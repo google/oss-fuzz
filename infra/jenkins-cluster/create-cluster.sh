@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +15,30 @@
 #
 ################################################################################
 
-FROM jenkins
-MAINTAINER mike.aizatsky@gmail.com
-USER root
+set -x
 
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && apt-get upgrade -y
+DIR=$(dirname $0)
+$DIR/build-images.sh
 
-# /var/run/docker.sock will be bound to a pod.
-RUN apt-get install -y docker.io
+# delete jenkins-master if it exists before starting
+kubectl get rc jenkins-master
+if [ $? -eq 0 ]
+then
+  kubectl delete -f $DIR/jenkins-master.yaml
+fi
+kubectl create -f $DIR/jenkins-master.yaml
+
+# do not restart services to keep IP addresses stable.
+kubectl get service jenkins-http
+if [ $? -ne 0 ]
+then
+  kubectl create -f $DIR/service-jenkins-http.yaml
+fi
+kubectl get service jenkins-master
+if [ $? -ne 0 ]
+then
+  kubectl create -f $DIR/service-jenkins-master.yaml
+fi
+
+kubectl describe rc jenkins-master
+kubectl describe service jenkins-http

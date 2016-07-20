@@ -1,19 +1,18 @@
-apiVersion: apps/v1alpha1
-kind: PetSet
+kind: ReplicationController
+apiVersion: v1
 metadata:
   name: jenkins-master
 
 spec:
-  serviceName: "jenkins-master"
   replicas: 1
+  selector:
+    app: jenkins-master
   template:
     metadata:
+      name: jenkins-master
       labels:
         app: jenkins-master
-      annotations:
-        pod.alpha.kubernetes.io/initialized: "true"
     spec:
-      terminationGracePeriodSeconds: 0
       containers:
       - name: jenkins-master
         image: gcr.io/meta-iterator-105109/jenkins
@@ -34,6 +33,8 @@ spec:
         volumeMounts:
         - name: jenkins-work
           mountPath: "/var/jenkins_home"
+        - name: docker-sock
+          mountPath: "/var/run/docker.sock"
         livenessProbe:
           httpGet:
             path: "/login"
@@ -45,13 +46,11 @@ spec:
             memory: "4Gi"
         securityContext:
           privileged: true
-  volumeClaimTemplates:
-  - metadata:
-      name: jenkins-work
-      annotations:
-        volume.alpha.kubernetes.io/storage-class: anything
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 250Gi
+      volumes:
+      - name: jenkins-work
+        gcePersistentDisk:
+          pdName: jenkins-work
+          fsType: ext4
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock

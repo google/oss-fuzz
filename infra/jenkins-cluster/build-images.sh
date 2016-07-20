@@ -15,33 +15,10 @@
 #
 ################################################################################
 
-set -x
+set -e -x
 
 PROJECT="gcr.io/meta-iterator-105109"
 DIR=$(dirname $0)
 
 docker build --pull -t $PROJECT/jenkins $DIR/
 gcloud docker push $PROJECT/jenkins
-
-# delete jenkins-master if it exists before starting
-kubectl get petset jenkins-master
-if [ $? -eq 0 ]
-then
-  kubectl delete -f $DIR/jenkins-master.yaml
-fi
-kubectl create -f $DIR/jenkins-master.yaml
-
-# do not restart services to keep IP addresses stable.
-kubectl get service jenkins-http
-if [ $? -ne 0 ]
-then
-  kubectl create -f $DIR/service-jenkins-http.yaml
-fi
-kubectl get service jenkins-master
-if [ $? -ne 0 ]
-then
-  kubectl create -f $DIR/service-jenkins-master.yaml
-fi
-
-kubectl describe petset jenkins-master
-kubectl describe service jenkins-http
