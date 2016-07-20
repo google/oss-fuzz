@@ -18,4 +18,5 @@
 
 FROM ubuntu:16.04
 MAINTAINER mike.aizatsky@gmail.com
+ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get upgrade -y

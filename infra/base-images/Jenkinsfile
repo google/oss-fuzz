@@ -20,11 +20,7 @@ def dockerOptions="--no-cache"
 
 node {
   git url: 'https://github.com/google/oss-fuzz/'
-  sh "docker build $dockerOptions --pull -t libfuzzer/base infra/images/base"
-  sh "docker build $dockerOptions -t libfuzzer/base-clang infra/images/base-clang"
-  sh "docker build $dockerOptions -t libfuzzer/base-fuzzer infra/images/base-fuzzer"
-
-  // cleanup stale docker images
-  // sh "docker rm $(docker ps -a -q) || true"
-  // sh "docker rmi $(docker images -q -f dangling=true) || true"
+  sh "docker build $dockerOptions --pull -t libfuzzer/base infra/base-images/base"
+  sh "docker build $dockerOptions -t libfuzzer/base-clang infra/base-images/base-clang"
+  sh "docker build $dockerOptions -t libfuzzer/base-fuzzer infra/base-images/base-fuzzer"
 }
