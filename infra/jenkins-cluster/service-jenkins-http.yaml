@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-http
+spec:
+  type: LoadBalancer
+  selector:
+    app: jenkins-master
+  ports:
+  - port: 80
+    targetPort: 8080

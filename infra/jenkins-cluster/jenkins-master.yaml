@@ -1,0 +1,57 @@
+apiVersion: apps/v1alpha1
+kind: PetSet
+metadata:
+  name: jenkins-master
+
+spec:
+  serviceName: "jenkins-master"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jenkins-master
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: jenkins-master
+        image: gcr.io/meta-iterator-105109/jenkins
+        env:
+          - name: KUB_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: KUB_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: JAVA_OPTS
+            value: "-Duser.timezone=America/Los_Angeles"
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000
+        volumeMounts:
+        - name: jenkins-work
+          mountPath: "/var/jenkins_home"
+        livenessProbe:
+          httpGet:
+            path: "/login"
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 15
+        resources:
+          requests:
+            memory: "4Gi"
+        securityContext:
+          privileged: true
+  volumeClaimTemplates:
+  - metadata:
+      name: jenkins-work
+      annotations:
+        volume.alpha.kubernetes.io/storage-class: anything
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 250Gi
