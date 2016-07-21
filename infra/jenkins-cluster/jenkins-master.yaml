@@ -35,6 +35,8 @@ spec:
           mountPath: "/var/jenkins_home"
         - name: docker-sock
           mountPath: "/var/run/docker.sock"
+        - name: dockerhub-login-secret
+          mountPath: "/var/secrets/dockerhub-login"
         livenessProbe:
           httpGet:
             path: "/login"
@@ -54,3 +56,6 @@ spec:
       - name: docker-sock
         hostPath:
           path: /var/run/docker.sock
+      - name: dockerhub-login-secret
+        secret:
+          secretName: dockerhub-login

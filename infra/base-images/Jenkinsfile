@@ -18,9 +18,24 @@
 
 def dockerOptions="--no-cache"
 
+stage 'Build Docker Images'
 node {
   git url: 'https://github.com/google/oss-fuzz/'
   sh "docker build $dockerOptions --pull -t libfuzzer/base infra/base-images/base"
   sh "docker build $dockerOptions -t libfuzzer/base-clang infra/base-images/base-clang"
   sh "docker build $dockerOptions -t libfuzzer/base-fuzzer infra/base-images/base-fuzzer"
+}
+
+stage 'Push Docker Images', concurrency: 1
+node {
+    // login into docker
+    def username = readFile('/var/secrets/dockerhub-login/username')
+    def password = readFile('/var/secrets/dockerhub-login/password')
+    def email = readFile('/var/secrets/dockerhub-login/email')
+
+    // #! is important here to disable default -x.
+    sh "#!/bin/bash -e\ndocker info\ndocker version\ndocker login -u='${username}' -p='${password}'  -e='${email}' https://index.docker.io/v1/"
+    sh "docker push libfuzzer/base"
+    sh "docker push libfuzzer/base-clang"
+    sh "docker push libfuzzer/base-fuzzer"
 }
