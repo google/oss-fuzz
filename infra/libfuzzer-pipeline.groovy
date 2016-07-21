@@ -40,7 +40,7 @@ def call(body) {
 
       for (int i = 0; i < sanitizers.size(); i++) {
         def sanitizer = sanitizers[i]
-        def dockerTag = "$projectName-$sanitizer"
+        def dockerTag = "ossfuzz/$projectName-$sanitizer"
 
         dir(sanitizer) {
           stage name: "$sanitizer sanitizer"
@@ -62,14 +62,14 @@ def call(body) {
             git url: gitUrl
           }
 
-          sh "docker build -t libfuzzer/$dockerTag -f $dockerfile ."
+          sh "docker build -t $dockerTag -f $dockerfile ."
 
           sh "rm -rf $out"
-          def zipFile= "$dockerTag-${date}.zip"
+          def zipFile= "$projectName-$sanitizer-${date}.zip"
 
           sh "mkdir -p $out"
           sh "ls -alR $workspace/"
-          sh "docker run -v $workspace:/workspace -v $out:/out -e sanitizer_flags=\"-fsanitize=$sanitizer\" -t libfuzzer/$dockerTag"
+          sh "docker run -v $workspace:/workspace -v $out:/out -e sanitizer_flags=\"-fsanitize=$sanitizer\" -t $dockerTag"
           sh "zip -j $zipFile $out/*"
           sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
         }
