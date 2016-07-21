@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM libfuzzer/base-clang
+FROM oss/base-clang
 
 MAINTAINER aizatsky@google.com
 
