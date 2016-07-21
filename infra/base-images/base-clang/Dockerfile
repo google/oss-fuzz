@@ -39,6 +39,5 @@ RUN ninja install
 RUN apt-get remove --purge -y cmake ninja-build python2.7 build-essential
 RUN apt-get autoremove -y
 
-# ENV PATH="/work/llvm/bin:$PATH"
-
+ENV PATH="/work/llvm/bin:$PATH"
 COPY env /work/llvm

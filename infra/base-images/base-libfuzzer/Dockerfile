@@ -14,9 +14,8 @@
 #
 ################################################################################
 
-FROM oss/base-clang
-
-MAINTAINER aizatsky@google.com
+FROM ossfuzz/base-clang
+MAINTAINER mike.aizatsky@gmail.com
 
 RUN mkdir /workspace
 WORKDIR /workspace
