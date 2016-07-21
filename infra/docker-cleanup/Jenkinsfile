@@ -16,12 +16,12 @@
 
 // Jenkins build script for periodic docker images cleanup.
 
-stage "Cleanup Processes", concurrency: 1
+stage 'Cleanup Processes', concurrency: 1
 node {
   sh "docker rm \$(docker ps -a -q) || true"
 }
 
-stage "Cleanup Images", concurrency: 1
+stage 'Cleanup Images', concurrency: 1
 node {
   sh "docker rmi \$(docker images -q -f dangling=true) || true"
 }
