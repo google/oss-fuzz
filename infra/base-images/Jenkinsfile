@@ -18,16 +18,14 @@
 
 def dockerOptions="--no-cache"
 
-stage 'Build Docker Images', concurrency: 1
 node {
+  stage name: 'Build Docker Images', concurrency: 1
   git url: 'https://github.com/google/oss-fuzz/'
   sh "docker build $dockerOptions --pull -t libfuzzer/base infra/base-images/base"
   sh "docker build $dockerOptions -t libfuzzer/base-clang infra/base-images/base-clang"
   sh "docker build $dockerOptions -t libfuzzer/base-libfuzzer infra/base-images/base-libfuzzer"
-}
 
-stage 'Push Docker Images', concurrency: 1
-node {
+  stage name: 'Push Docker Images', concurrency: 1
     // login into docker
     def username = readFile('/var/secrets/dockerhub-login/username')
     def password = readFile('/var/secrets/dockerhub-login/password')
