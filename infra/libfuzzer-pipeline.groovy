@@ -43,7 +43,7 @@ def call(body) {
         def dockerTag = "$projectName-$sanitizer"
 
         dir(sanitizer) {
-          echo "*** Building with $sanitizer sanitizer"
+          stage name: "$sanitizer sanitizer"
 
           // See JENKINS-33511
           sh 'pwd > pwd.current'
@@ -51,8 +51,8 @@ def call(body) {
           def out = "$workspace/out"
 
           if (needsOssFuzz) {
-            dir('libfuzzer-bot') {
-                git url: 'https://github.com/google/libfuzzer-bot/'
+            dir('oss-fuzz') {
+                git url: 'https://github.com/google/oss-fuzz.git'
             }
 
             dir(checkoutDir) {
