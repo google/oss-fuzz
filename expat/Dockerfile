@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM libfuzzer/base-fuzzer
+FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
 
 CMD /workspace/oss-fuzz/expat/build.sh
