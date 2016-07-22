@@ -69,7 +69,7 @@ def call(body) {
           def zipFile= "$projectName-$sanitizer-${date}.zip"
 
           sh "mkdir -p $out"
-          sh "ls -R $workspace/"
+          sh "ls -alR $workspace/"
           sh "docker run -v $workspace:/workspace -v $out:/out -e sanitizer_flags=\"-fsanitize=$sanitizer\" -t $dockerTag"
           sh "zip -j $zipFile $out/*"
           sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
