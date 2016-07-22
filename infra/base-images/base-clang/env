@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-
-set -e -x
-
 export WORKSPACE="/workspace"
 export CC="clang"
 export CXX="clang++"
@@ -32,3 +29,8 @@ popd > /dev/null
 export CFLAGS="-g $sanitizer_flags $cov_flags"
 export LIBCXX_FLAGS="-stdlib=libc++"
 export CXXFLAGS="$CFLAGS $LIBCXX_FLAGS "
+
+echo "CC=$CC"
+echo "CXX=$CXX"
+echo "CFLAGS=$CFLAGS"
+echo "CXXFLAGS=$CXXFLAGS"
