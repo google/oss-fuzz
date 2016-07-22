@@ -22,17 +22,26 @@ MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y build-essential make cmake ninja-build git python2.7
 
 RUN mkdir /src /work
+
+# Checkout
 RUN cd /src && git clone --depth 1 http://llvm.org/git/llvm.git
 RUN cd /src/llvm/tools && git clone --depth 1 http://llvm.org/git/clang.git
 RUN cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/compiler-rt.git
 RUN cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxx.git
 RUN cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxxabi.git
 RUN cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/lld.git
+
+# Build & Install
 RUN mkdir -p /work/llvm
 WORKDIR /work/llvm
 RUN cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DLIBCXX_ENABLE_SHARED=OFF  -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON /src/llvm
 RUN ninja
 RUN ninja install
+RUN rm -rf /work/llvm
+
+RUN mkdir /src/libfuzzer
+RUN cp -r /src/llvm/lib/Fuzzer/* /src/libfuzzer/
+RUN rm -rf /src/llvm
 
 # RUN ln -s /work/llvm/bin/lld /work/llvm/bin/ld
 
@@ -40,4 +49,4 @@ RUN apt-get remove --purge -y cmake ninja-build python2.7 build-essential
 RUN apt-get autoremove -y
 
 ENV PATH="/work/llvm/bin:$PATH"
-COPY env /work/llvm
+COPY env /

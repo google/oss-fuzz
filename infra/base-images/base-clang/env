@@ -18,15 +18,14 @@
 set -e -x
 
 export WORKSPACE="/workspace"
-export CC="/work/llvm/bin/clang"
-export CXX="/work/llvm/bin/clang++"
-export CCC="/work/llvm/bin/clang++"
+export CC="clang"
+export CXX="clang++"
+export CCC="clang++"
 
 pushd $PWD > /dev/null
 echo -n "Compiling libFuzzer..."
 cd /work/libfuzzer
-cp /src/llvm/lib/Fuzzer/*.h .
-$CXX -g -std=c++11 -stdlib=libc++ $sanitizer_flags -c /src/llvm/lib/Fuzzer/*.cpp -I.
+$CXX -g -std=c++11 -stdlib=libc++ $sanitizer_flags -c /src/libfuzzer/*.cpp -I/src/libfuzzer
 echo "Done."
 popd > /dev/null
 

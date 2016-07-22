@@ -16,6 +16,7 @@
 
 FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
+RUN apt-get install -y libc6-dev
 
 RUN mkdir /workspace
 WORKDIR /workspace
