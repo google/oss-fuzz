@@ -19,9 +19,14 @@
 def dockerOptions="--no-cache"
 
 node {
-  stage name: 'Build Docker Images', concurrency: 1
   git url: 'https://github.com/google/oss-fuzz/'
+
+  stage name: 'Build ossfuzz/base', concurrency: 1
   sh "docker build $dockerOptions --pull -t ossfuzz/base infra/base-images/base"
+
+  stage name: 'Build ossfuzz/base-clang', concurrency: 1
   sh "docker build $dockerOptions -t ossfuzz/base-clang infra/base-images/base-clang"
+
+  stage name: 'Build ossfuzz/base-libfuzzer', concurrency: 1
   sh "docker build $dockerOptions -t ossfuzz/base-libfuzzer infra/base-images/base-libfuzzer"
  }
