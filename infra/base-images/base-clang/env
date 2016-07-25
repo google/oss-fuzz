@@ -27,7 +27,7 @@ echo "Done."
 popd > /dev/null
 
 export CFLAGS="-g $sanitizer_flags $cov_flags"
-export LIBCXX_FLAGS="-stdlib=libc++"
+export LIBCXX_FLAGS="-stdlib=libc++ -lc++abi"
 export CXXFLAGS="$CFLAGS $LIBCXX_FLAGS "
 
 echo "CC=$CC"
