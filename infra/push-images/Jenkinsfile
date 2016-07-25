@@ -16,8 +16,14 @@
 
 // Jenkins build script to push docker images to docker repository.
 
-docker.withRegistry('', 'docker-login') {
-    docker.image('ossfuzz/base').push()
-    docker.image('ossfuzz/base-clang').push()
-    docker.image('ossfuzz/base-libfuzzer').push()
+def images = ['ossfuzz/base', 'ossfuzz/base-clang', 'ossfuzz/base-libfuzzer']
+
+node() {
+    docker.withRegistry('', 'docker-login') {
+        for (int i = 0; i < images.size(); i++) {
+            def image = images[i]
+            stage name: "Pushing $image"
+            docker.image(image).push()
+        }
+    }
 }
