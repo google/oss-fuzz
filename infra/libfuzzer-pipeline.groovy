@@ -70,7 +70,7 @@ def call(body) {
 
           sh "mkdir -p $out"
           sh "ls -alR $workspace/"
-          sh "docker run -v $workspace:/workspace -v $out:/out -e sanitizer_flags=\"-fsanitize=$sanitizer\" -t $dockerTag /bin/bash -c \"ls -alR /workspace\""
+          sh "docker run -v $workspace:/workspace -v $out:/out -e sanitizer_flags=\"-fsanitize=$sanitizer\" -t $dockerTag"
           sh "zip -j $zipFile $out/*"
           sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
         }
