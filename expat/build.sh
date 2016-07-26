@@ -2,7 +2,6 @@
 . /env
 
 cd /workspace/expat
-ls -alR
 
 ./buildconf.sh
 ./configure
