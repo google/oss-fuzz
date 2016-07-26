@@ -16,6 +16,6 @@
 
 FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y autoconf automake libtool
+RUN apt-get install -y autoconf automake libtool docbook2x
 
 CMD /src/oss-fuzz/expat/build.sh
