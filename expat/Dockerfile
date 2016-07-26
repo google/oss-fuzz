@@ -16,5 +16,6 @@
 
 FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
+RUN apt-get install -y autoconf automake libtool
 
-CMD /workspace/oss-fuzz/expat/build.sh
+CMD /src/oss-fuzz/expat/build.sh
