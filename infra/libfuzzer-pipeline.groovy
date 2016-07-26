@@ -31,7 +31,6 @@ def call(body) {
     def projectName = config["name"] ?: env.JOB_BASE_NAME
     def sanitizers = config["sanitizers"] ?: ["address", "memory"]
     def checkoutDir = config["checkoutDir"] ?: projectName
-    def needsOssFuzz = config["needsOssFuzz"] ?: false
 
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm").format(java.time.LocalDateTime.now())
 
@@ -51,17 +50,13 @@ def call(body) {
           def workspace = "$pwd/$sanitizer"
           def out = "$pwd/out/$sanitizer"
 
-          if (needsOssFuzz) {
-            dir('oss-fuzz') {
-                git url: 'https://github.com/google/oss-fuzz.git'
-            }
+	  dir('oss-fuzz') {
+	      git url: 'https://github.com/google/oss-fuzz.git'
+	  }
 
-            dir(checkoutDir) {
-                git url: gitUrl
-            }
-          } else {
-            git url: gitUrl
-          }
+	  dir(checkoutDir) {
+	      git url: gitUrl
+	  }
 
           sh "docker build -t $dockerTag -f $dockerfile ."
 
@@ -69,7 +64,7 @@ def call(body) {
           def zipFile= "$projectName-$sanitizer-${date}.zip"
 
           sh "mkdir -p $out"
-          sh "docker run -v $workspace:/workspace -v $out:/out -e sanitizer_flags=\"-fsanitize=$sanitizer\" -t $dockerTag"
+          sh "docker run -v $workspace/$checkoutDir:/workspace -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e sanitizer_flags=\"-fsanitize=$sanitizer\" -t $dockerTag"
           sh "zip -j $zipFile $out/*"
           sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
         }
