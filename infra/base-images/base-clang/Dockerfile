@@ -19,7 +19,8 @@
 FROM ossfuzz/base
 MAINTAINER mike.aizatsky@gmail.com
 
-RUN apt-get install -y build-essential make cmake ninja-build git python2.7
+ENV LLVM_DEP_PACKAGES "build-essential make cmake ninja-build git python2.7"
+RUN apt-get install -y $LLVM_DEP_PACKAGES
 
 RUN mkdir /src /work
 
@@ -45,7 +46,7 @@ RUN rm -rf /src/llvm
 
 # RUN ln -s /work/llvm/bin/lld /work/llvm/bin/ld
 
-RUN apt-get remove --purge -y cmake ninja-build python2.7 build-essential
+RUN apt-get remove --purge -y $LLVM_DEP_PACKAGES
 RUN apt-get autoremove -y
 
 ENV PATH="/work/llvm/bin:$PATH"

@@ -14,8 +14,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
-        'https://github.com/google/oss-fuzz.git', 'master', null, '')
+def libfuzzerBuild = fileLoader.fromGit(
+    'infra/libfuzzer-pipeline.groovy',
+    'https://github.com/google/oss-fuzz.git', 'master', null, '')
 
 libfuzzerBuild {
   git = "git://git.sv.nongnu.org/freetype/freetype2.git"
