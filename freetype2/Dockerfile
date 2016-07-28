@@ -16,7 +16,6 @@
 
 FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y autoconf libtool libarchive-dev
+RUN apt-get install -y make autoconf libtool libarchive-dev
 
 CMD /src/oss-fuzz/freetype2/build.sh
-
