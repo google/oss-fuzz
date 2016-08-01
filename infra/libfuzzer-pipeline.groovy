@@ -60,7 +60,10 @@ def call(body) {
           }
 
           if (dockerContextDir == null) {
-            dockerContextDir = new File(dockerfile).getAbsoluteFile().getParent().getName();
+            dockerContextDir = new File(dockerfile)
+                .getAbsoluteFile()
+                .getParent()
+                .getAbsolutePath();
           }
 
           sh "docker build -t $dockerTag -f $dockerfile $dockerContextDir"
