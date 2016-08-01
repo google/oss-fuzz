@@ -60,7 +60,7 @@ def call(body) {
           }
 
           if (dockerContextDir == null) {
-            dockerContextDir = new File(dockerfile)
+            dockerContextDir = new File(workspace, dockerfile)
                 .getAbsoluteFile()
                 .getParentFile()
                 .getAbsolutePath();
