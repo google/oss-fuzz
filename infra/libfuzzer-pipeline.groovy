@@ -62,7 +62,7 @@ def call(body) {
           if (dockerContextDir == null) {
             dockerContextDir = new File(dockerfile)
                 .getAbsoluteFile()
-                .getParent()
+                .getParentFile()
                 .getAbsolutePath();
           }
 
