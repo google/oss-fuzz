@@ -31,6 +31,7 @@ def call(body) {
     def projectName = config["name"] ?: env.JOB_BASE_NAME
     def sanitizers = config["sanitizers"] ?: ["address", "memory"]
     def checkoutDir = config["checkoutDir"] ?: projectName
+    def dockerContextDir = config["dockerContextDir"]
 
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm").format(java.time.LocalDateTime.now())
 
@@ -58,7 +59,11 @@ def call(body) {
               git url: gitUrl
           }
 
-          sh "docker build -t $dockerTag -f $dockerfile ."
+          if (dockerContextDir == null) {
+            dockerContextDir = new File($dockerfile).getAbsoluteFile().getParent().getName();
+          }
+
+          sh "docker build -t $dockerTag -f $dockerfile $dockerContextDir"
 
           sh "rm -rf $out"
           def zipFile= "$projectName-$sanitizer-${date}.zip"
