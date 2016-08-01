@@ -21,10 +21,6 @@ RUN apt-get install -y git libc6-dev
 RUN cd /src && git clone --depth 1 https://github.com/google/oss-fuzz.git
 VOLUME /src/oss-fuzz
 
-RUN mkdir /workspace
-WORKDIR /workspace
-VOLUME /workspace
-
 RUN mkdir -p /work/libfuzzer
 
 ENV sanitizer_flags="-fsanitize=address"

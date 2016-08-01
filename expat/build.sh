@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 . /env
 
-cd /workspace/expat
+cd /src/expat
 
 ./buildconf.sh
 ./configure
