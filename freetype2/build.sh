@@ -23,9 +23,6 @@ cd /src/freetype2/
 ./configure
 make
 
-$CXX $CXXFLAGS $LDFLAGS -std=c++11 ./src/tools/ftfuzzer/ftfuzzer.cc \
+$CXX $CXXFLAGS -std=c++11 ./src/tools/ftfuzzer/ftfuzzer.cc -o /out/freetype2_fuzzer \
   ./objs/*.o /work/libfuzzer/*.o \
-   -nodefaultlibs -Wl,-Bdynamic -lpthread -lrt -lm -ldl -lgcc_s -lgcc -lc \
-   -Wl,-Bstatic -lc++ -lc++abi \
-   -larchive -I./include -I. ./objs/.libs/libfreetype.a  \
-   -o /out/freetype2_fuzzer
+   -larchive -I./include -I. ./objs/.libs/libfreetype.a  $LDFLAGS
