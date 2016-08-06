@@ -49,5 +49,10 @@ RUN rm -rf /src/llvm
 RUN apt-get remove --purge -y $LLVM_DEP_PACKAGES
 RUN apt-get autoremove -y
 
-ENV PATH="/work/llvm/bin:$PATH"
+ENV CC "clang"
+ENV CXX "clang++"
+ENV CCC "clang++"
+
+ENV CFLAGS "-g"
+
 COPY env /

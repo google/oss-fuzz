@@ -14,9 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-export CC="clang"
-export CXX="clang++"
-export CCC="clang++"
+
+echo "CC=$CC"
+echo "CXX=$CXX"
+echo "CFLAGS=$CFLAGS"
+echo "CXXFLAGS=$CXXFLAGS"
 
 pushd $PWD > /dev/null
 echo -n "Compiling libFuzzer..."
@@ -26,9 +28,9 @@ echo "Done."
 popd > /dev/null
 
 export CFLAGS="-g $sanitizer_flags $cov_flags"
+export LDFLAGS="-Wl,-Bstatic -lc++ -lc++abi -Wl,-Bdynamic"
 export LIBCXX_FLAGS="-stdlib=libc++"
 export CXXFLAGS="$CFLAGS $LIBCXX_FLAGS "
-export LDFLAGS="-nodefaultlibs -Wl,-Bdynamic -lpthread -lrt -lm -ldl -lgcc_s -lgcc -lc -Wl,-Bstatic -lc++ -lc++abi"
 
 echo "CC=$CC"
 echo "CXX=$CXX"
