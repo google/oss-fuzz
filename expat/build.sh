@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -eu
 . /env
 
 cd /src/expat/expat

@@ -27,10 +27,8 @@ $CXX -g -std=c++11 -stdlib=libc++ $sanitizer_flags -c /src/libfuzzer/*.cpp -I/sr
 echo "Done."
 popd > /dev/null
 
-export CFLAGS="-g $sanitizer_flags $cov_flags"
-export LDFLAGS="-Wl,-Bstatic -lc++ -lc++abi -Wl,-Bdynamic"
 export LIBCXX_FLAGS="-stdlib=libc++"
-export CXXFLAGS="$CFLAGS $LIBCXX_FLAGS "
+export CXXFLAGS="$CFLAGS $LIBCXX_FLAGS"
 
 echo "CC=$CC"
 echo "CXX=$CXX"

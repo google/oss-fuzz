@@ -28,5 +28,8 @@ ENV cov_flags="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 
 ENV ASAN_OPTIONS="symbolize=1"
 
+ENV CFLAGS "$CFLAGS $sanitizer_flags $cov_flags"
+ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
+
 RUN mkdir /out
 VOLUME /out
