@@ -19,7 +19,7 @@ cd /src/freetype2/
 
 ./autogen.sh
 ./configure
-make
+make clean all
 
 $CXX $CXXFLAGS -std=c++11 ./src/tools/ftfuzzer/ftfuzzer.cc -o /out/freetype2_fuzzer \
   ./objs/*.o /work/libfuzzer/*.o \
