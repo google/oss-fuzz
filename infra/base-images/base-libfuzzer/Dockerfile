@@ -23,13 +23,13 @@ VOLUME /src/oss-fuzz
 
 RUN mkdir -p /work/libfuzzer
 
-ENV sanitizer_flags="-fsanitize=address"
-ENV cov_flags="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
+ENV SANITIZER_FLAGS="-fsanitize=address"
+ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 
 ENV ASAN_OPTIONS="symbolize=1"
 
-ENV CFLAGS "$CFLAGS $sanitizer_flags $cov_flags"
-ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
-
 RUN mkdir /out
 VOLUME /out
+
+COPY run /
+ENTRYPOINT ["/run"]

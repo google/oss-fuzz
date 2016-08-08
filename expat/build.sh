@@ -1,6 +1,4 @@
 #!/bin/bash -eu
-. /env
-
 cd /src/expat/expat
 
 ./buildconf.sh

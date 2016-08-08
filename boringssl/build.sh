@@ -15,8 +15,6 @@
 # limitations under the License.
 #
 ################################################################################
-. /env
-
 mkdir -p /work/boringssl
 cd /work/boringssl
 

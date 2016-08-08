@@ -15,22 +15,23 @@
 #
 ################################################################################
 
-echo "CC=$CC"
-echo "CXX=$CXX"
-echo "CFLAGS=$CFLAGS"
-echo "CXXFLAGS=$CXXFLAGS"
 
-pushd $PWD > /dev/null
+echo "---------------------------------------------------------------"
+
 echo -n "Compiling libFuzzer..."
 cd /work/libfuzzer
-$CXX -g -std=c++11 -stdlib=libc++ $sanitizer_flags -c /src/libfuzzer/*.cpp -I/src/libfuzzer
+$CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c /src/libfuzzer/*.cpp -I/src/libfuzzer
 echo "Done."
-popd > /dev/null
 
-export LIBCXX_FLAGS="-stdlib=libc++"
-export CXXFLAGS="$CFLAGS $LIBCXX_FLAGS"
+export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COV_FLAGS"
+export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
 echo "CC=$CC"
 echo "CXX=$CXX"
 echo "CFLAGS=$CFLAGS"
 echo "CXXFLAGS=$CXXFLAGS"
+echo "LDFLAGS=$LDFLAGS"
+
+echo "---------------------------------------------------------------"
+
+$*
