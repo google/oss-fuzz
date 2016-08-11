@@ -80,10 +80,15 @@ def call(body) {
 
       stage name: "Running fuzzers"
       dir ('out') {
-        def files = findFiles()
-        for (int i = 0; i < files.size(); i++) {
-          def file = files[i]
-          echo "FILES: $file"
+        for (int i = 0; i < sanitizers.size(); i++) {
+          def sanitizer = sanitizers[i]
+          dir (sanitizer) {
+            def files = findFiles()
+            for (int j = 0; j < files.size(); j++) {
+              def file = files[j]
+              echo "FILES: $file"
+            }
+          }
         }
       }
     }
