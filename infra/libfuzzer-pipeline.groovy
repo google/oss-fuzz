@@ -83,10 +83,12 @@ def call(body) {
         for (int i = 0; i < sanitizers.size(); i++) {
           def sanitizer = sanitizers[i]
           dir (sanitizer) {
+            def d = pwd()
             def files = findFiles()
             for (int j = 0; j < files.size(); j++) {
               def file = files[j]
-              echo "FILES: $file"
+              echo "FILE: $file"
+              sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner $file"
             }
           }
         }
