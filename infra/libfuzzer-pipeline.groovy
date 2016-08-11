@@ -77,6 +77,15 @@ def call(body) {
           sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
         }
       }
+
+      stage name: "Running fuzzers"
+      dir ('out') {
+        def files = findFiles()
+        for (int i = 0; i < files.size(); i++) {
+          def file = files[i]
+          echo "FILES: $file"
+        }
+      }
     }
 
   echo 'Done'
