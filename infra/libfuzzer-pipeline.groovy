@@ -38,7 +38,7 @@ def call(body) {
     node {
       echo "Building project $projectName with Dockerfile=$dockerfile"
 
-      def pwd = pwd()
+      def wsPwd = pwd()
 
       for (int i = 0; i < sanitizers.size(); i++) {
         def sanitizer = sanitizers[i]
@@ -47,7 +47,7 @@ def call(body) {
         dir(sanitizer) {
           stage name: "$sanitizer sanitizer"
           def workspace = pwd();
-          def out = "$pwd/out/$sanitizer"
+          def out = "$wsPwd/out/$sanitizer"
 
           dir('oss-fuzz') {
               git url: 'https://github.com/google/oss-fuzz.git'
