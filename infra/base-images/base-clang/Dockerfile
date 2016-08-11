@@ -58,4 +58,3 @@ ENV CFLAGS "-g"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
 
-ENV LDFLAGS "-Wl,-Bstatic -lc++ -lc++abi -Wl,-Bdynamic"
