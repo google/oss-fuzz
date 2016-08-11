@@ -38,9 +38,7 @@ def call(body) {
     node {
       echo "Building project $projectName with Dockerfile=$dockerfile"
 
-      // See JENKINS-33511
-      sh 'pwd > pwd.current'
-      def pwd = readFile('pwd.current').trim()
+      def pwd = pwd()
 
       for (int i = 0; i < sanitizers.size(); i++) {
         def sanitizer = sanitizers[i]
@@ -48,7 +46,7 @@ def call(body) {
 
         dir(sanitizer) {
           stage name: "$sanitizer sanitizer"
-          def workspace = "$pwd/$sanitizer"
+          def workspace = pwd();
           def out = "$pwd/out/$sanitizer"
 
           dir('oss-fuzz') {
@@ -65,13 +63,16 @@ def call(body) {
                 .getPath();
           }
 
+          // Build docker image
           sh "docker build -t $dockerTag -f $dockerfile $dockerContextDir"
 
+          // Run image to produce fuzzers"
           sh "rm -rf $out"
-          def zipFile= "$projectName-$sanitizer-${date}.zip"
-
           sh "mkdir -p $out"
           sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
+
+          // Zip everything in out/ directory.
+          def zipFile= "$projectName-$sanitizer-${date}.zip"
           sh "zip -j $zipFile $out/*"
           sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
         }
