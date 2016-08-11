@@ -88,7 +88,7 @@ def call(body) {
             for (int j = 0; j < files.size(); j++) {
               def file = files[j]
               echo "FILE: $file"
-              sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner $file"
+              sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file --runs=1"
             }
           }
         }
