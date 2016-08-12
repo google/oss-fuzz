@@ -33,7 +33,8 @@ def call(body) {
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
 
-    def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm").format(java.time.LocalDateTime.now())
+    def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
+        .format(java.time.LocalDateTime.now())
 
     node {
       echo "Building project $projectName with Dockerfile=$dockerfile"
@@ -70,16 +71,11 @@ def call(body) {
           sh "rm -rf $out"
           sh "mkdir -p $out"
           sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
-
-          // Zip everything in out/ directory.
-          def zipFile= "$projectName-$sanitizer-${date}.zip"
-          sh "zip -j $zipFile $out/*"
-          sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
         }
       }
 
-      stage name: "Running fuzzers"
       dir ('out') {
+        stage name: "Running fuzzers"
         for (int i = 0; i < sanitizers.size(); i++) {
           def sanitizer = sanitizers[i]
           dir (sanitizer) {
@@ -90,6 +86,16 @@ def call(body) {
               echo "FILE: $file"
               sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
             }
+          }
+        }
+
+        stage name: "Uploading fuzzers"
+        for (int i = 0; i < sanitizers.size(); i++) {
+          def sanitizer = sanitizers[i]
+          dir (sanitizer) {
+            def zipFile= "$projectName-$sanitizer-${date}.zip"
+            sh "zip -j $zipFile $out/*"
+            sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
           }
         }
       }
