@@ -93,8 +93,8 @@ def call(body) {
         for (int i = 0; i < sanitizers.size(); i++) {
           def sanitizer = sanitizers[i]
           dir (sanitizer) {
-            def zipFile= "$projectName-$sanitizer-${date}.zip"
-            sh "zip -j $zipFile $out/*"
+            def zipFile = "$projectName-$sanitizer-$date.zip"
+            sh "zip -j $zipFile *"
             sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
           }
         }
