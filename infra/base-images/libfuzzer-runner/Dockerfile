@@ -18,3 +18,4 @@ FROM ossfuzz/base
 MAINTAINER mike.aizatsky@gmail.com
 RUN mkdir /out
 VOLUME /out
+ENV PATH "$PATH:/out"

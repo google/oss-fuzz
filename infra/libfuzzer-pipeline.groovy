@@ -29,7 +29,7 @@ def call(body) {
 
     // Optional configuration
     def projectName = config["name"] ?: env.JOB_BASE_NAME
-    def sanitizers = config["sanitizers"] ?: ["address", "memory"]
+    def sanitizers = config["sanitizers"] ?: ["address"]
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
 
