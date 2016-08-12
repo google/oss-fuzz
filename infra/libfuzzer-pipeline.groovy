@@ -46,7 +46,7 @@ def call(body) {
         def dockerTag = "ossfuzz/$projectName-$sanitizer"
 
         dir(sanitizer) {
-          stage name: "$sanitizer sanitizer"
+          stage name: "Building $sanitizer sanitizer"
           def workspace = pwd();
           def out = "$wsPwd/out/$sanitizer"
 
@@ -93,7 +93,7 @@ def call(body) {
         for (int i = 0; i < sanitizers.size(); i++) {
           def sanitizer = sanitizers[i]
           dir (sanitizer) {
-            def zipFile = "$projectName-$sanitizer-$date.zip"
+            def zipFile = "$projectName-$sanitizer-${date}.zip"
             sh "zip -j $zipFile *"
             sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
           }
