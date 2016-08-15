@@ -24,8 +24,16 @@ fi
 
 bash compile_${FUZZING_ENGINE}
 
+if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
+then
+  # Take all libraries from lib/msan
+  export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
+  ls -alR /usr/msan/lib
+fi
+
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
+
 
 echo "CC=$CC"
 echo "CXX=$CXX"
