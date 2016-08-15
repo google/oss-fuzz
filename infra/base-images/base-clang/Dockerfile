@@ -36,7 +36,7 @@ RUN cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/lld.git
 RUN mkdir -p /work/llvm
 WORKDIR /work/llvm
 RUN cmake -G "Ninja" \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
     /src/llvm
 RUN ninja
 RUN ninja install
