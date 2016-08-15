@@ -35,19 +35,16 @@ RUN cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/lld.git
 # Build & Install
 RUN mkdir -p /work/llvm
 WORKDIR /work/llvm
-RUN cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DLIBCXX_ENABLE_SHARED=OFF  -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON /src/llvm
+RUN cmake -G "Ninja" \
+    -DCMAKE_BUILD_TYPE=Release \
+    /src/llvm
 RUN ninja
 RUN ninja install
+RUN rm -rf /work/llvm
 
 # Copy libfuzzer sources
 RUN mkdir /src/libfuzzer
 RUN cp -r /src/llvm/lib/Fuzzer/* /src/libfuzzer/
-
-# Cleanup
-RUN rm -rf /work/llvm
-RUN rm -rf /src/llvm
-RUN apt-get remove --purge -y $LLVM_DEP_PACKAGES
-RUN apt-get autoremove -y
 
 # Setup the environment.
 ENV CC "clang"
@@ -57,4 +54,22 @@ ENV CCC "clang++"
 ENV CFLAGS "-g"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
+
+# Build MSan libraries
+RUN mkdir -p /work/llvm-msan
+WORKDIR /work/llvm-msan
+RUN cmake -G "Ninja" \
+   -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_SANITIZER=Memory \
+    /src/llvm
+RUN ninja cxx cxxabi
+RUN mkdir /usr/local/lib/msan
+RUN cp lib/*.so /usr/local/lib/msan
+RUN cp lib/*.a /usr/local/lib/msan
+RUN rm -rf /work/llvm-msan
+
+# Cleanup
+RUN rm -rf /src/llvm
+RUN apt-get remove --purge -y $LLVM_DEP_PACKAGES
+RUN apt-get autoremove -y
+
 
