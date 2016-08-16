@@ -63,10 +63,10 @@ RUN cmake -G "Ninja" \
     -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
     -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_SANITIZER=Memory \
     /src/llvm
-RUN ninja cxx cxxabi
-RUN mkdir /usr/local/lib/msan
-RUN cp lib/*.so /usr/local/lib/msan
-RUN cp lib/*.a /usr/local/lib/msan
+# RUN ninja cxx cxxabi
+# RUN mkdir /usr/local/lib/msan
+# RUN cp lib/*.so /usr/local/lib/msan
+# RUN cp lib/*.a /usr/local/lib/msan
 RUN rm -rf /work/llvm-msan
 
 # Cleanup
