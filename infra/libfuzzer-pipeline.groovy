@@ -61,7 +61,7 @@ def call(body) {
               revisions[gitUrl] = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
           }
 
-          def revText = groovy.json.JsonOutput.toJson(revs)
+          def revText = groovy.json.JsonOutput.toJson(revisions)
           writeFile file: "$wsPwd/${sanitizer}.rev", text: revText
           echo "revisions: $revText"
 
