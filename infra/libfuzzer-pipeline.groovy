@@ -35,6 +35,7 @@ def call(body) {
 
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
+    def ossFuzzUrl = 'https://github.com/google/oss-fuzz.git'
 
     node {
       echo "Building project $projectName with Dockerfile=$dockerfile"
@@ -49,14 +50,20 @@ def call(body) {
           stage name: "Building $sanitizer sanitizer"
           def workspace = pwd();
           def out = "$wsPwd/out/$sanitizer"
+          def revisions = [:]
 
           dir('oss-fuzz') {
-              git url: 'https://github.com/google/oss-fuzz.git'
+              git url: ossFuzzUrl
           }
 
           dir(checkoutDir) {
               git url: gitUrl
+              revisions[gitUrl] = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
           }
+
+          def revText = groovy.json.JsonOutput.toJson(revs)
+          writeFile file: "$wsPwd/${sanitizer}.rev" text: revText
+          echo "revisions: $revText"
 
           if (dockerContextDir == null) {
             dockerContextDir = new File(dockerfile)
@@ -94,8 +101,11 @@ def call(body) {
           def sanitizer = sanitizers[i]
           dir (sanitizer) {
             def zipFile = "$projectName-$sanitizer-${date}.zip"
+            def revFile = "$projectName-$sanitizer-${date}.rev"
+            sh "cp $wsPwd/${sanitizer}.rev $revFile"
             sh "zip -j $zipFile *"
             sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
+            sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
           }
         }
       }
