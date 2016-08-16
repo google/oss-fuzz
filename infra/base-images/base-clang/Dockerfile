@@ -36,6 +36,7 @@ RUN cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/lld.git
 RUN mkdir -p /work/llvm
 WORKDIR /work/llvm
 RUN cmake -G "Ninja" \
+    -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
     -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
     /src/llvm
 RUN ninja
@@ -59,7 +60,8 @@ ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
 RUN mkdir -p /work/llvm-msan
 WORKDIR /work/llvm-msan
 RUN cmake -G "Ninja" \
-   -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_SANITIZER=Memory \
+    -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+    -DCMAKE_BUILD_TYPE=Release -DLLVM_USE_SANITIZER=Memory \
     /src/llvm
 RUN ninja cxx cxxabi
 RUN mkdir /usr/local/lib/msan
