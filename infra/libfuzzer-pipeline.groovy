@@ -62,7 +62,7 @@ def call(body) {
           }
 
           def revText = groovy.json.JsonOutput.toJson(revs)
-          writeFile file: "$wsPwd/${sanitizer}.rev" text: revText
+          writeFile file: "$wsPwd/${sanitizer}.rev", text: revText
           echo "revisions: $revText"
 
           if (dockerContextDir == null) {
