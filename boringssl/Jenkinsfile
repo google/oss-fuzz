@@ -20,7 +20,6 @@ def libfuzzerPipeline = fileLoader.fromGit(
 
 libfuzzerPipeline {
   git = "https://boringssl.googlesource.com/boringssl"
-  dockerfile = "oss-fuzz/boringssl/Dockerfile"
 }
 
 

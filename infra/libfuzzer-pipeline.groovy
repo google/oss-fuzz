@@ -22,8 +22,6 @@ def call(body) {
     body()
 
     // Mandatory configuration
-    def dockerfile = config["dockerfile"]
-    assert dockerfile : "dockerfile should be specified"
     def gitUrl = config["git"]
     assert gitUrl : "git should be specified"
 
@@ -38,7 +36,7 @@ def call(body) {
     def ossFuzzUrl = 'https://github.com/google/oss-fuzz.git'
 
     node {
-      echo "Building project $projectName with Dockerfile=$dockerfile"
+      echo "Building project $projectName"
 
       def wsPwd = pwd()
 
@@ -65,6 +63,7 @@ def call(body) {
           writeFile file: "$wsPwd/${sanitizer}.rev", text: revText
           echo "revisions: $revText"
 
+          def dockerfile = "$workspace/oss-fuzz/$projectName/Dockerfile"
           if (dockerContextDir == null) {
             dockerContextDir = new File(dockerfile)
                 .getParentFile()
@@ -74,10 +73,19 @@ def call(body) {
           // Build docker image
           sh "docker build -t $dockerTag -f $dockerfile $dockerContextDir"
 
-          // Run image to produce fuzzers"
+          // Run image to produce fuzzers
           sh "rm -rf $out"
           sh "mkdir -p $out"
           sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
+"
+          // Copy dict and options files
+          try {
+            sh "cp $workspace/oss-fuzz/$projectName/*.dict $out/"
+          } catch (err) {}
+
+          try {
+            sh "cp $workspace/oss-fuzz/$projectName/*.options $out/"
+          } catch (err) {}
         }
       }
 
