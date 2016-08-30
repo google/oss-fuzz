@@ -26,8 +26,8 @@ def call(body) {
     assert gitUrl : "git should be specified"
 
     // Optional configuration
-    def dockerfile = config["dockerfile"]
     def projectName = config["name"] ?: env.JOB_BASE_NAME
+    def dockerfile = config["dockerfile"] ?: "oss-fuzz/$projectName/Dockerfile"
     def sanitizers = config["sanitizers"] ?: ["address"]
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
@@ -64,10 +64,6 @@ def call(body) {
           writeFile file: "$wsPwd/${sanitizer}.rev", text: revText
           echo "revisions: $revText"
 
-          if (dockerfile == null) {
-            dockerfile = "$workspace/oss-fuzz/$projectName/Dockerfile"
-          }
-
           if (dockerContextDir == null) {
             dockerContextDir = new File(dockerfile)
                 .getParentFile()
@@ -83,13 +79,8 @@ def call(body) {
           sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
 "
           // Copy dict and options files
-          try {
-            sh "cp $workspace/oss-fuzz/$projectName/*.dict $out/"
-          } catch (err) {}
-
-          try {
-            sh "cp $workspace/oss-fuzz/$projectName/*.options $out/"
-          } catch (err) {}
+          sh "cp $workspace/oss-fuzz/$projectName/*.dict $out/ || true"
+          sh "cp $workspace/oss-fuzz/$projectName/*.options $out/ || true"
         }
       }
 
