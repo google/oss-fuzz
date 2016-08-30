@@ -26,6 +26,7 @@ def call(body) {
     assert gitUrl : "git should be specified"
 
     // Optional configuration
+    def dockerfile = config["dockerfile"]
     def projectName = config["name"] ?: env.JOB_BASE_NAME
     def sanitizers = config["sanitizers"] ?: ["address"]
     def checkoutDir = config["checkoutDir"] ?: projectName
@@ -63,7 +64,10 @@ def call(body) {
           writeFile file: "$wsPwd/${sanitizer}.rev", text: revText
           echo "revisions: $revText"
 
-          def dockerfile = "$workspace/oss-fuzz/$projectName/Dockerfile"
+          if (dockerfile == null) {
+            dockerfile = "$workspace/oss-fuzz/$projectName/Dockerfile"
+          }
+
           if (dockerContextDir == null) {
             dockerContextDir = new File(dockerfile)
                 .getParentFile()
