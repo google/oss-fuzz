@@ -93,6 +93,9 @@ def call(body) {
             def files = findFiles()
             for (int j = 0; j < files.size(); j++) {
               def file = files[j]
+              if (file.endsWith('.dict') || file.endsWith('.options')) {
+                continue
+              }
               echo "FILE: $file"
               sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
             }
