@@ -77,7 +77,7 @@ def call(body) {
           sh "rm -rf $out"
           sh "mkdir -p $out"
           sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
-"
+
           // Copy dict and options files
           sh "cp $workspace/oss-fuzz/$projectName/*.dict $out/ || true"
           sh "cp $workspace/oss-fuzz/$projectName/*.options $out/ || true"
