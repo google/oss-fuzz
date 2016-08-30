@@ -118,6 +118,22 @@ Breaking this down:
    and `.libs/libexpat.a` (which we just built).
 
 
+### Dictionaries and custom libfuzzer options
+
+Any top-level files in the library directory ending with the extension ".dict"
+or ".options" will be picked up by ClusterFuzz. Files ending with ".dict" are
+assumed to be libFuzzer compatible [dictionaries], and .options files have the
+format:
+
+```
+[libfuzzer]
+dict = dictionary_name.dict
+max_len = 9001
+```
+
+This means that `-dict=/path/to/dictionary_name.dict` and `-max_len=9001` will
+be passed to the fuzzer when it's run.
+
 ### Others (e.g. fuzzer source)
 
 For some libraries, the upstream repository will contain fuzzers (e.g.
@@ -184,3 +200,4 @@ Once your change is merged, the fuzzers should be automatically built and run on
 ClusterFuzz after a short while!
 
 [oss-fuzz repo]: https://github.com/google/oss-fuzz
+[dictionaries]: http://llvm.org/docs/LibFuzzer.html#dictionaries
