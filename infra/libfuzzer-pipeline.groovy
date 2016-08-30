@@ -22,13 +22,12 @@ def call(body) {
     body()
 
     // Mandatory configuration
-    def dockerfile = config["dockerfile"]
-    assert dockerfile : "dockerfile should be specified"
     def gitUrl = config["git"]
     assert gitUrl : "git should be specified"
 
     // Optional configuration
     def projectName = config["name"] ?: env.JOB_BASE_NAME
+    def dockerfile = config["dockerfile"] ?: "oss-fuzz/$projectName/Dockerfile"
     def sanitizers = config["sanitizers"] ?: ["address"]
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
@@ -38,7 +37,7 @@ def call(body) {
     def ossFuzzUrl = 'https://github.com/google/oss-fuzz.git'
 
     node {
-      echo "Building project $projectName with Dockerfile=$dockerfile"
+      echo "Building project $projectName"
 
       def wsPwd = pwd()
 
@@ -74,10 +73,14 @@ def call(body) {
           // Build docker image
           sh "docker build -t $dockerTag -f $dockerfile $dockerContextDir"
 
-          // Run image to produce fuzzers"
+          // Run image to produce fuzzers
           sh "rm -rf $out"
           sh "mkdir -p $out"
           sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
+"
+          // Copy dict and options files
+          sh "cp $workspace/oss-fuzz/$projectName/*.dict $out/ || true"
+          sh "cp $workspace/oss-fuzz/$projectName/*.options $out/ || true"
         }
       }
 

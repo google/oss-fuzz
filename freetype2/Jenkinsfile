@@ -20,6 +20,5 @@ def libfuzzerBuild = fileLoader.fromGit(
 
 libfuzzerBuild {
   git = "git://git.sv.nongnu.org/freetype/freetype2.git"
-  dockerfile = "oss-fuzz/freetype2/Dockerfile"
 }
 
