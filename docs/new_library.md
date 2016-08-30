@@ -76,9 +76,9 @@ Some useful environment variables are also set:
 * `CC`: The C compiler.
 * `CXX` or `CCC`: The C++ compiler.
 * `CFLAGS`: Predefined C flags. This should always be passed when building
-  fuzzers.
+  fuzzers written in C.
 * `CXXFLAGS`: Predefined C++ flags. This should always be passed when building
-  fuzzers.
+  fuzzers written in C++.
 * `LDFLAGS`: Linker flags. This should always be passed when building
   fuzzer.
 
