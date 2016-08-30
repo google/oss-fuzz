@@ -143,9 +143,7 @@ the container). You can then try to run these fuzzers inside the container to
 make sure that they work properly:
 
 ```bash
-$ docker run -i -v ~/tmp/out:/out -t ossfuzz/LIB_NAME /bin/bash
-# (you should now in bash inside the container)
-$ /out/FUZZER_NAME
+$ docker run -i -v ~/tmp/out:/out -t ossfuzz/libfuzzer-runner /out/FUZZER_NAME
 ```
 
 If everything works locally, then it should also work on our automated builders
