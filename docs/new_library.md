@@ -158,13 +158,13 @@ $ git clone https://github.com/google/oss-fuzz
 # Also checkout upstream library, make sure the directory name is the same
 # as $LIB_NAME.
 # For expat:
-# git clone git://git.code.sf.net/p/expat/code_git expat"
+# git clone git://git.code.sf.net/p/expat/code_git $LIB_NAME
 
 $ cd oss-fuzz
 # (patch in your changes to oss-fuzz )
 
 $ docker build -t ossfuzz/$LIB_NAME $LIB_NAME
-$ docker run -i -v ~/src/oss-fuzz:/src/oss-fuzz -v ~/src/LIB_NAME:/src/$LIB_NAME -v ~/tmp/out:/out -t ossfuzz/$LIB_NAME
+$ docker run -i -v ~/src/oss-fuzz:/src/oss-fuzz -v ~/src/$LIB_NAME:/src/$LIB_NAME -v ~/tmp/out:/out -t ossfuzz/$LIB_NAME
 ```
 
 This should place the built fuzzers into `~/tmp/out` on your machine (`/out` in
