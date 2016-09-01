@@ -22,14 +22,17 @@ A library directory requires 3 files:
 To create a new directory for a library:
 
 ```bash
-export LIB_NAME=name_of_the_library
-cd /path/to/oss-fuzz/checkout
-mkdir $LIB_NAME; cd $LIB_NAME
+$ cd /path/to/oss-fuzz/checkout
+$ python scripts/helper.py generate name_of_the_library
+$ export LIB_NAME=name_of_the_library
 ```
+
+This script automatically creates these 3 files for you to fill in.
 
 ### Jenkinsfile
 
-This file will be largely the same for most libraries. For expat, this is:
+This file will be largely the same for most libraries, and is used by our build
+infrastructure. For expat, this is:
 
 ```
 def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
@@ -153,26 +156,17 @@ the oss-fuzz repo.
 ## Testing locally
 
 ```bash
-$ mkdir ~/src; cd ~/src
-$ git clone https://github.com/google/oss-fuzz
-# Also checkout upstream library, make sure the directory name is the same
-# as $LIB_NAME.
-# For expat:
-# git clone git://git.code.sf.net/p/expat/code_git $LIB_NAME
-
-$ cd oss-fuzz
-# (patch in your changes to oss-fuzz )
-
-$ docker build -t ossfuzz/$LIB_NAME $LIB_NAME
-$ docker run -i -v ~/src/oss-fuzz:/src/oss-fuzz -v ~/src/$LIB_NAME:/src/$LIB_NAME -v ~/tmp/out:/out -t ossfuzz/$LIB_NAME
+$ cd /path/to/oss-fuzz/checkout
+$ python scripts/helper.py build_image $LIB_NAME
+$ python scripts/helper.py build_fuzzers $LIB_NAME
 ```
 
-This should place the built fuzzers into `~/tmp/out` on your machine (`/out` in
-the container). You can then try to run these fuzzers inside the container to
-make sure that they work properly:
+This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$LIB_NAME`
+on your machine (`/out` in the container). You can then try to run these fuzzers
+inside the container to make sure that they work properly:
 
 ```bash
-$ docker run -i -v ~/tmp/out:/out -t ossfuzz/libfuzzer-runner /out/FUZZER_NAME
+$ python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
 ```
 
 If everything works locally, then it should also work on our automated builders
