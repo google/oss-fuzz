@@ -6,14 +6,14 @@ library go into <https://github.com/google/oss-fuzz/tree/master/expat>.
 
 ## Prerequisites
 
-Install Docker.
+[Install Docker].
 
 If you're not familiar with how building libFuzzer-style fuzzers work in
 general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
 
 ## Library directories
 
-At a minimum, a library directory requires 3 files:
+A library directory requires 3 files:
 
 * Jenkinsfile
 * Dockerfile
@@ -25,7 +25,8 @@ This file will be largely the same for most libraries. For expat, this is:
 
 ```
 def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
-        'https://github.com/google/oss-fuzz.git', 'master', null, '')
+                                        'https://github.com/google/oss-fuzz.git',
+                                        'master', null, '')
 
 libfuzzerBuild {
   git = "git://git.code.sf.net/p/expat/code_git"
@@ -145,7 +146,10 @@ the oss-fuzz repo.
 ```bash
 $ mkdir ~/src; cd ~/src
 $ git clone https://github.com/google/oss-fuzz
-# (also checkout upstream library)
+# Also checkout upstream library, make sure the directory name is the same
+# as $LIB_NAME.k
+# For expat:
+# git clone git://git.code.sf.net/p/expat/code_git expat"
 
 $ cd oss-fuzz
 # (patch in your changes to oss-fuzz )
@@ -201,3 +205,4 @@ ClusterFuzz after a short while!
 
 [oss-fuzz repo]: https://github.com/google/oss-fuzz
 [dictionaries]: http://llvm.org/docs/LibFuzzer.html#dictionaries
+[Install Docker]: https://docs.docker.com/engine/installation/linux/ubuntulinux/
