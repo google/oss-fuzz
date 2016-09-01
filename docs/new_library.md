@@ -19,6 +19,14 @@ A library directory requires 3 files:
 * Dockerfile
 * build.sh
 
+To create a new directory for a library:
+
+```bash
+export LIB_NAME=name_of_the_library
+cd /path/to/oss-fuzz/checkout
+mkdir $LIB_NAME; cd $LIB_NAME
+```
+
 ### Jenkinsfile
 
 This file will be largely the same for most libraries. For expat, this is:
@@ -33,8 +41,9 @@ libfuzzerBuild {
 }
 ```
 
-Simply replace the the "git" entry with the correct git url for the library
-(only git is supported right now).
+Simply replace the the "git" entry with the correct git url for the library.
+
+*Note*: only git is supported right now.
 
 ### Dockerfile
 
@@ -48,7 +57,7 @@ couple of lines:
 * `RUN ....` to run custom commands. For example, if your library requires
   additional build dependencies, you should include `apt-get` commands here to
   install them.
-* `CMD /src/oss-fuzz/LIB_NAME/build.sh` to run the custom build script for your
+* `CMD /src/oss-fuzz/$LIB_NAME/build.sh` to run the custom build script for your
   library (see next section).
 
 expat example:
@@ -66,8 +75,8 @@ CMD /src/oss-fuzz/expat/build.sh
 This is where most of the work is done to build fuzzers for your library.
 
 When this script is run, the source code for your library will be at
-`/src/LIB_NAME` (replace `LIB_NAME` with the actual name). The `oss-fuzz`
-repository will similarly be checked out to `/src/oss-fuzz`.
+`/src/$LIB_NAME`. The `oss-fuzz` repository will similarly be checked out to
+`/src/oss-fuzz`.
 
 `/work/libfuzzer` contains the libFuzzer object files that need to be linked
 into all fuzzers.
@@ -147,15 +156,15 @@ the oss-fuzz repo.
 $ mkdir ~/src; cd ~/src
 $ git clone https://github.com/google/oss-fuzz
 # Also checkout upstream library, make sure the directory name is the same
-# as $LIB_NAME.k
+# as $LIB_NAME.
 # For expat:
 # git clone git://git.code.sf.net/p/expat/code_git expat"
 
 $ cd oss-fuzz
 # (patch in your changes to oss-fuzz )
 
-$ docker build -t ossfuzz/LIB_NAME LIB_NAME
-$ docker run -i -v ~/src/oss-fuzz:/src/oss-fuzz -v ~/src/LIB_NAME:/src/LIB_NAME -v ~/tmp/out:/out -t ossfuzz/LIB_NAME
+$ docker build -t ossfuzz/$LIB_NAME $LIB_NAME
+$ docker run -i -v ~/src/oss-fuzz:/src/oss-fuzz -v ~/src/LIB_NAME:/src/$LIB_NAME -v ~/tmp/out:/out -t ossfuzz/$LIB_NAME
 ```
 
 This should place the built fuzzers into `~/tmp/out` on your machine (`/out` in
