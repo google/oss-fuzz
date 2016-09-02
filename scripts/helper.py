@@ -92,7 +92,7 @@ def _checkout(library_name, checkout_dir):
 
   try:
     subprocess.check_call([
-        'git', 'clone', vcs_url, checkout_dir])
+        'git', 'clone', '--recursive', vcs_url, checkout_dir])
   except subprocess.CalledProcessError:
     print('Failed to git clone.', file=sys.stderr)
     return False
@@ -115,6 +115,10 @@ def _update_checkout(library_name, checkout_dir):
     subprocess.check_call(['git', 'checkout', '.'])
     subprocess.check_call(['git', 'fetch'])
     subprocess.check_call(['git', 'checkout', 'origin/master'])
+
+    if os.path.exists(os.path.join(checkout_dir, '.gitmodules')):
+      subprocess.check_call(['git', 'submodule', 'update', '--recursive'])
+
   except subprocess.CalledProcessError:
     print('Failed to update checkout.', file=sys.stderr)
     result = False
