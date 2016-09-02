@@ -84,4 +84,16 @@ BUILD_TEMPLATE = """
 
 cd /src/%s
 
+# build the library.
+# e.g.
+#
+# ./autogen.sh
+# ./configure
+# make clean all
+
+# build your fuzzer(s)
+# e.g.
+# $CXX $CXXFLAGS -std=c++11 -Iinclude \\
+#     /path/to/name_of_fuzzer.cc -o /out/name_of_fuzzer \\
+#     /work/libfuzzer/*.o /path/to/library.a $LDFLAGS
 """

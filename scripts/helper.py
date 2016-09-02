@@ -224,9 +224,11 @@ def generate(generate_args):
   with open(os.path.join(args.library_name, 'Dockerfile'), 'w') as f:
     f.write(templates.DOCKER_TEMPLATE % args.library_name)
 
-  with open(os.path.join(args.library_name, 'build.sh'), 'w') as f:
+  build_sh_path = os.path.join(args.library_name, 'build.sh')
+  with open(build_sh_path, 'w') as f:
     f.write(templates.BUILD_TEMPLATE % args.library_name)
 
+  os.chmod(build_sh_path, 0755)
   return 0
 
 
