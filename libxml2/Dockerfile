@@ -16,6 +16,6 @@
 
 FROM ossfuzz/base-libfuzzer
 MAINTAINER ochang@chromium.org
-RUN apt-get install -y make autoconf automake libtool
+RUN apt-get install -y make autoconf automake libtool pkg-config
 
 CMD /src/oss-fuzz/libxml2/build.sh
