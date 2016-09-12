@@ -32,19 +32,20 @@ function _try() {
 	fi
 }
 
-# Build the re2 library.
+
+# First, build the re2 library.
+# N.B., we don't follow the standard incantation for building re2
+# (i.e., `make && make test && make install && make testinstall`),
+# because some of the targets doesn't use $CXXFLAGS properly, which
+# causes compilation to fail. The obj/libre2.a target is all we
+# really need for our fuzzer, so that's all we build. Hopefully
+# this won't cause the fuzzer to fail erroneously due to not running
+# upstream's tests first to be sure things compiled correctly.
 _try make clean
-# We don't make everything, since one of the targets doesn't use $CXXFLAGS
-# properly, which causes problems compiling. This target is all we really
-# need for our fuzzer.
 _try make obj/libre2.a
-# TODO(wrengr): the test target has the same issue as the all target did.
-_try make test
-_try make install
-_try make testinstall
 
 
-# Build our fuzzers
+# Second, build our fuzzers.
 _try $CXX $CXXFLAGS -std=c++11 -I. \
 	/src/oss-fuzz/re2/re2_fuzzer.cc -o /out/re2_fuzzer \
 	/work/libfuzzer/*.o ./obj/libre2.a $LDFLAGS
