@@ -17,22 +17,6 @@
 
 cd /src/re2
 
-function _start()   { echo -e "\n\033[1;33m➜\033[0m \033[1m$*\033[0m"; }
-function _success() { echo -e "\033[1;32m✔\033[0m \033[1m$*\033[0m"; }
-function _failure() { echo -e "\n\033[1;31m✖\033[0m \033[1m$*\033[0m"; }
-
-function _try() {
-	_start "$*"
-	$@
-	if [ $? -eq 0 ]; then
-		_success "$*"
-	else
-		_failure "$*"
-		exit $?
-	fi
-}
-
-
 # First, build the re2 library.
 # N.B., we don't follow the standard incantation for building re2
 # (i.e., `make && make test && make install && make testinstall`),
@@ -41,12 +25,12 @@ function _try() {
 # really need for our fuzzer, so that's all we build. Hopefully
 # this won't cause the fuzzer to fail erroneously due to not running
 # upstream's tests first to be sure things compiled correctly.
-_try make clean
-_try make obj/libre2.a
+make clean
+make obj/libre2.a
 
 
 # Second, build our fuzzers.
-_try $CXX $CXXFLAGS -std=c++11 -I. \
+$CXX $CXXFLAGS -std=c++11 -I. \
 	/src/oss-fuzz/re2/re2_fuzzer.cc -o /out/re2_fuzzer \
 	/work/libfuzzer/*.o ./obj/libre2.a $LDFLAGS
 
