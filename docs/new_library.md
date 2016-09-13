@@ -23,8 +23,8 @@ To create a new directory for a library:
 
 ```bash
 $ cd /path/to/oss-fuzz/checkout
-$ python scripts/helper.py generate name_of_the_library
 $ export LIB_NAME=name_of_the_library
+$ python scripts/helper.py generate $LIB_NAME
 ```
 
 This script automatically creates these 3 files for you to fill in.
