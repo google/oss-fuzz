@@ -18,8 +18,10 @@
 
 echo "---------------------------------------------------------------"
 
-echo -n "Compiling libFuzzer..."
-cd /work/libfuzzer
+export LIBFUZZER_WORK_DIR=/work/libfuzzer
+
+echo -n "Compiling libFuzzer into $LIBFUZZER_WORK_DIR ..."
+cd $LIBFUZZER_WORK_DIR
 $CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c /src/libfuzzer/*.cpp -I/src/libfuzzer
 echo "Done."
 
