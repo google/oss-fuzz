@@ -1,6 +1,6 @@
 # Building and Running Fuzzers
 
-* This page documents building and running fuzzers as part of an OSS project. *
+_This page documents building and running fuzzers as part of an OSS project._
 
 ## Prerequisites
 
