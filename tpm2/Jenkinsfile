@@ -19,6 +19,6 @@ def libfuzzerBuild = fileLoader.fromGit(
     'https://github.com/google/oss-fuzz.git', 'master', null, '')
     
 libfuzzerBuild {
-  git = https://chromium.googlesource.com/chromiumos/third_party/tpm2/",
+  git = "https://chromium.googlesource.com/chromiumos/third_party/tpm2/",
   dockerfile = "/src/tpm2/fuzz/Dockerfile"
 }
