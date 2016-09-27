@@ -18,44 +18,25 @@ provided to simplify tool distribution.
 
 A library directory requires 3 files:
 
-* Jenkinsfile
-* Dockerfile
-* build.sh
+* Dockerfile - defines an container environment with all the dependencies needed to build the library and the fuzzer.
+* build.sh - build script that will be executed inside the container.
+* Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed running system.
 
 To create a new directory for a library:
 
 ```bash
-$ cd /path/to/oss-fuzz/checkout
+$ cd /path/to/oss-fuzz
 $ export LIB_NAME=name_of_the_library
 $ python scripts/helper.py generate $LIB_NAME
 ```
 
 This script automatically creates these 3 files for you to fill in.
 
-### Jenkinsfile
-
-This file will be largely the same for most libraries, and is used by our build
-infrastructure. For expat, this is:
-
-```
-def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
-                                        'https://github.com/google/oss-fuzz.git',
-                                        'master', null, '')
-
-libfuzzerBuild {
-  git = "git://git.code.sf.net/p/expat/code_git"
-}
-```
-
-Simply replace the the "git" entry with the correct git url for the library.
-
-*Note*: only git is supported right now.
-
 ### Dockerfile
 
 This is the definition for the Docker container that fuzzers will be built in.
-This should be very similar for most libraries as well. This file requires a
-couple of lines:
+This should be very similar for most libraries as well. This file requires just 
+a couple of lines:
 
 * `FROM ossfuzz/base-libfuzzer` to inherit settings from the base container.
   Containers are based on Ubuntu 16.04.
@@ -63,7 +44,7 @@ couple of lines:
 * `RUN ....` to run custom commands. For example, if your library requires
   additional build dependencies, you should include `apt-get` commands here to
   install them.
-* `CMD /src/oss-fuzz/$LIB_NAME/build.sh` to run the custom build script for your
+* `CMD /src/oss-fuzz/$LIB_NAME/build.sh` to specify the custom build script for your
   library (see next section).
 
 expat example:
@@ -100,7 +81,9 @@ Some useful environment variables are also set:
 
 In general, this script will need to:
 
-1. Build the library using whatever build system the library is using.
+1. Build the library using whatever build system the library is using. Many
+  well-crafted build scripts will automatically use these variables. If not,
+  passing them manually to a build tool might be required.
 2. Build the fuzzers, linking with the library and libFuzzer. Built fuzzers
    should be placed in `/out`.
 
@@ -174,6 +157,25 @@ $ python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
 
 If everything works locally, then it should also work on our automated builders
 and ClusterFuzz.
+
+## Jenkinsfile
+
+This file will be largely the same for most libraries, and is used by our build
+infrastructure. For expat, this is:
+
+```
+def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
+                                        'https://github.com/google/oss-fuzz.git',
+                                        'master', null, '')
+
+libfuzzerBuild {
+  git = "git://git.code.sf.net/p/expat/code_git"
+}
+```
+
+Simply replace the the "git" entry with the correct git url for the library.
+
+*Note*: only git is supported right now.
 
 ## Checking in to oss-fuzz repository
 
