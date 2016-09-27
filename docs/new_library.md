@@ -17,11 +17,11 @@ general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
 
 ## Overview
 
-To add a new OSS project to oss-fuzz, 3 files have to be added to oss-fuzz source code repository:
+To add a new OSS library to oss-fuzz, 3 supporting files have to be added to oss-fuzz source code repository:
 
-* *project_name*/Dockerfile - defines an container environment with all the dependencies needed to build the project and the fuzzer.
-* *project_name*/build.sh - build script that will be executed inside the container.
-* *project_name*/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
+* *library_name*/Dockerfile - defines an container environment with all the dependencies needed to build the project and the fuzzer.
+* *library_name*/build.sh - build script that will be executed inside the container.
+* *library_name*/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
   Specify your library VCS location in it.
 
 To create a new directory for the library and automatically generate these 3 files a python script can be used:
@@ -31,6 +31,8 @@ $ cd /path/to/oss-fuzz
 $ export LIB_NAME=name_of_the_library
 $ python scripts/helper.py generate $LIB_NAME
 ```
+
+Create a fuzzer and add it to the *library_name/* directory as well.
 
 ## Dockerfile
 
@@ -97,6 +99,25 @@ These flags are provided in following environment variables:
 
 Many well-crafted build scripts will automatically use these variables. If not,
 passing them manually to a build tool might be required.
+
+## Create Fuzzer Source File
+
+Create a new .cc file, define a `LLVMFuzzerTestOneInput` function and call
+your library:
+
+```c++
+#include <stddef.h>
+#include <stdint.h>
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // put your fuzzing code here and use data+size as input.
+  return 0;
+}
+```
+
+There are [lots](../libxml2/libxml2_xml_read_memory_fuzzer.cc) 
+[of](../expat/parse_fuzzer.cc) [examples](../zlib/zlib_uncompress_fuzzer.cc)
+in this project repository.
 
 ### Dictionaries and custom libfuzzer options
 
