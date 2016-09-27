@@ -50,7 +50,7 @@ be executed within an image built from a `Dockerfile`.
 
 In general, this script will need to:
 
-1. Build the library using its build system *with* correct compiler and its flags (see environment section below). 
+1. Build the library using its build system *with* correct compiler and its flags provided as *environment variables* (see below). 
 2. Build the fuzzers, linking with the library and libFuzzer. Built fuzzers
    should be placed in `/out`.
 
