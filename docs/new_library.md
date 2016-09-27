@@ -8,11 +8,12 @@ library go into <https://github.com/google/oss-fuzz/tree/master/expat>.
 
 [Install Docker].
 
-If you're not familiar with how building libFuzzer-style fuzzers work in
-general, check out [this page](http://llvm.org/docs/LibFuzzer.html). In 
-short, it requires building your library with a recent version of Clang 
-compiler and special compiler flags. An easy-to-use Docker image is 
+Building fuzzers requires building your library with a fresh of 
+Clang compiler and special compiler flags. An easy-to-use Docker image is 
 provided to simplify tool distribution.
+
+If you'd like to get more familiar with how building libFuzzer-style fuzzers work in
+general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
 
 ## Overview
 
@@ -20,9 +21,9 @@ To add a new OSS project to oss-fuzz, 3 files have to be added to oss-fuzz sourc
 
 * *project_name*/Dockerfile - defines an container environment with all the dependencies needed to build the library and the fuzzer.
 * *project_name*/build.sh - build script that will be executed inside the container.
-* *project_name*/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed running system.
+* *project_name*/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system.
 
-To create a new directory for a library and automatically generaete these 3 files a helper python script can be used:
+To create a new directory for the library and automatically generate these 3 files a python script can be used:
 
 ```bash
 $ cd /path/to/oss-fuzz
@@ -33,28 +34,15 @@ $ python scripts/helper.py generate $LIB_NAME
 
 ## Dockerfile
 
-This is the definition for the Docker container that fuzzers will be built in.
-This should be very similar for most libraries as well. This file requires just 
-a couple of lines:
-
-* `FROM ossfuzz/base-libfuzzer` to inherit settings from the base container.
-  Containers are based on Ubuntu 16.04.
-* `MAINTAINER YOUR_EMAIL`
-* `RUN ....` to run custom commands. For example, if your library requires
-  additional build dependencies, you should include `apt-get` commands here to
-  install them.
-* `CMD /src/oss-fuzz/$LIB_NAME/build.sh` to specify the custom build script for your
-  library (see next section).
-
-expat example:
-
+This is the Docker image definition that fuzzers will be built in.
+It is very simple for most libraries:
+```bash
+FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
+MAINTAINER YOUR_EMAL                    # each file should have a maintainer 
+RUN apt-get install -y ...              # install required packages to build a project
+CMD /src/oss-fuzz/PROJECT_NAME/build.sh # specify build script for the project.
 ```
-FROM ossfuzz/base-libfuzzer
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y make autoconf automake libtool docbook2x
-
-CMD /src/oss-fuzz/expat/build.sh
-```
+Expat example: [expat/Dockerfile](https://github.com/google/oss-fuzz/blob/master/expat/Dockerfile)
 
 ## build.sh
 
