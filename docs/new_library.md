@@ -14,15 +14,15 @@ short, it requires building your library with a recent version of Clang
 compiler and special compiler flags. An easy-to-use Docker image is 
 provided to simplify tool distribution.
 
-## Library directories
+## Overview
 
-A library directory requires 3 files:
+To add a new OSS project to oss-fuzz, 3 files have to be added to oss-fuzz source code repository:
 
-* Dockerfile - defines an container environment with all the dependencies needed to build the library and the fuzzer.
-* build.sh - build script that will be executed inside the container.
-* Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed running system.
+* <project_name>/Dockerfile - defines an container environment with all the dependencies needed to build the library and the fuzzer.
+* <project_name>/build.sh - build script that will be executed inside the container.
+* <project_name>/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed running system.
 
-To create a new directory for a library and automatically generaete these 3 files:
+To create a new directory for a library and automatically generaete these 3 files a helper python script can be used:
 
 ```bash
 $ cd /path/to/oss-fuzz
@@ -31,7 +31,7 @@ $ python scripts/helper.py generate $LIB_NAME
 ```
 
 
-### Dockerfile
+## Dockerfile
 
 This is the definition for the Docker container that fuzzers will be built in.
 This should be very similar for most libraries as well. This file requires just 
@@ -56,7 +56,7 @@ RUN apt-get install -y make autoconf automake libtool docbook2x
 CMD /src/oss-fuzz/expat/build.sh
 ```
 
-### build.sh
+## build.sh
 
 This is where most of the work is done to build fuzzers for your library.
 
