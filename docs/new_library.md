@@ -18,9 +18,9 @@ provided to simplify tool distribution.
 
 To add a new OSS project to oss-fuzz, 3 files have to be added to oss-fuzz source code repository:
 
-* <project_name>/Dockerfile - defines an container environment with all the dependencies needed to build the library and the fuzzer.
-* <project_name>/build.sh - build script that will be executed inside the container.
-* <project_name>/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed running system.
+* *project_name*/Dockerfile - defines an container environment with all the dependencies needed to build the library and the fuzzer.
+* *project_name*/build.sh - build script that will be executed inside the container.
+* *project_name*/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed running system.
 
 To create a new directory for a library and automatically generaete these 3 files a helper python script can be used:
 
