@@ -21,7 +21,8 @@ To add a new OSS project to oss-fuzz, 3 files have to be added to oss-fuzz sourc
 
 * *project_name*/Dockerfile - defines an container environment with all the dependencies needed to build the project and the fuzzer.
 * *project_name*/build.sh - build script that will be executed inside the container.
-* *project_name*/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system.
+* *project_name*/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
+  Specify your library VCS location in it.
 
 To create a new directory for the library and automatically generate these 3 files a python script can be used:
 
@@ -119,6 +120,26 @@ For some libraries, the upstream repository will contain fuzzers (e.g.
 freetype2). In other cases, such as expat, we can check in fuzzer source into
 the oss-fuzz repo.
 
+## Jenkinsfile
+
+This file will be largely the same for most libraries, and is used by our build
+infrastructure. For expat, this is:
+
+```groovy
+// load libFuzzer pipeline definition.
+def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
+                                        'https://github.com/google/oss-fuzz.git',
+                                        'master', null, '')
+
+libfuzzerBuild {
+  git = "git://git.code.sf.net/p/expat/code_git"
+}
+```
+
+Simply replace the the "git" entry with the correct git url for the library.
+
+*Note*: only git is supported right now.
+
 ## Testing locally
 
 Helper script can be used to build images and fuzzers. Non-script
@@ -140,26 +161,6 @@ $ python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
 
 If everything works locally, then it should also work on our automated builders
 and ClusterFuzz.
-
-## Jenkinsfile
-
-This file will be largely the same for most libraries, and is used by our build
-infrastructure. For expat, this is:
-
-```groovy
-// load libFuzzer pipeline definition.
-def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
-                                        'https://github.com/google/oss-fuzz.git',
-                                        'master', null, '')
-
-libfuzzerBuild {
-  git = "git://git.code.sf.net/p/expat/code_git"
-}
-```
-
-Simply replace the the "git" entry with the correct git url for the library.
-
-*Note*: only git is supported right now.
 
 ## Checking in to oss-fuzz repository
 
