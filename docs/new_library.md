@@ -9,7 +9,10 @@ library go into <https://github.com/google/oss-fuzz/tree/master/expat>.
 [Install Docker].
 
 If you're not familiar with how building libFuzzer-style fuzzers work in
-general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
+general, check out [this page](http://llvm.org/docs/LibFuzzer.html). In 
+short, it requires building your library with a recent version of Clang 
+compiler and special compiler flags. An easy-to-use Docker image is 
+provided to simplify tool distribution.
 
 ## Library directories
 
