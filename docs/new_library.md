@@ -22,7 +22,7 @@ A library directory requires 3 files:
 * build.sh - build script that will be executed inside the container.
 * Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed running system.
 
-To create a new directory for a library:
+To create a new directory for a library and automatically generaete these 3 files:
 
 ```bash
 $ cd /path/to/oss-fuzz
@@ -30,7 +30,6 @@ $ export LIB_NAME=name_of_the_library
 $ python scripts/helper.py generate $LIB_NAME
 ```
 
-This script automatically creates these 3 files for you to fill in.
 
 ### Dockerfile
 
