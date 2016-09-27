@@ -19,7 +19,7 @@ general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
 
 To add a new OSS project to oss-fuzz, 3 files have to be added to oss-fuzz source code repository:
 
-* *project_name*/Dockerfile - defines an container environment with all the dependencies needed to build the library and the fuzzer.
+* *project_name*/Dockerfile - defines an container environment with all the dependencies needed to build the project and the fuzzer.
 * *project_name*/build.sh - build script that will be executed inside the container.
 * *project_name*/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system.
 
@@ -31,46 +31,26 @@ $ export LIB_NAME=name_of_the_library
 $ python scripts/helper.py generate $LIB_NAME
 ```
 
-
 ## Dockerfile
 
-This is the Docker image definition that fuzzers will be built in.
+This is the Docker image definition that build.sh will be executed in.
 It is very simple for most libraries:
 ```bash
 FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
 MAINTAINER YOUR_EMAL                    # each file should have a maintainer 
 RUN apt-get install -y ...              # install required packages to build a project
-CMD /src/oss-fuzz/PROJECT_NAME/build.sh # specify build script for the project.
+CMD /src/oss-fuzz/LIB_NAME/build.sh     # specify build script for the project.
 ```
-Expat example: [expat/Dockerfile](https://github.com/google/oss-fuzz/blob/master/expat/Dockerfile)
+Expat example: [expat/Dockerfile](../expat/Dockerfile)
 
 ## build.sh
 
-This is where most of the work is done to build fuzzers for your library.
-
-When this script is run, the source code for your library will be at
-`/src/$LIB_NAME`. The `oss-fuzz` repository will similarly be checked out to
-`/src/oss-fuzz`.
-
-`/work/libfuzzer` contains the libFuzzer object files that need to be linked
-into all fuzzers.
-
-Some useful environment variables are also set:
-
-* `CC`: The C compiler.
-* `CXX` or `CCC`: The C++ compiler.
-* `CFLAGS`: Predefined C flags. This should always be passed when building
-  fuzzers written in C.
-* `CXXFLAGS`: Predefined C++ flags. This should always be passed when building
-  fuzzers written in C++.
-* `LDFLAGS`: Linker flags. This should always be passed when building
-  fuzzer.
+This is where most of the work is done to build fuzzers for your library. The script will
+be executed within an image built from a `Dockerfile`.
 
 In general, this script will need to:
 
-1. Build the library using whatever build system the library is using. Many
-  well-crafted build scripts will automatically use these variables. If not,
-  passing them manually to a build tool might be required.
+1. Build the library using its build system *with* correct compiler and its flags (see environment section below). 
 2. Build the fuzzers, linking with the library and libFuzzer. Built fuzzers
    should be placed in `/out`.
 
@@ -79,30 +59,43 @@ For expat, this looks like:
 ```bash
 #!/bin/bash -eu
 
-# cd into the expat directory.
 cd /src/expat/expat
-
-# build the library.
 ./buildconf.sh
+# configure scripts usually use correct environment variables.
 ./configure
+
 make clean all
 
 # build the fuzzer, linking with libFuzzer and libexpat.a
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
     /src/oss-fuzz/expat/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
-    /work/libfuzzer/*.o .libs/libexpat.a $LDFLAGS
+    /work/libfuzzer/*.o .libs/libexpat.a \
+    $LDFLAGS
 ```
 
-Breaking this down:
+### build.sh Script Environment 
 
-1. `cd /src/expat/expat` just changes the working directory to the expat dir.
-2. `buildconfig.sh ... make clean all` calls the build system for the library
-   (we need `libexpat.a`).
-3. Build the fuzzer. In this case, we're building a fuzzer that's stored in the
-   oss-fuzz repo (`/src/oss-fuzz/expat/parse_fuzzer.cc`), writing it to
-   `/out/expat_parse_fuzzer`, and linking in `/work/libfuzzer/*.o` (prebuilt)
-   and `.libs/libexpat.a` (which we just built).
+When build.sh script is executed, the following locations are available within the image:
 
+| Path                  | Description
+| ------                | -----
+| `/src/$LIB_NAME`      | Source code for your library. 
+| `/src/oss-fuzz`       | Checked out oss-fuzz source tree. 
+| `/work/libfuzzer/*.o` | Prebuilt libFuzzer object files that need to be linked into all fuzzers.
+
+You *must* use special compiler flags to build your library and fuzzers.
+These flags are provided in following environment variables:
+
+| Env Variable    | Description
+| -------------   | --------
+| `$CC`           | The C compiler binary.
+| `$CXX`, `$CCC`  | The C++ compiler binary.
+| `$CFLAGS`       | C compiler flags.
+| `$CXXFLAGS`     | C++ compiler flags.
+| `$LDFLAGS`      | Linker flags for fuzzer binaries.
+
+Many well-crafted build scripts will automatically use these variables. If not,
+passing them manually to a build tool might be required.
 
 ### Dictionaries and custom libfuzzer options
 
@@ -128,8 +121,11 @@ the oss-fuzz repo.
 
 ## Testing locally
 
+Helper script can be used to build images and fuzzers. Non-script
+version using docker commands directly is documented [here](building_running_fuzzers_external.md).
+
 ```bash
-$ cd /path/to/oss-fuzz/checkout
+$ cd /path/to/oss-fuzz
 $ python scripts/helper.py build_image $LIB_NAME
 $ python scripts/helper.py build_fuzzers $LIB_NAME
 ```
@@ -150,7 +146,8 @@ and ClusterFuzz.
 This file will be largely the same for most libraries, and is used by our build
 infrastructure. For expat, this is:
 
-```
+```groovy
+// load libFuzzer pipeline definition.
 def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
                                         'https://github.com/google/oss-fuzz.git',
                                         'master', null, '')
