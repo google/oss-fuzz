@@ -16,6 +16,10 @@
 
 FROM ossfuzz/base
 MAINTAINER mike.aizatsky@gmail.com
+
+ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
+
+# set up /out dir
 RUN mkdir /out
 VOLUME /out
 ENV PATH "$PATH:/out"
