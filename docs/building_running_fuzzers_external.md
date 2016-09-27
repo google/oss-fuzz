@@ -28,7 +28,6 @@ docker build -t ossfuzz/$PROJECT_NAME oss-fuzz/$PROJECT_NAME
 ````
 2. Running a container:
 ````bash
-# llreplace/define $PROJECT_NAME
 docker run -ti -v $PWD/$PROJECT_NAME:/src/$PROJECT_NAME -v $PWD/oss-fuzz:/src/oss-fuzz -v /tmp/out:/out ossfuzz/$PROJECT_NAME
 ````
 
