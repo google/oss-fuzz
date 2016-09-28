@@ -38,7 +38,7 @@ def main():
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
   parser.add_argument(
       'command',
-      help='One of: generate, build_image, build_fuzzers, run_fuzzer',
+      help='One of: generate, build_image, build_fuzzers, run_fuzzer, shell',
       nargs=argparse.REMAINDER)
   args = parser.parse_args()
 
@@ -54,11 +54,21 @@ def main():
     return build_fuzzers(args.command[1:])
   elif args.command[0] == 'run_fuzzer':
     return run_fuzzer(args.command[1:])
+  elif args.command[0] == 'shell':
+    return shell(args.command[1:])
   else:
     print('Unrecognised command!', file=sys.stderr)
     return 1
 
   return 0
+
+
+def _get_or_update_checkout(library_name, checkout_dir):
+  """Retrieve a new checkout, or update an existing one."""
+  if os.path.exists(checkout_dir):
+    return _update_checkout(library_name, checkout_dir)
+
+  return _checkout(library_name, checkout_dir)
 
 
 def _check_library_exists(library_name):
@@ -168,12 +178,7 @@ def build_fuzzers(build_args):
     return 1
 
   checkout_dir = os.path.join(BUILD_DIR, args.library_name)
-  if os.path.exists(checkout_dir):
-    got_checkout = _update_checkout(args.library_name, checkout_dir)
-  else:
-    got_checkout = _checkout(args.library_name, checkout_dir)
-
-  if not got_checkout:
+  if not _get_or_update_checkout(args.library_name, checkout_dir):
     return 1
 
   command = [
@@ -250,6 +255,32 @@ def generate(generate_args):
 
   os.chmod(build_sh_path, 0755)
   return 0
+
+
+def shell(shell_args):
+  """Runs a shell within a docker image."""
+  parser = argparse.ArgumentParser('helper.py shell')
+  parser.add_argument('library_name', help='name of the library')
+  args = parser.parse_args(shell_args)
+
+  if build_image(shell_args):
+    return 1
+
+  checkout_dir = os.path.join(BUILD_DIR, args.library_name)
+  if not _get_or_update_checkout(args.library_name, checkout_dir):
+    return 1
+
+  command = [
+        'docker', 'run', '-i',
+        '-v', '%s:/src/oss-fuzz' % OSSFUZZ_DIR,
+        '-v', '%s:/src/%s' % (checkout_dir, args.library_name),
+        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
+        '-t', 'ossfuzz/' + args.library_name,
+        '/bin/bash'
+  ]
+  print('Running:', _get_command_string(command))
+  pipe = subprocess.Popen(command)
+  pipe.communicate()
 
 
 if __name__ == '__main__':
