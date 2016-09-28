@@ -19,6 +19,7 @@ from __future__ import print_function
 import argparse
 import os
 import re
+import pipes
 import shutil
 import subprocess
 import sys
@@ -67,6 +68,11 @@ def _check_library_exists(library_name):
     return False
 
   return True
+
+
+def _get_command_string(command):
+  """Returns a shell escaped command string."""
+  return ' '.join(pipes.quote(part) for part in command)
 
 
 def _get_version_control_url(library_name):
@@ -137,10 +143,14 @@ def build_image(build_args):
   if not _check_library_exists(args.library_name):
     return 1
 
-  try:
-    subprocess.check_call([
+  command = [
         'docker', 'build', '-t', 'ossfuzz/' + args.library_name,
-        args.library_name])
+        args.library_name
+  ]
+  print('Running:', _get_command_string(command))
+
+  try:
+    subprocess.check_call(command)
   except subprocess.CalledProcessError:
     print('docker build failed.', file=sys.stderr)
     return 1
@@ -166,14 +176,18 @@ def build_fuzzers(build_args):
   if not got_checkout:
     return 1
 
-  try:
-    subprocess.check_call([
+  command = [
         'docker', 'run', '-i',
         '-v', '%s:/src/oss-fuzz' % OSSFUZZ_DIR,
         '-v', '%s:/src/%s' % (checkout_dir, args.library_name),
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
         '-t', 'ossfuzz/' + args.library_name,
-    ])
+  ]
+
+  print('Running:', _get_command_string(command))
+
+  try:
+    subprocess.check_call(command)
   except subprocess.CalledProcessError:
     print('fuzzers build failed.', file=sys.stderr)
     return 1
@@ -200,13 +214,15 @@ def run_fuzzer(run_args):
           file=sys.stderr)
     return 1
 
-  pipe = subprocess.Popen([
+  command = [
       'docker', 'run', '-i',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out'),
       '-t', 'ossfuzz/libfuzzer-runner',
       '/out/%s/%s' %(args.library_name, args.fuzzer_name)
-  ] + args.fuzzer_args)
+  ] + args.fuzzer_args
 
+  print('Running:', _get_command_string(command))
+  pipe = subprocess.Popen(command)
   pipe.communicate()
 
 
