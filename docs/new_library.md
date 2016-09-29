@@ -40,7 +40,7 @@ This is the Docker image definition that build.sh will be executed in.
 It is very simple for most libraries:
 ```bash
 FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
-MAINTAINER YOUR_EMAL                    # each file should have a maintainer 
+MAINTAINER YOUR_EMAIL                   # each file should have a maintainer 
 RUN apt-get install -y ...              # install required packages to build a project
 CMD /src/oss-fuzz/LIB_NAME/build.sh     # specify build script for the project.
 ```
@@ -182,6 +182,16 @@ $ python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
 
 If everything works locally, then it should also work on our automated builders
 and ClusterFuzz.
+
+### Debugging build scripts
+
+While developing your build script, it may be useful to run bash within the
+container:
+
+```bash
+$ python scripts/helper.py shell $LIB_NAME  # runs /bin/bash within container
+$ bash /src/oss-fuzz/$LIB_NAME/build.sh     # to run the build script manually
+```
 
 ## Checking in to oss-fuzz repository
 
