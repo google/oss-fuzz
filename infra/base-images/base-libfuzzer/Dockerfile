@@ -26,7 +26,7 @@ RUN mkdir -p /work/libfuzzer
 ENV SANITIZER_FLAGS="-fsanitize=address"
 ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 
-ENV ASAN_OPTIONS="symbolize=1"
+ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 ENV LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/libc++abi.a -Wl,-no-whole-archive"
 
 
