@@ -1,6 +1,7 @@
 # Building and Running Fuzzers
 
-_This page documents building and running fuzzers as part of an OSS project._
+_This page documents building and running fuzzers as part of an OSS project. 
+See [BuildingRunning External Fuzzer](building_running_fuzzers_external.md) for oss-fuzz fuzzers.  _
 
 ## Prerequisites
 
