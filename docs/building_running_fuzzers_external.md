@@ -2,6 +2,7 @@
 
 _This page documents building and running fuzzers defined as part of oss-fuzz repository,
 and not an original OSS project._
+_See [Building and Runninf Fuzzers](building_running_fuzzers.md) process for in-repository fuzzers._
 
 ## Prerequisites
 
