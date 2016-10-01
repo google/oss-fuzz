@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-JENKINS_TEMPLATE = """
+JENKINS_TEMPLATE = """\
 // Copyright 2016 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +40,7 @@ libfuzzerBuild {
 }
 """
 
-DOCKER_TEMPLATE = """
+DOCKER_TEMPLATE = """\
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,7 +64,7 @@ RUN apt-get install -y make autoconf automake libtool
 CMD /src/oss-fuzz/%s/build.sh
 """
 
-BUILD_TEMPLATE = """
+BUILD_TEMPLATE = """\
 #!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
