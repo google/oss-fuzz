@@ -16,7 +16,7 @@
 
 FROM ossfuzz/base
 MAINTAINER mike.aizatsky@gmail.com
-
+RUN apt-get install -y gdb
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 
 # set up /out dir
