@@ -183,15 +183,10 @@ $ python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
 If everything works locally, then it should also work on our automated builders
 and ClusterFuzz.
 
-### Debugging build scripts
+## Debugging Problems
 
-While developing your build script, it may be useful to run bash within the
-container:
-
-```bash
-$ python scripts/helper.py shell $LIB_NAME  # runs /bin/bash within container
-$ bash /src/oss-fuzz/$LIB_NAME/build.sh     # to run the build script manually
-```
+Consult the [Debugging](debugging.md) documentation if you have problems with your build
+script or a fuzzer.
 
 ## Checking in to oss-fuzz repository
 
