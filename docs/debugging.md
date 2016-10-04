@@ -1,5 +1,3 @@
-# Debugging Problems
-
 ## Debugging Build Scripts
 
 While developing your build script, it may be useful to run bash within the
