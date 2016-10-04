@@ -185,8 +185,8 @@ and ClusterFuzz.
 
 ## Debugging Problems
 
-Consult the [Debugging](debugging.md) documentation if you have problems with your build
-script or a fuzzer.
+[Debugging](debugging.md) document lists ways to debug your build scripts or fuzzers
+in case you run into problems.
 
 ## Checking in to oss-fuzz repository
 
