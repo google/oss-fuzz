@@ -17,4 +17,7 @@
 FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y make autoconf libtool libarchive-dev
+
+ENV GIT_URL="git://git.sv.nongnu.org/freetype/freetype2.git"
+
 COPY build.sh /src/

@@ -1,3 +1,4 @@
+#!/bin/bash -eux
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +15,15 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-clang
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y git libc6-dev
+cd /src
 
-RUN cd /src && git clone --depth 1 https://github.com/google/oss-fuzz.git
+if [[ ! -z "${GIT_URL-}" ]]; then
+  git clone --recursive $GIT_URL ${GIT_CHECKOUT_DIR-}
+elif [[ ! -z "${SVN_URL-}" ]]; then
+  svn co $SVN_URL ${SVN_CHECKOUT_DIR-}
+else
+  echo "ERROR: VCS URL Not Defined. Expected ($GET_URL|$SVN_URL)."
+  exit 1
+fi
 
-RUN mkdir -p /work/libfuzzer
-
-ENV SANITIZER_FLAGS="-fsanitize=address"
-ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
-
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
-ENV LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/libc++abi.a -Wl,-no-whole-archive"
-
-
-RUN mkdir /out
-VOLUME /out
-
-RUN mkdir /src/bin
-COPY compile checkout_and_compile /src/bin/
-ENV PATH=/src/bin:$PATH
-CMD ["compile"]
+compile
