@@ -32,4 +32,7 @@ node {
 
   stage name: 'Build ossfuzz/libfuzzer-runner', concurrency: 1
   sh "docker build $dockerOptions -t ossfuzz/libfuzzer-runner infra/base-images/libfuzzer-runner"
+  
+  // Show docker images tree
+  sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz images -t"
 }
