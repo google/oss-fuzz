@@ -12,6 +12,7 @@ oss-fuzz is an effort to apply coverage-guided software fuzzing on scale to test
   *part of target project* source code repository.
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
   *part of oss-fuzz* source code repository.
+* [Project List](docs/projects.md) lists OSS projects integrated with oss-fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
 
