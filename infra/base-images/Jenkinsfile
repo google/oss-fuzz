@@ -37,7 +37,7 @@ node {
   stage name: 'Build ossfuzz/base-clang', concurrency: 1
   sh "docker build $dockerOptions -t ossfuzz/base-clang infra/base-images/base-clang"
 
-  flattenDockerImage("ossfuzz/base-clang")
+  // flattenDockerImage("ossfuzz/base-clang")
   
   stage name: 'Build ossfuzz/base-libfuzzer', concurrency: 1
   sh "docker build $dockerOptions -t ossfuzz/base-libfuzzer infra/base-images/base-libfuzzer"
