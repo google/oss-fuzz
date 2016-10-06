@@ -43,13 +43,37 @@ Create a fuzzer and add it to the *library_name/* directory as well.
 
 This is the Docker image definition that build.sh will be executed in.
 It is very simple for most libraries:
-```bash
+```docker
 FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
-MAINTAINER YOUR_EMAIL                   # each file should have a maintainer 
+MAINTAINER YOUR_EMAIL                   # each file should have a maintainer
 RUN apt-get install -y ...              # install required packages to build a project
 COPY build.sh /src/                     # install build script for the project.
 ```
 Expat example: [expat/Dockerfile](../expat/Dockerfile)
+
+## Create Fuzzer Source File
+
+Create a new .cc file, define a `LLVMFuzzerTestOneInput` function and call
+your library:
+
+```c++
+#include <stddef.h>
+#include <stdint.h>
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // put your fuzzing code here and use data+size as input.
+  return 0;
+}
+```
+
+Make sure you add the file to your Docker image:
+```docker
+COPY build.sh my_fuzzer.cc /src/         # install build script & fuzzer.
+```
+
+There are [lots](../libxml2/libxml2_xml_read_memory_fuzzer.cc)
+[of](../expat/parse_fuzzer.cc) [examples](../zlib/zlib_uncompress_fuzzer.cc)
+in this project repository.
 
 ## build.sh
 
@@ -105,24 +129,6 @@ These flags are provided in following environment variables:
 Many well-crafted build scripts will automatically use these variables. If not,
 passing them manually to a build tool might be required.
 
-## Create Fuzzer Source File
-
-Create a new .cc file, define a `LLVMFuzzerTestOneInput` function and call
-your library:
-
-```c++
-#include <stddef.h>
-#include <stdint.h>
-
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // put your fuzzing code here and use data+size as input.
-  return 0;
-}
-```
-
-There are [lots](../libxml2/libxml2_xml_read_memory_fuzzer.cc) 
-[of](../expat/parse_fuzzer.cc) [examples](../zlib/zlib_uncompress_fuzzer.cc)
-in this project repository.
 
 ### Dictionaries and custom libfuzzer options
 

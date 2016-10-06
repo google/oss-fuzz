@@ -29,5 +29,7 @@ make clean all
 
 # build libpng_read_fuzzer
 $CXX $CXXFLAGS -std=c++11 -I. -lz \
-     /src/oss-fuzz/libpng/libpng_read_fuzzer.cc -o /out/libpng_read_fuzzer \
+     /src/libpng_read_fuzzer.cc -o /out/libpng_read_fuzzer \
      /work/libfuzzer/*.o .libs/libpng16.a $LDFLAGS
+
+cp /src/*.dict /src/*.options /out/

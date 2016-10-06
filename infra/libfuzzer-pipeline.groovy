@@ -34,7 +34,6 @@ def call(body) {
 
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
-    def ossFuzzUrl = 'https://github.com/google/oss-fuzz.git'
 
     node {
       def workspace = pwd()
@@ -44,10 +43,6 @@ def call(body) {
 
       stage("docker image") {
           def revisions = [:]
-          dir('oss-fuzz') {
-              git url: ossFuzzUrl
-          }
-
           dir(checkoutDir) {
               git url: gitUrl
               revisions[gitUrl] = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
@@ -74,11 +69,7 @@ def call(body) {
             // Run image to produce fuzzers
             sh "rm -rf $out"
             sh "mkdir -p $out"
-            sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
-
-            // Copy dict and options files
-            sh "cp $workspace/oss-fuzz/$projectName/*.dict $out/ || true"
-            sh "cp $workspace/oss-fuzz/$projectName/*.options $out/ || true"
+            sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
           }
         }
       }

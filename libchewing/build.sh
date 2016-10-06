@@ -27,7 +27,7 @@ make -C test CFLAGS="$CFLAGS -Dmain=stress_main -Drand=get_fuzz_input" stress.o
 
 $CC $CFLAGS \
     -o /out/chewing_fuzzer \
-    /src/oss-fuzz/libchewing/chewing_fuzzer.c \
+    /src/chewing_fuzzer.c \
     test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
     /work/libfuzzer/*.o $LDFLAGS
 

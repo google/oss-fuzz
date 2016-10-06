@@ -272,7 +272,6 @@ def shell(shell_args):
 
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/src/oss-fuzz' % OSSFUZZ_DIR,
         '-v', '%s:/src/%s' % (checkout_dir, args.library_name),
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
         '-t', 'ossfuzz/' + args.library_name,

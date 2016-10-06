@@ -6,5 +6,7 @@ cd /src/expat/expat
 make clean all
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
-    /src/oss-fuzz/expat/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
+    /src/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
     /work/libfuzzer/*.o .libs/libexpat.a $LDFLAGS
+
+cp /src/*.dict /src/*.options /out/

@@ -18,6 +18,6 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool mercurial zlib1g-dev
 
-COPY build.sh /src/
+COPY build.sh fuzzers /src/
 
 ENV LD_LIBRARY_PATH "$LD_LIBRARY_PATH:/out"

@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER wrengr@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 
-COPY build.sh /src/
+COPY build.sh re2_fuzzer.* /src
