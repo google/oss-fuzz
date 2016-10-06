@@ -115,6 +115,15 @@ def call(body) {
             sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
           }
         }
+
+        stage name: "Pushing Images"
+        docker.withRegistry('', 'docker-login') {
+          for (int i = 0; i < sanitizers.size(); i++) {
+            def sanitizer = sanitizers[i]
+            def dockerTag = "ossfuzz/$projectName-$sanitizer"
+            docker.image(dockerTag).push()
+          }          
+        }
       }
     }
 
