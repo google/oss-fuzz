@@ -1,6 +1,6 @@
-# OSS-Fuzz Project List
+# Project List
 
-All projects that are integrated with oss-fuzz.
+Projects integrated with oss-fuzz.
 
 | Project Name | Integration Source Location |
 | ------------ | --------------- |
