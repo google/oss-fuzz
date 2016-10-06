@@ -23,7 +23,5 @@ node {
   stage name: 'Cleanup Images', concurrency: 1
   sh "docker rmi \$(docker images -q -f dangling=true) || true"
   
-  // Show docker images tree
-  sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz images -t"
   sh "df -h"
 }
