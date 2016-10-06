@@ -15,6 +15,14 @@ oss-fuzz is an effort to apply coverage-guided software fuzzing on scale to test
 * [Project List](docs/projects.md) lists OSS projects integrated with oss-fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
+## Bounties
+
+* freetype2: 
+[9](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9&can=1&q=&colspec=ID%20Type%20Component%20Status%20Priority%20Milestone%20Owner%20Summary), 
+[10](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=10&can=1&q=&colspec=ID%20Type%20Component%20Status%20Priority%20Milestone%20Owner%20Summary)
+[36](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=36&can=1&q=&colspec=ID%20Type%20Component%20Status%20Priority%20Milestone%20Owner%20Summary)
+
+
 
 ## References
 * [libFuzzer](http://llvm.org/docs/LibFuzzer.html)
