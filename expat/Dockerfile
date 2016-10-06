@@ -18,4 +18,7 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y make autoconf automake libtool docbook2x
 
-CMD /src/oss-fuzz/expat/build.sh
+ENV GIT_CHECKOUT_DIR="expat"
+ENV GIT_URL="git://git.code.sf.net/p/expat/code_git"
+
+COPY build.sh /src/
