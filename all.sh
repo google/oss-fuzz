@@ -20,6 +20,6 @@
 
 ./infra/base-images/all.sh
 
-for project in boringssl expat freetype2 libchewing libpng libxml2 re2 sqlite3 tpm2 zlib; do
+for project in boringssl expat freetype2 libchewing libpng libxml2 re2 sqlite3 zlib; do
   docker build -t ossfuzz/$project $project/
 done
