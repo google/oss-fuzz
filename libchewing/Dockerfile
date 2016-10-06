@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER kcwu@csie.org
 RUN apt-get install -y make autoconf automake libtool texinfo
 
-CMD /src/oss-fuzz/libchewing/build.sh
+COPY build.sh /src/

@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER inferno@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 
-CMD /src/oss-fuzz/zlib/build.sh
+COPY build.sh /src/

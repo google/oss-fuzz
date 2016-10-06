@@ -42,7 +42,7 @@ It is very simple for most libraries:
 FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                   # each file should have a maintainer 
 RUN apt-get install -y ...              # install required packages to build a project
-CMD /src/oss-fuzz/LIB_NAME/build.sh     # specify build script for the project.
+COPY build.sh /src/                     # install build script for the project.
 ```
 Expat example: [expat/Dockerfile](../expat/Dockerfile)
 

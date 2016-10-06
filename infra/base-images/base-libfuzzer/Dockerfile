@@ -33,5 +33,7 @@ ENV LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/libc++abi
 RUN mkdir /out
 VOLUME /out
 
-COPY run /
-ENTRYPOINT ["/run"]
+RUN mkdir /src/bin
+COPY compile /src/bin
+ENV PATH=/src/bin:$PATH
+CMD ["compile"]

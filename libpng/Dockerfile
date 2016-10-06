@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool zlib1g-dev
 
-CMD /src/oss-fuzz/libpng/build.sh
+COPY build.sh /src/

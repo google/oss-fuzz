@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER tanin@google.com
 RUN apt-get install -y make autoconf automake libtool fossil tcl
 
-CMD /src/oss-fuzz/sqlite3/build.sh
+COPY build.sh /src/
