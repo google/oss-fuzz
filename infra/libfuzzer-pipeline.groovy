@@ -86,6 +86,7 @@ def call(body) {
 
       dir ('out') {
         stage name: "Running fuzzers"
+        sh "ls -alR"
         for (int i = 0; i < sanitizers.size(); i++) {
           def sanitizer = sanitizers[i]
           dir (sanitizer) {
