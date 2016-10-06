@@ -93,7 +93,7 @@ def call(body) {
             def files = findFiles()
             for (int j = 0; j < files.size(); j++) {
               def file = files[j]
-              if (file.name.endsWith('.dict') || file.name.endsWith('.options')) {
+              if (file.name.endsWith('.dict') || file.name.endsWith('.options') || file.directory) {
                 continue
               }
               echo "FILE: $file"
