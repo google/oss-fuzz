@@ -23,5 +23,7 @@ node {
   stage name: 'Cleanup Images', concurrency: 1
   sh "docker rmi \$(docker images -q -f dangling=true) || true"
   
+  // Dump useful information
+  sh "docker images --tree"
   sh "df -h"
 }
