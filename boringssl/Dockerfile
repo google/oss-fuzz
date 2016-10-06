@@ -16,8 +16,5 @@
 
 FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
-
 RUN apt-get install -y cmake ninja-build golang
-VOLUME /src/boringssl
-CMD /src/oss-fuzz/boringssl/build.sh
-
+COPY build.sh /src/

@@ -61,7 +61,7 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER your@email.com
 RUN apt-get install -y make autoconf automake libtool
 
-CMD /src/oss-fuzz/%s/build.sh
+COPY build.sh /src/
 """
 
 BUILD_TEMPLATE = """\

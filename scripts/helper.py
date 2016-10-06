@@ -247,7 +247,7 @@ def generate(generate_args):
     f.write(templates.JENKINS_TEMPLATE)
 
   with open(os.path.join(args.library_name, 'Dockerfile'), 'w') as f:
-    f.write(templates.DOCKER_TEMPLATE % args.library_name)
+    f.write(templates.DOCKER_TEMPLATE)
 
   build_sh_path = os.path.join(args.library_name, 'build.sh')
   with open(build_sh_path, 'w') as f:
