@@ -1,7 +1,5 @@
-Infrastructure
-==============
-
-This directory contains infrastructure definition for oss-fuzz project:
+# infra
+> OSS-Fuzz project infrastructure
 
 * `base-images` - docker images for building fuzzers & corresponding jenkins
   pipeline.
