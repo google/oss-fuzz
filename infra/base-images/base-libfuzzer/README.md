@@ -1,5 +1,4 @@
 # base-libfuzzer
-================
 > Abstract base image for libfuzzer builders.
 
 Supported commands:
