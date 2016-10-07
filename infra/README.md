@@ -1,7 +1,14 @@
 # infra
 > OSS-Fuzz project infrastructure
 
-* `base-images` - docker images for building fuzzers & corresponding jenkins
+Core infrastructure:
+* [`base-images`](base-images/) - docker images for building fuzzers & corresponding jenkins
   pipeline.
-* `docker-cleanup` - jenkins pipeline to clean stale docker images & processes.
-* `jenkins-cluster` - kubernetes cluster definition for our jenkins-based build.
+  
+Continuous Integration infrastracture:
+
+* [`libfuzzer-pipeline.groovy`](libfuzzer-pipeline.groovy/) - jenkins pipeline that runs for each oss-fuzz
+  project.
+* [`docker-cleanup`](docker-cleanup/) - jenkins pipeline to clean stale docker images & processes.
+* [`push-images`](push-images/) - jenkins pipeline to push built base images.
+* [`jenkins-cluster`](jenkins-cluster/) - kubernetes cluster definition for our jenkins-based build (not operational yet).
