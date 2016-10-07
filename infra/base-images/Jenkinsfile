@@ -18,16 +18,6 @@
 
 def dockerOptions="--no-cache"
 
-// Flattens all intermediate layers of the image.
-// Usefull when image has lots of deleted files.
-def flattenDockerImage(image) {
-  def containerName = image.replaceAll('/', '_') + "-tmp";
-  sh "echo ${image} ${containerName}"
-  sh "docker rm -f ${containerName} || true"
-  sh "docker run --name ${containerName} ${image} /bin/true"
-  sh "docker export ${containerName} | docker import - ${image}"
-}
-
 node {
   git url: 'https://github.com/google/oss-fuzz/'
 
@@ -36,8 +26,6 @@ node {
 
   stage name: 'Build ossfuzz/base-clang', concurrency: 1
   sh "docker build $dockerOptions -t ossfuzz/base-clang infra/base-images/base-clang"
-
-  // flattenDockerImage("ossfuzz/base-clang")
   
   stage name: 'Build ossfuzz/base-libfuzzer', concurrency: 1
   sh "docker build $dockerOptions -t ossfuzz/base-libfuzzer infra/base-images/base-libfuzzer"
