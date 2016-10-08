@@ -25,11 +25,11 @@ make clean all
 # build your fuzzer(s)
 make -C test CFLAGS="$CFLAGS -Dmain=stress_main -Drand=get_fuzz_input" stress.o
 
-./libtool --mode=link \
-    $CC $CFLAGS \
+$CC $CFLAGS \
     -o /out/chewing_fuzzer \
     /src/oss-fuzz/libchewing/chewing_fuzzer.c \
-    test/stress.o test/libtesthelper.la src/libchewing.la $LDFLAGS /work/libfuzzer/*.o
+    test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
+    /work/libfuzzer/*.o $LDFLAGS
 
 # install data files
 make -C data pkgdatadir=/out install
