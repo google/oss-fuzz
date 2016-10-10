@@ -39,6 +39,7 @@ cd ..
 mkdir -p /work/nss/lib
 #cp Linux*/lib/*.so /out
 cp dist/Linux*/lib/*.a /work/nss/lib
+cp nspr/Linux*/pr/src/misc/prlog2.o /work/nss/lib
 #cp Linux*/*.o /out
 #cp nss/lib/ssl/Linux*/*.o /work/nss/obj
 #cp nspr/Linux*/lib/ds/*.o /work/nss/obj
@@ -86,7 +87,7 @@ for fuzzer in $FUZZERS; do
      /work/libfuzzer/*.o \
      /work/nss/lib/libnss.a /work/nss/lib/libnssutil.a \
      /work/nss/lib/libnspr4.a /work/nss/lib/libplc4.a /work/nss/lib/libplds4.a \
-     -o /out/$fuzzer $LDFLAGS
+     /work/nss/lib/prlog2.o -o /out/$fuzzer $LDFLAGS
 done
 
 #     /work/nss/lib/*.a \
