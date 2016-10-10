@@ -28,23 +28,30 @@ mkdir -p /work/nss
 cp -u -r /src/nss/* /work/nss/
 cd /work/nss/nss
 make BUILD_OPT=1 USE_64=1 NSS_DISABLE_GTESTS=1 CC="$CC $CFLAGS" \
-  CXX="$CXX $CXXFLAGS" LD="$CC $CFLAGS" ZDEFS_FLAG= clean nss_build_all install
+  CXX="$CXX $CXXFLAGS" LD="$CC $CFLAGS" ZDEFS_FLAG= clean nss_build_all
 
-
+cd ..
 # Copy libraries to /usr/lib.
-cd ../dist
-cp Linux*/lib/*.so /usr/lib
-cp Linux*/lib/{*.chk,libcrmf.a} /usr/lib
+#cp Linux*/lib/*.so /usr/lib
+#cp Linux*/lib/{*.chk,libcrmf.a} /usr/lib
 
 # Copy libraries to /out since fuzzers don't work without them.
-cp Linux*/lib/*.so /out
-cp Linux*/lib/*.a /out
+mkdir -p /work/nss/lib
+#cp Linux*/lib/*.so /out
+cp dist/Linux*/lib/*.a /work/nss/lib
+#cp Linux*/*.o /out
+#cp nss/lib/ssl/Linux*/*.o /work/nss/obj
+#cp nspr/Linux*/lib/ds/*.o /work/nss/obj
+#/lib/libc/src/
+#config/
+#/pr/src/md/
+#/pr/src/md/unix/
 
 # Copy includes to /work/nss/include.
 mkdir -p /work/nss/include
-cp -rL Linux*/include/* /work/nss/include
-cp -rL {public,private}/nss/* /work/nss/include
-cd ..
+cp -rL dist/Linux*/include/* /work/nss/include
+cp -rL dist/{public,private}/nss/* /work/nss/include
+
 
 # Build the fuzzers.
 FUZZERS="asn1_algorithmid_fuzzer \
@@ -77,10 +84,12 @@ for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 /src/oss-fuzz/nss/fuzzers/$fuzzer.cc \
      -I/work/nss/include \
      /work/libfuzzer/*.o \
-     /out/*.a \
+     /work/nss/lib/libnss.a /work/nss/lib/libnssutil.a \
+     /work/nss/lib/libnspr4.a /work/nss/lib/libplc4.a /work/nss/lib/libplds4.a \
      -o /out/$fuzzer $LDFLAGS
 done
 
+#     /work/nss/lib/*.a \
 # To avoid "unbound variable" error.
 #if [[ ! -v LD_LIBRARY_PATH ]]; then
 #  export LD_LIBRARY_PATH=/work/nss/lib
