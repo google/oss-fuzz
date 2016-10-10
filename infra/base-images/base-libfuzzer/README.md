@@ -7,6 +7,8 @@ Supported commands:
   to be mounted.
 * `docker run -ti <image_name> checkout_and_compile` - checks projects sources out 
   if its location is defined and compiles.
+* `docker run -ti <image_name> run <fuzzer_name> <fuzzer_options...>` - build fuzzers and start
+  specified one with given options.
 * `docker run -ti <image_name> /bin/bash` - drop into shell. Run `compile` script
   to start build. 
 
