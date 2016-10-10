@@ -77,8 +77,8 @@ for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 /src/oss-fuzz/nss/fuzzers/$fuzzer.cc \
      -I/work/nss/include \
      /work/libfuzzer/*.o \
-     /out/libnss.a /out/libnssutil.a /out/libnspr4.a /out/libplc4.a /out/libplds4.a \
-     -o /out/$fuzzer
+     /out/*.a \
+     -o /out/$fuzzer $LDFLAGS
 done
 
 # To avoid "unbound variable" error.
