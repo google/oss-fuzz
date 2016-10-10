@@ -96,7 +96,7 @@ def call(body) {
             for (int j = 0; j < files.size(); j++) {
               def file = files[j]
               if (file.directory) { continue }
-              if (!new File(file.name).canExecute()) {
+              if (!new File(d, file.name).canExecute()) {
                   echo "skipping: $file"
                   continue
               }
