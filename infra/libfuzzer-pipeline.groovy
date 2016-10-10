@@ -85,41 +85,44 @@ def call(body) {
 
       // Run each of resulting fuzzers.
       dir ('out') {
-        stage name: "running fuzzers"
-        sh "ls -alR"
-        for (int i = 0; i < sanitizers.size(); i++) {
-          def sanitizer = sanitizers[i]
-          dir (sanitizer) {
-            def d = pwd()
-            def files = findFiles()
-            for (int j = 0; j < files.size(); j++) {
-              def file = files[j]
-              if (file.directory) { continue }
-              if (!new File(d, file.name).canExecute()) {
-                  echo "skipping: $file"
-                  continue
+        stage("running fuzzers") {
+          sh "ls -alR"
+          for (int i = 0; i < sanitizers.size(); i++) {
+            def sanitizer = sanitizers[i]
+            dir (sanitizer) {
+              def d = pwd()
+              def files = findFiles()
+              for (int j = 0; j < files.size(); j++) {
+                def file = files[j]
+                if (file.directory) { continue }
+                if (!new File(d, file.name).canExecute()) {
+                    echo "skipping: $file"
+                    continue
+                }
+                sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
               }
-              sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
             }
           }
         }
 
-        stage name: "uploading"
-        for (int i = 0; i < sanitizers.size(); i++) {
-          def sanitizer = sanitizers[i]
-          dir (sanitizer) {
-            def zipFile = "$projectName-$sanitizer-${date}.zip"
-            def revFile = "$projectName-$sanitizer-${date}.rev"
-            sh "cp $revisionsFile $revFile"
-            sh "zip -j $zipFile *"
-            sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
-            sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
+        stage("uploading") {
+          for (int i = 0; i < sanitizers.size(); i++) {
+            def sanitizer = sanitizers[i]
+            dir (sanitizer) {
+              def zipFile = "$projectName-$sanitizer-${date}.zip"
+              def revFile = "$projectName-$sanitizer-${date}.rev"
+              sh "cp $revisionsFile $revFile"
+              sh "zip -j $zipFile *"
+              sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
+              sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
+            }
           }
         }
 
-        stage name: "pushing image"
-        docker.withRegistry('', 'docker-login') {
-          docker.image(dockerTag).push()
+        stage("pushing image") {
+          docker.withRegistry('', 'docker-login') {
+            docker.image(dockerTag).push()
+          }
         }
       }
     }
