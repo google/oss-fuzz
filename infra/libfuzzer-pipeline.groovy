@@ -37,20 +37,12 @@ def call(body) {
     def ossFuzzUrl = 'https://github.com/google/oss-fuzz.git'
 
     node {
-      echo "Building project $projectName"
+      def workspace = pwd()
+      def dockerTag = "ossfuzz/$projectName"
+      echo "Building $dockerTag"
 
-      def wsPwd = pwd()
-
-      for (int i = 0; i < sanitizers.size(); i++) {
-        def sanitizer = sanitizers[i]
-        def dockerTag = "ossfuzz/$projectName-$sanitizer"
-
-        dir(sanitizer) {
-          stage name: "Building $sanitizer sanitizer"
-          def workspace = pwd();
-          def out = "$wsPwd/out/$sanitizer"
-          def revisions = [:]
-
+      stage name: "docker image"
+      {
           dir('oss-fuzz') {
               git url: ossFuzzUrl
           }
@@ -60,18 +52,25 @@ def call(body) {
               revisions[gitUrl] = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
           }
 
-          def revText = groovy.json.JsonOutput.toJson(revisions)
-          writeFile file: "$wsPwd/${sanitizer}.rev", text: revText
-          echo "revisions: $revText"
-
           if (dockerContextDir == null) {
             dockerContextDir = new File(dockerfile)
                 .getParentFile()
                 .getPath();
           }
 
-          // Build docker image
           sh "docker build -t $dockerTag -f $dockerfile $dockerContextDir"
+      }
+
+      for (int i = 0; i < sanitizers.size(); i++) {
+        def sanitizer = sanitizers[i]
+        dir(sanitizer) {
+          stage name: "$sanitizer sanitizer"
+          def out = "$workspace/out/$sanitizer"
+          def revisions = [:]
+
+          def revText = groovy.json.JsonOutput.toJson(revisions)
+          writeFile file: "$wsPwd/${sanitizer}.rev", text: revText
+          echo "revisions: $revText"
 
           // Run image to produce fuzzers
           sh "rm -rf $out"
@@ -86,7 +85,7 @@ def call(body) {
 
       // Run each of resulting fuzzers.
       dir ('out') {
-        stage name: "Running fuzzers"
+        stage name: "running fuzzers"
         sh "ls -alR"
         for (int i = 0; i < sanitizers.size(); i++) {
           def sanitizer = sanitizers[i]
@@ -105,7 +104,7 @@ def call(body) {
           }
         }
 
-        stage name: "Uploading fuzzers"
+        stage name: "uploading"
         for (int i = 0; i < sanitizers.size(); i++) {
           def sanitizer = sanitizers[i]
           dir (sanitizer) {
@@ -118,13 +117,9 @@ def call(body) {
           }
         }
 
-        stage name: "Pushing Images"
+        stage name: "pushing image"
         docker.withRegistry('', 'docker-login') {
-          for (int i = 0; i < sanitizers.size(); i++) {
-            def sanitizer = sanitizers[i]
-            def dockerTag = "ossfuzz/$projectName-$sanitizer"
-            docker.image(dockerTag).push()
-          }          
+          docker.image(dockerTag).push()
         }
       }
     }
