@@ -42,7 +42,7 @@ def call(body) {
       echo "Building $dockerTag"
 
       stage name: "docker image"
-      {
+      I:{ // groovy needs label for code block :)
           dir('oss-fuzz') {
               git url: ossFuzzUrl
           }
