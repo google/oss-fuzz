@@ -38,12 +38,13 @@ def call(body) {
 
     node {
       def workspace = pwd()
-      def revisions = [:]
+      def revisionsFile = "$workspace/$projectName.rev"
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
 
       stage name: "docker image"
       I:{ // groovy needs label for code block :)
+          def revisions = [:]
           dir('oss-fuzz') {
               git url: ossFuzzUrl
           }
@@ -60,6 +61,10 @@ def call(body) {
           }
 
           sh "docker build -t $dockerTag -f $dockerfile $dockerContextDir"
+
+          def revText = groovy.json.JsonOutput.toJson(revisions)
+          writeFile file: revisionsFile, text: revText
+          echo "revisions: $revText"
       }
 
       for (int i = 0; i < sanitizers.size(); i++) {
@@ -67,10 +72,6 @@ def call(body) {
         dir(sanitizer) {
           stage name: "$sanitizer sanitizer"
           def out = "$workspace/out/$sanitizer"
-
-          def revText = groovy.json.JsonOutput.toJson(revisions)
-          writeFile file: "$wsPwd/${sanitizer}.rev", text: revText
-          echo "revisions: $revText"
 
           // Run image to produce fuzzers
           sh "rm -rf $out"
@@ -110,7 +111,7 @@ def call(body) {
           dir (sanitizer) {
             def zipFile = "$projectName-$sanitizer-${date}.zip"
             def revFile = "$projectName-$sanitizer-${date}.rev"
-            sh "cp $wsPwd/${sanitizer}.rev $revFile"
+            sh "cp $revisionsFile $revFile"
             sh "zip -j $zipFile *"
             sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
             sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
