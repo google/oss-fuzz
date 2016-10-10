@@ -42,8 +42,7 @@ def call(body) {
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
 
-      stage name: "docker image"
-      I:{ // groovy needs label for code block :)
+      stage("docker image") {
           def revisions = [:]
           dir('oss-fuzz') {
               git url: ossFuzzUrl
@@ -70,17 +69,17 @@ def call(body) {
       for (int i = 0; i < sanitizers.size(); i++) {
         def sanitizer = sanitizers[i]
         dir(sanitizer) {
-          stage name: "$sanitizer sanitizer"
           def out = "$workspace/out/$sanitizer"
+          stage("$sanitizer sanitizer") {
+            // Run image to produce fuzzers
+            sh "rm -rf $out"
+            sh "mkdir -p $out"
+            sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
 
-          // Run image to produce fuzzers
-          sh "rm -rf $out"
-          sh "mkdir -p $out"
-          sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $workspace/oss-fuzz:/src/oss-fuzz -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
-
-          // Copy dict and options files
-          sh "cp $workspace/oss-fuzz/$projectName/*.dict $out/ || true"
-          sh "cp $workspace/oss-fuzz/$projectName/*.options $out/ || true"
+            // Copy dict and options files
+            sh "cp $workspace/oss-fuzz/$projectName/*.dict $out/ || true"
+            sh "cp $workspace/oss-fuzz/$projectName/*.options $out/ || true"
+          }
         }
       }
 
