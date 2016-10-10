@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eux
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,8 @@
 #
 ################################################################################
 
-set -e -x
-
 PROJECT="gcr.io/meta-iterator-105109"
 DIR=$(dirname $0)
 
 docker build --pull -t $PROJECT/jenkins $DIR/
-gcloud docker push $PROJECT/jenkins
+gcloud docker -- push $PROJECT/jenkins

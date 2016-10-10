@@ -21,5 +21,14 @@ USER root
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get upgrade -y
 
-# /var/run/docker.sock will be bound to a pod.
-RUN apt-get install -y docker.io
+# should not be newer than container's.
+ENV DOCKER_ENGINE_VERSION="1.11.2-0~jessie"
+
+# Install docker
+# /var/run/docker.sock will be mounted to a host.
+RUN apt-get install -y apt-transport-https ca-certificates
+RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+RUN echo "deb https://apt.dockerproject.org/repo debian-jessie main" > /etc/apt/sources.list.d/docker.list
+RUN apt-get update
+RUN apt-cache policy docker-engine
+RUN apt-get install -y docker-engine=$DOCKER_ENGINE_VERSION

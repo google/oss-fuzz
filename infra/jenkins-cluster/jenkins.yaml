@@ -1,12 +1,9 @@
-kind: ReplicationController
-apiVersion: v1
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: jenkins-master
-
+  name: jenkins
 spec:
   replicas: 1
-  selector:
-    app: jenkins-master
   template:
     metadata:
       name: jenkins-master
@@ -14,7 +11,7 @@ spec:
         app: jenkins-master
     spec:
       containers:
-      - name: jenkins-master
+      - name: jenkins
         image: gcr.io/meta-iterator-105109/jenkins
         env:
           - name: KUB_POD_NAME
@@ -31,12 +28,12 @@ spec:
         - containerPort: 8080
         - containerPort: 50000
         volumeMounts:
-        - name: jenkins-work
+        - name: jenkins-home
           mountPath: "/var/jenkins_home"
         - name: docker-sock
           mountPath: "/var/run/docker.sock"
-        - name: dockerhub-login-secret
-          mountPath: "/var/secrets/dockerhub-login"
+        # - name: dockerhub-login-secret
+        #   mountPath: "/var/secrets/dockerhub-login"
         livenessProbe:
           httpGet:
             path: "/login"
@@ -49,13 +46,13 @@ spec:
         securityContext:
           privileged: true
       volumes:
-      - name: jenkins-work
+      - name: jenkins-home
         gcePersistentDisk:
-          pdName: jenkins-work
+          pdName: oss-cluster-jenkins-work
           fsType: ext4
       - name: docker-sock
         hostPath:
           path: /var/run/docker.sock
-      - name: dockerhub-login-secret
-        secret:
-          secretName: dockerhub-login
+      # - name: dockerhub-login-secret
+      #   secret:
+      #     secretName: dockerhub-login
