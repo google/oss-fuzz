@@ -38,7 +38,7 @@ def call(body) {
 
     node {
       def workspace = pwd()
-      def revisionsFile = "$workspace/$projectName.rev"
+      def revisionsFile = "$workspace/${projectName}.rev"
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
 
