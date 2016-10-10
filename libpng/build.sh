@@ -23,7 +23,7 @@ cat scripts/pnglibconf.dfa | sed -e "s/option STDIO/option STDIO disabled/" \
 mv scripts/pnglibconf.dfa.temp scripts/pnglibconf.dfa
 
 # build the library.
-./autogen.sh
+autoreconf -f -i
 ./configure
 make clean all
 
