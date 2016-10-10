@@ -19,12 +19,12 @@ general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
 
 To add a new OSS library to oss-fuzz, 3 supporting files have to be added to oss-fuzz source code repository:
 
-* *library_name*/Dockerfile - defines an container environment with all the dependencies needed to build the project and the fuzzer.
-* *library_name*/build.sh - build script that will be executed inside the container.
-* *library_name*/Jenkinsfile - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
+* `library_name/Dockerfile` - defines an container environment with all the dependencies needed to build the project and the fuzzer.
+* `library_name/build.sh` - build script that will be executed inside the container.
+* `library_name/Jenkinsfile` - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
   Specify your library VCS location in it.
 
-To create a new directory for the library and automatically generate these 3 files a python script can be used:
+To create a new directory for the library and *automatically generate* these 3 files a python script can be used:
 
 ```bash
 $ cd /path/to/oss-fuzz
