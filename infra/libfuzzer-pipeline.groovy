@@ -38,6 +38,7 @@ def call(body) {
 
     node {
       def workspace = pwd()
+      def revisions = [:]
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
 
@@ -66,7 +67,6 @@ def call(body) {
         dir(sanitizer) {
           stage name: "$sanitizer sanitizer"
           def out = "$workspace/out/$sanitizer"
-          def revisions = [:]
 
           def revText = groovy.json.JsonOutput.toJson(revisions)
           writeFile file: "$wsPwd/${sanitizer}.rev", text: revText
