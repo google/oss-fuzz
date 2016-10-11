@@ -86,6 +86,7 @@ def call(body) {
       // Run each of resulting fuzzers.
       dir ('out') {
         stage("running fuzzers") {
+          def fuzzersFound = 0
           sh "ls -alR"
           for (int i = 0; i < sanitizers.size(); i++) {
             def sanitizer = sanitizers[i]
@@ -100,8 +101,12 @@ def call(body) {
                     continue
                 }
                 sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
+                fuzzersFound += 1
               }
             }
+          }
+          if (!fuzzersFound) {
+            error("0 fuzzers found");
           }
         }
 
