@@ -16,7 +16,7 @@
 
 def libfuzzerPipeline = fileLoader.fromGit(
     'infra/libfuzzer-pipeline.groovy',
-    'https://github.com/google/oss-fuzz.git', 'master', null, '')
+    'https://github.com/google/oss-fuzz.git')
 
 libfuzzerPipeline {
   git = "https://boringssl.googlesource.com/boringssl"
