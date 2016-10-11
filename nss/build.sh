@@ -31,7 +31,7 @@ make BUILD_OPT=1 USE_64=1 NSS_DISABLE_GTESTS=1 CC="$CC $CFLAGS" \
     CXX="$CXX $CXXFLAGS" LD="$CC $CFLAGS" ZDEFS_FLAG= clean nss_build_all
 cd ..
 
-# Copy libraries to /out since fuzzers don't work without them.
+# Copy libraries and some objects to /work/nss/lib.
 mkdir -p /work/nss/lib
 cp dist/Linux*/lib/*.a /work/nss/lib
 cp nspr/Linux*/pr/src/misc/prlog2.o /work/nss/lib
@@ -57,7 +57,7 @@ FUZZERS="asn1_algorithmid_fuzzer \
   asn1_utctime_fuzzer \
   asn1_utf8string_fuzzer"
 
-# The following fuzzers are currently disabled due to linking issues.
+# The following fuzzers are currently disabled due to linking issues:
 #  cert_certificate_fuzzer, seckey_privatekeyinfo_fuzzer
 
 
