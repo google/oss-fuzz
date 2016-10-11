@@ -28,25 +28,13 @@ mkdir -p /work/nss
 cp -u -r /src/nss/* /work/nss/
 cd /work/nss/nss
 make BUILD_OPT=1 USE_64=1 NSS_DISABLE_GTESTS=1 CC="$CC $CFLAGS" \
-  CXX="$CXX $CXXFLAGS" LD="$CC $CFLAGS" ZDEFS_FLAG= clean nss_build_all
-
+    CXX="$CXX $CXXFLAGS" LD="$CC $CFLAGS" ZDEFS_FLAG= clean nss_build_all
 cd ..
-# Copy libraries to /usr/lib.
-#cp Linux*/lib/*.so /usr/lib
-#cp Linux*/lib/{*.chk,libcrmf.a} /usr/lib
 
 # Copy libraries to /out since fuzzers don't work without them.
 mkdir -p /work/nss/lib
-#cp Linux*/lib/*.so /out
 cp dist/Linux*/lib/*.a /work/nss/lib
 cp nspr/Linux*/pr/src/misc/prlog2.o /work/nss/lib
-#cp Linux*/*.o /out
-#cp nss/lib/ssl/Linux*/*.o /work/nss/obj
-#cp nspr/Linux*/lib/ds/*.o /work/nss/obj
-#/lib/libc/src/
-#config/
-#/pr/src/md/
-#/pr/src/md/unix/
 
 # Copy includes to /work/nss/include.
 mkdir -p /work/nss/include
@@ -67,19 +55,11 @@ FUZZERS="asn1_algorithmid_fuzzer \
   asn1_objectid_fuzzer \
   asn1_octetstring_fuzzer \
   asn1_utctime_fuzzer \
-  asn1_utf8string_fuzzer \
-  cert_certificate_fuzzer \
-  seckey_privatekeyinfo_fuzzer"
+  asn1_utf8string_fuzzer"
 
+# The following fuzzers are currently disabled due to linking issues.
+#  cert_certificate_fuzzer, seckey_privatekeyinfo_fuzzer
 
-# Instead of:
-#     -lnss3 -lnssutil3 -lnspr4 -lplc4 -lplds4 \
-# I tried to use /out/*.a
-# log: https://gist.github.com/Dor1s/d9873b241480ccbb530d2ee2af8d7072
-#
-# and another version with exact names:
-#      /out/libnss.a /out/libnssutil.a /out/libnspr4.a /out/libplc4.a /out/libplds4.a
-# log: https://gist.github.com/Dor1s/fdd88b7092a85bcdd1a03bcd2382fe6b
 
 for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 /src/oss-fuzz/nss/fuzzers/$fuzzer.cc \
@@ -89,11 +69,3 @@ for fuzzer in $FUZZERS; do
      /work/nss/lib/libnspr4.a /work/nss/lib/libplc4.a /work/nss/lib/libplds4.a \
      /work/nss/lib/prlog2.o -o /out/$fuzzer $LDFLAGS
 done
-
-#     /work/nss/lib/*.a \
-# To avoid "unbound variable" error.
-#if [[ ! -v LD_LIBRARY_PATH ]]; then
-#  export LD_LIBRARY_PATH=/work/nss/lib
-#else
-#  export LD_LIBRARY_PATH=/work/nss/lib:$LD_LIBRARY_PATH
-#fi
