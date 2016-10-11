@@ -149,8 +149,7 @@ infrastructure. For expat, this is:
 ```groovy
 // load libFuzzer pipeline definition.
 def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
-                                        'https://github.com/google/oss-fuzz.git',
-                                        'master', null, '')
+                                        'https://github.com/google/oss-fuzz.git')
 
 libfuzzerBuild {
   git = "git://git.code.sf.net/p/expat/code_git"
