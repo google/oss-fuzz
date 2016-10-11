@@ -105,7 +105,7 @@ def call(body) {
               }
             }
           }
-          echo "Tested $fuzzersFound"
+          echo "Tested $fuzzersFound fuzzer"
           if (!fuzzersFound) {
             error "no fuzzers found";
           }
