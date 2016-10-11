@@ -15,8 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
-                                        'https://github.com/google/oss-fuzz.git',
-                                        'master', null, '')
+                                        'https://github.com/google/oss-fuzz.git')
 
 libfuzzerBuild {
   // We can't use git. We need to use fossil.
