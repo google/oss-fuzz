@@ -32,8 +32,7 @@ JENKINS_TEMPLATE = """\
 ////////////////////////////////////////////////////////////////////////////////
 
 def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
-                                        'https://github.com/google/oss-fuzz.git',
-                                        'master', null, '')
+                                        'https://github.com/google/oss-fuzz.git')
 
 libfuzzerBuild {
   git = "put git url here"
