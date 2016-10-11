@@ -17,10 +17,9 @@
 
 # Build the library.
 mkdir -p /work/nss
+cd /work/nss
 hg clone https://hg.mozilla.org/projects/nspr
 hg clone https://hg.mozilla.org/projects/nss
-
-ls -alR
 
 cd /work/nss/nss
 make BUILD_OPT=1 USE_64=1 NSS_DISABLE_GTESTS=1 CC="$CC $CFLAGS" \
