@@ -113,6 +113,7 @@ def call(body) {
               writeFile file:"$resultsDir/TEST-${sanitizer}.xml", text:testReport
             }
           }
+          sh "ls -al $resultsDir/"
           step([$class: 'JUnitResultArchiver', testResults: '$resultsDir/*.xml'])
           echo "Tested $fuzzersFound fuzzer"
           if (!fuzzersFound) {
