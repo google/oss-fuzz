@@ -18,7 +18,6 @@
 cd /src/woff2
 
 # Checkout and update submodules.
-git submodule sync
 git submodule init || true
 git submodule update --recursive
 
