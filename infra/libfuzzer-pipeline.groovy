@@ -85,12 +85,17 @@ def call(body) {
 
       // Run each of resulting fuzzers.
       dir ('out') {
-        stage("running fuzzers") {
+        def resultsDir = "$workspace/test-results/"
+        sh "rm -rf $resultsDir"
+        sh "mkdir -p $resultsDir"
+        stage("running fuzzers", testResults: "$resultsDir/*.xml") {
           def fuzzersFound = 0
           sh "ls -alR"
           for (int i = 0; i < sanitizers.size(); i++) {
             def sanitizer = sanitizers[i]
             dir (sanitizer) {
+              def testReport = "<testsuite name=\"$projectName-$sanitizer\">";
+                
               def d = pwd()
               def files = findFiles()
               for (int j = 0; j < files.size(); j++) {
@@ -103,6 +108,9 @@ def call(body) {
                 sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
                 fuzzersFound += 1
               }
+                
+              testReport += "/>";
+              writeFile("$resultsDir/$sanitizer.xml", testReport);
             }
           }
           echo "Tested $fuzzersFound fuzzer"
