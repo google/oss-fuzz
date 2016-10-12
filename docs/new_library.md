@@ -9,7 +9,7 @@ library go into <https://github.com/google/oss-fuzz/tree/master/expat>.
 [Install Docker].
 
 *NOTE: Docker images can consume significant disk space. Run*
-*[docker-cleanup](https://gist.github.com/mikea/f18ff91a65a7620b9a78551d4bfa0d26)*
+*[docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)*
 *periodically to garbage collect unused images.*
 
 
