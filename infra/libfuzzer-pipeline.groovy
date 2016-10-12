@@ -94,7 +94,7 @@ def call(body) {
           for (int i = 0; i < sanitizers.size(); i++) {
             def sanitizer = sanitizers[i]
             dir (sanitizer) {
-              def testReport = "<testsuite name=\"$projectName-$sanitizer\">";
+              def testReport = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"$projectName-$sanitizer\">";
                 
               def d = pwd()
               def files = findFiles()
@@ -109,7 +109,7 @@ def call(body) {
                 fuzzersFound += 1
               }
                 
-              testReport += "/>";
+              testReport += "</testsuite></testsuites>";
               writeFile file:"$resultsDir/TEST-${sanitizer}.xml", text:testReport
             }
           }
