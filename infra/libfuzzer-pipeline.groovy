@@ -93,9 +93,7 @@ def call(body) {
           sh "ls -alR"
           for (int i = 0; i < sanitizers.size(); i++) {
             def sanitizer = sanitizers[i]
-            dir (sanitizer) {
-              def testReport = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuites><testsuite name=\"$projectName-$sanitizer\">";
-                
+            dir (sanitizer) {               
               def d = pwd()
               def files = findFiles()
               for (int j = 0; j < files.size(); j++) {
@@ -109,7 +107,21 @@ def call(body) {
                 fuzzersFound += 1
               }
                 
-              testReport += "</testsuite></testsuites>";
+              def testReport = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
+                    "<testsuites xmlns=\"http://junit.org/junit4/\"\n" +
+                    "            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                    "            xsi:schemaLocation=\"http://junit.org/junit4/ http://windyroad.com.au/dl/Open%20Source/JUnit.xsd\">\n" +
+                    "    <testsuite name=\"expat-address\"\n" +
+                    "               errors=\"0\"\n" +
+                    "               failures=\"0\"\n" +
+                    "               hostname=\"localhost\"\n" +
+                    "               id=\"test\"\n" +
+                    "               package=\"\"\n" +
+                    "               tests=\"\"\n" +
+                    "               time=\"\"\n" +
+                    "               timestamp=\"\">\n" +
+                    "    </testsuite>\n" +
+                    "</testsuites>\n";
               writeFile file:"$resultsDir/TEST-${sanitizer}.xml", text:testReport
               sh "cat $resultsDir/TEST-${sanitizer}.xml"
             }
