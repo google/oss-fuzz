@@ -6,7 +6,7 @@ library go into <https://github.com/google/oss-fuzz/tree/master/expat>.
 
 ## Prerequisites
 
-[Install Docker].
+[Install Docker]. (Googlers: [go/installdocker](https://goto.google.com/installdocker) )
 
 *NOTE: Docker images can consume significant disk space. Run*
 *[docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)*
