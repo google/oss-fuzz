@@ -46,6 +46,10 @@ def call(body) {
 
       stage("docker image") {
           def revisions = [:]
+          dir('oss-fuzz') {
+              git url: "https://github.com/google/oss-fuzz.git"
+          }
+
           dir(checkoutDir) {
               git url: gitUrl
               revisions[gitUrl] = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
