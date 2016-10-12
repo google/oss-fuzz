@@ -110,7 +110,7 @@ def call(body) {
               }
                 
               testReport += "/>";
-              writeFile("$resultsDir/$sanitizer.xml", testReport);
+              writeFile("$resultsDir/TEST-${sanitizer}.xml", testReport);
             }
           }
           echo "Tested $fuzzersFound fuzzer"
