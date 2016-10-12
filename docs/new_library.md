@@ -181,7 +181,7 @@ on your machine (`/out` in the container). You can then try to run these fuzzers
 inside the container to make sure that they work properly:
 
 ```bash
-$ python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
+$ sudo python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
 ```
 
 If everything works locally, then it should also work on our automated builders
