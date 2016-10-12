@@ -41,6 +41,9 @@ def call(body) {
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
 
+      sh "rm -rf $workspace/out"
+      sh "mkdir -p $workspace/out"
+
       stage("docker image") {
           def revisions = [:]
           dir(checkoutDir) {
@@ -60,26 +63,24 @@ def call(body) {
           writeFile file: revisionsFile, text: revText
           echo "revisions: $revText"
       }
-
+        
       for (int i = 0; i < sanitizers.size(); i++) {
         def sanitizer = sanitizers[i]
         dir(sanitizer) {
           def out = "$workspace/out/$sanitizer"
           stage("$sanitizer sanitizer") {
             // Run image to produce fuzzers
-            sh "rm -rf $out"
-            sh "mkdir -p $out"
             sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
           }
         }
       }
 
       // Run each of resulting fuzzers.
-      dir ('out') {
+      stage("running fuzzers") {
         def resultsDir = "$workspace/test-results"
         sh "rm -rf $resultsDir"
         sh "mkdir -p $resultsDir"
-        stage("running fuzzers") {
+        dir ('out') {
           def fuzzersFound = 0
           sh "ls -alR"
           for (int i = 0; i < sanitizers.size(); i++) {
