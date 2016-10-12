@@ -19,5 +19,7 @@ def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
                                         'master', null, '')
 
 libfuzzerBuild {
-  git = "https://github.com/google/woff2"
+  // We need to do 'clone --recursive' (to checkout submodules as well).
+  // The below is just a dummy. Actual checkout is being done in build.sh.
+  git = "https://github.com/google/oss-fuzz"
 }
