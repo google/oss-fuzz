@@ -19,7 +19,7 @@ cd /src/woff2
 
 # Checkout and update submodules.
 git submodule sync
-git submodule init
+git submodule init || true
 git submodule update --recursive
 
 # Build the library. Actually there is no 'library' target, so we use .o files.
