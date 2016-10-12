@@ -110,7 +110,7 @@ def call(body) {
               }
                 
               testReport += "/>";
-              writeFile("$resultsDir/TEST-${sanitizer}.xml", testReport);
+              writeFile file:"$resultsDir/TEST-${sanitizer}.xml", text:testReport
             }
           }
           step([$class: 'JUnitResultArchiver', testResults: '$resultsDir/*.xml'])
