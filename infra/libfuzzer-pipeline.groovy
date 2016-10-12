@@ -116,10 +116,11 @@ def call(body) {
                     "               failures=\"0\"\n" +
                     "               hostname=\"localhost\"\n" +
                     "               id=\"test\"\n" +
-                    "               package=\"\"\n" +
-                    "               tests=\"\"\n" +
-                    "               time=\"\"\n" +
-                    "               timestamp=\"\">\n" +
+                    "               package=\"$projectName\"\n" +
+                    "               tests=\"1\"\n" +
+                    "               time=\"1s\"\n" +
+                    "               timestamp=\"0\">\n" +
+                    "         <testcase name=\"aName\" classname=\"aClassName\" time=\"1s\"/>\n" +
                     "    </testsuite>\n" +
                     "</testsuites>\n";
               writeFile file:"$resultsDir/TEST-${sanitizer}.xml", text:testReport
