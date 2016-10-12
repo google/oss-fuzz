@@ -85,7 +85,7 @@ def call(body) {
 
       // Run each of resulting fuzzers.
       dir ('out') {
-        def resultsDir = "$workspace/test-results/"
+        def resultsDir = "$workspace/test-results"
         sh "rm -rf $resultsDir"
         sh "mkdir -p $resultsDir"
         stage("running fuzzers") {
@@ -110,11 +110,11 @@ def call(body) {
               }
                 
               testReport += "/>";
-              writeFile file:"$resultsDir/TEST-${sanitizer}.xml", text:testReport
+              writeFile file:"$resultsDir/${sanitizer}.xml", text:testReport
             }
           }
           sh "ls -al $resultsDir/"
-          step([$class: 'JUnitResultArchiver', testResults: '${resultsDir}*.xml'])
+          step([$class: 'JUnitResultArchiver', testResults: '${resultsDir}/*.xml'])
           echo "Tested $fuzzersFound fuzzer"
           if (!fuzzersFound) {
             error "no fuzzers found";
