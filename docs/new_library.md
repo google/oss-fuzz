@@ -172,8 +172,8 @@ version using docker commands directly is documented [here](building_running_fuz
 
 ```bash
 $ cd /path/to/oss-fuzz
-$ python scripts/helper.py build_image $LIB_NAME
-$ python scripts/helper.py build_fuzzers $LIB_NAME
+$ sudo python scripts/helper.py build_image $LIB_NAME
+$ sudo python scripts/helper.py build_fuzzers $LIB_NAME
 ```
 
 This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$LIB_NAME`
