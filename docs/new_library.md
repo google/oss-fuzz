@@ -8,6 +8,11 @@ library go into <https://github.com/google/oss-fuzz/tree/master/expat>.
 
 [Install Docker].
 
+*NOTE: Docker images can consume significant disk space. Run*
+*[docker-cleanup](https://gist.github.com/mikea/f18ff91a65a7620b9a78551d4bfa0d26)*
+*periodically to garbage collect unused images.*
+
+
 Building fuzzers requires building your library with a fresh of 
 Clang compiler and special compiler flags. An easy-to-use Docker image is 
 provided to simplify tool distribution.
