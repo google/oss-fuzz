@@ -18,7 +18,9 @@
 cd /src/woff2
 
 # Checkout and update submodules.
-git submodule update --init --recursive
+git submodule sync
+git submodule init
+git submodule update --recursive
 
 # Build the library. Actually there is no 'library' target, so we use .o files.
 # '-no-canonical-prefixes' flag makes clang crazy. Need to avoid it.
