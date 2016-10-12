@@ -88,7 +88,7 @@ def call(body) {
         def resultsDir = "$workspace/test-results/"
         sh "rm -rf $resultsDir"
         sh "mkdir -p $resultsDir"
-        stage("running fuzzers", testResults: "$resultsDir/*.xml") {
+        stage("running fuzzers") {
           def fuzzersFound = 0
           sh "ls -alR"
           for (int i = 0; i < sanitizers.size(); i++) {
