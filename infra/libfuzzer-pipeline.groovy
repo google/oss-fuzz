@@ -111,6 +111,7 @@ def call(body) {
                 
               testReport += "</testsuite></testsuites>";
               writeFile file:"$resultsDir/TEST-${sanitizer}.xml", text:testReport
+              sh "cat $resultsDir/TEST-${sanitizer}.xml"
             }
           }
           // sh "ls -al $resultsDir/"
