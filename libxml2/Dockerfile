@@ -19,3 +19,6 @@ MAINTAINER ochang@chromium.org
 RUN apt-get install -y make autoconf automake libtool pkg-config
 
 COPY build.sh /src/
+COPY libxml2_xml_read_memory_fuzzer.* \
+     libxml2_xml_regexp_compile_fuzzer.* \
+     xml.dict /src/

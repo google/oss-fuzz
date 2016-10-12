@@ -18,8 +18,6 @@ FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y git libc6-dev
 
-RUN cd /src && git clone --depth 1 https://github.com/google/oss-fuzz.git
-
 RUN mkdir -p /work/libfuzzer
 
 ENV SANITIZER_FLAGS="-fsanitize=address"

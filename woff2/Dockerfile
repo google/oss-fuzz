@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 
-COPY build.sh /src/
+COPY build.sh convert_woff2ttf_fuzzer.* /src/

@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool zlib1g-dev
 
-COPY build.sh /src/
+COPY build.sh libpng_read_fuzzer.* png.dict /src/

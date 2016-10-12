@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER kcwu@csie.org
 RUN apt-get install -y make autoconf automake libtool texinfo
 
-COPY build.sh /src/
+COPY build.sh chewing_fuzzer.c /src/
