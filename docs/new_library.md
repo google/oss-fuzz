@@ -13,11 +13,11 @@ library go into <https://github.com/google/oss-fuzz/tree/master/expat>.
 *periodically to garbage collect unused images.*
 
 
-Building fuzzers requires building your library with a fresh of 
+Building fuzzers requires building your library with a fresh
 Clang compiler and special compiler flags. An easy-to-use Docker image is 
 provided to simplify tool distribution.
 
-If you'd like to get more familiar with how building libFuzzer-style fuzzers work in
+If you'd like to get more familiar with how libFuzzer-style fuzzers work in
 general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
 
 ## Overview
@@ -128,7 +128,7 @@ in this project repository.
 
 Any top-level files in the library directory ending with the extension ".dict"
 or ".options" will be picked up by ClusterFuzz. Files ending with ".dict" are
-assumed to be libFuzzer compatible [dictionaries], and .options files have the
+assumed to be libFuzzer-compatible [dictionaries], and .options files have the
 format:
 
 ```
