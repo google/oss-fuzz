@@ -62,5 +62,5 @@ for fuzzer in $FUZZERS; do
      /work/libfuzzer/*.o \
      /work/nss/lib/libnss.a /work/nss/lib/libnssutil.a \
      /work/nss/lib/libnspr4.a /work/nss/lib/libplc4.a /work/nss/lib/libplds4.a \
-     /work/nss/lib/prlog2.o -o /out/$fuzzer $LDFLAGS
+     /work/nss/lib/prlog2.o -o /out/$fuzzer $FUZZER_LDFLAGS
 done

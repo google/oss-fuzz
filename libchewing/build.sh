@@ -29,7 +29,7 @@ $CC $CFLAGS \
     -o /out/chewing_fuzzer \
     /src/chewing_fuzzer.c \
     test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
-    /work/libfuzzer/*.o $LDFLAGS
+    /work/libfuzzer/*.o $FUZZER_LDFLAGS
 
 # install data files
 make -C data pkgdatadir=/out install

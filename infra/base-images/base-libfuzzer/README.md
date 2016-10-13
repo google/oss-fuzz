@@ -31,7 +31,7 @@ These flags are provided in following environment variables:
 | `$CXX`, `$CCC`  | The C++ compiler binary.
 | `$CFLAGS`       | C compiler flags.
 | `$CXXFLAGS`     | C++ compiler flags.
-| `$LDFLAGS`      | Linker flags for fuzzer binaries.
+| `$FUZZER_LDFLAGS`      | Linker flags for fuzzer binaries.
 
 Many well-crafted build scripts will automatically use these variables. If not,
 passing them manually to a build tool might be required.

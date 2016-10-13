@@ -104,7 +104,7 @@ make clean all
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
     /src/oss-fuzz/expat/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
     /work/libfuzzer/*.o .libs/libexpat.a \
-    $LDFLAGS
+    $FUZZER_LDFLAGS
 ```
 
 ### build.sh Script Environment 
@@ -120,13 +120,11 @@ When build.sh script is executed, the following locations are available within t
 You *must* use special compiler flags to build your library and fuzzers.
 These flags are provided in following environment variables:
 
-| Env Variable    | Description
-| -------------   | --------
-| `$CC`           | The C compiler binary.
-| `$CXX`, `$CCC`  | The C++ compiler binary.
-| `$CFLAGS`       | C compiler flags.
-| `$CXXFLAGS`     | C++ compiler flags.
-| `$LDFLAGS`      | Linker flags for fuzzer binaries.
+| Env Variable           | Description
+| -------------          | --------
+| `$CC`, `$CXX`, `$CCC`  | The C and C++ compiler binaries.
+| `$CFLAGS`, `$CXXFLAGS` | C and C++ compiler flags.
+| `$FUZZER_LDFLAGS`      | Linker flags for fuzzer binaries.
 
 Many well-crafted build scripts will automatically use these variables. If not,
 passing them manually to a build tool might be required.
