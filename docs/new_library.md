@@ -49,7 +49,7 @@ It is very simple for most libraries:
 FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                   # each file should have a maintainer
 RUN apt-get install -y ...              # install required packages to build a project
-COPY build.sh /src/                     # install build script for the project.
+COPY build.sh <additional_files> /src/  # install build script and other files.
 ```
 Expat example: [expat/Dockerfile](../expat/Dockerfile)
 
@@ -133,17 +133,19 @@ passing them manually to a build tool might be required.
 
 ### Custom libFuzzer options for ClusterFuzz
 
-By default ClusterFuzz will run your fuzzier without any options. You can specify
-options by creating a `fuzzer_name.options` file next to a fuzzier in `/out`:
+By default ClusterFuzz will run your fuzzer without any options. You can specify
+custom options by creating a `fuzzer_name.options` file next to a fuzzier in `/out`:
 
 ```
 [linfuzzer]
 max_len = 1024
 ```
 
-[Available options](http://llvm.org/docs/LibFuzzer.html#options)
+[List of available options](http://llvm.org/docs/LibFuzzer.html#options)
 
-For out of tree fuzzes You will commonly add options file using docker's
+At least `max_len` is highly recommended.
+
+For out of tree fuzzers you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
 
 ### Dictionaries
