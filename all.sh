@@ -20,6 +20,9 @@
 
 ./infra/base-images/all.sh
 
-for project in boringssl expat freetype2 libchewing libpng libxml2 re2 sqlite3 zlib; do
+IGNORE="docs:infra:tpm2:scripts"
+
+for project in *; do
+  if [[ -f $project || ":${IGNORE}:" == *":$project:"* ]]; then continue; fi
   docker build -t ossfuzz/$project $project/
 done
