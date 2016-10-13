@@ -31,6 +31,8 @@ cat Makefile | sed -e "s/-no-canonical-prefixes//" \
 > Makefile.temp
 mv Makefile.temp Makefile
 
+# woff2 uses LFLAGS instead of LDFLAGS.		
+export LFLAGS=$FUZZER_LDFLAGS
 make CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" clean all
 
 # To avoid multiple main() definitions.
