@@ -42,7 +42,7 @@ def call(body) {
       echo "Building $dockerTag"
 
       // rm files with docker first to use the same user
-      sh "docker run --rm -ti -v $workspace/out:/out ubuntu rm -rf /out/*"
+      sh "docker run --rm -v $workspace/out:/out ubuntu rm -rf /out/*"
       sh "rm -rf $workspace/out"
       sh "mkdir -p $workspace/out"
 
@@ -101,7 +101,7 @@ def call(body) {
                     echo "skipping: $file"
                     continue
                 }
-                sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
+                sh "docker run --rm -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
                 fuzzersFound += 1
               }
                 
