@@ -137,7 +137,7 @@ By default ClusterFuzz will run your fuzzer without any options. You can specify
 custom options by creating a `fuzzer_name.options` file next to a fuzzier in `/out`:
 
 ```
-[linfuzzer]
+[libfuzzer]
 max_len = 1024
 ```
 
