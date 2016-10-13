@@ -41,7 +41,7 @@ def call(body) {
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
 
-      sh "sudo rm -rf $workspace/out"
+      sh "rm -rf $workspace/out"
       sh "mkdir -p $workspace/out"
 
       stage("docker image") {
