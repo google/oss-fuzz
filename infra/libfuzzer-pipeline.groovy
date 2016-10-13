@@ -134,16 +134,18 @@ def call(body) {
         }
 
         stage("uploading") {
-          for (int i = 0; i < sanitizers.size(); i++) {
-            def sanitizer = sanitizers[i]
-            dir (sanitizer) {
-              def zipFile = "$projectName-$sanitizer-${date}.zip"
-              def revFile = "$projectName-$sanitizer-${date}.rev"
-              sh "cp $revisionsFile $revFile"
-              sh "zip -j $zipFile *"
-              sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
-              sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
-            }
+            dir('out') {
+              for (int i = 0; i < sanitizers.size(); i++) {
+                def sanitizer = sanitizers[i]
+                dir (sanitizer) {
+                  def zipFile = "$projectName-$sanitizer-${date}.zip"
+                  def revFile = "$projectName-$sanitizer-${date}.rev"
+                  sh "cp $revisionsFile $revFile"
+                  sh "zip -j $zipFile *"
+                  sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
+                  sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
+                }
+             }
           }
         }
 
