@@ -34,6 +34,6 @@ make sqlite3.c
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     /src/sqlite3_fuzzer.cc -o /out/sqlite3_fuzzer \
-    /work/libfuzzer/*.o ./sqlite3.o $LDFLAGS
+    /work/libfuzzer/*.o ./sqlite3.o $FUZZER_LDFLAGS
 
 cp /src/*.options /src/*.dict /out/

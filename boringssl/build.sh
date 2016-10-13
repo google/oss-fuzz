@@ -23,7 +23,7 @@ CXXFLAGS="$CXXFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
 
 cmake -GNinja -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-    -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
+    -DCMAKE_EXE_LINKER_FLAGS="$FUZZER_LDFLAGS" \
     /src/boringssl/
 ninja
 
@@ -34,7 +34,7 @@ find . -name "*.a"
 for F in $fuzzerFiles; do
   fuzzerName=$(basename $F .cc)
   echo "Building fuzzer $fuzzerName"
-  $CXX $CXXFLAGS $LDFLAGS -std=c++11 \
+  $CXX $CXXFLAGS $FUZZER_LDFLAGS -std=c++11 \
       -o /out/openssl_${fuzzerName} /work/libfuzzer/*.o $F \
       -I /src/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
 done

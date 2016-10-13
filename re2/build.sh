@@ -32,6 +32,6 @@ make obj/libre2.a
 # Second, build our fuzzers.
 $CXX $CXXFLAGS -std=c++11 -I. \
 	/src/re2_fuzzer.cc -o /out/re2_fuzzer \
-	/work/libfuzzer/*.o ./obj/libre2.a $LDFLAGS
+	/work/libfuzzer/*.o ./obj/libre2.a $FUZZER_LDFLAGS
 
 cp /src/*.options /out/

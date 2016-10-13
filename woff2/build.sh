@@ -31,8 +31,8 @@ cat Makefile | sed -e "s/-no-canonical-prefixes//" \
 > Makefile.temp
 mv Makefile.temp Makefile
 
-# woff2 uses LFLAGS instead of LDFLAGS.
-export LFLAGS=$LDFLAGS
+# woff2 uses LFLAGS instead of LDFLAGS.		
+export LFLAGS=$FUZZER_LDFLAGS
 make CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" clean all
 
 # To avoid multiple main() definitions.
@@ -42,6 +42,6 @@ rm src/woff2_compress.o src/woff2_decompress.o
 fuzzer=convert_woff2ttf_fuzzer
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     /src/$fuzzer.cc -o /out/$fuzzer \
-    /work/libfuzzer/*.o src/*.o brotli/dec/*.o brotli/enc/*.o $LDFLAGS
+    /work/libfuzzer/*.o src/*.o brotli/dec/*.o brotli/enc/*.o $FUZZER_LDFLAGS
 
 cp /src/*.options /out/

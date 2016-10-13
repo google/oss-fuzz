@@ -21,7 +21,7 @@ cd /src/freetype2/
 ./configure
 make clean all
 
-$CXX $CXXFLAGS $LDFLAGS -std=c++11 \
+$CXX $CXXFLAGS $FUZZER_LDFLAGS -std=c++11 \
   -I./include -I. \
   ./src/tools/ftfuzzer/ftfuzzer.cc -o /out/freetype2_fuzzer \
   ./objs/*.o /work/libfuzzer/*.o \

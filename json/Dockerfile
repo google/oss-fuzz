@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,21 +14,8 @@
 #
 ################################################################################
 
-cd /src/libpng
+FROM ossfuzz/base-libfuzzer
+MAINTAINER vitalybuka@gmail.com
+RUN apt-get install -y binutils gcc
 
-# Disable logging via library build configuration control.
-cat scripts/pnglibconf.dfa | sed -e "s/option STDIO/option STDIO disabled/" \
-> scripts/pnglibconf.dfa.temp
-mv scripts/pnglibconf.dfa.temp scripts/pnglibconf.dfa
-
-# build the library.
-autoreconf -f -i
-./configure
-make clean all
-
-# build libpng_read_fuzzer
-$CXX $CXXFLAGS -std=c++11 -I. -lz \
-     /src/libpng_read_fuzzer.cc -o /out/libpng_read_fuzzer \
-     /work/libfuzzer/*.o .libs/libpng16.a $FUZZER_LDFLAGS
-
-cp /src/*.dict /src/*.options /out/
+COPY build.sh parse_fuzzer.* /src/

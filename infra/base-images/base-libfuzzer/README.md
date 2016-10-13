@@ -12,6 +12,30 @@ Supported commands:
 * `docker run -ti <image_name> /bin/bash` - drop into shell. Run `compile` script
   to start build. 
 
+# Image Files Layout
+
+| Location | Description |
+| -------- | ----------  |
+| `/out/` | build artifacts should be copied here  |
+| `/work/` | used to store intermediate files |
+| `/work/libfuzzer/*.o` | libfuzzer object files |
+
+# Provided Environment Variables
+
+You *must* use special compiler flags to build your library and fuzzers.
+These flags are provided in following environment variables:
+
+| Env Variable    | Description
+| -------------   | --------
+| `$CC`           | The C compiler binary.
+| `$CXX`, `$CCC`  | The C++ compiler binary.
+| `$CFLAGS`       | C compiler flags.
+| `$CXXFLAGS`     | C++ compiler flags.
+| `$FUZZER_LDFLAGS`      | Linker flags for fuzzer binaries.
+
+Many well-crafted build scripts will automatically use these variables. If not,
+passing them manually to a build tool might be required.
+
 # Child Image Interface
 
 ## Required Files
@@ -33,11 +57,3 @@ Child image can define following environment variables:
 | `GIT_CHECKOUT_DIR` (optional) | directory (under `/src/`) to checkout into |
 | `SVN_CHECKOUT_DIR` (optional) | directory (under `/src/`) to checkout into |
 
-# Image Layout
-
-| Location | Description |
-| -------- | ----------  |
-| `/src/build.sh` | build script for the project |
-| `/src/<project>` | checked out sources for the project;  mounted when run |
-| `/out/` | build artifacts should be copied here  |
-| `/work/` | used to store intermediate files |

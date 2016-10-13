@@ -24,4 +24,4 @@ make clean all
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     /src/harfbuzz_fuzzer.cc -o /out/harfbuzz_fuzzer \
-    /work/libfuzzer/*.o src/.libs/*.o src/hb-ucdn/.libs/*.o $LDFLAGS
+    /work/libfuzzer/*.o src/.libs/*.o src/hb-ucdn/.libs/*.o $FUZZER_LDFLAGS

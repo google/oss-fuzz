@@ -102,7 +102,7 @@ def call(body) {
                     echo "skipping: $file"
                     continue
                 }
-                sh "docker run --rm -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
+                sh "docker run --rm -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=32"
                 fuzzersFound += 1
               }
                 

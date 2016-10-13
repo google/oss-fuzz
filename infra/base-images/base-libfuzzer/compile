@@ -32,7 +32,7 @@ echo "CC=$CC"
 echo "CXX=$CXX"
 echo "CFLAGS=$CFLAGS"
 echo "CXXFLAGS=$CXXFLAGS"
-echo "LDFLAGS=$LDFLAGS"
+echo "FUZZER_LDFLAGS=$FUZZER_LDFLAGS"
 
 echo "---------------------------------------------------------------"
 

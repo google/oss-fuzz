@@ -8,9 +8,11 @@ Projects integrated with oss-fuzz.
 | curl | https://github.com/google/oss-fuzz/tree/master/curl |
 | expat | https://github.com/google/oss-fuzz/tree/master/expat |
 | freetype2 | https://github.com/google/oss-fuzz/tree/master/freetype2 |
+| harfbuzz | https://github.com/google/oss-fuzz/tree/master/harfbuzz |
 | libchewing | https://github.com/google/oss-fuzz/tree/master/libchewing |
 | libpng | https://github.com/google/oss-fuzz/tree/master/libpng |
 | libxml2 | https://github.com/google/oss-fuzz/tree/master/libxml2 |
+| nlohmann/json | https://github.com/google/oss-fuzz/tree/master/json |
 | nss | https://github.com/google/oss-fuzz/tree/master/nss |
 | pcre2 | https://github.com/google/oss-fuzz/tree/master/pcre2 |
 | re2 | https://github.com/google/oss-fuzz/tree/master/re2 |

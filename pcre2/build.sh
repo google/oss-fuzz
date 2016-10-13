@@ -21,13 +21,11 @@ cd pcre2
 
 # build the library.
 ./autogen.sh
-SAVED_LDFLAGS="$LDFLAGS"
-export LDFLAGS=  # Can't use provided LDFLAGS to build pcre's .a targets.
 ./configure --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-recursion=1000
 make clean all
 
 # Build the target.
 $CXX $CXXFLAGS -std=c++11 -I src  \
      /src/pcre2_fuzzer.cc -o /out/pcre2_fuzzer \
-     -Wl,--whole-archive .libs/*.a -Wl,-no-whole-archive $SAVED_LDFLAGS \
+     -Wl,--whole-archive .libs/*.a -Wl,-no-whole-archive $FUZZER_LDFLAGS \
      /work/libfuzzer/*.o
