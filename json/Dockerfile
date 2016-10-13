@@ -16,6 +16,5 @@
 
 FROM ossfuzz/base-libfuzzer
 MAINTAINER vitalybuka@gmail.com
-RUN apt-get install -y cmake make ninja-build
 
 COPY build.sh /src/
