@@ -12,6 +12,7 @@ Projects integrated with oss-fuzz.
 | libchewing | https://github.com/google/oss-fuzz/tree/master/libchewing |
 | libpng | https://github.com/google/oss-fuzz/tree/master/libpng |
 | libxml2 | https://github.com/google/oss-fuzz/tree/master/libxml2 |
+| nlohmann/json | https://github.com/google/oss-fuzz/tree/master/json |
 | nss | https://github.com/google/oss-fuzz/tree/master/nss |
 | pcre2 | https://github.com/google/oss-fuzz/tree/master/pcre2 |
 | re2 | https://github.com/google/oss-fuzz/tree/master/re2 |
