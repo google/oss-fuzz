@@ -202,7 +202,7 @@ def build_fuzzers(build_args):
 
 def run_fuzzer(run_args):
   """Runs a fuzzer in the container."""
-  parser = argparse.ArgumentParser('helper.py build_fuzzers')
+  parser = argparse.ArgumentParser('helper.py run_fuzzer')
   parser.add_argument('library_name', help='name of the library')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
