@@ -8,6 +8,8 @@ library go into <https://github.com/google/oss-fuzz/tree/master/expat>.
 
 [Install Docker]. (Googlers: [go/installdocker](https://goto.google.com/installdocker) )
 
+*NOTE: if you want to run `docker` without `sudo` also follow the optional [Create a docker group](https://docs.docker.com/engine/installation/linux/ubuntulinux/#/create-a-docker-group) section.*
+
 *NOTE: Docker images can consume significant disk space. Run*
 *[docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)*
 *periodically to garbage collect unused images.*
@@ -187,7 +189,7 @@ on your machine (`/out` in the container). You can then try to run these fuzzers
 inside the container to make sure that they work properly:
 
 ```bash
-$ sudo python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
+$ python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
 ```
 
 If everything works locally, then it should also work on our automated builders
