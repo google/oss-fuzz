@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER kcc@google.com
 RUN apt-get install -y make autoconf automake libtool subversion
 
-COPY build.sh /src/
+COPY build.sh pcre2_fuzzer.cc /src/
