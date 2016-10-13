@@ -212,7 +212,8 @@ in case you run into problems.
 ## Checking in to oss-fuzz repository
 
 Fork oss-fuzz, commit and push to the fork, and then create a pull request with
-your change!
+your change! Follow the [Forking Project](https://guides.github.com/activities/forking/) guide
+if you are new to contributing via GitHub.
 
 ### Copyright headers
 
