@@ -23,9 +23,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     std::stringstream s;
     s << json::parse(data, data + size);
     try {
-      auto j2 = json::parse(s.str());
+      auto j = json::parse(s.str());
+      std::stringstream s2;
+      s2 << j;
+      assert(s.str() == s2.str());
+      assert(j == json::parse(s.str()));
     } catch (const std::invalid_argument&) { 
-      std::cerr << std::string{data, data + size} << " -> " << s.str() << "\n";
       assert(0);
     }
   } catch (const std::invalid_argument&) { }
