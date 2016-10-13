@@ -16,6 +16,6 @@
 
 FROM ossfuzz/base-libfuzzer
 MAINTAINER vitalybuka@gmail.com
-RUN apt-get install -y binutils gcc-5
+RUN apt-get install -y binutils gcc
 
 COPY build.sh /src/
