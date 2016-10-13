@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER vitalybuka@gmail.com
 RUN apt-get install -y binutils gcc
 
-COPY build.sh /src/
+COPY build.sh parse_fuzzer.cc /src/
