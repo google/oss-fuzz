@@ -28,6 +28,6 @@ make clean all
 
 # Build the target.
 $CXX $CXXFLAGS -std=c++11 -I src  \
-     /src/oss-fuzz/pcre2/pcre2_fuzzer.cc -o /out/pcre2_fuzzer \
+     /src/pcre2_fuzzer.cc -o /out/pcre2_fuzzer \
      -Wl,--whole-archive .libs/*.a -Wl,-no-whole-archive $SAVED_LDFLAGS \
      /work/libfuzzer/*.o
