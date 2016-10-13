@@ -131,6 +131,9 @@ These flags are provided in following environment variables:
 Many well-crafted build scripts will automatically use these variables. If not,
 passing them manually to a build tool might be required.
 
+See [Provided Environment Variables](../infra/base-images/base-libfuzzer/README.md#provided-environment-variables) section in 
+`base-libfuzzer` image documentation for more details.
+
 ### Custom libFuzzer options for ClusterFuzz
 
 By default ClusterFuzz will run your fuzzer without any options. You can specify
