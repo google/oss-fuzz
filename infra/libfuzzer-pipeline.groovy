@@ -41,7 +41,7 @@ def call(body) {
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
 
-      # rm files with docker first to use the same user
+      // rm files with docker first to use the same user
       sh "docker run --rm -ti -v $workspace/out:/out ubuntu rm -rf /out/*"
       sh "rm -rf $workspace/out"
       sh "mkdir -p $workspace/out"
