@@ -131,28 +131,32 @@ These flags are provided in following environment variables:
 Many well-crafted build scripts will automatically use these variables. If not,
 passing them manually to a build tool might be required.
 
+### Custom libFuzzer options for ClusterFuzz
 
-### Dictionaries and custom libfuzzer options
+By default ClusterFuzz will run your fuzzier without any options. You can specify
+options by creating a `fuzzer_name.options` file next to a fuzzier in `/out`:
 
-Any top-level files in the library directory ending with the extension ".dict"
-or ".options" will be picked up by ClusterFuzz. Files ending with ".dict" are
-assumed to be libFuzzer-compatible [dictionaries], and .options files have the
-format:
+```
+[linfuzzer]
+max_len = 1024
+```
+
+[Available options](http://llvm.org/docs/LibFuzzer.html#options)
+
+For out of tree fuzzes You will commonly add options file using docker's
+`COPY` directive and will copy it into output in build script. 
+
+### Dictionaries
+
+Dictionaries hugely improve fuzzer effectiveness for inputs with lots of similar
+sequences of bytes. [libFuzzer documentation](http://llvm.org/docs/LibFuzzer.html#dictionaries)
+
+Put your dict files in `/out` and specify them in .options file:
 
 ```
 [libfuzzer]
 dict = dictionary_name.dict
-max_len = 9001
 ```
-
-This means that `-dict=/path/to/dictionary_name.dict` and `-max_len=9001` will
-be passed to the fuzzer when it's run.
-
-### Others (e.g. fuzzer source)
-
-For some libraries, the upstream repository will contain fuzzers (e.g.
-freetype2). In other cases, such as expat, we can check in fuzzer source into
-the oss-fuzz repo.
 
 ## Jenkinsfile
 
