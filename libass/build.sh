@@ -33,6 +33,8 @@ make
 
 $CXX $CXXFLAGS -std=c++11 -I/src/libass \
     /src/libass_fuzzer.cc -o /out/libass_fuzzer \
-    /work/libfuzzer/*.o libass/.libs/libass.a -Wl,-Bstatic -lfontconfig  -lfribidi -lfreetype -lz -lpng12 -lexpat -Wl,-Bdynamic $LDFLAGS
+    /work/libfuzzer/*.o libass/.libs/libass.a \
+    -Wl,-Bstatic -lfontconfig  -lfribidi -lfreetype -lz -lpng12 -lexpat -Wl,-Bdynamic \
+    $FUZZER_LDFLAGS
 
 cp /src/*.dict /src/*.options /out/
