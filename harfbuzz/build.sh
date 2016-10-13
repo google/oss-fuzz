@@ -19,6 +19,7 @@ cd /src/harfbuzz
 
 # Build the library.
 ./autogen.sh
+export LDFLAGS=$FUZZER_LDFLAGS
 ./configure
 make clean all
 
