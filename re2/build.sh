@@ -34,4 +34,4 @@ $CXX $CXXFLAGS -std=c++11 -I. \
 	/src/re2_fuzzer.cc -o /out/re2_fuzzer \
 	/work/libfuzzer/*.o ./obj/libre2.a $LDFLAGS
 
-cp /src/*.options /src/*.dict /out/\
+cp /src/*.options /out/
