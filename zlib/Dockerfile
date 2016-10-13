@@ -18,4 +18,6 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER inferno@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 
+ENV GIT_URL="https://github.com/madler/zlib.git"
+
 COPY build.sh zlib_uncompress_fuzzer.cc /src/

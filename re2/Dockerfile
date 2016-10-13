@@ -18,4 +18,6 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER wrengr@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 
+ENV GIT_URL="https://code.googlesource.com/re2"
+
 COPY build.sh re2_fuzzer.* /src/
