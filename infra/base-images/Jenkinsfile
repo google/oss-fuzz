@@ -32,4 +32,7 @@ node {
 
   stage name: 'ossfuzz/libfuzzer-runner', concurrency: 1
   sh "docker build $dockerOptions -t ossfuzz/libfuzzer-runner infra/base-images/libfuzzer-runner"
+
+  stage name: 'ossfuzz/coverage', concurrency: 1
+  sh "docker build $dockerOptions -t ossfuzz/coverage infra/base-images/coverage"
 }
