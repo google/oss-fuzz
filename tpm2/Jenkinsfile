@@ -20,5 +20,7 @@ def libfuzzerBuild = fileLoader.fromGit(
     
 libfuzzerBuild {
   git = "https://chromium.googlesource.com/chromiumos/third_party/tpm2/"
+  # tpm2/ will contain checkout
   dockerfile = "tpm2/fuzz/Dockerfile"
+  dockerContextDir = "tpm2/"
 }
