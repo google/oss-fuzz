@@ -107,9 +107,6 @@ def call(body) {
               }
                 
               def testReport = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
-                    "<testsuites xmlns=\"http://junit.org/junit4/\"\n" +
-                    "            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                    "            xsi:schemaLocation=\"http://junit.org/junit4/ http://windyroad.com.au/dl/Open%20Source/JUnit.xsd\">\n" +
                     "    <testsuite name=\"expat-address\"\n" +
                     "               errors=\"0\"\n" +
                     "               failures=\"0\"\n" +
@@ -120,8 +117,8 @@ def call(body) {
                     "               time=\"1s\"\n" +
                     "               timestamp=\"0\">\n" +
                     "         <testcase name=\"aName\" classname=\"aClassName\" time=\"1s\"/>\n" +
-                    "    </testsuite>\n" +
-                    "</testsuites>\n";
+                    "    </testsuite>\n"
+                    ;
               writeFile file:"$resultsDir/TEST-${sanitizer}.xml", text:testReport
               sh "cat $resultsDir/TEST-${sanitizer}.xml"
             }
