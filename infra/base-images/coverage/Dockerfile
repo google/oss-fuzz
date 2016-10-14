@@ -1,4 +1,3 @@
-#!/bin/bash -eux
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,10 @@
 #
 ################################################################################
 
-docker build --pull -t ossfuzz/base $@ infra/base-images/base
-docker build -t ossfuzz/base-clang $@ infra/base-images/base-clang
-docker build -t ossfuzz/base-libfuzzer $@ infra/base-images/base-libfuzzer
-docker build -t ossfuzz/libfuzzer-runner $@ infra/base-images/libfuzzer-runner
-docker build -t ossfuzz/coverage $@ infra/base-images/coverage
+FROM ossfuzz/base-clang
+MAINTAINER vitalybuka@gmail.com
+RUN apt-get install -y python3 curl
+
+RUN mkdir -p /src/coverage/
+RUN cd /src/coverage/ && curl -O http://llvm.org/svn/llvm-project/llvm/trunk/tools/sancov/coverage-report-server.py && chmod +x coverage-report-server.py
+COPY coverage /src/coverage/
