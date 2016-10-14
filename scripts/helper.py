@@ -154,7 +154,7 @@ def build_image(build_args):
     return 1
 
   command = [
-        'docker', 'build', '-t', 'ossfuzz/' + args.library_name,
+        'docker', 'build', '--pull', '-t', 'ossfuzz/' + args.library_name,
         args.library_name
   ]
   print('Running:', _get_command_string(command))
