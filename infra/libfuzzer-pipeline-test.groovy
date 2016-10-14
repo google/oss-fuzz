@@ -87,6 +87,7 @@ def call(body) {
         def resultsDir = "$workspace/test-results"
         sh "rm -rf $resultsDir"
         sh "mkdir -p $resultsDir"
+        
         dir ('out') {
           def fuzzersFound = 0
           sh "ls -alR"
@@ -126,8 +127,9 @@ def call(body) {
               sh "cat $resultsDir/TEST-${sanitizer}.xml"
             }
           }
+ 
           sh "ls -al $resultsDir/"
-          step([$class: 'JUnitResultArchiver', testResults: '**/TEST-*.xml'])
+          step([$class: 'JUnitResultArchiver', testResults: 'test-results/TEST-*.xml'])
           echo "Tested $fuzzersFound fuzzer"
           if (!fuzzersFound) {
             error "no fuzzers found";
