@@ -90,7 +90,6 @@ def call(body) {
         
         dir ('out') {
           def fuzzersFound = 0
-          sh "ls -alR"
           for (int i = 0; i < sanitizers.size(); i++) {
             def sanitizer = sanitizers[i]
             dir (sanitizer) {               
@@ -128,8 +127,8 @@ def call(body) {
             }
           }
  
-          sh "ls -al $resultsDir/"
-          step([$class: 'JUnitResultArchiver', testResults: 'test-results/TEST-*.xml'])
+          sh "cat test-results/TEST-address.xml"
+          step([$class: 'JUnitResultArchiver', testResults: 'test-results/TEST-address.xml'])
           echo "Tested $fuzzersFound fuzzer"
           if (!fuzzersFound) {
             error "no fuzzers found";
