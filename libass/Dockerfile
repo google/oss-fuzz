@@ -18,7 +18,6 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER eugeni.stepanov@gmail.com
 RUN apt-get install -y make autoconf automake libtool pkg-config libfreetype6-dev libfontconfig1-dev
 
-ENV GIT_CHECKOUT_DIR="libass"
-ENV GIT_URL="https://github.com/eugenis/libass.git"
+ENV GIT_URL="https://github.com/libass/libass.git"
 
 COPY build.sh libass_fuzzer.cc *.dict *.options /src/
