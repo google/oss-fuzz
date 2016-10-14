@@ -127,7 +127,7 @@ def call(body) {
             }
           }
           sh "ls -al $resultsDir/"
-          step([$class: 'JUnitResultArchiver', testResults: '**/TEST-*.xml'])
+          step([$class: 'JUnitResultArchiver', testResults: '$resultsDir/TEST-*.xml'])
           echo "Tested $fuzzersFound fuzzer"
           if (!fuzzersFound) {
             error "no fuzzers found";
