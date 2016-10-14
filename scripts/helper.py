@@ -18,13 +18,14 @@
 from __future__ import print_function
 import argparse
 import os
-import re
 import pipes
+import re
 import shutil
 import subprocess
 import sys
-
+import tempfile
 import templates
+import time
 
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
@@ -38,7 +39,7 @@ def main():
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
   parser.add_argument(
       'command',
-      help='One of: generate, build_image, build_fuzzers, run_fuzzer, shell',
+      help='One of: generate, build_image, build_fuzzers, run_fuzzer, coverage, shell',
       nargs=argparse.REMAINDER)
   args = parser.parse_args()
 
@@ -54,6 +55,8 @@ def main():
     return build_fuzzers(args.command[1:])
   elif args.command[0] == 'run_fuzzer':
     return run_fuzzer(args.command[1:])
+  elif args.command[0] == 'coverage':
+    return coverage(args.command[1:])
   elif args.command[0] == 'shell':
     return shell(args.command[1:])
   else:
@@ -225,6 +228,62 @@ def run_fuzzer(run_args):
       '-t', 'ossfuzz/libfuzzer-runner',
       '/out/%s/%s' %(args.library_name, args.fuzzer_name)
   ] + args.fuzzer_args
+
+  print('Running:', _get_command_string(command))
+  pipe = subprocess.Popen(command)
+  pipe.communicate()
+
+def coverage(run_args):
+  """Runs a fuzzer in the container."""
+  parser = argparse.ArgumentParser('helper.py coverage')
+  parser.add_argument('--run_time', default=60, help='time in seconds to run fuzzer')
+  parser.add_argument('library_name', help='name of the library')
+  parser.add_argument('fuzzer_name', help='name of the fuzzer')
+  parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
+                      nargs=argparse.REMAINDER)
+  args = parser.parse_args(run_args)
+
+  if not _check_library_exists(args.library_name):
+    return 1
+
+  if not os.path.exists(os.path.join(BUILD_DIR, 'out', args.library_name,
+                                     args.fuzzer_name)):
+    print(args.fuzzer_name,
+          'does not seem to exist. Please run build_fuzzers first.',
+          file=sys.stderr)
+    return 1
+
+  temp_dir = tempfile.mkdtemp()
+  print (args.fuzzer_args)
+
+  command = [
+      'docker', 'run', '-i',
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out'),
+      '-v', '%s:/cov' % temp_dir,
+      '-w', '/cov',
+      '-e', 'ASAN_OPTIONS=coverage=1,detect_leaks=0',
+      '-t', 'ossfuzz/libfuzzer-runner',
+      '/out/%s/%s' % (args.library_name, args.fuzzer_name),
+      '-max_total_time=%s' % args.run_time
+  ] + args.fuzzer_args
+
+  print('Running:', _get_command_string(command))
+  pipe = subprocess.Popen(command)
+  pipe.communicate()
+
+  checkout_dir = os.path.join(BUILD_DIR, args.library_name)
+  command = [
+        'docker', 'run', '-i',
+        '-v', '%s:/src/oss-fuzz' % OSSFUZZ_DIR,
+        '-v', '%s:/src/%s' % (checkout_dir, args.library_name),
+        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
+        '-v', '%s:/cov' % temp_dir,
+        '-v', '%s:/scripts' % os.path.join(OSSFUZZ_DIR, 'scripts'),
+        '-w', '/cov',
+        '-p', '8001:8001',
+        '-t', 'ossfuzz/coverage',
+        '/src/coverage/coverage', '/out/%s' % args.fuzzer_name,
+  ]
 
   print('Running:', _get_command_string(command))
   pipe = subprocess.Popen(command)

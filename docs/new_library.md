@@ -202,6 +202,12 @@ $ python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
 If everything works locally, then it should also work on our automated builders
 and ClusterFuzz.
 
+It's recommended to look at coverage as a sanity check to make sure that fuzzer gets to the code you expect.
+
+```bash
+$ sudo python scripts/helper.py coverage $LIB_NAME name_of_a_fuzzer
+```
+
 ## Debugging Problems
 
 [Debugging](debugging.md) document lists ways to debug your build scripts or fuzzers
