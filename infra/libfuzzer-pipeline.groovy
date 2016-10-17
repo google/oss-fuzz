@@ -63,7 +63,7 @@ def call(body) {
                 .getPath();
           }
 
-          sh "docker build -t $dockerTag -f $dockerfile $dockerContextDir"
+          sh "docker build --no-cache -t $dockerTag -f $dockerfile $dockerContextDir"
 
           def revText = groovy.json.JsonOutput.toJson(revisions)
           writeFile file: revisionsFile, text: revText
