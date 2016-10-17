@@ -32,4 +32,9 @@ $CC $CFLAGS \
     -lfuzzer $FUZZER_LDFLAGS
 
 # install data files
-make -C data pkgdatadir=/out install
+mkdir -p /out/seed
+make -C data pkgdatadir=/out/seed install
+
+zip -j -r /out/chewing_fuzzer_seed_corpus.zip /out/seed
+rm -r /out/seed
+
