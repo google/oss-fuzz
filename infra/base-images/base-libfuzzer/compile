@@ -18,11 +18,12 @@
 
 echo "---------------------------------------------------------------"
 
-export LIBFUZZER_WORK_DIR=/work/libfuzzer
 
-echo -n "Compiling libFuzzer into $LIBFUZZER_WORK_DIR ..."
-cd $LIBFUZZER_WORK_DIR
+echo -n "Compiling libFuzzer into /usr/lib/libfuzzer.a ..."
+cd /work/libfuzzer
 $CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c /src/libfuzzer/*.cpp -I/src/libfuzzer
+ar ruv /usr/lib/libfuzzer.a /work/libfuzzer/*.o
+# TODO(mike): remove /work/libfuzzer after all fuzzers are migrated to -lfuzzer
 echo "Done."
 
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COV_FLAGS"

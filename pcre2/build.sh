@@ -28,4 +28,4 @@ make clean all
 $CXX $CXXFLAGS -std=c++11 -I src  \
      /src/pcre2_fuzzer.cc -o /out/pcre2_fuzzer \
      -Wl,--whole-archive .libs/*.a -Wl,-no-whole-archive $FUZZER_LDFLAGS \
-     /work/libfuzzer/*.o
+     -lfuzzer

@@ -19,6 +19,6 @@ cd /src/json
 
 $CXX $CXXFLAGS -std=c++11 -I/src/json/src/ \
     /src/parse_fuzzer.cc -o /out/parse_fuzzer \
-    /work/libfuzzer/*.o $FUZZER_LDFLAGS
+    -lfuzzer $FUZZER_LDFLAGS
 
 cp /src/*.options /out/

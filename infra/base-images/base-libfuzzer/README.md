@@ -18,7 +18,7 @@ Supported commands:
 | -------- | ----------  |
 | `/out/` | build artifacts should be copied here  |
 | `/work/` | used to store intermediate files |
-| `/work/libfuzzer/*.o` | libfuzzer object files |
+| `/usr/lib/libfuzzer.a` | libfuzzer static library |
 
 # Provided Environment Variables
 

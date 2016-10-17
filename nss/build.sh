@@ -59,7 +59,7 @@ FUZZERS="asn1_algorithmid_fuzzer \
 for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 /src/$fuzzer.cc \
      -I/work/nss/include \
-     /work/libfuzzer/*.o \
+     -lfuzzer \
      /work/nss/lib/libnss.a /work/nss/lib/libnssutil.a \
      /work/nss/lib/libnspr4.a /work/nss/lib/libplc4.a /work/nss/lib/libplds4.a \
      /work/nss/lib/prlog2.o -o /out/$fuzzer $FUZZER_LDFLAGS

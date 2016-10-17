@@ -103,7 +103,7 @@ make clean all
 # build the fuzzer, linking with libFuzzer and libexpat.a
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
     /src/oss-fuzz/expat/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
-    /work/libfuzzer/*.o .libs/libexpat.a \
+    -lfuzzer .libs/libexpat.a \
     $FUZZER_LDFLAGS
 ```
 
@@ -113,9 +113,9 @@ When build.sh script is executed, the following locations are available within t
 
 | Path                  | Description
 | ------                | -----
-| `/src/$LIB_NAME`      | Source code for your library. 
-| `/src/oss-fuzz`       | Checked out oss-fuzz source tree. 
-| `/work/libfuzzer/*.o` | Prebuilt libFuzzer object files that need to be linked into all fuzzers.
+| `/src/$LIB_NAME`      | Source code for your library.
+| `/src/oss-fuzz`       | Checked out oss-fuzz source tree.
+| `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that need to be linked into all fuzzers (`-lfuzzer`).
 
 You *must* use special compiler flags to build your library and fuzzers.
 These flags are provided in following environment variables:

@@ -30,6 +30,6 @@ make clean all
 # build libpng_read_fuzzer
 $CXX $CXXFLAGS -std=c++11 -I. -lz \
      /src/libpng_read_fuzzer.cc -o /out/libpng_read_fuzzer \
-     /work/libfuzzer/*.o .libs/libpng16.a $FUZZER_LDFLAGS
+     -lfuzzer .libs/libpng16.a $FUZZER_LDFLAGS
 
 cp /src/*.dict /src/*.options /out/
