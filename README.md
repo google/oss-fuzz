@@ -4,7 +4,7 @@ oss-fuzz is an effort to apply coverage-guided software fuzzing on scale to test
 
 *Project Status*: The project currently is in early stage. We focus on libFuzzer first. Documentation and smoothing the process is our main priority.
 
-Please open new issues for any kind of questions or feedback.
+[Open new issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
 
 ## Documentation
 
