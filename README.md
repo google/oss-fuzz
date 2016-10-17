@@ -29,6 +29,7 @@ oss-fuzz is an effort to apply coverage-guided software fuzzing on scale to test
 
 
 ## References
-* [libFuzzer](http://llvm.org/docs/LibFuzzer.html)
+* [libFuzzer documentation](http://libfuzzer.info)
+* [libFuzzer tutorial](http://tutorial.libfuzzer.info)
 * [Chromium In-Process Fuzzing Project Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)
 
