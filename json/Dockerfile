@@ -18,4 +18,5 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER vitalybuka@gmail.com
 RUN apt-get install -y binutils gcc
 
+RUN git clone https://github.com/nlohmann/json.git
 COPY build.sh parse_fuzzer.* /src/

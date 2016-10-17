@@ -17,8 +17,6 @@
 
 cd /src
 
-rm -rf fribidi
-git clone https://github.com/behdad/fribidi.git
 cd fribidi
 ./bootstrap
 ./configure --enable-static=yes --enable-shared=no --with-pic=yes

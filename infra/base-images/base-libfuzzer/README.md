@@ -3,21 +3,19 @@
 
 Supported commands:
 
-* `docker run -ti <image_name> [compile]` - compiles everything. Expects /src/ paths
-  to be mounted.
-* `docker run -ti <image_name> checkout_and_compile` - checks projects sources out 
-  if its location is defined and compiles.
+* `docker run -ti <image_name> [compile]` - builds fuzzers.
 * `docker run -ti <image_name> run <fuzzer_name> <fuzzer_options...>` - build fuzzers and start
   specified one with given options.
 * `docker run -ti <image_name> /bin/bash` - drop into shell. Run `compile` script
-  to start build. 
+  to start build.
 
 # Image Files Layout
 
 | Location | Description |
 | -------- | ----------  |
-| `/out/` | build artifacts should be copied here  |
-| `/work/` | used to store intermediate files |
+| `/out/`                | build artifacts should be copied here  |
+| `/src/`                | place to checkout source files |
+| `/work/`               | used to store intermediate files |
 | `/usr/lib/libfuzzer.a` | libfuzzer static library |
 
 # Provided Environment Variables
@@ -38,22 +36,17 @@ passing them manually to a build tool might be required.
 
 # Child Image Interface
 
-## Required Files
+## Sources
+
+Child image has to checkout all sources it needs to compile fuzzers into
+`/src/` directory. When the image is executed, a directory could be mounted
+on top of these with local checkouts using
+`docker run -v $HOME/my_library:/src/my_library ...`.
+
+## Other Required Files
 
 Following files have to be added by child images:
 
-| File Location | Description |
-| ------------- | ----------- |
+| File Location   | Description |
+| -------------   | ----------- |
 | `/src/build.sh` | build script to build the library and its fuzzers |
-
-## Optional Environment Variables
-
-Child image can define following environment variables:
-
-| Variable | Description |
-| -------- | ----------- |
-| `GIT_URL` (optional) | git url for sources |
-| `SVN_URL` (optional) | svn url for sources |
-| `GIT_CHECKOUT_DIR` (optional) | directory (under `/src/`) to checkout into |
-| `SVN_CHECKOUT_DIR` (optional) | directory (under `/src/`) to checkout into |
-

@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd /src/pcre2
-svn co svn://vcs.exim.org/pcre2/code/trunk pcre2
 cd pcre2
 
 # build the library.

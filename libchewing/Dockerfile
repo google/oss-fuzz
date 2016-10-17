@@ -18,6 +18,5 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER kcwu@csie.org
 RUN apt-get install -y make autoconf automake libtool texinfo
 
-ENV GIT_URL="https://github.com/chewing/libchewing.git"
-
+RUN git clone https://github.com/chewing/libchewing.git
 COPY build.sh chewing_fuzzer.c /src/

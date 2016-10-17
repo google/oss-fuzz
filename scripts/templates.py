@@ -59,7 +59,7 @@ DOCKER_TEMPLATE = """\
 FROM ossfuzz/base-libfuzzer
 MAINTAINER your@email.com
 RUN apt-get install -y make autoconf automake libtool
-
+RUN git checkout put git url here
 COPY build.sh /src/
 """
 

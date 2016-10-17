@@ -18,7 +18,7 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER ochang@chromium.org
 RUN apt-get install -y make autoconf automake libtool pkg-config
 
-ENV GIT_URL="git://git.gnome.org/libxml2"
+RUN git clone git://git.gnome.org/libxml2
 
 COPY build.sh /src/
 COPY libxml2_xml_read_memory_fuzzer.* \

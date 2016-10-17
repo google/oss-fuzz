@@ -15,10 +15,7 @@
 #
 ################################################################################
 
-# Checkout woff2 repository with submodules.
-mkdir -p /work/woff2
-cd /work/woff2
-git clone https://github.com/google/woff2 --recursive
+cd /src/woff2
 
 # Build the library. Actually there is no 'library' target, so we use .o files.
 # '-no-canonical-prefixes' flag makes clang crazy. Need to avoid it.
@@ -31,7 +28,7 @@ cat Makefile | sed -e "s/-no-canonical-prefixes//" \
 > Makefile.temp
 mv Makefile.temp Makefile
 
-# woff2 uses LFLAGS instead of LDFLAGS.		
+# woff2 uses LFLAGS instead of LDFLAGS.
 export LFLAGS=$FUZZER_LDFLAGS
 make CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" clean all
 
