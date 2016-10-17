@@ -161,6 +161,15 @@ Put your dict files in `/out` and specify them in .options file:
 dict = dictionary_name.dict
 ```
 
+### Seed corpora
+
+You can also pass a set of initial seed files to your fuzzers. This is typically
+a set of valid inputs to the target function you are testing, and can improve
+coverage significantly.
+
+This can be done by zipping up these files, naming them
+`fuzzer_name_seed_corpus.zip`, and placing them in `/out` in your build script.
+
 ## Jenkinsfile
 
 This file will be largely the same for most libraries, and is used by our build
