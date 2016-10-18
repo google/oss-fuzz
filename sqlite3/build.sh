@@ -17,13 +17,6 @@
 
 cd /src/sqlite3
 
-rm -rf fossil
-mkdir fossil
-cd fossil
-
-fossil clone https://www.sqlite.org/src sqlite --user `whoami`
-fossil open sqlite
-
 mkdir bld
 cd bld
 

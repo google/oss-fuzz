@@ -18,6 +18,5 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool zlib1g-dev
 
-ENV GIT_URL="git://git.code.sf.net/p/libpng/code"
-
+RUN git clone git://git.code.sf.net/p/libpng/code libpng
 COPY build.sh libpng_read_fuzzer.* png.dict /src/

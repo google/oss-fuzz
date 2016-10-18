@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-checkout_and_compile
+compile
 export PATH=/out:$PATH
 cd /out
 $@

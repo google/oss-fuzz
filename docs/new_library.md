@@ -26,7 +26,8 @@ general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
 
 To add a new OSS library to oss-fuzz, 3 supporting files have to be added to oss-fuzz source code repository:
 
-* `library_name/Dockerfile` - defines an container environment with all the dependencies needed to build the project and the fuzzer.
+* `library_name/Dockerfile` - defines an container environment with all the dependencies
+needed to build the project and the fuzzer.
 * `library_name/build.sh` - build script that will be executed inside the container.
 * `library_name/Jenkinsfile` - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
   Specify your library VCS location in it.
@@ -49,6 +50,7 @@ It is very simple for most libraries:
 FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                   # each file should have a maintainer
 RUN apt-get install -y ...              # install required packages to build a project
+RUN git checkout <git_url>              # checkout all sources needed to build your library
 COPY build.sh <additional_files> /src/  # install build script and other files.
 ```
 Expat example: [expat/Dockerfile](../expat/Dockerfile)
@@ -111,10 +113,9 @@ $CXX $CXXFLAGS -std=c++11 -Ilib/ \
 
 When build.sh script is executed, the following locations are available within the image:
 
-| Path                  | Description
-| ------                | -----
-| `/src/$LIB_NAME`      | Source code for your library.
-| `/src/oss-fuzz`       | Checked out oss-fuzz source tree.
+| Path                   | Description
+| ------                 | -----
+| `/src/<some_dir>`      | Source code needed to build your library.
 | `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that need to be linked into all fuzzers (`-lfuzzer`).
 
 You *must* use special compiler flags to build your library and fuzzers.

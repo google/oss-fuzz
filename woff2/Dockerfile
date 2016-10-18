@@ -18,6 +18,5 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 
-ENV GIT_URL="https://github.com/google/woff2"
-
+RUN git clone --recursive https://github.com/google/woff2
 COPY build.sh convert_woff2ttf_fuzzer.* /src/
