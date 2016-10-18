@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 #
 # Copyright 2016 Google Inc.
 #
@@ -17,12 +17,25 @@
 ################################################################################
 
 # Development script to build all images.
-
-./infra/base-images/all.sh
-
 IGNORE="docs:infra:tpm2:scripts"
 
+# Build
+./infra/base-images/all.sh
 for project in *; do
   if [[ -f $project || ":${IGNORE}:" == *":$project:"* ]]; then continue; fi
+  echo "@ Building $project"
   docker build -t ossfuzz/$project $project/
+
+  # Execute command ($1) if any
+  case ${1-} in
+    "")
+      ;;
+    compile)
+      docker run --rm -ti ossfuzz/$project $@
+      ;;
+    *)
+      echo $"Usage: $0 {|compile}"
+      exit 1
+  esac
+
 done
