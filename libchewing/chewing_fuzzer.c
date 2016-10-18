@@ -15,7 +15,7 @@ int stress_main(int argc, char** argv);
    char* dir = dirname(exe_path);
    // Assume data files are at the same location as executable.
    setenv("CHEWING_PATH", dir, 0);
-   setenv("CHEWING_USER_PATH", dir, 0);
+   setenv("CHEWING_USER_PATH", "/tmp", 0);
    return 0;
  }
 
