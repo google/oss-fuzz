@@ -16,9 +16,8 @@
 ################################################################################
 
 # Build the library.
-cd /work/nss/nss
-make BUILD_OPT=1 USE_64=1 NSS_DISABLE_GTESTS=1 CC="$CC $CFLAGS" \
-    CXX="$CXX $CXXFLAGS" LD="$CC $CFLAGS" ZDEFS_FLAG= clean nss_build_all
+cd work/nss
+make BUILD_OPT=1 USE_64=1 NSS_DISABLE_GTESTS=1 ZDEFS_FLAG= clean nss_build_all
 cd ..
 
 # Copy libraries and some objects to /work/nss/lib.

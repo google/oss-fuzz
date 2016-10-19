@@ -18,6 +18,9 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool mercurial zlib1g-dev
 
-RUN hg clone https://hg.mozilla.org/projects/nspr
-RUN hg clone https://hg.mozilla.org/projects/nss
+# Need to create 'work' subdir for nss and nspr sources, because '/src/nss' is
+# occupied by oss-fuzz sources checked out using dummy path from Jenkinsfile.
+RUN mkdir -p work
+RUN hg clone https://hg.mozilla.org/projects/nspr work/nspr
+RUN hg clone https://hg.mozilla.org/projects/nss work/nss
 COPY build.sh fuzzers/* /src/
