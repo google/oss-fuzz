@@ -1,8 +1,8 @@
 # oss-fuzz 
 
-oss-fuzz is an effort to apply coverage-guided software fuzzing on scale to test open source software. It grew out of Chrome in-process fuzzing effort ([Blog Post](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html), [Project Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)). 
+> fuzzing to open source software. 
 
-*Project Status*: The project currently is in early stage. We focus on libFuzzer first. Documentation and smoothing the process is our main priority.
+*Project Status*: We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
 [Open new issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
 
@@ -14,8 +14,10 @@ oss-fuzz is an effort to apply coverage-guided software fuzzing on scale to test
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
   *part of oss-fuzz* source code repository.
 * [Project List](docs/projects.md) lists OSS projects integrated with oss-fuzz.
-* [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 * [Life of a bug](docs/life_of_a_bug.md)
+* [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
+* [Guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html) 
+- Google Security Blog post describing the precursor work we've been doing in Chrome. 
 
 ## Build status
 [Build status](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
@@ -31,5 +33,5 @@ oss-fuzz is an effort to apply coverage-guided software fuzzing on scale to test
 ## References
 * [libFuzzer documentation](http://libfuzzer.info)
 * [libFuzzer tutorial](http://tutorial.libfuzzer.info)
-* [Chromium In-Process Fuzzing Project Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)
+* [Chromium Fuzzing Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)
 
