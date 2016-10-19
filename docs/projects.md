@@ -9,6 +9,7 @@ Projects integrated with oss-fuzz.
 | expat | https://github.com/google/oss-fuzz/tree/master/expat |
 | freetype2 | https://github.com/google/oss-fuzz/tree/master/freetype2 |
 | harfbuzz | https://github.com/google/oss-fuzz/tree/master/harfbuzz |
+| icu | https://github.com/google/oss-fuzz/tree/master/icu |
 | libass | https://github.com/google/oss-fuzz/tree/master/libass |
 | libchewing | https://github.com/google/oss-fuzz/tree/master/libchewing |
 | libpng | https://github.com/google/oss-fuzz/tree/master/libpng |
