@@ -37,5 +37,5 @@ echo "FUZZER_LDFLAGS=$FUZZER_LDFLAGS"
 echo "---------------------------------------------------------------"
 
 cd /src
-/bin/bash /src/build.sh
+/src/build.sh
 
