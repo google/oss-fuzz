@@ -51,7 +51,7 @@ FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                   # each file should have a maintainer
 RUN apt-get install -y ...              # install required packages to build a project
 RUN git checkout <git_url>              # checkout all sources needed to build your library
-COPY build.sh <additional_files> /src/  # install build script and other files.
+COPY build.sh fuzzer.cc /src/           # install build script and other source files.
 ```
 Expat example: [expat/Dockerfile](../expat/Dockerfile)
 
@@ -104,7 +104,7 @@ make clean all
 
 # build the fuzzer, linking with libFuzzer and libexpat.a
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
-    /src/oss-fuzz/expat/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
+    /src/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
     -lfuzzer .libs/libexpat.a \
     $FUZZER_LDFLAGS
 ```
