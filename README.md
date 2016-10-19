@@ -15,9 +15,10 @@
   *part of oss-fuzz* source code repository.
 * [Project List](docs/projects.md) lists OSS projects integrated with oss-fuzz.
 * [Life of a bug](docs/life_of_a_bug.md)
-* [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
-* [Guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html) 
-- Google Security Blog post describing the precursor work we've been doing in Chrome. 
+* [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
+  while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
+* [Guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html) -
+  Google Security Blog post describing the precursor work we've been doing in Chrome. 
 
 ## Build status
 [Build status](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
