@@ -16,7 +16,7 @@
 ################################################################################
 
 # Build the library.
-cd work/nss
+cd /src/nss
 make BUILD_OPT=1 USE_64=1 NSS_DISABLE_GTESTS=1 ZDEFS_FLAG= clean nss_build_all
 cd ..
 
