@@ -61,7 +61,6 @@ def call(body) {
           if (svnUrl != null) {
             dir(checkoutDir) {
                 svn url: svnUrl
-                revisions[svnUrl] = sh(returnStdout: true, script: 'svn info -r HEAD').trim()
             }
           }
 
