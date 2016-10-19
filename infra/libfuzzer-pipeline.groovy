@@ -77,7 +77,7 @@ def call(body) {
           sh "mkdir $out"
           stage("$sanitizer sanitizer") {
             // Run image to produce fuzzers
-            sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
+            sh "docker run -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
           }
         }
       }
