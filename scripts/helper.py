@@ -66,14 +66,6 @@ def main():
   return 0
 
 
-def _get_or_update_checkout(library_name, checkout_dir):
-  """Retrieve a new checkout, or update an existing one."""
-  if os.path.exists(checkout_dir):
-    return _update_checkout(library_name, checkout_dir)
-
-  return _checkout(library_name, checkout_dir)
-
-
 def _check_library_exists(library_name):
   """Checks if a library exists."""
   if not os.path.exists(os.path.join(OSSFUZZ_DIR, library_name)):
@@ -99,52 +91,6 @@ def _get_version_control_url(library_name):
         return match.group(1), 'git'
 
   return None, None
-
-
-def _checkout(library_name, checkout_dir):
-  """Checkout the upstream project for the library."""
-  vcs_url, vcs_type = _get_version_control_url(library_name)
-
-  # TODO(ochang): Support other version control systems.
-  if vcs_type != 'git':
-    return False
-
-  try:
-    subprocess.check_call([
-        'git', 'clone', '--recursive', vcs_url, checkout_dir])
-  except subprocess.CalledProcessError:
-    print('Failed to git clone.', file=sys.stderr)
-    return False
-
-  return True
-
-
-def _update_checkout(library_name, checkout_dir):
-  """Update checkout for library."""
-  _, vcs_type = _get_version_control_url(library_name)
-
-  # TODO(ochang): Support other version control systems.
-  if vcs_type != 'git':
-    return False
-
-  result = True
-  old_cwd = os.getcwd()
-  try:
-    os.chdir(checkout_dir)
-    subprocess.check_call(['git', 'checkout', '.'])
-    subprocess.check_call(['git', 'fetch'])
-    subprocess.check_call(['git', 'checkout', 'origin/master'])
-
-    if os.path.exists(os.path.join(checkout_dir, '.gitmodules')):
-      subprocess.check_call(['git', 'submodule', 'update', '--recursive'])
-
-  except subprocess.CalledProcessError:
-    print('Failed to update checkout.', file=sys.stderr)
-    result = False
-  finally:
-    os.chdir(old_cwd)
-
-  return result
 
 
 def build_image(build_args):
@@ -180,14 +126,8 @@ def build_fuzzers(build_args):
   if build_image(build_args):
     return 1
 
-  checkout_dir = os.path.join(BUILD_DIR, args.library_name)
-  if not _get_or_update_checkout(args.library_name, checkout_dir):
-    return 1
-
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/src/oss-fuzz' % OSSFUZZ_DIR,
-        '-v', '%s:/src/%s' % (checkout_dir, args.library_name),
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
         '-t', 'ossfuzz/' + args.library_name,
   ]
@@ -271,11 +211,8 @@ def coverage(run_args):
   pipe = subprocess.Popen(command)
   pipe.communicate()
 
-  checkout_dir = os.path.join(BUILD_DIR, args.library_name)
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/src/oss-fuzz' % OSSFUZZ_DIR,
-        '-v', '%s:/src/%s' % (checkout_dir, args.library_name),
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
         '-v', '%s:/cov' % temp_dir,
         '-v', '%s:/scripts' % os.path.join(OSSFUZZ_DIR, 'scripts'),
@@ -325,13 +262,8 @@ def shell(shell_args):
   if build_image(shell_args):
     return 1
 
-  checkout_dir = os.path.join(BUILD_DIR, args.library_name)
-  if not _get_or_update_checkout(args.library_name, checkout_dir):
-    return 1
-
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/src/%s' % (checkout_dir, args.library_name),
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
         '-t', 'ossfuzz/' + args.library_name,
         '/bin/bash'
