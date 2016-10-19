@@ -16,7 +16,7 @@
 
 FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y libc6-dev git subversion
+RUN apt-get install -y libc6-dev libtool git subversion
 
 RUN mkdir -p /work/libfuzzer
 
