@@ -16,7 +16,7 @@
 
 FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y libc6-dev libtool git subversion
+RUN apt-get install -y libc6-dev libtool git subversion jq
 
 RUN mkdir -p /work/libfuzzer
 
@@ -30,7 +30,7 @@ RUN mkdir /out
 VOLUME /out
 
 RUN mkdir /src/bin
-COPY compile run /src/bin/
+COPY compile revisions run /src/bin/
 ENV PATH=/src/bin:$PATH
 WORKDIR /src
 CMD ["compile"]
