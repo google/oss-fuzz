@@ -215,7 +215,7 @@ and ClusterFuzz.
 It's recommended to look at coverage as a sanity check to make sure that fuzzer gets to the code you expect.
 
 ```bash
-$ sudo python scripts/helper.py coverage $LIB_NAME name_of_a_fuzzer
+$ python scripts/helper.py coverage $LIB_NAME name_of_a_fuzzer
 ```
 
 ## Debugging Problems
