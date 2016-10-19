@@ -1,6 +1,6 @@
 # oss-fuzz 
 
-> fuzzing to open source software. 
+> Fuzzing Open Source Software. 
 
 *Project Status*: We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
