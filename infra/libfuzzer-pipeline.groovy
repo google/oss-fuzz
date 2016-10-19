@@ -23,7 +23,7 @@ def call(body) {
 
     // Mandatory configuration
     def gitUrl = config["git"]
-    assert gitUrl : "git should be specified"
+    def svnUrl = config["svn"]
 
     // Optional configuration
     def projectName = config["name"] ?: env.JOB_BASE_NAME
@@ -52,9 +52,17 @@ def call(body) {
               git url: "https://github.com/google/oss-fuzz.git"
           }
 
-          dir(checkoutDir) {
-              git url: gitUrl
-              revisions[gitUrl] = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+          if (gitUrl != null) {
+            dir(checkoutDir) {
+                git url: gitUrl
+                revisions[gitUrl] = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+            }
+          }
+          if (svnUrl != null) {
+            dir(checkoutDir) {
+                svn url: svnUrl
+                revisions[svnUrl] = sh(returnStdout: true, script: 'svn info -r HEAD').trim()
+            }
           }
 
           if (dockerContextDir == null) {
@@ -69,7 +77,7 @@ def call(body) {
           writeFile file: revisionsFile, text: revText
           echo "revisions: $revText"
       }
-        
+
       for (int i = 0; i < sanitizers.size(); i++) {
         def sanitizer = sanitizers[i]
         dir(sanitizer) {
