@@ -19,7 +19,6 @@ cd /src/woff2
 
 # Build the library. Actually there is no 'library' target, so we use .o files.
 # '-no-canonical-prefixes' flag makes clang crazy. Need to avoid it.
-cd woff2
 cat brotli/shared.mk | sed -e "s/-no-canonical-prefixes//" \
 > brotli/shared.mk.temp
 mv brotli/shared.mk.temp brotli/shared.mk
