@@ -85,7 +85,7 @@ def call(body) {
           sh "mkdir $out"
           stage("$sanitizer sanitizer") {
             // Run image to produce fuzzers
-            sh "docker run -u $uid -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
+            sh "docker run --user $uid -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
           }
         }
       }
@@ -110,7 +110,7 @@ def call(body) {
                     echo "skipping: $file"
                     continue
                 }
-                sh "docker run -u $uid --rm -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=32"
+                sh "docker run --user $uid --rm -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=32"
                 fuzzersFound += 1
               }
                 
