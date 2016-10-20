@@ -32,13 +32,13 @@ def call(body) {
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
 
-    def uid = sh(returnStdout: true, script: 'echo $UID')
-    
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
     node {
       def workspace = pwd()
+      def uid = sh(returnStdout: true, script: 'echo $UID')
+
       def revisionsFile = "$workspace/${projectName}.rev"
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
