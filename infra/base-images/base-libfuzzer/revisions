@@ -17,7 +17,7 @@
 
 # Deterimine revisions of checked out source code
 
-echo "{}" > /out/revisions.json
+echo "{}" > /out/srcmap.json
 
 # $1 - json file, $2 - jq program
 function jq_inplace() {
@@ -29,7 +29,7 @@ for DOT_GIT_DIR in $(find /src -name ".git" -type d); do
   cd $GIT_DIR
   GIT_URL=$(git config --get remote.origin.url)
   GIT_REV=$(git rev-parse HEAD)
-  jq_inplace /out/revisions.json ".\"$GIT_DIR\" = { type: \"git\", url: \"$GIT_URL\", rev: \"$GIT_REV\" }"
+  jq_inplace /out/srcmap.json ".\"$GIT_DIR\" = { type: \"git\", url: \"$GIT_URL\", rev: \"$GIT_REV\" }"
 done
 
 for DOT_SVN_DIR in $(find /src -name ".svn" -type d); do
@@ -37,8 +37,8 @@ for DOT_SVN_DIR in $(find /src -name ".svn" -type d); do
   cd $SVN_DIR
   SVN_URL=$(svn info | grep "^URL:" | sed  's/URL: //g')
   SVN_REV=$(svn info -r HEAD | grep "^Revision:" | sed  's/Revision: //g')
-  jq_inplace /out/revisions.json ".\"$SVN_DIR\" = { type: \"svn\", url: \"$SVN_URL\", rev: \"$SVN_REV\" }"
+  jq_inplace /out/srcmap.json ".\"$SVN_DIR\" = { type: \"svn\", url: \"$SVN_URL\", rev: \"$SVN_REV\" }"
 done
 
-cat /out/revisions.json
-chmod a+r /out/revisions.json
+cat /out/srcmap.json
+chmod a+r /out/srcmap.json
