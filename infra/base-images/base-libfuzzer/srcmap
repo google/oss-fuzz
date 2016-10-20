@@ -25,6 +25,7 @@ function jq_inplace() {
   F=$(tempfile) && cat $1 | jq "$2" > $F && mv $F $1
 }
 
+# Git
 for DOT_GIT_DIR in $(find /src -name ".git" -type d); do
   GIT_DIR=$(dirname $DOT_GIT_DIR)
   cd $GIT_DIR
@@ -33,12 +34,22 @@ for DOT_GIT_DIR in $(find /src -name ".git" -type d); do
   jq_inplace $SRCMAP ".\"$GIT_DIR\" = { type: \"git\", url: \"$GIT_URL\", rev: \"$GIT_REV\" }"
 done
 
+# Subversion
 for DOT_SVN_DIR in $(find /src -name ".svn" -type d); do
   SVN_DIR=$(dirname $DOT_SVN_DIR)
   cd $SVN_DIR
   SVN_URL=$(svn info | grep "^URL:" | sed  's/URL: //g')
   SVN_REV=$(svn info -r HEAD | grep "^Revision:" | sed  's/Revision: //g')
   jq_inplace $SRCMAP ".\"$SVN_DIR\" = { type: \"svn\", url: \"$SVN_URL\", rev: \"$SVN_REV\" }"
+done
+
+# Mercurial
+for DOT_HG_DIR in $(find /src -name ".hg" -type d); do
+  HG_DIR=$(dirname $DOT_HG_DIR)
+  cd $HG_DIR
+  HG_URL=$(hg paths default)
+  HG_REV=$(hg --debug id -i)
+  jq_inplace $SRCMAP ".\"$HG_DIR\" = { type: \"hg\", url: \"$HG_URL\", rev: \"$HG_REV\" }"
 done
 
 cat $SRCMAP
