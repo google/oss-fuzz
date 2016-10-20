@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,20 @@
 # Test fuzzers
 
 compile
-for FUZZER in $(find /out -executable -type f); do
+
+DIR="/out"
+N=0
+for FUZZER in $(find $DIR -executable -type f); do
+  echo "testing $FUZZER"
   $FUZZER -runs=32
+  N=$[$N+1]
 done
+
+if [ "$N" -eq "0" ]; then
+  echo "ERROR: no fuzzers found in $DIR"
+  ls -al /out
+  exit 1
+fi
+
+echo "$N fuzzers total"
 
