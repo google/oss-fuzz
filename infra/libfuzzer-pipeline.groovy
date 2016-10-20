@@ -37,7 +37,8 @@ def call(body) {
 
     node {
       def workspace = pwd()
-      def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
+      // def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
+      def uid = 0 // TODO: try to make $USER to work
       echo "using uid $uid"
 
       def revisionsFile = "$workspace/${projectName}.rev"

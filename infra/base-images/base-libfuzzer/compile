@@ -18,16 +18,18 @@
 revisions
 echo "---------------------------------------------------------------"
 
-
 echo -n "Compiling libFuzzer into /usr/lib/libfuzzer.a ..."
+mkdir /work/libfuzzer
 cd /work/libfuzzer
+mkdir /work/lib
 $CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c /src/libfuzzer/*.cpp -I/src/libfuzzer
-ar ruv /usr/lib/libfuzzer.a /work/libfuzzer/*.o
-# TODO(mike): remove /work/libfuzzer after all fuzzers are migrated to -lfuzzer
+ar ruv /work/lib/libfuzzer.a /work/libfuzzer/*.o
+rm -rf /work/libfuzzer
 echo "Done."
 
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COV_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
+export FUZZER_LDFLAGS="$FUZZER_LDFLAGS -L/work/lib"
 
 echo "CC=$CC"
 echo "CXX=$CXX"
