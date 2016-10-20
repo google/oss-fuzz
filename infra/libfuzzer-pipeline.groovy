@@ -154,6 +154,9 @@ def call(body) {
                   sh "zip -j $zipFile *"
                   sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
                   sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
+                  def srcmapFile = "$projectName-$sanitizer-${date}.srcmap.json"
+                  sh "cp srcmap.json $srcmapFile"
+                  sh "gsutil cp $srcmapFile gs://clusterfuzz-builds/$projectName/"
                 }
              }
           }
