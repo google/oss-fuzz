@@ -41,7 +41,7 @@ def call(body) {
       def uid = 0 // TODO: try to make $USER to work
       echo "using uid $uid"
 
-      def revisionsFile = "$workspace/${projectName}.rev"
+      def srcmapFile = "$workspace/srcmap.json"
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
 
@@ -49,7 +49,6 @@ def call(body) {
       sh "mkdir -p $workspace/out"
 
       stage("docker image") {
-          def revisions = [:]
           dir('oss-fuzz') {
               git url: "https://github.com/google/oss-fuzz.git"
           }
@@ -57,7 +56,6 @@ def call(body) {
           if (gitUrl != null) {
             dir(checkoutDir) {
                 git url: gitUrl
-                revisions[gitUrl] = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
             }
           }
           if (svnUrl != null) {
@@ -74,9 +72,7 @@ def call(body) {
 
           sh "docker build --no-cache -t $dockerTag -f $dockerfile $dockerContextDir"
 
-          def revText = groovy.json.JsonOutput.toJson(revisions)
-          writeFile file: revisionsFile, text: revText
-          echo "revisions: $revText"
+          sh "docker run --rm -t $dockerTag srcmap > $srcmapFile"
       }
 
       for (int i = 0; i < sanitizers.size(); i++) {
@@ -149,13 +145,9 @@ def call(body) {
                 def sanitizer = sanitizers[i]
                 dir (sanitizer) {
                   def zipFile = "$projectName-$sanitizer-${date}.zip"
-                  def revFile = "$projectName-$sanitizer-${date}.rev"
-                  sh "cp $revisionsFile $revFile"
                   sh "zip -j $zipFile *"
                   sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
-                  sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
-                  def srcmapFile = "$projectName-$sanitizer-${date}.srcmap.json"
-                  sh "cp srcmap.json $srcmapFile"
+                  sh "cp $srcmapFile $projectName-$sanitizer-${date}.srcmap.json"
                   sh "gsutil cp $srcmapFile gs://clusterfuzz-builds/$projectName/"
                 }
              }

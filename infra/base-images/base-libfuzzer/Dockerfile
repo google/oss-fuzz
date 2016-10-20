@@ -27,7 +27,7 @@ ENV FUZZER_LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/li
 RUN mkdir /out && chmod a+w /out
 
 RUN mkdir /src/bin
-COPY compile revisions run test /src/bin/
+COPY compile srcmap run test /src/bin/
 ENV PATH=/src/bin:$PATH
 WORKDIR /src
 CMD ["compile"]
