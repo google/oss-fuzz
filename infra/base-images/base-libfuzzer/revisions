@@ -41,3 +41,4 @@ for DOT_SVN_DIR in $(find /src -name ".svn" -type d); do
 done
 
 cat /out/revisions.json
+chmod a+r /out/revisions.json
