@@ -32,6 +32,8 @@ def call(body) {
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
 
+    def uid = sh(returnStdout: true, script: 'echo $UID')
+    
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
@@ -41,8 +43,6 @@ def call(body) {
       def dockerTag = "ossfuzz/$projectName"
       echo "Building $dockerTag"
 
-      // rm files with docker first to use the same user
-      sh "docker run --rm -v $workspace/out:/out ubuntu /bin/sh -c 'rm -rvf /out/*'"
       sh "rm -rf $workspace/out"
       sh "mkdir -p $workspace/out"
 
@@ -84,7 +84,7 @@ def call(body) {
           sh "mkdir $out"
           stage("$sanitizer sanitizer") {
             // Run image to produce fuzzers
-            sh "docker run -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
+            sh "docker run -u $uid -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
           }
         }
       }
@@ -109,7 +109,7 @@ def call(body) {
                     echo "skipping: $file"
                     continue
                 }
-                sh "docker run --rm -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=32"
+                sh "docker run -u $uid --rm -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=32"
                 fuzzersFound += 1
               }
                 
