@@ -30,7 +30,7 @@ for project in *; do
   case ${1-} in
     "")
       ;;
-    compile)
+    compile|test)
       docker run --rm -ti ossfuzz/$project $@
       ;;
     *)

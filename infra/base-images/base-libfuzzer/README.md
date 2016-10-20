@@ -6,6 +6,8 @@ Supported commands:
 * `docker run -ti <image_name> [compile]` - builds fuzzers.
 * `docker run -ti <image_name> run <fuzzer_name> <fuzzer_options...>` - build fuzzers and start
   specified one with given options.
+* `docker run -ti <image_name> test` - builds fuzzers and runs each
+  for a little while to verify it is working correctly.
 * `docker run -ti <image_name> /bin/bash` - drop into shell. Run `compile` script
   to start build.
 
