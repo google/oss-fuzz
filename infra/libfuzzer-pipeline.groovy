@@ -95,8 +95,9 @@ def call(body) {
                         def zipFile = "$projectName-$sanitizer-${date}.zip"
                         sh "zip -j $zipFile *"
                         sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
-                        sh "cp $srcmapFile $projectName-$sanitizer-${date}.srcmap.json"
-                        sh "gsutil cp $srcmapFile gs://clusterfuzz-builds/$projectName/"
+                        def stampedSrcmap = "$projectName-$sanitizer-${date}.srcmap.json"
+                        sh "cp $srcmapFile $stampedSrcmap"
+                        sh "gsutil cp $stampedSrcmap gs://clusterfuzz-builds/$projectName/"
                     }
                 }
             }
