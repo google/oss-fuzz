@@ -13,7 +13,8 @@ Projects integrated with oss-fuzz.
 | libass | https://github.com/google/oss-fuzz/tree/master/libass |
 | libchewing | https://github.com/google/oss-fuzz/tree/master/libchewing |
 | libpng | https://github.com/google/oss-fuzz/tree/master/libpng |
-| libtsm | https://github.com/google/oss-fuzz/tree/master/libtsm |
+| [libteken](http://80386.nl/projects/libteken/) | https://github.com/google/oss-fuzz/tree/master/libtsm |
+| [libtsm](https://www.freedesktop.org/wiki/Software/kmscon/libtsm/) | https://github.com/google/oss-fuzz/tree/master/libtsm |
 | libxml2 | https://github.com/google/oss-fuzz/tree/master/libxml2 |
 | nlohmann/json | https://github.com/google/oss-fuzz/tree/master/json |
 | nss | https://github.com/google/oss-fuzz/tree/master/nss |
