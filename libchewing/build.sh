@@ -25,11 +25,13 @@ make clean all
 # build your fuzzer(s)
 make -C test CFLAGS="$CFLAGS -Dmain=stress_main -Drand=get_fuzz_input" stress.o
 
-$CC $CFLAGS \
-    -o /out/chewing_fuzzer \
-    /src/chewing_fuzzer.c \
-    test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
-    -lfuzzer $FUZZER_LDFLAGS
+for variant in default random_init dynamic_config; do
+    $CC $CFLAGS \
+	-o /out/chewing_${variant}_fuzzer \
+	/src/chewing_${variant}_fuzzer.c /src/chewing_fuzzer_common.c \
+	test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
+	-lfuzzer $FUZZER_LDFLAGS
+done
 
 # install data files
 make -C data pkgdatadir=/out install
