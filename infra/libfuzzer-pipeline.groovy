@@ -38,6 +38,7 @@ def call(body) {
     node {
       def workspace = pwd()
       def uid = sh(returnStdout: true, script: 'echo $UID')
+      echo "using uid $uid"
 
       def revisionsFile = "$workspace/${projectName}.rev"
       def dockerTag = "ossfuzz/$projectName"
