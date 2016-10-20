@@ -17,7 +17,7 @@
 ################################################################################
 
 # Development script to build all images.
-IGNORE="docs:infra:tpm2:scripts"
+IGNORE="build:docs:infra:tpm2:scripts"
 
 # Build
 ./infra/base-images/all.sh
