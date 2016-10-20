@@ -26,8 +26,7 @@ ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 ENV FUZZER_LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/libc++abi.a -Wl,-no-whole-archive"
 
-RUN mkdir /out
-VOLUME /out
+RUN mkdir /out && chmod a+w /out
 
 RUN mkdir /src/bin
 COPY compile revisions run /src/bin/

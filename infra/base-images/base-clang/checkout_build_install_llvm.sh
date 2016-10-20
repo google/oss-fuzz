@@ -24,7 +24,6 @@ cd /src/llvm/tools && git clone --depth 1 http://llvm.org/git/clang.git
 cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/compiler-rt.git
 cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxx.git
 cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxxabi.git
-cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/lld.git
 
 # Build & Install
 mkdir -p /work/llvm
