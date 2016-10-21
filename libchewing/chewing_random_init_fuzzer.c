@@ -7,7 +7,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   fuzz_size = size;
 
   const char* stress_argv[] = {
-      "./chewing_fuzzer", "-loop", "1", "-init", "-extra", NULL,
+      "./chewing_fuzzer", "-loop", "1", "-init", NULL,
   };
   stress_main(sizeof(stress_argv) / sizeof(stress_argv[0]) - 1,
               (char**)stress_argv);
