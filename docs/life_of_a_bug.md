@@ -1,5 +1,7 @@
 # Life of a bug
 
+Oss-fuzz uses a [separate issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) to track fuzzer-detected issues.
+During the initial part of the issue life the issue has restricted visibility:
 
 | State    | Visibility |
 |----------|------------|
