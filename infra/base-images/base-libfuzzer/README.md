@@ -1,15 +1,17 @@
 # base-libfuzzer
 > Abstract base image for libfuzzer builders.
 
+`docker run -ti <image_name> <command> <arguments>`
+
 Supported commands:
 
-* `docker run -ti <image_name> [compile]` - builds fuzzers.
-* `docker run -ti <image_name> run <fuzzer_name> <fuzzer_options...>` - build fuzzers and start
-  specified one with given options.
-* `docker run -ti <image_name> test` - builds fuzzers and runs each
-  for a little while to verify it is working correctly.
-* `docker run -ti <image_name> /bin/bash` - drop into shell. Run `compile` script
-  to start build.
+| Command | Description |
+|---------|-------------|
+| `compile` (default) | build all fuzzers
+| `reproduce <fuzzer_name> <base64_testcase>` | build all fuzzers and run specified one with a given base64-encoded input
+| `run <fuzzer_name> <fuzzer_options...>` | build all fuzzers and run specified one with given options.
+| `test` | build all fuzzers and run each one for a little while to verify it is working correctly.
+| `/bin/bash` | drop into shell, execute `compile` script to start build.
 
 # Image Files Layout
 

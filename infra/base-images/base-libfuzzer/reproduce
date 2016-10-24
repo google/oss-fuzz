@@ -1,3 +1,4 @@
+#!/bin/bash -eux
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +15,16 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-clang
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y libc6-dev libtool git subversion jq
+compile
+export PATH=/out:$PATH
+cd /out
+FUZZER=$1
+TEST_INPUT=$2
+shift 2
 
-ENV SANITIZER_FLAGS="-fsanitize=address"
-ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
-
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
-ENV FUZZER_LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/libc++abi.a -Wl,-no-whole-archive"
-
-RUN mkdir /out && chmod a+w /out
-
-RUN mkdir /src/bin
-COPY compile srcmap reproduce run test /src/bin/
-ENV PATH=/src/bin:$PATH
-WORKDIR /src
-CMD ["compile"]
+TEST_CORPUS=$(tempfile)
+rm -rf TEST_CORPUS
+mkdir TEST_CORPUS
+echo $TEST_INPUT | base64 -w 0 > $TEST_CORPUS/input
+$FUZZER $@ $TEST_CORPUS
 
