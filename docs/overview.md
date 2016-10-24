@@ -1,53 +1,89 @@
-# [WIP] Overview
-*Warning: This document is a work in progress.*
+# Oss-fuzz Overview
+> Applying fuzzing on a scale to common open source software.
 
-* what we are doing
-  - how to add the library
-    * create a pull request and provide the following information in 
-      description:
-      - project website & details
-      - SRC repository location
-      - oss-fuzz related contact persons
-  - which libraries do we accept
-    * libraries with significant user base
-    * libraries critical to global IT infrastructure & business
-  - how we file bugs
-    * we file a bug in https://bugs.chromium.org/p/oss-fuzz/issues/list
-    * we will perform initial triage
-    * CC contact person(s) to the bug
-  - who we assign
-    * we ask for contact person(s) when you sign up
-  - who can add the library to oss-fuzz
-    * active members of the library development community
-  - how we disclose bugs
-    * at first bugs are seen only by people added to a bug
-    * bug is made public:
-      - after bug is fixed
-      - after 90 days since reported to developers
-  - integration with own bug tracker
-    * we are considering integration with GitHub issues, but at
-    this moment it lacks security capabilities for responsible
-    bug disclosure
-  - mailing list? (do we need any?)
-    * keep in touch - watch the project?
-  - how do bug reports look like
-    * https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53
-  - how to contact us
-    * file an issue in GitHub tracker
+> *Warning: This document is a work in progress.*
+
+## Background
+
+[Fuzz testing](https://en.wikipedia.org/wiki/Fuzz_testing) is a well-known
+technique for uncovering certain types of programming errors in software.
+Many detectable errors (e.g. buffer overruns) have real security
+implications.
+
+Our previous experience applying [libFuzzer](http://llvm.org/docs/LibFuzzer.html)
+to do [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html)
+has proved very successful.
 
 
-* why we are doing
-  - fuzzing
-    * one of the best way to find certain kinds of problems
-    * many discovered problems have real security implications
-    * why fuzz?
-  - chrome experience
-  - continuous fuzzing
+## Goals
 
-* internals/design
-  - build system
-  - ClusterFuzz
-    - what is it? - distributed continuous fuzzing system
-    - links
-    - maybe not that prominent
+Oss-fuzz aims to make common open source software more secure by
+combining modern white-box fuzzing techniques together with scalable
+distributed running.
 
+At the first stage of the project we plan to combine
+[libFuzzer](http://llvm.org/docs/LibFuzzer.html) with various `clang`
+[sanitizers](https://github.com/google/sanitizers).
+[ClusterFuzz](https://blog.chromium.org/2012/04/fuzzing-for-security.html)
+provides distributed fuzzer execution environment and reporting.
+
+## Process Overview
+
+The following process is used for targets in oss-fuzz:
+
+- a target is accepted to oss-fuzz.
+- oss-fuzz build server build target fuzzers  regularly and submits them to
+  ClusterFuzz for execution.
+- ClusterFuzz continuously executes target fuzzers
+- when fuzzing uncovers an issue, ClusterFuzz creates an internal testcase.
+- oss-fuzz engineers triage the testcase and file an issue in oss-fuzz [testcase
+  issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list).
+  The issue is visible to *oss-fuzz engineers only*.
+  ([Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9&can=1&q=&colspec=ID%20Type%20Component%20Status%20Priority%20Milestone%20Owner%20Summary).)
+- if the target project has a defined process for reporting security issues,
+  we will follow it, otherwise we will cc library contact engineers on an issue.
+  The issue becomes visible to *CCed people*.
+- library engineers fix the issue and mark the issue fixed.
+- fuzzing infrastructure automatically verifies the fix, adds a comment and
+  closes the issue.
+- after the issue is fixed or after 90 days since reporting has passed the issue
+  becomes *public*.
+
+Seee [Life of a Bug](life_of_a_bug.md) for more
+information about handling bugs.
+
+## Accepting New Targets
+
+To be accepted to oss-fuzz, a target must be an open-source project with either
+a significant user base or it has to be critical to a global IT infrastructure.
+
+To submit a new target to oss-fuzz:
+- follow the [New Library Guide](new_library.md) to write the code.
+- create a pull request and provide the following information:
+  * project site and details
+  * source code repository location
+  * a link to the project security issue reporting process *OR*
+  * an e-mal of the engineering contact person to be CCed on issue. This
+    has to be an established project committer e-mail (present in VCS logs)
+    If this is not you, the committer has to acknowledge himself.
+    This e-mail will also be publicly listed in our [Projects](projects.md)
+    page.
+
+
+## Disclosure Guidelines
+
+Issues detected by oss-fuzz project might have security risks.
+Disclosure deadlines have long been an industry standard practice.
+They improve end-user security by getting security patches to users faster.
+
+Following [Project Zero disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
+oss-fuzz will adhere to following disclosure principles:
+  - **90-day deadline**. After notifying library authors, we will open reported
+    issues in 90 days, or sooner if the fix is released.
+  - **Weekends and holidays**. If a deadline is due to expire on a weekend or
+    US public holiday, the deadline will be moved to the next normal work day.
+  - **Grace period**. We will have a 14-day grace period. If a 90-day deadline
+    will expire but library engineers let us know before the deadline that a
+    patch is scheduled for release on a specific day within 14 days following
+    the deadline, the public disclosure will be delayed until the availability
+    of the patch.
