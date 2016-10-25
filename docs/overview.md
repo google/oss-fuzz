@@ -36,21 +36,20 @@ The following process is used for targets in oss-fuzz:
   ClusterFuzz for execution.
 - ClusterFuzz continuously executes target fuzzers
 - when fuzzing uncovers an issue, ClusterFuzz creates an internal testcase.
-- oss-fuzz engineers triage the testcase and file an issue in oss-fuzz [testcase
-  issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list).
+- issues are automatically triaged and filed in the oss-fuzz [testcase issue
+  tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list).
   The issue is visible to *oss-fuzz engineers only*.
-  ([Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9&can=1&q=&colspec=ID%20Type%20Component%20Status%20Priority%20Milestone%20Owner%20Summary).)
+  ([Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).)
 - if the target project has a defined process for reporting security issues,
   we will follow it, otherwise we will cc library contact engineers on an issue.
   The issue becomes visible to *CCed people*.
-- library engineers fix the issue and mark the issue fixed.
+- library engineers fix the issue and land the fix upstream.
 - fuzzing infrastructure automatically verifies the fix, adds a comment and
   closes the issue.
 - after the issue is fixed or after 90 days since reporting has passed the issue
   becomes *public*.
 
-Seee [Life of a Bug](life_of_a_bug.md) for more
-information about handling bugs.
+See [Life of a Bug](life_of_a_bug.md) for more information about handling bugs.
 
 ## Accepting New Targets
 
@@ -58,25 +57,22 @@ To be accepted to oss-fuzz, a target must be an open-source project with either
 a significant user base or it has to be critical to a global IT infrastructure.
 
 To submit a new target to oss-fuzz:
-- follow the [New Library Guide](new_library.md) to write the code.
 - create a pull request and provide the following information:
   * project site and details
   * source code repository location
   * a link to the project security issue reporting process *OR*
-  * an e-mal of the engineering contact person to be CCed on issue. This
+  * an e-mail of the engineering contact person to be CCed on issue. This
     has to be an established project committer e-mail (present in VCS logs)
-    If this is not you, the committer has to acknowledge himself.
+    If this is not you, the committer has to acknowledge theirself.
     This e-mail will also be publicly listed in our [Projects](projects.md)
     page.
+- once accepted by an oss-fuzz project member, follow the [New Library Guide](new_library.md)
+  to write the code.
 
 
 ## Disclosure Guidelines
 
-Issues detected by oss-fuzz project might have security risks.
-Disclosure deadlines have long been an industry standard practice.
-They improve end-user security by getting security patches to users faster.
-
-Following [Project Zero disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
+Following Google's standard [disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
 oss-fuzz will adhere to following disclosure principles:
   - **90-day deadline**. After notifying library authors, we will open reported
     issues in 90 days, or sooner if the fix is released.
