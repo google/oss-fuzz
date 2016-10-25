@@ -77,8 +77,8 @@ To submit a new target to oss-fuzz:
   * a link to the project security issue reporting process *OR*
   * an e-mail of the engineering contact person to be CCed on issue. This
     has to be an e-mail with google account that belongs to an 
-    established project committer e-mail (present in VCS logs).
-    If this is not you, an informal e-mail verification will be required.
+    established project committer (according to VCS logs).
+    If this is not you or address differs from VCS, an informal e-mail verification will be required.
     This e-mail will also be publicly listed in our [Projects](docs/projects.md)
     page.
 - once accepted by an oss-fuzz project member, follow the [New Library Guide](docs/new_library.md)
