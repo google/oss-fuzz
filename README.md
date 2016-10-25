@@ -49,11 +49,11 @@ The following process is used for targets in oss-fuzz:
   [Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).
   ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-testcases))
 - if the target project has a defined process for reporting security issues,
-  we will follow it, otherwise we will cc library contact engineers on an issue.
-- library engineers fix the issue and land the fix upstream.
+  we will follow it, otherwise we will cc target engineers on an issue.
+- engineers fix the issue and land the fix upstream.
 - fuzzing infrastructure automatically verifies the fix, adds a comment and
   closes the issue.
-- after the issue is fixed or after 90 days since reporting has passed the issue
+- after the issue is fixed or after 90 days since reporting has passed, the issue
   becomes *public*.
 
 The following table summarizes issue visibility through the process:
