@@ -20,7 +20,7 @@ shift
 TESTCASE="/testcase"
 
 if [ ! -f $TESTCASE ]; then
-  eho "Error: $TESTCASE not found, use: docker run -v <path>:$TESTCASE ..."
+  echo "Error: $TESTCASE not found, use: docker run -v <path>:$TESTCASE ..."
   exit 1
 fi
 
