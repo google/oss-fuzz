@@ -45,19 +45,25 @@ The following process is used for targets in oss-fuzz:
 - ClusterFuzz continuously executes target fuzzers
 - when fuzzing uncovers an issue, ClusterFuzz creates an internal testcase.
 - issues are automatically triaged and filed in the oss-fuzz [testcase issue
-  tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list).
-  The issue is visible to *oss-fuzz engineers only*.
-  ([Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).)
+  tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list). 
+  [Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).
+  ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-testcases))
 - if the target project has a defined process for reporting security issues,
   we will follow it, otherwise we will cc library contact engineers on an issue.
-  The issue becomes visible to *CCed people*.
 - library engineers fix the issue and land the fix upstream.
 - fuzzing infrastructure automatically verifies the fix, adds a comment and
   closes the issue.
 - after the issue is fixed or after 90 days since reporting has passed the issue
   becomes *public*.
 
-See [Life of a Bug](life_of_a_bug.md) for more information about handling bugs.
+The following table summarizes issue visibility through the process:
+
+| Issue State    | Visibility |
+|----------|------------|
+| New      | oss-fuzz engineers |
+| Reported | oss-fuzz engineers + peopel CC'ed on the bug |
+| Fixed & Verified | public |
+| Lapsed (90 days since report) | public |
 
 ## Accepting New Targets
 
@@ -72,9 +78,9 @@ To submit a new target to oss-fuzz:
   * an e-mail of the engineering contact person to be CCed on issue. This
     has to be an established project committer e-mail (present in VCS logs)
     If this is not you, the committer has to acknowledge theirself.
-    This e-mail will also be publicly listed in our [Projects](projects.md)
+    This e-mail will also be publicly listed in our [Projects](docs/projects.md)
     page.
-- once accepted by an oss-fuzz project member, follow the [New Library Guide](new_library.md)
+- once accepted by an oss-fuzz project member, follow the [New Library Guide](docs/new_library.md)
   to write the code.
 
 
