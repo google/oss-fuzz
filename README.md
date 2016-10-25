@@ -2,7 +2,7 @@
 
 > Fuzzing Open Source Software
 
-> *Status*: We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
+> *Status*: Beta. We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
 [New Library Guide](docs/new_library.md) 
 | [Project List](docs/projects.md)
