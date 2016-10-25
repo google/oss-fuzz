@@ -4,6 +4,7 @@
 
 > *Status*: Beta. We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
+[FAQ](docs/faq.md) | 
 [New Library Guide](docs/new_library.md) 
 | [Project List](docs/projects.md)
 
