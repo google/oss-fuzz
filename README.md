@@ -2,11 +2,13 @@
 
 > Fuzzing Open Source Software
 
-*Project Status*: We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
+> *Status*: We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
-[Open new issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
+[New Library Guide](docs/new_library.md) 
+| [Project List](docs/projects.md)
 
-Quick Links: [New Library Guide](docs/new_library.md) | [Project List](docs/projects.md)
+
+[Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
 
 ## Goals
 
