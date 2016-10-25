@@ -5,8 +5,8 @@
 > *Status*: Beta. We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
 [FAQ](docs/faq.md)
-| [New Target Guide](docs/new_target.md) 
-| [Project List](docs/projects.md)
+| [New Target Guide](targets/README.md) 
+| [Targets List](targets/README.md)
 
 
 [Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
@@ -79,7 +79,7 @@ To submit a new target to oss-fuzz:
     has to be an e-mail with google account that belongs to an 
     established project committer (according to VCS logs).
     If this is not you or address differs from VCS, an informal e-mail verification will be required.
-    This e-mail will also be publicly listed in our [Projects](docs/projects.md)
+    This e-mail will also be publicly listed in our [Targets](targets/README.md)
     page.
 - once accepted by an oss-fuzz project member, follow the [New Target Guide](docs/new_target.md)
   to write the code.
@@ -106,7 +106,7 @@ oss-fuzz will adhere to following disclosure principles:
   *part of target project* source code repository.
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
   *part of oss-fuzz* source code repository.
-* [Project List](docs/projects.md) lists OSS projects integrated with oss-fuzz.
+* [Targets List](targets/README.md) lists OSS targets added to oss-fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 

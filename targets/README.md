@@ -1,6 +1,6 @@
-# Project List
+# Targets List
 
-Projects integrated with oss-fuzz.
+Targets integrated with oss-fuzz.
 
 | Project | Integration Source Location |
 | ------------ | --------------- |
