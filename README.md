@@ -107,7 +107,6 @@ oss-fuzz will adhere to following disclosure principles:
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
   *part of oss-fuzz* source code repository.
 * [Project List](docs/projects.md) lists OSS projects integrated with oss-fuzz.
-* [Life of a bug](docs/life_of_a_bug.md)
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
