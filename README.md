@@ -6,7 +6,7 @@
 
 [Open new issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
 
-Quick Links: [New Library Guide](docs/new_library.md) | [Project List](docs/projects.md) |
+Quick Links: [New Library Guide](docs/new_library.md) | [Project List](docs/projects.md)
 
 ## Goals
 
