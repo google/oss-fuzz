@@ -15,16 +15,23 @@
 #
 ################################################################################
 
+FUZZER=$1
+shift
+TESTCASE="/testcase"
+
+if [ ! -f $TESTCASE ]; then
+  eho "Error: $TESTCASE not found, use: docker run -v <path>:$TESTCASE ..."
+  exit 1
+fi
+
+
 compile
 export PATH=/out:$PATH
 cd /out
-FUZZER=$1
-shift
-TEST_INPUT=$(cat -)
 
 TEST_CORPUS=$(tempfile)
 rm -rf $TEST_CORPUS
 mkdir $TEST_CORPUS
-echo $TEST_INPUT | $TEST_CORPUS/input
+cp $TESTCASE $TEST_CORPUS/
 $FUZZER $@ -runs=0 $TEST_CORPUS
 

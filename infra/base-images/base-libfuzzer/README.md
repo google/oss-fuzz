@@ -8,7 +8,7 @@ Supported commands:
 | Command | Description |
 |---------|-------------|
 | `compile` (default) | build all fuzzers
-| `reproduce <fuzzer_name> <base64_testcase>` | build all fuzzers and run specified one with a given base64-encoded input
+| `reproduce <fuzzer_name> <fuzzer_options>` | build all fuzzers and run specified one with `/testcase` content.
 | `run <fuzzer_name> <fuzzer_options...>` | build all fuzzers and run specified one with given options.
 | `test` | build all fuzzers and run each one for a little while to verify it is working correctly.
 | `/bin/bash` | drop into shell, execute `compile` script to start build.
