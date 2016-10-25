@@ -1,8 +1,8 @@
 # Setting up fuzzers for a new library
 
-Fuzzer build configurations are placed into a top-level directory for the
+Fuzzer build configurations are placed into a `targets/` subdirectory for the
 library in the [oss-fuzz repo] on GitHub. For example, fuzzers for the expat
-library go into <https://github.com/google/oss-fuzz/tree/master/expat>.
+library go into <https://github.com/google/oss-fuzz/tree/master/targets/expat>.
 
 ## Prerequisites
 
@@ -26,10 +26,10 @@ general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
 
 To add a new OSS library to oss-fuzz, 3 supporting files have to be added to oss-fuzz source code repository:
 
-* `library_name/Dockerfile` - defines an container environment with all the dependencies
+* `targets/library_name/Dockerfile` - defines an container environment with all the dependencies
 needed to build the project and the fuzzer.
-* `library_name/build.sh` - build script that will be executed inside the container.
-* `library_name/Jenkinsfile` - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
+* `targets/library_name/build.sh` - build script that will be executed inside the container.
+* `targets/library_name/Jenkinsfile` - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
   Specify your library VCS location in it.
 
 To create a new directory for the library and *automatically generate* these 3 files a python script can be used:
@@ -37,7 +37,7 @@ To create a new directory for the library and *automatically generate* these 3 f
 ```bash
 $ cd /path/to/oss-fuzz
 $ export LIB_NAME=name_of_the_library
-$ python scripts/helper.py generate $LIB_NAME
+$ python infra/helper.py generate $LIB_NAME
 ```
 
 Create a fuzzer and add it to the *library_name/* directory as well.
@@ -197,8 +197,8 @@ version using docker commands directly is documented [here](building_running_fuz
 
 ```bash
 $ cd /path/to/oss-fuzz
-$ python scripts/helper.py build_image $LIB_NAME
-$ python scripts/helper.py build_fuzzers $LIB_NAME
+$ python infra/helper.py build_image $LIB_NAME
+$ python infra/helper.py build_fuzzers $LIB_NAME
 ```
 
 This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$LIB_NAME`
@@ -206,7 +206,7 @@ on your machine (`/out` in the container). You can then try to run these fuzzers
 inside the container to make sure that they work properly:
 
 ```bash
-$ python scripts/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
+$ python infra/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
 ```
 
 If everything works locally, then it should also work on our automated builders
@@ -215,7 +215,7 @@ and ClusterFuzz.
 It's recommended to look at coverage as a sanity check to make sure that fuzzer gets to the code you expect.
 
 ```bash
-$ python scripts/helper.py coverage $LIB_NAME name_of_a_fuzzer
+$ python infra/helper.py coverage $LIB_NAME name_of_a_fuzzer
 ```
 
 ## Debugging Problems

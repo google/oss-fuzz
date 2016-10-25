@@ -68,7 +68,7 @@ def main():
 
 def _check_library_exists(library_name):
   """Checks if a library exists."""
-  if not os.path.exists(os.path.join(OSSFUZZ_DIR, library_name)):
+  if not os.path.exists(os.path.join(OSSFUZZ_DIR, "targets", library_name)):
     print(library_name, 'does not exist', file=sys.stderr)
     return False
 
@@ -104,7 +104,7 @@ def build_image(build_args):
 
   command = [
         'docker', 'build', '--pull', '-t', 'ossfuzz/' + args.library_name,
-        args.library_name
+        os.path.join("targets", args.library_name)
   ]
   print('Running:', _get_command_string(command))
 
@@ -232,20 +232,21 @@ def generate(generate_args):
   parser = argparse.ArgumentParser('helper.py generate')
   parser.add_argument('library_name')
   args = parser.parse_args(generate_args)
+  dir = os.path.join("targets", args.library_name)
 
   try:
-    os.mkdir(args.library_name)
+    os.mkdir(dir)
   except OSError:
-    print(args.library_name, 'already exists.', file=sys.stderr)
+    print(dir, 'already exists.', file=sys.stderr)
     return 1
 
-  with open(os.path.join(args.library_name, 'Jenkinsfile'), 'w') as f:
+  with open(os.path.join(dir, 'Jenkinsfile'), 'w') as f:
     f.write(templates.JENKINS_TEMPLATE)
 
-  with open(os.path.join(args.library_name, 'Dockerfile'), 'w') as f:
+  with open(os.path.join(dir, 'Dockerfile'), 'w') as f:
     f.write(templates.DOCKER_TEMPLATE)
 
-  build_sh_path = os.path.join(args.library_name, 'build.sh')
+  build_sh_path = os.path.join(dir, 'build.sh')
   with open(build_sh_path, 'w') as f:
     f.write(templates.BUILD_TEMPLATE % args.library_name)
 

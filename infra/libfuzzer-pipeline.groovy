@@ -27,7 +27,7 @@ def call(body) {
 
     // Optional configuration
     def projectName = config["name"] ?: env.JOB_BASE_NAME
-    def dockerfile = config["dockerfile"] ?: "oss-fuzz/$projectName/Dockerfile"
+    def dockerfile = config["dockerfile"] ?: "oss-fuzz/targets/$projectName/Dockerfile"
     def sanitizers = config["sanitizers"] ?: ["address"]
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]

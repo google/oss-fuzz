@@ -12,3 +12,15 @@ Continuous Integration infrastracture:
 * [`docker-cleanup`](docker-cleanup/) - jenkins pipeline to clean stale docker images & processes.
 * [`push-images`](push-images/) - jenkins pipeline to push built base images.
 * [`jenkins-cluster`](jenkins-cluster/) - kubernetes cluster definition for our jenkins-based build (not operational yet).
+
+## helper.py
+> script to automate common docker operations
+
+| Command | Description |
+|---------|-------------
+| `generate`      | 
+| `build_image`   |
+| `build_fuzzers` |
+| `run_fuzzer`    |
+| `coverage`      |
+| `shell`         |
