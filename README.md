@@ -1,10 +1,12 @@
 # oss-fuzz 
 
-> Fuzzing Open Source Software. 
+> Fuzzing Open Source Software
 
 *Project Status*: We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
 [Open new issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
+
+Quick Links: [New Library Guide](docs/new_library.md) | [Project List](docs/projects.md) |
 
 ## Goals
 
