@@ -29,9 +29,5 @@ compile
 export PATH=/out:$PATH
 cd /out
 
-TEST_CORPUS=$(tempfile)
-rm -rf $TEST_CORPUS
-mkdir $TEST_CORPUS
-cp $TESTCASE $TEST_CORPUS/
-$FUZZER $@ -runs=0 $TEST_CORPUS
+$FUZZER $@ -runs=0 $TESTCASE
 
