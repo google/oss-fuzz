@@ -47,7 +47,7 @@ The following process is used for targets in oss-fuzz:
 - issues are automatically triaged and filed in the oss-fuzz [testcase issue
   tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list). 
   [Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).
-  ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-testcases))
+  ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reportig-bugs-in-fuzz-targets))
 - if the target project has a defined process for reporting security issues,
   we will follow it, otherwise we will cc target engineers on an issue.
 - engineers fix the issue and land the fix upstream.
