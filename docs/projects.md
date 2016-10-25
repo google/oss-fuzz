@@ -7,9 +7,9 @@ Projects integrated with oss-fuzz.
 | [boringssl](https://boringssl.googlesource.com/boringssl/) | https://github.com/google/oss-fuzz/tree/master/boringssl |
 | [curl](https://curl.haxx.se/) | https://github.com/google/oss-fuzz/tree/master/curl |
 | [expat](http://expat.sourceforge.net/) | https://github.com/google/oss-fuzz/tree/master/expat |
-| freetype2 | https://github.com/google/oss-fuzz/tree/master/freetype2 |
-| harfbuzz | https://github.com/google/oss-fuzz/tree/master/harfbuzz |
-| icu | https://github.com/google/oss-fuzz/tree/master/icu |
+| [freetype2](https://www.freetype.org/) | https://github.com/google/oss-fuzz/tree/master/freetype2 |
+| [harfbuzz](http://www.harfbuzz.org/) | https://github.com/google/oss-fuzz/tree/master/harfbuzz |
+| [icu](http://site.icu-project.org/) | https://github.com/google/oss-fuzz/tree/master/icu |
 | libass | https://github.com/google/oss-fuzz/tree/master/libass |
 | libchewing | https://github.com/google/oss-fuzz/tree/master/libchewing |
 | libpng | https://github.com/google/oss-fuzz/tree/master/libpng |
