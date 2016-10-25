@@ -66,10 +66,10 @@ def main():
   return 0
 
 
-def _check_library_exists(library_name):
-  """Checks if a library exists."""
-  if not os.path.exists(os.path.join(OSSFUZZ_DIR, "targets", library_name)):
-    print(library_name, 'does not exist', file=sys.stderr)
+def _check_target_exists(target_name):
+  """Checks if a target exists."""
+  if not os.path.exists(os.path.join(OSSFUZZ_DIR, "targets", target_name)):
+    print(target_name, 'does not exist', file=sys.stderr)
     return False
 
   return True
@@ -80,11 +80,11 @@ def _get_command_string(command):
   return ' '.join(pipes.quote(part) for part in command)
 
 
-def _get_version_control_url(library_name):
-  """Returns (url, type) for the library."""
+def _get_version_control_url(target_name):
+  """Returns (url, type) for the target."""
   git_regex = re.compile(r'.*git\s*=\s*"(.*?)"\s*')
 
-  with open(os.path.join(OSSFUZZ_DIR, library_name, 'Jenkinsfile')) as f:
+  with open(os.path.join(OSSFUZZ_DIR, target_name, 'Jenkinsfile')) as f:
     for line in f:
       match = git_regex.match(line)
       if match:
@@ -96,15 +96,15 @@ def _get_version_control_url(library_name):
 def build_image(build_args):
   """Build docker image."""
   parser = argparse.ArgumentParser('helper.py build_image')
-  parser.add_argument('library_name')
+  parser.add_argument('target_name')
   args = parser.parse_args(build_args)
 
-  if not _check_library_exists(args.library_name):
+  if not _check_target_exists(args.target_name):
     return 1
 
   command = [
-        'docker', 'build', '--pull', '-t', 'ossfuzz/' + args.library_name,
-        os.path.join("targets", args.library_name)
+        'docker', 'build', '--pull', '-t', 'ossfuzz/' + args.target_name,
+        os.path.join("targets", args.target_name)
   ]
   print('Running:', _get_command_string(command))
 
@@ -120,7 +120,7 @@ def build_image(build_args):
 def build_fuzzers(build_args):
   """Build fuzzers."""
   parser = argparse.ArgumentParser('helper.py build_fuzzers')
-  parser.add_argument('library_name')
+  parser.add_argument('target_name')
   args = parser.parse_args(build_args)
 
   if build_image(build_args):
@@ -128,8 +128,8 @@ def build_fuzzers(build_args):
 
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
-        '-t', 'ossfuzz/' + args.library_name,
+        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
+        '-t', 'ossfuzz/' + args.target_name,
   ]
 
   print('Running:', _get_command_string(command))
@@ -146,16 +146,16 @@ def build_fuzzers(build_args):
 def run_fuzzer(run_args):
   """Runs a fuzzer in the container."""
   parser = argparse.ArgumentParser('helper.py run_fuzzer')
-  parser.add_argument('library_name', help='name of the library')
+  parser.add_argument('target_name', help='name of the target')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
                       nargs=argparse.REMAINDER)
   args = parser.parse_args(run_args)
 
-  if not _check_library_exists(args.library_name):
+  if not _check_target_exists(args.target_name):
     return 1
 
-  if not os.path.exists(os.path.join(BUILD_DIR, 'out', args.library_name,
+  if not os.path.exists(os.path.join(BUILD_DIR, 'out', args.target_name,
                                      args.fuzzer_name)):
     print(args.fuzzer_name,
           'does not seem to exist. Please run build_fuzzers first.',
@@ -166,7 +166,7 @@ def run_fuzzer(run_args):
       'docker', 'run', '-i',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out'),
       '-t', 'ossfuzz/libfuzzer-runner',
-      '/out/%s/%s' %(args.library_name, args.fuzzer_name)
+      '/out/%s/%s' %(args.target_name, args.fuzzer_name)
   ] + args.fuzzer_args
 
   print('Running:', _get_command_string(command))
@@ -177,16 +177,16 @@ def coverage(run_args):
   """Runs a fuzzer in the container."""
   parser = argparse.ArgumentParser('helper.py coverage')
   parser.add_argument('--run_time', default=60, help='time in seconds to run fuzzer')
-  parser.add_argument('library_name', help='name of the library')
+  parser.add_argument('target_name', help='name of the target')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
                       nargs=argparse.REMAINDER)
   args = parser.parse_args(run_args)
 
-  if not _check_library_exists(args.library_name):
+  if not _check_target_exists(args.target_name):
     return 1
 
-  if not os.path.exists(os.path.join(BUILD_DIR, 'out', args.library_name,
+  if not os.path.exists(os.path.join(BUILD_DIR, 'out', args.target_name,
                                      args.fuzzer_name)):
     print(args.fuzzer_name,
           'does not seem to exist. Please run build_fuzzers first.',
@@ -203,7 +203,7 @@ def coverage(run_args):
       '-w', '/cov',
       '-e', 'ASAN_OPTIONS=coverage=1,detect_leaks=0',
       '-t', 'ossfuzz/libfuzzer-runner',
-      '/out/%s/%s' % (args.library_name, args.fuzzer_name),
+      '/out/%s/%s' % (args.target_name, args.fuzzer_name),
       '-max_total_time=%s' % args.run_time
   ] + args.fuzzer_args
 
@@ -213,7 +213,7 @@ def coverage(run_args):
 
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
+        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
         '-v', '%s:/cov' % temp_dir,
         '-v', '%s:/scripts' % os.path.join(OSSFUZZ_DIR, 'scripts'),
         '-w', '/cov',
@@ -228,11 +228,11 @@ def coverage(run_args):
 
 
 def generate(generate_args):
-  """Generate empty library files."""
+  """Generate empty target files."""
   parser = argparse.ArgumentParser('helper.py generate')
-  parser.add_argument('library_name')
+  parser.add_argument('target_name')
   args = parser.parse_args(generate_args)
-  dir = os.path.join("targets", args.library_name)
+  dir = os.path.join("targets", args.target_name)
 
   try:
     os.mkdir(dir)
@@ -248,7 +248,7 @@ def generate(generate_args):
 
   build_sh_path = os.path.join(dir, 'build.sh')
   with open(build_sh_path, 'w') as f:
-    f.write(templates.BUILD_TEMPLATE % args.library_name)
+    f.write(templates.BUILD_TEMPLATE % args.target_name)
 
   os.chmod(build_sh_path, 0755)
   return 0
@@ -257,7 +257,7 @@ def generate(generate_args):
 def shell(shell_args):
   """Runs a shell within a docker image."""
   parser = argparse.ArgumentParser('helper.py shell')
-  parser.add_argument('library_name', help='name of the library')
+  parser.add_argument('target_name', help='name of the target')
   args = parser.parse_args(shell_args)
 
   if build_image(shell_args):
@@ -265,8 +265,8 @@ def shell(shell_args):
 
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.library_name),
-        '-t', 'ossfuzz/' + args.library_name,
+        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
+        '-t', 'ossfuzz/' + args.target_name,
         '/bin/bash'
   ]
   print('Running:', _get_command_string(command))

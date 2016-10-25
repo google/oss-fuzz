@@ -1,4 +1,4 @@
-# A template for a README file inside 'fuzz/' directory in a library project.
+# A template for a README file inside 'fuzz/' directory in a target project.
 
 This directory contains source code and build scripts for coverage-guided fuzzers. 
 

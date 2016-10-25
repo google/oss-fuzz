@@ -22,7 +22,7 @@ Supported commands:
 
 # Provided Environment Variables
 
-You *must* use special compiler flags to build your library and fuzzers.
+You *must* use special compiler flags to build your target and fuzzers.
 These flags are provided in following environment variables:
 
 | Env Variable    | Description
@@ -43,7 +43,7 @@ passing them manually to a build tool might be required.
 Child image has to checkout all sources it needs to compile fuzzers into
 `/src/` directory. When the image is executed, a directory could be mounted
 on top of these with local checkouts using
-`docker run -v $HOME/my_library:/src/my_library ...`.
+`docker run -v $HOME/my_target:/src/my_target ...`.
 
 ## Other Required Files
 
@@ -51,4 +51,4 @@ Following files have to be added by child images:
 
 | File Location   | Description |
 | -------------   | ----------- |
-| `/src/build.sh` | build script to build the library and its fuzzers |
+| `/src/build.sh` | build script to build the target and its fuzzers |

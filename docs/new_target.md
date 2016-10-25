@@ -1,8 +1,9 @@
-# Setting up fuzzers for a new library
+# Setting up fuzzers for a new target
 
-Fuzzer build configurations are placed into a `targets/` subdirectory for the
-library in the [oss-fuzz repo] on GitHub. For example, fuzzers for the expat
-library go into <https://github.com/google/oss-fuzz/tree/master/targets/expat>.
+Fuzzer build configurations are placed into [`targets/`](https://github.com/google/oss-fuzz/tree/master/targets) 
+subdirectories of the [oss-fuzz repo] on GitHub. 
+For example, fuzzers for the expat library are located in 
+[`targets/expat/`](https://github.com/google/oss-fuzz/tree/master/targets/expat).
 
 ## Prerequisites
 
@@ -17,23 +18,23 @@ library go into <https://github.com/google/oss-fuzz/tree/master/targets/expat>.
 
 ## Overview
 
-To add a new OSS library to oss-fuzz, 3 supporting files have to be added to oss-fuzz source code repository:
+To add a new OSS target to oss-fuzz, 3 supporting files have to be added to oss-fuzz source code repository:
 
-* `targets/library_name/Dockerfile` - defines an container environment with all the dependencies
+* `targets/target_name/Dockerfile` - defines an container environment with all the dependencies
 needed to build the project and the fuzzer.
-* `targets/library_name/build.sh` - build script that will be executed inside the container.
-* `targets/library_name/Jenkinsfile` - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
-  Specify your library VCS location in it.
+* `targets/target_name/build.sh` - build script that will be executed inside the container.
+* `targets/target_name/Jenkinsfile` - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
+  Specify your target VCS location in it.
 
-To create a new directory for the library and *automatically generate* these 3 files a python script can be used:
+To create a new directory for the target and *automatically generate* these 3 files a python script can be used:
 
 ```bash
 $ cd /path/to/oss-fuzz
-$ export LIB_NAME=name_of_the_library
-$ python infra/helper.py generate $LIB_NAME
+$ export TARGET_NAME=target_name
+$ python infra/helper.py generate $TARGET_NAME
 ```
 
-Create a fuzzer and add it to the *library_name/* directory as well.
+Create a fuzzer and add it to the *target_name/* directory as well.
 
 ## Dockerfile
 
@@ -43,7 +44,7 @@ It is very simple for most libraries:
 FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                   # each file should have a maintainer
 RUN apt-get install -y ...              # install required packages to build a project
-RUN git checkout <git_url>              # checkout all sources needed to build your library
+RUN git checkout <git_url>              # checkout all sources needed to build your target
 COPY build.sh fuzzer.cc /src/           # install build script and other source files.
 ```
 Expat example: [expat/Dockerfile](../expat/Dockerfile)
@@ -51,7 +52,7 @@ Expat example: [expat/Dockerfile](../expat/Dockerfile)
 ## Create Fuzzer Source File
 
 Create a new .cc file, define a `LLVMFuzzerTestOneInput` function and call
-your library:
+your target:
 
 ```c++
 #include <stddef.h>
@@ -74,13 +75,14 @@ in this project repository.
 
 ## build.sh
 
-This is where most of the work is done to build fuzzers for your library. The script will
+This is where most of the work is done to build fuzzers for your target. The script will
 be executed within an image built from a `Dockerfile`.
 
 In general, this script will need to:
 
-1. Build the library using its build system *with* correct compiler and its flags provided as *environment variables* (see below). 
-2. Build the fuzzers, linking with the library and libFuzzer. Built fuzzers
+1. Build the target using its build system *with* correct compiler and its flags provided as 
+  *environment variables* (see below). 
+2. Build the fuzzers, linking with the target and libFuzzer. Resulting fuzzers
    should be placed in `/out`.
 
 For expat, this looks like:
@@ -108,10 +110,10 @@ When build.sh script is executed, the following locations are available within t
 
 | Path                   | Description
 | ------                 | -----
-| `/src/<some_dir>`      | Source code needed to build your library.
+| `/src/<some_dir>`      | Source code needed to build your target.
 | `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that need to be linked into all fuzzers (`-lfuzzer`).
 
-You *must* use special compiler flags to build your library and fuzzers.
+You *must* use special compiler flags to build your target and fuzzers.
 These flags are provided in following environment variables:
 
 | Env Variable           | Description
@@ -179,7 +181,7 @@ libfuzzerBuild {
 }
 ```
 
-Simply replace the the "git" entry with the correct git url for the library.
+Simply replace the the "git" entry with the correct git url for the target.
 
 *Note*: only git is supported right now.
 
@@ -190,16 +192,16 @@ version using docker commands directly is documented [here](building_running_fuz
 
 ```bash
 $ cd /path/to/oss-fuzz
-$ python infra/helper.py build_image $LIB_NAME
-$ python infra/helper.py build_fuzzers $LIB_NAME
+$ python infra/helper.py build_image $TARGET_NAME
+$ python infra/helper.py build_fuzzers $TARGET_NAME
 ```
 
-This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$LIB_NAME`
+This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$TARGET_NAME`
 on your machine (`/out` in the container). You can then try to run these fuzzers
 inside the container to make sure that they work properly:
 
 ```bash
-$ python infra/helper.py run_fuzzer $LIB_NAME name_of_a_fuzzer
+$ python infra/helper.py run_fuzzer $TARGET_NAME name_of_a_fuzzer
 ```
 
 If everything works locally, then it should also work on our automated builders
@@ -208,7 +210,7 @@ and ClusterFuzz.
 It's recommended to look at coverage as a sanity check to make sure that fuzzer gets to the code you expect.
 
 ```bash
-$ python infra/helper.py coverage $LIB_NAME name_of_a_fuzzer
+$ python infra/helper.py coverage $TARGET_NAME name_of_a_fuzzer
 ```
 
 ## Debugging Problems

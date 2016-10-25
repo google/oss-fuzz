@@ -4,8 +4,8 @@
 
 > *Status*: Beta. We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
-[FAQ](docs/faq.md) | 
-[New Library Guide](docs/new_library.md) 
+[FAQ](docs/faq.md)
+| [New Target Guide](docs/new_target.md) 
 | [Project List](docs/projects.md)
 
 
@@ -81,7 +81,7 @@ To submit a new target to oss-fuzz:
     If this is not you or address differs from VCS, an informal e-mail verification will be required.
     This e-mail will also be publicly listed in our [Projects](docs/projects.md)
     page.
-- once accepted by an oss-fuzz project member, follow the [New Library Guide](docs/new_library.md)
+- once accepted by an oss-fuzz project member, follow the [New Target Guide](docs/new_target.md)
   to write the code.
 
 
@@ -89,19 +89,19 @@ To submit a new target to oss-fuzz:
 
 Following Google's standard [disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
 oss-fuzz will adhere to following disclosure principles:
-  - **90-day deadline**. After notifying library authors, we will open reported
+  - **90-day deadline**. After notifying target authors, we will open reported
     issues in 90 days, or sooner if the fix is released.
   - **Weekends and holidays**. If a deadline is due to expire on a weekend or
     US public holiday, the deadline will be moved to the next normal work day.
   - **Grace period**. We will have a 14-day grace period. If a 90-day deadline
-    will expire but library engineers let us know before the deadline that a
+    will expire but upstream engineers let us know before the deadline that a
     patch is scheduled for release on a specific day within 14 days following
     the deadline, the public disclosure will be delayed until the availability
     of the patch.
 
 ## Documentation
 
-* [New Library Guide](docs/new_library.md) walks through steps necessary to add fuzzers to an open source project.
+* [New Target Guide](docs/new_target.md) walks through steps necessary to add new targets to oss-fuzz.
 * [Running and Building Fuzzers](docs/building_running_fuzzers.md) documents the process for fuzzers that are
   *part of target project* source code repository.
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are

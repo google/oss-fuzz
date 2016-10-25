@@ -83,7 +83,7 @@ BUILD_TEMPLATE = """\
 
 cd /src/%s
 
-# build the library.
+# build the target.
 # e.g.
 #
 # ./autogen.sh
