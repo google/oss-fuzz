@@ -6,21 +6,14 @@ library go into <https://github.com/google/oss-fuzz/tree/master/targets/expat>.
 
 ## Prerequisites
 
-[Install Docker]. (Googlers: [go/installdocker](https://goto.google.com/installdocker) )
+[Install Docker]. Googlers: [go/installdocker](https://goto.google.com/installdocker).
+([Why Docker?](faq.md#why-do-you-use-docker))
 
 *NOTE: if you want to run `docker` without `sudo` also follow the optional [Create a docker group](https://docs.docker.com/engine/installation/linux/ubuntulinux/#/create-a-docker-group) section.*
 
 *NOTE: Docker images can consume significant disk space. Run*
 *[docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)*
 *periodically to garbage collect unused images.*
-
-
-Building fuzzers requires building your library with a fresh
-Clang compiler and special compiler flags. An easy-to-use Docker image is 
-provided to simplify tool distribution.
-
-If you'd like to get more familiar with how libFuzzer-style fuzzers work in
-general, check out [this page](http://llvm.org/docs/LibFuzzer.html).
 
 ## Overview
 
