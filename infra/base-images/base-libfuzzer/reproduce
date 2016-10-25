@@ -19,12 +19,12 @@ compile
 export PATH=/out:$PATH
 cd /out
 FUZZER=$1
-TEST_INPUT=$2
-shift 2
+shift
+TEST_INPUT=$(cat -)
 
 TEST_CORPUS=$(tempfile)
-rm -rf TEST_CORPUS
-mkdir TEST_CORPUS
-echo $TEST_INPUT | base64 -w 0 > $TEST_CORPUS/input
-$FUZZER $@ $TEST_CORPUS
+rm -rf $TEST_CORPUS
+mkdir $TEST_CORPUS
+echo $TEST_INPUT | $TEST_CORPUS/input
+$FUZZER $@ -runs=0 $TEST_CORPUS
 
