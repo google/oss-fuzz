@@ -29,11 +29,11 @@ Follow these steps:
 
 ## Manual
 
-Manual process is documented on main [libFuzzer page](http://llvm.org/docs/LibFuzzer.html). 
+Manual process is documented on main [libFuzzer page](http://llvm.org/docs/LibFuzzer.html)
 To manully reproduce the issue you have to:
-- fetch the toolchain: http://llvm.org/docs/LibFuzzer.html#versions.
-- build the target with toolchain and sanitizer: http://llvm.org/docs/LibFuzzer.html#building.
-- build the fuzzer from target-related code in [targets/](../targets/).
+- fetch the toolchain: http://llvm.org/docs/LibFuzzer.html#versions
+- build the target with toolchain and sanitizer: http://llvm.org/docs/LibFuzzer.html#building
+- build the fuzzer from target-related code in [targets/](../targets/)
 - run the fuzzer on downloaded testcase
 - develop a fix and submit it upstream
 
