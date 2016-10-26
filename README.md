@@ -67,8 +67,8 @@ The following table summarizes issue visibility through the process:
 
 ## Accepting New Targets
 
-To be accepted to oss-fuzz, the target must be an open-source project with
-a significant user base and/or be critical to the global IT infrastructure.
+In order to be accepted to oss-fuzz, an open-source project must 
+have a significant user base and/or be critical to the global IT infrastructure.
 
 To submit a new target to oss-fuzz:
 - create a pull request and provide the following information:
