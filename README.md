@@ -3,7 +3,7 @@
 > *Status*: Beta. We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
 [FAQ](docs/faq.md)
-| [New Target Guide](targets/README.md) 
+| [New Target Guide](docs/new_target.md) 
 | [Targets List](targets/README.md)
 
 
