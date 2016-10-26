@@ -29,5 +29,5 @@ compile
 export PATH=/out:$PATH
 cd /out
 
-$FUZZER $@ -runs=0 $TESTCASE
+$FUZZER $@ $TESTCASE
 
