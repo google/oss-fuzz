@@ -61,7 +61,7 @@ The following table summarizes issue visibility through the process:
 | Issue State    | Visibility |
 |----------|------------|
 | New      | oss-fuzz engineers |
-| Reported | oss-fuzz engineers + people CC'ed on the bug |
+| Reported | oss-fuzz engineers + everyone CC'ed on the bug |
 | Fixed & Verified | public |
 | Lapsed (90 days since report) | public |
 
