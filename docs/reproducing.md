@@ -22,7 +22,7 @@ Follow these steps:
     docker run --rm  -v <local_sources>:/src/target_src -v <reproducer_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
     ```
   
-  It is essentialy the previous command that addionally mounts local sources into the running container.
-- *Fix the issue.* Use the previous command to help you fix the issue. 
+  This is essentialy the previous command that addionally mounts local sources into the running container.
+- *Fix the issue.* Use the previous command to verify you fixed the issue locally. 
 - *Submit the fix.* Clusterfuzz will automatically pick up the changes, recheck the testcast 
   and will close the issue.
