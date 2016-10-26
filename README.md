@@ -15,7 +15,7 @@
 
 Oss-fuzz aims to make common open source software more secure by
 combining modern white-box fuzzing techniques together with scalable
-distributed running.
+distributed execution.
 
 At the first stage of the project we plan to combine
 [libFuzzer](http://llvm.org/docs/LibFuzzer.html) with various `clang`
