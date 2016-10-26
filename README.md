@@ -1,6 +1,4 @@
-# oss-fuzz 
-
-> Fuzzing Open Source Software
+# oss-fuzz - Continuous Fuzzing for Open Source Software
 
 > *Status*: Beta. We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
