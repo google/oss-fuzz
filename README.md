@@ -4,6 +4,7 @@
 
 [FAQ](docs/faq.md)
 | [New Target Guide](docs/new_target.md) 
+| [Reproducing](docs/reproducing.md) 
 | [Targets List](targets/README.md)
 
 
