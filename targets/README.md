@@ -2,7 +2,7 @@
 
 Targets integrated with oss-fuzz.
 
-| Target | Integration Source Location |
+| Target | Fuzzers Location |
 | ------------ | --------------- |
 | [boringssl](https://boringssl.googlesource.com/boringssl/) | [/targets/boringssl](https://github.com/google/oss-fuzz/tree/master/targets/boringssl) |
 | [curl](https://curl.haxx.se/) | [/targets/curl](https://github.com/google/oss-fuzz/tree/master/targets/curl) |
