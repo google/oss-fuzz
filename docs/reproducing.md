@@ -24,7 +24,7 @@ Follow these steps:
   
   This is essentialy the previous command that addionally mounts local sources into the running container.
 - *Fix the issue.* Use the previous command to verify you fixed the issue locally. 
-- *Submit the fix.* Clusterfuzz will automatically pick up the changes, recheck the testcast 
+- *Submit the fix.* Clusterfuzz will automatically pick up the changes, recheck the testcase 
   and will close the issue.
 
 ## Manual
@@ -34,4 +34,8 @@ To manully reproduce the issue you have to:
 - fetch the toolchain: http://llvm.org/docs/LibFuzzer.html#versions.
 - build the target with toolchain and sanitizer: http://llvm.org/docs/LibFuzzer.html#building.
 - build the fuzzer from target-related code in [targets/](../targets/).
-- run the fuzzer on downloaded testcase.
+- run the fuzzer on downloaded testcase
+- develop a fix and submit it upstream
+
+Clusterfuzz will automatically pick up the changes, recheck the testcase and will close the issue.
+
