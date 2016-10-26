@@ -18,9 +18,9 @@ docker run --rm -v <em>testcase_file</em>:/testcase -t ossfuzz/<em>target</em> r
   It builds the fuzzer from nightly sources (in the image) and runs it with testcase input.
   E.g. for libxml2 it will be: 
   
-    ```
-docker run --rm -ti -v ~/Downloads/testcase:/testcase ossfuzz/libxml2 reproduce libxml2_xml_read_memory_fuzzer
-    ```
+   <pre>
+docker run --rm -ti -v <em>~/Downloads/testcase</em>:/testcase ossfuzz/<em>libxml2</em> reproduce <em>libxml2_xml_read_memory_fuzzer</em>
+   </pre>
 - *Reproduce with local sources.* Run:
 
     ```bash
