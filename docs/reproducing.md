@@ -12,7 +12,7 @@ Follow these steps:
 - *Reproduce from nightly sources.* Run:
 
     ```bash
-    docker run --rm -v <testcase_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>`
+    docker run --rm -v <testcase_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
     ```
 
   It builds the fuzzer from nightly sources (in the image) and runs it with reproducer input.
