@@ -69,7 +69,7 @@ In order to be accepted to oss-fuzz, an open-source project must
 have a significant user base and/or be critical to the global IT infrastructure.
 
 To submit a new target to oss-fuzz:
-- create a pull request with a change to [targets/README.md] providing the following information:
+- create a pull request with a change to [targets/README.md](targets/README.md) providing the following information:
   * project site and details
   * source code repository location
   * a link to the project security issue reporting process *OR*
