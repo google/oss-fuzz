@@ -33,5 +33,5 @@ Manual process is documented on main [libFuzzer page](http://llvm.org/docs/LibFu
 To manully reproduce the issue you have to:
 - fetch the toolchain: http://llvm.org/docs/LibFuzzer.html#versions.
 - build the target with toolchain and sanitizer: http://llvm.org/docs/LibFuzzer.html#building.
-- build the fuzzer from the code in [targets/](../targets/).
+- build the fuzzer from target-related code in [targets/](../targets/).
 - run the fuzzer on downloaded testcase.
