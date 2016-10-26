@@ -12,19 +12,19 @@ Follow these steps:
 - *Reproduce from nightly sources.* Run:
 
    <pre>
-   docker run --rm -v <em>testcase_file</em>:/testcase -t ossfuzz/<em>target</em> reproduce <em>fuzzer</em>
+docker run --rm -v <em>testcase_file</em>:/testcase -t ossfuzz/<em>target</em> reproduce <em>fuzzer</em>
    </pre>
 
   It builds the fuzzer from nightly sources (in the image) and runs it with testcase input.
   E.g. for libxml2 it will be: 
   
     ```
-    docker run --rm -ti -v ~/Downloads/testcase:/testcase ossfuzz/libxml2 reproduce libxml2_xml_read_memory_fuzzer
+docker run --rm -ti -v ~/Downloads/testcase:/testcase ossfuzz/libxml2 reproduce libxml2_xml_read_memory_fuzzer
     ```
 - *Reproduce with local sources.* Run:
 
     ```bash
-    docker run --rm  -v <local_sources>:/src/<target> -v <reproducer_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
+docker run --rm  -v <local_sources>:/src/<target> -v <reproducer_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
     ```
   
   This is essentialy the previous command that addionally mounts local sources into the running container.
