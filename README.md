@@ -109,7 +109,8 @@ oss-fuzz will adhere to following disclosure principles:
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
 ## Build status
-[Build status](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
+[This page](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
+gives the latest build logs for each target.
 
 ## Bounties
 
