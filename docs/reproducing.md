@@ -11,9 +11,9 @@ Follow these steps:
 - *Download testcase.* Each issue has a minimized testcase link. Download the testcase to a file.
 - *Reproduce from nightly sources.* Run:
 
-    ```bash
-    docker run --rm -v <testcase_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
-    ```
+   <pre>
+   docker run --rm -v <em>testcase_file</em>:/testcase -t ossfuzz/<em>target</em> reproduce <em>fuzzer</em>
+   </pre>
 
   It builds the fuzzer from nightly sources (in the image) and runs it with testcase input.
   E.g. for libxml2 it will be: 
