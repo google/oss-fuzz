@@ -40,7 +40,7 @@ FUZZERS="break_iterator_fuzzer \
   "
 for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 \
-    /src/$fuzzer.cc -o /out/icu_$fuzzer \
+    /src/$fuzzer.cc -o /out/$fuzzer \
     -I/src/icu/source/common -I/src/icu/source/i18n -L/work/icu/lib \
     -lfuzzer -licui18n -licuuc -licutu -licudata $FUZZER_LDFLAGS
 done
