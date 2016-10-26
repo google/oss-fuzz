@@ -15,11 +15,11 @@ Follow these steps:
     docker run --rm -v <testcase_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
     ```
 
-  It builds the fuzzer from nightly sources (in the image) and runs it with reproducer input.
+  It builds the fuzzer from nightly sources (in the image) and runs it with testcase input.
 - *Reproduce with local sources.* Run:
 
     ```bash
-    docker run --rm  -v <local_sources>:/src/target_src -v <reproducer_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
+    docker run --rm  -v <local_sources>:/src/<target> -v <reproducer_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
     ```
   
   This is essentialy the previous command that addionally mounts local sources into the running container.
