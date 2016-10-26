@@ -112,13 +112,10 @@ oss-fuzz will adhere to following disclosure principles:
 [This page](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
 gives the latest build logs for each target.
 
-## Bounties
+## Trophies
 
-* freetype2: 
-[9](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9&can=1&q=&colspec=ID%20Type%20Component%20Status%20Priority%20Milestone%20Owner%20Summary), 
-[10](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=10&can=1&q=&colspec=ID%20Type%20Component%20Status%20Priority%20Milestone%20Owner%20Summary),
-[36](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=36&can=1&q=&colspec=ID%20Type%20Component%20Status%20Priority%20Milestone%20Owner%20Summary)
-
+[This page](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=status%3AFixed%2CVerified+Type%3ABug%2CBug-Security+-component%3AInfra+)
+gives a list of publically viewable (fixed) bugs found by oss-fuzz.
 
 ## References
 * [libFuzzer documentation](http://libfuzzer.info)
