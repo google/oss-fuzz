@@ -85,7 +85,7 @@ To submit a new target to oss-fuzz:
   to write the code.
 
 
-## Disclosure Guidelines
+## Bug Disclosure Guidelines
 
 Following Google's standard [disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
 oss-fuzz will adhere to following disclosure principles:
