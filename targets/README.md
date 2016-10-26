@@ -2,8 +2,8 @@
 
 Targets integrated with oss-fuzz.
 
-| Target | Fuzzers Location |
-| ------------ | --------------- |
+| Target | Fuzzers Location | CC e-mail | Description
+| ------------ | --------------- | ----------- | ------------ | 
 | [boringssl](https://boringssl.googlesource.com/boringssl/) | [/targets/boringssl](https://github.com/google/oss-fuzz/tree/master/targets/boringssl) |
 | [curl](https://curl.haxx.se/) | [/targets/curl](https://github.com/google/oss-fuzz/tree/master/targets/curl) |
 | [expat](http://expat.sourceforge.net/) | [/targets/expat](https://github.com/google/oss-fuzz/tree/master/targets/expat) |
