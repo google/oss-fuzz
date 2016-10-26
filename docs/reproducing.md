@@ -6,7 +6,7 @@ is entirely possible to do without.
 
 ## Docker
 
-Follow these steps:
+If you have docker installed, follow these steps:
 
 - *Download testcase.* Each issue has a minimized testcase link. Download the testcase to a file.
 - *Reproduce from nightly sources.* Run:
