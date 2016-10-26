@@ -19,12 +19,29 @@
 
 compile
 
+
+REPORT_DIR="/junit_reports"
+mkdir -p $REPORT_DIR
+
+REPORT_TEXT=$(cat <<-EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mikea.concrete.StackTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2016-10-25T02:57:01" hostname="box678.localdomain" time="0.053">
+  <properties/>
+  <testcase name="testEmptyStack" classname="com.mikea.concrete.StackTest" time="0.05"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
+EOF
+)
+
 DIR="/out"
 N=0
 for FUZZER in $(find $DIR -executable -type f); do
   echo "testing $FUZZER"
   $FUZZER -runs=32
   N=$[$N+1]
+
+  echo $REPORT_TEXT > /junit_reports/$FUZZER.xml
 done
 
 if [ "$N" -eq "0" ]; then
@@ -34,4 +51,6 @@ if [ "$N" -eq "0" ]; then
 fi
 
 echo "$N fuzzers total"
+
+ls -al /junit_reports/
 

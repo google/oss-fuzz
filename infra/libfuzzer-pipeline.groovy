@@ -79,10 +79,13 @@ def call(body) {
             def sanitizer = sanitizers[i]
             dir(sanitizer) {
                 def out = "$workspace/out/$sanitizer"
-                sh "mkdir $out"
+                def junit_reports = "$workspace/junit_reports/$sanitizer"
+                sh "mkdir -p $out"
+                sh "mkdir -p $junit_reports"
                 stage("$sanitizer sanitizer") {
                     // Run image to produce fuzzers
-                    sh "docker run --rm --user $uid -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag test"
+                    sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag test"
+                    sh "ls -al $junit_reports/"
                 }
             }
         }
