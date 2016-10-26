@@ -8,8 +8,21 @@ is entirely possible to do without.
 
 Follow these steps:
 
-- download reproducer file
-- run `docker run -v <reproducer_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>`. 
-  This will build a fuzzer (with recent target sources in the image) and will run it with reproducer input.
-- `docker run -v <local_sources>:/src/target_src -v <reproducer_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>` will build
-  fuzzer from your *local* target source. Use it to develop a fix and verify.
+- *Download testcase.* Each issue has a minimized testcase link. Download the testcase to a file.
+- *Reproduce from nightly sources.* Run:
+
+    ```bash
+    docker run --rm -v <testcase_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>`
+    ```
+
+  It builds the fuzzer from nightly sources (in the image) and runs it with reproducer input.
+- *Reproduce with local sources.* Run:
+
+    ```bash
+    docker run --rm  -v <local_sources>:/src/target_src -v <reproducer_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
+    ```
+  
+  It is essentialy the previous command that addionally mounts local sources into the running container.
+- *Fix the issue.* Use the previous command to help you fix the issue. 
+- *Submit the fix.* Clusterfuzz will automatically pick up the changes, recheck the testcast 
+  and will close the issue.
