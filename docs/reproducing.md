@@ -4,7 +4,7 @@ You've been CC'ed on an oss-fuzz issue, now what? Before attempting a fix you sh
 It is much simpler if you have Docker installed ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)), but 
 is entirely possible to do without.
 
-## Docker-based
+## Docker
 
 Follow these steps:
 
