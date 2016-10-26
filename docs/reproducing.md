@@ -26,3 +26,12 @@ Follow these steps:
 - *Fix the issue.* Use the previous command to verify you fixed the issue locally. 
 - *Submit the fix.* Clusterfuzz will automatically pick up the changes, recheck the testcast 
   and will close the issue.
+
+## Manual
+
+Manual process is documented on main [libFuzzer page](http://llvm.org/docs/LibFuzzer.html). 
+To manully reproduce the issue you have to:
+- fetch the toolchain: http://llvm.org/docs/LibFuzzer.html#versions.
+- build the target with toolchain and sanitizer: http://llvm.org/docs/LibFuzzer.html#building.
+- build the fuzzer from the code in [targets/](../targets/).
+- run the fuzzer on downloaded testcase.
