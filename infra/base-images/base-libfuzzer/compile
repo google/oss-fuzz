@@ -18,9 +18,9 @@
 echo "---------------------------------------------------------------"
 
 echo -n "Compiling libFuzzer into /usr/lib/libfuzzer.a ..."
-mkdir /work/libfuzzer
+mkdir -p /work/libfuzzer
 cd /work/libfuzzer
-mkdir /work/lib
+mkdir -p /work/lib
 $CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c /src/libfuzzer/*.cpp -I/src/libfuzzer
 ar ruv /work/lib/libfuzzer.a /work/libfuzzer/*.o
 rm -rf /work/libfuzzer
