@@ -86,13 +86,12 @@ def call(body) {
                     // Run image to produce fuzzers
                     sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag test"
                     sh "ls -al $junit_reports/"
-                
-                    step([$class: 'JUnitResultArchiver', testResults: '$junit_reports/*.xml'])
                 }
             }
         }
 
         stage("uploading") {
+            step([$class: 'JUnitResultArchiver', testResults: 'junit_reports/*.xml'])
             dir('out') {
                 for (int i = 0; i < sanitizers.size(); i++) {
                     def sanitizer = sanitizers[i]
