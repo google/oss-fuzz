@@ -30,7 +30,7 @@ docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b
   
   This is essentialy the previous command that addionally mounts local sources into the running container.
 - *Fix the issue.* Use the previous command to verify you fixed the issue locally. 
-- *Submit the fix.* Clusterfuzz will automatically pick up the changes, recheck the testcase 
+- *Submit the fix.* ClusterFuzz will automatically pick up the changes, recheck the testcase 
   and will close the issue.
 
 ## Manual
@@ -43,5 +43,5 @@ To manully reproduce the issue you have to:
 - run the fuzzer on downloaded testcase
 - develop a fix and submit it upstream
 
-Clusterfuzz will automatically pick up the changes, recheck the testcase and will close the issue.
+ClusterFuzz will automatically pick up the changes, recheck the testcase and will close the issue.
 
