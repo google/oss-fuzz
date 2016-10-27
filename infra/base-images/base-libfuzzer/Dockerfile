@@ -16,7 +16,7 @@
 
 FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y libc6-dev libtool git subversion jq zip
+RUN apt-get install -y libc6-dev libtool git subversion jq zip python3
 
 ENV SANITIZER_FLAGS="-fsanitize=address"
 ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
@@ -27,7 +27,7 @@ ENV FUZZER_LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/li
 RUN mkdir /out && chmod a+w /out
 
 RUN mkdir /src/bin
-COPY compile srcmap reproduce run test /src/bin/
+COPY compile srcmap reproduce run just_run test /src/bin/
 ENV PATH=/src/bin:$PATH
 WORKDIR /src
 CMD ["compile"]
