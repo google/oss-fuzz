@@ -22,25 +22,28 @@ compile
 REPORT_DIR="/junit_reports"
 mkdir -p $REPORT_DIR
 
-REPORT_TEXT=$(cat <<-EOF
+
+DIR="/out"
+N=0
+for FUZZER_BINARY in $(find $DIR -executable -type f); do
+  echo "testing $FUZZER_BINARY"
+  out=$(tempfile)
+  $FUZZER_BINARY -runs=32 | tee $out
+  N=$[$N+1]
+
+  cat $out
+  FUZZER=$(basename $FUZZER_BINARY) 
+  REPORT_TEXT=$(cat <<-EOF
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="Fuzzers" tests="1" skipped="0" failures="0" errors="0" timestamp="2016-10-25T02:57:01" hostname="box678.localdomain" time="1">
+<testsuite name="$FUZZER" tests="1" skipped="0" failures="0" errors="0" timestamp="2016-10-25T02:57:01" hostname="box678.localdomain" time="1">
   <properties/>
-  <testcase name="SomeFuzzer" classname="SomeFuzzer" time="1"/>
+  <testcase name="$FUZZER" classname="$FUZZER" time="1"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
 EOF
 )
-
-DIR="/out"
-N=0
-for FUZZER in $(find $DIR -executable -type f); do
-  echo "testing $FUZZER"
-  $FUZZER -runs=32
-  N=$[$N+1]
-
-  echo $REPORT_TEXT > /junit_reports/$(basename $FUZZER).xml
+  echo $REPORT_TEXT > /junit_reports/$FUZZER.xml
 done
 
 if [ "$N" -eq "0" ]; then
@@ -50,6 +53,4 @@ if [ "$N" -eq "0" ]; then
 fi
 
 echo "$N fuzzers total"
-
-ls -al /junit_reports/
 
