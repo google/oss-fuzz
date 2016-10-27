@@ -12,20 +12,20 @@ If you have docker installed, follow these steps:
 - *Reproduce from nightly sources.* Run:
 
    <pre>
-docker run --rm -v <em>testcase_file</em>:/testcase -t ossfuzz/<em>target</em> reproduce <em>fuzzer</em>
+docker run --rm -v <b><i>testcase_file</i></b>:/testcase -t ossfuzz/<b><i>target</i></b> reproduce <b><i>fuzzer</i></b>
    </pre>
 
   It builds the fuzzer from nightly sources (in the image) and runs it with testcase input.
   E.g. for libxml2 it will be: 
   
    <pre>
-docker run --rm -ti -v <em>~/Downloads/testcase</em>:/testcase ossfuzz/<em>libxml2</em> reproduce <em>libxml2_xml_read_memory_fuzzer</em>
+docker run --rm -ti -v <b><i>~/Downloads/testcase</i></b>:/testcase ossfuzz/<b><i>libxml2</i></b> reproduce <b><i>libxml2_xml_read_memory_fuzzer</i></b>
    </pre>
 - *Reproduce with local sources.* Run:
 
-    ```bash
-docker run --rm  -v <local_sources>:/src/<target> -v <reproducer_file>:/testcase -t ossfuzz/<target> reproduce <fuzzer>
-    ```
+    <pre>
+docker run --rm  -v <b><i>local_sources</i></b>:/src/<b><i>target</i></b> -v <b><i>reproducer_file</i></b>:/testcase -t ossfuzz/<b><i>target</i></b> reproduce <b><i>fuzzer</i></b>
+    </pre>
   
   This is essentialy the previous command that addionally mounts local sources into the running container.
 - *Fix the issue.* Use the previous command to verify you fixed the issue locally. 
