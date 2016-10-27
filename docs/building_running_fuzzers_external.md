@@ -1,22 +1,22 @@
 # Building and Running External Fuzzers
 
 _This page documents building and running fuzzers defined as part of oss-fuzz repository,
-and not an original OSS project._
+and not of the original OSS target._
 _See [Building and Running Fuzzers](building_running_fuzzers.md) process for in-repository fuzzers._
 
 ## Prerequisites
 
-[Install Docker]. The toolchain setup necessary to build coverage-guided fuzzers is complicated. Docker is used
+[Install Docker](install_docker.md). The toolchain setup necessary to build coverage-guided fuzzers is complicated. Docker is used
 to simplify distribution of the toolchain and to produce repeatable results for distributed execution.
 
 ## Checkout
 
-Checkout the oss-fuzz source tree as well as the project you are going to fuzz:
+Checkout the oss-fuzz source tree as well as the target you are going to fuzz:
 ```bash
 git clone git://github.com/google/oss-fuzz.git
-# checkout the project into $PROJECT_NAME dir. e.g. 
+# checkout the taregt into $target_name dir. e.g. 
 # git clone git://git.sv.nongnu.org/freetype/freetype2.git freetype2
-# export PROJECT_NAME=freetype2
+# export target_name=freetype2
 ```
 
 ## Building Fuzzers
@@ -24,13 +24,13 @@ git clone git://github.com/google/oss-fuzz.git
 Building fuzzer is a two-step process:
 
 1. Building a container ready to compile fuzzers: 
-````bash
-docker build -t ossfuzz/$PROJECT_NAME oss-fuzz/$PROJECT_NAME
-````
-2. Running a container:
-````bash
-docker run -ti -v $PWD/$PROJECT_NAME:/src/$PROJECT_NAME -v /tmp/out:/out ossfuzz/$PROJECT_NAME
-````
+    <pre>
+    docker build -t ossfuzz/<b><i>$target_name</i></b> oss-fuzz/<b><i>$target_name</i></b>
+    </pre>
+1. Running a container:
+    <pre>
+    docker run -ti -v $PWD:/src/<b><i>$target_name</i></b> -v /tmp/out:/out ossfuzz/<b><i>$target_name</i></b>
+    </pre>
 
 `/tmp/out` will contain fuzzers.
 
@@ -51,8 +51,6 @@ INFO: Seed: 477892609
 When Ubuntu environment is not aviable (or restricted environemnt is desirable), the fuzzer can easly be run inside docker 
 container:
 
-````bash
-docker run -ti -v /tmp/out:/out -t ossfuzz/libfuzzer-runner /out/some_fuzzer_name --runs=100
-````
-
-[Install Docker]: https://docs.docker.com/engine/installation/
+<pre>
+docker run -ti -v /tmp/out:/out -t ossfuzz/libfuzzer-runner /out/<b><i>$fuzzer</i></b> --runs=100
+</pre>
