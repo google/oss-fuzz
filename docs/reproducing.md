@@ -12,7 +12,7 @@ If you have docker installed, follow these steps:
 - *Reproduce from nightly sources.* Run:
 
    <pre>
-docker run --rm -v <b><i>testcase_file</i></b>:/testcase -t ossfuzz/<b><i>target</i></b> reproduce <b><i>fuzzer</i></b>
+docker run --rm -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
    </pre>
 
   It builds the fuzzer from nightly sources (in the image) and runs it with testcase input.
@@ -24,7 +24,7 @@ docker run --rm -ti -v <b><i>~/Downloads/testcase</i></b>:/testcase ossfuzz/<b><
 - *Reproduce with local sources.* Run:
 
     <pre>
-docker run --rm  -v <b><i>local_sources</i></b>:/src/<b><i>target</i></b> -v <b><i>reproducer_file</i></b>:/testcase -t ossfuzz/<b><i>target</i></b> reproduce <b><i>fuzzer</i></b>
+docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b> -v <b><i>$reproducer_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
     </pre>
   
   This is essentialy the previous command that addionally mounts local sources into the running container.
