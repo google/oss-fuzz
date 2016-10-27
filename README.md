@@ -47,7 +47,7 @@ The following process is used for targets in oss-fuzz:
   tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list). 
   [Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).
   ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reportig-bugs-in-fuzz-targets))
-- if the target project has a defined process for reporting security issues,
+- if the target has a defined process for reporting security issues,
   we will follow it, otherwise we will cc target engineers on an issue.
 - engineers fix the issue and land the fix upstream.
 - fuzzing infrastructure automatically verifies the fix, adds a comment and
@@ -66,17 +66,17 @@ The following table summarizes issue visibility through the process:
 
 ## Accepting New Targets
 
-In order to be accepted to oss-fuzz, an open-source project must 
+In order to be accepted to oss-fuzz, an open-source target must 
 have a significant user base and/or be critical to the global IT infrastructure.
 
 To submit a new target to oss-fuzz:
 - create a pull request with a change to [targets/README.md](targets/README.md) providing the following information:
-  * project site and details
+  * target home site and details
   * source code repository location
-  * a link to the project security issue reporting process *OR*
+  * a link to target security issue reporting process *OR*
   * an e-mail of the engineering contact person to be CCed on issue. This
     has to be an e-mail with google account that belongs to an 
-    established project committer (according to VCS logs).
+    established target committer (according to VCS logs).
     If this is not you or address differs from VCS, an informal e-mail verification will be required.
     This e-mail will also be publicly listed in our [Targets](targets/README.md)
     page.
@@ -102,7 +102,7 @@ oss-fuzz will adhere to following disclosure principles:
 
 * [New Target Guide](docs/new_target.md) walks through steps necessary to add new targets to oss-fuzz.
 * [Running and Building Fuzzers](docs/building_running_fuzzers.md) documents the process for fuzzers that are
-  *part of target project* source code repository.
+  *part of target* source code repository.
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
   *part of oss-fuzz* source code repository.
 * [Targets List](targets/README.md) lists OSS targets added to oss-fuzz.
