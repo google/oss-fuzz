@@ -91,7 +91,7 @@ def call(body) {
         }
 
         stage("uploading") {
-            step([$class: 'JUnitResultArchiver', testResults: 'junit_reports/*.xml'])
+            step([$class: 'JUnitResultArchiver', testResults: 'junit_reports/**/*.xml'])
             dir('out') {
                 for (int i = 0; i < sanitizers.size(); i++) {
                     def sanitizer = sanitizers[i]
