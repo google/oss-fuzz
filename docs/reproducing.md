@@ -9,7 +9,7 @@ is entirely possible to do without.
 If you have docker installed, follow these steps:
 
 - *Download testcase.* Each issue has a minimized testcase link. Download the testcase to a file.
-- *Reproduce from nightly sources.* Run:
+- *Reproduce from nightly sources:* 
 
    <pre>
 docker run --rm -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
@@ -21,7 +21,7 @@ docker run --rm -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$targ
    <pre>
 docker run --rm -ti -v <b><i>~/Downloads/testcase</i></b>:/testcase ossfuzz/<b><i>libxml2</i></b> reproduce <b><i>libxml2_xml_read_memory_fuzzer</i></b>
    </pre>
-- *Reproduce with local sources.* Run:
+- *Reproduce from local sources:*
 
     <pre>
 docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b> \
