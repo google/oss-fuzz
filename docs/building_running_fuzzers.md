@@ -1,6 +1,6 @@
 # Building and Running Fuzzers
 
-_This page documents building and running fuzzers as part of an OSS project._
+_This page documents building and running fuzzers as part of OSS target source tree._
 _See [External Fuzzer](building_running_fuzzers_external.md) process for oss-fuzz fuzzers._
 
 ## Prerequisites
@@ -14,13 +14,13 @@ Building fuzzer is a two-step process:
 
 1. Building a container ready to compile fuzzers: 
 ````bash
-# in project directory; replace/define PROJECT_NAME
-docker build -t ossfuzz/$PROJECT_NAME .
+# in target directory; replace/define TARGET_NAME
+docker build -t ossfuzz/$TARGET_NAME .
 ````
 2. Running a container:
 ````bash
-# in project directory; replace/define PROJECT_NAME
-docker run -ti -v $PWD:/src/$PROJECT_NAME -v /tmp/out:/out ossfuzz/$PROJECT_NAME
+# in target directory; replace/define TARGET_NAME
+docker run -ti -v $PWD:/src/$TARGET_NAME -v /tmp/out:/out ossfuzz/$TARGET_NAME
 ````
 
 `/tmp/out` will contain fuzzers.
