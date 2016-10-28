@@ -145,7 +145,7 @@ For out of tree fuzzers you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
 
 
-### Seed corpora
+### Seed Corpus
 
 oss-fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
 of sample inputs is one of the best ways to improve fuzzer coverage.
