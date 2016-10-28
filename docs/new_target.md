@@ -1,4 +1,4 @@
-# Setting up fuzzers for a new target
+# Setting up New Target
 
 Fuzzer build configurations are placed into [`targets/`](https://github.com/google/oss-fuzz/tree/master/targets) 
 subdirectories of the [oss-fuzz repo] on GitHub. 
