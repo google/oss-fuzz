@@ -38,5 +38,8 @@ for F in $fuzzerFiles; do
   $CXX $CXXFLAGS $FUZZER_LDFLAGS -std=c++11 \
       -o /out/${fuzzerName} -lfuzzer $F \
       -I /src/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
-done
 
+  if [ -d "/src/boringssl/fuzz/${fuzzerName}_corpus" ]; then
+    zip -j /out/${fuzzerName}_seed_corpus.zip /src/boringssl/fuzz/${fuzzerName}_corpus/*
+  fi
+done
