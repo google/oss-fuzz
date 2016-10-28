@@ -16,7 +16,7 @@
 
 FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y libc6-dev libtool git subversion jq
+RUN apt-get install -y libc6-dev libtool git subversion jq zip
 
 ENV SANITIZER_FLAGS="-fsanitize=address"
 ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
