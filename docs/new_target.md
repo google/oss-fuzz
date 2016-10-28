@@ -143,7 +143,7 @@ At least `max_len` is highly recommended.
 
 For out of tree fuzzers you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
-
+([Woff2 example](https://github.com/google/oss-fuzz/blob/master/targets/woff2/convert_woff2ttf_fuzzer.options).)
 
 ### Seed Corpus
 
@@ -154,7 +154,8 @@ To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
 to the fuzzer binary in `/out` during the build. Individual files in the zip file 
 will be used as starting inputs for mutations. You can store the corpus next to 
 source files, generate during build or fetch it using curl or any other tool of 
-your choice. [Boringssl example](https://github.com/google/oss-fuzz/blob/master/targets/boringssl/build.sh#L42)
+your choice. 
+([Boringssl example](https://github.com/google/oss-fuzz/blob/master/targets/boringssl/build.sh#L42).)
 
 Seed corpus files will be used for cross-mutations and portions of them might appear
 in bug reports or be used for further security research. It is important that corpus
@@ -174,7 +175,7 @@ dict = dictionary_name.dict
 ```
 
 It is common for several fuzzers to reuse the same dictionary if they are fuzzing very similar inputs.
-
+([Expat example](https://github.com/google/oss-fuzz/blob/master/targets/expat/parse_fuzzer.options).)
 
 ## Jenkinsfile
 
