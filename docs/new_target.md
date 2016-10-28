@@ -130,7 +130,7 @@ See [Provided Environment Variables](../infra/base-images/base-libfuzzer/README.
 ### Custom libFuzzer options for ClusterFuzz
 
 By default ClusterFuzz will run your fuzzer without any options. You can specify
-custom options by creating a `fuzzer_name.options` file next to a fuzzier in `/out`:
+custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` executable in `/out`:
 
 ```
 [libfuzzer]
@@ -144,26 +144,37 @@ At least `max_len` is highly recommended.
 For out of tree fuzzers you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
 
+
+### Seed corpora
+
+oss-fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
+of sample inputs is one of the best ways to improve fuzzer coverage.
+
+To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
+to the fuzzer binary in `/out` during the build. Individual files in the zip file 
+will be used as starting inputs for mutations. You can store the corpus next to 
+source files, generate during build or fetch it using curl or any other tool of 
+your choice.
+
+Seed corpus files will be used for cross-mutations and portions of them might appear
+in bug reports or be used for further security research. It is important that corpus
+has an appropriate and consistent license.
+
+
 ### Dictionaries
 
 Dictionaries hugely improve fuzzer effectiveness for inputs with lots of similar
 sequences of bytes. [libFuzzer documentation](http://llvm.org/docs/LibFuzzer.html#dictionaries)
 
-Put your dict files in `/out` and specify them in .options file:
+Put your dict file in `/out` and specify in .options file:
 
 ```
 [libfuzzer]
 dict = dictionary_name.dict
 ```
 
-### Seed corpora
+It is common for several fuzzers to reuse the same dictionary if they are fuzzing very similar inputs.
 
-You can also pass a set of initial seed files to your fuzzers. This is typically
-a set of valid inputs to the target function you are testing, and can improve
-coverage significantly.
-
-This can be done by zipping up these files, naming them
-`fuzzer_name_seed_corpus.zip`, and placing them in `/out` in your build script.
 
 ## Jenkinsfile
 
