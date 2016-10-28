@@ -154,7 +154,7 @@ To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
 to the fuzzer binary in `/out` during the build. Individual files in the zip file 
 will be used as starting inputs for mutations. You can store the corpus next to 
 source files, generate during build or fetch it using curl or any other tool of 
-your choice.
+your choice. [Boringssl example](https://github.com/google/oss-fuzz/blob/master/targets/boringssl/build.sh#L42)
 
 Seed corpus files will be used for cross-mutations and portions of them might appear
 in bug reports or be used for further security research. It is important that corpus
