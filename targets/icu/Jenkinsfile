@@ -18,5 +18,5 @@ def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
         'https://github.com/google/oss-fuzz.git')
 
 libfuzzerBuild {
-  svn = "http://source.icu-project.org/repos/icu/icu/trunk/"
+  svn = "http://source.icu-project.org/repos/icu/trunk/icu4c/"
 }
