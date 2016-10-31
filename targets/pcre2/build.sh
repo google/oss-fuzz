@@ -19,11 +19,10 @@ cd pcre2
 
 # build the library.
 ./autogen.sh
-./configure --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-recursion=1000
+./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-recursion=1000
 make clean all
 
 # Build the target.
-$CXX $CXXFLAGS -std=c++11 -I src  \
-     /src/pcre2_fuzzer.cc -o /out/pcre2_fuzzer \
-     -Wl,--whole-archive .libs/*.a -Wl,-no-whole-archive $FUZZER_LDFLAGS \
-     -lfuzzer
+$CXX $CXXFLAGS -o /out/pcre2_fuzzer \
+    -lfuzzer .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a \
+    $FUZZER_LDFLAGS

@@ -19,4 +19,4 @@ MAINTAINER kcc@google.com
 RUN apt-get install -y make autoconf automake libtool subversion
 
 RUN svn co svn://vcs.exim.org/pcre2/code/trunk pcre2
-COPY build.sh pcre2_fuzzer.cc /src/
+COPY build.sh /src/
