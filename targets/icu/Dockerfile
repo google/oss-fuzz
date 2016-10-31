@@ -18,5 +18,5 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y make
 
-RUN svn co http://source.icu-project.org/repos/icu/icu/trunk/ icu
+RUN svn co http://source.icu-project.org/repos/icu/trunk/icu4c/ icu
 COPY build.sh *.cc *.h *.dict *.options /src/
