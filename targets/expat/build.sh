@@ -3,7 +3,7 @@ cd /src/expat/expat
 
 ./buildconf.sh
 ./configure
-make clean all
+make -j$(nproc) clean all
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
     /src/parse_fuzzer.cc -o /out/parse_fuzzer \

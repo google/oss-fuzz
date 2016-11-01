@@ -26,7 +26,7 @@ cd /src/re2
 # this won't cause the fuzzer to fail erroneously due to not running
 # upstream's tests first to be sure things compiled correctly.
 make clean
-make obj/libre2.a
+make -j$(nproc) obj/libre2.a
 
 
 # Second, build our fuzzers.

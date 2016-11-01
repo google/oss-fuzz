@@ -21,13 +21,13 @@ cd fribidi
 ./bootstrap
 ./configure --enable-static=yes --enable-shared=no --with-pic=yes
 # Don't run "make": it's broken. Run "make install".
-make install
+make -j$(nproc) install
 
 cd /src/libass
 
 ./autogen.sh
 ./configure --disable-asm
-make
+make -j$(nproc)
 
 $CXX $CXXFLAGS -std=c++11 -I/src/libass \
     /src/libass_fuzzer.cc -o /out/libass_fuzzer \

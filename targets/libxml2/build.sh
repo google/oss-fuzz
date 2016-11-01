@@ -19,7 +19,7 @@ cd /src/libxml2
 
 ./autogen.sh
 ./configure
-make clean all
+make -j$(nproc) clean all
 
 for fuzzer in libxml2_xml_read_memory_fuzzer libxml2_xml_regexp_compile_fuzzer; do
   $CXX $CXXFLAGS -std=c++11 -Iinclude/ \

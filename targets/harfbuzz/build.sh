@@ -21,7 +21,7 @@ cd /src/harfbuzz
 ./autogen.sh
 export LDFLAGS=$FUZZER_LDFLAGS
 ./configure
-make clean all
+make -j$(nproc) clean all
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     /src/harfbuzz_fuzzer.cc -o /out/harfbuzz_fuzzer \

@@ -25,7 +25,7 @@ mv scripts/pnglibconf.dfa.temp scripts/pnglibconf.dfa
 # build the library.
 autoreconf -f -i
 ./configure
-make clean all
+make -j$(nproc) clean all
 
 # build libpng_read_fuzzer
 $CXX $CXXFLAGS -std=c++11 -I. -lz \

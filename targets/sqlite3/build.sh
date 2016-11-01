@@ -22,7 +22,7 @@ cd bld
 
 export ASAN_OPTIONS=detect_leaks=0
 ../configure
-make
+make -j$(nproc)
 make sqlite3.c
 
 $CXX $CXXFLAGS -std=c++11 -I. \

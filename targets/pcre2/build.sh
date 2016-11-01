@@ -20,7 +20,7 @@ cd pcre2
 # build the library.
 ./autogen.sh
 ./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-recursion=1000
-make clean all
+make -j$(nproc) clean all
 
 # Build the target.
 $CXX $CXXFLAGS -o /out/pcre2_fuzzer \

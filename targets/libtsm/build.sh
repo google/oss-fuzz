@@ -19,7 +19,7 @@ cd /src/libtsm
 
 # build the library.
 ./autogen.sh
-make clean all
+make -j$(nproc) clean all
 
 # build your fuzzer(s)
 $CC $CFLAGS -Isrc/tsm \

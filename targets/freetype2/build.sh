@@ -19,7 +19,7 @@ cd /src/freetype2/
 
 ./autogen.sh
 ./configure
-make clean all
+make -j$(nproc) clean all
 
 $CXX $CXXFLAGS $FUZZER_LDFLAGS -std=c++11 \
   -I./include -I. \

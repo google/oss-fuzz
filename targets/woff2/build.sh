@@ -29,7 +29,7 @@ mv Makefile.temp Makefile
 
 # woff2 uses LFLAGS instead of LDFLAGS.
 export LFLAGS=$FUZZER_LDFLAGS
-make CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" clean all
+make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" clean all
 
 # To avoid multiple main() definitions.
 rm src/woff2_compress.o src/woff2_decompress.o
