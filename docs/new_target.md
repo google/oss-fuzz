@@ -94,7 +94,7 @@ cd /src/expat/expat
 # configure scripts usually use correct environment variables.
 ./configure
 
-make clean all
+make -j$(nproc) clean all
 
 # build the fuzzer, linking with libFuzzer and libexpat.a
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
