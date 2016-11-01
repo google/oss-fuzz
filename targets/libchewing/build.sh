@@ -20,7 +20,8 @@ cd /src/libchewing
 # build the library.
 ./autogen.sh
 ./configure --disable-shared --enable-static --without-sqlite3
-make -j$(nproc) clean all
+make clean
+make -j$(nproc) all
 
 # build your fuzzer(s)
 make -C test CFLAGS="$CFLAGS -Dmain=stress_main -Drand=get_fuzz_input" stress.o
