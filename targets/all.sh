@@ -21,17 +21,17 @@ IGNORE="build:docs:infra:tpm2:scripts"
 
 # Build
 ./infra/base-images/all.sh
-for project in *; do
-  if [[ -f $project || ":${IGNORE}:" == *":$project:"* ]]; then continue; fi
-  echo "@ Building $project"
-  docker build -t ossfuzz/$project $project/
+for target in targets/*; do
+  if [[ -f $target || ":${IGNORE}:" == *":$target:"* ]]; then continue; fi
+  echo "@ Building $target"
+  docker build -t ossfuzz/$target $target/
 
   # Execute command ($1) if any
   case ${1-} in
     "")
       ;;
     compile|test)
-      docker run --rm -ti ossfuzz/$project $@
+      docker run --rm -ti ossfuzz/$target $@
       ;;
     *)
       echo $"Usage: $0 {|compile}"
