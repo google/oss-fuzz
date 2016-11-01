@@ -88,7 +88,7 @@ cd /src/%s
 #
 # ./autogen.sh
 # ./configure
-# make clean all
+# make -j$(nproc) all
 
 # build your fuzzer(s)
 # e.g.
