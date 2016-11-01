@@ -18,7 +18,7 @@
 cd /src/openssl
 
 ./config enable-fuzz-libfuzzer -DPEDANTIC no-shared --with-fuzzer-lib=/usr/lib/libfuzzer $CFLAGS
-LDCMD=clang++ make
+make -j$(nproc) EX_LIBS="-ldl $FUZZER_LDFLAGS"
 
 fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test)
 for f in $fuzzers; do
