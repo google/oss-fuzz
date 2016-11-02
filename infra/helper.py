@@ -17,6 +17,7 @@
 
 from __future__ import print_function
 import argparse
+from ConfigParser import ConfigParser
 import os
 import pipes
 import re
@@ -29,6 +30,7 @@ import time
 
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
+TARGETS_DIR = os.path.join(OSSFUZZ_DIR, 'targets')
 
 
 def main():
@@ -93,6 +95,29 @@ def _get_version_control_url(target_name):
   return None, None
 
 
+def _get_fuzzer_options(target_name, fuzzer_name):
+  """Get fuzzer options if exists."""
+  fuzzer_directory = os.path.join(TARGETS_DIR, target_name)
+  options_file_path = os.path.join(fuzzer_directory, fuzzer_name + '.options')
+  if not os.path.isfile(options_file_path):
+    return []
+
+  config = ConfigParser()
+  config.read(options_file_path)
+
+  if not config.has_section('libfuzzer'):
+    return []
+
+  options = []
+  for key, value in config.items('libfuzzer'):
+    if key == 'dict':
+      value = os.path.join('/out', value)
+
+    options.append('-%s=%s' % (key, value))
+
+  return options
+
+
 def build_image(build_args):
   """Build docker image."""
   parser = argparse.ArgumentParser('helper.py build_image')
@@ -104,7 +129,7 @@ def build_image(build_args):
 
   command = [
         'docker', 'build', '--pull', '-t', 'ossfuzz/' + args.target_name,
-        os.path.join("targets", args.target_name)
+        os.path.join('targets', args.target_name)
   ]
   print('Running:', _get_command_string(command))
 
@@ -162,16 +187,18 @@ def run_fuzzer(run_args):
           file=sys.stderr)
     return 1
 
+  fuzzer_options = _get_fuzzer_options(args.target_name, args.fuzzer_name)
   command = [
       'docker', 'run', '-i',
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out'),
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
       '-t', 'ossfuzz/libfuzzer-runner',
-      '/out/%s/%s' %(args.target_name, args.fuzzer_name)
-  ] + args.fuzzer_args
+      '/out/%s' % args.fuzzer_name
+  ] + args.fuzzer_args + fuzzer_options
 
   print('Running:', _get_command_string(command))
   pipe = subprocess.Popen(command)
   pipe.communicate()
+
 
 def coverage(run_args):
   """Runs a fuzzer in the container."""
