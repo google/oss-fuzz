@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +15,17 @@
 #
 ################################################################################
 
-FROM ossfuzz/base
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y gdb
-COPY llvm-symbolizer run_fuzzer /usr/local/bin/
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
+# Fuzzer runner.
 
-# set up /out dir
-RUN mkdir /out
-VOLUME /out
-ENV PATH "$PATH:/out"
-WORKDIR /out
+FUZZER=$1
+shift
+CMD_LINE="$FUZZER $@"
+
+OPTIONS_FILE="${FUZZER}.options"
+if [ -f $OPTIONS_FILE ]; then
+  OPTIONS_ARGS=$(grep "=" $OPTIONS_FILE | sed 's/\(\w*\)\W*=\W*\(.*\)/-\1=\2 /g' | tr '\n' ' ')
+  CMD_LINE="$CMD_LINE $OPTIONS_ARGS"
+fi
+
+echo $CMD_LINE
+bash -c "$CMD_LINE"

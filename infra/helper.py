@@ -166,6 +166,7 @@ def run_fuzzer(run_args):
       'docker', 'run', '-i',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out'),
       '-t', 'ossfuzz/libfuzzer-runner',
+      'run_fuzzer',
       '/out/%s/%s' %(args.target_name, args.fuzzer_name)
   ] + args.fuzzer_args
 
