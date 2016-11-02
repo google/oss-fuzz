@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +15,17 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-clang
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y libc6-dev libtool git subversion jq zip
+# Fuzzer runner.
 
-ENV SANITIZER_FLAGS="-fsanitize=address"
-ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
+FUZZER=$1
+shift
+CMD_LINE="$FUZZER $@"
 
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
-ENV FUZZER_LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/libc++abi.a -Wl,-no-whole-archive"
+OPTIONS_FILE="${FUZZER}.options"
+if [ -f $OPTIONS_FILE ]; then
+  OPTIONS_ARGS=$(grep "=" $OPTIONS_FILE | sed 's/\(\w*\)\W*=\W*\(.*\)/-\1=\2 /g' | tr '\n' ' ')
+  CMD_LINE="$CMD_LINE $OPTIONS_ARGS"
+fi
 
-RUN mkdir /out && chmod a+w /out
-
-RUN mkdir /src/bin
-COPY compile srcmap reproduce run just_run test /src/bin/
-ENV PATH=/src/bin:$PATH
-WORKDIR /src
-CMD ["compile"]
-
+echo $CMD_LINE
+bash -c "$CMD_LINE"

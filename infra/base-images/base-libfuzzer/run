@@ -16,6 +16,6 @@
 ################################################################################
 
 compile
-export PATH=/out:$PATH
 cd /out
-$@
+export PATH="/out:$PATH"
+just_run $@
