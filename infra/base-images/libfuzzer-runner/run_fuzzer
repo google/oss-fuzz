@@ -27,5 +27,12 @@ if [ -f $OPTIONS_FILE ]; then
   CMD_LINE="$CMD_LINE $OPTIONS_ARGS"
 fi
 
+SEED_CORPUS="${FUZZER}_seed_corpus.zip"
+if [ -f $SEED_CORPUS ]; then
+  mkdir /tmp/seed_corpus/
+  unzip -d /tmp/seed_corpus/ $SEED_CORPUS
+  CMD_LINE="$CMD_LINE /tmp/seed_corpus/"
+fi
+
 echo $CMD_LINE
 bash -c "$CMD_LINE"
