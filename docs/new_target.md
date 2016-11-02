@@ -68,8 +68,8 @@ Make sure you add the file to your Docker image:
 COPY build.sh my_fuzzer.cc /src/         # install build script & fuzzer.
 ```
 
-There are [lots](../libxml2/libxml2_xml_read_memory_fuzzer.cc)
-[of](../expat/parse_fuzzer.cc) [examples](../zlib/zlib_uncompress_fuzzer.cc)
+There are [lots](../targets/libxml2/libxml2_xml_read_memory_fuzzer.cc)
+[of](../targets/expat/parse_fuzzer.cc) [examples](../targets/zlib/zlib_uncompress_fuzzer.cc)
 in this project repository.
 
 ## build.sh
