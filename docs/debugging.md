@@ -8,7 +8,7 @@ $ python infra/helper.py shell $TARGET_NAME  # runs /bin/bash within container
 $ compile                                   # run compilation manually
 ```
 
-## Debugging Fuzzers
+## Debugging Fuzzers with GDB
 
 If you decide to debug a fuzzer with gdb (which is already installed in libfuzzer-runner image),
 you will need to start a container in privileged mode:
