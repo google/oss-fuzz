@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,24 +17,15 @@
 
 # Fuzzer runner.
 
-import configparser
-import os
-import subprocess
-import sys
+FUZZER=$1
+shift
+CMD_LINE="$FUZZER $@"
 
-run_args = sys.argv[1:]
+OPTIONS_FILE="${FUZZER}.options"
+if [ -f $OPTIONS_FILE ]; then
+  OPTIONS_ARGS=$(grep "=" $OPTIONS_FILE | sed 's/\(\w*\)\W*=\W*\(.*\)/-\1=\2 /g' | tr '\n' ' ')
+  CMD_LINE="$CMD_LINE $OPTIONS_ARGS"
+fi
 
-# Use .options file if any.
-fuzzer_name = run_args[0]
-options_file = fuzzer_name + ".options"
-if os.path.isfile(options_file):
-  config = configparser.ConfigParser()
-  config.read(options_file)
-  for (key, value) in config["libfuzzer"].items():
-    run_args.append("-{0}={1}".format(key, value))
-
-# Run
-print("$", " ".join(run_args))
-run_process = subprocess.Popen(run_args)
-run_process.wait()
-assert run_process.returncode == 0
+echo $CMD_LINE
+bash -c "$CMD_LINE"
