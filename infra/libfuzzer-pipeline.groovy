@@ -74,7 +74,7 @@ def call(body) {
 
             sh "docker build --no-cache -t $dockerTag -f $dockerfile $dockerContextDir"
             sh "docker run --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
-            def srcmap = new groovy.json.JsonSlurper().parse(
+            def srcmap = new groovy.json.JsonSlurperClassic().parse(
                 new File("$workspace/srcmap.json.tmp"))
             srcmap['/src'] = [ type: 'git',
                               rev: ossfuzzRev,
