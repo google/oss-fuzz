@@ -76,7 +76,7 @@ def call(body) {
             sh "docker run --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
             def srcmap = new groovy.json.JsonSlurper().parse(
                 new File("$workspace/srcmap.json.tmp"))
-            srmap['/src'] = [ type: 'git',
+            srcmap['/src'] = [ type: 'git',
                               rev: ossfuzzRev,
                               url: 'https://github.com/google/oss-fuzz.git',
                               path: "targets/$projectName"]
