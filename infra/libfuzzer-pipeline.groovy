@@ -72,7 +72,7 @@ def call(body) {
 
             sh "docker build --no-cache -t $dockerTag -f $dockerfile $dockerContextDir"
             sh "docker run --rm $dockerTag srcmap > $srcmapFile"
-            sh "cat $srcmapFile"
+            sh "cat $srcmapFile | jq \"\\\"/src\\\" = 1 \""
         } // stage("docker image")
 
         for (int i = 0; i < sanitizers.size(); i++) {
