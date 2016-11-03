@@ -73,8 +73,14 @@ def call(body) {
             }
 
             sh "docker build --no-cache -t $dockerTag -f $dockerfile $dockerContextDir"
-            sh "docker run --rm $dockerTag srcmap > $srcmapFile"
-            def srcmap = new groovy.json.JsonSlurper().parse(new File(srcmapFile))
+            sh "docker run --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
+            def srcmap = new groovy.json.JsonSlurper().parse(
+                new File("$workspace/srcmap.json.tmp"))
+            srmap['/src'] = [ type: 'git',
+                              rev: ossfuzzRev,
+                              url: 'https://github.com/google/oss-fuzz.git',
+                              path: "targets/$projectName"]
+            writeFile file: srcmapFile text: groovy.json.JsonOutput.toJson(srcmap)
             echo "srcmap: $srcmap"
         } // stage("docker image")
 
