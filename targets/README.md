@@ -7,6 +7,7 @@ Targets integrated with oss-fuzz.
 | [boringssl](https://boringssl.googlesource.com/boringssl/) | [/targets/boringssl](boringssl) |
 | [curl](https://curl.haxx.se/) | [/targets/curl](curl) |
 | [expat](http://expat.sourceforge.net/) | [/targets/expat](expat) |
+| [file (aka libmagic)](http://www.darwinsys.com/file/) | [/targets/file](file) |
 | [freetype2](https://www.freetype.org/) | [/targets/freetype2](freetype2) |
 | [harfbuzz](http://www.harfbuzz.org/) | [/targets/harfbuzz](harfbuzz) |
 | [icu](http://site.icu-project.org/) | [/targets/icu](icu) |
