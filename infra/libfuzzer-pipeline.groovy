@@ -84,6 +84,7 @@ def call(body) {
             // def srcmapText = groovy.json.JsonOutput.toJson(srcmap)
             // echo "srcmapText: $srcmapText"
             // writeFile file: srcmapFile text: srcmapText
+            sh "cp $workspace/srcmap.json.tmp $srcmap"
         } // stage("docker image")
 
         for (int i = 0; i < sanitizers.size(); i++) {
