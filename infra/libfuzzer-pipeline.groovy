@@ -74,6 +74,7 @@ def call(body) {
 
             sh "docker build --no-cache -t $dockerTag -f $dockerfile $dockerContextDir"
             sh "docker run --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
+            // use classic slurper: http://stackoverflow.com/questions/37864542/jenkins-pipeline-notserializableexception-groovy-json-internal-lazymap
             def srcmap = new groovy.json.JsonSlurperClassic().parse(
                 new File("$workspace/srcmap.json.tmp"))
             srcmap['/src'] = [ type: 'git',
@@ -81,8 +82,8 @@ def call(body) {
                               url: 'https://github.com/google/oss-fuzz.git',
                               path: "targets/$projectName" ]
             echo "srcmap: $srcmap"
-            // def srcmapText = groovy.json.JsonOutput.toJson(srcmap)
-            // echo "srcmapText: $srcmapText"
+            def srcmapText = groovy.json.JsonOutput.toJson(srcmap)
+            echo "srcmapText: $srcmapText"
             // writeFile file: srcmapFile text: srcmapText
             sh "cp $workspace/srcmap.json.tmp $srcmap"
         } // stage("docker image")
