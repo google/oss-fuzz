@@ -49,8 +49,10 @@ def call(body) {
         sh "mkdir -p $workspace/out"
 
         stage("docker image") {
+            def ossfuzzRev
             dir('oss-fuzz') {
                 git url: "https://github.com/google/oss-fuzz.git"
+                ossfuzzRev = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
             }
 
             if (gitUrl != null) {
@@ -72,7 +74,8 @@ def call(body) {
 
             sh "docker build --no-cache -t $dockerTag -f $dockerfile $dockerContextDir"
             sh "docker run --rm $dockerTag srcmap > $srcmapFile"
-            sh "cat $srcmapFile | jq \"\\\"/src\\\" = 1 \""
+            def srcmap = new groovy.json.JsonSlurper().parseFile(new File(srcmapFile))
+            echo "srcmap: $srcmap"
         } // stage("docker image")
 
         for (int i = 0; i < sanitizers.size(); i++) {
