@@ -74,7 +74,7 @@ def call(body) {
 
             sh "docker build --no-cache -t $dockerTag -f $dockerfile $dockerContextDir"
             sh "docker run --rm $dockerTag srcmap > $srcmapFile"
-            def srcmap = new groovy.json.JsonSlurper().parseFile(new File(srcmapFile))
+            def srcmap = new groovy.json.JsonSlurper().parse(new File(srcmapFile))
             echo "srcmap: $srcmap"
         } // stage("docker image")
 
