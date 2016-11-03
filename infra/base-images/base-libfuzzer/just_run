@@ -33,7 +33,7 @@ fi
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 if [ -f $SEED_CORPUS ]; then
-  mkdir /tmp/seed_corpus/
+  rm -rf /tmp/seed_corpus/ && mkdir /tmp/seed_corpus/
   unzip -d /tmp/seed_corpus/ $SEED_CORPUS
   CMD_LINE="$CMD_LINE /tmp/seed_corpus/"
 fi
