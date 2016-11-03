@@ -81,9 +81,9 @@ def call(body) {
                               url: 'https://github.com/google/oss-fuzz.git',
                               path: "targets/$projectName" ]
             echo "srcmap: $srcmap"
-            def srcmapText = groovy.json.JsonOutput.toJson(srcmap)
-            echo "srcmapText: $srcmapText"
-            writeFile file: srcmapFile text: srcmapText
+            // def srcmapText = groovy.json.JsonOutput.toJson(srcmap)
+            // echo "srcmapText: $srcmapText"
+            // writeFile file: srcmapFile text: srcmapText
         } // stage("docker image")
 
         for (int i = 0; i < sanitizers.size(); i++) {
