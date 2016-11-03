@@ -82,7 +82,7 @@ def call(body) {
                               url: 'https://github.com/google/oss-fuzz.git',
                               path: "targets/$projectName" ]
             echo "srcmap: $srcmap"
-            writeFile file: srcmapFile text: groovy.json.JsonOutput.toJson(srcmap)
+            // writeFile file: srcmapFile text: groovy.json.JsonOutput.toJson(srcmap)
         } // stage("docker image")
 
         for (int i = 0; i < sanitizers.size(); i++) {
