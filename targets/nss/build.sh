@@ -61,7 +61,7 @@ for fuzzer in $FUZZERS; do
 done
 
 # Archive and copy to /out seed corpus if the build succeeded.
-zip /work/nss/all_nss_seed_corpus.zip /src/nss-corpus/{cert,pkcs8,spki}/*
+zip /work/nss/all_nss_seed_corpus.zip /src/nss-corpus/*/*
 
 for fuzzer in $FUZZERS; do
   cp /work/nss/all_nss_seed_corpus.zip /out/${fuzzer}_seed_corpus.zip
