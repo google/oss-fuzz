@@ -67,10 +67,27 @@ def main():
   return 0
 
 
+def _is_base_image(image_name):
+  """Checks if the image name is a base image."""
+  return os.path.exists(os.path.join('infra', 'base-images', image_name))
+
+
 def _check_target_exists(target_name):
   """Checks if a target exists."""
-  if not os.path.exists(os.path.join(OSSFUZZ_DIR, "targets", target_name)):
+  if not os.path.exists(os.path.join(OSSFUZZ_DIR, 'targets', target_name)):
     print(target_name, 'does not exist', file=sys.stderr)
+    return False
+
+  return True
+
+
+def _check_fuzzer_exists(target_name, fuzzer_name):
+  """Checks if a fuzzer exists."""
+  if not os.path.exists(os.path.join(BUILD_DIR, 'out', target_name,
+                                     fuzzer_name)):
+    print(fuzzer_name,
+          'does not seem to exist. Please run build_fuzzers first.',
+          file=sys.stderr)
     return False
 
   return True
@@ -81,17 +98,30 @@ def _get_command_string(command):
   return ' '.join(pipes.quote(part) for part in command)
 
 
-def _get_version_control_url(target_name):
-  """Returns (url, type) for the target."""
-  git_regex = re.compile(r'.*git\s*=\s*"(.*?)"\s*')
+def _build_image(image_name):
+  """Build image."""
 
-  with open(os.path.join(OSSFUZZ_DIR, target_name, 'Jenkinsfile')) as f:
-    for line in f:
-      match = git_regex.match(line)
-      if match:
-        return match.group(1), 'git'
+  if _is_base_image(image_name):
+    dockerfile_dir = os.path.join('infra', 'base-images', image_name)
+  else:
+    if not _check_target_exists(image_name):
+      return False
 
-  return None, None
+    dockerfile_dir = os.path.join('targets', image_name)
+
+  command = [
+        'docker', 'build', '--pull', '-t', 'ossfuzz/' + image_name,
+        dockerfile_dir,
+  ]
+  print('Running:', _get_command_string(command))
+
+  try:
+    subprocess.check_call(command)
+  except subprocess.CalledProcessError:
+    print('docker build failed.', file=sys.stderr)
+    return False
+
+  return True
 
 
 def build_image(build_args):
@@ -100,22 +130,10 @@ def build_image(build_args):
   parser.add_argument('target_name')
   args = parser.parse_args(build_args)
 
-  if not _check_target_exists(args.target_name):
-    return 1
+  if _build_image(args.target_name):
+    return 0
 
-  command = [
-        'docker', 'build', '--pull', '-t', 'ossfuzz/' + args.target_name,
-        os.path.join("targets", args.target_name)
-  ]
-  print('Running:', _get_command_string(command))
-
-  try:
-    subprocess.check_call(command)
-  except subprocess.CalledProcessError:
-    print('docker build failed.', file=sys.stderr)
-    return 1
-
-  return 0
+  return 1
 
 
 def build_fuzzers(build_args):
@@ -124,7 +142,7 @@ def build_fuzzers(build_args):
   parser.add_argument('target_name')
   args = parser.parse_args(build_args)
 
-  if build_image(build_args):
+  if not _build_image(args.target_name):
     return 1
 
   command = [
@@ -156,19 +174,18 @@ def run_fuzzer(run_args):
   if not _check_target_exists(args.target_name):
     return 1
 
-  if not os.path.exists(os.path.join(BUILD_DIR, 'out', args.target_name,
-                                     args.fuzzer_name)):
-    print(args.fuzzer_name,
-          'does not seem to exist. Please run build_fuzzers first.',
-          file=sys.stderr)
+  if not _check_fuzzer_exists(args.target_name, args.fuzzer_name):
+    return 1
+
+  if not _build_image('libfuzzer-runner'):
     return 1
 
   command = [
       'docker', 'run', '-i',
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out'),
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
       '-t', 'ossfuzz/libfuzzer-runner',
       'run_fuzzer',
-      '/out/%s/%s' %(args.target_name, args.fuzzer_name)
+      '/out/%s' % args.fuzzer_name,
   ] + args.fuzzer_args
 
   print('Running:', _get_command_string(command))
@@ -178,7 +195,8 @@ def run_fuzzer(run_args):
 def coverage(run_args):
   """Runs a fuzzer in the container."""
   parser = argparse.ArgumentParser('helper.py coverage')
-  parser.add_argument('--run_time', default=60, help='time in seconds to run fuzzer')
+  parser.add_argument('--run_time', default=60,
+                      help='time in seconds to run fuzzer')
   parser.add_argument('target_name', help='name of the target')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
@@ -188,24 +206,22 @@ def coverage(run_args):
   if not _check_target_exists(args.target_name):
     return 1
 
-  if not os.path.exists(os.path.join(BUILD_DIR, 'out', args.target_name,
-                                     args.fuzzer_name)):
-    print(args.fuzzer_name,
-          'does not seem to exist. Please run build_fuzzers first.',
-          file=sys.stderr)
+  if not _check_fuzzer_exists(args.target_name, args.fuzzer_name):
+    return 1
+
+  if not _build_image('libfuzzer-runner'):
     return 1
 
   temp_dir = tempfile.mkdtemp()
-  print (args.fuzzer_args)
 
   command = [
       'docker', 'run', '-i',
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out'),
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
       '-e', 'ASAN_OPTIONS=coverage=1,detect_leaks=0',
       '-t', 'ossfuzz/libfuzzer-runner',
-      '/out/%s/%s' % (args.target_name, args.fuzzer_name),
+      '/out/%s' % args.fuzzer_name,
       '-max_total_time=%s' % args.run_time
   ] + args.fuzzer_args
 
@@ -233,7 +249,7 @@ def generate(generate_args):
   parser = argparse.ArgumentParser('helper.py generate')
   parser.add_argument('target_name')
   args = parser.parse_args(generate_args)
-  dir = os.path.join("targets", args.target_name)
+  dir = os.path.join('targets', args.target_name)
 
   try:
     os.mkdir(dir)
@@ -242,6 +258,8 @@ def generate(generate_args):
       raise
     print(dir, 'already exists.', file=sys.stderr)
     return 1
+
+  print('Writing new files to', dir)
 
   with open(os.path.join(dir, 'Jenkinsfile'), 'w') as f:
     f.write(templates.JENKINS_TEMPLATE)
@@ -263,7 +281,7 @@ def shell(shell_args):
   parser.add_argument('target_name', help='name of the target')
   args = parser.parse_args(shell_args)
 
-  if build_image(shell_args):
+  if not _build_image(args.target_name):
     return 1
 
   command = [
