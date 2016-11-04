@@ -18,9 +18,9 @@ Continuous Integration infrastracture:
 
 | Command | Description |
 |---------|-------------
-| `generate`      | 
-| `build_image`   |
-| `build_fuzzers` |
-| `run_fuzzer`    |
-| `coverage`      |
-| `shell`         |
+| `generate`      | Generates skeleton files for a new target |
+| `build_image`   | Builds a docker image for a given target |
+| `build_fuzzers` | Builds fuzzers for a given target |
+| `run_fuzzer`    | Runs a fuzzer in a docker container |
+| `coverage`      | Runs a fuzzer in a docker container and computes a coverage report |
+| `shell`         | Starts a shell inside the docker image for a target |
