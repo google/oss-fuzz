@@ -6,7 +6,7 @@
 | [New Target Guide](docs/new_target.md) 
 | [Reproducing](docs/reproducing.md) 
 | [Targets List](targets/README.md)
-| [Issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
+| [Targets issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 
 
 [Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
