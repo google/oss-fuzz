@@ -59,3 +59,10 @@ for fuzzer in $FUZZERS; do
      /work/nss/lib/libnspr4.a /work/nss/lib/libplc4.a /work/nss/lib/libplds4.a \
      /work/nss/lib/prlog2.o -o /out/$fuzzer $FUZZER_LDFLAGS
 done
+
+# Archive and copy to /out seed corpus if the build succeeded.
+zip /work/nss/all_nss_seed_corpus.zip /src/nss-corpus/*/*
+
+for fuzzer in $FUZZERS; do
+  cp /work/nss/all_nss_seed_corpus.zip /out/${fuzzer}_seed_corpus.zip
+done

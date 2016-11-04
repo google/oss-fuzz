@@ -20,5 +20,6 @@ RUN apt-get install -y make autoconf automake libtool mercurial zlib1g-dev
 
 RUN hg clone https://hg.mozilla.org/projects/nspr nspr
 RUN hg clone https://hg.mozilla.org/projects/nss nss
+RUN git clone https://github.com/mozilla/nss-fuzzing-corpus.git nss-corpus
 
 COPY build.sh fuzzers/* /src/
