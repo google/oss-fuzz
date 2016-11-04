@@ -250,7 +250,7 @@ def generate(generate_args):
   with open(build_sh_path, 'w') as f:
     f.write(templates.BUILD_TEMPLATE % args.target_name)
 
-  os.chmod(build_sh_path, 0755)
+  os.chmod(build_sh_path, 0o755)
   return 0
 
 
