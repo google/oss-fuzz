@@ -18,7 +18,7 @@ Continuous Integration infrastracture:
 
 | Command | Description |
 |---------|-------------
-| `generate`      | 
+| `generate`      | Generates skeleton files for a new target |
 | `build_image`   |
 | `build_fuzzers` |
 | `run_fuzzer`    |
