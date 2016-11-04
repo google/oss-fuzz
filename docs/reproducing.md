@@ -2,15 +2,50 @@
 
 You've been CC'ed on an oss-fuzz issue, now what? Before attempting a fix you should be able to reliably reproduce an issue. 
 
-
 The process is much simpler if you have Docker installed ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)), but 
 is entirely possible to do without.
+
+## Bug tracker reports.
+
+Bug reports in our bug tracker have the format:
+
+```
+Detailed report: <link to ClusterFuzz report
+
+Target: target
+Fuzzer: libFuzzer_target_fuzzer
+Fuzzer binary: fuzzer
+Job Type: libFuzzer_asan_libchewing
+
+Crash Type: Heap-use-after-free
+Crash Address: 0x1337
+Crash State
+  Frame1
+  Frame2
+  Frame3
+
+Regressed: <Regression range link>
+
+Minimized Testcase (size): <Testcase download link>
+```
+
+Click the testcase download link to download the testcase (you may need to
+login, using the same Google account that you've been CC'ed with). The "Detailed
+report" link provides the full stack trace, as well as some additional details
+that may be useful.
+
+For the following instructions, `$target` is the text after `Target: ` in the
+report, and `$fuzzer` is the text after `Fuzzer binary: `. `$testcase_file` is
+the path to the testcase you just downloaded.
+
+Note that for older reports, `Fuzzer binary:` and `Target:` may not exist. In
+this case, please extract this information from the `Fuzzer:` field. This is
+usually in the format `libFuzzer_$target_$fuzzer`.
 
 ## Docker
 
 If you have docker installed, follow these steps:
 
-- *Download testcase.* Each issue has a minimized testcase link. Download the testcase to a file.
 - *Reproduce from nightly sources:* 
 
    <pre>
