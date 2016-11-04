@@ -11,6 +11,7 @@ Targets integrated with oss-fuzz.
 | [freetype2](https://www.freetype.org/) | [/targets/freetype2](freetype2) |
 | [harfbuzz](http://www.harfbuzz.org/) | [/targets/harfbuzz](harfbuzz) |
 | [icu](http://site.icu-project.org/) | [/targets/icu](icu) |
+| [libarchive](https://github.com/libarchive/libarchive) | [/targets/libarchive](libarchive) |
 | [libass](https://github.com/libass/libass) | [/targets/libass](libass) |
 | [libchewing](http://chewing.im/) | [/targets/libchewing](libchewing) |
 | [libpng](http://www.libpng.org/pub/png/libpng.html) | [/targets/libpng](libpng) |
