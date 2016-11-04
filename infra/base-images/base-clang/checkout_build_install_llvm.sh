@@ -40,6 +40,8 @@ rm -rf /work/llvm
 mkdir /src/libfuzzer
 cp -r /src/llvm/lib/Fuzzer/* /src/libfuzzer/
 
+cp /src/llvm/tools/sancov/coverage-report-server.py /usr/local/bin/
+
 # Cleanup
 rm -rf /src/llvm
 apt-get remove --purge -y $LLVM_DEP_PACKAGES

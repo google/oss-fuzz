@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +15,10 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-clang
-MAINTAINER vitalybuka@gmail.com
-RUN apt-get install -y python3 curl
+BINARY=$1
 
-RUN mkdir -p /src/coverage/
-RUN cd /src/coverage/ && curl -O http://llvm.org/svn/llvm-project/llvm/trunk/tools/sancov/coverage-report-server.py && chmod +x coverage-report-server.py
-COPY coverage /src/coverage/
+sancov -symbolize *.sancov -strip_path_prefix=/ $BINARY > cov.symcov
+
+(sleep 3; echo ; echo "Navigate to see coverage: http://127.0.0.1:8001/"; echo) &
+/usr/local/bin/coverage-report-server.py --host 0.0.0.0 --symcov cov.symcov --srcpath /
+

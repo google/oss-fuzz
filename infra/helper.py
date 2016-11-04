@@ -216,11 +216,10 @@ def coverage(run_args):
         'docker', 'run', '-i',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
         '-v', '%s:/cov' % temp_dir,
-        '-v', '%s:/scripts' % os.path.join(OSSFUZZ_DIR, 'scripts'),
         '-w', '/cov',
         '-p', '8001:8001',
-        '-t', 'ossfuzz/coverage',
-        '/src/coverage/coverage', '/out/%s' % args.fuzzer_name,
+        '-t', 'ossfuzz/%s' % args.target_name,
+        'coverage_report', '/out/%s' % args.fuzzer_name,
   ]
 
   print('Running:', _get_command_string(command))
