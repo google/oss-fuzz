@@ -17,6 +17,7 @@
 
 from __future__ import print_function
 import argparse
+import errno
 import os
 import pipes
 import re
@@ -236,7 +237,9 @@ def generate(generate_args):
 
   try:
     os.mkdir(dir)
-  except OSError:
+  except OSError as e:
+    if e.errno != errno.errno.EEXIST:
+      raise
     print(dir, 'already exists.', file=sys.stderr)
     return 1
 
