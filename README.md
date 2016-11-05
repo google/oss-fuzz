@@ -3,8 +3,8 @@
 > *Status*: Beta. We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
 [FAQ](docs/faq.md)
-| [New Target Guide](docs/new_target.md) 
-| [Reproducing](docs/reproducing.md) 
+| [New Target Guide](docs/new_target.md)
+| [Reproducing](docs/reproducing.md)
 | [Targets List](targets/README.md)
 | [Targets issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 
@@ -45,7 +45,7 @@ The following process is used for targets in oss-fuzz:
 - ClusterFuzz continuously executes target fuzzers
 - when fuzzing uncovers an issue, ClusterFuzz creates an internal testcase.
 - issues are automatically triaged and filed in the oss-fuzz [testcase issue
-  tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list). 
+  tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list).
   [Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).
   ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reportig-bugs-in-fuzz-targets))
 - if the target has a defined process for reporting security issues,
@@ -67,7 +67,7 @@ The following table summarizes issue visibility through the process:
 
 ## Accepting New Targets
 
-In order to be accepted to oss-fuzz, an open-source target must 
+In order to be accepted to oss-fuzz, an open-source target must
 have a significant user base and/or be critical to the global IT infrastructure.
 
 To submit a new target to oss-fuzz:
@@ -76,7 +76,7 @@ To submit a new target to oss-fuzz:
   * source code repository location
   * a link to target security issue reporting process *OR*
   * an e-mail of the engineering contact person to be CCed on issue. This
-    has to be an e-mail with google account that belongs to an 
+    has to be an e-mail with google account that belongs to an
     established target committer (according to VCS logs).
     If this is not you or address differs from VCS, an informal e-mail verification will be required.
     This e-mail will also be publicly listed in our [Targets](targets/README.md)
@@ -107,7 +107,7 @@ oss-fuzz will adhere to following disclosure principles:
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
   *part of oss-fuzz* source code repository.
 * [Targets List](targets/README.md) lists OSS targets added to oss-fuzz.
-* [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
+* [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md)
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
 ## Build status
@@ -117,10 +117,9 @@ gives the latest build logs for each target.
 ## Trophies
 
 [This page](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=status%3AFixed%2CVerified+Type%3ABug%2CBug-Security+-component%3AInfra+)
-gives a list of publically viewable (fixed) bugs found by oss-fuzz.
+gives a list of publicly viewable (fixed) bugs found by oss-fuzz.
 
 ## References
 * [libFuzzer documentation](http://libfuzzer.info)
 * [libFuzzer tutorial](http://tutorial.libfuzzer.info)
 * [Chromium Fuzzing Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)
-
