@@ -14,15 +14,28 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <magic.h>
+
+struct Environment {
+  Environment() {
+    magic = magic_open(MAGIC_NONE);
+    if (magic_load(magic, "magic")) {
+      fprintf(stderr, "error loading magic file: %s\n", magic_error(magic));
+      exit(1);
+    }
+  }
+
+  magic_t magic;
+};
+
+static Environment env;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 1)
     return 0;
-    
-  magic_t magic = magic_open(MAGIC_NONE);
-  magic_buffer(magic, data, size);
-  magic_close(magic);
+  magic_buffer(env.magic, data, size);
   return 0;
 }

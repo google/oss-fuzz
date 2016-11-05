@@ -24,3 +24,6 @@ make V=1 all
 $CXX $CXXFLAGS -std=c++11 -Isrc/ \
      /src/magic_fuzzer.cc -o /out/magic_fuzzer \
      -lfuzzer ./src/.libs/libmagic.a $FUZZER_LDFLAGS
+
+cp ./magic/magic.mgc /out/
+
