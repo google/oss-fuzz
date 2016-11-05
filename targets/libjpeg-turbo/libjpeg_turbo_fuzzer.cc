@@ -13,19 +13,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     if (res != 0) {
         tjDestroy(jpegDecompressor);
-        return 1;
+        return 0;
     }
 
     // TODO: this can't possibly be right?
     void *buf = malloc(width * height * 3);
-    res = tjDecompress2(
+    tjDecompress2(
         jpegDecompressor, data, size, reinterpret_cast<unsigned char *>(buf), width, 0, height, TJPF_RGB, 0);
 
     free(buf);
     tjDestroy(jpegDecompressor);
 
-    if (res != 0) {
-        return 1;
-    }
     return 0;
 }
