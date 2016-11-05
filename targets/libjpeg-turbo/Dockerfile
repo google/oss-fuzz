@@ -18,4 +18,10 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER alex.gaynor@gmail.com
 RUN apt-get install -y make autoconf automake libtool nasm
 RUN git clone https://github.com/libjpeg-turbo/libjpeg-turbo
-COPY build.sh libjpeg_turbo_fuzzer.cc libjpeg_turbo_fuzzer.options /src/
+
+RUN mkdir afl-testcases
+RUN curl -o afl-testcases/afl_testcases.tgz http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz
+RUN cd afl-testcases/ && tar -xf afl_testcases.tgz
+RUN zip libjpeg_turbo_fuzzer_seed_corpus.zip afl-testcases/jpeg/full/images/*
+
+COPY build.sh libjpeg_turbo_fuzzer.cc libjpeg_turbo_fuzzer.options libjpeg_turbo_fuzzer_seed_corpus.zip /src/
