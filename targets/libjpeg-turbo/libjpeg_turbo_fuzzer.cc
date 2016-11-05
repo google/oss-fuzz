@@ -11,7 +11,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     int res = tjDecompressHeader3(
         jpegDecompressor, data, size, &width, &height, &subsamp, &colorspace);
 
-    if (res != 0) {
+    if (res != 0 || width == 0 || height == 0) {
         tjDestroy(jpegDecompressor);
         return 0;
     }
