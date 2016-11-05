@@ -25,5 +25,4 @@ $CXX $CXXFLAGS -std=c++11 -I. \
     /src/libjpeg_turbo_fuzzer.cc -o /out/libjpeg_turbo_fuzzer \
     -lfuzzer ./.libs/libturbojpeg.a $FUZZER_LDFLAGS
 
-cp /src/*.options /out/
 cp /src/libjpeg_turbo_fuzzer_seed_corpus.zip /out/
