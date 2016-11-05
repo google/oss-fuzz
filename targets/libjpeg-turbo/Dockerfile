@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER alex.gaynor@gmail.com
 RUN apt-get install -y make autoconf automake libtool nasm
 RUN git clone https://github.com/libjpeg-turbo/libjpeg-turbo
-COPY build.sh libjpeg_turbo_fuzzer.cc /src/
+COPY build.sh libjpeg_turbo_fuzzer.cc libjpeg_turbo_fuzzer.options /src/
