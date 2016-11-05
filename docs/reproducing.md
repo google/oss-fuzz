@@ -5,7 +5,7 @@ You've been CC'ed on an oss-fuzz issue, now what? Before attempting a fix you sh
 The process is much simpler if you have Docker installed ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)), but 
 is entirely possible to do without.
 
-## Bug tracker reports.
+## Bug tracker reports
 
 Bug reports in our bug tracker have the format:
 
