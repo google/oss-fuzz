@@ -46,7 +46,7 @@ RUN apt-get install -y ...              # install required packages to build a p
 RUN git checkout <git_url>              # checkout all sources needed to build your target
 COPY build.sh fuzzer.cc /src/           # install build script and other source files.
 ```
-Expat example: [expat/Dockerfile](../expat/Dockerfile)
+Expat example: [expat/Dockerfile](../targets/expat/Dockerfile)
 
 ## Create Fuzzer Source File
 
