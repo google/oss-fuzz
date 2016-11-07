@@ -72,6 +72,12 @@ There are [lots](../targets/libxml2/libxml2_xml_read_memory_fuzzer.cc)
 [of](../targets/expat/parse_fuzzer.cc) [examples](../targets/zlib/zlib_uncompress_fuzzer.cc)
 in this project repository.
 
+### Fuzzer execution environment
+
+[This page](fuzzer_environment.md) gives information about the environment that
+your fuzzers will run under on ClusterFuzz, and the assumptions that you can
+make.
+
 ## build.sh
 
 This is where most of the work is done to build fuzzers for your target. The script will
