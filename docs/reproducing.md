@@ -10,7 +10,7 @@ is entirely possible to do without.
 Bug reports in our bug tracker have the format:
 
 ```
-Detailed report: <link to ClusterFuzz report
+Detailed report: <link to ClusterFuzz report>
 
 Target: target
 Fuzzer: libFuzzer_target_fuzzer
