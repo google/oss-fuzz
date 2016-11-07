@@ -127,6 +127,42 @@ passing them manually to a build tool might be required.
 See [Provided Environment Variables](../infra/base-images/base-libfuzzer/README.md#provided-environment-variables) section in 
 `base-libfuzzer` image documentation for more details.
 
+
+## Testing locally
+
+Helper script can be used to build images and fuzzers. Non-script
+version using docker commands directly is documented [here](building_running_fuzzers_external.md).
+
+```bash
+$ cd /path/to/oss-fuzz
+$ python infra/helper.py build_image $TARGET_NAME
+$ python infra/helper.py build_fuzzers $TARGET_NAME
+```
+
+This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$TARGET_NAME`
+on your machine (`/out` in the container). You can then try to run these fuzzers
+inside the container to make sure that they work properly:
+
+```bash
+$ python infra/helper.py run_fuzzer $TARGET_NAME name_of_a_fuzzer
+```
+
+If everything works locally, then it should also work on our automated builders
+and ClusterFuzz.
+
+It's recommended to look at coverage as a sanity check to make sure that fuzzer gets to the code you expect.
+
+```bash
+$ python infra/helper.py coverage $TARGET_NAME name_of_a_fuzzer
+```
+
+
+## Debugging Problems
+
+[Debugging](debugging.md) document lists ways to debug your build scripts or fuzzers
+in case you run into problems.
+
+
 ### Custom libFuzzer options for ClusterFuzz
 
 By default ClusterFuzz will run your fuzzer without any options. You can specify
@@ -144,6 +180,7 @@ At least `max_len` is highly recommended.
 For out of tree fuzzers you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
 ([Woff2 example](https://github.com/google/oss-fuzz/blob/master/targets/woff2/convert_woff2ttf_fuzzer.options).)
+
 
 ### Seed Corpus
 
@@ -195,39 +232,6 @@ libfuzzerBuild {
 Simply replace the the "git" entry with the correct git url for the target.
 
 *Note*: only git is supported right now.
-
-## Testing locally
-
-Helper script can be used to build images and fuzzers. Non-script
-version using docker commands directly is documented [here](building_running_fuzzers_external.md).
-
-```bash
-$ cd /path/to/oss-fuzz
-$ python infra/helper.py build_image $TARGET_NAME
-$ python infra/helper.py build_fuzzers $TARGET_NAME
-```
-
-This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$TARGET_NAME`
-on your machine (`/out` in the container). You can then try to run these fuzzers
-inside the container to make sure that they work properly:
-
-```bash
-$ python infra/helper.py run_fuzzer $TARGET_NAME name_of_a_fuzzer
-```
-
-If everything works locally, then it should also work on our automated builders
-and ClusterFuzz.
-
-It's recommended to look at coverage as a sanity check to make sure that fuzzer gets to the code you expect.
-
-```bash
-$ python infra/helper.py coverage $TARGET_NAME name_of_a_fuzzer
-```
-
-## Debugging Problems
-
-[Debugging](debugging.md) document lists ways to debug your build scripts or fuzzers
-in case you run into problems.
 
 ## Checking in to oss-fuzz repository
 
