@@ -106,6 +106,8 @@ oss-fuzz will adhere to following disclosure principles:
   *part of target* source code repository.
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
   *part of oss-fuzz* source code repository.
+* [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
+  environment under which your fuzzers will be run.
 * [Targets List](targets/README.md) lists OSS targets added to oss-fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md)
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.

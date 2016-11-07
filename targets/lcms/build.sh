@@ -15,15 +15,16 @@
 #
 ################################################################################
 
-cd /src/file
+cd /src/lcms
 
-autoreconf -i
-./configure --enable-static
-make V=1 all
+# build the target.
+./configure
+make -j$(nproc) all
 
-$CXX $CXXFLAGS -std=c++11 -Isrc/ \
-     /src/magic_fuzzer.cc -o /out/magic_fuzzer \
-     -lfuzzer ./src/.libs/libmagic.a $FUZZER_LDFLAGS
-
-cp ./magic/magic.mgc /out/
-
+# build your fuzzer(s)
+FUZZERS="cmsIT8_load_fuzzer cms_transform_fuzzer"
+for F in $FUZZERS; do
+    $CC $CFLAGS -Iinclude \
+        /src/$F.c -o /out/$F \
+        -lfuzzer src/.libs/liblcms2.a $FUZZER_LDFLAGS
+done

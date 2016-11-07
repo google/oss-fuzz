@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +14,8 @@
 #
 ################################################################################
 
-cd /src/file
-
-autoreconf -i
-./configure --enable-static
-make V=1 all
-
-$CXX $CXXFLAGS -std=c++11 -Isrc/ \
-     /src/magic_fuzzer.cc -o /out/magic_fuzzer \
-     -lfuzzer ./src/.libs/libmagic.a $FUZZER_LDFLAGS
-
-cp ./magic/magic.mgc /out/
-
+FROM ossfuzz/base-libfuzzer
+MAINTAINER kcwu@google.com
+RUN apt-get install -y make autoconf automake libtool
+RUN git clone https://github.com/mm2/Little-CMS.git lcms
+COPY build.sh cmsIT8_load_fuzzer.c cms_transform_fuzzer.c /src/
