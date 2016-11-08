@@ -14,6 +14,7 @@ Targets integrated with oss-fuzz.
 | [libarchive](https://github.com/libarchive/libarchive) | [/targets/libarchive](libarchive) |
 | [libass](https://github.com/libass/libass) | [/targets/libass](libass) |
 | [libchewing](http://chewing.im/) | [/targets/libchewing](libchewing) |
+| [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo) | [/targets/libjpeg-turbo](libjpeg-turbo) |
 | [lcms](https://github.com/mm2/Little-CMS) | [/targets/lcms](lcms) |
 | [libpng](http://www.libpng.org/pub/png/libpng.html) | [/targets/libpng](libpng) |
 | [libteken](http://80386.nl/projects/libteken/) | [/targets/libteken](libteken) |
