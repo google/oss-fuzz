@@ -22,7 +22,7 @@ export FFMPEG_DEPS_PATH=/src/ffmpeg_deps
 mkdir -p $FFMPEG_DEPS_PATH
 
 cd /src
-bzip2 -d alsa-lib-*
+bzip2 -f -d alsa-lib-*
 tar xf alsa-lib-*
 cd alsa-lib-*
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
