@@ -22,7 +22,8 @@ Targets integrated with oss-fuzz.
 | libxml2 | [/targets/libxml2](libxml2) |
 | nlohmann/json | [/targets/json](json) |
 | nss | [/targets/nss](nss) |
-| [openssl](https://www.openssl.org/) | [/targets/openssl](openssl)
+| [openssl](https://www.openssl.org/) | [/targets/openssl](openssl) |
+| [ots](https://github.com/khaledhosny/ots) | [/targets/ots](ots) |
 | pcre2 | [/targets/pcre2](pcre2) |
 | re2 | [/targets/re2](re2) |
 | sqlite3 | [/targets/sqlite3](sqlite3) |
