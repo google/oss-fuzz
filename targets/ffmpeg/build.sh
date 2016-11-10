@@ -212,6 +212,8 @@ for codec in $CODEC_NAMES; do
       -o /out/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
+
+  echo -en "[libfuzzer]\nmax_len = 1000000\n" > /out/${fuzzer_name}.options
 done
 
 # Build fuzzers for subtitles formats.
@@ -283,6 +285,8 @@ for codec in $CODEC_NAMES; do
       -o /out/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
+
+  echo -en "[libfuzzer]\nmax_len = 1000000\n" > /out/${fuzzer_name}.options
 done
 
 # Find relevant corpus in test samples and archive them for every fuzzer.
