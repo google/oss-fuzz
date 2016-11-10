@@ -165,6 +165,9 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
 make clean
 make -j$(nproc) install
 
+# Download test sampes, will be used as seed corpus.
+export TEST_SAMPLES_PATH=/src/ffmpeg/fate-suite/
+make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
 
 # Build the fuzzers.
 cd /src/ffmpeg
@@ -180,10 +183,9 @@ FFMPEG_FUZZERS_COMMON_FLAGS="-lfuzzer $FUZZER_LDFLAGS \
     -Wl,-rpath-link=libpostproc:libswresample:libswscale:libavfilter:libavdevice:libavformat:libavcodec:libavutil:libavresample \
     -lavdevice -lavfilter -lavformat -lavcodec -lswresample -lswscale \
     -lavutil -ldl -lxcb -lxcb-shm -lxcb -lxcb-xfixes  -lxcb -lxcb-shape -lxcb \
-    -lX11 -lasound -lm -lbz2 -lz -pthread \
-    -lx264 -lx265 -lvpx -lva -lvorbis -logg -lvorbisenc -lopus -lmp3lame -lfdk-aac \
-    -ltheora -ltheoraenc -ltheoradec -lvdpau -lva-drm -ldrm \
-    -lva-x11 -lXext -lXfixes"
+    -lX11 -lasound -lm -lbz2 -lz -pthread -lva-x11 -lXext -lXfixes \
+    -lx264 -lx265 -lvpx -lva -lvorbis -logg -lvorbisenc -lopus -lmp3lame \
+    -lfdk-aac -ltheora -ltheoraenc -ltheoradec -lvdpau -lva-drm -ldrm"
 
 # Build fuzzers for audio formats.
 CODEC_TYPE="AUDIO"
@@ -203,9 +205,11 @@ CODEC_NAMES="AV_CODEC_ID_AAC \
   AV_CODEC_ID_WAVPACK"
 
 for codec in $CODEC_NAMES; do
+  fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
+
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
       /src/ffmpeg/doc/examples/decoder_targeted.c \
-      -o /out/ffmpeg_${CODEC_TYPE}_${codec}_fuzzer \
+      -o /out/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
 done
@@ -217,9 +221,11 @@ CODEC_NAMES="AV_CODEC_ID_DVD_SUBTITLE \
   AV_CODEC_ID_SUBRIP"
 
 for codec in $CODEC_NAMES; do
+  fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
+
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
       /src/ffmpeg/doc/examples/decoder_targeted.c \
-      -o /out/ffmpeg_${CODEC_TYPE}_${codec}_fuzzer \
+      -o /out/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
 done
@@ -270,9 +276,15 @@ CODEC_NAMES="AV_CODEC_ID_AMV \
   AV_CODEC_ID_ZMBV"
 
 for codec in $CODEC_NAMES; do
+  fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
+
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
       /src/ffmpeg/doc/examples/decoder_targeted.c \
-      -o /out/ffmpeg_${CODEC_TYPE}_${codec}_fuzzer \
+      -o /out/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
 done
+
+# Find relevant corpus in test samples and archive them for every fuzzer.
+cd /src
+python group_seed_corpus.py $TEST_SAMPLES_PATH /out
