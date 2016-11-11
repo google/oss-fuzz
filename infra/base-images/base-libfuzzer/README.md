@@ -3,7 +3,7 @@
 
 `docker run -ti <image_name> <command> <arguments>`
 
-Supported commands:
+# Supported Commands
 
 | Command | Description |
 |---------|-------------|
