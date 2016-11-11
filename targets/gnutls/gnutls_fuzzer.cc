@@ -57,7 +57,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         }
     }
 
-    close(out_fd);
     close(socket_fds[0]);
     close(socket_fds[1]);
     gnutls_deinit(session);
