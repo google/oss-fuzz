@@ -20,7 +20,7 @@ Building fuzzer is a two-step process:
 2. Build fuzzers:
     <pre>
     <i># in target directory</i>
-docker run -ti -v $PWD:/src/<b><i>$target_name</i></b> -v /tmp/out:/out ossfuzz/<b><i>$target_name</i></b>
+docker run -ti -v /tmp/out:/out ossfuzz/<b><i>$target_name</i></b>
     </pre>
 
 `/tmp/out` will contain fuzzers.
