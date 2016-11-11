@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include <gnutls/gnutls.h>
@@ -32,10 +33,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     out_fd = open("/dev/null", O_RDWR);
     assert(out_fd >= 0);
-    int pipe_fds[2];
-    res = pipe(pipe_fds);
+    int socket_fds[2];
+    res = socketpair(AF_UNIX, SOCK_STREAM, 0, socket_fds);
     assert(res >= 0);
-    ssize_t write_res = write(pipe_fds[1], data, size);
+    ssize_t write_res = write(socket_fds[1], data, size);
     assert(write_res == size);
 
     res = gnutls_init(&session, GNUTLS_CLIENT);
@@ -44,7 +45,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     res = gnutls_set_default_priority(session);
     assert(res >= 0);
 
-    gnutls_transport_set_int2(session, pipe_fds[0], out_fd);
+    gnutls_transport_set_int2(session, socket_fds[0], out_fd);
 
     do {
         res = gnutls_handshake(session);
@@ -60,8 +61,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
 
     close(out_fd);
-    close(pipe_fds[0]);
-    close(pipe_fds[1]);
+    close(socket_fds[0]);
+    close(socket_fds[1]);
     gnutls_deinit(session);
     return 0;
 }
