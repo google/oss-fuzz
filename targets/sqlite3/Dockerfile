@@ -18,6 +18,8 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER tanin@google.com
 RUN apt-get install -y make autoconf automake libtool fossil tcl
 
+# We won't be able to poll fossil for changes, so this will build
+# only once a day.
 RUN mkdir /src/sqlite3 && \
     cd /src/sqlite3 && \
     fossil clone https://www.sqlite.org/src sqlite --user `whoami` && \
