@@ -29,10 +29,7 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     int res;
     gnutls_session_t session;
-    int in_fd, out_fd;
 
-    out_fd = open("/dev/null", O_RDWR);
-    assert(out_fd >= 0);
     int socket_fds[2];
     res = socketpair(AF_UNIX, SOCK_STREAM, 0, socket_fds);
     assert(res >= 0);
@@ -45,7 +42,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     res = gnutls_set_default_priority(session);
     assert(res >= 0);
 
-    gnutls_transport_set_int2(session, socket_fds[0], out_fd);
+    gnutls_transport_set_int(session, socket_fds[0]);
 
     do {
         res = gnutls_handshake(session);
