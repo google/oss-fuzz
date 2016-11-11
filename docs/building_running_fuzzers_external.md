@@ -25,7 +25,7 @@ Building fuzzer is a two-step process:
 
 1. Building a container ready to compile fuzzers: 
     <pre>
-    docker build -t ossfuzz/<b><i>$target_name</i></b> oss-fuzz/<b><i>$target_name</i></b>
+    docker build -t ossfuzz/<b><i>$target_name</i></b> <b><i>targets/$target_name</i></b>
     </pre>
 1. Running a container:
     <pre>
