@@ -36,8 +36,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     int socket_fds[2];
     res = socketpair(AF_UNIX, SOCK_STREAM, 0, socket_fds);
     assert(res >= 0);
-    ssize_t write_res = write(socket_fds[1], data, size);
-    assert(write_res == size);
+    ssize_t send_res = send(socket_fds[1], data, size, 0);
+    assert(send_res == size);
 
     res = gnutls_init(&session, GNUTLS_CLIENT);
     assert(res >= 0);
