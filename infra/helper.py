@@ -340,9 +340,9 @@ def update_targets_readme(readme_path, target_name, fuzzers_location):
 
   position_to_insert += first_target_line_number
   updated_readme_lines = readme_lines[ : position_to_insert]
-  updated_readme_lines.append('| %s | [%s](%s) |\n' % (target_name,
-                                                     fuzzers_location,
-                                                     target_name))
+  updated_readme_lines.append('| %s | [/%s](%s) |\n' % (target_name,
+                                                        fuzzers_location,
+                                                        target_name))
   updated_readme_lines += readme_lines[position_to_insert : ]
 
   with open(readme_path, 'w') as f:
