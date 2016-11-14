@@ -24,4 +24,4 @@ RUN mkdir /src/sqlite3 && \
     cd /src/sqlite3 && \
     fossil clone https://www.sqlite.org/src sqlite --user `whoami` && \
     fossil open sqlite
-COPY build.sh *.cc *.dict *.options /src/
+COPY build.sh *.dict *.options /src/

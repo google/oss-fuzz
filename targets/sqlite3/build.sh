@@ -28,10 +28,6 @@ export CFLAGS="$CFLAGS -DSQLITE_MAX_LENGTH=128000000 \
 make -j$(nproc)
 make sqlite3.c
 
-$CXX $CXXFLAGS -std=c++11 -I. \
-    /src/sqlite3_fuzzer.cc -o /out/sqlite3_fuzzer \
-    -lfuzzer ./sqlite3.o $FUZZER_LDFLAGS
-
 $CC $CFLAGS -I. \
     /src/sqlite3/test/ossfuzz.c -o /out/ossfuzz \
     -lfuzzer ./sqlite3.o $FUZZER_LDFLAGS
