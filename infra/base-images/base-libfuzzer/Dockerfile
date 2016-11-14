@@ -19,7 +19,7 @@ MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y git subversion jq zip python3
 
 ENV SANITIZER_FLAGS="-fsanitize=address"
-ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
+ENV COV_FLAGS="-fsanitize-coverage=trace-pc-guard"
 
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 ENV FUZZER_LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/libc++abi.a -Wl,-no-whole-archive"
