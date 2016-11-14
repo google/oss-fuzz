@@ -22,6 +22,7 @@ import os
 import pipes
 import re
 import shutil
+import string
 import subprocess
 import sys
 import tempfile
@@ -271,6 +272,9 @@ def generate(generate_args):
   with open(build_sh_path, 'w') as f:
     f.write(templates.BUILD_TEMPLATE % args.target_name)
 
+  targets_readme_path = os.path.join('targets', 'README.md')
+  update_targets_readme(targets_readme_path, args.target_name, dir)
+
   os.chmod(build_sh_path, 0o755)
   return 0
 
@@ -293,6 +297,56 @@ def shell(shell_args):
   print('Running:', _get_command_string(command))
   pipe = subprocess.Popen(command)
   pipe.communicate()
+
+
+def update_targets_readme(readme_path, target_name, fuzzers_location):
+  """Add new target name and fuzzers location to the given README.md file."""
+  readme_lines = []
+  with open(readme_path) as f:
+    readme_lines += f.readlines()
+
+  if not readme_lines:
+    print('ERROR: empty %s file' % readme_path)
+    return
+
+  TARGETS_LIST_START_TOKEN = '| Target |'
+  first_target_line_number = -1
+  for i, line in enumerate(readme_lines):
+    if line.startswith(TARGETS_LIST_START_TOKEN):
+      first_target_line_number = i + 2
+      break
+
+  if first_target_line_number < 0:
+    print('ERROR: list of targets is not found in %s file' % readme_path)
+    return
+
+  def sanitize_line(line):
+    while line and not line[0] in string.ascii_letters + string.digits:
+      line = line[1:]
+    return line
+
+  sanitized_lines = readme_lines[first_target_line_number : ]
+  sanitized_lines = [sanitize_line(line) for line in sanitized_lines]
+
+  position_to_insert = -1
+  for i in xrange(0, len(sanitized_lines)):
+    if target_name > sanitized_lines[i] and target_name < sanitized_lines[i+1]:
+      position_to_insert = i + 1
+      break
+
+  if position_to_insert < 0:
+    print('ERROR: please update %s file manually' % readme_path)
+    return
+
+  position_to_insert += first_target_line_number
+  updated_readme_lines = readme_lines[ : position_to_insert]
+  updated_readme_lines.append('| %s | [%s](%s) |\n' % (target_name,
+                                                     fuzzers_location,
+                                                     target_name))
+  updated_readme_lines += readme_lines[position_to_insert : ]
+
+  with open(readme_path, 'w') as f:
+    f.write(''.join(updated_readme_lines))
 
 
 if __name__ == '__main__':

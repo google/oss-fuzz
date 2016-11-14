@@ -5,6 +5,7 @@ Targets integrated with oss-fuzz.
 | Target | Fuzzers Location | CC e-mail | Description
 | ------------ | --------------- | ----------- | ------------ |
 | [boringssl](https://boringssl.googlesource.com/boringssl/) | [/targets/boringssl](boringssl) |
+| [c-ares](https://c-ares.haxx.se/) | [targets/c-ares](c-ares) |
 | [curl](https://curl.haxx.se/) | [/targets/curl](curl) |
 | [expat](http://expat.sourceforge.net/) | [/targets/expat](expat) |
 | [file (aka libmagic)](http://www.darwinsys.com/file/) | [/targets/file](file) |
