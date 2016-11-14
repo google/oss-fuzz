@@ -1,0 +1,2 @@
+python-jenkins
+jinja2
