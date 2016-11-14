@@ -53,7 +53,7 @@ The following process is used for targets in oss-fuzz:
 - engineers fix the issue and land the fix upstream.
 - fuzzing infrastructure automatically verifies the fix, adds a comment and
   closes the issue.
-- after the issue is fixed or after 90 days since reporting has passed, the issue
+- after 7 days has passed since the issue is fixed or after 90 days since reporting has passed, the issue
   becomes *public*.
 
 The following table summarizes issue visibility through the process:
