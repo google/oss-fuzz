@@ -14,6 +14,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+def sanitizerFlags = [
+  "address":"-fsanitize=address",
+  "undefined":"-fsanitize=bool"
+  ]
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -95,7 +100,8 @@ def call(body) {
                 sh "mkdir -p $junit_reports"
                 stage("$sanitizer sanitizer") {
                     // Run image to produce fuzzers
-                    sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag test"
+                    def flags = sanitizerFlags[sanitizer]
+                    sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -e SANITIZER_FLAGS=\"${flags}\" -t $dockerTag test"
                     sh "ls -al $junit_reports/"
                 }
             }
