@@ -33,5 +33,5 @@ $CC $CFLAGS -I. \
     /src/sqlite3/test/ossfuzz.c -o /out/ossfuzz \
     -lfuzzer ./sqlite3.o $FUZZER_LDFLAGS
 
-cp /src/*.options /src/*.dict /out/
+cp /src/*.options /src/*.dict /src/*.zip /out/
 

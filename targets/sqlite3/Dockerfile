@@ -24,4 +24,7 @@ RUN mkdir /src/sqlite3 && \
     cd /src/sqlite3 && \
     fossil clone https://www.sqlite.org/src sqlite --user `whoami` && \
     fossil open sqlite
+
+RUN find /src/sqlite3 -name "*.test" | xargs zip /src/ossfuzz_seed_corpus.zip
+
 COPY build.sh *.dict *.options /src/
