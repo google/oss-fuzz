@@ -14,11 +14,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-def sanitizerFlags = [
-  "address":"-fsanitize=address",
-  "undefined":"-fsanitize=bool"
-  ]
-
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -37,7 +32,13 @@ def call(body) {
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
 
-    def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
+    // Flags configuration
+    def sanitizerFlags = [
+      "address":"-fsanitize=address",
+      "undefined":"-fsanitize=bool"
+      ]
+
+  def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
     node {
