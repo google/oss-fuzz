@@ -13,10 +13,10 @@ Examples:
 [s2n](https://github.com/awslabs/s2n/tree/master/tests/fuzz),
 [openssl](https://github.com/openssl/openssl/tree/master/fuzz),
 [FreeType](http://git.savannah.gnu.org/cgit/freetype/freetype2.git/tree/src/tools/ftfuzzer),
-[re2](https://github.com/google/re2/tree/master/re2/fuzzing)
+[re2](https://github.com/google/re2/tree/master/re2/fuzzing),
 [harfbuzz](https://github.com/behdad/harfbuzz/tree/master/test/fuzzing),
 [pcre2](http://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
-[ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decoder_targeted.c)
+[ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decoder_targeted.c).
 
 
 ## Seed Corpus
