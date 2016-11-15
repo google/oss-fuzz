@@ -18,6 +18,6 @@ def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
         'https://github.com/google/oss-fuzz.git')
 
 libfuzzerBuild {
-  git = "git://git.code.sf.net/p/expat/code_git",
+  git = "git://git.code.sf.net/p/expat/code_git"
   sanitizers = ["address", "undefined"]
 }
