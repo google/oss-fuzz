@@ -23,7 +23,8 @@ cd bld
 export ASAN_OPTIONS=detect_leaks=0
 # Limit max length of data blobs and sql queries to prevent irrelevant OOMs.
 export CFLAGS="$CFLAGS -DSQLITE_MAX_LENGTH=128000000 \
-               -DSQLITE_MAX_SQL_LENGTH=128000000"
+               -DSQLITE_MAX_SQL_LENGTH=128000000 \
+               -DSQLITE_PRINTF_PRECISION_LIMIT=128000000"
 ../configure
 make -j$(nproc)
 make sqlite3.c
