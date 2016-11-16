@@ -1,4 +1,4 @@
-# oss-fuzz - continuous fuzzing of open source software
+# OSS-Fuzz - continuous fuzzing of open source software
 
 > *Status*: Beta. We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
 
@@ -13,7 +13,7 @@
 
 ## Goals
 
-Oss-fuzz aims to make common open source software more secure by
+OSS-Fuzz aims to make common open source software more secure by
 combining modern white-box fuzzing techniques together with scalable
 distributed execution.
 
@@ -37,14 +37,14 @@ has proved very successful.
 
 ## Process Overview
 
-The following process is used for targets in oss-fuzz:
+The following process is used for targets in OSS-Fuzz:
 
-- a target is accepted to oss-fuzz.
-- oss-fuzz build server build target fuzzers  regularly and submits them to
+- a target is accepted to OSS-Fuzz.
+- OSS-Fuzz build server build target fuzzers  regularly and submits them to
   ClusterFuzz for execution.
 - ClusterFuzz continuously executes target fuzzers
 - when fuzzing uncovers an issue, ClusterFuzz creates an internal testcase.
-- issues are automatically triaged and filed in the oss-fuzz [testcase issue
+- issues are automatically triaged and filed in the OSS-Fuzz [testcase issue
   tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list). 
   [Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).
   ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reportig-bugs-in-fuzz-targets))
