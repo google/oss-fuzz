@@ -1,6 +1,6 @@
 # Targets List
 
-Targets integrated with oss-fuzz.
+Following is the list of targets that are currently integrated with OSS-Fuzz.
 
 | Target | Fuzzers Location | CC e-mail | Description
 | ------------ | --------------- | ----------- | ------------ |
