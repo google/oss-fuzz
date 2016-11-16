@@ -23,7 +23,7 @@ export LDFLAGS="$FUZZER_LDFLAGS"
 ./buildconf
 ./configure
 make clean
-make -j$(nproc) all
+make CFLAGS= -j$(nproc) all
 
 # Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -I. \
