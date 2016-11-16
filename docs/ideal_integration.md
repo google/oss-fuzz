@@ -23,9 +23,11 @@ Examples:
 
 
 ## Stage 2: Seed Corpus
-* The seed corpus should be available in revision control (same or different as the source code). 
+The seed corpus should be available in revision control (same or different as the source code). 
 The seed corpus should be maintained by the project owners and extended every time a bug found by the fuzz target is fixed. 
 Inputs that trigger important parts of the code are also welcome.
+
+The quality of the seed corpus has huge impact on the efficiency of fuzzing .
 
 Examples: 
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
