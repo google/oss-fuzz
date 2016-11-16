@@ -60,17 +60,17 @@ The following table summarizes issue visibility through the process:
 
 | Issue State    | Visibility |
 |----------|------------|
-| New      | oss-fuzz engineers |
-| Reported | oss-fuzz engineers + everyone CC'ed on the bug |
+| New      | OSS-Fuzz engineers |
+| Reported | OSS-Fuzz engineers + everyone CC'ed on the bug |
 | Fixed & Verified | public |
 | Lapsed (90 days since report) | public |
 
 ## Accepting New Targets
 
-In order to be accepted to oss-fuzz, an open-source target must 
+In order to be accepted to OSS-Fuzz, an open-source target must 
 have a significant user base and/or be critical to the global IT infrastructure.
 
-To submit a new target to oss-fuzz:
+To submit a new target to OSS-Fuzz:
 - create a pull request with a change to [targets/README.md](targets/README.md) providing the following information:
   * target home site and details
   * source code repository location
@@ -81,14 +81,14 @@ To submit a new target to oss-fuzz:
     If this is not you or address differs from VCS, an informal e-mail verification will be required.
     This e-mail will also be publicly listed in our [Targets](targets/README.md)
     page.
-- once accepted by an oss-fuzz project member, follow the [New Target Guide](docs/new_target.md)
+- once accepted by an OSS-Fuzz project member, follow the [New Target Guide](docs/new_target.md)
   to write the code.
 
 
 ## Bug Disclosure Guidelines
 
 Following Google's standard [disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
-oss-fuzz will adhere to following disclosure principles:
+OSS-Fuzz will adhere to following disclosure principles:
   - **90-day deadline**. After notifying target authors, we will open reported
     issues in 90 days, or sooner if the fix is released.
   - **Weekends and holidays**. If a deadline is due to expire on a weekend or
@@ -101,14 +101,14 @@ oss-fuzz will adhere to following disclosure principles:
 
 ## Documentation
 
-* [New Target Guide](docs/new_target.md) walks through steps necessary to add new targets to oss-fuzz.
+* [New Target Guide](docs/new_target.md) walks through steps necessary to add new targets to OSS-Fuzz.
 * [Running and Building Fuzzers](docs/building_running_fuzzers.md) documents the process for fuzzers that are
   *part of target* source code repository.
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
-  *part of oss-fuzz* source code repository.
+  *part of OSS-Fuzz* source code repository.
 * [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
   environment under which your fuzzers will be run.
-* [Targets List](targets/README.md) lists OSS targets added to oss-fuzz.
+* [Targets List](targets/README.md) lists OSS targets added to OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
@@ -119,7 +119,7 @@ gives the latest build logs for each target.
 ## Trophies
 
 [This page](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=status%3AFixed%2CVerified+Type%3ABug%2CBug-Security+-component%3AInfra+)
-gives a list of publically viewable (fixed) bugs found by oss-fuzz.
+gives a list of publically viewable (fixed) bugs found by OSS-Fuzz.
 
 ## References
 * [libFuzzer documentation](http://libfuzzer.info)
