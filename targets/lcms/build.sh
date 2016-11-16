@@ -28,3 +28,5 @@ for F in $FUZZERS; do
         /src/$F.c -o /out/$F \
         -lfuzzer src/.libs/liblcms2.a $FUZZER_LDFLAGS
 done
+
+cp /src/icc.dict /src/*.options /out

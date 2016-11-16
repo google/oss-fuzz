@@ -18,4 +18,4 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER kcwu@google.com
 RUN apt-get install -y make autoconf automake libtool
 RUN git clone https://github.com/mm2/Little-CMS.git lcms
-COPY build.sh cmsIT8_load_fuzzer.c cms_transform_fuzzer.c /src/
+COPY build.sh cmsIT8_load_fuzzer.* cms_transform_fuzzer.* icc.dict /src/
