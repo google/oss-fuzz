@@ -3,7 +3,10 @@ OSS projects have different build and test systems and so we can not expect them
 to have a unified way of implementing and maintaining fuzz targets and integrating
 them with OSS-Fuzz. However we will still try to give recommendations on the preferred ways. 
 
-## Fuzz Target
+Here are the 4 steps (from the simplest to the most advanced) that will make automated fuzzing
+simple and efficient. 
+
+## Stage 1: Fuzz Target
 The code of the [fuzz target(s)](http://libfuzzer.info/#fuzz-target) should be part of the project's source code repository. 
 All fuzz targets should be easily discoverable (e.g. reside in the same directory, or follow the same naming pattern, etc). 
 
@@ -19,7 +22,7 @@ Examples:
 [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decoder_targeted.c).
 
 
-## Seed Corpus
+## Stage 2: Seed Corpus
 * The seed corpus should be available in revision control (same or different as the source code). 
 The seed corpus should be maintained by the project owners and extended every time a bug found by the fuzz target is fixed. 
 Inputs that trigger important parts of the code are also welcome.
@@ -29,7 +32,7 @@ Examples:
 [openssl](https://github.com/openssl/openssl/tree/master/fuzz),
 
 
-## Regression Testing
+## Stage 3: Regression Testing
 The fuzz targets should be regularly tested (not necessary fuzzed!) as a part
 of the project's regression testing process.
 One way to do so is to link the fuzz target with a simple driver
@@ -39,7 +42,7 @@ If possible, use the [sanitizers](https://github.com/google/sanitizers) during r
 
 Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45)
 
-## Build support
+## Stage 4: Build support
 A plethora of different build systems exist in the open-source world.
 And the less OSS-Fuzz knows about them the better it can scale. 
 
