@@ -3,7 +3,7 @@ OSS projects have different build and test systems and so we can not expect them
 to have a unified way of implementing and maintaining fuzz targets and integrating
 them with OSS-Fuzz. However we will still try to give recommendations on the preferred ways. 
 
-Here are the 4 steps (from the simplest to the most advanced) that will make automated fuzzing
+Here are the 4 stages of integraion (starting from the easiest) that will make automated fuzzing
 simple and efficient. 
 
 ## Stage 1: Fuzz Target
