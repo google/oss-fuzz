@@ -1,6 +1,6 @@
-# Reproducing oss-fuzz issues
+# Reproducing OSS-Fuzz issues
 
-You've been CC'ed on an oss-fuzz issue, now what? Before attempting a fix you should be able to reliably reproduce an issue. 
+You've been CC'ed on an OSS-Fuzz issue, now what? Before attempting a fix you should be able to reliably reproduce an issue. 
 
 The process is much simpler if you have Docker installed ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)), but 
 is entirely possible to do without.

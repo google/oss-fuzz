@@ -17,7 +17,7 @@ For example, fuzzers for the expat library are located in
 
 ## Overview
 
-To add a new OSS target to oss-fuzz, 3 supporting files have to be added to oss-fuzz source code repository:
+To add a new OSS target to OSS-Fuzz, 3 supporting files have to be added to OSS-Fuzz source code repository:
 
 * `targets/<target_name>/Dockerfile` - defines an container environment with all the dependencies
 needed to build the project and the fuzzer.

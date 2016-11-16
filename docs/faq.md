@@ -1,8 +1,8 @@
 # Frequently Asked Questions
 
-## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reportig bugs in fuzz targets?
+## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in fuzz targets?
 
-Security control is important for the kind of issues that oss-fuzz detects.
+Security access control is important for the kind of issues that OSS-Fuzz detects.
 We will reconsider github issue tracker once there are access control
 features available.
 
