@@ -25,16 +25,22 @@ Examples:
 
 
 ## Stage 2: Seed Corpus
-The seed corpus should be available in revision control (can be same or different as the source code). 
-The seed corpus should be maintained by the project owners and extended every time a bug found by the fuzz target is fixed. 
-Inputs that trigger important parts of the code are also welcome.
+The *corpus* is a set of inputs for the fuzz target (stored as individual files). 
+When starting the fuzzing process, one should have a "seed corpus", 
+i.e. a set of inputs to "seed" the mutations.
+The quality of the seed corpus has a huge impact on the fuzzing efficiency as it allows the fuzzer
+to discover new code paths easier. 
 
-The quality of the seed corpus has a huge impact on the fuzzing efficiency as it allows the fuzzer to discover new code paths easily. The ideal corpus is a minimial set of intputs that provides maximal code coverage. 
-Adding past crash inputs to seed corpus helps to create a good regression suite for testing.
+The ideal corpus is a minimial set of intputs that provides maximal code coverage. 
+
+For better OSS-Fuzz integration 
+the seed corpus should be available in revision control (can be same or different as the source code). 
+It should be regularly extended with the inputs that (used to) trigger bugs and/or touch new parts of the code. 
 
 Examples: 
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
 [openssl](https://github.com/openssl/openssl/tree/master/fuzz),
+[nss](https://github.com/mozilla/nss-fuzzing-corpus) (corpus in a separate repo) 
 
 
 ## Stage 3: Regression Testing
