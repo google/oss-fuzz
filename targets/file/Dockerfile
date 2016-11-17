@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM ossfuzz/base-libfuzzer
-MAINTAINER your@email.com
+MAINTAINER emaste@freebsd.org
 RUN apt-get install -y make autoconf automake libtool shtool 
 RUN git clone https://github.com/file/file.git
 COPY build.sh magic_fuzzer.cc /src/
