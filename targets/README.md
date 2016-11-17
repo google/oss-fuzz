@@ -5,10 +5,10 @@ Following is the list of targets that are currently integrated with OSS-Fuzz.
 | Target | Fuzzers Location | CC e-mail | Description
 | ------------ | --------------- | ----------- | ------------ |
 | [boringssl](https://boringssl.googlesource.com/boringssl/) | [/targets/boringssl](boringssl) |
-| [c-ares](https://c-ares.haxx.se/) | [targets/c-ares](c-ares) |
+| [c-ares](https://c-ares.haxx.se/) | [/targets/c-ares](c-ares) |
 | [curl](https://curl.haxx.se/) | [/targets/curl](curl) |
 | [expat](http://expat.sourceforge.net/) | [/targets/expat](expat) |
-| [file (aka libmagic)](http://www.darwinsys.com/file/) | [/targets/file](file) |
+| [file (aka libmagic)](http://www.darwinsys.com/file/) | [/targets/file](file) | emaste@freebsd.org | guesses file type (`file` command) |
 | [freetype2](https://www.freetype.org/) | [/targets/freetype2](freetype2) |
 | [harfbuzz](http://www.harfbuzz.org/) | [/targets/harfbuzz](harfbuzz) |
 | [icu](http://site.icu-project.org/) | [/targets/icu](icu) |
