@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd /src/re2
-
 # First, build the re2 library.
 # N.B., we don't follow the standard incantation for building re2
 # (i.e., `make && make test && make install && make testinstall`),

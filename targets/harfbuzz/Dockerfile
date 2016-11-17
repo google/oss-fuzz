@@ -19,4 +19,5 @@ MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool ragel pkg-config
 
 RUN git clone https://anongit.freedesktop.org/git/harfbuzz.git
+WORKDIR harfbuzz
 COPY build.sh harfbuzz_fuzzer.cc /src/

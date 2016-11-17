@@ -19,4 +19,5 @@ MAINTAINER wrengr@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 
 RUN git clone https://code.googlesource.com/re2
+WORKDIR re2
 COPY build.sh re2_fuzzer.* /src/

@@ -16,7 +16,6 @@
 ################################################################################
 
 # Build the library.
-cd /src/nss
 make CCC="$CXX" XCFLAGS="$CXXFLAGS" SANITIZER_CFLAGS="$CXXFLAGS" \
     BUILD_OPT=1 USE_64=1 NSS_DISABLE_GTESTS=1 ZDEFS_FLAG= \
     nss_clean_all nss_build_all

@@ -22,4 +22,5 @@ RUN hg clone https://hg.mozilla.org/projects/nspr nspr
 RUN hg clone https://hg.mozilla.org/projects/nss nss
 RUN git clone https://github.com/mozilla/nss-fuzzing-corpus.git nss-corpus
 
+WORKDIR nss
 COPY build.sh fuzzers/* /src/

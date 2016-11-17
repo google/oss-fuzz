@@ -19,5 +19,6 @@ MAINTAINER dvyukov@google.com
 RUN apt-get install -y make autoconf automake libtool libssl-dev zlib1g-dev
 
 RUN git clone https://github.com/curl/curl.git
+WORKDIR curl
 COPY build.sh curl_fuzzer.cc *.options *.dict /src/
 

@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd /src/libpng
-
 # Disable logging via library build configuration control.
 cat scripts/pnglibconf.dfa | sed -e "s/option STDIO/option STDIO disabled/" \
 > scripts/pnglibconf.dfa.temp

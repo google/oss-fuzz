@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd /src/openssl
-
 ./config enable-fuzz-libfuzzer -DPEDANTIC no-shared --with-fuzzer-lib=/usr/lib/libfuzzer $CFLAGS
 make -j$(nproc) EX_LIBS="-ldl $FUZZER_LDFLAGS"
 

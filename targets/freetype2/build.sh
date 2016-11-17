@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 ################################################################################
-cd /src/freetype2/
 
 ./autogen.sh
 ./configure

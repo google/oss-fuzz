@@ -262,15 +262,18 @@ def generate(generate_args):
 
   print('Writing new files to', dir)
 
+  template_args = {
+    'target_name' : args.target_name
+    }
   with open(os.path.join(dir, 'Jenkinsfile'), 'w') as f:
-    f.write(templates.JENKINS_TEMPLATE)
+    f.write(templates.JENKINS_TEMPLATE % template_args)
 
   with open(os.path.join(dir, 'Dockerfile'), 'w') as f:
-    f.write(templates.DOCKER_TEMPLATE)
+    f.write(templates.DOCKER_TEMPLATE % template_args)
 
   build_sh_path = os.path.join(dir, 'build.sh')
   with open(build_sh_path, 'w') as f:
-    f.write(templates.BUILD_TEMPLATE % args.target_name)
+    f.write(templates.BUILD_TEMPLATE % template_args)
 
   targets_readme_path = os.path.join('targets', 'README.md')
   update_targets_readme(targets_readme_path, args.target_name, dir)

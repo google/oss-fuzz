@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd /src/libjpeg-turbo
-
 autoreconf -fiv
 ./configure
 make "-j$(nproc)"

@@ -40,11 +40,12 @@ Create a fuzzer and add it to the *target_name/* directory as well.
 This is the Docker image definition that build.sh will be executed in.
 It is very simple for most libraries:
 ```docker
-FROM ossfuzz/base-libfuzzer             # base image with clang toolchain
-MAINTAINER YOUR_EMAIL                   # each file should have a maintainer
-RUN apt-get install -y ...              # install required packages to build a project
-RUN git checkout <git_url>              # checkout all sources needed to build your target
-COPY build.sh fuzzer.cc /src/           # install build script and other source files.
+FROM ossfuzz/base-libfuzzer               # base image with clang toolchain
+MAINTAINER YOUR_EMAIL                     # each file should have a maintainer
+RUN apt-get install -y ...                # install required packages to build a project
+RUN git checkout <git_url> <checkout_dir> # checkout all sources needed to build your target
+WORKDIR <checkout_dir>                    # current directory for build script
+COPY build.sh fuzzer.cc /src/             # install build script and other source files.
 ```
 Expat example: [expat/Dockerfile](../targets/expat/Dockerfile)
 
@@ -95,7 +96,6 @@ For expat, this looks like:
 ```bash
 #!/bin/bash -eu
 
-cd /src/expat/expat
 ./buildconf.sh
 # configure scripts usually use correct environment variables.
 ./configure
