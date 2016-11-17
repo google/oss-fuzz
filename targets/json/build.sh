@@ -16,7 +16,7 @@
 ################################################################################
 
 $CXX $CXXFLAGS -std=c++11 -Isrc/ \
-    /src/parse_fuzzer.cc -o /out/parse_fuzzer \
+    $src/parse_fuzzer.cc -o $out/parse_fuzzer \
     -lfuzzer $FUZZER_LDFLAGS
 
-cp /src/*.options /out/
+cp $src/*.options $out/

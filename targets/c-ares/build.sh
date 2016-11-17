@@ -25,6 +25,6 @@ make CFLAGS= -j$(nproc) all
 
 # Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -I. \
-    /src/c_ares_ares_create_query_fuzzer.cc \
-    -o /out/c_ares_ares_create_query_fuzzer \
-    -lfuzzer /src/c-ares/.libs/libcares.a $FUZZER_LDFLAGS
+    $src/c_ares_ares_create_query_fuzzer.cc \
+    -o $out/c_ares_ares_create_query_fuzzer \
+    -lfuzzer $src/c-ares/.libs/libcares.a $FUZZER_LDFLAGS

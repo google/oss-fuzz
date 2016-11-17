@@ -25,10 +25,10 @@ export LDFLAGS=$FUZZER_LDFLAGS
 cmake -GNinja -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
     -DCMAKE_EXE_LINKER_FLAGS="$FUZZER_LDFLAGS" \
-    /src/boringssl/
+    $src/boringssl/
 ninja
 
-fuzzerFiles=$(find /src/boringssl/fuzz/ -name "*.cc")
+fuzzerFiles=$(find $src/boringssl/fuzz/ -name "*.cc")
 
 find . -name "*.a"
 
@@ -36,10 +36,10 @@ for F in $fuzzerFiles; do
   fuzzerName=$(basename $F .cc)
   echo "Building fuzzer $fuzzerName"
   $CXX $CXXFLAGS $FUZZER_LDFLAGS -std=c++11 \
-      -o /out/${fuzzerName} -lfuzzer $F \
-      -I /src/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
+      -o $out/${fuzzerName} -lfuzzer $F \
+      -I $src/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
 
-  if [ -d "/src/boringssl/fuzz/${fuzzerName}_corpus" ]; then
-    zip -j /out/${fuzzerName}_seed_corpus.zip /src/boringssl/fuzz/${fuzzerName}_corpus/*
+  if [ -d "$src/boringssl/fuzz/${fuzzerName}_corpus" ]; then
+    zip -j $out/${fuzzerName}_seed_corpus.zip $src/boringssl/fuzz/${fuzzerName}_corpus/*
   fi
 done

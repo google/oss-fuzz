@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cd /src
+cd $src
 
 # build the library.
 pmake -C teken/libteken teken_state.h
@@ -23,6 +23,6 @@ CFLAGS="$CFLAGS -D__unused=" pmake -C teken/libteken libteken.a
 
 # build your fuzzer(s)
 $CC $CFLAGS -Iteken \
-    -o /out/libteken_fuzzer \
+    -o $out/libteken_fuzzer \
     libteken_fuzzer.c \
     -lfuzzer teken/libteken/libteken.a $FUZZER_LDFLAGS
