@@ -28,7 +28,6 @@ Following is the list of targets that are currently integrated with OSS-Fuzz.
 | pcre2 | [/targets/pcre2](pcre2) |
 | re2 | [/targets/re2](re2) |
 | sqlite3 | [/targets/sqlite3](sqlite3) |
-| test | [/targets/test](test) |
 | tpm2 | [chromium:tpm2/fuzz](https://chromium.googlesource.com/chromiumos/third_party/tpm2/+/master/fuzz/) |
 | woff2 | [/targets/woff2](woff2) |
 | zlib | [/targets/zlib](zlib) |
