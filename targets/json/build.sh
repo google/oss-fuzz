@@ -15,9 +15,7 @@
 #
 ################################################################################
 
-cd /src/json
-
-$CXX $CXXFLAGS -std=c++11 -I/src/json/src/ \
+$CXX $CXXFLAGS -std=c++11 -Isrc/ \
     /src/parse_fuzzer.cc -o /out/parse_fuzzer \
     -lfuzzer $FUZZER_LDFLAGS
 

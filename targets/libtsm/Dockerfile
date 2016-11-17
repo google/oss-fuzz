@@ -19,4 +19,5 @@ MAINTAINER kcwu@csie.org
 RUN apt-get install -y make autoconf automake libtool pkg-config
 
 RUN git clone git://people.freedesktop.org/~dvdhrm/libtsm
+WORKDIR libpng
 COPY build.sh libtsm_fuzzer.c /src/

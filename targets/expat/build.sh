@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-cd /src/expat/expat
 
 ./buildconf.sh
 ./configure

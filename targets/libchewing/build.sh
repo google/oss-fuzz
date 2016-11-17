@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd /src/libchewing
-
 # build the library.
 ./autogen.sh
 ./configure --disable-shared --enable-static --without-sqlite3

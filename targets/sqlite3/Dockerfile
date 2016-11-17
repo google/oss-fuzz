@@ -27,4 +27,5 @@ RUN mkdir /src/sqlite3 && \
 
 RUN find /src/sqlite3 -name "*.test" | xargs zip /src/ossfuzz_seed_corpus.zip
 
+WORKDIR sqlite3
 COPY build.sh *.dict *.options /src/

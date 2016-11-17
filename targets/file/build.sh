@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd /src/file
-
 autoreconf -i
 ./configure --enable-static
 make V=1 all

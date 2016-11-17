@@ -19,6 +19,7 @@ MAINTAINER ochang@chromium.org
 RUN apt-get install -y make autoconf automake libtool pkg-config
 
 RUN git clone git://git.gnome.org/libxml2
+WORKDIR libxml2
 
 COPY build.sh /src/
 COPY libxml2_xml_read_memory_fuzzer.* \

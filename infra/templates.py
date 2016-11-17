@@ -59,7 +59,8 @@ DOCKER_TEMPLATE = """\
 FROM ossfuzz/base-libfuzzer
 MAINTAINER your@email.com
 RUN apt-get install -y make autoconf automake libtool
-RUN git clone <git_url>    # or use other version control
+RUN git clone <git_url> %(target_name)s     # or use other version control
+WORKDIR %(target_name)s
 COPY build.sh /src/
 """
 
@@ -80,8 +81,6 @@ BUILD_TEMPLATE = """\
 # limitations under the License.
 #
 ################################################################################
-
-cd /src/%s
 
 # build the target.
 # e.g.

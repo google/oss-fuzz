@@ -18,4 +18,5 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 RUN git clone https://github.com/c-ares/c-ares.git
+WORKDIR c-ares
 COPY build.sh *_fuzzer.cc /src/

@@ -15,9 +15,7 @@
 #
 ################################################################################
 
-cd /src
-
-cd fribidi
+cd /src/fribidi
 ./bootstrap
 ./configure --enable-static=yes --enable-shared=no --with-pic=yes
 # Don't run "make": it's broken. Run "make install".

@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 ################################################################################
-cd /src/libxml2
 
 ./autogen.sh
 ./configure

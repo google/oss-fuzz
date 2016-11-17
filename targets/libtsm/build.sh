@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd /src/libtsm
-
 # build the library.
 ./autogen.sh
 make -j$(nproc) clean all

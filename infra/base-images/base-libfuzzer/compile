@@ -17,6 +17,8 @@
 
 echo "---------------------------------------------------------------"
 
+pushd .
+
 echo -n "Compiling libFuzzer into /usr/lib/libfuzzer.a ..."
 mkdir -p /work/libfuzzer
 cd /work/libfuzzer
@@ -35,5 +37,5 @@ echo "FUZZER_LDFLAGS=$FUZZER_LDFLAGS"
 
 echo "---------------------------------------------------------------"
 
-cd /src
+popd >/dev/null 2>&1
 bash -x /src/build.sh

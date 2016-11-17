@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd /src/libarchive
-
 # build the target.
 ./build/autogen.sh
 ./configure

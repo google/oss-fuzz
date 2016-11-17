@@ -1,7 +1,5 @@
 #!/bin/bash -eu
 
-cd /src/zlib
-
 ./configure
 make -j$(nproc) clean all
 
