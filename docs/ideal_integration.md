@@ -48,7 +48,7 @@ The fuzz targets should be regularly tested (not necessary fuzzed!) as a part of
 One way to do so is to link the fuzz target with a simple driver
 (e.g. [this one](https://github.com/llvm-mirror/llvm/tree/master/lib/Fuzzer/standalone))
 that runs the provided inputs and use this driver with the seed corpus created in previous step. 
-It is recommended use the [sanitizers](https://github.com/google/sanitizers) during regression testing.
+It is recommended to use the [sanitizers](https://github.com/google/sanitizers) during regression testing.
 
 Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45),
 [openssl](https://github.com/openssl/openssl/blob/master/fuzz/test-corpus.c)
