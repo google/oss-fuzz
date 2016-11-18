@@ -17,7 +17,7 @@
 // Jenkins build script to push docker images to docker repository.
 
 def images = ['ossfuzz/base', 'ossfuzz/base-clang', 'ossfuzz/base-libfuzzer',
-              'ossfuzz/libfuzzer-runner']
+              'ossfuzz/base-runner', 'ossfuzz/libfuzzer-runner']
 
 node() {
     docker.withRegistry('', 'docker-login') {

@@ -1,4 +1,3 @@
-#!/bin/bash -eux
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,7 @@
 #
 ################################################################################
 
-docker build --pull -t ossfuzz/base $@ infra/base-images/base
-docker build -t ossfuzz/base-clang $@ infra/base-images/base-clang
-docker build -t ossfuzz/base-libfuzzer $@ infra/base-images/base-libfuzzer
-docker build -t ossfuzz/base-runner $@ infra/base-images/base-runner
-docker build -t ossfuzz/libfuzzer-runner $@ infra/base-images/libfuzzer-runner
+FROM ossfuzz/base
+MAINTAINER mike.aizatsky@gmail.com
+COPY test_all run_fuzzer /usr/local/bin/
+

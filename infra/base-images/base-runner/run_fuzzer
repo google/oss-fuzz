@@ -1,4 +1,4 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +15,27 @@
 #
 ################################################################################
 
-docker build --pull -t ossfuzz/base $@ infra/base-images/base
-docker build -t ossfuzz/base-clang $@ infra/base-images/base-clang
-docker build -t ossfuzz/base-libfuzzer $@ infra/base-images/base-libfuzzer
-docker build -t ossfuzz/base-runner $@ infra/base-images/base-runner
-docker build -t ossfuzz/libfuzzer-runner $@ infra/base-images/libfuzzer-runner
+# Fuzzer runner. Appends .options arguments and seed corpus to users args.
+# Usage: $0 <fuzzer_name> <fuzzer_args>
+
+cd $OUT
+
+FUZZER=$1
+shift
+CMD_LINE="$FUZZER $@"
+
+OPTIONS_FILE="${FUZZER}.options"
+if [ -f $OPTIONS_FILE ]; then
+  OPTIONS_ARGS=$(grep "=" $OPTIONS_FILE | sed 's/\(\w*\)\W*=\W*\(.*\)/-\1=\2 /g' | tr '\n' ' ')
+  CMD_LINE="$CMD_LINE $OPTIONS_ARGS"
+fi
+
+SEED_CORPUS="${FUZZER}_seed_corpus.zip"
+if [ -f $SEED_CORPUS ]; then
+  rm -rf /tmp/seed_corpus/ && mkdir /tmp/seed_corpus/
+  unzip -d /tmp/seed_corpus/ $SEED_CORPUS
+  CMD_LINE="$CMD_LINE /tmp/seed_corpus/"
+fi
+
+echo $CMD_LINE
+bash -c "$CMD_LINE"

@@ -21,15 +21,21 @@ def dockerOptions="--no-cache"
 node {
   git url: 'https://github.com/google/oss-fuzz/'
 
-  stage name: 'ossfuzz/base', concurrency: 1
-  sh "docker build $dockerOptions --pull -t ossfuzz/base infra/base-images/base"
 
-  stage name: 'ossfuzz/base-clang', concurrency: 1
-  sh "docker build $dockerOptions -t ossfuzz/base-clang infra/base-images/base-clang"
-  
-  stage name: 'ossfuzz/base-libfuzzer', concurrency: 1
-  sh "docker build $dockerOptions -t ossfuzz/base-libfuzzer infra/base-images/base-libfuzzer"
+  dir ("infra/base-images") {
+    stage name: 'ossfuzz/base', concurrency: 1
+    sh "docker build $dockerOptions --pull -t ossfuzz/base base"
 
-  stage name: 'ossfuzz/libfuzzer-runner', concurrency: 1
-  sh "docker build $dockerOptions -t ossfuzz/libfuzzer-runner infra/base-images/libfuzzer-runner"
+    stage name: 'ossfuzz/base-clang', concurrency: 1
+    sh "docker build $dockerOptions -t ossfuzz/base-clang base-clang"
+
+    stage name: 'ossfuzz/base-libfuzzer', concurrency: 1
+    sh "docker build $dockerOptions -t ossfuzz/base-libfuzzer base-libfuzzer"
+
+    stage name: 'ossfuzz/base-runner', concurrency: 1
+    sh "docker build $dockerOptions -t ossfuzz/base-runner base-runner"
+
+    stage name: 'ossfuzz/libfuzzer-runner', concurrency: 1
+    sh "docker build $dockerOptions -t ossfuzz/libfuzzer-runner libfuzzer-runner"
+  }
 }

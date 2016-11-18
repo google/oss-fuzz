@@ -1,0 +1,53 @@
+#!/bin/bash -eu
+# Copyright 2016 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# Test fuzzers
+
+REPORT_DIR="/junit_reports"
+mkdir -p $REPORT_DIR
+
+set -o pipefail
+
+N=0
+for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
+  FUZZER=$(basename $FUZZER_BINARY)
+  echo "testing $FUZZER"
+  out=$(tempfile)
+  run_fuzzer $FUZZER -runs=32 | tee $out
+  N=$[$N+1]
+
+  REPORT_TEXT=$(cat <<-EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="$FUZZER" tests="1" skipped="0" failures="0" errors="0" timestamp="2016-10-25T02:57:01" hostname="box678.localdomain" time="1">
+  <properties/>
+  <testcase name="$FUZZER" classname="$FUZZER" time="1"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
+EOF
+)
+  echo $REPORT_TEXT > /junit_reports/$FUZZER.xml
+done
+
+if [ "$N" -eq "0" ]; then
+  echo "ERROR: no fuzzers found in $OUT/"
+  ls -al $OUT
+  exit 1
+fi
+
+echo "$N fuzzers total"
+
