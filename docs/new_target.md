@@ -1,9 +1,10 @@
 # Setting up New Target
 
-Fuzzer build configurations are placed into [`targets/`](https://github.com/google/oss-fuzz/tree/master/targets) 
-subdirectories of the [oss-fuzz repo] on GitHub. 
-For example, fuzzers for the expat library are located in 
-[`targets/expat/`](https://github.com/google/oss-fuzz/tree/master/targets/expat).
+Fuzzer configurations are placed into a subdirectories inside the [`targets/` dir](../targets) 
+of the [oss-fuzz repo] on GitHub. 
+For example, the configuration files for the
+[boringssl](https://github.com/google/boringssl) targets are located in 
+[`targets/boringssl`](../targets/boringssl).
 
 ## Prerequisites
 [Install Docker](https://docs.docker.com/engine/installation). Googlers: [go/installdocker](https://goto.google.com/installdocker).
