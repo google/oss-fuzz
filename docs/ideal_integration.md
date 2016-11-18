@@ -10,7 +10,11 @@ simple and efficient, and will allow to catch regressions early on in the develo
 The code of the [fuzz target(s)](http://libfuzzer.info/#fuzz-target) should be part of the project's source code repository. 
 All fuzz targets should be easily discoverable (e.g. reside in the same directory, or follow the same naming pattern, etc). 
 
-This makes it easy to maintain fuzzer and minimizes breakages that can arise as source code changes over time.
+This makes it easy to maintain the fuzzers and minimizes breakages that can arise as source code changes over time.
+
+Make sure to fuzz the target locally for a small period of time to ensure that 
+it does not crash, hang, or runs out of memory instantly. 
+See details at http://libfuzzer.info and http://tutorial.libfuzzer.info
 
 Examples: 
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
@@ -84,3 +88,14 @@ This will allow to have minimal OSS-Fuzz-specific configuration and thus be more
 There is no point in hardcoding the exact compiler flags in the build system because they 
 a) may change and b) are different depending on the fuzzing target and the sanitizer being used. 
 
+## Not a project member?
+
+If you are the member of the project you want to fuzz, most of the steps above are simple.
+However in some cases someone outside the project team may want to fuzz the code.
+If so, and the project members are not interested in coopearation, the easiest is to create a
+separate GitHub project with the fuzz target, corpus, dictionary, etc. 
+
+In simple cases we can even host the fuzz target in this repository
+(examples: [libxml2](../targets/libxml2), [c-ares](../targets/c-ares), [expat](../targets/expat)),
+but this is the pattern we **strongly discourage**
+because it is harder to maintain and is not tied to the project's continuos integration testing.
