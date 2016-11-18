@@ -29,7 +29,7 @@ for variant in default random_init dynamic_config; do
 	-o $OUT/chewing_${variant}_fuzzer \
 	$SRC/chewing_${variant}_fuzzer.c $SRC/chewing_fuzzer_common.c \
 	test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
-	-lfuzzer $FUZZER_LDFLAGS
+	-lfuzzer
 done
 
 # install data files

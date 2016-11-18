@@ -105,8 +105,7 @@ make -j$(nproc) clean all
 # build the fuzzer, linking with libFuzzer and libexpat.a
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
     $SRC/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
-    -lfuzzer .libs/libexpat.a \
-    $FUZZER_LDFLAGS
+    -lfuzzer .libs/libexpat.a
 ```
 
 ### build.sh Script Environment 
@@ -125,7 +124,6 @@ These flags are provided in following environment variables:
 | -------------          | --------
 | `$CC`, `$CXX`, `$CCC`  | The C and C++ compiler binaries.
 | `$CFLAGS`, `$CXXFLAGS` | C and C++ compiler flags.
-| `$FUZZER_LDFLAGS`      | Linker flags for fuzzer binaries.
 
 Many well-crafted build scripts will automatically use these variables. If not,
 passing them manually to a build tool might be required.

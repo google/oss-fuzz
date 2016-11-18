@@ -22,6 +22,6 @@ make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
     $SRC/parse_fuzzer.cc -o $OUT/parse_fuzzer \
-    -lfuzzer .libs/libexpat.a $FUZZER_LDFLAGS
+    -lfuzzer .libs/libexpat.a
 
 cp $SRC/*.dict $SRC/*.options $OUT/

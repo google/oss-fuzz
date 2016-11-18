@@ -26,15 +26,23 @@ cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxx.git
 cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxxabi.git
 
 # Build & Install
-mkdir -p /work/llvm
-cd /work/llvm
+mkdir -p $WORK/llvm
+cd $WORK/llvm
 cmake -G "Ninja" \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
       $SRC/llvm
 ninja
 ninja install
-rm -rf /work/llvm
+rm -rf $WORK/llvm
+
+# Merge libc++abi.a into libc++.a
+# https://llvm.org/bugs/show_bug.cgi?id=30919
+mkdir $WORK/libcxx
+cd $WORK/libcxx
+ar -x /usr/local/lib/libc++abi.a
+ar -q /usr/local/lib/libc++.a *.o
+rm -rf $WORK/libcxx
 
 # Copy libfuzzer sources
 mkdir $SRC/libfuzzer

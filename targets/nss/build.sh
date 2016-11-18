@@ -57,7 +57,7 @@ for fuzzer in $FUZZERS; do
      -lfuzzer \
      $WORK/nss/lib/libnss.a $WORK/nss/lib/libnssutil.a \
      $WORK/nss/lib/libnspr4.a $WORK/nss/lib/libplc4.a $WORK/nss/lib/libplds4.a \
-     $WORK/nss/lib/prlog2.o -o $OUT/$fuzzer $FUZZER_LDFLAGS
+     $WORK/nss/lib/prlog2.o -o $OUT/$fuzzer
 done
 
 # Archive and copy to $OUT seed corpus if the build succeeded.

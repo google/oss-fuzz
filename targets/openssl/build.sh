@@ -16,7 +16,7 @@
 ################################################################################
 
 ./config enable-fuzz-libfuzzer -DPEDANTIC no-shared --with-fuzzer-lib=/usr/lib/libfuzzer $CFLAGS
-make -j$(nproc) EX_LIBS="-ldl $FUZZER_LDFLAGS"
+make -j$(nproc) EX_LIBS="-ldl"
 
 fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test)
 for f in $fuzzers; do

@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-export LDFLAGS="$FUZZER_LDFLAGS"
-
 # Build dependencies.
 export FFMPEG_DEPS_PATH=$SRC/ffmpeg_deps
 mkdir -p $FFMPEG_DEPS_PATH
@@ -130,7 +128,6 @@ cd $SRC/x265/build/linux
 cmake -G "Unix Makefiles" \
     -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-    -DCMAKE_EXE_LINKER_FLAGS="$FUZZER_LDFLAGS" \
     -DCMAKE_INSTALL_PREFIX="$FFMPEG_DEPS_PATH" -DENABLE_SHARED:bool=off \
     ../../source
 make clean
@@ -175,7 +172,7 @@ cd $SRC/ffmpeg
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
 
-FFMPEG_FUZZERS_COMMON_FLAGS="-lfuzzer $FUZZER_LDFLAGS \
+FFMPEG_FUZZERS_COMMON_FLAGS="-lfuzzer \
     -L$FFMPEG_DEPS_PATH/lib \
     -Llibavcodec -Llibavdevice -Llibavfilter -Llibavformat -Llibavresample \
     -Llibavutil -Llibpostproc -Llibswscale -Llibswresample \

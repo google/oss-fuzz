@@ -29,7 +29,7 @@ make sqlite3.c
 
 $CC $CFLAGS -I. \
     $SRC/sqlite3/test/ossfuzz.c -o $OUT/ossfuzz \
-    -lfuzzer ./sqlite3.o $FUZZER_LDFLAGS
+    -lfuzzer ./sqlite3.o
 
 cp $SRC/*.options $SRC/*.dict $SRC/*.zip $OUT/
 

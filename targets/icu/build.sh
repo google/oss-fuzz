@@ -24,7 +24,7 @@ DEFINES="-DU_CHARSET_IS_UTF8=1 -DU_USING_ICU_NAMESPACE=0 -DU_ENABLE_DYLOAD=0 -DU
 CFLAGS="$CFLAGS $DEFINES"
 CXXFLAGS="$CXXFLAGS $DEFINES"
 
-CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS CC=$CC CXX=$CXX LDFLAGS=$FUZZER_LDFLAGS \
+CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS CC=$CC CXX=$CXX \
   /bin/bash $SRC/icu/source/runConfigureICU Linux \
    --with-library-bits=64 --with-data-packaging=static --enable-static --disable-shared
 
@@ -42,7 +42,7 @@ for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 \
     $SRC/$fuzzer.cc -o $OUT/$fuzzer \
     -I$SRC/icu/source/common -I$SRC/icu/source/i18n -L$WORK/icu/lib \
-    -lfuzzer -licui18n -licuuc -licutu -licudata $FUZZER_LDFLAGS
+    -lfuzzer -licui18n -licuuc -licutu -licudata
 done
 
 cp $SRC/*.dict $SRC/*.options  $OUT/

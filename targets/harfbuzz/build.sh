@@ -17,10 +17,9 @@
 
 # Build the library.
 ./autogen.sh
-export LDFLAGS=$FUZZER_LDFLAGS
 ./configure
 make -j$(nproc) clean all
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     $SRC/harfbuzz_fuzzer.cc -o $OUT/harfbuzz_fuzzer \
-    -lfuzzer src/.libs/*.o src/hb-ucdn/.libs/*.o $FUZZER_LDFLAGS
+    -lfuzzer src/.libs/*.o src/hb-ucdn/.libs/*.o

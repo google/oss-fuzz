@@ -24,7 +24,7 @@ FUZZERS="cmsIT8_load_fuzzer cms_transform_fuzzer"
 for F in $FUZZERS; do
     $CC $CFLAGS -Iinclude \
         $SRC/$F.c -o $OUT/$F \
-        -lfuzzer src/.libs/liblcms2.a $FUZZER_LDFLAGS
+        -lfuzzer src/.libs/liblcms2.a
 done
 
 cp $SRC/icc.dict $SRC/*.options $OUT/

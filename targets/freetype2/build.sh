@@ -20,7 +20,7 @@
 ./configure
 make -j$(nproc) clean all
 
-$CXX $CXXFLAGS $FUZZER_LDFLAGS -std=c++11 \
+$CXX $CXXFLAGS -std=c++11 \
   -I./include -I. \
   ./src/tools/ftfuzzer/ftfuzzer.cc -o $OUT/ftfuzzer \
   ./objs/*.o -lfuzzer \

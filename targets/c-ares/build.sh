@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-export LDFLAGS="$FUZZER_LDFLAGS"
-
 # Build the target.
 ./buildconf
 ./configure
@@ -27,4 +25,4 @@ make CFLAGS= -j$(nproc) all
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/c_ares_ares_create_query_fuzzer.cc \
     -o $OUT/c_ares_ares_create_query_fuzzer \
-    -lfuzzer $SRC/c-ares/.libs/libcares.a $FUZZER_LDFLAGS
+    -lfuzzer $SRC/c-ares/.libs/libcares.a

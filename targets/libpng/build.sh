@@ -28,6 +28,6 @@ make -j$(nproc) clean all
 # build libpng_read_fuzzer
 $CXX $CXXFLAGS -std=c++11 -I. -lz \
      $SRC/libpng_read_fuzzer.cc -o $OUT/libpng_read_fuzzer \
-     -lfuzzer .libs/libpng16.a $FUZZER_LDFLAGS
+     -lfuzzer .libs/libpng16.a
 
 cp $SRC/*.dict $SRC/*.options $OUT/

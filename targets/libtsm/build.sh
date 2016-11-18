@@ -24,4 +24,4 @@ $CC $CFLAGS -Isrc/tsm \
     -o $OUT/libtsm_fuzzer \
     $SRC/libtsm_fuzzer.c \
     .libs/libtsm.a \
-    -lfuzzer $FUZZER_LDFLAGS
+    -lfuzzer

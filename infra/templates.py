@@ -93,5 +93,5 @@ BUILD_TEMPLATE = """\
 # e.g.
 # $CXX $CXXFLAGS -std=c++11 -Iinclude \\
 #     /path/to/name_of_fuzzer.cc -o /out/name_of_fuzzer \\
-#     -lfuzzer /path/to/library.a $FUZZER_LDFLAGS
+#     -lfuzzer /path/to/library.a
 """
