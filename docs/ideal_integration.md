@@ -90,7 +90,7 @@ a) may change and b) are different depending on the fuzzing target and the sanit
 
 ## Not a project member?
 
-If you are the member of the project you want to fuzz, most of the steps above are simple.
+If you are a member of the project you want to fuzz, most of the steps above are simple.
 However in some cases someone outside the project team may want to fuzz the code.
 If so, and the project members are not interested in coopearation, the easiest is to create a
 separate GitHub project with the fuzz target, corpus, dictionary, etc. 
