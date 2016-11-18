@@ -22,5 +22,5 @@ export LDFLAGS=$FUZZER_LDFLAGS
 make -j$(nproc) clean all
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
-    $src/harfbuzz_fuzzer.cc -o $out/harfbuzz_fuzzer \
+    $SRC/harfbuzz_fuzzer.cc -o $OUT/harfbuzz_fuzzer \
     -lfuzzer src/.libs/*.o src/hb-ucdn/.libs/*.o $FUZZER_LDFLAGS

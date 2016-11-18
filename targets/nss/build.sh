@@ -52,17 +52,17 @@ FUZZERS="asn1_algorithmid_fuzzer \
 
 
 for fuzzer in $FUZZERS; do
-  $CXX $CXXFLAGS -std=c++11 $src/$fuzzer.cc \
+  $CXX $CXXFLAGS -std=c++11 $SRC/$fuzzer.cc \
      -I/work/nss/include \
      -lfuzzer \
      /work/nss/lib/libnss.a /work/nss/lib/libnssutil.a \
      /work/nss/lib/libnspr4.a /work/nss/lib/libplc4.a /work/nss/lib/libplds4.a \
-     /work/nss/lib/prlog2.o -o $out/$fuzzer $FUZZER_LDFLAGS
+     /work/nss/lib/prlog2.o -o $OUT/$fuzzer $FUZZER_LDFLAGS
 done
 
-# Archive and copy to $out seed corpus if the build succeeded.
-zip /work/nss/all_nss_seed_corpus.zip $src/nss-corpus/*/*
+# Archive and copy to $OUT seed corpus if the build succeeded.
+zip /work/nss/all_nss_seed_corpus.zip $SRC/nss-corpus/*/*
 
 for fuzzer in $FUZZERS; do
-  cp /work/nss/all_nss_seed_corpus.zip $out/${fuzzer}_seed_corpus.zip
+  cp /work/nss/all_nss_seed_corpus.zip $OUT/${fuzzer}_seed_corpus.zip
 done

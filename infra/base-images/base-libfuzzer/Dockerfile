@@ -29,9 +29,9 @@ RUN mkdir /src/bin
 COPY coverage_report compile srcmap reproduce run just_run test /src/bin/
 
 ENV PATH=/src/bin:$PATH
-ENV src=/src
-ENV out=/out
+ENV SRC=/src
+ENV OUT=/out
 
-WORKDIR $src
+WORKDIR $SRC
 CMD ["compile"]
 

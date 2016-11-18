@@ -19,8 +19,6 @@
 # Development script to build all images.
 IGNORE="build:docs:infra:tpm2:scripts"
 
-# Build
-./infra/base-images/all.sh
 for target in targets/*; do
   if [[ -f $target || ":${IGNORE}:" == *":$target:"* ]]; then continue; fi
   echo "@ Building $target"

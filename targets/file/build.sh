@@ -20,8 +20,8 @@ autoreconf -i
 make V=1 all
 
 $CXX $CXXFLAGS -std=c++11 -Isrc/ \
-     $src/magic_fuzzer.cc -o $out/magic_fuzzer \
-     -lfuzzer .$src/.libs/libmagic.a $FUZZER_LDFLAGS
+     $SRC/magic_fuzzer.cc -o $OUT/magic_fuzzer \
+     -lfuzzer ./src/.libs/libmagic.a $FUZZER_LDFLAGS
 
-cp ./magic/magic.mgc $out/
+cp ./magic/magic.mgc $OUT/
 

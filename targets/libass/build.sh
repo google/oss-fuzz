@@ -15,22 +15,22 @@
 #
 ################################################################################
 
-cd $src/fribidi
+cd $SRC/fribidi
 ./bootstrap
 ./configure --enable-static=yes --enable-shared=no --with-pic=yes
 # Don't run "make": it's broken. Run "make install".
 make install
 
-cd $src/libass
+cd $SRC/libass
 
 ./autogen.sh
 ./configure --disable-asm
 make -j$(nproc)
 
-$CXX $CXXFLAGS -std=c++11 -I$src/libass \
-    $src/libass_fuzzer.cc -o $out/libass_fuzzer \
+$CXX $CXXFLAGS -std=c++11 -I$SRC/libass \
+    $SRC/libass_fuzzer.cc -o $OUT/libass_fuzzer \
     -lfuzzer libass/.libs/libass.a \
     -Wl,-Bstatic -lfontconfig  -lfribidi -lfreetype -lz -lpng12 -lexpat -Wl,-Bdynamic \
     $FUZZER_LDFLAGS
 
-cp $src/*.dict $src/*.options $out/
+cp $SRC/*.dict $SRC/*.options $OUT/
