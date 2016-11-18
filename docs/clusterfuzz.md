@@ -1,11 +1,11 @@
 # ClusterFuzz
 
-ClusterFuzz is the infrastructure behind OSS-Fuzz, and started as fuzzing
-infrastructure for Chrome.
+ClusterFuzz is the distributed fuzzing infrastructure behind OSS-Fuzz. It was initially built
+for fuzzing Chrome at scale.
 
 ## Web interface
 
-ClusterFuzz also provides  [web interface](https://clusterfuzz-external.appspot.com/v2)
+ClusterFuzz also provides [web interface](https://clusterfuzz-external.appspot.com/v2)
 to view statistics about your fuzzer targets, as well as current crashes.
 
 Note that access is restricted to library developers that we auto CC on new bug
@@ -13,8 +13,8 @@ reports.
 
 ## Fuzzer stats
 
-You can view statistics about your fuzzers (e.g. speed, coverage information) on
-our fuzzer statistics dashboard.
+You can view statistics about your fuzzers (e.g. speed, coverage information,
+memory usage) on our fuzzer statistics dashboard.
 
 ![stats]
 (https://raw.githubusercontent.com/google/oss-fuzz/master/docs/freetype_stats.png)
