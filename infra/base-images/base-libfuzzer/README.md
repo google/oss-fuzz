@@ -15,14 +15,19 @@
 
 # Image Files Layout
 
+
 | Location | Description |
 | -------- | ----------  |
-| `/out/`                | build artifacts should be copied here  |
-| `/src/`                | place to checkout source files |
-| `/work/`               | used to store intermediate files |
+| `/out/` (`$OUT`)       | build artifacts should be copied here  |
+| `/src/` (`$SRC`)       | place to checkout source files |
+| `/work/`(`$WORK`)      | used to store intermediate files |
 | `/usr/lib/libfuzzer.a` | libfuzzer static library |
 
-# Provided Environment Variables
+While files layout is fixed within a container, `$SRC`, `$OUT`, `$WORK` are
+provided to be able to write retargetable scripts.
+
+
+## Compiler Flags
 
 You *must* use special compiler flags to build your target and fuzzers.
 These flags are provided in following environment variables:
@@ -37,6 +42,7 @@ These flags are provided in following environment variables:
 
 Many well-crafted build scripts will automatically use these variables. If not,
 passing them manually to a build tool might be required.
+
 
 # Child Image Interface
 

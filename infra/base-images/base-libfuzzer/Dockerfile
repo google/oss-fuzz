@@ -30,6 +30,7 @@ COPY coverage_report compile srcmap reproduce run just_run test /usr/local/bin/
 # ENV PATH=/src/bin:$PATH
 ENV SRC=/src
 ENV OUT=/out
+ENV WORK=/work
 
 WORKDIR $SRC
 CMD ["compile"]

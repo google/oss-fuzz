@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 ################################################################################
-mkdir -p /work/boringssl
-cd /work/boringssl
+mkdir -p $WORK/boringssl
+cd $WORK/boringssl
 
 CFLAGS="$CFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
 CXXFLAGS="$CXXFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"

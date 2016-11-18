@@ -16,8 +16,8 @@
 #
 ################################################################################
 
-mkdir /work/icu
-cd /work/icu
+mkdir $WORK/icu
+cd $WORK/icu
 
 # TODO: icu build failes without -DU_USE_STRTOD_L=0
 DEFINES="-DU_CHARSET_IS_UTF8=1 -DU_USING_ICU_NAMESPACE=0 -DU_ENABLE_DYLOAD=0 -DU_USE_STRTOD_L=0"
@@ -41,7 +41,7 @@ FUZZERS="break_iterator_fuzzer \
 for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 \
     $SRC/$fuzzer.cc -o $OUT/$fuzzer \
-    -I$SRC/icu/source/common -I$SRC/icu/source/i18n -L/work/icu/lib \
+    -I$SRC/icu/source/common -I$SRC/icu/source/i18n -L$WORK/icu/lib \
     -lfuzzer -licui18n -licuuc -licutu -licudata $FUZZER_LDFLAGS
 done
 
