@@ -91,11 +91,11 @@ a) may change and b) are different depending on the fuzzing target and the sanit
 ## Not a project member?
 
 If you are a member of the project you want to fuzz, most of the steps above are simple.
-However in some cases someone outside the project team may want to fuzz the code.
-If so, and the project members are not interested in coopearation, the easiest is to create a
-separate GitHub project with the fuzz target, corpus, dictionary, etc. 
+However in some cases someone outside the project team may want to fuzz the code
+and the project maintainers are not interested in helping.
 
-In simple cases we can even host the fuzz target in this repository
-(examples: [libxml2](../targets/libxml2), [c-ares](../targets/c-ares), [expat](../targets/expat)),
-but this is the pattern we **strongly discourage**
-because it is harder to maintain and is not tied to the project's continuos integration testing.
+In such cases we can host the fuzz targets, dictionaries, etc in this repository.
+Examples: [libxml2](../targets/libxml2), [c-ares](../targets/c-ares), [expat](../targets/expat).
+
+Please note that if you are not the project maintainer
+we may not be able to CC you to security bugs found by OSS-Fuzz.
