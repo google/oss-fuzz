@@ -22,3 +22,11 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get autoremove -y
+
+ENV OUT=/out
+ENV SRC=/src
+ENV WORK=/work
+
+RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK
+ENV PATH="$PATH:/out"
+

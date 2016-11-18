@@ -19,11 +19,11 @@ LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7"
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
-cd /src && git clone --depth 1 http://llvm.org/git/llvm.git
-cd /src/llvm/tools && git clone --depth 1 http://llvm.org/git/clang.git
-cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/compiler-rt.git
-cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxx.git
-cd /src/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxxabi.git
+cd $SRC && git clone --depth 1 http://llvm.org/git/llvm.git
+cd $SRC/llvm/tools && git clone --depth 1 http://llvm.org/git/clang.git
+cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/compiler-rt.git
+cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxx.git
+cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxxabi.git
 
 # Build & Install
 mkdir -p /work/llvm
@@ -31,18 +31,18 @@ cd /work/llvm
 cmake -G "Ninja" \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
-      /src/llvm
+      $SRC/llvm
 ninja
 ninja install
 rm -rf /work/llvm
 
 # Copy libfuzzer sources
-mkdir /src/libfuzzer
-cp -r /src/llvm/lib/Fuzzer/* /src/libfuzzer/
+mkdir $SRC/libfuzzer
+cp -r $SRC/llvm/lib/Fuzzer/* $SRC/libfuzzer/
 
-cp /src/llvm/tools/sancov/coverage-report-server.py /usr/local/bin/
+cp $SRC/llvm/tools/sancov/coverage-report-server.py /usr/local/bin/
 
 # Cleanup
-rm -rf /src/llvm
+rm -rf $SRC/llvm
 apt-get remove --purge -y $LLVM_DEP_PACKAGES
 apt-get autoremove -y

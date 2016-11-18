@@ -20,8 +20,3 @@ RUN apt-get install -y gdb zip
 COPY llvm-symbolizer run_fuzzer /usr/local/bin/
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 
-# set up /out dir
-RUN mkdir /out
-VOLUME /out
-ENV PATH "$PATH:/out"
-WORKDIR /out

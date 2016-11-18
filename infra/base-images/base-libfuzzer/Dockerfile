@@ -23,14 +23,8 @@ ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 ENV FUZZER_LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/libc++abi.a -Wl,-no-whole-archive"
 
-RUN mkdir /out && chmod a+w /out
-
-COPY coverage_report compile srcmap reproduce run just_run test /usr/local/bin/
-
-# ENV PATH=/src/bin:$PATH
-ENV SRC=/src
-ENV OUT=/out
-ENV WORK=/work
+COPY coverage_report compile srcmap reproduce run just_run test \
+     /usr/local/bin/
 
 WORKDIR $SRC
 CMD ["compile"]

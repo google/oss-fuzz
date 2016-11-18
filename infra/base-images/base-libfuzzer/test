@@ -24,7 +24,7 @@ mkdir -p $REPORT_DIR
 
 set -o pipefail
 
-DIR="/out"
+DIR="$OUT"
 N=0
 for FUZZER_BINARY in $(find $DIR -executable -type f); do
   FUZZER=$(basename $FUZZER_BINARY)
@@ -48,7 +48,7 @@ done
 
 if [ "$N" -eq "0" ]; then
   echo "ERROR: no fuzzers found in $DIR"
-  ls -al /out
+  ls -al $OUT
   exit 1
 fi
 

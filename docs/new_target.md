@@ -45,7 +45,7 @@ MAINTAINER YOUR_EMAIL                     # each file should have a maintainer
 RUN apt-get install -y ...                # install required packages to build a project
 RUN git checkout <git_url> <checkout_dir> # checkout all sources needed to build your target
 WORKDIR <checkout_dir>                    # current directory for build script
-COPY build.sh fuzzer.cc /src/             # install build script and other source files.
+COPY build.sh fuzzer.cc $SRC/             # install build script and other source files.
 ```
 Expat example: [expat/Dockerfile](../targets/expat/Dockerfile)
 
@@ -66,7 +66,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
 Make sure you add the file to your Docker image:
 ```docker
-COPY build.sh my_fuzzer.cc /src/         # install build script & fuzzer.
+COPY build.sh my_fuzzer.cc $SRC/         # install build script & fuzzer.
 ```
 
 There are [lots](../targets/libxml2/libxml2_xml_read_memory_fuzzer.cc)
@@ -104,7 +104,7 @@ make -j$(nproc) clean all
 
 # build the fuzzer, linking with libFuzzer and libexpat.a
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
-    /src/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
+    $SRC/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
     -lfuzzer .libs/libexpat.a \
     $FUZZER_LDFLAGS
 ```
@@ -115,7 +115,7 @@ When build.sh script is executed, the following locations are available within t
 
 | Path                   | Description
 | ------                 | -----
-| `/src/<some_dir>`      | Source code needed to build your target.
+| `$SRC/<some_dir>`      | Source code needed to build your target.
 | `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that need to be linked into all fuzzers (`-lfuzzer`).
 
 You *must* use special compiler flags to build your target and fuzzers.
