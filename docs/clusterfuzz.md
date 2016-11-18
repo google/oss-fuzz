@@ -5,7 +5,7 @@ for fuzzing Chrome at scale.
 
 ## Web interface
 
-ClusterFuzz also provides [web interface](https://clusterfuzz-external.appspot.com/v2)
+ClusterFuzz also provides a [web interface](https://clusterfuzz-external.appspot.com/v2)
 to view statistics about your fuzzer targets, as well as current crashes.
 
 Note that access is restricted to library developers that we auto CC on new bug
