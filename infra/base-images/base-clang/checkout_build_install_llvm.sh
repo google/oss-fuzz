@@ -36,14 +36,6 @@ ninja
 ninja install
 rm -rf $WORK/llvm
 
-# Merge libc++abi.a into libc++.a
-# https://llvm.org/bugs/show_bug.cgi?id=30919
-mkdir $WORK/libcxx
-cd $WORK/libcxx
-ar -x /usr/local/lib/libc++abi.a
-ar -q /usr/local/lib/libc++.a *.o
-rm -rf $WORK/libcxx
-
 # Copy libfuzzer sources
 mkdir $SRC/libfuzzer
 cp -r $SRC/llvm/lib/Fuzzer/* $SRC/libfuzzer/
