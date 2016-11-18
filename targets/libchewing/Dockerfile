@@ -20,4 +20,4 @@ RUN apt-get install -y make autoconf automake libtool texinfo
 
 RUN git clone https://github.com/chewing/libchewing.git
 WORKDIR libchewing
-COPY build.sh chewing_fuzzer_common.[ch] chewing_*_fuzzer.c /src/
+COPY build.sh chewing_fuzzer_common.[ch] chewing_*_fuzzer.c $SRC/

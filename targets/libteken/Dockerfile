@@ -19,4 +19,4 @@ MAINTAINER kcwu@csie.org
 RUN apt-get install -y pmake
 RUN svn co https://svn.freebsd.org/base/head/sys/teken
 WORKDIR teken
-COPY build.sh libteken_fuzzer.c /src/
+COPY build.sh libteken_fuzzer.c $SRC/

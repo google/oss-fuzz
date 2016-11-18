@@ -40,4 +40,4 @@ RUN git clone git://git.xiph.org/vorbis.git
 RUN git clone git://git.videolan.org/git/x264.git
 RUN hg clone https://bitbucket.org/multicoreware/x265
 
-COPY build.sh group_seed_corpus.py /src/
+COPY build.sh group_seed_corpus.py $SRC/

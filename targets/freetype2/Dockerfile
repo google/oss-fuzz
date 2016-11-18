@@ -20,4 +20,4 @@ RUN apt-get install -y make autoconf libtool libarchive-dev
 
 RUN git clone git://git.sv.nongnu.org/freetype/freetype2.git
 WORKDIR freetype2
-COPY build.sh /src/
+COPY build.sh $SRC/

@@ -20,12 +20,12 @@ RUN apt-get install -y make autoconf automake libtool fossil tcl
 
 # We won't be able to poll fossil for changes, so this will build
 # only once a day.
-RUN mkdir /src/sqlite3 && \
-    cd /src/sqlite3 && \
+RUN mkdir $SRC/sqlite3 && \
+    cd $SRC/sqlite3 && \
     fossil clone https://www.sqlite.org/src sqlite --user `whoami` && \
     fossil open sqlite
 
-RUN find /src/sqlite3 -name "*.test" | xargs zip /src/ossfuzz_seed_corpus.zip
+RUN find $SRC/sqlite3 -name "*.test" | xargs zip $SRC/ossfuzz_seed_corpus.zip
 
 WORKDIR sqlite3
-COPY build.sh *.dict *.options /src/
+COPY build.sh *.dict *.options $SRC/

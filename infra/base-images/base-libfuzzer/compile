@@ -22,7 +22,7 @@ pushd .
 echo -n "Compiling libFuzzer into /usr/lib/libfuzzer.a ..."
 mkdir -p /work/libfuzzer
 cd /work/libfuzzer
-$CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c /src/libfuzzer/*.cpp -I/src/libfuzzer
+$CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
 ar ruv /usr/lib/libfuzzer.a /work/libfuzzer/*.o
 echo "Done."
 
@@ -38,4 +38,4 @@ echo "FUZZER_LDFLAGS=$FUZZER_LDFLAGS"
 echo "---------------------------------------------------------------"
 
 popd >/dev/null 2>&1
-bash -x /src/build.sh
+bash -x $SRC/build.sh

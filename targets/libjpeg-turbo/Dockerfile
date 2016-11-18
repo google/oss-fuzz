@@ -25,4 +25,4 @@ RUN cd afl-testcases/ && tar -xf afl_testcases.tgz
 RUN zip libjpeg_turbo_fuzzer_seed_corpus.zip afl-testcases/jpeg/full/images/*
 
 WORKDIR libjpeg-turbo
-COPY build.sh libjpeg_turbo_fuzzer.cc /src/
+COPY build.sh libjpeg_turbo_fuzzer.cc $SRC/
