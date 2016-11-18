@@ -76,7 +76,9 @@ To submit a new target to OSS-Fuzz:
   * source code repository location
   * a link to target security issue reporting process *OR*
   * an e-mail of the engineering contact person to be CCed on issue. This
-    has to be an e-mail with google account that belongs to an 
+    has to be an e-mail 
+    [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
+    that belongs to an 
     established target committer (according to VCS logs).
     If this is not you or address differs from VCS, an informal e-mail verification will be required.
     This e-mail will also be publicly listed in our [Targets](targets/README.md)
