@@ -8,7 +8,7 @@ for fuzzing Chrome at scale.
 ClusterFuzz also provides a [web interface](https://clusterfuzz-external.appspot.com/v2)
 to view statistics about your fuzzer targets, as well as current crashes.
 
-Note that access is restricted to library developers that we auto CC on new bug
+*Note*: This is a work in progress. Access is restricted to library developers who we auto CC on new bug
 reports.
 
 ## Fuzzer stats
