@@ -20,7 +20,7 @@ distributed execution.
 At the first stage of the project we plan to combine
 [libFuzzer](http://llvm.org/docs/LibFuzzer.html) with various `clang`
 [sanitizers](https://github.com/google/sanitizers).
-[ClusterFuzz](https://blog.chromium.org/2012/04/fuzzing-for-security.html)
+[ClusterFuzz](docs/clusterfuzz.md)
 provides distributed fuzzer execution environment and reporting.
 
 ## Background
