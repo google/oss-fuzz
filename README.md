@@ -44,8 +44,8 @@ one or more [Fuzz Target](http://libfuzzer.info/#fuzz-target)
 and [integrates](docs/ideal_integration.md) it with the project's build and test system.
 - These targets are [accepted to OSS-Fuzz](docs/new_target.md).
 - When [ClusterFuzz](docs/clusterfuzz.md) finds a bug, an issue is automatically
-  reported in the OSS-Fuzz [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list). 
-  [Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).
+  reported in the OSS-Fuzz [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) 
+  ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9)).
   ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reportig-bugs-in-fuzz-targets)).
   Project owners are CC-ed to the bug report, but otherwise the report is not public.
 - The bug is fixed upstream.
