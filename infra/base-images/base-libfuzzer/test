@@ -29,6 +29,7 @@ N=0
 for FUZZER_BINARY in $(find $DIR -executable -type f); do
   FUZZER=$(basename $FUZZER_BINARY)
   echo "testing $FUZZER"
+  ldd $FUZZER_BINARY
   out=$(tempfile)
   just_run $FUZZER -runs=32 | tee $out
   N=$[$N+1]
