@@ -24,4 +24,4 @@ RUN apt-get install -y make autoconf automake libtool pkg-config \
         libxml2-dev libssl-dev
 RUN git clone https://github.com/libarchive/libarchive.git
 WORKDIR libarchive
-COPY build.sh libarchive_fuzzer.cc /src/
+COPY build.sh libarchive_fuzzer.cc $SRC/

@@ -18,10 +18,10 @@
 export LDFLAGS="$FUZZER_LDFLAGS"
 
 # Build dependencies.
-export FFMPEG_DEPS_PATH=/src/ffmpeg_deps
+export FFMPEG_DEPS_PATH=$SRC/ffmpeg_deps
 mkdir -p $FFMPEG_DEPS_PATH
 
-cd /src
+cd $SRC
 bzip2 -f -d alsa-lib-*
 tar xf alsa-lib-*
 cd alsa-lib-*
@@ -30,7 +30,7 @@ make clean
 make -j$(nproc) all
 make install
 
-cd /src/drm
+cd $SRC/drm
 # Requires xutils-dev libpciaccess-dev
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
@@ -38,14 +38,14 @@ make clean
 make -j$(nproc)
 make install
 
-cd /src/fdk-aac
+cd $SRC/fdk-aac
 autoreconf -fiv
 ./configure --prefix="$FFMPEG_DEPS_PATH" --disable-shared
 make clean
 make -j$(nproc) all
 make install
 
-cd /src
+cd $SRC
 tar xzf lame.tar.gz
 cd lame-*
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
@@ -53,56 +53,56 @@ make clean
 make -j$(nproc)
 make install
 
-cd /src/libXext
+cd $SRC/libXext
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
 make clean
 make -j$(nproc)
 make install
 
-cd /src/libXfixes
+cd $SRC/libXfixes
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
 make clean
 make -j$(nproc)
 make install
 
-cd /src/libva
+cd $SRC/libva
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
 make clean
 make -j$(nproc) all
 make install
 
-cd /src/libvdpau
+cd $SRC/libvdpau
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
 make clean
 make -j$(nproc) all
 make install
 
-cd /src/libvpx
+cd $SRC/libvpx
 LDFLAGS="$CXXFLAGS $LDFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
     --disable-examples --disable-unit-tests
 make clean
 make -j$(nproc) all
 make install
 
-cd /src/ogg
+cd $SRC/ogg
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
 make clean
 make -j$(nproc)
 make install
 
-cd /src/opus
+cd $SRC/opus
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
 make clean
 make -j$(nproc) all
 make install
 
-cd /src/theora
+cd $SRC/theora
 # theora requires ogg, need to pass its location to the "configure" script.
 CFLAGS="$CFLAGS -fPIC" LDFLAGS="$LDFLAGS -L$FFMPEG_DEPS_PATH/lib/" \
     CPPFLAGS="$CXXFLAGS -I$FFMPEG_DEPS_PATH/include/" \
@@ -112,21 +112,21 @@ make clean
 make -j$(nproc)
 make install
 
-cd /src/vorbis
+cd $SRC/vorbis
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
 make clean
 make -j$(nproc)
 make install
 
-cd /src/x264
+cd $SRC/x264
 LDFLAGS="$CXXFLAGS $LDFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
     --enable-static
 make clean
 make -j$(nproc)
 make install
 
-cd /src/x265/build/linux
+cd $SRC/x265/build/linux
 cmake -G "Unix Makefiles" \
     -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
@@ -142,7 +142,7 @@ rm $FFMPEG_DEPS_PATH/lib/*.so
 rm $FFMPEG_DEPS_PATH/lib/*.so.*
 
 # Build the target.
-cd /src/ffmpeg
+cd $SRC/ffmpeg
 PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \
     --extra-cflags="-I$FFMPEG_DEPS_PATH/include" \
@@ -166,11 +166,11 @@ make clean
 make -j$(nproc) install
 
 # Download test sampes, will be used as seed corpus.
-export TEST_SAMPLES_PATH=/src/ffmpeg/fate-suite/
+export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
 make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
 
 # Build the fuzzers.
-cd /src/ffmpeg
+cd $SRC/ffmpeg
 
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
@@ -208,12 +208,12 @@ for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
-      /src/ffmpeg/doc/examples/decoder_targeted.c \
-      -o /out/${fuzzer_name} \
+      $SRC/ffmpeg/doc/examples/decoder_targeted.c \
+      -o $OUT/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
 
-  echo -en "[libfuzzer]\nmax_len = 1000000\n" > /out/${fuzzer_name}.options
+  echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
 done
 
 # Build fuzzers for subtitles formats.
@@ -226,8 +226,8 @@ for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
-      /src/ffmpeg/doc/examples/decoder_targeted.c \
-      -o /out/${fuzzer_name} \
+      $SRC/ffmpeg/doc/examples/decoder_targeted.c \
+      -o $OUT/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
 done
@@ -281,14 +281,14 @@ for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
-      /src/ffmpeg/doc/examples/decoder_targeted.c \
-      -o /out/${fuzzer_name} \
+      $SRC/ffmpeg/doc/examples/decoder_targeted.c \
+      -o $OUT/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
 
-  echo -en "[libfuzzer]\nmax_len = 1000000\n" > /out/${fuzzer_name}.options
+  echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
 done
 
 # Find relevant corpus in test samples and archive them for every fuzzer.
-cd /src
-python group_seed_corpus.py $TEST_SAMPLES_PATH /out
+cd $SRC
+python group_seed_corpus.py $TEST_SAMPLES_PATH $OUT/

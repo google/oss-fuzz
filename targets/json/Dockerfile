@@ -19,5 +19,5 @@ MAINTAINER vitalybuka@gmail.com
 RUN apt-get install -y binutils gcc
 
 RUN git clone https://github.com/nlohmann/json.git
-WORKDIR /src/json/
-COPY build.sh parse_fuzzer.* /src/
+WORKDIR json/
+COPY build.sh parse_fuzzer.* $SRC/

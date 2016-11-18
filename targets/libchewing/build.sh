@@ -26,11 +26,11 @@ make -C test CFLAGS="$CFLAGS -Dmain=stress_main -Drand=get_fuzz_input" stress.o
 
 for variant in default random_init dynamic_config; do
     $CC $CFLAGS \
-	-o /out/chewing_${variant}_fuzzer \
-	/src/chewing_${variant}_fuzzer.c /src/chewing_fuzzer_common.c \
+	-o $OUT/chewing_${variant}_fuzzer \
+	$SRC/chewing_${variant}_fuzzer.c $SRC/chewing_fuzzer_common.c \
 	test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
 	-lfuzzer $FUZZER_LDFLAGS
 done
 
 # install data files
-make -j$(nproc) -C data pkgdatadir=/out install
+make -j$(nproc) -C data pkgdatadir=$OUT install

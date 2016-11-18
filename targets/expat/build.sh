@@ -21,7 +21,7 @@ make clean
 make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
-    /src/parse_fuzzer.cc -o /out/parse_fuzzer \
+    $SRC/parse_fuzzer.cc -o $OUT/parse_fuzzer \
     -lfuzzer .libs/libexpat.a $FUZZER_LDFLAGS
 
-cp /src/*.dict /src/*.options /out/
+cp $SRC/*.dict $SRC/*.options $OUT/

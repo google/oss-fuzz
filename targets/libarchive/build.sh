@@ -22,6 +22,6 @@ make -j$(nproc) all
 
 # build your fuzzer(s)
 $CXX $CXXFLAGS -Ilibarchive \
-    /src/libarchive_fuzzer.cc -o /out/libarchive_fuzzer \
+    $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \
     -lfuzzer .libs/libarchive.a $FUZZER_LDFLAGS \
     -lbz2 -llzo2 -llzma -lxml2 -lz -lcrypto -llz4

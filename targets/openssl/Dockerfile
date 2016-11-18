@@ -19,4 +19,4 @@ MAINTAINER kurt@roeckx.be
 RUN apt-get install -y make
 RUN git clone https://github.com/openssl/openssl.git
 WORKDIR openssl
-COPY build.sh /src/
+COPY build.sh $SRC/

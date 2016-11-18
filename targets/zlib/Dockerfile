@@ -20,4 +20,4 @@ RUN apt-get install -y make autoconf automake libtool
 
 RUN git clone https://github.com/madler/zlib.git
 WORKDIR zlib
-COPY build.sh zlib_uncompress_fuzzer.cc /src/
+COPY build.sh zlib_uncompress_fuzzer.cc $SRC/

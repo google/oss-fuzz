@@ -23,8 +23,8 @@ make -j$(nproc) all
 FUZZERS="cmsIT8_load_fuzzer cms_transform_fuzzer"
 for F in $FUZZERS; do
     $CC $CFLAGS -Iinclude \
-        /src/$F.c -o /out/$F \
+        $SRC/$F.c -o $OUT/$F \
         -lfuzzer src/.libs/liblcms2.a $FUZZER_LDFLAGS
 done
 
-cp /src/icc.dict /src/*.options /out
+cp $SRC/icc.dict $SRC/*.options $OUT/

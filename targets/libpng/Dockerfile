@@ -20,4 +20,4 @@ RUN apt-get install -y make autoconf automake libtool zlib1g-dev
 
 RUN git clone git://git.code.sf.net/p/libpng/code libpng
 WORKDIR libpng
-COPY build.sh libpng_read_fuzzer.* png.dict /src/
+COPY build.sh libpng_read_fuzzer.* png.dict $SRC/

@@ -20,7 +20,6 @@ FROM ossfuzz/base
 MAINTAINER mike.aizatsky@gmail.com
 
 RUN apt-get install -y libc6-dev binutils libgcc-5-dev
-RUN mkdir /src /work && chmod a+w /src /work
 
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate

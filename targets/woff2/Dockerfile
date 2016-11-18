@@ -20,4 +20,4 @@ RUN apt-get install -y make autoconf automake libtool
 
 RUN git clone --recursive https://github.com/google/woff2
 WORKDIR woff2
-COPY build.sh convert_woff2ttf_fuzzer.* /src/
+COPY build.sh convert_woff2ttf_fuzzer.* $SRC/

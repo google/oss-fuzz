@@ -21,7 +21,7 @@ make -j$(nproc) EX_LIBS="-ldl $FUZZER_LDFLAGS"
 fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test)
 for f in $fuzzers; do
 	fuzzer=$(basename $f)
-	cp $f /out
-	zip -j /out/${fuzzer}_seed_corpus.zip fuzz/corpora/${fuzzer}/*
+	cp $f $OUT/
+	zip -j $OUT/${fuzzer}_seed_corpus.zip fuzz/corpora/${fuzzer}/*
 done
 

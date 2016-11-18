@@ -28,8 +28,8 @@ make -j$(nproc)
 make sqlite3.c
 
 $CC $CFLAGS -I. \
-    /src/sqlite3/test/ossfuzz.c -o /out/ossfuzz \
+    $SRC/sqlite3/test/ossfuzz.c -o $OUT/ossfuzz \
     -lfuzzer ./sqlite3.o $FUZZER_LDFLAGS
 
-cp /src/*.options /src/*.dict /src/*.zip /out/
+cp $SRC/*.options $SRC/*.dict $SRC/*.zip $OUT/
 

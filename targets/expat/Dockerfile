@@ -20,4 +20,4 @@ RUN apt-get install -y make autoconf automake libtool docbook2x
 
 RUN git clone git://git.code.sf.net/p/expat/code_git expat 
 WORKDIR expat/expat
-COPY build.sh parse_fuzzer.*  xml.dict /src/
+COPY build.sh parse_fuzzer.*  xml.dict $SRC/

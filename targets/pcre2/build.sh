@@ -23,6 +23,6 @@ cd pcre2
 make -j$(nproc) clean all
 
 # Build the target.
-$CXX $CXXFLAGS -o /out/pcre2_fuzzer \
+$CXX $CXXFLAGS -o $OUT/pcre2_fuzzer \
     -lfuzzer .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a \
     $FUZZER_LDFLAGS
