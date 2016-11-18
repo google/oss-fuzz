@@ -5,9 +5,8 @@ infrastructure for Chrome.
 
 ## Web interface
 
-The [web interface](https://clusterfuzz-external.appspot.com/v2) also provides a
-web interface to view statistics about your fuzzer targets, as well as current
-crashes.
+ClusterFuzz also provides  [web interface](https://clusterfuzz-external.appspot.com/v2)
+to view statistics about your fuzzer targets, as well as current crashes.
 
 Note that access is restricted to library developers that we auto CC on new bug
 reports.
@@ -22,9 +21,8 @@ our fuzzer statistics dashboard.
 
 ## Coverage reports
 
-You can also visualise the coverage for your fuzzer by going to our coverage
-report links, where we highlight the parts of source code that are being
-reached.
+We also provide coverage reports, where we highlight the parts of source code that are being
+reached by your fuzzer.
 
 ![coverage_1]
 (https://raw.githubusercontent.com/google/oss-fuzz/master/docs/freetype_coverage_1.png)
