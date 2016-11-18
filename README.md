@@ -39,31 +39,20 @@ has proved very successful.
 
 The following process is used for targets in OSS-Fuzz:
 
-- a target is accepted to OSS-Fuzz.
-- OSS-Fuzz build server build target fuzzers  regularly and submits them to
-  ClusterFuzz for execution.
-- ClusterFuzz continuously executes target fuzzers
-- when fuzzing uncovers an issue, ClusterFuzz creates an internal testcase.
-- issues are automatically triaged and filed in the OSS-Fuzz [testcase issue
-  tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list). 
+- A maintainer of an opensource project or an outside volunteer creates
+one or more [Fuzz Target](http://libfuzzer.info/#fuzz-target) 
+and [integrates](docs/ideal_integration.md) it with the project's build and test system.
+- These targets are [accepted to OSS-Fuzz](docs/new_target.md).
+- When [ClusterFuzz](docs/clusterfuzz.md) finds a bug, an issue is automatically
+  reported in the OSS-Fuzz [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list). 
   [Example issue](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9).
-  ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reportig-bugs-in-fuzz-targets))
-- if the target has a defined process for reporting security issues,
-  we will follow it, otherwise we will cc target engineers on an issue.
-- engineers fix the issue and land the fix upstream.
-- fuzzing infrastructure automatically verifies the fix, adds a comment and
-  closes the issue.
-- after 7 days has passed since the issue is fixed or after 90 days since reporting has passed, the issue
-  becomes *public*.
+  ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reportig-bugs-in-fuzz-targets)).
+  Project owners are CC-ed to the bug report, but otherwise the report is not public.
+- The bug is fixed upstream.
+- [ClusterFuzz](docs/clusterfuzz.md) automatically verifies the fix, adds a comment and closes the issue.
+- 7 days after the fix is verified or after 90 days after reporting, the issue becomes *public*
+  ([exact guidelines](#bug-disclosure-guidelines)).
 
-The following table summarizes issue visibility through the process:
-
-| Issue State    | Visibility |
-|----------|------------|
-| New      | OSS-Fuzz engineers |
-| Reported | OSS-Fuzz engineers + everyone CC'ed on the bug |
-| Fixed & Verified | public |
-| Lapsed (90 days since report) | public |
 
 ## Accepting New Targets
 
@@ -104,6 +93,7 @@ OSS-Fuzz will adhere to following disclosure principles:
 ## Documentation
 
 * [New Target Guide](docs/new_target.md) walks through steps necessary to add new targets to OSS-Fuzz.
+* [Ideal Integration](docs/ideal_integration.md) describes the ideal way to integrate fuzz targets with your project.
 * [Running and Building Fuzzers](docs/building_running_fuzzers.md) documents the process for fuzzers that are
   *part of target* source code repository.
 * [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
