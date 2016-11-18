@@ -3,10 +3,10 @@ OSS projects have different build and test systems. So, we can not expect them
 to have a unified way of implementing and maintaining fuzz targets and integrating
 them with OSS-Fuzz. However, we will still try to give recommendations on the preferred ways.
 
-Here are the 4 stages of integraion (starting from the easiest) that will make automated fuzzing
-simple, efficient and catch regressions early on in the development cycle. 
+Here are several features (starting from the easiest) that will make automated fuzzing
+simple and efficient, and will allow to catch regressions early on in the development cycle. 
 
-## Stage 1: Fuzz Target
+## Fuzz Target
 The code of the [fuzz target(s)](http://libfuzzer.info/#fuzz-target) should be part of the project's source code repository. 
 All fuzz targets should be easily discoverable (e.g. reside in the same directory, or follow the same naming pattern, etc). 
 
@@ -24,7 +24,7 @@ Examples:
 [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decoder_targeted.c).
 
 
-## Stage 2: Seed Corpus
+## Seed Corpus
 The *corpus* is a set of inputs for the fuzz target (stored as individual files). 
 When starting the fuzzing process, one should have a "seed corpus", 
 i.e. a set of inputs to "seed" the mutations.
@@ -43,7 +43,7 @@ Examples:
 [nss](https://github.com/mozilla/nss-fuzzing-corpus) (corpus in a separate repo) 
 
 
-## Stage 3: Regression Testing
+## Regression Testing
 The fuzz targets should be regularly tested (not necessary fuzzed!) as a part of the project's regression testing process.
 One way to do so is to link the fuzz target with a simple driver
 (e.g. [this one](https://github.com/llvm-mirror/llvm/tree/master/lib/Fuzzer/standalone))
@@ -53,7 +53,17 @@ It is recommended to use the [sanitizers](https://github.com/google/sanitizers) 
 Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45),
 [openssl](https://github.com/openssl/openssl/blob/master/fuzz/test-corpus.c)
 
-## Stage 4: Build support
+## Fuzzing dictionary
+
+For some input types a simple dictionary of tokens used by the input language
+may have dramatic positive effect on fuzzing. 
+For example, when fuzzing an XML parser, a dictionary of XML tokens will help.
+AFL has a [collection](https://github.com/rc0r/afl-fuzz/tree/master/dictionaries)
+of such dictionaries for some of the popular data formats.
+Ideally, a dictionary should be maintained alongside the fuzz target.
+The syntax is described [here](http://libfuzzer.info/#dictionaries).
+
+## Build support
 A plethora of different build systems exist in the open-source world.
 And the less OSS-Fuzz knows about them, the better it can scale. 
 
