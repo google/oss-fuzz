@@ -6,7 +6,7 @@
 | [Ideal Fuzzing Integration](docs/ideal_integration.md)
 | [New Target Guide](docs/new_target.md) 
 | [Reproducing](docs/reproducing.md) 
-| [Targets List](targets/README.md)
+| [All Targets List](targets)
 | [Targets issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 
 
