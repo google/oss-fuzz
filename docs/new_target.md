@@ -51,30 +51,6 @@ COPY build.sh fuzzer.cc $SRC/             # install build script and other sourc
 ```
 Expat example: [expat/Dockerfile](../targets/expat/Dockerfile)
 
-## Create Fuzzer Source File
-
-Create a new .cc file, define a `LLVMFuzzerTestOneInput` function and call
-your target:
-
-```c++
-#include <stddef.h>
-#include <stdint.h>
-
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // put your fuzzing code here and use data+size as input.
-  return 0;
-}
-```
-
-Make sure you add the file to your Docker image:
-```docker
-COPY build.sh my_fuzzer.cc $SRC/         # install build script & fuzzer.
-```
-
-There are [lots](../targets/libxml2/libxml2_xml_read_memory_fuzzer.cc)
-[of](../targets/expat/parse_fuzzer.cc) [examples](../targets/zlib/zlib_uncompress_fuzzer.cc)
-in this project repository.
-
 ### Fuzzer execution environment
 
 [This page](fuzzer_environment.md) gives information about the environment that
