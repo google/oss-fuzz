@@ -78,7 +78,7 @@ To submit a new target to OSS-Fuzz:
 Following Google's standard [disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
 OSS-Fuzz will adhere to following disclosure principles:
   - **90-day deadline**. After notifying target authors, we will open reported
-    issues in 90 days, or sooner if the fix is released.
+    issues in 90 days, or 7 days after the fix is released.
   - **Weekends and holidays**. If a deadline is due to expire on a weekend or
     US public holiday, the deadline will be moved to the next normal work day.
   - **Grace period**. We will have a 14-day grace period. If a 90-day deadline
