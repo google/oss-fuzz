@@ -23,7 +23,7 @@ ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 ENV FUZZER_LDFLAGS ""
 
-COPY coverage_report compile srcmap reproduce run just_run test \
+COPY coverage_report compile srcmap reproduce run just_run \
      /usr/local/bin/
 
 WORKDIR $SRC
