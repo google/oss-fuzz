@@ -1,10 +1,12 @@
 # Reproducing OSS-Fuzz issues
 
-You've been CC'ed on an OSS-Fuzz issue ([examples](https://bugs.chromium.org/p/oss-fuzz/issues/list)),
-now what?
+You've been CC'ed on an OSS-Fuzz issue
+([examples](https://bugs.chromium.org/p/oss-fuzz/issues/list)), now what?
 Before attempting a fix the bug you should be able to reliably reproduce it. 
 
 Every issue has a reproducer file attached.
+Download it. If the issue is not public, you will need to login using your Google account
+that is CC-ed to the bug report.
 This file contains the bytes that were fed to the [Fuzz Target](http://libfuzzer.info/#fuzz-target).
 
 If you have [properly integrated](ideal_integration.md) the fuzz target with your build and test system
@@ -12,7 +14,7 @@ all you need is to download the reproducer file and run
 ```
 ./fuzz_target_binary REPRODUCER_FILE
 ```
-Depending on the nature of the bug, the fuzz target binary needs to be build with the appropriate sanitizer
+Depending on the nature of the bug, the fuzz target binary needs to be built with the appropriate sanitizer
 (e.g. if this is a buffer overflow, with [AddressSanitizer](http://clang.llvm.org/docs/AddressSanitizer.html)).
 
 **TODO**
@@ -20,34 +22,10 @@ Depending on the nature of the bug, the fuzz target binary needs to be build wit
 Another option is to use the Docker commands (**TODO: link**) to replicate the exact build steps
 used by OSS-Fuzz and then feed the reproducer input to the target.
 
+## **TODO careate separate file with all docker commands**
 ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)), but 
 is entirely possible to do without.
 
-## **TODO Move into a separate file with docker commands**
-
-## Bug tracker reports
-
-Bug reports in our bug tracker have the format:
-
-```
-Detailed report: <link to ClusterFuzz report>
-
-Target: target
-Fuzzer: libFuzzer_target_fuzzer
-Fuzzer binary: fuzzer
-Job Type: libFuzzer_asan_libchewing
-
-Crash Type: Heap-use-after-free
-Crash Address: 0x1337
-Crash State
-  Frame1
-  Frame2
-  Frame3
-
-Regressed: <Regression range link>
-
-Minimized Testcase (size): <Testcase download link>
-```
 
 Click the testcase download link to download the testcase (you may need to
 login, using the same Google account that you've been CC'ed with). The "Detailed
