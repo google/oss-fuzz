@@ -18,5 +18,11 @@
 ./buildconf
 ./configure --disable-shared --enable-debug --enable-maintainer-mode --disable-symbol-hiding --disable-threaded-resolver --enable-ipv6 --with-random=/dev/null
 make -j$(nproc)
-$CXX $CXXFLAGS $SRC/curl_fuzzer.cc -Iinclude lib/.libs/libcurl.a -lssl -lcrypto -lz -lfuzzer -o $OUT/curl_fuzzer
+$CXX $CXXFLAGS $SRC/curl_fuzzer.cc -Iinclude lib/.libs/libcurl.a \
+  -o $OUT/curl_fuzzer \
+  -Wl,-Bstatic -lssl -lcrypto -lz -lfuzzer -Wl,-Bdynamic
+
+#  /usr/lib/x86_64-linux-gnu/libssl.a \
+#  /usr/lib/x86_64-linux-gnu/libcrypto.a \
+
 cp $SRC/*.dict $SRC/*.options $OUT/
