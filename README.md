@@ -14,9 +14,8 @@
 ## Why OSS-Fuzz?
 
 [Fuzz testing](https://en.wikipedia.org/wiki/Fuzz_testing) is a well-known
-technique for uncovering certain types of programming errors in software.
-Many detectable errors (e.g. buffer overruns) have real security
-implications.
+technique for uncovering various kinds of programming errors in software.
+Many detectable errors (e.g. buffer overruns) have real security implications.
 
 We successfully deployed 
 [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html)
