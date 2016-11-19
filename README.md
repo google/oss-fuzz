@@ -1,6 +1,6 @@
 # OSS-Fuzz - continuous fuzzing of open source software
 
-> *Status*: Beta. We are preparing the project for the first public release. Documentation and smoothing the process is our main priority.
+> *Status*: Beta. We are preparing the project for public release. We are polishing the documentation and the process.
 
 [FAQ](docs/faq.md)
 | [New Target Guide](docs/new_target.md) 
