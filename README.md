@@ -3,6 +3,7 @@
 > *Status*: Beta. We are preparing the project for public release. We are polishing the documentation and the process.
 
 [FAQ](docs/faq.md)
+| [Ideal Fuzzing Integration](docs/ideal_integration.md)
 | [New Target Guide](docs/new_target.md) 
 | [Reproducing](docs/reproducing.md) 
 | [Targets List](targets/README.md)
