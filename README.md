@@ -11,29 +11,26 @@
 
 [Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
 
-## Goals
-
-OSS-Fuzz aims to make common open source software more secure by
-combining modern white-box fuzzing techniques together with scalable
-distributed execution.
-
-At the first stage of the project we plan to combine
-[libFuzzer](http://llvm.org/docs/LibFuzzer.html) with various `clang`
-[sanitizers](https://github.com/google/sanitizers).
-[ClusterFuzz](docs/clusterfuzz.md)
-provides distributed fuzzer execution environment and reporting.
-
-## Background
+## Why OSS-Fuzz?
 
 [Fuzz testing](https://en.wikipedia.org/wiki/Fuzz_testing) is a well-known
 technique for uncovering certain types of programming errors in software.
 Many detectable errors (e.g. buffer overruns) have real security
 implications.
 
-Our previous experience applying [libFuzzer](http://llvm.org/docs/LibFuzzer.html)
-to do [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html)
-has proved very successful.
+We successfully deployed 
+[guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html)
+and now want to share the experience and the service with the openssource community. 
 
+OSS-Fuzz aims to make common open source software more secure by
+combining modern fuzzing techniques and scalable
+distributed execution.
+
+At the first stage of the project we use
+[libFuzzer](http://llvm.org/docs/LibFuzzer.html) with
+[Sanitizers](https://github.com/google/sanitizers). More fuzzing engines will be added later.
+[ClusterFuzz](docs/clusterfuzz.md)
+provides distributed fuzzer execution environment and reporting.
 
 ## Process Overview
 
