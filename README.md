@@ -90,7 +90,7 @@ OSS-Fuzz will adhere to following disclosure principles:
     the deadline, the public disclosure will be delayed until the availability
     of the patch.
 
-## Documentation
+## More Documentation
 
 * [New Target Guide](docs/new_target.md) walks through steps necessary to add new targets to OSS-Fuzz.
 * [Ideal Integration](docs/ideal_integration.md) describes the ideal way to integrate fuzz targets with your project.
