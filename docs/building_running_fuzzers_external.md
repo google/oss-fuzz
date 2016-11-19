@@ -48,7 +48,7 @@ INFO: Seed: 477892609
 #4      NEW    cov: 293 bits: 299 indir: 61 units: 4 exec/s: 0 L: 32 MS: 2 ChangeBit-EraseBytes-
 ```
 
-When Ubuntu environment is not aviable (or restricted environemnt is desirable), the fuzzer can easly be run inside docker 
+When Ubuntu environment is not aviable (or restricted environment is desirable), the fuzzer can easily be run inside docker 
 container:
 
 <pre>

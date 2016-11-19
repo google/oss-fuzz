@@ -211,7 +211,7 @@ libfuzzerBuild {
 }
 ```
 
-Simply replace the the "git" entry with the correct git url for the target.
+Simply replace the "git" entry with the correct git url for the target.
 
 *Note*: only git is supported right now.
 

@@ -63,7 +63,7 @@ docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b
                      -v <b><i>$reproducer_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
     </pre>
   
-  This is essentially the previous command that additonally mounts local sources into the running container.
+  This is essentially the previous command that additionally mounts local sources into the running container.
 - *Fix the issue.* Use the previous command to verify you fixed the issue locally. 
    [Use gdb](debugging.md#debugging-fuzzers-with-gdb) if needed.
 - *Submit the fix.* ClusterFuzz will automatically pick up the changes, recheck the testcase 
