@@ -28,7 +28,7 @@ docker run -ti -v /tmp/out:/out ossfuzz/<b><i>$target_name</i></b>
 ## Running Fuzzers
 
 Fuzzers are statically linked executables and could be executed normally in Unbuntu-like environment.
-When Ubuntu environment is not available (or a restricted environment is desirable), the fuzzer can easly be run inside docker
+When Ubuntu environment is not available (or a restricted environment is desirable), the fuzzer can easily be run inside docker
 container:
 
 <pre>
