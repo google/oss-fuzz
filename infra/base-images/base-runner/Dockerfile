@@ -16,5 +16,6 @@
 
 FROM ossfuzz/base
 MAINTAINER mike.aizatsky@gmail.com
+RUN apt-get install -y zip
 COPY test_all run_fuzzer /usr/local/bin/
 
