@@ -7,14 +7,15 @@ For example, the configuration files for the
 [`targets/boringssl`](../targets/boringssl).
 
 ## Prerequisites
-[Install Docker](https://docs.docker.com/engine/installation). Googlers: [go/installdocker](https://goto.google.com/installdocker).
-([Why Docker?](faq.md#why-do-you-use-docker))
-
-*NOTE: if you want to run `docker` without `sudo` also follow the optional [Create a docker group](https://docs.docker.com/engine/installation/linux/ubuntulinux/#/create-a-docker-group) section.*
-
-*NOTE: Docker images can consume significant disk space. Run*
-*[docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)*
-*periodically to garbage collect unused images.*
+- [Install Docker](https://docs.docker.com/engine/installation). ([Why Docker?](faq.md#why-do-you-use-docker))
+  - Googlers: [go/installdocker](https://goto.google.com/installdocker).
+  - NOTE: if you want to run `docker` without `sudo` also follow the optional 
+    [Create a docker group](https://docs.docker.com/engine/installation/linux/ubuntulinux/#/create-a-docker-group) section.
+  - NOTE: Docker images can consume significant disk space. Run
+    [docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)
+    periodically to garbage collect unused images.
+- [Itegrate](ideal_integration.md) one or more [Fuzz Target](http://libfuzzer.info/#fuzz-target)
+  with the project you want to fuzz.
 
 ## Overview
 
