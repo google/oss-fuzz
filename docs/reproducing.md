@@ -1,9 +1,29 @@
 # Reproducing OSS-Fuzz issues
 
-You've been CC'ed on an OSS-Fuzz issue, now what? Before attempting a fix you should be able to reliably reproduce an issue. 
+You've been CC'ed on an OSS-Fuzz issue ([examples](https://bugs.chromium.org/p/oss-fuzz/issues/list)),
+now what?
+Before attempting a fix the bug you should be able to reliably reproduce it. 
 
-The process is much simpler if you have Docker installed ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)), but 
+Every issue has a reproducer file attached.
+This file contains the bytes that were fed to the [Fuzz Target](http://libfuzzer.info/#fuzz-target).
+
+If you have [properly integrated](ideal_integration.md) the fuzz target with your build and test system
+all you need is to download the reproducer file and run
+```
+./fuzz_target_binary REPRODUCER_FILE
+```
+Depending on the nature of the bug, the fuzz target binary needs to be build with the appropriate sanitizer
+(e.g. if this is a buffer overflow, with [AddressSanitizer](http://clang.llvm.org/docs/AddressSanitizer.html)).
+
+**TODO**
+
+Another option is to use the Docker commands (**TODO: link**) to replicate the exact build steps
+used by OSS-Fuzz and then feed the reproducer input to the target.
+
+([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)), but 
 is entirely possible to do without.
+
+## **TODO Move into a separate file with docker commands**
 
 ## Bug tracker reports
 
@@ -70,16 +90,3 @@ docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b
    [Use gdb](debugging.md#debugging-fuzzers-with-gdb) if needed.
 - *Submit the fix.* ClusterFuzz will automatically pick up the changes, recheck the testcase 
   and will close the issue.
-
-## Manual
-
-Manual process is fully documented on main [libFuzzer page](http://llvm.org/docs/LibFuzzer.html).
-To manully reproduce the issue you have to:
-- fetch the toolchain: http://llvm.org/docs/LibFuzzer.html#versions
-- build the target with toolchain and sanitizer: http://llvm.org/docs/LibFuzzer.html#building
-- build the fuzzer from target-related code in [targets/](../targets/)
-- run the fuzzer on downloaded testcase
-- develop a fix and submit it upstream
-
-ClusterFuzz will automatically pick up the changes, recheck the testcase and will close the issue.
-
