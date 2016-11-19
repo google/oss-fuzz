@@ -24,12 +24,15 @@ make -j$(nproc) all
 # build your fuzzer(s)
 make -C test CFLAGS="$CFLAGS -Dmain=stress_main -Drand=get_fuzz_input" stress.o
 
+$CC $CFLAGS -c $SRC/chewing_fuzzer_common.c -o $WORK/chewing_fuzzer_common.o
+
 for variant in default random_init dynamic_config; do
-    $CC $CFLAGS \
-	-o $OUT/chewing_${variant}_fuzzer \
-	$SRC/chewing_${variant}_fuzzer.c $SRC/chewing_fuzzer_common.c \
-	test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
-	-lfuzzer
+    $CC $CFLAGS -c $SRC/chewing_${variant}_fuzzer.c -o $WORK/chewing_${variant}_fuzzer.o
+    $CXX $CXXFLAGS \
+      -o $OUT/chewing_${variant}_fuzzer \
+      $WORK/chewing_${variant}_fuzzer.o $WORK/chewing_fuzzer_common.o \
+      test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
+      -lfuzzer
 done
 
 # install data files
