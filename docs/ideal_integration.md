@@ -94,7 +94,8 @@ If you are a member of the project you want to fuzz, most of the steps above are
 However in some cases someone outside the project team may want to fuzz the code
 and the project maintainers are not interested in helping.
 
-In such cases we can host the fuzz targets, dictionaries, etc in this repository.
+In such cases we can host the fuzz targets, dictionaries, etc in this
+repository and mention them in the Dockerfile.
 Examples: [libxml2](../targets/libxml2), [c-ares](../targets/c-ares), [expat](../targets/expat).
 This is far from ideal because the fuzz targets will not be continuosly tested 
 and hence may quickly bitrot.
