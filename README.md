@@ -12,7 +12,7 @@
 
 [Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
 
-## Introduction to OSS-Fuzz
+## Introduction
 
 [Fuzz testing](https://en.wikipedia.org/wiki/Fuzz_testing) is a well-known
 technique for uncovering various kinds of programming errors in software.
