@@ -27,14 +27,20 @@ See also [#mutation-engine] and [#test-generator].
 ## Test Input
 Or **reproducer**, or **testcase**. 
 A sequence of bytes that is used as the input to a Fuzz Target. 
+Typicaly, a test input is stored in a separate file. 
+
+## Corpus
+Or **test corpus**, or **fuzzing corpus**. 
+A set of [test inputs](#test-input).
 
 ## Mutation Engine
 A tool that take a set of testcases
 and creates their mutations, but do not directly feed the mutations to Fuzz Targets.
-Example [Radamsa](https://github.com/aoh/radamsa),
+Example: [Radamsa](https://github.com/aoh/radamsa),
 
 ## Test Generator
-A tool that generates testcases 
+A tool that generates testcases according to some rules or grammar. 
+Example: [csmith](https://embed.cs.utah.edu/csmith/) (a test generator for the C language).
 
 ## Fuzzer
 
