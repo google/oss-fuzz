@@ -17,6 +17,4 @@
 FROM ossfuzz/base-runner
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y gdb zip
-COPY llvm-symbolizer /usr/local/bin/
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 
