@@ -38,9 +38,9 @@ provides distributed fuzzer execution environment and reporting.
 The following process is used for targets in OSS-Fuzz:
 
 - A maintainer of an opensource project or an outside volunteer creates
-one or more [Fuzz Target](http://libfuzzer.info/#fuzz-target) 
-and [integrates](docs/ideal_integration.md) it with the project's build and test system.
-- These targets are [accepted to OSS-Fuzz](docs/new_target.md).
+one or more [fuzz targets](http://libfuzzer.info/#fuzz-target) 
+and [integrates](docs/ideal_integration.md) them with the project's build and test system.
+- These fuzz targets are [accepted to OSS-Fuzz](docs/new_target.md).
 - When [ClusterFuzz](docs/clusterfuzz.md) finds a bug, an issue is automatically
   reported in the OSS-Fuzz [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) 
   ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9)).
