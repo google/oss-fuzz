@@ -1,4 +1,4 @@
-# Fuzzing Gloassary
+# Fuzzing Glossary
 
 TODO
 
