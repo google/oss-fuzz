@@ -24,9 +24,12 @@ Examples: [libFuzzer](http://lbfuzzer.info),
 See also [Mutation Engine](#mutation-engine) and [Test Generator](#test-generator).
 
 ## Test Input
-Or **reproducer**, or **testcase**. 
 A sequence of bytes that is used as the input to a Fuzz Target. 
 Typicaly, a test input is stored in a separate file. 
+
+## Reproducer 
+Or a **testcase**.<BR> 
+A [Test Input](#test-input) that causes a specific bug to reproduce. 
 
 ## Corpus
 Or **test corpus**, or **fuzzing corpus**. 
