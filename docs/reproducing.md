@@ -2,7 +2,7 @@
 
 You've been CC'ed on an OSS-Fuzz issue
 ([examples](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=Type%3ABug%2CBug-Security)), now what?
-Before attempting a fix the bug you should be able to reliably reproduce it. 
+Before attempting to fix the bug you should be able to reliably reproduce it. 
 
 Every issue has a reproducer (aka "testcase") file attached.
 Download it. If the issue is not public, you will need to login using your Google account
