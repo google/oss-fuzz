@@ -21,7 +21,7 @@ Examples: [libFuzzer](http://lbfuzzer.info),
 [AFL](lcamtuf.coredump.cx/afl/),
 [honggfuzz](https://github.com/google/honggfuzz), etc 
 
-See also [#mutation-engine] and [#test-generator].
+See also [Mutation Engine](mutation-engine) and [Test Generator][Test Generator].
 
 ## Test Input
 Or **reproducer**, or **testcase**. 
