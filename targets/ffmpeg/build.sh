@@ -172,7 +172,7 @@ cd $SRC/ffmpeg
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
 
-FFMPEG_FUZZERS_COMMON_FLAGS="-lfuzzer \
+FFMPEG_FUZZERS_COMMON_FLAGS="-lfuzzer /usr/local/lib/libc++.a \
     -L$FFMPEG_DEPS_PATH/lib \
     -Llibavcodec -Llibavdevice -Llibavfilter -Llibavformat -Llibavresample \
     -Llibavutil -Llibpostproc -Llibswscale -Llibswresample \
