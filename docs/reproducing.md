@@ -10,7 +10,7 @@ Download it. If the issue is not public, you will need to login using your
 that the bug report CCs.
 This file contains the bytes that were fed to the [Fuzz Target](http://libfuzzer.info/#fuzz-target).
 
-If you have [properly integrated](ideal_integration.md) the fuzz target with your build and test system
+If you have already [integrated](ideal_integration.md) the fuzz target with your build and test system
 all you do is run:
 ```
 ./fuzz_target_binary REPRODUCER_FILE
