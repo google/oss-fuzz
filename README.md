@@ -22,6 +22,7 @@ We successfully deployed
 [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html)
 and now want to share the experience and the service with the opensource community. 
 
+In cooperation with the [Core Infrastructure Initiative](https://www.coreinfrastructure.org/)
 OSS-Fuzz aims to make common open source software more secure by
 combining modern fuzzing techniques and scalable
 distributed execution.
