@@ -45,6 +45,6 @@ docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b
   This is essentially the previous command that additionally mounts local sources into the running container.
 - *Fix the issue.* Use the previous command to verify you fixed the issue locally. 
    [Use gdb](debugging.md#debugging-fuzzers-with-gdb) if needed.
-- Consider [improving fuzzing support](indeal_integration.md) in your project's build and test system.
+- Consider [improving fuzzing support](ideal_integration.md) in your project's build and test system.
 - *Submit the fix.* ClusterFuzz will automatically pick up the changes, recheck the testcase 
   and will close the issue.
