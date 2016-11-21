@@ -20,7 +20,7 @@ Many detectable errors (e.g. buffer overruns) have real security implications.
 
 We successfully deployed 
 [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html)
-and now want to share the experience and the service with the openssource community. 
+and now want to share the experience and the service with the opensource community. 
 
 OSS-Fuzz aims to make common open source software more secure by
 combining modern fuzzing techniques and scalable
