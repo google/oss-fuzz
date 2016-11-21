@@ -17,32 +17,9 @@ all you is to run
 Depending on the nature of the bug, the fuzz target binary needs to be built with the appropriate sanitizer
 (e.g. if this is a buffer overflow, with [AddressSanitizer](http://clang.llvm.org/docs/AddressSanitizer.html)).
 
-**TODO**
-
-Another option is to use the Docker commands (**TODO: link**) to replicate the exact build steps
-used by OSS-Fuzz and then feed the reproducer input to the target.
-
-## **TODO careate separate file with all docker commands**
-([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)), but 
-is entirely possible to do without.
-
-
-Click the testcase download link to download the testcase (you may need to
-login, using the same Google account that you've been CC'ed with). The "Detailed
-report" link provides the full stack trace, as well as some additional details
-that may be useful.
-
-For the following instructions, `$target` is the text after `Target: ` in the
-report, and `$fuzzer` is the text after `Fuzzer binary: `. `$testcase_file` is
-the path to the testcase you just downloaded.
-
-Note that for older reports, `Fuzzer binary:` and `Target:` may not exist. In
-this case, please extract this information from the `Fuzzer:` field. This is
-usually in the format `libFuzzer_$target_$fuzzer`.
-
-## Docker
-
-If you have docker installed, follow these steps:
+If you are not sure how to build fuzzers within the target, you may also use 
+Docker (([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker))) commands 
+to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer input to the target.
 
 - *Reproduce from nightly sources:* 
 
