@@ -4,7 +4,7 @@ You've been CC'ed on an OSS-Fuzz issue
 ([examples](https://bugs.chromium.org/p/oss-fuzz/issues/list)), now what?
 Before attempting a fix the bug you should be able to reliably reproduce it. 
 
-Every issue has a reproducer file attached.
+Every issue has a reproducer (aka "test case") file attached.
 Download it. If the issue is not public, you will need to login using your Google account
 that is CC-ed to the bug report.
 This file contains the bytes that were fed to the [Fuzz Target](http://libfuzzer.info/#fuzz-target).
