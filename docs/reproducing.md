@@ -21,13 +21,15 @@ If you are not sure how to build the fuzzer using the project's build system,
 you may also use the Docker ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)) commands 
 to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer input to the target.
 
-- *Reproduce using the most recent successfull OSS-Fuzz build:* 
+- *Reproduce using the latest OSS-Fuzz build:* 
 
    <pre>
 docker run --rm -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
    </pre>
 
-  It builds the fuzzer from nightly sources (in the image) and runs it with testcase input.
+  It builds the fuzzer from  the most recent successfull OSS-Fuzz build (roughly, last night's sources)
+  and feeds the testcase file to the target function. 
+  
   E.g. for the [libxml2](../target/libxml2) fuzzer named `libxml2_xml_read_memory_fuzzer` it will be: 
   
    <pre>
