@@ -1,5 +1,7 @@
 # OSS-Fuzz Glossary
 
+**WORK-IN-PROGRESS**
+
 Naming things is hard.<BR>
 This page tries to reduce confusion around fuzz-related terminology.
 
@@ -13,6 +15,18 @@ Examples: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/x509.c),
 
 A Fuzz Target can and should also be used for regression testing
 and for reproducing bug reports, see [ideal integration](ideal_integration.md).
+
+## Library Configuration
+???Any better name??? 
+
+OSS-Fuzz-specific term. <BR>
+OSS-Fuzz applies fuzzing to [Fuzz Targets](#fuzz-target)
+that test APIs of some specific opensource library
+(or sometimes, internal functions of some application). 
+One library may have more than one Fuzz Target
+(example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)),
+but OSS-Fuzz will have a single set of configuration files for such library. 
+This is what we call **Library Configuration**.
 
 ## Fuzzing Engine
 
