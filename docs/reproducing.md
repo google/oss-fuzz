@@ -17,23 +17,23 @@ all you is to run
 Depending on the nature of the bug, the fuzz target binary needs to be built with the appropriate sanitizer
 (e.g. if this is a buffer overflow, with [AddressSanitizer](http://clang.llvm.org/docs/AddressSanitizer.html)).
 
-If you are not sure how to build fuzzers within the target, you may also use 
-Docker (([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker))) commands 
+If you are not sure how to build the fuzzer using the project's build system,
+you may also use the Docker ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)) commands 
 to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer input to the target.
 
-- *Reproduce from nightly sources:* 
+- *Reproduce using the most recent successfull OSS-Fuzz build:* 
 
    <pre>
 docker run --rm -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
    </pre>
 
   It builds the fuzzer from nightly sources (in the image) and runs it with testcase input.
-  E.g. for libxml2 it will be: 
+  E.g. for the [libxml2](../target/libxml2) fuzzer named `libxml2_xml_read_memory_fuzzer` it will be: 
   
    <pre>
 docker run --rm -ti -v <b><i>~/Downloads/testcase</i></b>:/testcase ossfuzz/<b><i>libxml2</i></b> reproduce <b><i>libxml2_xml_read_memory_fuzzer</i></b>
    </pre>
-- *Reproduce from local sources:*
+- *Reproduce using the local source code:*
 
     <pre>
 docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b> \
