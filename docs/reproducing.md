@@ -5,12 +5,13 @@ You've been CC'ed on an OSS-Fuzz issue
 Before attempting to fix the bug you should be able to reliably reproduce it. 
 
 Every issue has a reproducer (aka "testcase") file attached.
-Download it. If the issue is not public, you will need to login using your Google account
-that is CC-ed to the bug report.
+Download it. If the issue is not public, you will need to login using your
+[Google account](https://support.google.com/accounts/answer/176347?hl=en)
+that the bug report CCs.
 This file contains the bytes that were fed to the [Fuzz Target](http://libfuzzer.info/#fuzz-target).
 
 If you have [properly integrated](ideal_integration.md) the fuzz target with your build and test system
-all you is to run
+all you do is run:
 ```
 ./fuzz_target_binary REPRODUCER_FILE
 ```
