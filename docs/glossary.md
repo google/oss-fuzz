@@ -1,8 +1,7 @@
 # Fuzzing Glossary
 
-TODO
-
-Naming things is hard. This page tries to reduce confusion around naming.
+Naming things is hard.<BR>
+This page tries to reduce confusion around fuzz-related terminology.
 
 ## Fuzz Target
 Or **Target Function** or **Fuzzing Target Function**.<BR>
