@@ -1,2 +1,4 @@
-target: expat
 homepage: "http://expat.sourceforge.net/"
+sanitizers:
+  - address
+  - undefined
