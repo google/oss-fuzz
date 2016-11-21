@@ -10,7 +10,7 @@
 | [Targets issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 
 
-[Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback.
+[Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback about OSS-Fuzz.
 
 ## Introduction
 
