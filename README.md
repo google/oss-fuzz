@@ -51,20 +51,19 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
 - 7 days after the fix is verified or after 90 days after reporting, the issue becomes *public*
   ([exact guidelines](#bug-disclosure-guidelines)).
 
-<!-- NOTE: this is referenced by oss-fuzz blog post -->
+<!-- NOTE: this anchor is referenced by oss-fuzz blog post -->
 ## Accepting New Targets
 
 In order to be accepted to OSS-Fuzz, an open-source target must 
 have a significant user base and/or be critical to the global IT infrastructure.
 
-To submit a new target to OSS-Fuzz:
+To submit a new target:
 - create a pull request with new `targets/<target_name>/target.yaml` file ([example](targets/file/target.yaml) providing at least the following information:
   * target home site
-  * an e-mail of the engineering contact person to be CCed on issue. This
+  * e-mail of the engineering contact person to be CCed on issue. This
     has to be an e-mail 
     [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
-    that belongs to an 
-    established target committer (according to VCS logs).
+    that belongs to an established target committer (according to VCS logs).
     If this is not you or address differs from VCS, an informal e-mail verification will be required.
     This e-mail will also be publicly listed in our [Targets](targets/README.md)
     page.
