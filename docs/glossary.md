@@ -16,7 +16,7 @@ Examples: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/x509.c),
 A Fuzz Target can and should also be used for regression testing
 and for reproducing bug reports, see [ideal integration](ideal_integration.md).
 
-## Library Configuration
+## Library Config
 ???Any better name??? 
 
 OSS-Fuzz-specific term. <BR>
@@ -26,7 +26,7 @@ that test APIs of some specific opensource library
 One library may have more than one Fuzz Target
 (example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)),
 but OSS-Fuzz will have a single set of configuration files for such library. 
-This is what we call **Library Configuration**.
+This is what we call **Library Config**.
 
 ## Fuzzing Engine
 
@@ -39,7 +39,9 @@ See also [Mutation Engine](#mutation-engine) and [Test Generator](#test-generato
 
 ## Job type
 
-A [ClusterFuzz](clusterfuzz.md) specific term. This refers to a build of all fuzz targets for a library configuration with (or for) a specific [fuzzing engine](#fuzzing-engine),
+A [ClusterFuzz](clusterfuzz.md) specific term.
+This refers to a build of all fuzz targets for a given library
+(see [library config](library-config)) with a specific [fuzzing engine](#fuzzing-engine),
 in a specific build mode (e.g. with enabled or disabled assertions), 
 optionally combined with a [sanitizer](#sanitizer).
 
