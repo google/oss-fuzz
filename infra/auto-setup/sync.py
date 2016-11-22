@@ -33,28 +33,11 @@ def main():
 
 def get_libraries():
   """Return list of libraries for oss-fuzz."""
-  OSSFUZZ_TREE_URL = ('https://api.github.com/repos/google/oss-fuzz/'
-                      'git/trees/master')
-  tree = json.loads(urllib2.urlopen(OSSFUZZ_TREE_URL).read())
   libraries = []
-
-  targets_url = None
-
-  for item in tree['tree']:
-    if item['path'] == 'targets':
-      targets_url = item['url']
-      break
-
-  if not targets_url:
-    print >>sys.stderr, 'No libraries found.'
-    return []
-
-  tree = json.loads(urllib2.urlopen(targets_url).read())
-  for item in tree['tree']:
-    if item['type'] != 'tree':
-      continue
-
-    libraries.append(item['path'])
+  listing = os.listdir('../targets')
+  for name in listing:
+    if os.path.isdir(name):
+      libraries.append(name)
 
   return libraries
 
