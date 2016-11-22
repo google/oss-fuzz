@@ -21,14 +21,14 @@ docker run --rm -ti ossfuzz/<b><i>$target</i></b> <i>&lt;command&gt;</i> <i>&lt;
 - *reproduce an issue using the latest OSS-Fuzz build:* 
 
    <pre>
-docker run --rm -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
+docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
    </pre>
 
 - *reproduce using the local source code:*
 
     <pre>
-    docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b> \
-                     -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
+    docker run --rm -ti -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b> \
+                        -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
     </pre>
 
 
