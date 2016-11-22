@@ -30,12 +30,19 @@ This is what we call **Library Configuration**.
 
 ## Fuzzing Engine
 
-A program that tries to find interesting inputs for a Fuzz Target by executing it.
+A tool that tries to find interesting inputs for a Fuzz Target by executing it.
 Examples: [libFuzzer](http://lbfuzzer.info),
 [AFL](lcamtuf.coredump.cx/afl/),
 [honggfuzz](https://github.com/google/honggfuzz), etc 
 
 See also [Mutation Engine](#mutation-engine) and [Test Generator](#test-generator).
+
+## Fuzzer build
+
+A binary built for a [fuzz target](#fuzz-target) for a specific [fuzzing engine](#fuzzing-engine),
+in a specific build mode (e.g. with enabled or disabled assertions), 
+optionally combined with a [sanitizer](#sanitizer).
+
 
 ## Test Input
 A sequence of bytes that is used as the input to a Fuzz Target. 
@@ -57,6 +64,15 @@ Example: [Radamsa](https://github.com/aoh/radamsa),
 ## Test Generator
 A tool that generates testcases according to some rules or grammar. 
 Example: [csmith](https://embed.cs.utah.edu/csmith/) (a test generator for the C language).
+
+## Sanitizer
+A dynamic testing tool that can detect bugs during program execution.
+An incomplete list:
+[ASan](http://clang.llvm.org/docs/AddressSanitizer.html),
+[MSan](http://clang.llvm.org/docs/MemorySanitizer.html),
+[TSan](http://clang.llvm.org/docs/ThreadSanitizer.html),
+[LSan](http://clang.llvm.org/docs/LeakSanitizer.html),
+[UBSan](http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html). 
 
 ## Fuzzer
 
