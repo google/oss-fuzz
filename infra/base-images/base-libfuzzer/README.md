@@ -1,8 +1,12 @@
 # base-libfuzzer
 > Abstract base image for libfuzzer builders.
 
-`docker run -ti <image_name> <command> <arguments>`
+Every target image supports multiple commands that can be invoked through docker after building the image:
 
+<pre>
+docker run --rm -ti ossfuzz/<b><i>$target</i></b> <i>&lt;command&gt;</i> <i>&lt;arguments...&gt;</i>
+</pre>
+   
 # Supported Commands
 
 | Command | Description |
@@ -11,6 +15,22 @@
 | `reproduce <fuzzer_name> <fuzzer_options>` | build all fuzzers and run specified one with `/testcase` content.
 | `run <fuzzer_name> <fuzzer_options...>` | build all fuzzers and run specified one with given options.
 | `/bin/bash` | drop into shell, execute `compile` script to start build.
+
+# Examples
+
+- *reproduce an issue using the latest OSS-Fuzz build:* 
+
+   <pre>
+docker run --rm -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
+   </pre>
+
+- *reproduce using the local source code:*
+
+    <pre>
+    docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b> \
+                     -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
+    </pre>
+
 
 # Image Files Layout
 
