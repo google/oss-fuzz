@@ -39,7 +39,7 @@ See also [Mutation Engine](#mutation-engine) and [Test Generator](#test-generato
 
 ## Fuzzer build
 
-A binary built for a [fuzz target](#fuzz-target) for a specific [fuzzing engine](#fuzzing-engine),
+A binary built for a [fuzz target](#fuzz-target) with (or for) a specific [fuzzing engine](#fuzzing-engine),
 in a specific build mode (e.g. with enabled or disabled assertions), 
 optionally combined with a [sanitizer](#sanitizer).
 
