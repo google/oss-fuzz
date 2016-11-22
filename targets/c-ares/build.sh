@@ -19,7 +19,7 @@
 ./buildconf
 ./configure
 make clean
-make CFLAGS= -j$(nproc) all
+make -j$(nproc) V=1 all
 
 # Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -I. \
