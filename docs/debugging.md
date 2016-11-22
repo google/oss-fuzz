@@ -14,5 +14,5 @@ If you decide to debug a fuzzer with gdb (which is already installed in libfuzze
 you will need to start a container in privileged mode:
 
 ```bash
-docker run -ti --privileged -v /tmp/out:/out -t ossfuzz/libfuzzer-runner /out/some_fuzzer_name
+docker run -ti --privileged -v /tmp/out:/out ossfuzz/libfuzzer-runner gdb /out/fuzzer_name
 ```
