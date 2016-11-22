@@ -13,6 +13,7 @@ BUILD_BUCKET = 'clusterfuzz-builds'
 JENKINS_SERVER = ('localhost', 8080)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+OSSFUZZ_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
 
 def main():
@@ -34,7 +35,7 @@ def main():
 def get_libraries():
   """Return list of libraries for oss-fuzz."""
   libraries = []
-  listing = os.listdir('../targets')
+  listing = os.listdir(os.path.join(OSSFUZZ_DIR, 'targets'))
   for name in listing:
     if os.path.isdir(name):
       libraries.append(name)
