@@ -25,7 +25,7 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 - *Reproduce using the latest OSS-Fuzz build:* 
 
    <pre>
-docker run --rm -v <b><i>$testcase_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
+docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
    </pre>
 
   It builds the fuzzer from  the most recent successfull OSS-Fuzz build (roughly, last night's sources)
@@ -39,8 +39,8 @@ docker run --rm -ti -v <b><i>~/Downloads/testcase</i></b>:/testcase ossfuzz/<b><
 - *Reproduce using the local source code:*
 
     <pre>
-docker run --rm  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b> \
-                     -v <b><i>$reproducer_file</i></b>:/testcase -t ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
+    docker run --rm -ti  -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b> \
+                         -v <b><i>$reproducer_file</i></b>:/testcase ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
     </pre>
   
   This is essentially the previous command that additionally mounts local sources into the running container.
