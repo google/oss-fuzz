@@ -39,6 +39,9 @@ def get_libraries():
     if os.path.isdir(name):
       libraries.append(name)
 
+  if not libraries:
+    print >>sys.stderr, 'No libraries found.'
+
   return libraries
 
 
