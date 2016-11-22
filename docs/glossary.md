@@ -37,12 +37,11 @@ Examples: [libFuzzer](http://lbfuzzer.info),
 
 See also [Mutation Engine](#mutation-engine) and [Test Generator](#test-generator).
 
-## Fuzzer build
+## Job type
 
-A binary built for a [fuzz target](#fuzz-target) with (or for) a specific [fuzzing engine](#fuzzing-engine),
+A [ClusterFuzz](clusterfuzz.md) specific term. This refers to a build of all fuzz targets for a library configuration with (or for) a specific [fuzzing engine](#fuzzing-engine),
 in a specific build mode (e.g. with enabled or disabled assertions), 
 optionally combined with a [sanitizer](#sanitizer).
-
 
 ## Test Input
 A sequence of bytes that is used as the input to a Fuzz Target. 
