@@ -43,7 +43,7 @@ A [ClusterFuzz](clusterfuzz.md) specific term. This refers to a build of all fuz
 in a specific build mode (e.g. with enabled or disabled assertions), 
 optionally combined with a [sanitizer](#sanitizer).
 
-For example, we have an "libfuzzer_asan_sqlite" job type, indicating sqlite3 fuzz target builds using libFuzzer and ASan.
+For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of all sqlite3 fuzz target using libFuzzer and ASan.
 
 ## Test Input
 A sequence of bytes that is used as the input to a Fuzz Target. 
