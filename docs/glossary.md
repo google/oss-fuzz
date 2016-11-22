@@ -77,6 +77,9 @@ An incomplete list:
 ## Fuzzer
 
 The most overloaded term, which makes it bad (maybe, we should try avoiding it?).
-Sometimes the "Fuzzer" is referred to a Fuzz Target, sometimes to a Fuzzing Engine, Mutation Engine, or a Test Generator. 
-Sometimes to a binary built from a Fuzz Target using some of the Fuzzing Engine and optionally with some dynamic testing tool. 
+Sometimes the "Fuzzer" is referred to a [fuzz target](#fuzz-target),
+sometimes to a [fuzzing engine](#fuzzing-engine),
+[mutation engine](#mutation-engine),
+or a [test generator](#test-generator). 
+sometimes to a [fuzzer build](#fuzzer-build).
 
