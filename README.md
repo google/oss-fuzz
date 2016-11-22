@@ -56,9 +56,9 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
 
 To be accepted to OSS-Fuzz, an open-source target must 
 have a significant user base and/or be critical to the global IT infrastructure.
-
 To submit a new target:
-- start a pull request with new `targets/<target_name>/target.yaml` file ([example](targets/file/target.yaml) providing at least the following information:
+- [create a pull request](https://help.github.com/articles/creating-a-pull-request/) with new 
+`targets/<target_name>/target.yaml` file ([example](targets/file/target.yaml) providing at least the following information:
   * target home site
   * e-mail of the engineering contact person to be CCed on issue. This
     has to be an e-mail 
