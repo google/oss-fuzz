@@ -35,9 +35,9 @@ def main():
 def get_libraries():
   """Return list of libraries for oss-fuzz."""
   libraries = []
-  listing = os.listdir(os.path.join(OSSFUZZ_DIR, 'targets'))
-  for name in listing:
-    if os.path.isdir(name):
+  targets_dir = os.path.join(OSSFUZZ_DIR, 'targets')
+  for name in os.listdir(targets_dir):
+    if os.path.isdir(os.path.join(targets_dir, name)):
       libraries.append(name)
 
   if not libraries:
