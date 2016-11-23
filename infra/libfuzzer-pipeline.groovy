@@ -20,17 +20,18 @@ def call(body) {
     body.resolveStrategy = Closure.DELEGATE_FIRST
     body.delegate = config
     body()
-
+    
     // Mandatory configuration
-    def gitUrl = config["git"]
-    def svnUrl = config["svn"]
-
+    def target = new groovy.json.JsonSlurperClassic().parse(config["target_json"])
+    
     // Optional configuration
     def projectName = config["name"] ?: env.JOB_BASE_NAME
     def dockerfile = config["dockerfile"] ?: "oss-fuzz/targets/$projectName/Dockerfile"
     def sanitizers = config["sanitizers"] ?: ["address"]
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
+    def gitUrl = config["git"]
+    def svnUrl = config["svn"]
 
     // Flags configuration
     def sanitizerFlags = [
@@ -38,7 +39,7 @@ def call(body) {
       "undefined":"-fsanitize=bool,signed-integer-overflow,shift,vptr"
       ]
 
-  def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
+    def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
     node {
@@ -49,7 +50,7 @@ def call(body) {
 
         def srcmapFile = "$workspace/srcmap.json"
         def dockerTag = "ossfuzz/$projectName"
-        echo "Building $dockerTag"
+        echo "Building $dockerTag: $target"
 
         sh "rm -rf $workspace/out"
         sh "mkdir -p $workspace/out"
