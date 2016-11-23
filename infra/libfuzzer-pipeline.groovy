@@ -25,9 +25,10 @@ def call(body) {
     def target = new groovy.json.JsonSlurperClassic().parseText(config["target_json"])
     
     // Optional configuration
-    def projectName = config["name"] ?: env.JOB_BASE_NAME
+    def sanitizers = target["sanitizers"] ?: ["address"]
+    def projectName = target["name"] ?: env.JOB_BASE_NAME
     def dockerfile = config["dockerfile"] ?: "oss-fuzz/targets/$projectName/Dockerfile"
-    def sanitizers = config["sanitizers"] ?: ["address"]
+    
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
     def gitUrl = config["git"]
