@@ -65,8 +65,6 @@ To submit a new target:
     [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
     that belongs to an established target committer (according to VCS logs).
     If this is not you or address differs from VCS, an informal e-mail verification will be required.
-    This e-mail will also be publicly listed in our [Targets](targets/README.md)
-    page.
 - once accepted by an OSS-Fuzz project member, follow the [New Target Guide](docs/new_target.md)
   to write the code.
 
