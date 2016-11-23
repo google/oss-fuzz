@@ -66,7 +66,7 @@ def upload_status(successes, failures):
           last_updated=datetime.datetime.utcnow().ctime()))
 
   subprocess.check_output(['gsutil', 'cp', 'status.html', 'gs://' +
-                           LOGS_BUCKET])
+                           LOGS_BUCKET], stderr=subprocess.STDOUT)
 
 
 def upload_build_logs(successes, failures):
@@ -77,7 +77,8 @@ def upload_build_logs(successes, failures):
 
     subprocess.check_output(['gsutil', 'cp', 'latest.txt',
                              'gs://%s/build_logs/%s/' %
-                             (LOGS_BUCKET, result.name)])
+                             (LOGS_BUCKET, result.name)],
+                             stderr=subprocess.STDOUT)
 
 
 def main():
