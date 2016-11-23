@@ -1,6 +1,6 @@
-# OSS-Fuzz - continuous fuzzing of open source software
+# OSS-Fuzz - Continuous Fuzzing for Open Source Software
 
-> *Status*: Beta. We are preparing the project for public release. We are polishing the documentation and the process.
+> *Status*: Beta. We are preparing the project for public release soon.
 
 [FAQ](docs/faq.md)
 | [Ideal Fuzzing Integration](docs/ideal_integration.md)
@@ -16,14 +16,14 @@
 
 [Fuzz testing](https://en.wikipedia.org/wiki/Fuzz_testing) is a well-known
 technique for uncovering various kinds of programming errors in software.
-Many detectable errors (e.g. buffer overruns) have real security implications.
+Many of these detectable errors (e.g. [buffer overflow](https://en.wikipedia.org/wiki/Buffer_overflow)) can have serious security implications.
 
 We successfully deployed 
 [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html)
-and now want to share the experience and the service with the opensource community. 
+and found [hundreds](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=label%3AStability-LibFuzzer+-status%3ADuplicate%2CWontFix) of security vulnerabilities and stability bugs. We now want to share the experience and the service with the open source community. 
 
-In cooperation with the [Core Infrastructure Initiative](https://www.coreinfrastructure.org/)
-OSS-Fuzz aims to make common open source software more secure by
+In cooperation with the [Core Infrastructure Initiative](https://www.coreinfrastructure.org/), 
+OSS-Fuzz aims to make common open source software more secure and stable by
 combining modern fuzzing techniques and scalable
 distributed execution.
 
@@ -49,7 +49,7 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
 - The bug is fixed upstream.
 - [ClusterFuzz](docs/clusterfuzz.md) automatically verifies the fix, adds a comment and closes the issue.
 - 7 days after the fix is verified or after 90 days after reporting, the issue becomes *public*
-  ([exact guidelines](#bug-disclosure-guidelines)).
+  ([guidelines](#bug-disclosure-guidelines)).
 
 <!-- NOTE: this anchor is referenced by oss-fuzz blog post -->
 ## Accepting New Targets
@@ -59,41 +59,41 @@ have a significant user base and/or be critical to the global IT infrastructure.
 To submit a new target:
 - [create a pull request](https://help.github.com/articles/creating-a-pull-request/) with new 
 `targets/<target_name>/target.yaml` file ([example](targets/file/target.yaml)) giving at least the following information:
-  * target home site.
-  * e-mail of the engineering contact person to be CCed on issue. This
-    has to be an e-mail 
+  * target home website.
+  * e-mail of the engineering contact person to be CCed on new issues. This
+    email should be  
     [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
-    that belongs to an established target committer (according to VCS logs).
-    If this is not you or address differs from VCS, an informal e-mail verification will be required.
+    and belong to an established target committer (according to VCS logs).
+    If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
 - once accepted by an OSS-Fuzz project member, follow the [New Target Guide](docs/new_target.md)
   to write the code.
 
 
 ## Bug Disclosure Guidelines
 
-Following Google's standard [disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
+Following [Google's standard disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
 OSS-Fuzz will adhere to following disclosure principles:
   - **90-day deadline**. After notifying target authors, we will open reported
     issues in 90 days, or 7 days after the fix is released.
   - **Weekends and holidays**. If a deadline is due to expire on a weekend or
     US public holiday, the deadline will be moved to the next normal work day.
-  - **Grace period**. We will have a 14-day grace period. If a 90-day deadline
-    will expire but upstream engineers let us know before the deadline that a
+  - **Grace period**. We have a 14-day grace period. If a 90-day deadline
+    expires but the upstream engineers lets us know before the deadline that a
     patch is scheduled for release on a specific day within 14 days following
     the deadline, the public disclosure will be delayed until the availability
     of the patch.
 
 ## More Documentation
 
-* [New Target Guide](docs/new_target.md) walks through steps necessary to add new targets to OSS-Fuzz.
-* [Ideal Integration](docs/ideal_integration.md) describes the ideal way to integrate fuzz targets with your project.
-* [Running and Building Fuzzers](docs/building_running_fuzzers.md) documents the process for fuzzers that are
+* [New Target Guide](docs/new_target.md) walks through the steps necessary to add new targets to OSS-Fuzz.
+* [Ideal Integration](docs/ideal_integration.md) describes the steps to integrate fuzz targets with your project.
+* [Running and Building Fuzzers](docs/building_running_fuzzers.md) documents the process for running fuzzers that are
   *part of target* source code repository.
-* [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for fuzzers that are
+* [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for running fuzzers that are
   *part of OSS-Fuzz* source code repository.
 * [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
   environment under which your fuzzers will be run.
-* [Targets List](targets/README.md) lists OSS targets added to OSS-Fuzz.
+* [Targets List](targets/README.md) lists OSS targets currently added to OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
