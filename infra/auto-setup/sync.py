@@ -16,6 +16,12 @@ JENKINS_SERVER = ('localhost', 8080)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
+SCRIPT_TEMPLATE = """
+def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
+                                        'https://github.com/google/oss-fuzz.git')
+
+libfuzzerBuild { }
+"""
 
 def main():
   # Connect to jenkins server.
@@ -64,8 +70,8 @@ def sync_jenkins_job(server, library):
   job_name = 'targets/' + library
   job_definition = ET.parse(os.path.join(SCRIPT_DIR, 'jenkins_config',
                                          'base_job.xml'))
-  # jenkinsfile_location = job_definition.findall('.//definition/scriptPath')[0]
-  # jenkinsfile_location.text = 'targets/%s/Jenkinsfile' % library
+  script = job_definition.findall('.//definition/script')[0]
+  script.text = SCRIPT_TEMPLATE
   job_config_xml = ET.tostring(job_definition.getroot())
 
   if server.job_exists(job_name):
