@@ -17,10 +17,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
 SCRIPT_TEMPLATE = """
-def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
-                                        'https://github.com/google/oss-fuzz.git')
-
-libfuzzerBuild { }
+def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy', 'https://github.com/google/oss-fuzz.git')
+libfuzzerBuild { target_json = %(target_json)s }
 """
 
 def main():
@@ -65,13 +63,13 @@ def sync_jenkins_job(server, library):
   """Sync the config with jenkins."""
   target_yaml = os.path.join(OSSFUZZ_DIR, 'targets', library, 'target.yaml')
   with open(target_yaml, 'r') as f:
-    print json.dumps(json.dumps(yaml.load(f)))
+    target_json_string = json.dumps(json.dumps(yaml.load(f)))
                              
   job_name = 'targets/' + library
   job_definition = ET.parse(os.path.join(SCRIPT_DIR, 'jenkins_config',
                                          'base_job.xml'))
   script = job_definition.findall('.//definition/script')[0]
-  script.text = SCRIPT_TEMPLATE
+  script.text = SCRIPT_TEMPLATE % { "target_json": target_json_string} 
   job_config_xml = ET.tostring(job_definition.getroot())
 
   if server.job_exists(job_name):
