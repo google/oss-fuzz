@@ -62,18 +62,17 @@ def sync_jenkins_job(server, library):
     print json.dumps(json.dumps(yaml.load(f)))
                              
   job_name = 'targets/' + library
-  if server.job_exists(job_name):
-    # Job already set up.
-    # TODO(ochang): Also update jobs if the definition is different.
-    return
-
   job_definition = ET.parse(os.path.join(SCRIPT_DIR, 'jenkins_config',
                                          'base_job.xml'))
   jenkinsfile_location = job_definition.findall('.//definition/scriptPath')[0]
   jenkinsfile_location.text = 'targets/%s/Jenkinsfile' % library
+  job_config_xml = ET.tostring(job_definition.getroot())
 
-  server.create_job(job_name, ET.tostring(job_definition.getroot()))
-  server.build_job(job_name)
+  if server.job_exists(job_name):
+    server.reconfig_job(job_name, job_config_xml)
+  else:
+    server.create_job(job_name, job_config_xml)
+    server.build_job(job_name)
 
 
 if __name__ == '__main__':
