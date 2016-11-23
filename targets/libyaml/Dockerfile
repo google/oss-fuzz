@@ -15,7 +15,10 @@
 ################################################################################
 
 FROM ossfuzz/base-libfuzzer
-MAINTAINER your@email.com
+MAINTAINER alex.gaynor@gmail.com
 RUN apt-get install -y make autoconf automake libtool
+
 RUN git clone https://github.com/yaml/libyaml
-COPY build.sh libyaml_fuzzer.cc /src/
+WORKDIR libyaml
+
+COPY build.sh libyaml_fuzzer.cc $SRC/

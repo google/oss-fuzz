@@ -15,12 +15,12 @@
 #
 ################################################################################
 
-cd /src/libyaml
+cd libyaml
 
 ./bootstrap
 ./configure
 make "-j$(nproc)"
 
 $CXX $CXXFLAGS -std=c++11 -Iinclude \
-    /src/libyaml_fuzzer.cc -o /out/libyaml_fuzzer \
+    $SRC/libyaml_fuzzer.cc -o $OUT/libyaml_fuzzer \
     -lfuzzer src/.libs/libyaml.a $FUZZER_LDFLAGS
