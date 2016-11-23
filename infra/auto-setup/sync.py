@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import urllib2
+import yaml
 import xml.etree.ElementTree as ET
 
 import jenkins
@@ -56,6 +57,10 @@ def get_jenkins_login():
 
 def sync_jenkins_job(server, library):
   """Sync the config with jenkins."""
+  target_yaml = os.path.join(OSSFUZZ_DIR, 'targets', library, 'target.yaml')
+  with open(target_yaml, 'r') as f:
+    print json.dumps(yaml.load(f))
+                             
   job_name = 'targets/' + library
   if server.job_exists(job_name):
     # Job already set up.
