@@ -6,8 +6,8 @@
 | [Ideal Fuzzing Integration](docs/ideal_integration.md)
 | [New Target Guide](docs/new_target.md) 
 | [Reproducing Bug Reports](docs/reproducing.md) 
-| [All Targets](targets)
-| [Targets issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
+| [Targets List](targets)
+| [Targets Issue Tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 
 
 [Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback about OSS-Fuzz.
