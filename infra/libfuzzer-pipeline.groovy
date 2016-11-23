@@ -22,7 +22,7 @@ def call(body) {
     body()
     
     // Mandatory configuration
-    def target = new groovy.json.JsonSlurperClassic().parse(config["target_json"])
+    def target = new groovy.json.JsonSlurperClassic().parseText(config["target_json"])
     
     // Optional configuration
     def projectName = config["name"] ?: env.JOB_BASE_NAME
