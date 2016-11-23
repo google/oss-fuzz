@@ -14,7 +14,7 @@ This makes it easy to maintain the fuzzers and minimizes breakages that can aris
 
 Make sure to fuzz the target locally for a small period of time to ensure that 
 it does not crash, hang, or runs out of memory instantly. 
-See details at http://libfuzzer.info and http://tutorial.libfuzzer.info
+See details at http://libfuzzer.info and http://tutorial.libfuzzer.info.
 
 Examples: 
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
@@ -35,9 +35,9 @@ i.e. a set of inputs to "seed" the mutations.
 The quality of the seed corpus has a huge impact on the fuzzing efficiency as it allows the fuzzer
 to discover new code paths easier. 
 
-The ideal corpus is a minimial set of intputs that provides maximal code coverage. 
+The ideal corpus is a minimial set of inputs that provides maximal code coverage. 
 
-For better OSS-Fuzz integration 
+For better OSS-Fuzz integration, 
 the seed corpus should be available in revision control (can be same or different as the source code). 
 It should be regularly extended with the inputs that (used to) trigger bugs and/or touch new parts of the code. 
 
@@ -59,8 +59,8 @@ Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45),
 
 ## Fuzzing dictionary
 
-For some input types a simple dictionary of tokens used by the input language
-may have dramatic positive effect on fuzzing. 
+For some input types, a simple dictionary of tokens used by the input language
+can have a dramatic positive effect on fuzzing efficiency. 
 For example, when fuzzing an XML parser, a dictionary of XML tokens will help.
 AFL has a [collection](https://github.com/rc0r/afl-fuzz/tree/master/dictionaries)
 of such dictionaries for some of the popular data formats.
@@ -91,13 +91,13 @@ a) may change and b) are different depending on the fuzzing target and the sanit
 ## Not a project member?
 
 If you are a member of the project you want to fuzz, most of the steps above are simple.
-However in some cases someone outside the project team may want to fuzz the code
+However in some cases, someone outside the project team may want to fuzz the code
 and the project maintainers are not interested in helping.
 
-In such cases we can host the fuzz targets, dictionaries, etc in this
+In such cases, we can host the fuzz targets, dictionaries, etc in OSS-Fuzz's 
 repository and mention them in the Dockerfile.
 Examples: [libxml2](../targets/libxml2), [c-ares](../targets/c-ares), [expat](../targets/expat).
 This is far from ideal because the fuzz targets will not be continuously tested 
 and hence may quickly bitrot.
 
-If you are not a project maintainer we may not be able to CC you to security bugs found by OSS-Fuzz.
+If you are not a project maintainer, we may not be able to CC you to security bugs found by OSS-Fuzz.
