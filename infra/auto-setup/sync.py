@@ -64,8 +64,8 @@ def sync_jenkins_job(server, library):
   job_name = 'targets/' + library
   job_definition = ET.parse(os.path.join(SCRIPT_DIR, 'jenkins_config',
                                          'base_job.xml'))
-  jenkinsfile_location = job_definition.findall('.//definition/scriptPath')[0]
-  jenkinsfile_location.text = 'targets/%s/Jenkinsfile' % library
+  # jenkinsfile_location = job_definition.findall('.//definition/scriptPath')[0]
+  # jenkinsfile_location.text = 'targets/%s/Jenkinsfile' % library
   job_config_xml = ET.tostring(job_definition.getroot())
 
   if server.job_exists(job_name):
