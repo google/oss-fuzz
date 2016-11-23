@@ -10,5 +10,5 @@ We will reconsider github issue tracker once the
 
 Building fuzzers requires building your target with a fresh Clang compiler and special compiler flags. 
 An easy-to-use Docker image is provided to simplify toolchain distribution. This also limits our exposure
-to multitude of Linux varieties and provides a reproducible and (more) secure environment for fuzzer
+to a multitude of Linux varieties and provides a reproducible and secure environment for fuzzer
 building and execution.
