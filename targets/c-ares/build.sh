@@ -17,7 +17,7 @@
 
 # Build the target.
 ./buildconf
-./configure
+./configure --enable-debug
 make clean
 make -j$(nproc) V=1 all
 
