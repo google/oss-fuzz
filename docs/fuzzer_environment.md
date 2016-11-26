@@ -1,13 +1,12 @@
 # Fuzzer environment on ClusterFuzz
 
-Your fuzzers will be run on ClusterFuzz (Linux environment) with some security restrictions.
+Your fuzzers will be run on a [Google Compute Engine](https://cloud.google.com/compute/) VM (Linux) with some security restrictions.
 
 ## Current working directory
 
-You cannot make any assumptions about the current working directory of your
+You should not make any assumptions about the current working directory of your
 fuzzer. If you need to load data files, please use `argv[0]` to get the
-directory where your fuzzer executable is located. This may change in the near
-future.
+directory where your fuzzer executable is located.
 
 ## Filesystem
 
