@@ -6,8 +6,8 @@
 | [Ideal Fuzzing Integration](docs/ideal_integration.md)
 | [New Target Guide](docs/new_target.md) 
 | [Reproducing Bug Reports](docs/reproducing.md) 
-| [All Targets](targets)
-| [Targets issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
+| [Targets List](targets)
+| [Targets Issue Tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 
 
 [Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback about OSS-Fuzz.
@@ -57,15 +57,15 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
 To be accepted to OSS-Fuzz, an open-source target must 
 have a significant user base and/or be critical to the global IT infrastructure.
 To submit a new target:
-- [create a pull request](https://help.github.com/articles/creating-a-pull-request/) with new 
+- [Create a pull request](https://help.github.com/articles/creating-a-pull-request/) with new 
 `targets/<target_name>/target.yaml` file ([example](targets/file/target.yaml)) giving at least the following information:
-  * target home website.
+  * target homepage.
   * e-mail of the engineering contact person to be CCed on new issues. This
     email should be  
     [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
     and belong to an established target committer (according to VCS logs).
     If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
-- once accepted by an OSS-Fuzz project member, follow the [New Target Guide](docs/new_target.md)
+- Once accepted by an OSS-Fuzz project member, follow the [New Target Guide](docs/new_target.md)
   to write the code.
 
 
@@ -110,4 +110,5 @@ gives a list of publically viewable (fixed) bugs found by OSS-Fuzz.
 * [libFuzzer documentation](http://libfuzzer.info)
 * [libFuzzer tutorial](http://tutorial.libfuzzer.info)
 * [Chromium Fuzzing Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)
+* [ClusterFuzz](https://blog.chromium.org/2012/04/fuzzing-for-security.html)
 

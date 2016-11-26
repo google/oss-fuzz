@@ -24,8 +24,7 @@ To add a new OSS target to OSS-Fuzz, 3 supporting files have to be added to OSS-
 * `targets/<target_name>/Dockerfile` - defines an container environment with all the dependencies
 needed to build the project and the fuzzer.
 * `targets/<target_name>/build.sh` - build script that will be executed inside the container.
-* `targets/<target_name>/Jenkinsfile` - will be needed to integrate fuzzers with ClusterFuzz build and distributed execution system. 
-  Specify your target VCS location in it.
+* `targets/<target_name>/target.yaml` - provides metadata about the target
 
 To create a new directory for the target and *automatically generate* these 3 files a python script can be used:
 

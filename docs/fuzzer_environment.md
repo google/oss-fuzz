@@ -1,7 +1,6 @@
 # Fuzzer environment on ClusterFuzz
 
-Your fuzzers will be run on ClusterFuzz (Linux environment) with some
-restrictions.
+Your fuzzers will be run on ClusterFuzz (Linux environment) with some security restrictions.
 
 ## Current working directory
 
