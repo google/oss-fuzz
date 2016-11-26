@@ -17,7 +17,7 @@ You can view statistics about your fuzzers (e.g. speed, coverage information,
 memory usage) on our fuzzer statistics dashboard.
 
 ![stats]
-(https://raw.githubusercontent.com/google/oss-fuzz/master/docs/freetype_stats.png)
+(https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/freetype_stats.png)
 
 ## Coverage reports
 
@@ -25,10 +25,10 @@ We also provide coverage reports, where we highlight the parts of source code th
 reached by your fuzzer.
 
 ![coverage_1]
-(https://raw.githubusercontent.com/google/oss-fuzz/master/docs/freetype_coverage_1.png)
+(https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/freetype_coverage_1.png)
 
 ![coverage_2]
-(https://raw.githubusercontent.com/google/oss-fuzz/master/docs/freetype_coverage_2.png)
+(https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/freetype_coverage_2.png)
 
 ## Testcase reports
 
@@ -38,5 +38,5 @@ report page that gives you the stack trace, a link to the crashing testcase, and
 regression ranges where the bug was most likely introduced.
 
 ![report]
-(https://raw.githubusercontent.com/google/oss-fuzz/master/docs/pcre2_testcase.png)
+(https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/pcre2_testcase.png)
 
