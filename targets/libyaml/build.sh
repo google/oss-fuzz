@@ -26,3 +26,4 @@ $CXX $CXXFLAGS -std=c++11 -Iinclude \
     -lfuzzer src/.libs/libyaml.a $FUZZER_LDFLAGS
 
 cp $SRC/libyaml_fuzzer_seed_corpus.zip $OUT/
+cp $SRC/*.dict $SRC/*.options $OUT/
