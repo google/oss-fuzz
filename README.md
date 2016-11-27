@@ -93,11 +93,11 @@ OSS-Fuzz will adhere to following disclosure principles:
   *part of OSS-Fuzz* source code repository.
 * [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
   environment under which your fuzzers will be run.
-* [Targets List](targets/README.md) lists OSS targets currently added to OSS-Fuzz.
+* [Targets List](targets) lists OSS targets currently added to OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
-## Build status
+## Build Status
 [This page](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
 gives the latest build logs for each target.
 
