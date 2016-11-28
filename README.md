@@ -87,10 +87,6 @@ OSS-Fuzz will adhere to following disclosure principles:
 
 * [New Target Guide](docs/new_target.md) walks through the steps necessary to add new targets to OSS-Fuzz.
 * [Ideal Integration](docs/ideal_integration.md) describes the steps to integrate fuzz targets with your project.
-* [Running and Building Fuzzers](docs/building_running_fuzzers.md) documents the process for running fuzzers that are
-  *part of target* source code repository.
-* [Running and Building External Fuzzers](docs/building_running_fuzzers_external.md) documents the process for running fuzzers that are
-  *part of OSS-Fuzz* source code repository.
 * [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
   environment under which your fuzzers will be run.
 * [Targets List](targets) lists OSS targets currently added to OSS-Fuzz.
