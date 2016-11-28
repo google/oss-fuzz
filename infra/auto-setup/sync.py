@@ -10,7 +10,6 @@ import xml.etree.ElementTree as ET
 
 import jenkins
 
-BUILD_BUCKET = 'clusterfuzz-builds'
 JENKINS_SERVER = ('localhost', 8080)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
