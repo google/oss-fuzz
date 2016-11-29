@@ -15,7 +15,7 @@ It is recommended to use it for regression testing (see [ideal integration](idea
 
 ## Project
 
-OSS-Fuzz applies fuzzing to [Fuzz Targets](#fuzz-target)
+OSS-Fuzz applies fuzzing to [fuzz targets](#fuzz-target)
 that test APIs of some specific opensource library
 (or sometimes, internal functions of some application). 
 One project may have more than one Fuzz Target
@@ -35,16 +35,16 @@ See also [Mutation Engine](#mutation-engine) and [Test Generator](#test-generato
 ## Job type
 
 A [ClusterFuzz](clusterfuzz.md) specific term.
-This refers to a build of all fuzz targets for a given library
-(see [library config](library-config)) with a specific [fuzzing engine](#fuzzing-engine),
-in a specific build mode (e.g. with enabled or disabled assertions), 
-optionally combined with a [sanitizer](#sanitizer).
+This refers to a build that contains all the [fuzz targets](#fuzz-target) for a given [project](#project)
+with a specific [fuzzing engine](#fuzzing-engine), in a specific build mode (e.g. with enabled or disabled assertions), 
+and optionally combined with a [sanitizer](#sanitizer).
 
-For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of all sqlite3 fuzz target using libFuzzer and ASan.
+For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of all sqlite3 fuzz target using 
+[libFuzzer](http://lbfuzzer.info) and [ASan](http://clang.llvm.org/docs/AddressSanitizer.html).
 
 ## Test Input
-A sequence of bytes that is used as the input to a Fuzz Target. 
-Typicaly, a test input is stored in a separate file. 
+A sequence of bytes that is used as the input to a [fuzz target](#fuzz-target). 
+Typicaly, a test input is stored in a seperate file. 
 
 ## Reproducer 
 Or a **testcase**.<BR> 
@@ -52,32 +52,35 @@ A [Test Input](#test-input) that causes a specific bug to reproduce.
 
 ## Corpus
 Or **test corpus**, or **fuzzing corpus**. 
-A set of [test inputs](#test-input).
+A set of [test inputs](#test-input). In many context, it is also referred to a set of minimal test inputs that generates maximal code coverage.
 
 ## Mutation Engine
-A tool that take a set of testcases
-and creates their mutations, but do not directly feed the mutations to Fuzz Targets.
-Example: [Radamsa](https://github.com/aoh/radamsa),
+A tool that take a set of testcases as input and creates their mutated versions. 
+It does not feed the mutations to [fuzz target](#fuzz-target).
+Example: [radamsa](https://github.com/aoh/radamsa) (a generic test mutator).
 
 ## Test Generator
 A tool that generates testcases according to some rules or grammar. 
-Example: [csmith](https://embed.cs.utah.edu/csmith/) (a test generator for the C language).
+Examples: 
+[csmith](https://embed.cs.utah.edu/csmith/) (a test generator for the C language),
+[crossfuzz](http://lcamtuf.coredump.cx/cross_fuzz/) (a cross-document DOM binding test generator),
 
-## Sanitizer
-A dynamic testing tool that can detect bugs during program execution.
-An incomplete list:
+## [Sanitizer](https://github.com/google/sanitizers)
+A [dynamic testing](https://en.wikipedia.org/wiki/Dynamic_testing) tool that can detect bugs during program execution.
+Examples:
 [ASan](http://clang.llvm.org/docs/AddressSanitizer.html),
+[DFSan](http://clang.llvm.org/docs/DataFlowSanitizer.html),
+[LSan](http://clang.llvm.org/docs/LeakSanitizer.html),
 [MSan](http://clang.llvm.org/docs/MemorySanitizer.html),
 [TSan](http://clang.llvm.org/docs/ThreadSanitizer.html),
-[LSan](http://clang.llvm.org/docs/LeakSanitizer.html),
 [UBSan](http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html). 
 
 ## Fuzzer
 
-The most overloaded term, which makes it bad (maybe, we should try avoiding it?).
-Sometimes the "Fuzzer" is referred to a [fuzz target](#fuzz-target),
+The most overloaded term and used in a variety of contexts, which makes it bad.
+Sometimes, "Fuzzer" is referred to a [fuzz target](#fuzz-target),
 sometimes to a [fuzzing engine](#fuzzing-engine),
-[mutation engine](#mutation-engine),
-or a [test generator](#test-generator). 
+a [mutation engine](#mutation-engine),
+a [test generator](#test-generator) and 
 sometimes to a [fuzzer build](#fuzzer-build).
 
