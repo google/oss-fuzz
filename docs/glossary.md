@@ -1,29 +1,24 @@
 # OSS-Fuzz Glossary
 
-**WORK-IN-PROGRESS**
-
-Naming things is hard.<BR>
-This page tries to reduce confusion around fuzz-related terminology.
+Naming things is hard. This page tries to reduce confusion around fuzz-related terminology.
 
 ## Fuzz Target
 Or **Target Function** or **Fuzzing Target Function**, or **Fuzzing Entry Point**.<BR>
-A function to which we apply fuzzing.
-A [specific signature](http://libfuzzer.info#fuzz-target) must be used for OSS-Fuzz.
+A function to which we apply fuzzing.<BR>
+A [specific signature](http://libfuzzer.info#fuzz-target) is needed for OSS-Fuzz.
 Examples: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/x509.c),
-[SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338),
-[re2](https://github.com/google/re2/blob/master/re2/fuzzing/re2_fuzzer.cc).
+[re2](https://github.com/google/re2/blob/master/re2/fuzzing/re2_fuzzer.cc),
+[SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338).
 
-A Fuzz Target can and should also be used for regression testing
-and for reproducing bug reports, see [ideal integration](ideal_integration.md).
+A Fuzz Target can be used to [reproduce bug reports](reproducing.md). 
+It is recommended to use it for regression testing (see [ideal integration](ideal_integration.md)).
 
-## Library Config
-???Any better name??? 
+## Project
 
-OSS-Fuzz-specific term. <BR>
 OSS-Fuzz applies fuzzing to [Fuzz Targets](#fuzz-target)
 that test APIs of some specific opensource library
 (or sometimes, internal functions of some application). 
-One library may have more than one Fuzz Target
+One project may have more than one Fuzz Target
 (example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)),
 but OSS-Fuzz will have a single set of configuration files for such library. 
 This is what we call **Library Config**.
