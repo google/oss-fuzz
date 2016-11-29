@@ -106,8 +106,7 @@ See [Provided Environment Variables](../infra/base-images/base-libfuzzer/README.
 
 ## Testing locally
 
-Helper script can be used to build images and fuzzers. Non-script
-version using docker commands directly is documented [here](building_running_fuzzers_external.md).
+Helper script can be used to build images and fuzzers.
 
 ```bash
 $ cd /path/to/oss-fuzz
@@ -116,7 +115,7 @@ $ python infra/helper.py build_fuzzers $PROJECT_NAME
 ```
 
 This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
-on your machine (`/out` in the container). You can then try to run these fuzzers
+directory on your machine (and `/out` in the container). You should then try to run these fuzzers
 inside the container to make sure that they work properly:
 
 ```bash
@@ -126,7 +125,7 @@ $ python infra/helper.py run_fuzzer $PROJECT_NAME name_of_a_fuzzer
 If everything works locally, then it should also work on our automated builders
 and ClusterFuzz.
 
-It's recommended to look at coverage as a sanity check to make sure that fuzzer gets to the code you expect.
+It's recommended to look at code coverage as a sanity check to make sure that fuzzer gets to the code you expect.
 
 ```bash
 $ python infra/helper.py coverage $PROJECT_NAME name_of_a_fuzzer
@@ -141,7 +140,7 @@ in case you run into problems.
 
 ### Custom libFuzzer options for ClusterFuzz
 
-By default ClusterFuzz will run your fuzzer without any options. You can specify
+By default, ClusterFuzz will run your fuzzer without any options. You can specify
 custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` executable in `/out`:
 
 ```
@@ -151,16 +150,16 @@ max_len = 1024
 
 [List of available options](http://llvm.org/docs/LibFuzzer.html#options)
 
-At least `max_len` is highly recommended.
+At least, `max_len` is highly recommended which specifies what the maximum length of allowed input to your function.
 
-For out of tree fuzzers you will likely add options file using docker's
+For out of tree fuzzers, you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
 ([Woff2 example](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options).)
 
 
 ### Seed Corpus
 
-oss-fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
+OSS-Fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
 of sample inputs is one of the best ways to improve fuzzer coverage.
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
@@ -211,7 +210,7 @@ Simply replace the "git" entry with the correct git url for the project.
 
 ## Checking in to oss-fuzz repository
 
-Fork oss-fuzz, commit and push to the fork, and then create a pull request with
+Fork OSS-Fuzz, commit and push to the fork, and then create a pull request with
 your change! Follow the [Forking Project](https://guides.github.com/activities/forking/) guide
 if you are new to contributing via GitHub.
 
@@ -244,6 +243,6 @@ If porting a fuzzer from Chromium, keep the Chromium license header.
 Once your change is merged, the fuzzers should be automatically built and run on
 ClusterFuzz after a short while!
 
-[oss-fuzz repo]: https://github.com/google/oss-fuzz
-[dictionaries]: http://llvm.org/docs/LibFuzzer.html#dictionaries
+[OSS-Fuzz repo]: https://github.com/google/oss-fuzz
+[Dictionaries]: http://llvm.org/docs/LibFuzzer.html#dictionaries
 [Install Docker]: https://docs.docker.com/engine/installation/linux/ubuntulinux/
