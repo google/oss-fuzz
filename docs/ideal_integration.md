@@ -96,7 +96,7 @@ and the project maintainers are not interested in helping.
 
 In such cases, we can host the fuzz targets, dictionaries, etc in OSS-Fuzz's 
 repository and mention them in the Dockerfile.
-Examples: [libxml2](../targets/libxml2), [c-ares](../targets/c-ares), [expat](../targets/expat).
+Examples: [libxml2](../projects/libxml2), [c-ares](../projects/c-ares), [expat](../projects/expat).
 This is far from ideal because the fuzz targets will not be continuously tested 
 and hence may quickly bitrot.
 

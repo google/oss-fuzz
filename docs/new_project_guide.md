@@ -1,10 +1,10 @@
-# Setting up New Target
+# Setting up New Project
 
-Fuzzer configurations are placed into a subdirectories inside the [`targets/` dir](../targets) 
+Fuzzer configurations are placed into a subdirectories inside the [`projects/` dir](../projects) 
 of the [oss-fuzz repo] on GitHub. 
 For example, the configuration files for the
-[boringssl](https://github.com/google/boringssl) targets are located in 
-[`targets/boringssl`](../targets/boringssl).
+[boringssl](https://github.com/google/boringssl) project are located in 
+[`projects/boringssl`](../projects/boringssl).
 
 ## Prerequisites
 - [Install Docker](https://docs.docker.com/engine/installation). ([Why Docker?](faq.md#why-do-you-use-docker))
@@ -19,22 +19,22 @@ For example, the configuration files for the
 
 ## Overview
 
-To add a new OSS target to OSS-Fuzz, 3 supporting files have to be added to OSS-Fuzz source code repository:
+To add a new OSS project to OSS-Fuzz, 3 supporting files have to be added to OSS-Fuzz source code repository:
 
-* `targets/<target_name>/Dockerfile` - defines an container environment with all the dependencies
+* `projects/<project_name>/Dockerfile` - defines an container environment with all the dependencies
 needed to build the project and the fuzzer.
-* `targets/<target_name>/build.sh` - build script that will be executed inside the container.
-* `targets/<target_name>/target.yaml` - provides metadata about the target
+* `projects/<project_name>/build.sh` - build script that will be executed inside the container.
+* `projects/<project_name>/project.yaml` - provides metadata about the project
 
-To create a new directory for the target and *automatically generate* these 3 files a python script can be used:
+To create a new directory for the project and *automatically generate* these 3 files a python script can be used:
 
 ```bash
 $ cd /path/to/oss-fuzz
-$ export TARGET_NAME=target_name
-$ python infra/helper.py generate $TARGET_NAME
+$ export PROJECT_NAME=project_name
+$ python infra/helper.py generate $PROJECT_NAME
 ```
 
-Create a fuzzer and add it to the *target_name/* directory as well.
+Create a fuzzer and add it to the *project_name/* directory as well.
 
 ## Dockerfile
 
@@ -44,11 +44,11 @@ It is very simple for most libraries:
 FROM ossfuzz/base-libfuzzer               # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                     # each file should have a maintainer
 RUN apt-get install -y ...                # install required packages to build a project
-RUN git checkout <git_url> <checkout_dir> # checkout all sources needed to build your target
+RUN git checkout <git_url> <checkout_dir> # checkout all sources needed to build your project
 WORKDIR <checkout_dir>                    # current directory for build script
 COPY build.sh fuzzer.cc $SRC/             # install build script and other source files.
 ```
-Expat example: [expat/Dockerfile](../targets/expat/Dockerfile)
+Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
 
 ### Fuzzer execution environment
 
@@ -58,14 +58,14 @@ make.
 
 ## build.sh
 
-This is where most of the work is done to build fuzzers for your target. The script will
+This is where most of the work is done to build fuzzers for your project. The script will
 be executed within an image built from a `Dockerfile`.
 
 In general, this script will need to:
 
-1. Build the target using its build system *with* correct compiler and its flags provided as 
+1. Build the project using its build system *with* correct compiler and its flags provided as 
   *environment variables* (see below). 
-2. Build the fuzzers, linking with the target and libFuzzer. Resulting fuzzers
+2. Build the fuzzers, linking with the project and libFuzzer. Resulting fuzzers
    should be placed in `/out`.
 
 For expat, this looks like:
@@ -91,10 +91,10 @@ When build.sh script is executed, the following locations are available within t
 
 | Path                   | Description
 | ------                 | -----
-| `$SRC/<some_dir>`      | Source code needed to build your target.
+| `$SRC/<some_dir>`      | Source code needed to build your project.
 | `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that need to be linked into all fuzzers (`-lfuzzer`).
 
-You *must* use special compiler flags to build your target and fuzzers.
+You *must* use special compiler flags to build your project and fuzzers.
 These flags are provided in following environment variables:
 
 | Env Variable           | Description
@@ -160,7 +160,7 @@ At least `max_len` is highly recommended.
 
 For out of tree fuzzers you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
-([Woff2 example](https://github.com/google/oss-fuzz/blob/master/targets/woff2/convert_woff2ttf_fuzzer.options).)
+([Woff2 example](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options).)
 
 
 ### Seed Corpus
@@ -173,7 +173,7 @@ to the fuzzer binary in `/out` during the build. Individual files in the zip fil
 will be used as starting inputs for mutations. You can store the corpus next to 
 source files, generate during build or fetch it using curl or any other tool of 
 your choice. 
-([Boringssl example](https://github.com/google/oss-fuzz/blob/master/targets/boringssl/build.sh#L42).)
+([Boringssl example](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L42).)
 
 Seed corpus files will be used for cross-mutations and portions of them might appear
 in bug reports or be used for further security research. It is important that corpus
@@ -193,7 +193,7 @@ dict = dictionary_name.dict
 ```
 
 It is common for several fuzzers to reuse the same dictionary if they are fuzzing very similar inputs.
-([Expat example](https://github.com/google/oss-fuzz/blob/master/targets/expat/parse_fuzzer.options).)
+([Expat example](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options).)
 
 ## Jenkinsfile
 
@@ -210,7 +210,7 @@ libfuzzerBuild {
 }
 ```
 
-Simply replace the "git" entry with the correct git url for the target.
+Simply replace the "git" entry with the correct git url for the project.
 
 *Note*: only git is supported right now.
 
