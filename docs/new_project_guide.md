@@ -116,16 +116,16 @@ version using docker commands directly is documented [here](building_running_fuz
 
 ```bash
 $ cd /path/to/oss-fuzz
-$ python infra/helper.py build_image $TARGET_NAME
-$ python infra/helper.py build_fuzzers $TARGET_NAME
+$ python infra/helper.py build_image $PROJECT_NAME
+$ python infra/helper.py build_fuzzers $PROJECT_NAME
 ```
 
-This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$TARGET_NAME`
+This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
 on your machine (`/out` in the container). You can then try to run these fuzzers
 inside the container to make sure that they work properly:
 
 ```bash
-$ python infra/helper.py run_fuzzer $TARGET_NAME name_of_a_fuzzer
+$ python infra/helper.py run_fuzzer $PROJECT_NAME name_of_a_fuzzer
 ```
 
 If everything works locally, then it should also work on our automated builders
@@ -134,7 +134,7 @@ and ClusterFuzz.
 It's recommended to look at coverage as a sanity check to make sure that fuzzer gets to the code you expect.
 
 ```bash
-$ python infra/helper.py coverage $TARGET_NAME name_of_a_fuzzer
+$ python infra/helper.py coverage $PROJECT_NAME name_of_a_fuzzer
 ```
 
 
