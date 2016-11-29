@@ -4,8 +4,8 @@ While developing your build script, it may be useful to run bash within the
 container:
 
 ```bash
-$ python infra/helper.py shell $TARGET_NAME  # runs /bin/bash within container
-$ compile                                   # run compilation manually
+$ python infra/helper.py shell $PROJECT_NAME  # runs /bin/bash within container
+$ compile                                     # run compilation manually
 ```
 
 ## Debugging Fuzzers with GDB
