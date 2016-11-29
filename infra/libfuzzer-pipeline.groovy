@@ -21,18 +21,20 @@ def call(body) {
     body.delegate = config
     body()
 
-    // Mandatory configuration
     def project = new groovy.json.JsonSlurperClassic().parseText(config["project_json"])
 
-    // Optional configuration
-    def sanitizers = project["sanitizers"] ?: ["address"]
+    // Project configuration.
     def projectName = project["name"] ?: env.JOB_BASE_NAME
-    def dockerfile = config["dockerfile"] ?: "oss-fuzz/projects/$projectName/Dockerfile"
-
-    def checkoutDir = config["checkoutDir"] ?: projectName
-    def dockerContextDir = config["dockerContextDir"]
-    def gitUrl = config["git"]
-    def svnUrl = config["svn"]
+    def sanitizers = project["sanitizers"] ?: ["address"]
+    def dockerfileConfig = config["dockerfile"] ?: [
+        "path": "projects/$projectName/Dockerfile",
+        "git" : "https://github.com/google/oss-fuzz.git",
+        "context" : "projects/$projectName/"
+    ]
+    def dockerfile = dockerfileConfig["path"]
+    def dockerGit = dockerfileConfig["git"]
+    def dockerContextDir = dockerfileConfig["context"] ?: ""
+    def dockerTag = "ossfuzz/$projectName"
 
     // Flags configuration
     def sanitizerFlags = [
@@ -50,47 +52,31 @@ def call(body) {
         echo "using uid $uid"
 
         def srcmapFile = "$workspace/srcmap.json"
-        def dockerTag = "ossfuzz/$projectName"
         echo "Building $dockerTag: $project"
 
         sh "rm -rf $workspace/out"
         sh "mkdir -p $workspace/out"
 
         stage("docker image") {
-            def ossfuzzRev
-            dir('oss-fuzz') {
-                git url: "https://github.com/google/oss-fuzz.git"
-                ossfuzzRev = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+            def dockerfileRev
+
+            dir('checkout') {
+                git url: dockerGit
+                dockerfileRev = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
             }
 
-            if (gitUrl != null) {
-                dir(checkoutDir) {
-                    git url: gitUrl
-                }
-            }
-            if (svnUrl != null) {
-                dir(checkoutDir) {
-                    svn url: svnUrl
-                }
-            }
+            sh "docker build --no-cache -t $dockerTag -f checkout/$dockerfile checkout/$dockerContextDir"
 
-            if (dockerContextDir == null) {
-                dockerContextDir = new File(dockerfile)
-                    .getParentFile()
-                    .getPath();
-            }
-
-            sh "docker build --no-cache -t $dockerTag -f $dockerfile $dockerContextDir"
+            // obtain srcmap
             sh "docker run --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
             // use classic slurper: http://stackoverflow.com/questions/37864542/jenkins-pipeline-notserializableexception-groovy-json-internal-lazymap
             def srcmap = new groovy.json.JsonSlurperClassic().parse(
                 new File("$workspace/srcmap.json.tmp"))
             srcmap['/src'] = [ type: 'git',
-                              rev: ossfuzzRev,
-                              url: 'https://github.com/google/oss-fuzz.git',
-                              path: "projects/$projectName" ]
+                               rev:  dockerfileRev,
+                               url:  dockerGit,
+                               path: dockerContextDir ]
             echo "srcmap: $srcmap"
-            // sh "cp $workspace/srcmap.json.tmp $srcmapFile"
             writeFile file: srcmapFile, text: groovy.json.JsonOutput.toJson(srcmap)
         } // stage("docker image")
 
