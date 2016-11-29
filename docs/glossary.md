@@ -3,7 +3,7 @@
 Naming things is hard. This page tries to reduce confusion around fuzz-related terminologies.
 
 ## Fuzz Target
-Or **Target Function** or **Fuzzing Target Function**, or **Fuzzing Entry Point**.<BR><BR>
+Or **Target Function**, or **Fuzzing Target Function**, or **Fuzzing Entry Point**.<BR><BR>
 A function to which we apply fuzzing. A [specific signature](http://libfuzzer.info#fuzz-target) is needed for OSS-Fuzz.
 Examples: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/x509.c),
 [re2](https://github.com/google/re2/blob/master/re2/fuzzing/re2_fuzzer.cc),
@@ -15,15 +15,14 @@ It is recommended to use it for regression testing (see [ideal integration](idea
 ## Project
 
 OSS-Fuzz applies fuzzing to [fuzz targets](#fuzz-target)
-that test APIs of some specific opensource library
-(or sometimes, internal functions of some application). 
+that test APIs (or internal functions) of a specific open source project.
 One project may have more than one [fuzz target](#fuzz-target)
 (example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)),
 but OSS-Fuzz will have a single set of configuration files for such project. 
 
 ## Fuzzing Engine
 
-A tool that tries to find interesting inputs for a Fuzz Target by executing it.
+A tool that tries to find interesting inputs for a [fuzz target](#fuzz-target) by executing it.
 Examples: [libFuzzer](http://lbfuzzer.info),
 [AFL](lcamtuf.coredump.cx/afl/),
 [honggfuzz](https://github.com/google/honggfuzz), etc 
@@ -32,13 +31,13 @@ See also [Mutation Engine](#mutation-engine) and [Test Generator](#test-generato
 
 ## Job type
 
-Or **Fuzzer Build**.<BR><BR>
+Or **Fuzzer Build**.<BR>
 A [ClusterFuzz](clusterfuzz.md) specific term.
 This refers to a build that contains all the [fuzz targets](#fuzz-target) for a given [project](#project)
 with a specific [fuzzing engine](#fuzzing-engine), in a specific build mode (e.g. with enabled or disabled assertions), 
 and optionally combined with a [sanitizer](#sanitizer).
 
-For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of all sqlite3 fuzz target using 
+For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of all sqlite3 [fuzz targets](#fuzz-target) using 
 [libFuzzer](http://lbfuzzer.info) and [ASan](http://clang.llvm.org/docs/AddressSanitizer.html).
 
 ## Test Input
@@ -46,11 +45,11 @@ A sequence of bytes that is used as the input to a [fuzz target](#fuzz-target).
 Typicaly, a test input is stored in a seperate file. 
 
 ## Reproducer 
-Or a **testcase**.<BR><BR>
+Or a **testcase**.<BR>
 A [test input](#test-input) that causes a specific bug to reproduce. 
 
 ## Corpus
-Or **test corpus**, or **fuzzing corpus**.<BR><BR> 
+Or **test corpus**, or **fuzzing corpus**.<BR>
 A set of [test inputs](#test-input). In many context, it is also referred to a set of minimal test inputs that generates maximal code coverage.
 
 ## Mutation Engine
