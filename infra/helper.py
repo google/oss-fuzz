@@ -265,8 +265,8 @@ def generate(generate_args):
   template_args = {
     'project_name' : args.project_name
     }
-  with open(os.path.join(dir, 'Jenkinsfile'), 'w') as f:
-    f.write(templates.JENKINS_TEMPLATE % template_args)
+  with open(os.path.join(dir, 'project.yaml'), 'w') as f:
+    f.write(templates.PROJECT_YAML_TEMPLATE % template_args)
 
   with open(os.path.join(dir, 'Dockerfile'), 'w') as f:
     f.write(templates.DOCKER_TEMPLATE % template_args)
