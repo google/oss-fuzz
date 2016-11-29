@@ -35,7 +35,7 @@ def get_build_results(server):
         continue
 
       print name
-      library = name[len('projects/'):]
+      project = name[len('projects/'):]
 
       info = server.get_job_info(name)
       last_build_number = info['lastCompletedBuild']['number']
@@ -43,11 +43,11 @@ def get_build_results(server):
 
       if last_build_number == last_failed_builder_number:
         failures.append(Result(
-            library,
+            project,
             server.get_build_console_output(name, last_build_number)))
       else:
         successes.append(Result(
-            library,
+            project,
             server.get_build_console_output(name, last_build_number)))
     except Exception:
       pass
