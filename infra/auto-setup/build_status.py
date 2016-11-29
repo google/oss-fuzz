@@ -31,11 +31,11 @@ def get_build_results(server):
   for job in server.get_jobs(1):
     try:
       name = job['fullname']
-      if not name.startswith('targets/'):
+      if not name.startswith('projects/'):
         continue
 
       print name
-      library = name[len('targets/'):]
+      library = name[len('projects/'):]
 
       info = server.get_job_info(name)
       last_build_number = info['lastCompletedBuild']['number']

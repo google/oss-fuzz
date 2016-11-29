@@ -1,12 +1,12 @@
 # base-libfuzzer
 > Abstract base image for libfuzzer builders.
 
-Every target image supports multiple commands that can be invoked through docker after building the image:
+Every project image supports multiple commands that can be invoked through docker after building the image:
 
 <pre>
-docker run --rm -ti ossfuzz/<b><i>$target</i></b> <i>&lt;command&gt;</i> <i>&lt;arguments...&gt;</i>
+docker run --rm -ti ossfuzz/<b><i>$project</i></b> <i>&lt;command&gt;</i> <i>&lt;arguments...&gt;</i>
 </pre>
-   
+
 # Supported Commands
 
 | Command | Description |
@@ -18,17 +18,17 @@ docker run --rm -ti ossfuzz/<b><i>$target</i></b> <i>&lt;command&gt;</i> <i>&lt;
 
 # Examples
 
-- *reproduce an issue using the latest OSS-Fuzz build:* 
+- *reproduce an issue using the latest OSS-Fuzz build:*
 
    <pre>
-docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
+docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
    </pre>
 
 - *reproduce using the local source code:*
 
     <pre>
-    docker run --rm -ti -v <b><i>$target_checkout_dir</i></b>:/src/<b><i>$target</i></b> \
-                        -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$target</i></b> reproduce <b><i>$fuzzer</i></b>
+    docker run --rm -ti -v <b><i>$project_checkout_dir</i></b>:/src/<b><i>$project</i></b> \
+                        -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
     </pre>
 
 
@@ -48,7 +48,7 @@ provided to be able to write retargetable scripts.
 
 ## Compiler Flags
 
-You *must* use special compiler flags to build your target and fuzzers.
+You *must* use special compiler flags to build your project and fuzzers.
 These flags are provided in following environment variables:
 
 | Env Variable    | Description
@@ -69,7 +69,7 @@ passing them manually to a build tool might be required.
 Child image has to checkout all sources it needs to compile fuzzers into
 `$SRC` directory. When the image is executed, a directory could be mounted
 on top of these with local checkouts using
-`docker run -v $HOME/my_target:/src/my_target ...`.
+`docker run -v $HOME/my_project:/src/my_project ...`.
 
 ## Other Required Files
 
@@ -77,4 +77,4 @@ Following files have to be added by child images:
 
 | File Location   | Description |
 | -------------   | ----------- |
-| `$SRC/build.sh` | build script to build the target and its fuzzers |
+| `$SRC/build.sh` | build script to build the project and its fuzzers |

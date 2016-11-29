@@ -73,18 +73,18 @@ def _is_base_image(image_name):
   return os.path.exists(os.path.join('infra', 'base-images', image_name))
 
 
-def _check_target_exists(target_name):
-  """Checks if a target exists."""
-  if not os.path.exists(os.path.join(OSSFUZZ_DIR, 'targets', target_name)):
-    print(target_name, 'does not exist', file=sys.stderr)
+def _check_project_exists(project_name):
+  """Checks if a project exists."""
+  if not os.path.exists(os.path.join(OSSFUZZ_DIR, 'projects', project_name)):
+    print(project_name, 'does not exist', file=sys.stderr)
     return False
 
   return True
 
 
-def _check_fuzzer_exists(target_name, fuzzer_name):
+def _check_fuzzer_exists(project_name, fuzzer_name):
   """Checks if a fuzzer exists."""
-  if not os.path.exists(os.path.join(BUILD_DIR, 'out', target_name,
+  if not os.path.exists(os.path.join(BUILD_DIR, 'out', project_name,
                                      fuzzer_name)):
     print(fuzzer_name,
           'does not seem to exist. Please run build_fuzzers first.',
@@ -105,10 +105,10 @@ def _build_image(image_name):
   if _is_base_image(image_name):
     dockerfile_dir = os.path.join('infra', 'base-images', image_name)
   else:
-    if not _check_target_exists(image_name):
+    if not _check_project_exists(image_name):
       return False
 
-    dockerfile_dir = os.path.join('targets', image_name)
+    dockerfile_dir = os.path.join('projects', image_name)
 
   command = [
         'docker', 'build', '--pull', '-t', 'ossfuzz/' + image_name,
@@ -128,10 +128,10 @@ def _build_image(image_name):
 def build_image(build_args):
   """Build docker image."""
   parser = argparse.ArgumentParser('helper.py build_image')
-  parser.add_argument('target_name')
+  parser.add_argument('project_name')
   args = parser.parse_args(build_args)
 
-  if _build_image(args.target_name):
+  if _build_image(args.project_name):
     return 0
 
   return 1
@@ -140,16 +140,16 @@ def build_image(build_args):
 def build_fuzzers(build_args):
   """Build fuzzers."""
   parser = argparse.ArgumentParser('helper.py build_fuzzers')
-  parser.add_argument('target_name')
+  parser.add_argument('project_name')
   args = parser.parse_args(build_args)
 
-  if not _build_image(args.target_name):
+  if not _build_image(args.project_name):
     return 1
 
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
-        '-t', 'ossfuzz/' + args.target_name,
+        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+        '-t', 'ossfuzz/' + args.project_name,
   ]
 
   print('Running:', _get_command_string(command))
@@ -166,16 +166,16 @@ def build_fuzzers(build_args):
 def run_fuzzer(run_args):
   """Runs a fuzzer in the container."""
   parser = argparse.ArgumentParser('helper.py run_fuzzer')
-  parser.add_argument('target_name', help='name of the target')
+  parser.add_argument('project_name', help='name of the project')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
                       nargs=argparse.REMAINDER)
   args = parser.parse_args(run_args)
 
-  if not _check_target_exists(args.target_name):
+  if not _check_project_exists(args.project_name):
     return 1
 
-  if not _check_fuzzer_exists(args.target_name, args.fuzzer_name):
+  if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
   if not _build_image('libfuzzer-runner'):
@@ -183,7 +183,7 @@ def run_fuzzer(run_args):
 
   command = [
       'docker', 'run', '-i',
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-t', 'ossfuzz/libfuzzer-runner',
       'run_fuzzer',
       '/out/%s' % args.fuzzer_name,
@@ -198,16 +198,16 @@ def coverage(run_args):
   parser = argparse.ArgumentParser('helper.py coverage')
   parser.add_argument('--run_time', default=60,
                       help='time in seconds to run fuzzer')
-  parser.add_argument('target_name', help='name of the target')
+  parser.add_argument('project_name', help='name of the project')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
                       nargs=argparse.REMAINDER)
   args = parser.parse_args(run_args)
 
-  if not _check_target_exists(args.target_name):
+  if not _check_project_exists(args.project_name):
     return 1
 
-  if not _check_fuzzer_exists(args.target_name, args.fuzzer_name):
+  if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
   if not _build_image('libfuzzer-runner'):
@@ -217,7 +217,7 @@ def coverage(run_args):
 
   command = [
       'docker', 'run', '-i',
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
       '-e', 'ASAN_OPTIONS=coverage=1,detect_leaks=0',
@@ -232,11 +232,11 @@ def coverage(run_args):
 
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
+        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
         '-v', '%s:/cov' % temp_dir,
         '-w', '/cov',
         '-p', '8001:8001',
-        '-t', 'ossfuzz/%s' % args.target_name,
+        '-t', 'ossfuzz/%s' % args.project_name,
         'coverage_report', '/out/%s' % args.fuzzer_name,
   ]
 
@@ -246,11 +246,11 @@ def coverage(run_args):
 
 
 def generate(generate_args):
-  """Generate empty target files."""
+  """Generate empty project files."""
   parser = argparse.ArgumentParser('helper.py generate')
-  parser.add_argument('target_name')
+  parser.add_argument('project_name')
   args = parser.parse_args(generate_args)
-  dir = os.path.join('targets', args.target_name)
+  dir = os.path.join('projects', args.project_name)
 
   try:
     os.mkdir(dir)
@@ -263,7 +263,7 @@ def generate(generate_args):
   print('Writing new files to', dir)
 
   template_args = {
-    'target_name' : args.target_name
+    'project_name' : args.project_name
     }
   with open(os.path.join(dir, 'Jenkinsfile'), 'w') as f:
     f.write(templates.JENKINS_TEMPLATE % template_args)
@@ -275,9 +275,6 @@ def generate(generate_args):
   with open(build_sh_path, 'w') as f:
     f.write(templates.BUILD_TEMPLATE % template_args)
 
-  targets_readme_path = os.path.join('targets', 'README.md')
-  update_targets_readme(targets_readme_path, args.target_name, dir)
-
   os.chmod(build_sh_path, 0o755)
   return 0
 
@@ -285,71 +282,21 @@ def generate(generate_args):
 def shell(shell_args):
   """Runs a shell within a docker image."""
   parser = argparse.ArgumentParser('helper.py shell')
-  parser.add_argument('target_name', help='name of the target')
+  parser.add_argument('project_name', help='name of the project')
   args = parser.parse_args(shell_args)
 
-  if not _build_image(args.target_name):
+  if not _build_image(args.project_name):
     return 1
 
   command = [
         'docker', 'run', '-i',
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.target_name),
-        '-t', 'ossfuzz/' + args.target_name,
+        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+        '-t', 'ossfuzz/' + args.project_name,
         '/bin/bash'
   ]
   print('Running:', _get_command_string(command))
   pipe = subprocess.Popen(command)
   pipe.communicate()
-
-
-def update_targets_readme(readme_path, target_name, fuzzers_location):
-  """Add new target name and fuzzers location to the given README.md file."""
-  readme_lines = []
-  with open(readme_path) as f:
-    readme_lines += f.readlines()
-
-  if not readme_lines:
-    print('ERROR: empty %s file' % readme_path)
-    return
-
-  TARGETS_LIST_START_TOKEN = '| Target |'
-  first_target_line_number = -1
-  for i, line in enumerate(readme_lines):
-    if line.startswith(TARGETS_LIST_START_TOKEN):
-      first_target_line_number = i + 2
-      break
-
-  if first_target_line_number < 0:
-    print('ERROR: list of targets is not found in %s file' % readme_path)
-    return
-
-  def sanitize_line(line):
-    while line and not line[0] in string.ascii_letters + string.digits:
-      line = line[1:]
-    return line
-
-  sanitized_lines = readme_lines[first_target_line_number : ]
-  sanitized_lines = [sanitize_line(line) for line in sanitized_lines]
-
-  position_to_insert = -1
-  for i in xrange(0, len(sanitized_lines)):
-    if target_name > sanitized_lines[i] and target_name < sanitized_lines[i+1]:
-      position_to_insert = i + 1
-      break
-
-  if position_to_insert < 0:
-    print('ERROR: please update %s file manually' % readme_path)
-    return
-
-  position_to_insert += first_target_line_number
-  updated_readme_lines = readme_lines[ : position_to_insert]
-  updated_readme_lines.append('| %s | [/%s](%s) |\n' % (target_name,
-                                                        fuzzers_location,
-                                                        target_name))
-  updated_readme_lines += readme_lines[position_to_insert : ]
-
-  with open(readme_path, 'w') as f:
-    f.write(''.join(updated_readme_lines))
 
 
 if __name__ == '__main__':
