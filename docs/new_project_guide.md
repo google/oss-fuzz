@@ -1,32 +1,27 @@
 # Setting up New Project
 
-Fuzzer configurations are placed into a subdirectories inside the [`projects/` dir](../projects) 
-of the [oss-fuzz repo] on GitHub. 
+Fuzzer configuration files are placed in a subdirectory inside the [`projects/` dir](../projects) 
+of the [OSS-Fuzz repo] on GitHub. 
 For example, the configuration files for the
 [boringssl](https://github.com/google/boringssl) project are located in 
 [`projects/boringssl`](../projects/boringssl).
 
 ## Prerequisites
 - [Install Docker](https://docs.docker.com/engine/installation). ([Why Docker?](faq.md#why-do-you-use-docker))
-  - Googlers: [go/installdocker](https://goto.google.com/installdocker).
-  - NOTE: if you want to run `docker` without `sudo` also follow the optional 
-    [Create a docker group](https://docs.docker.com/engine/installation/linux/ubuntulinux/#/create-a-docker-group) section.
-  - NOTE: Docker images can consume significant disk space. Run
-    [docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)
-    periodically to garbage collect unused images.
-- [Itegrate](ideal_integration.md) one or more [Fuzz Target](http://libfuzzer.info/#fuzz-target)
+- [Integrate](ideal_integration.md) one or more [Fuzz Targets](http://libfuzzer.info/#fuzz-target)
   with the project you want to fuzz.
 
 ## Overview
 
-To add a new OSS project to OSS-Fuzz, 3 supporting files have to be added to OSS-Fuzz source code repository:
+To add a new OSS project to OSS-Fuzz, 3 supporting files have to be added to OSS-Fuzz repository:
 
-* `projects/<project_name>/Dockerfile` - defines an container environment with all the dependencies
-needed to build the project and the fuzzer.
-* `projects/<project_name>/build.sh` - build script that will be executed inside the container.
-* `projects/<project_name>/project.yaml` - provides metadata about the project
+* `projects/<project_name>/Dockerfile` - defines a container environment with all the dependencies
+needed to build the project and its fuzzers.
+* `projects/<project_name>/build.sh` - build script that executes inside the container.
+* `projects/<project_name>/project.yaml` - provides metadata about the project.
 
-To create a new directory for the project and *automatically generate* these 3 files a python script can be used:
+To create a new directory for the project and 
+*automatically generate* template versions of these files, run the following commands:
 
 ```bash
 $ cd /path/to/oss-fuzz
