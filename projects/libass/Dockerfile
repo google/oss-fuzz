@@ -18,7 +18,7 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER eugeni.stepanov@gmail.com
 RUN apt-get install -y make autoconf automake libtool pkg-config libfreetype6-dev libfontconfig1-dev
 
-RUN git clone https://github.com/libass/libass.git
-RUN git clone https://github.com/behdad/fribidi.git
+RUN git clone --depth 1 https://github.com/libass/libass.git
+RUN git clone --depth 1 https://github.com/behdad/fribidi.git
 
 COPY build.sh libass_fuzzer.cc *.dict *.options $SRC/

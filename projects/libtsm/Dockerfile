@@ -18,6 +18,6 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER kcwu@csie.org
 RUN apt-get install -y make autoconf automake libtool pkg-config
 
-RUN git clone git://people.freedesktop.org/~dvdhrm/libtsm
+RUN git clone --depth 1 git://people.freedesktop.org/~dvdhrm/libtsm
 WORKDIR libtsm
 COPY build.sh libtsm_fuzzer.c $SRC/

@@ -16,7 +16,7 @@
 
 FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y make autoconf automake libtool shtool 
-RUN git clone https://github.com/file/file.git
+RUN apt-get install -y make autoconf automake libtool shtool
+RUN git clone --depth 1 https://github.com/file/file.git
 WORKDIR file
 COPY build.sh magic_fuzzer.cc $SRC/

@@ -17,6 +17,6 @@
 FROM ossfuzz/base-libfuzzer
 MAINTAINER kurt@roeckx.be
 RUN apt-get install -y make
-RUN git clone https://github.com/openssl/openssl.git
+RUN git clone --depth 1 https://github.com/openssl/openssl.git
 WORKDIR openssl
 COPY build.sh $SRC/

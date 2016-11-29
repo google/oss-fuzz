@@ -22,6 +22,6 @@ MAINTAINER kcwu@google.com
 RUN apt-get install -y make autoconf automake libtool pkg-config \
         libbz2-dev liblzo2-dev liblzma-dev liblz4-dev libz-dev \
         libxml2-dev libssl-dev
-RUN git clone https://github.com/libarchive/libarchive.git
+RUN git clone --depth 1 https://github.com/libarchive/libarchive.git
 WORKDIR libarchive
 COPY build.sh libarchive_fuzzer.cc $SRC/

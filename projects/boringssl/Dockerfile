@@ -18,5 +18,5 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y cmake ninja-build golang
 
-RUN git clone https://boringssl.googlesource.com/boringssl
+RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 COPY build.sh $SRC/

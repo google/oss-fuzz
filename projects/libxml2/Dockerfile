@@ -18,7 +18,7 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER ochang@chromium.org
 RUN apt-get install -y make autoconf automake libtool pkg-config
 
-RUN git clone git://git.gnome.org/libxml2
+RUN git clone --depth 1 git://git.gnome.org/libxml2
 WORKDIR libxml2
 
 COPY build.sh $SRC/

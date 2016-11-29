@@ -18,6 +18,6 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 
-RUN git clone --recursive https://github.com/google/woff2
+RUN git clone --depth 1 --recursive --shallow-submodules https://github.com/google/woff2
 WORKDIR woff2
 COPY build.sh convert_woff2ttf_fuzzer.* $SRC/

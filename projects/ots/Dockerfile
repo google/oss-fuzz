@@ -17,7 +17,7 @@
 FROM ossfuzz/base-libfuzzer
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool pkg-config zlib1g-dev
-RUN git clone https://github.com/khaledhosny/ots.git
+RUN git clone --depth 1 https://github.com/khaledhosny/ots.git
 WORKDIR ots
 COPY build.sh ots_fuzzer.* $SRC/
 COPY seed_corpus $SRC/seed_corpus

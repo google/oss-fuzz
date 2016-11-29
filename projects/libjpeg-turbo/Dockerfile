@@ -17,7 +17,7 @@
 FROM ossfuzz/base-libfuzzer
 MAINTAINER alex.gaynor@gmail.com
 RUN apt-get install -y make autoconf automake libtool nasm curl
-RUN git clone https://github.com/libjpeg-turbo/libjpeg-turbo
+RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 
 RUN mkdir afl-testcases
 RUN curl -o afl-testcases/afl_testcases.tgz http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz
