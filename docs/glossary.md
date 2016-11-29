@@ -55,9 +55,8 @@ Example: [radamsa](https://github.com/aoh/radamsa) (a generic test mutator).
 
 An entity comprising of various [fuzz targets](#fuzz-target)
 that test APIs (or internal functions) of a specific open source project.
-One project may have more than one [fuzz target](#fuzz-target)
-(example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)),
-but OSS-Fuzz will have a single set of configuration files for such project. 
+Each project has a single set of configuration files and may have more than one [fuzz target](#fuzz-target)
+(example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)). 
 
 ## Reproducer 
 Or a **testcase**.<BR>
