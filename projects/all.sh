@@ -16,20 +16,17 @@
 #
 ################################################################################
 
-# Development script to build all images.
-IGNORE="build:docs:infra:tpm2:scripts"
-
-for target in targets/*; do
-  if [[ -f $target || ":${IGNORE}:" == *":$target:"* ]]; then continue; fi
-  echo "@ Building $target"
-  docker build -t ossfuzz/$target $target/
+for project in projects/*; do
+  if [[ -f $project ]]; then continue; fi
+  echo "@ Building $project"
+  docker build -t ossfuzz/$project $project/
 
   # Execute command ($1) if any
   case ${1-} in
     "")
       ;;
-    compile|test)
-      docker run --rm -ti ossfuzz/$target $@
+    compile)
+      docker run --rm -ti ossfuzz/$project $@
       ;;
     *)
       echo $"Usage: $0 {|compile}"
