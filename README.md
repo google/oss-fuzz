@@ -5,8 +5,8 @@
 [FAQ](docs/faq.md)
 | [Ideal Fuzzing Integration](docs/ideal_integration.md)
 | [New Project Guide](docs/new_project_guide.md)
-| [Reproducing Bug Reports](docs/reproducing.md)
-| [Projects List](projects)
+| [Reproducing Bugs](docs/reproducing.md)
+| [Projects](projects)
 | [Projects Issue Tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 | [Glossary](docs/glossary.md)
 
