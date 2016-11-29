@@ -227,8 +227,11 @@ def coverage(run_args):
   ] + args.fuzzer_args
 
   print('Running:', _get_command_string(command))
-  pipe = subprocess.Popen(command)
-  pipe.communicate()
+  print('This may take a while (running your fuzzer for %d seconds)...' %
+        args.run_time)
+  with open(os.devnull, 'w') as f:
+    pipe = subprocess.Popen(command, stdout=f, stderr=subprocess.STDOUT)
+    pipe.communicate()
 
   command = [
         'docker', 'run', '-i',
@@ -264,7 +267,7 @@ def generate(generate_args):
 
   template_args = {
     'project_name' : args.project_name
-    }
+  }
   with open(os.path.join(dir, 'project.yaml'), 'w') as f:
     f.write(templates.PROJECT_YAML_TEMPLATE % template_args)
 
