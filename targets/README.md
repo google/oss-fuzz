@@ -1,1 +1,1 @@
-Content of this directory has been moved to [`../projects/`](../projects/).
+This directory was renamed to [`../projects/`](../projects/)
