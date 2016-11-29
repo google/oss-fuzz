@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# Build the target.
+# Build the project.
 ./autogen.sh
 ./configure
 

@@ -62,14 +62,13 @@ BUILD_TEMPLATE = """\
 #
 ################################################################################
 
-# build the project.
+# build project
 # e.g.
-#
 # ./autogen.sh
 # ./configure
 # make -j$(nproc) all
 
-# build your fuzzer(s)
+# build fuzzers
 # e.g.
 # $CXX $CXXFLAGS -std=c++11 -Iinclude \\
 #     /path/to/name_of_fuzzer.cc -o /out/name_of_fuzzer \\

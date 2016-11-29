@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# Build the target.
+# Build the project.
 ./buildconf
 ./configure --enable-debug
 make clean

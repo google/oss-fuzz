@@ -15,12 +15,12 @@
 #
 ################################################################################
 
-# build the target.
+# build the project
 ./build/autogen.sh
 ./configure
 make -j$(nproc) all
 
-# build your fuzzer(s)
+# build fuzzer(s)
 $CXX $CXXFLAGS -Ilibarchive \
     $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \
     -lfuzzer .libs/libarchive.a \

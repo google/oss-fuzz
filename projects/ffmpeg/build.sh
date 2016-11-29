@@ -138,7 +138,7 @@ make install
 rm $FFMPEG_DEPS_PATH/lib/*.so
 rm $FFMPEG_DEPS_PATH/lib/*.so.*
 
-# Build the target.
+# Build ffmpeg.
 cd $SRC/ffmpeg
 PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --cc=$CC --cxx=$CXX --ld="$CXX $CXXFLAGS -std=c++11" \

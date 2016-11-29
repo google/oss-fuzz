@@ -17,11 +17,11 @@
 
 cd pcre2
 
-# build the library.
+# build project
 ./autogen.sh
 ./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-recursion=1000
 make -j$(nproc) clean all
 
-# Build the target.
+# build fuzer
 $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer \
     -lfuzzer .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a
