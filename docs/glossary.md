@@ -14,7 +14,7 @@ It is recommended to use it for regression testing (see [ideal integration](idea
 
 ## Project
 
-OSS-Fuzz applies fuzzing to [fuzz targets](#fuzz-target)
+An entity comprising of various [fuzz targets](#fuzz-target)
 that test APIs (or internal functions) of a specific open source project.
 One project may have more than one [fuzz target](#fuzz-target)
 (example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)),
@@ -42,7 +42,7 @@ For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of a
 
 ## Test Input
 A sequence of bytes that is used as the input to a [fuzz target](#fuzz-target). 
-Typicaly, a test input is stored in a seperate file. 
+Typicaly, a test input is stored in a separate file. 
 
 ## Reproducer 
 Or a **testcase**.<BR>
@@ -50,7 +50,7 @@ A [test input](#test-input) that causes a specific bug to reproduce.
 
 ## Corpus
 Or **test corpus**, or **fuzzing corpus**.<BR>
-A set of [test inputs](#test-input). In many context, it is also referred to a set of minimal test inputs that generates maximal code coverage.
+A set of [test inputs](#test-input). In usual context, it is also referred to a set of minimal test inputs that generate maximal code coverage.
 
 ## Mutation Engine
 A tool that take a set of testcases as input and creates their mutated versions. 
@@ -58,7 +58,7 @@ It does not feed the mutations to [fuzz target](#fuzz-target).
 Example: [radamsa](https://github.com/aoh/radamsa) (a generic test mutator).
 
 ## Test Generator
-A tool that generates testcases according to some rules or grammar. 
+A tool that generates testcases from scratch according to some rules or grammar. 
 Examples: 
 [csmith](https://embed.cs.utah.edu/csmith/) (a test generator for C language),
 [cross_fuzz](http://lcamtuf.coredump.cx/cross_fuzz/) (a cross-document DOM binding test generator),
