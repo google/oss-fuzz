@@ -39,7 +39,7 @@ Create a fuzzer and add it to the *project_name/* directory as well.
 ## Dockerfile
 
 This is the Docker image definition that build.sh will be executed in.
-It is very simple for most libraries:
+It is very simple for most projects:
 ```docker
 FROM ossfuzz/base-libfuzzer               # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                     # each file should have a maintainer
@@ -197,7 +197,7 @@ It is common for several fuzzers to reuse the same dictionary if they are fuzzin
 
 ## Jenkinsfile
 
-This file will be largely the same for most libraries, and is used by our build
+This file will be largely the same for most projects, and is used by our build
 infrastructure. For expat, this is:
 
 ```groovy
