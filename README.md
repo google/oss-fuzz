@@ -44,7 +44,7 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
 - When [ClusterFuzz](docs/clusterfuzz.md) finds a bug, an issue is automatically
   reported in the OSS-Fuzz [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) 
   ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9)).
-  ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reporting-bugs-in-fuzz-targets)).
+  ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reporting-bugs-in-oss-projects)).
   Project owners are CC-ed to the bug report.
 - The bug is fixed upstream.
 - [ClusterFuzz](docs/clusterfuzz.md) automatically verifies the fix, adds a comment and closes the issue ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53#c3)).
