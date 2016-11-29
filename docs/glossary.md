@@ -1,16 +1,15 @@
 # OSS-Fuzz Glossary
 
-Naming things is hard. This page tries to reduce confusion around fuzz-related terminology.
+Naming things is hard. This page tries to reduce confusion around fuzz-related terminologies.
 
 ## Fuzz Target
-Or **Target Function** or **Fuzzing Target Function**, or **Fuzzing Entry Point**.<BR>
-A function to which we apply fuzzing.<BR>
-A [specific signature](http://libfuzzer.info#fuzz-target) is needed for OSS-Fuzz.
+Or **Target Function** or **Fuzzing Target Function**, or **Fuzzing Entry Point**.<BR><BR>
+A function to which we apply fuzzing. A [specific signature](http://libfuzzer.info#fuzz-target) is needed for OSS-Fuzz.
 Examples: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/x509.c),
 [re2](https://github.com/google/re2/blob/master/re2/fuzzing/re2_fuzzer.cc),
 [SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338).
 
-A Fuzz Target can be used to [reproduce bug reports](reproducing.md). 
+A fuzz target can be used to [reproduce bug reports](reproducing.md). 
 It is recommended to use it for regression testing (see [ideal integration](ideal_integration.md)).
 
 ## Project
@@ -18,10 +17,9 @@ It is recommended to use it for regression testing (see [ideal integration](idea
 OSS-Fuzz applies fuzzing to [fuzz targets](#fuzz-target)
 that test APIs of some specific opensource library
 (or sometimes, internal functions of some application). 
-One project may have more than one Fuzz Target
+One project may have more than one [fuzz target](#fuzz-target)
 (example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)),
-but OSS-Fuzz will have a single set of configuration files for such library. 
-This is what we call **Library Config**.
+but OSS-Fuzz will have a single set of configuration files for such project. 
 
 ## Fuzzing Engine
 
@@ -34,6 +32,7 @@ See also [Mutation Engine](#mutation-engine) and [Test Generator](#test-generato
 
 ## Job type
 
+Or **Fuzzer Build**.<BR><BR>
 A [ClusterFuzz](clusterfuzz.md) specific term.
 This refers to a build that contains all the [fuzz targets](#fuzz-target) for a given [project](#project)
 with a specific [fuzzing engine](#fuzzing-engine), in a specific build mode (e.g. with enabled or disabled assertions), 
@@ -47,11 +46,11 @@ A sequence of bytes that is used as the input to a [fuzz target](#fuzz-target).
 Typicaly, a test input is stored in a seperate file. 
 
 ## Reproducer 
-Or a **testcase**.<BR> 
-A [Test Input](#test-input) that causes a specific bug to reproduce. 
+Or a **testcase**.<BR><BR>
+A [test input](#test-input) that causes a specific bug to reproduce. 
 
 ## Corpus
-Or **test corpus**, or **fuzzing corpus**. 
+Or **test corpus**, or **fuzzing corpus**.<BR><BR> 
 A set of [test inputs](#test-input). In many context, it is also referred to a set of minimal test inputs that generates maximal code coverage.
 
 ## Mutation Engine
@@ -62,8 +61,8 @@ Example: [radamsa](https://github.com/aoh/radamsa) (a generic test mutator).
 ## Test Generator
 A tool that generates testcases according to some rules or grammar. 
 Examples: 
-[csmith](https://embed.cs.utah.edu/csmith/) (a test generator for the C language),
-[crossfuzz](http://lcamtuf.coredump.cx/cross_fuzz/) (a cross-document DOM binding test generator),
+[csmith](https://embed.cs.utah.edu/csmith/) (a test generator for C language),
+[cross_fuzz](http://lcamtuf.coredump.cx/cross_fuzz/) (a cross-document DOM binding test generator),
 
 ## [Sanitizer](https://github.com/google/sanitizers)
 A [dynamic testing](https://en.wikipedia.org/wiki/Dynamic_testing) tool that can detect bugs during program execution.
@@ -81,6 +80,6 @@ The most overloaded term and used in a variety of contexts, which makes it bad.
 Sometimes, "Fuzzer" is referred to a [fuzz target](#fuzz-target),
 sometimes to a [fuzzing engine](#fuzzing-engine),
 a [mutation engine](#mutation-engine),
-a [test generator](#test-generator) and 
-sometimes to a [fuzzer build](#fuzzer-build).
+a [test generator](#test-generator) or 
+a [fuzzer build](#job-type).
 
