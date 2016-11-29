@@ -36,12 +36,6 @@ def call(body) {
     def dockerContextDir = dockerfileConfig["context"] ?: ""
     def dockerTag = "ossfuzz/$projectName"
 
-    // Flags configuration
-    def sanitizerFlags = [
-      "address":"-fsanitize=address",
-      "undefined":"-fsanitize=bool,signed-integer-overflow,shift,vptr -fno-sanitize-recover=undefined"
-      ]
-
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
@@ -89,8 +83,7 @@ def call(body) {
                 sh "mkdir -p $junit_reports"
                 stage("$sanitizer sanitizer") {
                     // Run image to produce fuzzers
-                    def flags = sanitizerFlags[sanitizer]
-                    sh "docker run --rm --user $uid -v $out:/out -e SANITIZER_FLAGS=\"${flags}\" -t $dockerTag compile"
+                    sh "docker run --rm --user $uid -v $out:/out -e SANITIZER=\"${sanitizer}\" -t $dockerTag compile"
                     sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -t ossfuzz/base-runner test_all"
                     sh "ls -al $junit_reports/"
                 }
