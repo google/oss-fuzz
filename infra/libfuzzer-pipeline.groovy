@@ -20,15 +20,15 @@ def call(body) {
     body.resolveStrategy = Closure.DELEGATE_FIRST
     body.delegate = config
     body()
-    
+
     // Mandatory configuration
-    def target = new groovy.json.JsonSlurperClassic().parseText(config["target_json"])
-    
+    def project = new groovy.json.JsonSlurperClassic().parseText(config["project_json"])
+
     // Optional configuration
-    def sanitizers = target["sanitizers"] ?: ["address"]
-    def projectName = target["name"] ?: env.JOB_BASE_NAME
-    def dockerfile = config["dockerfile"] ?: "oss-fuzz/targets/$projectName/Dockerfile"
-    
+    def sanitizers = project["sanitizers"] ?: ["address"]
+    def projectName = project["name"] ?: env.JOB_BASE_NAME
+    def dockerfile = config["dockerfile"] ?: "oss-fuzz/projects/$projectName/Dockerfile"
+
     def checkoutDir = config["checkoutDir"] ?: projectName
     def dockerContextDir = config["dockerContextDir"]
     def gitUrl = config["git"]
@@ -51,7 +51,7 @@ def call(body) {
 
         def srcmapFile = "$workspace/srcmap.json"
         def dockerTag = "ossfuzz/$projectName"
-        echo "Building $dockerTag: $target"
+        echo "Building $dockerTag: $project"
 
         sh "rm -rf $workspace/out"
         sh "mkdir -p $workspace/out"
@@ -88,7 +88,7 @@ def call(body) {
             srcmap['/src'] = [ type: 'git',
                               rev: ossfuzzRev,
                               url: 'https://github.com/google/oss-fuzz.git',
-                              path: "targets/$projectName" ]
+                              path: "projects/$projectName" ]
             echo "srcmap: $srcmap"
             // sh "cp $workspace/srcmap.json.tmp $srcmapFile"
             writeFile file: srcmapFile, text: groovy.json.JsonOutput.toJson(srcmap)

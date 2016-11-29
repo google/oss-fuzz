@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Script to sync CF and Jenkins jobs.""" 
+"""Script to sync CF and Jenkins jobs."""
 
 import json
 import os
@@ -17,7 +17,7 @@ OSSFUZZ_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
 SCRIPT_TEMPLATE = """
 def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy', 'https://github.com/google/oss-fuzz.git')
-libfuzzerBuild { target_json = %(target_json)s }
+libfuzzerBuild { project_json = %(project_json)s }
 """
 
 def main():
@@ -26,28 +26,28 @@ def main():
   server = jenkins.Jenkins('http://%s:%d' % JENKINS_SERVER,
                            username=jenkins_login[0], password=jenkins_login[1])
 
-  for library in get_libraries():
-    print 'syncing configs for', library
+  for project in get_projects():
+    print 'syncing configs for', project
     try:
       # Create/update jenkins build job.
-      sync_jenkins_job(server, library)
+      sync_jenkins_job(server, project)
 
     except Exception as e:
       print >>sys.stderr, 'Failed to setup job with exception', e
 
 
-def get_libraries():
-  """Return list of libraries for oss-fuzz."""
-  libraries = []
-  targets_dir = os.path.join(OSSFUZZ_DIR, 'targets')
-  for name in os.listdir(targets_dir):
-    if os.path.isdir(os.path.join(targets_dir, name)):
-      libraries.append(name)
+def get_projects():
+  """Return list of projects for oss-fuzz."""
+  projects = []
+  projects_dir = os.path.join(OSSFUZZ_DIR, 'projects')
+  for name in os.listdir(projects_dir):
+    if os.path.isdir(os.path.join(projects_dir, name)):
+      projects.append(name)
 
-  if not libraries:
-    print >>sys.stderr, 'No libraries found.'
+  if not projects:
+    print >>sys.stderr, 'No projects found.'
 
-  return libraries
+  return projects
 
 
 def get_jenkins_login():
@@ -58,17 +58,17 @@ def get_jenkins_login():
   return username, password
 
 
-def sync_jenkins_job(server, library):
+def sync_jenkins_job(server, project):
   """Sync the config with jenkins."""
-  target_yaml = os.path.join(OSSFUZZ_DIR, 'targets', library, 'target.yaml')
-  with open(target_yaml, 'r') as f:
-    target_json_string = json.dumps(json.dumps(yaml.safe_load(f)))
-                             
-  job_name = 'targets/' + library
+  project_yaml = os.path.join(OSSFUZZ_DIR, 'projects', project, 'project.yaml')
+  with open(project_yaml, 'r') as f:
+    project_json_string = json.dumps(json.dumps(yaml.safe_load(f)))
+
+  job_name = 'projects/' + project
   job_definition = ET.parse(os.path.join(SCRIPT_DIR, 'jenkins_config',
                                          'base_job.xml'))
   script = job_definition.findall('.//definition/script')[0]
-  script.text = SCRIPT_TEMPLATE % { "target_json": target_json_string} 
+  script.text = SCRIPT_TEMPLATE % { "project_json": project_json_string}
   job_config_xml = ET.tostring(job_definition.getroot())
 
   if server.job_exists(job_name):
