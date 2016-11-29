@@ -37,7 +37,7 @@ def call(body) {
     // Flags configuration
     def sanitizerFlags = [
       "address":"-fsanitize=address",
-      "undefined":"-fsanitize=bool,signed-integer-overflow,shift,vptr"
+      "undefined":"-fsanitize=bool,signed-integer-overflow,shift,vptr -fno-sanitize-recover=undefined"
       ]
 
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
