@@ -85,6 +85,7 @@ OSS-Fuzz will adhere to following disclosure principles:
 
 ## More Documentation
 
+* [Glossary](docs/glossary.md) describes the common terms used in OSS-Fuzz.
 * [New Project Guide](docs/new_project_guide.md) walks through the steps necessary to add new projects to OSS-Fuzz.
 * [Ideal Integration](docs/ideal_integration.md) describes the steps to integrate fuzz targets with your project.
 * [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
