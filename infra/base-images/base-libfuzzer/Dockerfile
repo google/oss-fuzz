@@ -18,7 +18,11 @@ FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y git subversion jq python3 zip
 
-ENV SANITIZER_FLAGS="-fsanitize=address"
+ENV SANITIZER="address"
+ENV SANITIZER_FLAGS_address = "-fsanitizer=address"
+
+# ENV SANITIZER_FLAGS="-fsanitize=address"
+
 ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 ENV FUZZER_LDFLAGS ""
