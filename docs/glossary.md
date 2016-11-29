@@ -3,7 +3,7 @@
 Naming things is hard. This page tries to reduce confusion around fuzz-related terminologies.
 
 ## Fuzz Target
-Or **Target Function**, or **Fuzzing Target Function**, or **Fuzzing Entry Point**.<BR><BR>
+Or **Target Function**, or **Fuzzing Target Function**, or **Fuzzing Entry Point**.<BR>
 A function to which we apply fuzzing. A [specific signature](http://libfuzzer.info#fuzz-target) is needed for OSS-Fuzz.
 Examples: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/x509.c),
 [re2](https://github.com/google/re2/blob/master/re2/fuzzing/re2_fuzzer.cc),
