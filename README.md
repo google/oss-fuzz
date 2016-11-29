@@ -4,10 +4,10 @@
 
 [FAQ](docs/faq.md)
 | [Ideal Fuzzing Integration](docs/ideal_integration.md)
-| [New Target Guide](docs/new_target.md) 
-| [Reproducing Bug Reports](docs/reproducing.md) 
-| [Targets List](targets)
-| [Targets Issue Tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
+| [New Project Guide](docs/new_project_guide.md)
+| [Reproducing Bug Reports](docs/reproducing.md)
+| [Projects List](projects)
+| [Projects Issue Tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 
 
 [Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback about OSS-Fuzz.
@@ -35,16 +35,16 @@ provides distributed fuzzer execution environment and reporting.
 
 ## Process Overview
 
-The following process is used for targets in OSS-Fuzz:
+The following process is used for projects in OSS-Fuzz:
 
 - A maintainer of an opensource project or an outside volunteer creates
 one or more [fuzz targets](http://libfuzzer.info/#fuzz-target) 
 and [integrates](docs/ideal_integration.md) them with the project's build and test system.
-- These fuzz targets are [accepted to OSS-Fuzz](#accepting-new-targets).
+- These fuzz targets are [accepted to OSS-Fuzz](#accepting-new-projects).
 - When [ClusterFuzz](docs/clusterfuzz.md) finds a bug, an issue is automatically
   reported in the OSS-Fuzz [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) 
   ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9)).
-  ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reportig-bugs-in-fuzz-targets)).
+  ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reporting-bugs-in-fuzz-targets)).
   Project owners are CC-ed to the bug report.
 - The bug is fixed upstream.
 - [ClusterFuzz](docs/clusterfuzz.md) automatically verifies the fix, adds a comment and closes the issue ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53#c3)).
@@ -52,20 +52,20 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
   ([guidelines](#bug-disclosure-guidelines)).
 
 <!-- NOTE: this anchor is referenced by oss-fuzz blog post -->
-## Accepting New Targets
+## Accepting New Projects
 
-To be accepted to OSS-Fuzz, an open-source target must 
+To be accepted to OSS-Fuzz, an open-source project must 
 have a significant user base and/or be critical to the global IT infrastructure.
-To submit a new target:
+To submit a new project:
 - [Create a pull request](https://help.github.com/articles/creating-a-pull-request/) with new 
-`targets/<target_name>/target.yaml` file ([example](targets/file/target.yaml)) giving at least the following information:
-  * target homepage.
+`projects/<project_name>/project.yaml` file ([example](projects/file/project.yaml)) giving at least the following information:
+  * project homepage.
   * e-mail of the engineering contact person to be CCed on new issues. This
     email should be  
     [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
-    and belong to an established target committer (according to VCS logs).
+    and belong to an established project committer (according to VCS logs).
     If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
-- Once accepted by an OSS-Fuzz project member, follow the [New Target Guide](docs/new_target.md)
+- Once accepted by an OSS-Fuzz project member, follow the [New Project Guide](docs/new_project_guide.md)
   to write the code.
 
 
@@ -73,7 +73,7 @@ To submit a new target:
 
 Following [Google's standard disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
 OSS-Fuzz will adhere to following disclosure principles:
-  - **90-day deadline**. After notifying target authors, we will open reported
+  - **90-day deadline**. After notifying project authors, we will open reported
     issues in 90 days, or 7 days after the fix is released.
   - **Weekends and holidays**. If a deadline is due to expire on a weekend or
     US public holiday, the deadline will be moved to the next normal work day.
@@ -85,17 +85,17 @@ OSS-Fuzz will adhere to following disclosure principles:
 
 ## More Documentation
 
-* [New Target Guide](docs/new_target.md) walks through the steps necessary to add new targets to OSS-Fuzz.
+* [New Project Guide](docs/new_project_guide.md) walks through the steps necessary to add new projects to OSS-Fuzz.
 * [Ideal Integration](docs/ideal_integration.md) describes the steps to integrate fuzz targets with your project.
 * [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
   environment under which your fuzzers will be run.
-* [Targets List](targets) lists OSS targets currently added to OSS-Fuzz.
+* [Projects List](projects) lists OSS projects currently added to OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
 ## Build Status
 [This page](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
-gives the latest build logs for each target.
+gives the latest build logs for each project.
 
 ## Trophies
 
