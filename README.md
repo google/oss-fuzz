@@ -91,7 +91,7 @@ OSS-Fuzz will adhere to following disclosure principles:
 * [Ideal Integration](docs/ideal_integration.md) describes the steps to integrate fuzz targets with your project.
 * [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
   environment under which your fuzzers will be run.
-* [Projects List](projects) lists OSS projects currently added to OSS-Fuzz.
+* [Projects](projects) lists OSS projects currently added to OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
 
