@@ -1,4 +1,4 @@
-# OSS-Fuzz Glossary
+# Glossary
 
 Naming things is hard. This page tries to reduce confusion around fuzz-related terminologies.
 
