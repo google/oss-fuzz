@@ -8,7 +8,7 @@ You should not make any assumptions about the current working directory of your
 fuzzer. If you need to load data files, please use `argv[0]` to get the
 directory where your fuzzer executable is located.
 
-## Filesystem
+## File system
 
 Everything except `/tmp` is read-only, including the directory that your fuzzer
 executable lives in. Note that `/tmp` is limited in size (64MB).
