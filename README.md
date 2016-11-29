@@ -100,7 +100,7 @@ gives the latest build logs for each project.
 ## Trophies
 
 [This page](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=status%3AFixed%2CVerified+Type%3ABug%2CBug-Security+-component%3AInfra+)
-gives a list of publically viewable (fixed) bugs found by OSS-Fuzz.
+gives a list of publically viewable fixed bugs found by OSS-Fuzz.
 
 ## References
 * [libFuzzer documentation](http://libfuzzer.info)
