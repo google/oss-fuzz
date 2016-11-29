@@ -44,7 +44,7 @@ It should be regularly extended with the inputs that (used to) trigger bugs and/
 Examples: 
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
 [openssl](https://github.com/openssl/openssl/tree/master/fuzz),
-[nss](https://github.com/mozilla/nss-fuzzing-corpus) (corpus in a separate repo) 
+[nss](https://github.com/mozilla/nss-fuzzing-corpus) (corpus in a separate repo).
 
 
 ## Regression Testing
@@ -52,7 +52,7 @@ The fuzz targets should be regularly tested (not necessary fuzzed!) as a part of
 One way to do so is to link the fuzz target with a simple driver
 (e.g. [this one](https://github.com/llvm-mirror/llvm/tree/master/lib/Fuzzer/standalone))
 that runs the provided inputs and use this driver with the seed corpus created in previous step. 
-It is recommended to use the [sanitizers](https://github.com/google/sanitizers) during regression testing.
+It is recommended to use [sanitizers](https://github.com/google/sanitizers) during regression testing.
 
 Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45),
 [openssl](https://github.com/openssl/openssl/blob/master/fuzz/test-corpus.c)
@@ -74,7 +74,7 @@ And the less OSS-Fuzz knows about them, the better it can scale.
 An ideal build integration for OSS-Fuzz would look like this:
 * For every fuzz target `foo` in the project, there is a build rule that builds `foo_fuzzer.a`,
 an archive that contains the fuzzing entry point (`LLVMFuzzerTestOneInput`)
-and all the code it depends on, but not the `main()` function
+and all the code it depends on, but not the `main()` function.
 * The build system supports changing the compiler and passing extra compiler
 flags so that the build command for a `foo_fuzzer.a` looks similar to this:
 
@@ -83,7 +83,7 @@ CC="clang $FUZZER_FLAGS" CXX="clang++ $FUZZER_FLAGS" make_or_whatever_other_comm
 ```
 
 In this case, linking the target with e.g. libFuzzer will look like "clang++ foo_fuzzer.a libFuzzer.a".
-This will allow to have minimal OSS-Fuzz-specific configuration and thus be more robust. 
+This will allow to have minimal OSS-Fuzz specific configuration and thus be more robust. 
 
 There is no point in hardcoding the exact compiler flags in the build system because they 
 a) may change and b) are different depending on the fuzzing target and the sanitizer being used. 
