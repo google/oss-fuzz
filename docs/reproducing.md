@@ -31,7 +31,7 @@ docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$pro
   It builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
   and feeds the testcase file to the target function. 
   
-  E.g. for [libxml2](../target/libxml2) project with fuzzer named `libxml2_xml_read_memory_fuzzer`, it will be: 
+  E.g. for [libxml2](../projects/libxml2) project with fuzzer named `libxml2_xml_read_memory_fuzzer`, it will be: 
   
    <pre>
 docker run --rm -ti -v <b><i>~/Downloads/testcase</i></b>:/testcase ossfuzz/<b><i>libxml2</i></b> reproduce <b><i>libxml2_xml_read_memory_fuzzer</i></b>
