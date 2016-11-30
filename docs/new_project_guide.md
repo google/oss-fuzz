@@ -9,7 +9,7 @@
 
 To add a new OSS project to OSS-Fuzz, you need a project subdirectory 
 inside the [`projects/`](../projects) directory in [OSS-Fuzz repository](https://github.com/google/oss-fuzz). 
-E.g. [boringssl](https://github.com/google/boringssl) project is located in 
+Example: [boringssl](https://github.com/google/boringssl) project is located in 
 [`projects/boringssl`](../projects/boringssl).
 
 The project directory needs to contain the following three configuration files:
@@ -88,6 +88,7 @@ When build.sh script is executed, the following locations are available within t
 
 | Path                   | Description
 | ------                 | -----
+| `$OUT`                 | Output directory containing fuzz targets, dictionary files, options files, seed corpus archives.
 | `$SRC/<some_dir>`      | Source code needed to build your project.
 | `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that needs to be linked into all fuzz targets (`-lfuzzer`).
 
@@ -121,16 +122,17 @@ directory on your machine (and `$OUT` in the container). You should then try to 
 inside the container to make sure that they work properly:
 
 ```bash
-$ python infra/helper.py run_fuzzer $PROJECT_NAME name_of_a_fuzzer
+$ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>
 ```
 
 If everything works locally, then it should also work on our automated builders
 and ClusterFuzz.
 
-It's recommended to look at code coverage as a sanity check to make sure that fuzzer gets to the code you expect.
+It's recommended to look at code coverage as a sanity check to make sure that 
+fuzz target gets to the code you expect.
 
 ```bash
-$ python infra/helper.py coverage $PROJECT_NAME name_of_a_fuzzer
+$ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
 ```
 
 
@@ -156,7 +158,7 @@ At least, `max_len` is highly recommended.
 
 For out of tree fuzz targets, you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
-([Woff2 example](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options)).
+(example: [woff2](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options)).
 
 
 ### Seed Corpus
@@ -169,7 +171,7 @@ to the fuzz target binary in `$OUT` during the build. Individual files in this
 archive will be used as starting inputs for mutations. You can store the corpus 
 next to source files, generate during build or fetch it using curl or any other 
 tool of your choice. 
-([Boringssl example](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L42).)
+(example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L42)).
 
 Seed corpus files will be used for cross-mutations and portions of them might appear
 in bug reports or be used for further security research. It is important that corpus
@@ -189,26 +191,13 @@ dict = dictionary_name.dict
 ```
 
 It is common for several fuzz targets to reuse the same dictionary if they are fuzzing very similar inputs.
-([Expat example](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
+(example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
 
-## Jenkinsfile
+## project.yaml
 
-This file will be largely the same for most projects, and is used by our build
-infrastructure. For expat, this is:
-
-```groovy
-// load libFuzzer pipeline definition.
-def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy',
-                                        'https://github.com/google/oss-fuzz.git')
-
-libfuzzerBuild {
-  git = "git://git.code.sf.net/p/expat/code_git"
-}
-```
-
-Simply replace the "git" entry with the correct git url for the project.
-
-*Note*: only git is supported right now.
+This file stores the metadata about your project. This includes things like project's homepage, 
+list of sanitizers used, list of ccs on newly filed bugs, etc. 
+(example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/project.yaml)).
 
 ## Checking in to OSS-Fuzz repository
 
@@ -243,5 +232,5 @@ If you are porting a fuzz target from Chromium, keep the original Chromium licen
 ## The end
 
 Once your change is merged, your project and fuzz targets should be automatically built and run on
-ClusterFuzz after a short while! 
-Check your build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).
+ClusterFuzz after a short while!<BR><BR> 
+Check your project's build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).
