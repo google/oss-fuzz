@@ -86,7 +86,7 @@ In this case, linking the target with e.g. libFuzzer will look like "clang++ foo
 This will allow to have minimal OSS-Fuzz specific configuration and thus be more robust. 
 
 There is no point in hardcoding the exact compiler flags in the build system because they 
-a) may change and b) are different depending on the fuzzing target and the sanitizer being used. 
+a) may change and b) are different depending on the fuzzing engine and the sanitizer being used. 
 
 ## Not a project member?
 
