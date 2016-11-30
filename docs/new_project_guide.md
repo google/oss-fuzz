@@ -1,11 +1,5 @@
 # Setting up New Project
 
-Fuzzer configuration files are placed in a subdirectory inside the [`projects/` dir](../projects) 
-of the [OSS-Fuzz repo] on GitHub. 
-For example, the configuration files for the
-[boringssl](https://github.com/google/boringssl) project are located in 
-[`projects/boringssl`](../projects/boringssl).
-
 ## Prerequisites
 - [Install Docker](https://docs.docker.com/engine/installation). ([Why Docker?](faq.md#why-do-you-use-docker))
 - [Integrate](ideal_integration.md) one or more [Fuzz Targets](http://libfuzzer.info/#fuzz-target)
@@ -13,54 +7,60 @@ For example, the configuration files for the
 
 ## Overview
 
-To add a new OSS project to OSS-Fuzz, 3 supporting files have to be added to OSS-Fuzz repository:
+To add a new OSS project to OSS-Fuzz, you need a project subdirectory 
+inside the [`projects/`](../projects) directory in [OSS-Fuzz repository](https://github.com/google/oss-fuzz). 
+E.g. [boringssl](https://github.com/google/boringssl) project is located in 
+[`projects/boringssl`](../projects/boringssl).
 
-* `projects/<project_name>/Dockerfile` - defines a container environment with all the dependencies
-needed to build the project and its fuzzers.
-* `projects/<project_name>/build.sh` - build script that executes inside the container.
+The project directory needs to contain the following three configuration files:
+
+* `projects/<project_name>/Dockerfile` - defines the container environment with information 
+on dependencies needed to build the project and its fuzz targets.
+* `projects/<project_name>/build.sh` - build script that executes inside the container and 
+generates project build.
 * `projects/<project_name>/project.yaml` - provides metadata about the project.
 
-To create a new directory for the project and 
-*automatically generate* template versions of these files, run the following commands:
+To *automatically* create a new directory for your project and 
+generate templated versions of these configuration files, 
+run the following set of commands:
 
 ```bash
 $ cd /path/to/oss-fuzz
-$ export PROJECT_NAME=project_name
+$ export PROJECT_NAME=<project_name>
 $ python infra/helper.py generate $PROJECT_NAME
 ```
 
-Create a fuzzer and add it to the *project_name/* directory as well.
+It is preferred to keep and maintain fuzz targets in your own source code repository. If this is not possible due to various reasons, you can store them inside the OSS-Fuzz's project directory created above.
 
 ## Dockerfile
 
-This is the Docker image definition that build.sh will be executed in.
+This file defines the Docker image definition. This is where the build.sh script will be executed in. 
 It is very simple for most projects:
 ```docker
 FROM ossfuzz/base-libfuzzer               # base image with clang toolchain
-MAINTAINER YOUR_EMAIL                     # each file should have a maintainer
-RUN apt-get install -y ...                # install required packages to build a project
+MAINTAINER YOUR_EMAIL                     # maintainer for this file
+RUN apt-get install -y ...                # install required packages to build your project
 RUN git checkout <git_url> <checkout_dir> # checkout all sources needed to build your project
 WORKDIR <checkout_dir>                    # current directory for build script
-COPY build.sh fuzzer.cc $SRC/             # install build script and other source files.
+COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer files in src dir
 ```
 Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
 
 ### Fuzzer execution environment
 
 [This page](fuzzer_environment.md) gives information about the environment that
-your fuzzers will run under on ClusterFuzz, and the assumptions that you can
-make.
+your fuzz targets will run on ClusterFuzz, and the assumptions that you can make.
 
 ## build.sh
 
-This is where most of the work is done to build fuzzers for your project. The script will
-be executed within an image built from a `Dockerfile`.
+This file describes how to build fuzz targets for your project. 
+The script will be executed within the image built from `Dockerfile`.
 
 In general, this script will need to:
 
-1. Build the project using its build system *with* correct compiler and its flags provided as 
+1. Build the project using your build system *with* correct compiler and its flags provided as 
   *environment variables* (see below). 
-2. Build the fuzzers, linking with the project and libFuzzer. Resulting fuzzers
+2. Build the fuzz targets, linking your project's build and libFuzzer. Resulting fuzz targets 
    should be placed in `/out`.
 
 For expat, this looks like:
@@ -87,18 +87,18 @@ When build.sh script is executed, the following locations are available within t
 | Path                   | Description
 | ------                 | -----
 | `$SRC/<some_dir>`      | Source code needed to build your project.
-| `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that need to be linked into all fuzzers (`-lfuzzer`).
+| `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that needs to be linked into all fuzzers (`-lfuzzer`).
 
-You *must* use special compiler flags to build your project and fuzzers.
-These flags are provided in following environment variables:
+You *must* use the special compiler flags needed to build your project and fuzz targets.
+These flags are provided in the following environment variables:
 
 | Env Variable           | Description
 | -------------          | --------
 | `$CC`, `$CXX`, `$CCC`  | The C and C++ compiler binaries.
 | `$CFLAGS`, `$CXXFLAGS` | C and C++ compiler flags.
 
-Many well-crafted build scripts will automatically use these variables. If not,
-passing them manually to a build tool might be required.
+Most well-crafted build scripts will automatically use these variables. If not,
+pass them manually to the build tool.
 
 See [Provided Environment Variables](../infra/base-images/base-libfuzzer/README.md#provided-environment-variables) section in 
 `base-libfuzzer` image documentation for more details.
@@ -106,7 +106,7 @@ See [Provided Environment Variables](../infra/base-images/base-libfuzzer/README.
 
 ## Testing locally
 
-Helper script can be used to build images and fuzzers.
+Use the helper script build docker image and fuzz targets.
 
 ```bash
 $ cd /path/to/oss-fuzz
@@ -114,8 +114,8 @@ $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers $PROJECT_NAME
 ```
 
-This should place the built fuzzers into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
-directory on your machine (and `/out` in the container). You should then try to run these fuzzers
+This should place the built fuzz targets into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
+directory on your machine (and `/out` in the container). You should then try to run these fuzz targets 
 inside the container to make sure that they work properly:
 
 ```bash
@@ -134,7 +134,7 @@ $ python infra/helper.py coverage $PROJECT_NAME name_of_a_fuzzer
 
 ## Debugging Problems
 
-[Debugging](debugging.md) document lists ways to debug your build scripts or fuzzers
+[Debugging](debugging.md) document lists ways to debug your build scripts or fuzz targets
 in case you run into problems.
 
 
@@ -150,20 +150,20 @@ max_len = 1024
 
 [List of available options](http://llvm.org/docs/LibFuzzer.html#options)
 
-At least, `max_len` is highly recommended which specifies what the maximum length of allowed input to your function.
+At least, `max_len` is highly recommended.
 
-For out of tree fuzzers, you will likely add options file using docker's
+For out of tree fuzz targets, you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
-([Woff2 example](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options).)
+([Woff2 example](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options)).
 
 
 ### Seed Corpus
 
 OSS-Fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
-of sample inputs is one of the best ways to improve fuzzer coverage.
+of good sample inputs is one of the best ways to improve fuzzer coverage.
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
-to the fuzzer binary in `/out` during the build. Individual files in the zip file 
+to the fuzzer binary in `/out` during the build. Individual files in this archive  
 will be used as starting inputs for mutations. You can store the corpus next to 
 source files, generate during build or fetch it using curl or any other tool of 
 your choice. 
@@ -186,8 +186,8 @@ Put your dict file in `/out` and specify in .options file:
 dict = dictionary_name.dict
 ```
 
-It is common for several fuzzers to reuse the same dictionary if they are fuzzing very similar inputs.
-([Expat example](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options).)
+It is common for several fuzz targets to reuse the same dictionary if they are fuzzing very similar inputs.
+([Expat example](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
 
 ## Jenkinsfile
 
@@ -208,7 +208,7 @@ Simply replace the "git" entry with the correct git url for the project.
 
 *Note*: only git is supported right now.
 
-## Checking in to oss-fuzz repository
+## Checking in to OSS-Fuzz repository
 
 Fork OSS-Fuzz, commit and push to the fork, and then create a pull request with
 your change! Follow the [Forking Project](https://guides.github.com/activities/forking/) guide
@@ -236,13 +236,10 @@ Please include copyright headers for all files checked in to oss-fuzz:
 ################################################################################
 ```
 
-If porting a fuzzer from Chromium, keep the Chromium license header.
+If you are porting a fuzzer from Chromium, keep the original Chromium license header.
 
 ## The end
 
 Once your change is merged, the fuzzers should be automatically built and run on
-ClusterFuzz after a short while!
-
-[OSS-Fuzz repo]: https://github.com/google/oss-fuzz
-[Dictionaries]: http://llvm.org/docs/LibFuzzer.html#dictionaries
-[Install Docker]: https://docs.docker.com/engine/installation/linux/ubuntulinux/
+ClusterFuzz after a short while! 
+Check your build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).
