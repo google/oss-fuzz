@@ -49,7 +49,7 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
   Project owners are CC-ed to the bug report.
 - The bug is fixed upstream.
 - [ClusterFuzz](docs/clusterfuzz.md) automatically verifies the fix, adds a comment and closes the issue ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53#c3)).
-- 7 days after the fix is verified or after 90 days after reporting, the issue becomes *public*
+- 7 days after the fix is verified or 90 days after reporting, the issue becomes *public*
   ([guidelines](#bug-disclosure-guidelines)).
 
 <!-- NOTE: this anchor is referenced by oss-fuzz blog post -->
