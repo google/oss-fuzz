@@ -88,9 +88,10 @@ When build.sh script is executed, the following locations are available within t
 
 | Path                   | Description
 | ------                 | -----
-| `$OUT`                 | Output directory containing fuzz targets, dictionary files, options files, seed corpus archives.
-| `$SRC/<some_dir>`      | Source code needed to build your project.
-| `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that needs to be linked into all fuzz targets (`-lfuzzer`).
+| `/out/` (`$OUT`)       | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives).
+| `/src/` (`$SRC`)       | Directory to checkout source files.
+| `/work/`(`$WORK`)      | Directory for storing intermediate files |
+| `/usr/lib/libfuzzer.a` | Location of prebuilt libFuzzer library that needs to be linked into all fuzz targets (`-lfuzzer`).
 
 You *must* use the special compiler flags needed to build your project and fuzz targets.
 These flags are provided in the following environment variables:
@@ -152,9 +153,7 @@ custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` exec
 max_len = 1024
 ```
 
-[List of available options](http://llvm.org/docs/LibFuzzer.html#options)
-
-At least, `max_len` is highly recommended.
+[List of available options](http://llvm.org/docs/LibFuzzer.html#options). Use of `max_len` is highly recommended.
 
 For out of tree fuzz targets, you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
