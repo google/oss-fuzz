@@ -20,6 +20,6 @@ RUN apt-get install -y make autoconf automake libtool
 
 RUN git clone --depth=1 https://github.com/yaml/libyaml
 RUN zip libyaml_fuzzer_seed_corpus.zip libyaml/examples/*
-WORKDIR libyaml
 
+WORKDIR libyaml
 COPY build.sh libyaml_fuzzer.cc libyaml_fuzzer.options yaml.dict $SRC/
