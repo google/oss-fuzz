@@ -6,14 +6,14 @@ for fuzzing Chrome at scale.
 ## Web interface
 
 ClusterFuzz also provides a [web interface](https://clusterfuzz-external.appspot.com/v2)
-to view statistics about your fuzzer targets, as well as current crashes.
+to view statistics about your fuzz targets, as well as current crashes.
 
 *Note*: This is a work in progress. Access is restricted to project developers who we auto CC on new bug
 reports.
 
 ## Fuzzer stats
 
-You can view statistics about your fuzzers (e.g. speed, coverage information,
+You can view statistics about your fuzz targets (e.g. speed, coverage information,
 memory usage) on our fuzzer statistics dashboard.
 
 ![stats]
@@ -22,7 +22,7 @@ memory usage) on our fuzzer statistics dashboard.
 ## Coverage reports
 
 We also provide coverage reports, where we highlight the parts of source code that are being
-reached by your fuzzer.
+reached by your fuzz target.
 
 ![coverage_1]
 (https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/freetype_coverage_1.png)
