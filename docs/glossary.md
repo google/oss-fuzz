@@ -47,7 +47,7 @@ For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of a
 
 
 ## Mutation Engine
-A tool that take a set of testcases as input and creates their mutated versions. 
+A tool that takes a set of testcases as input and creates their mutated versions. 
 It is just a generator and does not feed the mutations to [fuzz target](#fuzz-target).
 Example: [radamsa](https://github.com/aoh/radamsa) (a generic test mutator).
 
