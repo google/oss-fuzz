@@ -25,7 +25,7 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 - *Reproduce using latest OSS-Fuzz build:* 
 
    <pre>
-docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
+docker run --rm -ti -v <b><i>$absolute_path_to_testcase_file</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
    </pre>
 
   It builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
