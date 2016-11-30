@@ -26,7 +26,7 @@ def call(body) {
     // Project configuration.
     def projectName = project["name"] ?: env.JOB_BASE_NAME
     def sanitizers = project["sanitizers"] ?: ["address"]
-    def dockerfileConfig = config["dockerfile"] ?: [
+    def dockerfileConfig = project["dockerfile"] ?: [
         "path": "projects/$projectName/Dockerfile",
         "git" : "https://github.com/google/oss-fuzz.git",
         "context" : "projects/$projectName/"
