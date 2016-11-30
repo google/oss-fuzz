@@ -1,26 +1,26 @@
 # Glossary
 
-Naming things is hard. This page tries to reduce confusion around fuzz-related terminologies.
+Naming things is hard, so this page tries to reduce confusion around fuzzing related terminology.
 
 ## Corpus
 Or **test corpus**, or **fuzzing corpus**.<BR>
-A set of [test inputs](#test-input). In usual context, it is also referred to a set of minimal test inputs that generate maximal code coverage.
+A set of [test inputs](#test-input). In most contexts, it is also referred to a set of minimal test inputs that generate maximal code coverage.
 
 ## Fuzz Target
 Or **Target Function**, or **Fuzzing Target Function**, or **Fuzzing Entry Point**.<BR>
-A function to which we apply fuzzing. A [specific signature](http://libfuzzer.info#fuzz-target) is needed for OSS-Fuzz.
+A function to which we apply fuzzing. A [specific signature](http://libfuzzer.info#fuzz-target) is required for OSS-Fuzz.
 Examples: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/x509.c),
 [re2](https://github.com/google/re2/blob/master/re2/fuzzing/re2_fuzzer.cc),
 [SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338).
 
 A fuzz target can be used to [reproduce bug reports](reproducing.md). 
-It is recommended to use it for regression testing (see [ideal integration](ideal_integration.md)).
+It is recommended to use it for regression testing as well (see [ideal integration](ideal_integration.md)).
 
 ## Fuzzer
 
 The most overloaded term and used in a variety of contexts, which makes it bad.
-Sometimes, "Fuzzer" is referred to a [fuzz target](#fuzz-target),
-sometimes to a [fuzzing engine](#fuzzing-engine),
+Sometimes, "Fuzzer" is referred to a [fuzz target](#fuzz-target), 
+a [fuzzing engine](#fuzzing-engine),
 a [mutation engine](#mutation-engine),
 a [test generator](#test-generator) or 
 a [fuzzer build](#job-type).
@@ -32,14 +32,14 @@ Examples: [libFuzzer](http://lbfuzzer.info),
 [AFL](lcamtuf.coredump.cx/afl/),
 [honggfuzz](https://github.com/google/honggfuzz), etc 
 
-See also [Mutation Engine](#mutation-engine) and [Test Generator](#test-generator).
+See related terms [Mutation Engine](#mutation-engine) and [Test Generator](#test-generator).
 
 ## Job type
 
 Or **Fuzzer Build**.<BR>
 A [ClusterFuzz](clusterfuzz.md) specific term.
-This refers to a build that contains all the [fuzz targets](#fuzz-target) for a given [project](#project)
-with a specific [fuzzing engine](#fuzzing-engine), in a specific build mode (e.g. with enabled or disabled assertions), 
+This refers to a build that contains all the [fuzz targets](#fuzz-target) for a given [project](#project), is run 
+with a specific [fuzzing engine](#fuzzing-engine), in a specific build mode (e.g. with enabled/disabled assertions), 
 and optionally combined with a [sanitizer](#sanitizer).
 
 For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of all sqlite3 [fuzz targets](#fuzz-target) using 
@@ -48,14 +48,15 @@ For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of a
 
 ## Mutation Engine
 A tool that take a set of testcases as input and creates their mutated versions. 
-It does not feed the mutations to [fuzz target](#fuzz-target).
+It is just a generator and does not feed the mutations to [fuzz target](#fuzz-target).
 Example: [radamsa](https://github.com/aoh/radamsa) (a generic test mutator).
 
 ## Project
 
-An entity comprising of various [fuzz targets](#fuzz-target)
-that test APIs (or internal functions) of a specific open source project.
-Each project has a single set of configuration files and may have more than one [fuzz target](#fuzz-target)
+A project is an open source software that is integrated with OSS-Fuzz. 
+Each project has a single set of configuration files 
+(example: [expat](https://github.com/google/oss-fuzz/tree/master/projects/expat)) and 
+may have one or more [fuzz targets](#fuzz-target) 
 (example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)). 
 
 ## Reproducer 
@@ -79,5 +80,5 @@ Examples:
 [cross_fuzz](http://lcamtuf.coredump.cx/cross_fuzz/) (a cross-document DOM binding test generator).
 
 ## Test Input
-A sequence of bytes that is used as the input to a [fuzz target](#fuzz-target). 
+A sequence of bytes that is used as input to a [fuzz target](#fuzz-target). 
 Typicaly, a test input is stored in a separate file. 
