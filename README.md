@@ -79,7 +79,7 @@ OSS-Fuzz will adhere to following disclosure principles:
   - **Weekends and holidays**. If a deadline is due to expire on a weekend or
     US public holiday, the deadline will be moved to the next normal work day.
   - **Grace period**. We have a 14-day grace period. If a 90-day deadline
-    expires but the upstream engineers lets us know before the deadline that a
+    expires but the upstream engineers let us know before the deadline that a
     patch is scheduled for release on a specific day within 14 days following
     the deadline, the public disclosure will be delayed until the availability
     of the patch.
