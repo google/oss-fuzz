@@ -61,9 +61,9 @@ In general, this script will need to:
 1. Build the project using your build system *with* correct compiler and its flags provided as 
   *environment variables* (see below). 
 2. Build the fuzz targets, linking your project's build and libFuzzer. Resulting fuzz targets 
-   should be placed in `/out`.
+   should be placed in `$OUT`.
 
-For expat, this looks like:
+For expat, this looks like [this](https://github.com/google/oss-fuzz/blob/master/projects/expat/build.sh):
 
 ```bash
 #!/bin/bash -eu
@@ -72,12 +72,14 @@ For expat, this looks like:
 # configure scripts usually use correct environment variables.
 ./configure
 
-make -j$(nproc) clean all
+make clean
+make -j$(nproc) all
 
-# build the fuzzer, linking with libFuzzer and libexpat.a
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
-    $SRC/parse_fuzzer.cc -o /out/expat_parse_fuzzer \
+    $SRC/parse_fuzzer.cc -o $OUT/parse_fuzzer \
     -lfuzzer .libs/libexpat.a
+
+cp $SRC/*.dict $SRC/*.options $OUT/
 ```
 
 ### build.sh Script Environment 
@@ -87,7 +89,7 @@ When build.sh script is executed, the following locations are available within t
 | Path                   | Description
 | ------                 | -----
 | `$SRC/<some_dir>`      | Source code needed to build your project.
-| `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that needs to be linked into all fuzzers (`-lfuzzer`).
+| `/usr/lib/libfuzzer.a` | Prebuilt libFuzzer library that needs to be linked into all fuzz targets (`-lfuzzer`).
 
 You *must* use the special compiler flags needed to build your project and fuzz targets.
 These flags are provided in the following environment variables:
@@ -115,7 +117,7 @@ $ python infra/helper.py build_fuzzers $PROJECT_NAME
 ```
 
 This should place the built fuzz targets into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
-directory on your machine (and `/out` in the container). You should then try to run these fuzz targets 
+directory on your machine (and `$OUT` in the container). You should then try to run these fuzz targets 
 inside the container to make sure that they work properly:
 
 ```bash
@@ -141,7 +143,7 @@ in case you run into problems.
 ### Custom libFuzzer options for ClusterFuzz
 
 By default, ClusterFuzz will run your fuzzer without any options. You can specify
-custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` executable in `/out`:
+custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` executable in `$OUT`:
 
 ```
 [libfuzzer]
@@ -160,13 +162,13 @@ For out of tree fuzz targets, you will likely add options file using docker's
 ### Seed Corpus
 
 OSS-Fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
-of good sample inputs is one of the best ways to improve fuzzer coverage.
+of good sample inputs is one of the best ways to improve fuzz target's coverage.
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
-to the fuzzer binary in `/out` during the build. Individual files in this archive  
-will be used as starting inputs for mutations. You can store the corpus next to 
-source files, generate during build or fetch it using curl or any other tool of 
-your choice. 
+to the fuzz target binary in `$OUT` during the build. Individual files in this 
+archive will be used as starting inputs for mutations. You can store the corpus 
+next to source files, generate during build or fetch it using curl or any other 
+tool of your choice. 
 ([Boringssl example](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L42).)
 
 Seed corpus files will be used for cross-mutations and portions of them might appear
@@ -176,10 +178,10 @@ has an appropriate and consistent license.
 
 ### Dictionaries
 
-Dictionaries hugely improve fuzzer effectiveness for inputs with lots of similar
+Dictionaries hugely improve fuzz target's effectiveness for inputs with lots of similar
 sequences of bytes. [libFuzzer documentation](http://llvm.org/docs/LibFuzzer.html#dictionaries)
 
-Put your dict file in `/out` and specify in .options file:
+Put your dict file in `$OUT` and specify in .options file:
 
 ```
 [libfuzzer]
@@ -236,10 +238,10 @@ Please include copyright headers for all files checked in to oss-fuzz:
 ################################################################################
 ```
 
-If you are porting a fuzzer from Chromium, keep the original Chromium license header.
+If you are porting a fuzz target from Chromium, keep the original Chromium license header.
 
 ## The end
 
-Once your change is merged, the fuzzers should be automatically built and run on
+Once your change is merged, your project and fuzz targets should be automatically built and run on
 ClusterFuzz after a short while! 
 Check your build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).
