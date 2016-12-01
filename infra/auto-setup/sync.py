@@ -3,6 +3,7 @@
 
 import json
 import os
+import re
 import sys
 import urllib2
 import yaml
@@ -20,6 +21,9 @@ def libfuzzerBuild = fileLoader.fromGit('infra/libfuzzer-pipeline.groovy', 'http
 libfuzzerBuild { project_json = %(project_json)s }
 """
 
+VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
+
+
 def main():
   # Connect to jenkins server.
   jenkins_login = get_jenkins_login()
@@ -36,13 +40,33 @@ def main():
       print >>sys.stderr, 'Failed to setup job with exception', e
 
 
+def _has_dockerfile(project_dir):
+  """Whether or not the project has a Dockerfile."""
+  if os.path.exists(os.path.join(project_dir, 'Dockerfile')):
+    return True
+
+  project_yaml_path = os.path.join(project_dir, 'project.yaml')
+  if not os.path.exists(project_yaml_path):
+    return False
+
+  with open(project_yaml_path) as f:
+    project_info = yaml.safe_load(f)
+
+  return 'dockerfile' in project_info
+
+
 def get_projects():
   """Return list of projects for oss-fuzz."""
   projects = []
   projects_dir = os.path.join(OSSFUZZ_DIR, 'projects')
   for name in os.listdir(projects_dir):
-    if os.path.isdir(os.path.join(projects_dir, name)):
-      projects.append(name)
+    if not VALID_PROJECT_NAME.match(name):
+      print >>sys.stderr, 'Invalid project name:', name
+      continue
+
+    full_path = os.path.join(projects_dir, name)
+    if not os.path.isdir(full_path) or not _has_dockerfile(full_path):
+      continue
 
   if not projects:
     print >>sys.stderr, 'No projects found.'
@@ -68,7 +92,7 @@ def sync_jenkins_job(server, project):
   job_definition = ET.parse(os.path.join(SCRIPT_DIR, 'jenkins_config',
                                          'base_job.xml'))
   script = job_definition.findall('.//definition/script')[0]
-  script.text = SCRIPT_TEMPLATE % { "project_json": project_json_string}
+  script.text = SCRIPT_TEMPLATE % { 'project_json': project_json_string}
   job_config_xml = ET.tostring(job_definition.getroot())
 
   if server.job_exists(job_name):
