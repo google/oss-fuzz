@@ -59,7 +59,7 @@ To be accepted to OSS-Fuzz, an open-source project must
 have a significant user base and/or be critical to the global IT infrastructure.
 To submit a new project:
 - [Create a pull request](https://help.github.com/articles/creating-a-pull-request/) with new 
-`projects/<project_name>/project.yaml` file ([example](projects/file/project.yaml)) giving at least the following information:
+`projects/<project_name>/project.yaml` file ([example](projects/libarchive/project.yaml)) giving at least the following information:
   * project homepage.
   * e-mail of the engineering contact person to be CCed on new issues. This
     email should be  
