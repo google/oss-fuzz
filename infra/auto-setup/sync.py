@@ -60,13 +60,15 @@ def get_projects():
   projects = []
   projects_dir = os.path.join(OSSFUZZ_DIR, 'projects')
   for name in os.listdir(projects_dir):
+    full_path = os.path.join(projects_dir, name)
+    if not os.path.isdir(full_path) or not _has_dockerfile(full_path):
+      continue
+
     if not VALID_PROJECT_NAME.match(name):
       print >>sys.stderr, 'Invalid project name:', name
       continue
 
-    full_path = os.path.join(projects_dir, name)
-    if not os.path.isdir(full_path) or not _has_dockerfile(full_path):
-      continue
+    projects.append(name)
 
   if not projects:
     print >>sys.stderr, 'No projects found.'
