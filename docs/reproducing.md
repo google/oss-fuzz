@@ -13,7 +13,7 @@ This file contains the bytes that were fed to the [Fuzz Target](http://libfuzzer
 If you have already [integrated](ideal_integration.md) the fuzz target with your build and test system, 
 all you do is run:
 <pre>
-./fuzz_target_binary <b><i>$testcase_file</i></b>
+./fuzz_target_binary <b><i>$testcase_file_absolute_path</i></b>
 </pre>
 Depending on the nature of the bug, the fuzz target binary needs to be built with the appropriate [sanitizer](https://github.com/google/sanitizers)
 (e.g. if this is a buffer overflow, with [AddressSanitizer](http://clang.llvm.org/docs/AddressSanitizer.html)).
@@ -25,7 +25,7 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 - *Reproduce using latest OSS-Fuzz build:* 
 
    <pre>
-docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
+docker run --rm -ti -v <b><i>$testcase_file_absolute_path</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
    </pre>
 
   It builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
@@ -40,7 +40,7 @@ docker run --rm -ti -v <b><i>~/Downloads/testcase</i></b>:/testcase ossfuzz/<b><
 
     <pre>
     docker run --rm -ti -v <b><i>$local_source_checkout_dir</i></b>:/src/<b><i>$project</i></b> \
-                        -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
+                        -v <b><i>$testcase_file_absolute_path</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
     </pre>
   
   This is essentially the previous command that additionally mounts local sources into the running container.
