@@ -66,7 +66,7 @@ To submit a new project:
     [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
     and belong to an established project committer (according to VCS logs).
     If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
-  * Note that *`<project_name>`* must only contain alphanumeric characters and '_' or '-'.
+  * Note that `project_name` can only contain alphanumeric characters, '_' or '-'.
 - Once accepted by an OSS-Fuzz project member, follow the [New Project Guide](docs/new_project_guide.md)
   to write the code.
 
