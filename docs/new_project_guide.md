@@ -62,6 +62,9 @@ In general, this script will need to:
   *environment variables* (see below). 
 2. Build the fuzz targets, linking your project's build and libFuzzer. Resulting fuzz targets 
    should be placed in `$OUT`.
+   
+*Note*: The binary names for your fuzz targets must only contain alphanumeric characters, underscore(_) or dash(-).
+They will not run on our infrastructure otherwise.
 
 For expat, this looks like [this](https://github.com/google/oss-fuzz/blob/master/projects/expat/build.sh):
 
