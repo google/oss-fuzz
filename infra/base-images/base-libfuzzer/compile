@@ -19,6 +19,11 @@ echo "---------------------------------------------------------------"
 
 pushd . > /dev/null 2>&1
 
+if [ -z "${SANITIZER_FLAGS+}" ]; then
+  FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
+  SANITIZER_FLAGS=$(echo ${!FLAGS_VAR})
+fi
+
 echo -n "Compiling libFuzzer into /usr/lib/libfuzzer.a ..."
 mkdir -p $WORK/libfuzzer
 cd $WORK/libfuzzer

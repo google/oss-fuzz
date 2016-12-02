@@ -32,6 +32,25 @@ docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$pro
     </pre>
 
 
+# Build Configuration
+
+Build configuration is performed through following environment variables:
+
+| Env Variable     | Description
+| -------------    | --------
+| `SANITIZER` (`"address"`) | Specifies sanitizer configuration to use. `address` or `undefined`.
+| `SANITIZER_FLAGS` | Specify compiler sanitizer flags directly. Overrides `SANITIZER`.
+
+# Examples
+
+- *building sqlite3 fuzzer with UBSan (`SANITIZER=undefined`):*
+
+   <pre>
+docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> ossfuzz/sqlite3
+   </pre>
+
+
+
 # Image Files Layout
 
 | Location | Description |
