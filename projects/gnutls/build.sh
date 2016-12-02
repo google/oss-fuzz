@@ -15,13 +15,10 @@
 #
 ################################################################################
 
-cd /src/gnutls
-
-export LDFLAGS=$FUZZER_LDFLAGS
 make bootstrap
 ./configure --enable-gcc-warnings --enable-static --with-included-libtasn1 --without-p11-kit
 make "-j$(nproc)"
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
-    /src/gnutls_fuzzer.cc -o /out/gnutls_fuzzer \
-    -lfuzzer -lpthread lib/.libs/libgnutls.a -lhogweed -lnettle -lgmp $FUZZER_LDFLAGS
+    $STR/gnutls_fuzzer.cc -o $OUT/gnutls_fuzzer \
+    -lfuzzer -lpthread lib/.libs/libgnutls.a -lhogweed -lnettle -lgmp

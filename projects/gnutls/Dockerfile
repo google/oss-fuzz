@@ -21,4 +21,5 @@ RUN apt-get install -y make autoconf automake libtool autopoint libnettle6 nettl
 RUN git clone https://gitlab.com/gnutls/gnutls.git
 RUN cd gnutls && git submodule update --init
 
-COPY build.sh gnutls_fuzzer.cc /src/
+WORKDIR gnutls
+COPY build.sh gnutls_fuzzer.cc $SRC/
