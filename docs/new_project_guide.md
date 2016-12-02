@@ -246,5 +246,6 @@ If you are porting a fuzz target from Chromium, keep the original Chromium licen
 ## The end
 
 Once your change is merged, your project and fuzz targets should be automatically built and run on
-ClusterFuzz after a short while!<BR><BR> 
-Check your project's build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).
+ClusterFuzz after a short while (&lt; 1 day)!<BR><BR> 
+Check your project's build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).<BR>
+Check out the crashes generated and code coverage statistics on [ClusterFuzz](clusterfuzz.md) web interface [here](https://clusterfuzz-external.appspot.com/).
