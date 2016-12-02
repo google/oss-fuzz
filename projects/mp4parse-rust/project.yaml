@@ -1,0 +1,5 @@
+homepage: "https://github.com/mozilla/mp4parse-rust/"
+primary_contact: "giles@mozilla.com"
+auto_ccs:
+  - "kinetik@flim.org"
+  - "ajones@mozilla.com"
