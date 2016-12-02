@@ -23,7 +23,7 @@ make "-j$(nproc)"
 
 $CXX $CXXFLAGS -std=c++11 -Iinclude \
     $SRC/libyaml_fuzzer.cc -o $OUT/libyaml_fuzzer \
-    -lfuzzer src/.libs/libyaml.a $FUZZER_LDFLAGS
+    -lfuzzer src/.libs/libyaml.a
 
 cp $SRC/libyaml_fuzzer_seed_corpus.zip $OUT/
 cp $SRC/*.dict $SRC/*.options $OUT/
