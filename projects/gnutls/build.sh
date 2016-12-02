@@ -20,5 +20,5 @@ make bootstrap
 make "-j$(nproc)"
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
-    $SRC/gnutls_fuzzer.cc -o $OUT/gnutls_fuzzer \
+    $SRC/gnutls_client_fuzzer.cc -o $OUT/gnutls_client_fuzzer \
     -lfuzzer -lpthread lib/.libs/libgnutls.a -lhogweed -lnettle -lgmp

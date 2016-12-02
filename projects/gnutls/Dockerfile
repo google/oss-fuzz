@@ -22,4 +22,4 @@ RUN git clone https://gitlab.com/gnutls/gnutls.git
 RUN cd gnutls && git submodule update --init
 
 WORKDIR gnutls
-COPY build.sh gnutls_fuzzer.cc $SRC/
+COPY build.sh gnutls_client_fuzzer.cc $SRC/
