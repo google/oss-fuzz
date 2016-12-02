@@ -1,4 +1,2 @@
 homepage: "http://www.gnu.org/software/coreutils/"
 primary_contact: "P@draigBrady.com"
-auto_ccs:
-  - "coreutils@gnu.org"
