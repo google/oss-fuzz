@@ -96,6 +96,9 @@ OSS-Fuzz will adhere to following disclosure principles:
 * [Projects](projects) lists OSS projects currently added to OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
+* Blog posts: 2016-12-01 ([1](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
+[2](https://testing.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
+[3](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
 
 ## Build Status
 [This page](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
