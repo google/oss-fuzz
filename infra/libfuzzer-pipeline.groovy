@@ -54,7 +54,7 @@ def call(body) {
         def srcmapFile = "$workspace/srcmap.json"
         echo "Building $dockerTag: $project"
 
-        sh "rm -rf $workspace/out"
+        sh "docker run --rm --user $uid -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""
         sh "mkdir -p $workspace/out"
 
         stage("docker image") {
@@ -68,7 +68,7 @@ def call(body) {
             sh "docker build --no-cache -t $dockerTag -f checkout/$dockerfile checkout/$dockerContextDir"
 
             // obtain srcmap
-            sh "docker run --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
+            sh "docker run --user $uid --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
             // use classic slurper: http://stackoverflow.com/questions/37864542/jenkins-pipeline-notserializableexception-groovy-json-internal-lazymap
             def srcmap = new groovy.json.JsonSlurperClassic().parse(
                 new File("$workspace/srcmap.json.tmp"))
