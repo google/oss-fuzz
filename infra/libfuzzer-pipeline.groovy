@@ -69,7 +69,7 @@ def call(body) {
             srcmap['/src'] = [ type: 'git',
                                rev:  dockerfileRev,
                                url:  dockerGit,
-                               path: dockerContextDir ]
+                               path: "/" + dockerContextDir ]
             echo "srcmap: $srcmap"
             writeFile file: srcmapFile, text: groovy.json.JsonOutput.toJson(srcmap)
         } // stage("docker image")
