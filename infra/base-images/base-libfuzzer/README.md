@@ -53,7 +53,7 @@ docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> ossfuzz/sqlite3
 
 # Image Files Layout
 
-| Location|Env Variables| Description |
+| Location|Env| Description |
 |---------| -------- | ----------  |
 | `/out/` | `$OUT`         | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
 | `/src/` | `$SRC`         | Directory to checkout source files |
