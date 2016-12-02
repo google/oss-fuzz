@@ -16,7 +16,7 @@
 ################################################################################
 
 make bootstrap
-./configure --enable-gcc-warnings --enable-static --with-included-libtasn1 --without-p11-kit
+./configure --enable-gcc-warnings --enable-static --with-included-libtasn1 --with-included-unistring --without-p11-kit
 make "-j$(nproc)"
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
