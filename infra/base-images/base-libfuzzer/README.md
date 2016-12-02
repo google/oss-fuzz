@@ -38,7 +38,7 @@ Build configuration is performed through following environment variables:
 
 | Env Variable     | Description
 | -------------    | --------
-| `SANITIZER` `("address")` | Specifies sanitizer configuration to use. `address` or `undefined`.
+| `SANITIZER ("address")` | Specifies sanitizer configuration to use. `address` or `undefined`.
 | `SANITIZER_FLAGS` | Specify compiler sanitizer flags directly. Overrides `SANITIZER`.
 
 # Examples
@@ -53,12 +53,12 @@ docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> ossfuzz/sqlite3
 
 # Image Files Layout
 
-| Location | Description |
-| -------- | ----------  |
-| `/out/` (`$OUT`)       | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
-| `/src/` (`$SRC`)       | Directory to checkout source files |
-| `/work/`(`$WORK`)      | Directory for storing intermediate files |
-| `/usr/lib/libfuzzer.a` | Location of prebuilt libFuzzer library that needs to be linked into all fuzz targets (`-lfuzzer`). |
+| Location|Env Variables| Description |
+|---------| -------- | ----------  |
+| `/out/` | `$OUT`         | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
+| `/src/` | `$SRC`         | Directory to checkout source files |
+| `/work/`| `$WORK`        | Directory for storing intermediate files |
+| `/usr/lib/libfuzzer.a` | | Location of prebuilt libFuzzer library that needs to be linked into all fuzz targets (`-lfuzzer`). |
 
 While files layout is fixed within a container, `$SRC`, `$OUT`, `$WORK` are
 provided to be able to write retargetable scripts.
