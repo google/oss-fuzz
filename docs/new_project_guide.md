@@ -1,9 +1,19 @@
 # Setting up New Project
 
 ## Prerequisites
-- [Install Docker](https://docs.docker.com/engine/installation). ([Why Docker?](faq.md#why-do-you-use-docker))
 - [Integrate](ideal_integration.md) one or more [Fuzz Targets](http://libfuzzer.info/#fuzz-target)
-  with the project you want to fuzz.
+  with the project you want to fuzz. Examples: 
+[boringssl](https://github.com/google/boringssl/tree/master/fuzz),
+[SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338),
+[s2n](https://github.com/awslabs/s2n/tree/master/tests/fuzz),
+[openssl](https://github.com/openssl/openssl/tree/master/fuzz),
+[FreeType](http://git.savannah.gnu.org/cgit/freetype/freetype2.git/tree/src/tools/ftfuzzer),
+[re2](https://github.com/google/re2/tree/master/re2/fuzzing),
+[harfbuzz](https://github.com/behdad/harfbuzz/tree/master/test/fuzzing),
+[pcre2](http://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
+[ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decoder_targeted.c).
+- [Install Docker](https://docs.docker.com/engine/installation). ([Why Docker?](faq.md#why-do-you-use-docker))
+
 
 ## Overview
 
