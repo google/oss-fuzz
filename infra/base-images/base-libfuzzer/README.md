@@ -43,10 +43,10 @@ Build configuration is performed through following environment variables:
 
 # Examples
 
-- *building sqlite3 fuzzer with undefined sanitizer:*
+- *building sqlite3 fuzzer with UBSan (`SANITIZER=undefined`):*
 
    <pre>
-docker run --rm -ti -e <i>SANITIZER</i>=<i>"undefined</i> ossfuzz/expat
+docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> ossfuzz/sqlite3
    </pre>
 
 
