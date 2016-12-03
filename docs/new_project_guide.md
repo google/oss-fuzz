@@ -1,7 +1,7 @@
 # Setting up New Project
 
 ## Prerequisites
-- [Integrate](ideal_integration.md) one or more [Fuzz Targets](http://libfuzzer.info/#fuzz-target)
+- [Integrate](ideal_integration.md) one or more [Fuzz Targets](glossary.md#fuzz-target)
   with the project you want to fuzz.<BR>
   Examples: 
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
