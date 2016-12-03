@@ -27,7 +27,7 @@ Example: [boringssl](https://github.com/google/boringssl) project is located in
 The project directory needs to contain the following three configuration files:
 
 * `projects/<project_name>/Dockerfile` - defines the container environment with information 
-on dependencies needed to build the project and its fuzz targets.
+on dependencies needed to build the project and its [fuzz targets](glossary.md#fuzz-target).
 * `projects/<project_name>/build.sh` - build script that executes inside the container and 
 generates project build.
 * `projects/<project_name>/project.yaml` - provides metadata about the project.
@@ -42,7 +42,7 @@ $ export PROJECT_NAME=<project_name>
 $ python infra/helper.py generate $PROJECT_NAME
 ```
 
-It is preferred to keep and maintain fuzz targets in your own source code repository. If this is not possible due to various reasons, you can store them inside the OSS-Fuzz's project directory created above.
+It is preferred to keep and maintain [fuzz targets](glossary.md#fuzz-target) in your own source code repository. If this is not possible due to various reasons, you can store them inside the OSS-Fuzz's project directory created above.
 
 ## Dockerfile
 
@@ -61,19 +61,19 @@ Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
 ### Fuzzer execution environment
 
 [This page](fuzzer_environment.md) gives information about the environment that
-your fuzz targets will run on ClusterFuzz, and the assumptions that you can make.
+your [fuzz targets](glossary.md#fuzz-target) will run on ClusterFuzz, and the assumptions that you can make.
 
 ## build.sh
 
-This file describes how to build fuzz targets for your project. 
+This file describes how to build [fuzz targets](glossary.md#fuzz-target) for your project. 
 The script will be executed within the image built from `Dockerfile`.
 
 In general, this script will need to:
 
 1. Build the project using your build system *with* correct compiler and its flags provided as 
   *environment variables* (see below). 
-2. Build the fuzz targets, linking your project's build and libFuzzer. Resulting fuzz targets 
-   should be placed in `$OUT`.
+2. Build the [fuzz targets](glossary.md#fuzz-target), linking your project's build and libFuzzer.
+   Resulting binaries should be placed in `$OUT`.
    
 *Note*: The binary names for your fuzz targets must only contain alphanumeric characters, underscore(_) or dash(-).
 They will not run on our infrastructure otherwise.
@@ -125,7 +125,7 @@ See [Provided Environment Variables](../infra/base-images/base-libfuzzer/README.
 
 ## Testing locally
 
-Use the helper script build docker image and fuzz targets.
+Use the helper script to build docker image and [fuzz targets](glossary.md#fuzz-target).
 
 ```bash
 $ cd /path/to/oss-fuzz
@@ -133,8 +133,8 @@ $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers $PROJECT_NAME
 ```
 
-This should place the built fuzz targets into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
-directory on your machine (and `$OUT` in the container). You should then try to run these fuzz targets 
+This should place the built binaries into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
+directory on your machine (and `$OUT` in the container). You should then try to run these binaries 
 inside the container to make sure that they work properly:
 
 ```bash
@@ -145,7 +145,7 @@ If everything works locally, then it should also work on our automated builders
 and ClusterFuzz.
 
 It's recommended to look at code coverage as a sanity check to make sure that 
-fuzz target gets to the code you expect.
+[fuzz target](glossary.md#fuzz-target) gets to the code you expect.
 
 ```bash
 $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
@@ -154,7 +154,8 @@ $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
 
 ## Debugging Problems
 
-[Debugging](debugging.md) document lists ways to debug your build scripts or fuzz targets
+[Debugging](debugging.md) document lists ways to debug your build scripts or
+[fuzz targets](glossary.md#fuzz-target)
 in case you run into problems.
 
 
@@ -170,7 +171,7 @@ max_len = 1024
 
 [List of available options](http://llvm.org/docs/LibFuzzer.html#options). Use of `max_len` is highly recommended.
 
-For out of tree fuzz targets, you will likely add options file using docker's
+For out of tree [fuzz targets](glossary.md#fuzz-target), you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script. 
 (example: [woff2](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options)).
 
@@ -178,10 +179,10 @@ For out of tree fuzz targets, you will likely add options file using docker's
 ### Seed Corpus
 
 OSS-Fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
-of good sample inputs is one of the best ways to improve fuzz target's coverage.
+of good sample inputs is one of the best ways to improve [fuzz target](glossary.md#fuzz-target)'s coverage.
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
-to the fuzz target binary in `$OUT` during the build. Individual files in this 
+to the [fuzz target](glossary.md#fuzz-target)'s binary in `$OUT` during the build. Individual files in this 
 archive will be used as starting inputs for mutations. You can store the corpus 
 next to source files, generate during build or fetch it using curl or any other 
 tool of your choice. 
@@ -194,8 +195,8 @@ has an appropriate and consistent license.
 
 ### Dictionaries
 
-Dictionaries hugely improve fuzz target's effectiveness for inputs with lots of similar
-sequences of bytes. [libFuzzer documentation](http://llvm.org/docs/LibFuzzer.html#dictionaries)
+Dictionaries hugely improve fuzzing effeciency for inputs with lots of similar
+sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
 
 Put your dict file in `$OUT` and specify in .options file:
 
@@ -204,7 +205,8 @@ Put your dict file in `$OUT` and specify in .options file:
 dict = dictionary_name.dict
 ```
 
-It is common for several fuzz targets to reuse the same dictionary if they are fuzzing very similar inputs.
+It is common for several [fuzz targets](glossary.md#fuzz-target)
+to reuse the same dictionary if they are fuzzing very similar inputs.
 (example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
 
 ## project.yaml
