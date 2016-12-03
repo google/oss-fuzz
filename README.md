@@ -34,6 +34,8 @@ At the first stage of the project we use
 [ClusterFuzz](docs/clusterfuzz.md)
 provides distributed fuzzer execution environment and reporting.
 
+Currently OSS-Fuzz supports C and C++ code (other languages supported by [LLVM](http://llvm.org) may work too).
+
 ## Process Overview
 
 The following process is used for projects in OSS-Fuzz:
