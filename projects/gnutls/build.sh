@@ -21,6 +21,7 @@ make "-j$(nproc)"
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
     $SRC/gnutls_client_fuzzer.cc -o $OUT/gnutls_client_fuzzer \
-    -lfuzzer -lpthread lib/.libs/libgnutls.a -lhogweed -lnettle -lgmp
+    lib/.libs/libgnutls.a -lfuzzer -lpthread -Wl,-Bstatic -lhogweed -lnettle \
+    -lgmp -Wl,-Bdynamic
 
 cp $SRC/gnutls_client_fuzzer_seed_corpus.zip $OUT/
