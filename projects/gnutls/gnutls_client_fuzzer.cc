@@ -36,6 +36,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     assert(res >= 0);
     ssize_t send_res = send(socket_fds[1], data, size, 0);
     assert(send_res == size);
+    res = shutdown(socket_fds[1], SHUT_WR);
+    assert(res == 0);
 
     res = gnutls_init(&session, GNUTLS_CLIENT);
     assert(res >= 0);
@@ -49,7 +51,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     assert(res >= 0);
 
     gnutls_transport_set_int(session, socket_fds[0]);
-    gnutls_handshake_set_timeout(session, 1000);
 
     do {
         res = gnutls_handshake(session);
