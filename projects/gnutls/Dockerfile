@@ -23,11 +23,8 @@ RUN cd gnutls && git submodule update --init
 
 # Using the client_corpus transcripts from boringssl, they're a decent starting point.
 RUN mkdir boringssl-testcases
-RUN curl -o boringssl-testcases/client_corpus.tar.gz https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/client_corpus.tar.gz
-RUN curl -o boringssl-testcases/client_corpus_no_fuzzer_mode.tar.gz https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/client_corpus_no_fuzzer_mode.tar.gz
-RUN cd boringssl-testcases/ && tar -xf client_corpus.tar.gz
-RUN cd boringssl-testcases/ && tar -xf client_corpus_no_fuzzer_mode.tar.gz
-RUN rm boringssl-testcases/client_corpus.tar.gz boringssl-testcases/client_corpus_no_fuzzer_mode.tar.gz
+RUN cd boringssl-testcases/ && curl https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/client_corpus.tar.gz | tar -zx
+RUN cd boringssl-testcases/ && curl https://boringssl.googlesource.com/boringssl/+archive/master/fuzz/client_corpus_no_fuzzer_mode.tar.gz | tar -zx
 RUN zip gnutls_client_fuzzer_seed_corpus.zip boringssl-testcases/*
 
 WORKDIR gnutls
