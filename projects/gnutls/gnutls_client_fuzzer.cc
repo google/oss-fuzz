@@ -29,6 +29,7 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     int res;
     gnutls_session_t session;
+    gnutls_certificate_credentials_t xcred;
 
     int socket_fds[2];
     res = socketpair(AF_UNIX, SOCK_STREAM, 0, socket_fds);
@@ -37,6 +38,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     assert(send_res == size);
 
     res = gnutls_init(&session, GNUTLS_CLIENT);
+    assert(res >= 0);
+
+    res = gnutls_certificate_allocate_credentials(&xcred);
+    assert(res >= 0);
+    res = gnutls_credentials_set(session, GNUTLS_CRD_CERTIFICATE, xcred);
     assert(res >= 0);
 
     res = gnutls_set_default_priority(session);
@@ -60,5 +66,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     close(socket_fds[0]);
     close(socket_fds[1]);
     gnutls_deinit(session);
+    gnutls_certificate_free_credentials(xcred);
     return 0;
 }
