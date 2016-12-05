@@ -186,7 +186,7 @@ to the [fuzz target](glossary.md#fuzz-target)'s binary in `$OUT` during the buil
 archive will be used as starting inputs for mutations. You can store the corpus 
 next to source files, generate during build or fetch it using curl or any other 
 tool of your choice. 
-(example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L42)).
+(example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L41)).
 
 Seed corpus files will be used for cross-mutations and portions of them might appear
 in bug reports or be used for further security research. It is important that corpus
