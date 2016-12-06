@@ -1,5 +1,5 @@
 homepage: "https://github.com/libarchive/libarchive"
 primary_contact: "joerg.sonnenberger@googlemail.com"
 auto_ccs:
-  - "kientzle@gmail.org"
+  - "kientzle@gmail.com"
   - "martin@matuska.org"
