@@ -14,7 +14,7 @@ The fuzzer statistics page for your project on [ClusterFuzz](clusterfuzz.md) wil
 ![viewing_corpus]
 (https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/viewing_corpus.png)
 
-## Downloading the corpus
+## Downloading the corpus 
 
 TODO.
 
