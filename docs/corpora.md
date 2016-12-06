@@ -24,7 +24,7 @@ If you would like to download the entire corpus, from the cloud console link, co
 And then run the following command to copy the corpus to a directory on your machine.
 
 ```bash
-gsutil -m rsync gs://<corpus_path> <local_directory>
+gsutil -m rsync gs://<bucket_path> <local_directory>
 ```
 Following the expat example above, this would be:
 
