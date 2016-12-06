@@ -19,7 +19,7 @@
 ./autogen.sh
 ./configure
 make clean
-make -j$(nproc) V=1 alL
+make -j$(nproc) V=1 all
 make -C src V=1 fuzzing
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
