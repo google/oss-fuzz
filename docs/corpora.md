@@ -4,7 +4,7 @@ If you would like to access the corpora that we are using for your fuzz targets 
 
 ## Install Google Cloud SDK
 
-[Install](https://cloud.google.com/storage/docs/gsutil_install) the gsutil tool, which is part of the Google Cloud SDK.
+The corpora for fuzz targets are stored on [Google Cloud Storage](https://cloud.google.com/storage/). To access them, you will need to [install](https://cloud.google.com/storage/docs/gsutil_install) the gsutil tool, which is part of the Google Cloud SDK.
 Follow the instructions on the installation page to login with a Google account thats listed in your project's `project.yaml`.
 
 ## Viewing the corpus for a fuzz target
