@@ -28,7 +28,8 @@ echo -n "Compiling libFuzzer into /usr/lib/libfuzzer.a ..."
 mkdir -p $WORK/libfuzzer
 cd $WORK/libfuzzer
 $CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
-ar ruv /usr/lib/libfuzzer.a $WORK/libfuzzer/*.o > /dev/null 2>&1
+ar ruv /usr/lib/libFuzzingEngine.a $WORK/libfuzzer/*.o > /dev/null 2>&1
+ln -s /usr/lib/libFuzzingEngine.a /usr/lib/libfuzzer.a
 echo " done."
 
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COV_FLAGS"
