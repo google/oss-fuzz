@@ -9,7 +9,7 @@ Follow the instructions on the installation page to login with a Google account 
 
 ## Viewing the corpus for a fuzz target
 
-The fuzzer statistics page for your project on [ClusterFuzz](clusterfuzz.md) will contain a link to the Google Cloud console for your corpus under the "corpus_size" column. You can browse and download individual units in the corpus here.
+The fuzzer statistics page for your project on [ClusterFuzz](clusterfuzz.md) will contain a link to the Google Cloud console for your corpus under the "corpus_size" column. You can browse and download individual test inputs in the corpus here.
 
 ![viewing_corpus]
 (https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/viewing_corpus.png)
