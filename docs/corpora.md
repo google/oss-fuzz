@@ -1,0 +1,16 @@
+# Accessing Corpora
+
+If you would like to access the corpora that we are using for your fuzz targets (synthesized by the fuzzing engine), please follow these steps.
+
+## Install Google Cloud SDK
+
+[Install](https://cloud.google.com/storage/docs/gsutil_install) the gsutil tool, which is part of the Google Cloud SDK.
+Follow the instructions on the installation page to login with a Google account thats listed in your project's `project.yaml`.
+
+## Getting the corpus
+
+TODO.
+
+```bash
+gsutil -m rsync gs://<corpus_path> <local_directory>
+```
