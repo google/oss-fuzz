@@ -26,7 +26,8 @@ cat Makefile | sed -e "s/-no-canonical-prefixes//" \
 mv Makefile.temp Makefile
 
 # woff2 uses LFLAGS instead of LDFLAGS.
-make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" clean all
+make clean
+make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" all
 
 # To avoid multiple main() definitions.
 rm src/woff2_compress.o src/woff2_decompress.o

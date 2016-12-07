@@ -18,7 +18,8 @@
 
 ./autogen.sh
 ./configure
-make -j$(nproc) clean all
+make -j$(nproc) clean
+make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 \
   -I./include -I. \
