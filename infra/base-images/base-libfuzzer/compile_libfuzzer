@@ -15,23 +15,12 @@
 #
 ################################################################################
 
-echo "---------------------------------------------------------------"
-
-if [ -z "${SANITIZER_FLAGS+}" ]; then
-  FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
-  export SANITIZER_FLAGS=$(echo ${!FLAGS_VAR})
-fi
-
-bash compile_${FUZZING_ENGINE}
-
-export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COV_FLAGS"
-export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
-
-echo "CC=$CC"
-echo "CXX=$CXX"
-echo "CFLAGS=$CFLAGS"
-echo "CXXFLAGS=$CXXFLAGS"
-
-echo "---------------------------------------------------------------"
-
-bash -x $SRC/build.sh
+echo -n "Compiling libFuzzer into $LIBFUZZER_LIB ..."
+mkdir -p $WORK/libfuzzer
+cd $WORK/libfuzzer
+$CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
+ar r $LIBFUZZER_LIB $WORK/libfuzzer/*.o
+# TODO: remove once migration is complete
+ln -s $LIBFUZZER_LIB /usr/lib/libfuzzer.a
+rm -rf $WORK/libfuzzer
+echo " done."

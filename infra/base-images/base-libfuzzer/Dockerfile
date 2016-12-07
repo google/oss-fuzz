@@ -23,12 +23,17 @@ ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,signed-integer-overflow,shift,vpt
 
 # Default sanitizer to use
 ENV SANITIZER="address"
+ENV FUZZING_ENGINE="libfuzzer"
 
 ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
+
+ENV LIBFUZZER_LIB="/usr/lib/libFuzzingEngine.a"
+
+# TODO: remove after tpm2 catchup
 ENV FUZZER_LDFLAGS ""
 
-COPY coverage_report compile srcmap reproduce run just_run \
+COPY coverage_report compile compile_libfuzzer srcmap reproduce run just_run \
      /usr/local/bin/
 
 WORKDIR $SRC
