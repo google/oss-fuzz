@@ -20,7 +20,7 @@
 make -j$(nproc) clean all
 
 # build your fuzzer(s)
-$CC $CCFLAGS -c $SRC/libtsm_fuzzer.c -Isrc/tsm -o $SRC/libtsm_fuzzer.o
+$CC $CFLAGS -c $SRC/libtsm_fuzzer.c -Isrc/tsm -o $SRC/libtsm_fuzzer.o
 $CXX $CXXFLAGS \
     -o $OUT/libtsm_fuzzer \
     $SRC/libtsm_fuzzer.o \
