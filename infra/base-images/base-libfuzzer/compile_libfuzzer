@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-echo -n "Compiling libFuzzer into $LIB_FUZZING_ENGINE ..."
+echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE ..."
 mkdir -p $WORK/libfuzzer
 cd $WORK/libfuzzer
 $CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
