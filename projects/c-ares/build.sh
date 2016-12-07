@@ -25,4 +25,4 @@ make -j$(nproc) V=1 all
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/c_ares_ares_create_query_fuzzer.cc \
     -o $OUT/c_ares_ares_create_query_fuzzer \
-    -lfuzzer $SRC/c-ares/.libs/libcares.a
+    -lFuzzingEngine $SRC/c-ares/.libs/libcares.a

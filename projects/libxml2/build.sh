@@ -18,12 +18,13 @@
 
 ./autogen.sh
 ./configure
-make -j$(nproc) clean all
+make -j$(nproc) clean
+make -j$(nproc) all
 
 for fuzzer in libxml2_xml_read_memory_fuzzer libxml2_xml_regexp_compile_fuzzer; do
   $CXX $CXXFLAGS -std=c++11 -Iinclude/ \
       $SRC/$fuzzer.cc -o $OUT/$fuzzer \
-      -lfuzzer .libs/libxml2.a
+      -lFuzzingEngine .libs/libxml2.a
 done
 
 cp $SRC/*.dict $SRC/*.options $OUT/

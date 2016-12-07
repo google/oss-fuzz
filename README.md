@@ -1,6 +1,6 @@
 # OSS-Fuzz - Continuous Fuzzing for Open Source Software
 
-> *Status*: Beta. We are preparing the project for public release soon.
+> *Status*: Beta. We are now accepting applications from widely used open source projects.
 
 [FAQ](docs/faq.md)
 | [Ideal Fuzzing Integration](docs/ideal_integration.md)
@@ -34,6 +34,8 @@ At the first stage of the project we use
 [ClusterFuzz](docs/clusterfuzz.md)
 provides distributed fuzzer execution environment and reporting.
 
+Currently OSS-Fuzz supports C and C++ code (other languages supported by [LLVM](http://llvm.org) may work too).
+
 ## Process Overview
 
 The following process is used for projects in OSS-Fuzz:
@@ -41,7 +43,7 @@ The following process is used for projects in OSS-Fuzz:
 - A maintainer of an opensource project or an outside volunteer creates
 one or more [fuzz targets](http://libfuzzer.info/#fuzz-target) 
 and [integrates](docs/ideal_integration.md) them with the project's build and test system.
-- These fuzz targets are [accepted to OSS-Fuzz](#accepting-new-projects).
+- The project is [accepted to OSS-Fuzz](#accepting-new-projects).
 - When [ClusterFuzz](docs/clusterfuzz.md) finds a bug, an issue is automatically
   reported in the OSS-Fuzz [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) 
   ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9)).
@@ -64,6 +66,7 @@ To submit a new project:
   * e-mail of the engineering contact person to be CCed on new issues. This
     email should be  
     [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
+    ([why?](docs/faq.md#why-we-require-an-e-mail-associated-with-a-google-account))
     and belong to an established project committer (according to VCS logs).
     If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
   * Note that `project_name` can only contain alphanumeric characters, underscores(_) or dashes(-).
@@ -90,11 +93,15 @@ OSS-Fuzz will adhere to following disclosure principles:
 * [Glossary](docs/glossary.md) describes the common terms used in OSS-Fuzz.
 * [New Project Guide](docs/new_project_guide.md) walks through the steps necessary to add new projects to OSS-Fuzz.
 * [Ideal Integration](docs/ideal_integration.md) describes the steps to integrate fuzz targets with your project.
+* [Accessing corpora](docs/corpora.md) describes how to access the corpora we use for fuzzing.
 * [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
   environment under which your fuzzers will be run.
 * [Projects](projects) lists OSS projects currently added to OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while contains some chrome-specifics, is an excellent documentation on making your fuzzer better.
+* Blog posts: 2016-12-01 ([1](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
+[2](https://testing.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
+[3](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
 
 ## Build Status
 [This page](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)

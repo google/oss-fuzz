@@ -36,12 +36,6 @@ def call(body) {
     def dockerContextDir = dockerfileConfig["context"] ?: ""
     def dockerTag = "ossfuzz/$projectName"
 
-    // Flags configuration
-    def sanitizerFlags = [
-      "address":"-fsanitize=address",
-      "undefined":"-fsanitize=bool,signed-integer-overflow,shift,vptr -fno-sanitize-recover=undefined"
-      ]
-
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
@@ -54,7 +48,7 @@ def call(body) {
         def srcmapFile = "$workspace/srcmap.json"
         echo "Building $dockerTag: $project"
 
-        sh "rm -rf $workspace/out"
+        sh "docker run --rm --user $uid -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""
         sh "mkdir -p $workspace/out"
 
         stage("docker image") {
@@ -68,14 +62,14 @@ def call(body) {
             sh "docker build --no-cache -t $dockerTag -f checkout/$dockerfile checkout/$dockerContextDir"
 
             // obtain srcmap
-            sh "docker run --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
+            sh "docker run --user $uid --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
             // use classic slurper: http://stackoverflow.com/questions/37864542/jenkins-pipeline-notserializableexception-groovy-json-internal-lazymap
             def srcmap = new groovy.json.JsonSlurperClassic().parse(
                 new File("$workspace/srcmap.json.tmp"))
             srcmap['/src'] = [ type: 'git',
                                rev:  dockerfileRev,
                                url:  dockerGit,
-                               path: dockerContextDir ]
+                               path: "/" + dockerContextDir ]
             echo "srcmap: $srcmap"
             writeFile file: srcmapFile, text: groovy.json.JsonOutput.toJson(srcmap)
         } // stage("docker image")
@@ -89,9 +83,9 @@ def call(body) {
                 sh "mkdir -p $junit_reports"
                 stage("$sanitizer sanitizer") {
                     // Run image to produce fuzzers
-                    def flags = sanitizerFlags[sanitizer]
-                    sh "docker run --rm --user $uid -v $out:/out -e SANITIZER_FLAGS=\"${flags}\" -t $dockerTag compile"
-                    sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -t ossfuzz/base-runner test_all"
+                    sh "docker run --rm --user $uid -v $out:/out -e SANITIZER=\"${sanitizer}\" -t $dockerTag compile"
+                    // Test all fuzzers
+                    sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.\" -t ossfuzz/base-runner test_all"
                     sh "ls -al $junit_reports/"
                 }
             }

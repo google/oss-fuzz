@@ -32,16 +32,35 @@ docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$pro
     </pre>
 
 
+# Build Configuration
+
+Build configuration is performed through following environment variables:
+
+| Env Variable     | Description
+| -------------    | --------
+| `$SANITIZER ("address")` | Specifies sanitizer configuration to use. `address` or `undefined`.
+| `$SANITIZER_FLAGS` | Specify compiler sanitizer flags directly. Overrides `$SANITIZER`.
+
+# Examples
+
+- *building sqlite3 fuzzer with UBSan (`SANITIZER=undefined`):*
+
+   <pre>
+docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> ossfuzz/sqlite3
+   </pre>
+
+
+
 # Image Files Layout
 
-| Location | Description |
-| -------- | ----------  |
-| `/out/` (`$OUT`)       | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
-| `/src/` (`$SRC`)       | Directory to checkout source files |
-| `/work/`(`$WORK`)      | Directory for storing intermediate files |
-| `/usr/lib/libfuzzer.a` | Location of prebuilt libFuzzer library that needs to be linked into all fuzz targets (`-lfuzzer`). |
+| Location|Env| Description |
+|---------| -------- | ----------  |
+| `/out/` | `$OUT`         | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
+| `/src/` | `$SRC`         | Directory to checkout source files |
+| `/work/`| `$WORK`        | Directory for storing intermediate files |
+| `/usr/lib/libFuzzingEngine.a` | `$LIB_FUZZING_ENGINE` | Location of prebuilt fuzzing engine library (e.g. libFuzzer ) that needs to be linked with all fuzz targets (`-lFuzzingEngine`).
 
-While files layout is fixed within a container, `$SRC`, `$OUT`, `$WORK` are
+While files layout is fixed within a container, the environment variables are
 provided to be able to write retargetable scripts.
 
 
@@ -66,7 +85,7 @@ pass them manually to the build tool.
 ## Sources
 
 Child image has to checkout all sources that it needs to compile fuzz targets into
-`$SRC` directory. When the image is executed, a directory could be mounted on top 
+`$SRC` directory. When the image is executed, a directory could be mounted on top
 of these with local checkouts using
 `docker run -v $HOME/my_project:/src/my_project ...`.
 

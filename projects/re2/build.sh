@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-# First, build the re2 library.
-# N.B., we don't follow the standard incantation for building re2
+# First, build RE2.
+# N.B., we don't follow the standard incantation for building RE2
 # (i.e., `make && make test && make install && make testinstall`),
 # because some of the targets doesn't use $CXXFLAGS properly, which
 # causes compilation to fail. The obj/libre2.a target is all we
@@ -26,10 +26,9 @@
 make clean
 make -j$(nproc) obj/libre2.a
 
-
-# Second, build our fuzzers.
+# Second, build the fuzzer (distributed with RE2).
 $CXX $CXXFLAGS -std=c++11 -I. \
-	$SRC/re2_fuzzer.cc -o $OUT/re2_fuzzer \
-	-lfuzzer ./obj/libre2.a
+	re2/fuzzing/re2_fuzzer.cc -o $OUT/re2_fuzzer \
+	-lFuzzingEngine obj/libre2.a
 
 cp $SRC/*.options $OUT/

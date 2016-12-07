@@ -17,6 +17,6 @@
 
 $CXX $CXXFLAGS -std=c++11 -Isrc/ \
     $SRC/parse_fuzzer.cc -o $OUT/parse_fuzzer \
-    -lfuzzer
+    -lFuzzingEngine
 
 cp $SRC/*.options $OUT/

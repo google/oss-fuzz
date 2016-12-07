@@ -42,7 +42,7 @@ for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 \
     $SRC/$fuzzer.cc -o $OUT/$fuzzer \
     -I$SRC/icu/source/common -I$SRC/icu/source/i18n -L$WORK/icu/lib \
-    -lfuzzer -licui18n -licuuc -licutu -licudata
+    -lFuzzingEngine -licui18n -licuuc -licutu -licudata
 done
 
 cp $SRC/*.dict $SRC/*.options  $OUT/

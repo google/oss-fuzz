@@ -17,14 +17,12 @@
 
 echo "---------------------------------------------------------------"
 
-pushd . > /dev/null 2>&1
+if [ -z "${SANITIZER_FLAGS+}" ]; then
+  FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
+  export SANITIZER_FLAGS=$(echo ${!FLAGS_VAR})
+fi
 
-echo -n "Compiling libFuzzer into /usr/lib/libfuzzer.a ..."
-mkdir -p $WORK/libfuzzer
-cd $WORK/libfuzzer
-$CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
-ar ruv /usr/lib/libfuzzer.a $WORK/libfuzzer/*.o > /dev/null 2>&1
-echo " done."
+bash compile_${FUZZING_ENGINE}
 
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COV_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
@@ -36,5 +34,4 @@ echo "CXXFLAGS=$CXXFLAGS"
 
 echo "---------------------------------------------------------------"
 
-popd >/dev/null 2>&1
 bash -x $SRC/build.sh
