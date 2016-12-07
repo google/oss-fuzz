@@ -36,6 +36,6 @@ rm src/woff2_compress.o src/woff2_decompress.o
 fuzzer=convert_woff2ttf_fuzzer
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     $SRC/$fuzzer.cc -o $OUT/$fuzzer \
-    -lfuzzer src/*.o brotli/dec/*.o brotli/enc/*.o
+    -lFuzzingEngine src/*.o brotli/dec/*.o brotli/enc/*.o
 
 cp $SRC/*.options $OUT/

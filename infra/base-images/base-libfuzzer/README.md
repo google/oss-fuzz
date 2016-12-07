@@ -58,9 +58,9 @@ docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> ossfuzz/sqlite3
 | `/out/` | `$OUT`         | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
 | `/src/` | `$SRC`         | Directory to checkout source files |
 | `/work/`| `$WORK`        | Directory for storing intermediate files |
-| `/usr/lib/libfuzzer.a` | | Location of prebuilt libFuzzer library that needs to be linked into all fuzz targets (`-lfuzzer`). |
+| `/usr/lib/libFuzzingEngine.a` | `$LIB_FUZZING_ENGINE` | Location of prebuilt fuzzing engine library (e.g. libFuzzer ) that needs to be linked with all fuzz targets (`-lFuzzingEngine`).
 
-While files layout is fixed within a container, `$SRC`, `$OUT`, `$WORK` are
+While files layout is fixed within a container, the environment variables are
 provided to be able to write retargetable scripts.
 
 

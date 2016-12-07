@@ -24,5 +24,5 @@ make -C src V=1 fuzzing
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-fuzzer.cc -o $OUT/hb-fuzzer \
-    -lfuzzer ./src/.libs/libharfbuzz-fuzzing.a
+    -lFuzzingEngine ./src/.libs/libharfbuzz-fuzzing.a
 

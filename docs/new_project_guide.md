@@ -92,7 +92,7 @@ make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
     $SRC/parse_fuzzer.cc -o $OUT/parse_fuzzer \
-    -lfuzzer .libs/libexpat.a
+    -lFuzzingEngine .libs/libexpat.a
 
 cp $SRC/*.dict $SRC/*.options $OUT/
 ```
@@ -101,12 +101,15 @@ cp $SRC/*.dict $SRC/*.options $OUT/
 
 When build.sh script is executed, the following locations are available within the image:
 
-| Path                   | Description
-| ------                 | -----
-| `/out/` (`$OUT`)       | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives).
-| `/src/` (`$SRC`)       | Directory to checkout source files.
-| `/work/`(`$WORK`)      | Directory for storing intermediate files |
-| `/usr/lib/libfuzzer.a` | Location of prebuilt libFuzzer library that needs to be linked into all fuzz targets (`-lfuzzer`).
+| Location|Env| Description |
+|---------| -------- | ----------  |
+| `/out/` | `$OUT`         | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
+| `/src/` | `$SRC`         | Directory to checkout source files |
+| `/work/`| `$WORK`        | Directory for storing intermediate files |
+| `/usr/lib/libFuzzingEngine.a` | `$LIB_FUZZING_ENGINE` | Location of prebuilt fuzzing engine library (e.g. libFuzzer ) that needs to be linked with all fuzz targets (`-lFuzzingEngine`).
+
+While files layout is fixed within a container, the environment variables are
+provided to be able to write retargetable scripts.
 
 You *must* use the special compiler flags needed to build your project and fuzz targets.
 These flags are provided in the following environment variables:

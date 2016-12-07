@@ -29,6 +29,6 @@ make -j$(nproc) obj/libre2.a
 # Second, build the fuzzer (distributed with RE2).
 $CXX $CXXFLAGS -std=c++11 -I. \
 	re2/fuzzing/re2_fuzzer.cc -o $OUT/re2_fuzzer \
-	-lfuzzer obj/libre2.a
+	-lFuzzingEngine obj/libre2.a
 
 cp $SRC/*.options $OUT/

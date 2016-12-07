@@ -25,4 +25,4 @@ make -j$(nproc) all
 
 # build fuzzer
 $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer \
-    -lfuzzer .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a
+    -lFuzzingEngine .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a
