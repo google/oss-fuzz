@@ -28,4 +28,4 @@ RUN cd boringssl-testcases/ && curl https://boringssl.googlesource.com/boringssl
 RUN zip gnutls_client_fuzzer_seed_corpus.zip boringssl-testcases/*
 
 WORKDIR gnutls
-COPY build.sh gnutls_client_fuzzer.cc $SRC/
+COPY build.sh gnutls_client_fuzzer.cc gnutls_x509_parser_fuzzer.cc $SRC/

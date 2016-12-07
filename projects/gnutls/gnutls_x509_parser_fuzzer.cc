@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+/*
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,34 @@
 # limitations under the License.
 #
 ################################################################################
+*/
 
-make bootstrap
-./configure --enable-gcc-warnings --enable-static --with-included-libtasn1 --with-included-unistring --without-p11-kit --disable-doc
-make "-j$(nproc)"
+#include <assert.h>
+#include <stdint.h>
 
-fuzzers="
-client
-x509_parser
-"
+#include <gnutls/gnutls.h>
+#include <gnutls/x509.h>
 
-for fuzzer in $fuzzers; do
-    $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
-        "$SRC/gnutls_${fuzzer}_fuzzer.cc" -o "$OUT/gnutls_${fuzzer}_fuzzer" \
-        lib/.libs/libgnutls.a -lfuzzer -lpthread -Wl,-Bstatic -lhogweed \
-        -lnettle -lgmp -Wl,-Bdynamic
-done
 
-cp "$SRC/gnutls_client_fuzzer_seed_corpus.zip" "$OUT/"
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    gnutls_datum_t raw;
+    gnutls_datum_t out;
+    gnutls_x509_crt_t crt;
+    int ret;
+
+    raw.data = (unsigned char *)data;
+    raw.size = size;
+
+    ret = gnutls_x509_crt_init(&crt);
+    assert(ret >= 0);
+
+    ret = gnutls_x509_crt_import(crt, &raw, GNUTLS_X509_FMT_DER);
+    if (ret >= 0) {
+        ret = gnutls_x509_crt_print(crt, GNUTLS_CRT_PRINT_FULL, &out);
+        assert(ret >= 0);
+        gnutls_free(out.data);
+    }
+
+    gnutls_x509_crt_deinit(crt);
+    return 0;
+}
