@@ -21,6 +21,6 @@ make "-j$(nproc)"
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/libjpeg_turbo_fuzzer.cc -o $OUT/libjpeg_turbo_fuzzer \
-    -lfuzzer ./.libs/libturbojpeg.a
+    -lFuzzingEngine ./.libs/libturbojpeg.a
 
 cp $SRC/libjpeg_turbo_fuzzer_seed_corpus.zip $OUT/

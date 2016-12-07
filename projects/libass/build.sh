@@ -29,7 +29,7 @@ make -j$(nproc)
 
 $CXX $CXXFLAGS -std=c++11 -I$SRC/libass \
     $SRC/libass_fuzzer.cc -o $OUT/libass_fuzzer \
-    -lfuzzer libass/.libs/libass.a \
+    -lFuzzingEngine libass/.libs/libass.a \
     -Wl,-Bstatic -lfontconfig  -lfribidi -lfreetype -lz -lpng12 \
     -lexpat -Wl,-Bdynamic
 

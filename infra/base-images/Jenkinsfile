@@ -15,27 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Jenkins build script for base images.
-
-def dockerOptions="--no-cache"
-
 node {
   git url: 'https://github.com/google/oss-fuzz/'
-
-
-  dir ("infra/base-images") {
-    stage name: 'ossfuzz/base', concurrency: 1
-    sh "docker build $dockerOptions --pull -t ossfuzz/base base"
-
-    stage name: 'ossfuzz/base-clang', concurrency: 1
-    sh "docker build $dockerOptions -t ossfuzz/base-clang base-clang"
-
-    stage name: 'ossfuzz/base-libfuzzer', concurrency: 1
-    sh "docker build $dockerOptions -t ossfuzz/base-libfuzzer base-libfuzzer"
-
-    stage name: 'ossfuzz/base-runner', concurrency: 1
-    sh "docker build $dockerOptions -t ossfuzz/base-runner base-runner"
-
-    stage name: 'ossfuzz/libfuzzer-runner', concurrency: 1
-    sh "docker build $dockerOptions -t ossfuzz/libfuzzer-runner libfuzzer-runner"
-  }
+  sh "infra/base-images/all.sh --no-cache"
 }

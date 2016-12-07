@@ -20,7 +20,7 @@
 make -j$(nproc)
 $CXX $CXXFLAGS $SRC/curl_fuzzer.cc -Iinclude lib/.libs/libcurl.a \
   -o $OUT/curl_fuzzer \
-  -Wl,-Bstatic -lssl -lcrypto -lz -lfuzzer -Wl,-Bdynamic
+  -Wl,-Bstatic -lssl -lcrypto -lz -lFuzzingEngine -Wl,-Bdynamic
 
 #  /usr/lib/x86_64-linux-gnu/libssl.a \
 #  /usr/lib/x86_64-linux-gnu/libcrypto.a \

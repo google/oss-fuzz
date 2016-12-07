@@ -20,4 +20,4 @@ RUN apt-get install -y make autoconf automake libtool
 
 RUN git clone --depth 1 https://code.googlesource.com/re2
 WORKDIR re2
-COPY build.sh re2_fuzzer.* $SRC/
+COPY build.sh re2_fuzzer.options $SRC/

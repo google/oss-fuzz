@@ -15,24 +15,12 @@
 #
 ################################################################################
 
-mkdir bld
-cd bld
-
-export ASAN_OPTIONS=detect_leaks=0
-# Limit max length of data blobs and sql queries to prevent irrelevant OOMs.
-export CFLAGS="$CFLAGS -DSQLITE_MAX_LENGTH=128000000 \
-               -DSQLITE_MAX_SQL_LENGTH=128000000 \
-               -DSQLITE_PRINTF_PRECISION_LIMIT=128000000"
-../configure
-make -j$(nproc)
-make sqlite3.c
-
-$CC $CFLAGS -I. -c \
-    $SRC/sqlite3/test/ossfuzz.c -o $SRC/sqlite3/test/ossfuzz.o
-
-$CXX $CXXFLAGS \
-    $SRC/sqlite3/test/ossfuzz.o -o $OUT/ossfuzz \
-    -lFuzzingEngine ./sqlite3.o
-
-cp $SRC/*.options $SRC/*.dict $SRC/*.zip $OUT/
-
+echo -n "Compiling libFuzzer into $LIB_FUZZING_ENGINE ..."
+mkdir -p $WORK/libfuzzer
+cd $WORK/libfuzzer
+$CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
+ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
+# TODO: remove once migration is complete
+ln -s $LIB_FUZZING_ENGINE /usr/lib/libfuzzer.a
+rm -rf $WORK/libfuzzer
+echo " done."

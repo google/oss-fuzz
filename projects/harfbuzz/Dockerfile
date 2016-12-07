@@ -20,4 +20,4 @@ RUN apt-get install -y make autoconf automake libtool ragel pkg-config
 
 RUN git clone --depth 1 https://anongit.freedesktop.org/git/harfbuzz.git
 WORKDIR harfbuzz
-COPY build.sh harfbuzz_fuzzer.cc $SRC/
+COPY build.sh $SRC/

@@ -18,8 +18,11 @@
 # Build the library.
 ./autogen.sh
 ./configure
-make -j$(nproc) clean all
+make clean
+make -j$(nproc) V=1 all
+make -C src V=1 fuzzing
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
-    $SRC/harfbuzz_fuzzer.cc -o $OUT/harfbuzz_fuzzer \
-    -lfuzzer src/.libs/*.o src/hb-ucdn/.libs/*.o
+    ./test/fuzzing/hb-fuzzer.cc -o $OUT/hb-fuzzer \
+    -lFuzzingEngine ./src/.libs/libharfbuzz-fuzzing.a
+

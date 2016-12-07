@@ -24,7 +24,7 @@ make libots.a libwoff2.a libbrotli.a
 # Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -Iinclude \
     $SRC/ots_fuzzer.cc -o $OUT/ots_fuzzer \
-    -lfuzzer -lz $SRC/ots/libots.a $SRC/ots/libwoff2.a $SRC/ots/libbrotli.a
+    -lFuzzingEngine -lz $SRC/ots/libots.a $SRC/ots/libwoff2.a $SRC/ots/libbrotli.a
 
 cp $SRC/ots_fuzzer.options $OUT/
 zip $OUT/ots_fuzzer_seed_corpus.zip $SRC/seed_corpus/*
