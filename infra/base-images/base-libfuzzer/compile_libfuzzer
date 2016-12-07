@@ -15,12 +15,12 @@
 #
 ################################################################################
 
-echo -n "Compiling libFuzzer into $LIBFUZZER_LIB ..."
+echo -n "Compiling libFuzzer into $LIB_FUZZING_ENGINE ..."
 mkdir -p $WORK/libfuzzer
 cd $WORK/libfuzzer
 $CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
-ar r $LIBFUZZER_LIB $WORK/libfuzzer/*.o
+ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
 # TODO: remove once migration is complete
-ln -s $LIBFUZZER_LIB /usr/lib/libfuzzer.a
+ln -s $LIB_FUZZING_ENGINE /usr/lib/libfuzzer.a
 rm -rf $WORK/libfuzzer
 echo " done."

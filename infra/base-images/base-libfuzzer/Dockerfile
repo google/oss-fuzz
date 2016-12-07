@@ -28,7 +28,7 @@ ENV FUZZING_ENGINE="libfuzzer"
 ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 
-ENV LIBFUZZER_LIB="/usr/lib/libFuzzingEngine.a"
+ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 
 # TODO: remove after tpm2 catchup
 ENV FUZZER_LDFLAGS ""
