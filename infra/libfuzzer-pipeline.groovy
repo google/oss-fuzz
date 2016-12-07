@@ -84,7 +84,8 @@ def call(body) {
                 stage("$sanitizer sanitizer") {
                     // Run image to produce fuzzers
                     sh "docker run --rm --user $uid -v $out:/out -e SANITIZER=\"${sanitizer}\" -t $dockerTag compile"
-                    sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -t ossfuzz/base-runner test_all"
+                    // Test all fuzzers
+                    sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.\" -t ossfuzz/base-runner test_all"
                     sh "ls -al $junit_reports/"
                 }
             }
