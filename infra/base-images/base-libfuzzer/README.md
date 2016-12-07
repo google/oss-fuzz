@@ -85,7 +85,7 @@ pass them manually to the build tool.
 ## Sources
 
 Child image has to checkout all sources that it needs to compile fuzz targets into
-`$SRC` directory. When the image is executed, a directory could be mounted on top 
+`$SRC` directory. When the image is executed, a directory could be mounted on top
 of these with local checkouts using
 `docker run -v $HOME/my_project:/src/my_project ...`.
 
