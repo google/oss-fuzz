@@ -17,5 +17,8 @@
 // Jenkins build script for base images.
 node {
   git url: 'https://github.com/google/oss-fuzz/'
-  sh "infra/base-images/all.sh --no-cache"
+  
+  stage("infra/base-images/all.sh") {
+    sh "infra/base-images/all.sh --no-cache"
+  }
 }
