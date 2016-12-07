@@ -27,8 +27,8 @@ x509_parser
 for fuzzer in $fuzzers; do
     $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
         "$SRC/gnutls_${fuzzer}_fuzzer.cc" -o "$OUT/gnutls_${fuzzer}_fuzzer" \
-        lib/.libs/libgnutls.a -lfuzzer -lpthread -Wl,-Bstatic -lhogweed \
-        -lnettle -lgmp -Wl,-Bdynamic
+        lib/.libs/libgnutls.a -lFuzzingEngine -lpthread -Wl,-Bstatic \
+        -lhogweed -lnettle -lgmp -Wl,-Bdynamic
 done
 
 cp "$SRC/gnutls_client_fuzzer_seed_corpus.zip" "$OUT/"
