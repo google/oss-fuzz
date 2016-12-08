@@ -20,4 +20,3 @@ RUN apt-get install -y make python
 RUN git clone --depth 1 https://github.com/randombit/botan.git botan
 WORKDIR botan
 COPY build.sh $SRC/
-RUN ls -R $SRC/
