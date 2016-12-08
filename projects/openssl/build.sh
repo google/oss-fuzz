@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-./config enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared --with-fuzzer-lib=/usr/lib/libfuzzer $CFLAGS
+./config enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS
 make -j$(nproc) EX_LIBS="-ldl /usr/local/lib/libc++.a"
 
 fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test)
