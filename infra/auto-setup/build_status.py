@@ -5,6 +5,7 @@ import datetime
 import os
 import subprocess
 import sys
+import traceback
 
 import jenkins
 import jinja2
@@ -51,7 +52,7 @@ def get_build_results(server):
             project,
             server.get_build_console_output(name, last_build_number)))
     except Exception as e:
-      print >>sys.stderr, e
+      traceback.print_exc()
 
   return successes, failures
 
