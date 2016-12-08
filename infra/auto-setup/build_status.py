@@ -4,6 +4,7 @@ import codecs
 import datetime
 import os
 import subprocess
+import sys
 
 import jenkins
 import jinja2
