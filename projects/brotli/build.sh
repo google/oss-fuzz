@@ -9,3 +9,4 @@ $CXX $CXXFLAGS -std=c++11 -I. \
     -lFuzzingEngine ./libbrotlidec.a ./libbrotlicommon.a
 
 cp java/integration/fuzz_data.zip $OUT/decode_fuzzer_seed_corpus.zip
+chmod a-x $OUT/decode_fuzzer_seed_corpus.zip # we will try to run it otherwise
