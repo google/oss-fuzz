@@ -20,4 +20,4 @@ RUN apt-get install -y cmake libtool make
 
 RUN git clone --depth 1 https://github.com/google/brotli.git
 WORKDIR brotli
-COPY build.sh brotli_fuzzer.cc $SRC/
+COPY build.sh $SRC/

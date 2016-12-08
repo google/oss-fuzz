@@ -1,9 +1,11 @@
 #!/bin/bash -eu
 
 cmake . -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF
-make -j$(nproc) clean
-make -j$(nproc) all
+make clean
+make -j$(nproc) brotlidec
 
 $CXX $CXXFLAGS -std=c++11 -I. \
-    $SRC/brotli_fuzzer.cc -o $OUT/brotli_fuzzer \
-    -lfuzzer -I./include ./libbrotlidec.a ./libbrotlicommon.a
+    fuzz/decode_fuzzer.cc -I./include -o $OUT/decode_fuzzer \
+    -lFuzzingEngine ./libbrotlidec.a ./libbrotlicommon.a
+
+cp java/integration/fuzz_data.zip $OUT/decode_fuzzer_seed_corpus.zip
