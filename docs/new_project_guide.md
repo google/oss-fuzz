@@ -75,8 +75,13 @@ In general, this script will need to:
 2. Build the [fuzz targets](glossary.md#fuzz-target), linking your project's build and libFuzzer.
    Resulting binaries should be placed in `$OUT`.
 
-*Note*: The binary names for your fuzz targets must only contain alphanumeric characters, underscore(_) or dash(-).
-They will not run on our infrastructure otherwise.
+*Note*:
+
+1. Please don't assume that the fuzzing engine is libFuzzer and hardcode in your build scripts. 
+In future, we will add support for other fuzzing engines like AFL. 
+So, link the fuzzing engine using `-lFuzzingEngine`, see example below.
+2. Please make sure that the binary names for your [fuzz targets](glossary.md#fuzz-target) contain only contain 
+alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on the our infrastructure.
 
 For expat, this looks like [this](https://github.com/google/oss-fuzz/blob/master/projects/expat/build.sh):
 
