@@ -49,8 +49,8 @@ def get_build_results(server):
         successes.append(Result(
             project,
             server.get_build_console_output(name, last_build_number)))
-    except Exception:
-      pass
+    except Exception as e:
+      print >>sys.stderr, e
 
   return successes, failures
 
