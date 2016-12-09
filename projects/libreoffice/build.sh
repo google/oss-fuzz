@@ -17,7 +17,7 @@ cd $OUT
 #afterwards
 mkdir -p scratch
 cd scratch
-$SRC/libreoffice/autogen.sh --with-distro=LibreOfficeOssFuzz
+$SRC/libreoffice/autogen.sh --with-distro=LibreOfficeOssFuzz --with-external-tar=$SRC
 
 make build-nocheck
 
