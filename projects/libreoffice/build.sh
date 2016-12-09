@@ -1,7 +1,5 @@
 #!/bin/bash -eu
 
-git pull -r
-
 #shuffle CXXFLAGS -stdlib=libc++ arg into CXX as well because we use
 #the CXX as the linker and need to pass -stdlib=libc++ to build
 export CXX="$CXX -stdlib=libc++"
@@ -10,10 +8,14 @@ export CXX="$CXX -stdlib=libc++"
 export LDFLAGS="$CFLAGS -lpthread"
 
 cd $OUT
-#build under $OUT cause its the only place without enough space to do so
+#build under $OUT cause its the only place with enough space to do so
+#Filesystem              Size  Used Avail Use% Mounted on
+#/dev/mapper/docker...   10G   3.7G  6.4G  37% /
+#/dev/sda1               440G  316G  102G  76% /out
+#where $OUT is /out and $SRC and $WORK are on / which hasn't sufficient space
 #build in a sub scratch dir so we can easily throw away the build artifacts
 #afterwards
-mkdir scratch
+mkdir -p scratch
 cd scratch
 $SRC/libreoffice/autogen.sh --with-distro=LibreOfficeOssFuzz
 
