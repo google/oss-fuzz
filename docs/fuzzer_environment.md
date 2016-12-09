@@ -5,8 +5,8 @@ Your fuzzers will be run on a [Google Compute Engine](https://cloud.google.com/c
 ## Current working directory
 
 You should not make any assumptions about the current working directory of your
-fuzzer. However, if you need to load data files, you can assume that `/out` will contain
-whatever your build scripts copied into `$OUT`.
+fuzzer. If you need to load data files, please use `argv[0]` to get the
+directory where your fuzzer executable is located.
 
 ## File system
 
