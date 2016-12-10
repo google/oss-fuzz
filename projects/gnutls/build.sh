@@ -29,6 +29,6 @@ for fuzzer in $fuzzers; do
         "$SRC/gnutls_${fuzzer}_fuzzer.cc" -o "$OUT/gnutls_${fuzzer}_fuzzer" \
         lib/.libs/libgnutls.a -lFuzzingEngine -lpthread -Wl,-Bstatic \
         -lhogweed -lnettle -lgmp -Wl,-Bdynamic
-done
 
-cp "$SRC/gnutls_client_fuzzer_seed_corpus.zip" "$OUT/"
+    cp "$SRC/gnutls_${fuzzer}_fuzzer_seed_corpus.zip" "$OUT/"
+done
