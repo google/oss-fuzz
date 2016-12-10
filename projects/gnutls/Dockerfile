@@ -18,11 +18,11 @@ FROM ossfuzz/base-libfuzzer
 MAINTAINER alex.gaynor@gmail.com
 RUN apt-get install -y make autoconf automake libtool autopoint libnettle6 nettle-dev pkg-config gperf bison autogen texinfo curl
 
-RUN git clone https://gitlab.com/gnutls/gnutls.git
+RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN cd gnutls && git submodule update --init
 
 # clone OpenSSL to get it's fuzzer testcases
-RUN git clone https://github.com/openssl/openssl
+RUN git clone --depth=1 https://github.com/openssl/openssl
 
 # Using the client_corpus transcripts from BoringSSL and OpenSSL, they're a
 # decent starting point.
