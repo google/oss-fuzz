@@ -14,7 +14,7 @@
 [pcre2](http://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
 [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decoder_targeted.c).
 
-- [Install Docker](https://docs.docker.com/engine/installation). ([Why Docker?](faq.md#why-do-you-use-docker))
+- [Install Docker](installing_docker.md). ([Why Docker?](faq.md#why-do-you-use-docker))
 
 
 ## Overview
