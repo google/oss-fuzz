@@ -4,6 +4,8 @@ import codecs
 import datetime
 import os
 import subprocess
+import sys
+import traceback
 
 import jenkins
 import jinja2
@@ -49,8 +51,8 @@ def get_build_results(server):
         successes.append(Result(
             project,
             server.get_build_console_output(name, last_build_number)))
-    except Exception:
-      pass
+    except Exception as e:
+      traceback.print_exc()
 
   return successes, failures
 

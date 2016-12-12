@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM ossfuzz/base
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y zip file
-COPY llvm-symbolizer test_all run_fuzzer /usr/local/bin/
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
-
+FROM ossfuzz/base-libfuzzer
+MAINTAINER jack@randombit.net
+RUN apt-get install -y make python
+RUN git clone --depth 1 https://github.com/randombit/botan.git botan
+WORKDIR botan
+COPY build.sh $SRC/

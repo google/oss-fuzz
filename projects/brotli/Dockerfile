@@ -14,9 +14,10 @@
 #
 ################################################################################
 
-FROM ossfuzz/base
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y zip file
-COPY llvm-symbolizer test_all run_fuzzer /usr/local/bin/
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
+FROM ossfuzz/base-libfuzzer
+MAINTAINER eustas@chromium.org
+RUN apt-get install -y cmake libtool make
 
+RUN git clone --depth 1 https://github.com/google/brotli.git
+WORKDIR brotli
+COPY build.sh $SRC/

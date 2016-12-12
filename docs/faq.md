@@ -18,3 +18,15 @@ Building fuzzers requires building your project with a fresh Clang compiler and 
 An easy-to-use Docker image is provided to simplify toolchain distribution. This also limits our exposure
 to a multitude of Linux varieties and provides a reproducible and secure environment for fuzzer
 building and execution.
+
+## What kind of projects are you accepting?
+
+We are currently in a beta status, and still working out kinks in our service. At this point, we
+can only commit to supporting established projects that have a critical impact on infrastructure and
+user security. We will consider each request on a case-by-case basis, but some things we keep in mind are:
+
+  - Exposure to remote attacks.
+  - Number of users/other projects depending on this project.
+
+We hope to relax this requirement in the future though, so keep an eye out even if we are not able
+to accept your project at this time!

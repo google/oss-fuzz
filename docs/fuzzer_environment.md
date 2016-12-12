@@ -13,6 +13,8 @@ directory where your fuzzer executable is located.
 Everything except `/tmp` is read-only, including the directory that your fuzzer
 executable lives in. Note that `/tmp` is limited in size (64MB).
 
+`/dev` is also unavailable.
+
 ## Network access
 
 There will be no network interfaces available (not even loopback).

@@ -20,7 +20,5 @@ mkdir -p $WORK/libfuzzer
 cd $WORK/libfuzzer
 $CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
 ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
-# TODO: remove once migration is complete
-ln -s $LIB_FUZZING_ENGINE /usr/lib/libfuzzer.a
 rm -rf $WORK/libfuzzer
 echo " done."

@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +15,20 @@
 #
 ################################################################################
 
-FROM ossfuzz/base
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y zip file
-COPY llvm-symbolizer test_all run_fuzzer /usr/local/bin/
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
+make bootstrap
+./configure --enable-gcc-warnings --enable-static --with-included-libtasn1 --with-included-unistring --without-p11-kit --disable-doc
+make "-j$(nproc)"
 
+fuzzers="
+client
+x509_parser
+"
+
+for fuzzer in $fuzzers; do
+    $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
+        "$SRC/gnutls_${fuzzer}_fuzzer.cc" -o "$OUT/gnutls_${fuzzer}_fuzzer" \
+        lib/.libs/libgnutls.a -lFuzzingEngine -lpthread -Wl,-Bstatic \
+        -lhogweed -lnettle -lgmp -Wl,-Bdynamic
+
+    cp "$SRC/gnutls_${fuzzer}_fuzzer_seed_corpus.zip" "$OUT/"
+done

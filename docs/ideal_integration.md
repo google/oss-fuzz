@@ -35,7 +35,7 @@ i.e. a set of inputs to "seed" the mutations.
 The quality of the seed corpus has a huge impact on the fuzzing efficiency as it allows the fuzzer
 to discover new code paths easier. 
 
-The ideal corpus is a minimial set of inputs that provides maximal code coverage. 
+The ideal corpus is a minimal set of inputs that provides maximal code coverage. 
 
 For better OSS-Fuzz integration, 
 the seed corpus should be available in revision control (can be same or different as the source code). 

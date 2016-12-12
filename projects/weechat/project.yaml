@@ -1,4 +1,4 @@
-omepage: "https://github.com/weechat/weechat"
+homepage: "https://github.com/weechat/weechat"
 primary_contact: "flashcode@flashtux.org"
 auto_ccs:
   - "security@weechat.org"
