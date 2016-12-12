@@ -18,11 +18,14 @@
 ./buildconf
 ./configure --disable-shared --enable-debug --enable-maintainer-mode --disable-symbol-hiding --disable-threaded-resolver --enable-ipv6 --with-random=/dev/null
 make -j$(nproc)
+
+# Build the fuzzer.
 $CXX $CXXFLAGS $SRC/curl_fuzzer.cc -Iinclude lib/.libs/libcurl.a \
   -o $OUT/curl_fuzzer \
   -Wl,-Bstatic -lssl -lcrypto -lz -lFuzzingEngine -Wl,-Bdynamic
 
-#  /usr/lib/x86_64-linux-gnu/libssl.a \
-#  /usr/lib/x86_64-linux-gnu/libcrypto.a \
-
+# Copy dictionary and options file to $OUT.
 cp $SRC/*.dict $SRC/*.options $OUT/
+
+# Archive and copy to $OUT seed corpus if the build succeeded.
+zip -j $OUT/curl_fuzzer_seed_corpus.zip $SRC/curl/tests/data/test*
