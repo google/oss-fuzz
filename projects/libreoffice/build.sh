@@ -50,8 +50,5 @@ done
 #and then toggle our fuzzers back to executable
 chmod +x $OUT/instdir/program/*fuzzer*
 
-#simple fontconfig conf that points to our instdir/share/fonts
-cp $SRC/fonts.conf $OUT/instdir/program/fonts.conf
-
 #starting corpuses
 cp $SRC/*_seed_corpus.zip $OUT/instdir/program

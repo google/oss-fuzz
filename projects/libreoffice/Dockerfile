@@ -85,4 +85,3 @@ RUN wget http://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
-COPY build.sh fonts.conf $SRC/
