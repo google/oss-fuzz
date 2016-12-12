@@ -19,5 +19,10 @@ MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool ragel pkg-config
 
 RUN git clone --depth 1 https://anongit.freedesktop.org/git/harfbuzz.git
+
+# Add seed corpus from Google Fonts.
+RUN git clone https://github.com/google/fonts.git google-fonts
+RUN find ./google-fonts -type f ! -iname '*.ttf' -delete
+
 WORKDIR harfbuzz
 COPY build.sh $SRC/

@@ -28,5 +28,4 @@ $CXX $CXXFLAGS -std=c++11 -Isrc \
     -lFuzzingEngine ./src/.libs/libharfbuzz-fuzzing.a
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
-zip -j -r $OUT/hb-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/shaping/fonts
-
+zip -r $OUT/hb-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/shaping/fonts $SRC/google-fonts
