@@ -38,7 +38,8 @@ def call(body) {
     def dockerGit = dockerfileConfig["git"]
     def dockerContextDir = dockerfileConfig["context"] ?: ""
     def dockerTag = "ossfuzz/$projectName"
-    def dockerRunOptions = "--user $uid --cap-add SYS_PTRACE"
+    def dockerUid = 0 // TODO: try to make $USER to work
+    def dockerRunOptions = "--user $dockerUid --cap-add SYS_PTRACE"
     
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
@@ -46,7 +47,6 @@ def call(body) {
     node {
         def workspace = pwd()
         // def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
-        def uid = 0 // TODO: try to make $USER to work
         echo "using uid $uid"
 
         def srcmapFile = "$workspace/srcmap.json"
