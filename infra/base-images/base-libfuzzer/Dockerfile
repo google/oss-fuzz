@@ -25,7 +25,7 @@ ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,signed-integer-overflow,shift,vpt
 ENV SANITIZER="address"
 ENV FUZZING_ENGINE="libfuzzer"
 
-ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
+ENV COVERAGE_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
 
 ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"

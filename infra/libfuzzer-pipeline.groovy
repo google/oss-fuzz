@@ -26,6 +26,9 @@ def call(body) {
     // Project configuration.
     def projectName = project["name"] ?: env.JOB_BASE_NAME
     def sanitizers = project["sanitizers"] ?: ["address"]
+    def coverageFlags = project["coverage_flags"]
+
+    // Dockerfile config
     def dockerfileConfig = project["dockerfile"] ?: [
         "path": "projects/$projectName/Dockerfile",
         "git" : "https://github.com/google/oss-fuzz.git",
@@ -83,7 +86,11 @@ def call(body) {
                 sh "mkdir -p $junit_reports"
                 stage("$sanitizer sanitizer") {
                     // Run image to produce fuzzers
-                    sh "docker run --rm --user $uid -v $out:/out -e SANITIZER=\"${sanitizer}\" -t $dockerTag compile"
+                    def env = "-e SANITIZER=\"${sanitizer}\" "
+                    if (coverageFlags != null) {
+                        env += "-e COVERAGE_FLAGS=\"${coverageFlags}\" "
+                    }
+                    sh "docker run --rm --user $uid -v $out:/out $env -t $dockerTag compile"
                     // Test all fuzzers
                     sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.\" -t ossfuzz/base-runner test_report"
                     sh "ls -al $junit_reports/"
