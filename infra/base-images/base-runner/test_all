@@ -17,8 +17,6 @@
 
 # Test every fuzzer. Fails on first fuzzer failure.
 
-set -o pipefail
-
 N=0
 for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
   if file "$FUZZER_BINARY" | grep -v ELF > /dev/null 2>&1; then
@@ -38,4 +36,3 @@ if [ "$N" -eq "0" ]; then
 fi
 
 echo "$N fuzzers total"
-
