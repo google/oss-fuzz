@@ -179,7 +179,7 @@ def run_fuzzer(run_args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('libfuzzer-runner'):
+  if not _build_image('base-runner'):
     return 1
 
   command = [
@@ -211,7 +211,7 @@ def coverage(run_args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('libfuzzer-runner'):
+  if not _build_image('base-runner'):
     return 1
 
   temp_dir = tempfile.mkdtemp()
@@ -222,7 +222,7 @@ def coverage(run_args):
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
       '-e', 'ASAN_OPTIONS=coverage=1,detect_leaks=0',
-      '-t', 'ossfuzz/libfuzzer-runner',
+      '-t', 'ossfuzz/base-runner',
       '/out/%s' % args.fuzzer_name,
       '-max_total_time=%s' % args.run_time
   ] + args.fuzzer_args
