@@ -63,6 +63,7 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
 EOF
 )
   echo "$REPORT_TEXT" > /junit_reports/$FUZZER.xml
+  echo "$REPORT_TEXT"
 done
 
 if [ "$N" -eq "0" ]; then
