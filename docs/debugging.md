@@ -10,9 +10,9 @@ $ compile                                     # run compilation manually
 
 ## Debugging Fuzzers with GDB
 
-If you decide to debug a fuzzer with gdb (which is already installed in base-debug-runner image),
+If you decide to debug a fuzzer with gdb (which is already installed in base-runner-debug image),
 you will need to start a container in privileged mode:
 
 ```bash
-docker run -ti --privileged -v /tmp/out:/out ossfuzz/base-debug-runner gdb /out/fuzzer_name
+docker run -ti --privileged -v /tmp/out:/out ossfuzz/base-runner-debug gdb /out/fuzzer_name
 ```

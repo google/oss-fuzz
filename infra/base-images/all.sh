@@ -19,3 +19,4 @@ docker build --pull -t ossfuzz/base $@ infra/base-images/base
 docker build -t ossfuzz/base-clang $@ infra/base-images/base-clang
 docker build -t ossfuzz/base-libfuzzer $@ infra/base-images/base-libfuzzer
 docker build -t ossfuzz/base-runner $@ infra/base-images/base-runner
+docker build -t ossfuzz/base-runner-debug $@ infra/base-images/libfuzzer-runner-debug
