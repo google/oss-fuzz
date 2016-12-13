@@ -38,7 +38,8 @@ def call(body) {
     def dockerGit = dockerfileConfig["git"]
     def dockerContextDir = dockerfileConfig["context"] ?: ""
     def dockerTag = "ossfuzz/$projectName"
-
+    def dockerRunOptions = "--user $uid --cap-add SYS_PTRACE"
+    
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
@@ -51,7 +52,7 @@ def call(body) {
         def srcmapFile = "$workspace/srcmap.json"
         echo "Building $dockerTag: $project"
 
-        sh "docker run --rm --user $uid -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""
+        sh "docker run --rm $dockerRunOptions -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""
         sh "mkdir -p $workspace/out"
 
         stage("docker image") {
@@ -65,7 +66,7 @@ def call(body) {
             sh "docker build --no-cache -t $dockerTag -f checkout/$dockerfile checkout/$dockerContextDir"
 
             // obtain srcmap
-            sh "docker run --user $uid --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
+            sh "docker run $dockerRunOptions --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
             // use classic slurper: http://stackoverflow.com/questions/37864542/jenkins-pipeline-notserializableexception-groovy-json-internal-lazymap
             def srcmap = new groovy.json.JsonSlurperClassic().parse(
                 new File("$workspace/srcmap.json.tmp"))
@@ -90,9 +91,9 @@ def call(body) {
                     if (coverageFlags != null) {
                         env += "-e COVERAGE_FLAGS=\"${coverageFlags}\" "
                     }
-                    sh "docker run --rm --user $uid -v $out:/out $env -t $dockerTag compile"
+                    sh "docker run --rm $dockerRunOptions -v $out:/out $env -t $dockerTag compile"
                     // Test all fuzzers
-                    sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.\" -t ossfuzz/base-runner test_report"
+                    sh "docker run --rm $dockerRunOptions -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.\" -t ossfuzz/base-runner test_report"
                     sh "ls -al $junit_reports/"
                 }
             }
