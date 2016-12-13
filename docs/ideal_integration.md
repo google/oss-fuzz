@@ -16,6 +16,9 @@ Make sure to fuzz the target locally for a small period of time to ensure that
 it does not crash, hang, or runs out of memory instantly. 
 See details at http://libfuzzer.info and http://tutorial.libfuzzer.info.
 
+The interface between the [fuzz target]((http://libfuzzer.info/#fuzz-target))
+and the fuzzing engines is C, so you may use C or C++ to implement the fuzz target.
+
 Examples: 
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
 [SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338),
