@@ -47,7 +47,7 @@ def call(body) {
     node {
         def workspace = pwd()
         // def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
-        echo "using uid $uid"
+        echo "using uid $dockerUid"
 
         def srcmapFile = "$workspace/srcmap.json"
         echo "Building $dockerTag: $project"
