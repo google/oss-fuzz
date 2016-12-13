@@ -37,9 +37,11 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
   FUZZER_STATUS=${PIPESTATUS[0]}
 
   FAILURES=0
+  FAILURE_TAG=""
   if [ "$FUZZER_STATUS" -ne "0" ]; then
     echo "ERROR: bad exit code: $FUZZER_STATUS"
     FAILURES=1
+    FAILURE_TAG="<failure message=\"Fuzzer failed\">$FUZZER_STATUS</failure>"
     TOTAL_FAILURES=$[$TOTAL_FAILURES+1]
   fi
 
@@ -54,7 +56,7 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuite name="$TESTNAME" tests="1" skipped="0" failures="$FAILURES" errors="0" timestamp="$TIMESTAMP" hostname="$HOSTNAME" time="1">
   <properties/>
-  <testcase name="$TESTNAME" classname="$TESTNAME" time="1"/>
+  <testcase name="$TESTNAME" classname="$TESTNAME" time="1">${FAILURE_TAG}</testcase>
   <system-out><![CDATA[${OUT_TXT}]]></system-out>
   <system-err></system-err>
 </testsuite>
