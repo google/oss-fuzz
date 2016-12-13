@@ -94,7 +94,6 @@ def call(body) {
                     sh "docker run --rm $dockerRunOptions -v $out:/out $env -t $dockerTag compile"
                     // Test all fuzzers
                     sh "docker run --rm $dockerRunOptions -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.\" -t ossfuzz/base-runner test_report"
-                    sh "ls -al $junit_reports/"
                 }
             }
         }
