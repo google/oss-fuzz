@@ -23,7 +23,7 @@ ENV SANITIZER_FLAGS_address "-fsanitize=address"
 ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,signed-integer-overflow,shift,vptr -fno-sanitize-recover=undefined"
 
 # Default build flags for coverage.
-ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
+ENV COVERAGE_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 
 # Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"

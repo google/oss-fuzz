@@ -149,6 +149,7 @@ def build_fuzzers(build_args):
   command = [
         'docker', 'run', '--rm', '-i',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+        '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
         '-t', 'ossfuzz/' + args.project_name,
   ]
 
@@ -294,6 +295,7 @@ def shell(shell_args):
   command = [
         'docker', 'run', '--rm', '-i',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+        '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
         '-t', 'ossfuzz/' + args.project_name,
         '/bin/bash'
   ]

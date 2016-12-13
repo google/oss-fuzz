@@ -40,6 +40,7 @@ Build configuration is performed through following environment variables:
 | -------------    | --------
 | `$SANITIZER ("address")` | Specifies sanitizer configuration to use. `address` or `undefined`.
 | `$SANITIZER_FLAGS` | Specify compiler sanitizer flags directly. Overrides `$SANITIZER`.
+| `$COVERAGE_FLAGS` | Specify compiler flags to use for fuzzer feedback coverage.
 
 # Examples
 
