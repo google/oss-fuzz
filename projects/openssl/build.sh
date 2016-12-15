@@ -25,3 +25,4 @@ for f in $fuzzers; do
 	zip -j $OUT/${fuzzer}_seed_corpus.zip fuzz/corpora/${fuzzer}/*
 done
 
+cp $SRC/*.options $OUT/
