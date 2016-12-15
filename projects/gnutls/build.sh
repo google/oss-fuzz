@@ -19,16 +19,16 @@ make bootstrap
 ./configure --enable-gcc-warnings --enable-static --with-included-libtasn1 --with-included-unistring --without-p11-kit --disable-doc
 make "-j$(nproc)"
 
-fuzzers="
-client
-x509_parser
-"
+fuzzers=$(find devel/fuzz/ -name "*_fuzzer.cc")
 
-for fuzzer in $fuzzers; do
+for f in $fuzzers; do
+    fuzzer=$(basename "$f" ".cc")
     $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
-        "$SRC/gnutls_${fuzzer}_fuzzer.cc" -o "$OUT/gnutls_${fuzzer}_fuzzer" \
+        "devel/fuzz/${fuzzer}.cc" -o "$OUT/${fuzzer}" \
         lib/.libs/libgnutls.a -lFuzzingEngine -lpthread -Wl,-Bstatic \
         -lhogweed -lnettle -lgmp -Wl,-Bdynamic
 
-    cp "$SRC/gnutls_${fuzzer}_fuzzer_seed_corpus.zip" "$OUT/"
+    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
+        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
+    fi
 done
