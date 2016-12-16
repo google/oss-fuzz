@@ -17,12 +17,7 @@
 
 ./config enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-ec_nistp_64_gcc_128 enable-ssl3 enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment
 
-# openssl uses clang, not clang++ for linking. Add c++ libraries.
-EX_LIBS="-ldl /usr/local/lib/libc++.a"
-if [[ $SANITIZER = undefined ]]; then
-	EX_LIBS="$EX_LIBS /usr/local/lib/clang/4.0.0/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a /usr/local/lib/clang/4.0.0/lib/linux/libclang_rt.ubsan_standalone-x86_64.a"
-fi
-make -j$(nproc) EX_LIBS="$EX_LIBS"
+make -j$(nproc) LDCMD="clang++ $CXXFLAGS"
 
 fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test)
 for f in $fuzzers; do
