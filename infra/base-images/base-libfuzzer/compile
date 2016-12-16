@@ -28,7 +28,7 @@ if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
 then
   # Take all libraries from lib/msan
   # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
-  cp -R /usr/msan/lib/* /usr/lib/*
+  cp -R /usr/msan/lib/* /usr/lib/
 fi
 
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
