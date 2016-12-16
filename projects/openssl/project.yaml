@@ -1,6 +1,3 @@
 homepage: "https://www.openssl.org/"
 primary_contact: "kurt@roeckx.be"
 auto_ccs: "openssl-security@openssl.org"
-sanitizers:
-  - address
-  - undefined
