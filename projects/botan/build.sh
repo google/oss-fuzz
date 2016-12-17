@@ -19,25 +19,18 @@ cd $SRC/botan
 
 # This assumes $CC is set to either 'clang' or 'gcc'
 ./configure.py --cc=$CC --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
-               --unsafe-fuzzer-mode --disable-shared
+               --unsafe-fuzzer-mode --disable-shared --disable-modules=locking_allocator
 make -j$(nproc) libbotan-1.11.a
 
 jigs=$(find $SRC/botan/src/extra_tests/fuzzers/jigs -name "*.cpp")
 
 for fuzzer_src in $jigs; do
-  fuzzer_name=$(basename $fuzzer_src .cpp)
+  fuzzer=$(basename $fuzzer_src .cpp)
   $CXX $CXXFLAGS -DUSE_LLVM_FUZZER -std=c++11 -I$SRC/botan/build/include \
-       -o $OUT/$fuzzer_name $fuzzer_src -L$SRC/botan -lbotan-1.11 -lFuzzingEngine
+       -o $OUT/$fuzzer $fuzzer_src -L$SRC/botan -lbotan-1.11 -lFuzzingEngine
 
-  max_len=1024 # default max_len
-  if [ $fuzzer_name = 'ecc_bp256' ] || [ $fuzzer_name = 'ecc_p256' ] || [ $fuzzer_name = 'redc_p256' ]; then
-      max_len=64
-  elif [ $fuzzer_name = 'ecc_p384' ] || [ $fuzzer_name = 'redc_p384' ]; then
-      max_len=96
-  elif [ $fuzzer_name = 'ecc_p521' ] || [ $fuzzer_name = 'redc_p521' ]; then
-      max_len=132
+  if [ -d "$SRC/crypto-corpus/${fuzzer}" ]; then
+    zip -j $OUT/${fuzzer}_seed_corpus.zip $SRC/crypto-corpus/${fuzzer}/*
   fi
-
-  echo -en "[libfuzzer]\nmax_len = $max_len\n" > $OUT/${fuzzer_name}.options
-
 done
+
