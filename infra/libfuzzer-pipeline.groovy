@@ -22,6 +22,7 @@ def call(body) {
     body()
 
     def project = new groovy.json.JsonSlurperClassic().parseText(config["project_json"])
+    def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
 
     // Project configuration.
     def projectName = project["name"] ?: env.JOB_BASE_NAME
@@ -38,15 +39,14 @@ def call(body) {
     def dockerGit = dockerfileConfig["git"]
     def dockerContextDir = dockerfileConfig["context"] ?: ""
     def dockerTag = "ossfuzz/$projectName"
-    def dockerUid = 0 // TODO: try to make $USER to work
-    def dockerRunOptions = "--user $dockerUid --cap-add SYS_PTRACE"
-    
+    def dockerUid = $uid
+    def dockerRunOptions = "-e SWITCH_UID=$dockerUid --cap-add SYS_PTRACE"
+
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
     node {
         def workspace = pwd()
-        // def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
         echo "using uid $dockerUid"
 
         def srcmapFile = "$workspace/srcmap.json"
