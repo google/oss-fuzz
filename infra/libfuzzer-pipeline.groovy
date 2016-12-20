@@ -105,7 +105,7 @@ def call(body) {
                     def sanitizer = sanitizers[i]
                     dir (sanitizer) {
                         def zipFile = "$projectName-$sanitizer-${date}.zip"
-                        sh "zip -j $zipFile *"
+                        sh "zip -r $zipFile *"
                         sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
                         def stampedSrcmap = "$projectName-$sanitizer-${date}.srcmap.json"
                         sh "cp $srcmapFile $stampedSrcmap"
