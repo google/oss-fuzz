@@ -28,7 +28,7 @@ a [fuzzer build](#job-type).
 ## Fuzzing Engine
 
 A tool that tries to find interesting inputs for a [fuzz target](#fuzz-target) by executing it.
-Examples: [libFuzzer](http://lbfuzzer.info),
+Examples: [libFuzzer](http://libfuzzer.info),
 [AFL](lcamtuf.coredump.cx/afl/),
 [honggfuzz](https://github.com/google/honggfuzz), etc 
 
