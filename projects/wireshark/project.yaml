@@ -1,5 +1,7 @@
 homepage: "https://www.wireshark.org"
-primary_contact: "security@wireshark.org"
+primary_contact: "gerald@wireshark.org"
 auto_ccs:
+ - "security@wireshark.org"
+ - "peter@lekensteyn.nl"
  - "me@moshekaplan.com"
  - "david@davidmanouchehri.com"
