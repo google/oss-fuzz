@@ -43,7 +43,7 @@ with a specific [fuzzing engine](#fuzzing-engine), in a specific build mode (e.g
 and optionally combined with a [sanitizer](#sanitizer).
 
 For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of all sqlite3 [fuzz targets](#fuzz-target) using 
-[libFuzzer](http://lbfuzzer.info) and [ASan](http://clang.llvm.org/docs/AddressSanitizer.html).
+[libFuzzer](http://libfuzzer.info) and [ASan](http://clang.llvm.org/docs/AddressSanitizer.html).
 
 
 ## Mutation Engine
