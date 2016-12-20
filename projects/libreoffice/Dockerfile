@@ -78,7 +78,7 @@ RUN wget http://dev-www.libreoffice.org/src/language-subtag-registry-2016-07-19.
 RUN wget http://dev-www.libreoffice.org/src/3069842a88b8f40c6b83ad2850cda293-graphite2-minimal-1.3.9.tgz
 RUN wget http://dev-www.libreoffice.org/src/harfbuzz-1.3.2.tar.bz2
 RUN wget http://dev-www.libreoffice.org/src/bae83fa5dc7f081768daace6e199adc3-glm-0.9.4.6-libreoffice.zip
-RUN wget http://dev-www.libreoffice.org/src/33d370f7fe5a030985e445a5672b2067-hunspell-1.4.1.tar.gz
+RUN wget http://dev-www.libreoffice.org/src/9849a2381bacbeb2714034ad825bede8-hunspell-1.5.4.tar.gz
 RUN wget http://dev-www.libreoffice.org/src/dbf2caca1d3afd410a29217a9809d397-freetype-2.4.8.tar.bz2
 RUN wget http://dev-www.libreoffice.org/src/77e15a92006ddc2adbb06f840d591c0e-fontconfig-2.8.0.tar.gz
 RUN wget http://dev-www.libreoffice.org/src/libepoxy-1.3.1.tar.bz2
