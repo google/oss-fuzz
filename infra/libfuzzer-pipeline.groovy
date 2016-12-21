@@ -39,17 +39,15 @@ def call(body) {
     def dockerGit = dockerfileConfig["git"]
     def dockerContextDir = dockerfileConfig["context"] ?: ""
     def dockerTag = "ossfuzz/$projectName"
-    def dockerUid = $uid
-    def dockerRunOptions = "-e SWITCH_UID=$dockerUid --cap-add SYS_PTRACE"
+    def dockerRunOptions = "-e BUILD_UID=$uid --cap-add SYS_PTRACE"
 
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
     node {
         def workspace = pwd()
-        echo "using uid $dockerUid"
-
         def srcmapFile = "$workspace/srcmap.json"
+
         echo "Building $dockerTag: $project"
 
         sh "docker run --rm $dockerRunOptions -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""

@@ -43,11 +43,11 @@ echo "CXXFLAGS=$CXXFLAGS"
 echo "---------------------------------------------------------------"
 
 BUILD_CMD="bash -x $SRC/build.sh"
-if [ -z "${SWITCH_UID+}" ]; then
-  adduser -u $SWITCH_UID --disabled-password --no-create-home --gecos '' ossfuzz
-  chown -R ossfuzz /src
-  chown ossfuzz /out
-  su -c "$BUILD_CMD" ossfuzz
+if [ -z "${BUILD_UID+}" ]; then
+  adduser -u $BUILD_UID --disabled-password --no-create-home --gecos '' builder
+  chown -R builder $SRC
+  chown builder $OUT
+  su -c "$BUILD_CMD" builder
 else
   $BUILD_CMD
 fi
