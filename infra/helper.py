@@ -147,7 +147,7 @@ def build_fuzzers(build_args):
     return 1
 
   command = [
-        'docker', 'run', '--rm', '-i',
+        'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
         '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
         '-t', 'ossfuzz/' + args.project_name,
@@ -183,7 +183,7 @@ def run_fuzzer(run_args):
     return 1
 
   command = [
-      'docker', 'run', '--rm', '-i',
+      'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-t', 'ossfuzz/base-runner',
       'run_fuzzer',
@@ -217,7 +217,7 @@ def coverage(run_args):
   temp_dir = tempfile.mkdtemp()
 
   command = [
-      'docker', 'run', '--rm', '-i',
+      'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
@@ -235,7 +235,7 @@ def coverage(run_args):
     pipe.communicate()
 
   command = [
-        'docker', 'run', '--rm', '-i',
+        'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
         '-v', '%s:/cov' % temp_dir,
         '-w', '/cov',
@@ -293,7 +293,7 @@ def shell(shell_args):
     return 1
 
   command = [
-        'docker', 'run', '--rm', '-i',
+        'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
         '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
         '-t', 'ossfuzz/' + args.project_name,
