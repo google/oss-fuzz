@@ -18,19 +18,22 @@ FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y git subversion jq python3 zip
 
+# Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address"
 ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,signed-integer-overflow,shift,vptr -fno-sanitize-recover=undefined"
+ENV SANITIZER_FLAGS_memory "-fsanitize=memory"
 
-# Default sanitizer to use
+# Default build flags for coverage.
+ENV COVERAGE_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
+
+# Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"
 ENV FUZZING_ENGINE="libfuzzer"
 
-ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
-
+# Path to fuzzing engine library.
 ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 
-# TODO: remove after tpm2 catchup
+# TODO: remove after tpm2 catchup.
 ENV FUZZER_LDFLAGS ""
 
 COPY coverage_report compile compile_libfuzzer srcmap reproduce run just_run \

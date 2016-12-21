@@ -26,6 +26,9 @@ def call(body) {
     // Project configuration.
     def projectName = project["name"] ?: env.JOB_BASE_NAME
     def sanitizers = project["sanitizers"] ?: ["address"]
+    def coverageFlags = project["coverage_flags"]
+
+    // Dockerfile config
     def dockerfileConfig = project["dockerfile"] ?: [
         "path": "projects/$projectName/Dockerfile",
         "git" : "https://github.com/google/oss-fuzz.git",
@@ -35,20 +38,21 @@ def call(body) {
     def dockerGit = dockerfileConfig["git"]
     def dockerContextDir = dockerfileConfig["context"] ?: ""
     def dockerTag = "ossfuzz/$projectName"
-
+    def dockerUid = 0 // TODO: try to make $USER to work
+    def dockerRunOptions = "--user $dockerUid --cap-add SYS_PTRACE"
+    
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.LocalDateTime.now())
 
     node {
         def workspace = pwd()
         // def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
-        def uid = 0 // TODO: try to make $USER to work
-        echo "using uid $uid"
+        echo "using uid $dockerUid"
 
         def srcmapFile = "$workspace/srcmap.json"
         echo "Building $dockerTag: $project"
 
-        sh "docker run --rm --user $uid -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""
+        sh "docker run --rm $dockerRunOptions -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""
         sh "mkdir -p $workspace/out"
 
         stage("docker image") {
@@ -62,7 +66,7 @@ def call(body) {
             sh "docker build --no-cache -t $dockerTag -f checkout/$dockerfile checkout/$dockerContextDir"
 
             // obtain srcmap
-            sh "docker run --user $uid --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
+            sh "docker run $dockerRunOptions --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
             // use classic slurper: http://stackoverflow.com/questions/37864542/jenkins-pipeline-notserializableexception-groovy-json-internal-lazymap
             def srcmap = new groovy.json.JsonSlurperClassic().parse(
                 new File("$workspace/srcmap.json.tmp"))
@@ -83,10 +87,13 @@ def call(body) {
                 sh "mkdir -p $junit_reports"
                 stage("$sanitizer sanitizer") {
                     // Run image to produce fuzzers
-                    sh "docker run --rm --user $uid -v $out:/out -e SANITIZER=\"${sanitizer}\" -t $dockerTag compile"
+                    def env = "-e SANITIZER=\"${sanitizer}\" "
+                    if (coverageFlags != null) {
+                        env += "-e COVERAGE_FLAGS=\"${coverageFlags}\" "
+                    }
+                    sh "docker run --rm $dockerRunOptions -v $out:/out $env -t $dockerTag compile"
                     // Test all fuzzers
-                    sh "docker run --rm --user $uid -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.\" -t ossfuzz/base-runner test_all"
-                    sh "ls -al $junit_reports/"
+                    sh "docker run --rm $dockerRunOptions -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.\" -t ossfuzz/base-runner test_report"
                 }
             }
         }
@@ -98,7 +105,7 @@ def call(body) {
                     def sanitizer = sanitizers[i]
                     dir (sanitizer) {
                         def zipFile = "$projectName-$sanitizer-${date}.zip"
-                        sh "zip -j $zipFile *"
+                        sh "zip -r $zipFile *"
                         sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
                         def stampedSrcmap = "$projectName-$sanitizer-${date}.srcmap.json"
                         sh "cp $srcmapFile $stampedSrcmap"

@@ -15,12 +15,7 @@
 #
 ################################################################################
 
-# Test fuzzers
-
-REPORT_DIR="/junit_reports"
-mkdir -p $REPORT_DIR
-
-set -o pipefail
+# Test every fuzzer. Fails on first fuzzer failure.
 
 N=0
 for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
@@ -30,25 +25,8 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
 
   FUZZER=$(basename $FUZZER_BINARY)
   echo "testing $FUZZER"
-  out=$(tempfile)
-  run_fuzzer $FUZZER -runs=32 | tee $out
+  run_fuzzer $FUZZER -runs=32
   N=$[$N+1]
-
-  TIMESTAMP=$(date --iso-8601=seconds)
-  HOSTNAME=$(hostname)
-  TESTNAME="${TEST_SUITE:-}$FUZZER"
-
-  REPORT_TEXT=$(cat <<-EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="$TESTNAME" tests="1" skipped="0" failures="0" errors="0" timestamp="$TIMESTAMP" hostname="$HOSTNAME" time="1">
-  <properties/>
-  <testcase name="$TESTNAME" classname="$TESTNAME" time="1"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
-EOF
-)
-  echo $REPORT_TEXT > /junit_reports/$FUZZER.xml
 done
 
 if [ "$N" -eq "0" ]; then
@@ -58,4 +36,3 @@ if [ "$N" -eq "0" ]; then
 fi
 
 echo "$N fuzzers total"
-

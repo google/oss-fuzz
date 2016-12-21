@@ -22,7 +22,11 @@ make clean
 make -j$(nproc) V=1 all
 make -C src V=1 fuzzing
 
+# Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-fuzzer.cc -o $OUT/hb-fuzzer \
     -lFuzzingEngine ./src/.libs/libharfbuzz-fuzzing.a
+
+# Archive and copy to $OUT seed corpus if the build succeeded.
+zip -j -r $OUT/hb-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/shaping/fonts
 

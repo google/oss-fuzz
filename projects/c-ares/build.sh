@@ -23,14 +23,17 @@ make -j$(nproc) V=1 all
 
 # Build the fuzzers.
 $CC $CFLAGS -I. -c $SRC/c-ares/test/ares-test-fuzz.c -o $WORK/ares-test-fuzz.o
-$CXX $CXXFLAGS -std=c++11 \
-    $WORK/ares-test-fuzz.o \
+$CXX $CXXFLAGS -std=c++11 $WORK/ares-test-fuzz.o \
     -o $OUT/ares_parse_reply_fuzzer \
     -lFuzzingEngine $SRC/c-ares/.libs/libcares.a
-$CXX $CXXFLAGS -std=c++11 -I. \
-    $SRC/ares_create_query_fuzzer.cc \
+
+$CC $CFLAGS -I. -c $SRC/c-ares/test/ares-test-fuzz-name.c \
+    -o $WORK/ares-test-fuzz-name.o
+$CXX $CXXFLAGS -std=c++11 $WORK/ares-test-fuzz-name.o \
     -o $OUT/ares_create_query_fuzzer \
     -lFuzzingEngine $SRC/c-ares/.libs/libcares.a
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 zip -j $OUT/ares_parse_reply_fuzzer_seed_corpus.zip $SRC/c-ares/test/fuzzinput/*
+zip -j $OUT/ares_create_query_fuzzer_seed_corpus.zip \
+    $SRC/c-ares/test/fuzznames/*

@@ -15,8 +15,9 @@
 #
 ################################################################################
 
-./config enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS
-make -j$(nproc) EX_LIBS="-ldl /usr/local/lib/libc++.a"
+./config enable-fuzz-libfuzzer -DPEDANTIC -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION no-shared enable-tls1_3 enable-rc5 enable-md2 enable-ec_nistp_64_gcc_128 enable-ssl3 enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers --with-fuzzer-lib=/usr/lib/libFuzzingEngine $CFLAGS -fno-sanitize=alignment
+
+make -j$(nproc) LDCMD="clang++ $CXXFLAGS"
 
 fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test)
 for f in $fuzzers; do
@@ -25,3 +26,4 @@ for f in $fuzzers; do
 	zip -j $OUT/${fuzzer}_seed_corpus.zip fuzz/corpora/${fuzzer}/*
 done
 
+cp $SRC/*.options $OUT/

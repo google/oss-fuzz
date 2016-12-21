@@ -19,4 +19,4 @@ MAINTAINER kurt@roeckx.be
 RUN apt-get install -y make
 RUN git clone --depth 1 https://github.com/openssl/openssl.git
 WORKDIR openssl
-COPY build.sh $SRC/
+COPY build.sh *.options $SRC/
