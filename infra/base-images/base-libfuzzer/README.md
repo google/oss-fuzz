@@ -34,16 +34,36 @@ docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$pro
 
 # Build Configuration
 
-Build configuration is performed through following environment variables:
+A single build image can build same set of fuzzers in many configurations. 
+The configuration is picked through one or more environment variables. 
+
+## Sanitizer Configuration
+
+Fuzzers are usually built with some [sanitizer](https://github.com/google/sanitizers) enabled.
 
 | Env Variable     | Description
 | -------------    | --------
-| `$SANITIZER ("address")` | Specifies sanitizer configuration to use. `address` or `undefined`.
+| `$SANITIZER ("address")` | Specifies predefined sanitizer configuration to use. `address` or `undefined`.
 | `$SANITIZER_FLAGS` | Specify compiler sanitizer flags directly. Overrides `$SANITIZER`.
+
+Flag values for predefined configurations are specified in [Dockerfile](Dockerfile).
+You can specify which configurations to run your fuzzers with in `project.yaml` file ([sqlite3](../../../projects/expat/project.yaml)):
+
+```yaml
+sanitizers:
+  - address
+  - undefined
+ ```
+
+
+## Other Configuration
+
+| Env Variable     | Description
+| -------------    | --------
 | `$COVERAGE_FLAGS` | Specify compiler flags to use for fuzzer feedback coverage.
 | `$BUILD_UID` | User id to use while building fuzzers.
 
-# Examples
+## Examples
 
 - *building sqlite3 fuzzer with UBSan (`SANITIZER=undefined`):*
 
