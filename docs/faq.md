@@ -42,6 +42,11 @@ This may or may not be considered as a real bug by the project owners,
 but nevertheless we treat all timeouts and OOMs as bugs
 since they significantly reduce the efficiency of fuzzing.
 
+Remember that fuzzing is executed with AddressSanitizer or other
+sanitizers which introduce certain ovehead in RAM and CPU.   
+
 We currently do not have a good way to deduplicate timeout or OOM bugs.
 So, at every point we report only one timeout and only one OOM bug per one fuzz target.
 Once that bug is fixed we may file another one, and so on. 
+
+Currently we do not offer ways to change the memory and time limits.
