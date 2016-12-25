@@ -30,3 +30,18 @@ user security. We will consider each request on a case-by-case basis, but some t
 
 We hope to relax this requirement in the future though, so keep an eye out even if we are not able
 to accept your project at this time!
+
+## How timeouts and OOMs are handled?
+
+If a single input to a [fuzz target](glossary.md#fuzz-target)
+requires more than **~25 seconds** or more than **2Gb RAM** to process we report this as a
+timeout or an OOM (out-of-memory) bug
+(examples: [timeouts](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=%22Crash+Type%3A+Timeout%22),
+[OOMs](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q="Crash+Type%3A+Out-of-memory")).
+This may or may not be considered as a real bug by the project owners,
+but nevertheless we treat all timeouts and OOMs as bugs
+since they significantly reduce the efficiency of fuzzing.
+
+We currently do not have a good way to deduplicate timeout or OOM bugs.
+So, at every point we report only one timeout and only one OOM bug per one fuzz target.
+Once that bug is fixed we may file another one, and so on. 
