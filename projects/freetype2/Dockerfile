@@ -21,3 +21,10 @@ RUN apt-get install -y make autoconf libtool libarchive-dev
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 WORKDIR freetype2
 COPY build.sh $SRC/
+
+# Get some files for the seed corpus
+RUN wget https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf
+
+
+# Put all seed files into $OUT/ftfuzzer_seed_corpus.zip
+RUN zip -j $OUT/ftfuzzer_seed_corpus.zip $(find . -name '*.otf')
