@@ -1,0 +1,5 @@
+homepage: "https://sqlite.org/"
+sanitizers:
+  - address
+  - undefined
+  

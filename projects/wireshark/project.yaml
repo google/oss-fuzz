@@ -1,0 +1,9 @@
+homepage: "https://www.wireshark.org"
+primary_contact: "gerald@wireshark.org"
+auto_ccs:
+ - "security@wireshark.org"
+ - "peter@lekensteyn.nl"
+ - "me@moshekaplan.com"
+ - "david@davidmanouchehri.com"
+ - "lomato@gmail.com"
+ - "rknall@gmail.com"

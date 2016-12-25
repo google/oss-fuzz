@@ -1,0 +1,13 @@
+homepage: "https://chromium.googlesource.com/chromiumos/third_party/tpm2"
+dockerfile:
+  git: "https://chromium.googlesource.com/chromiumos/third_party/tpm2/"
+  path: "fuzz/Dockerfile"
+sanitizers:
+  - address
+  - undefined
+primary_contact: "ngm@google.com"
+auto_ccs:
+  - "tpm-security-bugs@google.com"
+  - "dkrahn@google.com"
+  - "vbendeb@google.com"
+  - "apronin@google.com"

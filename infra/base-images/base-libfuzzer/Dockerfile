@@ -16,21 +16,29 @@
 
 FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y git libc6-dev
+RUN apt-get install -y git subversion jq python3 zip
 
-RUN mkdir -p /work/libfuzzer
+# Default build flags for various sanitizers.
+ENV SANITIZER_FLAGS_address "-fsanitize=address"
+ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,signed-integer-overflow,shift,vptr -fno-sanitize-recover=undefined"
+ENV SANITIZER_FLAGS_memory "-fsanitize=memory"
 
-ENV SANITIZER_FLAGS="-fsanitize=address"
-ENV COV_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
+# Default build flags for coverage.
+ENV COVERAGE_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
 
-ENV ASAN_OPTIONS="symbolize=1:detect_leaks=0"
-ENV LDFLAGS "-Wl,-whole-archive /usr/local/lib/libc++.a /usr/local/lib/libc++abi.a -Wl,-no-whole-archive"
+# Default sanitizer and fuzzing engine to use.
+ENV SANITIZER="address"
+ENV FUZZING_ENGINE="libfuzzer"
 
+# Path to fuzzing engine library.
+ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 
-RUN mkdir /out
-VOLUME /out
+# TODO: remove after tpm2 catchup.
+ENV FUZZER_LDFLAGS ""
 
-RUN mkdir /src/bin
-COPY compile checkout_and_compile run /src/bin/
-ENV PATH=/src/bin:$PATH
+COPY coverage_report compile compile_libfuzzer srcmap reproduce run just_run \
+     /usr/local/bin/
+
+WORKDIR $SRC
 CMD ["compile"]
+

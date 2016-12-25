@@ -1,0 +1,28 @@
+# Copyright 2016 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+FROM ossfuzz/base-libfuzzer
+MAINTAINER alex.gaynor@gmail.com
+RUN apt-get install -y make autoconf automake libtool nasm curl
+RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
+
+RUN mkdir afl-testcases
+RUN curl -o afl-testcases/afl_testcases.tgz http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz
+RUN cd afl-testcases/ && tar -xf afl_testcases.tgz
+RUN zip libjpeg_turbo_fuzzer_seed_corpus.zip afl-testcases/jpeg/full/images/* afl-testcases/jpeg_turbo/full/images/* $SRC/libjpeg-turbo/testimages/*
+
+WORKDIR libjpeg-turbo
+COPY build.sh libjpeg_turbo_fuzzer.cc $SRC/

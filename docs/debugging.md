@@ -4,15 +4,15 @@ While developing your build script, it may be useful to run bash within the
 container:
 
 ```bash
-$ python scripts/helper.py shell $LIB_NAME  # runs /bin/bash within container
-$ compile                                   # run compilation manually
+$ python infra/helper.py shell $PROJECT_NAME  # runs /bin/bash within container
+$ compile                                     # run compilation manually
 ```
 
-## Debugging Fuzzers
+## Debugging Fuzzers with GDB
 
-If you decide to debug a fuzzer with gdb (which is already installed in libfuzzer-runner image),
+If you decide to debug a fuzzer with gdb (which is already installed in base-runner-debug image),
 you will need to start a container in privileged mode:
 
 ```bash
-docker run -ti --privileged -v /tmp/out:/out -t ossfuzz/libfuzzer-runner /out/some_fuzzer_name
+docker run -ti --privileged -v /tmp/out:/out ossfuzz/base-runner-debug gdb /out/fuzzer_name
 ```

@@ -15,26 +15,39 @@
 #
 ################################################################################
 
-
 echo "---------------------------------------------------------------"
 
-export LIBFUZZER_WORK_DIR=/work/libfuzzer
+if [ -z "${SANITIZER_FLAGS+}" ]; then
+  FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
+  export SANITIZER_FLAGS=$(echo ${!FLAGS_VAR})
+fi
 
-echo -n "Compiling libFuzzer into $LIBFUZZER_WORK_DIR ..."
-cd $LIBFUZZER_WORK_DIR
-$CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c /src/libfuzzer/*.cpp -I/src/libfuzzer
-echo "Done."
+bash compile_${FUZZING_ENGINE}
 
-export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COV_FLAGS"
+if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
+then
+  # Take all libraries from lib/msan
+  # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
+  cp -R /usr/msan/lib/* /usr/lib/
+fi
+
+export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
+
 
 echo "CC=$CC"
 echo "CXX=$CXX"
 echo "CFLAGS=$CFLAGS"
 echo "CXXFLAGS=$CXXFLAGS"
-echo "LDFLAGS=$LDFLAGS"
 
 echo "---------------------------------------------------------------"
 
-/src/build.sh
-
+BUILD_CMD="bash -x $SRC/build.sh"
+if [ -n "${BUILD_UID+}" ]; then
+  adduser -u $BUILD_UID --disabled-password --no-create-home --gecos '' builder
+  chown -R builder $SRC
+  chown builder $OUT
+  su -c "$BUILD_CMD" builder
+else
+  $BUILD_CMD
+fi

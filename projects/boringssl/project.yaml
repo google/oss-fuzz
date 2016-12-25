@@ -1,0 +1,4 @@
+homepage: "https://boringssl.googlesource.com/boringssl/"
+sanitizers:
+ - address
+ - undefined

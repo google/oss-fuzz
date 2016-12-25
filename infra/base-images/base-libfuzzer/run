@@ -15,7 +15,5 @@
 #
 ################################################################################
 
-checkout_and_compile
-export PATH=/out:$PATH
-cd /out
-$@
+compile
+just_run $@

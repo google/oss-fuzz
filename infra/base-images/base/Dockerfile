@@ -19,6 +19,11 @@
 FROM ubuntu:16.04
 MAINTAINER mike.aizatsky@gmail.com
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update
-RUN apt-get upgrade -y
-RUN apt-get autoremove -y
+RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
+
+ENV OUT=/out
+ENV SRC=/src
+ENV WORK=/work
+ENV PATH="$PATH:/out"
+
+RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK

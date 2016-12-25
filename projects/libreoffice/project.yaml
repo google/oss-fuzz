@@ -1,0 +1,4 @@
+homepage: "https://www.libreoffice.org/"
+primary_contact: "caolanm@redhat.com"
+auto_ccs:
+  - "security@documentfoundation.org"

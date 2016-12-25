@@ -29,5 +29,7 @@ node {
   stage name: 'info', concurrency: 1
   sh "docker info"
   sh "df -h"
+  
   // Show docker images tree
-  sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz images -t"}
+  // sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz images -t"
+}

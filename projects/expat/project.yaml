@@ -1,0 +1,5 @@
+homepage: "http://expat.sourceforge.net/"
+sanitizers:
+  - address
+  - undefined
+  - memory
