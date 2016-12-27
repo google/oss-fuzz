@@ -17,7 +17,7 @@
 
 cd $SRC/fribidi
 ./bootstrap
-./configure --enable-static=yes --enable-shared=no --with-pic=yes
+./configure --enable-static=yes --enable-shared=no --with-pic=yes --prefix=/work/fribidi
 # Don't run "make": it's broken. Run "make install".
 make install
 
