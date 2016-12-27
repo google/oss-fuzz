@@ -17,7 +17,7 @@
 
 echo "---------------------------------------------------------------"
 
-if [ -z "${SANITIZER_FLAGS+}" ]; then
+if [ -z "${SANITIZER_FLAGS-}" ]; then
   FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
   export SANITIZER_FLAGS=$(echo ${!FLAGS_VAR})
 fi
@@ -42,8 +42,8 @@ echo "CXXFLAGS=$CXXFLAGS"
 
 echo "---------------------------------------------------------------"
 
-BUILD_CMD="bash -x $SRC/build.sh"
-if [ -n "${BUILD_UID+}" ]; then
+BUILD_CMD="bash -eux $SRC/build.sh"
+if [ -n "${BUILD_UID-}" ]; then
   adduser -u $BUILD_UID --disabled-password --no-create-home --gecos '' builder
   chown -R builder $SRC
   chown builder $OUT
