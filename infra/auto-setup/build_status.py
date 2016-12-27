@@ -62,6 +62,9 @@ def upload_status(successes, failures):
   """Upload main status page."""
   env = Environment(loader=FileSystemLoader(os.path.join(SCRIPT_DIR,
                                                          'templates')))
+  failures = [f.name for f in failures]
+  successes = [s.name for s in successes]
+  
   data = {
     'projects': failures + successes,
     'failures': failures,
