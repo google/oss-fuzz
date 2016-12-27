@@ -42,7 +42,7 @@ echo "CXXFLAGS=$CXXFLAGS"
 
 echo "---------------------------------------------------------------"
 
-BUILD_CMD="bash -x $SRC/build.sh"
+BUILD_CMD="bash -eux $SRC/build.sh"
 if [ -n "${BUILD_UID-}" ]; then
   adduser -u $BUILD_UID --disabled-password --no-create-home --gecos '' builder
   chown -R builder $SRC
