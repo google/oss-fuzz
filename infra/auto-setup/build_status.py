@@ -76,7 +76,7 @@ def upload_status(successes, failures):
   subprocess.check_output(['gsutil', 'cp', 'status.html', 'gs://' +
                            LOGS_BUCKET], stderr=subprocess.STDOUT)
 
-   with open('status.json', 'w') as f:
+  with open('status.json', 'w') as f:
     f.write(json.dumps(data))
 
   subprocess.check_output(['gsutil', 'cp', 'status.json', 'gs://' +
