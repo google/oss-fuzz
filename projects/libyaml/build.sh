@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-
-cd libyaml
-
 ./bootstrap
 ./configure
 make "-j$(nproc)"

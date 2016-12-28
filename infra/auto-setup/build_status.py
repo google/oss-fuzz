@@ -2,6 +2,7 @@
 
 import codecs
 import datetime
+import json
 import os
 import subprocess
 import sys
@@ -61,13 +62,27 @@ def upload_status(successes, failures):
   """Upload main status page."""
   env = Environment(loader=FileSystemLoader(os.path.join(SCRIPT_DIR,
                                                          'templates')))
+  failures = [f.name for f in failures]
+  successes = [s.name for s in successes]
+  
+  data = {
+    'projects': failures + successes,
+    'failures': failures,
+    'successes': successes,
+    'last_updated': datetime.datetime.utcnow().ctime()
+  }
+  
   with open('status.html', 'w') as f:
     f.write(
-      env.get_template('status_template.html').render(
-          failures=failures, successes=successes,
-          last_updated=datetime.datetime.utcnow().ctime()))
+      env.get_template('status_template.html').render(data))
 
   subprocess.check_output(['gsutil', 'cp', 'status.html', 'gs://' +
+                           LOGS_BUCKET], stderr=subprocess.STDOUT)
+
+  with open('status.json', 'w') as f:
+    f.write(json.dumps(data))
+
+  subprocess.check_output(['gsutil', 'cp', 'status.json', 'gs://' +
                            LOGS_BUCKET], stderr=subprocess.STDOUT)
 
 

@@ -45,8 +45,7 @@ echo "---------------------------------------------------------------"
 BUILD_CMD="bash -eux $SRC/build.sh"
 if [ -n "${BUILD_UID-}" ]; then
   adduser -u $BUILD_UID --disabled-password --no-create-home --gecos '' builder
-  chown -R builder $SRC
-  chown builder $OUT
+  chown -R builder $SRC $OUT $WORK
   su -c "$BUILD_CMD" builder
 else
   $BUILD_CMD

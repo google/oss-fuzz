@@ -33,6 +33,8 @@ OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
 
 
+GLOBAL_ARGS = None
+
 def main():
   os.chdir(OSSFUZZ_DIR)
   if not os.path.exists(BUILD_DIR):
@@ -40,10 +42,14 @@ def main():
 
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
   parser.add_argument(
+      '--nopull', default=False, action='store_const', const=True,
+      help='do not specify --pull while building an image')
+  parser.add_argument(
       'command',
       help='One of: generate, build_image, build_fuzzers, run_fuzzer, coverage, shell',
       nargs=argparse.REMAINDER)
-  args = parser.parse_args()
+  global GLOBAL_ARGS
+  GLOBAL_ARGS = args = parser.parse_args()
 
   if not args.command:
     parser.print_help()
@@ -110,10 +116,13 @@ def _build_image(image_name):
 
     dockerfile_dir = os.path.join('projects', image_name)
 
-  command = [
-        'docker', 'build', '--pull', '-t', 'ossfuzz/' + image_name,
-        dockerfile_dir,
-  ]
+
+  build_args = []
+  if not GLOBAL_ARGS.nopull:
+      build_args += ['--pull']
+  build_args += ['-t', 'ossfuzz/' + image_name, dockerfile_dir ]
+
+  command = [ 'docker', 'build' ] + build_args
   print('Running:', _get_command_string(command))
 
   try:
