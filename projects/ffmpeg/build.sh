@@ -118,7 +118,7 @@ make -j$(nproc)
 make install
 
 cd $SRC/x264
-LDFLAGS="$CXXFLAGS $LDFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
+LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
     --enable-static
 make clean
 make -j$(nproc)
