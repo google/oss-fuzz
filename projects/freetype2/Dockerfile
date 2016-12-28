@@ -23,4 +23,4 @@ ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/downlo
 
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 WORKDIR freetype2
-COPY build.sh $SRC/
+COPY build.sh *.options $SRC/
