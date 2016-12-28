@@ -119,7 +119,6 @@ def _build_image(image_name):
 
   build_args = []
 
-  global GLOBAL_ARGS
   if not GLOBAL_ARGS.nopull:
       build_args += ['--pull']
 
