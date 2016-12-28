@@ -80,7 +80,7 @@ make -j$(nproc) all
 make install
 
 cd $SRC/libvpx
-LDFLAGS="$CXXFLAGS $LDFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
+LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
     --disable-examples --disable-unit-tests
 make clean
 make -j$(nproc) all
@@ -102,7 +102,7 @@ make install
 
 cd $SRC/theora
 # theora requires ogg, need to pass its location to the "configure" script.
-CFLAGS="$CFLAGS -fPIC" LDFLAGS="$LDFLAGS -L$FFMPEG_DEPS_PATH/lib/" \
+CFLAGS="$CFLAGS -fPIC" LDFLAGS="-L$FFMPEG_DEPS_PATH/lib/" \
     CPPFLAGS="$CXXFLAGS -I$FFMPEG_DEPS_PATH/include/" \
     LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib/" \
     ./autogen.sh --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-examples
