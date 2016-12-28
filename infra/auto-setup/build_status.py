@@ -42,7 +42,9 @@ def get_build_results(server):
 
       info = server.get_job_info(name)
       last_build_number = info['lastCompletedBuild']['number']
-      last_failed_builder_number = info['lastFailedBuild']['number']
+      
+      if info['lastFailedBuild']:
+        last_failed_builder_number = info['lastFailedBuild']['number']
 
       if last_build_number == last_failed_builder_number:
         failures.append(Result(
