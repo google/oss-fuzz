@@ -20,4 +20,4 @@ RUN apt-get install -y binutils gcc
 
 RUN git clone --depth 1 -b develop https://github.com/nlohmann/json.git
 WORKDIR json/
-COPY build.sh parse_fuzzer.* $SRC/
+COPY build.sh *.options $SRC/
