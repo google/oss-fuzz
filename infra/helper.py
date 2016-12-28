@@ -118,10 +118,8 @@ def _build_image(image_name):
 
 
   build_args = []
-
   if not GLOBAL_ARGS.nopull:
       build_args += ['--pull']
-
   build_args += ['-t', 'ossfuzz/' + image_name, dockerfile_dir ]
 
   command = [ 'docker', 'build' ] + build_args
