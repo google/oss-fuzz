@@ -31,6 +31,7 @@ def get_build_results(server):
   """Return successes, failures."""
   successes = []
   failures = []
+  unstable = []
 
   for job in server.get_jobs(1):
     try:
@@ -44,41 +45,44 @@ def get_build_results(server):
       info = server.get_job_info(name)
       pprint.pprint(info)
       last_build_number = info['lastCompletedBuild']['number']
-      
+      build_result = Result(
+          project,
+          server.get_build_console_output(name, last_build_number))
+
       if info['lastFailedBuild']:
         last_failed_builder_number = info['lastFailedBuild']['number']
+      if info['lastUnstableBuild']:
+        last_unstable_build_number = info['lastUnstableBuild']['number']
 
       if last_build_number == last_failed_builder_number:
-        failures.append(Result(
-            project,
-            server.get_build_console_output(name, last_build_number)))
+        failures.append(build_result)
+      elif last_build_number == last_unstable_build_number:
+        unstable.append(build_result)
       else:
-        successes.append(Result(
-            project,
-            server.get_build_console_output(name, last_build_number)))
-    except Exception as e:
+        successes.append(build_result)
+    except Exception as _:
       traceback.print_exc()
 
-  return successes, failures
+  return successes, failures, unstable
 
 
-def upload_status(successes, failures):
+def upload_status(successes, failures, unstable):
   """Upload main status page."""
   env = Environment(loader=FileSystemLoader(os.path.join(SCRIPT_DIR,
                                                          'templates')))
   failures = [f.name for f in failures]
   successes = [s.name for s in successes]
-  
+
   data = {
-    'projects': failures + successes,
-    'failures': failures,
-    'successes': successes,
-    'last_updated': datetime.datetime.utcnow().ctime()
+      'projects': failures + successes,
+      'failures': failures,
+      'successes': successes,
+      'unstable': unstable,
+      'last_updated': datetime.datetime.utcnow().ctime()
   }
-  
+
   with open('status.html', 'w') as f:
-    f.write(
-      env.get_template('status_template.html').render(data))
+    f.write(env.get_template('status_template.html').render(data))
 
   subprocess.check_output(['gsutil', 'cp', 'status.html', 'gs://' +
                            LOGS_BUCKET], stderr=subprocess.STDOUT)
@@ -90,9 +94,9 @@ def upload_status(successes, failures):
                            LOGS_BUCKET], stderr=subprocess.STDOUT)
 
 
-def upload_build_logs(successes, failures):
+def upload_build_logs(results):
   """Upload individual build logs."""
-  for result in failures + successes:
+  for result in results:
     with codecs.open('latest.txt', 'w', encoding='utf-8') as f:
       f.write(result.output)
 
@@ -107,9 +111,9 @@ def main():
   server = jenkins.Jenkins('http://%s:%d' % JENKINS_SERVER,
                            username=jenkins_login[0], password=jenkins_login[1])
 
-  successes, failures = get_build_results(server)
-  upload_status(successes, failures)
-  upload_build_logs(successes, failures)
+  successes, failures, unstable = get_build_results(server)
+  upload_status(successes, failures, unstable)
+  upload_build_logs(successes + failures + unstable)
 
 
 def get_jenkins_login():
