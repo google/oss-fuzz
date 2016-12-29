@@ -146,21 +146,6 @@ def build_image(build_args):
   return 1
 
 
-class StoreNameValuePair(argparse.Action):
-  def __init__(self, option_strings, dest, nargs=None, **kwargs):
-    super(StoreNameValuePair, self).__init__(option_strings, dest, **kwargs)
-    self.name = self.dest
-
-  def __call__(self, parser, namespace, values, option_string=None):
-    options = getattr(namespace, self.name)
-    if not options:
-      options = dict()
-      setattr(namespace, self.name, options)
-
-    n, v = values.split('=')
-    options[n] = v
-
-
 def build_fuzzers(build_args):
   """Build fuzzers."""
   parser = argparse.ArgumentParser('helper.py build_fuzzers')
