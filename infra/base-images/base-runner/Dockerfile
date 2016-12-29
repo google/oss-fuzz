@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base
+FROM ossfuzz/base-image
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y zip file
 COPY llvm-symbolizer test_all test_report run_fuzzer /usr/local/bin/

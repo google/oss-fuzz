@@ -1,4 +1,4 @@
-# base-libfuzzer
+# base-builder
 > Abstract base image for libfuzzer builders.
 
 Every project image supports multiple commands that can be invoked through docker after the image is built:
@@ -34,8 +34,8 @@ docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$pro
 
 # Build Configuration
 
-A single build image can build same set of fuzzers in many configurations. 
-The configuration is picked through one or more environment variables. 
+A single build image can build same set of fuzzers in many configurations.
+The configuration is picked through one or more environment variables.
 
 ## Sanitizer Configuration
 
