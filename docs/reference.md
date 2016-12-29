@@ -3,20 +3,12 @@
 ## Sanitizers
 
 Fuzzers are usualy built with one or more  [sanitizer](https://github.com/google/sanitizers) enabled. 
-You can select a sanitizer while by specifying `$SANITIZER` build environment varible using `-e` option:
+You can select sanitizer configuration by specifying `$SANITIZER` build environment varible using `-e` option:
 
 ```bash
 python infra/helper.py build_fuzzers -e SANITIZER=undefined json
 ```
 
-You can choose which configurations to automatically run your fuzzers with in `project.yaml` file ([sqlite3](../../../projects/sqlite3/project.yaml)):
-
-```yaml
-sanitizers:
-  - address
-  - undefined
- ```
-  
 Supported sanitizers:
 
 | `$SANITIZER` | Description
@@ -28,3 +20,11 @@ Supported sanitizers:
 Compiler flag values for predefined configurations are specified in [Dockerfile](Dockerfile). 
 These flags can be overriden by specifying `$SANITIZER_FLAGS` directly.
 
+You can choose which configurations to automatically run your fuzzers with in `project.yaml` file ([sqlite3](../../../projects/sqlite3/project.yaml)):
+
+```yaml
+sanitizers:
+  - address
+  - undefined
+ ```
+  
