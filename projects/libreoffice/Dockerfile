@@ -17,7 +17,7 @@
 FROM ossfuzz/base-libfuzzer
 MAINTAINER security@documentfoundation.org
 #build requirements
-RUN apt-get -y build-dep libreoffice
+RUN apt-get -y build-dep libreoffice wget
 #cache build dependencies
 ADD http://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-serif-font-1.0000W.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosextrafonts-carlito-20130920.tar.gz $SRC/
