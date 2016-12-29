@@ -149,19 +149,24 @@ def build_image(build_args):
 def build_fuzzers(build_args):
   """Build fuzzers."""
   parser = argparse.ArgumentParser('helper.py build_fuzzers')
+  parser.add_argument('-e', action='append', help="set environment variable")
   parser.add_argument('project_name')
   args = parser.parse_args(build_args)
+  project_name = args.project_name
 
   if not _build_image(args.project_name):
     return 1
 
-  command = [
-        'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
-        '-e', 'BUILD_UID=%d' % os.getuid(),
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
-        '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
-        '-t', 'ossfuzz/' + args.project_name,
-  ]
+  env = ['BUILD_UID=%d' % os.getuid()]
+  if args.e:
+    env += args.e
+
+  command = (['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
+             sum([['-e', v] for v in env], []) +
+             ['-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name),
+              '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
+              '-t', 'ossfuzz/' + project_name
+             ])
 
   print('Running:', _get_command_string(command))
 
