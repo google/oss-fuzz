@@ -49,6 +49,8 @@ def get_build_results(server):
           project,
           server.get_build_console_output(name, last_build_number))
 
+      last_failed_builder_number = None
+      last_unstable_build_number = None
       if info['lastFailedBuild']:
         last_failed_builder_number = info['lastFailedBuild']['number']
       if info['lastUnstableBuild']:
