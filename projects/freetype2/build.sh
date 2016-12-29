@@ -29,4 +29,4 @@ $CXX $CXXFLAGS -std=c++11 \
   ./objs/.libs/libfreetype.a
 
 zip -j $OUT/ftfuzzer_seed_corpus.zip $SRC/font-corpus/*
-copy $SRC/*.options $OUT/
+cp $SRC/*.options $OUT/
