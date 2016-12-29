@@ -20,7 +20,7 @@ Supported sanitizers:
 Compiler flag values for predefined configurations are specified in the [Dockerfile](../infra/base-images/base-builder/Dockerfile). 
 These flags can be overriden by specifying `$SANITIZER_FLAGS` directly.
 
-You can choose which configurations to automatically run your fuzzers with in `project.yaml` file ([sqlite3](../../../projects/sqlite3/project.yaml)):
+You can choose which configurations to automatically run your fuzzers with in `project.yaml` file (e.g. [sqlite3](../projects/sqlite3/project.yaml)):
 
 ```yaml
 sanitizers:
