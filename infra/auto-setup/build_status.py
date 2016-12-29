@@ -72,6 +72,7 @@ def upload_status(successes, failures, unstable):
                                                          'templates')))
   failures = [f.name for f in failures]
   successes = [s.name for s in successes]
+  unstable = [p.name for p in unstable]
 
   data = {
       'projects': failures + successes,
