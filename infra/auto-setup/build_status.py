@@ -75,7 +75,7 @@ def upload_status(successes, failures, unstable):
   unstable = [p.name for p in unstable]
 
   data = {
-      'projects': failures + successes,
+      'projects': failures + successes + unstable,
       'failures': failures,
       'successes': successes,
       'unstable': unstable,
