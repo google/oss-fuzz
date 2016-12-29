@@ -40,7 +40,7 @@ def call(body) {
     def dockerTag = "ossfuzz/$projectName"
 
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
-        .format(ZonedDateTime.now(ZoneOffset.UTC))
+        .format(java.time.ZonedDateTime.now(ZoneOffset.UTC))
 
     node {
         def workspace = pwd()
