@@ -4,3 +4,4 @@ coverage_flags: "-fsanitize-coverage=trace-pc-guard"
 sanitizers:
  - address
  - undefined
+ - memory
