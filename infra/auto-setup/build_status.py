@@ -4,7 +4,6 @@ import codecs
 import datetime
 import json
 import os
-import pprint
 import subprocess
 import sys
 import traceback
@@ -43,7 +42,6 @@ def get_build_results(server):
       project = name[len('projects/'):]
 
       info = server.get_job_info(name)
-      pprint.pprint(info)
       last_build_number = info['lastCompletedBuild']['number']
       build_result = Result(
           project,
