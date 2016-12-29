@@ -17,7 +17,7 @@ Supported sanitizers:
 | `undefined` | [Undefined Behavior Sanitizer](http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html).
 | `memory` | [Memory Sanitizer](https://github.com/google/sanitizers/wiki/MemorySanitizer). *NOTE: It is critical that you build __all__ the code in your program (including libraries it uses) with memory sanitizer.*
 
-Compiler flag values for predefined configurations are specified in [Dockerfile](Dockerfile). 
+Compiler flag values for predefined configurations are specified in the [Dockerfile](../base-images/base-builder/Dockerfile). 
 These flags can be overriden by specifying `$SANITIZER_FLAGS` directly.
 
 You can choose which configurations to automatically run your fuzzers with in `project.yaml` file ([sqlite3](../../../projects/sqlite3/project.yaml)):
