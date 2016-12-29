@@ -158,7 +158,6 @@ def build_fuzzers(build_args):
     return 1
 
   env = ['BUILD_UID=%d' % os.getuid()]
-
   if args.e:
     env += args.e
 
