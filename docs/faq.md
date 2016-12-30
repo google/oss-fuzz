@@ -18,7 +18,7 @@ Security access control is important for the kind of issues that OSS-Fuzz detect
 We will reconsider github issue tracker once the
 [access control feature](https://github.com/isaacs/github/issues/37) is available.
 
-## Why we require an e-mail associated with a Google account?
+## Why do you require an e-mail associated with a Google account?
 
 The [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) uses Google accounts for authentication. 
 Note that any e-mail address [can be associated](https://support.google.com/accounts/answer/176347?hl=en)
@@ -31,7 +31,7 @@ An easy-to-use Docker image is provided to simplify toolchain distribution. This
 to a multitude of Linux varieties and provides a reproducible and secure environment for fuzzer
 building and execution.
 
-## How timeouts and OOMs are handled?
+## How do you handle timeouts and OOMs?
 
 If a single input to a [fuzz target](glossary.md#fuzz-target)
 requires more than **~25 seconds** or more than **2GB RAM** to process, we
