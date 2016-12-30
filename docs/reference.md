@@ -2,7 +2,7 @@
 
 ## Sanitizers
 
-Fuzzers are usualy built with one or more  [sanitizer](https://github.com/google/sanitizers) enabled. 
+Fuzzers are usually built with one or more  [sanitizer](https://github.com/google/sanitizers) enabled. 
 You can select sanitizer configuration by specifying `$SANITIZER` build environment varible using `-e` option:
 
 ```bash
@@ -15,7 +15,7 @@ Supported sanitizers:
 | ------------ | ----------
 | `address` *(default)* | [Address Sanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizer) with [Leak Sanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer).
 | `undefined` | [Undefined Behavior Sanitizer](http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html).
-| `memory` | [Memory Sanitizer](https://github.com/google/sanitizers/wiki/MemorySanitizer). *NOTE: It is critical that you build __all__ the code in your program (including libraries it uses) with memory sanitizer.*
+| `memory` | [Memory Sanitizer](https://github.com/google/sanitizers/wiki/MemorySanitizer).<br/>*NOTE: It is critical that you build __all__ the code in your program (including libraries it uses) with memory sanitizer. Otherwise, you will see false positive crashes due to inability to see initializations in uninstrumented code.*
 
 Compiler flag values for predefined configurations are specified in the [Dockerfile](../infra/base-images/base-builder/Dockerfile). 
 These flags can be overriden by specifying `$SANITIZER_FLAGS` directly.
