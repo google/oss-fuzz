@@ -20,7 +20,7 @@ cp $SRC/libreoffice/extras/source/truetype/symbol/opens___.ttf instdir/share/fon
 #minimal runtime requirements
 mkdir $OUT/services $OUT/types
 pushd instdir/program
-cp wmffuzzer *rc *rdb */*rdb $OUT
+cp *fuzzer *rc *rdb */*rdb $OUT
 popd
 
 #starting corpuses
