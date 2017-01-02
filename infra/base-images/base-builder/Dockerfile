@@ -42,3 +42,9 @@ COPY coverage_report compile compile_libfuzzer srcmap reproduce run just_run \
 WORKDIR $SRC
 CMD ["compile"]
 
+ADD http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz $SRC/
+RUN mkdir afl && \
+    cd afl && \
+    tar -xzv --strip-components=1 -f $SRC/afl-latest.tgz && \
+    rm -rf $SRC/afl-latest.tgz && \
+    ls -lR /src

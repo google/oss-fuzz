@@ -17,17 +17,18 @@
 
 cd $SRC/fribidi
 ./bootstrap
-./configure --enable-static=yes --enable-shared=no --with-pic=yes
+./configure --enable-static=yes --enable-shared=no --with-pic=yes --prefix=/work/
 # Don't run "make": it's broken. Run "make install".
 make install
 
 cd $SRC/libass
 
+export PKG_CONFIG_PATH=/work/lib/pkgconfig
 ./autogen.sh
 ./configure --disable-asm
 make -j$(nproc)
 
-$CXX $CXXFLAGS -std=c++11 -I$SRC/libass \
+$CXX $CXXFLAGS -std=c++11 -I$SRC/libass -L/work/lib \
     $SRC/libass_fuzzer.cc -o $OUT/libass_fuzzer \
     -lFuzzingEngine libass/.libs/libass.a \
     -Wl,-Bstatic -lfontconfig  -lfribidi -lfreetype -lz -lpng12 \

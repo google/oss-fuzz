@@ -1,3 +1,5 @@
+#!/bin/bash -eux
+#
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,15 +15,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM ossfuzz/base-libfuzzer
-MAINTAINER alex.gaynor@gmail.com
-RUN apt-get install -y make autoconf automake libtool nasm curl
-RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
-
-RUN mkdir afl-testcases
-RUN cd afl-testcases/ && curl http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar -xz
-RUN zip libjpeg_turbo_fuzzer_seed_corpus.zip afl-testcases/jpeg/full/images/* afl-testcases/jpeg_turbo/full/images/* $SRC/libjpeg-turbo/testimages/*
-
-WORKDIR libjpeg-turbo
-COPY build.sh libjpeg_turbo_fuzzer.cc $SRC/
+$CXX $CXXFLAGS -std=c++11 -g src/cxa_demangle.cpp -Iinclude fuzz/cxa_demangle_fuzzer.cpp \
+  -o $OUT/cxa_demangle_fuzzer  -lFuzzingEngine

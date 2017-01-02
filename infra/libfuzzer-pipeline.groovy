@@ -38,18 +38,16 @@ def call(body) {
     def dockerGit = dockerfileConfig["git"]
     def dockerContextDir = dockerfileConfig["context"] ?: ""
     def dockerTag = "ossfuzz/$projectName"
-    def dockerUid = 0 // TODO: try to make $USER to work
-    def dockerRunOptions = "--user $dockerUid --cap-add SYS_PTRACE"
-    
+
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
-        .format(java.time.LocalDateTime.now())
+        .format(java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC))
 
     node {
         def workspace = pwd()
-        // def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
-        echo "using uid $dockerUid"
-
         def srcmapFile = "$workspace/srcmap.json"
+        def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
+        def dockerRunOptions = "-e BUILD_UID=$uid --cap-add SYS_PTRACE"
+
         echo "Building $dockerTag: $project"
 
         sh "docker run --rm $dockerRunOptions -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""

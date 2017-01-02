@@ -33,6 +33,8 @@ OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
 
 
+GLOBAL_ARGS = None
+
 def main():
   os.chdir(OSSFUZZ_DIR)
   if not os.path.exists(BUILD_DIR):
@@ -40,10 +42,14 @@ def main():
 
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
   parser.add_argument(
+      '--nopull', default=False, action='store_const', const=True,
+      help='do not specify --pull while building an image')
+  parser.add_argument(
       'command',
       help='One of: generate, build_image, build_fuzzers, run_fuzzer, coverage, shell',
       nargs=argparse.REMAINDER)
-  args = parser.parse_args()
+  global GLOBAL_ARGS
+  GLOBAL_ARGS = args = parser.parse_args()
 
   if not args.command:
     parser.print_help()
@@ -110,10 +116,13 @@ def _build_image(image_name):
 
     dockerfile_dir = os.path.join('projects', image_name)
 
-  command = [
-        'docker', 'build', '--pull', '-t', 'ossfuzz/' + image_name,
-        dockerfile_dir,
-  ]
+
+  build_args = []
+  if not GLOBAL_ARGS.nopull:
+      build_args += ['--pull']
+  build_args += ['-t', 'ossfuzz/' + image_name, dockerfile_dir ]
+
+  command = [ 'docker', 'build' ] + build_args
   print('Running:', _get_command_string(command))
 
   try:
@@ -140,18 +149,24 @@ def build_image(build_args):
 def build_fuzzers(build_args):
   """Build fuzzers."""
   parser = argparse.ArgumentParser('helper.py build_fuzzers')
+  parser.add_argument('-e', action='append', help="set environment variable")
   parser.add_argument('project_name')
   args = parser.parse_args(build_args)
+  project_name = args.project_name
 
   if not _build_image(args.project_name):
     return 1
 
-  command = [
-        'docker', 'run', '--rm', '-i',
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
-        '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
-        '-t', 'ossfuzz/' + args.project_name,
-  ]
+  env = ['BUILD_UID=%d' % os.getuid()]
+  if args.e:
+    env += args.e
+
+  command = (['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
+             sum([['-e', v] for v in env], []) +
+             ['-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name),
+              '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
+              '-t', 'ossfuzz/' + project_name
+             ])
 
   print('Running:', _get_command_string(command))
 
@@ -183,7 +198,7 @@ def run_fuzzer(run_args):
     return 1
 
   command = [
-      'docker', 'run', '--rm', '-i',
+      'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-t', 'ossfuzz/base-runner',
       'run_fuzzer',
@@ -217,7 +232,7 @@ def coverage(run_args):
   temp_dir = tempfile.mkdtemp()
 
   command = [
-      'docker', 'run', '--rm', '-i',
+      'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
@@ -235,7 +250,7 @@ def coverage(run_args):
     pipe.communicate()
 
   command = [
-        'docker', 'run', '--rm', '-i',
+        'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
         '-v', '%s:/cov' % temp_dir,
         '-w', '/cov',
@@ -293,7 +308,7 @@ def shell(shell_args):
     return 1
 
   command = [
-        'docker', 'run', '--rm', '-i',
+        'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
         '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
         '-t', 'ossfuzz/' + args.project_name,

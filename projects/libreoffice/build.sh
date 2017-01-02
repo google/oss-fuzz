@@ -10,10 +10,13 @@ export LDFLAGS="$CFLAGS -lpthread"
 cd $WORK
 $SRC/libreoffice/autogen.sh --with-distro=LibreOfficeOssFuzz --with-external-tar=$SRC
 
+#build-time rsc tool leaks a titch
+export ASAN_OPTIONS="detect_leaks=0"
+
 make fuzzers
 
 #some minimal fonts required
-cp extras/source/truetype/symbol/opens___.ttf instdir/share/fonts/truetype/Liberation* $OUT
+cp $SRC/libreoffice/extras/source/truetype/symbol/opens___.ttf instdir/share/fonts/truetype/Liberation* $OUT
 #minimal runtime requirements
 mkdir $OUT/services $OUT/types
 pushd instdir/program
@@ -21,4 +24,4 @@ cp wmffuzzer *rc *rdb */*rdb $OUT
 popd
 
 #starting corpuses
-cp $SRC/*_seed_corpus.zip $OUT/instdir/program
+cp $SRC/*_seed_corpus.zip $OUT
