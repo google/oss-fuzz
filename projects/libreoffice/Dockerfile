@@ -87,6 +87,12 @@ ADD http://dev-www.libreoffice.org/src/dbf2caca1d3afd410a29217a9809d397-freetype
 ADD http://dev-www.libreoffice.org/src/77e15a92006ddc2adbb06f840d591c0e-fontconfig-2.8.0.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/libepoxy-1.3.1.tar.bz2 $SRC/
 #fuzzing corpuses
+RUN mkdir afl-testcases
+RUN cd afl-testcases/ && curl http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar -xz
+RUN zip $SRC/jpgfuzzer_seed_corpus.zip afl-testcases/jpeg*/full/images/*
+RUN zip $SRC/giffuzzer_seed_corpus.zip afl-testcases/gif*/full/images/*
+RUN zip $SRC/bmpfuzzer_seed_corpus.zip afl-testcases/bmp*/full/images/*
+RUN zip $SRC/pngfuzzer_seed_corpus.zip afl-testcases/png*/full/images/*
 ADD http://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
