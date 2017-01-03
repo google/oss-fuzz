@@ -22,7 +22,7 @@ cd $OUT
 
 FUZZER=$1
 shift
-CMD_LINE="$FUZZER $@"
+CMD_LINE="$FUZZER $FUZZER_ARGS $@"
 
 OPTIONS_FILE="${FUZZER}.options"
 if [ -f $OPTIONS_FILE ]; then
