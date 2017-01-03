@@ -14,8 +14,13 @@ This file contains the bytes that were fed to the [Fuzz Target](http://libfuzzer
 If you have already [integrated](ideal_integration.md) the fuzz target with your build and test system, 
 all you do is run:
 <pre>
-./fuzz_target_binary <b><i>$testcase_file_absolute_path</i></b>
+./fuzz_target_binary <testcase_path>
 </pre>
+
+If this is a timeout bug, add the <b><i>-timeout=25</i></b> argument.
+If this is a OOM bug, add the <b><i>-rss_limit_mb=2048</i></b> argument.
+Read more on how timeouts and OOMs are handed [here](faq.md#how-do-you-handle-timeouts-and-ooms).
+
 Depending on the nature of the bug, the fuzz target binary needs to be built with the appropriate [sanitizer](https://github.com/google/sanitizers)
 (e.g. if this is a buffer overflow, with [AddressSanitizer](http://clang.llvm.org/docs/AddressSanitizer.html)).
 
@@ -26,7 +31,7 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 - *Reproduce using latest OSS-Fuzz build:* 
 
    <pre>
-docker run --rm -ti -v <b><i>$testcase_file_absolute_path</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
+python infra/helper.py reproduce $PROJECT_NAME <fuzzer_name> <testcase_path>
    </pre>
 
   It builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
@@ -35,13 +40,13 @@ docker run --rm -ti -v <b><i>$testcase_file_absolute_path</i></b>:/testcase ossf
   E.g. for [libxml2](../projects/libxml2) project with fuzzer named `libxml2_xml_read_memory_fuzzer`, it will be: 
   
    <pre>
-docker run --rm -ti -v <b><i>~/Downloads/testcase</i></b>:/testcase ossfuzz/<b><i>libxml2</i></b> reproduce <b><i>libxml2_xml_read_memory_fuzzer</i></b>
+python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Downloads/testcase
    </pre>
 - *Reproduce using local source checkout:*
 
     <pre>
-    docker run --rm -ti -v <b><i>$local_source_checkout_dir</i></b>:/src/<b><i>$project</i></b> \
-                        -v <b><i>$testcase_file_absolute_path</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
+python infra/helper.py build_fuzzers $PROJECT_NAME <source_path>
+python infra/helper.py reproduce $PROJECT_NAME <fuzzer_name> <testcase_path>
     </pre>
   
   This is essentially the previous command that additionally mounts local sources into the running container.

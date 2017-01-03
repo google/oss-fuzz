@@ -15,5 +15,17 @@
 #
 ################################################################################
 
-compile
-just_run $@
+FUZZER=$1
+shift
+TESTCASE="/testcase"
+
+if [ ! -f $TESTCASE ]; then
+  echo "Error: $TESTCASE not found, use: docker run -v <path>:$TESTCASE ..."
+  exit 1
+fi
+
+export PATH=/out:$PATH
+cd /out
+
+$FUZZER $FUZZER_ARGS $@ $TESTCASE
+
