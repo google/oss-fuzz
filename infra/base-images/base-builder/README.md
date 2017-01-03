@@ -12,25 +12,7 @@ docker run --rm -ti ossfuzz/<b><i>$project</i></b> <i>&lt;command&gt;</i> <i>&lt
 | Command | Description |
 |---------|-------------|
 | `compile` (default) | build all fuzz targets
-| `reproduce <fuzzer_name> <fuzzer_options>` | build all fuzz targets and run specified one with testcase `/testcase` and given options.
-| `run <fuzzer_name> <fuzzer_options...>` | build all fuzz targets and run specified one with given options.
 | `/bin/bash` | drop into shell, execute `compile` script to start build.
-
-# Examples
-
-- *Reproduce using latest OSS-Fuzz build:*
-
-   <pre>
-docker run --rm -ti -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
-   </pre>
-
-- *Reproduce using local source checkout:*
-
-    <pre>
-    docker run --rm -ti -v <b><i>$local_source_checkout_dir</i></b>:/src/<b><i>$project</i></b> \
-                        -v <b><i>$testcase_file</i></b>:/testcase ossfuzz/<b><i>$project</i></b> reproduce <b><i>$fuzzer</i></b>
-    </pre>
-
 
 # Build Configuration
 
@@ -51,7 +33,6 @@ The configuration is picked through one or more environment variables.
    <pre>
 docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> ossfuzz/sqlite3
    </pre>
-
 
 
 # Image Files Layout

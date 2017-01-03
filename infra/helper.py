@@ -32,7 +32,6 @@ import time
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
 
-
 GLOBAL_ARGS = None
 
 def main():
@@ -46,7 +45,7 @@ def main():
       help='do not specify --pull while building an image')
   parser.add_argument(
       'command',
-      help='One of: generate, build_image, build_fuzzers, run_fuzzer, coverage, shell',
+      help='One of: generate, build_image, build_fuzzers, run_fuzzer, coverage, reproduce, shell',
       nargs=argparse.REMAINDER)
   global GLOBAL_ARGS
   GLOBAL_ARGS = args = parser.parse_args()
@@ -65,6 +64,8 @@ def main():
     return run_fuzzer(args.command[1:])
   elif args.command[0] == 'coverage':
     return coverage(args.command[1:])
+  elif args.command[0] == 'reproduce':
+    return reproduce(args.command[1:])
   elif args.command[0] == 'shell':
     return shell(args.command[1:])
   else:
@@ -100,6 +101,11 @@ def _check_fuzzer_exists(project_name, fuzzer_name):
   return True
 
 
+def _get_absolute_path(path):
+  """Returns absolute path with user expansion."""
+  return os.path.abspath(os.path.expanduser(path))
+
+
 def _get_command_string(command):
   """Returns a shell escaped command string."""
   return ' '.join(pipes.quote(part) for part in command)
@@ -120,7 +126,7 @@ def _build_image(image_name):
   build_args = []
   if not GLOBAL_ARGS.nopull:
       build_args += ['--pull']
-  build_args += ['-t', 'ossfuzz/' + image_name, dockerfile_dir ]
+  build_args += ['-t', 'ossfuzz/%s' % image_name, dockerfile_dir ]
 
   command = [ 'docker', 'build' ] + build_args
   print('Running:', _get_command_string(command))
@@ -151,6 +157,8 @@ def build_fuzzers(build_args):
   parser = argparse.ArgumentParser('helper.py build_fuzzers')
   parser.add_argument('-e', action='append', help="set environment variable")
   parser.add_argument('project_name')
+  parser.add_argument('source_path', help='path of local source',
+                      nargs='?')
   args = parser.parse_args(build_args)
   project_name = args.project_name
 
@@ -161,12 +169,20 @@ def build_fuzzers(build_args):
   if args.e:
     env += args.e
 
-  command = (['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
-             sum([['-e', v] for v in env], []) +
-             ['-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name),
-              '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
-              '-t', 'ossfuzz/' + project_name
-             ])
+  command = (
+      ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
+      sum([['-e', v] for v in env], [])
+  )
+  if args.source_path:
+    command += [
+        '-v',
+        '%s:/src/%s' % (_get_absolute_path(args.source_path), args.project_name)
+    ]
+  command += [
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name),
+      '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
+      '-t', 'ossfuzz/%s' % project_name
+  ]
 
   print('Running:', _get_command_string(command))
 
@@ -209,6 +225,7 @@ def run_fuzzer(run_args):
   pipe = subprocess.Popen(command)
   pipe.communicate()
 
+
 def coverage(run_args):
   """Runs a fuzzer in the container."""
   parser = argparse.ArgumentParser('helper.py coverage')
@@ -236,7 +253,7 @@ def coverage(run_args):
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
-      '-e', 'ASAN_OPTIONS=coverage=1,detect_leaks=0',
+      '-e', 'ASAN_OPTIONS=coverage=1',
       '-t', 'ossfuzz/base-runner',
       '/out/%s' % args.fuzzer_name,
       '-max_total_time=%s' % args.run_time
@@ -258,6 +275,40 @@ def coverage(run_args):
         '-t', 'ossfuzz/%s' % args.project_name,
         'coverage_report', '/out/%s' % args.fuzzer_name,
   ]
+
+  print('Running:', _get_command_string(command))
+  pipe = subprocess.Popen(command)
+  pipe.communicate()
+
+
+def reproduce(run_args):
+  """Reproduces a testcase in the container."""
+  parser = argparse.ArgumentParser('helper.py reproduce')
+  parser.add_argument('project_name', help='name of the project')
+  parser.add_argument('fuzzer_name', help='name of the fuzzer')
+  parser.add_argument('testcase_path', help='path of local testcase')
+  parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
+                      nargs=argparse.REMAINDER)
+  args = parser.parse_args(run_args)
+
+  if not _check_project_exists(args.project_name):
+    return 1
+
+  if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
+    return 1
+
+  if not _build_image('base-runner'):
+    return 1
+
+  command = [
+      'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
+      '-t', 'ossfuzz/base-runner',
+      'reproduce',
+      '/out/%s' % args.fuzzer_name,
+      '-runs=100',
+  ] + args.fuzzer_args
 
   print('Running:', _get_command_string(command))
   pipe = subprocess.Popen(command)
@@ -311,7 +362,7 @@ def shell(shell_args):
         'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
         '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
-        '-t', 'ossfuzz/' + args.project_name,
+        '-t', 'ossfuzz/%s' % args.project_name,
         '/bin/bash'
   ]
   print('Running:', _get_command_string(command))
