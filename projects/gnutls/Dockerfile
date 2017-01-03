@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER alex.gaynor@gmail.com
 RUN apt-get install -y make autoconf automake libtool autopoint libnettle6 nettle-dev pkg-config gperf bison autogen texinfo curl
 

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool build-essential \
     libass-dev libfreetype6-dev libsdl1.2-dev \

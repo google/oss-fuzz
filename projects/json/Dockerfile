@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER vitalybuka@gmail.com
 RUN apt-get install -y binutils make
 

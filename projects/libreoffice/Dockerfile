@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER officesecurity@lists.freedesktop.org
 #build requirements
 RUN apt-get build-dep -y libreoffice
