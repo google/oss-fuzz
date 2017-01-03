@@ -14,11 +14,11 @@ This file contains the bytes that were fed to the [Fuzz Target](http://libfuzzer
 If you have already [integrated](ideal_integration.md) the fuzz target with your build and test system, 
 all you do is run:
 <pre>
-./fuzz_target_binary <testcase_path>
+./fuzz_target_binary <b><i>&lt;testcase_path&gt;</i></b>
 </pre>
 
-If this is a timeout bug, add the <b><i>-timeout=25</i></b> argument.
-If this is a OOM bug, add the <b><i>-rss_limit_mb=2048</i></b> argument.
+If this is a timeout bug, add the <b><i>-timeout=25</i></b> argument.<br />
+If this is an OOM bug, add the <b><i>-rss_limit_mb=2048</i></b> argument.<br />
 Read more on how timeouts and OOMs are handed [here](faq.md#how-do-you-handle-timeouts-and-ooms).
 
 Depending on the nature of the bug, the fuzz target binary needs to be built with the appropriate [sanitizer](https://github.com/google/sanitizers)
@@ -31,7 +31,7 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 - *Reproduce using latest OSS-Fuzz build:* 
 
    <pre>
-python infra/helper.py reproduce $PROJECT_NAME <fuzzer_name> <testcase_path>
+   python infra/helper.py reproduce $PROJECT_NAME <b><i>&lt;fuzzer_name&gt;</i></b> <b><i>&lt;testcase_path&gt;</i></b>
    </pre>
 
   It builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
@@ -45,8 +45,8 @@ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Downlo
 - *Reproduce using local source checkout:*
 
     <pre>
-python infra/helper.py build_fuzzers $PROJECT_NAME <source_path>
-python infra/helper.py reproduce $PROJECT_NAME <fuzzer_name> <testcase_path>
+python infra/helper.py build_fuzzers $PROJECT_NAME <b><i>&lt;source_path&gt;</i></b>
+python infra/helper.py reproduce $PROJECT_NAME <b><i>&lt;fuzzer_name&gt;</i></b> <b><i>&lt;testcase_path&gt;</i></b>
     </pre>
   
   This is essentially the previous command that additionally mounts local sources into the running container.
