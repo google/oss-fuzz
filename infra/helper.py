@@ -287,7 +287,8 @@ def reproduce(run_args):
   parser.add_argument('project_name', help='name of the project')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('testcase_path', help='path of local testcase')
-
+  parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
+                      nargs=argparse.REMAINDER)
   args = parser.parse_args(run_args)
 
   if not _check_project_exists(args.project_name):
@@ -306,7 +307,8 @@ def reproduce(run_args):
       '-t', 'ossfuzz/base-runner',
       'reproduce',
       '/out/%s' % args.fuzzer_name,
-  ]
+      '-runs=100',
+  ] + args.fuzzer_args
 
   print('Running:', _get_command_string(command))
   pipe = subprocess.Popen(command)
