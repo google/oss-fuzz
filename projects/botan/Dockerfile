@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER jack@randombit.net
 RUN apt-get install -y make python
 RUN git clone --depth 1 https://github.com/randombit/botan.git botan

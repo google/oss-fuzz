@@ -15,9 +15,11 @@
 #
 ################################################################################
 
-FUZZER_FILES=$(find -name "fuzzer-parse*.cpp")
+make FUZZER_ENGINE="-lFuzzingEngine" fuzzers -Ctest
+
+FUZZER_FILES=$(find test/ -maxdepth 1 -executable -type f)
 for F in $FUZZER_FILES; do
+    cp $F $OUT/
     FUZZER=$(basename $F .cpp)
-    $CXX $CXXFLAGS -std=c++11 -Isrc/ $F -o $OUT/$FUZZER -lFuzzingEngine
     cp $SRC/fuzzer-parse.options $OUT/$FUZZER.options
 done

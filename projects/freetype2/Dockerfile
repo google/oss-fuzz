@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y make autoconf libtool libarchive-dev
 

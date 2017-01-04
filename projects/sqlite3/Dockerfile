@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER tanin@google.com
 RUN apt-get install -y make autoconf automake libtool fossil tcl
 
