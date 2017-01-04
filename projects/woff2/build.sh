@@ -21,21 +21,13 @@ cat brotli/shared.mk | sed -e "s/-no-canonical-prefixes//" \
 > brotli/shared.mk.temp
 mv brotli/shared.mk.temp brotli/shared.mk
 
-cat Makefile | sed -e "s/-no-canonical-prefixes//" \
-> Makefile.temp
-mv Makefile.temp Makefile
-
 # woff2 uses LFLAGS instead of LDFLAGS.
 make clean
-make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" all
+make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" CANONICAL_PREFIXES= all
 
-# To avoid multiple main() definitions.
-rm src/woff2_compress.o src/woff2_decompress.o
-
-# Build the fuzzer.
-fuzzer=convert_woff2ttf_fuzzer
-$CXX $CXXFLAGS -std=c++11 -Isrc \
-    $SRC/$fuzzer.cc -o $OUT/$fuzzer \
-    -lFuzzingEngine src/*.o brotli/dec/*.o brotli/enc/*.o
+# Build fuzzers
+for fuzzer_archive in $(ls src/*fuzzer*.a); do
+  $CXX $CXXFLAGS -lFuzzingEngine $fuzzer_archive -o $OUT/${fuzzer_archive%.a}
+done
 
 cp $SRC/*.options $OUT/
