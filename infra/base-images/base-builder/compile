@@ -22,7 +22,8 @@ if [ -z "${SANITIZER_FLAGS-}" ]; then
   export SANITIZER_FLAGS=$(echo ${!FLAGS_VAR})
 fi
 
-bash compile_${FUZZING_ENGINE}
+# compile script might override environment, use . to call it.
+. compile_${FUZZING_ENGINE}
 
 if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
 then

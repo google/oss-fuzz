@@ -15,11 +15,16 @@
 #
 ################################################################################
 
-echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE ..."
-mkdir -p $WORK/libfuzzer
-pushd $WORK/libfuzzer > /dev/null
-$CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
+echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
+mkdir -p $WORK/afl
+pushd $WORK/afl > /dev/null
+$CC $CFLAGS $SANITIZER_FLAGS -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
+$CXX $CXXFLAGS -std=c++11 $SANITIZER_FLAGS -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
+ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
 popd > /dev/null
-rm -rf $WORK/libfuzzer
+rm -rf $WORK/afl
+
+# afl needs its special coverage flags
+export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc"
+
 echo " done."

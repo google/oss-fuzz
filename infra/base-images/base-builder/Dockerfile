@@ -36,13 +36,15 @@ ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 # TODO: remove after tpm2 catchup.
 ENV FUZZER_LDFLAGS ""
 
-COPY compile compile_libfuzzer coverage_report srcmap /usr/local/bin/
-
 WORKDIR $SRC
-CMD ["compile"]
 
 ADD http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz $SRC/
 RUN mkdir afl && \
     cd afl && \
     tar -xzv --strip-components=1 -f $SRC/afl-latest.tgz && \
     rm -rf $SRC/afl-latest.tgz
+
+COPY compile compile_afl compile_libfuzzer coverage_report srcmap /usr/local/bin/
+
+CMD ["compile"]
+
