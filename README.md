@@ -49,7 +49,8 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
   ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=9)).
   ([Why different tracker?](docs/faq.md#why-do-you-use-a-different-issue-tracker-for-reporting-bugs-in-oss-projects)).
   Project owners are CC-ed to the bug report.
-- The bug is fixed upstream.
+- The project developer fixes the bug upstream and credits OSS-Fuzz for the discovery (commit message should contain
+  the string **'Credit to OSS-Fuzz'**).
 - [ClusterFuzz](docs/clusterfuzz.md) automatically verifies the fix, adds a comment and closes the issue ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53#c3)).
 - 7 days after the fix is verified or 90 days after reporting, the issue becomes *public*
   ([guidelines](#bug-disclosure-guidelines)).
