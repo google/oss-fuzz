@@ -63,7 +63,7 @@ ADD http://dev-www.libreoffice.org/src/libmwaw-0.3.9.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libodfgen-0.1.6.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/liborcus-0.12.1.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/libpagemaker-0.0.3.tar.bz2 $SRC/
-ADD http://dev-www.libreoffice.org/src/libpng-1.6.24.tar.gz $SRC/
+ADD http://dev-www.libreoffice.org/src/libpng-1.6.28.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/librevenge-0.0.4.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libstaroffice-0.0.2.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libvisio-0.1.5.tar.bz2 $SRC/
@@ -95,6 +95,7 @@ RUN zip -q $SRC/giffuzzer_seed_corpus.zip afl-testcases/gif*/full/images/*
 RUN zip -q $SRC/bmpfuzzer_seed_corpus.zip afl-testcases/bmp*/full/images/*
 RUN zip -q $SRC/pngfuzzer_seed_corpus.zip afl-testcases/png*/full/images/*
 ADD http://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/xbmfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
