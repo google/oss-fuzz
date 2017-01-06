@@ -31,7 +31,7 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 - *Reproduce using latest OSS-Fuzz build:* 
 
    <pre>
-   python infra/helper.py reproduce $PROJECT_NAME <b><i>&lt;fuzzer_name&gt;</i></b> <b><i>&lt;testcase_path&gt;</i></b>
+   python infra/helper.py reproduce <b><i>$PROJECT_NAME</i></b> <b><i>&lt;fuzzer_name&gt;</i></b> <b><i>&lt;testcase_path&gt;</i></b>
    </pre>
 
   It builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
@@ -45,8 +45,8 @@ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Downlo
 - *Reproduce using local source checkout:*
 
     <pre>
-python infra/helper.py build_fuzzers $PROJECT_NAME <b><i>&lt;source_path&gt;</i></b>
-python infra/helper.py reproduce $PROJECT_NAME <b><i>&lt;fuzzer_name&gt;</i></b> <b><i>&lt;testcase_path&gt;</i></b>
+python infra/helper.py build_fuzzers <b><i>$PROJECT_NAME</i></b> <b><i>&lt;source_path&gt;</i></b>
+python infra/helper.py reproduce <b><i>$PROJECT_NAME</i></b> <b><i>&lt;fuzzer_name&gt;</i></b> <b><i>&lt;testcase_path&gt;</i></b>
     </pre>
   
   This is essentially the previous command that additionally mounts local sources into the running container.
