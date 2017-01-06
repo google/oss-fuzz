@@ -31,7 +31,7 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 - *Reproduce using latest OSS-Fuzz build:* 
 
 ```bash
-$ python infra/helper.py reproduce $PROJECT_NAME <fuzzer_name> <testcase_path>
+$ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
   It builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
@@ -47,7 +47,7 @@ $ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Down
 
 ```bash
 $ python infra/helper.py build_fuzzers $PROJECT_NAME <source_path>
-$ python infra/helper.py reproduce $PROJECT_NAME <fuzzer_name> <testcase_path>
+$ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
   This is essentially the previous command that additionally mounts local sources into the running container.
