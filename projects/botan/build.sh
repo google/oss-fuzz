@@ -20,7 +20,7 @@ cd $SRC/botan
 # This assumes $CC is set to either 'clang' or 'gcc'
 ./configure.py --cc=$CC --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
                --unsafe-fuzzer-mode --disable-shared --disable-modules=locking_allocator
-make -j$(nproc) libbotan-1.11.a
+make -j$(nproc) libbotan-2.a
 
 jigs=$(find $SRC/botan/src/extra_tests/fuzzers/jigs -name "*.cpp")
 
