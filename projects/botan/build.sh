@@ -27,7 +27,7 @@ jigs=$(find $SRC/botan/src/extra_tests/fuzzers/jigs -name "*.cpp")
 for fuzzer_src in $jigs; do
   fuzzer=$(basename $fuzzer_src .cpp)
   $CXX $CXXFLAGS -DUSE_LLVM_FUZZER -std=c++11 -I$SRC/botan/build/include \
-       -o $OUT/$fuzzer $fuzzer_src -L$SRC/botan -lbotan-1.11 -lFuzzingEngine
+       -o $OUT/$fuzzer $fuzzer_src -L$SRC/botan -lbotan-2 -lFuzzingEngine
 
   if [ -d "$SRC/crypto-corpus/${fuzzer}" ]; then
     zip -j $OUT/${fuzzer}_seed_corpus.zip $SRC/crypto-corpus/${fuzzer}/*
