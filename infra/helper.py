@@ -256,6 +256,7 @@ def coverage(run_args):
       '-e', 'ASAN_OPTIONS=coverage=1',
       '-t', 'ossfuzz/base-runner',
       '/out/%s' % args.fuzzer_name,
+      '-dump_coverage=1',
       '-max_total_time=%s' % args.run_time
   ] + args.fuzzer_args
 

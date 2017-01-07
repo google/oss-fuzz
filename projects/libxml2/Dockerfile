@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER ochang@chromium.org
 RUN apt-get install -y make autoconf automake libtool pkg-config
 

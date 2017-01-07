@@ -81,11 +81,11 @@ and all the code it depends on, but not the `main()` function.
 * The build system supports changing the compiler and passing extra compiler
 flags so that the build command for a `foo_fuzzer.a` looks similar to this:
 
-```
-CC="clang $FUZZER_FLAGS" CXX="clang++ $FUZZER_FLAGS" make_or_whatever_other_command foo_fuzzer.a
+```bash
+$ CC="clang $FUZZER_FLAGS" CXX="clang++ $FUZZER_FLAGS" make_or_whatever_other_command foo_fuzzer.a
 ```
 
-In this case, linking the target with e.g. libFuzzer will look like "clang++ foo_fuzzer.a libFuzzer.a".
+In this case, linking the target with e.g. libFuzzer will look like "clang++ libFuzzer.a foo_fuzzer.a ".
 This will allow to have minimal OSS-Fuzz specific configuration and thus be more robust. 
 
 There is no point in hardcoding the exact compiler flags in the build system because they 

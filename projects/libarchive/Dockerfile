@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER kcwu@google.com
 
 # Installing optional libraries can utilize more code path and/or improve
