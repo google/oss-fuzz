@@ -1,6 +1,23 @@
+# Copyright 2016 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+##############################################################################
+
 FROM ossfuzz/base-builder
 MAINTAINER nickm@torproject.org
 RUN apt-get install -y zlib1g zlib1g-dev libevent-dev libevent-2.0 openssl autoconf automake libssl-dev make libc++-dev
-RUN true && true && git clone https://git.torproject.org/nickm/tor.git -b combined-fuzzing-v3
+RUN true && true && true && true && true && git clone https://git.torproject.org/nickm/tor.git -b combined-fuzzing-v3
+RUN git clone https://github.com/nmathewson/tor-fuzz-corpora.git
 WORKDIR tor
 COPY build.sh $SRC/
