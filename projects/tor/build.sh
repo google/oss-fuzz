@@ -43,7 +43,7 @@ for fuzzer in src/test/fuzz/*.a; do
     output="${fuzzer%.a}"
     output="${output##*lib}"
     ${CXX} ${CXXFLAGS} -std=c++11 -lFuzzingEngine ${fuzzer} ${TORLIBS} -o ${OUT}/${output}
-    zip ${OUT}/${output}_seed_corpus.zip ${SRC}/tor-fuzz-corpora/${output#oss-fuzz-}
+    zip -j ${OUT}/${output}_seed_corpus.zip ${SRC}/tor-fuzz-corpora/${output#oss-fuzz-}/*
 done
 
 
