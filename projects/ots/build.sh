@@ -19,12 +19,9 @@
 ./autogen.sh
 ./configure
 
-make libots.a libwoff2.a libbrotli.a
-
 # Build the fuzzer.
-$CXX $CXXFLAGS -std=c++11 -Iinclude \
-    $SRC/ots_fuzzer.cc -o $OUT/ots_fuzzer \
-    -lFuzzingEngine -lz $SRC/ots/libots.a $SRC/ots/libwoff2.a $SRC/ots/libbrotli.a
+make -j$(nproc) V=1 CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN" LDFLAGS="-lFuzzingEngine" ots-fuzzer
+mv ots-fuzzer $OUT/
 
-cp $SRC/ots_fuzzer.options $OUT/
-zip $OUT/ots_fuzzer_seed_corpus.zip $SRC/seed_corpus/*
+cp $SRC/ots-fuzzer.options $OUT/
+zip -j -r $OUT/ots-fuzzer_seed_corpus.zip $SRC/ots/tests/fonts
