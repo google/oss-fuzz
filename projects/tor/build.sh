@@ -37,7 +37,7 @@ TORLIBS="$TORLIBS src/common/libor-testing.a"
 TORLIBS="$TORLIBS src/common/libor-ctime-testing.a"
 TORLIBS="$TORLIBS src/common/libor-event-testing.a"
 TORLIBS="$TORLIBS src/trunnel/libor-trunnel-testing.a"
-TORLIBS="$TORLIBS -lz -lm -levent -lssl -lcrypto"
+TORLIBS="$TORLIBS -lz -lm -lssl -lcrypto -Wl,-Bstatic -levent -Wl,-Bdynamic"
 
 for fuzzer in src/test/fuzz/*.a; do
     output="${fuzzer%.a}"
