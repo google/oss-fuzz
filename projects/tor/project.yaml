@@ -1,3 +1,6 @@
 homepage: "https://www.torproject.org"
 primary_contact: "nima@torproject.org"
 auto_ccs: "nickm@torproject.org"
+sanitizers:
+ - address
+ - undefined
