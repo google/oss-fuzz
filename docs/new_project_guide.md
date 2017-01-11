@@ -49,7 +49,7 @@ It is preferred to keep and maintain [fuzz targets](glossary.md#fuzz-target) in 
 This file defines the Docker image definition. This is where the build.sh script will be executed in.
 It is very simple for most projects:
 ```docker
-FROM ossfuzz/base-libfuzzer               # base image with clang toolchain
+FROM ossfuzz/base-builder               # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                     # maintainer for this file
 RUN apt-get install -y ...                # install required packages to build your project
 RUN git clone <git_url> <checkout_dir>    # checkout all sources needed to build your project
@@ -77,10 +77,10 @@ In general, this script will need to:
 
 *Note*:
 
-1. Please don't assume that the fuzzing engine is libFuzzer and hardcode in your build scripts. 
-In future, we will add support for other fuzzing engines like AFL. 
+1. Please don't assume that the fuzzing engine is libFuzzer and hardcode in your build scripts.
+In future, we will add support for other fuzzing engines like AFL.
 So, link the fuzzing engine using `-lFuzzingEngine`, see example below.
-2. Please make sure that the binary names for your [fuzz targets](glossary.md#fuzz-target) contain only 
+2. Please make sure that the binary names for your [fuzz targets](glossary.md#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 
 For expat, this looks like [this](https://github.com/google/oss-fuzz/blob/master/projects/expat/build.sh):
@@ -127,8 +127,8 @@ These flags are provided in the following environment variables:
 Most well-crafted build scripts will automatically use these variables. If not,
 pass them manually to the build tool.
 
-See [Provided Environment Variables](../infra/base-images/base-libfuzzer/README.md#provided-environment-variables) section in
-`base-libfuzzer` image documentation for more details.
+See [Provided Environment Variables](../infra/base-images/base-builder/README.md#provided-environment-variables) section in
+`base-builder` image documentation for more details.
 
 
 ## Testing locally

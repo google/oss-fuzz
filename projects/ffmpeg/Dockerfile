@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-libfuzzer
+FROM ossfuzz/base-builder
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool build-essential \
     libass-dev libfreetype6-dev libsdl1.2-dev \
@@ -27,7 +27,7 @@ RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 RUN wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.1.0.tar.bz2
 RUN git clone git://anongit.freedesktop.org/mesa/drm
 RUN git clone https://github.com/mstorsjo/fdk-aac.git
-RUN wget https://sourceforge.net/projects/lame/files/latest/download -O lame.tar.gz
+ADD https://sourceforge.net/projects/lame/files/latest/download lame.tar.gz
 RUN git clone git://anongit.freedesktop.org/xorg/lib/libXext
 RUN git clone git://anongit.freedesktop.org/git/xorg/lib/libXfixes
 RUN git clone git://anongit.freedesktop.org/git/libva
