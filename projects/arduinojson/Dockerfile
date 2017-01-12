@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +14,9 @@
 #
 ################################################################################
 
-# Build the project.
-./autogen.sh
-./configure
-
-# Build the fuzzer.
-make -j$(nproc) V=1 CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN" LDFLAGS="-lFuzzingEngine" ots-fuzzer
-mv ots-fuzzer $OUT/
-
-cp $SRC/ots-fuzzer.options $OUT/
-zip -j -r $OUT/ots-fuzzer_seed_corpus.zip $SRC/ots/tests/fonts
+FROM ossfuzz/base-builder
+MAINTAINER oss-fuzz@benoitblanchon.fr
+RUN apt-get install -y make zip git
+RUN git clone --depth 1 https://github.com/bblanchon/ArduinoJson.git
+WORKDIR ArduinoJson
+COPY build.sh $SRC/
