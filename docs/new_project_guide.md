@@ -152,7 +152,7 @@ $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>
 ```
 
 If everything works locally, then it should also work on our automated builders and ClusterFuzz.
-If it fails, check out [this](docs/fuzzer_environment.md#dependencies) entry.
+If it fails, check out [this](fuzzer_environment.md#dependencies) entry.
 
 It's recommended to look at code coverage as a sanity check to make sure that
 [fuzz target](glossary.md#fuzz-target) gets to the code you expect.
