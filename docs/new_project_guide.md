@@ -142,15 +142,17 @@ $ python infra/helper.py build_fuzzers $PROJECT_NAME
 ```
 
 This should place the built binaries into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
-directory on your machine (and `$OUT` in the container). You should then try to run these binaries
-inside the container to make sure that they work properly:
+directory on your machine (and `$OUT` in the container).
+
+*Note*: You *must* run these fuzz target binaries inside the base-runner docker
+container to make sure that they work properly:
 
 ```bash
 $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>
 ```
 
-If everything works locally, then it should also work on our automated builders
-and ClusterFuzz.
+If everything works locally, then it should also work on our automated builders and ClusterFuzz.
+If it fails, check out [this](docs/fuzzer_environment.md#dependencies) entry.
 
 It's recommended to look at code coverage as a sanity check to make sure that
 [fuzz target](glossary.md#fuzz-target) gets to the code you expect.
