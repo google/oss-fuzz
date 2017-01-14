@@ -17,7 +17,6 @@
 
 # configure script doesn't like the oss-fuzz CFLAGS
 ./autogen.sh CFLAGS=
-export LIB_FUZZING_ENGINE=/usr/lib/libFuzzingEngine.a
 ./configure --without-textui --with-fuzzer --with-fuzzer-lib=$LIB_FUZZING_ENGINE CC=$CC CXX=$CXX CFLAGS= CXXFLAGS="$CXXFLAGS"
 make "-j$(nproc)" CFLAGS="$CFLAGS"
 
