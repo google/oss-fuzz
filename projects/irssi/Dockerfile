@@ -20,4 +20,4 @@ RUN apt-get install -y make autoconf automake libtool pkg-config libglib2.0-dev 
 RUN git clone https://github.com/irssi/irssi
 
 WORKDIR irssi
-COPY build.sh $SRC/
+COPY build.sh *.options $SRC/
