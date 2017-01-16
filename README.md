@@ -116,6 +116,7 @@ gives a list of publically viewable fixed bugs found by OSS-Fuzz.
 ## References
 * [libFuzzer documentation](http://libfuzzer.info)
 * [libFuzzer tutorial](http://tutorial.libfuzzer.info)
+* [libFuzzer workshop](https://github.com/Dor1s/libfuzzer-workshop)
 * [Chromium Fuzzing Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)
 * [ClusterFuzz](https://blog.chromium.org/2012/04/fuzzing-for-security.html)
 
