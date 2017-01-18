@@ -1,5 +1,5 @@
 homepage: "https://github.com/bblanchon/ArduinoJson"
-primary_contact: "oss-fuzz@benoitblanchon.fr"
+primary_contact: "benoit.blanchon@gmail.com"
 sanitizers:
   - address
   - undefined
