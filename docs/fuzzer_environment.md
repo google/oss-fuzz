@@ -9,9 +9,13 @@ and libraries in the execution environment. Make sure to statically link any
 library dependencies with your fuzz target executable during build time 
 ([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/build.sh#L40)). 
 All build artifacts needed during fuzz target execution should be inside `$OUT` 
-directory, and other directories like `$WORK`, `$SRC`, etc will not be accessible. 
+directory. Other directories like `$WORK`, `$SRC` OR dependent packages installed
+in build.sh will not be available.
+
 You can ensure that the fuzz target works correctly by using `run_fuzzer` command 
-(see instructions [here](docs/new_project_guide.md#testing-locally)).
+(see instructions [here](new_project_guide.md#testing-locally)). This command uses
+a clean base-runner docker container and not the base-builder docker container
+created during build-time.
 
 ## Current working directory
 
