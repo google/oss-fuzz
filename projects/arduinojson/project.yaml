@@ -3,4 +3,3 @@ primary_contact: "oss-fuzz@benoitblanchon.fr"
 sanitizers:
   - address
   - undefined
-  - memory
