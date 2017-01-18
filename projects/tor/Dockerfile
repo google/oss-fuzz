@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,15 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-################################################################################
+##############################################################################
 
-# Build the project.
-./autogen.sh
-./configure
-
-# Build the fuzzer.
-make -j$(nproc) V=1 CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN" LDFLAGS="-lFuzzingEngine" ots-fuzzer
-mv ots-fuzzer $OUT/
-
-cp $SRC/ots-fuzzer.options $OUT/
-zip -j -r $OUT/ots-fuzzer_seed_corpus.zip $SRC/ots/tests/fonts
+FROM ossfuzz/base-builder
+MAINTAINER nickm@torproject.org
+RUN apt-get install -y zlib1g zlib1g-dev libevent-dev libevent-2.0 openssl autoconf automake libssl-dev make
+RUN git clone https://git.torproject.org/nickm/tor.git -b combined-fuzzing-v3
+RUN git clone https://github.com/nmathewson/tor-fuzz-corpora.git
+WORKDIR tor
+COPY build.sh $SRC/

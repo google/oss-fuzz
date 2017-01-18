@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +14,10 @@
 #
 ################################################################################
 
-# Build the project.
-./autogen.sh
-./configure
+FROM ossfuzz/base-builder
+MAINTAINER joseph.bisch@gmail.com
+RUN apt-get install -y make autoconf automake libtool pkg-config libglib2.0-dev libncurses5-dev libssl-dev openssl lynx
+RUN git clone https://github.com/irssi/irssi
 
-# Build the fuzzer.
-make -j$(nproc) V=1 CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN" LDFLAGS="-lFuzzingEngine" ots-fuzzer
-mv ots-fuzzer $OUT/
-
-cp $SRC/ots-fuzzer.options $OUT/
-zip -j -r $OUT/ots-fuzzer_seed_corpus.zip $SRC/ots/tests/fonts
+WORKDIR irssi
+COPY build.sh *.options $SRC/
