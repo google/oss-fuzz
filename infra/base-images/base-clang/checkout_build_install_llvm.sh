@@ -21,6 +21,7 @@ apt-get install -y $LLVM_DEP_PACKAGES
 # Checkout
 cd $SRC && git clone --depth 1 http://llvm.org/git/llvm.git
 cd $SRC/llvm/tools && git clone --depth 1 http://llvm.org/git/clang.git
+cd $SRC/llvm/tools && git clone --depth 1 http://llvm.org/git/lld.git
 cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/compiler-rt.git
 cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxx.git
 cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxxabi.git
