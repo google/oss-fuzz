@@ -17,6 +17,10 @@ You can ensure that the fuzz target works correctly by using `run_fuzzer` comman
 a clean base-runner docker container and not the base-builder docker container
 created during build-time.
 
+## argv[0]
+
+You must not modify argv[0]. It is required for certain things to work correctly.
+
 ## Current working directory
 
 You should not make any assumptions about the current working directory of your
