@@ -85,8 +85,9 @@ def upload_status(successes, failures, unstable):
   with open('status.html', 'w') as f:
     f.write(env.get_template('status_template.html').render(data))
 
-  subprocess.check_output(['gsutil', 'cp', 'status.html', 'gs://' +
-                           LOGS_BUCKET], stderr=subprocess.STDOUT)
+  subprocess.check_output(['gsutil', '-h', 'Cache-Control: no-cache',
+                           'cp', 'status.html', 'gs://' + LOGS_BUCKET],
+                          stderr=subprocess.STDOUT)
 
   with open('status.json', 'w') as f:
     f.write(json.dumps(data))
