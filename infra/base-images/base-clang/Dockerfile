@@ -32,6 +32,6 @@ ENV CC "clang"
 ENV CXX "clang++"
 ENV CCC "clang++"
 
-ENV CFLAGS "-g -fuse-ld=lld -Wno-error=unused-command-line-argument"
+ENV CFLAGS "-g"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
