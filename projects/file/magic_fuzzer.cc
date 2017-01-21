@@ -38,8 +38,11 @@ static Environment* env;
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   char* exe_path = (*argv)[0];
-  char* dir = dirname(exe_path);
+  // dirname() can modify its argument.
+  char* exe_path_copy = strdup(exe_path);
+  char* dir = dirname(exe_path_copy);
   env = new Environment(dir);
+  free(exe_path_copy);
   return 0;
 }
 
