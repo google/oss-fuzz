@@ -47,8 +47,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
   struct archive_entry *entry;
   while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
     while ((r = archive_read_data(a, data_buffer.data(),
-            data_buffer.size()) > 0)
-      );
+            data_buffer.size())) > 0)
+      ;
     if (r == ARCHIVE_FATAL)
       break;
   }
