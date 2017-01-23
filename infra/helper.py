@@ -91,8 +91,15 @@ def _check_project_exists(project_name):
 
 def _check_fuzzer_exists(project_name, fuzzer_name):
   """Checks if a fuzzer exists."""
-  if not os.path.exists(os.path.join(BUILD_DIR, 'out', project_name,
-                                     fuzzer_name)):
+  command = ['docker', 'run', '--rm']
+  command.extend(['-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name)])
+  command.append('ubuntu:16.04')
+
+  command.extend(['/bin/bash', '-c', 'test -f /out/%s' % fuzzer_name])
+
+  try:
+    subprocess.check_call(command)
+  except subprocess.CalledProcessError:
     print(fuzzer_name,
           'does not seem to exist. Please run build_fuzzers first.',
           file=sys.stderr)
