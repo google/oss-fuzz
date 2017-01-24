@@ -81,8 +81,8 @@ Following [Google's standard disclosure policy](https://googleprojectzero.blogsp
 OSS-Fuzz will adhere to following disclosure principles:
   - **90-day deadline**. After notifying project authors, we will open reported
     issues in 90 days, or 7 days after the fix is released.
-  - **Weekends and holidays**. If a deadline is due to expire on a weekend or
-    US public holiday, the deadline will be moved to the next normal work day.
+  - **Weekends and holidays**. If a deadline is due to expire on a weekend,
+    the deadline will be moved to the next normal work day.
   - **Grace period**. We have a 14-day grace period. If a 90-day deadline
     expires but the upstream engineers let us know before the deadline that a
     patch is scheduled for release on a specific day within 14 days following
