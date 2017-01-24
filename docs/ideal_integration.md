@@ -72,24 +72,26 @@ The syntax is described [here](http://libfuzzer.info/#dictionaries).
 
 ## Build support
 A plethora of different build systems exist in the open-source world.
-And the less OSS-Fuzz knows about them, the better it can scale. 
+And the less OSS-Fuzz knows about them, the better it can scale.
 
 An ideal build integration for OSS-Fuzz would look like this:
-* For every fuzz target `foo` in the project, there is a build rule that builds `foo_fuzzer.a`,
-an archive that contains the fuzzing entry point (`LLVMFuzzerTestOneInput`)
-and all the code it depends on, but not the `main()` function.
+* For every fuzz target `foo` in the project, there is a build rule that builds `foo_fuzzer`,
+a binary that contains the fuzzing entry point (`LLVMFuzzerTestOneInput`)
+and all the code it depends on, and that uses the `main()` function from `$LIB_FUZZING_ENGINE`
+(env var [provided](new_project_guide.md) by OSS-Fuzz environment).
 * The build system supports changing the compiler and passing extra compiler
-flags so that the build command for a `foo_fuzzer.a` looks similar to this:
+flags so that the build command for a `foo_fuzzer` looks similar to this:
 
 ```bash
-$ CC="clang $FUZZER_FLAGS" CXX="clang++ $FUZZER_FLAGS" make_or_whatever_other_command foo_fuzzer.a
+# Assume the following env vars are set:
+# CC, CXX, CFLAGS, CXXFLAGS, LIB_FUZZING_ENGINE
+$ make_or_whatever_other_command foo_fuzzer
 ```
 
-In this case, linking the target with e.g. libFuzzer will look like "clang++ libFuzzer.a foo_fuzzer.a ".
-This will allow to have minimal OSS-Fuzz specific configuration and thus be more robust. 
+This will allow to have minimal OSS-Fuzz-specific configuration and thus be more robust.
 
-There is no point in hardcoding the exact compiler flags in the build system because they 
-a) may change and b) are different depending on the fuzzing engine and the sanitizer being used. 
+There is no point in hardcoding the exact compiler flags in the build system because they
+a) may change and b) are different depending on the fuzzing engine and the sanitizer being used.
 
 ## Not a project member?
 
