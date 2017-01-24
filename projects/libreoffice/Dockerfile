@@ -69,7 +69,7 @@ ADD http://dev-www.libreoffice.org/src/libstaroffice-0.0.2.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libvisio-0.1.5.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libwpd-0.10.1.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libwpg-0.3.1.tar.bz2 $SRC/
-ADD http://dev-www.libreoffice.org/src/libwps-0.4.4.tar.bz2 $SRC/
+ADD http://dev-www.libreoffice.org/src/libwps-0.4.5.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libzmf-0.0.1.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/zlib-1.2.8.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/poppler-0.50.0.tar.xz $SRC/
@@ -82,7 +82,7 @@ ADD http://dev-www.libreoffice.org/src/bae83fa5dc7f081768daace6e199adc3-glm-0.9.
 ADD http://dev-www.libreoffice.org/src/1901302aaff1c1633ef81862663d2917-icu4c-58_1-src.tgz $SRC/
 ADD http://dev-www.libreoffice.org/src/ae249165c173b1ff386ee8ad676815f5-libxml2-2.9.4.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/a129d3c44c022de3b9dcf6d6f288d72e-libxslt-1.1.29.tar.gz $SRC/
-ADD http://dev-www.libreoffice.org/src/9849a2381bacbeb2714034ad825bede8-hunspell-1.5.4.tar.gz $SRC/
+ADD http://dev-www.libreoffice.org/src/047c3feb121261b76dc16cdb62f54483-hunspell-1.6.0.tar.gz
 ADD http://dev-www.libreoffice.org/src/dbf2caca1d3afd410a29217a9809d397-freetype-2.4.8.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/77e15a92006ddc2adbb06f840d591c0e-fontconfig-2.8.0.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/libepoxy-1.3.1.tar.bz2 $SRC/
@@ -102,6 +102,7 @@ ADD http://dev-www.libreoffice.org/corpus/pcdfuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/dxffuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/metfuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/ppmfuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/psdfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
