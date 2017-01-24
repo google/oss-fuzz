@@ -21,7 +21,7 @@ node {
   sh "docker rm \$(docker ps -a -q) || true"
 
   stage name: 'images', concurrency: 1
-  sh "docker rmi \$(docker images -q -f dangling=true) || true"
+  sh "docker rmi -f \$(docker images -q -f dangling=true) || true"
   
   stage name: 'volumes', concurrency: 1
   sh "docker volume rm \$(docker volume ls -qf dangling=true) || true"

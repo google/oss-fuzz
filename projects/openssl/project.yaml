@@ -1,6 +1,14 @@
 homepage: "https://www.openssl.org/"
 primary_contact: "kurt@roeckx.be"
-auto_ccs: "openssl-security@openssl.org"
+auto_ccs: 
+ - "openssl-security@openssl.org"
+ - "benl@google.com"
+ - "snhenson@gmail.com"
+ - "appronym@gmail.com"
+ - "ekasper@google.com"
+ - "rich.salz@gmail.com"
+ - "caswell.matt@googlemail.com"
+ - "richard@levitte.org"
 sanitizers:
  - address
  - undefined

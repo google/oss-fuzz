@@ -15,13 +15,9 @@
 ################################################################################
 
 FROM ossfuzz/base-builder
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y make autoconf libtool libarchive-dev
+MAINTAINER joseph.bisch@gmail.com
+RUN apt-get install -y make autoconf automake libtool pkg-config libglib2.0-dev libncurses5-dev libssl-dev openssl lynx
+RUN git clone https://github.com/irssi/irssi
 
-# Get some files for the seed corpus
-ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/font-corpus/
-RUN git clone https://github.com/unicode-org/text-rendering-tests.git && cp text-rendering-tests/fonts/* $SRC/font-corpus
-
-RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
-WORKDIR freetype2
+WORKDIR irssi
 COPY build.sh *.options $SRC/

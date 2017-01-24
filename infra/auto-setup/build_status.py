@@ -85,14 +85,16 @@ def upload_status(successes, failures, unstable):
   with open('status.html', 'w') as f:
     f.write(env.get_template('status_template.html').render(data))
 
-  subprocess.check_output(['gsutil', 'cp', 'status.html', 'gs://' +
-                           LOGS_BUCKET], stderr=subprocess.STDOUT)
+  subprocess.check_output(['gsutil', '-h', 'Cache-Control: no-cache',
+                           'cp', 'status.html', 'gs://' + LOGS_BUCKET],
+                          stderr=subprocess.STDOUT)
 
   with open('status.json', 'w') as f:
     f.write(json.dumps(data))
 
-  subprocess.check_output(['gsutil', 'cp', 'status.json', 'gs://' +
-                           LOGS_BUCKET], stderr=subprocess.STDOUT)
+  subprocess.check_output(['gsutil', '-h', 'Cache-Control: no-cache', 'cp',
+                           'status.json', 'gs://' + LOGS_BUCKET],
+                          stderr=subprocess.STDOUT)
 
 
 def upload_build_logs(results):
@@ -101,10 +103,10 @@ def upload_build_logs(results):
     with codecs.open('latest.txt', 'w', encoding='utf-8') as f:
       f.write(result.output)
 
-    subprocess.check_output(['gsutil', 'cp', 'latest.txt',
-                             'gs://%s/build_logs/%s/' %
-                             (LOGS_BUCKET, result.name)],
-                             stderr=subprocess.STDOUT)
+    subprocess.check_output([
+        'gsutil', '-h', 'Cache-Control: no-cache', 'cp', 'latest.txt',
+        'gs://%s/build_logs/%s/' % (LOGS_BUCKET, result.name)
+    ], stderr=subprocess.STDOUT)
 
 
 def main():

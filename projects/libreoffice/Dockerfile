@@ -98,6 +98,10 @@ ADD http://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/xbmfuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/xpmfuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/svmfuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/pcdfuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/dxffuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/metfuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/ppmfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice

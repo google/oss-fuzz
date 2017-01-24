@@ -24,7 +24,7 @@ ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,signed-integer-overflow,shift,vpt
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
 # Default build flags for coverage.
-ENV COVERAGE_FLAGS="-fsanitize-coverage=edge,indirect-calls,8bit-counters"
+ENV COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard,trace-cmp"
 
 # Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"
