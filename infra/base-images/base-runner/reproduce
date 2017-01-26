@@ -24,8 +24,7 @@ if [ ! -f $TESTCASE ]; then
   exit 1
 fi
 
-export PATH=/out:$PATH
-cd /out
-
+export PATH=$OUT:$PATH
+cd $OUT
 $FUZZER $FUZZER_ARGS $@ $TESTCASE
 
