@@ -16,11 +16,11 @@
 
 FROM ossfuzz/base-builder
 MAINTAINER mmoroz@chromium.org
-RUN apt-get install -y make autoconf automake libtool mercurial zlib1g-dev
+RUN apt-get install -y make mercurial zlib1g-dev gyp ninja-build libssl-dev
 
 RUN hg clone https://hg.mozilla.org/projects/nspr nspr
 RUN hg clone https://hg.mozilla.org/projects/nss nss
 RUN git clone --depth 1 https://github.com/mozilla/nss-fuzzing-corpus.git nss-corpus
 
 WORKDIR nss
-COPY build.sh fuzzers/* $SRC/
+COPY build.sh $SRC/
