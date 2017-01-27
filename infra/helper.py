@@ -225,7 +225,7 @@ def run_fuzzer(run_args):
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-t', 'ossfuzz/base-runner',
       'run_fuzzer',
-      '/out/%s' % args.fuzzer_name,
+      args.fuzzer_name,
   ] + args.fuzzer_args
 
   print('Running:', _get_command_string(command))
@@ -314,7 +314,7 @@ def reproduce(run_args):
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
       '-t', 'ossfuzz/base-runner',
       'reproduce',
-      '/out/%s' % args.fuzzer_name,
+      args.fuzzer_name,
       '-runs=100',
   ] + args.fuzzer_args
 
