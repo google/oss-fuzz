@@ -1,19 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0f773a1..9fcd5c4 100644
+index 0f773a1..696fb88 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -46,6 +46,10 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
- FIND_PACKAGE(PkgConfig)
- FIND_PACKAGE(Threads REQUIRED)
- 
-+# Find statically linked SSL for portability (https://github.com/google/oss-fuzz/)
-+IF (BUILD_FUZZER)
-+    SET(OPENSSL_USE_STATIC_LIBS TRUE)
-+ENDIF ()
- FIND_PACKAGE(OpenSSL)
- FIND_PACKAGE(ZLIB REQUIRED)
- 
-@@ -533,14 +537,26 @@ IF (BUILD_FUZZER)
+@@ -533,14 +533,26 @@ IF (BUILD_FUZZER)
      ADD_EXECUTABLE(h2o-fuzzer-http2 fuzz/driver.cc)
      SET_TARGET_PROPERTIES(h2o-fuzzer-http1 PROPERTIES COMPILE_FLAGS "-DHTTP1")
      SET_TARGET_PROPERTIES(h2o-fuzzer-http2 PROPERTIES COMPILE_FLAGS "-DHTTP2")
@@ -47,7 +36,7 @@ index 0f773a1..9fcd5c4 100644
  ENDIF (BUILD_FUZZER)
  
  # environment-specific tweaks
-@@ -567,4 +583,7 @@ ELSE ()
+@@ -567,4 +579,7 @@ ELSE ()
      SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
  ENDIF ()
  
