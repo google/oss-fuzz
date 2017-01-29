@@ -205,7 +205,7 @@ for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
-      $SRC/ffmpeg/doc/examples/decoder_targeted.c \
+      $SRC/ffmpeg/tools/target_dec_fuzzer.c \
       -o $OUT/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
@@ -223,7 +223,7 @@ for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
-      $SRC/ffmpeg/doc/examples/decoder_targeted.c \
+      $SRC/ffmpeg/tools/target_dec_fuzzer.c \
       -o $OUT/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
@@ -278,7 +278,7 @@ for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
-      $SRC/ffmpeg/doc/examples/decoder_targeted.c \
+      $SRC/ffmpeg/tools/target_dec_fuzzer.c \
       -o $OUT/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
