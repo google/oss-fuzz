@@ -1,25 +1,25 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0f773a1..86ff193 100644
+index 0f773a1..9fcd5c4 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -46,6 +46,10 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
  FIND_PACKAGE(PkgConfig)
  FIND_PACKAGE(Threads REQUIRED)
-
+ 
 +# Find statically linked SSL for portability (https://github.com/google/oss-fuzz/)
 +IF (BUILD_FUZZER)
 +    SET(OPENSSL_USE_STATIC_LIBS TRUE)
 +ENDIF ()
  FIND_PACKAGE(OpenSSL)
  FIND_PACKAGE(ZLIB REQUIRED)
-
-@@ -533,14 +537,27 @@ IF (BUILD_FUZZER)
+ 
+@@ -533,14 +537,26 @@ IF (BUILD_FUZZER)
      ADD_EXECUTABLE(h2o-fuzzer-http2 fuzz/driver.cc)
      SET_TARGET_PROPERTIES(h2o-fuzzer-http1 PROPERTIES COMPILE_FLAGS "-DHTTP1")
      SET_TARGET_PROPERTIES(h2o-fuzzer-http2 PROPERTIES COMPILE_FLAGS "-DHTTP2")
 -    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize-coverage=edge,indirect-calls,8bit-counters")
 -    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize-coverage=edge,indirect-calls,8bit-counters")
--    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
 -    TARGET_LINK_LIBRARIES(h2o-fuzzer-http1 libh2o-evloop ${EXTRA_LIBS} ${CMAKE_CURRENT_BINARY_DIR}/libFuzzer.a)
 -    TARGET_LINK_LIBRARIES(h2o-fuzzer-http2 libh2o-evloop ${EXTRA_LIBS} ${CMAKE_CURRENT_BINARY_DIR}/libFuzzer.a)
 -    ADD_CUSTOM_TARGET(libFuzzer ${CMAKE_CURRENT_SOURCE_DIR}/misc/build_libFuzzer.sh WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -30,13 +30,11 @@ index 0f773a1..86ff193 100644
 +        SET(LIB_FUZZER FuzzingEngine)
 +        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
 +        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
-+        SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
 +    ELSE ()
 +        # Default non-oss-fuzz options
 +        SET(LIB_FUZZER "${CMAKE_CURRENT_BINARY_DIR}/libFuzzer.a")
 +        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize-coverage=edge,indirect-calls,8bit-counters")
 +        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address -fsanitize-coverage=edge,indirect-calls,8bit-counters")
-+        SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
 +
 +        ADD_CUSTOM_TARGET(libFuzzer ${CMAKE_CURRENT_SOURCE_DIR}/misc/build_libFuzzer.sh WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 +        ADD_DEPENDENCIES(h2o-fuzzer-http1 libFuzzer)
@@ -47,15 +45,14 @@ index 0f773a1..86ff193 100644
 +    TARGET_LINK_LIBRARIES(h2o-fuzzer-http2 libh2o-evloop ${EXTRA_LIBS} ${LIB_FUZZER})
 +
  ENDIF (BUILD_FUZZER)
-
+ 
  # environment-specific tweaks
-@@ -567,4 +584,7 @@ ELSE ()
+@@ -567,4 +583,7 @@ ELSE ()
      SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
  ENDIF ()
-
+ 
 -SET(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 +# Retain CXX_FLAGS for std c++ compatiability across fuzz build/test environments
 +IF (NOT BUILD_FUZZER)
 +    SET(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 +ENDIF (NOT BUILD_FUZZER)
-
