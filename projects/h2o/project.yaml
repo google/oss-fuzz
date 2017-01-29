@@ -1,4 +1,6 @@
 homepage: "https://github.com/h2o/h2o"
-primary_contact: "frederik.deweerdt@gmail.com"
+primary_contact: "jonathan.foote@gmail.com"
 auto_ccs:
+  - "frederik.deweerdt@gmail.com"
   - "kazuhooku@gmail.com"
+  - "security@fastly.com"
