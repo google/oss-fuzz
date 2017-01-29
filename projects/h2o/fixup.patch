@@ -1,16 +1,19 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0f773a1..c904a40 100644
+index 0f773a1..86ff193 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -23,6 +23,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
- CMAKE_POLICY(SET CMP0003 NEW)
+@@ -46,6 +46,10 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+ FIND_PACKAGE(PkgConfig)
+ FIND_PACKAGE(Threads REQUIRED)
 
- PROJECT(h2o)
-+SET(OPENSSL_USE_STATIC_LIBS TRUE)
++# Find statically linked SSL for portability (https://github.com/google/oss-fuzz/)
++IF (BUILD_FUZZER)
++    SET(OPENSSL_USE_STATIC_LIBS TRUE)
++ENDIF ()
+ FIND_PACKAGE(OpenSSL)
+ FIND_PACKAGE(ZLIB REQUIRED)
 
- SET(VERSION_MAJOR "2")
- SET(VERSION_MINOR "2")
-@@ -533,14 +534,28 @@ IF (BUILD_FUZZER)
+@@ -533,14 +537,27 @@ IF (BUILD_FUZZER)
      ADD_EXECUTABLE(h2o-fuzzer-http2 fuzz/driver.cc)
      SET_TARGET_PROPERTIES(h2o-fuzzer-http1 PROPERTIES COMPILE_FLAGS "-DHTTP1")
      SET_TARGET_PROPERTIES(h2o-fuzzer-http2 PROPERTIES COMPILE_FLAGS "-DHTTP2")
@@ -40,17 +43,19 @@ index 0f773a1..c904a40 100644
 +        ADD_DEPENDENCIES(h2o-fuzzer-http2 libFuzzer)
 +    ENDIF (OSS_FUZZ)
 +
-+    MESSAGE("YOOO ${LIB_FUZZER}")
 +    TARGET_LINK_LIBRARIES(h2o-fuzzer-http1 libh2o-evloop ${EXTRA_LIBS} ${LIB_FUZZER})
 +    TARGET_LINK_LIBRARIES(h2o-fuzzer-http2 libh2o-evloop ${EXTRA_LIBS} ${LIB_FUZZER})
 +
  ENDIF (BUILD_FUZZER)
 
  # environment-specific tweaks
-@@ -567,4 +582,4 @@ ELSE ()
+@@ -567,4 +584,7 @@ ELSE ()
      SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
  ENDIF ()
 
 -SET(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
-+#SET(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
++# Retain CXX_FLAGS for std c++ compatiability across fuzz build/test environments
++IF (NOT BUILD_FUZZER)
++    SET(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
++ENDIF (NOT BUILD_FUZZER)
 
