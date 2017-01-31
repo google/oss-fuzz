@@ -12,7 +12,7 @@
 [re2](https://github.com/google/re2/tree/master/re2/fuzzing),
 [harfbuzz](https://github.com/behdad/harfbuzz/tree/master/test/fuzzing),
 [pcre2](http://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
-[ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decoder_targeted.c).
+[ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/tools/target_dec_fuzzer.c).
 
 - [Install Docker](installing_docker.md). ([Why Docker?](faq.md#why-do-you-use-docker))
 
