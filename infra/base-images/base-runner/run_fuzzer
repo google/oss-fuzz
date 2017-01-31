@@ -18,11 +18,12 @@
 # Fuzzer runner. Appends .options arguments and seed corpus to users args.
 # Usage: $0 <fuzzer_name> <fuzzer_args>
 
+export PATH=$OUT:$PATH
 cd $OUT
 
 FUZZER=$1
 shift
-CMD_LINE="$FUZZER $FUZZER_ARGS $@"
+CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $@"
 
 OPTIONS_FILE="${FUZZER}.options"
 if [ -f $OPTIONS_FILE ]; then

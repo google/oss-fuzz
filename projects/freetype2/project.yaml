@@ -1,2 +1,4 @@
 homepage: "https://www.freetype.org/"
 primary_contact: "lemzwerg@gmail.com"
+auto_ccs:
+- "darnold@adobe.com"
