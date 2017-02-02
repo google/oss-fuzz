@@ -260,7 +260,6 @@ def coverage(run_args):
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
-      '-e', 'ASAN_OPTIONS=coverage=1',
       '-t', 'ossfuzz/base-runner',
       '/out/%s' % args.fuzzer_name,
       '-dump_coverage=1',
