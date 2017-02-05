@@ -169,6 +169,8 @@ make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
 # Build the fuzzers.
 cd $SRC/ffmpeg
 
+FUZZ_TARGET_SOURCE=$SRC/ffmpeg/tools/target_dec_fuzzer.c
+
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
 
@@ -205,7 +207,7 @@ for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
-      $SRC/ffmpeg/doc/examples/decoder_targeted.c \
+      $FUZZ_TARGET_SOURCE \
       -o $OUT/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
@@ -223,7 +225,7 @@ for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
-      $SRC/ffmpeg/doc/examples/decoder_targeted.c \
+      $FUZZ_TARGET_SOURCE \
       -o $OUT/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
@@ -278,7 +280,7 @@ for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
-      $SRC/ffmpeg/doc/examples/decoder_targeted.c \
+      $FUZZ_TARGET_SOURCE \
       -o $OUT/${fuzzer_name} \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}

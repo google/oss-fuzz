@@ -1,5 +1,4 @@
-#!/bin/bash -eux
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +14,12 @@
 #
 ################################################################################
 
-FUZZER=$1
-shift
-TESTCASE="/testcase"
+FROM ossfuzz/base-builder
+MAINTAINER vitalybuka@gmail.com
+RUN apt-get install -y make autoconf automake libtool pkg-config cmake ninja-build liblzma-dev libz-dev
 
-if [ ! -f $TESTCASE ]; then
-  echo "Error: $TESTCASE not found, use: docker run -v <path>:$TESTCASE ..."
-  exit 1
-fi
+RUN git clone --depth 1  https://github.com/google/libprotobuf-mutator.git
+WORKDIR libprotobuf-mutator
 
-export PATH=$OUT:$PATH
-cd $OUT
-$OUT/$FUZZER $FUZZER_ARGS $@ $TESTCASE
-
+COPY build.sh $SRC/
+COPY libxml2* $SRC/

@@ -9,6 +9,3 @@ auto_ccs:
  - "rich.salz@gmail.com"
  - "caswell.matt@googlemail.com"
  - "richard@levitte.org"
-sanitizers:
- - address
- - undefined

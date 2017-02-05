@@ -32,6 +32,6 @@ ENV CC "clang"
 ENV CXX "clang++"
 ENV CCC "clang++"
 
-ENV CFLAGS "-g"
+ENV CFLAGS "-fno-omit-frame-pointer -gline-tables-only"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"

@@ -25,7 +25,7 @@ def call(body) {
 
     // Project configuration.
     def projectName = project["name"] ?: env.JOB_BASE_NAME
-    def sanitizers = project["sanitizers"] ?: ["address"]
+    def sanitizers = project["sanitizers"] ?: ["address", "undefined"]
     def coverageFlags = project["coverage_flags"]
 
     // Dockerfile config

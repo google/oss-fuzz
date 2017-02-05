@@ -1,1 +1,3 @@
 homepage: "http://site.icu-project.org/"
+sanitizers:
+- address

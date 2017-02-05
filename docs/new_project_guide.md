@@ -12,7 +12,7 @@
 [re2](https://github.com/google/re2/tree/master/re2/fuzzing),
 [harfbuzz](https://github.com/behdad/harfbuzz/tree/master/test/fuzzing),
 [pcre2](http://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
-[ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/doc/examples/decoder_targeted.c).
+[ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/tools/target_dec_fuzzer.c).
 
 - [Install Docker](installing_docker.md). ([Why Docker?](faq.md#why-do-you-use-docker))
 
@@ -138,7 +138,7 @@ Use the helper script to build docker image and [fuzz targets](glossary.md#fuzz-
 ```bash
 $ cd /path/to/oss-fuzz
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers $PROJECT_NAME
+$ python infra/helper.py build_fuzzers -e SANITIZER=<address/memory/undefined> $PROJECT_NAME
 ```
 
 This should place the built binaries into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
@@ -161,6 +161,9 @@ It's recommended to look at code coverage as a sanity check to make sure that
 $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
 ```
 
+*Note*: Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined) 
+configurations. MemorySanitizer is in development mode and not recommended for use. Make sure to test each
+of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).
 
 ## Debugging Problems
 
