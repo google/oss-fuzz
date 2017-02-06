@@ -16,7 +16,7 @@
 #
 ################################################################################
 
-cp $SRC/*.options $OUT/
+cp -f $SRC/*.dict $SRC/*.options $OUT/
 
 mkdir -p build
 pushd build
@@ -24,7 +24,10 @@ rm -rf *
 cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release \
     -DLIB_PROTO_MUTATOR_WITH_ASAN=OFF \
     -DLIB_PROTO_MUTATOR_FUZZER_LIBRARIES=FuzzingEngine
-ninja libxml2_example && cp libxml2_example $OUT/
+ninja libxml2_example 
+cp -f libxml2_example $OUT/
+cp -f libxml2_example $OUT/libxml2_small
+cp -f libxml2_example $OUT/libxml2_dict
 popd
 
 # Experimental fuzzer to compare coverage with default one.
@@ -35,7 +38,8 @@ rm -rf *
 cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release \
     -DLIB_PROTO_MUTATOR_WITH_ASAN=OFF \
     -DLIB_PROTO_MUTATOR_FUZZER_LIBRARIES=FuzzingEngine
-ninja libxml2_example && cp libxml2_example $OUT/libxml2_experiment
+ninja libxml2_example
+cp -f libxml2_example $OUT/libxml2_experiment
 popd
 
 
