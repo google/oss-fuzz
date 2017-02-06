@@ -14,11 +14,51 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
-MAINTAINER vitalybuka@gmail.com
-RUN apt-get install -y make autoconf automake libtool pkg-config cmake ninja-build liblzma-dev libz-dev
-
-RUN git clone --depth 1  https://github.com/google/libprotobuf-mutator.git
-WORKDIR libprotobuf-mutator
-
-COPY build.sh  *.dict *.options $SRC/
+"&#1;"
+"&#x1;"
+"&a;"
+"&lt;"
+"1.0"
+"ANY"
+"ATTLIST"
+"CDATA"
+"DOCTYPE"
+"EBCDIC"
+"ELEMENT"
+"EMPTY"
+"ENTITIES"
+"ENTITY"
+"FIXED"
+"ID"
+"IDREF"
+"IDREFS"
+"IGNORE"
+"IMPLIED"
+"INCLUDE"
+"ISO-8859-1"
+"NDATA"
+"NMTOKENS"
+"NOTATION"
+"PCDATA"
+"PUBLIC"
+"REQUIRED"
+"SYSTEM"
+"UCS-4"
+"US-ASCII"
+"UTF-16"
+"UTF-16BE"
+"UTF-16LE"
+"UTF-8"
+"\"http://www.w3.org/1999/xhtml\""
+"\"http://www.w3.org/2000/xmlns\""
+"\"http://www.w3.org/XML/1998/namespace\""
+"fallback"
+"http://"
+"https://"
+"include"
+"schema"
+"xml"
+"xml:lang"
+"xml:space"
+"xmlns"
+"xmlns:"
