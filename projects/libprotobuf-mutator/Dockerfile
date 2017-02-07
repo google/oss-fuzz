@@ -16,7 +16,8 @@
 
 FROM ossfuzz/base-builder
 MAINTAINER vitalybuka@gmail.com
-RUN apt-get install -y make autoconf automake libtool pkg-config cmake ninja-build liblzma-dev libz-dev
+RUN apt-get install -y make autoconf automake libtool pkg-config cmake \
+    ninja-build liblzma-dev libz-dev docbook2x
 
 RUN git clone --depth 1  https://github.com/google/libprotobuf-mutator.git
 WORKDIR libprotobuf-mutator
