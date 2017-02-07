@@ -50,3 +50,12 @@ So, we report only one timeout and only one OOM bug per fuzz target.
 Once that bug is fixed, we will file another one, and so on.
 
 Currently we do not offer ways to change the memory and time limits.
+
+## Can I launch an additional process (e.g. a daemon) from my fuzz target?
+
+No. To experience all benefits of in-process guided fuzz testing, it is required
+to have everything in a single process. Another rule of thumb is: "_the smaller
+fuzz target is, the better_". According to that, in most of the cases, it would
+be better to have many fuzz targets to test different pieces of your project,
+instead of having a single fuzz target trying to cover everything. We recommend
+to consider every fuzz target as a unit test, though it is much more powerful.
