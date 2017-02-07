@@ -53,9 +53,13 @@ Currently we do not offer ways to change the memory and time limits.
 
 ## Can I launch an additional process (e.g. a daemon) from my fuzz target?
 
-No. To experience all benefits of in-process guided fuzz testing, it is required
-to have everything in a single process. Another rule of thumb is: "_the smaller
-fuzz target is, the better_". According to that, in most of the cases, it would
-be better to have many fuzz targets to test different pieces of your project,
-instead of having a single fuzz target trying to cover everything. We recommend
-to consider every fuzz target as a unit test, though it is much more powerful.
+No. In order to get all the benefits of in-process coverage guided fuzz testing,
+it is required to run everything inside a single process. Any child processes created
+outside the main process introduces heavy launch overhead and is not monitored for
+code coverage.
+
+Another rule of thumb is: "the smaller fuzz target is, the better it is". It is
+expected to have many fuzz targets to test different components in your project,
+instead of a single fuzz target trying to cover everything. Think of fuzz target
+as a unit test, though it is much more powerful since it helps to test millions
+of data permutations rather than just one.
