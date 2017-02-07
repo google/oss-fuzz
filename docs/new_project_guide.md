@@ -58,11 +58,6 @@ COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer f
 ```
 Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
 
-### Fuzzer execution environment
-
-[This page](fuzzer_environment.md) gives information about the environment that
-your [fuzz targets](glossary.md#fuzz-target) will run on ClusterFuzz, and the assumptions that you can make.
-
 ## build.sh
 
 This file describes how to build [fuzz targets](glossary.md#fuzz-target) for your project.
@@ -130,6 +125,10 @@ pass them manually to the build tool.
 See [Provided Environment Variables](../infra/base-images/base-builder/README.md#provided-environment-variables) section in
 `base-builder` image documentation for more details.
 
+## Fuzzer execution environment
+
+[This page](fuzzer_environment.md) gives information about the environment that
+your [fuzz targets](glossary.md#fuzz-target) will run on ClusterFuzz, and the assumptions that you can make.
 
 ## Testing locally
 
