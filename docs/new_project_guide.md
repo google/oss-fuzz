@@ -161,8 +161,8 @@ $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
 ```
 
 *Note*: Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined) 
-configurations. MemorySanitizer is in development mode and not recommended for use. Make sure to test each
-of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).
+configurations. MemorySanitizer is in development mode and not recommended for use. <b>Make sure to test each
+of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
 ## Debugging Problems
 
