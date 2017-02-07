@@ -59,7 +59,7 @@ ADD http://dev-www.libreoffice.org/src/libe-book-0.1.2.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libetonyek-0.1.6.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libfreehand-0.1.1.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libmspub-0.1.2.tar.bz2 $SRC/
-ADD http://dev-www.libreoffice.org/src/libmwaw-0.3.10.tar.bz2 $SRC/
+ADD http://dev-www.libreoffice.org/src/libmwaw-0.3.10.tar.xz $SRC/
 ADD http://dev-www.libreoffice.org/src/libodfgen-0.1.6.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/liborcus-0.12.1.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/libpagemaker-0.0.3.tar.bz2 $SRC/
