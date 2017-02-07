@@ -15,19 +15,13 @@
 #
 ################################################################################
 
-echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
+pushd $SRC/h2o
+cmake -DBUILD_FUZZER=ON -DOSS_FUZZ=ON -DOPENSSL_USE_STATIC_LIBS=TRUE .
+make
+cp ./h2o-fuzzer-http* $OUT/
 
-# afl needs its special coverage flags
-export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
-export SANITIZER_FLAGS=""
+zip -jr $OUT/h2o-fuzzer-http1_seed_corpus.zip $SRC/h2o/fuzz/http1-corpus
+zip -jr $OUT/h2o-fuzzer-http2_seed_corpus.zip $SRC/h2o/fuzz/http2-corpus
 
-mkdir -p $WORK/afl
-pushd $WORK/afl > /dev/null
-$CC $CFLAGS -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
-$CXX $CXXFLAGS -std=c++11 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
-popd > /dev/null
-rm -rf $WORK/afl
-
-
-echo " done."
+cp $SRC/*.options $SRC/h2o/fuzz/*.dict $OUT/
+popd

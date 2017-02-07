@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +14,10 @@
 #
 ################################################################################
 
-echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
-
-# afl needs its special coverage flags
-export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
-export SANITIZER_FLAGS=""
-
-mkdir -p $WORK/afl
-pushd $WORK/afl > /dev/null
-$CC $CFLAGS -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
-$CXX $CXXFLAGS -std=c++11 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
-popd > /dev/null
-rm -rf $WORK/afl
-
-
-echo " done."
+FROM ossfuzz/base-builder
+MAINTAINER jonathan.foote@gmail.com
+RUN apt-get install -y make autoconf automake libtool cmake zlib1g-dev pkg-config libssl-dev
+RUN git clone https://github.com/h2o/h2o
+WORKDIR h2o
+COPY build.sh $SRC/
+COPY *.options $SRC/

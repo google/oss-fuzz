@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +14,12 @@
 #
 ################################################################################
 
-echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
+FROM ossfuzz/base-builder
+MAINTAINER vitalybuka@gmail.com
+RUN apt-get install -y make autoconf automake libtool pkg-config cmake \
+    ninja-build liblzma-dev libz-dev docbook2x
 
-# afl needs its special coverage flags
-export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
-export SANITIZER_FLAGS=""
+RUN git clone --depth 1  https://github.com/google/libprotobuf-mutator.git
+WORKDIR libprotobuf-mutator
 
-mkdir -p $WORK/afl
-pushd $WORK/afl > /dev/null
-$CC $CFLAGS -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
-$CXX $CXXFLAGS -std=c++11 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
-popd > /dev/null
-rm -rf $WORK/afl
-
-
-echo " done."
+COPY build.sh  *.dict *.options $SRC/

@@ -15,19 +15,14 @@
 #
 ################################################################################
 
-echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
+autoreconf -i
+./configure --enable-lib-only
+make -j$(nproc) all
 
-# afl needs its special coverage flags
-export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
-export SANITIZER_FLAGS=""
+$CXX $CXXFLAGS -std=c++11 -Ilib/includes \
+    fuzz/fuzz_target.cc -o $OUT/nghttp2_fuzzer \
+    -lFuzzingEngine lib/.libs/libnghttp2.a
 
-mkdir -p $WORK/afl
-pushd $WORK/afl > /dev/null
-$CC $CFLAGS -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
-$CXX $CXXFLAGS -std=c++11 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
-popd > /dev/null
-rm -rf $WORK/afl
+cp $SRC/*.options $OUT
 
-
-echo " done."
+zip -j $OUT/nghttp2_fuzzer_seed_corpus.zip fuzz/corpus/*/*

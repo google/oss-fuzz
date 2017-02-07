@@ -162,7 +162,7 @@ def build_image(build_args):
 def build_fuzzers(build_args):
   """Build fuzzers."""
   parser = argparse.ArgumentParser('helper.py build_fuzzers')
-  parser.add_argument('-e', action='append', help="set environment variable")
+  parser.add_argument('-e', action='append', help="set environment variable e.g. SANITIZER=address")
   parser.add_argument('project_name')
   parser.add_argument('source_path', help='path of local source',
                       nargs='?')
@@ -260,7 +260,6 @@ def coverage(run_args):
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
-      '-e', 'ASAN_OPTIONS=coverage=1',
       '-t', 'ossfuzz/base-runner',
       '/out/%s' % args.fuzzer_name,
       '-dump_coverage=1',

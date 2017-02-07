@@ -1,4 +1,5 @@
 #!/bin/bash -eu
+#
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +16,17 @@
 #
 ################################################################################
 
-echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
+./autogen.sh --without-cython --enable-debug
+make -j$(nproc) clean
+make -j$(nproc) all
 
-# afl needs its special coverage flags
-export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
-export SANITIZER_FLAGS=""
+for fuzzer in bplist_fuzzer xplist_fuzzer; do
+  $CXX $CXXFLAGS -std=c++11 -Iinclude/ \
+      $SRC/$fuzzer.cc -o $OUT/$fuzzer \
+      -lFuzzingEngine src/.libs/libplist.a
+done
 
-mkdir -p $WORK/afl
-pushd $WORK/afl > /dev/null
-$CC $CFLAGS -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
-$CXX $CXXFLAGS -std=c++11 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
-popd > /dev/null
-rm -rf $WORK/afl
+zip -j $OUT/bplist_fuzzer_seed_corpus.zip $SRC/libplist/test/data/*.bplist
+zip -j $OUT/xplist_fuzzer_seed_corpus.zip $SRC/libplist/test/data/*.plist
 
-
-echo " done."
+cp $SRC/*.dict $SRC/*.options $OUT/

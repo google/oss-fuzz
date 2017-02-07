@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+/*
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +14,16 @@
 # limitations under the License.
 #
 ################################################################################
+*/
 
-echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
+#include <plist/plist.h>
+#include <stdio.h>
 
-# afl needs its special coverage flags
-export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
-export SANITIZER_FLAGS=""
+extern "C" int LLVMFuzzerTestOneInput(const char* data, size_t size)
+{
+	plist_t root_node = NULL;
+	plist_from_xml(data, size, &root_node);
+	plist_free(root_node);
 
-mkdir -p $WORK/afl
-pushd $WORK/afl > /dev/null
-$CC $CFLAGS -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
-$CXX $CXXFLAGS -std=c++11 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
-popd > /dev/null
-rm -rf $WORK/afl
-
-
-echo " done."
+	return 0;
+}

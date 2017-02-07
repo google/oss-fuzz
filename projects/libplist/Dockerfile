@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +14,15 @@
 #
 ################################################################################
 
-echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
+FROM ossfuzz/base-builder
+MAINTAINER nikias@gmx.li
+RUN apt-get install -y make autoconf automake libtool pkg-config
 
-# afl needs its special coverage flags
-export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
-export SANITIZER_FLAGS=""
+RUN git clone --depth 1 https://github.com/libimobiledevice/libplist
+WORKDIR libplist
 
-mkdir -p $WORK/afl
-pushd $WORK/afl > /dev/null
-$CC $CFLAGS -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
-$CXX $CXXFLAGS -std=c++11 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
-ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
-popd > /dev/null
-rm -rf $WORK/afl
-
-
-echo " done."
+COPY build.sh $SRC/
+COPY bplist_fuzzer.* \
+     xplist_fuzzer.* \
+     bplist.dict \
+     xplist.dict $SRC/
