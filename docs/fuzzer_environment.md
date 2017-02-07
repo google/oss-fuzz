@@ -7,7 +7,16 @@ Your fuzz targets will be run on a [Google Compute Engine](https://cloud.google.
 You should not make any assumptions on the availability of dependent packages 
 and libraries in the execution environment. Make sure to statically link any
 library dependencies with your fuzz target executable during build time 
-([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/build.sh#L40)). 
+([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/build.sh#L40)).
+
+Please note that it is not required to build all dependecies in
+[build.sh](https://github.com/google/oss-fuzz/blob/master/docs/new_project_guide.md#buildsh).
+You can install any build dependendcies via
+[Dockerfile](https://github.com/google/oss-fuzz/blob/master/docs/new_project_guide.md#dockerfile)
+([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/Dockerfile#L19)),
+but make sure that you link statically against them. Those dependecies will be
+available only on a builder machine, not on the ones running the fuzzers.
+
 All build artifacts needed during fuzz target execution should be inside `$OUT` 
 directory. Other directories like `$WORK`, `$SRC` OR dependent packages installed
 in build.sh will not be available.
