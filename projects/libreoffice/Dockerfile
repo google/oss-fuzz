@@ -71,7 +71,7 @@ ADD http://dev-www.libreoffice.org/src/libwpd-0.10.1.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libwpg-0.3.1.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libwps-0.4.5.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libzmf-0.0.1.tar.bz2 $SRC/
-ADD http://dev-www.libreoffice.org/src/zlib-1.2.8.tar.gz $SRC/
+ADD http://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz $SRC/
 ADD http://dev-www.libreoffice.org/src/poppler-0.51.0.tar.xz $SRC/
 ADD http://dev-www.libreoffice.org/src/mdds-1.2.2.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/openssl-1.0.2k.tar.gz $SRC/
