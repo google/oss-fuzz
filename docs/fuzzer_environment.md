@@ -2,7 +2,7 @@
 
 Your fuzz targets will be run on a [Google Compute Engine](https://cloud.google.com/compute/) VM (Linux) with some security restrictions.
 
-## Dependencies
+## Runtime Dependencies
 
 You should not make any assumptions on the availability of dependent packages 
 and libraries in the execution environment. Make sure to statically link any
@@ -12,7 +12,7 @@ All build artifacts needed during fuzz target execution should be inside `$OUT`
 directory. Other directories like `$WORK`, `$SRC` OR dependent packages installed
 in build.sh will not be available.
 
-You can ensure that the fuzz target works correctly by using `run_fuzzer` command 
+You should ensure that the fuzz target works correctly by using `run_fuzzer` command 
 (see instructions [here](new_project_guide.md#testing-locally)). This command uses
 a clean base-runner docker container and not the base-builder docker container
 created during build-time.
