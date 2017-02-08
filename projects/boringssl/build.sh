@@ -21,10 +21,17 @@ cd $WORK/boringssl
 CFLAGS="$CFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
 CXXFLAGS="$CXXFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
 
+CMAKE_DEFINES=""
+if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
+then
+  CMAKE_DEFINES="-DOPENSSL_NO_ASM=1"
+fi
+
 cmake -GNinja -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
-    -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-    $SRC/boringssl/
+      -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+      $CMAKE_DEFINES $SRC/boringssl/
 ninja
+
 
 fuzzerFiles=$(find $SRC/boringssl/fuzz/ -name "*.cc")
 
