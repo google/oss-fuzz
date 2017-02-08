@@ -35,7 +35,7 @@ $ python infra/helper.py build_fuzzers -e SANITIZER=<address/memory/undefined> $
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
-  It builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
+  This builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
   and feeds the testcase file to the target function. 
   
   E.g. for building [libxml2](../projects/libxml2) project with UndefinedBehaviorSanitizer instrumentation 

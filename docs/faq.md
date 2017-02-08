@@ -15,7 +15,7 @@ to accept your project at this time!
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
 
 Security access control is important for the kind of issues that OSS-Fuzz detects.
-We will reconsider github issue tracker once the
+We will reconsider the Github issue tracker once the
 [access control feature](https://github.com/isaacs/github/issues/37) is available.
 
 ## Why do you require an e-mail associated with a Google account?
@@ -27,8 +27,8 @@ with a Google account.
 ## Why do you use Docker?
 
 Building fuzzers requires building your project with a fresh Clang compiler and special compiler flags. 
-An easy-to-use Docker image is provided to simplify toolchain distribution. This also limits our exposure
-to a multitude of Linux varieties and provides a reproducible and secure environment for fuzzer
+An easy-to-use Docker image is provided to simplify toolchain distribution. This also simplifies our
+support for a variety of Linux distributions and provides a reproducible and secure environment for fuzzer
 building and execution.
 
 ## How do you handle timeouts and OOMs?
@@ -53,13 +53,13 @@ Currently we do not offer ways to change the memory and time limits.
 
 ## Can I launch an additional process (e.g. a daemon) from my fuzz target?
 
-No. In order to get all the benefits of in-process coverage guided fuzz testing,
+No. In order to get all the benefits of in-process, coverage-guided fuzz testing,
 it is required to run everything inside a single process. Any child processes created
 outside the main process introduces heavy launch overhead and is not monitored for
 code coverage.
 
 Another rule of thumb is: "the smaller fuzz target is, the better it is". It is
-expected to have many fuzz targets to test different components in your project,
+expected that your project will have many fuzz targets to test different components,
 instead of a single fuzz target trying to cover everything. Think of fuzz target
 as a unit test, though it is much more powerful since it helps to test millions
 of data permutations rather than just one.
