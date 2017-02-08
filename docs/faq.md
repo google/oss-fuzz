@@ -63,3 +63,14 @@ expected that your project will have many fuzz targets to test different compone
 instead of a single fuzz target trying to cover everything. Think of fuzz target
 as a unit test, though it is much more powerful since it helps to test millions
 of data permutations rather than just one.
+
+## What if my fuzz target finds a bug not in my project, but its dependency?
+
+Every bug report has a stack-trace. It clearly shows where the crash happened.
+Thanks to that, you can quickly find a root cause and distinguish whether it is
+a bug in another library or it is an incorrect usage of other library API in
+your project.
+
+If your fuzzer found a bug in another project, you can CC maintainers of that
+project on the bug. They will get an access to all the information necessary to
+reproduce the issue.
