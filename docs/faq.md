@@ -63,3 +63,15 @@ expected that your project will have many fuzz targets to test different compone
 instead of a single fuzz target trying to cover everything. Think of fuzz target
 as a unit test, though it is much more powerful since it helps to test millions
 of data permutations rather than just one.
+
+## What if my fuzz target finds a bug in another project (dependency) ?
+
+Every bug report has a crash stack-trace that shows where the crash happened.
+Using that, you can debug the root cause and see which category the bug falls in:
+
+- If this is a bug is due to an incorrect usage of the dependent project's API 
+in your project, then you need to fix your usage to call the API correctly.
+- If this is a real bug in the dependent project, then you should CC the maintainers
+of that project on the bug. Once cced, they will get automatic access to all the
+information necessary to reproduce the issue. If this project is maintained in OSS-Fuzz,
+you can search for contacts in the respective project.yaml file.
