@@ -1,4 +1,4 @@
-# Setting up New Project
+# Setting up a New Project
 
 ## Prerequisites
 - [Integrate](ideal_integration.md) one or more [Fuzz Targets](glossary.md#fuzz-target)
@@ -207,7 +207,7 @@ has an appropriate and consistent license.
 
 ### Dictionaries
 
-Dictionaries hugely improve fuzzing effeciency for inputs with lots of similar
+Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
 sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
 
 Put your dict file in `$OUT` and specify in .options file:
@@ -224,7 +224,7 @@ to reuse the same dictionary if they are fuzzing very similar inputs.
 ## project.yaml
 
 This file stores the metadata about your project. This includes things like project's homepage,
-list of sanitizers used, list of ccs on newly filed bugs, etc.
+list of sanitizers used, list of CCs on newly-filed bugs, etc.
 (example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/project.yaml)).
 
 ## Checking in to OSS-Fuzz repository
