@@ -1,3 +1,5 @@
 homepage: "http://site.icu-project.org/"
+auto_ccs:
+ - "icu-team@google.com"
 sanitizers:
-- address
+ - address
