@@ -38,6 +38,9 @@ Currently OSS-Fuzz supports C and C++ code (other languages supported by [LLVM](
 
 ## Process Overview
 
+![diagram]
+(docs/images/process.png?raw=true)
+
 The following process is used for projects in OSS-Fuzz:
 
 - A maintainer of an opensource project or an outside volunteer creates
