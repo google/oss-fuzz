@@ -43,7 +43,7 @@ bazel-bin/*.a \
 
 # build project
 bazel
-BAZEL build --spawn_strategy=standalone --genrule_strategy=standalone :all test/... examples/cpp/...
+bazel build --spawn_strategy=standalone --genrule_strategy=standalone :all test/... examples/cpp/...
 
 CFLAGS="${CFLAGS} -Iinclude -I."
 CXXFLAGS="${CXXFLAGS} -Iinclude -I. -stdlib=libc++"
