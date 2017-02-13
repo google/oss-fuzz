@@ -5,7 +5,7 @@ for fuzzing Chrome at scale.
 
 ## Web interface
 
-ClusterFuzz also provides a [web interface](https://oss-fuzz.com/v2)
+ClusterFuzz also provides a [web interface](https://oss-fuzz.com)
 to view statistics about your fuzz targets, as well as current crashes.
 
 *Note*: This is a work in progress. Access is restricted to project developers who we auto CC on new bug
