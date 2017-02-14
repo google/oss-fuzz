@@ -19,6 +19,6 @@ MAINTAINER flim@google.com
 RUN apt-get install -y make autoconf automake libtool wget
 
 RUN git clone https://git.xiph.org/opus.git
-RUN wget http://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
+RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
 WORKDIR opus
 COPY build.sh $SRC/
