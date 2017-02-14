@@ -43,7 +43,10 @@ bazel-bin/*.a \
 "
 
 # build grpc
+# Temporary hack, see https://github.com/google/oss-fuzz/issues/383
+EXTERA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
+  $EXTERA_BAZEL_FLAGS \
 	:all test/... third_party/boringssl-with-bazel/... third_party/nanopb/...
 
 CFLAGS="${CFLAGS} -Iinclude -I."
