@@ -18,6 +18,6 @@ FROM ossfuzz/base-builder
 MAINTAINER kcc@google.com
 RUN apt-get install -y subversion
 
-RUN svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
+RUN svn co https://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
 WORKDIR libcxxabi
 COPY build.sh $SRC/
