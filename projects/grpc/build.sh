@@ -35,15 +35,16 @@ FUZZER_LIBRARIES="\
 bazel-bin/*.a \
 bazel-bin/test/core/util/*.a \
 bazel-bin/test/core/end2end/*.a \
-bazel-bin/external/submodule_boringssl/*.so \
+bazel-bin/third_party/boringssl-with-bazel/libssl.a \
+bazel-bin/third_party/boringssl-with-bazel/libcrypto.a \
 bazel-bin/external/submodule_zlib/_objs/z/external/submodule_zlib/*.o \
-bazel-bin/third_party/nanopb/*.so \
+bazel-bin/third_party/nanopb/*.a \
 bazel-bin/*.a \
 "
 
-# build project
-bazel
-bazel build --spawn_strategy=standalone --genrule_strategy=standalone :all test/... examples/cpp/...
+# build grpc
+bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
+	:all test/... third_party/boringssl-with-bazel/... third_party/nanopb/...
 
 CFLAGS="${CFLAGS} -Iinclude -I."
 CXXFLAGS="${CXXFLAGS} -Iinclude -I. -stdlib=libc++"
