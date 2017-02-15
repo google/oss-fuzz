@@ -25,7 +25,7 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
 
   FUZZER=$(basename $FUZZER_BINARY)
   echo "testing $FUZZER"
-  run_fuzzer $FUZZER -runs=32
+  run_fuzzer $FUZZER -max_total_time=60
   N=$[$N+1]
 done
 
