@@ -88,7 +88,7 @@ def call(body) {
                         def junit_reports = "$workspace/junit_reports/$sanitizer/$engine"
                         sh "mkdir -p $out"
                         sh "mkdir -p $junit_reports"
-                        stage("$sanitizer sanitizer") {
+                        stage("$sanitizer sanitizer ($engine)") {
                             // Run image to produce fuzzers
                             def env = "-e SANITIZER=\"${sanitizer}\" "
                             if (coverageFlags != null) {
