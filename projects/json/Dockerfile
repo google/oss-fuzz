@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM ossfuzz/base-builder
-MAINTAINER vitalybuka@gmail.com
+MAINTAINER vitalybuka@chromium.org
 RUN apt-get install -y binutils make
 
 RUN git clone --depth 1 -b develop https://github.com/nlohmann/json.git

@@ -15,7 +15,7 @@ to accept your project at this time!
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
 
 Security access control is important for the kind of issues that OSS-Fuzz detects.
-We will reconsider github issue tracker once the
+We will reconsider the Github issue tracker once the
 [access control feature](https://github.com/isaacs/github/issues/37) is available.
 
 ## Why do you require an e-mail associated with a Google account?
@@ -27,8 +27,8 @@ with a Google account.
 ## Why do you use Docker?
 
 Building fuzzers requires building your project with a fresh Clang compiler and special compiler flags. 
-An easy-to-use Docker image is provided to simplify toolchain distribution. This also limits our exposure
-to a multitude of Linux varieties and provides a reproducible and secure environment for fuzzer
+An easy-to-use Docker image is provided to simplify toolchain distribution. This also simplifies our
+support for a variety of Linux distributions and provides a reproducible and secure environment for fuzzer
 building and execution.
 
 ## How do you handle timeouts and OOMs?
@@ -50,3 +50,28 @@ So, we report only one timeout and only one OOM bug per fuzz target.
 Once that bug is fixed, we will file another one, and so on.
 
 Currently we do not offer ways to change the memory and time limits.
+
+## Can I launch an additional process (e.g. a daemon) from my fuzz target?
+
+No. In order to get all the benefits of in-process, coverage-guided fuzz testing,
+it is required to run everything inside a single process. Any child processes created
+outside the main process introduces heavy launch overhead and is not monitored for
+code coverage.
+
+Another rule of thumb is: "the smaller fuzz target is, the better it is". It is
+expected that your project will have many fuzz targets to test different components,
+instead of a single fuzz target trying to cover everything. Think of fuzz target
+as a unit test, though it is much more powerful since it helps to test millions
+of data permutations rather than just one.
+
+## What if my fuzz target finds a bug in another project (dependency) ?
+
+Every bug report has a crash stack-trace that shows where the crash happened.
+Using that, you can debug the root cause and see which category the bug falls in:
+
+- If this is a bug is due to an incorrect usage of the dependent project's API 
+in your project, then you need to fix your usage to call the API correctly.
+- If this is a real bug in the dependent project, then you should CC the maintainers
+of that project on the bug. Once cced, they will get automatic access to all the
+information necessary to reproduce the issue. If this project is maintained in OSS-Fuzz,
+you can search for contacts in the respective project.yaml file.

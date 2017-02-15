@@ -21,7 +21,7 @@ The configuration is picked through one or more environment variables.
 
 | Env Variable     | Description
 | -------------    | --------
-| `$SANITIZER ("address")` | Specifies predefined sanitizer configuration to use. `address` or `undefined`.
+| `$SANITIZER ("address")` | Specifies predefined sanitizer configuration to use. `address` or `memory` or `undefined`.
 | `$SANITIZER_FLAGS` | Specify compiler sanitizer flags directly. Overrides `$SANITIZER`.
 | `$COVERAGE_FLAGS` | Specify compiler flags to use for fuzzer feedback coverage.
 | `$BUILD_UID` | User id to use while building fuzzers.

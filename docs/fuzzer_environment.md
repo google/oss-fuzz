@@ -2,17 +2,30 @@
 
 Your fuzz targets will be run on a [Google Compute Engine](https://cloud.google.com/compute/) VM (Linux) with some security restrictions.
 
-## Dependencies
+## Runtime Dependencies
 
 You should not make any assumptions on the availability of dependent packages 
-and libraries in the execution environment. Make sure to statically link any
-library dependencies with your fuzz target executable during build time 
-([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/build.sh#L40)). 
-All build artifacts needed during fuzz target execution should be inside `$OUT` 
-directory. Other directories like `$WORK`, `$SRC` OR dependent packages installed
-in build.sh will not be available.
+in the execution environment. Packages that are installed via
+[Dockerfile](https://github.com/google/oss-fuzz/blob/master/docs/new_project_guide.md#dockerfile)
+or built as part of 
+[build.sh](https://github.com/google/oss-fuzz/blob/master/docs/new_project_guide.md#buildsh)
+are not available on the bot runtime environment (where the fuzz targets run).
 
-You can ensure that the fuzz target works correctly by using `run_fuzzer` command 
+If you need these dependencies in the runtime environment, you can either
+- Install the packages via Dockerfile
+([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/Dockerfile#L19))
+and then link statically against them
+([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/build.sh#L40))
+- Or build the dependencies statically in
+[build.sh](https://github.com/google/oss-fuzz/blob/master/docs/new_project_guide.md#buildsh)
+([example](https://github.com/google/oss-fuzz/blob/master/projects/ffmpeg/build.sh#L26)).
+
+All build artifacts needed during fuzz target execution should be inside the `$OUT`
+directory. Only those artifacts are archived and used on the bots. Everything else
+is ignored (e.g. artifacts in `$WORK`, `$SRC`, etc) and hence is not available
+in the execution environment.
+
+You should ensure that the fuzz target works correctly by using `run_fuzzer` command 
 (see instructions [here](new_project_guide.md#testing-locally)). This command uses
 a clean base-runner docker container and not the base-builder docker container
 created during build-time.

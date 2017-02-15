@@ -31,24 +31,25 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 - *Reproduce using latest OSS-Fuzz build:* 
 
 ```bash
-$ python infra/helper.py build_fuzzers $PROJECT_NAME
+$ python infra/helper.py build_fuzzers -e SANITIZER=<address/memory/undefined> $PROJECT_NAME
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
-  It builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
+  This builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
   and feeds the testcase file to the target function. 
   
-  E.g. for [libxml2](../projects/libxml2) project with fuzzer named `libxml2_xml_read_memory_fuzzer`, it will be: 
+  E.g. for building [libxml2](../projects/libxml2) project with UndefinedBehaviorSanitizer instrumentation 
+  and reproduce a crash testcase for a fuzzer named `libxml2_xml_read_memory_fuzzer`, it will be: 
 
 ```bash
-$ python infra/helper.py build_fuzzers libxml2
+$ python infra/helper.py build_fuzzers -e SANITIZER=undefined libxml2
 $ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Downloads/testcase
 ```
 
 - *Reproduce using local source checkout:*
 
 ```bash
-$ python infra/helper.py build_fuzzers $PROJECT_NAME <source_path>
+$ python infra/helper.py build_fuzzers -e SANITIZER=<address/memory/undefined> $PROJECT_NAME <source_path>
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 

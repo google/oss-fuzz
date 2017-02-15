@@ -25,7 +25,7 @@ def call(body) {
 
     // Project configuration.
     def projectName = project["name"] ?: env.JOB_BASE_NAME
-    def sanitizers = project["sanitizers"] ?: ["address"]
+    def sanitizers = project["sanitizers"] ?: ["address", "undefined"]
     def coverageFlags = project["coverage_flags"]
 
     // Dockerfile config
@@ -42,6 +42,7 @@ def call(body) {
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC))
 
+    timeout(time: 4, unit: 'HOURS') {
     node {
         def workspace = pwd()
         def srcmapFile = "$workspace/srcmap.json"
@@ -119,6 +120,7 @@ def call(body) {
             }
         } // stage("pushing image")
     } // node
+    } // timeout
 }  // call
 
 return this;
