@@ -32,6 +32,10 @@ test/core/end2end/fuzzers/server_fuzzer.c \
 # TODO: enable ssl server corpus after Bazel fuzzer rules written
 # test/core/security/ssl_server_fuzzer.c \
 
+FUZZER_DICTIONARIES="\
+test/core/end2end/fuzzers/api_fuzzer.dictionary \
+test/core/end2end/fuzzers/hpack.dictionary \
+"
 
 FUZZER_LIBRARIES="\
 bazel-bin/*.a \
@@ -67,19 +71,26 @@ for file in $FUZZER_FILES; do
     -lFuzzingEngine ${FUZZER_LIBRARIES}
 done
 
+# Copy dictionaries and options files to $OUT/
+for dict in $FUZZER_DICTIONARIES; do
+  cp $dict $OUT/
+done
+
+cp $SRC/*.options $OUT/
+
 # We don't have a consistent naming convention between fuzzer files and corpus
 # directories so we resort to hard coding zipping corpuses
-zip -j $OUT/fuzzer_seed_corpus.zip test/core/json/corpus
-zip -j $OUT/uri_fuzzer_test_seed_corpus.zip test/core/client_channel/uri_corpus
-zip -j $OUT/request_fuzzer_seed_corpus.zip test/core/http/request_corpus
-zip -j $OUT/response_fuzzer_seed_corpus.zip test/core/http/response_corpus
-zip -j $OUT/fuzzer_response_seed_corpus.zip test/core/nanopb/response_corpus
-zip -j $OUT/fuzzer_serverlist_seed_corpus.zip test/core/nanopb/serverlist_corpus
-zip -j $OUT/percent_decode_fuzzer_seed_corpus.zip test/core/slice/percent_decode_corpus
-zip -j $OUT/percent_encode_fuzzer_seed_corpus.zip test/core/slice/percent_encode_corpus
-zip -j $OUT/hpack_parser_fuzzer_test_seed_corpus.zip test/core/transport/chttp2/hpack_parser_corpus
-zip -j $OUT/api_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/api_fuzzer_corpus
-zip -j $OUT/client_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/client_fuzzer_corpus
-zip -j $OUT/server_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/server_fuzzer_corpus
+zip $OUT/fuzzer_seed_corpus.zip test/core/json/corpus
+zip $OUT/uri_fuzzer_test_seed_corpus.zip test/core/client_channel/uri_corpus
+zip $OUT/request_fuzzer_seed_corpus.zip test/core/http/request_corpus
+zip $OUT/response_fuzzer_seed_corpus.zip test/core/http/response_corpus
+zip $OUT/fuzzer_response_seed_corpus.zip test/core/nanopb/corpus_response
+zip $OUT/fuzzer_serverlist_seed_corpus.zip test/core/nanopb/corpus_serverlist
+zip $OUT/percent_decode_fuzzer_seed_corpus.zip test/core/slice/percent_decode_corpus
+zip $OUT/percent_encode_fuzzer_seed_corpus.zip test/core/slice/percent_encode_corpus
+zip $OUT/hpack_parser_fuzzer_test_seed_corpus.zip test/core/transport/chttp2/hpack_parser_corpus
+zip $OUT/api_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/api_fuzzer_corpus
+zip $OUT/client_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/client_fuzzer_corpus
+zip $OUT/server_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/server_fuzzer_corpus
 # TODO: zip ssl server corpus after Bazel fuzzer rules written
 # test/core/security/corpus/ssl_server_corpus

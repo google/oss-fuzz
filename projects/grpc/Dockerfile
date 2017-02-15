@@ -36,4 +36,4 @@ RUN apt-get update && apt-get install -y bazel
 
 RUN git clone --recursive https://github.com/grpc/grpc grpc
 WORKDIR /src/grpc/
-COPY build.sh $SRC/
+COPY build.sh *.options $SRC/
