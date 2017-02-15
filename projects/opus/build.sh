@@ -46,10 +46,10 @@ for build in "${BUILDS[@]}"; do
       $fuzzer.o \
       -o $OUT/${fuzzer}_${build} \
       -lFuzzingEngine .libs/libopus.a
-  done
 
-  # Setup the .options and test corpus zip files using the corresponding
-  # fuzzer's name
-  cp tests/$fuzzer.options $OUT/${fuzzer}_${build}.options
-  zip -r $OUT/${fuzzer}_${build}_seed_corpus.zip opus_testvectors/
+    # Setup the .options and test corpus zip files using the corresponding
+    # fuzzer's name
+    cp tests/$fuzzer.options $OUT/${fuzzer}_${build}.options
+    zip -r $OUT/${fuzzer}_${build}_seed_corpus.zip opus_testvectors/
+  done
 done
