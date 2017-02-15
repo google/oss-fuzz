@@ -33,7 +33,7 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
 
   # run fuzzer.
   FUZZER_STDOUT=$(tempfile)
-  run_fuzzer $FUZZER -runs=32 |& tee $FUZZER_STDOUT
+  run_fuzzer $FUZZER -max_total_time=60 |& tee $FUZZER_STDOUT
   FUZZER_STATUS=${PIPESTATUS[0]}
 
   FAILURES=0
