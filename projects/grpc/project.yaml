@@ -1,6 +1,6 @@
 homepage: "http://www.grpc.io/"
 primary_contact: "mattkwong@google.com"
-auto_css:
+auto_ccs:
   - "grpc-c-team@google.com"
   - "ctiller@google.com"
   - "dgq@google.com"
