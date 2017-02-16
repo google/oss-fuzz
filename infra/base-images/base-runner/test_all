@@ -30,10 +30,10 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
 
   echo "testing $FUZZER"
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    run_fuzzer $FUZZER -max_total_time=10
+    run_fuzzer $FUZZER -max_total_time=20
   else
     export AFL_NO_UI=1
-    timeout --preserve-status -s INT 10s run_fuzzer $FUZZER
+    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
   fi
   N=$[$N+1]
 done
