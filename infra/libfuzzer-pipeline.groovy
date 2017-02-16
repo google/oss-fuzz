@@ -124,7 +124,6 @@ def call(body) {
                             }
 
                             def upload_bucket = engine == "libfuzzer" ? "clusterfuzz-builds" : "clusterfuzz-builds-afl"
-
                             dir(engine) {
                                 def zipFile = "$projectName-$sanitizer-${date}.zip"
                                 sh "zip -r $zipFile *"
