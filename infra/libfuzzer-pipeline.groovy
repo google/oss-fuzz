@@ -43,6 +43,11 @@ def call(body) {
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC))
 
+    def supportedSanitizers = [
+        libfuzzer: ["address", "memory", "undefined"],
+        afl: ["address"]
+    ]
+
     timeout(time: 6, unit: 'HOURS') {
     node {
         def workspace = pwd()
@@ -83,6 +88,9 @@ def call(body) {
             dir(sanitizer) {
                 for (int j = 0; j < fuzzingEngines.size(); j++) {
                     def engine = fuzzingEngines[j]
+                    if (!supportedSanitizers[engine].contains(sanitizer)) {
+                        continue
+                    }
                     dir (engine) {
                         def out = "$workspace/out/$sanitizer/$engine"
                         def junit_reports = "$workspace/junit_reports/$sanitizer/$engine"
@@ -111,6 +119,10 @@ def call(body) {
                     dir (sanitizer) {
                         for (int j = 0; j < fuzzingEngines.size(); j++) {
                             def engine = fuzzingEngines[j]
+                            if (!supportedSanitizers[engine].contains(sanitizer)) {
+                                continue
+                            }
+
                             def upload_bucket = engine == "libfuzzer" ? "clusterfuzz-builds" : "clusterfuzz-builds-afl"
 
                             dir(engine) {
