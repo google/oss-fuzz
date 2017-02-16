@@ -176,7 +176,7 @@ def build_fuzzers(build_args):
   parser = argparse.ArgumentParser('helper.py build_fuzzers')
   _add_engine_args(parser)
   _add_sanitizer_args(parser)
-  parser.add_argument('-e', action='append', help="set environment variable e.g. SANITIZER=address")
+  parser.add_argument('-e', action='append', help="set environment variable e.g. VAR=value")
   parser.add_argument('project_name')
   parser.add_argument('source_path', help='path of local source',
                       nargs='?')

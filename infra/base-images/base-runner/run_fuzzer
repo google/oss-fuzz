@@ -34,14 +34,16 @@ if [ -f $SEED_CORPUS ]; then
 fi
 
 if [[ "$FUZZING_ENGINE" = afl ]]; then
+  # https://chromium.googlesource.com/chromium/src/+/master/third_party/afl/src/docs/env_variables.txt
   export ASAN_OPTIONS="$ASAN_OPTIONS:abort_on_error=1:symbolize=0"
   export MSAN_OPTIONS="$MSAN_OPTIONS:exit_code=86:symbolize=0"
+  export UBSAN_OPTIONS="$UBSAN_OPTIONS:symbolize=0"
   export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
   export AFL_SKIP_CPUFREQ=1
   rm -rf /tmp/afl_output && mkdir /tmp/afl_output
   # AFL expects at least 1 file in the input dir.
   echo input > /tmp/input/input
-  CMD_LINE="$OUT/afl-fuzz -m 2048 -i /tmp/input -o /tmp/afl_output $@ $OUT/$FUZZER"
+  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i /tmp/input -o /tmp/afl_output $@ $OUT/$FUZZER"
 else
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $@ $CORPUS"
 
