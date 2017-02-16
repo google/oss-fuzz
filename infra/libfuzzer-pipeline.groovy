@@ -27,7 +27,7 @@ def call(body) {
     def projectName = project["name"] ?: env.JOB_BASE_NAME
     def sanitizers = project["sanitizers"] ?: ["address", "undefined"]
     def coverageFlags = project["coverage_flags"]
-    def fuzzingEngines = project['fuzzing_engines'] ?: ["libfuzzer"]
+    def fuzzingEngines = project["fuzzing_engines"] ?: ["libfuzzer"]
 
     // Dockerfile config
     def dockerfileConfig = project["dockerfile"] ?: [
