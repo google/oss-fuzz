@@ -23,20 +23,35 @@ cd $OUT
 
 FUZZER=$1
 shift
-CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $@"
 
-OPTIONS_FILE="${FUZZER}.options"
-if [ -f $OPTIONS_FILE ]; then
-  OPTIONS_ARGS=$(grep "=" $OPTIONS_FILE | sed 's/\(\w*\)\W*=\W*\(.*\)/-\1=\2 /g' | tr '\n' ' ')
-  CMD_LINE="$CMD_LINE $OPTIONS_ARGS"
-fi
+rm -rf /tmp/input/ && mkdir /tmp/input/
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 if [ -f $SEED_CORPUS ]; then
   echo "Using seed corpus: $SEED_CORPUS"
-  rm -rf /tmp/seed_corpus/ && mkdir /tmp/seed_corpus/
-  unzip -d /tmp/seed_corpus/ $SEED_CORPUS > /dev/null
-  CMD_LINE="$CMD_LINE /tmp/seed_corpus/"
+  unzip -d /tmp/input/ $SEED_CORPUS > /dev/null
+  CORPUS=/tmp/input
+fi
+
+if [[ "$FUZZING_ENGINE" = afl ]]; then
+  # https://chromium.googlesource.com/chromium/src/+/master/third_party/afl/src/docs/env_variables.txt
+  export ASAN_OPTIONS="$ASAN_OPTIONS:abort_on_error=1:symbolize=0"
+  export MSAN_OPTIONS="$MSAN_OPTIONS:exit_code=86:symbolize=0"
+  export UBSAN_OPTIONS="$UBSAN_OPTIONS:symbolize=0"
+  export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
+  export AFL_SKIP_CPUFREQ=1
+  rm -rf /tmp/afl_output && mkdir /tmp/afl_output
+  # AFL expects at least 1 file in the input dir.
+  echo input > /tmp/input/input
+  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i /tmp/input -o /tmp/afl_output $@ $OUT/$FUZZER"
+else
+  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $@ $CORPUS"
+
+  OPTIONS_FILE="${FUZZER}.options"
+  if [ -f $OPTIONS_FILE ]; then
+    OPTIONS_ARGS=$(grep "=" $OPTIONS_FILE | sed 's/\(\w*\)\W*=\W*\(.*\)/-\1=\2 /g' | tr '\n' ' ')
+    CMD_LINE="$CMD_LINE $OPTIONS_ARGS"
+  fi
 fi
 
 echo $CMD_LINE

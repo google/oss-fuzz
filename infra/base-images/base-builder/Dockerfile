@@ -16,7 +16,7 @@
 
 FROM ossfuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y git subversion jq python3 zip
+RUN apt-get install -y git subversion jq python3 zip make
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address"
