@@ -27,13 +27,22 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
     continue
   fi
 
-  N=$[$N+1]
   FUZZER=$(basename $FUZZER_BINARY)
+  if echo "$FUZZER" | grep "^afl-" > /dev/null 2>&1; then
+    continue
+  fi
+
+  N=$[$N+1]
   echo "testing $FUZZER"
 
   # run fuzzer.
   FUZZER_STDOUT=$(tempfile)
-  run_fuzzer $FUZZER -max_total_time=20 |& tee $FUZZER_STDOUT
+  if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
+    run_fuzzer $FUZZER -max_total_time=20 |& tee $FUZZER_STDOUT
+  else
+    export AFL_NO_UI=1
+    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER |& tee $FUZZER_STDOUT
+  fi
   FUZZER_STATUS=${PIPESTATUS[0]}
 
   FAILURES=0
