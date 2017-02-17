@@ -48,7 +48,7 @@ def call(body) {
         afl: ["address"]
     ]
 
-    timeout(time: 6, unit: 'HOURS') {
+    timeout(time: 12, unit: 'HOURS') {
     node {
         def workspace = pwd()
         def srcmapFile = "$workspace/srcmap.json"
