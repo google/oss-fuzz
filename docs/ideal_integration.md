@@ -13,7 +13,7 @@ All fuzz targets should be easily discoverable (e.g. reside in the same director
 This makes it easy to maintain the fuzzers and minimizes breakages that can arise as source code changes over time.
 
 Make sure to fuzz the target locally for a small period of time to ensure that 
-it does not crash, hang, or runs out of memory instantly. 
+it does not crash, hang, or run out of memory instantly.
 See details at http://libfuzzer.info and http://tutorial.libfuzzer.info.
 
 The interface between the [fuzz target]((http://libfuzzer.info/#fuzz-target))
@@ -35,8 +35,8 @@ Examples:
 The *corpus* is a set of inputs for the fuzz target (stored as individual files). 
 When starting the fuzzing process, one should have a "seed corpus", 
 i.e. a set of inputs to "seed" the mutations.
-The quality of the seed corpus has a huge impact on the fuzzing efficiency as it allows the fuzzer
-to discover new code paths easier. 
+The quality of the seed corpus has a huge impact on fuzzing efficiency as it allows the fuzzer
+to discover new code paths more easily.
 
 The ideal corpus is a minimal set of inputs that provides maximal code coverage. 
 
@@ -51,7 +51,7 @@ Examples:
 
 
 ## Regression Testing
-The fuzz targets should be regularly tested (not necessary fuzzed!) as a part of the project's regression testing process.
+The fuzz targets should be regularly tested (not necessarily fuzzed!) as a part of the project's regression testing process.
 One way to do so is to link the fuzz target with a simple driver
 (e.g. [this one](https://github.com/llvm-mirror/llvm/tree/master/lib/Fuzzer/standalone))
 that runs the provided inputs and use this driver with the seed corpus created in previous step. 

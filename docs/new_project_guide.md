@@ -1,4 +1,4 @@
-# Setting up New Project
+# Setting up a New Project
 
 ## Prerequisites
 - [Integrate](ideal_integration.md) one or more [Fuzz Targets](glossary.md#fuzz-target)
@@ -26,11 +26,11 @@ Example: [boringssl](https://github.com/google/boringssl) project is located in
 
 The project directory needs to contain the following three configuration files:
 
+* `projects/<project_name>/project.yaml` - provides metadata about the project.
 * `projects/<project_name>/Dockerfile` - defines the container environment with information
 on dependencies needed to build the project and its [fuzz targets](glossary.md#fuzz-target).
 * `projects/<project_name>/build.sh` - build script that executes inside the container and
 generates project build.
-* `projects/<project_name>/project.yaml` - provides metadata about the project.
 
 To *automatically* create a new directory for your project and
 generate templated versions of these configuration files,
@@ -43,6 +43,23 @@ $ python infra/helper.py generate $PROJECT_NAME
 ```
 
 It is preferred to keep and maintain [fuzz targets](glossary.md#fuzz-target) in your own source code repository. If this is not possible due to various reasons, you can store them inside the OSS-Fuzz's project directory created above.
+
+## project.yaml
+
+This file stores the metadata about your project. The following attributes are supported:
+
+* `homepage` - Project's homepage.
+* `primary_contact`, `auto_ccs` - Primary contact and CCs list. These people get access to ClusterFuzz 
+which includes crash reports, fuzzer statistics, etc and are auto-cced on newly filed bugs in OSS-Fuzz
+tracker.
+* `sanitizers` (optional) - List of sanitizers to use. By default, you shouldn't override this and it 
+will use the default list of supported sanitizers (currently -
+AddressSanitizer("address"), UndefinedBehaviorSanitizer("undefined")). 
+If your project does not build with a particular sanitizer configuration and you need some time fixing
+it, then you can use this option to override the defaults temporarily. E.g. For disabling 
+UndefinedBehaviourSanitizer build, then you can just specify all supported sanitizers, except "undefined".
+
+Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
 
 ## Dockerfile
 
@@ -57,11 +74,6 @@ WORKDIR <checkout_dir>                    # current directory for build script
 COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer files in src dir
 ```
 Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
-
-### Fuzzer execution environment
-
-[This page](fuzzer_environment.md) gives information about the environment that
-your [fuzz targets](glossary.md#fuzz-target) will run on ClusterFuzz, and the assumptions that you can make.
 
 ## build.sh
 
@@ -130,6 +142,10 @@ pass them manually to the build tool.
 See [Provided Environment Variables](../infra/base-images/base-builder/README.md#provided-environment-variables) section in
 `base-builder` image documentation for more details.
 
+## Fuzzer execution environment
+
+[This page](fuzzer_environment.md) gives information about the environment that
+your [fuzz targets](glossary.md#fuzz-target) will run on ClusterFuzz, and the assumptions that you can make.
 
 ## Testing locally
 
@@ -162,8 +178,8 @@ $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
 ```
 
 *Note*: Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined) 
-configurations. MemorySanitizer is in development mode and not recommended for use. Make sure to test each
-of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).
+configurations. MemorySanitizer is in development mode and not recommended for use. <b>Make sure to test each
+of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
 ## Debugging Problems
 
@@ -172,7 +188,7 @@ of the supported build configurations with the above commands (build_fuzzers -> 
 in case you run into problems.
 
 
-### Custom libFuzzer options for ClusterFuzz
+## Custom libFuzzer options for ClusterFuzz
 
 By default, ClusterFuzz will run your fuzzer without any options. You can specify
 custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` executable in `$OUT`:
@@ -208,7 +224,7 @@ has an appropriate and consistent license.
 
 ### Dictionaries
 
-Dictionaries hugely improve fuzzing effeciency for inputs with lots of similar
+Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
 sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
 
 Put your dict file in `$OUT` and specify in .options file:
@@ -221,12 +237,6 @@ dict = dictionary_name.dict
 It is common for several [fuzz targets](glossary.md#fuzz-target)
 to reuse the same dictionary if they are fuzzing very similar inputs.
 (example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
-
-## project.yaml
-
-This file stores the metadata about your project. This includes things like project's homepage,
-list of sanitizers used, list of ccs on newly filed bugs, etc.
-(example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/project.yaml)).
 
 ## Checking in to OSS-Fuzz repository
 
@@ -263,4 +273,4 @@ If you are porting a fuzz target from Chromium, keep the original Chromium licen
 Once your change is merged, your project and fuzz targets should be automatically built and run on
 ClusterFuzz after a short while (&lt; 1 day)!<BR><BR>
 Check your project's build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).<BR>
-Check out the crashes generated and code coverage statistics on [ClusterFuzz](clusterfuzz.md) web interface [here](https://clusterfuzz-external.appspot.com/).
+Check out the crashes generated and code coverage statistics on [ClusterFuzz](clusterfuzz.md) web interface [here](https://oss-fuzz.com/).

@@ -29,5 +29,10 @@ ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
 popd > /dev/null
 rm -rf $WORK/afl
 
+# Copy afl tools necessary for fuzzing.
+pushd $SRC/afl > /dev/null
+make clean && make
+find . -name 'afl-*' -executable -type f | xargs cp -t $OUT
+popd > /dev/null
 
 echo " done."

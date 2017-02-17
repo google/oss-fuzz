@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
 ################################################################################
 
 FROM ossfuzz/base-builder
-MAINTAINER vitalybuka@chromium.org
-RUN apt-get install -y binutils make
+MAINTAINER flim@google.com
+RUN apt-get install -y make autoconf automake libtool wget
 
-RUN git clone --depth 1 -b develop https://github.com/nlohmann/json.git
-WORKDIR json/
-COPY build.sh *.options $SRC/
+RUN git clone https://git.xiph.org/opus.git
+RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
+WORKDIR opus
+COPY build.sh $SRC/

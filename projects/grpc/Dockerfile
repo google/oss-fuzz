@@ -15,9 +15,25 @@
 ################################################################################
 
 FROM ossfuzz/base-builder
-MAINTAINER vitalybuka@chromium.org
-RUN apt-get install -y binutils make
+MAINTAINER mattkwong@google.com
 
-RUN git clone --depth 1 -b develop https://github.com/nlohmann/json.git
-WORKDIR json/
+RUN apt-get install -y software-properties-common python-software-properties
+RUN add-apt-repository ppa:webupd8team/java
+RUN apt-get update
+RUN apt-get -y install  \
+	vim             \
+	build-essential \
+	openjdk-8-jdk   \
+	make            \
+        curl            \
+        autoconf        \
+        libtool
+
+# Install Bazel
+RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
+RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -    
+RUN apt-get update && apt-get install -y bazel
+
+RUN git clone --recursive https://github.com/grpc/grpc grpc
+WORKDIR /src/grpc/
 COPY build.sh *.options $SRC/
