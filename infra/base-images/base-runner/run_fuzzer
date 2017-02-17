@@ -26,6 +26,7 @@ shift
 
 rm -rf /tmp/input/ && mkdir /tmp/input/
 
+CORPUS=
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 if [ -f $SEED_CORPUS ]; then
   echo "Using seed corpus: $SEED_CORPUS"
