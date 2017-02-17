@@ -98,14 +98,14 @@ def call(body) {
                         sh "mkdir -p $junit_reports"
                         stage("$sanitizer sanitizer ($engine)") {
                             // Run image to produce fuzzers
-                            def engine_env = "-e FUZZING_ENGINE=\"${engine}\" "
-                            def env = "-e SANITIZER=\"${sanitizer}\" ${engine_env}"
+                            def engineEnv = "-e FUZZING_ENGINE=\"${engine}\" "
+                            def env = "-e SANITIZER=\"${sanitizer}\" ${engineEnv}"
                             if (coverageFlags != null) {
                                 env += "-e COVERAGE_FLAGS=\"${coverageFlags}\" "
                             }
                             sh "docker run --rm $dockerRunOptions -v $out:/out $env -t $dockerTag compile"
                             // Test all fuzzers
-                            sh "docker run --rm $dockerRunOptions -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.${engine}\" $engine_env -t ossfuzz/base-runner test_report"
+                            sh "docker run --rm $dockerRunOptions -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.${engine}\" $engineEnv -t ossfuzz/base-runner test_report"
                         }
                     }
                 }
