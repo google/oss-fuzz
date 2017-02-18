@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Disable UBSan vptr since several targets built with -fno-rtti.
+export CFLAGS="$CFLAGS -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+
 # Build dependencies.
 export FFMPEG_DEPS_PATH=$SRC/ffmpeg_deps
 mkdir -p $FFMPEG_DEPS_PATH
