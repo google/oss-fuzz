@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Disable UBSan vptr since target built with -fno-rtti.
+export CFLAGS="$CFLAGS -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+
 # Build the library.
 ./autogen.sh
 ./configure
