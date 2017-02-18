@@ -27,6 +27,7 @@ def call(body) {
     def projectName = project["name"] ?: env.JOB_BASE_NAME
     def sanitizers = project["sanitizers"] ?: ["address", "undefined"]
     def coverageFlags = project["coverage_flags"]
+    def fuzzingEngines = project["fuzzing_engines"] ?: ["libfuzzer"]
 
     // Dockerfile config
     def dockerfileConfig = project["dockerfile"] ?: [
@@ -42,7 +43,12 @@ def call(body) {
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
         .format(java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC))
 
-    timeout(time: 4, unit: 'HOURS') {
+    def supportedSanitizers = [
+        libfuzzer: ["address", "memory", "undefined"],
+        afl: ["address"]
+    ]
+
+    timeout(time: 12, unit: 'HOURS') {
     node {
         def workspace = pwd()
         def srcmapFile = "$workspace/srcmap.json"
@@ -80,19 +86,28 @@ def call(body) {
         for (int i = 0; i < sanitizers.size(); i++) {
             def sanitizer = sanitizers[i]
             dir(sanitizer) {
-                def out = "$workspace/out/$sanitizer"
-                def junit_reports = "$workspace/junit_reports/$sanitizer"
-                sh "mkdir -p $out"
-                sh "mkdir -p $junit_reports"
-                stage("$sanitizer sanitizer") {
-                    // Run image to produce fuzzers
-                    def env = "-e SANITIZER=\"${sanitizer}\" "
-                    if (coverageFlags != null) {
-                        env += "-e COVERAGE_FLAGS=\"${coverageFlags}\" "
+                for (int j = 0; j < fuzzingEngines.size(); j++) {
+                    def engine = fuzzingEngines[j]
+                    if (!supportedSanitizers[engine].contains(sanitizer)) {
+                        continue
                     }
-                    sh "docker run --rm $dockerRunOptions -v $out:/out $env -t $dockerTag compile"
-                    // Test all fuzzers
-                    sh "docker run --rm $dockerRunOptions -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.\" -t ossfuzz/base-runner test_report"
+                    dir (engine) {
+                        def out = "$workspace/out/$sanitizer/$engine"
+                        def junit_reports = "$workspace/junit_reports/$sanitizer/$engine"
+                        sh "mkdir -p $out"
+                        sh "mkdir -p $junit_reports"
+                        stage("$sanitizer sanitizer ($engine)") {
+                            // Run image to produce fuzzers
+                            def engineEnv = "-e FUZZING_ENGINE=\"${engine}\" "
+                            def env = "-e SANITIZER=\"${sanitizer}\" ${engineEnv}"
+                            if (coverageFlags != null) {
+                                env += "-e COVERAGE_FLAGS=\"${coverageFlags}\" "
+                            }
+                            sh "docker run --rm $dockerRunOptions -v $out:/out $env -t $dockerTag compile"
+                            // Test all fuzzers
+                            sh "docker run --rm $dockerRunOptions -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.${engine}\" $engineEnv -t ossfuzz/base-runner test_report"
+                        }
+                    }
                 }
             }
         }
@@ -103,12 +118,22 @@ def call(body) {
                 for (int i = 0; i < sanitizers.size(); i++) {
                     def sanitizer = sanitizers[i]
                     dir (sanitizer) {
-                        def zipFile = "$projectName-$sanitizer-${date}.zip"
-                        sh "zip -r $zipFile *"
-                        sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
-                        def stampedSrcmap = "$projectName-$sanitizer-${date}.srcmap.json"
-                        sh "cp $srcmapFile $stampedSrcmap"
-                        sh "gsutil cp $stampedSrcmap gs://clusterfuzz-builds/$projectName/"
+                        for (int j = 0; j < fuzzingEngines.size(); j++) {
+                            def engine = fuzzingEngines[j]
+                            if (!supportedSanitizers[engine].contains(sanitizer)) {
+                                continue
+                            }
+
+                            def upload_bucket = engine == "libfuzzer" ? "clusterfuzz-builds" : "clusterfuzz-builds-afl"
+                            dir(engine) {
+                                def zipFile = "$projectName-$sanitizer-${date}.zip"
+                                sh "zip -r $zipFile *"
+                                sh "gsutil cp $zipFile gs://$upload_bucket/$projectName/"
+                                def stampedSrcmap = "$projectName-$sanitizer-${date}.srcmap.json"
+                                sh "cp $srcmapFile $stampedSrcmap"
+                                sh "gsutil cp $stampedSrcmap gs://$upload_bucket/$projectName/"
+                            }
+                        }
                     }
                 }
             }

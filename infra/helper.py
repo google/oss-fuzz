@@ -118,6 +118,18 @@ def _get_command_string(command):
   return ' '.join(pipes.quote(part) for part in command)
 
 
+def _add_engine_args(parser):
+  """Add common engine args."""
+  parser.add_argument('--engine', default='libfuzzer',
+                      choices=['libfuzzer', 'afl'])
+
+
+def _add_sanitizer_args(parser):
+  """Add common sanitizer args."""
+  parser.add_argument('--sanitizer', default='address',
+                      choices=['address', 'memory', 'undefined'])
+
+
 def _build_image(image_name):
   """Build image."""
 
@@ -162,7 +174,9 @@ def build_image(build_args):
 def build_fuzzers(build_args):
   """Build fuzzers."""
   parser = argparse.ArgumentParser('helper.py build_fuzzers')
-  parser.add_argument('-e', action='append', help="set environment variable e.g. SANITIZER=address")
+  _add_engine_args(parser)
+  _add_sanitizer_args(parser)
+  parser.add_argument('-e', action='append', help="set environment variable e.g. VAR=value")
   parser.add_argument('project_name')
   parser.add_argument('source_path', help='path of local source',
                       nargs='?')
@@ -172,7 +186,12 @@ def build_fuzzers(build_args):
   if not _build_image(args.project_name):
     return 1
 
-  env = ['BUILD_UID=%d' % os.getuid()]
+  env = [
+      'BUILD_UID=%d' % os.getuid(),
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer
+  ]
+
   if args.e:
     env += args.e
 
@@ -205,6 +224,8 @@ def build_fuzzers(build_args):
 def run_fuzzer(run_args):
   """Runs a fuzzer in the container."""
   parser = argparse.ArgumentParser('helper.py run_fuzzer')
+  _add_engine_args(parser)
+
   parser.add_argument('project_name', help='name of the project')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
@@ -220,8 +241,11 @@ def run_fuzzer(run_args):
   if not _build_image('base-runner'):
     return 1
 
+  env = ['FUZZING_ENGINE=' + args.engine]
+
   command = [
       'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
+  ] + sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-t', 'ossfuzz/base-runner',
       'run_fuzzer',
