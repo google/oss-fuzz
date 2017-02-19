@@ -60,6 +60,9 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
   TESTNAME="${TEST_SUITE:-}$FUZZER"
 
   OUT_TXT=$(cat $FUZZER_STDOUT)
+  
+  # Strip non-ascii characters.
+  OUT_TXT=${OUT_TXT//[^[:ascii:]]/}
 
   REPORT_TEXT=$(cat <<-EOF
 <?xml version="1.0" encoding="UTF-8"?>
