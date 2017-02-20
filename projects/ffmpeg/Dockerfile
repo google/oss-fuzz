@@ -30,7 +30,7 @@ RUN git clone https://github.com/mstorsjo/fdk-aac.git
 ADD https://sourceforge.net/projects/lame/files/latest/download lame.tar.gz
 RUN git clone git://anongit.freedesktop.org/xorg/lib/libXext
 RUN git clone git://anongit.freedesktop.org/git/xorg/lib/libXfixes
-RUN git clone git://anongit.freedesktop.org/git/libva
+RUN git clone https://github.com/01org/libva
 RUN git clone git://people.freedesktop.org/~aplattner/libvdpau
 RUN git clone https://chromium.googlesource.com/webm/libvpx
 RUN svn co http://svn.xiph.org/trunk/ogg
