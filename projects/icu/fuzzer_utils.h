@@ -9,6 +9,9 @@
 #include <algorithm>
 #include <random>
 
+#include "unicode/unistr.h"
+#include "unicode/strenum.h"
+
 #include "unicode/locid.h"
 #include "unicode/uchar.h"
 
