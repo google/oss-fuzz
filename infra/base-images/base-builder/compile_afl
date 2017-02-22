@@ -19,7 +19,6 @@ echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
 
 # afl needs its special coverage flags
 export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
-export SANITIZER_FLAGS=""
 
 mkdir -p $WORK/afl
 pushd $WORK/afl > /dev/null
