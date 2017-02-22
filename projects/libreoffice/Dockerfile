@@ -72,7 +72,7 @@ ADD http://dev-www.libreoffice.org/src/libwpg-0.3.1.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libwps-0.4.5.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libzmf-0.0.1.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz $SRC/
-ADD http://dev-www.libreoffice.org/src/poppler-0.51.0.tar.xz $SRC/
+ADD http://dev-www.libreoffice.org/src/poppler-0.52.0.tar.xz $SRC/
 ADD http://dev-www.libreoffice.org/src/mdds-1.2.2.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/openssl-1.0.2k.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/language-subtag-registry-2016-07-19.tar.bz2 $SRC/
@@ -112,6 +112,8 @@ ADD http://dev-www.libreoffice.org/corpus/pcxfuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/rasfuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/tgafuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/tiffuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/hwpfuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/602fuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
