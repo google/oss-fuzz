@@ -60,6 +60,10 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
   TESTNAME="${TEST_SUITE:-}$FUZZER"
 
   OUT_TXT=$(cat $FUZZER_STDOUT)
+  
+  # Escape non-printable characters and CDATA end sequence.
+  OUT_TXT=${OUT_TXT//[^[:print:]]/?}
+  OUT_TXT=${OUT_TXT//]]>/?}
 
   REPORT_TEXT=$(cat <<-EOF
 <?xml version="1.0" encoding="UTF-8"?>
