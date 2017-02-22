@@ -28,4 +28,4 @@ ENV ASAN_OPTIONS="alloc_dealloc_mismatch=0:allocator_may_return_null=1:allocator
 ENV MSAN_OPTIONS="print_stats=1:strip_path_prefix=/workspace/:symbolize=1"
 ENV UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1:print_summary=1:strip_path_prefix=/workspace/:symbolize=1"
 ENV FUZZER_ARGS="-rss_limit_mb=2048 -timeout=25"
-ENV AFL_FUZZER_ARGS="-m 2048"
+ENV AFL_FUZZER_ARGS="-m none"
