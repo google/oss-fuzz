@@ -65,7 +65,7 @@ ADD http://dev-www.libreoffice.org/src/liborcus-0.12.1.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/libpagemaker-0.0.3.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libpng-1.6.28.tar.gz $SRC/
 ADD http://dev-www.libreoffice.org/src/librevenge-0.0.4.tar.bz2 $SRC/
-ADD http://dev-www.libreoffice.org/src/libstaroffice-0.0.2.tar.bz2 $SRC/
+ADD http://dev-www.libreoffice.org/src/libstaroffice-0.0.3.tar.xz $SRC/
 ADD http://dev-www.libreoffice.org/src/libvisio-0.1.5.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libwpd-0.10.1.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/libwpg-0.3.1.tar.bz2 $SRC/
@@ -75,7 +75,7 @@ ADD http://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz $SRC/
 ADD http://dev-www.libreoffice.org/src/poppler-0.52.0.tar.xz $SRC/
 ADD http://dev-www.libreoffice.org/src/mdds-1.2.2.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/openssl-1.0.2k.tar.gz $SRC/
-ADD http://dev-www.libreoffice.org/src/language-subtag-registry-2016-07-19.tar.bz2 $SRC/
+ADD http://dev-www.libreoffice.org/src/language-subtag-registry-2017-01-20.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/3069842a88b8f40c6b83ad2850cda293-graphite2-minimal-1.3.9.tgz $SRC/
 ADD http://dev-www.libreoffice.org/src/harfbuzz-1.3.2.tar.bz2 $SRC/
 ADD http://dev-www.libreoffice.org/src/bae83fa5dc7f081768daace6e199adc3-glm-0.9.4.6-libreoffice.zip $SRC/
@@ -114,6 +114,8 @@ ADD http://dev-www.libreoffice.org/corpus/tgafuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/tiffuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/hwpfuzzer_seed_corpus.zip $SRC/
 ADD http://dev-www.libreoffice.org/corpus/602fuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/lwpfuzzer_seed_corpus.zip $SRC/
+ADD http://dev-www.libreoffice.org/corpus/pptfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
