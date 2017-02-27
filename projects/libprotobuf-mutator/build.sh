@@ -26,22 +26,5 @@ cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release \
     -DLIB_PROTO_MUTATOR_FUZZER_LIBRARIES=FuzzingEngine
 ninja libxml2_example expat_example 
 cp -f examples/libxml2/libxml2_example $OUT/
-cp -f examples/libxml2/libxml2_example $OUT/libxml2_small
-cp -f examples/libxml2/libxml2_example $OUT/libxml2_dict
 cp -f examples/expat/expat_example $OUT/
-cp -f examples/expat/expat_example $OUT/expat_dict
 popd
-
-# Experimental fuzzer to compare coverage with default one.
-CXXFLAGS="$CXXFLAGS -DLIB_PROTO_MUTATOR_XML2_NO_FLATTENING=1"
-mkdir -p build_exp
-pushd build_exp
-rm -rf *
-cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release \
-    -DLIB_PROTO_MUTATOR_WITH_ASAN=OFF \
-    -DLIB_PROTO_MUTATOR_FUZZER_LIBRARIES=FuzzingEngine
-ninja libxml2_example
-cp -f examples/libxml2/libxml2_example $OUT/libxml2_experiment
-popd
-
-
