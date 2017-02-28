@@ -212,8 +212,11 @@ for codec in $CODEC_NAMES; do
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
       $FUZZ_TARGET_SOURCE \
+      -c -o /tmp/${fuzzer_name}.o \
+      -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}=
+
+  $CXX $CXXFLAGS /tmp/${fuzzer_name}.o \
       -o $OUT/${fuzzer_name} \
-      -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
 
   echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
@@ -230,8 +233,11 @@ for codec in $CODEC_NAMES; do
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
       $FUZZ_TARGET_SOURCE \
+      -c -o /tmp/${fuzzer_name}.o \
+      -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}=
+
+  $CXX $CXXFLAGS /tmp/${fuzzer_name}.o \
       -o $OUT/${fuzzer_name} \
-      -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
 done
 
@@ -285,8 +291,11 @@ for codec in $CODEC_NAMES; do
 
   $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
       $FUZZ_TARGET_SOURCE \
+      -c -o /tmp/${fuzzer_name}.o \
+      -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}=
+
+  $CXX $CXXFLAGS /tmp/${fuzzer_name}.o \
       -o $OUT/${fuzzer_name} \
-      -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}= \
       ${FFMPEG_FUZZERS_COMMON_FLAGS}
 
   echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options

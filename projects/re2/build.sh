@@ -23,6 +23,7 @@
 # really need for our fuzzer, so that's all we build. Hopefully
 # this won't cause the fuzzer to fail erroneously due to not running
 # upstream's tests first to be sure things compiled correctly.
+CXXFLAGS="$CXXFLAGS -O2"
 make clean
 make -j$(nproc) obj/libre2.a
 
