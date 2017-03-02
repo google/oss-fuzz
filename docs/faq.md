@@ -75,3 +75,15 @@ in your project, then you need to fix your usage to call the API correctly.
 of that project on the bug. Once cced, they will get automatic access to all the
 information necessary to reproduce the issue. If this project is maintained in OSS-Fuzz,
 you can search for contacts in the respective project.yaml file.
+
+## What if my fuzzer does not find anything? 
+
+If your fuzz target is running for many days and does not find bugs or new coverage it may mean several things: 
+- We've covered all reachable code. In order to cover more code we need more fuzz targets.
+- The [seed corpus](new_project_guide.md#seed-corpus) is not good enough and the fuzzing engine(s) are not able to go deeper based on the existing seeds. Need to add more seeds. 
+- There is some crypto/crc stuff in the code that will prevent any fuzzing engine from going deeper, in which case the crypto should be disabled in [fuzzing mode](http://libfuzzer.info#fuzzer-friendly-build-mode). Examples: [openssl](https://github.com/openssl/openssl/tree/master/fuzz#reproducing-issues), [boringssl](https://boringssl.googlesource.com/boringssl/+/HEAD/FUZZING.md#Fuzzer-mode)
+
+In either case, look at the [coverage reports](clusterfuzz.md#coverage-reports) for your target(s) and figure out why some parts of the code are not covered. 
+    
+    
+    
