@@ -32,6 +32,7 @@ def call(body) {
       if (overridenSanitizers instanceof java.util.Map) {
         sanitizers = overridenSanitizers
       } else if (overridenSanitizers instanceof java.util.List) {
+        sanitizers = [:]
         overridenSanitizers.each { sanitizer ->
           if (sanitizer instanceof String) {
             sanitizers.put(sanitizer, [:])
