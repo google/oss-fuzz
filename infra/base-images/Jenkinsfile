@@ -21,4 +21,18 @@ node {
   stage("infra/base-images/all.sh") {
     sh "infra/base-images/all.sh --no-cache"
   }
+  
+  stage("docker push") {
+    def images = ['ossfuzz/base-image', 'ossfuzz/base-clang', 'ossfuzz/base-libfuzzer',
+                  'ossfuzz/base-runner', 'ossfuzz/base-runner-debug',
+                  'ossfuzz/base-builder',]  
+    
+    docker.withRegistry('', 'docker-login') {
+        for (int i = 0; i < images.size(); i++) {
+            def image = images[i]
+            stage name: "$image"
+            docker.image(image).push()
+        }
+    }
+  }
 }
