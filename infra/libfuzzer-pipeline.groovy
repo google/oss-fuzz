@@ -74,7 +74,7 @@ def call(body) {
             def srcmapJsonStr = sh(returnStdout: true, 
                                    script: "docker run $dockerRunOptions --rm $dockerTag srcmap").trim()
             // use classic slurper: http://stackoverflow.com/questions/37864542/jenkins-pipeline-notserializableexception-groovy-json-internal-lazymap
-            def srcmap = new groovy.json.JsonSlurperClassic().parse(srcmapJsonStr)
+            def srcmap = new groovy.json.JsonSlurperClassic().parseText(srcmapJsonStr)
             srcmap['/src'] = [ type: 'git',
                                rev:  dockerfileRev,
                                url:  dockerGit,
