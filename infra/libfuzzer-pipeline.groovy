@@ -84,7 +84,7 @@ def call(body) {
         } // stage("docker image")
 
         for (int i = 0; i < sanitizers.size(); i++) {
-            def sanitizer = sanitizers[i]
+            def sanitizer = sanitizers[i].replaceAll('_experimental$', '')
             dir(sanitizer) {
                 for (int j = 0; j < fuzzingEngines.size(); j++) {
                     def engine = fuzzingEngines[j]
@@ -116,7 +116,7 @@ def call(body) {
             step([$class: 'JUnitResultArchiver', testResults: 'junit_reports/**/*.xml'])
             dir('out') {
                 for (int i = 0; i < sanitizers.size(); i++) {
-                    def sanitizer = sanitizers[i]
+                    def sanitizer = sanitizers[i].replaceAll('_experimental$', '')
                     dir (sanitizer) {
                         for (int j = 0; j < fuzzingEngines.size(); j++) {
                             def engine = fuzzingEngines[j]
