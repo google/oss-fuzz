@@ -55,7 +55,7 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
 - The project developer fixes the bug upstream and credits OSS-Fuzz for the discovery (commit message should contain
   the string **'Credit to OSS-Fuzz'**).
 - [ClusterFuzz](docs/clusterfuzz.md) automatically verifies the fix, adds a comment and closes the issue ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53#c3)).
-- 7 days after the fix is verified or 90 days after reporting, the issue becomes *public*
+- 30 days after the fix is verified or 90 days after reporting (whichever is earlier), the issue becomes *public*
   ([guidelines](#bug-disclosure-guidelines)).
 
 <!-- NOTE: this anchor is referenced by oss-fuzz blog post -->
