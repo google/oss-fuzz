@@ -44,7 +44,7 @@ echo "CXXFLAGS=$CXXFLAGS"
 echo "---------------------------------------------------------------"
 
 BUILD_CMD="bash -eux $SRC/build.sh"
-if [ -n "${BUILD_UID-}" -a "${BUILD_UID-}" -ne "0"]; then
+if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder
   chown -R builder $SRC $OUT $WORK
   su -c "$BUILD_CMD" builder
