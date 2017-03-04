@@ -29,27 +29,19 @@ def call(body) {
 
     if (project.containsKey("sanitizers")) {
       def overridenSanitizers = project["sanitizers"]
-      if (overridenSanitizers instanceof java.util.Map) {
-        sanitizers = overridenSanitizers
-      } else if (overridenSanitizers instanceof java.util.List) {
-        sanitizers = [:]
-        overridenSanitizers.each { sanitizer ->
-          if (sanitizer instanceof String) {
-            sanitizers.put(sanitizer, [:])
-          } else if (sanitizer instanceof java.util.Map) {
-            // Allow either:
-            // sanitizers:
-            //   undefined:
-            //     experimental: true
-            //   ...:
-            // or:
-            // sanitizers:
-            //   - undefined:
-            //       experimental: true
-            //   - ...:
-            sanitizer.each { entry ->
-              sanitizers.put(entry.key, entry.value)
-            }
+      sanitizers = [:]
+      overridenSanitizers.each { sanitizer ->
+        // each field can either be a Map or a String:
+        // sanitizers:
+        //   - undefined:
+        //       experimental: true
+        //   - address
+        //   - memory
+        if (sanitizer instanceof String) {
+          sanitizers.put(sanitizer, [:])
+        } else if (sanitizer instanceof java.util.Map) {
+          sanitizer.each { entry ->
+            sanitizers.put(entry.key, entry.value)
           }
         }
       }
