@@ -30,7 +30,6 @@ node {
     docker.withRegistry('', 'docker-login') {
         for (int i = 0; i < images.size(); i++) {
             def image = images[i]
-            stage name: "$image"
             docker.image(image).push()
         }
     }
