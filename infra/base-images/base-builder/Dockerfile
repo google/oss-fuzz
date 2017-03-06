@@ -19,7 +19,7 @@ MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y git subversion jq python3 zip make
 
 # Default build flags for various sanitizers.
-ENV SANITIZER_FLAGS_address "-fsanitize=address"
+ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
 ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,function,signed-integer-overflow,shift,vla-bound,vptr -fno-sanitize-recover=undefined"
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
