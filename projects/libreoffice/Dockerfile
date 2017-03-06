@@ -91,12 +91,11 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libgpg-error-1.26.tar.bz2 $SRC/
 #fuzzing corpuses
 ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/
-RUN mkdir afl-testcases
-RUN cd afl-testcases/ && tar xf $SRC/afl_testcases.tgz
-RUN zip -q $SRC/jpgfuzzer_seed_corpus.zip afl-testcases/jpeg*/full/images/*
-RUN zip -q $SRC/giffuzzer_seed_corpus.zip afl-testcases/gif*/full/images/*
-RUN zip -q $SRC/bmpfuzzer_seed_corpus.zip afl-testcases/bmp*/full/images/*
-RUN zip -q $SRC/pngfuzzer_seed_corpus.zip afl-testcases/png*/full/images/*
+RUN mkdir afl-testcases && cd afl-testcases/ && tar xf $SRC/afl_testcases.tgz && cd .. && \
+    zip -q $SRC/jpgfuzzer_seed_corpus.zip afl-testcases/jpeg*/full/images/* && \
+    zip -q $SRC/giffuzzer_seed_corpus.zip afl-testcases/gif*/full/images/* && \
+    zip -q $SRC/bmpfuzzer_seed_corpus.zip afl-testcases/bmp*/full/images/* && \
+    zip -q $SRC/pngfuzzer_seed_corpus.zip afl-testcases/png*/full/images/*
 ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xbmfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xpmfuzzer_seed_corpus.zip \
