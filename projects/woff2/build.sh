@@ -28,8 +28,10 @@ make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" CANONICAL_PREFIXES= all \
 
 # Build fuzzers
 for fuzzer_archive in $(ls src/*fuzzer*.a); do
+  fuzzer_name=$(basename ${fuzzer_archive%.a})
   $CXX $CXXFLAGS -lFuzzingEngine $fuzzer_archive \
-      -o $OUT/$(basename ${fuzzer_archive%.a})
+      -o $OUT/$fuzzer_name
+  zip -q $OUT/${fuzzer_name}_seed_corpus.zip $SRC/corpus/*
 done
 
 cp $SRC/*.options $OUT/
