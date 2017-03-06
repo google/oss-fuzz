@@ -18,9 +18,10 @@ make fuzzers
 #some minimal fonts required
 cp $SRC/libreoffice/extras/source/truetype/symbol/opens___.ttf instdir/share/fonts/truetype/Liberation* $OUT
 #minimal runtime requirements
-mkdir -p $OUT/services $OUT/types
+rm -rf $OUT/services $OUT/types $OUT/resource $OUT/*rdb
 pushd instdir/program
-cp *fuzzer *rc *rdb */*rdb $OUT
+cp -r *fuzzer *rc *rdb services types resource $OUT
+mv $OUT/services/services.rdb $OUT/services.rdb
 popd
 
 #starting corpuses
