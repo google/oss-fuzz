@@ -23,7 +23,8 @@ mv brotli/shared.mk.temp brotli/shared.mk
 
 # woff2 uses LFLAGS instead of LDFLAGS.
 make clean
-make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" CANONICAL_PREFIXES= all
+make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" CANONICAL_PREFIXES= all \
+  NOISY_LOGGING=
 
 # Build fuzzers
 for fuzzer_archive in $(ls src/*fuzzer*.a); do
