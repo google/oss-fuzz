@@ -323,12 +323,12 @@ def reproduce(run_args):
                       nargs=argparse.REMAINDER)
   args = parser.parse_args(run_args)
 
+  env = []
   if args.gdb:
     image_name = 'base-runner-debug'
-    debugger = 'gdb --args'
+    env += ['DEBUGGER=gdb --args']
   else:
     image_name = 'base-runner'
-    debugger = ''
 
   if not _check_project_exists(args.project_name):
     return 1
@@ -341,11 +341,11 @@ def reproduce(run_args):
 
   command = [
       'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
+  ] + sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
       '-t', 'ossfuzz/%s' % image_name,
       'reproduce',
-      debugger,
       args.fuzzer_name,
       '-runs=100',
   ] + args.fuzzer_args

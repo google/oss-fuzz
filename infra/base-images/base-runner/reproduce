@@ -15,9 +15,9 @@
 #
 ################################################################################
 
-DEBUGGER=$1
-FUZZER=$2
-shift 2
+DEBUGGER=${DEBUGGER:-}
+FUZZER=$1
+shift 1
 TESTCASE="/testcase"
 
 if [ ! -f $TESTCASE ]; then
