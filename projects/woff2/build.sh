@@ -30,7 +30,7 @@ for fuzzer_archive in $(ls src/*fuzzer*.a); do
   fuzzer_name=$(basename ${fuzzer_archive%.a})
   $CXX $CXXFLAGS -lFuzzingEngine $fuzzer_archive \
       -o $OUT/$fuzzer_name
-  cp $SRC/seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+  zip -q $OUT/${fuzzer_name}_seed_corpus.zip $SRC/corpus/*
 done
 
 cp $SRC/*.options $OUT/

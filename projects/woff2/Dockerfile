@@ -20,5 +20,5 @@ RUN apt-get install -y make autoconf automake libtool
 
 RUN git clone --depth 1 --recursive https://github.com/google/woff2
 WORKDIR woff2
-COPY build.sh *.options seed_corpus.zip $SRC/
-
+COPY build.sh *.options $SRC/
+COPY corpus $SRC/corpus
