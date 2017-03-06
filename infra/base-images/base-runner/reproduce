@@ -15,8 +15,9 @@
 #
 ################################################################################
 
-FUZZER=$1
-shift
+DEBUGGER=$1
+FUZZER=$2
+shift 2
 TESTCASE="/testcase"
 
 if [ ! -f $TESTCASE ]; then
@@ -26,5 +27,5 @@ fi
 
 export PATH=$OUT:$PATH
 cd $OUT
-$OUT/$FUZZER $FUZZER_ARGS $@ $TESTCASE
+$DEBUGGER $OUT/$FUZZER $FUZZER_ARGS $@ $TESTCASE
 
