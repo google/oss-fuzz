@@ -30,7 +30,7 @@ def call(body) {
     if (project.containsKey("sanitizers")) {
       def overridenSanitizers = project["sanitizers"]
       sanitizers = [:]
-      overridenSanitizers.each { sanitizer ->
+      for (sanitizer : overridenSanitizers) {
         // each field can either be a Map or a String:
         // sanitizers:
         //   - undefined:
@@ -40,7 +40,7 @@ def call(body) {
         if (sanitizer instanceof String) {
           sanitizers.put(sanitizer, [:])
         } else if (sanitizer instanceof java.util.Map) {
-          sanitizer.each { entry ->
+          for (entry : sanitizer) {
             sanitizers.put(entry.key, entry.value)
           }
         }
@@ -104,10 +104,9 @@ def call(body) {
             writeFile file: srcmapFile, text: groovy.json.JsonOutput.toJson(srcmap)
         } // stage("docker image")
 
-        sanitizers.keySet().each { sanitizer ->
+        for (sanitizer : sanitizers.keySet()) {
             dir(sanitizer) {
-                for (int j = 0; j < fuzzingEngines.size(); j++) {
-                    def engine = fuzzingEngines[j]
+                for (engine : fuzzingEngines) {
                     if (!supportedSanitizers[engine].contains(sanitizer)) {
                         continue
                     }
@@ -135,10 +134,9 @@ def call(body) {
         stage("uploading") {
             step([$class: 'JUnitResultArchiver', testResults: 'junit_reports/**/*.xml'])
             dir('out') {
-                sanitizers.keySet().each { sanitizer ->
+                for (sanitizer : sanitizers.keySet()) {
                     dir (sanitizer) {
-                        for (int j = 0; j < fuzzingEngines.size(); j++) {
-                            def engine = fuzzingEngines[j]
+                        for (engine : fuzzingEngines) {
                             if (!supportedSanitizers[engine].contains(sanitizer)) {
                                 continue
                             }
