@@ -35,6 +35,6 @@ ENV CCC "clang++"
 # FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is described at
 # http://libfuzzer.info#fuzzer-friendly-build-mode
 
-ENV CFLAGS "-fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"
