@@ -21,7 +21,8 @@ def call(body) {
     body.delegate = config
     body()
 
-    def project = new groovy.json.JsonSlurperClassic().parseText(config["project_json"])
+    def projectJson = config["project_json"]
+    def project = new groovy.json.JsonSlurperClassic().parseText(projectJson)
 
     // Project configuration.
     def projectName = project["name"] ?: env.JOB_BASE_NAME
@@ -69,6 +70,9 @@ def call(body) {
         afl: ["address"]
     ]
 
+    // project is not serializable, clear it.
+    project = null
+    
     timeout(time: 12, unit: 'HOURS') {
     node {
         def workspace = pwd()
@@ -76,7 +80,7 @@ def call(body) {
         def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
         def dockerRunOptions = "-e BUILD_UID=$uid --cap-add SYS_PTRACE"
 
-        echo "Building $dockerTag: $project"
+        echo "Building $dockerTag: $projectJson"
 
         sh "docker run --rm $dockerRunOptions -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""
         sh "mkdir -p $workspace/out"
@@ -102,6 +106,7 @@ def call(body) {
                                path: "/" + dockerContextDir ]
             echo "srcmap: $srcmap"
             writeFile file: srcmapFile, text: groovy.json.JsonOutput.toJson(srcmap)
+            srcmap = null
         } // stage("docker image")
 
         for (sanitizer : sanitizers.keySet()) {
