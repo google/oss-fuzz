@@ -1,0 +1,57 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins-master
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: jenkins-master
+      labels:
+        app: jenkins-master
+    spec:
+      containers:
+      - name: jenkins
+        image: jenkinsci/jenkins
+#        command:
+#          - "/bin/tini"
+#          - "--"
+#          - "/usr/local/bin/jenkins.sh"
+        env:
+#          - name: KUB_POD_NAME
+#            valueFrom:
+#              fieldRef:
+#                fieldPath: metadata.name
+#          - name: KUB_POD_IP
+#            valueFrom:
+#              fieldRef:
+#                fieldPath: status.podIP
+          - name: JAVA_OPTS
+            value: "-Duser.timezone=America/Los_Angeles -Dhudson.security.csrf.requestfield=Jenkins-Crumb"
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000
+        volumeMounts:
+        - name: jenkins-home
+          mountPath: "/var/jenkins_home"
+        livenessProbe:
+          httpGet:
+            path: "/login"
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 15
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "4"
+      - name: kubectl-proxy
+        image: lachlanevenson/k8s-kubectl
+        args:
+          - "proxy"
+          - "-p"
+          - "8081"
+      volumes:
+      - name: jenkins-home
+        gcePersistentDisk:
+          pdName: jenkins-home
+          fsType: ext4
