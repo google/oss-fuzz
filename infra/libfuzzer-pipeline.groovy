@@ -14,6 +14,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+// See https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Groovy+Plugin#PipelineGroovyPlugin-2.14%28Sep07%2C2016%29
+@NonCPS def entrySet(m) {m.collect {k, v -> [key: k, value: v]}}
+@NonCPS def keySet(m) {m.collect {k, v -> k}}
+
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -31,7 +36,7 @@ def call(body) {
     if (project.containsKey("sanitizers")) {
       def overridenSanitizers = project["sanitizers"]
       sanitizers = [:]
-      for (sanitizer : overridenSanitizers) {
+      for (def sanitizer : overridenSanitizers) {
         // each field can either be a Map or a String:
         // sanitizers:
         //   - undefined:
@@ -41,7 +46,7 @@ def call(body) {
         if (sanitizer instanceof String) {
           sanitizers.put(sanitizer, [:])
         } else if (sanitizer instanceof java.util.Map) {
-          for (entry : sanitizer) {
+          for (def entry : entrySet(sanitizer)) {
             sanitizers.put(entry.key, entry.value)
           }
         }
@@ -109,9 +114,9 @@ def call(body) {
             srcmap = null
         } // stage("docker image")
 
-        for (sanitizer : sanitizers.keySet()) {
+        for (def sanitizer : keySet(sanitizers)) {
             dir(sanitizer) {
-                for (engine : fuzzingEngines) {
+                for (def engine : fuzzingEngines) {
                     if (!supportedSanitizers[engine].contains(sanitizer)) {
                         continue
                     }
@@ -139,9 +144,9 @@ def call(body) {
         stage("uploading") {
             step([$class: 'JUnitResultArchiver', testResults: 'junit_reports/**/*.xml'])
             dir('out') {
-                for (sanitizer : sanitizers.keySet()) {
+                for (def sanitizer : keySet(sanitizers)) {
                     dir (sanitizer) {
-                        for (engine : fuzzingEngines) {
+                        for (def engine : fuzzingEngines) {
                             if (!supportedSanitizers[engine].contains(sanitizer)) {
                                 continue
                             }
