@@ -13,19 +13,7 @@ spec:
       containers:
       - name: jenkins
         image: jenkinsci/jenkins
-#        command:
-#          - "/bin/tini"
-#          - "--"
-#          - "/usr/local/bin/jenkins.sh"
         env:
-#          - name: KUB_POD_NAME
-#            valueFrom:
-#              fieldRef:
-#                fieldPath: metadata.name
-#          - name: KUB_POD_IP
-#            valueFrom:
-#              fieldRef:
-#                fieldPath: status.podIP
           - name: JAVA_OPTS
             value: "-Duser.timezone=America/Los_Angeles -Dhudson.security.csrf.requestfield=Jenkins-Crumb"
         ports:
