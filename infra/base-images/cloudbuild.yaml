@@ -1,6 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  dir: 'oss-fuzz/infra/base-images/base-image'
+  dir: 'infra/base-images/base-image'
   args: ['build', '-t', 'gcr.io/clusterfuzz-external/oss-fuzz/infra/base-image', '.' ]
 
 images:
