@@ -14,6 +14,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+// See https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Groovy+Plugin#PipelineGroovyPlugin-2.14%28Sep07%2C2016%29
+@NonCPS def entrySet(m) {m.collect {k, v -> [key: k, value: v]}}
+@NonCPS def keySet(m) {m.collect {k, v -> k}}
+
+
 def call(body) {
     // evaluate the body block, and collect configuration into the object
     def config = [:]
@@ -21,11 +26,33 @@ def call(body) {
     body.delegate = config
     body()
 
-    def project = new groovy.json.JsonSlurperClassic().parseText(config["project_json"])
+    def projectJson = config["project_json"]
+    def project = new groovy.json.JsonSlurperClassic().parseText(projectJson)
 
     // Project configuration.
     def projectName = project["name"] ?: env.JOB_BASE_NAME
-    def sanitizers = project["sanitizers"] ?: ["address", "undefined"]
+    def sanitizers = [address: [:], undefined: [:]]
+
+    if (project.containsKey("sanitizers")) {
+      def overridenSanitizers = project["sanitizers"]
+      sanitizers = [:]
+      for (def sanitizer : overridenSanitizers) {
+        // each field can either be a Map or a String:
+        // sanitizers:
+        //   - undefined:
+        //       experimental: true
+        //   - address
+        //   - memory
+        if (sanitizer instanceof String) {
+          sanitizers.put(sanitizer, [:])
+        } else if (sanitizer instanceof java.util.Map) {
+          for (def entry : entrySet(sanitizer)) {
+            sanitizers.put(entry.key, entry.value)
+          }
+        }
+      }
+    }
+
     def coverageFlags = project["coverage_flags"]
     def fuzzingEngines = project["fuzzing_engines"] ?: ["libfuzzer"]
 
@@ -48,6 +75,9 @@ def call(body) {
         afl: ["address"]
     ]
 
+    // project is not serializable, clear it.
+    project = null
+    
     timeout(time: 12, unit: 'HOURS') {
     node {
         def workspace = pwd()
@@ -55,7 +85,7 @@ def call(body) {
         def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
         def dockerRunOptions = "-e BUILD_UID=$uid --cap-add SYS_PTRACE"
 
-        echo "Building $dockerTag: $project"
+        echo "Building $dockerTag: $projectJson"
 
         sh "docker run --rm $dockerRunOptions -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""
         sh "mkdir -p $workspace/out"
@@ -81,13 +111,12 @@ def call(body) {
                                path: "/" + dockerContextDir ]
             echo "srcmap: $srcmap"
             writeFile file: srcmapFile, text: groovy.json.JsonOutput.toJson(srcmap)
+            srcmap = null
         } // stage("docker image")
 
-        for (int i = 0; i < sanitizers.size(); i++) {
-            def sanitizer = sanitizers[i]
+        for (def sanitizer : keySet(sanitizers)) {
             dir(sanitizer) {
-                for (int j = 0; j < fuzzingEngines.size(); j++) {
-                    def engine = fuzzingEngines[j]
+                for (def engine : fuzzingEngines) {
                     if (!supportedSanitizers[engine].contains(sanitizer)) {
                         continue
                     }
@@ -115,11 +144,9 @@ def call(body) {
         stage("uploading") {
             step([$class: 'JUnitResultArchiver', testResults: 'junit_reports/**/*.xml'])
             dir('out') {
-                for (int i = 0; i < sanitizers.size(); i++) {
-                    def sanitizer = sanitizers[i]
+                for (def sanitizer : keySet(sanitizers)) {
                     dir (sanitizer) {
-                        for (int j = 0; j < fuzzingEngines.size(); j++) {
-                            def engine = fuzzingEngines[j]
+                        for (def engine : fuzzingEngines) {
                             if (!supportedSanitizers[engine].contains(sanitizer)) {
                                 continue
                             }

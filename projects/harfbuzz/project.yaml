@@ -1,2 +1,6 @@
 homepage: "http://www.harfbuzz.org/"
 primary_contact: "behdad@google.com"
+sanitizers:
+ - address
+ - undefined
+ - memory

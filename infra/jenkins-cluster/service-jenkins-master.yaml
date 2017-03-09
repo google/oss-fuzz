@@ -5,11 +5,11 @@ metadata:
   labels:
     app: jenkins-master
 spec:
-  type: NodePort
   selector:
     app: jenkins-master
   ports:
-  - port: 50000
-    targetPort: 50000
-    nodePort: 31001
-    protocol: TCP
+  - name: agent
+    port: 50000
+  - name: http
+    port: 80
+    targetPort: 8080

@@ -11,7 +11,9 @@ ENV DIND_COMMIT 3b5fac462d21ca164b3778647420016315289034
 
 RUN apt-get update && apt-get upgrade -y
 # Needed for our build environment.
-RUN apt-get install -y zip
+RUN apt-get install -y zip git curl
+RUN curl https://sdk.cloud.google.com | bash
+ENV PATH "$PATH:/root/google-cloud-sdk/bin"
 
 ##########
 # Docker in the Docker. Follows official docker:dind image
