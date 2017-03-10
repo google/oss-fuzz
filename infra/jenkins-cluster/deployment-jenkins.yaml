@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
       - name: jenkins
-        image: jenkinsci/jenkins
+        image: gcr.io/clusterfuzz-external/jenkins:latest
         env:
           - name: JAVA_OPTS
             value: "-Duser.timezone=America/Los_Angeles -Dhudson.security.csrf.requestfield=Jenkins-Crumb"
@@ -22,6 +22,9 @@ spec:
         volumeMounts:
         - name: jenkins-home
           mountPath: "/var/jenkins_home"
+        - name: secrets
+          mountPath: "/var/secrets"
+          readOnly: true
         livenessProbe:
           httpGet:
             path: "/login"
@@ -43,3 +46,9 @@ spec:
         gcePersistentDisk:
           pdName: jenkins-home
           fsType: ext4
+      - name: secrets
+        secret:
+          secretName: builder-service-account
+          items:
+            - key: build-service-account.json
+              path: build-service-account.json
