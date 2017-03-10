@@ -21,6 +21,8 @@ CONFIGURATIONS = {
   'sanitizer-undefined' : [ 'SANITIZER=undefined' ],
   }
 
+DEFAULT_SANITIZERS = ['address', 'undefined']
+
 
 def usage():
   sys.stderr.write(
@@ -64,7 +66,8 @@ def get_build_steps(project_yaml):
           },
     ]
 
-  for sanitizer in project_yaml["sanitizers"]:
+  sanitizers = project_yaml.get('sanitizers', DEFAULT_SANITIZERS)
+  for sanitizer in sanitizers:
     env = CONFIGURATIONS["sanitizer-" + sanitizer]
     out = '/workspace/out/' + sanitizer
     zip_file = name + "-" + sanitizer + "-" + ts + ".zip"
