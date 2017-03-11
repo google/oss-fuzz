@@ -32,12 +32,18 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>virtualenv ENV
+      <command>#!/bin/bash -eux
+
+virtualenv ENV
+set +o nounset
 . ENV/bin/activate
+set -o nounset
 
 cd $WORKSPACE/oss-fuzz/infra/gcb
 pip install -r requirements.txt
-python build.py $WORKSPACE/oss-fuzz/$JOB_NAME</command>
+build_id=$(python build.py $WORKSPACE/oss-fuzz/$JOB_NAME)
+python wait_for_build.py $build_id
+</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
