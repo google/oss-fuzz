@@ -23,6 +23,7 @@ CONFIGURATIONS = {
   }
 
 DEFAULT_SANITIZERS = ['address', 'undefined']
+UPLOAD_BUCKET = 'clusterfuzz-builds-test'
 
 
 def usage():
@@ -75,6 +76,17 @@ def create_sink(log_topic, build_id):
   return sink
 
 
+def get_signed_url(url):
+  sign_output = subprocess.check_output([
+      'gsutil',
+      'signurl',
+      '-m', 'PUT',
+      '-d', '5h',
+      os.environ['GOOGLE_APPLICATION_CREDENTIALS'],
+      url])
+  return sign_output.splitlines()[1].split()[4]
+
+
 def get_build_steps(project_yaml):
   name = project_yaml['name']
   image = project_yaml['image']
@@ -94,7 +106,7 @@ def get_build_steps(project_yaml):
           },
           {
               'name': image,
-              'args': [ 
+              'args': [
                 'bash',
                 '-c',
                 'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json' 
@@ -107,6 +119,8 @@ def get_build_steps(project_yaml):
     env = CONFIGURATIONS["sanitizer-" + sanitizer]
     out = '/workspace/out/' + sanitizer
     zip_file = name + "-" + sanitizer + "-" + ts + ".zip"
+    upload_url = get_signed_url('gs://{0}/{1}/{2}'.format(
+        UPLOAD_BUCKET, name, zip_file))
 
     build_steps.extend([
         {'name': image,
@@ -123,7 +137,14 @@ def get_build_steps(project_yaml):
             '-c',
             'cd {0} && zip -r {1} *'.format(out, zip_file)
           ],
-        }])
+        },
+        {'name': 'gcr.io/clusterfuzz-external/uploader',
+         'args': [
+             os.path.join(out, zip_file),
+             upload_url,
+         ],
+        },
+    ])
 
   return build_steps
 
