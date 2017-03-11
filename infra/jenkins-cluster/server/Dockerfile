@@ -3,7 +3,7 @@ USER root
 
 RUN mkdir /var/secrets
 RUN apt-get -y update && apt-get -y upgrade
-RUN apt-get -y install python-dev virtualenv python-pip build-essential libssl-dev libffi-dev
+RUN apt-get -y install python-dev virtualenv python-pip build-essential
 
 WORKDIR /
 RUN wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.zip
