@@ -10,6 +10,8 @@ import os
 import sys
 import yaml
 
+from google.cloud import logging
+from google.cloud import pubsub
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build
 
@@ -40,10 +42,41 @@ def load_project_yaml(project_dir):
     return project_yaml
 
 
+def create_log_topic(build_id):
+  pubsub_client = pubsub.Client()
+  log_topic = pubsub_client.topic('build-logs-' + build_id)
+  if log_topic.exists():
+    log_topic.delete()
+  log_topic.create()
+
+  policy = log_topic.get_iam_policy()
+  policy.owners.add(policy.group('cloud-logs@google.com'))
+  log_topic.set_iam_policy(policy)
+
+  return log_topic
+
+
+def create_sink(log_topic, build_id):
+  log_destination = 'pubsub.googleapis.com/' + log_topic.full_name
+  log_filter = (
+      'resource.type="build"\n'
+      'resource.labels.build_id="{0}"\n'
+  ).format(build_id)
+
+  logging_client = logging.Client()
+  sink = logging_client.sink(
+      'sink-build-logs-' + build_id, filter_=log_filter,
+      destination=log_destination)
+  if sink.exists():
+    sink.delete()
+  sink.create()
+
+  return sink
+
+
 def get_build_steps(project_yaml):
   name = project_yaml['name']
   image = project_yaml['image']
-  print "Building " + image
 
   ts = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
@@ -101,8 +134,6 @@ def main():
   options = {}
   if "GCB_OPTIONS" in os.environ:
     options = yaml.safe_load(os.environ["GCB_OPTIONS"])
-    print "Using options", options
-
 
   build_body = {
       'source': {
@@ -121,7 +152,13 @@ def main():
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
   build_info = cloudbuild.projects().builds().create(projectId='clusterfuzz-external', body=build_body).execute()
-  print build_info['metadata']['build']['id']
+  build_id =  build_info['metadata']['build']['id']
+
+  print build_id
+
+  # Create pub/sub topic for build logs.
+  log_topic = create_log_topic(build_id)
+  create_sink(log_topic, build_id)
 
 
 if __name__ == "__main__":
