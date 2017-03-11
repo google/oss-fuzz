@@ -5,14 +5,19 @@
 Usage: build.py <project_dir>
 """
 
+import base64
 import datetime
 import os
+import subprocess
 import sys
+import time
+import urllib
 import yaml
 
 from google.cloud import logging
 from google.cloud import pubsub
 from oauth2client.client import GoogleCredentials
+from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
 
@@ -23,6 +28,7 @@ CONFIGURATIONS = {
   }
 
 DEFAULT_SANITIZERS = ['address', 'undefined']
+UPLOAD_BUCKET = 'clusterfuzz-builds-test'
 
 
 def usage():
@@ -37,7 +43,7 @@ def load_project_yaml(project_dir):
   with open(project_yaml_path) as f:
     project_yaml = yaml.safe_load(f)
     project_yaml.setdefault('name', project_name)
-    project_yaml.setdefault('image', 
+    project_yaml.setdefault('image',
         'gcr.io/clusterfuzz-external/oss-fuzz/' + project_name)
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
     return project_yaml
@@ -75,6 +81,25 @@ def create_sink(log_topic, build_id):
   return sink
 
 
+def get_signed_url(path):
+  timestamp = int(time.time() + 60 * 60 * 5)
+  blob = 'PUT\n\n\n{0}\n{1}'.format(
+      timestamp, path)
+
+  creds = ServiceAccountCredentials.from_json_keyfile_name(
+      os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+  client_id = creds.service_account_email
+  signature = base64.b64encode(creds.sign_blob(blob)[1])
+  values = {
+      'GoogleAccessId': client_id,
+      'Expires': timestamp,
+      'Signature': signature,
+  }
+
+  return ('https://storage.googleapis.com{0}?'.format(path) +
+          urllib.urlencode(values))
+
+
 def get_build_steps(project_yaml):
   name = project_yaml['name']
   image = project_yaml['image']
@@ -94,10 +119,10 @@ def get_build_steps(project_yaml):
           },
           {
               'name': image,
-              'args': [ 
+              'args': [
                 'bash',
                 '-c',
-                'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json' 
+                'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
               ],
               'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
           },
@@ -106,7 +131,13 @@ def get_build_steps(project_yaml):
   for sanitizer in project_yaml['sanitizers']:
     env = CONFIGURATIONS["sanitizer-" + sanitizer]
     out = '/workspace/out/' + sanitizer
-    zip_file = name + "-" + sanitizer + "-" + ts + ".zip"
+    stamped_name = name + '-' + sanitizer + '-' + ts
+    zip_file = stamped_name + '.zip'
+    stamped_srcmap_file = stamped_name + '.srcmap.json'
+    upload_url = get_signed_url('/{0}/{1}/{2}'.format(
+        UPLOAD_BUCKET, name, zip_file))
+    srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(
+        UPLOAD_BUCKET, name, stamped_srcmap_file))
 
     build_steps.extend([
         {'name': image,
@@ -123,7 +154,27 @@ def get_build_steps(project_yaml):
             '-c',
             'cd {0} && zip -r {1} *'.format(out, zip_file)
           ],
-        }])
+        },
+        {'name': 'gcr.io/clusterfuzz-external/uploader',
+         'args': [
+             os.path.join(out, zip_file),
+             upload_url,
+         ],
+        },
+        {'name': 'gcr.io/clusterfuzz-external/uploader',
+         'args': [
+             '/workspace/srcmap.json',
+             srcmap_url,
+         ],
+        },
+        {'name': image,
+          'args': [
+            'bash',
+            '-c',
+            'rm -r ' + out,
+          ],
+        },
+    ])
 
   return build_steps
 

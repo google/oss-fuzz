@@ -2,4 +2,3 @@ google-api-python-client
 PyYAML
 google-cloud-pubsub
 google-cloud-logging
-
