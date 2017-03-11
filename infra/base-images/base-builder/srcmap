@@ -52,7 +52,7 @@ for DOT_HG_DIR in $(find $SRC -name ".hg" -type d); do
   jq_inplace $SRCMAP ".\"$HG_DIR\" = { type: \"hg\", url: \"$HG_URL\", rev: \"$HG_REV\" }"
 done
 
-if [ "${OSSFUZZ_REVISION-0}" -ne "0" ]; then
+if [ "${OSSFUZZ_REVISION-}" != "" ]; then
   jq_inplace $SRCMAP ".\"/src\" = { type: \"git\", url: \"https://github.com/google/oss-fuzz.git\", rev: \"$OSSFUZZ_REVISION\" }"
 fi
 
