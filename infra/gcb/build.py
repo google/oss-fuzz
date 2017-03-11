@@ -62,7 +62,11 @@ def get_build_steps(project_yaml):
           },
           {
               'name': image,
-              'args': [ 'srcmap' ],
+              'args': [ 
+                'bash',
+                '-c',
+                'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json' 
+              ],
               'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
           },
     ]
@@ -122,7 +126,6 @@ def main():
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
   pp = pprint.PrettyPrinter(indent=4)
-  pp.pprint(build_body)
   pp.pprint(cloudbuild.projects().builds().create(projectId='clusterfuzz-external', body=build_body).execute())
 
 
