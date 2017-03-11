@@ -7,6 +7,7 @@ Usage: build.py <project_dir>
 
 import datetime
 import os
+import subprocess
 import sys
 import yaml
 
