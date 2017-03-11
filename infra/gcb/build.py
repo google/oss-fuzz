@@ -7,7 +7,6 @@ Usage: build.py <project_dir>
 
 import datetime
 import os
-import pprint
 import sys
 import yaml
 
@@ -121,9 +120,8 @@ def main():
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
-  pp = pprint.PrettyPrinter(indent=4)
-  pp.pprint(build_body)
-  pp.pprint(cloudbuild.projects().builds().create(projectId='clusterfuzz-external', body=build_body).execute())
+  build_info = cloudbuild.projects().builds().create(projectId='clusterfuzz-external', body=build_body).execute()
+  print build_info['metadata']['build']['id']
 
 
 if __name__ == "__main__":
