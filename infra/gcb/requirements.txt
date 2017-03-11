@@ -3,3 +3,4 @@ PyYAML
 google-cloud-pubsub
 google-cloud-logging
 pyopenssl
+pyparsing
