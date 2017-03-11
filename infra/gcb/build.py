@@ -85,7 +85,6 @@ def get_signed_url(path):
   timestamp = int(time.time() + 60 * 60 * 5)
   blob = 'PUT\n\n\n{0}\n{1}'.format(
       timestamp, path)
-  print blob
 
   creds = ServiceAccountCredentials.from_json_keyfile_name(
       os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
