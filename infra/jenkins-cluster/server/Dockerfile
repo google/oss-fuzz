@@ -13,5 +13,7 @@ RUN /google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false
 RUN /google-cloud-sdk/bin/gcloud -q components install alpha beta
 RUN /google-cloud-sdk/bin/gcloud -q components update
 
-RUN chown -R jenkins /google-cloud-sdk
+RUN chown -R jenkins:jenkins /google-cloud-sdk
+
+USER jenkins
 ENV PATH=$PATH:/google-cloud-sdk/bin
