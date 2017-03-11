@@ -131,9 +131,13 @@ def get_build_steps(project_yaml):
   for sanitizer in project_yaml['sanitizers']:
     env = CONFIGURATIONS["sanitizer-" + sanitizer]
     out = '/workspace/out/' + sanitizer
-    zip_file = name + "-" + sanitizer + "-" + ts + ".zip"
+    stamped_name = name + '-' + sanitizer + '-' + ts
+    zip_file = stamped_name + '.zip'
+    stamped_srcmap_file = stamped_name + '.srcmap.json'
     upload_url = get_signed_url('/{0}/{1}/{2}'.format(
         UPLOAD_BUCKET, name, zip_file))
+    srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(
+        UPLOAD_BUCKET, name, stamped_srcmap_file))
 
     build_steps.extend([
         {'name': image,
@@ -156,6 +160,19 @@ def get_build_steps(project_yaml):
              os.path.join(out, zip_file),
              upload_url,
          ],
+        },
+        {'name': 'gcr.io/clusterfuzz-external/uploader',
+         'args': [
+             '/workspace/srcmap.json',
+             srcmap_url,
+         ],
+        },
+        {'name': image,
+          'args': [
+            'bash',
+            '-c',
+            'rm -r ' + out,
+          ],
         },
     ])
 
