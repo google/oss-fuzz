@@ -39,6 +39,7 @@ def load_project_yaml(project_dir):
     project_yaml.setdefault('name', project_name)
     project_yaml.setdefault('image', 
         'gcr.io/clusterfuzz-external/oss-fuzz/' + project_name)
+    project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
     return project_yaml
 
 
@@ -93,13 +94,16 @@ def get_build_steps(project_yaml):
           },
           {
               'name': image,
-              'args': [ 'srcmap' ],
+              'args': [ 
+                'bash',
+                '-c',
+                'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json' 
+              ],
               'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
           },
     ]
 
-  sanitizers = project_yaml.get('sanitizers', DEFAULT_SANITIZERS)
-  for sanitizer in sanitizers:
+  for sanitizer in project_yaml['sanitizers']:
     env = CONFIGURATIONS["sanitizer-" + sanitizer]
     out = '/workspace/out/' + sanitizer
     zip_file = name + "-" + sanitizer + "-" + ts + ".zip"
