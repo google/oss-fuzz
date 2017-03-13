@@ -36,6 +36,12 @@ for encoding in $ENCODING_TYPES; do
       $SRC/parse_fuzzer.cc -o $OUT/${fuzz_target_name} \
       -lFuzzingEngine .libs/libexpat.a
 
-  cp $SRC/xml.dict  $OUT/${fuzz_target_name}.dict
+  # Use dictionaries in proper encoding for 16-bit encoding types.
+  if [[ $encoding == *"UTF_16"* ]]; then
+    cp $SRC/xml_${encoding}.dict  $OUT/${fuzz_target_name}.dict
+  else
+    cp $SRC/xml.dict  $OUT/${fuzz_target_name}.dict
+  fi
+
   cp $SRC/parse_fuzzer.options  $OUT/${fuzz_target_name}.options
 done
