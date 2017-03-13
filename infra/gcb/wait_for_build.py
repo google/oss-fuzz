@@ -72,7 +72,7 @@ def main():
     while True:
       pulled = log_sub.pull(max_messages=32)
       for ack_id, message in pulled:
-        print json.loads(message.data)['textPayload']
+        print json.loads(message.data)['textPayload'].encode('utf-8')
 
       if pulled:
         log_sub.acknowledge([ack_id for ack_id, message in pulled])
