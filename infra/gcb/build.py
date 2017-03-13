@@ -140,6 +140,7 @@ def get_build_steps(project_yaml):
         UPLOAD_BUCKET, name, stamped_srcmap_file))
 
     build_steps.extend([
+        # compile
         {'name': image,
           'env' : env,
           'args': [
@@ -148,6 +149,7 @@ def get_build_steps(project_yaml):
             'cd /src/{1} && compile && mkdir -p {0} && cp -Rv /out/* {0}/'.format(out, name),
             ],
           },
+        # zip binaries
         {'name': image,
           'args': [
             'bash',
@@ -155,18 +157,21 @@ def get_build_steps(project_yaml):
             'cd {0} && zip -r {1} *'.format(out, zip_file)
           ],
         },
+        # upload binaries
         {'name': 'gcr.io/clusterfuzz-external/uploader',
          'args': [
              os.path.join(out, zip_file),
              upload_url,
          ],
         },
+        # upload srcmap
         {'name': 'gcr.io/clusterfuzz-external/uploader',
          'args': [
              '/workspace/srcmap.json',
              srcmap_url,
          ],
         },
+        # cleanup
         {'name': image,
           'args': [
             'bash',
