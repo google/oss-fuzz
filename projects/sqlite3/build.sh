@@ -27,7 +27,7 @@ export CFLAGS="$CFLAGS -DSQLITE_MAX_LENGTH=128000000 \
                -DSQLITE_MAX_MEMORY=25000000 \
                -DSQLITE_PRINTF_PRECISION_LIMIT=1048576 \
                -DSQLITE_DEBUG=1 \
-               -DSQLITE_MAX_PAGE_COUNT=16384" \               
+               -DSQLITE_MAX_PAGE_COUNT=16384"             
                
 ../configure
 make -j$(nproc)
