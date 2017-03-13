@@ -66,13 +66,16 @@ def main():
   status_thread.daemon = True
   status_thread.start()
 
+  # Channel logs
   try:
     log_sub = create_log_subscription(log_topic, build_id)
     while True:
       pulled = log_sub.pull(max_messages=32)
       for ack_id, message in pulled:
         print json.loads(message.data)['textPayload']
-        log_sub.acknowledge([ack_id])
+
+      if pulled:
+        log_sub.acknowledge([ack_id for ack_id, message in pulled])
   except KeyboardInterrupt:
     if status:
       print status
