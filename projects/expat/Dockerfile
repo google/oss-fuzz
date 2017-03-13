@@ -18,6 +18,6 @@ FROM ossfuzz/base-builder
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y make autoconf automake libtool docbook2x
 
-RUN git clone --depth 1 https://github.com/libexpat/libexpat
-WORKDIR libexpat/expat
+RUN git clone --depth 1 https://github.com/libexpat/libexpat expat
+WORKDIR expat
 COPY build.sh parse_fuzzer.*  xml.dict $SRC/

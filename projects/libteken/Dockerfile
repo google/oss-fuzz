@@ -17,6 +17,6 @@
 FROM ossfuzz/base-builder
 MAINTAINER kcwu@csie.org
 RUN apt-get install -y pmake
-RUN svn co https://svn.freebsd.org/base/head/sys/teken
-WORKDIR teken
+RUN svn co https://svn.freebsd.org/base/head/sys/teken libteken
+WORKDIR libteken
 COPY build.sh libteken_fuzzer.c $SRC/
