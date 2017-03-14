@@ -17,6 +17,6 @@
 FROM ossfuzz/base-builder
 MAINTAINER oss-fuzz@benoitblanchon.fr
 RUN apt-get install -y make zip git
-RUN git clone --depth 1 https://github.com/bblanchon/ArduinoJson.git
-WORKDIR ArduinoJson
+RUN git clone --depth 1 https://github.com/bblanchon/ArduinoJson.git arduinojson
+WORKDIR arduinojson
 COPY build.sh $SRC/

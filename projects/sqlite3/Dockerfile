@@ -16,14 +16,14 @@
 
 FROM ossfuzz/base-builder
 MAINTAINER tanin@google.com
-RUN apt-get install -y make autoconf automake libtool fossil tcl
+RUN apt-get install -y make autoconf automake libtool curl tcl
 
 # We won't be able to poll fossil for changes, so this will build
 # only once a day.
 RUN mkdir $SRC/sqlite3 && \
     cd $SRC/sqlite3 && \
-    fossil clone https://www.sqlite.org/src sqlite --user `whoami` && \
-    fossil open sqlite
+    curl 'https://www.sqlite.org/src/tarball?uuid=trunk' -o sqlite3.tar.gz && \
+    tar xzf sqlite3.tar.gz
 
 RUN find $SRC/sqlite3 -name "*.test" | xargs zip $SRC/ossfuzz_seed_corpus.zip
 
