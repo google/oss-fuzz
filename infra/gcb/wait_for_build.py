@@ -34,14 +34,13 @@ def wait_for_build(build_id):
   status = None
   while True:
     build_info = get_build(build_id, cloudbuild)
+
     current_status = build_info['status']
     if current_status != status:
         print datetime.datetime.now(), current_status
     status = current_status
     if status == 'SUCCESS' or status == 'FAILURE':
       return status == 'SUCCESS'
-
-    print build_info['logUrl']
 
     time.sleep(POLL_INTERVAL)
 
