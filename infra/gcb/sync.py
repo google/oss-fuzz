@@ -86,7 +86,7 @@ def sync_jenkins_job(server, project):
     project_json_string = json.dumps(json.dumps(yaml.safe_load(f)))
 
   job_name = 'projects/' + project
-  with open(os.path.join(SCRIPT_DIR, 'jenkins_config', 'base_job_gcb.xml')) as f:
+  with open(os.path.join(SCRIPT_DIR, 'jenkins_config', 'base_job.xml')) as f:
     job_config_xml = f.read()
 
   if server.job_exists(job_name):
