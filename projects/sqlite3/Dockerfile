@@ -22,7 +22,7 @@ RUN apt-get install -y make autoconf automake libtool curl tcl
 # only once a day.
 RUN mkdir $SRC/sqlite3 && \
     cd $SRC/sqlite3 && \
-    curl 'https://www.sqlite.org/src/tarball?uuid=trunk' -o sqlite3.tar.gz && \
+    curl 'http://www.sqlite.org/src/tarball?uuid=trunk' -o sqlite3.tar.gz \
     tar xzf sqlite3.tar.gz
 
 RUN find $SRC/sqlite3 -name "*.test" | xargs zip $SRC/ossfuzz_seed_corpus.zip
