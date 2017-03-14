@@ -38,6 +38,7 @@ def wait_for_build(build_id):
     current_status = build_info['status']
     if current_status != status:
         print datetime.datetime.now(), current_status
+        sys.stdout.flush()
     status = current_status
     if status == 'SUCCESS' or status == 'FAILURE':
       return status == 'SUCCESS'
