@@ -95,7 +95,7 @@ def get_build_steps(project_yaml):
     ]
 
   for sanitizer in project_yaml['sanitizers']:
-    env = CONFIGURATIONS["sanitizer-" + sanitizer]
+    env = CONFIGURATIONS["sanitizer-" + sanitizer][:]
     out = '/workspace/out/' + sanitizer
     stamped_name = name + '-' + sanitizer + '-' + ts
     zip_file = stamped_name + '.zip'
@@ -105,7 +105,7 @@ def get_build_steps(project_yaml):
     srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(
         UPLOAD_BUCKET, name, stamped_srcmap_file))
 
-    env['OUT'] = out
+    env.append('OUT=' + out)
 
     build_steps.extend([
         # compile
