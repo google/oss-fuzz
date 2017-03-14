@@ -105,6 +105,8 @@ def get_build_steps(project_yaml):
     srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(
         UPLOAD_BUCKET, name, stamped_srcmap_file))
 
+    env['OUT'] = out
+
     build_steps.extend([
         # compile
         {'name': image,
@@ -112,7 +114,7 @@ def get_build_steps(project_yaml):
           'args': [
             'bash',
             '-c',
-            'cd /src/{1} && compile && mkdir -p {0} && cp -Rv /out/* {0}/'.format(out, name),
+            'cd /src/{1} && mkdir -p {0} && compile'.format(out, name),
             ],
           },
         # zip binaries
