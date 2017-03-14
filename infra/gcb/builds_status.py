@@ -46,11 +46,15 @@ def upload_status(successes, failures, unstable):
   storage_client = storage.Client()
   bucket = storage_client.get_bucket(LOGS_BUCKET)
 
-  bucket.blob('status_template.html').upload_from_string(
+  blob = bucket.blob('status.html')
+  blob.cache_control = 'no-cache'
+  blob.upload_from_string(
           env.get_template('status_template.html').render(data),
           content_type='text/html')
 
-  bucket.blob('status.json').upload_from_string(
+  blob = bucket.blob('status.json')
+  blob.cache_control = 'no-cache'
+  blob.upload_from_string(
           json.dumps(data),
           content_type='text/html')
 
@@ -63,7 +67,6 @@ def main():
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = gcb_build('cloudbuild', 'v1', credentials=credentials)
-
 
   successes = []
   failures = []
