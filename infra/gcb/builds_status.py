@@ -84,9 +84,15 @@ def main():
     last_build = builds[0]
     print last_build['startTime'], last_build['status'], last_build['id']
     if last_build['status'] == 'SUCCESS':
-        successes.append(project)
+        successes.append({
+            'name': project,
+            'build_id': last_build['id'],
+        })
     else:
-        failures.append(project)
+        failures.append({
+            'name': project,
+            'build_id': last_build['id'],
+        })
 
   upload_status(successes, failures, [])
 

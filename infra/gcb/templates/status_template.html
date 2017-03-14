@@ -6,20 +6,20 @@
 <body>
 <h1>Failing builds</h1>
 <ul>
-{% for failure in failures -%}
-<li><a href="/build_logs/{{failure}}/latest.txt">{{failure}}</a></li>
+{% for project in failures -%}
+<li><a href="/log-{{project.build_id}}.txt">{{project.name}}</a></li>
 {% endfor -%}
 </ul>
 <h1>Unstable builds</h1>
 <ul>
 {% for project in unstable -%}
-<li><a href="/build_logs/{{project}}/latest.txt">{{project}}</a></li>
+<li><a href="/log-{{project.build_id}}.txt">{{project.name}}</a></li>
 {% endfor -%}
 </ul>
 <h1>Healthy builds</h1>
 <ul>
-{% for success in successes -%}
-<li><a href="/build_logs/{{success}}/latest.txt">{{success}}</a></li>
+{% for project in successes -%}
+<li><a href="/log-{{project.build_id}}.txt">{{project.name}}</a></li>
 {% endfor -%}
 </ul>
 <p>Last updated {{ last_updated }} (UTC)</p>
