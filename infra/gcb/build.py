@@ -183,6 +183,7 @@ def main():
   build_info = cloudbuild.projects().builds().create(projectId='clusterfuzz-external', body=build_body).execute()
   build_id =  build_info['metadata']['build']['id']
 
+  print >>sys.stderr, 'Logs:', build_info['metadata']['build']['logUrl']
   print build_id
 
 
