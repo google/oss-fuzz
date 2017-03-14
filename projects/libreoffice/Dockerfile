@@ -114,7 +114,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/hwpfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/602fuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/lwpfuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/pptfuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/pptfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
