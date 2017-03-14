@@ -172,6 +172,7 @@ def main():
       'steps': get_build_steps(project_yaml),
       'timeout': str(4 * 3600) + 's',
       'options': options,
+      'logsBucket': 'oss-fuzz-gcb-logs',
       'images': [ project_yaml['image'] ],
   }
 
