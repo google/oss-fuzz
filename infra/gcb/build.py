@@ -14,8 +14,6 @@ import time
 import urllib
 import yaml
 
-from google.cloud import logging
-from google.cloud import pubsub
 from oauth2client.client import GoogleCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
@@ -47,38 +45,6 @@ def load_project_yaml(project_dir):
         'gcr.io/clusterfuzz-external/oss-fuzz/' + project_name)
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
     return project_yaml
-
-
-def create_log_topic(build_id):
-  pubsub_client = pubsub.Client()
-  log_topic = pubsub_client.topic('build-logs-' + build_id)
-  if log_topic.exists():
-    log_topic.delete()
-  log_topic.create()
-
-  policy = log_topic.get_iam_policy()
-  policy.owners.add(policy.group('cloud-logs@google.com'))
-  log_topic.set_iam_policy(policy)
-
-  return log_topic
-
-
-def create_sink(log_topic, build_id):
-  log_destination = 'pubsub.googleapis.com/' + log_topic.full_name
-  log_filter = (
-      'resource.type="build"\n'
-      'resource.labels.build_id="{0}"\n'
-  ).format(build_id)
-
-  logging_client = logging.Client()
-  sink = logging_client.sink(
-      'sink-build-logs-' + build_id, filter_=log_filter,
-      destination=log_destination)
-  if sink.exists():
-    sink.delete()
-  sink.create()
-
-  return sink
 
 
 def get_signed_url(path):
@@ -215,10 +181,6 @@ def main():
   build_id =  build_info['metadata']['build']['id']
 
   print build_id
-
-  # Create pub/sub topic for build logs.
-  log_topic = create_log_topic(build_id)
-  create_sink(log_topic, build_id)
 
 
 if __name__ == "__main__":
