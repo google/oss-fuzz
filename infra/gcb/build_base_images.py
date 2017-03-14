@@ -70,10 +70,6 @@ def main():
 
   print build_id
 
-  # Create pub/sub topic for build logs.
-  log_topic = gcb_build.create_log_topic(build_id)
-  gcb_build.create_sink(log_topic, build_id)
-
 
 if __name__ == "__main__":
   main()
