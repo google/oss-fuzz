@@ -152,6 +152,12 @@ def get_build_steps(project_yaml):
   return build_steps
 
 
+def get_logs_url(build_id):
+  URL_FORMAT = ('https://console.developers.google.com/logs/viewer?'
+                'resource=build%2Fbuild_id%2F{0}&project=clusterfuzz-external')
+  return URL_FORMAT.format(build_id)
+
+
 def main():
   if len(sys.argv) != 2:
     usage()
@@ -180,10 +186,11 @@ def main():
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
-  build_info = cloudbuild.projects().builds().create(projectId='clusterfuzz-external', body=build_body).execute()
+  build_info = cloudbuild.projects().builds().create(
+      projectId='clusterfuzz-external', body=build_body).execute()
   build_id =  build_info['metadata']['build']['id']
 
-  print >>sys.stderr, 'Logs:', build_info['metadata']['build']['logUrl']
+  print >>sys.stderr, 'Logs:', get_logs_url(build_id)
   print build_id
 
 
