@@ -11,7 +11,6 @@ import yaml
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build
 
-import build as gcb_build
 
 BASE_IMAGES = [
     'base-image',
