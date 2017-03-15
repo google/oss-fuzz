@@ -32,10 +32,10 @@ EngineInfo = collections.namedtuple(
 
 ENGINE_INFO = {
     'libfuzzer': EngineInfo(
-        upload_bucket='clusterfuzz-builds-test',
+        upload_bucket='clusterfuzz-builds',
         supported_sanitizers=['address', 'memory', 'undefined']),
     'afl': EngineInfo(
-        upload_bucket='clusterfuzz-builds-afl-test',
+        upload_bucket='clusterfuzz-builds-afl',
         supported_sanitizers=['address']),
 }
 
