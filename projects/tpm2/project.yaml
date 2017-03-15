@@ -1,7 +1,10 @@
 homepage: "https://chromium.googlesource.com/chromiumos/third_party/tpm2"
-dockerfile:
-  git: "https://chromium.googlesource.com/chromiumos/third_party/tpm2/"
-  path: "fuzz/Dockerfile"
+# todo: delete Dockerfile from tpm2 repo.
+# Docker files change too much, it was moved to oss-fuzz repository.
+#
+#dockerfile:
+#  git: "https://chromium.googlesource.com/chromiumos/third_party/tpm2/"
+#  path: "fuzz/Dockerfile"
 primary_contact: "ngm@google.com"
 auto_ccs:
   - "tpm-security-bugs@google.com"
