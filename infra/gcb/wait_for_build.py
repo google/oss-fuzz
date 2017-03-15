@@ -40,7 +40,7 @@ def wait_for_build(build_id):
         print datetime.datetime.now(), current_status
         sys.stdout.flush()
     status = current_status
-    if status == 'SUCCESS' or status == 'FAILURE':
+    if status == 'SUCCESS' or status == 'FAILURE' or status == 'INTERNAL_ERROR':
       return status == 'SUCCESS'
 
     time.sleep(POLL_INTERVAL)
