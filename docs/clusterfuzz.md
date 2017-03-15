@@ -39,6 +39,6 @@ reached by your fuzz target.
 You can view performance issues that your fuzz target is running into (e.g. leaks, timeouts, etc) by
 clicking on `Performance` link on our fuzzer statistics dashboard.
 
-![performance_analyzer](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/performance_analyzer.png)
+![performance_analyzer](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/expat_performance_analyzer.png)
 
 
