@@ -86,5 +86,5 @@ If your fuzz target is running for many days and does not find bugs or new cover
 
 In either case, look at the [coverage reports](clusterfuzz.md#coverage-reports) for your target(s) and figure out why some parts of the code are not covered. 
     
-    
-    
+## Does OSS-Fuzz support AFL?
+OSS-Fuzz *uses* [AFL](http://lcamtuf.coredump.cx/afl/) as one of its [fuzzing engines](glossary.md#fuzzing-engine) but this is an implementation detail. Just follow the [ideal integration guide](ideal_integration.md) and OSS-Fuzz will use all its fuzzing engines on your code.
