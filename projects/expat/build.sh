@@ -22,8 +22,26 @@ cd expat
 make clean
 make -j$(nproc) all
 
-$CXX $CXXFLAGS -std=c++11 -Ilib/ \
-    $SRC/parse_fuzzer.cc -o $OUT/parse_fuzzer \
-    -lFuzzingEngine .libs/libexpat.a
+ENCODING_TYPES="UTF_16 \
+  UTF_8 \
+  ISO_8859_1 \
+  US_ASCII \
+  UTF_16BE \
+  UTF_16LE"
 
-cp $SRC/*.dict $SRC/*.options $OUT/
+for encoding in $ENCODING_TYPES; do
+  fuzz_target_name=parse_${encoding}_fuzzer
+
+  $CXX $CXXFLAGS -std=c++11 -Ilib/ -DENCODING_${encoding} \
+      $SRC/parse_fuzzer.cc -o $OUT/${fuzz_target_name} \
+      -lFuzzingEngine .libs/libexpat.a
+
+  # Use dictionaries in proper encoding for 16-bit encoding types.
+  if [[ $encoding == *"UTF_16"* ]]; then
+    cp $SRC/xml_${encoding}.dict  $OUT/${fuzz_target_name}.dict
+  else
+    cp $SRC/xml.dict  $OUT/${fuzz_target_name}.dict
+  fi
+
+  cp $SRC/parse_fuzzer.options  $OUT/${fuzz_target_name}.options
+done
