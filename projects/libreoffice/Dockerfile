@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER officesecurity@lists.freedesktop.org
 #build requirements
 RUN apt-get build-dep -y libreoffice
-RUN apt-get install -y wget
+RUN apt-get install -y wget yasm
 #cache build dependencies
 ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-serif-font-1.0000W.tar.gz \
     https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosextrafonts-carlito-20130920.tar.gz \
