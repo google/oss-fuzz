@@ -2,7 +2,7 @@
 > Base image for fuzzer runners.
 
 ```bash
-docker run -ti ossfuzz/base-runner <command> <args>
+docker run -ti gcr.io/oss-fuzz/base-runner <command> <args>
 ```
 
 ## Commands
@@ -18,12 +18,12 @@ docker run -ti ossfuzz/base-runner <command> <args>
 - *Reproduce using latest OSS-Fuzz build:*
 
    <pre>
-docker run --rm -ti -v <b><i>&lt;testcase_path&gt;</i></b>:/testcase ossfuzz/<b><i>$PROJECT_NAME</i></b> reproduce <b><i>&lt;fuzzer_name&gt;</i></b>
+docker run --rm -ti -v <b><i>&lt;testcase_path&gt;</i></b>:/testcase gcr.io/oss-fuzz/<b><i>$PROJECT_NAME</i></b> reproduce <b><i>&lt;fuzzer_name&gt;</i></b>
    </pre>
 
 - *Reproduce using local source checkout:*
 
     <pre>
     docker run --rm -ti -v <b><i>&lt;source_path&gt;</i></b>:/src/<b><i>$PROJECT_NAME</i></b> \
-                        -v <b><i>&lt;testcase_path&gt;</i></b>:/testcase ossfuzz/<b><i>$PROJECT_NAME</i></b> reproduce <b><i>&lt;fuzzer_name&gt;</i></b>
+                        -v <b><i>&lt;testcase_path&gt;</i></b>:/testcase gcr.io/oss-fuzz/<b><i>$PROJECT_NAME</i></b> reproduce <b><i>&lt;fuzzer_name&gt;</i></b>
     </pre>

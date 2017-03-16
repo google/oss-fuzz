@@ -38,8 +38,7 @@ Currently OSS-Fuzz supports C and C++ code (other languages supported by [LLVM](
 
 ## Process Overview
 
-![diagram]
-(docs/images/process.png?raw=true)
+![diagram](docs/images/process.png?raw=true)
 
 The following process is used for projects in OSS-Fuzz:
 
@@ -109,7 +108,7 @@ OSS-Fuzz will adhere to following disclosure principles:
 [3](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
 
 ## Build Status
-[This page](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
+[This page](https://oss-fuzz-gcb-logs.storage.googleapis.com/status.html)
 gives the latest build logs for each project.
 
 ## Trophies

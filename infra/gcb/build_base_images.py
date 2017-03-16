@@ -11,7 +11,6 @@ import yaml
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build
 
-import build as gcb_build
 
 BASE_IMAGES = [
     'base-image',
@@ -21,7 +20,7 @@ BASE_IMAGES = [
     'base-runner-debug',
 ]
 
-TAG_PREFIX = 'gcr.io/clusterfuzz-external/oss-fuzz/infra/'
+TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
 
 def get_steps():
@@ -69,10 +68,6 @@ def main():
   build_id =  build_info['metadata']['build']['id']
 
   print build_id
-
-  # Create pub/sub topic for build logs.
-  log_topic = gcb_build.create_log_topic(build_id)
-  gcb_build.create_sink(log_topic, build_id)
 
 
 if __name__ == "__main__":

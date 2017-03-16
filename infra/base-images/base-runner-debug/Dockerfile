@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-runner
+FROM gcr.io/oss-fuzz/base-runner
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y gdb zip
 

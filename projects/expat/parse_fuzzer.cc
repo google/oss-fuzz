@@ -2,22 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
+#include <stddef.h>
+#include <stdint.h>
+
 #include "expat.h"
 
-std::vector<const char*> kEncodings = {{"UTF-16", "UTF-8", "ISO-8859-1",
-                                        "US-ASCII", "UTF-16BE", "UTF-16LE",
-                                        "INVALIDENCODING"}};
+const char* kEncoding =
+#if defined(ENCODING_UTF_16)
+"UTF-16"
+#elif defined(ENCODING_UTF_8)
+"UTF-8"
+#elif defined(ENCODING_ISO_8859_1)
+"ISO-8859-1"
+#elif defined(ENCODING_US_ASCII)
+"US-ASCII"
+#elif defined(ENCODING_UTF_16BE)
+"UTF-16BE"
+#elif defined(ENCODING_UTF_16LE)
+"UTF-16LE"
+#else
+#error Encoding type is not specified.
+#endif
+;
+
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  const char* dataPtr = reinterpret_cast<const char*>(data);
   for (int use_ns = 0; use_ns <= 1; ++use_ns) {
-    for (auto enc : kEncodings) {
-      XML_Parser parser =
-          use_ns ? XML_ParserCreateNS(enc, '\n') : XML_ParserCreate(enc);
-      XML_Parse(parser, dataPtr, size, true);
-      XML_ParserFree(parser);
-    }
+    XML_Parser parser =
+        use_ns ? XML_ParserCreateNS(kEncoding, '\n') :
+                 XML_ParserCreate(kEncoding);
+    XML_Parse(parser, reinterpret_cast<const char*>(data), size, true);
+    XML_ParserFree(parser);
   }
   return 0;
 }

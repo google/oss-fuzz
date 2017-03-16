@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER mattkwong@google.com
 
 RUN apt-get install -y software-properties-common python-software-properties
@@ -36,4 +36,4 @@ RUN apt-get update && apt-get install -y bazel
 
 RUN git clone --recursive https://github.com/grpc/grpc grpc
 WORKDIR /src/grpc/
-COPY build.sh *.options $SRC/
+COPY build.sh $SRC/

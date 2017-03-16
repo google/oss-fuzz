@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER tanin@google.com
 RUN apt-get install -y make autoconf automake libtool curl tcl
 

@@ -4,7 +4,7 @@
 Every project image supports multiple commands that can be invoked through docker after the image is built:
 
 <pre>
-docker run --rm -ti ossfuzz/<b><i>$project</i></b> <i>&lt;command&gt;</i> <i>&lt;arguments...&gt;</i>
+docker run --rm -ti gcr.io/oss-fuzz/<b><i>$project</i></b> <i>&lt;command&gt;</i> <i>&lt;arguments...&gt;</i>
 </pre>
 
 # Supported Commands
@@ -31,7 +31,7 @@ The configuration is picked through one or more environment variables.
 - *building sqlite3 fuzzer with UBSan (`SANITIZER=undefined`):*
 
    <pre>
-docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> ossfuzz/sqlite3
+docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> gcr.io/oss-fuzz/sqlite3
    </pre>
 
 

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-image
+FROM gcr.io/oss-fuzz/base-image
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y zip file
 COPY llvm-symbolizer reproduce run_fuzzer test_all test_report \

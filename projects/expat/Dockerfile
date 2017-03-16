@@ -14,10 +14,10 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y make autoconf automake libtool docbook2x
 
 RUN git clone --depth 1 https://github.com/libexpat/libexpat expat
 WORKDIR expat
-COPY build.sh parse_fuzzer.*  xml.dict $SRC/
+COPY build.sh parse_fuzzer.* *.dict $SRC/
