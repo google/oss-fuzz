@@ -20,7 +20,7 @@ BASE_IMAGES = [
     'base-runner-debug',
 ]
 
-TAG_PREFIX = 'gcr.io/clusterfuzz-external/oss-fuzz/infra/'
+TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
 
 def get_steps():
