@@ -315,6 +315,7 @@ def coverage(run_args):
 def reproduce(run_args):
   """Reproduces a testcase in the container."""
   parser = argparse.ArgumentParser('helper.py reproduce')
+  parser.add_argument('--gdb', action='store_true', help='run inside gdb debugger')
   parser.add_argument('project_name', help='name of the project')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('testcase_path', help='path of local testcase')
@@ -322,20 +323,28 @@ def reproduce(run_args):
                       nargs=argparse.REMAINDER)
   args = parser.parse_args(run_args)
 
+  env = []
+  if args.gdb:
+    image_name = 'base-runner-debug'
+    env += ['DEBUGGER=gdb --args']
+  else:
+    image_name = 'base-runner'
+
   if not _check_project_exists(args.project_name):
     return 1
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner'):
+  if not _build_image(image_name):
     return 1
 
   command = [
       'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
+  ] + sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
-      '-t', 'ossfuzz/base-runner',
+      '-t', 'ossfuzz/%s' % image_name,
       'reproduce',
       args.fuzzer_name,
       '-runs=100',
