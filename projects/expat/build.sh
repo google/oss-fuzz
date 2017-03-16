@@ -43,5 +43,7 @@ for encoding in $ENCODING_TYPES; do
     cp $SRC/xml.dict  $OUT/${fuzz_target_name}.dict
   fi
 
-  cp $SRC/parse_fuzzer.options  $OUT/${fuzz_target_name}.options
+  # Generate .option files for each fuzzer.
+  echo -en "[libfuzzer]\ndict = ${fuzz_target_name}.dict\nmax_len = 1024\n" \
+      > $OUT/${fuzz_target_name}.options
 done
