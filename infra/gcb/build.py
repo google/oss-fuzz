@@ -56,7 +56,7 @@ def load_project_yaml(project_dir):
     project_yaml = yaml.safe_load(f)
     project_yaml.setdefault('name', project_name)
     project_yaml.setdefault('image',
-        'gcr.io/clusterfuzz-external/oss-fuzz/' + project_name)
+        'gcr.io/oss-fuzz/' + project_name)
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
     project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
     return project_yaml
