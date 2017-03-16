@@ -145,7 +145,7 @@ def _build_image(image_name):
   build_args = []
   if not GLOBAL_ARGS.nopull:
       build_args += ['--pull']
-  build_args += ['-t', 'ossfuzz/%s' % image_name, dockerfile_dir ]
+  build_args += ['-t', 'gcr.io/oss-fuzz/%s' % image_name, dockerfile_dir ]
 
   command = [ 'docker', 'build' ] + build_args
   print('Running:', _get_command_string(command))
@@ -207,7 +207,7 @@ def build_fuzzers(build_args):
   command += [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name),
       '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
-      '-t', 'ossfuzz/%s' % project_name
+      '-t', 'gcr.io/oss-fuzz/%s' % project_name
   ]
 
   print('Running:', _get_command_string(command))
@@ -247,7 +247,7 @@ def run_fuzzer(run_args):
       'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
   ] + sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
-      '-t', 'ossfuzz/base-runner',
+      '-t', 'gcr.io/oss-fuzz/base-runner',
       'run_fuzzer',
       args.fuzzer_name,
   ] + args.fuzzer_args
@@ -284,7 +284,7 @@ def coverage(run_args):
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
-      '-t', 'ossfuzz/base-runner',
+      '-t', 'gcr.io/oss-fuzz/base-runner',
       '/out/%s' % args.fuzzer_name,
       '-dump_coverage=1',
       '-max_total_time=%s' % args.run_time
@@ -303,7 +303,7 @@ def coverage(run_args):
         '-v', '%s:/cov' % temp_dir,
         '-w', '/cov',
         '-p', '8001:8001',
-        '-t', 'ossfuzz/%s' % args.project_name,
+        '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
         'coverage_report', '/out/%s' % args.fuzzer_name,
   ]
 
@@ -335,7 +335,7 @@ def reproduce(run_args):
       'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
-      '-t', 'ossfuzz/base-runner',
+      '-t', 'gcr.io/oss-fuzz/base-runner',
       'reproduce',
       args.fuzzer_name,
       '-runs=100',
@@ -393,7 +393,7 @@ def shell(shell_args):
         'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
         '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
-        '-t', 'ossfuzz/%s' % args.project_name,
+        '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
         '/bin/bash'
   ]
   print('Running:', _get_command_string(command))
