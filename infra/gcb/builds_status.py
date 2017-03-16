@@ -8,6 +8,7 @@ import json
 
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build as gcb_build
+from google.cloud import logging
 from google.cloud import storage
 from jinja2 import Environment, FileSystemLoader
 
@@ -59,6 +60,24 @@ def upload_status(successes, failures, unstable):
           content_type='text/html')
 
 
+def is_build_successful(build):
+  if build['status'] == 'SUCCESS':
+    return True
+
+  build_id = build['id']
+  logging_client = logging.Client(project='clusterfuzz-external')
+  entries = logging_client.list_entries(
+      order_by=logging.DESCENDING,
+      page_size=1,
+      filter_=(
+          'resource.type="build" AND '
+          'resource.labels.build_id="{0}"'.format(build_id)))
+
+  entry = next(entries.pages)
+  entry = list(entry)[0]
+  return entry.payload == 'DONE'
+
+
 def main():
   if len(sys.argv) != 2:
     usage()
@@ -72,7 +91,7 @@ def main():
   failures = []
   for project in scan_project_names(projects_dir):
     print project
-    query_filter = ('(status="SUCCESS" OR status="FAILURE") AND ' + 
+    query_filter = ('(status="SUCCESS" OR status="FAILURE") AND ' +
         'images="gcr.io/clusterfuzz-external/oss-fuzz/{0}"'.format(project))
     response = cloudbuild.projects().builds().list(
         projectId='clusterfuzz-external',
@@ -83,16 +102,16 @@ def main():
     builds = response['builds']
     last_build = builds[0]
     print last_build['startTime'], last_build['status'], last_build['id']
-    if last_build['status'] == 'SUCCESS':
-        successes.append({
-            'name': project,
-            'build_id': last_build['id'],
-        })
+    if is_build_successful(last_build):
+      successes.append({
+          'name': project,
+          'build_id': last_build['id'],
+      })
     else:
-        failures.append({
-            'name': project,
-            'build_id': last_build['id'],
-        })
+      failures.append({
+          'name': project,
+          'build_id': last_build['id'],
+      })
 
   upload_status(successes, failures, [])
 
