@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER tatsuhiro.t@gmail.com
 RUN apt-get install -y make autoconf automake libtool pkg-config
 RUN git clone --depth 1 https://github.com/nghttp2/nghttp2.git

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER eustas@chromium.org
 RUN apt-get install -y cmake libtool make
 

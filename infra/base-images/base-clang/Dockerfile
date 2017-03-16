@@ -16,7 +16,7 @@
 
 # Docker image with head clang installed.
 
-FROM ossfuzz/base-image
+FROM gcr.io/oss-fuzz/base-image
 MAINTAINER mike.aizatsky@gmail.com
 
 RUN apt-get install -y libc6-dev binutils libgcc-5-dev

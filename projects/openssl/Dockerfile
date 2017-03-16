@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER kurt@roeckx.be
 RUN apt-get install -y make
 RUN git clone --depth 1 https://github.com/openssl/openssl.git

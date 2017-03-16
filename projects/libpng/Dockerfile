@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool zlib1g-dev
 

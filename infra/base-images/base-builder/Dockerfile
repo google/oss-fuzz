@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-clang
+FROM gcr.io/oss-fuzz/base-clang
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y git subversion jq python3 zip make
 

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER jonathan.foote@gmail.com
 RUN apt-get install -y make autoconf automake libtool cmake zlib1g-dev pkg-config libssl-dev
 RUN git clone https://github.com/h2o/h2o

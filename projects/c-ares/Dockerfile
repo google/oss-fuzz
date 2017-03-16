@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz/base-builder
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/c-ares/c-ares.git
