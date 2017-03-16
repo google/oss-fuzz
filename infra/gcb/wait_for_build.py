@@ -12,7 +12,6 @@ import datetime
 from googleapiclient.discovery import build
 from oauth2client.client import GoogleCredentials
 
-
 POLL_INTERVAL = 15
 cloudbuild = None
 
@@ -29,7 +28,12 @@ def get_build(build_id, cloudbuild):
 
 
 def wait_for_build(build_id):
-  global cloudbuild
+  DONE_STATUSES = [
+      'SUCCESS',
+      'FAILURE',
+      'INTERNAL_ERROR',
+      'CANCELLED',
+  ]
 
   status = None
   while True:
@@ -40,7 +44,7 @@ def wait_for_build(build_id):
         print datetime.datetime.now(), current_status
         sys.stdout.flush()
     status = current_status
-    if status == 'SUCCESS' or status == 'FAILURE' or status == 'INTERNAL_ERROR':
+    if status in DONE_STATUSES:
       return status == 'SUCCESS'
 
     time.sleep(POLL_INTERVAL)
