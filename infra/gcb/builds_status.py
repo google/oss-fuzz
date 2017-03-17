@@ -92,7 +92,7 @@ def main():
   for project in scan_project_names(projects_dir):
     print project
     query_filter = ('(status="SUCCESS" OR status="FAILURE") AND ' +
-        'images="gcr.io/clusterfuzz-external/oss-fuzz/{0}"'.format(project))
+        'images="gcr.io/oss-fuzz/{0}"'.format(project))
     response = cloudbuild.projects().builds().list(
         projectId='clusterfuzz-external',
         filter=query_filter).execute()
