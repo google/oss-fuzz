@@ -129,7 +129,7 @@ def get_build_steps(project_yaml):
     ]
 
   for fuzzing_engine in project_yaml['fuzzing_engines']:
-    for sanitizer in project_yaml['sanitizers']:
+    for sanitizer in get_sanitizers(project_yaml):
       if not is_supported_configuration(fuzzing_engine, sanitizer):
         continue
 
