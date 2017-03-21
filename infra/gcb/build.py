@@ -85,6 +85,21 @@ def is_supported_configuration(fuzzing_engine, sanitizer):
   return sanitizer in ENGINE_INFO[fuzzing_engine].supported_sanitizers
 
 
+def get_sanitizers(project_yaml):
+  sanitizers = project_yaml['sanitizers']
+  assert isinstance(sanitizers, list)
+
+  processed_sanitizers = []
+  for sanitizer in sanitizers:
+    if isinstance(sanitizer, basestring):
+      processed_sanitizers.append(sanitizer)
+    elif isinstance(sanitizer, dict):
+      for key in sanitizer.iterkeys():
+        processed_sanitizers.append(key)
+
+  return processed_sanitizers
+
+
 def get_build_steps(project_yaml):
   name = project_yaml['name']
   image = project_yaml['image']
