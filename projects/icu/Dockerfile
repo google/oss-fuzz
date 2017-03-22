@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y make
 

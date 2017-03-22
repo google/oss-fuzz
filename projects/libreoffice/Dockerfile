@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER officesecurity@lists.freedesktop.org
 #build requirements
 RUN apt-get build-dep -y libreoffice

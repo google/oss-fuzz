@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER flim@google.com
 RUN apt-get install -y make autoconf automake libtool wget
 

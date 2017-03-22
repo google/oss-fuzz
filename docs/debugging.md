@@ -14,5 +14,5 @@ If you decide to debug a fuzzer with gdb (which is already installed in base-run
 you will need to start a container in privileged mode:
 
 ```bash
-docker run -ti --privileged -v /tmp/out:/out gcr.io/oss-fuzz/base-runner-debug gdb /out/<fuzz_target_name>
+docker run -ti --privileged -v /tmp/out:/out gcr.io/oss-fuzz-base/base-runner-debug gdb /out/<fuzz_target_name>
 ```

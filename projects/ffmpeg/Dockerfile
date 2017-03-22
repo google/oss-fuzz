@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make autoconf automake libtool build-essential \
     libass-dev libfreetype6-dev libsdl1.2-dev \

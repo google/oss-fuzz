@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alex.gaynor@gmail.com
 RUN apt-get install -y make autoconf automake libtool nasm curl
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo

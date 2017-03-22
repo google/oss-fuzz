@@ -247,7 +247,7 @@ def run_fuzzer(run_args):
       'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
   ] + sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
-      '-t', 'gcr.io/oss-fuzz/base-runner',
+      '-t', 'gcr.io/oss-fuzz-base/base-runner',
       'run_fuzzer',
       args.fuzzer_name,
   ] + args.fuzzer_args
@@ -284,7 +284,7 @@ def coverage(run_args):
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
-      '-t', 'gcr.io/oss-fuzz/base-runner',
+      '-t', 'gcr.io/oss-fuzz-base/base-runner',
       '/out/%s' % args.fuzzer_name,
       '-dump_coverage=1',
       '-max_total_time=%s' % args.run_time
@@ -335,7 +335,7 @@ def reproduce(run_args):
       'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
-      '-t', 'gcr.io/oss-fuzz/base-runner',
+      '-t', 'gcr.io/oss-fuzz-base/base-runner',
       'reproduce',
       args.fuzzer_name,
       '-runs=100',
