@@ -20,7 +20,7 @@ BASE_IMAGES = [
     'base-runner-debug',
 ]
 
-TAG_PREFIX = 'gcr.io/oss-fuzz/'
+TAG_PREFIX = 'gcr.io/oss-fuzz-base/'
 
 
 def get_steps():
@@ -50,7 +50,7 @@ def main():
       'source': {
           'repoSource': {
               'branchName': 'master',
-              'projectId': 'clusterfuzz-external',
+              'projectId': 'oss-fuzz-base',
               'repoName': 'oss-fuzz',
           },
       },
