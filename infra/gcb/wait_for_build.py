@@ -5,6 +5,7 @@
 Usage: wait_for_build.py <build_id>
 """
 
+import argparse
 import sys
 import time
 import datetime
@@ -16,18 +17,12 @@ POLL_INTERVAL = 15
 cloudbuild = None
 
 
-def usage():
-  sys.stderr.write(
-    "Usage: " + sys.argv[0] + " <build_id>\n")
-  exit(1)
-
-
-def get_build(build_id, cloudbuild):
+def get_build(build_id, cloudbuild, project):
   return cloudbuild.projects().builds().get(
-      projectId='clusterfuzz-external', id=build_id).execute()
+      projectId=project, id=build_id).execute()
 
 
-def wait_for_build(build_id):
+def wait_for_build(build_id, project):
   DONE_STATUSES = [
       'SUCCESS',
       'FAILURE',
@@ -37,7 +32,7 @@ def wait_for_build(build_id):
 
   status = None
   while True:
-    build_info = get_build(build_id, cloudbuild)
+    build_info = get_build(build_id, cloudbuild, project)
 
     current_status = build_info['status']
     if current_status != status:
@@ -53,18 +48,24 @@ def wait_for_build(build_id):
 def main():
   global cloudbuild
 
-  if len(sys.argv) != 2:
-    usage()
+  parser = argparse.ArgumentParser(description='Wait for build to complete')
+  parser.add_argument(
+      '-p',
+      '--project',
+      help='Cloud Project',
+      default='clusterfuzz-external')
+  parser.add_argument('build_id', help='The Container Builder build ID.')
+
+  args = parser.parse_args()
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
 
-  build_id = sys.argv[1]
-  success = wait_for_build(build_id)
+  success = wait_for_build(args.build_id, args.project)
 
   if not success:
     sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()
