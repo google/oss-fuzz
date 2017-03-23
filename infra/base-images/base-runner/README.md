@@ -2,7 +2,7 @@
 > Base image for fuzzer runners.
 
 ```bash
-docker run -ti gcr.io/oss-fuzz/base-runner <command> <args>
+docker run -ti gcr.io/oss-fuzz-base/base-runner <command> <args>
 ```
 
 ## Commands

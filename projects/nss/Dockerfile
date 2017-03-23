@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
 RUN apt-get install -y make mercurial zlib1g-dev gyp ninja-build libssl-dev
 

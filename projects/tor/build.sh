@@ -23,7 +23,7 @@ sh autogen.sh
 # test functions will fail.
 export ASAN_OPTIONS=detect_leaks=0
 
-./configure --disable-asciidoc --enable-oss-fuzz
+./configure --disable-asciidoc --enable-oss-fuzz --disable-memory-sentinels
 make clean
 make -j$(nproc) oss-fuzz-fuzzers
 

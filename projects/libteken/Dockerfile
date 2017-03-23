@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kcwu@csie.org
 RUN apt-get install -y pmake
 RUN svn co https://svn.freebsd.org/base/head/sys/teken libteken

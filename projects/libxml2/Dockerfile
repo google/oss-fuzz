@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER ochang@chromium.org
 RUN apt-get install -y make autoconf automake libtool pkg-config
 

@@ -36,12 +36,12 @@ DOCKER_TEMPLATE = """\
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER your@email.com
 RUN apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 <git_url> %(project_name)s     # or use other version control
 WORKDIR %(project_name)s
-COPY build.sh $src/
+COPY build.sh $SRC/
 """
 
 BUILD_TEMPLATE = """\

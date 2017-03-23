@@ -108,7 +108,7 @@ OSS-Fuzz will adhere to following disclosure principles:
 [3](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
 
 ## Build Status
-[This page](https://oss-fuzz-gcb-logs.storage.googleapis.com/status.html)
+[This page](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
 gives the latest build logs for each project.
 
 ## Trophies

@@ -52,3 +52,5 @@ spec:
           items:
             - key: build-service-account.json
               path: build-service-account.json
+            - key: base-build-service-account.json
+              path: base-build-service-account.json

@@ -20,7 +20,7 @@ BASE_IMAGES = [
     'base-runner-debug',
 ]
 
-TAG_PREFIX = 'gcr.io/oss-fuzz/'
+TAG_PREFIX = 'gcr.io/oss-fuzz-base/'
 
 
 def get_steps():
@@ -50,7 +50,7 @@ def main():
       'source': {
           'repoSource': {
               'branchName': 'master',
-              'projectId': 'clusterfuzz-external',
+              'projectId': 'oss-fuzz-base',
               'repoName': 'oss-fuzz',
           },
       },
@@ -64,7 +64,7 @@ def main():
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
-  build_info = cloudbuild.projects().builds().create(projectId='clusterfuzz-external', body=build_body).execute()
+  build_info = cloudbuild.projects().builds().create(projectId='oss-fuzz-base', body=build_body).execute()
   build_id =  build_info['metadata']['build']['id']
 
   print build_id
