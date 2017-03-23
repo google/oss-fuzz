@@ -5,3 +5,4 @@ google-cloud-logging
 google-cloud-storage
 jinja2
 python-jenkins
+python-dateutil

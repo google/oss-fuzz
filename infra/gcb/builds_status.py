@@ -5,7 +5,9 @@ import os
 import sys
 import jinja2
 import json
+import tempfile
 
+import dateutil.parser
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build as gcb_build
 from google.cloud import logging
@@ -13,6 +15,7 @@ from google.cloud import storage
 from jinja2 import Environment, FileSystemLoader
 
 
+STATUS_BUCKET = 'oss-fuzz-build-logs'
 LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,7 +48,7 @@ def upload_status(successes, failures, unstable):
   }
 
   storage_client = storage.Client()
-  bucket = storage_client.get_bucket(LOGS_BUCKET)
+  bucket = storage_client.get_bucket(STATUS_BUCKET)
 
   blob = bucket.blob('status.html')
   blob.cache_control = 'no-cache'
@@ -78,6 +81,30 @@ def is_build_successful(build):
   return entry.payload == 'DONE'
 
 
+def find_last_build(builds):
+  DELAY_MINUTES = 40
+
+  for build in builds:
+    finish_time = dateutil.parser.parse(build['finishTime'], ignoretz=True)
+    if (datetime.datetime.utcnow() - finish_time >=
+        datetime.timedelta(minutes=DELAY_MINUTES)):
+      storage_client = storage.Client()
+
+      status_bucket = storage_client.get_bucket(STATUS_BUCKET)
+      gcb_bucket = storage_client.get_bucket(LOGS_BUCKET)
+      log_name = 'log-{0}.txt'.format(build['id'])
+      log = gcb_bucket.blob(log_name)
+      dest_log = status_bucket.blob(log_name)
+
+      with tempfile.NamedTemporaryFile() as f:
+        log.download_to_filename(f.name)
+        dest_log.upload_from_filename(f.name, content_type='text/plain')
+
+      return build
+
+  return None
+
+
 def main():
   if len(sys.argv) != 2:
     usage()
@@ -100,7 +127,11 @@ def main():
       continue
 
     builds = response['builds']
-    last_build = builds[0]
+    last_build = find_last_build(builds)
+    if not last_build:
+      print >>sys.stderr, 'Failed to get build for', project
+      continue
+
     print last_build['startTime'], last_build['status'], last_build['id']
     if is_build_successful(last_build):
       successes.append({
@@ -114,6 +145,7 @@ def main():
       })
 
   upload_status(successes, failures, [])
+
 
 if __name__ == "__main__":
   main()
