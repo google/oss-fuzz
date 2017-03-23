@@ -75,6 +75,8 @@ COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer f
 ```
 Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
 
+In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`. 
+
 ## build.sh
 
 This file describes how to build [fuzz targets](glossary.md#fuzz-target) for your project.
