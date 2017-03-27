@@ -10,6 +10,6 @@ spec:
   ports:
   - name: agent
     port: 50000
-  - name: http
-    port: 80
+  - name: https
+    port: 443
     targetPort: 8080

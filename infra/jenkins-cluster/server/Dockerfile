@@ -16,4 +16,5 @@ RUN /google-cloud-sdk/bin/gcloud -q components update
 RUN chown -R jenkins:jenkins /google-cloud-sdk
 
 USER jenkins
+ENV JENKINS_OPTS --httpPort=-1 --httpsPort=8080 --httpsCertificate=/var/secrets/cert.pem --httpsPrivateKey=/var/secrets/cert.key
 ENV PATH=$PATH:/google-cloud-sdk/bin
