@@ -147,7 +147,7 @@ def _build_image(image_name):
   build_args = []
   if not GLOBAL_ARGS.nopull:
       build_args += ['--pull']
-  build_args += ['-t', 'gcr.io/%s/%s' % (image_name, image_project), dockerfile_dir ]
+  build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir ]
 
   command = [ 'docker', 'build' ] + build_args
   print('Running:', _get_command_string(command))
