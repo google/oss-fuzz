@@ -134,8 +134,10 @@ def _build_image(image_name):
   """Build image."""
 
   if _is_base_image(image_name):
+    image_project = 'oss-fuzz-base'
     dockerfile_dir = os.path.join('infra', 'base-images', image_name)
   else:
+    image_project = 'oss-fuzz'
     if not _check_project_exists(image_name):
       return False
 
@@ -145,7 +147,7 @@ def _build_image(image_name):
   build_args = []
   if not GLOBAL_ARGS.nopull:
       build_args += ['--pull']
-  build_args += ['-t', 'gcr.io/oss-fuzz/%s' % image_name, dockerfile_dir ]
+  build_args += ['-t', 'gcr.io/%s/%s' % (image_name, image_project), dockerfile_dir ]
 
   command = [ 'docker', 'build' ] + build_args
   print('Running:', _get_command_string(command))
