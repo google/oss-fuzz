@@ -8,5 +8,5 @@ spec:
     app: jenkins-master
   ports:
   - port: 443
-    targetPort: 8080
+    targetPort: 8082
     name: https
