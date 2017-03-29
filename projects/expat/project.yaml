@@ -1,4 +1,9 @@
-homepage: "http://expat.sourceforge.net/"
+homepage: "https://github.com/libexpat/libexpat"
+primary_contact: "sebastian@pipping.org"
+auto_ccs:
+ - "rhodri@kynesim.co.uk"
+ - "hanno@hboeck.de"
+ - "webmaster@hartwork.org"
 sanitizers:
   - address
   - memory:
