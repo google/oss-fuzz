@@ -165,7 +165,7 @@ def _add_sanitizer_args(parser):
                       choices=['address', 'memory', 'undefined'])
 
 
-def _build_image(image_name, args):
+def _build_image(image_name, args, no_cache=False):
   """Build image."""
 
   is_base_image = _is_base_image(image_name)
@@ -180,6 +180,9 @@ def _build_image(image_name, args):
     dockerfile_dir = os.path.join('projects', image_name)
 
   build_args = []
+  if no_cache:
+    build_args.append('--no-cache')
+
   build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir]
 
   return docker_build(build_args, pull=(is_base_image and not
@@ -224,7 +227,8 @@ def docker_build(build_args, pull=False):
 
 def build_image(args):
   """Build docker image."""
-  if _build_image(args.project_name, args):
+  # If build_image is called explicitly, don't use cache.
+  if _build_image(args.project_name, args, no_cache=True):
     return 0
 
   return 1
@@ -297,7 +301,6 @@ def run_fuzzer(args):
 
 def coverage(args):
   """Runs a fuzzer in the container."""
-
   if not _check_project_exists(args.project_name):
     return 1
 
@@ -325,12 +328,12 @@ def coverage(args):
 
   print('Go to http://localhost:8001 to see the coverage report.')
   run_args = [
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
-        '-v', '%s:/cov' % temp_dir,
-        '-w', '/cov',
-        '-p', '8001:8001',
-        '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
-        'coverage_report', '/out/%s' % args.fuzzer_name,
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/cov' % temp_dir,
+      '-w', '/cov',
+      '-p', '8001:8001',
+      '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
+      'coverage_report', '/out/%s' % args.fuzzer_name,
   ]
 
   docker_run(run_args)
