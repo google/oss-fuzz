@@ -32,7 +32,6 @@ import time
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
 
-GLOBAL_ARGS = None
 
 def main():
   os.chdir(OSSFUZZ_DIR)
@@ -41,36 +40,72 @@ def main():
 
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
   parser.add_argument(
-      '--nopull', default=False, action='store_const', const=True,
-      help='do not specify --pull while building an image')
-  parser.add_argument(
-      'command',
-      help='One of: generate, build_image, build_fuzzers, run_fuzzer, coverage, reproduce, shell',
-      nargs=argparse.REMAINDER)
-  global GLOBAL_ARGS
-  GLOBAL_ARGS = args = parser.parse_args()
+      '--no-pull-base-images', help='Don\'t pull base images and build them locally.',
+      action='store_true')
 
-  if not args.command:
-    parser.print_help()
-    return 1
+  subparsers = parser.add_subparsers(dest='command')
 
-  if args.command[0] == 'generate':
-    return generate(args.command[1:])
-  elif args.command[0] == 'build_image':
-    return build_image(args.command[1:])
-  elif args.command[0] == 'build_fuzzers':
-    return build_fuzzers(args.command[1:])
-  elif args.command[0] == 'run_fuzzer':
-    return run_fuzzer(args.command[1:])
-  elif args.command[0] == 'coverage':
-    return coverage(args.command[1:])
-  elif args.command[0] == 'reproduce':
-    return reproduce(args.command[1:])
-  elif args.command[0] == 'shell':
-    return shell(args.command[1:])
-  else:
-    print('Unrecognised command!', file=sys.stderr)
-    return 1
+  generate_parser = subparsers.add_parser(
+      'generate', help='Generate files for new project.')
+  generate_parser.add_argument('project_name')
+
+  build_image_parser = subparsers.add_parser(
+      'build_image', help='Build an image.')
+  build_image_parser.add_argument('project_name')
+
+  build_fuzzers_parser = subparsers.add_parser(
+      'build_fuzzers', help='Build fuzzers for a project.')
+  _add_engine_args(build_fuzzers_parser)
+  _add_sanitizer_args(build_fuzzers_parser)
+  build_fuzzers_parser.add_argument('-e', action='append', help="set environment variable e.g. VAR=value")
+  build_fuzzers_parser.add_argument('project_name')
+  build_fuzzers_parser.add_argument('source_path', help='path of local source',
+                      nargs='?')
+
+  run_fuzzer_parser = subparsers.add_parser(
+      'run_fuzzer', help='Run a fuzzer.')
+  _add_engine_args(run_fuzzer_parser)
+  run_fuzzer_parser.add_argument('project_name', help='name of the project')
+  run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
+  run_fuzzer_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
+                      nargs=argparse.REMAINDER)
+
+  coverage_parser = subparsers.add_parser(
+      'coverage', help='Run a fuzzer for a while and generate coverage.')
+  coverage_parser.add_argument('--run_time', default=60,
+                      help='time in seconds to run fuzzer')
+  coverage_parser.add_argument('project_name', help='name of the project')
+  coverage_parser.add_argument('fuzzer_name', help='name of the fuzzer')
+  coverage_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
+                      nargs=argparse.REMAINDER)
+
+  reproduce_parser = subparsers.add_parser(
+      'reproduce', help='Reproduce a crash.')
+  reproduce_parser.add_argument('project_name', help='name of the project')
+  reproduce_parser.add_argument('fuzzer_name', help='name of the fuzzer')
+  reproduce_parser.add_argument('testcase_path', help='path of local testcase')
+  reproduce_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
+                      nargs=argparse.REMAINDER)
+
+  shell_parser = subparsers.add_parser(
+      'shell', help='Run /bin/bash in an image.')
+  shell_parser.add_argument('project_name', help='name of the project')
+
+  args = parser.parse_args()
+  if args.command == 'generate':
+    return generate(args)
+  elif args.command == 'build_image':
+    return build_image(args)
+  elif args.command == 'build_fuzzers':
+    return build_fuzzers(args)
+  elif args.command == 'run_fuzzer':
+    return run_fuzzer(args)
+  elif args.command == 'coverage':
+    return coverage(args)
+  elif args.command == 'reproduce':
+    return reproduce(args)
+  elif args.command == 'shell':
+    return shell(args)
 
   return 0
 
@@ -130,10 +165,11 @@ def _add_sanitizer_args(parser):
                       choices=['address', 'memory', 'undefined'])
 
 
-def _build_image(image_name):
+def _build_image(image_name, args):
   """Build image."""
 
-  if _is_base_image(image_name):
+  is_base_image = _is_base_image(image_name)
+  if is_base_image:
     image_project = 'oss-fuzz-base'
     dockerfile_dir = os.path.join('infra', 'base-images', image_name)
   else:
@@ -143,13 +179,38 @@ def _build_image(image_name):
 
     dockerfile_dir = os.path.join('projects', image_name)
 
-
   build_args = []
-  if not GLOBAL_ARGS.nopull:
-      build_args += ['--pull']
-  build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir ]
+  build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir]
 
-  command = [ 'docker', 'build' ] + build_args
+  return docker_build(build_args, pull=(is_base_image and not
+                                        args.no_pull_base_images))
+
+
+def docker_run(run_args, print_output=True):
+  """Call `docker run`."""
+  command = ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE']
+  command.extend(run_args)
+
+  print('Running:', _get_command_string(command))
+  stdout = None
+  if not print_output:
+    stdout = open(os.devnull, 'w')
+
+  try:
+    subprocess.check_call(command, stdout=stdout, stderr=subprocess.STDOUT)
+  except subprocess.CalledProcessError:
+    return False
+
+  return True
+
+
+def docker_build(build_args, pull=False):
+  """Call `docker build`."""
+  command = ['docker', 'build']
+  if pull:
+    command.append('--pull')
+
+  command.extend(build_args)
   print('Running:', _get_command_string(command))
 
   try:
@@ -161,31 +222,19 @@ def _build_image(image_name):
   return True
 
 
-def build_image(build_args):
+def build_image(args):
   """Build docker image."""
-  parser = argparse.ArgumentParser('helper.py build_image')
-  parser.add_argument('project_name')
-  args = parser.parse_args(build_args)
-
-  if _build_image(args.project_name):
+  if _build_image(args.project_name, args):
     return 0
 
   return 1
 
 
-def build_fuzzers(build_args):
+def build_fuzzers(args):
   """Build fuzzers."""
-  parser = argparse.ArgumentParser('helper.py build_fuzzers')
-  _add_engine_args(parser)
-  _add_sanitizer_args(parser)
-  parser.add_argument('-e', action='append', help="set environment variable e.g. VAR=value")
-  parser.add_argument('project_name')
-  parser.add_argument('source_path', help='path of local source',
-                      nargs='?')
-  args = parser.parse_args(build_args)
   project_name = args.project_name
 
-  if not _build_image(args.project_name):
+  if not _build_image(args.project_name, args):
     return 1
 
   env = [
@@ -223,52 +272,31 @@ def build_fuzzers(build_args):
   return 0
 
 
-def run_fuzzer(run_args):
+def run_fuzzer(args):
   """Runs a fuzzer in the container."""
-  parser = argparse.ArgumentParser('helper.py run_fuzzer')
-  _add_engine_args(parser)
-
-  parser.add_argument('project_name', help='name of the project')
-  parser.add_argument('fuzzer_name', help='name of the fuzzer')
-  parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                      nargs=argparse.REMAINDER)
-  args = parser.parse_args(run_args)
-
   if not _check_project_exists(args.project_name):
     return 1
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner'):
+  if not _build_image('base-runner', args):
     return 1
 
   env = ['FUZZING_ENGINE=' + args.engine]
 
-  command = [
-      'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
-  ] + sum([['-e', v] for v in env], []) + [
+  run_args = sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
       'run_fuzzer',
       args.fuzzer_name,
   ] + args.fuzzer_args
 
-  print('Running:', _get_command_string(command))
-  pipe = subprocess.Popen(command)
-  pipe.communicate()
+  docker_run(run_args)
 
 
-def coverage(run_args):
+def coverage(args):
   """Runs a fuzzer in the container."""
-  parser = argparse.ArgumentParser('helper.py coverage')
-  parser.add_argument('--run_time', default=60,
-                      help='time in seconds to run fuzzer')
-  parser.add_argument('project_name', help='name of the project')
-  parser.add_argument('fuzzer_name', help='name of the fuzzer')
-  parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                      nargs=argparse.REMAINDER)
-  args = parser.parse_args(run_args)
 
   if not _check_project_exists(args.project_name):
     return 1
@@ -276,13 +304,12 @@ def coverage(run_args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner'):
+  if not _build_image('base-runner', args):
     return 1
 
   temp_dir = tempfile.mkdtemp()
 
-  command = [
-      'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
+  run_args = [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
@@ -292,15 +319,12 @@ def coverage(run_args):
       '-max_total_time=%s' % args.run_time
   ] + args.fuzzer_args
 
-  print('Running:', _get_command_string(command))
   print('This may take a while (running your fuzzer for %d seconds)...' %
         args.run_time)
-  with open(os.devnull, 'w') as f:
-    pipe = subprocess.Popen(command, stdout=f, stderr=subprocess.STDOUT)
-    pipe.communicate()
+  docker_run(run_args, print_output=False)
 
-  command = [
-        'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
+  print('Go to http://localhost:8001 to see the coverage report.')
+  run_args = [
         '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
         '-v', '%s:/cov' % temp_dir,
         '-w', '/cov',
@@ -309,32 +333,21 @@ def coverage(run_args):
         'coverage_report', '/out/%s' % args.fuzzer_name,
   ]
 
-  print('Running:', _get_command_string(command))
-  pipe = subprocess.Popen(command)
-  pipe.communicate()
+  docker_run(run_args)
 
 
 def reproduce(run_args):
   """Reproduces a testcase in the container."""
-  parser = argparse.ArgumentParser('helper.py reproduce')
-  parser.add_argument('project_name', help='name of the project')
-  parser.add_argument('fuzzer_name', help='name of the fuzzer')
-  parser.add_argument('testcase_path', help='path of local testcase')
-  parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                      nargs=argparse.REMAINDER)
-  args = parser.parse_args(run_args)
-
   if not _check_project_exists(args.project_name):
     return 1
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner'):
+  if not _build_image('base-runner', args):
     return 1
 
-  command = [
-      'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
+  run_args = [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
@@ -343,16 +356,11 @@ def reproduce(run_args):
       '-runs=100',
   ] + args.fuzzer_args
 
-  print('Running:', _get_command_string(command))
-  pipe = subprocess.Popen(command)
-  pipe.communicate()
+  docker_run(run_args)
 
 
-def generate(generate_args):
+def generate(args):
   """Generate empty project files."""
-  parser = argparse.ArgumentParser('helper.py generate')
-  parser.add_argument('project_name')
-  args = parser.parse_args(generate_args)
   dir = os.path.join('projects', args.project_name)
 
   try:
@@ -382,25 +390,19 @@ def generate(generate_args):
   return 0
 
 
-def shell(shell_args):
+def shell(args):
   """Runs a shell within a docker image."""
-  parser = argparse.ArgumentParser('helper.py shell')
-  parser.add_argument('project_name', help='name of the project')
-  args = parser.parse_args(shell_args)
-
-  if not _build_image(args.project_name):
+  if not _build_image(args.project_name, args):
     return 1
 
-  command = [
-        'docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE',
-        '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
-        '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
-        '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
-        '/bin/bash'
+  run_args = [
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
+      '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
+      '/bin/bash'
   ]
-  print('Running:', _get_command_string(command))
-  pipe = subprocess.Popen(command)
-  pipe.communicate()
+
+  docker_run(run_args)
 
 
 if __name__ == '__main__':
