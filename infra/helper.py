@@ -39,10 +39,6 @@ def main():
     os.mkdir(BUILD_DIR)
 
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
-  parser.add_argument(
-      '--no-pull-base-images', help='Don\'t pull base images and build them locally.',
-      action='store_true')
-
   subparsers = parser.add_subparsers(dest='command')
 
   generate_parser = subparsers.add_parser(
@@ -165,7 +161,7 @@ def _add_sanitizer_args(parser):
                       choices=['address', 'memory', 'undefined'])
 
 
-def _build_image(image_name, args, no_cache=False):
+def _build_image(image_name, no_cache=False):
   """Build image."""
 
   is_base_image = _is_base_image(image_name)
@@ -185,8 +181,8 @@ def _build_image(image_name, args, no_cache=False):
 
   build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir]
 
-  return docker_build(build_args, pull=(is_base_image and not
-                                        args.no_pull_base_images))
+  return docker_build(build_args, pull=(is_base_image and
+                                        not no_cache))
 
 
 def docker_run(run_args, print_output=True):
@@ -228,7 +224,7 @@ def docker_build(build_args, pull=False):
 def build_image(args):
   """Build docker image."""
   # If build_image is called explicitly, don't use cache.
-  if _build_image(args.project_name, args, no_cache=True):
+  if _build_image(args.project_name, no_cache=True):
     return 0
 
   return 1
@@ -238,7 +234,7 @@ def build_fuzzers(args):
   """Build fuzzers."""
   project_name = args.project_name
 
-  if not _build_image(args.project_name, args):
+  if not _build_image(args.project_name):
     return 1
 
   env = [
@@ -284,7 +280,7 @@ def run_fuzzer(args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner', args):
+  if not _build_image('base-runner'):
     return 1
 
   env = ['FUZZING_ENGINE=' + args.engine]
@@ -307,7 +303,7 @@ def coverage(args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner', args):
+  if not _build_image('base-runner'):
     return 1
 
   temp_dir = tempfile.mkdtemp()
@@ -326,7 +322,6 @@ def coverage(args):
         args.run_time)
   docker_run(run_args, print_output=False)
 
-  print('Go to http://localhost:8001 to see the coverage report.')
   run_args = [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
@@ -347,7 +342,7 @@ def reproduce(run_args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner', args):
+  if not _build_image('base-runner'):
     return 1
 
   run_args = [
@@ -395,7 +390,7 @@ def generate(args):
 
 def shell(args):
   """Runs a shell within a docker image."""
-  if not _build_image(args.project_name, args):
+  if not _build_image(args.project_name):
     return 1
 
   run_args = [
