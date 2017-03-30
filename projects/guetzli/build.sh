@@ -17,6 +17,6 @@
 
 make guetzli_static
 $CXX $CXXFLAGS -std=c++11 -I. fuzz_target.cc -lFuzzingEngine \
-  -o /out/guetzli_fuzzer bin/Release/libguetzli_static.a
+  -o $OUT/guetzli_fuzzer bin/Release/libguetzli_static.a
 
 cp $SRC/guetzli_fuzzer_seed_corpus.zip $OUT/

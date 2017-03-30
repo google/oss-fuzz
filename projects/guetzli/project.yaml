@@ -1,4 +1,4 @@
 homepage: "https://github.com/google/guetzli"
 primary_contact: "robryk@google.com"
-sanitizers:
-- address
+auto_ccs:
+ - "szabadka@google.com"

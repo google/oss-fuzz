@@ -156,7 +156,7 @@ Use the helper script to build docker image and [fuzz targets](glossary.md#fuzz-
 ```bash
 $ cd /path/to/oss-fuzz
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers -e SANITIZER=<address/memory/undefined> $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer=<address/memory/undefined> $PROJECT_NAME
 ```
 
 This should place the built binaries into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
