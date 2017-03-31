@@ -18,8 +18,7 @@ FROM ossfuzz/base-builder
 MAINTAINER dtardon@redhat.com
 # build requirements
 RUN apt-get update
-RUN apt-get build-dep -y libpagemaker
-RUN apt-get install -y zlib1g-dev
+RUN apt-get build-dep -y libpagemaker librevenge
 # clone source
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libpagemaker
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge libpagemaker/librevenge
