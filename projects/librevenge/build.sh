@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-CXX="$CXX -std=c++11"
-
 ./autogen.sh
 ./configure --without-docs --disable-shared --enable-static --disable-tests --disable-generators --enable-fuzzers
 make -j$(nproc)
