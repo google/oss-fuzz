@@ -20,6 +20,7 @@ MAINTAINER dtardon@redhat.com
 RUN apt-get update
 RUN apt-get build-dep -y librevenge
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip $SRC/
+ADD https://dev-www.libreoffice.org/corpus/zipfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
 WORKDIR librevenge
