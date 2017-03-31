@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-CXX="$CXX -std=c++11 -stdlib=libc++"
-
 # HACK to link with static icu
 mkdir icu
 cp -p /usr/lib/*/libicu*.a icu
