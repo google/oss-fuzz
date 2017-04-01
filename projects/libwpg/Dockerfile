@@ -19,10 +19,12 @@ MAINTAINER dtardon@redhat.com
 # build requirements
 RUN apt-get update
 RUN apt-get build-dep -y libwpg librevenge libwpd
+RUN apt-get install -y wget
 # clone source
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpg/code libwpg
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/code libwpg/libwpd
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge libwpg/librevenge
-ADD https://dev-www.libreoffice.org/corpus/wpgfuzzer_seed_corpus.zip $SRC/
+# download seed corpus
+RUN wget -P $SRC https://sourceforge.net/projects/libwpg/files/corpus/wpgfuzzer_seed_corpus.zip
 WORKDIR libwpg
 COPY build.sh $SRC/
