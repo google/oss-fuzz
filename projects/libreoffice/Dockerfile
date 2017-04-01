@@ -59,7 +59,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libetonyek-0.1.6.tar.bz2 \
     https://dev-www.libreoffice.org/src/libfreehand-0.1.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libmspub-0.1.2.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libmwaw-0.3.10.tar.xz \
+    https://dev-www.libreoffice.org/src/libmwaw-0.3.11.tar.xz \
     https://dev-www.libreoffice.org/src/libodfgen-0.1.6.tar.bz2 \
     https://dev-www.libreoffice.org/src/liborcus-0.12.1.tar.gz \
     https://dev-www.libreoffice.org/src/libpagemaker-0.0.3.tar.bz2 \
