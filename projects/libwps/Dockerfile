@@ -19,10 +19,11 @@ MAINTAINER dtardon@redhat.com
 # build requirements
 RUN apt-get update
 RUN apt-get build-dep -y libwps librevenge
+RUN apt-get install -y wget
 # clone source
 RUN git clone --depth 1 git://git.code.sf.net/p/libwps/code libwps
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge libwps/librevenge
-# get seed coprus
-ADD https://dev-www.libreoffice.org/corpus/wpsfuzzer_seed_corpus.zip $SRC/
+# get seed corpus
+RUN wget -P $SRC https://sourceforge.net/projects/libwps/files/corpus/wpsfuzzer_seed_corpus.zip
 WORKDIR libwps
 COPY build.sh $SRC/
