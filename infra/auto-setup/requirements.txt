@@ -1,3 +1,0 @@
-python-jenkins
-jinja2
-PyYAML

@@ -75,6 +75,8 @@ COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer f
 ```
 Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
 
+In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`. 
+
 ## build.sh
 
 This file describes how to build [fuzz targets](glossary.md#fuzz-target) for your project.
@@ -154,7 +156,7 @@ Use the helper script to build docker image and [fuzz targets](glossary.md#fuzz-
 ```bash
 $ cd /path/to/oss-fuzz
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers -e SANITIZER=<address/memory/undefined> $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer=<address/memory/undefined> $PROJECT_NAME
 ```
 
 This should place the built binaries into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`

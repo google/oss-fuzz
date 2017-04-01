@@ -154,7 +154,9 @@ def get_build_steps(project_yaml):
             'args': [
               'bash',
               '-c',
-              'cd /src/{1} && mkdir -p {0} && compile'.format(out, name),
+              # Remove /out to break loudly when a build script incorrectly uses
+              # /out instead of $OUT.
+              'rm -r /out && cd /src/{1} && mkdir -p {0} && compile'.format(out, name),
               ],
             },
           # zip binaries

@@ -37,7 +37,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/48d647fbd8ef8889e5a7f422c1bfda94-clucene-core-2.3.3.4.tar.gz \
     https://dev-www.libreoffice.org/src/boost_1_63_0.tar.bz2 \
     https://dev-www.libreoffice.org/src/expat-2.2.0.tar.bz2 \
-    https://dev-www.libreoffice.org/src/jpegsrc.v9a.tar.gz \
+    https://dev-www.libreoffice.org/src/libjpeg-turbo-1.5.1.tar.gz \
     https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
     https://dev-www.libreoffice.org/src/0168229624cfac409e766913506961a8-ucpp-1.3.2.tar.gz \
     https://dev-www.libreoffice.org/src/10d61fbaa6a06348823651b1bd7940fe-libexttextcat-3.4.4.tar.bz2 \
@@ -115,6 +115,7 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/602fuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/lwpfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/pptfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/rtffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice

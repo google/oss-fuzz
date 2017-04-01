@@ -15,7 +15,7 @@ spec:
         image: gcr.io/clusterfuzz-external/jenkins:latest
         env:
           - name: JAVA_OPTS
-            value: "-Duser.timezone=America/Los_Angeles -Dhudson.security.csrf.requestfield=Jenkins-Crumb"
+            value: "-Duser.timezone=America/Los_Angeles -Dhudson.security.csrf.requestfield=Jenkins-Crumb -Xmx16g"
         ports:
         - containerPort: 8080
         - containerPort: 50000
@@ -48,9 +48,13 @@ spec:
           fsType: ext4
       - name: secrets
         secret:
-          secretName: builder-service-account
+          secretName: secrets
           items:
             - key: build-service-account.json
               path: build-service-account.json
             - key: base-build-service-account.json
               path: base-build-service-account.json
+            - key: tls-cert
+              path: cert.pem
+            - key: tls-key
+              path: cert.key
