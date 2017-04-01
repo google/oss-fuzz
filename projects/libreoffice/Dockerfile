@@ -59,7 +59,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libetonyek-0.1.6.tar.bz2 \
     https://dev-www.libreoffice.org/src/libfreehand-0.1.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libmspub-0.1.2.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libmwaw-0.3.10.tar.xz \
+    https://dev-www.libreoffice.org/src/libmwaw-0.3.11.tar.xz \
     https://dev-www.libreoffice.org/src/libodfgen-0.1.6.tar.bz2 \
     https://dev-www.libreoffice.org/src/liborcus-0.12.1.tar.gz \
     https://dev-www.libreoffice.org/src/libpagemaker-0.0.3.tar.bz2 \
@@ -69,7 +69,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libvisio-0.1.5.tar.bz2 \
     https://dev-www.libreoffice.org/src/libwpd-0.10.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libwpg-0.3.1.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libwps-0.4.5.tar.bz2 \
+    https://dev-www.libreoffice.org/src/libwps-0.4.6.tar.xz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/poppler-0.52.0.tar.xz \
@@ -116,7 +116,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/lwpfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/pptfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/rtffuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/cgmfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
