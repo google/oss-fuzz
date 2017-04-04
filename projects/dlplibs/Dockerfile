@@ -16,12 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER dtardon@redhat.com
-#build requirements
+# install build requirements
 RUN apt-get update
-RUN apt-get build-dep -y librevenge
-ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip $SRC/
-ADD https://dev-www.libreoffice.org/corpus/zipfuzzer_seed_corpus.zip $SRC/
-#clone source
+RUN apt-get build-dep -y libmspub librevenge
+# download fuzzing corpora
+ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/pubfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/zipfuzzer_seed_corpus.zip \
+    $SRC/
+# clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
-WORKDIR librevenge
+RUN git clone --depth 1 git://gerrit.libreoffice.org/libmspub
+WORKDIR $SRC
 COPY build.sh $SRC/
