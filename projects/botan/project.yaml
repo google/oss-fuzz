@@ -5,6 +5,5 @@ auto_ccs:
   - "d.neus@sirrix.com"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined

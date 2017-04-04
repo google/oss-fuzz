@@ -3,6 +3,5 @@ auto_ccs:
  - "icu-team@google.com"
 sanitizers:
  - address
- - memory:
-     experimental: True
+ - memory
 
