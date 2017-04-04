@@ -144,5 +144,13 @@ pushd libwps
 make -j$(nproc)
 popd
 
+pushd libmwaw
+./autogen.sh
+./configure --without-docs --disable-shared --enable-static --disable-tools --disable-zip --enable-fuzzers \
+    REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0 -lrevenge-stream-0.0" \
+    REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
+make -j$(nproc)
+popd
+
 cp */src/fuzz/*fuzzer $OUT
 cp *_seed_corpus.zip $OUT
