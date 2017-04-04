@@ -2,6 +2,5 @@ homepage: "https://github.com/google/brotli"
 primary_contact: "eustas@chromium.org"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined
