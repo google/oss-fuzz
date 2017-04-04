@@ -111,7 +111,9 @@ def workdir_from_dockerfile(dockerfile):
   for line in lines:
     match = re.match(WORKDIR_REGEX, line)
     if match:
-      return match.group(1)
+      # We need to escape '$' since they're used for subsitutions in Container
+      # Builer builds.
+      return match.group(1).replace('$', '$$')
 
   return None
 
