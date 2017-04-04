@@ -32,6 +32,7 @@ ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/zmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/pmdfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fhfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/cmxfuzzer_seed_corpus.zip \
     $SRC/
 RUN wget \
     https://sourceforge.net/projects/libwpd/files/corpus/wpdfuzzer_seed_corpus.zip \
