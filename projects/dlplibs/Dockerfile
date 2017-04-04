@@ -33,6 +33,7 @@ ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/pmdfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fhfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/cmxfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/sdcfuzzer_seed_corpus.zip \
     $SRC/
 RUN wget \
     https://sourceforge.net/projects/libwpd/files/corpus/wpdfuzzer_seed_corpus.zip \
@@ -48,5 +49,6 @@ RUN git clone --depth 1 git://gerrit.libreoffice.org/libpagemaker
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libfreehand
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/code libwpd
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpg/code libwpg
+RUN git clone --depth 1 https://github.com/fosnola/libstaroffice
 WORKDIR $SRC
 COPY build.sh $SRC/
