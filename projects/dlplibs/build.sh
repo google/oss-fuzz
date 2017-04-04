@@ -15,10 +15,23 @@
 #
 ################################################################################
 
-# HACK to link with static icu
-mkdir icu
-cp -p /usr/lib/*/libicu*.a icu
-iculib=$(pwd)/icu
+# HACK to force linking with static icu and libxml2
+mkdir static
+cp -pL \
+    /usr/lib/*/libicu*.a \
+    /usr/lib/*/libxml2.a \
+    /usr/lib/*/liblzma.a \
+    /usr/lib/*/libpng*.a \
+    static
+staticlib=$(pwd)/static
+
+tar -xzf $SRC/lcms2-2.8.tar.gz
+pushd lcms2-2.8
+./configure --disable-shared --enable-static --without-jpeg --without-tiff
+make -C src -j$(nproc)
+lcmsinc=$(pwd)/include
+lcmslib=$(pwd)/src
+popd
 
 pushd librevenge
 ./autogen.sh
@@ -32,7 +45,60 @@ pushd libmspub
 ./autogen.sh
 ./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
     ICU_CFLAGS="$(pkg-config --cflags icu-i18n)" \
-    ICU_LIBS="-L$iculib $(pkg-config --libs icu-i18n)" \
+    ICU_LIBS="-L$staticlib $(pkg-config --libs icu-i18n)" \
+    REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
+    REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
+    REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
+make -j$(nproc)
+popd
+
+pushd libcdr
+./autogen.sh
+./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
+    ICU_CFLAGS="$(pkg-config --cflags icu-i18n)" \
+    ICU_LIBS="-L$staticlib $(pkg-config --libs icu-i18n)" \
+    LCMS2_CFLAGS=-I$lcmsinc LCMS2_LIBS="-L$lcmslib -llcms2" \
+    REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
+    REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
+    REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
+make -j$(nproc)
+popd
+
+pushd libvisio
+./autogen.sh
+./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
+    LDFLAGS=-L$staticlib \
+    LIBXML_LIBS="-lxml2 -llzma" \
+    REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
+    REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
+    REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
+make -j$(nproc)
+popd
+
+pushd libzmf
+./autogen.sh
+./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
+    LDFLAGS=-L$staticlib \
+    REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
+    REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
+    REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
+make -j$(nproc)
+popd
+
+pushd libpagemaker
+./autogen.sh
+./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
+    REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
+    REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
+    REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
+make -j$(nproc)
+popd
+
+pushd libfreehand
+./autogen.sh
+./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
+    LDFLAGS=-L$staticlib \
+    LCMS2_CFLAGS=-I$lcmsinc LCMS2_LIBS="-L$lcmslib -llcms2" \
     REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
     REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
     REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"

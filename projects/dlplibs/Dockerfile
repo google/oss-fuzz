@@ -18,14 +18,27 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER dtardon@redhat.com
 # install build requirements
 RUN apt-get update
-RUN apt-get build-dep -y libmspub librevenge
+RUN apt-get build-dep -y \
+    libmspub librevenge libcdr libvisio libpagemaker libfreehand
+RUN apt-get install -y liblzma-dev libpng-dev
+ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz $SRC/
 # download fuzzing corpora
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/pubfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/zipfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/cdrfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/vsdfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/zmffuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/pmdfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/fhfuzzer_seed_corpus.zip \
     $SRC/
 # clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libmspub
+RUN git clone --depth 1 git://gerrit.libreoffice.org/libcdr
+RUN git clone --depth 1 git://gerrit.libreoffice.org/libvisio
+RUN git clone --depth 1 git://gerrit.libreoffice.org/libzmf
+RUN git clone --depth 1 git://gerrit.libreoffice.org/libpagemaker
+RUN git clone --depth 1 git://gerrit.libreoffice.org/libfreehand
 WORKDIR $SRC
 COPY build.sh $SRC/
