@@ -55,7 +55,7 @@ EXTERA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
   $EXTERA_BAZEL_FLAGS \
   $NO_VPTR \
-  :all test/... third_party/boringssl-with-bazel/... third_party/nanopb/...
+  :all test/core/util/... test/core/end2end/... third_party/boringssl-with-bazel/... third_party/nanopb/...
 
 CFLAGS="${CFLAGS} -Iinclude -I."
 CXXFLAGS="${CXXFLAGS} -Iinclude -I. -stdlib=libc++"
