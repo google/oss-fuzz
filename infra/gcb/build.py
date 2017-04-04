@@ -156,7 +156,9 @@ def get_build_steps(project_yaml):
               '-c',
               # Remove /out to break loudly when a build script incorrectly uses
               # /out instead of $OUT.
-              'rm -r /out && cd /src/{1} && mkdir -p {0} && compile'.format(out, name),
+              # We also remove /work and /src to save disk space after a step.
+              # Container Builder doesn't pass --rm to docker run yet.
+              'rm -r /out && cd /src/{1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, name),
               ],
             },
           # zip binaries
