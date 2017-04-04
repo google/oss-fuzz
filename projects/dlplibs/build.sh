@@ -17,7 +17,12 @@
 
 # HACK to force linking with static icu and libxml2
 mkdir static
-cp -p /usr/lib/*/libicu*.a /usr/lib/*/libxml2.a /usr/lib/*/liblzma.a static
+cp -pL \
+    /usr/lib/*/libicu*.a \
+    /usr/lib/*/libxml2.a \
+    /usr/lib/*/liblzma.a \
+    /usr/lib/*/libpng*.a \
+    static
 staticlib=$(pwd)/static
 
 tar -xzf $SRC/lcms2-2.8.tar.gz
@@ -64,6 +69,16 @@ pushd libvisio
 ./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
     LDFLAGS=-L$staticlib \
     LIBXML_LIBS="-lxml2 -llzma" \
+    REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
+    REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
+    REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
+make -j$(nproc)
+popd
+
+pushd libzmf
+./autogen.sh
+./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
+    LDFLAGS=-L$staticlib \
     REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
     REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
     REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
