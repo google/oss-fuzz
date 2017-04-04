@@ -1,1 +1,6 @@
 homepage: "http://www.zlib.net/"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined

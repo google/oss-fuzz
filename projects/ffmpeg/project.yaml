@@ -2,6 +2,3 @@ homepage: "https://www.ffmpeg.org/"
 primary_contact: "ffmpeg-security@ffmpeg.org"
 auto_ccs:
  - "michaelni@gmx.at"
-fuzzing_engines:
- - libfuzzer
- - afl
