@@ -22,12 +22,13 @@ iculib=$(pwd)/icu
 
 pushd librevenge
 ./autogen.sh
-./configure --without-docs --disable-shared --enable-static --disable-tests
+./configure --without-docs --disable-shared --enable-static --disable-tests --enable-fuzzers
 make -j$(nproc)
 rvnginc=$(pwd)/inc
 rvnglib=$(pwd)/src/lib
 popd
 
+pushd libmspub
 ./autogen.sh
 ./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
     ICU_CFLAGS="$(pkg-config --cflags icu-i18n)" \
@@ -36,6 +37,7 @@ popd
     REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
     REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
 make -j$(nproc)
+popd
 
-cp src/fuzz/*fuzzer $OUT
-cp $SRC/*_seed_corpus.zip $OUT
+cp */src/fuzz/*fuzzer $OUT
+cp *_seed_corpus.zip $OUT
