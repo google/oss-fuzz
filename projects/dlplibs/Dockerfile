@@ -20,8 +20,8 @@ MAINTAINER dtardon@redhat.com
 RUN apt-get update
 RUN apt-get build-dep -y \
     libmspub librevenge libcdr libvisio libpagemaker libfreehand libwpd \
-    libwpg
-RUN apt-get install -y liblzma-dev libpng-dev wget
+    libwpg libwps libmwaw libe-book
+RUN apt-get install -y liblzma-dev libpng-dev wget liblangtag-dev
 ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz $SRC/
 # download fuzzing corpora
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
@@ -33,10 +33,15 @@ ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/pmdfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fhfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/cmxfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/sdcfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/bmifuzzer_seed_corpus.zip \
     $SRC/
 RUN wget \
     https://sourceforge.net/projects/libwpd/files/corpus/wpdfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwpg/files/corpus/wpgfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libwps/files/corpus/wpsfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/actafuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libebook/files/corpus/lrffuzzer_seed_corpus.zip \
     -P $SRC
 # clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
@@ -48,5 +53,9 @@ RUN git clone --depth 1 git://gerrit.libreoffice.org/libpagemaker
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libfreehand
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/code libwpd
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpg/code libwpg
+RUN git clone --depth 1 https://github.com/fosnola/libstaroffice
+RUN git clone --depth 1 git://git.code.sf.net/p/libwps/code libwps
+RUN git clone --depth 1 git://git.code.sf.net/p/libmwaw/libmwaw
+RUN git clone --depth 1 git://git.code.sf.net/p/libebook/code libe-book
 WORKDIR $SRC
 COPY build.sh $SRC/
