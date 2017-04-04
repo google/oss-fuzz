@@ -66,7 +66,7 @@ Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/bor
 This file defines the Docker image definition. This is where the build.sh script will be executed in.
 It is very simple for most projects:
 ```docker
-FROM gcr.io/oss-fuzz-base/base-builder               # base image with clang toolchain
+FROM gcr.io/oss-fuzz-base/base-builder    # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                     # maintainer for this file
 RUN apt-get install -y ...                # install required packages to build your project
 RUN git clone <git_url> <checkout_dir>    # checkout all sources needed to build your project
