@@ -19,8 +19,9 @@ MAINTAINER dtardon@redhat.com
 # install build requirements
 RUN apt-get update
 RUN apt-get build-dep -y \
-    libmspub librevenge libcdr libvisio libpagemaker libfreehand
-RUN apt-get install -y liblzma-dev libpng-dev
+    libmspub librevenge libcdr libvisio libpagemaker libfreehand libwpd \
+    libwpg
+RUN apt-get install -y liblzma-dev libpng-dev wget
 ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz $SRC/
 # download fuzzing corpora
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
@@ -32,6 +33,10 @@ ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/pmdfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fhfuzzer_seed_corpus.zip \
     $SRC/
+RUN wget \
+    https://sourceforge.net/projects/libwpd/files/corpus/wpdfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libwpg/files/corpus/wpgfuzzer_seed_corpus.zip \
+    -P $SRC
 # clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libmspub
@@ -40,5 +45,7 @@ RUN git clone --depth 1 git://gerrit.libreoffice.org/libvisio
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libzmf
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libpagemaker
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libfreehand
+RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/code libwpd
+RUN git clone --depth 1 git://git.code.sf.net/p/libwpg/code libwpg
 WORKDIR $SRC
 COPY build.sh $SRC/

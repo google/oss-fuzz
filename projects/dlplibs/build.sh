@@ -105,5 +105,26 @@ pushd libfreehand
 make -j$(nproc)
 popd
 
+pushd libwpd
+./autogen.sh
+./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
+    REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
+    REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
+    REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
+make -j$(nproc)
+wpdinc=$(pwd)/inc
+wpdlib=$(pwd)/src/lib
+popd
+
+pushd libwpg
+./autogen.sh
+./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers \
+    WPD_CFLAGS=-I$wpdinc WPD_LIBS="-L$wpdlib -lwpd-0.10" \
+    REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
+    REVENGE_STREAM_CFLAGS=-I$rvnginc REVENGE_STREAM_LIBS="-L$rvnglib -lrevenge-stream-0.0" \
+    REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
+make -j$(nproc)
+popd
+
 cp */src/fuzz/*fuzzer $OUT
 cp *_seed_corpus.zip $OUT
