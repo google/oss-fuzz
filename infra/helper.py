@@ -334,7 +334,7 @@ def coverage(args):
   docker_run(run_args)
 
 
-def reproduce(run_args):
+def reproduce(args):
   """Reproduces a testcase in the container."""
   if not _check_project_exists(args.project_name):
     return 1
