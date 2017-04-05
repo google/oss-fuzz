@@ -68,7 +68,7 @@ def is_build_successful(build):
     return True
 
   build_id = build['id']
-  logging_client = logging.Client(project='clusterfuzz-external')
+  logging_client = logging.Client(project='oss-fuzz')
   entries = logging_client.list_entries(
       order_by=logging.DESCENDING,
       page_size=1,
@@ -121,7 +121,7 @@ def main():
     query_filter = ('(status="SUCCESS" OR status="FAILURE") AND ' +
         'images="gcr.io/oss-fuzz/{0}"'.format(project))
     response = cloudbuild.projects().builds().list(
-        projectId='clusterfuzz-external',
+        projectId='oss-fuzz',
         filter=query_filter).execute()
     if not 'builds' in response:
       continue
