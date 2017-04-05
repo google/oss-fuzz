@@ -195,14 +195,14 @@ def get_build_steps(project_yaml, dockerfile_path):
             ],
           },
           # upload binaries
-          {'name': 'gcr.io/clusterfuzz-external/uploader',
+          {'name': 'gcr.io/oss-fuzz-base/uploader',
            'args': [
                os.path.join(out, zip_file),
                upload_url,
            ],
           },
           # upload srcmap
-          {'name': 'gcr.io/clusterfuzz-external/uploader',
+          {'name': 'gcr.io/oss-fuzz-base/uploader',
            'args': [
                '/workspace/srcmap.json',
                srcmap_url,
