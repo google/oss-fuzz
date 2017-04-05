@@ -5,6 +5,5 @@ auto_ccs:
   - "benl@google.com"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined

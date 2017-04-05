@@ -2,6 +2,5 @@ homepage: "http://libcxxabi.llvm.org/"
 primary_contact: "kcc@google.com"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined

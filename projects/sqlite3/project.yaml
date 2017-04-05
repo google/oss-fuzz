@@ -4,6 +4,5 @@ auto_ccs:
   - "sboydps@gmail.com"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined

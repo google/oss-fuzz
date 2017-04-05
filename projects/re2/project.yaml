@@ -2,6 +2,5 @@ homepage: "https://code.googlesource.com/re2"
 primary_contact: "junyer@google.com"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined
