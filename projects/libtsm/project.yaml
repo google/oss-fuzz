@@ -2,6 +2,5 @@ homepage: "https://www.freedesktop.org/wiki/Software/kmscon/libtsm/"
 primary_contact: "dh.herrmann@gmail.com"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined

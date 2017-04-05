@@ -4,6 +4,5 @@ auto_ccs:
   - "nikias@gmx.li"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined
