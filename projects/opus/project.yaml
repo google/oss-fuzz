@@ -2,3 +2,8 @@ homepage: "https://opus-codec.org/"
 primary_contact: "jmvalin@jmvalin.ca"
 auto_ccs:
 - "flim@google.com"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined

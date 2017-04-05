@@ -1,2 +1,7 @@
 homepage: https://github.com/yaml/libyaml
 primary_contact: "alex.gaynor@gmail.com"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined

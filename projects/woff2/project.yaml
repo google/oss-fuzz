@@ -1,5 +1,7 @@
 homepage: "https://github.com/google/woff2"
 primary_contact: "rsheeter@google.com"
-fuzzing_engines:
-  - libfuzzer
-  - afl
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined

@@ -2,3 +2,8 @@ homepage: "https://github.com/libimobiledevice/libplist"
 primary_contact: "nikias.bassen@gmail.com"
 auto_ccs:
   - "nikias@gmx.li"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined

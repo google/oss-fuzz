@@ -1,2 +1,7 @@
 homepage: "http://www.pcre.org/"
 primary_contact: "philip.hazel@gmail.com"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined

@@ -1,1 +1,6 @@
 homepage: "http://80386.nl/projects/libteken/"
+sanitizers:
+  - address
+  - memory:
+      experimental: True
+  - undefined
