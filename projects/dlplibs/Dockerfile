@@ -58,6 +58,7 @@ RUN wget \
     https://sourceforge.net/projects/libmwaw/files/corpus/mswkssfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/123fuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/wkfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libwps/files/corpus/wqfuzzer_seed_corpus.zip \
     -P $SRC
 # clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
