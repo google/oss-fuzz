@@ -46,6 +46,16 @@ RUN wget \
     https://sourceforge.net/projects/libwps/files/corpus/wpsfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/actafuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libebook/files/corpus/lrffuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libwps/files/corpus/wksfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libwps/files/corpus/wdbfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libwps/files/corpus/docfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libwps/files/corpus/wrifuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/powerpointfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/mswrdfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/mswksfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/mswksdfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/mswksgfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/mswkssfuzzer_seed_corpus.zip \
     -P $SRC
 # clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
