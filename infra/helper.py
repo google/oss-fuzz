@@ -53,7 +53,7 @@ def main():
       'build_fuzzers', help='Build fuzzers for a project.')
   _add_engine_args(build_fuzzers_parser)
   _add_sanitizer_args(build_fuzzers_parser)
-  build_fuzzers_parser.add_argument('-e', action='append', help="set environment variable e.g. VAR=value")
+  _add_environment_args(build_fuzzers_parser)
   build_fuzzers_parser.add_argument('project_name')
   build_fuzzers_parser.add_argument('source_path', help='path of local source',
                       nargs='?')
@@ -86,6 +86,9 @@ def main():
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash in an image.')
   shell_parser.add_argument('project_name', help='name of the project')
+  _add_engine_args(shell_parser)
+  _add_sanitizer_args(shell_parser)
+  _add_environment_args(shell_parser)
 
   args = parser.parse_args()
   if args.command == 'generate':
@@ -159,6 +162,12 @@ def _add_sanitizer_args(parser):
   """Add common sanitizer args."""
   parser.add_argument('--sanitizer', default='address',
                       choices=['address', 'memory', 'undefined'])
+
+
+def _add_environment_args(parser):
+  """Add common environment args."""
+  parser.add_argument('-e', action='append',
+                      help="set environment variable e.g. VAR=value")
 
 
 def _build_image(image_name, no_cache=False):
@@ -393,7 +402,15 @@ def shell(args):
   if not _build_image(args.project_name):
     return 1
 
-  run_args = [
+  env = [
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer
+  ]
+
+  if args.e:
+    env += args.e
+
+  run_args = sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
       '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
