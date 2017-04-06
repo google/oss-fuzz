@@ -1,5 +1,7 @@
 homepage: https://github.com/yaml/libyaml
 primary_contact: "alex.gaynor@gmail.com"
+auto_ccs:
+  - "sigmavirus24@gmail.com"
 sanitizers:
   - address
   - memory
