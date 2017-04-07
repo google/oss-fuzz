@@ -21,7 +21,7 @@ RUN apt-get update
 RUN apt-get build-dep -y \
     libmspub librevenge libcdr libvisio libpagemaker libfreehand libwpd \
     libwpg libwps libmwaw libe-book libabw libetonyek
-RUN apt-get install -y liblzma-dev libpng-dev wget liblangtag-dev
+RUN apt-get install -y liblzma-dev libpng-dev wget
 ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz $SRC/
 # download fuzzing corpora
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
