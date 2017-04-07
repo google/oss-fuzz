@@ -20,8 +20,8 @@ MAINTAINER dtardon@redhat.com
 RUN apt-get update
 RUN apt-get build-dep -y \
     libmspub librevenge libcdr libvisio libpagemaker libfreehand libwpd \
-    libwpg libwps libmwaw libe-book libabw
-RUN apt-get install -y liblzma-dev libpng-dev wget liblangtag-dev
+    libwpg libwps libmwaw libe-book libabw libetonyek
+RUN apt-get install -y liblzma-dev libpng-dev wget
 ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz $SRC/
 # download fuzzing corpora
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
@@ -39,6 +39,7 @@ ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/sdafuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/sddfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/sdwfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/key6fuzzer_seed_corpus.zip \
     $SRC/
 RUN wget \
     https://sourceforge.net/projects/libwpd/files/corpus/wpdfuzzer_seed_corpus.zip \
@@ -76,5 +77,6 @@ RUN git clone --depth 1 git://git.code.sf.net/p/libwps/code libwps
 RUN git clone --depth 1 git://git.code.sf.net/p/libmwaw/libmwaw
 RUN git clone --depth 1 git://git.code.sf.net/p/libebook/code libe-book
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libabw
+RUN git clone --depth 1 git://gerrit.libreoffice.org/libetonyek
 WORKDIR $SRC
 COPY build.sh abw.dict *.options $SRC/
