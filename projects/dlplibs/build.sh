@@ -154,7 +154,7 @@ popd
 
 pushd libe-book
 ./autogen.sh
-./configure --without-docs --disable-shared --enable-static --disable-tools --enable-fuzzers --without-liblangtag \
+./configure --without-docs --disable-shared --enable-static --without-tools --enable-fuzzers --without-liblangtag \
     LDFLAGS=-L$staticlib \
     XML_LIBS="-lxml2 -llzma" \
     REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0" \
