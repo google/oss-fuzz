@@ -54,9 +54,6 @@ RUN wget \
     https://sourceforge.net/projects/libmwaw/files/corpus/powerpointfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/mswrdfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/mswksfuzzer_seed_corpus.zip \
-    https://sourceforge.net/projects/libmwaw/files/corpus/mswksdfuzzer_seed_corpus.zip \
-    https://sourceforge.net/projects/libmwaw/files/corpus/mswksgfuzzer_seed_corpus.zip \
-    https://sourceforge.net/projects/libmwaw/files/corpus/mswkssfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/123fuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/wkfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/wqfuzzer_seed_corpus.zip \
