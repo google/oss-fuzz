@@ -71,6 +71,25 @@ RUN wget \
     https://sourceforge.net/projects/libmwaw/files/corpus/pixelpaintfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/superpaintfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/wingzfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/docmkrfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/edocfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/fullwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/hanmacwrdfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/lightwaytxtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/macdocfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/macwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/marinerwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/maxwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/mindwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/morefuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/mousewrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/nisuswrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/ragtimefuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/stylefuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/teachtxtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/writenowfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/writerplsfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/zwrtfuzzer_seed_corpus.zip \
     -P $SRC
 # clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
