@@ -41,7 +41,7 @@ ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/sdwfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/key6fuzzer_seed_corpus.zip \
     $SRC/
-RUN wget \
+RUN wget -q --show-progress --progress=bar:force \
     https://sourceforge.net/projects/libwpd/files/corpus/wpdfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwpg/files/corpus/wpgfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/wpsfuzzer_seed_corpus.zip \
@@ -61,6 +61,35 @@ RUN wget \
     https://sourceforge.net/projects/libmwaw/files/corpus/beaglewksfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/clariswksfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/greatwksfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/applepictfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/clarisdrawfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/cricketdrawfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/freehandfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/macdraftfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/macdrawfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/macpaintfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/pixelpaintfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/superpaintfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/wingzfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/docmkrfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/edocfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/fullwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/hanmacwrdfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/lightwaytxtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/macdocfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/macwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/marinerwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/maxwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/mindwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/morefuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/mousewrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/nisuswrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/ragtimefuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/stylefuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/teachtxtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/writenowfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/writerplsfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/zwrtfuzzer_seed_corpus.zip \
     -P $SRC
 # clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
