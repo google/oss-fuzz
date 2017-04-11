@@ -70,6 +70,7 @@ RUN wget \
     https://sourceforge.net/projects/libmwaw/files/corpus/macpaintfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/pixelpaintfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/superpaintfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/wingzfuzzer_seed_corpus.zip \
     -P $SRC
 # clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
