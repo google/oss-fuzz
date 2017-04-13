@@ -125,26 +125,32 @@ def get_build_steps(project_yaml, dockerfile_path):
   ts = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
   build_steps = [
-          {
-              'name': 'gcr.io/cloud-builders/docker',
-              'args': [
-                  'build',
-                  '-t',
-                  image,
-                  '.',
-                  ],
-              'dir': 'projects/' + name,
-          },
-          {
-              'name': image,
-              'args': [
-                'bash',
-                '-c',
-                'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-              ],
-              'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
-          },
-    ]
+      {
+          'args': [
+              'clone', 'https://github.com/google/oss-fuzz.git',
+          ],
+          'name': 'gcr.io/cloud-builders/git',
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': [
+              'build',
+              '-t',
+              image,
+              '.',
+          ],
+          'dir': 'oss-fuzz/projects/' + name,
+      },
+      {
+          'name': image,
+          'args': [
+            'bash',
+            '-c',
+            'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+          ],
+          'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
+      },
+  ]
 
   for fuzzing_engine in project_yaml['fuzzing_engines']:
     for sanitizer in get_sanitizers(project_yaml):
@@ -240,13 +246,6 @@ def main():
     options = yaml.safe_load(os.environ["GCB_OPTIONS"])
 
   build_body = {
-      'source': {
-          'repoSource': {
-              'branchName': 'master',
-              'projectId': 'oss-fuzz',
-              'repoName': 'oss-fuzz',
-          },
-      },
       'steps': get_build_steps(project_yaml, dockerfile_path),
       'timeout': str(4 * 3600) + 's',
       'options': options,
