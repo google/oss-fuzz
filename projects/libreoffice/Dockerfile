@@ -16,7 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER officesecurity@lists.freedesktop.org
+# enable source repos
+RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
 #build requirements
+RUN apt-get update
 RUN apt-get build-dep -y libreoffice
 RUN apt-get install -y wget yasm
 #cache build dependencies
