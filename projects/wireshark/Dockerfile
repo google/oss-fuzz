@@ -22,6 +22,7 @@ RUN apt-get install -y make autoconf automake libtool libtool-bin \
                        libglib2.0-dev libgcrypt20-dev
 
 RUN git clone --depth=1 https://code.wireshark.org/review/wireshark
+RUN git clone --depth=1 https://bitbucket.org/jwzawadzki/wireshark-fuzzdb.git
 
 WORKDIR wireshark
 COPY build.sh $SRC/
