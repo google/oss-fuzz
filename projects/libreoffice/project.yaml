@@ -6,5 +6,3 @@ auto_ccs:
   - "sbergman@redhat.com"
 sanitizers:
   - address
-fuzzing_engines:
-  - libfuzzer
