@@ -42,6 +42,7 @@ ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/sddfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/sdwfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/key6fuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/vsdxfuzzer_seed_corpus.zip \
     $SRC/
 RUN wget -q --show-progress --progress=bar:force \
     https://sourceforge.net/projects/libwpd/files/corpus/wpdfuzzer_seed_corpus.zip \
