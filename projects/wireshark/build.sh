@@ -38,6 +38,8 @@ CONFOPTS="$CONFOPTS --disable-wireshark --disable-tshark --disable-sharkd \
              --without-extcap \
          "
 
+# Fortify and asan don't like each other ... :(
+sed -i '/AC_WIRESHARK_GCC_FORTIFY_SOURCE_CHECK/d' configure.ac
 ./autogen.sh
 ./configure --prefix="$WIRESHARK_INSTALL_PATH" $CONFOPTS --disable-warnings-as-errors
 
