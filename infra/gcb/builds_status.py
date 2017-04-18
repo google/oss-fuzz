@@ -138,12 +138,14 @@ def main():
           'name': project,
           'build_id': last_build['id'],
           'finish_time': last_build['finishTime'],
+          'success': True,
       })
     else:
       failures.append({
           'name': project,
           'build_id': last_build['id'],
           'finish_time': last_build['finishTime'],
+          'success': False,
       })
 
   upload_status(successes, failures)
