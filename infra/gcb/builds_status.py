@@ -43,7 +43,6 @@ def upload_status(successes, failures):
       'projects': failures + successes,
       'failures': failures,
       'successes': successes,
-      'unstable': unstable,
       'last_updated': datetime.datetime.utcnow().ctime()
   }
 
