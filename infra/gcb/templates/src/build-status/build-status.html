@@ -78,10 +78,7 @@
                   [[project.name]]
                 </div>
                 <div secondary>
-                  Last built [[project.finish_time]]
-                  <template is="dom-if" if="[[!project.success]]">
-                    (failed)
-                  </template>
+                  Last built [[toLocalDate(project.finish_time)]]
                 </div>
               </paper-item-body>
             </paper-item>
@@ -148,6 +145,11 @@
 
       showLog(log) {
         return log !== '';
+      }
+
+      toLocalDate(str) {
+        let date = new Date(str);
+        return date.toLocaleString();
       }
     }
 
