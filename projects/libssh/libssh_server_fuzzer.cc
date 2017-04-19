@@ -66,7 +66,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     res = shutdown(socket_fds[1], SHUT_WR);
     assert(res == 0);
 
-    int fd = open("/tmp/libssh_fuzzer_private_key", O_WRONLY | O_CREAT);
+    int fd = open("/tmp/libssh_fuzzer_private_key", O_WRONLY | O_CREAT, S_IRWXU);
     assert(fd >= 0);
     ssize_t write_res = write(fd, kRSAPrivateKeyPEM, strlen(kRSAPrivateKeyPEM));
     assert(write_res == strlen(kRSAPrivateKeyPEM));
