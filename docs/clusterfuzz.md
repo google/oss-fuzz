@@ -29,15 +29,17 @@ memory usage) on our fuzzer statistics dashboard.
 ## Coverage reports
 
 We provide coverage reports, where we highlight the parts of source code that are being
-reached by your fuzz target.
+reached by your fuzz target. Make sure to look at the uncovered code marked in red and
+add appropriate fuzz targets to cover those usecases.
 
 ![coverage_1](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/freetype_coverage_1.png)
 ![coverage_2](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/freetype_coverage_2.png)
 
 ## Performance analyzer
 
-You can view performance issues that your fuzz target is running into (e.g. leaks, timeouts, etc) by
-clicking on `Performance` link on our fuzzer statistics dashboard.
+You can view performance issues that your fuzz target is running into (e.g. leaks, timeouts,
+etc) by clicking on `Performance` link on our fuzzer statistics dashboard. Make sure to fix
+all cited issues, so as to keep your fuzz target running efficiently and finding new bugs.
 
 ![performance_analyzer](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/expat_performance_analyzer.png)
 
