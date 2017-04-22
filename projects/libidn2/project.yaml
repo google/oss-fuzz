@@ -1,0 +1,5 @@
+homepage: "https://gitlab.com/libidn/libidn2"
+primary_contact: "n.mavrogiannopoulos@gmail.com"
+auto_ccs:
+  - "rockdaboot@gmail.com"
+  - "simon@josefsson.org"
