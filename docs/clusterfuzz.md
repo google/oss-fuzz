@@ -17,14 +17,14 @@ our [bug tracker](https://bugs.chromium.org/p/monorail). We provide a crash
 report page that gives you the stack trace, a link to the crashing testcase, and
 regression ranges where the bug was most likely introduced.
 
-![report](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/pcre2_testcase.png)
+![report](images/pcre2_testcase.png?raw=true)
 
 ## Fuzzer stats
 
 You can view statistics about your fuzz targets (e.g. speed, coverage information,
 memory usage) on our fuzzer statistics dashboard.
 
-![stats](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/freetype_stats.png)
+![stats](images/freetype_stats.png?raw=true)
 
 ## Coverage reports
 
@@ -32,8 +32,8 @@ We provide coverage reports, where we highlight the parts of source code that ar
 reached by your fuzz target. Make sure to look at the uncovered code marked in red and
 add appropriate fuzz targets to cover those usecases.
 
-![coverage_1](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/freetype_coverage_1.png)
-![coverage_2](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/freetype_coverage_2.png)
+![coverage_1](images/freetype_coverage_1.png?raw=true)
+![coverage_2](images/freetype_coverage_2.png?raw=true)
 
 ## Performance analyzer
 
@@ -41,6 +41,10 @@ You can view performance issues that your fuzz target is running into (e.g. leak
 etc) by clicking on `Performance` link on our fuzzer statistics dashboard. Make sure to fix
 all cited issues, so as to keep your fuzz target running efficiently and finding new bugs.
 
-![performance_analyzer](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/expat_performance_analyzer.png)
+![performance_analyzer](images/expat_performance_analyzer.png?raw=true)
 
+## Crash stats
 
+You can view statistics of crashes over time on our crash statistics dashboard.
+
+![crash_stats](images/crash_stats.png?raw=true)
