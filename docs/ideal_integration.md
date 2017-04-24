@@ -30,6 +30,28 @@ Examples:
 [pcre2](http://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
 [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/tools/target_dec_fuzzer.c).
 
+## Build support
+A plethora of different build systems exist in the open-source world.
+And the less OSS-Fuzz knows about them, the better it can scale.
+
+An ideal build integration for OSS-Fuzz would look like this:
+* For every fuzz target `foo` in the project, there is a build rule that builds `foo_fuzzer`,
+a binary that contains the fuzzing entry point (`LLVMFuzzerTestOneInput`)
+and all the code it depends on, and that uses the `main()` function from `$LIB_FUZZING_ENGINE`
+(env var [provided](new_project_guide.md) by OSS-Fuzz environment).
+* The build system supports changing the compiler and passing extra compiler
+flags so that the build command for a `foo_fuzzer` looks similar to this:
+
+```bash
+# Assume the following env vars are set:
+# CC, CXX, CFLAGS, CXXFLAGS, LIB_FUZZING_ENGINE
+$ make_or_whatever_other_command foo_fuzzer
+```
+
+This will allow to have minimal OSS-Fuzz-specific configuration and thus be more robust.
+
+There is no point in hardcoding the exact compiler flags in the build system because they
+a) may change and b) are different depending on the fuzzing engine and the sanitizer being used.
 
 ## Seed Corpus
 The *corpus* is a set of inputs for the fuzz target (stored as individual files). 
@@ -70,28 +92,6 @@ of such dictionaries for some of the popular data formats.
 Ideally, a dictionary should be maintained alongside the fuzz target.
 The syntax is described [here](http://libfuzzer.info/#dictionaries).
 
-## Build support
-A plethora of different build systems exist in the open-source world.
-And the less OSS-Fuzz knows about them, the better it can scale.
-
-An ideal build integration for OSS-Fuzz would look like this:
-* For every fuzz target `foo` in the project, there is a build rule that builds `foo_fuzzer`,
-a binary that contains the fuzzing entry point (`LLVMFuzzerTestOneInput`)
-and all the code it depends on, and that uses the `main()` function from `$LIB_FUZZING_ENGINE`
-(env var [provided](new_project_guide.md) by OSS-Fuzz environment).
-* The build system supports changing the compiler and passing extra compiler
-flags so that the build command for a `foo_fuzzer` looks similar to this:
-
-```bash
-# Assume the following env vars are set:
-# CC, CXX, CFLAGS, CXXFLAGS, LIB_FUZZING_ENGINE
-$ make_or_whatever_other_command foo_fuzzer
-```
-
-This will allow to have minimal OSS-Fuzz-specific configuration and thus be more robust.
-
-There is no point in hardcoding the exact compiler flags in the build system because they
-a) may change and b) are different depending on the fuzzing engine and the sanitizer being used.
 
 ## Not a project member?
 
