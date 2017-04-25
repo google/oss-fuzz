@@ -101,7 +101,7 @@ timeouts/out-of-memory bugs in your targets.
 ## Performance
 Fuzz targets should also be performant, as high memory usage and/or slow execution speed can slow the down
 the growth of coverage and finding of new bugs. ClusterFuzz provides a
-(performance analyzer)[https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md]
+[performance analyzer](https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md)
 for each fuzz target that shows problems that are impacting the performance of the fuzz target.
 
 ## Not a project member?
