@@ -1,0 +1,4 @@
+homepage: "https://github.com/google/skia"
+primary_contact: "kjlubick@chromium.org"
+auto_ccs:
+  - "hcm@chromium.org"
