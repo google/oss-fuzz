@@ -22,7 +22,3 @@ RUN git clone --depth 1 https://github.com/libimobiledevice/libplist
 WORKDIR libplist
 
 COPY build.sh $SRC/
-COPY bplist_fuzzer.* \
-     xplist_fuzzer.* \
-     bplist.dict \
-     xplist.dict $SRC/
