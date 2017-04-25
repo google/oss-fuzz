@@ -71,7 +71,6 @@ Examples:
 [openssl](https://github.com/openssl/openssl/tree/master/fuzz),
 [nss](https://github.com/mozilla/nss-fuzzing-corpus) (corpus in a separate repo).
 
-
 ## Regression Testing
 The fuzz targets should be regularly tested (not necessarily fuzzed!) as a part of the project's regression testing process.
 One way to do so is to link the fuzz target with a simple driver
@@ -83,7 +82,6 @@ Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45),
 [openssl](https://github.com/openssl/openssl/blob/master/fuzz/test-corpus.c)
 
 ## Fuzzing dictionary
-
 For some input types, a simple dictionary of tokens used by the input language
 can have a dramatic positive effect on fuzzing efficiency. 
 For example, when fuzzing an XML parser, a dictionary of XML tokens will help.
@@ -92,6 +90,18 @@ of such dictionaries for some of the popular data formats.
 Ideally, a dictionary should be maintained alongside the fuzz target.
 The syntax is described [here](http://libfuzzer.info/#dictionaries).
 
+## Coverage
+For a fuzzer to be useful, it must have good coverage in the code that it is testing. You can view the coverage
+for your fuzz targets by looking at the [fuzzer stats](https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md#fuzzer-stats) dashboard on ClusterFuzz, as well as coverage reports.
+
+Coverage can often be improved by adding dictionaries, more inputs for the seed corpora, and fixing
+timeouts/out-of-memory bugs in your targets.
+
+## Fuzzer performance
+Fuzzers should also be performant, as high memory usage and/or slow execution speed can slow the down
+the growth of coverage and finding of new bugs. ClusterFuzz provides a
+(performance analyzer)[https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md]
+for each fuzz target that shows problems that are impacting the performance of the fuzz target.
 
 ## Not a project member?
 
