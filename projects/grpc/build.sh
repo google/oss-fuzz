@@ -40,10 +40,10 @@ FUZZER_LIBRARIES="\
 bazel-bin/*.a \
 bazel-bin/test/core/util/*.a \
 bazel-bin/test/core/end2end/*.a \
-bazel-bin/third_party/boringssl-with-bazel/libssl.a \
-bazel-bin/third_party/boringssl-with-bazel/libcrypto.a \
-bazel-bin/external/submodule_cares/_objs/ares/external/submodule_cares/cares/*.o \
-bazel-bin/external/submodule_zlib/_objs/z/external/submodule_zlib/*.o \
+bazel-bin/external/submodule_boringssl/libssl.a \
+bazel-bin/external/submodule_boringssl/libcrypto.a \
+bazel-bin/external/submodule_cares/*.a \
+bazel-bin/external/submodule_zlib/*.a \
 bazel-bin/third_party/nanopb/*.a \
 bazel-bin/*.a \
 "
@@ -55,7 +55,7 @@ EXTERA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
   $EXTERA_BAZEL_FLAGS \
   $NO_VPTR \
-  :all test/core/util/... test/core/end2end/... third_party/boringssl-with-bazel/... third_party/nanopb/...
+  :all test/core/util/... test/core/end2end/... third_party/nanopb/... @submodule_boringssl//:all @submodule_zlib//:all @submodule_cares//:all
 
 CFLAGS="${CFLAGS} -Iinclude -I."
 CXXFLAGS="${CXXFLAGS} -Iinclude -I. -stdlib=libc++"
