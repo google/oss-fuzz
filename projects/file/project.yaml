@@ -2,7 +2,6 @@ homepage: "http://www.darwinsys.com/file/"
 primary_contact: "zoulasc@gmail.com"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined
 

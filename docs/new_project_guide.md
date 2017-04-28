@@ -66,7 +66,7 @@ Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/bor
 This file defines the Docker image definition. This is where the build.sh script will be executed in.
 It is very simple for most projects:
 ```docker
-FROM gcr.io/oss-fuzz-base/base-builder               # base image with clang toolchain
+FROM gcr.io/oss-fuzz-base/base-builder    # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                     # maintainer for this file
 RUN apt-get install -y ...                # install required packages to build your project
 RUN git clone <git_url> <checkout_dir>    # checkout all sources needed to build your project
@@ -156,7 +156,7 @@ Use the helper script to build docker image and [fuzz targets](glossary.md#fuzz-
 ```bash
 $ cd /path/to/oss-fuzz
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer=<address/memory/undefined> $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
 ```
 
 This should place the built binaries into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
@@ -275,4 +275,9 @@ If you are porting a fuzz target from Chromium, keep the original Chromium licen
 Once your change is merged, your project and fuzz targets should be automatically built and run on
 ClusterFuzz after a short while (&lt; 1 day)!<BR><BR>
 Check your project's build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).<BR>
-Check out the crashes generated and code coverage statistics on [ClusterFuzz](clusterfuzz.md) web interface [here](https://oss-fuzz.com/).
+
+Use [ClusterFuzz](clusterfuzz.md) web interface [here](https://oss-fuzz.com/) to checkout the following items:
+* Crashes generated
+* Code coverage statistics
+* Fuzzer statistics
+* Fuzzer performance analyzer (linked from fuzzer statistics)

@@ -9,6 +9,7 @@ import base64
 import collections
 import datetime
 import os
+import re
 import subprocess
 import sys
 import time
@@ -100,33 +101,56 @@ def get_sanitizers(project_yaml):
   return processed_sanitizers
 
 
-def get_build_steps(project_yaml):
+def workdir_from_dockerfile(dockerfile):
+  """Parse WORKDIR from the Dockerfile."""
+  WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+
+  with open(dockerfile) as f:
+    lines = f.readlines()
+
+  for line in lines:
+    match = re.match(WORKDIR_REGEX, line)
+    if match:
+      # We need to escape '$' since they're used for subsitutions in Container
+      # Builer builds.
+      return match.group(1).replace('$', '$$')
+
+  return None
+
+
+def get_build_steps(project_yaml, dockerfile_path):
   name = project_yaml['name']
   image = project_yaml['image']
 
   ts = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
   build_steps = [
-          {
-              'name': 'gcr.io/cloud-builders/docker',
-              'args': [
-                  'build',
-                  '-t',
-                  image,
-                  '.',
-                  ],
-              'dir': 'projects/' + name,
-          },
-          {
-              'name': image,
-              'args': [
-                'bash',
-                '-c',
-                'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-              ],
-              'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
-          },
-    ]
+      {
+          'args': [
+              'clone', 'https://github.com/google/oss-fuzz.git',
+          ],
+          'name': 'gcr.io/cloud-builders/git',
+      },
+      {
+          'name': 'gcr.io/cloud-builders/docker',
+          'args': [
+              'build',
+              '-t',
+              image,
+              '.',
+          ],
+          'dir': 'oss-fuzz/projects/' + name,
+      },
+      {
+          'name': image,
+          'args': [
+            'bash',
+            '-c',
+            'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+          ],
+          'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
+      },
+  ]
 
   for fuzzing_engine in project_yaml['fuzzing_engines']:
     for sanitizer in get_sanitizers(project_yaml):
@@ -147,6 +171,10 @@ def get_build_steps(project_yaml):
 
       env.append('OUT=' + out)
 
+      workdir = workdir_from_dockerfile(dockerfile_path)
+      if not workdir:
+        workdir = '/src'
+
       build_steps.extend([
           # compile
           {'name': image,
@@ -156,7 +184,12 @@ def get_build_steps(project_yaml):
               '-c',
               # Remove /out to break loudly when a build script incorrectly uses
               # /out instead of $OUT.
-              'rm -r /out && cd /src/{1} && mkdir -p {0} && compile'.format(out, name),
+              # `cd /src && cd {workdir}` (where {workdir} is parsed from the
+              # Dockerfile). Container Builder overrides our workdir so we need to add
+              # this step to set it back.
+              # We also remove /work and /src to save disk space after a step.
+              # Container Builder doesn't pass --rm to docker run yet.
+              'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
               ],
             },
           # zip binaries
@@ -168,14 +201,14 @@ def get_build_steps(project_yaml):
             ],
           },
           # upload binaries
-          {'name': 'gcr.io/clusterfuzz-external/uploader',
+          {'name': 'gcr.io/oss-fuzz-base/uploader',
            'args': [
                os.path.join(out, zip_file),
                upload_url,
            ],
           },
           # upload srcmap
-          {'name': 'gcr.io/clusterfuzz-external/uploader',
+          {'name': 'gcr.io/oss-fuzz-base/uploader',
            'args': [
                '/workspace/srcmap.json',
                srcmap_url,
@@ -196,7 +229,7 @@ def get_build_steps(project_yaml):
 
 def get_logs_url(build_id):
   URL_FORMAT = ('https://console.developers.google.com/logs/viewer?'
-                'resource=build%2Fbuild_id%2F{0}&project=clusterfuzz-external')
+                'resource=build%2Fbuild_id%2F{0}&project=oss-fuzz')
   return URL_FORMAT.format(build_id)
 
 
@@ -206,20 +239,14 @@ def main():
 
   project_dir = sys.argv[1]
   project_yaml = load_project_yaml(project_dir)
+  dockerfile_path = os.path.join(project_dir, 'Dockerfile')
 
   options = {}
   if "GCB_OPTIONS" in os.environ:
     options = yaml.safe_load(os.environ["GCB_OPTIONS"])
 
   build_body = {
-      'source': {
-          'repoSource': {
-              'branchName': 'master',
-              'projectId': 'clusterfuzz-external',
-              'repoName': 'oss-fuzz',
-          },
-      },
-      'steps': get_build_steps(project_yaml),
+      'steps': get_build_steps(project_yaml, dockerfile_path),
       'timeout': str(4 * 3600) + 's',
       'options': options,
       'logsBucket': 'oss-fuzz-gcb-logs',
@@ -229,7 +256,7 @@ def main():
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
   build_info = cloudbuild.projects().builds().create(
-      projectId='clusterfuzz-external', body=build_body).execute()
+      projectId='oss-fuzz', body=build_body).execute()
   build_id =  build_info['metadata']['build']['id']
 
   print >>sys.stderr, 'Logs:', get_logs_url(build_id)

@@ -1,4 +1,4 @@
-/*
+#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-*/
 
-#include <plist/plist.h>
-#include <stdio.h>
+mkdir -p build
+pushd build
+cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
+    -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+    -DWITH_STATIC_LIB=ON ..
+make "-j$(nproc)"
+popd
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size)
-{
-	plist_t root_node = NULL;
-	plist_from_xml(reinterpret_cast<const char*>(data), size, &root_node);
-	plist_free(root_node);
-
-	return 0;
-}
+$CXX $CXXFLAGS -std=c++11 -Iinclude/ \
+    "$SRC/libssh_server_fuzzer.cc" -o "$OUT/libssh_server_fuzzer" \
+    -lFuzzingEngine ./build/src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic

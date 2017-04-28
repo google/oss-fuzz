@@ -24,7 +24,12 @@ TAG_PREFIX = 'gcr.io/oss-fuzz-base/'
 
 
 def get_steps():
-  steps = []
+  steps = [{
+      'args': [
+          'clone', 'https://github.com/google/oss-fuzz.git',
+      ],
+      'name': 'gcr.io/cloud-builders/git',
+  }]
 
   for base_image in BASE_IMAGES:
     steps.append({
@@ -34,7 +39,7 @@ def get_steps():
             TAG_PREFIX + base_image,
             '.',
         ],
-        'dir': 'infra/base-images/' + base_image,
+        'dir': 'oss-fuzz/infra/base-images/' + base_image,
         'name': 'gcr.io/cloud-builders/docker',
     })
 
@@ -47,13 +52,6 @@ def main():
     options = yaml.safe_load(os.environ["GCB_OPTIONS"])
 
   build_body = {
-      'source': {
-          'repoSource': {
-              'branchName': 'master',
-              'projectId': 'oss-fuzz-base',
-              'repoName': 'oss-fuzz',
-          },
-      },
       'steps': get_steps(),
       'timeout': str(4 * 3600) + 's',
       'options': options,

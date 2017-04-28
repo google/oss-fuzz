@@ -35,15 +35,14 @@ def scan_project_names(projects_dir):
   return sorted(projects)
 
 
-def upload_status(successes, failures, unstable):
+def upload_status(successes, failures):
   """Upload main status page."""
   env = Environment(loader=FileSystemLoader(os.path.join(SCRIPT_DIR,
                                                          'templates')))
   data = {
-      'projects': failures + successes + unstable,
+      'projects': failures + successes,
       'failures': failures,
       'successes': successes,
-      'unstable': unstable,
       'last_updated': datetime.datetime.utcnow().ctime()
   }
 
@@ -68,7 +67,7 @@ def is_build_successful(build):
     return True
 
   build_id = build['id']
-  logging_client = logging.Client(project='clusterfuzz-external')
+  logging_client = logging.Client(project='oss-fuzz')
   entries = logging_client.list_entries(
       order_by=logging.DESCENDING,
       page_size=1,
@@ -121,7 +120,7 @@ def main():
     query_filter = ('(status="SUCCESS" OR status="FAILURE") AND ' +
         'images="gcr.io/oss-fuzz/{0}"'.format(project))
     response = cloudbuild.projects().builds().list(
-        projectId='clusterfuzz-external',
+        projectId='oss-fuzz',
         filter=query_filter).execute()
     if not 'builds' in response:
       continue
@@ -137,14 +136,18 @@ def main():
       successes.append({
           'name': project,
           'build_id': last_build['id'],
+          'finish_time': last_build['finishTime'],
+          'success': True,
       })
     else:
       failures.append({
           'name': project,
           'build_id': last_build['id'],
+          'finish_time': last_build['finishTime'],
+          'success': False,
       })
 
-  upload_status(successes, failures, [])
+  upload_status(successes, failures)
 
 
 if __name__ == "__main__":

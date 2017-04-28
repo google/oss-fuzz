@@ -10,12 +10,6 @@
 <li><a href="/log-{{project.build_id}}.txt">{{project.name}}</a></li>
 {% endfor -%}
 </ul>
-<h1>Unstable builds</h1>
-<ul>
-{% for project in unstable -%}
-<li><a href="/log-{{project.build_id}}.txt">{{project.name}}</a></li>
-{% endfor -%}
-</ul>
 <h1>Healthy builds</h1>
 <ul>
 {% for project in successes -%}

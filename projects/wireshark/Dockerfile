@@ -15,13 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER dtardon@redhat.com
-#build requirements
-RUN apt-get update
-RUN apt-get build-dep -y librevenge
-ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip $SRC/
-ADD https://dev-www.libreoffice.org/corpus/zipfuzzer_seed_corpus.zip $SRC/
-#clone source
-RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
-WORKDIR librevenge
+MAINTAINER Jakub Zawadzki <darkjames-ws@darkjames.pl>
+
+RUN apt-get install -y make autoconf automake libtool libtool-bin \
+                       flex bison \
+                       libglib2.0-dev libgcrypt20-dev
+
+RUN git clone --depth=1 https://code.wireshark.org/review/wireshark
+RUN git clone --depth=1 https://bitbucket.org/jwzawadzki/wireshark-fuzzdb.git
+
+WORKDIR wireshark
 COPY build.sh $SRC/

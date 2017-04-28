@@ -1,6 +1,5 @@
 homepage: "https://github.com/libjpeg-turbo/libjpeg-turbo"
 sanitizers:
   - address
-  - memory:
-      experimental: True
+  - memory
   - undefined

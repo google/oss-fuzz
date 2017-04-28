@@ -53,7 +53,7 @@ def main():
       '-p',
       '--project',
       help='Cloud Project',
-      default='clusterfuzz-external')
+      default='oss-fuzz')
   parser.add_argument('build_id', help='The Container Builder build ID.')
 
   args = parser.parse_args()

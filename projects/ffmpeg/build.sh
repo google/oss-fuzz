@@ -210,7 +210,7 @@ CODEC_NAMES="AV_CODEC_ID_AAC \
 for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
-  $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
+  $CC $CFLAGS -I${SRC}/ffmpeg -I${FFMPEG_DEPS_PATH}/include \
       $FUZZ_TARGET_SOURCE \
       -c -o /tmp/${fuzzer_name}.o \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}=
@@ -231,7 +231,7 @@ CODEC_NAMES="AV_CODEC_ID_DVD_SUBTITLE \
 for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
-  $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
+  $CC $CFLAGS -I${SRC}/ffmpeg -I${FFMPEG_DEPS_PATH}/include \
       $FUZZ_TARGET_SOURCE \
       -c -o /tmp/${fuzzer_name}.o \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}=
@@ -289,7 +289,7 @@ CODEC_NAMES="AV_CODEC_ID_AMV \
 for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_${CODEC_TYPE}_${codec}_fuzzer
 
-  $CC $CFLAGS -I${FFMPEG_DEPS_PATH}/include \
+  $CC $CFLAGS -I${SRC}/ffmpeg -I${FFMPEG_DEPS_PATH}/include \
       $FUZZ_TARGET_SOURCE \
       -c -o /tmp/${fuzzer_name}.o \
       -DFFMPEG_CODEC=${codec} -DFUZZ_FFMPEG_${CODEC_TYPE}=

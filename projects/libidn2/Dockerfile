@@ -1,4 +1,3 @@
-/*
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +13,13 @@
 # limitations under the License.
 #
 ################################################################################
-*/
 
-#include <plist/plist.h>
-#include <stdio.h>
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER n.mavrogiannopoulos@gmail.com
+RUN apt-get install -y make autoconf automake gettext libtool autopoint pkg-config gengetopt curl gperf
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size)
-{
-	plist_t root_node = NULL;
-	plist_from_bin(reinterpret_cast<const char*>(data), size, &root_node);
-	plist_free(root_node);
+RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
+RUN cd libidn2 && git submodule update --init
 
-	return 0;
-}
+WORKDIR libidn2
+COPY build.sh $SRC/

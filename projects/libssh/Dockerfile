@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +14,13 @@
 #
 ################################################################################
 
-./autogen.sh
-./configure --without-docs --disable-shared --enable-static --disable-tests --disable-generators --enable-fuzzers
-make -j$(nproc)
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER alex.gaynor@gmail.com
+RUN apt-get install -y cmake zlib1g-dev libssl-dev
 
-cp src/fuzz/*fuzzer $OUT
-cp $SRC/*_seed_corpus.zip $OUT
+# Can't use --depth=1 because git.libssh.org is using the "dumb" HTTP
+# transport, which doesn't support it.
+RUN git clone https://git.libssh.org/projects/libssh.git
+
+WORKDIR libssh
+COPY build.sh libssh_server_fuzzer.cc $SRC/
