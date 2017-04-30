@@ -182,65 +182,7 @@ export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
 
 # Build fuzzers for decoders.
-CODEC_NAMES="AAC \
-  AC3 \
-  ADPCM_ADX \
-  AMR_NB \
-  AMR_WB \
-  DTS \
-  EAC3 \
-  FLAC \
-  GSM_MS \
-  MP2 \
-  MP3 \
-  QCELP \
-  SIPR \
-  WAVPACK \
-  DVD_SUBTITLE \
-  MOV_TEXT \
-  SUBRIP \
-  AMV \
-  BINTEXT \
-  BMP \
-  CINEPAK \
-  DVVIDEO \
-  ESCAPE130 \
-  FLIC \
-  FLV1 \
-  FRAPS \
-  GIF \
-  H263 \
-  H263I \
-  H264 \
-  INDEO2 \
-  INTERPLAY_VIDEO \
-  JPEGLS \
-  KMVC \
-  MDEC \
-  MJPEG \
-  MPEG1VIDEO \
-  MPEG2VIDEO \
-  MPEG4 \
-  MSVIDEO1 \
-  PCX \
-  PGM \
-  PICTOR \
-  PNG \
-  RPZA \
-  RV40 \
-  SANM \
-  SMC \
-  SUNRAST \
-  SVQ1 \
-  SVQ3 \
-  TARGA \
-  TIFF \
-  VP3 \
-  VP5 \
-  VP6 \
-  VP6F \
-  VP8 \
-  ZMBV"
+CODEC_NAMES=`git grep 'AV_CODEC_ID_[A-Z0-9_]*,' libavcodec/avcodec.h | grep -v '_NONE' | sed 's/.*AV_CODEC_ID_\([^,]*\),.*/\1/' `
 
 for codec in $CODEC_NAMES; do
   fuzzer_name=ffmpeg_AV_CODEC_ID_${codec}_fuzzer
