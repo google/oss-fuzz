@@ -181,8 +181,7 @@ FUZZ_TARGET_SOURCE=$SRC/ffmpeg/tools/target_dec_fuzzer.c
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
 
-# Build fuzzers for audio formats.
-CODEC_TYPE="AUDIO"
+# Build fuzzers for decoders.
 CODEC_NAMES="AAC \
   AC3 \
   ADPCM_ADX \
@@ -196,33 +195,11 @@ CODEC_NAMES="AAC \
   MP3 \
   QCELP \
   SIPR \
-  WAVPACK"
-
-for codec in $CODEC_NAMES; do
-  fuzzer_name=ffmpeg_${CODEC_TYPE}_AV_CODEC_ID_${codec}_fuzzer
-
-  make tools/target_dec_${codec}_fuzzer
-  mv tools/target_dec_${codec}_fuzzer $OUT/${fuzzer_name}
-
-  echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
-done
-
-# Build fuzzers for subtitles formats.
-CODEC_TYPE="SUBTITLE"
-CODEC_NAMES="DVD_SUBTITLE \
+  WAVPACK \
+  DVD_SUBTITLE \
   MOV_TEXT \
-  SUBRIP"
-
-for codec in $CODEC_NAMES; do
-  fuzzer_name=ffmpeg_${CODEC_TYPE}_AV_CODEC_ID_${codec}_fuzzer
-
-  make tools/target_dec_${codec}_fuzzer
-  mv tools/target_dec_${codec}_fuzzer $OUT/${fuzzer_name}
-done
-
-# Build fuzzers for video formats.
-CODEC_TYPE="VIDEO"
-CODEC_NAMES="AMV \
+  SUBRIP \
+  AMV \
   BINTEXT \
   BMP \
   CINEPAK \
@@ -266,7 +243,7 @@ CODEC_NAMES="AMV \
   ZMBV"
 
 for codec in $CODEC_NAMES; do
-  fuzzer_name=ffmpeg_${CODEC_TYPE}_AV_CODEC_ID_${codec}_fuzzer
+  fuzzer_name=ffmpeg_AV_CODEC_ID_${codec}_fuzzer
 
   make tools/target_dec_${codec}_fuzzer
   mv tools/target_dec_${codec}_fuzzer $OUT/${fuzzer_name}
