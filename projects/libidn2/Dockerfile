@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER n.mavrogiannopoulos@gmail.com
-RUN apt-get install -y make autoconf automake gettext libtool autopoint pkg-config gengetopt curl gperf
+RUN apt-get update && apt-get install -y make autoconf automake gettext libtool autopoint pkg-config gengetopt curl gperf
 
 RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
 RUN cd libidn2 && git submodule update --init

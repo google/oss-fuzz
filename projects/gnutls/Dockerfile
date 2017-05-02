@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alex.gaynor@gmail.com
-RUN apt-get install -y make autoconf automake libtool autopoint libnettle6 nettle-dev pkg-config gperf bison autogen texinfo curl
+RUN apt-get update && apt-get install -y make autoconf automake libtool autopoint libnettle6 nettle-dev pkg-config gperf bison autogen texinfo curl
 
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN cd gnutls && git submodule update --init

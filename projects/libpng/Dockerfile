@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
-RUN apt-get install -y make autoconf automake libtool zlib1g-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev
 
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
 WORKDIR libpng
