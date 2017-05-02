@@ -68,7 +68,7 @@ It is very simple for most projects:
 ```docker
 FROM gcr.io/oss-fuzz-base/base-builder    # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                     # maintainer for this file
-RUN apt-get install -y ...                # install required packages to build your project
+RUN apt-get update && apt-get install -y ... # install required packages to build your project
 RUN git clone <git_url> <checkout_dir>    # checkout all sources needed to build your project
 WORKDIR <checkout_dir>                    # current directory for build script
 COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer files in src dir
