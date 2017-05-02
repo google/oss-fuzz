@@ -19,11 +19,10 @@ MAINTAINER dtardon@redhat.com
 # enable source repos
 RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
 # install build requirements
-RUN apt-get update
-RUN apt-get build-dep -y \
+RUN apt-get update && apt-get build-dep -y \
     libmspub librevenge libcdr libvisio libpagemaker libfreehand libwpd \
     libwpg libwps libmwaw libe-book libabw libetonyek
-RUN apt-get install -y liblzma-dev libpng-dev wget
+RUN apt-get update && apt-get install -y liblzma-dev libpng-dev wget
 ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz $SRC/
 # download fuzzing corpora
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \

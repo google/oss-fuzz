@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
-RUN apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get install -y make autoconf automake libtool
 
 RUN git clone --depth 1 --recursive https://github.com/google/woff2
 WORKDIR woff2

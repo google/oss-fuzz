@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER robryk@google.com
-RUN apt-get install -y make autoconf automake libtool libpng-dev pkg-config curl
+RUN apt-get update && apt-get install -y make autoconf automake libtool libpng-dev pkg-config curl
 
 RUN mkdir afl-testcases
 RUN cd afl-testcases/ && curl http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar -xz

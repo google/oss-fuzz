@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y make
+RUN apt-get update && apt-get install -y make
 
 RUN svn co http://source.icu-project.org/repos/icu/trunk/icu4c/ icu
 COPY build.sh *.cc *.h *.dict *.options $SRC/

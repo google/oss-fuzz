@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alex.gaynor@gmail.com
-RUN apt-get install -y cmake zlib1g-dev libssl-dev
+RUN apt-get update && apt-get install -y cmake zlib1g-dev libssl-dev
 
 # Can't use --depth=1 because git.libssh.org is using the "dumb" HTTP
 # transport, which doesn't support it.

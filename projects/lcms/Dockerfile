@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kcwu@google.com
-RUN apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git lcms
 WORKDIR lcms
 COPY build.sh cmsIT8_load_fuzzer.* cms_transform_fuzzer.* icc.dict $SRC/
