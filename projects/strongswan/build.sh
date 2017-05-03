@@ -17,7 +17,7 @@
 
 ./autogen.sh
 
-./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE" LDFLAGS='--coverage' --enable-fuzzing --enable-coverage --with-libfuzzer=$LIB_FUZZING_ENGINE --enable-monolithic --disable-shared --enable-static
+./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE" --enable-fuzzing --with-libfuzzer=$LIB_FUZZING_ENGINE --enable-monolithic --disable-shared --enable-static
 
 make -j$(nproc)
 
