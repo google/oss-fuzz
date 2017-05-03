@@ -182,13 +182,13 @@ export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
 
 # Build fuzzers for decoders.
-CODEC_NAMES=`git grep 'AV_CODEC_ID_[A-Z0-9_]*,' libavcodec/avcodec.h | grep -v '_NONE' | sed 's/.*AV_CODEC_ID_\([^,]*\),.*/\1/' `
+CONDITIONALS=`grep 'DECODER 1$' config.h | sed 's/#define CONFIG_\(.*\)_DECODER 1/\1/'`
+for c in $CONDITIONALS ; do
+  fuzzer_name=ffmpeg_dec_${c}_fuzzer
+  symbol=`git grep 'REGISTER_[A-Z]*DEC[A-Z ]*('"$c"' *,' libavcodec/allcodecs.c | sed 's/.*, *\([^) ]*\)).*/\1/'`
 
-for codec in $CODEC_NAMES; do
-  fuzzer_name=ffmpeg_AV_CODEC_ID_${codec}_fuzzer
-
-  make tools/target_dec_${codec}_fuzzer
-  mv tools/target_dec_${codec}_fuzzer $OUT/${fuzzer_name}
+  make tools/target_dec_${symbol}_fuzzer
+  mv tools/target_dec_${symbol}_fuzzer $OUT/${fuzzer_name}
 
   echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
 done
