@@ -148,7 +148,7 @@ See [Provided Environment Variables](../infra/base-images/base-builder/README.md
 
 Our builders have a disk size of 70GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
 
-In addition to this, please keep the size of the build (everything copied to `$OUT`) small (<10GB) -- this will need be repeatedly transferred and unzipped during fuzzing and run on VMs with limited disk space.
+In addition to this, please keep the size of the build (everything copied to `$OUT`) small (<10GB uncompressed) -- this will need be repeatedly transferred and unzipped during fuzzing and run on VMs with limited disk space.
 
 ## Fuzzer execution environment
 
