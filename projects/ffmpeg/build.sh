@@ -170,8 +170,12 @@ make clean
 make -j$(nproc) install
 
 # Download test sampes, will be used as seed corpus.
-export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
-make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
+# DISABLED.
+# TODO: implement a better way to maintain a minimized seed corpora
+# for all targets. As of 2017-05-04 now the combined size of corpora
+# is too big for ClusterFuzz (over 10Gb compressed data).
+# export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
+# make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
 
 # Build the fuzzers.
 cd $SRC/ffmpeg
@@ -192,5 +196,5 @@ for c in $CONDITIONALS ; do
 done
 
 # Find relevant corpus in test samples and archive them for every fuzzer.
-cd $SRC
-python group_seed_corpus.py $TEST_SAMPLES_PATH $OUT/
+#cd $SRC
+#python group_seed_corpus.py $TEST_SAMPLES_PATH $OUT/
