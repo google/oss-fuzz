@@ -144,6 +144,12 @@ pass them manually to the build tool.
 See [Provided Environment Variables](../infra/base-images/base-builder/README.md#provided-environment-variables) section in
 `base-builder` image documentation for more details.
 
+## Disk space restrictions
+
+Our builders have a disk size of 70GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
+
+In addition to this, please keep the size of the uncompressed build small (<10GB) -- this will need be repeatedly transferred and unzipped during fuzzing and run on VMs with limited disk space.
+
 ## Fuzzer execution environment
 
 [This page](fuzzer_environment.md) gives information about the environment that
