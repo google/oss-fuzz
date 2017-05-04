@@ -24,7 +24,7 @@ import zipfile
 
 
 logging.basicConfig(level=logging.INFO, format='INFO: %(message)s')
-CODEC_NAME_REGEXP = re.compile(r'codec_id_(.+?)_fuzzer')
+CODEC_NAME_REGEXP = re.compile(r'dec_(.+?)_fuzzer')
 
 
 def get_fuzzer_tags(fuzzer_name):
