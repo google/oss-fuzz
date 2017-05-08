@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +13,16 @@
 # limitations under the License.
 #
 ################################################################################
-
-export CXXFLAGS_ARR=`echo $CXXFLAGS | sed -e "s/\s/\",\"/g"`
-$SRC/depot_tools/gn gen out/Fuzz --args='cc="'$CC'" cxx="'$CXX'" is_debug=false extra_cflags=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"] skia_use_system_freetype2=false skia_use_fontconfig=false skia_enable_gpu=false extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
+# TODO(kjlubick): Move this into Skia proper
 
 
-
-$SRC/depot_tools/ninja -C out/Fuzz fuzz_region_deserialize
-
-cp out/Fuzz/fuzz_region_deserialize $OUT/fuzz_region_deserialize
+# Append this to build.gn in the skia repo and then build the targets
+test_app("fuzz_region_deserialize") {
+  sources = [
+    "fuzz/oss_fuzz/region_deserialize.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
