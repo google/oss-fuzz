@@ -99,6 +99,10 @@ def get_sanitizers(project_yaml):
       for key in sanitizer.iterkeys():
         processed_sanitizers.append(key)
 
+  # Always make a coverage build.
+  if 'coverage' not in processed_sanitizers:
+    processed_sanitizers.append('coverage')
+
   return processed_sanitizers
 
 
