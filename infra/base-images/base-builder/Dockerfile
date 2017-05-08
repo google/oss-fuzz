@@ -26,6 +26,9 @@ ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 # Default build flags for coverage.
 ENV COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard,trace-cmp"
 
+# Coverage flags for generating coverage reports.
+ENV COVERAGE_FLAGS_coverage="-fsanitize-coverage=bb,no-prune,trace-pc-guard"
+
 # Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"
 ENV FUZZING_ENGINE="libfuzzer"

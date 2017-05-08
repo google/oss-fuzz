@@ -24,6 +24,7 @@ CONFIGURATIONS = {
   'sanitizer-address' : [ 'SANITIZER=address' ],
   'sanitizer-memory' : [ 'SANITIZER=memory' ],
   'sanitizer-undefined' : [ 'SANITIZER=undefined' ],
+  'sanitizer-coverage' : [ 'SANITIZER=coverage' ],
   'engine-libfuzzer' : [ 'FUZZING_ENGINE=libfuzzer' ],
   'engine-afl' : [ 'FUZZING_ENGINE=afl' ],
 }
@@ -34,7 +35,7 @@ EngineInfo = collections.namedtuple(
 ENGINE_INFO = {
     'libfuzzer': EngineInfo(
         upload_bucket='clusterfuzz-builds',
-        supported_sanitizers=['address', 'memory', 'undefined']),
+        supported_sanitizers=['address', 'memory', 'undefined', 'coverage']),
     'afl': EngineInfo(
         upload_bucket='clusterfuzz-builds-afl',
         supported_sanitizers=['address']),
