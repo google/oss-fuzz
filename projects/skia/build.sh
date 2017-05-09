@@ -15,11 +15,19 @@
 #
 ################################################################################
 
+# This splits a space separated list into a quoted, comma separated list for gn.
 export CXXFLAGS_ARR=`echo $CXXFLAGS | sed -e "s/\s/\",\"/g"`
-$SRC/depot_tools/gn gen out/Fuzz --args='cc="'$CC'" cxx="'$CXX'" is_debug=false extra_cflags=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"] skia_use_system_freetype2=false skia_use_fontconfig=false skia_enable_gpu=false extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
-
-
+$SRC/depot_tools/gn gen out/Fuzz\
+    --args='cc="'$CC'"
+    cxx="'$CXX'"
+    is_debug=false
+    extra_cflags=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"]
+    skia_use_system_freetype2=false
+    skia_use_fontconfig=false
+    skia_enable_gpu=false
+    extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
 $SRC/depot_tools/ninja -C out/Fuzz fuzz_region_deserialize
 
-cp out/Fuzz/fuzz_region_deserialize $OUT/fuzz_region_deserialize
+cp out/Fuzz/fuzz_region_deserialize $OUT/region_deserialize
+cp ./region_deserialize.options $OUT/region_deserialize.options

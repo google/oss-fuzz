@@ -31,9 +31,9 @@ WORKDIR skia
 RUN python tools/git-sync-deps
 
 COPY build.sh $SRC/
-COPY region_deserialize.options $OUT/region_deserialize.options
 
 # Dirty, ugly hacks until I land the final result in Skia proper
+COPY region_deserialize.options $SRC/skia/region_deserialize.options
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn
 COPY region_deserialize.cpp $SRC/skia/fuzz/oss_fuzz/region_deserialize.cpp
