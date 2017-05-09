@@ -15,8 +15,15 @@
 #
 ################################################################################
 
+CONFIGURE_FLAGS=""
+if [[ $CFLAGS = "*sanitize=memory*" ]]
+then
+  CONFIGURE_FLAGS="--disable-hardware-acceleration"
+fi
+
 make bootstrap
-./configure --enable-gcc-warnings --enable-static --with-included-libtasn1 --with-included-unistring --without-p11-kit --disable-doc
+./configure --enable-gcc-warnings --enable-static --with-included-libtasn1 \
+    --with-included-unistring --without-p11-kit --disable-doc $CONFIGURE_FLAGS
 make "-j$(nproc)"
 
 fuzzers=$(find devel/fuzz/ -name "*_fuzzer.cc")
