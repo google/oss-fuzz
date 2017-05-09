@@ -32,6 +32,14 @@ import time
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
 
+BASE_IMAGES = [
+    'gcr.io/oss-fuzz-base/base-image',
+    'gcr.io/oss-fuzz-base/base-clang',
+    'gcr.io/oss-fuzz-base/base-builder',
+    'gcr.io/oss-fuzz-base/base-runner',
+    'gcr.io/oss-fuzz-base/base-runner-debug',
+]
+
 
 def main():
   os.chdir(OSSFUZZ_DIR)
@@ -48,6 +56,8 @@ def main():
   build_image_parser = subparsers.add_parser(
       'build_image', help='Build an image.')
   build_image_parser.add_argument('project_name')
+  build_image_parser.add_argument('--pull', action='store_true',
+                                  help='Pull latest base image.')
 
   build_fuzzers_parser = subparsers.add_parser(
       'build_fuzzers', help='Build fuzzers for a project.')
@@ -90,6 +100,9 @@ def main():
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
 
+  pull_images_parser = subparsers.add_parser(
+      'pull_images', help='Pull base images.')
+
   args = parser.parse_args()
   if args.command == 'generate':
     return generate(args)
@@ -105,6 +118,8 @@ def main():
     return reproduce(args)
   elif args.command == 'shell':
     return shell(args)
+  elif args.command == 'pull_images':
+    return pull_images(args)
 
   return 0
 
@@ -170,7 +185,7 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def _build_image(image_name, no_cache=False):
+def _build_image(image_name, no_cache=False, pull=False):
   """Build image."""
 
   is_base_image = _is_base_image(image_name)
@@ -190,8 +205,7 @@ def _build_image(image_name, no_cache=False):
 
   build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir]
 
-  return docker_build(build_args, pull=(is_base_image and
-                                        not no_cache))
+  return docker_build(build_args, pull=pull)
 
 
 def docker_run(run_args, print_output=True):
@@ -230,10 +244,24 @@ def docker_build(build_args, pull=False):
   return True
 
 
+def docker_pull(image, pull=False):
+  """Call `docker pull`."""
+  command = ['docker', 'pull', image]
+  print('Running:', _get_command_string(command))
+
+  try:
+    subprocess.check_call(command)
+  except subprocess.CalledProcessError:
+    print('docker pull failed.', file=sys.stderr)
+    return False
+
+  return True
+
+
 def build_image(args):
   """Build docker image."""
   # If build_image is called explicitly, don't use cache.
-  if _build_image(args.project_name, no_cache=True):
+  if _build_image(args.project_name, no_cache=True, pull=args.pull):
     return 0
 
   return 1
@@ -289,9 +317,6 @@ def run_fuzzer(args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner'):
-    return 1
-
   env = ['FUZZING_ENGINE=' + args.engine]
 
   run_args = sum([['-e', v] for v in env], []) + [
@@ -310,9 +335,6 @@ def coverage(args):
     return 1
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
-    return 1
-
-  if not _build_image('base-runner'):
     return 1
 
   temp_dir = tempfile.mkdtemp()
@@ -349,9 +371,6 @@ def reproduce(args):
     return 1
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
-    return 1
-
-  if not _build_image('base-runner'):
     return 1
 
   run_args = [
@@ -418,6 +437,16 @@ def shell(args):
   ]
 
   docker_run(run_args)
+  return 0
+
+
+def pull_images(args):
+  """Pull base images."""
+  for base_image in BASE_IMAGES:
+    if not docker_pull(base_image):
+      return 1
+
+  return 0
 
 
 if __name__ == '__main__':
