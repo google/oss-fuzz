@@ -260,8 +260,18 @@ def docker_pull(image, pull=False):
 
 def build_image(args):
   """Build docker image."""
+  pull = args.pull
+  if not pull:
+    y_or_n = raw_input('Pull latest base images (compiler/runtime)? (y/N): ')
+    pull = y_or_n.lower() == 'y'
+
+  if pull:
+    print('Pulling latest base images...')
+  else:
+    print('Using cached base images...')
+
   # If build_image is called explicitly, don't use cache.
-  if _build_image(args.project_name, no_cache=True, pull=args.pull):
+  if _build_image(args.project_name, no_cache=True, pull=pull):
     return 0
 
   return 1
