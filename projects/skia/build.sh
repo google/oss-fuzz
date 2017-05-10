@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Disable UBSan vptr since target built with -fno-rtti.
+export CFLAGS="$CFLAGS -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+
 # This splits a space separated list into a quoted, comma separated list for gn.
 export CXXFLAGS_ARR=`echo $CXXFLAGS | sed -e "s/\s/\",\"/g"`
 $SRC/depot_tools/gn gen out/Fuzz\
@@ -32,3 +36,4 @@ $SRC/depot_tools/ninja -C out/Fuzz fuzz_region_deserialize
 
 cp out/Fuzz/fuzz_region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
+
