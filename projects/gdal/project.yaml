@@ -1,0 +1,5 @@
+homepage: "https://gdal.org"
+primary_contact: "even.rouault@spatialys.com"
+auto_ccs:
+  - "schwehr@gmail.com"
+  - "mateusz@loskot.net"
