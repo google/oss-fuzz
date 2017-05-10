@@ -1,4 +1,2 @@
 homepage: "https://github.com/darktable-org/rawspeed"
 primary_contact: "lebedev.ri@gmail.com"
-fuzzing_engines:
-  - libfuzzer
