@@ -16,7 +16,7 @@
 ################################################################################
 
 CONFIGURE_FLAGS=""
-if [[ $CFLAGS = "*sanitize=memory*" ]]
+if [[ $CFLAGS = *sanitize=memory* ]]
 then
   CONFIGURE_FLAGS="no-asm"
 fi
