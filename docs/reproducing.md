@@ -31,6 +31,7 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 - *Reproduce using latest OSS-Fuzz build:* 
 
 ```bash
+$ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
@@ -42,6 +43,7 @@ $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_pa
   and reproduce a crash testcase for a fuzzer named `libxml2_xml_read_memory_fuzzer`, it will be: 
 
 ```bash
+$ python infra/helper.py build_image libxml2
 $ python infra/helper.py build_fuzzers --sanitizer undefined libxml2
 $ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Downloads/testcase
 ```
