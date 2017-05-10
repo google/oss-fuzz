@@ -5,5 +5,3 @@ auto_ccs:
   - "lemzwerg@googlemail.com"
 sanitizers:
   - address
-  - memory:
-     experimental: True

@@ -4,8 +4,3 @@ auto_ccs:
   - "frederik.deweerdt@gmail.com"
   - "kazuhooku@gmail.com"
   - "security@fastly.com"
-sanitizers:
-  - address
-  - memory:
-     experimental: True
-  - undefined

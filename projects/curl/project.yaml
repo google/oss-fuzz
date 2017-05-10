@@ -2,6 +2,5 @@ homepage: "https://curl.haxx.se/"
 primary_contact: "daniel@haxx.se"
 sanitizers:
   - address
-  - memory:
-     experimental: True
+  - memory
   - undefined
