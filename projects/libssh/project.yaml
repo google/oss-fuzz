@@ -2,3 +2,8 @@ homepage: "https://libssh.org/"
 primary_contact: "asn@cryptomilk.org"
 auto_ccs:
  - "cryptomilk@gmail.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined

@@ -3,6 +3,8 @@ primary_contact: "joerg.sonnenberger@googlemail.com"
 auto_ccs:
   - "kientzle@gmail.com"
   - "martin@matuska.org"
-fuzzing_engines:
-  - libfuzzer
-  - afl
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
