@@ -4,6 +4,6 @@ auto_ccs:
   - "hcm@chromium.org"
 sanitizers:
  - address
- - undefined
+ - undefined:
     experimental: True
  - memory
