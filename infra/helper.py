@@ -66,7 +66,7 @@ def main():
   _add_environment_args(build_fuzzers_parser)
   build_fuzzers_parser.add_argument('project_name')
   build_fuzzers_parser.add_argument('source_path', help='path of local source',
-                      nargs='?')
+                                    nargs='?')
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer.')
@@ -74,7 +74,7 @@ def main():
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                      nargs=argparse.REMAINDER)
+                                 nargs=argparse.REMAINDER)
 
   coverage_parser = subparsers.add_parser(
       'coverage', help='Run a fuzzer for a while and generate coverage.')
@@ -83,15 +83,17 @@ def main():
   coverage_parser.add_argument('project_name', help='name of the project')
   coverage_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   coverage_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                      nargs=argparse.REMAINDER)
+                               nargs=argparse.REMAINDER)
 
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
+  reproduce_parser.add_argument('--valgrind', action='store_true',
+                       help='run with valgrind')
   reproduce_parser.add_argument('project_name', help='name of the project')
   reproduce_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   reproduce_parser.add_argument('testcase_path', help='path of local testcase')
   reproduce_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                      nargs=argparse.REMAINDER)
+                                nargs=argparse.REMAINDER)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash in an image.')
@@ -100,8 +102,8 @@ def main():
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
 
-  pull_images_parser = subparsers.add_parser(
-      'pull_images', help='Pull base images.')
+  pull_images_parser = subparsers.add_parser('pull_images',
+                                             help='Pull base images.')
 
   args = parser.parse_args()
   if args.command == 'generate':
@@ -383,10 +385,21 @@ def reproduce(args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  run_args = [
+  debugger = ''
+  env = []
+  image_name = 'base-runner'
+
+  if args.valgrind:
+    debugger = 'valgrind --tool=memcheck --track-origins=yes --leak-check=full'
+
+  if debugger:
+    image_name = 'base-runner-debug'
+    env += ['DEBUGGER=' + debugger]
+
+  run_args = sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
-      '-t', 'gcr.io/oss-fuzz-base/base-runner',
+      '-t', 'gcr.io/oss-fuzz-base/%s' % image_name,
       'reproduce',
       args.fuzzer_name,
       '-runs=100',
