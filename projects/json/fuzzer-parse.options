@@ -1,0 +1,3 @@
+[libfuzzer]
+max_len = 456
+timeout = 10

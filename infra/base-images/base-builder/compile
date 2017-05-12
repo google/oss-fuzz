@@ -1,0 +1,53 @@
+#!/bin/bash -eu
+# Copyright 2016 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+echo "---------------------------------------------------------------"
+
+if [ -z "${SANITIZER_FLAGS-}" ]; then
+  FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
+  export SANITIZER_FLAGS=$(echo ${!FLAGS_VAR})
+fi
+
+# compile script might override environment, use . to call it.
+. compile_${FUZZING_ENGINE}
+
+if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
+then
+  # Take all libraries from lib/msan
+  # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
+  cp -R /usr/msan/lib/* /usr/lib/
+fi
+
+export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
+export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
+
+
+echo "CC=$CC"
+echo "CXX=$CXX"
+echo "CFLAGS=$CFLAGS"
+echo "CXXFLAGS=$CXXFLAGS"
+
+echo "---------------------------------------------------------------"
+
+BUILD_CMD="bash -eux $SRC/build.sh"
+if [ -n "${BUILD_UID-}" ]; then
+  adduser -u $BUILD_UID --disabled-password --gecos '' builder
+  chown -R builder $SRC $OUT $WORK
+  su -c "$BUILD_CMD" builder
+else
+  $BUILD_CMD
+fi

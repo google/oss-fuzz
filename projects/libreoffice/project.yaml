@@ -1,0 +1,7 @@
+homepage: "https://www.libreoffice.org/"
+primary_contact: "caolanm@redhat.com"
+auto_ccs:
+  - "officesecurity@lists.freedesktop.org"
+  - "damjan.jov@gmail.com"
+sanitizers:
+  - address

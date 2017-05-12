@@ -1,0 +1,8 @@
+homepage: "https://boringssl.googlesource.com/boringssl/"
+primary_contact: "agl@google.com"
+auto_ccs:
+ - "davidben@google.com"
+sanitizers:
+- address
+- undefined
+- memory

@@ -21,134 +21,131 @@ def call(body) {
     body.delegate = config
     body()
 
-    // Mandatory configuration
-    def gitUrl = config["git"]
-    assert gitUrl : "git should be specified"
+    def project = new groovy.json.JsonSlurperClassic().parseText(config["project_json"])
 
-    // Optional configuration
-    def projectName = config["name"] ?: env.JOB_BASE_NAME
-    def dockerfile = config["dockerfile"] ?: "oss-fuzz/$projectName/Dockerfile"
-    def sanitizers = config["sanitizers"] ?: ["address"]
-    def checkoutDir = config["checkoutDir"] ?: projectName
-    def dockerContextDir = config["dockerContextDir"]
+    // Project configuration.
+    def projectName = project["name"] ?: env.JOB_BASE_NAME
+    def sanitizers = project["sanitizers"] ?: ["address", "undefined"]
+    def coverageFlags = project["coverage_flags"]
+    def fuzzingEngines = project["fuzzing_engines"] ?: ["libfuzzer"]
+
+    // Dockerfile config
+    def dockerfileConfig = project["dockerfile"] ?: [
+        "path": "projects/$projectName/Dockerfile",
+        "git" : "https://github.com/google/oss-fuzz.git",
+        "context" : "projects/$projectName/"
+    ]
+    def dockerfile = dockerfileConfig["path"]
+    def dockerGit = dockerfileConfig["git"]
+    def dockerContextDir = dockerfileConfig["context"] ?: ""
+    def dockerTag = "ossfuzz/$projectName"
 
     def date = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm")
-        .format(java.time.LocalDateTime.now())
+        .format(java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC))
 
+    def supportedSanitizers = [
+        libfuzzer: ["address", "memory", "undefined"],
+        afl: ["address"]
+    ]
+
+    timeout(time: 12, unit: 'HOURS') {
     node {
-      def workspace = pwd()
-      def revisionsFile = "$workspace/${projectName}.rev"
-      def dockerTag = "ossfuzz/$projectName"
-      echo "Building $dockerTag"
+        def workspace = pwd()
+        def srcmapFile = "$workspace/srcmap.json"
+        def uid = sh(returnStdout: true, script: 'id -u $USER').trim()
+        def dockerRunOptions = "-e BUILD_UID=$uid --cap-add SYS_PTRACE"
 
-      stage("docker image") {
-          def revisions = [:]
-          dir(checkoutDir) {
-              git url: gitUrl
-              revisions[gitUrl] = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
-          }
+        echo "Building $dockerTag: $project"
 
-          if (dockerContextDir == null) {
-            dockerContextDir = new File(dockerfile)
-                .getParentFile()
-                .getPath();
-          }
+        sh "docker run --rm $dockerRunOptions -v $workspace:/workspace ubuntu bash -c \"rm -rf /workspace/out\""
+        sh "mkdir -p $workspace/out"
 
-          sh "docker build -t $dockerTag -f $dockerfile $dockerContextDir"
+        stage("docker image") {
+            def dockerfileRev
 
-          def revText = groovy.json.JsonOutput.toJson(revisions)
-          writeFile file: revisionsFile, text: revText
-          echo "revisions: $revText"
-      }
-
-      for (int i = 0; i < sanitizers.size(); i++) {
-        def sanitizer = sanitizers[i]
-        dir(sanitizer) {
-          def out = "$workspace/out/$sanitizer"
-          stage("$sanitizer sanitizer") {
-            // Run image to produce fuzzers
-            sh "rm -rf $out"
-            sh "mkdir -p $out"
-            sh "docker run -v $workspace/$checkoutDir:/src/$checkoutDir -v $out:/out -e SANITIZER_FLAGS=\"-fsanitize=$sanitizer\" -t $dockerTag"
-          }
-        }
-      }
-
-      // Run each of resulting fuzzers.
-      dir ('out') {
-        def resultsDir = "$workspace/test-results"
-        sh "rm -rf $resultsDir"
-        sh "mkdir -p $resultsDir"
-        stage("running fuzzers") {
-          def fuzzersFound = 0
-          sh "ls -alR"
-          for (int i = 0; i < sanitizers.size(); i++) {
-            def sanitizer = sanitizers[i]
-            dir (sanitizer) {               
-              def d = pwd()
-              def files = findFiles()
-              for (int j = 0; j < files.size(); j++) {
-                def file = files[j]
-                if (file.directory) { continue }
-                if (!new File(d, file.name).canExecute()) {
-                    echo "skipping: $file"
-                    continue
-                }
-                sh "docker run -v $d:/out -t ossfuzz/libfuzzer-runner /out/$file -runs=1"
-                fuzzersFound += 1
-              }
-                
-              def testReport = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
-                    "<testsuites xmlns=\"http://junit.org/junit4/\"\n" +
-                    "            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                    "            xsi:schemaLocation=\"http://junit.org/junit4/ http://windyroad.com.au/dl/Open%20Source/JUnit.xsd\">\n" +
-                    "    <testsuite name=\"expat-address\"\n" +
-                    "               errors=\"0\"\n" +
-                    "               failures=\"0\"\n" +
-                    "               hostname=\"localhost\"\n" +
-                    "               id=\"test\"\n" +
-                    "               package=\"$projectName\"\n" +
-                    "               tests=\"1\"\n" +
-                    "               time=\"1s\"\n" +
-                    "               timestamp=\"0\">\n" +
-                    "         <testcase name=\"aName\" classname=\"aClassName\" time=\"1s\"/>\n" +
-                    "    </testsuite>\n" +
-                    "</testsuites>\n";
-              writeFile file:"$resultsDir/TEST-${sanitizer}.xml", text:testReport
-              sh "cat $resultsDir/TEST-${sanitizer}.xml"
+            dir('checkout') {
+                git url: dockerGit
+                dockerfileRev = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
             }
-          }
-          // sh "ls -al $resultsDir/"
-          // step([$class: 'JUnitResultArchiver', testResults: '**/TEST-*.xml'])
-          echo "Tested $fuzzersFound fuzzer"
-          if (!fuzzersFound) {
-            error "no fuzzers found";
-          }
+
+            sh "docker build --no-cache -t $dockerTag -f checkout/$dockerfile checkout/$dockerContextDir"
+
+            // obtain srcmap
+            sh "docker run $dockerRunOptions --rm $dockerTag srcmap > $workspace/srcmap.json.tmp"
+            // use classic slurper: http://stackoverflow.com/questions/37864542/jenkins-pipeline-notserializableexception-groovy-json-internal-lazymap
+            def srcmap = new groovy.json.JsonSlurperClassic().parse(
+                new File("$workspace/srcmap.json.tmp"))
+            srcmap['/src'] = [ type: 'git',
+                               rev:  dockerfileRev,
+                               url:  dockerGit,
+                               path: "/" + dockerContextDir ]
+            echo "srcmap: $srcmap"
+            writeFile file: srcmapFile, text: groovy.json.JsonOutput.toJson(srcmap)
+        } // stage("docker image")
+
+        for (int i = 0; i < sanitizers.size(); i++) {
+            def sanitizer = sanitizers[i]
+            dir(sanitizer) {
+                for (int j = 0; j < fuzzingEngines.size(); j++) {
+                    def engine = fuzzingEngines[j]
+                    if (!supportedSanitizers[engine].contains(sanitizer)) {
+                        continue
+                    }
+                    dir (engine) {
+                        def out = "$workspace/out/$sanitizer/$engine"
+                        def junit_reports = "$workspace/junit_reports/$sanitizer/$engine"
+                        sh "mkdir -p $out"
+                        sh "mkdir -p $junit_reports"
+                        stage("$sanitizer sanitizer ($engine)") {
+                            // Run image to produce fuzzers
+                            def engineEnv = "-e FUZZING_ENGINE=\"${engine}\" "
+                            def env = "-e SANITIZER=\"${sanitizer}\" ${engineEnv}"
+                            if (coverageFlags != null) {
+                                env += "-e COVERAGE_FLAGS=\"${coverageFlags}\" "
+                            }
+                            sh "docker run --rm $dockerRunOptions -v $out:/out $env -t $dockerTag compile"
+                            // Test all fuzzers
+                            sh "docker run --rm $dockerRunOptions -v $out:/out -v $junit_reports:/junit_reports -e TEST_SUITE=\"${projectName}.${sanitizer}.${engine}\" $engineEnv -t ossfuzz/base-runner test_report"
+                        }
+                    }
+                }
+            }
         }
 
         stage("uploading") {
-          for (int i = 0; i < sanitizers.size(); i++) {
-            def sanitizer = sanitizers[i]
-            dir (sanitizer) {
-              def zipFile = "$projectName-$sanitizer-${date}.zip"
-              def revFile = "$projectName-$sanitizer-${date}.rev"
-              sh "cp $revisionsFile $revFile"
-              sh "zip -j $zipFile *"
-              sh "gsutil cp $zipFile gs://clusterfuzz-builds/$projectName/"
-              sh "gsutil cp $revFile gs://clusterfuzz-builds/$projectName/"
+            step([$class: 'JUnitResultArchiver', testResults: 'junit_reports/**/*.xml'])
+            dir('out') {
+                for (int i = 0; i < sanitizers.size(); i++) {
+                    def sanitizer = sanitizers[i]
+                    dir (sanitizer) {
+                        for (int j = 0; j < fuzzingEngines.size(); j++) {
+                            def engine = fuzzingEngines[j]
+                            if (!supportedSanitizers[engine].contains(sanitizer)) {
+                                continue
+                            }
+
+                            def upload_bucket = engine == "libfuzzer" ? "clusterfuzz-builds" : "clusterfuzz-builds-afl"
+                            dir(engine) {
+                                def zipFile = "$projectName-$sanitizer-${date}.zip"
+                                sh "zip -r $zipFile *"
+                                sh "gsutil cp $zipFile gs://$upload_bucket/$projectName/"
+                                def stampedSrcmap = "$projectName-$sanitizer-${date}.srcmap.json"
+                                sh "cp $srcmapFile $stampedSrcmap"
+                                sh "gsutil cp $stampedSrcmap gs://$upload_bucket/$projectName/"
+                            }
+                        }
+                    }
+                }
             }
-          }
-        }
+        } // stage("uploading")
 
         stage("pushing image") {
-          docker.withRegistry('', 'docker-login') {
-            docker.image(dockerTag).push()
-          }
-        }
-      }
-    }
-
-  echo 'Done'
-}
+            docker.withRegistry('', 'docker-login') {
+                docker.image(dockerTag).push()
+            }
+        } // stage("pushing image")
+    } // node
+    } // timeout
+}  // call
 
 return this;
