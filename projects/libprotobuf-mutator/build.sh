@@ -21,10 +21,13 @@ cp -f $SRC/*.dict $SRC/*.options $OUT/
 mkdir -p build
 pushd build
 rm -rf *
-cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release \
+
+CXXFLAGS="$CXXFLAGS -Wl,-lpthread -Wno-unused-command-line-argument" \
+  cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release \
     -DLIB_PROTO_MUTATOR_WITH_ASAN=OFF \
+    -DLIB_PROTO_MUTATOR_WITH_COVERAGE_FLAGS=OFF \
     -DLIB_PROTO_MUTATOR_FUZZER_LIBRARIES=FuzzingEngine
-ninja libxml2_example expat_example 
+ninja libxml2_example expat_example
 cp -f examples/libxml2/libxml2_example $OUT/
 cp -f examples/expat/expat_example $OUT/
 popd
