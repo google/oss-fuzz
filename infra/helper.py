@@ -40,6 +40,8 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-runner-debug',
 ]
 
+VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
+
 
 def main():
   os.chdir(OSSFUZZ_DIR)
@@ -410,6 +412,10 @@ def reproduce(args):
 
 def generate(args):
   """Generate empty project files."""
+  if not VALID_PROJECT_NAME_REGEX.match(args.project_name):
+    print('Invalid project name.', file=sys.stderr)
+    return 1
+
   dir = os.path.join('projects', args.project_name)
 
   try:
