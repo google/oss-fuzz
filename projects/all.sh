@@ -19,14 +19,14 @@
 for project in projects/*; do
   if [[ -f $project ]]; then continue; fi
   echo "@ Building $project"
-  docker build -t ossfuzz/$project $project/
+  docker build -t gcr.io/oss-fuzz/$project $project/
 
   # Execute command ($1) if any
   case ${1-} in
     "")
       ;;
     compile)
-      docker run --rm -ti ossfuzz/$project $@
+      docker run --rm -ti gcr.io/oss-fuzz/$project $@
       ;;
     *)
       echo $"Usage: $0 {|compile}"

@@ -1,11 +1,8 @@
 homepage: "http://www.grpc.io/"
 primary_contact: "mattkwong@google.com"
 auto_ccs:
-  - "grpc-c-team@google.com"
   - "ctiller@google.com"
   - "dgq@google.com"
-  - "klempner@google.com"
-  - "jkolhe@google.com"
   - "roth@google.com"
   - "ncteisen@google.com"
   - "nnoble@google.com"

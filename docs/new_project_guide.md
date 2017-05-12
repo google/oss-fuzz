@@ -66,14 +66,16 @@ Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/bor
 This file defines the Docker image definition. This is where the build.sh script will be executed in.
 It is very simple for most projects:
 ```docker
-FROM ossfuzz/base-builder               # base image with clang toolchain
+FROM gcr.io/oss-fuzz-base/base-builder    # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                     # maintainer for this file
-RUN apt-get install -y ...                # install required packages to build your project
+RUN apt-get update && apt-get install -y ... # install required packages to build your project
 RUN git clone <git_url> <checkout_dir>    # checkout all sources needed to build your project
 WORKDIR <checkout_dir>                    # current directory for build script
 COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer files in src dir
 ```
 Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
+
+In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`. 
 
 ## build.sh
 
@@ -142,6 +144,12 @@ pass them manually to the build tool.
 See [Provided Environment Variables](../infra/base-images/base-builder/README.md#provided-environment-variables) section in
 `base-builder` image documentation for more details.
 
+## Disk space restrictions
+
+Our builders have a disk size of 70GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
+
+In addition to this, please keep the size of the build (everything copied to `$OUT`) small (<10GB uncompressed) -- this will need be repeatedly transferred and unzipped during fuzzing and run on VMs with limited disk space.
+
 ## Fuzzer execution environment
 
 [This page](fuzzer_environment.md) gives information about the environment that
@@ -154,7 +162,7 @@ Use the helper script to build docker image and [fuzz targets](glossary.md#fuzz-
 ```bash
 $ cd /path/to/oss-fuzz
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers -e SANITIZER=<address/memory/undefined> $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
 ```
 
 This should place the built binaries into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
@@ -273,4 +281,9 @@ If you are porting a fuzz target from Chromium, keep the original Chromium licen
 Once your change is merged, your project and fuzz targets should be automatically built and run on
 ClusterFuzz after a short while (&lt; 1 day)!<BR><BR>
 Check your project's build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).<BR>
-Check out the crashes generated and code coverage statistics on [ClusterFuzz](clusterfuzz.md) web interface [here](https://oss-fuzz.com/).
+
+Use [ClusterFuzz](clusterfuzz.md) web interface [here](https://oss-fuzz.com/) to checkout the following items:
+* Crashes generated
+* Code coverage statistics
+* Fuzzer statistics
+* Fuzzer performance analyzer (linked from fuzzer statistics)

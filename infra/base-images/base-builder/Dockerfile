@@ -14,17 +14,20 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-clang
+FROM gcr.io/oss-fuzz-base/base-clang
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y git subversion jq python3 zip make
 
 # Default build flags for various sanitizers.
-ENV SANITIZER_FLAGS_address "-fsanitize=address"
-ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,function,signed-integer-overflow,shift,vla-bound,vptr -fno-sanitize-recover=undefined"
+ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
+ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,null,shift,signed-integer-overflow,vla-bound,vptr -fno-sanitize-recover=undefined"
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
 # Default build flags for coverage.
 ENV COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard,trace-cmp"
+
+# Coverage flags for generating coverage reports.
+ENV COVERAGE_FLAGS_coverage="-fsanitize-coverage=bb,no-prune,trace-pc-guard"
 
 # Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"

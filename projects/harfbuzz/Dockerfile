@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
-RUN apt-get install -y make autoconf automake libtool ragel pkg-config
+RUN apt-get update && apt-get install -y make autoconf automake libtool ragel pkg-config
 
 RUN git clone --depth 1 https://anongit.freedesktop.org/git/harfbuzz.git
 WORKDIR harfbuzz

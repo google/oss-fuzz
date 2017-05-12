@@ -22,11 +22,11 @@ make -j$(nproc) all
 
 for fuzzer in bplist_fuzzer xplist_fuzzer; do
   $CXX $CXXFLAGS -std=c++11 -Iinclude/ \
-      $SRC/$fuzzer.cc -o $OUT/$fuzzer \
+      fuzz/$fuzzer.cc -o $OUT/$fuzzer \
       -lFuzzingEngine src/.libs/libplist.a
 done
 
-zip -j $OUT/bplist_fuzzer_seed_corpus.zip $SRC/libplist/test/data/*.bplist
-zip -j $OUT/xplist_fuzzer_seed_corpus.zip $SRC/libplist/test/data/*.plist
+zip -j $OUT/bplist_fuzzer_seed_corpus.zip test/data/*.bplist
+zip -j $OUT/xplist_fuzzer_seed_corpus.zip test/data/*.plist
 
-cp $SRC/*.dict $SRC/*.options $OUT/
+cp fuzz/*.dict fuzz/*.options $OUT/

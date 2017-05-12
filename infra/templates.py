@@ -36,12 +36,12 @@ DOCKER_TEMPLATE = """\
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER your@email.com
-RUN apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 <git_url> %(project_name)s     # or use other version control
 WORKDIR %(project_name)s
-COPY build.sh $src/
+COPY build.sh $SRC/
 """
 
 BUILD_TEMPLATE = """\
@@ -71,6 +71,6 @@ BUILD_TEMPLATE = """\
 # build fuzzers
 # e.g.
 # $CXX $CXXFLAGS -std=c++11 -Iinclude \\
-#     /path/to/name_of_fuzzer.cc -o /out/name_of_fuzzer \\
+#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \\
 #     -lFuzzingEngine /path/to/library.a
 """

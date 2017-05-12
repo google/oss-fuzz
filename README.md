@@ -38,8 +38,7 @@ Currently OSS-Fuzz supports C and C++ code (other languages supported by [LLVM](
 
 ## Process Overview
 
-![diagram]
-(docs/images/process.png?raw=true)
+![diagram](docs/images/process.png?raw=true)
 
 The following process is used for projects in OSS-Fuzz:
 
@@ -55,7 +54,7 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
 - The project developer fixes the bug upstream and credits OSS-Fuzz for the discovery (commit message should contain
   the string **'Credit to OSS-Fuzz'**).
 - [ClusterFuzz](docs/clusterfuzz.md) automatically verifies the fix, adds a comment and closes the issue ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53#c3)).
-- 7 days after the fix is verified or 90 days after reporting, the issue becomes *public*
+- 30 days after the fix is verified or 90 days after reporting (whichever is earlier), the issue becomes *public*
   ([guidelines](#bug-disclosure-guidelines)).
 
 <!-- NOTE: this anchor is referenced by oss-fuzz blog post -->
@@ -82,8 +81,9 @@ To submit a new project:
 
 Following [Google's standard disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
 OSS-Fuzz will adhere to following disclosure principles:
-  - **90-day deadline**. After notifying project authors, we will open reported
-    issues to the public in 90 days, or 7 days after the fix is released.
+  - **Deadline**. After notifying project authors, we will open reported
+    issues to the public in 90 days, or 30 days after the fix is released 
+    (whichever comes earlier).
   - **Weekends and holidays**. If a deadline is due to expire on a weekend,
     the deadline will be moved to the next normal work day.
   - **Grace period**. We have a 14-day grace period. If a 90-day deadline
@@ -103,12 +103,16 @@ OSS-Fuzz will adhere to following disclosure principles:
 * [Projects](projects) lists OSS projects currently analyzed by OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while containing some Chrome-specific bits, is an excellent guide to making your fuzzer better.
-* Blog posts: 2016-12-01 ([1](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
+* Blog posts: 
+  * 2016-12-01 ([1](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
 [2](https://testing.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
 [3](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
+  * 2017-05-08 ([1](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
+[2](https://testing.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
+[3](https://security.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html))
 
 ## Build Status
-[This page](https://oss-fuzz-build-logs.storage.googleapis.com/status.html)
+[This page](https://oss-fuzz-build-logs.storage.googleapis.com/index.html)
 gives the latest build logs for each project.
 
 ## Trophies

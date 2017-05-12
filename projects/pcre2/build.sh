@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd pcre2
-
 # build project
 ./autogen.sh
 ./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-recursion=1000
