@@ -1,5 +1,5 @@
-# Provide the home page for your project:
-homepage: "https://github.com/google/oss-fuzz"
+# Provide the home page for *your* project:
+homepage: "https://my-api.example.com"
 # Provide the e-mail for the primary contact:
 primary_contact: "primary-my-api-maintainer@example.com"
 auto_ccs:
