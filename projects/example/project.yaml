@@ -1,0 +1,4 @@
+# Provide the home page for your project:
+homepage: "https://github.com/google/oss-fuzz"
+# Provide the e-mail for the primary contact:
+primary_contact: "kcc@google.com"
