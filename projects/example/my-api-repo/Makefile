@@ -39,6 +39,8 @@ do_stuff_unittest: do_stuff_unittest.cpp my_api.a
 # you may choose which fuzzing engine to use.
 do_stuff_fuzzer: do_stuff_fuzzer.cpp my_api.a standalone_fuzz_taget_runner.o
 	${CXX} ${CXXFLAGS} $< my_api.a ${LIB_FUZZING_ENGINE} -o $@
+	zip -q do_stuff_seed_corpus.zip do_stuff_test_data
+
 
 # The library itself.
 my_api.a: my_api.cpp my_api.h
@@ -47,3 +49,4 @@ my_api.a: my_api.cpp my_api.h
 
 # The standalone fuzz target runner.
 standalone_fuzz_taget_runner.o: standalone_fuzz_taget_runner.cpp
+
