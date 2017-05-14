@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     size_t length = in.tellg();
     in.seekg (0, in.beg);
     std::cout << "Reading " << length << " bytes from " << argv[i] << std::endl;
-    // Allcate exactly length bytes so that we reliably catch buffer overflows.
+    // Allocate exactly length bytes so that we reliably catch buffer overflows.
     std::vector<char> bytes(length);
     in.read(bytes.data(), bytes.size());
     assert(in);

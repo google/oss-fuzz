@@ -49,4 +49,3 @@ my_api.a: my_api.cpp my_api.h
 
 # The standalone fuzz target runner.
 standalone_fuzz_taget_runner.o: standalone_fuzz_taget_runner.cpp
-

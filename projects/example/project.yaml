@@ -5,6 +5,6 @@ primary_contact: "primary-my-api-maintainer@example.com"
 auto_ccs:
   - "secondary-my-api-maintainer@example.com"
   - "tertiary-my-api-maintainer@example.com"
- 
+
 # We don't run this example project for real. (Don't use this flag for your project)
 disabled: true

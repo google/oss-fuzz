@@ -11,4 +11,3 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   DoStuff(str);  // Disregard the output.
   return 0;
 }
-
