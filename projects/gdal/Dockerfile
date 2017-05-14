@@ -16,17 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER even.rouault@spatialys.com
-# curl needed to fetch sqlite3
-# tcl needed to build sqlite3
-# docbook2x needed o build expat
-RUN apt-get update && apt-get install -y make autoconf automake libtool g++ curl tcl docbook2x
-# libpng12-dev libjpeg-dev libgif-dev liblzma-dev libgeos-dev libcurl4-gnutls-dev libproj-dev libxml2-dev libexpat-dev libxerces-c-dev libnetcdf-dev netcdf-bin libpoppler-dev libspatialite-dev libhdf4-alt-dev libhdf5-serial-dev  poppler-utils libfreexl-dev unixodbc-dev libwebp-dev libepsilon-dev libpcre3-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool g++ zlib1g-dev libsqlite3-dev libexpat-dev liblzma-dev libxerces-c-dev libpng12-dev libgif-dev libwebp-dev libicu-dev
+#   libgeos-dev libjpeg-dev libcurl4-gnutls-dev libproj-dev libxml2-dev libnetcdf-dev netcdf-bin libpoppler-dev libspatialite-dev libhdf4-alt-dev libhdf5-serial-dev  poppler-utils libfreexl-dev unixodbc-dev libepsilon-dev libpcre3-dev
 # libpodofo-dev  libcrypto++-dev
 RUN git clone --depth 1 https://github.com/OSGeo/gdal gdal
-RUN git clone --depth 1 https://github.com/libexpat/libexpat gdal/libexpat
-RUN mkdir gdal/sqlite3 && \
-    cd gdal/sqlite3 && \
-    curl 'https://www.sqlite.org/src/tarball?uuid=trunk' -o sqlite3.tar.gz && \
-    tar xzf sqlite3.tar.gz
 WORKDIR gdal
 COPY build.sh $SRC/
