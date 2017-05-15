@@ -69,7 +69,7 @@ To submit a new project:
   * e-mail of the engineering contact person to be CCed on new issues. This
     email should be  
     [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
-    ([why?](docs/faq.md#why-we-require-an-e-mail-associated-with-a-google-account))
+    ([why?](docs/faq.md#why-do-you-require-an-e-mail-associated-with-a-google-account))
     and belong to an established project committer (according to VCS logs).
     If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
   * Note that `project_name` can only contain alphanumeric characters, underscores(_) or dashes(-).
