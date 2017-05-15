@@ -1,9 +1,9 @@
 Example of [OSS-Fuzz ideal integration](../../../docs/ideal_integration.md).
 
-This directory contains a example software project that has all the trais of [ideal](../../../docs/ideal_integration.md) support for fuzzing. 
+This directory contains an example software project that has all the trais of [ideal](../../../docs/ideal_integration.md) support for fuzzing. 
 
-* [my_api.h](my_api.h) and [my_api.cpp](my_api.cpp) implement the API that we want to test/fuzz. The function `DoStuff()` inside [my_api.cpp](my_api.cpp) contains a bug. (Find it!)
-* [do_stuff_unittest.cpp](do_stuff_unittest.cpp) is a unit test for `DoStuff()`. 
+* [my_api.h](my_api.h) and [my_api.cpp](my_api.cpp) implement the API we want to test/fuzz. The function `DoStuff()` inside [my_api.cpp](my_api.cpp) contains a bug. (Find it!)
+* [do_stuff_unittest.cpp](do_stuff_unittest.cpp) is a unit test for `DoStuff()`. Unit tests are not necessary for fuzzing, but are generally a good practice. 
 * [do_stuff_fuzzer.cpp](do_stuff_fuzzer.cpp) is a [fuzz target](http://libfuzzer.info/#fuzz-target) for `DoStuff()`.
 * [standalone_fuzz_taget_runner.cpp](standalone_fuzz_taget_runner.cpp) is a simple standalone runnner for fuzz targets. You may use it to execute a fuzz target on given files w/o having to link in libFuzzer or other fuzzing engine. 
 * [do_stuff_test_data](do_stuff_test_data) corpus directory for [do_stuff_fuzzer.cpp](do_stuff_fuzzer.cpp). 
