@@ -11,7 +11,7 @@ This directory contains an example software project that has all the trais of [i
   * accepts external compiler flags via `$CC`, `$CXX`, `$CFLAGS`, `$CXXFLAGS`
   * accepts external fuzzing engine via `$LIB_FUZZING_ENGINE`, by default uses [standalone_fuzz_taget_runner.cpp](standalone_fuzz_taget_runner.cpp)
   * builds the fuzz target(s) and their corpus archive(s)
-  * `make check` executes [do_stuff_fuzzer.cpp](do_stuff_fuzzer.cpp) on [`do_stuff_test_data/*`](do_stuff_test_data)
+  * `make check` executes [do_stuff_fuzzer.cpp](do_stuff_fuzzer.cpp) on [`do_stuff_test_data/*`](do_stuff_test_data), thus ensures that the fuzz target is up to date and uses it as a regression test.
 
 
 Example bug report filed automatically: https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=1562
