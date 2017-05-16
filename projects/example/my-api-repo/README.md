@@ -1,6 +1,6 @@
 Example of [OSS-Fuzz ideal integration](../../../docs/ideal_integration.md).
 
-This directory contains an example software project that has all the traits of [ideal](../../../docs/ideal_integration.md) support for fuzzing. 
+This directory contains an example software project that has most of the traits of [ideal](../../../docs/ideal_integration.md) support for fuzzing. 
 
 ## Files in my-api-repo
 Imagine that these files reside in your project's repository:
