@@ -18,7 +18,7 @@ Imagine that these files reside in your project's repository:
   * builds the fuzz target(s) and their corpus archive(s)
   * `make check` executes [do_stuff_fuzzer.cpp](do_stuff_fuzzer.cpp) on [`do_stuff_test_data/*`](do_stuff_test_data), thus ensures that the fuzz target is up to date and uses it as a regression test.
 
-## Files on OSS-Fuzz repository
+## Files in OSS-Fuzz repository
 * [oss-fuzz/projects/example](..)
   * [Dockerfile](../Dockerfile): sets up the build environment
   * [build.sh](../build.sh): builds the fuzz target(s). The smaller this file the better, most of the logic should be inside the project's build system).
