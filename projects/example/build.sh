@@ -22,6 +22,6 @@ make -j$(nproc) check  # Sanity check, not strictly required, but nice to have.
 
 # Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'     # If you have dictionaries.
+find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'  # If you have custom options.
+find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';' # If you have seed corpora (you better have them!)
