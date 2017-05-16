@@ -1,0 +1,2 @@
+[libfuzzer]
+dict = do_stuff_fuzzer.dict
