@@ -18,6 +18,9 @@ LIB_FUZZING_ENGINE ?= standalone_fuzz_taget_runner.o
 
 # Values for CC, CFLAGS, CXX, CXXFLAGS are provided by OSS-Fuzz.
 # Outside of OSS-Fuzz use the ones you prefer or rely on the default values.
+# Do not use the -fsanitize=* flags by default.
+# OSS-Fuzz will use different -fsanitize=* flags for different builds (asan, ubsan, msan, ...)
+
 # You may add extra compiler flags like this:
 CXXFLAGS += -std=c++11
 
