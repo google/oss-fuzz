@@ -10,7 +10,7 @@ Imagine that these files reside in your project's repository:
 * [do_stuff_fuzzer.cpp](do_stuff_fuzzer.cpp) is a [fuzz target](http://libfuzzer.info/#fuzz-target) for `DoStuff()`.
 * [standalone_fuzz_taget_runner.cpp](standalone_fuzz_taget_runner.cpp) is a simple standalone runnner for fuzz targets. You may use it to execute a fuzz target on given files w/o having to link in libFuzzer or other fuzzing engine. 
 * [do_stuff_test_data](do_stuff_test_data) corpus directory for [do_stuff_fuzzer.cpp](do_stuff_fuzzer.cpp). 
-* [Makefile](Makefile) is a build file:
+* [Makefile](Makefile) is a build file (the same can be done with other build systems):
   * accepts external compiler flags via `$CC`, `$CXX`, `$CFLAGS`, `$CXXFLAGS`
   * accepts external fuzzing engine via `$LIB_FUZZING_ENGINE`, by default uses [standalone_fuzz_taget_runner.cpp](standalone_fuzz_taget_runner.cpp)
   * builds the fuzz target(s) and their corpus archive(s)
