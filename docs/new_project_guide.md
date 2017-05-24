@@ -235,7 +235,9 @@ has an appropriate and consistent license.
 Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
 sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
 
-Put your dict file in `$OUT` and specify in .options file:
+Put your dict file in `$OUT`. If the dict filename is the same as your target
+binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the name different
+(e.g. because it is shared by several targets), specify this in .options file:
 
 ```
 [libfuzzer]
