@@ -24,3 +24,6 @@ make -j$(nproc) all
 # build fuzzer
 $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer \
     -lFuzzingEngine .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a
+
+# set up dictionary and options to use it
+cp $SRC/pcre2_fuzzer.options $SRC/pcre2_fuzzer.dict $OUT/
