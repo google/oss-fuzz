@@ -21,6 +21,8 @@
 make -j$(nproc) clean
 make -j$(nproc) all
 
+cp $SRC/pcre2_fuzzer.dict $SRC/pcre2_fuzzer.options $OUT/
+
 # build fuzzer
 $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer \
     -lFuzzingEngine .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a
