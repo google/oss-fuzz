@@ -53,6 +53,12 @@ else
     OPTIONS_ARGS=$(grep "=" $OPTIONS_FILE | sed 's/\(\w*\)\W*=\W*\(.*\)/-\1=\2 /g' | tr '\n' ' ')
     CMD_LINE="$CMD_LINE $OPTIONS_ARGS"
   fi
+
+  if [[ ! "$CMD_LINE" =~ "-dict=" ]]; then
+    if [ -f "$FUZZER.dict" ]; then
+      CMD_LINE="$CMD_LINE -dict=$FUZZER.dict"
+    fi
+  fi
 fi
 
 echo $CMD_LINE
