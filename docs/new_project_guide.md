@@ -236,7 +236,7 @@ Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
 sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
 
 Put your dict file in `$OUT`. If the dict filename is the same as your target
-binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the name different
+binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the name is different
 (e.g. because it is shared by several targets), specify this in .options file:
 
 ```
