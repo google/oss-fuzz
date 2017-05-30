@@ -24,12 +24,18 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
   fi
 
   FUZZER=$(basename $FUZZER_BINARY)
-  if echo "$FUZZER" | grep "^afl-" > /dev/null 2>&1; then
+  if [[ "$FUZZER" == afl-* ]]; then
+    continue
+  fi
+  if [[ "$FUZZER" == honggfuzz ]]; then
     continue
   fi
 
   echo "testing $FUZZER"
-  if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
+
+  if [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
+    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
+  elif [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
     run_fuzzer $FUZZER -max_total_time=20
   else
     export AFL_NO_UI=1

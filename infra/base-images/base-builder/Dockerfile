@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y git subversion jq python3 zip make
+RUN apt-get install -y git subversion jq python3 zip make libunwind8-dev binutils-dev libblocksruntime-dev
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
@@ -47,7 +47,13 @@ RUN mkdir afl && \
     tar -xzv --strip-components=1 -f $SRC/afl-latest.tgz && \
     rm -rf $SRC/afl-latest.tgz
 
-COPY compile compile_afl compile_libfuzzer coverage_report srcmap /usr/local/bin/
+ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
+RUN mkdir honggfuzz && \
+    cd honggfuzz && \
+    tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
+    rm -rf $SRC/oss-fuzz.tar.gz
+
+COPY compile compile_afl compile_libfuzzer compile_honggfuzz coverage_report srcmap /usr/local/bin/
 
 CMD ["compile"]
 

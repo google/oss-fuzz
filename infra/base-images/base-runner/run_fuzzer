@@ -45,6 +45,22 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   # AFL expects at least 1 file in the input dir.
   echo input > /tmp/input/input
   CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i /tmp/input -o /tmp/afl_output $@ $OUT/$FUZZER"
+elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
+  if [ -z "$CORPUS" ]; then
+    CORPUS=/tmp/input
+  fi
+  # Honggfuzz expects at least 1 file in the input dir.
+  echo input > $CORPUS/input
+  rm -rf /tmp/honggfuzz_workdir && mkdir /tmp/honggfuzz_workdir
+  # --exit_upon_crash: exit whith a first crash seen
+  # -R (report): save report file to this location
+  # -W (working dir): where the crashes and the report file go
+  # -v (verbose): don't use VTE UI, just stderr
+  # -z: use software-instrumentation of clang (trace-pc-guard....)
+  # -P: use persistent mode of fuzzing (i.e. LLVMFuzzerTestOneInput)
+  # -f: location of the initial (and destination) file corpus
+  # -n: number of fuzzing threads (and processes)
+  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/HONGGFUZZ.REPORT.TXT -W /tmp/honggfuzz_workdir -v -z -P -f \"$CORPUS\" $@ -- \"$OUT/$FUZZER\""
 else
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $@ $CORPUS"
 

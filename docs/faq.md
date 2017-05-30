@@ -88,3 +88,6 @@ In either case, look at the [coverage reports](clusterfuzz.md#coverage-reports) 
     
 ## Does OSS-Fuzz support AFL?
 OSS-Fuzz *uses* [AFL](http://lcamtuf.coredump.cx/afl/) as one of its [fuzzing engines](glossary.md#fuzzing-engine) but this is an implementation detail. Just follow the [ideal integration guide](ideal_integration.md) and OSS-Fuzz will use all its fuzzing engines on your code.
+
+## Does OSS-Fuzz support Honggfuzz?
+Analogically to [AFL](#does-oss-fuzz-support-afl).
