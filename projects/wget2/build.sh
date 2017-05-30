@@ -15,9 +15,9 @@
 #
 ################################################################################
 
-./bootstrap
-./configure --enable-static --disable-doc
-make
+! test -d lib && ./bootstrap
+! test -f config.h && ./configure --enable-static --disable-doc
+make -j$(nproc)
 
 cp -p fuzz/*.dict fuzz/*.options $OUT
 
