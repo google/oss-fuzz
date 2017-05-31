@@ -38,6 +38,6 @@ for f in $fuzzers; do
 
     corpus_dir=$(basename "${fuzzer}" "_fuzzer")
     if [ -d "fuzz/${corpus_dir}.in/" ]; then
-        zip -r "$OUT/${fuzzer}_seed_corpus.zip" "fuzz/${corpus_dir}.in/"
+        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "fuzz/${corpus_dir}.in/"
     fi
 done
