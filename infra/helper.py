@@ -354,16 +354,21 @@ def coverage(args):
   temp_dir = tempfile.mkdtemp()
 
   run_args = [
+      '-e', 'FUZZING_ENGINE=libfuzzer',
+      '-e', 'ASAN_OPTIONS=coverage_dir=/cov',
+      '-e', 'MSAN_OPTIONS=coverage_dir=/cov',
+      '-e', 'UBSAN_OPTIONS=coverage_dir=/cov',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
-      '/out/%s' % args.fuzzer_name,
+      'run_fuzzer',
+      args.fuzzer_name,
       '-dump_coverage=1',
       '-max_total_time=%s' % args.run_time
   ] + args.fuzzer_args
 
-  print('This may take a while (running your fuzzer for %d seconds)...' %
+  print('This may take a while (running your fuzzer for %s seconds)...' %
         args.run_time)
   docker_run(run_args, print_output=False)
 
