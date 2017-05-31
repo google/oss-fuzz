@@ -15,15 +15,25 @@
 #
 ################################################################################
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7"
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2.7"
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
-cd $SRC && git clone --depth 1 http://llvm.org/git/llvm.git
-cd $SRC/llvm/tools && git clone --depth 1 http://llvm.org/git/clang.git
-cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/compiler-rt.git
-cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxx.git
-cd $SRC/llvm/projects && git clone --depth 1 http://llvm.org/git/libcxxabi.git
+
+# Use chromium's clang revision
+mkdir $SRC/chromium_tools
+cd $SRC/chromium_tools
+git clone https://chromium.googlesource.com/chromium/src/tools/clang
+cd clang
+
+LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K\d+(?=')" scripts/update.py)
+echo "Using LLVM revision: $LLVM_REVISION"
+
+cd $SRC && svn co http://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
+cd $SRC/llvm/tools && svn co http://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_REVISION clang
+cd $SRC/llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
+cd $SRC/llvm/projects && svn co http://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
+cd $SRC/llvm/projects && svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
 
 # Build & install
 mkdir -p $WORK/llvm
@@ -48,13 +58,13 @@ ninja cxx
 ninja install-cxx
 rm -rf $WORK/msan
 
-# Copy libfuzzer sources
-mkdir $SRC/libfuzzer
-cp -r $SRC/llvm/lib/Fuzzer/* $SRC/libfuzzer/
+# Pull trunk libfuzzer.
+cd $SRC && git clone https://chromium.googlesource.com/chromium/llvm-project/llvm/lib/Fuzzer libfuzzer
 
 cp $SRC/llvm/tools/sancov/coverage-report-server.py /usr/local/bin/
 
 # Cleanup
 rm -rf $SRC/llvm
+rm -rf $SRC/chromium_tools
 apt-get remove --purge -y $LLVM_DEP_PACKAGES
 apt-get autoremove -y
