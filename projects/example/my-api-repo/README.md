@@ -12,10 +12,10 @@ Imagine that these files reside in your project's repository:
 * [do_stuff_fuzzer.dict](do_stuff_fuzzer.dict): a [fuzzing dictionary file](https://github.com/google/oss-fuzz/blob/master/docs/new_project_guide.md#dictionaries) for `DoStuff()`. Optional, but may improve fuzzing in many cases. 
 * [Makefile](Makefile): is a build file (the same can be done with other build systems):
   * accepts external compiler flags via `$CC`, `$CXX`, `$CFLAGS`, `$CXXFLAGS`
-  * accepts external fuzzing engine via `$LIB_FUZZING_ENGINE`, by default uses [standalone_fuzz_taget_runner.cpp](standalone_fuzz_taget_runner.cpp)
+  * accepts external fuzzing engine via `$LIB_FUZZING_ENGINE`, by default uses [standalone_fuzz_target_runner.cpp](standalone_fuzz_target_runner.cpp)
   * builds the fuzz target(s) and their corpus archive(s)
   * `make check` executes [do_stuff_fuzzer.cpp](do_stuff_fuzzer.cpp) on [`do_stuff_test_data/*`](do_stuff_test_data), thus ensures that the fuzz target is up to date and uses it as a regression test.
-* [standalone_fuzz_taget_runner.cpp](standalone_fuzz_taget_runner.cpp): is a simple standalone runnner for fuzz targets. You may use it to execute a fuzz target on given files w/o having to link in libFuzzer or other fuzzing engine. 
+* [standalone_fuzz_target_runner.cpp](standalone_fuzz_target_runner.cpp): is a simple standalone runnner for fuzz targets. You may use it to execute a fuzz target on given files w/o having to link in libFuzzer or other fuzzing engine.
 
 ## Files in OSS-Fuzz repository
 * [oss-fuzz/projects/example](..)
