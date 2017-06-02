@@ -161,7 +161,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --prefix="$FFMPEG_DEPS_PATH" \
     --pkg-config-flags="--static" \
     --libfuzzer=-lFuzzingEngine \
-    --optflags=-O1 \
+    --optflags='-O1 -Os' \
     --enable-gpl \
     --enable-libass \
     --enable-libfdk-aac \
