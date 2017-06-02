@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-image
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y zip file
+RUN apt-get install -y zip file libunwind8 binutils libblocksruntime0
 COPY llvm-symbolizer reproduce run_fuzzer test_all test_report \
     /usr/local/bin/
 
