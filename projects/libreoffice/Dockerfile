@@ -46,13 +46,13 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/1f5def51ca0026cd192958ef07228b52-rasqal-0.9.33.tar.gz \
     https://dev-www.libreoffice.org/src/a39f6c07ddb20d7dd2ff1f95fa21e2cd-raptor2-2.0.15.tar.gz \
     https://dev-www.libreoffice.org/src/e5be03eda13ef68aabab6e42aa67715e-redland-1.0.17.tar.gz \
-    https://dev-www.libreoffice.org/src/3d569869d27b48860210c758c4f313082103a5e58219a7669b52bfd29d674780-cppunit-1.14.0.tar.gz \
+    https://dev-www.libreoffice.org/src/cppunit-1.14.0.tar.gz \
     https://dev-www.libreoffice.org/src/openldap-2.4.44.tgz \
     https://dev-www.libreoffice.org/src/231adebe5c2f78fded3e3df6e958878e-neon-0.30.1.tar.gz \
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.14.8.tar.xz \
     https://dev-www.libreoffice.org/src/curl-7.52.1.tar.gz \
-    https://dev-www.libreoffice.org/src/86b1daaa438f5a7bea9a52d7b9799ac0-xmlsec1-1.2.23.tar.gz \
+    https://dev-www.libreoffice.org/src/xmlsec1-1.2.24.tar.gz \
     https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libcdr-0.1.3.tar.bz2 \
@@ -74,8 +74,8 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libwps-0.4.6.tar.xz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
-    https://dev-www.libreoffice.org/src/poppler-0.52.0.tar.xz \
-    https://dev-www.libreoffice.org/src/mdds-1.2.2.tar.bz2 \
+    https://dev-www.libreoffice.org/src/poppler-0.55.0.tar.xz \
+    https://dev-www.libreoffice.org/src/mdds-1.2.3.tar.bz2 \
     https://dev-www.libreoffice.org/src/openssl-1.0.2k.tar.gz \
     https://dev-www.libreoffice.org/src/language-subtag-registry-2017-04-19.tar.bz2 \
     https://dev-www.libreoffice.org/src/3069842a88b8f40c6b83ad2850cda293-graphite2-minimal-1.3.9.tgz \
@@ -123,7 +123,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/cgmfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/ww2fuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/ww6fuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/ww8fuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/ww8fuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/qpwfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
