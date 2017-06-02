@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER dvyukov@google.com
-RUN apt-get install -y make autoconf automake libtool libssl-dev zlib1g-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev zlib1g-dev
 
 RUN git clone --depth 1 https://github.com/curl/curl.git
 WORKDIR curl

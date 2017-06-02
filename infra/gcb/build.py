@@ -24,8 +24,10 @@ CONFIGURATIONS = {
   'sanitizer-address' : [ 'SANITIZER=address' ],
   'sanitizer-memory' : [ 'SANITIZER=memory' ],
   'sanitizer-undefined' : [ 'SANITIZER=undefined' ],
+  'sanitizer-coverage' : [ 'SANITIZER=coverage' ],
   'engine-libfuzzer' : [ 'FUZZING_ENGINE=libfuzzer' ],
   'engine-afl' : [ 'FUZZING_ENGINE=afl' ],
+  'engine-honggfuzz' : [ 'FUZZING_ENGINE=honggfuzz' ],
 }
 
 EngineInfo = collections.namedtuple(
@@ -34,13 +36,16 @@ EngineInfo = collections.namedtuple(
 ENGINE_INFO = {
     'libfuzzer': EngineInfo(
         upload_bucket='clusterfuzz-builds',
-        supported_sanitizers=['address', 'memory', 'undefined']),
+        supported_sanitizers=['address', 'memory', 'undefined', 'coverage']),
     'afl': EngineInfo(
         upload_bucket='clusterfuzz-builds-afl',
         supported_sanitizers=['address']),
+    'honggfuzz': EngineInfo(
+        upload_bucket='clusterfuzz-builds-honggfuzz',
+        supported_sanitizers=['address', 'memory', 'undefined']),
 }
 
-DEFAULT_ENGINES = ['libfuzzer', 'afl']
+DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
@@ -97,6 +102,10 @@ def get_sanitizers(project_yaml):
     elif isinstance(sanitizer, dict):
       for key in sanitizer.iterkeys():
         processed_sanitizers.append(key)
+
+  # Always make a coverage build.
+  if 'coverage' not in processed_sanitizers:
+    processed_sanitizers.append('coverage')
 
   return processed_sanitizers
 

@@ -17,10 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mattkwong@google.com
 
-RUN apt-get install -y software-properties-common python-software-properties
+RUN apt-get update && apt-get install -y software-properties-common python-software-properties
 RUN add-apt-repository ppa:webupd8team/java
-RUN apt-get update
-RUN apt-get -y install  \
+RUN apt-get update && apt-get -y install  \
 	vim             \
 	build-essential \
 	openjdk-8-jdk   \

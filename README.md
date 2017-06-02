@@ -69,7 +69,7 @@ To submit a new project:
   * e-mail of the engineering contact person to be CCed on new issues. This
     email should be  
     [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
-    ([why?](docs/faq.md#why-we-require-an-e-mail-associated-with-a-google-account))
+    ([why?](docs/faq.md#why-do-you-require-an-e-mail-associated-with-a-google-account))
     and belong to an established project committer (according to VCS logs).
     If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
   * Note that `project_name` can only contain alphanumeric characters, underscores(_) or dashes(-).
@@ -103,9 +103,13 @@ OSS-Fuzz will adhere to following disclosure principles:
 * [Projects](projects) lists OSS projects currently analyzed by OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while containing some Chrome-specific bits, is an excellent guide to making your fuzzer better.
-* Blog posts: 2016-12-01 ([1](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
+* Blog posts: 
+  * 2016-12-01 ([1](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
 [2](https://testing.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
 [3](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
+  * 2017-05-08 ([1](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
+[2](https://testing.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
+[3](https://security.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html))
 
 ## Build Status
 [This page](https://oss-fuzz-build-logs.storage.googleapis.com/index.html)

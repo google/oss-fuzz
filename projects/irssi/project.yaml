@@ -3,3 +3,11 @@ primary_contact: "ahf@irssi.org"
 auto_ccs:
   - "dx@dxzone.com.ar"
   - "staff@irssi.org"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl

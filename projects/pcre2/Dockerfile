@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kcc@google.com
-RUN apt-get install -y make autoconf automake libtool subversion
+RUN apt-get update && apt-get install -y make autoconf automake libtool subversion
 
 RUN svn co svn://vcs.exim.org/pcre2/code/trunk pcre2
 WORKDIR pcre2

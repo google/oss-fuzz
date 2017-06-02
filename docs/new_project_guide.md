@@ -68,7 +68,7 @@ It is very simple for most projects:
 ```docker
 FROM gcr.io/oss-fuzz-base/base-builder    # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                     # maintainer for this file
-RUN apt-get install -y ...                # install required packages to build your project
+RUN apt-get update && apt-get install -y ... # install required packages to build your project
 RUN git clone <git_url> <checkout_dir>    # checkout all sources needed to build your project
 WORKDIR <checkout_dir>                    # current directory for build script
 COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer files in src dir
@@ -143,6 +143,12 @@ pass them manually to the build tool.
 
 See [Provided Environment Variables](../infra/base-images/base-builder/README.md#provided-environment-variables) section in
 `base-builder` image documentation for more details.
+
+## Disk space restrictions
+
+Our builders have a disk size of 70GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
+
+In addition to this, please keep the size of the build (everything copied to `$OUT`) small (<10GB uncompressed) -- this will need be repeatedly transferred and unzipped during fuzzing and run on VMs with limited disk space.
 
 ## Fuzzer execution environment
 
@@ -229,7 +235,9 @@ has an appropriate and consistent license.
 Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
 sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
 
-Put your dict file in `$OUT` and specify in .options file:
+Put your dict file in `$OUT`. If the dict filename is the same as your target
+binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the name is different
+(e.g. because it is shared by several targets), specify this in .options file:
 
 ```
 [libfuzzer]

@@ -19,7 +19,7 @@ echo "---------------------------------------------------------------"
 
 if [ -z "${SANITIZER_FLAGS-}" ]; then
   FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
-  export SANITIZER_FLAGS=$(echo ${!FLAGS_VAR})
+  export SANITIZER_FLAGS=${!FLAGS_VAR-}
 fi
 
 # compile script might override environment, use . to call it.
@@ -32,9 +32,15 @@ then
   cp -R /usr/msan/lib/* /usr/lib/
 fi
 
+# Coverage flag overrides.
+COVERAGE_FLAGS_VAR="COVERAGE_FLAGS_$SANITIZER"
+if [[ -n ${!COVERAGE_FLAGS_VAR-} ]]
+then
+  export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
+fi
+
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
-
 
 echo "CC=$CC"
 echo "CXX=$CXX"

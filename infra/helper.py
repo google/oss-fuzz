@@ -32,6 +32,16 @@ import time
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
 
+BASE_IMAGES = [
+    'gcr.io/oss-fuzz-base/base-image',
+    'gcr.io/oss-fuzz-base/base-clang',
+    'gcr.io/oss-fuzz-base/base-builder',
+    'gcr.io/oss-fuzz-base/base-runner',
+    'gcr.io/oss-fuzz-base/base-runner-debug',
+]
+
+VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
+
 
 def main():
   os.chdir(OSSFUZZ_DIR)
@@ -48,6 +58,8 @@ def main():
   build_image_parser = subparsers.add_parser(
       'build_image', help='Build an image.')
   build_image_parser.add_argument('project_name')
+  build_image_parser.add_argument('--pull', action='store_true',
+                                  help='Pull latest base image.')
 
   build_fuzzers_parser = subparsers.add_parser(
       'build_fuzzers', help='Build fuzzers for a project.')
@@ -56,7 +68,7 @@ def main():
   _add_environment_args(build_fuzzers_parser)
   build_fuzzers_parser.add_argument('project_name')
   build_fuzzers_parser.add_argument('source_path', help='path of local source',
-                      nargs='?')
+                                    nargs='?')
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer.')
@@ -64,7 +76,7 @@ def main():
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                      nargs=argparse.REMAINDER)
+                                 nargs=argparse.REMAINDER)
 
   coverage_parser = subparsers.add_parser(
       'coverage', help='Run a fuzzer for a while and generate coverage.')
@@ -73,15 +85,17 @@ def main():
   coverage_parser.add_argument('project_name', help='name of the project')
   coverage_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   coverage_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                      nargs=argparse.REMAINDER)
+                               nargs=argparse.REMAINDER)
 
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
+  reproduce_parser.add_argument('--valgrind', action='store_true',
+                       help='run with valgrind')
   reproduce_parser.add_argument('project_name', help='name of the project')
   reproduce_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   reproduce_parser.add_argument('testcase_path', help='path of local testcase')
   reproduce_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                      nargs=argparse.REMAINDER)
+                                nargs=argparse.REMAINDER)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash in an image.')
@@ -89,6 +103,9 @@ def main():
   _add_engine_args(shell_parser)
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
+
+  pull_images_parser = subparsers.add_parser('pull_images',
+                                             help='Pull base images.')
 
   args = parser.parse_args()
   if args.command == 'generate':
@@ -105,6 +122,8 @@ def main():
     return reproduce(args)
   elif args.command == 'shell':
     return shell(args)
+  elif args.command == 'pull_images':
+    return pull_images(args)
 
   return 0
 
@@ -155,7 +174,7 @@ def _get_command_string(command):
 def _add_engine_args(parser):
   """Add common engine args."""
   parser.add_argument('--engine', default='libfuzzer',
-                      choices=['libfuzzer', 'afl'])
+                      choices=['libfuzzer', 'afl', 'honggfuzz'])
 
 
 def _add_sanitizer_args(parser):
@@ -170,7 +189,7 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def _build_image(image_name, no_cache=False):
+def _build_image(image_name, no_cache=False, pull=False):
   """Build image."""
 
   is_base_image = _is_base_image(image_name)
@@ -190,8 +209,7 @@ def _build_image(image_name, no_cache=False):
 
   build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir]
 
-  return docker_build(build_args, pull=(is_base_image and
-                                        not no_cache))
+  return docker_build(build_args, pull=pull)
 
 
 def docker_run(run_args, print_output=True):
@@ -230,10 +248,34 @@ def docker_build(build_args, pull=False):
   return True
 
 
+def docker_pull(image, pull=False):
+  """Call `docker pull`."""
+  command = ['docker', 'pull', image]
+  print('Running:', _get_command_string(command))
+
+  try:
+    subprocess.check_call(command)
+  except subprocess.CalledProcessError:
+    print('docker pull failed.', file=sys.stderr)
+    return False
+
+  return True
+
+
 def build_image(args):
   """Build docker image."""
+  pull = args.pull
+  if not pull:
+    y_or_n = raw_input('Pull latest base images (compiler/runtime)? (y/N): ')
+    pull = y_or_n.lower() == 'y'
+
+  if pull:
+    print('Pulling latest base images...')
+  else:
+    print('Using cached base images...')
+
   # If build_image is called explicitly, don't use cache.
-  if _build_image(args.project_name, no_cache=True):
+  if _build_image(args.project_name, no_cache=True, pull=pull):
     return 0
 
   return 1
@@ -289,9 +331,6 @@ def run_fuzzer(args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner'):
-    return 1
-
   env = ['FUZZING_ENGINE=' + args.engine]
 
   run_args = sum([['-e', v] for v in env], []) + [
@@ -312,22 +351,24 @@ def coverage(args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner'):
-    return 1
-
   temp_dir = tempfile.mkdtemp()
 
   run_args = [
+      '-e', 'FUZZING_ENGINE=libfuzzer',
+      '-e', 'ASAN_OPTIONS=coverage_dir=/cov',
+      '-e', 'MSAN_OPTIONS=coverage_dir=/cov',
+      '-e', 'UBSAN_OPTIONS=coverage_dir=/cov',
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
-      '/out/%s' % args.fuzzer_name,
+      'run_fuzzer',
+      args.fuzzer_name,
       '-dump_coverage=1',
       '-max_total_time=%s' % args.run_time
   ] + args.fuzzer_args
 
-  print('This may take a while (running your fuzzer for %d seconds)...' %
+  print('This may take a while (running your fuzzer for %s seconds)...' %
         args.run_time)
   docker_run(run_args, print_output=False)
 
@@ -351,13 +392,21 @@ def reproduce(args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  if not _build_image('base-runner'):
-    return 1
+  debugger = ''
+  env = []
+  image_name = 'base-runner'
 
-  run_args = [
+  if args.valgrind:
+    debugger = 'valgrind --tool=memcheck --track-origins=yes --leak-check=full'
+
+  if debugger:
+    image_name = 'base-runner-debug'
+    env += ['DEBUGGER=' + debugger]
+
+  run_args = sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
-      '-t', 'gcr.io/oss-fuzz-base/base-runner',
+      '-t', 'gcr.io/oss-fuzz-base/%s' % image_name,
       'reproduce',
       args.fuzzer_name,
       '-runs=100',
@@ -368,6 +417,10 @@ def reproduce(args):
 
 def generate(args):
   """Generate empty project files."""
+  if not VALID_PROJECT_NAME_REGEX.match(args.project_name):
+    print('Invalid project name.', file=sys.stderr)
+    return 1
+
   dir = os.path.join('projects', args.project_name)
 
   try:
@@ -418,6 +471,16 @@ def shell(args):
   ]
 
   docker_run(run_args)
+  return 0
+
+
+def pull_images(args):
+  """Pull base images."""
+  for base_image in BASE_IMAGES:
+    if not docker_pull(base_image):
+      return 1
+
+  return 0
 
 
 if __name__ == '__main__':

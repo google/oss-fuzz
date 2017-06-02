@@ -5,3 +5,11 @@ auto_ccs:
   - "nfxjfg@gmail.com"
   - "chortos@inbox.lv"
   - "vabnick@gmail.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - afl

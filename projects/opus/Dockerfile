@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER flim@google.com
-RUN apt-get install -y make autoconf automake libtool wget
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 
 RUN git clone https://git.xiph.org/opus.git
 RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz

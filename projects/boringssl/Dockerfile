@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y cmake ninja-build golang
+RUN apt-get update && apt-get install -y cmake ninja-build golang
 
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 COPY build.sh $SRC/

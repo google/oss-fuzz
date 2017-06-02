@@ -104,6 +104,9 @@ the growth of coverage and finding of new bugs. ClusterFuzz provides a
 [performance analyzer](https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md)
 for each fuzz target that shows problems that are impacting the performance of the fuzz target.
 
+## Example
+You may look at a simple [example](../projects/example/my-api-repo) that covers most of the items above. 
+
 ## Not a project member?
 
 If you are a member of the project you want to fuzz, most of the steps above are simple.

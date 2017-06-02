@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER vitalybuka@chromium.org
-RUN apt-get install -y make autoconf automake libtool pkg-config cmake \
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config cmake \
     ninja-build liblzma-dev libz-dev docbook2x
 
 RUN git clone --depth 1  https://github.com/google/libprotobuf-mutator.git

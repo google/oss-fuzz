@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER Jakub Zawadzki <darkjames-ws@darkjames.pl>
 
-RUN apt-get install -y make autoconf automake libtool libtool-bin \
+RUN apt-get update && apt-get install -y make autoconf automake libtool libtool-bin \
                        flex bison \
                        libglib2.0-dev libgcrypt20-dev
 

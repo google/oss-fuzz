@@ -1,1 +1,6 @@
 homepage: "http://www.libpng.org/pub/png/libpng.html"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
