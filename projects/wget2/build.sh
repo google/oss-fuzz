@@ -15,13 +15,14 @@
 #
 ################################################################################
 
-./bootstrap
-./configure --enable-static --disable-doc
-make
+! test -d lib && ./bootstrap
+! test -f config.h && ./configure --enable-static --disable-doc
+make -j$(nproc)
 
-cp -p fuzz/*.dict fuzz/*.options $OUT
+find fuzz -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
+find fuzz -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
-fuzzers=$(find fuzz/ -name "*_fuzzer.cc")
+fuzzers=$(find fuzz -name "*_fuzzer.cc")
 
 for f in $fuzzers; do
     fuzzer=$(basename "$f" ".cc")
@@ -36,8 +37,7 @@ for f in $fuzzers; do
         cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
     fi
 
-    corpus_dir=$(basename "${fuzzer}" "_fuzzer")
-    if [ -d "fuzz/${corpus_dir}.in/" ]; then
-        zip -r "$OUT/${fuzzer}_seed_corpus.zip" "fuzz/${corpus_dir}.in/"
+    if [ -d "fuzz/${fuzzer}.in/" ]; then
+        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "fuzz/${fuzzer}.in/"
     fi
 done

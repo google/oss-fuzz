@@ -5,3 +5,4 @@ auto_ccs:
   - "lemzwerg@googlemail.com"
 sanitizers:
   - address
+  - undefined
