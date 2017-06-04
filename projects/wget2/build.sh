@@ -15,21 +15,22 @@
 #
 ################################################################################
 
-! test -d lib && ./bootstrap
-! test -f config.h && ./configure --enable-static --disable-doc
-make -j$(nproc)
+# avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
+export ASAN_OPTIONS=detect_leaks=0
 
-find fuzz -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
-find fuzz -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
+! test -f lib/Makefile.in && ./bootstrap
+./configure --enable-static --disable-doc
+make clean
+make -j$(nproc) all check
 
-fuzzers=$(find fuzz -name "*_fuzzer.cc")
+cd fuzz
+find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
-for f in $fuzzers; do
-    fuzzer=$(basename "$f" ".cc")
-
-    $CXX $CXXFLAGS -std=c++11 -Iinclude/wget/ \
-        "fuzz/${fuzzer}.cc" -o "$OUT/${fuzzer}" \
-        libwget/.libs/libwget.a -lFuzzingEngine -Wl,-Bstatic \
+for fuzzer in *_fuzzer; do
+    $CXX $CXXFLAGS -std=c++11 -I../include/wget/ \
+        "${fuzzer}.cc" -o "$OUT/${fuzzer}" \
+        ../libwget/.libs/libwget.a -lFuzzingEngine -Wl,-Bstatic \
         -lidn2 -lunistring \
         -Wl,-Bdynamic
 
@@ -37,7 +38,7 @@ for f in $fuzzers; do
         cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
     fi
 
-    if [ -d "fuzz/${fuzzer}.in/" ]; then
-        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "fuzz/${fuzzer}.in/"
+    if [ -d "${fuzzer}.in/" ]; then
+        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${fuzzer}.in/"
     fi
 done
