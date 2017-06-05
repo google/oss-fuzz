@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y \
  texinfo \
  flex \
  liblzma-dev \
+ libidn11-dev \
  libidn2-0-dev \
  libunistring-dev \
  zlib1g-dev \
