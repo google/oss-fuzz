@@ -15,13 +15,30 @@
 #
 ################################################################################
 
+# build libnetcdf.a
+curl ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz > netcdf-4.4.1.1.tar.gz
+tar xvzf netcdf-4.4.1.1.tar.gz
+cd netcdf-4.4.1.1
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$SRC/install -DHDF5_C_LIBRARY=libhdf5_serial.a -DHDF5_HL_LIBRARY=libhdf5_serial_hl.a -DHDF5_INCLUDE_DIR=/usr/include/hdf5/serial -DENABLE_DAP:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -DBUILD_UTILITIES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DENABLE_TESTS:BOOL=OFF
+make clean -s
+make -j$(nproc) -s
+make install
+cd ../..
+
 # build gdal
 cd gdal
 export LDFLAGS=${CXXFLAGS}
-./configure --without-libtool --with-liblzma --with-expat --with-sqlite3 --with-xerces --with-webp
+./configure --without-libtool --with-liblzma --with-expat --with-sqlite3 --with-xerces --with-webp --with-netcdf=$SRC/install --without-curl --without-hdf5 --with-jpeg=internal
 make clean -s
 make -j$(nproc) -s
 
-export EXTRA_LIBS="-Wl,-Bstatic -lwebp -llzma -lexpat -lsqlite3 -lgif -lpng12 -lz -lxerces-c -licuuc -licudata -Wl,-Bdynamic -ldl -lpthread"
+export EXTRA_LIBS="-Wl,-Bstatic -lwebp -llzma -lexpat -lsqlite3 -lgif -lpng12 -lz"
+# Xerces-C related
+export EXTRA_LIBS="$EXTRA_LIBS -lxerces-c -licuuc -licudata"
+# netCDF related
+export EXTRA_LIBS="$EXTRA_LIBS -L$SRC/install/lib -lnetcdf -lhdf5_serial_hl -lhdf5_serial -lsz -laec -lz"
+export EXTRA_LIBS="$EXTRA_LIBS -Wl,-Bdynamic -ldl -lpthread"
 ./fuzzers/build_google_oss_fuzzers.sh
 ./fuzzers/build_seed_corpus.sh
