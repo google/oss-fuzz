@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER even.rouault@spatialys.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool g++ zlib1g-dev libsqlite3-dev libexpat-dev liblzma-dev libxerces-c-dev libpng12-dev libgif-dev libwebp-dev libicu-dev libnetcdf-dev curl
+RUN apt-get update && apt-get install -y make autoconf automake libtool g++ zlib1g-dev libsqlite3-dev libexpat-dev liblzma-dev libxerces-c-dev libpng12-dev libgif-dev libwebp-dev libicu-dev libnetcdf-dev curl cmake
 #   libgeos-dev libjpeg-dev libcurl4-gnutls-dev libproj-dev libxml2-dev netcdf-bin libpoppler-dev libspatialite-dev libhdf4-alt-dev libhdf5-serial-dev  poppler-utils libfreexl-dev unixodbc-dev libepsilon-dev libpcre3-dev
 # libpodofo-dev  libcrypto++-dev
 RUN git clone --depth 1 https://github.com/OSGeo/gdal gdal
