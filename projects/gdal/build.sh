@@ -19,6 +19,7 @@
 curl ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz > netcdf-4.4.1.1.tar.gz
 tar xvzf netcdf-4.4.1.1.tar.gz
 cd netcdf-4.4.1.1
+patch -p0 < $SRC/NC4_put_propattr_leak_fix.patch
 mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$SRC/install -DHDF5_C_LIBRARY=libhdf5_serial.a -DHDF5_HL_LIBRARY=libhdf5_serial_hl.a -DHDF5_INCLUDE_DIR=/usr/include/hdf5/serial -DENABLE_DAP:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -DBUILD_UTILITIES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF -DENABLE_TESTS:BOOL=OFF
