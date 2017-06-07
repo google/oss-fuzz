@@ -17,7 +17,7 @@
 
 # build libnetcdf.a
 curl ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz > netcdf-4.4.1.1.tar.gz
-tar xvzf netcdf-4.4.1.1.tar.gz
+tar xzf netcdf-4.4.1.1.tar.gz
 cd netcdf-4.4.1.1
 patch -p0 < $SRC/NC4_put_propattr_leak_fix.patch
 mkdir build
@@ -33,7 +33,7 @@ cd gdal
 export LDFLAGS=${CXXFLAGS}
 ./configure --without-libtool --with-liblzma --with-expat --with-sqlite3 --with-xerces --with-webp --with-netcdf=$SRC/install --without-curl --without-hdf5 --with-jpeg=internal
 make clean -s
-make -j$(nproc) -s
+make -j$(nproc) -s static-lib
 
 export EXTRA_LIBS="-Wl,-Bstatic -lwebp -llzma -lexpat -lsqlite3 -lgif -lpng12 -lz"
 # Xerces-C related
