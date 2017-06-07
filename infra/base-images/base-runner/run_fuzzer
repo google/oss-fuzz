@@ -54,7 +54,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   rm -rf /tmp/honggfuzz_workdir && mkdir /tmp/honggfuzz_workdir
   # --exit_upon_crash: exit whith a first crash seen
   # -R (report): save report file to this location
-  # -W (working dir): where the crashes and the report file go
+  # -W (working dir): where the crashes go
   # -v (verbose): don't use VTE UI, just stderr
   # -z: use software-instrumentation of clang (trace-pc-guard....)
   # -P: use persistent mode of fuzzing (i.e. LLVMFuzzerTestOneInput)
