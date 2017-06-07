@@ -26,9 +26,6 @@ cp libhfuzz/libhfuzz.a $LIB_FUZZING_ENGINE
 cp honggfuzz $OUT/
 popd > /dev/null
 
-# Tell hfuzz-clang which exactly clang binary to use (otherwise hfuzz-clang
-# would try various ones (clang-5.0, clang-4.0, clang-devel, etc.)
-export HFUZZ_CC_PATH="$CC"
 # Relevant coverage flags are added by the compiler/linker
 export COVERAGE_FLAGS=
 export CC=$SRC/honggfuzz/hfuzz_cc/hfuzz-clang
