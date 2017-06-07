@@ -21,4 +21,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool g++ zlib
 # libpodofo-dev  libcrypto++-dev
 RUN git clone --depth 1 https://github.com/OSGeo/gdal gdal
 WORKDIR gdal
-COPY build.sh $SRC/
+COPY build.sh NC4_put_propattr_leak_fix.patch $SRC/
