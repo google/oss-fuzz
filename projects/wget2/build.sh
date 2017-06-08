@@ -24,15 +24,12 @@ make clean
 make -j$(nproc) all check
 
 cd fuzz
+make oss-fuzz
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
 for fuzzer in *_fuzzer; do
-    $CXX $CXXFLAGS -std=c++11 -I../include/wget/ \
-        "${fuzzer}.cc" -o "$OUT/${fuzzer}" \
-        ../libwget/.libs/libwget.a -lFuzzingEngine -Wl,-Bstatic \
-        -lidn2 -lunistring \
-        -Wl,-Bdynamic
+    cp -p "${fuzzer}" "$OUT"
 
     if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
         cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
