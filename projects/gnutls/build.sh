@@ -16,15 +16,31 @@
 ################################################################################
 
 CONFIGURE_FLAGS=""
+NETTLE_CONFIGURE_FLAGS=""
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
   CONFIGURE_FLAGS="--disable-hardware-acceleration"
+  NETTLE_CONFIGURE_FLAGS="--disable-assembler --disable-fat"
 fi
 
+# We could use GMP from git repository to avoid false positives in
+# sanitizers, but GMP doesn't compile with clang. We use gmp-mini
+# instead.
+
+pushd nettle
+bash .bootstrap
+./configure --enable-mini-gmp --disable-documentation --libdir=/opt/lib/ --prefix=/opt $NETTLE_CONFIGURE_FLAGS && ( make -j$(nproc) || make -j$(nproc) ) && make install
+if test $? != 0;then
+	echo "Failed to compile nettle"
+	exit 1
+fi
+popd
+
 make bootstrap
-./configure --enable-gcc-warnings --enable-static --with-included-libtasn1 \
+PKG_CONFIG_PATH=/opt/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig ./configure --with-nettle-mini --enable-gcc-warnings --enable-static --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc $CONFIGURE_FLAGS
-make "-j$(nproc)"
+make "-j$(nproc)" -C gl
+make "-j$(nproc)" -C lib
 
 fuzzers=$(find devel/fuzz/ -name "*_fuzzer.cc")
 
@@ -33,7 +49,7 @@ for f in $fuzzers; do
     $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
         "devel/fuzz/${fuzzer}.cc" -o "$OUT/${fuzzer}" \
         lib/.libs/libgnutls.a -lFuzzingEngine -lpthread -Wl,-Bstatic \
-        -lhogweed -lnettle -lgmp -Wl,-Bdynamic
+        /opt/lib/libhogweed.a /opt/lib/libnettle.a -Wl,-Bdynamic
 
     if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
         cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
