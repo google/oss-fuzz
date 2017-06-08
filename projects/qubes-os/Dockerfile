@@ -11,7 +11,7 @@ RUN git clone --depth 1 https://github.com/qubesos/qubes-builder-debian.git $SRC
     apt-key add $SRC/qubes-os/builder-debian/keys/qubes-debian-r4.0.asc && \
     apt-get update
 
-RUN git clone --depth 1 https://github.com/paraschetal/qubes-linux-utils.git $SRC/qubes-os/linux-utils && \
+RUN git clone https://github.com/paraschetal/qubes-linux-utils.git $SRC/qubes-os/linux-utils && \
     $SRC/qubes-os/builder-debian/scripts/debian-parser control --build-depends $SRC/qubes-os/linux-utils/debian/control | xargs apt-get -y install && \
     $SRC/qubes-os/builder-debian/scripts/debian-parser control --qubes-build-depends debian $SRC/qubes-os/linux-utils/debian/control | xargs apt-get -y install && \
     $SRC/qubes-os/builder-debian/scripts/debian-parser control --qubes-build-depends stretch $SRC/qubes-os/linux-utils/debian/control | xargs apt-get -y install
