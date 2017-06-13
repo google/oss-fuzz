@@ -1,0 +1,6 @@
+homepage: "http://commonmark.org"
+primary_contact: "jgm@berkeley.edu"
+sanitizers:
+  - address
+  - memory
+  - undefined
