@@ -20,5 +20,18 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool g++ zlib
 #   libgeos-dev libjpeg-dev libcurl4-gnutls-dev libproj-dev libxml2-dev netcdf-bin libpoppler-dev libspatialite-dev libhdf4-alt-dev libhdf5-serial-dev  poppler-utils libfreexl-dev unixodbc-dev libepsilon-dev libpcre3-dev
 # libpodofo-dev  libcrypto++-dev
 RUN git clone --depth 1 https://github.com/OSGeo/gdal gdal
+
+RUN git clone --depth 1 https://github.com/curl/curl.git gdal/curl
+
+COPY build.sh NC4_put_propattr_leak_fix.patch  $SRC/
+
+RUN curl ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz > gdal/netcdf-4.4.1.1.tar.gz && \
+    cd gdal && \
+    tar xzf netcdf-4.4.1.1.tar.gz && \
+    rm -f netcdf-4.4.1.1.tar.gz && \
+    cd netcdf-4.4.1.1 && \
+    patch -p0 < $SRC/NC4_put_propattr_leak_fix.patch && \
+    cd ../..
+
 WORKDIR gdal
-COPY build.sh NC4_put_propattr_leak_fix.patch $SRC/
+
