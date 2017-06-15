@@ -23,7 +23,7 @@ RUN git clone --depth 1 https://github.com/OSGeo/gdal gdal
 
 RUN git clone --depth 1 https://github.com/curl/curl.git gdal/curl
 
-COPY build.sh NC4_put_propattr_leak_fix.patch  $SRC/
+COPY build.sh NC4_put_propattr_leak_fix.patch libnetcdf_fix_undefined_left_shift_in_ncx_get_size_t.patch $SRC/
 
 RUN curl ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz > gdal/netcdf-4.4.1.1.tar.gz && \
     cd gdal && \
@@ -31,6 +31,7 @@ RUN curl ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz > gdal/netc
     rm -f netcdf-4.4.1.1.tar.gz && \
     cd netcdf-4.4.1.1 && \
     patch -p0 < $SRC/NC4_put_propattr_leak_fix.patch && \
+    patch -p0 < $SRC/libnetcdf_fix_undefined_left_shift_in_ncx_get_size_t.patch && \
     cd ../..
 
 WORKDIR gdal

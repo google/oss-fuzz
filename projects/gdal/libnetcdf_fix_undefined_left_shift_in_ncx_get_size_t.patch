@@ -1,0 +1,22 @@
+--- libsrc/ncx.m4.ori	2017-06-15 12:45:29.461345214 +0200
++++ libsrc/ncx.m4	2017-06-15 12:45:42.593332765 +0200
+@@ -1883,7 +1883,7 @@
+ 	/* similar to get_ix_int */
+ 	const uchar *cp = (const uchar *) *xpp;
+ 
+-	*ulp = (unsigned)(*cp++ << 24);
++	*ulp = (unsigned)(*cp++) << 24;
+ 	*ulp |= (*cp++ << 16);
+ 	*ulp |= (*cp++ << 8);
+ 	*ulp |= *cp;
+--- libsrc/ncx.c.ori	2017-06-15 12:38:29.769770935 +0200
++++ libsrc/ncx.c	2017-06-15 12:41:15.861594817 +0200
+@@ -3451,7 +3451,7 @@
+ 	/* similar to get_ix_int */
+ 	const uchar *cp = (const uchar *) *xpp;
+ 
+-	*ulp = (unsigned)(*cp++ << 24);
++	*ulp = (unsigned)(*cp++) << 24;
+ 	*ulp |= (*cp++ << 16);
+ 	*ulp |= (*cp++ << 8);
+ 	*ulp |= *cp;
