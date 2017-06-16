@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-export BACKEND_VMM=xen
-
 
 cd $SRC/qubes-os/linux-utils/
 
