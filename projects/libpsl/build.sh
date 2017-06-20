@@ -18,8 +18,11 @@
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
+# let 'make check' survive
+export LD_LIBRARY_PATH=/usr/local/lib
+
 ./autogen.sh
-./configure --enable-static --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2
+LDFLAGS="-L/usr/local/lib" ./configure --enable-static --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2
 make clean
 make -j$(nproc)
 make -j$(nproc) check
