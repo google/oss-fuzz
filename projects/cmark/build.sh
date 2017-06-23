@@ -21,7 +21,7 @@ $CC $CFLAGS -Isrc -Ibuild/src -c $SRC/markdown_to_html_fuzzer.c -o $WORK/markdow
 $CXX $CXXFLAGS -lFuzzingEngine $WORK/markdown_to_html_fuzzer.o build/src/libcmark.a -o $OUT/markdown_to_html_fuzzer
 
 cp $SRC/*.options $OUT/
-zip -j $OUT/markdown_to_html_fuzzer.zip $SRC/cmark/test/afl_test_cases/*
+zip -j $OUT/markdown_to_html_fuzzer_seed_corpus.zip $SRC/cmark/test/afl_test_cases/*
 
 # TODO: convert upstream AFL dictionary to new format
 # Convert the old AFL dictionary format to the new libFuzzer format
