@@ -22,4 +22,17 @@ $CXX $CXXFLAGS -lFuzzingEngine cmark_fuzzer.o build/src/libcmark.a -o $OUT/cmark
 
 cp $SRC/*.options $OUT/
 cp $SRC/cmark/test/fuzzing_dictionary $OUT/cmark.dict
-zip -j $OUT/markdown_to_html_fuzzer_seed_corpus.zip $SRC/cmark/test/afl_test_cases/*
+
+mkdir -p corpus
+cp $SRC/cmark/test/afl_test_cases/* corpus
+
+git clone --depth 1 https://github.com/michelf/mdtest.git mdtest
+find mdtest/*.mdtest -type f -name '*.text' | while read in_file
+do
+  # Genreate unique name for each input...
+  out_file=$(sha1sum "$in_file" | cut -c 1-32)
+  # ... and prepend a four-byte 'options' header
+  printf "\0\0\0\0" > "corpus/$out_file"
+  cat "$in_file" >> "corpus/$out_file"
+done
+zip -j $OUT/cmark_fuzzer_seed_corpus.zip corpus/*
