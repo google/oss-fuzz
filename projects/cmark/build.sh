@@ -17,8 +17,8 @@
 
 make -j$(nproc) cmake_build
 
-$CC $CFLAGS -Isrc -Ibuild/src -c $SRC/cmark/test/cmark-fuzz.c -o $WORK/cmark_fuzzer.o
-$CXX $CXXFLAGS -lFuzzingEngine $WORK/cmark_fuzzer.o build/src/libcmark.a -o $OUT/cmark_fuzzer
+$CC $CFLAGS -Isrc -Ibuild/src -c $SRC/cmark/test/cmark-fuzz.c -o cmark_fuzzer.o
+$CXX $CXXFLAGS -lFuzzingEngine cmark_fuzzer.o build/src/libcmark.a -o $OUT/cmark_fuzzer
 
 cp $SRC/*.options $OUT/
 cp $SRC/cmark/test/fuzzing_dictionary $OUT/cmark.dict
