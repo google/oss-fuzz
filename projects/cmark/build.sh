@@ -17,22 +17,9 @@
 
 make -j$(nproc) cmake_build
 
-$CC $CFLAGS -Isrc -Ibuild/src -c $SRC/markdown_to_html_fuzzer.c -o $WORK/markdown_to_html_fuzzer.o
-$CXX $CXXFLAGS -lFuzzingEngine $WORK/markdown_to_html_fuzzer.o build/src/libcmark.a -o $OUT/markdown_to_html_fuzzer
+$CC $CFLAGS -Isrc -Ibuild/src -c $SRC/cmark/test/cmark-fuzz.c -o $WORK/cmark_fuzzer.o
+$CXX $CXXFLAGS -lFuzzingEngine $WORK/cmark_fuzzer.o build/src/libcmark.a -o $OUT/cmark_fuzzer
 
 cp $SRC/*.options $OUT/
+cp $SRC/cmark/test/fuzzing_dictionary $OUT/cmark.dict
 zip -j $OUT/markdown_to_html_fuzzer_seed_corpus.zip $SRC/cmark/test/afl_test_cases/*
-
-# TODO: convert upstream AFL dictionary to new format
-# Convert the old AFL dictionary format to the new libFuzzer format
-afl_dir="test/afl_dictionary/"
-if [ -d "$afl_dir" ]; then
-  truncate --size 0 $OUT/cmark.dict
-  # For each individual token...
-  for filename in $(find "$afl_dir" -type f -size +0); do
-    # ... hex escape ...
-    token=$(cat "$filename" | od -v -An -tx1 | tr -d '\n' | sed -e 's/ /\\x/g')
-    # ...then surround by double-quotes
-    echo "\"$token\"" >> $OUT/cmark.dict
-  done
-fi

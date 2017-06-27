@@ -19,4 +19,4 @@ MAINTAINER philipturnbull@github.com
 RUN apt-get update && apt-get install -y make cmake
 RUN git clone --depth 1 https://github.com/jgm/cmark.git cmark
 WORKDIR cmark
-COPY build.sh markdown_to_html_fuzzer.c *.dict *.options $SRC/
+COPY build.sh *.dict *.options $SRC/
