@@ -3,6 +3,7 @@ primary_contact: "lemzwerg@gmail.com"
 auto_ccs:
   - "darnold@adobe.com"
   - "lemzwerg@googlemail.com"
+  - "hintak.leung@gmail.com"
 sanitizers:
   - address
   - undefined
