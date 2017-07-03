@@ -15,16 +15,70 @@
 #
 ################################################################################
 
+export WGET2_DEPS_PATH=$SRC/wget2_deps
+export PKG_CONFIG_PATH=$WGET2_DEPS_PATH/lib/pkgconfig
+export CPPFLAGS="-I$WGET2_DEPS_PATH/include"
+export LDFLAGS="-L$WGET2_DEPS_PATH/lib"
+
+cd $SRC/libunistring
+./autogen.sh
+./configure --enable-static --disable-shared --prefix=$WGET2_DEPS_PATH
+make -j$(nproc)
+make install
+
+cd $SRC/libidn2
+./bootstrap
+./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$WGET2_DEPS_PATH
+make -j$(nproc)
+make install
+
+cd $SRC/libpsl
+./autogen.sh
+./configure --enable-static --disable-shared --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2 --prefix=$WGET2_DEPS_PATH
+make -j$(nproc)
+make install
+
+GNUTLS_CONFIGURE_FLAGS=""
+NETTLE_CONFIGURE_FLAGS=""
+if [[ $CFLAGS = *sanitize=memory* ]]; then
+  GNUTLS_CONFIGURE_FLAGS="--disable-hardware-acceleration"
+  NETTLE_CONFIGURE_FLAGS="--disable-assembler --disable-fat"
+fi
+
+# We could use GMP from git repository to avoid false positives in
+# sanitizers, but GMP doesn't compile with clang. We use gmp-mini
+# instead.
+cd $SRC/nettle
+bash .bootstrap
+./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --prefix=$WGET2_DEPS_PATH $NETTLE_CONFIGURE_FLAGS
+( make -j$(nproc) || make -j$(nproc) ) && make install
+if test $? != 0;then
+        echo "Failed to compile nettle"
+        exit 1
+fi
+
+cd $SRC/gnutls
+make bootstrap
+LIBS="-lunistring" \
+./configure --with-nettle-mini --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
+    --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
+    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --prefix=$WGET2_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
+make -j$(nproc)
+make install
+
+
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
-! test -f lib/Makefile.in && ./bootstrap
-./configure --enable-static --disable-doc
+cd $SRC/wget2
+./bootstrap
+LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+./configure --enable-static --disable-shared --disable-doc --without-plugin-support
 make clean
 make -j$(nproc) all check
 
 cd fuzz
-make oss-fuzz
+CXXFLAGS="$CXXFLAGS -L$WGET2_DEPS_PATH/lib/" make oss-fuzz
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
