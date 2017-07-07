@@ -51,10 +51,6 @@ for f in $fuzzers; do
         lib/.libs/libgnutls.a -lFuzzingEngine -lpthread -Wl,-Bstatic \
         /opt/lib/libhogweed.a /opt/lib/libnettle.a -Wl,-Bdynamic
 
-    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
-        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
-    fi
-
     corpus_dir=$(basename "${fuzzer}" "_fuzzer")
     if [ -d "devel/fuzz/${corpus_dir}.in/" ]; then
         zip -r "$OUT/${fuzzer}_seed_corpus.zip" "devel/fuzz/${corpus_dir}.in/"
