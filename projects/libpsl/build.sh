@@ -15,29 +15,40 @@
 #
 ################################################################################
 
+export DEPS_PATH=$SRC/deps
+export PKG_CONFIG_PATH=$DEPS_PATH/lib/pkgconfig
+export CPPFLAGS="-I$DEPS_PATH/include"
+export LDFLAGS="-L$DEPS_PATH/lib"
+
+cd $SRC/libunistring
+./autogen.sh
+./configure --enable-static --disable-shared --prefix=$DEPS_PATH
+make -j$(nproc)
+make install
+
+cd $SRC/libidn2
+./bootstrap
+./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$DEPS_PATH
+make -j$(nproc)
+make install
+
+
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
-# let 'make check' survive
-export LD_LIBRARY_PATH=/usr/local/lib
-
+cd $SRC/libpsl
 ./autogen.sh
-LDFLAGS="-L/usr/local/lib" ./configure --enable-static --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2
-make clean
+./configure --enable-static --disable-shared --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2 --prefix=$DEPS_PATH
 make -j$(nproc)
 make -j$(nproc) check
 
 cd fuzz
-make oss-fuzz
+CXXFLAGS="$CXXFLAGS -L$DEPS_PATH/lib/" make oss-fuzz
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
 for fuzzer in *_fuzzer; do
     cp -p "${fuzzer}" "$OUT"
-
-    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
-        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
-    fi
 
     if [ -d "${fuzzer}.in/" ]; then
         zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${fuzzer}.in/"
