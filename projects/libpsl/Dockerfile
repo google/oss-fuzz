@@ -17,21 +17,26 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER rockdaboot@gmail.com
 RUN apt-get update && apt-get install -y \
+ make \
  pkg-config \
+ autogen \
  autopoint \
  autoconf \
  automake \
  libtool \
- libunistring-dev \
- gtk-doc-tools \
- gettext gengetopt curl gperf
+ texinfo \
+ bison \
+ gettext \
+ gengetopt \
+ curl \
+ gperf \
+ wget \
+ python
 
-RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
-RUN cd libidn2 && git submodule update --init
-RUN cd libidn2 && ./bootstrap && ./configure --enable-static --disable-doc && make && make install
+RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
+RUN git clone --depth=1 --recursive https://gitlab.com/libidn/libidn2.git
 
-RUN git clone --depth=1 https://github.com/rockdaboot/libpsl.git
-RUN cd libpsl && git submodule update --init
+RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 
 WORKDIR libpsl
 COPY build.sh $SRC/
