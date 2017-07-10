@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER lr@pcorp.us
 RUN apt-get update && apt-get install -y make autoconf automake libtool g++ postgresql-server-dev-9.5 libgeos-dev libproj-dev libxml2-dev pkg-config libjson-c-dev
-RUN git clone --branch ossfuzz --depth 1 https://git.osgeo.org/gogs/postgis/postgis.git postgis
+RUN git clone --depth 1 https://git.osgeo.org/gogs/postgis/postgis.git postgis
 WORKDIR postgis
 COPY build.sh $SRC/
