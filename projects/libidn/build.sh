@@ -18,7 +18,8 @@
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
-./configure --enable-static --disable-doc
+make CFGFLAGS="--enable-static --disable-doc"
+make clean
 make -j1
 make -j$(nproc) check
 

@@ -22,12 +22,9 @@ RUN apt-get update && apt-get install -y \
  autoconf \
  automake \
  libtool \
- libunistring-dev \
- gtk-doc-tools \
- gettext gengetopt curl gperf openjdk-8-jdk
+ gettext gengetopt curl gperf
 
 RUN git clone --depth=1 https://git.savannah.gnu.org/git/libidn.git
-RUN cd libidn && make CFGFLAGS="--enable-static --disable-doc"
 
 WORKDIR libidn
 COPY build.sh $SRC/
