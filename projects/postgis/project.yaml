@@ -1,0 +1,6 @@
+homepage: "http://postgis.net/"
+primary_contact: "lr@pcorp.us"
+auto_ccs:
+  - "even.rouault@gmail.com"
+  - "pramsey@cleverelephant.ca"
+  - "strk@kbt.io"
