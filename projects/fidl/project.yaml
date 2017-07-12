@@ -1,8 +1,6 @@
 homepage: "https://fuchsia.googlesource.com/magenta/+/master/system/host/fidl/"
-primary_contact: "hariri@google.com"
+primary_contact: "aarongreen@google.com"
 auto_ccs:
+ - "hariri@google.com"
  - "phosek@google.com"
- - "aarongreen@google.com"
  - "kulakowski@google.com"
-sanitizers:
-- address
