@@ -22,5 +22,8 @@ make clean -s
 make -j$(nproc) -s
 cd ..
 
+chmod +x ./fuzzers/build_google_oss_fuzzers.sh
 ./fuzzers/build_google_oss_fuzzers.sh
+
+chmod +x ./fuzzers/build_seed_corpus.sh
 ./fuzzers/build_seed_corpus.sh
