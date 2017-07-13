@@ -1,5 +1,7 @@
 homepage: "https://curl.haxx.se/"
 primary_contact: "daniel@haxx.se"
+auto_ccs:
+  - "daniel.haxx@gmail.com"
 sanitizers:
   - address
   - memory
