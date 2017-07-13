@@ -4,5 +4,4 @@ auto_ccs:
   - "daniel.haxx@gmail.com"
 sanitizers:
   - address
-  - memory
   - undefined
