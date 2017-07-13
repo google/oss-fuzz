@@ -6,5 +6,6 @@ auto_ccs:
  - "webmaster@hartwork.org"
 sanitizers:
   - address
+  - memory
   - undefined
 
