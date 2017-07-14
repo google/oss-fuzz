@@ -15,54 +15,20 @@
 #
 ################################################################################
 
-# variables
+# target_dir determined by Dockerfile
 target_dir="$SRC/fuzz-targets"
-LDFLAGS=""
-LDLIBS="-lwolfssl -lFuzzingEngine"
 
-
-
-# build project
+# build wolfssl
 ./autogen.sh
 ./configure --enable-static --disable-shared --prefix=/usr CC="clang"
-make -j$(nproc) all
+make -j "$(nproc)" all
 make install
 
+# put linker arguments into the environment, appending to any existing ones
+export LDFLAGS="${LDFLAGS-""}"
+export LDLIBS="${LDLIBS-""} -lwolfssl -lFuzzingEngine"
 
-
-# set up fuzz targets
-for each in "${target_dir}"/*/target.c; do
-    [ -d "${each}" ] && continue
-    [ -f "${each}" ] || continue
-
-    path=$(dirname "${each}")
-    target=$(basename "${path}")
-
-    # build fuzz target
-    $CC $CFLAGS -I./fuzz \
-        -c "${path}/target.c" -o "$WORK/${target}.o"
-
-    $CXX $CXXFLAGS \
-        "$WORK/${target}.o" -o "$OUT/${target}" \
-        $LDFLAGS $LDLIBS
-
-    # copy only one options file, if any
-    options=$(find "${path}" -type f -iname '*.options' | head -n 1)
-    if [ -f "${options}" ]; then
-        cp "${options}" "$OUT/${target}.options"
-    fi
-
-    # copy only one corpus directory, if any
-    corpus=$(find "${path}" -type d -iname '*corpus' | head -n 1)
-    if [ -d "${corpus}" ]; then
-        zip -q "$OUT/${target}_seed_corpus.zip" -r "${corpus}"
-    fi
-done
-
-# copy dictionaries, if any
-for each in "$target_dir"/*.dict; do
-    [ -d "${each}" ] && continue
-    [ -f "${each}" ] || continue
-
-    cp "${each}" "$OUT/"
-done
+# make and export targets to $OUT; environment overridding internal variables
+cd "${target_dir}"
+make -e all
+make -e export prefix="$OUT"
