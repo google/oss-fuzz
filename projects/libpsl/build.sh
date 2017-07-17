@@ -22,12 +22,11 @@ export LDFLAGS="-L$DEPS_PATH/lib"
 
 cd $SRC/icu/source
 UBSAN_OPTIONS=detect_leaks=0 \
-CFLAGS="$CFLAGS -fno-sanitize=function,vptr" \
-CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr" \
-CPPFLAGS="$CPPFLAGS -fno-sanitize=function,vptr" \
-LDFLAGS="$LDFLAGS -fno-sanitize=undefined" \
-  ./configure --disable-shared --enable-static --disable-extras --disable-icuio --disable-layoutex \
-    --disable-tests --disable-samples --with-data-packaging=static --prefix=$DEPS_PATH
+CFLAGS="$CFLAGS -fno-sanitize=vptr" \
+CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
+CPPFLAGS="$CPPFLAGS -fno-sanitize=vptr" \
+./configure --disable-shared --enable-static --disable-extras --disable-icuio --disable-layoutex \
+  --disable-tests --disable-samples --with-data-packaging=static --prefix=$DEPS_PATH
 # ugly hack to avoid build error
 echo '#include <locale.h>' >>i18n/digitlst.h
 make -j$(nproc)
