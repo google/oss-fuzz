@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,17 @@
 mkdir -p $WORK/open62541
 cd $WORK/open62541
 
-cmake -DCMAKE_BUILD_TYPE=Debug -DUA_ENABLE_AMALGAMATION=OFF \
-      -DBUILD_SHARED_LIBS=OFF -DUA_BUILD_EXAMPLES=OFF -DUA_LOGLEVEL=400 \
+# LOGLEVEL:
+# <= 100 TRACE
+# <= 200 DEBUG
+# <= 300 INFO
+# <= 400 WARNING
+# <= 500 ERROR
+# <= 600 FATAL
+# > 600 No LOG output
+
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUA_ENABLE_AMALGAMATION=OFF \
+      -DBUILD_SHARED_LIBS=OFF -DUA_BUILD_EXAMPLES=OFF -DUA_LOGLEVEL=600 \
       -DUA_ENABLE_DISCOVERY=ON -DUA_ENABLE_DISCOVERY_MULTICAST=ON \
       $SRC/open62541/
 
