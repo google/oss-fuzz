@@ -289,7 +289,6 @@ def build_fuzzers(args):
     return 1
 
   env = [
-      'BUILD_UID=%d' % os.getuid(),
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer
   ]
