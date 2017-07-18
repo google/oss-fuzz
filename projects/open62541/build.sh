@@ -40,25 +40,22 @@ make -j1
 # ------------------------------------------------------------
 
 # Definitions
-CFLAGS="$CFLAGS -DUA_NO_AMALGAMATION"
+CXXFLAGS="$CXXFLAGS -DUA_NO_AMALGAMATION"
 # Include dirs
-CFLAGS="$CFLAGS -I$WORK/open62541/src_generated -I$SRC/open62541/include -I$SRC/open62541/plugins -I$SRC/open62541/deps -I$SRC/open62541/src -I$SRC/open62541/src/server"
+CXXFLAGS="$CXXFLAGS -I$WORK/open62541/src_generated -I$SRC/open62541/include -I$SRC/open62541/plugins -I$SRC/open62541/deps -I$SRC/open62541/src -I$SRC/open62541/src/server"
 
 # ------------------------------------------------------------
 # Build all the fuzzing targets in tests/fuzz
 # ------------------------------------------------------------
 
-fuzzerFiles=$(find $SRC/open62541/tests/fuzz/ -name "*.c")
+fuzzerFiles=$(find $SRC/open62541/tests/fuzz/ -name "*.cc")
 
 for F in $fuzzerFiles; do
 	fuzzerName=$(basename $F .c)
 	echo "Building fuzzer $fuzzerName"
 
-	$CC $CFLAGS -c \
-		$F -o $OUT/${fuzzerName}.o
-
-	$CXX $CXXFLAGS \
-		$OUT/${fuzzerName}.o -o $OUT/${fuzzerName} \
+	$CXX $CXXFLAGS  -std=c++11 \
+		$F -o $OUT/${fuzzerName} \
 		-lFuzzingEngine -L $WORK/open62541/bin -lopen62541
 
 	if [ -d "$SRC/open62541/tests/fuzz/${fuzzerName}_corpus" ]; then
