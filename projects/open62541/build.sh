@@ -29,40 +29,14 @@ cd $WORK/open62541
 
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUA_ENABLE_AMALGAMATION=OFF \
       -DBUILD_SHARED_LIBS=OFF -DUA_BUILD_EXAMPLES=OFF -DUA_LOGLEVEL=600 \
-      -DUA_ENABLE_DISCOVERY=ON -DUA_ENABLE_DISCOVERY_MULTICAST=ON \
+      -DUA_BUILD_OSS_FUZZ=ON \
       $SRC/open62541/
 
-# for now just use one processor, otherwise amalgamation may fail
+# This also builds all the fuzz targets and places them in the $OUT directory
+# Only build with one process otherwise amalgamation fails.
 make -j1
 
-# ------------------------------------------------------------
-# Add additional definitions which are normally set with CMake
-# ------------------------------------------------------------
-
-# Definitions
-CXXFLAGS="$CXXFLAGS -DUA_NO_AMALGAMATION"
-# Include dirs
-CXXFLAGS="$CXXFLAGS -I$WORK/open62541/src_generated -I$SRC/open62541/include -I$SRC/open62541/plugins -I$SRC/open62541/deps -I$SRC/open62541/src -I$SRC/open62541/src/server"
-
-# ------------------------------------------------------------
-# Build all the fuzzing targets in tests/fuzz
-# ------------------------------------------------------------
-
-fuzzerFiles=$(find $SRC/open62541/tests/fuzz/ -name "*.cc")
-
-for F in $fuzzerFiles; do
-	fuzzerName=$(basename $F .cc)
-	echo "Building fuzzer $fuzzerName"
-
-	$CXX $CXXFLAGS  -std=c++11 \
-		$F -o $OUT/${fuzzerName} \
-		-lFuzzingEngine -L $WORK/open62541/bin -lopen62541
-
-	if [ -d "$SRC/open62541/tests/fuzz/${fuzzerName}_corpus" ]; then
-		zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/open62541/tests/fuzz/${fuzzerName}_corpus/*
-	fi
-done
-
-cp $SRC/open62541/tests/fuzz/*.dict $SRC/open62541/tests/fuzz/*.options $OUT/
+# Copy the corpus, dict and options to the $OUT dir
+$SRC/open62541/tests/fuzz/oss-fuzz-copy.sh
 
 echo "Built all fuzzer targets."
