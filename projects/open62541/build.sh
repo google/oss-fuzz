@@ -51,7 +51,7 @@ CXXFLAGS="$CXXFLAGS -I$WORK/open62541/src_generated -I$SRC/open62541/include -I$
 fuzzerFiles=$(find $SRC/open62541/tests/fuzz/ -name "*.cc")
 
 for F in $fuzzerFiles; do
-	fuzzerName=$(basename $F .c)
+	fuzzerName=$(basename $F .cc)
 	echo "Building fuzzer $fuzzerName"
 
 	$CXX $CXXFLAGS  -std=c++11 \
