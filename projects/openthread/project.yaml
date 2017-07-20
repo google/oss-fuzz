@@ -1,4 +1,2 @@
 homepage: "https://github.com/openthread/openthread"
 primary_contact: "jonhui@nestlabs.com"
-# builds aren't working yet.
-disabled: true
