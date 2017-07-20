@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jonhui@nestlabs.com
 
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 -b oss-fuzz https://github.com/openthread/openthread
+RUN git clone --depth 1 https://github.com/openthread/openthread
 
 WORKDIR openthread
 COPY build.sh *.options $SRC/
