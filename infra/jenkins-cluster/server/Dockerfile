@@ -1,9 +1,8 @@
-FROM jenkinsci/jenkins
+FROM jenkins/jenkins:lts
 USER root
 
 RUN mkdir /var/secrets
-RUN apt-get -y update && apt-get -y upgrade
-RUN apt-get -y install python-dev virtualenv python-pip build-essential
+RUN apt-get -y update && apt-get -y upgrade && apt-get -y install python-dev virtualenv python-pip build-essential
 
 WORKDIR /
 RUN wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.zip
@@ -16,5 +15,5 @@ RUN /google-cloud-sdk/bin/gcloud -q components update
 RUN chown -R jenkins:jenkins /google-cloud-sdk
 
 USER jenkins
-ENV JENKINS_OPTS --httpPort=8080 --httpsPort=8082 --httpsCertificate=/var/secrets/cert.pem --httpsPrivateKey=/var/secrets/cert.key
+ENV JENKINS_OPTS --httpPort=8080 --httpsPort=8082 --httpsCertificate=/var/secrets/cert.pem --httpsPrivateKey=/var/secrets/cert.key -Djenkins.security.ApiTokenProperty.showTokenToAdmins=true
 ENV PATH=$PATH:/google-cloud-sdk/bin

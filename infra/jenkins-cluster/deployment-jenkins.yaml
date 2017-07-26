@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
       - name: jenkins
-        image: gcr.io/oss-fuzz-base/jenkins:latest
+        image: gcr.io/oss-fuzz-base/jenkins:20170726v2
         env:
           - name: JAVA_OPTS
             value: "-Duser.timezone=America/Los_Angeles -Dhudson.security.csrf.requestfield=Jenkins-Crumb -Xmx16g"
