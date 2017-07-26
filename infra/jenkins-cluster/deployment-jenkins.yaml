@@ -12,10 +12,10 @@ spec:
     spec:
       containers:
       - name: jenkins
-        image: gcr.io/oss-fuzz-base/jenkins:20170726v2
+        image: gcr.io/oss-fuzz-base/jenkins:20170726v4
         env:
           - name: JAVA_OPTS
-            value: "-Duser.timezone=America/Los_Angeles -Dhudson.security.csrf.requestfield=Jenkins-Crumb -Xmx16g"
+            value: "-Duser.timezone=America/Los_Angeles -Dhudson.security.csrf.requestfield=Jenkins-Crumb -Xmx16g -Djenkins.security.ApiTokenProperty.showTokenToAdmins=true"
         ports:
         - containerPort: 8080
         - containerPort: 50000
