@@ -30,12 +30,13 @@ make -j$(nproc) install
 popd
 
 FUZZ_DIR=cpython/Modules/_fuzz
-for fuzz_test in $(ls $FUZZ_DIR/fuzz_*.inc | egrep -o 'fuzz_[^.]*' )
+for fuzz_test in $(cat $FUZZ_DIR/fuzz_tests.txt)
 do
-  $OUT/bin/python3 $SRC/gen_fuzz.py $FUZZ_DIR/$fuzz_test.inc $fuzz_test > $FUZZ_DIR/$fuzz_test.cc
   $CXX $CXXFLAGS \
+    -D _Py_FUZZ_ONE -D _Py_FUZZ_$fuzz_test \
+    -Wno-unused-function \
     $($OUT/bin/python3-config --cflags) -g -O1 \
-    $FUZZ_DIR/$fuzz_test.cc -o $OUT/$fuzz_test -lFuzzingEngine \
+    $FUZZ_DIR/fuzzer.cpp -o $OUT/$fuzz_test -lFuzzingEngine \
     $($OUT/bin/python3-config --ldflags)
 done
 
