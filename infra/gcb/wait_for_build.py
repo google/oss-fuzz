@@ -28,6 +28,7 @@ def wait_for_build(build_id, project):
       'FAILURE',
       'INTERNAL_ERROR',
       'CANCELLED',
+      'TIMEOUT',
   ]
 
   status = None

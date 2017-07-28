@@ -1,0 +1,8 @@
+homepage: "http://commonmark.org"
+primary_contact: "jgm@berkeley.edu"
+auto_ccs:
+  - "kivikakk@github.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

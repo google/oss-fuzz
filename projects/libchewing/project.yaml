@@ -1,5 +1,2 @@
 homepage: "http://chewing.im/"
 disabled: true
-fuzzing_engines:
-  - libfuzzer
-  - afl

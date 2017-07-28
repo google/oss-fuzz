@@ -26,7 +26,7 @@ $SRC/depot_tools/gn gen out/Fuzz\
     cxx="'$CXX'"
     is_debug=false
     extra_cflags=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING",
-        "-Wno-zero-as-null-pointer-constant", "-Wno-unused-template"]
+        "-Wno-zero-as-null-pointer-constant", "-Wno-unused-template", "-Wno-cast-qual"]
     skia_use_system_freetype2=false
     skia_use_fontconfig=false
     skia_enable_gpu=false

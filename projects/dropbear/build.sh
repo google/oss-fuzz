@@ -21,7 +21,7 @@ autoconf
 autoheader
 popd
 
-$SRC/dropbear/configure --enable-fuzz
+$SRC/dropbear/configure --enable-fuzz --disable-harden
 # force static zlib
 sed -i 's@-lz@/usr/lib/x86_64-linux-gnu/libz.a@' Makefile
 
@@ -32,5 +32,5 @@ TARGETS="$(make list-fuzz-targets)"
 make -C $SRC/dropbear/corpus
 
 cp -v $TARGETS $OUT/
-cp -v $SRC/*.options $OUT/
+cp -v *.options $OUT/
 cp -v $SRC/dropbear/corpus/*.zip $OUT/

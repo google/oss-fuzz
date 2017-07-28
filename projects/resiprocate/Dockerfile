@@ -1,4 +1,3 @@
-#!/bin/bash -eux
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,9 @@
 #
 ################################################################################
 
-PROJECT="gcr.io/meta-iterator-105109"
-DIR=$(dirname $0)
-
-docker build --pull -t $PROJECT/jenkins $DIR/
-gcloud docker -- push $PROJECT/jenkins
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER gjasny@googlemail.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
+RUN git clone --depth 1 https://github.com/resiprocate/resiprocate.git resiprocate
+WORKDIR resiprocate
+COPY build.sh $SRC/

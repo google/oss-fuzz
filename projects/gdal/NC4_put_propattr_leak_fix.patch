@@ -1,0 +1,16 @@
+--- libsrc4/nc4info.c.ori	2017-06-07 10:28:11.478130590 +0200
++++ libsrc4/nc4info.c	2017-06-07 10:28:29.670268763 +0200
+@@ -174,11 +174,8 @@
+       herr = 0;
+     }
+  done:
+-    if(ncstat != NC_NOERR) {
+-      if(text != NULL) {
+-        free(text);
+-        text = NULL;
+-      }
++    if(text != NULL) {
++      free(text);
+     }
+ 
+     if(attid >= 0) HCHECK((H5Aclose(attid)));

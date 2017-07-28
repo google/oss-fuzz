@@ -1,0 +1,12 @@
+homepage: "https://www.wolfssl.com/"
+primary_contact: "jacob@wolfssl.com"
+auto_ccs:
+ - "david@wolfssl.com"
+ - "kaleb@wolfssl.com"
+ - "levi@wolfssl.com"
+ - "testing@wolfssl.com"
+sanitizers:
+ - address
+ - memory:
+    experimental: True
+ - undefined

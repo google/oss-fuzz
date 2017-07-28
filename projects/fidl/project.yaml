@@ -1,0 +1,6 @@
+homepage: "https://fuchsia.googlesource.com/magenta/+/master/system/host/fidl/"
+primary_contact: "aarongreen@google.com"
+auto_ccs:
+ - "hariri@google.com"
+ - "phosek@google.com"
+ - "kulakowski@google.com"

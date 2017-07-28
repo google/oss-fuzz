@@ -1,0 +1,46 @@
+--- libsrc/ncx.m4.ori	2017-06-15 12:45:29.461345214 +0200
++++ libsrc/ncx.m4	2017-06-23 12:14:29.263652717 +0200
+@@ -726,7 +726,11 @@
+ {
+ 	const uchar *cp = (const uchar *) xp;
+ 
++#if INT_MAX  >= X_INT_MAX
++	*ip = (ix_int)((unsigned)(*cp++) << 24);
++#else
+ 	*ip = *cp++ << 24;
++#endif
+ #if SIZEOF_IX_INT > X_SIZEOF_INT
+ 	if(*ip & 0x80000000)
+ 	{
+@@ -1883,7 +1887,7 @@
+ 	/* similar to get_ix_int */
+ 	const uchar *cp = (const uchar *) *xpp;
+ 
+-	*ulp = (unsigned)(*cp++ << 24);
++	*ulp = (unsigned)(*cp++) << 24;
+ 	*ulp |= (*cp++ << 16);
+ 	*ulp |= (*cp++ << 8);
+ 	*ulp |= *cp;
+--- libsrc/ncx.c.ori	2017-06-15 12:38:29.769770935 +0200
++++ libsrc/ncx.c	2017-06-23 12:10:38.359973119 +0200
+@@ -1031,7 +1031,11 @@
+ {
+ 	const uchar *cp = (const uchar *) xp;
+ 
++#if INT_MAX  >= X_INT_MAX
++	*ip = (ix_int)((unsigned)(*cp++) << 24);
++#else
+ 	*ip = *cp++ << 24;
++#endif
+ #if SIZEOF_IX_INT > X_SIZEOF_INT
+ 	if(*ip & 0x80000000)
+ 	{
+@@ -3451,7 +3455,7 @@
+ 	/* similar to get_ix_int */
+ 	const uchar *cp = (const uchar *) *xpp;
+ 
+-	*ulp = (unsigned)(*cp++ << 24);
++	*ulp = (unsigned)(*cp++) << 24;
+ 	*ulp |= (*cp++ << 16);
+ 	*ulp |= (*cp++ << 8);
+ 	*ulp |= *cp;
