@@ -47,6 +47,12 @@ executable lives in.
 
 `/dev` is also unavailable.
 
+## Hardware
+
+Your project should not be compiled with `-march=native` or `-mtune=native`
+flags, as the build infrastructure and fuzzing machines may have different CPUs
+as well as other hardware differences. You may however use `-mtune=generic`.
+
 ## Network access
 
 There will be no network interfaces available (not even loopback).
