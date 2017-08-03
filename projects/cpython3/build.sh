@@ -32,11 +32,15 @@ popd
 FUZZ_DIR=cpython/Modules/_fuzz
 for fuzz_test in $(cat $FUZZ_DIR/fuzz_tests.txt)
 do
-  $CXX $CXXFLAGS \
+  $CC $CFLAGS \
     -D _Py_FUZZ_ONE -D _Py_FUZZ_$fuzz_test \
     -Wno-unused-function \
-    $($OUT/bin/python3-config --cflags) -g -O1 \
-    $FUZZ_DIR/fuzzer.cpp -o $OUT/$fuzz_test -lFuzzingEngine \
+    $($OUT/bin/python3-config --cflags) -c -g -O1 \
+    $FUZZ_DIR/fuzzer.c -o $fuzz_test.o
+  $CXX $CXXFLAGS \
+    $fuzz_test.o \
+    -o $OUT/$fuzz_test \
+    -lFuzzingEngine \
     $($OUT/bin/python3-config --ldflags)
 done
 
