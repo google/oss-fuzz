@@ -27,12 +27,14 @@ function check_instrumentation {
     fi
   fi
 
-  # Should be 90 at least. The "example" target has 93. Real targets have the
-  # following values: arduinojson: 413, libteken: 519, zlib: 586.
-  NUMBER_OF_EDGES=$(sancov -print-coverage-pcs $FUZZER | wc -l)
-  if (( $NUMBER_OF_EDGES < 90 )); then
-    echo "BAD BUILD: the code does not seem to have coverage instrumentation."
-    CHECK_FAILED=1
+  if (( $CHECK_FAILED == 0 )); then
+    # Should be 90 at least. The "example" target has 93. Real targets have the
+    # following values: arduinojson: 413, libteken: 519, zlib: 586.
+    NUMBER_OF_EDGES=$(sancov -print-coverage-pcs $FUZZER | wc -l)
+    if (( $NUMBER_OF_EDGES < 90 )); then
+      echo "BAD BUILD: the code does not seem to have coverage instrumentation."
+      CHECK_FAILED=1
+    fi
   fi
 
   if (( $CHECK_FAILED > 0 )); then
@@ -170,9 +172,6 @@ function main {
 
   check_instrumentation $FUZZER
   check_mixed_sanitizers $FUZZER
-
-  # For some reason, bad_example_startup_crash errors out with instrumentation
-  # error, as sancov prints 0 coverage pcs.
   check_startup_crash $FUZZER
 }
 

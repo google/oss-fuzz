@@ -1,6 +1,17 @@
 #!/bin/bash -eu
 
-# Testcase 1. Silent startup crash.
+# Testcase 1. Valid fuzzer build.
+################################################################################
+./configure
+make -j$(nproc) clean
+make -j$(nproc) all
+
+$CXX $CXXFLAGS -std=c++11 -I. \
+    $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_valid_build \
+    -lFuzzingEngine ./libz.a
+
+
+# Testcase 2. Silent startup crash.
 ################################################################################
 ./configure
 make -j$(nproc) clean
@@ -11,7 +22,7 @@ $CXX $CXXFLAGS -std=c++11 -I. -DINTENTIONAL_STARTUP_CRASH \
     -lFuzzingEngine ./libz.a
 
 
-# Testcase 2. Ignore the flags provided by OSS-Fuzz.
+# Testcase 3. Ignore the flags provided by OSS-Fuzz.
 ################################################################################
 export CFLAGS="-O1"
 export CXXFLAGS="-O1 -stdlib=libc++"
@@ -25,7 +36,7 @@ $CXX -fsanitize=$SANITIZER $CXXFLAGS -std=c++11 -I. \
     -lFuzzingEngine ./libz.a
 
 
-# Testcase 3. Enable multiple sanitizers.
+# Testcase 4. Enable multiple sanitizers.
 ################################################################################
 # Add UBSan to ASan or MSan build. Add ASan to UBSan build.
 EXTRA_SANITIZER="undefined"
