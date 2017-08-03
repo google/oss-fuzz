@@ -1,3 +1,4 @@
+disabled: True
 homepage: "http://www.zlib.net/"
 sanitizers:
   - address
