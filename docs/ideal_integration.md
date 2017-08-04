@@ -10,7 +10,7 @@ simple and efficient, and will allow to catch regressions early on in the develo
 Every [fuzz target](http://libfuzzer.info/#fuzz-target):
 * Is [maintained by code owners](#fuzz-target) in their RCS (Git, SVN, etc).
 * Is [built with the rest of the tests](#build-support) - no bit rot! 
-* Has a [seed corpus](#seed-corpus) with good code coverage.
+* Has a [seed corpus](#seed-corpus) with good [code coverage](#coverage).
 * Is [continuously tested on the seed corpus](#regression-testing) with [ASan/UBSan/MSan](https://github.com/google/sanitizers)
 * Is [fast and has no OOMs](#performance)
 * Has a [fuzzing dictionary](#fuzzing-dictionary), if applicable
