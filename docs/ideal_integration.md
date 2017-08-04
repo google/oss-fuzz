@@ -6,6 +6,15 @@ them with OSS-Fuzz. However, we will still try to give recommendations on the pr
 Here are several features (starting from the easiest) that will make automated fuzzing
 simple and efficient, and will allow to catch regressions early on in the development cycle. 
 
+## TL;DR
+Every [fuzz target](http://libfuzzer.info/#fuzz-target):
+* Is [maintained by code owners](#fuzz-target) in their RCS (Git, SVN, etc).
+* Is [built with the rest of the tests](#build-support) - no bit rot! 
+* Has a [seed corpus](#seed-corpus) with good code coverage.
+* Is [continuously tested on the seed corpus](#regression-testing) with [ASan/UBSan/MSan](https://github.com/google/sanitizers)
+* Is [fast and has no OOMs](#performance)
+* Has a [fuzzing dictionary](#fuzzing-dictionary), if applicable
+
 ## Fuzz Target
 The code of the [fuzz target(s)](http://libfuzzer.info/#fuzz-target) should be part of the project's source code repository. 
 All fuzz targets should be easily discoverable (e.g. reside in the same directory, or follow the same naming pattern, etc). 
