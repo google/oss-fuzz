@@ -73,7 +73,7 @@ Examples:
 
 ## Regression Testing
 The fuzz targets should be regularly tested (not necessarily fuzzed!) as a part of the project's regression testing process.
-One way to do so is to link the fuzz target with a simple driver
+One way to do so is to link the fuzz target with a simple standalone driver
 (e.g. [this one](https://github.com/llvm-mirror/llvm/tree/master/lib/Fuzzer/standalone))
 that runs the provided inputs and use this driver with the seed corpus created in previous step. 
 It is recommended to use [sanitizers](https://github.com/google/sanitizers) during regression testing.
