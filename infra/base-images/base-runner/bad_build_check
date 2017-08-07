@@ -183,3 +183,4 @@ fi
 
 FUZZER=$1
 main $FUZZER
+echo "INFO: $FUZZER has passed bad_build_check tests."

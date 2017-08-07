@@ -207,8 +207,9 @@ def get_build_steps(project_yaml, dockerfile_path):
             'args': [
               'bash',
               '-c',
-              'test_all && ' # To verify that fuzzers generally work.
-              'test_bad_build' # To verify instrumentation and other issues.
+              # Verify that fuzzers have been built properly and are not broken.
+              # TODO(mmoroz): raise a notification if not passing the tests.
+              'test_all'
             ]
           },
           # zip binaries
