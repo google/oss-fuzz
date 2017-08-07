@@ -49,8 +49,10 @@ function check_startup_crash {
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
     CHECK_PASSED=$($FUZZER -runs=4 2>&1 | egrep "Done 4 runs" -c)
+  else
+    # TODO: add checks for another fuzzing engines if possible.
+    CHECK_PASSED=1
   fi
-  # TODO: add checks for another fuzzing engines if possible.
 
   if (( $CHECK_PASSED == 0 )); then
     echo "BAD BUILD: the fuzzer seems to have either startup crash or exit."
