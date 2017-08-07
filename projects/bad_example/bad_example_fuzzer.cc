@@ -5,20 +5,33 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
+#include <signal.h>
 #include <unistd.h>
 
 #include "zlib.h"
 
 static Bytef buffer[256 * 1024] = { 0 };
 
+
+#ifdef INTENTIONAL_STARTUP_CRASH
+void bad_term_handler(int signum) {
+  _exit(0);
+}
+#endif
+
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 #ifdef INTENTIONAL_STARTUP_CRASH
   // Simulates the worst case, fuzz target silently dies without any error.
-  //
-  // Ways to detect:
-  // Probably check the output, but it would be different for different engines.
-  _exit(0);
+
+  struct sigaction action = { 0 };
+  action.sa_handler = bad_term_handler;
+  sigaction(SIGTERM, &action, NULL);
+
+  // Cannot call _exit(0) directly, as it's even worse -- sancov does not print
+  // any coverage information in that case.
+  kill(getpid(), SIGTERM);
 #endif
 
   uLongf buffer_length = static_cast<uLongf>(sizeof(buffer));
