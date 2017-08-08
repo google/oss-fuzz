@@ -41,7 +41,7 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
     export AFL_NO_UI=1
     timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
   fi
-  bad_build_check $FUZZER
+  bad_build_check $FUZZER_BINARY
   N=$[$N+1]
 done
 
