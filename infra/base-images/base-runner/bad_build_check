@@ -17,8 +17,8 @@
 
 # Verify that the given fuzzer has proper coverage instrumentation.
 function check_instrumentation {
-  FUZZER=$1
-  CHECK_FAILED=0
+  local FUZZER=$1
+  local CHECK_FAILED=0
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
     CHECK_FAILED=$($FUZZER -max_total_time=4 2>&1 | egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c)
@@ -30,7 +30,7 @@ function check_instrumentation {
   if (( $CHECK_FAILED == 0 )); then
     # Should be 90 at least. The "example" target has 93. Real targets have the
     # following values: arduinojson: 413, libteken: 519, zlib: 586.
-    NUMBER_OF_EDGES=$(sancov -print-coverage-pcs $FUZZER | wc -l)
+    local NUMBER_OF_EDGES=$(sancov -print-coverage-pcs $FUZZER | wc -l)
     if (( $NUMBER_OF_EDGES < 90 )); then
       echo "BAD BUILD: the code does not seem to have coverage instrumentation."
       CHECK_FAILED=1
@@ -44,8 +44,8 @@ function check_instrumentation {
 
 # Verify that the given fuzzer has been built properly and works as expected.
 function check_startup_crash {
-  FUZZER=$1
-  CHECK_PASSED=0
+  local FUZZER=$1
+  local CHECK_PASSED=0
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
     CHECK_PASSED=$($FUZZER -runs=4 2>&1 | egrep "Done 4 runs" -c)
@@ -62,13 +62,13 @@ function check_startup_crash {
 
 # Mixed sanitizers check for ASan build.
 function check_asan_build {
-  FUZZER=$1
-  ASAN_CALLS=$2
-  MSAN_CALLS=$3
-  UBSAN_CALLS=$4
+  local FUZZER=$1
+  local ASAN_CALLS=$2
+  local MSAN_CALLS=$3
+  local UBSAN_CALLS=$4
 
   # Perform all the checks for more verbose error message.
-  CHECK_FAILED=0
+  local CHECK_FAILED=0
 
   if (( $ASAN_CALLS < 1000 )); then
     echo "BAD BUILD: $FUZZER does not seem to be compiled with ASan."
@@ -92,13 +92,13 @@ function check_asan_build {
 
 # Mixed sanitizers check for MSan build.
 function check_msan_build {
-  FUZZER=$1
-  ASAN_CALLS=$2
-  MSAN_CALLS=$3
-  UBSAN_CALLS=$4
+  local FUZZER=$1
+  local ASAN_CALLS=$2
+  local MSAN_CALLS=$3
+  local UBSAN_CALLS=$4
 
   # Perform all the checks for more verbose error message.
-  CHECK_FAILED=0
+  local CHECK_FAILED=0
 
   if (( $ASAN_CALLS > 0 )); then
     echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with ASan."
@@ -122,13 +122,13 @@ function check_msan_build {
 
 # Mixed sanitizers check for UBSan build.
 function check_ubsan_build {
-  FUZZER=$1
-  ASAN_CALLS=$2
-  MSAN_CALLS=$3
-  UBSAN_CALLS=$4
+  local FUZZER=$1
+  local ASAN_CALLS=$2
+  local MSAN_CALLS=$3
+  local UBSAN_CALLS=$4
 
   # Perform all the checks for more verbose error message.
-  CHECK_FAILED=0
+  local CHECK_FAILED=0
 
   if (( $ASAN_CALLS > 0 )); then
     echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with ASan."
@@ -152,12 +152,12 @@ function check_ubsan_build {
 
 # Verify that the given fuzz target is compiled with correct sanitizer.
 function check_mixed_sanitizers {
-  FUZZER=$1
-  ASAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__asan" -c)
-  MSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__msan" -c)
-  UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__ubsan" -c)
+  local FUZZER=$1
+  local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__asan" -c)
+  local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__msan" -c)
+  local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__ubsan" -c)
 
-  CHECK_FAILED=0
+  local CHECK_FAILED=0
 
   if [[ "$SANITIZER" = address ]]; then
     check_asan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
@@ -170,7 +170,7 @@ function check_mixed_sanitizers {
 
 
 function main {
-  FUZZER=$1
+  local FUZZER=$1
 
   check_instrumentation $FUZZER
   check_mixed_sanitizers $FUZZER

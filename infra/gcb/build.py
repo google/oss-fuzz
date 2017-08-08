@@ -200,9 +200,9 @@ def get_build_steps(project_yaml, dockerfile_path):
               # Container Builder doesn't pass --rm to docker run yet.
               'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
             ],
-           },
+          },
           # test binaries
-          {'name': 'gcr.io/oss-fuzz-base/base_runner',
+          {'name': 'gcr.io/oss-fuzz-base/base-runner',
             'env': env,
             'args': [
               'bash',
