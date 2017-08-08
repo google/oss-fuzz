@@ -24,7 +24,7 @@ ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
 popd > /dev/null
 rm -rf $WORK/libfuzzer
 
-# Put build metadata into $LIB_FUZZING_ENGINE.info
+# Put build metadata into $LIB_FUZZING_ENGINE.info file.
 cd $SRC/libfuzzer
 echo "fuzzing engine revision: $(git log -n 1 | grep "lib/Fuzzer@\K[[:digit:]]+" -oP)" > $LIB_FUZZING_ENGINE.info
 echo "clang revision: $(clang --version | grep "\(trunk \K[[:digit:]]+" -oP)" >> $LIB_FUZZING_ENGINE.info
