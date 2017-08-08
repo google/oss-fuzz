@@ -178,6 +178,11 @@ function main {
 }
 
 
+# Temporary condition to prevent running on production builds until tested well.
+if [[ -z "$EXPERIMENTAL_BAD_BUILD_CHECK" ]]; then
+  exit 0
+fi
+
 if [ $# -ne 1 ]; then
     echo "Usage: $0 <fuzz_target_binary>"
     exit 1
