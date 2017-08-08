@@ -49,7 +49,7 @@ echo "CXXFLAGS=$CXXFLAGS"
 
 echo "---------------------------------------------------------------"
 
-BUILD_CMD="bash -eux $SRC/build.sh"
+BUILD_CMD="bash -eux $SRC/build.sh && bash -c cp $LIB_FUZZING_ENGINE.info $OUT/"
 if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder
   chown -R builder $SRC $OUT $WORK
