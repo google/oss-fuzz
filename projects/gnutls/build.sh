@@ -39,6 +39,11 @@ popd
 make bootstrap
 PKG_CONFIG_PATH=/opt/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig ./configure --with-nettle-mini --enable-gcc-warnings --enable-static --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc $CONFIGURE_FLAGS
+
+# Do not use the syscall interface for randomness in oss-fuzz, it seems
+# to confuse memory sanitizer.
+sed -i 's|include <sys/syscall.h>|include <sys/syscall.h>\n#undef SYS_getrandom|' lib/nettle/sysrng-linux.c
+
 make "-j$(nproc)" -C gl
 make "-j$(nproc)" -C lib
 
