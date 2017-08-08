@@ -23,4 +23,10 @@ $CXX $CXXFLAGS -std=c++11 -O2 $SANITIZER_FLAGS -fno-sanitize=vptr \
 ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
 popd > /dev/null
 rm -rf $WORK/libfuzzer
+
+# Put build metadata into $LIB_FUZZING_ENGINE.info
+cd $SRC/libfuzzer
+echo "fuzzing engine revision: $(git log -n 1 | grep "lib/Fuzzer@\K[[:digit:]]+" -oP)" > $LIB_FUZZING_ENGINE.info
+echo "clang revision: $(clang --version | grep "\(trunk \K[[:digit:]]+" -oP)" >> $LIB_FUZZING_ENGINE.info
+
 echo " done."

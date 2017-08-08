@@ -41,6 +41,8 @@ ENV FUZZER_LDFLAGS ""
 
 WORKDIR $SRC
 
+RUN git clone https://chromium.googlesource.com/chromium/llvm-project/llvm/lib/Fuzzer libfuzzer
+
 ADD http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz $SRC/
 RUN mkdir afl && \
     cd afl && \
