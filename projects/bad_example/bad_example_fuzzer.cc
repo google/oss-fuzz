@@ -24,7 +24,6 @@ void bad_term_handler(int signum) {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 #ifdef INTENTIONAL_STARTUP_CRASH
   // Simulates the worst case, fuzz target silently dies without any error.
-
   struct sigaction action = { 0 };
   action.sa_handler = bad_term_handler;
   sigaction(SIGTERM, &action, NULL);
