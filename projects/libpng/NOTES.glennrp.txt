@@ -56,3 +56,24 @@ manually.
 
 ======================
 
+Went to the clang web site. Apparently the required version
+is 4.0.1, July 2017 (4.0.0 is prior to 20 April). 4.0.0
+is available for Ubuntu, 4.0.1 is not, so I downloaded the
+Debian-8 version.
+
+======================
+
+Looks good:
+
+studio> /home/glennrp/Clang/clang+llvm-4.0.1-x86_64-linux-gnu-debian8/bin/clang --version
+clang version 4.0.1 (tags/RELEASE_401/final)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /home/glennrp/Clang/clang+llvm-4.0.1-x86_64-linux-gnu-debian8/bin
+
+======================
+
+But, it still doesn't like the "nullptr" in  libpng_read_fuzzer.cc
+
+======================
+
