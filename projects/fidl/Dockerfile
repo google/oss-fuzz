@@ -18,6 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER aarongreen@google.com
 RUN apt-get update && apt-get install -y golang git build-essential curl unzip texinfo libglib2.0-dev autoconf libtool libsdl-dev
 
-RUN curl -s https://raw.githubusercontent.com/fuchsia-mirror/jiri/master/scripts/bootstrap_jiri | bash -s fuchsia
+RUN curl -s "https://fuchsia.googlesource.com/jiri/+/master/scripts/bootstrap_jiri?format=TEXT" | base64 -d | bash -s fuchsia
 WORKDIR fuchsia
 COPY build.sh $SRC/

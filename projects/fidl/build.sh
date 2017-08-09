@@ -7,6 +7,5 @@ $JIRI_HOME/jiri update
 ./packages/gn/gen.py -m fidl --ignore-skia --args=enable_ossfuzz=true
 ./buildtools/ninja -C out/debug-x86-64
 
-cp out/debug-x86-64/host_x64/fidl-fuzzer $OUT/fidl-fuzzer
-cp -r lib/fidl/fuzz/input_corpus/ $OUT/input_corpus
-cp -r magenta/system/host/fidl/examples/ $OUT/examples
+cp out/debug-x86-64/host_x64/fidl-fuzzer $OUT/fuchsia_fidl_fuzzer
+zip -j $OUT/fuchsia_fidl_seed_corpus.zip lib/fidl/fuzz/input_corpus/* magenta/system/host/fidl/examples/*
