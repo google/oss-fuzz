@@ -28,10 +28,15 @@ function check_instrumentation {
   fi
 
   if (( $CHECK_FAILED == 0 )); then
-    # Should be 90 at least. The "example" target has 93. Real targets have the
-    # following values: arduinojson: 413, libteken: 519, zlib: 586.
+    # The "example" target has 93 when built with ASan and 67 with UBSan. Real
+    # targets have greater values (arduinojson: 413, libteken: 519, zlib: 586).
+    local THRESHOLD_FOR_NUMBER_OF_EDGES=90
+    if [[ $SANITIZER = undefined ]]; then
+      THRESHOLD_FOR_NUMBER_OF_EDGES=65
+    fi
+
     local NUMBER_OF_EDGES=$(sancov -print-coverage-pcs $FUZZER | wc -l)
-    if (( $NUMBER_OF_EDGES < 90 )); then
+    if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
       echo "BAD BUILD: the code does not seem to have coverage instrumentation."
       CHECK_FAILED=1
     fi
@@ -126,6 +131,13 @@ function check_ubsan_build {
   local ASAN_CALLS=$2
   local MSAN_CALLS=$3
   local UBSAN_CALLS=$4
+
+  if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
+    # Ignore UBSan checks for fuzzing engines other than libFuzzer because:
+    # A) we (probably) are not going to use those with UBSan
+    # B) such builds show indistinguishable number of calls to UBSan
+    return 0
+  fi
 
   # Perform all the checks for more verbose error message.
   local CHECK_FAILED=0
