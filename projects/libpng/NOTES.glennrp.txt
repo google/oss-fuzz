@@ -97,3 +97,13 @@ InstalledDir: /usr/bin
 But, it still doesn't like the "nullptr" in  libpng_read_fuzzer.cc.
 
 ======================
+
+Changed local-run.sh to add "-std=c++11":
+
+  clang++ -std=c++11 -I. -lz -I/usr/include \
+  -fsanitize=address -fsanitize-coverage=trace-pc-guard \
+  libpng_read_fuzzer.cc -libFuzzer.a
+  ./a.out
+
+This still can't find libFuzzer.a (I can't find it anywhere either; I
+thought it was supposed to be part of Clang).
