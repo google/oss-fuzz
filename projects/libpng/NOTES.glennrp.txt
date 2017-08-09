@@ -1,10 +1,13 @@
 
 Installed docker-ce
+======================
 
 in libpng/Dockerfile
 
 -MAINTAINER mmoroz@chromium.org
 +MAINTAINER glennrp@gmail.com
+
+======================
 
 in libpng/build.sh
 
@@ -18,6 +21,29 @@ Don't build tools, just libpng:
 -make -j$(nproc) all
 +make -j$(nproc) libpng16.la
 
+======================
+
 In libpng/libpng_read_fuzzer.cc
 added PNG_CLEANUP macro and invoked it 4 places
 (in setjmp blocks and at final return).
+
+======================
+
+Attempted to run the fuzzer locally as suggested
+in ... with
+
+clang++ -g -fsanitize=address -fsanitize-coverage=trace-pc-guard \
+  libpng_read_fuzzer.cc libFuzzer.a
+./a.out
+
+but it couldn't find liibFuzzer.a.  It seems that my clang
+is too old because libFuzzer.a is supposed to be included
+in clang versions > 20 April 2017.
+
+======================
+
+So I ran apt-get dselect-upgrade clang
+but it appears to be upgrading everything.
+
+======================
+
