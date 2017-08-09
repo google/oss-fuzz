@@ -136,8 +136,7 @@ def get_build_steps(project_yaml, dockerfile_path):
   build_steps = [
       {
           'args': [
-              # FIXME(mmoroz): remove custom branch checkout before landing!
-              'clone', '-b', 'test_builds', 'https://github.com/google/oss-fuzz.git',
+              'clone', 'https://github.com/google/oss-fuzz.git',
           ],
           'name': 'gcr.io/cloud-builders/git',
       },
