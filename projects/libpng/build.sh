@@ -16,7 +16,9 @@
 ################################################################################
 
 # Disable logging via library build configuration control.
-cat scripts/pnglibconf.dfa | sed -e "s/option STDIO/option STDIO disabled/" \
+cat scripts/pnglibconf.dfa | \
+  sed -e "s/option STDIO/option STDIO disabled/" \
+      -e "s/option WARNING /option WARNING disabled/" \
 > scripts/pnglibconf.dfa.temp
 mv scripts/pnglibconf.dfa.temp scripts/pnglibconf.dfa
 
@@ -24,7 +26,7 @@ mv scripts/pnglibconf.dfa.temp scripts/pnglibconf.dfa
 autoreconf -f -i
 ./configure
 make -j$(nproc) clean
-make -j$(nproc) all
+make -j$(nproc) libpng16.la
 
 # build libpng_read_fuzzer.
 $CXX $CXXFLAGS -std=c++11 -I. -lz \
@@ -32,6 +34,6 @@ $CXX $CXXFLAGS -std=c++11 -I. -lz \
      -lFuzzingEngine .libs/libpng16.a
 
 # add seed corpus.
-find $SRC/libpng -name "*.png" | xargs zip $OUT/libpng_read_fuzzer_seed_corpus.zip
+find $SRC/libpng/contrib/pngsuite -name "*.png" | xargs zip $OUT/libpng_read_fuzzer_seed_corpus.zip
 
 cp $SRC/*.dict $SRC/*.options $OUT/
