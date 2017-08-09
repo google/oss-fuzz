@@ -107,3 +107,10 @@ Changed local-run.sh to add "-std=c++11":
 
 This still can't find libFuzzer.a (I can't find it anywhere either; I
 thought it was supposed to be part of Clang).
+
+======================
+
+http://llvm.org/docs/LibFuzzer.html says to use -fsanitize=fuzzer,address
+but no such luck.  "unsupported argument 'fuzzer'"
+
+======================
