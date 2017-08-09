@@ -1,0 +1,21 @@
+
+Installed docker-ce
+
+in libpng/Dockerfile
+
+-MAINTAINER mmoroz@chromium.org
++MAINTAINER glennrp@gmail.com
+
+in libpng/build.sh
+
+disable libpng WARNING:
+-cat scripts/pnglibconf.dfa | sed -e "s/option STDIO/option STDIO disabled/" \
++cat scripts/pnglibconf.dfa | \
++  sed -e "s/option STDIO/option STDIO disabled/" \
++      -e "s/option WARNING /option WARNING disabled/" \
+
+Don't build tools, just libpng:
+-make -j$(nproc) all
++make -j$(nproc) libpng16.la
+
+
