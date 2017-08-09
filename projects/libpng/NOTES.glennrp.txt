@@ -73,7 +73,27 @@ InstalledDir: /home/glennrp/Clang/clang+llvm-4.0.1-x86_64-linux-gnu-debian8/bin
 
 ======================
 
-But, it still doesn't like the "nullptr" in  libpng_read_fuzzer.cc
+But, it still doesn't like the "nullptr" in  libpng_read_fuzzer.cc:
+
+libpng_read_fuzzer.cc:27:22: warning: in-class initialization of non-static data
+      member is a C++11 extension [-Wc++11-extensions]
+  png_infop info_ptr = nullptr;
+                     ^
+and a dozen similar messages
 
 ======================
 
+Copied the 
+/home/glennrp/Clang/clang+llvm-4.0.1-x86_64-linux-gnu-debian8/*
+into /usr, so "clang++ --version" reports
+
+clang version 4.0.1 (tags/RELEASE_401/final)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /usr/bin
+
+======================
+
+But, it still doesn't like the "nullptr" in  libpng_read_fuzzer.cc.
+
+======================
