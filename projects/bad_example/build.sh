@@ -22,6 +22,12 @@ $CXX $CXXFLAGS -std=c++11 -I. -DINTENTIONAL_STARTUP_CRASH \
     -lFuzzingEngine ./libz.a
 
 
+# The latest two examples won't for for coverage build, bail out.
+if [[ $SANITIZER = *coverage* ]]; then
+  exit 0
+fi
+
+
 # Testcase 3. Ignore the flags provided by OSS-Fuzz.
 ################################################################################
 export CFLAGS="-O1"
@@ -40,8 +46,7 @@ $CXX -fsanitize=$SANITIZER $CXXFLAGS -std=c++11 -I. \
 ################################################################################
 # Add UBSan to ASan or MSan build. Add ASan to UBSan build.
 EXTRA_SANITIZER="undefined"
-if [[ $SANITIZER = *undefined* ]]
-then
+if [[ $SANITIZER = *undefined* ]]; then
   EXTRA_SANITIZER="address"
 fi
 
