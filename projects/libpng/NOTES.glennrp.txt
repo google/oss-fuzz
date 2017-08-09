@@ -44,6 +44,15 @@ in clang versions > 20 April 2017.
 
 So I ran apt-get dselect-upgrade clang
 but it appears to be upgrading everything.
+It took nearly an hour, but didn't change
+clang or clang++ from version 3.8.0
+
+======================
+
+Tried removing the unrecognized -fsanitize-coverage option
+but then the compiler complains about nullptr which is
+where I was the other day trying to compile the target
+manually.
 
 ======================
 
