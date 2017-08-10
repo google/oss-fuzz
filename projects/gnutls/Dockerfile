@@ -16,10 +16,33 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alex.gaynor@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool autopoint pkg-config gperf bison autogen texinfo curl
+RUN apt-get update && apt-get install -y \
+ make \
+ pkg-config \
+ autoconf \
+ automake \
+ autogen \
+ autopoint \
+ libtool \
+ gperf \
+ bison \
+ texinfo \
+ curl \
+ gettext \
+ gengetopt \
+ wget \
+ python \
+ mercurial
 
-RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
-RUN cd gnutls && git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
+RUN git clone git://git.savannah.gnu.org/gnulib.git
+RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
+RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
+RUN hg clone https://gmplib.org/repo/gmp/ gmp
+RUN git clone --depth=1 https://git.savannah.gnu.org/git/libtasn1.git
+RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+
+RUN git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git
 
 WORKDIR gnutls
 COPY build.sh $SRC/
