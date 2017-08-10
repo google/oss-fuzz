@@ -123,7 +123,7 @@ def main():
     try:
       response = cloudbuild.projects().builds().list(
           projectId='oss-fuzz',
-          pageSize=1,
+          pageSize=2,
           filter=query_filter).execute()
     except googleapiclient.errors.HttpError:
       print >>sys.stderr, 'Failed to list builds for', project
