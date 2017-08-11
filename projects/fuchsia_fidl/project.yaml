@@ -4,3 +4,6 @@ auto_ccs:
  - "hariri@google.com"
  - "phosek@google.com"
  - "kulakowski@google.com"
+fuzzing_engines:
+ - afl
+ - libfuzzer
