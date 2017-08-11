@@ -60,7 +60,7 @@ def upload_status(successes, failures):
   blob.cache_control = 'no-cache'
   blob.upload_from_string(
           json.dumps(data),
-          content_type='text/html')
+          content_type='application/json')
 
 
 def is_build_successful(build):
