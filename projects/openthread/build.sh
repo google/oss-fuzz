@@ -40,6 +40,14 @@
 make -j$(nproc)
 
 find . -name '*-fuzzer' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
+find . -name '*-fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*-fuzzer.options' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';'
+
+fuzzers=$(find tests/fuzz -name "*-fuzzer")
+for f in $fuzzers; do
+    fuzzer=$(basename $f -fuzzer)
+
+    if [ -d "tests/fuzz/corpora/${fuzzer}" ]; then
+	zip -j $OUT/$(basename $f)_seed_corpus.zip tests/fuzz/corpora/${fuzzer}/*
+    fi
+done
