@@ -112,12 +112,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (!png_get_IHDR(png_handler.png_ptr, png_handler.info_ptr, &width,
                     &height, &bit_depth, &color_type, &interlace_type,
                     &compression_type, &filter_type)) {
+    PNG_CLEANUP
     return 0;
   }
 
   // This is going to be too slow.
-  if (width && height > 100000000 / width)
+  if (width && height > 100000000 / width) {
+    PNG_CLEANUP
     return 0;
+  }
 
   int passes = png_set_interlace_handling(png_handler.png_ptr);
   png_start_read_image(png_handler.png_ptr);
