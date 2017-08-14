@@ -36,7 +36,7 @@ clang++ -g -fsanitize=address -fsanitize-coverage=trace-pc-guard \
   libpng_read_fuzzer.cc libFuzzer.a
 ./a.out
 
-but it couldn't find liibFuzzer.a.  It seems that my clang
+but it couldn't find libFuzzer.a.  It seems that my clang
 is too old because libFuzzer.a is supposed to be included
 in clang versions > 20 April 2017.
 
@@ -164,4 +164,42 @@ in local-run.sh, changed
 This appears to work.
 
 =======================
+
+Disable WRITE support in libpng
+Don't build libpng tools, just libpng16.la
+with changes in build.sh:
+
+# Disable logging via library build configuration control.
+cat scripts/pnglibconf.dfa | \
+  sed -e "s/option STDIO/option STDIO disabled/" \
+      -e "s/option WARNING /option WARNING disabled/" \
+      -e "s/option WRITE enables WRITE_INT_FUNCTIONS/option WRITE disabled/" \
+> scripts/pnglibconf.dfa.temp
+mv scripts/pnglibconf.dfa.temp scripts/pnglibconf.dfa
+
+# build the library.
+autoreconf -f -i
+./configure
+make -j$(nproc) clean
+make -j$(nproc) libpng16.la
+
+=======================
+
+  Rebuild libpng with
+  cd libpng
+  ../build.sh
+
+  then local_run.sh which now contains
+
+  clang++ -std=c++11 -I. -I/usr/include \
+  -Ilibpng -Llibpng \
+  -fsanitize=address -fsanitize-coverage=trace-pc-guard \
+  libpng_read_fuzzer.cc libFuzzer.a libpng/.libs/libpng16.a -lz
+  ./a.out -runs=5 -max_len=16000
+
+  Seems to be running fine.
+
+=======================
+
+
 
