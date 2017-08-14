@@ -4,11 +4,16 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <vector>
 
 #define PNG_INTERNAL
 #include "png.h"
+
+#define PNG_CLEANUP \
+    png_destroy_read_struct(&png_handler.png_ptr, &png_handler.info_ptr,\
+      nullptr);
 
 struct BufState {
   const uint8_t* data;
@@ -79,8 +84,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   png_set_read_fn(png_handler.png_ptr, png_handler.buf_state, user_read_data);
   png_set_sig_bytes(png_handler.png_ptr, kPngHeaderSize);
 
-  // libpng error handling.
   if (setjmp(png_jmpbuf(png_handler.png_ptr))) {
+    PNG_CLEANUP
     return 0;
   }
 
@@ -92,6 +97,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // reset error handler to put png_deleter into scope.
   if (setjmp(png_jmpbuf(png_handler.png_ptr))) {
+    PNG_CLEANUP
     return 0;
   }
 
@@ -115,9 +121,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   for (int pass = 0; pass < passes; ++pass) {
     for (png_uint_32 y = 0; y < height; ++y) {
       png_read_row(png_handler.png_ptr,
-                   static_cast<png_bytep>(png_handler.row_ptr), NULL);
+                   static_cast<png_bytep>(png_handler.row_ptr), nullptr);
     }
   }
 
+  PNG_CLEANUP
   return 0;
 }
