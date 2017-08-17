@@ -20,7 +20,7 @@ We will reconsider the Github issue tracker once the
 
 ## Why do you require a Gmail account for authentication?
 
-Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Gmail account for authentication. Note that an alternate email address associated with a Google acount does not work, it has to be a Gmail address.
+Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Gmail account for authentication. Note that an alternate email address associated with a Google acount does not work due to appengine api limitations.
 
 ## Why do you use Docker?
 
