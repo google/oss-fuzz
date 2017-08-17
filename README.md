@@ -66,12 +66,9 @@ To submit a new project:
 - [Create a pull request](https://help.github.com/articles/creating-a-pull-request/) with new 
 `projects/<project_name>/project.yaml` file ([example](projects/libarchive/project.yaml)) giving at least the following information:
   * project homepage.
-  * e-mail of the engineering contact person to be CCed on new issues. This
-    email should be  
-    [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en)
-    ([why?](docs/faq.md#why-do-you-require-an-e-mail-associated-with-a-google-account))
-    and belong to an established project committer (according to VCS logs).
-    If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
+  * e-mail of the engineering contact person to be CCed on new issues. It should:
+      * belong to an established project committer (according to VCS logs). If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
+      * be a [Gmail](https://support.google.com/mail/answer/56256?hl=en) address ([why?](docs/faq.md#why-do-you-require-a-gmail-account-for-authentication)). You can use an alternate email address [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en) for authentication, but it will only give you access to filed bugs in [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) and not to [ClusterFuzz](clusterfuzz.md) dashboard (due to appengine api limitations).
   * Note that `project_name` can only contain alphanumeric characters, underscores(_) or dashes(-).
 - Once accepted by an OSS-Fuzz project member, follow the [New Project Guide](docs/new_project_guide.md)
   to configure your project.
