@@ -18,9 +18,9 @@ Security access control is important for the kind of issues that OSS-Fuzz detect
 We will reconsider the Github issue tracker once the
 [access control feature](https://github.com/isaacs/github/issues/37) is available.
 
-## Why do you require a Gmail account for authentication?
+## Why do you require a Google account for authentication?
 
-Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Gmail account for authentication. Note that an alternate email address associated with a Google acount does not work due to appengine api limitations.
+Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Google account for authentication. Note that an alternate email address associated with a Google acount does not work due to appengine api limitations.
 
 ## Why do you use Docker?
 
