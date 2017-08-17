@@ -18,7 +18,7 @@ Security access control is important for the kind of issues that OSS-Fuzz detect
 We will reconsider the Github issue tracker once the
 [access control feature](https://github.com/isaacs/github/issues/37) is available.
 
-## Why do you require a Google account e-mail for authentication ?
+## Why do you require a Google account e-mail for authentication?
 
 Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Google account for authentication. Note that an alternate email address associated with a Google acount does not work, it has to be a Google account email.
 
