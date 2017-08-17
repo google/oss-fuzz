@@ -68,7 +68,7 @@ To submit a new project:
   * project homepage.
   * e-mail of the engineering contact person to be CCed on new issues. It should:
       * belong to an established project committer (according to VCS logs). If this is not you or the email address differs from VCS, an informal e-mail verification will be required.
-      * be a [Gmail](https://support.google.com/mail/answer/56256?hl=en) address ([why?](docs/faq.md#why-do-you-require-a-gmail-account-for-authentication)). You can use an alternate email address [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en) for authentication, but it will only give you access to filed bugs in [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) and not to [ClusterFuzz](clusterfuzz.md) dashboard (due to appengine api limitations).
+      * be associated with a Google account ([why?](docs/faq.md#why-do-you-require-a-google-account-for-authentication)). If you use an alternate email address [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en), it will ONLY give you access to filed bugs in [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) and NOT to [ClusterFuzz](clusterfuzz.md) dashboard (due to appengine api limitations).
   * Note that `project_name` can only contain alphanumeric characters, underscores(_) or dashes(-).
 - Once accepted by an OSS-Fuzz project member, follow the [New Project Guide](docs/new_project_guide.md)
   to configure your project.
