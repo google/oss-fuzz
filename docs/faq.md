@@ -20,9 +20,7 @@ We will reconsider the Github issue tracker once the
 
 ## Why do you require an e-mail associated with a Google account?
 
-The [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) uses Google accounts for authentication. 
-Note that any e-mail address [can be associated](https://support.google.com/accounts/answer/176347?hl=en)
-with a Google account. 
+Our [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) requires a Google account for authentication.
 
 ## Why do you use Docker?
 
