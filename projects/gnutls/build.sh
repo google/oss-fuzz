@@ -75,7 +75,7 @@ fi
 cd $SRC/gnutls
 make autoreconf
 ASAN_OPTIONS=detect_leaks=0 LIBS="-lunistring" CXXFLAGS="$CXXFLAGS -L$DEPS_PATH/lib" \
-  ./configure --disable-gcc-warnings --enable-static --disable-shared --disable-doc --disable-tests \
+  ./configure --enable-fuzzer-target --disable-gcc-warnings --enable-static --disable-shared --disable-doc --disable-tests \
     --disable-tools --disable-cxx --disable-maintainer-mode --disable-libdane --without-p11-kit $GNUTLS_CONFIGURE_FLAGS
 
 # Do not use the syscall interface for randomness in oss-fuzz, it seems
