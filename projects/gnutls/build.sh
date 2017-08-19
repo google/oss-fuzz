@@ -42,7 +42,7 @@ fi
 cd $SRC/gmp
 bash .bootstrap
 ASAN_OPTIONS=detect_leaks=0 \
-  ./configure --disable-shared --prefix=$DEPS_PATH
+  ./configure --disable-shared --prefix=$DEPS_PATH $GMP_CONFIGURE_FLAGS
 make -j$(nproc)
 make install
 
