@@ -3,6 +3,7 @@ primary_contact: "n.mavrogiannopoulos@gmail.com"
 auto_ccs:
   - "alex.gaynor@gmail.com"
   - "daiki.ueno@gmail.com"
+  - "rockdaboot@gmail.com"
 sanitizers:
   - address
   - memory
