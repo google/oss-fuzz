@@ -1,6 +1,13 @@
+
+// libpng_read_fuzzer.cc
+// Copyright 2017 Glenn Randers-Pehrson
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// The modifications by Glenn Randers-Pehrson include the addition of a
+// PNG_CLEANUP macro and setting the option to ignore ADLER32 checksums.
+
 
 #include <stddef.h>
 #include <stdint.h>
@@ -84,8 +91,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   png_set_crc_action(png_handler.png_ptr, PNG_CRC_QUIET_USE, PNG_CRC_QUIET_USE);
 #ifdef PNG_IGNORE_ADLER32
-  png_set_option(read_ptr, PNG_IGNORE_ADLER32,
-     PNG_OPTION_ON);
+  png_set_option(read_ptr, PNG_IGNORE_ADLER32, PNG_OPTION_ON);
 #endif
 
   // Setting up reading from buffer.
