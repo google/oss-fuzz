@@ -9,6 +9,7 @@ import tempfile
 
 import dateutil.parser
 from oauth2client.client import GoogleCredentials
+import googleapiclient
 from googleapiclient.discovery import build as gcb_build
 from google.cloud import logging
 from google.cloud import storage
@@ -59,7 +60,7 @@ def upload_status(successes, failures):
   blob.cache_control = 'no-cache'
   blob.upload_from_string(
           json.dumps(data),
-          content_type='text/html')
+          content_type='application/json')
 
 
 def is_build_successful(build):
@@ -118,10 +119,16 @@ def main():
   for project in scan_project_names(projects_dir):
     print project
     query_filter = ('(status="SUCCESS" OR status="FAILURE") AND ' +
-        'images="gcr.io/oss-fuzz/{0}"'.format(project))
-    response = cloudbuild.projects().builds().list(
-        projectId='oss-fuzz',
-        filter=query_filter).execute()
+                    'images="gcr.io/oss-fuzz/{0}"'.format(project))
+    try:
+      response = cloudbuild.projects().builds().list(
+          projectId='oss-fuzz',
+          pageSize=2,
+          filter=query_filter).execute()
+    except googleapiclient.errors.HttpError:
+      print >>sys.stderr, 'Failed to list builds for', project
+      continue
+
     if not 'builds' in response:
       continue
 

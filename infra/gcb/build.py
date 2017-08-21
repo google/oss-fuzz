@@ -187,7 +187,7 @@ def get_build_steps(project_yaml, dockerfile_path):
       build_steps.extend([
           # compile
           {'name': image,
-            'env' : env,
+            'env': env,
             'args': [
               'bash',
               '-c',
@@ -199,8 +199,8 @@ def get_build_steps(project_yaml, dockerfile_path):
               # We also remove /work and /src to save disk space after a step.
               # Container Builder doesn't pass --rm to docker run yet.
               'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
-              ],
-            },
+            ],
+          },
           # zip binaries
           {'name': image,
             'args': [
@@ -214,14 +214,14 @@ def get_build_steps(project_yaml, dockerfile_path):
            'args': [
                os.path.join(out, zip_file),
                upload_url,
-           ],
+            ],
           },
           # upload srcmap
           {'name': 'gcr.io/oss-fuzz-base/uploader',
            'args': [
                '/workspace/srcmap.json',
                srcmap_url,
-           ],
+            ],
           },
           # cleanup
           {'name': image,
