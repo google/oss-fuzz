@@ -12,8 +12,14 @@
 #include "png.h"
 
 #define PNG_CLEANUP \
-    png_destroy_read_struct(&png_handler.png_ptr, &png_handler.info_ptr,\
-      nullptr);
+    if(png_handler.png_ptr) \
+    { \
+      if (png_handler.info_ptr) \
+        png_destroy_read_struct(&png_handler.png_ptr, &png_handler.info_ptr,\
+          nullptr); \
+      else \
+        png_destroy_read_struct(&png_handler.png_ptr, nullptr, nullptr); \
+     }
 
 struct BufState {
   const uint8_t* data;
@@ -70,16 +76,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
+  png_handler.info_ptr = png_create_info_struct(png_handler.png_ptr);
+  if (!png_handler.info_ptr) {
+    PNG_CLEANUP
+    return 0;
+  }
+
   png_set_crc_action(png_handler.png_ptr, PNG_CRC_QUIET_USE, PNG_CRC_QUIET_USE);
 #ifdef PNG_IGNORE_ADLER32
   png_set_option(read_ptr, PNG_IGNORE_ADLER32,
      PNG_OPTION_ON);
 #endif
-
-  png_handler.info_ptr = png_create_info_struct(png_handler.png_ptr);
-  if (!png_handler.info_ptr) {
-    return 0;
-  }
 
   // Setting up reading from buffer.
   png_handler.buf_state = new BufState();
