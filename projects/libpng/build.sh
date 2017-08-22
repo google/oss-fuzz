@@ -31,7 +31,7 @@ make -j$(nproc) libpng16.la
 
 # build libpng_read_fuzzer.
 $CXX $CXXFLAGS -std=c++11 -I. \
-     $SRC/libpng_read_fuzzer.cc -o $OUT/libpng_read_fuzzer \
+     $SRC/libpng/contrib/oss-fuzz/libpng_read_fuzzer.cc -o $OUT/libpng_read_fuzzer \
      -lFuzzingEngine .libs/libpng16.a -lz
 
 # add seed corpus.
