@@ -59,7 +59,7 @@ ninja install-cxx
 rm -rf $WORK/msan
 
 # Pull trunk libfuzzer.
-cd $SRC && git clone https://chromium.googlesource.com/chromium/llvm-project/llvm/lib/Fuzzer libfuzzer
+cd $SRC && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
 
 cp $SRC/llvm/tools/sancov/coverage-report-server.py /usr/local/bin/
 
