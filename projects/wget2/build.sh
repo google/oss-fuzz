@@ -19,6 +19,7 @@ export WGET2_DEPS_PATH=$SRC/wget2_deps
 export PKG_CONFIG_PATH=$WGET2_DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$WGET2_DEPS_PATH/include"
 export LDFLAGS="-L$WGET2_DEPS_PATH/lib"
+export GNULIB_SRCDIR=$SRC/gnulib
 
 cd $SRC/libunistring
 ./autogen.sh
@@ -58,8 +59,11 @@ if test $? != 0;then
 fi
 
 cd $SRC/gnutls
+touch .submodule.stamp
 make bootstrap
+GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
 LIBS="-lunistring" \
+CFLAGS="$GNUTLS_CFLAGS" \
 ./configure --with-nettle-mini --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
     --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --prefix=$WGET2_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
