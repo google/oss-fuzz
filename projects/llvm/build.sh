@@ -18,7 +18,8 @@
 
 # This is not a typical OSS-Fuzz set up, don't use it as an example.
 
-# This builds LLVM fuzzers using $CC/$CXX and LLVM's own copy of libFuzzer.
+# This builds LLVM fuzzers using a previosly built LLVM, ignoring $CC/$CXX,
+# and LLVM's own copy of libFuzzer.
 # TODO(kcc): honor CFLAGS/CXXFLAGS to allow building with msan/ubsan
 
 mkdir build
@@ -26,8 +27,8 @@ cd build
 
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_ENABLE_ASSERTIONS=ON \
-    -DCMAKE_C_COMPILER=$CC \
-    -DCMAKE_CXX_COMPILER=$CXX \
+    -DCMAKE_C_COMPILER=`pwd`/../build0/bin/clang \
+    -DCMAKE_CXX_COMPILER=`pwd`/../build0/bin/clang++ \
     -DLLVM_USE_SANITIZE_COVERAGE=YES \
     -DLLVM_USE_SANITIZER=Address
 
