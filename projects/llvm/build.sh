@@ -25,6 +25,8 @@
 mkdir build
 cd build
 
+unset CC CXX CFLAGS CXXFLAGS
+
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DCMAKE_C_COMPILER=`pwd`/../build0/bin/clang \

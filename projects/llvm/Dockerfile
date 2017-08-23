@@ -19,9 +19,7 @@ MAINTAINER kcc@google.com
 RUN apt-get update -y
 RUN apt-get install -y autoconf automake libtool curl make g++ unzip wget git \
     binutils liblzma-dev libz-dev python-all cmake ninja-build subversion \
-    pkg-config docbook2x
-
-WORKDIR /root
+    pkg-config
 
 # Get protobuf
 RUN wget -qO- https://github.com/google/protobuf/releases/download/v3.3.0/protobuf-cpp-3.3.0.tar.gz | tar zxf -
@@ -32,7 +30,9 @@ RUN cd llvm/tools && svn co http://llvm.org/svn/llvm-project/cfe/trunk clang -r 
 RUN cd llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt -r $(cd ../ && svn info | grep Revision | awk '{print $2}')
 
 # Build plain LLVM (stage 0)
-RUN mkdir build0 && cd build0 && cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm && ninja
+RUN mkdir build0
+RUN unset CC CXX CFLAGS CXXFLAGS; cd build0 && cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm
+RUN cd build0 && ninja clang compiler-rt
+RUN cd build0 && ninja check-fuzzer
 
 COPY build.sh $SRC/
-
