@@ -1,0 +1,13 @@
+homepage: "http://llvm.org/"
+primary_contact: "kcc@google.com"
+auto_ccs:
+  - "mascasa@google.com"
+
+# TODO(kcc): enable other sanitizers.
+sanitizers:
+  - address
+
+# The LLVM build currently supports only libFuzzer
+fuzzing_engines:
+    - libfuzzer
+
