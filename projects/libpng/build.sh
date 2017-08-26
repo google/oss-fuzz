@@ -37,4 +37,4 @@ $CXX $CXXFLAGS -std=c++11 -I. \
 # add seed corpus.
 find $SRC/libpng/contrib/pngsuite -name "*.png" | xargs zip $OUT/libpng_read_fuzzer_seed_corpus.zip
 
-cp $SRC/*.dict $SRC/*.options $OUT/
+cp $SRC/libpng/contrib/oss-fuzz/*.dict $SRC/libpng/contrib/oss-fuzz/*.options $OUT/
