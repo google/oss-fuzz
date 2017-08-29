@@ -174,7 +174,8 @@ def _get_command_string(command):
 def _add_engine_args(parser):
   """Add common engine args."""
   parser.add_argument('--engine', default='libfuzzer',
-                      choices=['libfuzzer', 'afl', 'honggfuzz'])
+                      choices=['libfuzzer', 'libfuzzer-standalone', 'afl',
+                               'honggfuzz'])
 
 
 def _add_sanitizer_args(parser):
