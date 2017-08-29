@@ -29,11 +29,11 @@ cd clang
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K\d+(?=')" scripts/update.py)
 echo "Using LLVM revision: $LLVM_REVISION"
 
-cd $SRC && svn co http://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
-cd $SRC/llvm/tools && svn co http://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_REVISION clang
-cd $SRC/llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
-cd $SRC/llvm/projects && svn co http://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
-cd $SRC/llvm/projects && svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
+cd $SRC && svn co https://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
+cd $SRC/llvm/tools && svn co https://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_REVISION clang
+cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
+cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
+cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
 
 # Build & install
 mkdir -p $WORK/llvm
@@ -59,7 +59,7 @@ ninja install-cxx
 rm -rf $WORK/msan
 
 # Pull trunk libfuzzer.
-cd $SRC && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
+cd $SRC && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
 
 cp $SRC/llvm/tools/sancov/coverage-report-server.py /usr/local/bin/
 
