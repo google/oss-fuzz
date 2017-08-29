@@ -34,6 +34,7 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_USE_SANITIZE_COVERAGE=YES \
     -DLLVM_USE_SANITIZER=Address
 
-ninja clang-fuzzer
-
-cp bin/clang-fuzzer $OUT
+for fuzzer in clang-fuzzer llvm-dwarfdump-fuzzer; do
+  ninja $fuzzer
+  cp bin/$fuzzer $OUT
+done
