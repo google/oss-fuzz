@@ -2,6 +2,7 @@ homepage: "http://llvm.org/"
 primary_contact: "kcc@google.com"
 auto_ccs:
   - "mascasa@google.com"
+  - "llvm-bugs@lists.llvm.org"
 
 # TODO(kcc): enable other sanitizers.
 sanitizers:
