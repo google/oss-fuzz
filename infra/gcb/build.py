@@ -26,6 +26,7 @@ CONFIGURATIONS = {
   'sanitizer-undefined' : [ 'SANITIZER=undefined' ],
   'sanitizer-coverage' : [ 'SANITIZER=coverage' ],
   'engine-libfuzzer' : [ 'FUZZING_ENGINE=libfuzzer' ],
+  'engine-libfuzzer-standalone' : [ 'FUZZING_ENGINE=libfuzzer-standalone' ],
   'engine-afl' : [ 'FUZZING_ENGINE=afl' ],
   'engine-honggfuzz' : [ 'FUZZING_ENGINE=honggfuzz' ],
 }
@@ -45,7 +46,7 @@ ENGINE_INFO = {
         supported_sanitizers=['address', 'memory', 'undefined']),
 }
 
-DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
+DEFAULT_ENGINES = ['libfuzzer', 'libfuzzer-standalone', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
