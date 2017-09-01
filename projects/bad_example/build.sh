@@ -23,7 +23,7 @@ $CXX $CXXFLAGS -std=c++11 -I. -DINTENTIONAL_STARTUP_CRASH \
 
 
 # The latest two examples won't for for coverage build, bail out.
-if [[ $SANITIZER = *coverage* ]]; then
+if [[ $SANITIZER = *coverage* ]] || [[ $SANITIZER = *profile* ]]; then
   exit 0
 fi
 
