@@ -32,8 +32,8 @@ make clean
 make -j$(nproc)
 make install
 
-export PATH=$FFMPEG_DEPS_PATH/bin:$PATH
-export LD_LIBRARY_PATH=$FFMPEG_DEPS_PATH/lib:$LD_LIBRARY_PATH
+export PATH="$FFMPEG_DEPS_PATH/bin:$PATH"
+export LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib"
 
 cd $SRC
 bzip2 -f -d alsa-lib-*
