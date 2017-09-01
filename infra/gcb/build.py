@@ -214,18 +214,18 @@ def get_build_steps(project_yaml, dockerfile_path):
               'cd {0} && zip -r {1} *'.format(out, zip_file)
             ],
           },
-          # upload binaries
-          {'name': 'gcr.io/oss-fuzz-base/uploader',
-           'args': [
-               os.path.join(out, zip_file),
-               upload_url,
-            ],
-          },
           # upload srcmap
           {'name': 'gcr.io/oss-fuzz-base/uploader',
            'args': [
                '/workspace/srcmap.json',
                srcmap_url,
+            ],
+          },
+          # upload binaries
+          {'name': 'gcr.io/oss-fuzz-base/uploader',
+           'args': [
+               os.path.join(out, zip_file),
+               upload_url,
             ],
           },
           # cleanup
