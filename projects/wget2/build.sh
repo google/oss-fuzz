@@ -20,6 +20,7 @@ export PKG_CONFIG_PATH=$WGET2_DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$WGET2_DEPS_PATH/include"
 export LDFLAGS="-L$WGET2_DEPS_PATH/lib"
 export GNULIB_SRCDIR=$SRC/gnulib
+export LLVM_PROFILE_FILE=/tmp/prof.test
 
 cd $SRC/libunistring
 ./autogen.sh
