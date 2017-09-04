@@ -2,6 +2,7 @@ homepage: "http://llvm.org/"
 primary_contact: "kcc@google.com"
 auto_ccs:
   - "mascasa@google.com"
+  - "jdevlieghere@apple.com"
   - "llvm-bugs@lists.llvm.org"
 
 # TODO(kcc): enable other sanitizers.
@@ -11,6 +12,6 @@ sanitizers:
 # The LLVM build currently supports only libFuzzer
 fuzzing_engines:
     - libfuzzer
-    
+
 # Bug reports are public by default:
 view_restrictions: none
