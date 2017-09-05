@@ -19,8 +19,7 @@ cd $SRC/botan
 
 ln -s $SRC/fuzzer_corpus .
 
-# This assumes $CC is set to either 'clang' or 'gcc'
-./configure.py --cc=$CC --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
+./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
                --disable-shared --disable-modules=locking_allocator \
                --unsafe-fuzzer-mode --build-fuzzers=libfuzzer \
                --with-fuzzer-lib='FuzzingEngine'
