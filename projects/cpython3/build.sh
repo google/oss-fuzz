@@ -29,7 +29,7 @@ pushd cpython
 make -j$(nproc) install
 popd
 
-FUZZ_DIR=cpython/Modules/_fuzz
+FUZZ_DIR=cpython/Modules/_xxtestfuzz
 for fuzz_test in $(cat $FUZZ_DIR/fuzz_tests.txt)
 do
   $CC $CFLAGS \
