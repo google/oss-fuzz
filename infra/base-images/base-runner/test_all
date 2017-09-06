@@ -33,7 +33,7 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
 
   echo "testing $FUZZER"
 
-  if [ "$SKIP_TEST_TARGET_RUN" -ne 1 ]; then
+  if [ "$SKIP_TEST_TARGET_RUN" != "1" ]; then
     if [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
       timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
     elif [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
