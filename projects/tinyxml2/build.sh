@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,9 @@
 #
 ################################################################################
 make -j$(nproc) clean
-make CXXFLAGS='' -j$(nproc) all
+make -j$(nproc) all
 
-$CXX $CXXFLAGS -std=c++11 -Iinclude/ $SRC/xmltest.cpp -o $OUT/xmltest -lFuzzingEngine $SRC/tinyxml2/libtinyxml2.a
+$CXX $CXXFLAGS -std=c++11 -Iinclude/ $SRC/xmltest.cpp -o $OUT/xmltest \
+    -lFuzzingEngine $SRC/tinyxml2/libtinyxml2.a
 
 cp $SRC/*.dict $SRC/*.options $OUT/
