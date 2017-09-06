@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-# Test every fuzzer. Fails on first fuzzer failure.
+# Invoke bad build checks for every fuzzer. Fails on first fuzzer failure.
 
 N=0
 for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
@@ -33,15 +33,7 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
 
   echo "testing $FUZZER"
 
-  if [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
-    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
-  elif [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    run_fuzzer $FUZZER -max_total_time=20
-  else
-    export AFL_NO_UI=1
-    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
-  fi
-
+  bad_build_check $FUZZER_BINARY
   N=$[$N+1]
 done
 

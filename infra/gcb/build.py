@@ -206,6 +206,17 @@ def get_build_steps(project_yaml, dockerfile_path):
               'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
             ],
           },
+          # test binaries
+          {'name': 'gcr.io/oss-fuzz-base/base-runner',
+            'env': env,
+            'args': [
+              'bash',
+              '-c',
+              # Verify that fuzzers have been built properly and are not broken.
+              # TODO(mmoroz): raise a notification if not passing the tests.
+              'test_all_for_bad_build'
+            ]
+          },
           # zip binaries
           {'name': image,
             'args': [
