@@ -185,6 +185,9 @@ def get_build_steps(project_yaml, dockerfile_path):
 
       env.append('OUT=' + out)
 
+      # To disable running of all fuzz targets while doing |test_all| step.
+      env.append('SKIP_TEST_TARGET_RUN=1')
+
       workdir = workdir_from_dockerfile(dockerfile_path)
       if not workdir:
         workdir = '/src'
@@ -205,6 +208,17 @@ def get_build_steps(project_yaml, dockerfile_path):
               # Container Builder doesn't pass --rm to docker run yet.
               'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
             ],
+          },
+          # test binaries
+          {'name': 'gcr.io/oss-fuzz-base/base-runner',
+            'env': env,
+            'args': [
+              'bash',
+              '-c',
+              # Verify that fuzzers have been built properly and are not broken.
+              # TODO(mmoroz): raise a notification if not passing the tests.
+              'test_all'
+            ]
           },
           # zip binaries
           {'name': image,

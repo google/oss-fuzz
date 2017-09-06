@@ -33,14 +33,17 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
 
   echo "testing $FUZZER"
 
-  if [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
-    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
-  elif [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    run_fuzzer $FUZZER -max_total_time=20
-  else
-    export AFL_NO_UI=1
-    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
+  if [ "$SKIP_TEST_TARGET_RUN" != "1" ]; then
+    if [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
+      timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
+    elif [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
+      run_fuzzer $FUZZER -max_total_time=20
+    else
+      export AFL_NO_UI=1
+      timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
+    fi
   fi
+
   bad_build_check $FUZZER_BINARY
   N=$[$N+1]
 done
