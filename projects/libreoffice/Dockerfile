@@ -38,7 +38,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/5ade6ae2a99bc1e9e57031ca88d36dad-hyphen-2.8.8.tar.gz \
     https://dev-www.libreoffice.org/src/48d647fbd8ef8889e5a7f422c1bfda94-clucene-core-2.3.3.4.tar.gz \
     https://dev-www.libreoffice.org/src/boost_1_63_0.tar.bz2 \
-    https://dev-www.libreoffice.org/src/expat-2.2.1.tar.bz2 \
+    https://dev-www.libreoffice.org/src/expat-2.2.3.tar.bz2 \
     https://dev-www.libreoffice.org/src/libjpeg-turbo-1.5.1.tar.gz \
     https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
     https://dev-www.libreoffice.org/src/0168229624cfac409e766913506961a8-ucpp-1.3.2.tar.gz \
@@ -74,12 +74,12 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libwps-0.4.7.tar.xz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
-    https://dev-www.libreoffice.org/src/poppler-0.56.0.tar.xz \
+    https://dev-www.libreoffice.org/src/poppler-0.57.0.tar.xz \
     https://dev-www.libreoffice.org/src/mdds-1.2.3.tar.bz2 \
     https://dev-www.libreoffice.org/src/openssl-1.0.2k.tar.gz \
     https://dev-www.libreoffice.org/src/language-subtag-registry-2017-04-19.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.10.tgz \
-    https://dev-www.libreoffice.org/src/harfbuzz-1.3.2.tar.bz2 \
+    https://dev-www.libreoffice.org/src/harfbuzz-1.4.8.tar.bz2 \
     https://dev-www.libreoffice.org/src/bae83fa5dc7f081768daace6e199adc3-glm-0.9.4.6-libreoffice.zip \
     https://dev-www.libreoffice.org/src/icu4c-59_1-src.tgz \
     https://dev-www.libreoffice.org/src/icu4c-59_1-data.zip \
@@ -89,9 +89,11 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/freetype-2.7.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/fontconfig-2.12.4.tar.bz2 \
     https://dev-www.libreoffice.org/src/libepoxy-1.3.1.tar.bz2 \
-    https://dev-www.libreoffice.org/src/gpgme-1.8.0.tar.bz2 \
+    https://dev-www.libreoffice.org/src/gpgme-1.9.0.tar.bz2 \
     https://dev-www.libreoffice.org/src/libassuan-2.4.3.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libgpg-error-1.26.tar.bz2 $SRC/
+    https://dev-www.libreoffice.org/src/libgpg-error-1.27.tar.bz2 \
+    https://dev-www.libreoffice.org/src/libepubgen-0.0.1.tar.bz2 \
+    https://dev-www.libreoffice.org/src/libqxp-0.0.0.tar.xz $SRC/
 #fuzzing corpuses
 ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/
 RUN mkdir afl-testcases && cd afl-testcases/ && tar xf $SRC/afl_testcases.tgz && cd .. && \
@@ -125,7 +127,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/ww6fuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/ww8fuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/qpwfuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/slkfuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/slkfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/fodtfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
