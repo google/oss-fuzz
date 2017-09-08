@@ -15,9 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mmoroz@chromium.org
+MAINTAINER glennrp@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev
 
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
 WORKDIR libpng
-COPY build.sh libpng_read_fuzzer.* png.dict $SRC/
+COPY build.sh $SRC/

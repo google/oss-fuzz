@@ -1,4 +1,5 @@
 #!/bin/bash -eu
+# Copyright 2017 Glenn Randers-Pehrson
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Last changed in libpng 1.6.32 [August 24, 2017]
+#
+# Revisions by Glenn Randers-Pehson, 2017:
+# 1. Build only the library, not the tools (changed "make -j$(nproc) all" to
+#     "make -j$(nproc) libpng16.la").
+# 2. Disabled WARNING and WRITE options in pnglibconf.dfa.
 ################################################################################
 
 # Disable logging via library build configuration control.
-cat scripts/pnglibconf.dfa | sed -e "s/option STDIO/option STDIO disabled/" \
+cat scripts/pnglibconf.dfa | \
+  sed -e "s/option STDIO/option STDIO disabled/" \
+      -e "s/option WARNING /option WARNING disabled/" \
+      -e "s/option WRITE enables WRITE_INT_FUNCTIONS/option WRITE disabled/" \
 > scripts/pnglibconf.dfa.temp
 mv scripts/pnglibconf.dfa.temp scripts/pnglibconf.dfa
 
@@ -24,14 +34,17 @@ mv scripts/pnglibconf.dfa.temp scripts/pnglibconf.dfa
 autoreconf -f -i
 ./configure
 make -j$(nproc) clean
-make -j$(nproc) all
+make -j$(nproc) libpng16.la
 
 # build libpng_read_fuzzer.
-$CXX $CXXFLAGS -std=c++11 -I. -lz \
-     $SRC/libpng_read_fuzzer.cc -o $OUT/libpng_read_fuzzer \
-     -lFuzzingEngine .libs/libpng16.a
+$CXX $CXXFLAGS -std=c++11 -I. \
+     $SRC/libpng/contrib/oss-fuzz/libpng_read_fuzzer.cc \
+     -o $OUT/libpng_read_fuzzer \
+     -lFuzzingEngine .libs/libpng16.a -lz
 
 # add seed corpus.
-find $SRC/libpng -name "*.png" | xargs zip $OUT/libpng_read_fuzzer_seed_corpus.zip
+find $SRC/libpng -name "*.png" | \
+     xargs zip $OUT/libpng_read_fuzzer_seed_corpus.zip
 
-cp $SRC/*.dict $SRC/*.options $OUT/
+cp $SRC/libpng/contrib/oss-fuzz/*.dict \
+     $SRC/libpng/contrib/oss-fuzz/*.options $OUT/

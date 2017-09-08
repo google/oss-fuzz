@@ -5,6 +5,4 @@ auto_ccs:
   - "staff@irssi.org"
 sanitizers:
   - address
-  - memory:
-     experimental: True
   - undefined

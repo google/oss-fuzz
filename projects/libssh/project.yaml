@@ -4,6 +4,4 @@ auto_ccs:
  - "cryptomilk@gmail.com"
 sanitizers:
   - address
-  - memory:
-     experimental: True
   - undefined

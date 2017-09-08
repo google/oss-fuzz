@@ -7,6 +7,9 @@
 
 #include "expat.h"
 
+#include <functional>
+#include <string>
+
 const char* kEncoding =
 #if defined(ENCODING_UTF_16)
 "UTF-16"
@@ -27,11 +30,17 @@ const char* kEncoding =
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  std::string input(reinterpret_cast<const char*>(data), size);
+  auto hash_salt = std::hash<std::string>()(input);
+
   for (int use_ns = 0; use_ns <= 1; ++use_ns) {
     XML_Parser parser =
         use_ns ? XML_ParserCreateNS(kEncoding, '\n') :
                  XML_ParserCreate(kEncoding);
-    XML_Parse(parser, reinterpret_cast<const char*>(data), size, true);
+
+    // Set a hash salt to prevent MSan from crashing on random bytes generation.
+    XML_SetHashSalt(parser, hash_salt);
+    XML_Parse(parser, input.c_str(), input.size(), true);
     XML_ParserFree(parser);
   }
   return 0;

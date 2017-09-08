@@ -1,4 +1,5 @@
 homepage: "http://www.libpng.org/pub/png/libpng.html"
+primary_contact: "glennrp@gmail.com"
 sanitizers:
   - address
   - memory:

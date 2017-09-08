@@ -7,6 +7,4 @@ auto_ccs:
   - "vabnick@gmail.com"
 sanitizers:
   - address
-  - memory:
-     experimental: True
   - undefined

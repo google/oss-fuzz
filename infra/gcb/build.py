@@ -25,6 +25,7 @@ CONFIGURATIONS = {
   'sanitizer-memory' : [ 'SANITIZER=memory' ],
   'sanitizer-undefined' : [ 'SANITIZER=undefined' ],
   'sanitizer-coverage' : [ 'SANITIZER=coverage' ],
+  'sanitizer-profile' : [ 'SANITIZER=profile' ],
   'engine-libfuzzer' : [ 'FUZZING_ENGINE=libfuzzer' ],
   'engine-afl' : [ 'FUZZING_ENGINE=afl' ],
   'engine-honggfuzz' : [ 'FUZZING_ENGINE=honggfuzz' ],
@@ -36,7 +37,8 @@ EngineInfo = collections.namedtuple(
 ENGINE_INFO = {
     'libfuzzer': EngineInfo(
         upload_bucket='clusterfuzz-builds',
-        supported_sanitizers=['address', 'memory', 'undefined', 'coverage']),
+        supported_sanitizers=['address', 'memory', 'undefined', 'coverage',
+                              'profile']),
     'afl': EngineInfo(
         upload_bucket='clusterfuzz-builds-afl',
         supported_sanitizers=['address']),
@@ -106,6 +108,9 @@ def get_sanitizers(project_yaml):
   # Always make a coverage build.
   if 'coverage' not in processed_sanitizers:
     processed_sanitizers.append('coverage')
+
+  if 'profile' not in processed_sanitizers:
+    processed_sanitizers.append('profile')
 
   return processed_sanitizers
 
@@ -187,7 +192,7 @@ def get_build_steps(project_yaml, dockerfile_path):
       build_steps.extend([
           # compile
           {'name': image,
-            'env' : env,
+            'env': env,
             'args': [
               'bash',
               '-c',
@@ -199,8 +204,8 @@ def get_build_steps(project_yaml, dockerfile_path):
               # We also remove /work and /src to save disk space after a step.
               # Container Builder doesn't pass --rm to docker run yet.
               'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
-              ],
-            },
+            ],
+          },
           # zip binaries
           {'name': image,
             'args': [
@@ -209,19 +214,19 @@ def get_build_steps(project_yaml, dockerfile_path):
               'cd {0} && zip -r {1} *'.format(out, zip_file)
             ],
           },
-          # upload binaries
-          {'name': 'gcr.io/oss-fuzz-base/uploader',
-           'args': [
-               os.path.join(out, zip_file),
-               upload_url,
-           ],
-          },
           # upload srcmap
           {'name': 'gcr.io/oss-fuzz-base/uploader',
            'args': [
                '/workspace/srcmap.json',
                srcmap_url,
-           ],
+            ],
+          },
+          # upload binaries
+          {'name': 'gcr.io/oss-fuzz-base/uploader',
+           'args': [
+               os.path.join(out, zip_file),
+               upload_url,
+            ],
           },
           # cleanup
           {'name': image,
