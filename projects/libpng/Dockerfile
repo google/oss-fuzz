@@ -19,5 +19,6 @@ MAINTAINER glennrp@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev
 
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
+RUN (cd libpng; git log | head -1)
 WORKDIR libpng
 COPY build.sh $SRC/
