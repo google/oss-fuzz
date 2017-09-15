@@ -1,0 +1,7 @@
+homepage: "http://www.rarlab.com/"
+primary_contact: "roshal@rarlab.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
