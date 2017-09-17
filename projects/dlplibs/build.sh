@@ -149,7 +149,9 @@ pushd libmwaw
 ./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --disable-zip --enable-fuzzers \
     REVENGE_CFLAGS=-I$rvnginc REVENGE_LIBS="-L$rvnglib -lrevenge-0.0 -lrevenge-stream-0.0" \
     REVENGE_GENERATORS_CFLAGS=-I$rvnginc REVENGE_GENERATORS_LIBS="-L$rvnglib -lrevenge-generators-0.0"
-make -j$(nproc)
+make -C src/lib -j$(nproc)
+# Link with less parallelism to avoid memory problems on the builders
+make -j2
 popd
 
 pushd libe-book
