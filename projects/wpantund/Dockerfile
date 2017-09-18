@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,22 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER glennrp@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev
+MAINTAINER rquattle@google.com
 
-RUN git clone --depth 1 https://github.com/glennrp/libpng.git
-RUN (cd libpng; git log | head -1)
-WORKDIR libpng
-COPY build.sh $SRC/
+RUN apt-get -y update \
+	&& DEBIAN_FRONTEND=noninteractive \
+			apt-get install -y -q --no-install-recommends \
+				gdb \
+				libdbus-1-dev \
+				libboost-dev \
+				pkg-config \
+				libtool \
+				autoconf \
+				autoconf-archive \
+				automake
+
+COPY build.sh *.options $SRC/
+
+RUN git clone --depth 1 https://github.com/openthread/wpantund
+
+WORKDIR wpantund

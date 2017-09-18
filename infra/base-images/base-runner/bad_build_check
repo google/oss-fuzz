@@ -27,18 +27,21 @@ function check_instrumentation {
     fi
   fi
 
-  if (( $CHECK_FAILED == 0 )); then
-    # The "example" target has 93 when built with ASan and 67 with UBSan. Real
-    # targets have greater values (arduinojson: 413, libteken: 519, zlib: 586).
-    local THRESHOLD_FOR_NUMBER_OF_EDGES=90
-    if [[ $SANITIZER = undefined ]]; then
-      THRESHOLD_FOR_NUMBER_OF_EDGES=65
-    fi
+  # honggfuzz is not fully integrated, avoid performing the following check.
+  if [[ "$FUZZING_ENGINE" != honggfuzz ]]; then
+    if (( $CHECK_FAILED == 0 )); then
+      # The "example" target has 93 when built with ASan and 67 with UBSan. Real
+      # targets have greater values (arduinojson: 413, libteken: 519, zlib: 586).
+      local THRESHOLD_FOR_NUMBER_OF_EDGES=90
+      if [[ $SANITIZER = undefined ]]; then
+        THRESHOLD_FOR_NUMBER_OF_EDGES=65
+      fi
 
-    local NUMBER_OF_EDGES=$(sancov -print-coverage-pcs $FUZZER | wc -l)
-    if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
-      echo "BAD BUILD: the code does not seem to have coverage instrumentation."
-      CHECK_FAILED=1
+      local NUMBER_OF_EDGES=$(sancov -print-coverage-pcs $FUZZER | wc -l)
+      if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
+        echo "BAD BUILD: the code does not seem to have coverage instrumentation."
+        CHECK_FAILED=1
+      fi
     fi
   fi
 

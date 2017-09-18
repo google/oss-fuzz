@@ -1,0 +1,5 @@
+homepage: https://www.openssh.com/
+primary_contact: "djm@mindrot.org"
+auto_ccs:
+        - "dtucker@dtucker.net.au"
+        - "djm@google.com"
