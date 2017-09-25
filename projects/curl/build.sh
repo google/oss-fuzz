@@ -21,13 +21,22 @@ echo "LIB_FUZZING_ENGINE: $LIB_FUZZING_ENGINE"
 echo "CFLAGS: $CFLAGS"
 echo "CXXFLAGS: $CXXFLAGS"
 
+# Make an install directory
+export INSTALLDIR=/tmp/curl_install
+
+# Compile curl
+pushd /tmp/curl
 ./buildconf
-./configure --disable-shared --enable-debug --enable-maintainer-mode --disable-symbol-hiding --disable-threaded-resolver --enable-ipv6 --with-random=/dev/null --without-ssl
+./configure --prefix=${INSTALLDIR} --disable-shared --enable-debug --enable-maintainer-mode --disable-symbol-hiding --disable-threaded-resolver --enable-ipv6 --with-random=/dev/null --without-ssl
 make -j$(nproc)
+make install
+popd
 
 # Build the fuzzer.
-cd tests/fuzz
-make all
+./buildconf
+./configure
+make
+make check
 make zip
 
 cp -v curl_fuzzer curl_fuzzer_seed_corpus.zip $OUT/
