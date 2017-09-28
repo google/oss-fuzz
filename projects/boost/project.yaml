@@ -1,9 +1,7 @@
 homepage: "http://www.boost.org/"
 
-# TODO: add actual boost maintainers here.
-# Provide the e-mail for the primary contact and others:
-# Un-comment the below lines to make auto-cc work.
-# primary_contact: "primary-my-api-maintainer@example.com"
-# auto_ccs:  
-#   - "secondary-my-api-maintainer@example.com"
-#   - "tertiary-my-api-maintainer@example.com"
+# TODO: add more boost maintainers here and possibly a mailing list.
+# primary_contact: "someone@boost.org"
+auto_ccs:  
+   - "jz.maddock@googlemail.com"
+#   - "someone-else@boost.org"
