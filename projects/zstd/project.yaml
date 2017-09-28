@@ -1,0 +1,8 @@
+homepage: "http://facebook.github.io/zstd/"
+primary_contact: "nickrterrell@gmail.com"
+auto_ccs:
+  - "Yann.collet.73@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
