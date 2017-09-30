@@ -16,9 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER glennrp@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev
+RUN apt-get update && \
+    apt-get install -y make autoconf automake libtool zlib1g-dev
 
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
-RUN (cd libpng; git log | head -1)
+RUN cp libpng/contrib/oss-fuzz/build.sh $SRC
 WORKDIR libpng
-COPY build.sh $SRC/
