@@ -15,31 +15,5 @@
 #
 ################################################################################
 
-echo "CC: $CC"
-echo "CXX: $CXX"
-echo "LIB_FUZZING_ENGINE: $LIB_FUZZING_ENGINE"
-echo "CFLAGS: $CFLAGS"
-echo "CXXFLAGS: $CXXFLAGS"
-
-# Make an install directory
-export INSTALLDIR=/tmp/curl_install
-
-# Compile curl
-pushd /tmp/curl
-./buildconf
-./configure --prefix=${INSTALLDIR} --disable-shared --enable-debug --enable-maintainer-mode --disable-symbol-hiding --disable-threaded-resolver --enable-ipv6 --with-random=/dev/null --without-ssl
-make -j$(nproc)
-make install
-popd
-
-# Build the fuzzer.
-./buildconf
-./configure
-make
-make check
-make zip
-
-cp -v curl_fuzzer curl_fuzzer_seed_corpus.zip $OUT/
-
-# Copy dictionary and options file to $OUT.
-cp $SRC/*.dict $SRC/*.options $OUT/
+# Run the OSS-Fuzz script in the curl-fuzzer project.
+./ossfuzz.sh
