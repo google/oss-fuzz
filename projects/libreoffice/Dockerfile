@@ -42,7 +42,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libjpeg-turbo-1.5.2.tar.gz \
     https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
     https://dev-www.libreoffice.org/src/0168229624cfac409e766913506961a8-ucpp-1.3.2.tar.gz \
-    https://dev-www.libreoffice.org/src/10d61fbaa6a06348823651b1bd7940fe-libexttextcat-3.4.4.tar.bz2 \
+    https://dev-www.libreoffice.org/src/libexttextcat-3.4.5.tar.xz \
     https://dev-www.libreoffice.org/src/1f5def51ca0026cd192958ef07228b52-rasqal-0.9.33.tar.gz \
     https://dev-www.libreoffice.org/src/a39f6c07ddb20d7dd2ff1f95fa21e2cd-raptor2-2.0.15.tar.gz \
     https://dev-www.libreoffice.org/src/e5be03eda13ef68aabab6e42aa67715e-redland-1.0.17.tar.gz \
@@ -52,7 +52,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.14.8.tar.xz \
     https://dev-www.libreoffice.org/src/curl-7.52.1.tar.gz \
-    https://dev-www.libreoffice.org/src/xmlsec1-1.2.24.tar.gz \
+    https://dev-www.libreoffice.org/src/xmlsec1-1.2.25.tar.gz \
     https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libcdr-0.1.4.tar.xz \
@@ -65,7 +65,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libodfgen-0.1.6.tar.bz2 \
     https://dev-www.libreoffice.org/src/liborcus-0.12.1.tar.gz \
     https://dev-www.libreoffice.org/src/libpagemaker-0.0.3.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libpng-1.6.30.tar.xz \
+    https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \
     https://dev-www.libreoffice.org/src/librevenge-0.0.4.tar.bz2 \
     https://dev-www.libreoffice.org/src/libstaroffice-0.0.4.tar.xz \
     https://dev-www.libreoffice.org/src/libvisio-0.1.5.tar.bz2 \
@@ -83,9 +83,9 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/bae83fa5dc7f081768daace6e199adc3-glm-0.9.4.6-libreoffice.zip \
     https://dev-www.libreoffice.org/src/icu4c-59_1-src.tgz \
     https://dev-www.libreoffice.org/src/icu4c-59_1-data.zip \
-    https://dev-www.libreoffice.org/src/libxml2-2.9.5.tar.gz \
+    https://dev-www.libreoffice.org/src/libxml2-2.9.6.tar.gz \
     https://dev-www.libreoffice.org/src/libxslt-1.1.30.tar.gz \
-    https://dev-www.libreoffice.org/src/047c3feb121261b76dc16cdb62f54483-hunspell-1.6.0.tar.gz \
+    https://dev-www.libreoffice.org/src/hunspell-1.6.2.tar.gz \
     https://dev-www.libreoffice.org/src/freetype-2.8.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/fontconfig-2.12.4.tar.bz2 \
     https://dev-www.libreoffice.org/src/libepoxy-1.3.1.tar.bz2 \
