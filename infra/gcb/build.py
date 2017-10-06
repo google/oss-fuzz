@@ -261,7 +261,7 @@ def main():
 
   build_body = {
       'steps': get_build_steps(project_yaml, dockerfile_path),
-      'timeout': str(4 * 3600) + 's',
+      'timeout': str(6 * 3600) + 's',
       'options': options,
       'logsBucket': 'oss-fuzz-gcb-logs',
       'images': [ project_yaml['image'] ],
