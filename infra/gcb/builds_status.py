@@ -85,6 +85,9 @@ def find_last_build(builds):
   DELAY_MINUTES = 40
 
   for build in builds:
+    if build['status'] == 'WORKING':
+      continue
+
     finish_time = dateutil.parser.parse(build['finishTime'], ignoretz=True)
     if (datetime.datetime.utcnow() - finish_time >=
         datetime.timedelta(minutes=DELAY_MINUTES)):
