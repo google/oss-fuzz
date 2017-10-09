@@ -21,7 +21,6 @@ cp -pL \
     /usr/lib/*/libicu*.a \
     /usr/lib/*/libxml2.a \
     /usr/lib/*/liblzma.a \
-    /usr/lib/*/libpng*.a \
     static
 staticlib=$(pwd)/static
 
@@ -39,6 +38,14 @@ pushd lcms2-2.8
 make -C src -j$(nproc)
 export LCMS2_CFLAGS="-I$(pwd)/include"
 export LCMS2_LIBS="-L$(pwd)/src -llcms2"
+popd
+
+tar -xJf $SRC/libpng-1.6.34.tar.xz
+pushd libpng-1.6.34
+./configure --disable-shared --enable-static
+make -j$(nproc)
+export LIBPNG_CFLAGS="-I$(pwd)"
+export LIBPNG_LIBS="-L$(pwd) -lpng16"
 popd
 
 pushd librevenge
