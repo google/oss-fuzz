@@ -25,6 +25,14 @@ cp -pL \
     static
 staticlib=$(pwd)/static
 
+tar -xJf $SRC/zlib-1.2.11.tar.xz
+pushd zlib-1.2.11
+./configure --static
+make -j$(nproc)
+export ZLIB_CFLAGS="-I$(pwd)"
+export ZLIB_LIBS="-L$(pwd) -lz"
+popd
+
 tar -xzf $SRC/lcms2-2.8.tar.gz
 pushd lcms2-2.8
 ./configure --disable-shared --enable-static --without-jpeg --without-tiff
