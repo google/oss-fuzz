@@ -15,12 +15,10 @@
 #
 ################################################################################
 
-# HACK to force linking with static icu and libxml2
+# HACK to force linking with static icu
 mkdir static
 cp -pL \
     /usr/lib/*/libicu*.a \
-    /usr/lib/*/libxml2.a \
-    /usr/lib/*/liblzma.a \
     static
 staticlib=$(pwd)/static
 
@@ -46,6 +44,16 @@ pushd libpng-1.6.34
 make -j$(nproc)
 export LIBPNG_CFLAGS="-I$(pwd)"
 export LIBPNG_LIBS="-L$(pwd) -lpng16"
+popd
+
+tar -xzf $SRC/libxml2-2.9.6.tar.gz
+pushd libxml2-2.9.6
+./configure --disable-shared --enable-static --disable-ipv6 --without-python --without-zlib --without-lzma
+make -j$(nproc)
+export LIBXML_CFLAGS="-I$(pwd)/include"
+export LIBXML_LIBS="-L$(pwd) -lxml2"
+export XML_CFLAGS="$LIBXML_CFLAGS"
+export XML_LIBS="$LIBXML_LIBS"
 popd
 
 pushd librevenge
@@ -81,8 +89,7 @@ popd
 pushd libvisio
 ./autogen.sh
 ./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers \
-    LDFLAGS=-L$staticlib \
-    LIBXML_LIBS="-lxml2 -llzma"
+    LDFLAGS=-L$staticlib
 make -j$(nproc)
 popd
 
@@ -144,16 +151,14 @@ popd
 pushd libe-book
 ./autogen.sh
 ./configure --without-docs --disable-werror --disable-shared --enable-static --without-tools --enable-fuzzers --without-liblangtag \
-    LDFLAGS=-L$staticlib \
-    XML_LIBS="-lxml2 -llzma"
+    LDFLAGS=-L$staticlib
 make -j$(nproc)
 popd
 
 pushd libabw
 ./autogen.sh
 ./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers \
-    LDFLAGS=-L$staticlib \
-    LIBXML_LIBS="-lxml2 -llzma -licuuc -licudata"
+    LDFLAGS=-L$staticlib
 make -j$(nproc)
 popd
 
@@ -161,8 +166,7 @@ pushd libetonyek
 ./autogen.sh
 ./configure --without-docs --disable-werror --disable-shared --enable-static \
     --without-tools --enable-fuzzers --with-mdds=0.x --without-liblangtag \
-    LDFLAGS=-L$staticlib \
-    XML_LIBS="-lxml2 -llzma -licuuc -licudata"
+    LDFLAGS=-L$staticlib
 make -j$(nproc)
 popd
 
