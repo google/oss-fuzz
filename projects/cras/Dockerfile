@@ -24,7 +24,8 @@ RUN apt-get -y update && \
       libspeexdsp-dev \
       libtool \
       libudev-dev \
-      wget
+      wget \
+      zip
 RUN apt-get clean
 RUN cd /tmp && git clone https://github.com/ndevilla/iniparser.git && \
       cd iniparser && \
