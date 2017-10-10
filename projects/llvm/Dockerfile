@@ -33,6 +33,6 @@ RUN cd llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trun
 RUN mkdir build0
 RUN unset CC CXX CFLAGS CXXFLAGS; cd build0 && cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm
 RUN cd build0 && ninja clang compiler-rt
-RUN cd build0 && ninja check-fuzzer
+RUN cd build0 && ninja fuzzer
 
 COPY build.sh $SRC/
