@@ -19,3 +19,4 @@ $CXX $CXXFLAGS $FUZZER_LDFLAGS \
   -lpthread -lrt -ludev -ldl -lm \
   -lFuzzingEngine \
   -Wl,-Bstatic -liniparser -lasound -lspeexdsp -Wl,-Bdynamic
+zip -j ${OUT}/rclient_message_corpus.zip ${SRC}/adhd/cras/src/fuzz/corpus/*
