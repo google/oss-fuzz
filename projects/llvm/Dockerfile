@@ -25,9 +25,9 @@ RUN apt-get install -y autoconf automake libtool curl make g++ unzip wget git \
 RUN wget -qO- https://github.com/google/protobuf/releases/download/v3.3.0/protobuf-cpp-3.3.0.tar.gz | tar zxf -
 RUN cd protobuf-3.3.0 && ./autogen.sh && ./configure && make -j $(nproc) && make check -j $(nproc) && make install && ldconfig
 # Get LLVM
-RUN svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
-RUN cd llvm/tools && svn co http://llvm.org/svn/llvm-project/cfe/trunk clang -r $(cd ../ && svn info | grep Revision | awk '{print $2}')
-RUN cd llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt -r $(cd ../ && svn info | grep Revision | awk '{print $2}')
+RUN svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm > svn.log 2>&1 
+RUN cd llvm/tools && svn co http://llvm.org/svn/llvm-project/cfe/trunk clang -r $(cd ../ && svn info | grep Revision | awk '{print $2}') >> svn.log 2>&1 
+RUN cd llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt -r $(cd ../ && svn info | grep Revision | awk '{print $2}')  >> svn.log 2>&1 
 
 # Build plain LLVM (stage 0)
 RUN mkdir build0
