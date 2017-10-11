@@ -19,10 +19,9 @@ MAINTAINER dtardon@redhat.com
 # enable source repos
 RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
 # install build requirements
-RUN apt-get update && apt-get build-dep -y \
-    libmspub librevenge libcdr libvisio libpagemaker libfreehand libwpd \
-    libwpg libwps libmwaw libe-book libabw libetonyek
-RUN apt-get update && apt-get install -y wget
+RUN apt-get update && \
+    apt-get install -y wget xz-utils autoconf automake libtool pkg-config \
+        gperf libboost-dev libglm-dev libmdds-dev
 ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \

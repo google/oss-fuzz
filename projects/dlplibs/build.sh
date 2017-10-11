@@ -33,7 +33,7 @@ popd
 
 tar -xJf $SRC/libpng-1.6.34.tar.xz
 pushd libpng-1.6.34
-./configure --disable-shared --enable-static
+./configure --disable-shared --enable-static CPPFLAGS="$ZLIB_CFLAGS" LDFLAGS="$ZLIB_LIBS"
 make -j$(nproc)
 export LIBPNG_CFLAGS="-I$(pwd)"
 export LIBPNG_LIBS="-L$(pwd) -lpng16"
