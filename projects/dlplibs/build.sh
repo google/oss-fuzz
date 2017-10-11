@@ -15,13 +15,6 @@
 #
 ################################################################################
 
-# HACK to force linking with static icu
-mkdir static
-cp -pL \
-    /usr/lib/*/libicu*.a \
-    static
-staticlib=$(pwd)/static
-
 tar -xJf $SRC/zlib-1.2.11.tar.xz
 pushd zlib-1.2.11
 ./configure --static
@@ -56,6 +49,16 @@ export XML_CFLAGS="$LIBXML_CFLAGS"
 export XML_LIBS="$LIBXML_LIBS"
 popd
 
+tar -xzf $SRC/icu4c-59_1-src.tgz
+pushd icu/source
+./configure --disable-shared --enable-static --with-data-packaging=static --disable-dyload --disable-strict \
+    --disable-layout --disable-samples --disable-extras --disable-icuio --disable-plugins \
+    CPPFLAGS=-DU_USE_STRTOD_L=0
+make -j$(nproc)
+export ICU_CFLAGS="-I$(pwd) -I$(pwd)/i18n -I$(pwd)/common"
+export ICU_LIBS="-L$(pwd)/lib -licui18n -licuuc -licudata"
+popd
+
 pushd librevenge
 ./autogen.sh
 ./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tests --enable-fuzzers
@@ -72,31 +75,25 @@ popd
 
 pushd libmspub
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers \
-    ICU_CFLAGS="$(pkg-config --cflags icu-i18n)" \
-    ICU_LIBS="-L$staticlib $(pkg-config --libs icu-i18n)"
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
 make -j$(nproc)
 popd
 
 pushd libcdr
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers \
-    ICU_CFLAGS="$(pkg-config --cflags icu-i18n)" \
-    ICU_LIBS="-L$staticlib $(pkg-config --libs icu-i18n)"
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
 make -j$(nproc)
 popd
 
 pushd libvisio
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers \
-    LDFLAGS=-L$staticlib
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
 make -j$(nproc)
 popd
 
 pushd libzmf
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers \
-    LDFLAGS=-L$staticlib
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
 make -j$(nproc)
 popd
 
@@ -108,8 +105,7 @@ popd
 
 pushd libfreehand
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers \
-    LDFLAGS=-L$staticlib
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
 make -j$(nproc)
 popd
 
@@ -150,30 +146,26 @@ popd
 
 pushd libe-book
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --without-tools --enable-fuzzers --without-liblangtag \
-    LDFLAGS=-L$staticlib
+./configure --without-docs --disable-werror --disable-shared --enable-static --without-tools --enable-fuzzers --without-liblangtag
 make -j$(nproc)
 popd
 
 pushd libabw
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers \
-    LDFLAGS=-L$staticlib
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
 make -j$(nproc)
 popd
 
 pushd libetonyek
 ./autogen.sh
 ./configure --without-docs --disable-werror --disable-shared --enable-static \
-    --without-tools --enable-fuzzers --with-mdds=0.x --without-liblangtag \
-    LDFLAGS=-L$staticlib
+    --without-tools --enable-fuzzers --with-mdds=0.x --without-liblangtag
 make -j$(nproc)
 popd
 
 pushd libqxp
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers \
-    LDFLAGS=-L$staticlib
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
 make -j$(nproc)
 popd
 
