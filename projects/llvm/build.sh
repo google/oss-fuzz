@@ -22,6 +22,40 @@
 # and LLVM's own copy of libFuzzer.
 # TODO(kcc): honor CFLAGS/CXXFLAGS to allow building with msan/ubsan
 
+# Build and install protobuf
+pushd protobuf-3.3.0
+./autogen.sh
+./configure --disable-shared
+make -j $(nproc)
+make check -j $(nproc)
+make install
+ldconfig
+popd
+
+case $SANITIZER in
+  address) LLVM_SANITIZER="Address" ;;
+  undefined) LLVM_SANITIZER="Undefined" ;;
+  memory) LLVM_SANITIZER="MemoryWithOrigins" ;;
+  *) LLVM_SANITIZER="" ;;
+esac
+
+mkdir cpf-build
+pushd cpf-build
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
+    -DLLVM_ENABLE_ASSERTIONS=ON \
+    -DCMAKE_C_COMPILER="${CC}" \
+    -DCMAKE_CXX_COMPILER="${CXX}" \
+    -DCMAKE_C_FLAGS="${CFLAGS}" \
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
+    -DLIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE}" \
+    -DCLANG_ENABLE_PROTO_FUZZER=ON \
+    -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}"
+for fuzzer in clang-fuzzer clang-proto-fuzzer; do
+  ninja $fuzzer
+  cp bin/$fuzzer $OUT
+done
+popd
+
 mkdir build
 cd build
 
@@ -34,7 +68,7 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_USE_SANITIZE_COVERAGE=YES \
     -DLLVM_USE_SANITIZER=Address
 
-for fuzzer in clang-fuzzer clang-format-fuzzer llvm-dwarfdump-fuzzer; do
+for fuzzer in clang-format-fuzzer llvm-dwarfdump-fuzzer; do
   ninja $fuzzer
   cp bin/$fuzzer $OUT
 done
