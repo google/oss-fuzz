@@ -28,10 +28,4 @@ RUN svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm > svn.log 2>&1
 RUN cd llvm/tools && svn co http://llvm.org/svn/llvm-project/cfe/trunk clang -r $(cd ../ && svn info | grep Revision | awk '{print $2}') >> svn.log 2>&1 
 RUN cd llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt -r $(cd ../ && svn info | grep Revision | awk '{print $2}')  >> svn.log 2>&1 
 
-# Build plain LLVM (stage 0)
-RUN mkdir build0
-RUN unset CC CXX CFLAGS CXXFLAGS; cd build0 && cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm
-RUN cd build0 && ninja clang compiler-rt
-RUN cd build0 && ninja fuzzer
-
 COPY build.sh $SRC/
