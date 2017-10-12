@@ -81,19 +81,19 @@ popd
 
 pushd libcdr
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers --disable-tests
 make -j$(nproc)
 popd
 
 pushd libvisio
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers --disable-tests
 make -j$(nproc)
 popd
 
 pushd libzmf
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers --disable-tests
 make -j$(nproc)
 popd
 
@@ -105,7 +105,7 @@ popd
 
 pushd libfreehand
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers --disable-tests
 make -j$(nproc)
 popd
 
@@ -146,7 +146,8 @@ popd
 
 pushd libe-book
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --without-tools --enable-fuzzers --without-liblangtag
+./configure --without-docs --disable-werror --disable-shared --enable-static \
+    --without-tools --enable-fuzzers --without-liblangtag --disable-tests
 make -j$(nproc)
 popd
 
@@ -159,13 +160,13 @@ popd
 pushd libetonyek
 ./autogen.sh
 ./configure --without-docs --disable-werror --disable-shared --enable-static \
-    --without-tools --enable-fuzzers --with-mdds=0.x --without-liblangtag
+    --without-tools --enable-fuzzers --with-mdds=0.x --without-liblangtag --disable-tests
 make -j$(nproc)
 popd
 
 pushd libqxp
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --enable-fuzzers --disable-tests
 make -j$(nproc)
 popd
 
