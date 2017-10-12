@@ -31,6 +31,7 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DCMAKE_C_COMPILER=`pwd`/../build0/bin/clang \
     -DCMAKE_CXX_COMPILER=`pwd`/../build0/bin/clang++ \
+    -DLLVM_NO_DEAD_STRIP=ON \
     -DLLVM_USE_SANITIZE_COVERAGE=YES \
     -DLLVM_USE_SANITIZER=Address
 
