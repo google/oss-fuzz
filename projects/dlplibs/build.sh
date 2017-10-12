@@ -137,8 +137,7 @@ popd
 
 pushd libmwaw
 ./autogen.sh
-./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --disable-zip --enable-fuzzers \
-    REVENGE_LIBS="$REVENGE_LIBS $REVENGE_STREAM_LIBS"
+./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tools --disable-zip --enable-fuzzers
 make -C src/lib -j$(nproc)
 # Link with less parallelism to avoid memory problems on the builders
 make -j2
