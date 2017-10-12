@@ -65,10 +65,14 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DCMAKE_C_COMPILER=`pwd`/../build0/bin/clang \
     -DCMAKE_CXX_COMPILER=`pwd`/../build0/bin/clang++ \
+    -DLLVM_NO_DEAD_STRIP=ON \
     -DLLVM_USE_SANITIZE_COVERAGE=YES \
     -DLLVM_USE_SANITIZER=Address
 
-for fuzzer in clang-format-fuzzer llvm-dwarfdump-fuzzer; do
+for fuzzer in clang-format-fuzzer llvm-dwarfdump-fuzzer llvm-isel-fuzzer; do
   ninja $fuzzer
   cp bin/$fuzzer $OUT
 done
+
+# isel-fuzzer encodes its default fags in the name.
+mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer=aarch64-gisel
