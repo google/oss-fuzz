@@ -6,7 +6,7 @@ auto_ccs:
   - "vsk@apple.com"
   - "llvm-bugs@lists.llvm.org"
 
-# TODO(kcc): enable other sanitizers.
+# TODO(kcc): enable msan.
 sanitizers:
   - address
 
