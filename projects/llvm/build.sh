@@ -16,14 +16,6 @@
 #
 ################################################################################
 
-# This is not a typical OSS-Fuzz set up, don't use it as an example.
-
-# This builds LLVM fuzzers using a previosly built LLVM, ignoring $CC/$CXX,
-# and LLVM's own copy of libFuzzer.
-# TODO(kcc): honor CFLAGS/CXXFLAGS to allow building with msan/ubsan
-
-# Build and install protobuf
-
 build_protobuf() {
   ./autogen.sh
   ./configure --disable-shared
