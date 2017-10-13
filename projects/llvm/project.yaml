@@ -9,7 +9,6 @@ auto_ccs:
 # TODO(kcc): enable msan.
 sanitizers:
   - address
-  - undefined
 
 # The LLVM build currently supports only libFuzzer
 fuzzing_engines:
