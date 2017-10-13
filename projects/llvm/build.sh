@@ -58,4 +58,4 @@ for fuzzer in "${FUZZERS[@]}"; do
 done
 
 # isel-fuzzer encodes its default flags in the name.
-mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer=aarch64-gisel
+mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
