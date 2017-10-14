@@ -1,0 +1,7 @@
+homepage: "https://gstreamer.freedesktop.org/"
+primary_contact: "bilboed@bilboed.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+  
