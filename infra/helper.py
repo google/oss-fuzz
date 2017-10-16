@@ -214,7 +214,7 @@ def _build_image(image_name, no_cache=False, pull=False):
 
 def docker_run(run_args, print_output=True):
   """Call `docker run`."""
-  command = ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE']
+  command = ['docker', 'run', '--rm', '-i', '--privileged']
   command.extend(run_args)
 
   print('Running:', _get_command_string(command))
@@ -462,10 +462,17 @@ def shell(args):
   if args.e:
     env += args.e
 
+  if _is_base_image(args.project_name):
+    image_project = 'oss-fuzz-base'
+    out_dir = os.path.join(BUILD_DIR, 'out');
+  else:
+    image_project = 'oss-fuzz'
+    out_dir = os.path.join(BUILD_DIR, 'out', args.project_name)
+
   run_args = sum([['-e', v] for v in env], []) + [
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/out' % out_dir,
       '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
-      '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
+      '-t', 'gcr.io/%s/%s' % (image_project, args.project_name),
       '/bin/bash'
   ]
 
