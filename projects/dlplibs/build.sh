@@ -49,7 +49,7 @@ export XML_CFLAGS="$LIBXML_CFLAGS"
 export XML_LIBS="$LIBXML_LIBS"
 popd
 
-tar -xzf $SRC/icu4c-59_1-src.tgz
+tar -xzf $SRC/icu4c-60rc-src.tgz
 pushd icu/source
 ./configure --disable-shared --enable-static --with-data-packaging=static --disable-dyload --disable-strict \
     --disable-layout --disable-samples --disable-extras --disable-icuio --disable-plugins \

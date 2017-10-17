@@ -26,7 +26,7 @@ ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \
     https://dev-www.libreoffice.org/src/libxml2-2.9.6.tar.gz \
-    https://dev-www.libreoffice.org/src/icu4c-59_1-src.tgz \
+    http://download.icu-project.org/files/icu4c/60rc/icu4c-60rc-src.tgz \
     $SRC/
 # download fuzzing corpora
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \
