@@ -34,6 +34,7 @@ readonly FUZZERS=( \
   llvm-demangle-fuzzer \
   llvm-dwarfdump-fuzzer \
   llvm-isel-fuzzer \
+  llvm-special-case-list-fuzzer \
 )
 case $SANITIZER in
   address) LLVM_SANITIZER="Address" ;;
