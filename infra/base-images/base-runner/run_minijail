@@ -35,12 +35,23 @@ mkdir /tmp/chroot/bin
 cp /bin/sh /tmp/chroot/bin/sh
 cp $(which llvm-symbolizer) /tmp/chroot/bin/llvm-symbolizer
 
-EXE_DIR=$(dirname $(readlink -f $1))
+FULL_EXE_PATH=$(readlink -f $1)
+EXE_DIR=$(dirname $FULL_EXE_PATH)
 mkdir -p /tmp/chroot/$EXE_DIR
+
+shift
+
+echo 'Running:'
+echo minijail0 -U -m \"0 $UID 1\" -T static \
+  -c 0 -n -e -v -p -l -I \
+  -k proc,/proc,proc,1 -P /tmp/chroot \
+  -b /lib,/lib,0 -b /lib64,/lib64,0 -b /usr/lib,/usr/lib,0 \
+  -b /tmp,/tmp,1 \
+  -b $EXE_DIR,$EXE_DIR,0 $FULL_EXE_PATH $@
 
 minijail0 -U -m "0 $UID 1" -T static \
   -c 0 -n -e -v -p -l -I \
   -k proc,/proc,proc,1 -P /tmp/chroot \
   -b /lib,/lib,0 -b /lib64,/lib64,0 -b /usr/lib,/usr/lib,0 \
   -b /tmp,/tmp,1 \
-  -b $EXE_DIR,$EXE_DIR,0 $@
+  -b $EXE_DIR,$EXE_DIR,0 $FULL_EXE_PATH $@
