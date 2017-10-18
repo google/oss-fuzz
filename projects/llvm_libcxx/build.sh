@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-for f in sort stable_sort partition stable_partition nth_element partial_sort; do
+for f in sort stable_sort partition stable_partition nth_element partial_sort regex_ECMAScript regex_POSIX regex_extended regex_awk regex_grep regex_egrep; do
   cat > ${f}_fuzzer.cc <<EOF
 #include "fuzzing/fuzzing.h"
 #include <cassert>
