@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +15,7 @@
 #
 ################################################################################
 
-# build project
-# e.g.
-# ./autogen.sh
-# ./configure
-# make -j$(nproc) all
-
-# build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o /out/name_of_fuzzer \
-#     -lFuzzingEngine /path/to/library.a
-BASEFLAGS="-Wno-constant-conversion -Wno-header-guard -Wno-mismatched-tags -O2"
+BASEFLAGS="-Wno-constant-conversion -Wno-header-guard -Wno-mismatched-tags"
 echo "CFLAGS" $CFLAGS
 echo "CXXFLAGS" $CXXFLAGS
 export CFLAGS="$CFLAGS $BASEFLAGS"
@@ -38,9 +27,6 @@ export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 mkdir -p $PREFIX
 cd $WORK
 
-env
-
-# #for i in orc gstreamer gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly gst-libav;
 for i in orc gstreamer gst-plugins-base;
 do
     mkdir -p $i
@@ -70,9 +56,6 @@ PLUGINS="$PLUGIN_DIR/libgstcoreelements.a \
        $PLUGIN_DIR/libgsttheora.a \
        $PLUGIN_DIR/libgstogg.a"
 
-# FIXME FIXME FIXME : TRYING WITHOUT GSTAPP
-#       $PLUGIN_DIR/libgstapp.a \
-
 # We want to statically link everything, except for shared libraries that are present on
 # the base image. Those need to be specified beforehad and explicitely linked dynamically
 # If any of the static dependencies require a pre-installed shared library, you need
@@ -84,17 +67,7 @@ PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -pthread -lrt -lpthread"
 #BUILD_LDFLAGS="$LDFLAGS `pkg-config --static --libs $PKG_DEPS` -Wl,-static -lpcre "
 BUILD_LDFLAGS="$LDFLAGS -Wl,-static `pkg-config --static --libs $PKG_DEPS`"
 
-for pr in glib-2.0 gstreamer-1.0 gstreamer-pbutils-1.0 gstreamer-video-1.0 gstreamer-audio-1.0 orc-0.4 ogg; do
-    echo ">>>>>>>>>>>>>>>>>>>" $pr;
-    pkg-config --static --libs $pr;
-    pkg-config --debug $pr
-done
-
 echo
-echo
-echo
-echo
-
 echo "PREDEPS_LDFLAGS" $PREDEPS_LDFLAGS
 echo
 echo "BUILD_LDFLAGS" $BUILD_LDFLAGS
