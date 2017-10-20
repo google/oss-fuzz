@@ -33,8 +33,8 @@ then
 fi
 
 # Coverage flag overrides.
-COVERAGE_FLAGS_VAR="COVERAGE_FLAGS_$SANITIZER"
-if [[ -n ${!COVERAGE_FLAGS_VAR-} ]]
+COVERAGE_FLAGS_VAR="COVERAGE_FLAGS_${SANITIZER}"
+if [[ -n ${!COVERAGE_FLAGS_VAR+x} ]]
 then
   export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
 fi
