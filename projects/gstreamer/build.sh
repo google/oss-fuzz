@@ -15,11 +15,8 @@
 #
 ################################################################################
 
-BASEFLAGS="-Wno-constant-conversion -Wno-header-guard -Wno-mismatched-tags"
 echo "CFLAGS" $CFLAGS
 echo "CXXFLAGS" $CXXFLAGS
-export CFLAGS="$CFLAGS $BASEFLAGS"
-export CXXFLAGS="$CXXFLAGS $BASEFLAGS"
 export LDFLAGS="$SANITIZER_FLAGS $COVERAGE_FLAGS"
 PREFIX=$WORK/prefix
 PLUGIN_DIR=$PREFIX/lib/gstreamer-1.0
@@ -110,6 +107,5 @@ echo
 cd $OUT
 wget -nd https://people.freedesktop.org/~bilboed/gst-discoverer_seed_corpus.zip
 
-cp $LIB_FUZZING_ENGINE /work/
 
 

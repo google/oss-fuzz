@@ -36,3 +36,4 @@ RUN \
 WORKDIR gstreamer
 COPY build.sh $SRC/
 COPY gst-discoverer.c $SRC/
+
