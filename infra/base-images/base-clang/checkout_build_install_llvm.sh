@@ -26,7 +26,13 @@ cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 
+OUR_LLVM_REVISION=315377  # For manual bumping.
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K\d+(?=')" scripts/update.py)
+
+if [ $OUR_LLVM_REVISION -gt $LLVM_REVISION ]; then
+  LLVM_REVISION=$OUR_LLVM_REVISION
+fi
+
 echo "Using LLVM revision: $LLVM_REVISION"
 
 cd $SRC && svn co https://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm

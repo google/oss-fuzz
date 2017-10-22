@@ -1,3 +1,5 @@
+#!/bin/bash -eu
+#
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +16,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER dvyukov@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev zlib1g-dev
+./autogen.sh
+./configure --enable-static --disable-shared --without-selinux
+make -j$(nproc)
 
-RUN git clone --depth 1 https://github.com/curl/curl.git /src/curl
-RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
-WORKDIR /src/curl_fuzzer
-COPY build.sh $SRC/
+for fuzzer in augeas_escape_name_fuzzer; do
+    $CXX $CXXFLAGS -std=c++11 -Isrc/ `xml2-config --cflags` \
+        $SRC/$fuzzer.cc -o $OUT/$fuzzer -lFuzzingEngine \
+        src/.libs/libaugeas.a src/.libs/libfa.a ./gnulib/lib/.libs/libgnu.a \
+        /usr/lib/x86_64-linux-gnu/libxml2.a
+done

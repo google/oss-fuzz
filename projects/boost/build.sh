@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,5 +15,12 @@
 #
 ################################################################################
 
-# Run the OSS-Fuzz script in the curl-fuzzer project.
-./ossfuzz.sh
+
+# Very simple build rule, but sufficient here.
+$CXX $CXXFLAGS -I . ../boost_regex_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_fuzzer
+
+# Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
+# find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'     # If you have dictionaries.
+# find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'  # If you have custom options.
+# find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';' # If you have seed corpora (you better have them!)

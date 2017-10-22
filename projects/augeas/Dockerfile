@@ -15,10 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER dvyukov@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev zlib1g-dev
+MAINTAINER hhan@redhat.com
+RUN apt-get update && apt-get install -y libreadline-dev libselinux1-dev \
+    libxml2-dev make autoconf automake libtool pkg-config bison flex
 
-RUN git clone --depth 1 https://github.com/curl/curl.git /src/curl
-RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
-WORKDIR /src/curl_fuzzer
+RUN git clone --depth 1 https://github.com/hercules-team/augeas
+WORKDIR augeas
+
 COPY build.sh $SRC/
+COPY augeas_escape_name_fuzzer.cc $SRC/

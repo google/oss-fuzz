@@ -3,9 +3,10 @@ primary_contact: "kcc@google.com"
 auto_ccs:
   - "mascasa@google.com"
   - "jdevlieghere@apple.com"
+  - "vsk@apple.com"
   - "llvm-bugs@lists.llvm.org"
 
-# TODO(kcc): enable other sanitizers.
+# TODO(kcc): enable msan.
 sanitizers:
   - address
 

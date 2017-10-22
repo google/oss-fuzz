@@ -71,20 +71,22 @@ def is_build_successful(build):
   logging_client = logging.Client(project='oss-fuzz')
   entries = logging_client.list_entries(
       order_by=logging.DESCENDING,
-      page_size=1,
+      page_size=4,
       filter_=(
           'resource.type="build" AND '
           'resource.labels.build_id="{0}"'.format(build_id)))
 
-  entry = next(entries.pages)
-  entry = list(entry)[0]
-  return entry.payload == 'DONE'
+  entries = next(entries.pages)
+  return any(entry.payload == 'DONE' for entry in entries)
 
 
 def find_last_build(builds):
   DELAY_MINUTES = 40
 
   for build in builds:
+    if build['status'] == 'WORKING':
+      continue
+
     finish_time = dateutil.parser.parse(build['finishTime'], ignoretz=True)
     if (datetime.datetime.utcnow() - finish_time >=
         datetime.timedelta(minutes=DELAY_MINUTES)):
@@ -118,8 +120,7 @@ def main():
   failures = []
   for project in scan_project_names(projects_dir):
     print project
-    query_filter = ('(status="SUCCESS" OR status="FAILURE") AND ' +
-                    'images="gcr.io/oss-fuzz/{0}"'.format(project))
+    query_filter = ('images="gcr.io/oss-fuzz/{0}"'.format(project))
     try:
       response = cloudbuild.projects().builds().list(
           projectId='oss-fuzz',

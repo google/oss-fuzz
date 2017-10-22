@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-image
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y zip file libunwind8 binutils libblocksruntime0
 COPY bad_build_check llvm-cov llvm-profdata llvm-symbolizer reproduce \
-    run_fuzzer sancov test_all test_report /usr/local/bin/
+    run_fuzzer sancov test_all test_report minijail0 run_minijail /usr/local/bin/
 
 # Default environment options for various sanitizers.
 # Note that these match the settings used in ClusterFuzz and

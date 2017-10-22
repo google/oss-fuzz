@@ -112,6 +112,8 @@ OSS-Fuzz will adhere to following disclosure principles:
 [This page](https://oss-fuzz-build-logs.storage.googleapis.com/index.html)
 gives the latest build logs for each project.
 
+(Internal only) [Builds dashboard](https://builder.oss-fuzz.com).
+
 ## Trophies
 
 [This page](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=status%3AFixed%2CVerified+Type%3ABug%2CBug-Security+-component%3AInfra+)

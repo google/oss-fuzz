@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +15,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER dvyukov@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev zlib1g-dev
-
-RUN git clone --depth 1 https://github.com/curl/curl.git /src/curl
-RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
-WORKDIR /src/curl_fuzzer
-COPY build.sh $SRC/
+for f in sort stable_sort partition stable_partition nth_element partial_sort regex_ECMAScript regex_POSIX regex_extended regex_awk regex_grep regex_egrep; do
+  cat > ${f}_fuzzer.cc <<EOF
+#include "fuzzing/fuzzing.h"
+#include <cassert>
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  int result = fuzzing::$f(data, size);
+  assert(result == 0); return 0;
+}
+EOF
+  $CXX $CXXFLAGS -std=c++11 ${f}_fuzzer.cc ./libcxx/fuzzing/fuzzing.cpp -I ./libcxx  -o $OUT/$f -lFuzzingEngine
+done

@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER dvyukov@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool libssl-dev zlib1g-dev
+RUN apt-get update && apt-get install -y g++
 
-RUN git clone --depth 1 https://github.com/curl/curl.git /src/curl
-RUN git clone --depth 1 https://github.com/curl/curl-fuzzer.git /src/curl_fuzzer
-WORKDIR /src/curl_fuzzer
-COPY build.sh $SRC/
+RUN git clone --recursive https://github.com/boostorg/boost.git
+WORKDIR boost
+# This bootstrap boost with the g++ toolchain.
+# The actual build will need to use CXX/CXXFLAGS provided by OSS-Fuzz.
+RUN ./bootstrap.sh && ./b2 headers
+# Preferably, move boost_regex_fuzzer.cc to the boost repository.
+COPY build.sh boost_regex_fuzzer.cc $SRC/
