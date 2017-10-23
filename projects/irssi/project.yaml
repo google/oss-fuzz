@@ -2,6 +2,7 @@ homepage: "https://github.com/irssi/irssi"
 primary_contact: "ahf@irssi.org"
 auto_ccs:
   - "dx@dxzone.com.ar"
+  - "joseph.bisch@gmail.com"
   - "staff@irssi.org"
 sanitizers:
   - address
