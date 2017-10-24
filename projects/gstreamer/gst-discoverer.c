@@ -35,10 +35,11 @@ GST_PLUGIN_STATIC_DECLARE(ogg);
 GST_PLUGIN_STATIC_DECLARE(theora);
 GST_PLUGIN_STATIC_DECLARE(vorbis);
 
-
+#undef DEBUG_OSS_GST
 static void
 print_info (GstDiscovererInfo * info, GError * err)
 {
+#ifdef DEBUG_OSS_GST
   GstDiscovererResult result;
 
   if (!info) {
@@ -50,33 +51,33 @@ print_info (GstDiscovererInfo * info, GError * err)
   result = gst_discoverer_info_get_result (info);
   g_print ("Done discovering %s\n", gst_discoverer_info_get_uri (info));
   switch (result) {
-    case GST_DISCOVERER_OK:
+  case GST_DISCOVERER_OK:
     {
       g_print ("All good\n");
       break;
     }
-    case GST_DISCOVERER_URI_INVALID:
+  case GST_DISCOVERER_URI_INVALID:
     {
       g_print ("URI is not valid\n");
       break;
     }
-    case GST_DISCOVERER_ERROR:
+  case GST_DISCOVERER_ERROR:
     {
       g_print ("An error was encountered while discovering the file\n");
       g_print (" %s\n", err->message);
       break;
     }
-    case GST_DISCOVERER_TIMEOUT:
+  case GST_DISCOVERER_TIMEOUT:
     {
       g_print ("Analyzing URI timed out\n");
       break;
     }
-    case GST_DISCOVERER_BUSY:
+  case GST_DISCOVERER_BUSY:
     {
       g_print ("Discoverer was busy\n");
       break;
     }
-    case GST_DISCOVERER_MISSING_PLUGINS:
+  case GST_DISCOVERER_MISSING_PLUGINS:
     {
       g_print ("Missing plugins\n");
       break;
@@ -84,6 +85,7 @@ print_info (GstDiscovererInfo * info, GError * err)
   }
 
   g_print ("\n");
+#endif
 }
 
 const guint8 *fuzztesting_data;
@@ -95,10 +97,12 @@ appsrc_configuration (GstDiscoverer *dc, GstElement *source, gpointer data)
   GstBuffer *buf;
   GstFlowReturn ret;
   
-  /* Create buffer from fuzztesting_data */
-  buf = gst_buffer_new_wrapped ((gpointer) fuzztesting_data, fuzztesting_size);
+  /* Create buffer from fuzztesting_data which shouldn't be freed */
+  buf = gst_buffer_new_wrapped_full (0, (gpointer) fuzztesting_data, fuzztesting_size,
+				     0, fuzztesting_size, NULL, NULL);
   g_object_set (G_OBJECT (source), "size", fuzztesting_size, NULL);
   g_signal_emit_by_name (G_OBJECT(source), "push-buffer", buf, &ret);
+  gst_buffer_unref (buf);
 }
 
 int LLVMFuzzerTestOneInput(const guint8 *data, size_t size)
@@ -107,16 +111,20 @@ int LLVMFuzzerTestOneInput(const guint8 *data, size_t size)
   GstDiscoverer *dc;
   gint timeout = 10;
   GstDiscovererInfo *info;
+  static gboolean initialized = 0;
 
-  gst_init (NULL, NULL);
+  if (!initialized) {
+    /* Only initialize and register plugins once */
+    gst_init (NULL, NULL);
   
-  GST_PLUGIN_STATIC_REGISTER(coreelements);
-  GST_PLUGIN_STATIC_REGISTER(playback);
-  GST_PLUGIN_STATIC_REGISTER(typefindfunctions);
-  GST_PLUGIN_STATIC_REGISTER(app);
-  GST_PLUGIN_STATIC_REGISTER(ogg);
-  GST_PLUGIN_STATIC_REGISTER(theora);
-  GST_PLUGIN_STATIC_REGISTER(vorbis);
+    GST_PLUGIN_STATIC_REGISTER(coreelements);
+    GST_PLUGIN_STATIC_REGISTER(playback);
+    GST_PLUGIN_STATIC_REGISTER(typefindfunctions);
+    GST_PLUGIN_STATIC_REGISTER(app);
+    GST_PLUGIN_STATIC_REGISTER(ogg);
+    GST_PLUGIN_STATIC_REGISTER(theora);
+    GST_PLUGIN_STATIC_REGISTER(vorbis);
+  }
   
   dc = gst_discoverer_new (timeout * GST_SECOND, &err);
   if (G_UNLIKELY (dc == NULL)) {
