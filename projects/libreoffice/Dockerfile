@@ -51,14 +51,14 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/231adebe5c2f78fded3e3df6e958878e-neon-0.30.1.tar.gz \
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.14.8.tar.xz \
-    https://dev-www.libreoffice.org/src/curl-7.52.1.tar.gz \
+    https://dev-www.libreoffice.org/src/curl-7.56.1.tar.gz \
     https://dev-www.libreoffice.org/src/xmlsec1-1.2.25.tar.gz \
     https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libcdr-0.1.4.tar.xz \
     https://dev-www.libreoffice.org/src/libcmis-0.5.1.tar.gz \
     https://dev-www.libreoffice.org/src/libe-book-0.1.2.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libetonyek-0.1.6.tar.bz2 \
+    https://dev-www.libreoffice.org/src/libetonyek-0.1.7.tar.xz \
     https://dev-www.libreoffice.org/src/libfreehand-0.1.2.tar.xz \
     https://dev-www.libreoffice.org/src/libmspub-0.1.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libmwaw-0.3.12.tar.xz \
@@ -68,7 +68,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \
     https://dev-www.libreoffice.org/src/librevenge-0.0.4.tar.bz2 \
     https://dev-www.libreoffice.org/src/libstaroffice-0.0.4.tar.xz \
-    https://dev-www.libreoffice.org/src/libvisio-0.1.5.tar.bz2 \
+    https://dev-www.libreoffice.org/src/libvisio-0.1.6.tar.xz \
     https://dev-www.libreoffice.org/src/libwpd-0.10.2.tar.xz \
     https://dev-www.libreoffice.org/src/libwpg-0.3.2.tar.xz \
     https://dev-www.libreoffice.org/src/libwps-0.4.7.tar.xz \
@@ -137,7 +137,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fodtfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fodsfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fodgfuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/fodpfuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/fodpfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/xlsfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
