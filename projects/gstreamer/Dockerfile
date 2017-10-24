@@ -33,6 +33,8 @@ RUN \
   git clone --depth 1 --recursive https://anongit.freedesktop.org/git/gstreamer/gstreamer gstreamer && \
   git clone --depth 1 --recursive https://anongit.freedesktop.org/git/gstreamer/gst-plugins-base gst-plugins-base
 
+ADD https://people.freedesktop.org/~bilboed/gst-discoverer_seed_corpus.zip $SRC
+
 WORKDIR gstreamer
 COPY build.sh $SRC/
 COPY gst-discoverer.c $SRC/

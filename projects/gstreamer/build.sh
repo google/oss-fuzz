@@ -24,6 +24,9 @@ export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 mkdir -p $PREFIX
 cd $WORK
 
+# Minimize gst-debug level/code
+export CFLAGS="$CFLAGS -DGST_LEVEL_MAX=2"
+
 for i in orc gstreamer gst-plugins-base;
 do
     mkdir -p $i
@@ -101,11 +104,7 @@ $CXX $CXXFLAGS \
       -Wl,-Bdynamic
 
 echo
-echo ">>>> Downloading OGG corpus"
+echo ">>>> Installing OGG corpus"
 echo
 
-cd $OUT
-wget -nd https://people.freedesktop.org/~bilboed/gst-discoverer_seed_corpus.zip
-
-
-
+cp $SRC/*_seed_corpus.zip $OUT
