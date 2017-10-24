@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+if [[ $SANITIZER = *undefined* ]]; then
+  CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fsanitize-trap=unsigned-integer-overflow"
+fi
+
 for f in $(grep -v "#" libcxx/fuzzing/RoutineNames.txt); do
   cat > ${f}_fuzzer.cc <<EOF
 #include "fuzzing/fuzzing.h"
