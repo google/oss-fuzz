@@ -16,8 +16,8 @@
 ################################################################################
 
 # build project
-./configure --without-subdirs --disable-sys-libs --disable-gui LDFLAGS="$CXXFLAGS"
-make -j$(nproc) wxbase
+./configure --without-subdirs --disable-shared --disable-sys-libs --disable-gui LDFLAGS="$CXXFLAGS"
+make -j$(nproc)
 
 # build fuzzers
 $CXX $CXXFLAGS -o $OUT/zip ./tests/fuzz/zip.cpp \
