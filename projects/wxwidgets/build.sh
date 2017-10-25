@@ -16,7 +16,7 @@
 ################################################################################
 
 # build project
-./configure --without-subdirs --disable-sys-libs --disable-gui
+./configure --without-subdirs --disable-sys-libs --disable-gui LDFLAGS="$CXXFLAGS"
 make -j$(nproc) wxbase
 
 # build fuzzers
