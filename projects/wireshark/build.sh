@@ -26,7 +26,7 @@ cp -a $SRC/wireshark-fuzzdb/samples/* "$SAMPLES_DIR"
 # compile static version of libs
 # XXX, with static wireshark linking each fuzzer binary is ~240 MB (just libwireshark.a is 423 MBs).
 # XXX, wireshark is not ready for including static plugins into binaries.
-CONFOPTS="--disable-shared --enable-static --without-plugins"
+CONFOPTS="--disable-shared --enable-static --disable-plugins"
 
 # disable optional dependencies
 CONFOPTS="$CONFOPTS --without-pcap --without-ssl --without-gnutls"
