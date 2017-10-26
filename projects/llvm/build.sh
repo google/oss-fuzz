@@ -31,6 +31,7 @@ readonly FUZZERS=( \
   clang-fuzzer \
   clang-proto-fuzzer \
   clang-format-fuzzer \
+  clangd-fuzzer \
   llvm-demangle-fuzzer \
   llvm-dwarfdump-fuzzer \
   llvm-isel-fuzzer \
