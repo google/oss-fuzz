@@ -2,6 +2,12 @@
 
 mkdir build
 cd build
-cmake .. -DWITH_FUZZ=ON -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=$PWD/install_dir/
-make -j$(nproc) fuzz
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX:PATH=$PWD/install_dir/
+make -j$(nproc) inkscape_base
+
+$CXX $CXXFLAGS -std=c++11 -Ilib/ ${SRC}/fuzzer.cpp -o $OUT/fuzzer \
+    -lFuzzingEngine lib/*
+
+cp $SRC/fuzz-dict $OUT/fuzz.dict
+
 
