@@ -1,0 +1,4 @@
+homepage: "https://inkscape.org"
+primary_contact: "marc@jeanmougin.fr"
+fuzzing_engines:
+    - libfuzzer
