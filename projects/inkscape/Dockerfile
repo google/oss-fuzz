@@ -67,4 +67,4 @@ RUN apt-get update -yqq && apt-get install -y -qq \
 && rm -rf /var/lib/apt/lists/*
 RUN git clone --depth 1 https://gitlab.com/inkscape/inkscape.git inkscape
 WORKDIR inkscape
-COPY build.sh inkscape
+COPY build.sh $SRC/
