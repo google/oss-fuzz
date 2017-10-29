@@ -39,7 +39,6 @@ RUN apt-get update -yqq && apt-get install -y -qq \
   libgtk-3-dev \
   libgtkmm-3.0-dev \
   libgtkspell-dev \
-  libjemalloc-dev \
   liblcms2-dev \
   libmagick++-dev \
   libpango1.0-dev \
@@ -66,5 +65,6 @@ RUN apt-get update -yqq && apt-get install -y -qq \
   fonts-dejavu \
 && rm -rf /var/lib/apt/lists/*
 RUN git clone --depth 1 https://gitlab.com/inkscape/inkscape.git inkscape
+RUN sed -i 's/SHARED/STATIC/g' inkscape/src/CMakeLists.txt
 WORKDIR inkscape
 COPY build.sh $SRC/
