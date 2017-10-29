@@ -17,7 +17,6 @@
 
 echo "CFLAGS" $CFLAGS
 echo "CXXFLAGS" $CXXFLAGS
-export LDFLAGS="$SANITIZER_FLAGS $COVERAGE_FLAGS"
 PREFIX=$WORK/prefix
 PLUGIN_DIR=$PREFIX/lib/gstreamer-1.0
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
@@ -31,7 +30,9 @@ for i in orc gstreamer gst-plugins-base;
 do
     mkdir -p $i
     cd $i
-    $SRC/$i/autogen.sh --prefix=$PREFIX --disable-shared --enable-static --disable-examples --disable-gtk-doc --disable-introspection --enable-static-plugins --disable-gst-tracer-hooks
+    $SRC/$i/autogen.sh --prefix=$PREFIX --disable-shared --enable-static --disable-examples \
+		       --disable-gtk-doc --disable-introspection --enable-static-plugins \
+		       --disable-gst-tracer-hooks --disable-registry
     make -j$(nproc)
     make install
     cd ..
@@ -64,40 +65,26 @@ PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -pthread -lrt -lpthread"
 
 # The libraries we want to statically link to
 # This includes dependencies of the gst plugins
-#BUILD_LDFLAGS="$LDFLAGS `pkg-config --static --libs $PKG_DEPS` -Wl,-static -lpcre "
-BUILD_LDFLAGS="$LDFLAGS -Wl,-static `pkg-config --static --libs $PKG_DEPS`"
+BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $PKG_DEPS`"
 
 echo
 echo "PREDEPS_LDFLAGS" $PREDEPS_LDFLAGS
 echo
 echo "BUILD_LDFLAGS" $BUILD_LDFLAGS
 echo
-
-echo $CXX $CXXFLAGS $BUILD_CFLAGS \
-      -v -Wl,--verbose \
-      $SRC//gst-discoverer.c \
-      $PLUGINS \
-      $LIB_FUZZING_ENGINE \
-      -o gst-discoverer \
-      $PREDEPS_LDFLAGS \
-      $BUILD_LDFLAGS \
-      -Wl,-Bdynamic
-
-echo
 echo ">>>> BUILDING gst-discoverer.o"
 echo
 
-$CC $CFLAGS $BUILD_CFLAGS -c $SRC/gst-discoverer.c -o $SRC/gst-discoverer.o
+$CC $CFLAGS $BUILD_CFLAGS -c $SRC/gst-ci/fuzzing/gst-discoverer.c -o $SRC/gst-ci/fuzzing/gst-discoverer.o
 
 echo
 echo ">>>> LINKING"
 echo
 
 $CXX $CXXFLAGS \
-      -v -Wl,--verbose \
       -o $OUT/gst-discoverer \
       $PREDEPS_LDFLAGS \
-      $SRC/gst-discoverer.o \
+      $SRC/gst-ci/fuzzing/gst-discoverer.o \
       $PLUGINS \
       $BUILD_LDFLAGS \
       $LIB_FUZZING_ENGINE \
