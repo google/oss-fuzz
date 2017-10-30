@@ -2,5 +2,6 @@ homepage: "https://gstreamer.freedesktop.org/"
 primary_contact: "gstreamer-security@lists.freedesktop.org"
 auto_ccs:
  - "bilboed@bilboed.com"
-
+ - "tim@centricular.com"
+ - "slomo@coaxion.net"
 
