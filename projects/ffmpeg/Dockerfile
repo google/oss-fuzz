@@ -34,7 +34,7 @@ RUN git clone git://anongit.freedesktop.org/git/xorg/lib/libXfixes
 RUN git clone https://github.com/01org/libva
 RUN git clone git://people.freedesktop.org/~aplattner/libvdpau
 RUN git clone https://chromium.googlesource.com/webm/libvpx
-RUN svn co http://svn.xiph.org/trunk/ogg
+RUN git clone git://git.xiph.org/ogg.git
 RUN git clone git://git.xiph.org/opus.git
 RUN git clone git://git.xiph.org/theora.git
 RUN git clone git://git.xiph.org/vorbis.git
