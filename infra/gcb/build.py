@@ -28,6 +28,7 @@ CONFIGURATIONS = {
   'engine-libfuzzer' : [ 'FUZZING_ENGINE=libfuzzer' ],
   'engine-afl' : [ 'FUZZING_ENGINE=afl' ],
   'engine-honggfuzz' : [ 'FUZZING_ENGINE=honggfuzz' ],
+  'engine-none' : [ 'FUZZING_ENGINE=none' ],
 }
 
 EngineInfo = collections.namedtuple(
