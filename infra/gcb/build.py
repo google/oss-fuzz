@@ -44,6 +44,9 @@ ENGINE_INFO = {
     'honggfuzz': EngineInfo(
         upload_bucket='clusterfuzz-builds-honggfuzz',
         supported_sanitizers=['address', 'memory', 'undefined']),
+    'none': EngineInfo(
+        upload_bucket='clusterfuzz-builds-no-engine',
+        supported_sanitizers=['address']),
 }
 
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
