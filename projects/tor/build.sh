@@ -15,6 +15,42 @@
 #
 ##############################################################################
 
+# Create a directory for instrumented dependencies.
+TOR_DEPS=${SRC}/deps
+mkdir -p $TOR_DEPS
+
+# Build libevent with proper instrumentation.
+cd ${SRC}/libevent
+sh autogen.sh
+./configure --prefix=${TOR_DEPS}
+make -j$(nproc) clean
+make -j$(nproc) all
+make install
+
+# Build OpenSSL with proper instrumentation.
+cd ${SRC}/openssl
+OPENSSL_CONFIGURE_FLAGS=""
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+  OPENSSL_CONFIGURE_FLAGS="no-asm"
+fi
+
+./config no-shared --prefix=${TOR_DEPS} \
+    enable-tls1_3 enable-rc5 enable-md2 enable-ec_nistp_64_gcc_128 enable-ssl3 \
+    enable-ssl3-method enable-nextprotoneg enable-weak-ssl-ciphers $CFLAGS \
+    -fno-sanitize=alignment $OPENSSL_CONFIGURE_FLAGS
+
+make -j$(nproc) LDCMD="$CXX $CXXFLAGS"
+make install
+
+# Build zlib with proper instrumentation,
+cd ${SRC}/zlib
+./configure --prefix=${TOR_DEPS}
+make -j$(nproc) clean
+make -j$(nproc) all
+make install
+
+# Build tor and the fuzz targets.
 cd ${SRC}/tor
 
 sh autogen.sh
@@ -23,7 +59,11 @@ sh autogen.sh
 # test functions will fail.
 export ASAN_OPTIONS=detect_leaks=0
 
-./configure --disable-asciidoc --enable-oss-fuzz --disable-memory-sentinels
+./configure --disable-asciidoc --enable-oss-fuzz --disable-memory-sentinels \
+    --with-libevent-dir=${SRC}/deps \
+    --with-openssl-dir=${SRC}/deps \
+    --with-zlib-dir=${SRC}/deps
+
 make clean
 make -j$(nproc) oss-fuzz-fuzzers
 
@@ -37,7 +77,8 @@ TORLIBS="$TORLIBS src/common/libor-testing.a"
 TORLIBS="$TORLIBS src/common/libor-ctime-testing.a"
 TORLIBS="$TORLIBS src/common/libor-event-testing.a"
 TORLIBS="$TORLIBS src/trunnel/libor-trunnel-testing.a"
-TORLIBS="$TORLIBS -lm -Wl,-Bstatic -lssl -lcrypto -levent -lz -Wl,-Bdynamic"
+TORLIBS="$TORLIBS -lm -Wl,-Bstatic -lssl -lcrypto -levent -lz -L${TOR_DEPS}/lib"
+TORLIBS="$TORLIBS -Wl,-Bdynamic"
 
 for fuzzer in src/test/fuzz/*.a; do
     output="${fuzzer%.a}"
@@ -49,5 +90,3 @@ for fuzzer in src/test/fuzz/*.a; do
       zip -j ${OUT}/${output}_seed_corpus.zip ${corpus_dir}/*
     fi
 done
-
-
