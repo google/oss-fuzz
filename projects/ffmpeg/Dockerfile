@@ -22,23 +22,23 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool build-es
     pkg-config texinfo libbz2-dev zlib1g-dev yasm cmake mercurial wget \
     xutils-dev libpciaccess-dev
 
-RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+RUN git clone --depth 1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
 RUN wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.1.0.tar.bz2
 RUN wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.gz
-RUN git clone git://anongit.freedesktop.org/mesa/drm
-RUN git clone https://github.com/mstorsjo/fdk-aac.git
+RUN git clone --depth 1 git://anongit.freedesktop.org/mesa/drm
+RUN git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git
 ADD https://sourceforge.net/projects/lame/files/latest/download lame.tar.gz
-RUN git clone git://anongit.freedesktop.org/xorg/lib/libXext
-RUN git clone git://anongit.freedesktop.org/git/xorg/lib/libXfixes
-RUN git clone https://github.com/01org/libva
-RUN git clone git://people.freedesktop.org/~aplattner/libvdpau
-RUN git clone https://chromium.googlesource.com/webm/libvpx
-RUN git clone git://git.xiph.org/ogg.git
-RUN git clone git://git.xiph.org/opus.git
-RUN git clone git://git.xiph.org/theora.git
-RUN git clone git://git.xiph.org/vorbis.git
-RUN git clone git://git.videolan.org/git/x264.git
+RUN git clone --depth 1 git://anongit.freedesktop.org/xorg/lib/libXext
+RUN git clone --depth 1 git://anongit.freedesktop.org/git/xorg/lib/libXfixes
+RUN git clone --depth 1 https://github.com/01org/libva
+RUN git clone --depth 1 git://people.freedesktop.org/~aplattner/libvdpau
+RUN git clone --depth 1 https://chromium.googlesource.com/webm/libvpx
+RUN git clone --depth 1 git://git.xiph.org/ogg.git
+RUN git clone --depth 1 git://git.xiph.org/opus.git
+RUN git clone --depth 1 git://git.xiph.org/theora.git
+RUN git clone --depth 1 git://git.xiph.org/vorbis.git
+RUN git clone --depth 1 git://git.videolan.org/git/x264.git
 RUN hg clone https://bitbucket.org/multicoreware/x265
 
 COPY build.sh group_seed_corpus.py $SRC/

@@ -121,7 +121,9 @@ cd $SRC/theora
 CFLAGS="$CFLAGS -fPIC" LDFLAGS="-L$FFMPEG_DEPS_PATH/lib/" \
     CPPFLAGS="$CXXFLAGS -I$FFMPEG_DEPS_PATH/include/" \
     LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib/" \
-    ./autogen.sh --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-examples
+    ./autogen.sh
+./configure --with-ogg=$FFMPEG_DEPS_PATH --prefix="$FFMPEG_DEPS_PATH" \
+    --enable-static --disable-examples
 make clean
 make -j$(nproc)
 make install
