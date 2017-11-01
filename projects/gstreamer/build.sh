@@ -102,3 +102,21 @@ echo ">>>> Installing OGG corpus"
 echo
 
 cp $SRC/*_seed_corpus.zip $OUT
+
+echo ">>>> BUILDING typefind.o"
+echo
+
+$CC $CFLAGS $BUILD_CFLAGS -c $SRC/gst-ci/fuzzing/typefind.c -o $SRC/gst-ci/fuzzing/typefind.o
+
+echo
+echo ">>>> LINKING"
+echo
+
+$CXX $CXXFLAGS \
+      -o $OUT/typefind \
+      $PREDEPS_LDFLAGS \
+      $SRC/gst-ci/fuzzing/typefind.o \
+      $PLUGINS \
+      $BUILD_LDFLAGS \
+      $LIB_FUZZING_ENGINE \
+      -Wl,-Bdynamic
