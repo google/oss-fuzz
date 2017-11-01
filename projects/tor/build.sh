@@ -62,7 +62,8 @@ export ASAN_OPTIONS=detect_leaks=0
 ./configure --disable-asciidoc --enable-oss-fuzz --disable-memory-sentinels \
     --with-libevent-dir=${SRC}/deps \
     --with-openssl-dir=${SRC}/deps \
-    --with-zlib-dir=${SRC}/deps
+    --with-zlib-dir=${SRC}/deps \
+    --disable-gcc-hardening=no
 
 make clean
 make -j$(nproc) oss-fuzz-fuzzers
