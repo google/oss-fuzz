@@ -33,7 +33,7 @@ cd glib-2.54.2
 cd ..
 
 
-for i in orc gstreamer gst-plugins-base;
+for i in gstreamer gst-plugins-base;
 do
     mkdir -p $i
     cd $i
@@ -46,12 +46,12 @@ do
 done
 
 #finally build the binary \o/
-BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags glib-2.0 gstreamer-1.0 gstreamer-pbutils-1.0 gstreamer-video-1.0 gstreamer-audio-1.0 gstreamer-app-1.0 orc-0.4`"
+BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags glib-2.0 gstreamer-1.0 gstreamer-pbutils-1.0 gstreamer-video-1.0 gstreamer-audio-1.0 gstreamer-app-1.0`"
 
 # List of dependencies libraries we grab from pkg-config
 # Should also include dependencies of dependencies (ex: libvorbis depends on libogg)
 
-PKG_DEPS="glib-2.0 gstreamer-1.0 gstreamer-pbutils-1.0 gstreamer-video-1.0 gstreamer-audio-1.0 orc-0.4 \
+PKG_DEPS="glib-2.0 gstreamer-1.0 gstreamer-pbutils-1.0 gstreamer-video-1.0 gstreamer-audio-1.0 \
   gstreamer-riff-1.0 gstreamer-tag-1.0 gstreamer-app-1.0 zlib \
   ogg vorbis vorbisenc theoraenc theoradec theora"
 

@@ -31,7 +31,6 @@ ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.54/glib-2.54.2.tar.xz $SRC
 # Checkout all development repositories
 #RUN for i in orc  gstreamer gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly gst-libav; do git clone --depth 1 --recursive https://anongit.freedesktop.org/git/gstreamer/$i $i; done  
 RUN \
-  git clone --depth 1 --recursive https://anongit.freedesktop.org/git/gstreamer/orc orc && \
   git clone --depth 1 --recursive https://anongit.freedesktop.org/git/gstreamer/gstreamer gstreamer && \
   git clone --depth 1 --recursive https://anongit.freedesktop.org/git/gstreamer/gst-plugins-base gst-plugins-base && \
   git clone --depth 1 --recursive https://anongit.freedesktop.org/git/gstreamer/gst-ci gst-ci
