@@ -63,7 +63,7 @@ export ASAN_OPTIONS=detect_leaks=0
     --with-libevent-dir=${SRC}/deps \
     --with-openssl-dir=${SRC}/deps \
     --with-zlib-dir=${SRC}/deps \
-    --disable-gcc-hardening=no
+    --disable-gcc-hardening
 
 make clean
 make -j$(nproc) oss-fuzz-fuzzers
