@@ -33,3 +33,5 @@ for f in $fuzzers; do
 done
 
 cp $SRC/*.options $OUT/
+cp fuzz/oids.txt $OUT/asn1.dict
+cp fuzz/oids.txt $OUT/x509.dict
