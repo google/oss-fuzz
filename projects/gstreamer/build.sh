@@ -21,10 +21,17 @@ PREFIX=$WORK/prefix
 PLUGIN_DIR=$PREFIX/lib/gstreamer-1.0
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 mkdir -p $PREFIX
+export PATH=$PREFIX/bin:$PATH
 cd $WORK
 
 # Minimize gst-debug level/code
 export CFLAGS="$CFLAGS -DGST_LEVEL_MAX=2"
+
+tar xvJf $SRC/glib-2.54.2.tar.xz
+cd glib-2.54.2
+./configure --prefix=$PREFIX --enable-static --disable-shared --disable-libmount --with-pcre=internal && make -j$(nproc) && make install
+cd ..
+
 
 for i in orc gstreamer gst-plugins-base;
 do
