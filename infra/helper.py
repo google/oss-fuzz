@@ -144,7 +144,7 @@ def _check_project_exists(project_name):
 
 def _check_fuzzer_exists(project_name, fuzzer_name):
   """Checks if a fuzzer exists."""
-  command = ['docker', 'run', '--rm']
+  command = ['docker', 'run', '--rm', '--net=host']
   command.extend(['-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name)])
   command.append('ubuntu:16.04')
 
@@ -214,7 +214,7 @@ def _build_image(image_name, no_cache=False, pull=False):
 
 def docker_run(run_args, print_output=True):
   """Call `docker run`."""
-  command = ['docker', 'run', '--rm', '-i', '--privileged']
+  command = ['docker', 'run', '--network=host', '--rm', '-i', '--privileged']
   command.extend(run_args)
 
   print('Running:', _get_command_string(command))
@@ -232,7 +232,7 @@ def docker_run(run_args, print_output=True):
 
 def docker_build(build_args, pull=False):
   """Call `docker build`."""
-  command = ['docker', 'build']
+  command = ['docker', 'build', '--network=host']
   if pull:
     command.append('--pull')
 
@@ -297,7 +297,7 @@ def build_fuzzers(args):
     env += args.e
 
   command = (
-      ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
+      ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE', '--net=host'] +
       sum([['-e', v] for v in env], [])
   )
   if args.source_path:
