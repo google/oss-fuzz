@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool build-es
     pkg-config texinfo libbz2-dev zlib1g-dev yasm cmake mercurial wget \
     xutils-dev libpciaccess-dev
 
-RUN git clone --depth 1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
+RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
 RUN wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.1.0.tar.bz2
 RUN wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.gz
