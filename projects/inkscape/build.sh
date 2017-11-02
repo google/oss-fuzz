@@ -58,8 +58,7 @@ clang++ ${CXXFLAGS} \
     -Wl,-Bstatic CMakeFiles/fuzz.dir/fuzzer.cpp.o -o fuzz \
     -Wl,--start-group ../src/libinkscape_base.a ../src/libnrtype/libnrtype_LIB.a ../src/libcroco/libcroco_LIB.a ../src/libavoid/libavoid_LIB.a ../src/libcola/libcola_LIB.a ../src/libvpsc/libvpsc_LIB.a ../src/livarot/liblivarot_LIB.a ../src/libuemf/libuemf_LIB.a ../src/2geom/lib2geom_LIB.a ../src/libdepixelize/libdepixelize_LIB.a ../src/util/libutil_LIB.a ../src/inkgc/libgc_LIB.a /usr/lib/*.a \
     -lgraphite2 -lXdmcp -lXau -lxcb -licuuc -licudata -lthai -ldatrie -lc++ -lc -lsepol -lmount -lblkid -lrt -luuid -lutil -lxkbcommon -lrt -lpixman-1 -lpng12 -lexpat -llzma -lcrypt -lgsl -lgc -lxslt -ljpeg -lgslcblas -lgthread-2.0 -lresolv -lcairo-gobject -lXfixes -lXi -lXrandr -lXrender -lXinerama -lXft -lXfixes -lXext -lXdamage -lXcomposite -lXcursor -lX11 -lXext -lz -lm -ldl -lpcre -lxml2 -lcairo -lfontconfig -lfreetype -lpng -lpango-1.0 -lffi -lpangocairo-1.0 -lpangoft2-1.0 -lharfbuzz -ldbus-1 -Wl,--end-group \
-    -Wl,-Bdynamic -lgcc_s -lgcc -lselinux -lpthread -lsystemd \
-    -fsanitize=address -fsanitize-address-use-after-scope 
+    -Wl,-Bdynamic -lgcc_s -lgcc -lselinux -lpthread -lsystemd 
 
 cp fuzz $OUT/
 
