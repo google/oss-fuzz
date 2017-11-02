@@ -28,6 +28,7 @@ CONFIGURATIONS = {
   'engine-libfuzzer' : [ 'FUZZING_ENGINE=libfuzzer' ],
   'engine-afl' : [ 'FUZZING_ENGINE=afl' ],
   'engine-honggfuzz' : [ 'FUZZING_ENGINE=honggfuzz' ],
+  'engine-none' : [ 'FUZZING_ENGINE=none' ],
 }
 
 EngineInfo = collections.namedtuple(
@@ -43,6 +44,9 @@ ENGINE_INFO = {
     'honggfuzz': EngineInfo(
         upload_bucket='clusterfuzz-builds-honggfuzz',
         supported_sanitizers=['address', 'memory', 'undefined']),
+    'none': EngineInfo(
+        upload_bucket='clusterfuzz-builds-no-engine',
+        supported_sanitizers=['address']),
 }
 
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']

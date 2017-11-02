@@ -7,3 +7,4 @@ auto_ccs:
 fuzzing_engines:
  - afl
  - libfuzzer
+disabled: true

@@ -25,7 +25,7 @@ fi
 
 make -j$(nproc) LDCMD="$CXX $CXXFLAGS"
 
-fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test)
+fuzzers=$(find fuzz -executable -type f '!' -name \*.py '!' -name \*-test '!' -name \*.pl)
 for f in $fuzzers; do
 	fuzzer=$(basename $f)
 	cp $f $OUT/
@@ -33,3 +33,5 @@ for f in $fuzzers; do
 done
 
 cp $SRC/*.options $OUT/
+cp fuzz/oids.txt $OUT/asn1.dict
+cp fuzz/oids.txt $OUT/x509.dict
