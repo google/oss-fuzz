@@ -15,9 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER git@s.profanter.me
-RUN apt-get update && apt-get install -y make cmake python-six
-RUN git clone --depth 1 https://github.com/open62541/open62541.git -bmaster open62541
-WORKDIR open62541
-RUN git submodule update --init --recursive
+MAINTAINER vadim@wxwidgets.org
+RUN apt-get update && apt-get install -y make
+RUN git clone --depth 1 https://github.com/wxWidgets/wxWidgets.git wxwidgets
+WORKDIR wxwidgets
 COPY build.sh $SRC/

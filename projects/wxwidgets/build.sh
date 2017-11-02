@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +15,13 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER git@s.profanter.me
-RUN apt-get update && apt-get install -y make cmake python-six
-RUN git clone --depth 1 https://github.com/open62541/open62541.git -bmaster open62541
-WORKDIR open62541
-RUN git submodule update --init --recursive
-COPY build.sh $SRC/
+# build project
+./configure --without-subdirs --disable-shared --disable-sys-libs --disable-gui LDFLAGS="$CXXFLAGS"
+make -j$(nproc)
+
+# build fuzzers
+$CXX $CXXFLAGS -o $OUT/zip ./tests/fuzz/zip.cpp \
+    -lFuzzingEngine `./wx-config --cxxflags --libs base`
+
+# and copy their corpora
+zip -j $OUT/zip_seed_corpus.zip $SRC/wxwidgets/tests/fuzz/corpus/zip/*

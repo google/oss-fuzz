@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +15,18 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER git@s.profanter.me
-RUN apt-get update && apt-get install -y make cmake python-six
-RUN git clone --depth 1 https://github.com/open62541/open62541.git -bmaster open62541
-WORKDIR open62541
-RUN git submodule update --init --recursive
-COPY build.sh $SRC/
+DISABLED_WARNINGS='-Wno-everything'
+
+# Inject additional C/CXXFLAGS
+cat <<EOF > /usr/local/bin/cmake
+#!/bin/sh
+/usr/bin/cmake \\
+  -DCMAKE_C_FLAGS="\$CFLAGS $DISABLED_WARNINGS" \\
+  -DCMAKE_CXX_FLAGS="\$CXXFLAGS $DISABLED_WARNINGS" \\
+  "\$@"
+EOF
+
+chmod +x /usr/local/bin/cmake
+
+./build.sh --test-build --static --embed-icu --cc="$(which clang)" --cxx="$(which clang++)" -j -v -y
+cp out/Test/ch $OUT

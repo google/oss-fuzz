@@ -15,18 +15,24 @@
 #
 ################################################################################
 
-if [[ $SANITIZER = *undefined* ]]; then
-  CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fsanitize-trap=unsigned-integer-overflow"
-fi
+./bootstrap.sh
+./configure --enable-debug --without-crypto
 
-for f in $(grep -v "#" libcxx/fuzzing/RoutineNames.txt); do
-  cat > ${f}_fuzzer.cc <<EOF
-#include "fuzzing/fuzzing.h"
-#include <cassert>
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  int result = fuzzing::$f(data, size);
-  assert(result == 0); return 0;
-}
-EOF
-  $CXX $CXXFLAGS -std=c++11 ${f}_fuzzer.cc ./libcxx/fuzzing/fuzzing.cpp -I ./libcxx  -o $OUT/$f -lFuzzingEngine
+make clean
+make -j$(nproc) all
+make install
+
+fuzzers=$(find $SRC/yara/tests/oss-fuzz/ -name "*.cc")
+for f in $fuzzers; do
+  fuzzer_name=$(basename -s ".cc" $f)
+  echo "Building $fuzzer_name"
+  $CXX $CXXFLAGS -std=c++11 -I. $f -o $OUT/$fuzzer_name \
+    ./libyara/.libs/libyara.a \
+    -lFuzzingEngine
+  if [ -d "$SRC/yara/tests/oss-fuzz/${fuzzer_name}_corpus" ]; then
+    zip -j $OUT/${fuzzer_name}_seed_corpus.zip $SRC/yara/tests/oss-fuzz/${fuzzer_name}_corpus/*
+  fi
 done
+
+find $SRC/yara/tests/oss-fuzz -name \*.dict -exec cp {} $OUT \;
+find $SRC/yara/tests/oss-fuzz -name \*.options -exec cp {} $OUT \;
