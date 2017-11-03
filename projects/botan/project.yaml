@@ -2,7 +2,7 @@ homepage: "https://botan.randombit.net"
 primary_contact: "jack.lloyd@gmail.com"
 auto_ccs:
   - "r.korthaus@sirrix.com"
-  - "d.neus@sirrix.com"
+  - "daniel.neus@googlemail.com"
 sanitizers:
   - address
   - memory
