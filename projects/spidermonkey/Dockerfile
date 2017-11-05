@@ -20,6 +20,6 @@ RUN apt-get update && apt-get install -y \
   autoconf2.13 \
   yasm
 
-RUN git clone --depth=1 https://github.com/mozilla/gecko-dev
+RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
 WORKDIR mozilla-central/js/src/
 COPY build.sh $SRC/
