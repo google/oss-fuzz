@@ -17,10 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER agaynor@mozilla.com
 RUN apt-get update && apt-get install -y \
-  mercurial \
   autoconf2.13 \
   yasm
 
-RUN hg clone https://hg.mozilla.org/mozilla-central/
+RUN git clone --depth=1 https://github.com/mozilla/gecko-dev
 WORKDIR mozilla-central/js/src/
 COPY build.sh $SRC/
