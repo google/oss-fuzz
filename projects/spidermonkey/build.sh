@@ -17,7 +17,6 @@
 
 # Required for some reason... I don't ask questions
 export SHELL=/bin/bash
-cd js/src/
 
 autoconf2.13
 
@@ -26,7 +25,6 @@ cd build_DBG.OBJ
 
 ../configure \
     --enable-debug \
-    --disable-optimize \
     --disable-shared-js \
     --disable-jemalloc \
     --enable-address-sanitizer

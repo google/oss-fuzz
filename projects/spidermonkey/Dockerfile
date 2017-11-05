@@ -22,5 +22,5 @@ RUN apt-get update && apt-get install -y \
   yasm
 
 RUN hg clone https://hg.mozilla.org/mozilla-central/
-WORKDIR mozilla-central
+WORKDIR mozilla-central/js/src/
 COPY build.sh $SRC/
