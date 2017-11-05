@@ -75,7 +75,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/poppler-0.59.0.tar.xz \
-    https://dev-www.libreoffice.org/src/mdds-1.2.3.tar.bz2 \
+    https://dev-www.libreoffice.org/src/mdds-1.3.0.tar.bz2 \
     https://dev-www.libreoffice.org/src/openssl-1.0.2k.tar.gz \
     https://dev-www.libreoffice.org/src/language-subtag-registry-2017-08-15.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.10.tgz \
@@ -138,7 +138,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fodsfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fodgfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fodpfuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/xlsfuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/xlsfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/scrtffuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
