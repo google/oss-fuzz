@@ -1,5 +1,7 @@
 homepage: "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey"
 primary_contact: "agaynor@mozilla.com"
+auto_ccs:
+  - "choller@mozilla.com"
 fuzzing_engines:
   - none
 sanitizers:
