@@ -25,6 +25,7 @@ cd build_DBG.OBJ
 
 ../configure \
     --enable-debug \
+    --enable-optimize \
     --disable-shared-js \
     --disable-jemalloc \
     --enable-address-sanitizer
