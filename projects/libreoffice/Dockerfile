@@ -67,7 +67,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libpagemaker-0.0.3.tar.bz2 \
     https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \
     https://dev-www.libreoffice.org/src/librevenge-0.0.4.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libstaroffice-0.0.4.tar.xz \
+    https://dev-www.libreoffice.org/src/libstaroffice-0.0.5.tar.xz \
     https://dev-www.libreoffice.org/src/libvisio-0.1.6.tar.xz \
     https://dev-www.libreoffice.org/src/libwpd-0.10.2.tar.xz \
     https://dev-www.libreoffice.org/src/libwpg-0.3.2.tar.xz \
@@ -83,8 +83,8 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/bae83fa5dc7f081768daace6e199adc3-glm-0.9.4.6-libreoffice.zip \
     https://dev-www.libreoffice.org/src/icu4c-59_1-src.tgz \
     https://dev-www.libreoffice.org/src/icu4c-59_1-data.zip \
-    https://dev-www.libreoffice.org/src/libxml2-2.9.6.tar.gz \
-    https://dev-www.libreoffice.org/src/libxslt-1.1.30.tar.gz \
+    https://dev-www.libreoffice.org/src/libxml2-2.9.7.tar.gz \
+    https://dev-www.libreoffice.org/src/libxslt-1.1.32.tar.gz \
     https://dev-www.libreoffice.org/src/hunspell-1.6.2.tar.gz \
     https://dev-www.libreoffice.org/src/freetype-2.8.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/fontconfig-2.12.4.tar.bz2 \
@@ -140,7 +140,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/fodpfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xlsfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/scrtffuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/wksfuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/wksfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/diffuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
