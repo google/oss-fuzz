@@ -16,7 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER ochang@google.com
-RUN apt-get update && apt-get install -y cmake make autoconf automake libtool libicu-dev python ruby ninja-build bison flex gperf
+RUN apt-get update && apt-get install -y cmake make autoconf automake libtool python ruby ninja-build bison flex gperf wget
 RUN git clone --depth 1 git://git.webkit.org/WebKit.git
+RUN wget http://download.icu-project.org/files/icu4c/60.1/icu4c-60_1-src.tgz && tar xzvf icu4c-60_1-src.tgz
 WORKDIR WebKit
 COPY build.sh $SRC
