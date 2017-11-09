@@ -1,6 +1,10 @@
 homepage: https://webkit.org/
-primary_contact: ochang@google.com  # temporary
 fuzzing_engines:
   - none
 sanitizers:
   - address
+auto_ccs:
+  - "fpizlo@apple.com"
+  - "mark.lam@apple.com"
+  - "akilsrin@apple.com"
+  - "ddkilzer@apple.com"
