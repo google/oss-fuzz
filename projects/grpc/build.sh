@@ -16,19 +16,19 @@
 ################################################################################
 
 FUZZER_FILES="\
-test/core/json/fuzzer.c \
-test/core/client_channel/uri_fuzzer_test.c \
-test/core/http/request_fuzzer.c \
-test/core/http/response_fuzzer.c \
-test/core/nanopb/fuzzer_response.c \
-test/core/nanopb/fuzzer_serverlist.c \
-test/core/slice/percent_decode_fuzzer.c \
-test/core/slice/percent_encode_fuzzer.c \
-test/core/transport/chttp2/hpack_parser_fuzzer_test.c \
-test/core/end2end/fuzzers/api_fuzzer.c \
-test/core/end2end/fuzzers/client_fuzzer.c \
-test/core/end2end/fuzzers/server_fuzzer.c \
-test/core/security/ssl_server_fuzzer.c \
+test/core/json/fuzzer.cc \
+test/core/client_channel/uri_fuzzer_test.cc \
+test/core/http/request_fuzzer.cc \
+test/core/http/response_fuzzer.cc \
+test/core/nanopb/fuzzer_response.cc \
+test/core/nanopb/fuzzer_serverlist.cc \
+test/core/slice/percent_decode_fuzzer.cc \
+test/core/slice/percent_encode_fuzzer.cc \
+test/core/transport/chttp2/hpack_parser_fuzzer_test.cc \
+test/core/end2end/fuzzers/api_fuzzer.cc \
+test/core/end2end/fuzzers/client_fuzzer.cc \
+test/core/end2end/fuzzers/server_fuzzer.cc \
+test/core/security/ssl_server_fuzzer.cc \
 "
 
 FUZZER_DICTIONARIES="\
@@ -61,7 +61,7 @@ CFLAGS="${CFLAGS} -Iinclude -I."
 CXXFLAGS="${CXXFLAGS} -Iinclude -I. -stdlib=libc++"
 
 for file in $FUZZER_FILES; do
-  fuzzer_name=$(basename $file .c)
+  fuzzer_name=$(basename $file .cc)
   fuzzer_object="${file::-1}o"
   echo "Building fuzzer $fuzzer_name"
   $CC $CFLAGS \
