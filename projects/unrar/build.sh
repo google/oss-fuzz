@@ -15,52 +15,19 @@
 #
 ################################################################################
 
-set -eu
-
-tar xf $SRC/unrarsrc-5.5.8.tar.gz
+UNRAR_SRC_DIR="$SRC/unrar"
 
 # build 'lib'. This builds libunrar.a and libunrar.so
 # -fPIC is required for successful compilation.
-make CXX=$CXX CXXFLAGS="$CXXFLAGS -fPIC" -C $SRC/unrar/unrar lib
+make CXX=$CXX CXXFLAGS="$CXXFLAGS -fPIC" -C $UNRAR_SRC_DIR lib
 
 # remove the .so file so that the linker links unrar statically.
-rm -v $SRC/unrar/unrar/libunrar.so
-
-cat <<HERE > $SRC/unrar/unrar_fuzzer.cc
-#include <memory>
-#include <stddef.h>
-#include <string>
-#include <unistd.h>
-
-#include "unrar/rar.hpp"
-
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  char filename[] = "mytemp.XXXXXX";
-  int fd = mkstemp(filename);
-  write(fd, data, size);
-
-  std::unique_ptr<CommandData> cmd_data(new CommandData);
-  cmd_data->ParseArg(const_cast<wchar_t *>(L"-p"));
-  cmd_data->ParseArg(const_cast<wchar_t *>(L"x"));
-  cmd_data->ParseDone();
-  std::wstring wide_filename(filename, filename + strlen(filename));
-  cmd_data->AddArcName(wide_filename.c_str());
-
-  try {
-    CmdExtract extractor(cmd_data.get());
-    extractor.DoExtract();
-  } catch (...) {
-  }
-
-  close(fd);
-  unlink(filename);
-
-  return 0;
-}
-HERE
+rm -v $UNRAR_SRC_DIR/libunrar.so
 
 # build fuzzer
-$CXX $CXXFLAGS -v -g -ggdb -std=c++11 -I. \
-     $SRC/unrar/unrar_fuzzer.cc -o $OUT/unrar_fuzzer \
+$CXX $CXXFLAGS -v -g -ggdb -I. \
+     $UNRAR_SRC_DIR/unrar_fuzzer.cc -o $OUT/unrar_fuzzer \
      -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DRAR_SMP -DRARDLL \
-     -lFuzzingEngine -L$SRC/unrar/unrar -lunrar -lstdc++
+     -lFuzzingEngine -L$UNRAR_SRC_DIR -lunrar
+
+echo "all done!"
