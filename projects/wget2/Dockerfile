@@ -33,7 +33,9 @@ RUN apt-get update && apt-get install -y \
  curl \
  gperf \
  wget \
- python
+ python \
+ lzip \
+ rsync
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git
