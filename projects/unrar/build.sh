@@ -25,9 +25,6 @@ make CXX=$CXX CXXFLAGS="$CXXFLAGS -fPIC" -C $UNRAR_SRC_DIR lib
 rm -v $UNRAR_SRC_DIR/libunrar.so
 
 # build fuzzer
-$CXX $CXXFLAGS -v -g -ggdb -I. \
-     $UNRAR_SRC_DIR/unrar_fuzzer.cc -o $OUT/unrar_fuzzer \
+$CXX $CXXFLAGS -I. $UNRAR_SRC_DIR/unrar_fuzzer.cc -o $OUT/unrar_fuzzer \
      -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DRAR_SMP -DRARDLL \
      -lFuzzingEngine -L$UNRAR_SRC_DIR -lunrar
-
-echo "all done!"
