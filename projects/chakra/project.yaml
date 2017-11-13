@@ -1,5 +1,5 @@
 homepage: "https://github.com/Microsoft/ChakraCore"
-primary_contact: "ChakraCore@microsoft.com"
+primary_contact: "ChakraCoreEng@microsoft.com"
 fuzzing_engines:
   - none
 sanitizers:
