@@ -20,6 +20,8 @@ from oauth2client.client import GoogleCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
+BUILD_TIMEOUT = 10 * 60 * 60
+
 CONFIGURATIONS = {
   'sanitizer-address' : [ 'SANITIZER=address' ],
   'sanitizer-memory' : [ 'SANITIZER=memory' ],
@@ -260,7 +262,7 @@ def main():
 
   build_body = {
       'steps': get_build_steps(project_yaml, dockerfile_path),
-      'timeout': str(6 * 3600) + 's',
+      'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': 'oss-fuzz-gcb-logs',
       'images': [ project_yaml['image'] ],
