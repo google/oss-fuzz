@@ -21,7 +21,7 @@ RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
 # install build requirements
 RUN apt-get update && \
     apt-get install -y wget xz-utils autoconf automake libtool pkg-config \
-        gperf libboost-dev libglm-dev libmdds-dev
+        gperf libboost-dev libglm-dev libmdds-dev patch
 ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \
@@ -117,4 +117,4 @@ RUN git clone --depth 1 git://gerrit.libreoffice.org/libabw
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libetonyek
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libqxp
 WORKDIR $SRC
-COPY build.sh abw.dict *.options $SRC/
+COPY build.sh abw.dict *.options *.patch $SRC/
