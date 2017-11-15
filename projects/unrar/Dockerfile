@@ -16,10 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER vakh@chromium.org
-RUN apt-get update && apt-get install -y make autoconf automake build-essential libtool wget
+RUN apt-get update && apt-get install -y make build-essential
 
-RUN wget https://www.rarlab.com/rar/unrarsrc-5.5.8.tar.gz && tar xf unrarsrc-5.5.8.tar.gz
-
+RUN git clone --depth 1 https://github.com/aawc/unrar.git
 WORKDIR unrar
+
 COPY build.sh $SRC/
 COPY unrar_fuzzer.cc $SRC/unrar/
