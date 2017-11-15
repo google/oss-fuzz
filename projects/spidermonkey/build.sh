@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +15,21 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER vadim@wxwidgets.org
-RUN apt-get update && apt-get install -y make
-RUN git clone --recurse-submodules --depth 1 https://github.com/wxWidgets/wxWidgets.git wxwidgets
-WORKDIR wxwidgets
-COPY build.sh $SRC/
+# Required for some reason... I don't ask questions
+export SHELL=/bin/bash
+
+autoconf2.13
+
+mkdir build_DBG.OBJ
+cd build_DBG.OBJ
+
+../configure \
+    --enable-debug \
+    --enable-optimize \
+    --disable-shared-js \
+    --disable-jemalloc \
+    --enable-address-sanitizer
+
+make
+
+cp dist/bin/js $OUT

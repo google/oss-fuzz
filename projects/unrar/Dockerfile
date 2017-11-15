@@ -15,8 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER vadim@wxwidgets.org
-RUN apt-get update && apt-get install -y make
-RUN git clone --recurse-submodules --depth 1 https://github.com/wxWidgets/wxWidgets.git wxwidgets
-WORKDIR wxwidgets
+MAINTAINER vakh@chromium.org
+RUN apt-get update && apt-get install -y make autoconf automake build-essential libtool wget
+
+RUN wget https://www.rarlab.com/rar/unrarsrc-5.5.8.tar.gz && tar xf unrarsrc-5.5.8.tar.gz
+
+WORKDIR unrar
 COPY build.sh $SRC/
+COPY unrar_fuzzer.cc $SRC/unrar/

@@ -39,8 +39,8 @@ export LIBPNG_CFLAGS="-I$(pwd)"
 export LIBPNG_LIBS="-L$(pwd) -lpng16"
 popd
 
-tar -xzf $SRC/libxml2-2.9.6.tar.gz
-pushd libxml2-2.9.6
+tar -xzf $SRC/libxml2-2.9.7.tar.gz
+pushd libxml2-2.9.7
 ./configure --disable-shared --enable-static --disable-ipv6 --without-python --without-zlib --without-lzma
 make -j$(nproc)
 export LIBXML_CFLAGS="-I$(pwd)/include"
@@ -49,8 +49,10 @@ export XML_CFLAGS="$LIBXML_CFLAGS"
 export XML_LIBS="$LIBXML_LIBS"
 popd
 
-tar -xzf $SRC/icu4c-60rc-src.tgz
+tar -xzf $SRC/icu4c-60_1-src.tgz
 pushd icu/source
+patch -p2 < $SRC/icu4c-ubsan.patch
+patch -p3 < $SRC/ofz3670.patch
 ./configure --disable-shared --enable-static --with-data-packaging=static --disable-dyload --disable-strict \
     --disable-layout --disable-samples --disable-extras --disable-icuio --disable-plugins \
     CPPFLAGS=-DU_USE_STRTOD_L=0
