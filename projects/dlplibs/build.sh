@@ -61,6 +61,19 @@ export ICU_CFLAGS="-I$(pwd) -I$(pwd)/i18n -I$(pwd)/common"
 export ICU_LIBS="-L$(pwd)/lib -licui18n -licuuc -licudata"
 popd
 
+tar -xjf $SRC/boost_1_65_1.tar.bz2
+pushd boost_1_65_1
+patch -p2 < $SRC/ofz2894.patch
+export CPPFLAGS="-I$(pwd)"
+popd
+
+tar -xjf $SRC/mdds-1.3.1.tar.bz2
+pushd mdds-1.3.1
+./configure
+export MDDS_CFLAGS="-I$(pwd)/include"
+export MDDS_LIBS=' '
+popd
+
 pushd librevenge
 ./autogen.sh
 ./configure --without-docs --disable-werror --disable-shared --enable-static --disable-tests --enable-fuzzers
