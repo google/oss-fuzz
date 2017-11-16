@@ -4,6 +4,8 @@ auto_ccs:
   - "alex.gaynor@gmail.com"
   - "daiki.ueno@gmail.com"
   - "rockdaboot@gmail.com"
+  - "nisse@google.com"
+
 sanitizers:
   - address
   - memory
