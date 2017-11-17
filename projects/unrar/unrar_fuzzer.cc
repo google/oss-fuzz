@@ -1,14 +1,17 @@
+#include <fstream>
 #include <memory>
-#include <stddef.h>
-#include <string>
 #include <unistd.h>
 
 #include "rar.hpp"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  char filename[] = "mytemp.XXXXXX";
-  int fd = mkstemp(filename);
-  write(fd, data, size);
+  static const char filename[] = "temp.rar";
+  std::ofstream file (filename, std::ios::binary | std::ios::out | std::ios::trunc);
+  if (!file.is_open()) {
+    return 0;
+  }
+  file << data;
+  file.close();
 
   std::unique_ptr<CommandData> cmd_data(new CommandData);
   cmd_data->ParseArg(const_cast<wchar_t *>(L"-p"));
@@ -23,7 +26,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   } catch (...) {
   }
 
-  close(fd);
   unlink(filename);
 
   return 0;
