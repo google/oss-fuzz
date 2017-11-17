@@ -6,7 +6,8 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static const char filename[] = "temp.rar";
-  std::ofstream file (filename, std::ios::binary | std::ios::out | std::ios::trunc);
+  std::ofstream file(filename,
+                     std::ios::binary | std::ios::out | std::ios::trunc);
   if (!file.is_open()) {
     return 0;
   }
