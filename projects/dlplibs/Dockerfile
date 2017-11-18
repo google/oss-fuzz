@@ -16,8 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER dtardon@redhat.com
-# enable source repos
-RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
 # install build requirements
 RUN apt-get update && \
     apt-get install -y wget xz-utils autoconf automake libtool pkg-config \
