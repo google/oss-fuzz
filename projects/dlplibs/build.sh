@@ -64,6 +64,7 @@ popd
 tar -xjf $SRC/boost_1_65_1.tar.bz2
 pushd boost_1_65_1
 patch -p2 < $SRC/ofz2894.patch
+patch -p2 < $SRC/ofz4303.patch
 export CPPFLAGS="-I$(pwd)"
 popd
 
