@@ -19,5 +19,8 @@ MAINTAINER ochang@google.com
 RUN sed -i -r 's/#\s*deb-src/deb-src/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y python dpkg-dev
 
+# Take all libraries from lib/msan
+RUN cp -R /usr/msan/lib/* /usr/lib/
+
 COPY compiler_wrapper.py msan_build.py /usr/local/bin/
 WORKDIR $SRC

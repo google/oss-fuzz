@@ -48,7 +48,9 @@ def SetUpEnvironment(work_dir):
   env['DEB_CFLAGS_APPEND'] = (
       '-fsanitize=memory -fsanitize-memory-track-origins=2')
   env['DEB_CXXFLAGS_APPEND'] = (
-      '-fsanitize=memory -fsanitize-memory-track-origins=2')
+      '-fsanitize=memory -fsanitize-memory-track-origins=2 -stdlib=libc++')
+  env['DEB_CPPFLAGS_APPEND'] = (
+      '-fsanitize=memory -fsanitize-memory-track-origins=2 -stdlib=libc++')
   env['DEB_LDFLAGS_APPEND'] = (
       '-fsanitize=memory -fsanitize-memory-track-origins=2')
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
@@ -101,6 +103,10 @@ def ExtractDebianPackages(source_directory, output_directory):
 class MSanBuilder(object):
   """MSan builder."""
 
+  def __init__(self):
+    self.work_dir = None
+    self.env = None
+
   def __enter__(self):
     self.work_dir = tempfile.mkdtemp()
     self.env = SetUpEnvironment(self.work_dir)
@@ -131,6 +137,4 @@ def main(args):
 
 if __name__ == '__main__':
   main(sys.argv)
-
-
 

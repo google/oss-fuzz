@@ -40,7 +40,7 @@ def GetCompilerArgs(args):
 
 
 def FindRealClang():
-  return os.path.join(os.environ['REAL_CLANG_PATH'])
+  return os.environ['REAL_CLANG_PATH']
 
 
 def main(args):
