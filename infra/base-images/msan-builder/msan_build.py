@@ -74,6 +74,8 @@ def SetUpEnvironment(work_dir):
 
   # Prevent entire build from failing because of bugs/uninstrumented in tools
   # that are part of the build.
+  # TODO(ochang): Figure out some way to suppress reports since they can still
+  # be very noisy.
   env['MSAN_OPTIONS'] = 'halt_on_error=0:exitcode=0'
   return env
 
@@ -113,14 +115,23 @@ def BuildDebianPackage(source_directory, env):
       ['dpkg-buildpackage', '-us', '-uc', '-b'], cwd=source_directory, env=env)
 
 
-def ExtractDebianPackages(source_directory, output_directory):
+def ExtractDebianPackages(work_directory, output_directory):
   """Extract all .deb packages."""
-  for filename in os.listdir(source_directory):
-    file_path = os.path.join(source_directory, filename)
+  extract_directory = os.path.join(work_directory, 'extracted')
+  os.mkdir(extract_directory)
+
+  for filename in os.listdir(work_directory):
+    file_path = os.path.join(work_directory, filename)
     if not file_path.endswith('.deb'):
       continue
 
-    subprocess.check_call(['dpkg-deb', '-x', file_path, output_directory])
+    subprocess.check_call(['dpkg-deb', '-x', file_path, extract_directory])
+
+  for root, _, filenames in os.walk(extract_directory):
+    for filename in filenames:
+      file_path = os.path.join(root, filename)
+      if os.path.isfile(file_path) and file_path.endswith('.so'):
+        shutil.copy2(file_path, output_directory)
 
 
 class MSanBuilder(object):
