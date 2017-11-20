@@ -74,7 +74,7 @@ def SetUpEnvironment(work_dir):
 
   # Prevent entire build from failing because of bugs/uninstrumented in tools
   # that are part of the build.
-  env['MSAN_OPTIONS'] = 'halt_on_error=0'
+  env['MSAN_OPTIONS'] = 'halt_on_error=0:exitcode=0'
   return env
 
 
