@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+from __future__ import print_function
 import os
 import sys
 import subprocess
@@ -65,7 +66,7 @@ def main(args):
     real_clang += '++'
 
   args = [real_clang] + GetCompilerArgs(args)
-  print args
+  print(args)
   sys.exit(subprocess.call(args))
 
 

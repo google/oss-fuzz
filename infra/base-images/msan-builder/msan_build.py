@@ -15,9 +15,10 @@
 #
 ################################################################################
 
+from __future__ import print_function
+import argparse
 import os
 import shutil
-import sys
 import subprocess
 import tempfile
 
@@ -31,7 +32,7 @@ def SetUpEnvironment(work_dir):
   """Set up build environment."""
   env = {}
   env['REAL_CLANG_PATH'] = subprocess.check_output(['which', 'clang']).strip()
-  print 'Real clang at', env['REAL_CLANG_PATH']
+  print('Real clang at', env['REAL_CLANG_PATH'])
   compiler_wrapper_path = os.path.join(SCRIPT_DIR, 'compiler_wrapper.py')
 
   # Symlink binaries into TMP/bin
@@ -115,8 +116,8 @@ def BuildDebianPackage(source_directory, env):
       ['dpkg-buildpackage', '-us', '-uc', '-b'], cwd=source_directory, env=env)
 
 
-def ExtractDebianPackages(work_directory, output_directory):
-  """Extract all .deb packages."""
+def ExtractSharedLibraries(work_directory, output_directory):
+  """Extract all shared libraries from .deb packages."""
   extract_directory = os.path.join(work_directory, 'extracted')
   os.mkdir(extract_directory)
 
@@ -153,23 +154,26 @@ class MSanBuilder(object):
     """Build the package and write results into the output directory."""
     InstallBuildDeps(package_name)
     source_directory = DownloadPackageSource(package_name, self.work_dir)
-    print 'Source downloaded to', source_directory
+    print('Source downloaded to', source_directory)
 
     BuildDebianPackage(source_directory, self.env)
-    ExtractDebianPackages(self.work_dir, output_directory)
+    ExtractSharedLibraries(self.work_dir, output_directory)
 
 
-def main(args):
-  if len(args) < 3:
-    print 'Usage:', args[0], 'package_name', 'output_dir'
-    sys.exit(1)
+def main():
+  parser = argparse.ArgumentParser('msan_build.py', description='MSan builder.')
+  parser.add_argument('package_name', help='Name of the package.')
+  parser.add_argument('output_dir', help='Output directory.')
 
-  package_name = args[1]
-  output_dir = args[2]
+  args = parser.parse_args()
+
+  if not os.path.exists(args.output_dir):
+    os.makedirs(args.output_dir)
+
   with MSanBuilder() as builder:
-    builder.build(package_name, output_dir)
+    builder.build(args.package_name, args.output_dir)
 
 
 if __name__ == '__main__':
-  main(sys.argv)
+  main()
 
