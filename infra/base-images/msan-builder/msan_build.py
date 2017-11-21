@@ -59,6 +59,7 @@ def SetUpEnvironment(work_dir):
   os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'gcc'))
   os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'cc'))
   os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'g++'))
+  os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'c++'))
 
   MSAN_OPTIONS = (
       '-fsanitize=memory -fsanitize-memory-track-origins=2 '

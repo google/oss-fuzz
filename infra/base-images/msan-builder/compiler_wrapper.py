@@ -17,8 +17,8 @@
 
 from __future__ import print_function
 import os
-import sys
 import subprocess
+import sys
 
 
 def Is32Bit(args):
