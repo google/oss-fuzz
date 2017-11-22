@@ -22,6 +22,7 @@ import sys
 
 
 def Is32Bit(args):
+  """Return whether or not we're 32-bit."""
   M32_BIT_ARGS = [
       '-m32',
       '-mx32',
@@ -30,7 +31,26 @@ def Is32Bit(args):
   return any(arg in M32_BIT_ARGS for arg in args)
 
 
+def RemoveZDefs(args):
+  """Remove unsupported -Wl,-z,defs linker option."""
+  filtered = []
+
+  for arg in args:
+    if arg == '-Wl,-z,defs':
+      continue
+
+    if arg == '-Wl,defs':
+      # Remove previous -Wl,-z
+      filtered.pop()
+      continue
+
+    filtered.append(arg)
+
+  return filtered
+
+
 def GetCompilerArgs(args):
+  """Generate compiler args."""
   compiler_args = args[1:]
 
   if Is32Bit(args):
@@ -47,17 +67,15 @@ def GetCompilerArgs(args):
       '-U_FORTIFY_SOURCE',
   ])
 
-  REMOVED_ARGS = [
-      '-g',
-      '-Wl,-z,defs',
-  ]
+  compiler_args = RemoveZDefs(compiler_args)
+  # Reduce build size.
+  compiler_args.append('-gline-tables-only')
 
-  args = [arg for arg in compiler_args if arg not in REMOVED_ARGS]
-  args.append('-gline-tables-only')
-  return args
+  return compiler_args
 
 
 def FindRealClang():
+  """Return path to real clang."""
   return os.environ['REAL_CLANG_PATH']
 
 
@@ -69,6 +87,11 @@ def main(args):
     real_clang += '++'
 
   args = [real_clang] + GetCompilerArgs(args)
+  debug_log_path = os.getenv('WRAPPER_DEBUG_LOG_PATH')
+  if debug_log_path:
+    with open(debug_log_path, 'a') as f:
+      f.write(str(args) + '\n')
+
   sys.exit(subprocess.call(args))
 
 

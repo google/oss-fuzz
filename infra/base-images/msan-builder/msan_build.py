@@ -22,7 +22,16 @@ import shutil
 import subprocess
 import tempfile
 
-SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__)) 
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+INJECTED_ARGS = [
+    '-fsanitize=memory',
+    '-fsanitize-memory-track-origins=2',
+    '-fsanitize-recover=memory',
+    '-fPIC',
+    '-fno-omit-frame-pointer',
+]
+
 
 class MSanBuildException(Exception):
   """Base exception."""
@@ -61,9 +70,7 @@ def SetUpEnvironment(work_dir):
   os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'g++'))
   os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'c++'))
 
-  MSAN_OPTIONS = (
-      '-fsanitize=memory -fsanitize-memory-track-origins=2 '
-      '-fsanitize-recover=memory -fPIC -fno-omit-frame-pointer')
+  MSAN_OPTIONS = ' '.join(INJECTED_ARGS)
 
   env['DEB_BUILD_OPTIONS'] = 'nocheck'
   env['DEB_CFLAGS_APPEND'] = MSAN_OPTIONS
@@ -139,18 +146,23 @@ def ExtractSharedLibraries(work_directory, output_directory):
 class MSanBuilder(object):
   """MSan builder."""
 
-  def __init__(self, debug=False):
+  def __init__(self, debug=False, log_path=None):
     self.debug = debug
+    self.log_path = log_path
     self.work_dir = None
     self.env = None
 
   def __enter__(self):
     self.work_dir = tempfile.mkdtemp()
     self.env = SetUpEnvironment(self.work_dir)
+
+    if self.debug and self.log_path:
+      self.env['WRAPPER_DEBUG_LOG_PATH'] = self.log_path
+
     return self
 
   def __exit__(self, exc_type, exc_value, traceback):
-    if not debug:
+    if not self.debug:
       shutil.rmtree(self.work_dir, ignore_errors=True)
 
   def build(self, package_name, output_directory):
@@ -168,13 +180,14 @@ def main():
   parser.add_argument('package_name', help='Name of the package.')
   parser.add_argument('output_dir', help='Output directory.')
   parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
+  parser.add_argument('--log-path', help='Log path for debugging.')
 
   args = parser.parse_args()
 
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
-  with MSanBuilder(debug=args.debug) as builder:
+  with MSanBuilder(debug=args.debug, log_path=args.log_path) as builder:
     builder.build(args.package_name, args.output_dir)
 
 
