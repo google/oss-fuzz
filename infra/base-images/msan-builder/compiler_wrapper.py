@@ -62,14 +62,15 @@ def GetCompilerArgs(args):
 
     return compiler_args
 
-  # FORTIFY_SOURCE is not supported by sanitizers.
-  compiler_args.extend([
-      '-U_FORTIFY_SOURCE',
-  ])
-
   compiler_args = RemoveZDefs(compiler_args)
-  # Reduce build size.
-  compiler_args.append('-gline-tables-only')
+  compiler_args.extend([
+      # FORTIFY_SOURCE is not supported by sanitizers.
+      '-U_FORTIFY_SOURCE',
+      # Reduce binary size.
+      '-gline-tables-only',
+      # Disable all warnings.
+      '-w',
+  ])
 
   return compiler_args
 
