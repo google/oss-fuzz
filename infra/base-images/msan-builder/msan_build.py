@@ -72,7 +72,7 @@ def SetUpEnvironment(work_dir):
 
   MSAN_OPTIONS = ' '.join(INJECTED_ARGS)
 
-  env['DEB_BUILD_OPTIONS'] = 'nocheck'
+  env['DEB_BUILD_OPTIONS'] = 'nocheck nostrip'
   env['DEB_CFLAGS_APPEND'] = MSAN_OPTIONS
   env['DEB_CXXFLAGS_APPEND'] = MSAN_OPTIONS + ' -stdlib=libc++'
   env['DEB_CPPFLAGS_APPEND'] = env['DEB_CXXFLAGS_APPEND']
