@@ -79,6 +79,16 @@ def SetUpEnvironment(work_dir):
   env['DEB_LDFLAGS_APPEND'] = MSAN_OPTIONS
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
 
+  # debian/rules can set DPKG_GENSYMBOLS_CHECK_LEVEL explicitly, so override it.
+  dpkg_gensymbols_path = os.path.join(bin_dir, 'dpkg-gensymbols')
+  with open(dpkg_gensymbols_path, 'w') as f:
+    f.write(
+        '#!/bin/sh\n'
+        'export DPKG_GENSYMBOLS_CHECK_LEVEL=0\n'
+        '/usr/bin/dpkg-gensymbols "$@"\n')
+
+  os.chmod(dpkg_gensymbols_path, 0755)
+
   env['PATH'] = bin_dir + ':' + os.environ['PATH']
 
   # Prevent entire build from failing because of bugs/uninstrumented in tools
