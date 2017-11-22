@@ -48,10 +48,13 @@ def GetCompilerArgs(args):
   ])
 
   REMOVED_ARGS = [
+      '-g',
       '-Wl,-z,defs',
   ]
 
-  return [arg for arg in compiler_args if arg not in REMOVED_ARGS]
+  args = [arg for arg in compiler_args if arg not in REMOVED_ARGS]
+  args.append('-gline-tables-only')
+  return args
 
 
 def FindRealClang():
@@ -66,7 +69,7 @@ def main(args):
     real_clang += '++'
 
   args = [real_clang] + GetCompilerArgs(args)
-  print(args)
+  print(args, file=sys.stderr)
   sys.exit(subprocess.call(args))
 
 

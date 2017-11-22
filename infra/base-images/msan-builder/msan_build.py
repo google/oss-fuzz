@@ -63,7 +63,7 @@ def SetUpEnvironment(work_dir):
 
   MSAN_OPTIONS = (
       '-fsanitize=memory -fsanitize-memory-track-origins=2 '
-      '-fsanitize-recover=memory')
+      '-fsanitize-recover=memory -fPIC -fno-omit-frame-pointer')
 
   env['DEB_BUILD_OPTIONS'] = 'nocheck'
   env['DEB_CFLAGS_APPEND'] = MSAN_OPTIONS
