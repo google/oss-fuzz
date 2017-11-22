@@ -69,7 +69,6 @@ def main(args):
     real_clang += '++'
 
   args = [real_clang] + GetCompilerArgs(args)
-  print(args, file=sys.stderr)
   sys.exit(subprocess.call(args))
 
 

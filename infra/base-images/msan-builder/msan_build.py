@@ -139,7 +139,8 @@ def ExtractSharedLibraries(work_directory, output_directory):
 class MSanBuilder(object):
   """MSan builder."""
 
-  def __init__(self):
+  def __init__(self, debug=False):
+    self.debug = debug
     self.work_dir = None
     self.env = None
 
@@ -149,7 +150,8 @@ class MSanBuilder(object):
     return self
 
   def __exit__(self, exc_type, exc_value, traceback):
-    shutil.rmtree(self.work_dir, ignore_errors=True)
+    if not debug:
+      shutil.rmtree(self.work_dir, ignore_errors=True)
 
   def build(self, package_name, output_directory):
     """Build the package and write results into the output directory."""
@@ -165,13 +167,14 @@ def main():
   parser = argparse.ArgumentParser('msan_build.py', description='MSan builder.')
   parser.add_argument('package_name', help='Name of the package.')
   parser.add_argument('output_dir', help='Output directory.')
+  parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
 
   args = parser.parse_args()
 
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
-  with MSanBuilder() as builder:
+  with MSanBuilder(debug=args.debug) as builder:
     builder.build(args.package_name, args.output_dir)
 
 
