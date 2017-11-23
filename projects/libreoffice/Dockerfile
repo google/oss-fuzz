@@ -61,9 +61,9 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libetonyek-0.1.7.tar.xz \
     https://dev-www.libreoffice.org/src/libfreehand-0.1.2.tar.xz \
     https://dev-www.libreoffice.org/src/libmspub-0.1.2.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libmwaw-0.3.12.tar.xz \
+    https://dev-www.libreoffice.org/src/libmwaw-0.3.13.tar.xz \
     https://dev-www.libreoffice.org/src/libodfgen-0.1.6.tar.bz2 \
-    https://dev-www.libreoffice.org/src/liborcus-0.12.1.tar.gz \
+    https://dev-www.libreoffice.org/src/liborcus-0.13.1.tar.gz \
     https://dev-www.libreoffice.org/src/libpagemaker-0.0.3.tar.bz2 \
     https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \
     https://dev-www.libreoffice.org/src/librevenge-0.0.4.tar.bz2 \
@@ -75,14 +75,14 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/poppler-0.59.0.tar.xz \
-    https://dev-www.libreoffice.org/src/mdds-1.3.0.tar.bz2 \
+    https://dev-www.libreoffice.org/src/mdds-1.3.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/openssl-1.0.2m.tar.gz \
     https://dev-www.libreoffice.org/src/language-subtag-registry-2017-08-15.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.10.tgz \
-    https://dev-www.libreoffice.org/src/harfbuzz-1.6.3.tar.bz2 \
+    https://dev-www.libreoffice.org/src/harfbuzz-1.7.0.tar.bz2 \
     https://dev-www.libreoffice.org/src/bae83fa5dc7f081768daace6e199adc3-glm-0.9.4.6-libreoffice.zip \
-    https://dev-www.libreoffice.org/src/icu4c-59_1-src.tgz \
-    https://dev-www.libreoffice.org/src/icu4c-59_1-data.zip \
+    https://dev-www.libreoffice.org/src/icu4c-60_1-src.tgz \
+    https://dev-www.libreoffice.org/src/icu4c-60_1-data.zip \
     https://dev-www.libreoffice.org/src/libxml2-2.9.7.tar.gz \
     https://dev-www.libreoffice.org/src/libxslt-1.1.32.tar.gz \
     https://dev-www.libreoffice.org/src/hunspell-1.6.2.tar.gz \
@@ -141,7 +141,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xlsfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/scrtffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/wksfuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/diffuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/diffuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/docxfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
