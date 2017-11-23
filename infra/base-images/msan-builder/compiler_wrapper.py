@@ -36,7 +36,7 @@ def RemoveZDefs(args):
   filtered = []
 
   for arg in args:
-    if arg == '-Wl,-z,defs':
+    if arg == '-Wl,-z,defs' or arg == '-Wl,--no-undefined':
       continue
 
     if arg == '-Wl,defs':
