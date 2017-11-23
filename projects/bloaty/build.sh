@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-docker build --pull -t gcr.io/oss-fuzz-base/base-image "$@" infra/base-images/base-image
-docker build -t gcr.io/oss-fuzz-base/base-clang "$@" infra/base-images/base-clang
-docker build -t gcr.io/oss-fuzz-base/base-builder -t gcr.io/oss-fuzz/base-libfuzzer "$@" infra/base-images/base-builder
-docker build -t gcr.io/oss-fuzz-base/base-runner "$@" infra/base-images/base-runner
-docker build -t gcr.io/oss-fuzz-base/base-runner-debug "$@" infra/base-images/base-runner-debug
+cd $WORK
+cmake -G Ninja -DBUILD_TESTING=false $SRC/bloaty
+ninja -j$(nproc)
+cp fuzz_target $OUT
+zip -j $OUT/fuzz_target_seed_corpus.zip $SRC/bloaty/tests/testdata/fuzz_corpus/*

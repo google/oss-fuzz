@@ -62,12 +62,9 @@ CXXFLAGS="${CXXFLAGS} -Iinclude -I. -stdlib=libc++"
 
 for file in $FUZZER_FILES; do
   fuzzer_name=$(basename $file .cc)
-  fuzzer_object="${file::-1}o"
   echo "Building fuzzer $fuzzer_name"
-  $CC $CFLAGS \
-    $file -c -o $fuzzer_object 
   $CXX $CXXFLAGS \
-    $fuzzer_object -o $OUT/$fuzzer_name \
+    $file -o $OUT/$fuzzer_name \
     -lFuzzingEngine ${FUZZER_LIBRARIES}
 done
 

@@ -36,6 +36,7 @@ readonly FUZZERS=( \
   llvm-dwarfdump-fuzzer \
   llvm-isel-fuzzer \
   llvm-special-case-list-fuzzer \
+  llvm-opt-fuzzer \
 )
 case $SANITIZER in
   address) LLVM_SANITIZER="Address" ;;
@@ -64,3 +65,5 @@ done
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
 mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
+# Same for llvm-opt-fuzzer
+mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine

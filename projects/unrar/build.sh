@@ -1,5 +1,5 @@
-#!/bin/bash -eux
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,16 @@
 #
 ################################################################################
 
-docker build --pull -t gcr.io/oss-fuzz-base/base-image "$@" infra/base-images/base-image
-docker build -t gcr.io/oss-fuzz-base/base-clang "$@" infra/base-images/base-clang
-docker build -t gcr.io/oss-fuzz-base/base-builder -t gcr.io/oss-fuzz/base-libfuzzer "$@" infra/base-images/base-builder
-docker build -t gcr.io/oss-fuzz-base/base-runner "$@" infra/base-images/base-runner
-docker build -t gcr.io/oss-fuzz-base/base-runner-debug "$@" infra/base-images/base-runner-debug
+UNRAR_SRC_DIR="$SRC/unrar"
+
+# build 'lib'. This builds libunrar.a and libunrar.so
+# -fPIC is required for successful compilation.
+make CXX=$CXX CXXFLAGS="$CXXFLAGS -fPIC" -C $UNRAR_SRC_DIR lib
+
+# remove the .so file so that the linker links unrar statically.
+rm -v $UNRAR_SRC_DIR/libunrar.so
+
+# build fuzzer
+$CXX $CXXFLAGS -I. $UNRAR_SRC_DIR/unrar_fuzzer.cc -o $OUT/unrar_fuzzer \
+     -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DRAR_SMP -DRARDLL \
+     -lFuzzingEngine -L$UNRAR_SRC_DIR -lunrar

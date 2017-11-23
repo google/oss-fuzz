@@ -27,7 +27,7 @@ ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 ENV SANITIZER_FLAGS_profile "-fprofile-instr-generate -fcoverage-mapping -pthread"
 
 # Default build flags for coverage.
-ENV COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard,trace-cmp"
+ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 
 # Coverage flags for generating coverage reports.
 ENV COVERAGE_FLAGS_coverage="-fsanitize-coverage=bb,no-prune,trace-pc-guard -O0"

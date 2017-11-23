@@ -39,8 +39,8 @@ export LIBPNG_CFLAGS="-I$(pwd)"
 export LIBPNG_LIBS="-L$(pwd) -lpng16"
 popd
 
-tar -xzf $SRC/libxml2-2.9.6.tar.gz
-pushd libxml2-2.9.6
+tar -xzf $SRC/libxml2-2.9.7.tar.gz
+pushd libxml2-2.9.7
 ./configure --disable-shared --enable-static --disable-ipv6 --without-python --without-zlib --without-lzma
 make -j$(nproc)
 export LIBXML_CFLAGS="-I$(pwd)/include"
@@ -49,14 +49,30 @@ export XML_CFLAGS="$LIBXML_CFLAGS"
 export XML_LIBS="$LIBXML_LIBS"
 popd
 
-tar -xzf $SRC/icu4c-60rc-src.tgz
+tar -xzf $SRC/icu4c-60_1-src.tgz
 pushd icu/source
+patch -p2 < $SRC/icu4c-ubsan.patch
+patch -p3 < $SRC/ofz3670.patch
 ./configure --disable-shared --enable-static --with-data-packaging=static --disable-dyload --disable-strict \
     --disable-layout --disable-samples --disable-extras --disable-icuio --disable-plugins \
     CPPFLAGS=-DU_USE_STRTOD_L=0
 make -j$(nproc)
 export ICU_CFLAGS="-I$(pwd) -I$(pwd)/i18n -I$(pwd)/common"
 export ICU_LIBS="-L$(pwd)/lib -licui18n -licuuc -licudata"
+popd
+
+tar -xjf $SRC/boost_1_65_1.tar.bz2
+pushd boost_1_65_1
+patch -p2 < $SRC/ofz2894.patch
+patch -p2 < $SRC/ofz4303.patch
+export CPPFLAGS="-I$(pwd)"
+popd
+
+tar -xjf $SRC/mdds-1.3.1.tar.bz2
+pushd mdds-1.3.1
+./configure
+export MDDS_CFLAGS="-I$(pwd)/include"
+export MDDS_LIBS=' '
 popd
 
 pushd librevenge
