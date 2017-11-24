@@ -45,7 +45,7 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   export AFL_SKIP_CPUFREQ=1
   # AFL expects at least 1 file in the input dir.
   echo input > ${CORPUS_DIR}/input
-  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $@ $OUT/$FUZZER"
+  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $* $OUT/$FUZZER"
 elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # Honggfuzz expects at least 1 file in the input dir.
   echo input > $CORPUS_DIR/input
@@ -57,9 +57,9 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -P: use persistent mode of fuzzing (i.e. LLVMFuzzerTestOneInput)
   # -f: location of the initial (and destination) file corpus
   # -n: number of fuzzing threads (and processes)
-  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $@ -- \"$OUT/$FUZZER\""
+  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $* -- \"$OUT/$FUZZER\""
 else
-  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $@ $CORPUS_DIR"
+  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $* $CORPUS_DIR"
 
   OPTIONS_FILE="${FUZZER}.options"
   if [ -f $OPTIONS_FILE ]; then
