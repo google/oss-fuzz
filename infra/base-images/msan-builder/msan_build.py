@@ -17,12 +17,16 @@
 
 from __future__ import print_function
 import argparse
+import imp
 import os
 import shutil
 import subprocess
 import tempfile
 
+from packages import package
+
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+PACKAGES_DIR = os.path.join(SCRIPT_DIR, 'packages')
 
 INJECTED_ARGS = [
     '-fsanitize=memory',
@@ -99,41 +103,6 @@ def SetUpEnvironment(work_dir):
   return env
 
 
-def InstallBuildDeps(package_name):
-  """Install build dependencies for a package."""
-  subprocess.check_call(['apt-get', 'build-dep', '-y', package_name])
-
-
-def DownloadPackageSource(package_name, download_directory):
-  """Download the source for a package."""
-  before = FindDirs(download_directory)
-  subprocess.check_call(
-      ['apt-get', 'source', package_name],
-      stderr=subprocess.STDOUT, cwd=download_directory)
-
-  after = FindDirs(download_directory)
-  new_dirs = [subdir for subdir in after
-              if subdir not in before]
-
-  if len(new_dirs) != 1:
-    raise MSanBuildException(
-        'Found more than one new directory after downloading apt-get source.')
-
-  return os.path.join(download_directory, new_dirs[0])
-
-
-def FindDirs(directory):
-  """Find sub directories."""
-  return [subdir for subdir in os.listdir(directory)
-          if os.path.isdir(os.path.join(directory, subdir))]
-
-
-def BuildDebianPackage(source_directory, env):
-  """Build .deb packages."""
-  subprocess.check_call(
-      ['dpkg-buildpackage', '-us', '-uc', '-b'], cwd=source_directory, env=env)
-
-
 def ExtractSharedLibraries(work_directory, output_directory):
   """Extract all shared libraries from .deb packages."""
   extract_directory = os.path.join(work_directory, 'extracted')
@@ -153,17 +122,30 @@ def ExtractSharedLibraries(work_directory, output_directory):
         shutil.copy2(file_path, output_directory)
 
 
+def GetPackage(package_name):
+  custom_package_path = os.path.join(PACKAGES_DIR, package_name) + '.py'
+  if not os.path.exists(custom_package_path):
+    print('Using default package build steps.')
+    return package.Package(package_name)
+
+  print('Using custom package build steps.')
+  module = imp.load_source('packages.' + package_name, custom_package_path)
+  return module.Package()
+
+
 class MSanBuilder(object):
   """MSan builder."""
 
-  def __init__(self, debug=False, log_path=None):
+  def __init__(self, debug=False, log_path=None, work_dir=None):
     self.debug = debug
     self.log_path = log_path
-    self.work_dir = None
+    self.work_dir = work_dir
     self.env = None
 
   def __enter__(self):
-    self.work_dir = tempfile.mkdtemp()
+    if not self.work_dir:
+      self.work_dir = tempfile.mkdtemp(dir=self.work_dir)
+
     self.env = SetUpEnvironment(self.work_dir)
 
     if self.debug and self.log_path:
@@ -175,13 +157,15 @@ class MSanBuilder(object):
     if not self.debug:
       shutil.rmtree(self.work_dir, ignore_errors=True)
 
-  def build(self, package_name, output_directory):
+  def Build(self, package_name, output_directory):
     """Build the package and write results into the output directory."""
-    InstallBuildDeps(package_name)
-    source_directory = DownloadPackageSource(package_name, self.work_dir)
+    pkg = GetPackage(package_name)
+
+    pkg.InstallBuildDeps()
+    source_directory = pkg.DownloadSource(self.work_dir)
     print('Source downloaded to', source_directory)
 
-    BuildDebianPackage(source_directory, self.env)
+    pkg.Build(source_directory, self.env)
     ExtractSharedLibraries(self.work_dir, output_directory)
 
 
@@ -191,14 +175,16 @@ def main():
   parser.add_argument('output_dir', help='Output directory.')
   parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
   parser.add_argument('--log-path', help='Log path for debugging.')
+  parser.add_argument('--work-dir', help='Work directory.')
 
   args = parser.parse_args()
 
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
-  with MSanBuilder(debug=args.debug, log_path=args.log_path) as builder:
-    builder.build(args.package_name, args.output_dir)
+  with MSanBuilder(debug=args.debug, log_path=args.log_path,
+                   work_dir=args.work_dir) as builder:
+    builder.Build(args.package_name, args.output_dir)
 
 
 if __name__ == '__main__':

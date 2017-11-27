@@ -23,4 +23,5 @@ RUN apt-get update && apt-get install -y python dpkg-dev
 RUN cp -R /usr/msan/lib/* /usr/lib/
 
 COPY compiler_wrapper.py msan_build.py /usr/local/bin/
+COPY packages /usr/local/bin/packages
 WORKDIR $SRC
