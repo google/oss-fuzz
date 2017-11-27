@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-clang
 MAINTAINER ochang@google.com
 RUN sed -i -r 's/#\s*deb-src/deb-src/g' /etc/apt/sources.list
-RUN apt-get update && apt-get install -y python dpkg-dev
+RUN apt-get update && apt-get install -y python dpkg-dev patchelf
 
 # Take all libraries from lib/msan
 RUN cp -R /usr/msan/lib/* /usr/lib/

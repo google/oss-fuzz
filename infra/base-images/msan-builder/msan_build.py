@@ -115,11 +115,38 @@ def ExtractSharedLibraries(work_directory, output_directory):
 
     subprocess.check_call(['dpkg-deb', '-x', file_path, extract_directory])
 
+  extracted = []
   for root, _, filenames in os.walk(extract_directory):
+    if 'libx32' in root or 'lib32' in root:
+      continue
+
     for filename in filenames:
+      if not filename.endswith('.so') and '.so.' not in filename:
+        continue
+
       file_path = os.path.join(root, filename)
-      if os.path.isfile(file_path) and file_path.endswith('.so'):
-        shutil.copy2(file_path, output_directory)
+      rel_file_path = os.path.relpath(file_path, extract_directory)
+      rel_directory = os.path.dirname(rel_file_path)
+
+      target_dir = os.path.join(output_directory, rel_directory)
+      if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+
+      target_file_path = os.path.join(output_directory, rel_file_path)
+      extracted.append(target_file_path)
+
+      if os.path.islink(file_path):
+        link_path = os.readlink(file_path)
+        if os.path.isabs(link_path):
+          # Make absolute links relative.
+          link_path = os.path.relpath(
+              link_path, os.path.join('/', rel_directory))
+
+        os.symlink(link_path, target_file_path)
+      else:
+        shutil.copy2(file_path, target_file_path)
+
+  return extracted
 
 
 def GetPackage(package_name):
@@ -131,6 +158,38 @@ def GetPackage(package_name):
   print('Using custom package build steps.')
   module = imp.load_source('packages.' + package_name, custom_package_path)
   return module.Package()
+
+
+def PatchRpath(path, output_directory):
+  """Patch rpath to be relative to $ORIGIN."""
+  try:
+    rpaths = subprocess.check_output(
+        ['patchelf', '--print-rpath', path]).strip()
+  except subprocess.CalledProcessError:
+    return
+
+  if not rpaths:
+    return
+
+  processed_rpath = []
+  rel_directory = os.path.join(
+      '/', os.path.dirname(os.path.relpath(path, output_directory)))
+
+  for rpath in rpaths.split(':'):
+    if '$ORIGIN' in rpath:
+      # Already relative.
+      processed_rpath.append(rpath)
+      continue
+
+    processed_rpath.append(os.path.join(
+        '$ORIGIN',
+        os.path.relpath(rpath, rel_directory)))
+
+  processed_rpath = ':'.join(processed_rpath)
+  print('Patching rpath for', path, 'to', processed_rpath)
+  subprocess.check_call(
+      ['patchelf', '--force-rpath', '--set-rpath',
+       processed_rpath, path])
 
 
 class MSanBuilder(object):
@@ -166,7 +225,10 @@ class MSanBuilder(object):
     print('Source downloaded to', source_directory)
 
     pkg.Build(source_directory, self.env)
-    ExtractSharedLibraries(self.work_dir, output_directory)
+    extracted_paths = ExtractSharedLibraries(self.work_dir, output_directory)
+    for extracted_path in extracted_paths:
+      if not os.path.islink(extracted_path):
+        PatchRpath(extracted_path, output_directory)
 
 
 def main():
