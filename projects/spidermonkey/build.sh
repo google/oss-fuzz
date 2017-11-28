@@ -30,6 +30,6 @@ cd build_DBG.OBJ
     --disable-jemalloc \
     --enable-address-sanitizer
 
-make
+make "-j$(nproc)"
 
 cp dist/bin/js $OUT

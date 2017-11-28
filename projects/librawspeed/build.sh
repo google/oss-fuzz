@@ -17,6 +17,11 @@
 
 set -e
 
+if [[ $SANITIZER = *undefined* ]]; then
+  CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+  CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+fi
+
 cd "$WORK"
 mkdir build
 cd build
