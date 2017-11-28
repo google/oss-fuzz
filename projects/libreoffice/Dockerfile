@@ -33,6 +33,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/368f114c078f94214a308a74c7e991bc-crosextrafonts-20130214.tar.gz \
     https://dev-www.libreoffice.org/src/5c781723a0d9ed6188960defba8e91cf-liberation-fonts-ttf-2.00.1.tar.gz \
     https://dev-www.libreoffice.org/src/7a15edea7d415ac5150ea403e27401fd-open-sans-font-ttf-1.10.tar.gz \
+    https://dev-www.libreoffice.org/src/noto-fonts-20170306.tar.gz \
     https://dev-www.libreoffice.org/src/EmojiOneColor-SVGinOT-1.3.tar.gz \
     https://dev-www.libreoffice.org/src/a8c2c5b8f09e7ede322d5c602ff6a4b6-mythes-1.2.4.tar.gz \
     https://dev-www.libreoffice.org/src/5ade6ae2a99bc1e9e57031ca88d36dad-hyphen-2.8.8.tar.gz \
@@ -71,7 +72,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/libvisio-0.1.6.tar.xz \
     https://dev-www.libreoffice.org/src/libwpd-0.10.2.tar.xz \
     https://dev-www.libreoffice.org/src/libwpg-0.3.2.tar.xz \
-    https://dev-www.libreoffice.org/src/libwps-0.4.7.tar.xz \
+    https://dev-www.libreoffice.org/src/libwps-0.4.8.tar.xz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/poppler-0.59.0.tar.xz \
@@ -142,7 +143,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/scrtffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/wksfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/diffuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/docxfuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/docxfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/xlsxfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
