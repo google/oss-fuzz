@@ -52,7 +52,7 @@ ADD https://dev-www.libreoffice.org/src/c3c1a8ba7452950636e871d25020ce0d-pt-seri
     https://dev-www.libreoffice.org/src/neon-0.30.2.tar.gz \
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.14.10.tar.xz \
-    https://dev-www.libreoffice.org/src/curl-7.56.1.tar.gz \
+    https://dev-www.libreoffice.org/src/curl-7.57.0.tar.gz \
     https://dev-www.libreoffice.org/src/xmlsec1-1.2.25.tar.gz \
     https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.1.tar.bz2 \
@@ -144,7 +144,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/wksfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/diffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/docxfuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/xlsxfuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/xlsxfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/pptxfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
