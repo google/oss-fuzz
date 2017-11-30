@@ -17,7 +17,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y curl
 
 # Get AOSP's version of sqlite, and get the fuzz target from upstream.
-# Onece AOSP updates sqlite we'll be able to use the fuzz target from AOSP.
+# Once AOSP updates sqlite we'll be able to use the fuzz target from AOSP.
 RUN git clone https://android.googlesource.com/platform/external/sqlite
 RUN curl https://raw.githubusercontent.com/mackyle/sqlite/6bfffe7cfc8ff834e61f7d92a6509dbbca423b04/test/ossfuzz.c > sqlite_fuzz.c
 
