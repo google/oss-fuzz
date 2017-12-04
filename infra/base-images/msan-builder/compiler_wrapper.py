@@ -20,6 +20,8 @@ import os
 import subprocess
 import sys
 
+import msan_build
+
 
 def Is32Bit(args):
   """Return whether or not we're 32-bit."""
@@ -71,6 +73,10 @@ def GetCompilerArgs(args):
       # Disable all warnings.
       '-w',
   ])
+
+  if '-fsanitize=memory' not in args:
+    # If MSan flags weren't added for some reason, add them here.
+    compiler_args.extend(msan_build.INJECTED_ARGS)
 
   return compiler_args
 
