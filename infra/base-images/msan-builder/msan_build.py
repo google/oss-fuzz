@@ -19,9 +19,12 @@ from __future__ import print_function
 import argparse
 import imp
 import os
+import re
 import shutil
 import subprocess
 import tempfile
+
+import apt
 
 from packages import package
 
@@ -205,6 +208,48 @@ def PatchRpath(path, output_directory):
        processed_rpath, path])
 
 
+def _CollectDependencies(apt_cache, pkg, cache, dependencies):
+  """Collect dependencies that need to be built."""
+  C_OR_CXX_DEPS = [
+      'libc++1',
+      'libc6',
+      'libc++abi1',
+      'libgcc1',
+      'libstdc++6',
+  ]
+
+  if pkg.name in C_OR_CXX_DEPS:
+    return True
+
+  is_c_or_cxx = False
+  for dependency in pkg.versions[0].dependencies:
+    dependency = dependency[0]
+    if dependency.pre_depend:
+      continue
+
+    if dependency.name in cache:
+      is_c_or_cxx |= cache[dependency.name]
+    else:
+      is_c_or_cxx |= _CollectDependencies(apt_cache, apt_cache[dependency.name],
+                                          cache, dependencies)
+  if is_c_or_cxx:
+    dependencies.append(pkg.name)
+
+  cache[pkg.name] = is_c_or_cxx
+  return is_c_or_cxx
+
+
+
+def GetBuildList(package_name):
+  """Get list of packages that need to be built including dependencies."""
+  apt_cache = apt.Cache()
+  pkg = apt_cache[package_name]
+
+  dependencies = []
+  _CollectDependencies(apt_cache, pkg, {}, dependencies)
+  return dependencies
+
+
 class MSanBuilder(object):
   """MSan builder."""
 
@@ -265,18 +310,35 @@ def main():
   parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
   parser.add_argument('--log-path', help='Log path for debugging.')
   parser.add_argument('--work-dir', help='Work directory.')
-
+  parser.add_argument('--build-deps', action='store_true',
+                      help='Build dependencies as well.')
   args = parser.parse_args()
 
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
+  if args.build_deps:
+    all_packages = set()
+    package_names = []
+    for package_name in args.package_names:
+      for dep in GetBuildList(package_name):
+        if dep in all_packages:
+          continue
+
+        all_packages.add(dep)
+        package_names.append(dep)
+  else:
+    package_names = args.package_names
+
+  print('Going to build:')
+  for package_name in package_names:
+    print('\t', package_name)
+
   with MSanBuilder(debug=args.debug, log_path=args.log_path,
                    work_dir=args.work_dir) as builder:
-    for package_name in args.package_names:
+    for package_name in package_names:
       builder.Build(package_name, args.output_dir)
 
 
 if __name__ == '__main__':
   main()
-

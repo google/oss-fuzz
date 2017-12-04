@@ -1,13 +1,9 @@
 import os
 import subprocess
 
+import apt
+
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-
-
-def FindDirs(directory):
-  """Find sub directories."""
-  return [subdir for subdir in os.listdir(directory)
-          if os.path.isdir(os.path.join(directory, subdir))]
 
 
 def ApplyPatch(source_directory, patch_name):
@@ -46,20 +42,11 @@ class Package(object):
   def DownloadSource(self, download_directory):
     """Download the source for a package."""
     self.PreDownload(download_directory)
-    before = FindDirs(download_directory)
-    subprocess.check_call(
-        ['apt-get', 'source', self.name],
-        stderr=subprocess.STDOUT, cwd=download_directory)
 
-    after = FindDirs(download_directory)
-    new_dirs = [subdir for subdir in after
-                if subdir not in before]
+    apt_cache = apt.Cache()
+    source_directory = apt_cache[self.name].versions[0].fetch_source(
+        download_directory)
 
-    if len(new_dirs) != 1:
-      raise PackageException(
-          'Found more than one new directory after downloading apt-get source.')
-
-    source_directory = os.path.join(download_directory, new_dirs[0])
     self.PostDownload(source_directory)
     return source_directory
 
