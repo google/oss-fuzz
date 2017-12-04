@@ -27,7 +27,6 @@ from packages import package
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGES_DIR = os.path.join(SCRIPT_DIR, 'packages')
-
 INJECTED_ARGS = [
     '-fsanitize=memory',
     '-fsanitize-memory-track-origins=2',
@@ -103,17 +102,31 @@ def SetUpEnvironment(work_dir):
   return env
 
 
-def ExtractSharedLibraries(work_directory, output_directory):
-  """Extract all shared libraries from .deb packages."""
-  extract_directory = os.path.join(work_directory, 'extracted')
-  os.mkdir(extract_directory)
+def FindPackageDebs(package_name, work_directory):
+  """Find package debs."""
+  deb_paths = []
 
   for filename in os.listdir(work_directory):
     file_path = os.path.join(work_directory, filename)
     if not file_path.endswith('.deb'):
       continue
 
-    subprocess.check_call(['dpkg-deb', '-x', file_path, extract_directory])
+    if filename.startswith(package_name + '_'):
+      deb_paths.append(file_path)
+
+  return deb_paths
+
+
+def ExtractSharedLibraries(deb_paths, work_directory, output_directory):
+  """Extract shared libraries from .deb packages."""
+  extract_directory = os.path.join(work_directory, 'extracted')
+  if os.path.exists(extract_directory):
+    shutil.rmtree(extract_directory, ignore_errors=True)
+
+  os.mkdir(extract_directory)
+
+  for deb_path in deb_paths:
+    subprocess.check_call(['dpkg-deb', '-x', deb_path, extract_directory])
 
   extracted = []
   for root, _, filenames in os.walk(extract_directory):
@@ -205,6 +218,10 @@ class MSanBuilder(object):
     if not self.work_dir:
       self.work_dir = tempfile.mkdtemp(dir=self.work_dir)
 
+    if os.path.exists(self.work_dir):
+      shutil.rmtree(self.work_dir, ignore_errors=True)
+
+    os.makedirs(self.work_dir)
     self.env = SetUpEnvironment(self.work_dir)
 
     if self.debug and self.log_path:
@@ -218,14 +235,24 @@ class MSanBuilder(object):
 
   def Build(self, package_name, output_directory):
     """Build the package and write results into the output directory."""
-    pkg = GetPackage(package_name)
+    deb_paths = FindPackageDebs(package_name, self.work_dir)
+    if deb_paths:
+      print('Source package already built for', package_name)
+    else:
+      pkg = GetPackage(package_name)
 
-    pkg.InstallBuildDeps()
-    source_directory = pkg.DownloadSource(self.work_dir)
-    print('Source downloaded to', source_directory)
+      pkg.InstallBuildDeps()
+      source_directory = pkg.DownloadSource(self.work_dir)
+      print('Source downloaded to', source_directory)
 
-    pkg.Build(source_directory, self.env)
-    extracted_paths = ExtractSharedLibraries(self.work_dir, output_directory)
+      pkg.Build(source_directory, self.env)
+      deb_paths = FindPackageDebs(package_name, self.work_dir)
+
+    if not deb_paths:
+      raise MSanBuildException('Failed to find .deb packages.')
+
+    extracted_paths = ExtractSharedLibraries(deb_paths, self.work_dir,
+                                             output_directory)
     for extracted_path in extracted_paths:
       if not os.path.islink(extracted_path):
         PatchRpath(extracted_path, output_directory)
@@ -233,7 +260,7 @@ class MSanBuilder(object):
 
 def main():
   parser = argparse.ArgumentParser('msan_build.py', description='MSan builder.')
-  parser.add_argument('package_name', help='Name of the package.')
+  parser.add_argument('package_names', nargs='+', help='Name of the packages.')
   parser.add_argument('output_dir', help='Output directory.')
   parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
   parser.add_argument('--log-path', help='Log path for debugging.')
@@ -246,7 +273,8 @@ def main():
 
   with MSanBuilder(debug=args.debug, log_path=args.log_path,
                    work_dir=args.work_dir) as builder:
-    builder.Build(args.package_name, args.output_dir)
+    for package_name in args.package_names:
+      builder.Build(package_name, args.output_dir)
 
 
 if __name__ == '__main__':
