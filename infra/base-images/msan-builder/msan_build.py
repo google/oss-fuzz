@@ -19,6 +19,8 @@ from __future__ import print_function
 import argparse
 import imp
 import os
+import multiprocessing
+import resource
 import shutil
 import subprocess
 import tempfile
@@ -77,7 +79,10 @@ def SetUpEnvironment(work_dir):
 
   MSAN_OPTIONS = ' '.join(INJECTED_ARGS)
 
-  env['DEB_BUILD_OPTIONS'] = 'nocheck nostrip'
+  # We don't use nostrip because some build rules incorrectly break when it is
+  # passed. Instead we install our own no-op strip binaries.
+  env['DEB_BUILD_OPTIONS'] = ('nocheck parallel=%d' %
+                              multiprocessing.cpu_count())
   env['DEB_CFLAGS_APPEND'] = MSAN_OPTIONS
   env['DEB_CXXFLAGS_APPEND'] = MSAN_OPTIONS + ' -stdlib=libc++'
   env['DEB_CPPFLAGS_APPEND'] = env['DEB_CXXFLAGS_APPEND']
@@ -94,13 +99,29 @@ def SetUpEnvironment(work_dir):
 
   os.chmod(dpkg_gensymbols_path, 0755)
 
+  # Install no-op strip binaries.
+  strip_path = os.path.join(bin_dir, dpkg_host_architecture + '-strip')
+  with open(strip_path, 'w') as f:
+    f.write(
+        '#!/bin/sh\n'
+        'exit 0\n')
+
+  os.chmod(strip_path, 0755)
+  os.symlink(strip_path, os.path.join(bin_dir, 'strip'))
+
   env['PATH'] = bin_dir + ':' + os.environ['PATH']
 
   # Prevent entire build from failing because of bugs/uninstrumented in tools
   # that are part of the build.
-  # TODO(ochang): Figure out some way to suppress reports since they can still
-  # be very noisy.
-  env['MSAN_OPTIONS'] = 'halt_on_error=0:exitcode=0'
+  msan_log_dir = os.path.join(work_dir, 'msan')
+  os.mkdir(msan_log_dir)
+  msan_log_path = os.path.join(msan_log_dir, 'log')
+  env['MSAN_OPTIONS'] = (
+      'halt_on_error=0:exitcode=0:report_umrs=0:log_path=' + msan_log_path)
+
+  # Increase maximum stack size to prevent tests from failing.
+  limit = 128 * 1024 * 1024
+  resource.setrlimit(resource.RLIMIT_STACK, (limit, limit))
   return env
 
 
@@ -217,14 +238,19 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
       'libstdc++6',
   ]
 
+  BLACKLISTED_PACKAGES = [
+      'multiarch-support',
+  ]
+
+  if pkg.name in BLACKLISTED_PACKAGES:
+    return False
+
   if pkg.name in C_OR_CXX_DEPS:
     return True
 
   is_c_or_cxx = False
   for dependency in pkg.versions[0].dependencies:
     dependency = dependency[0]
-    if dependency.pre_depend:
-      continue
 
     if dependency.name in cache:
       is_c_or_cxx |= cache[dependency.name]
