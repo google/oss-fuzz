@@ -16,27 +16,32 @@
 ################################################################################
 
 from __future__ import print_function
-import glob
+
+import contextlib
 import os
 import subprocess
 
-import package
+
+def DpkgHostArchitecture():
+  """Return the host architecture."""
+  return subprocess.check_output(
+      ['dpkg-architecture', '-qDEB_HOST_GNU_TYPE']).strip()
 
 
-class Package(package.Package):
-  """PulseAudio package."""
+def InstallWrapper(bin_dir, name, contents, extra_names=None):
+  """Install a custom wrapper script into |bin_dir|."""
+  path = os.path.join(bin_dir, name)
+  with open(path, 'w') as f:
+    f.write(contents)
 
-  def __init__(self, apt_version):
-    super(Package, self).__init__('pulseaudio', apt_version)
+  os.chmod(path, 0755)
 
-  def PostDownload(self, source_directory):
-    """Remove blacklisted patches."""
-    # Fix *droid* patches.
-    bad_patch_path = os.path.join(
-        source_directory, 'debian', 'patches',
-        '0600-droid-sync-with-upstream-for-Android-5-support-and-b.patch')
-    if not os.path.exists(bad_patch_path):
-      return
+  if extra_names:
+    CreateSymlinks(path, bin_dir, extra_names)
 
-    print('Applying custom patches.')
-    package.ApplyPatch(source_directory, 'pulseaudio_fix_android.patch')
+
+def CreateSymlinks(original_path, bin_dir, extra_names):
+  """Create symlinks."""
+  for extra_name in extra_names:
+    extra_path = os.path.join(bin_dir, extra_name)
+    os.symlink(original_path, extra_path)

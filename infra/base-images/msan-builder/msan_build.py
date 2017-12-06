@@ -28,6 +28,7 @@ import tempfile
 import apt
 
 from packages import package
+import wrapper_utils
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGES_DIR = os.path.join(SCRIPT_DIR, 'packages')
@@ -55,27 +56,22 @@ def SetUpEnvironment(work_dir):
   bin_dir = os.path.join(work_dir, 'bin')
   os.mkdir(bin_dir)
 
-  os.symlink(compiler_wrapper_path,
-             os.path.join(bin_dir, 'clang'))
-
-  os.symlink(compiler_wrapper_path,
-             os.path.join(bin_dir, 'clang++'))
+  dpkg_host_architecture = wrapper_utils.DpkgHostArchitecture()
+  wrapper_utils.CreateSymlinks(
+      compiler_wrapper_path, bin_dir, [
+          'clang',
+          'clang++',
+          # Not all build rules respect $CC/$CXX, so make additional symlinks.
+          'gcc',
+          'g++',
+          'cc',
+          'c++',
+          dpkg_host_architecture + '-gcc',
+          dpkg_host_architecture + '-g++',
+      ])
 
   env['CC'] = os.path.join(bin_dir, 'clang')
   env['CXX'] = os.path.join(bin_dir, 'clang++')
-
-  # Not all build rules respect $CC/$CXX, so make additional symlinks.
-  dpkg_host_architecture = subprocess.check_output(
-      ['dpkg-architecture', '-qDEB_HOST_GNU_TYPE']).strip()
-  os.symlink(compiler_wrapper_path,
-             os.path.join(bin_dir, dpkg_host_architecture + '-gcc'))
-  os.symlink(compiler_wrapper_path,
-             os.path.join(bin_dir, dpkg_host_architecture + '-g++'))
-
-  os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'gcc'))
-  os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'cc'))
-  os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'g++'))
-  os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'c++'))
 
   MSAN_OPTIONS = ' '.join(INJECTED_ARGS)
 
@@ -90,24 +86,20 @@ def SetUpEnvironment(work_dir):
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
 
   # debian/rules can set DPKG_GENSYMBOLS_CHECK_LEVEL explicitly, so override it.
-  dpkg_gensymbols_path = os.path.join(bin_dir, 'dpkg-gensymbols')
-  with open(dpkg_gensymbols_path, 'w') as f:
-    f.write(
+  gen_symbols_wrapper = (
         '#!/bin/sh\n'
         'export DPKG_GENSYMBOLS_CHECK_LEVEL=0\n'
         '/usr/bin/dpkg-gensymbols "$@"\n')
 
-  os.chmod(dpkg_gensymbols_path, 0755)
+  wrapper_utils.InstallWrapper(bin_dir, 'dpkg-gensymbols',
+                               gen_symbols_wrapper)
 
   # Install no-op strip binaries.
-  strip_path = os.path.join(bin_dir, dpkg_host_architecture + '-strip')
-  with open(strip_path, 'w') as f:
-    f.write(
-        '#!/bin/sh\n'
-        'exit 0\n')
-
-  os.chmod(strip_path, 0755)
-  os.symlink(strip_path, os.path.join(bin_dir, 'strip'))
+  no_op_strip = ('#!/bin/sh\n'
+                 'exit 0\n')
+  wrapper_utils.InstallWrapper(
+      bin_dir, 'strip', no_op_strip,
+      [dpkg_host_architecture + '-strip'])
 
   env['PATH'] = bin_dir + ':' + os.environ['PATH']
 
@@ -186,14 +178,18 @@ def ExtractSharedLibraries(deb_paths, work_directory, output_directory):
 
 
 def GetPackage(package_name):
-  custom_package_path = os.path.join(PACKAGES_DIR, package_name) + '.py'
+  apt_cache = apt.Cache()
+  version = apt_cache[package_name].versions[0]
+  source_name = version.source_name
+
+  custom_package_path = os.path.join(PACKAGES_DIR, source_name) + '.py'
   if not os.path.exists(custom_package_path):
     print('Using default package build steps.')
-    return package.Package(package_name)
+    return package.Package(source_name, version)
 
   print('Using custom package build steps.')
-  module = imp.load_source('packages.' + package_name, custom_package_path)
-  return module.Package()
+  module = imp.load_source('packages.' + source_name, custom_package_path)
+  return module.Package(version)
 
 
 def PatchRpath(path, output_directory):
@@ -315,7 +311,17 @@ class MSanBuilder(object):
       source_directory = pkg.DownloadSource(self.work_dir)
       print('Source downloaded to', source_directory)
 
-      pkg.Build(source_directory, self.env)
+      # custom bin directory for custom build scripts to write wrappers.
+      custom_bin_dir = os.path.join(self.work_dir, package_name + '_bin')
+      os.mkdir(custom_bin_dir)
+
+      env = self.env.copy()
+      env['PATH'] = custom_bin_dir + ':' + env['PATH']
+
+      pkg.Build(source_directory, env, custom_bin_dir)
+
+      shutil.rmtree(custom_bin_dir, ignore_errors=True)
+
       deb_paths = FindPackageDebs(package_name, self.work_dir)
 
     if not deb_paths:

@@ -1,3 +1,20 @@
+#!/usr/bin/env python
+# Copyright 2017 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
 import os
 import subprocess
 
@@ -20,13 +37,14 @@ class PackageException(Exception):
 class Package(object):
   """Base package."""
 
-  def __init__(self, name):
+  def __init__(self, name, apt_version):
     self.name = name
+    self.apt_version = apt_version
 
-  def PreBuild(self, source_directory, env):
+  def PreBuild(self, source_directory, env, custom_bin_dir):
     return
 
-  def PostBuild(self, source_directory, env):
+  def PostBuild(self, source_directory, env, custom_bin_dir):
     return
 
   def PreDownload(self, download_directory):
@@ -43,19 +61,17 @@ class Package(object):
     """Download the source for a package."""
     self.PreDownload(download_directory)
 
-    apt_cache = apt.Cache()
-    source_directory = apt_cache[self.name].versions[0].fetch_source(
-        download_directory)
+    source_directory = self.apt_version.fetch_source(download_directory)
 
     self.PostDownload(source_directory)
     return source_directory
 
-  def Build(self, source_directory, env):
+  def Build(self, source_directory, env, custom_bin_dir):
     """Build .deb packages."""
-    self.PreBuild(source_directory, env)
+    self.PreBuild(source_directory, env, custom_bin_dir)
     subprocess.check_call(
         ['dpkg-buildpackage', '-us', '-uc', '-b'],
         cwd=source_directory, env=env)
-    self.PostBuild(source_directory, env)
+    self.PostBuild(source_directory, env, custom_bin_dir)
 
 
