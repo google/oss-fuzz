@@ -21,7 +21,7 @@ import shutil
 import package
 
 
-def AddNoAsmArg(origconfig_path):
+def AddNoAsmArg(config_path):
   """Add --no-asm to config scripts."""
   shutil.move(config_path, config_path + '.real')
   with open(config_path, 'w') as f:
