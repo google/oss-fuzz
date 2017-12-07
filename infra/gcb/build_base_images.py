@@ -31,7 +31,7 @@ def get_steps(images):
       'name': 'gcr.io/cloud-builders/git',
   }]
 
-  for base_image in BASE_IMAGES:
+  for base_image in images:
     steps.append({
         'args': [
             'build',
