@@ -84,6 +84,7 @@ def SetUpEnvironment(work_dir):
   env['DEB_CPPFLAGS_APPEND'] = env['DEB_CXXFLAGS_APPEND']
   env['DEB_LDFLAGS_APPEND'] = MSAN_OPTIONS
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
+  env['FORCE_UNSAFE_CONFIGURE'] = '1'
 
   # debian/rules can set DPKG_GENSYMBOLS_CHECK_LEVEL explicitly, so override it.
   gen_symbols_wrapper = (
@@ -235,6 +236,7 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
   ]
 
   BLACKLISTED_PACKAGES = [
+      'defconf',
       'multiarch-support',
   ]
 
