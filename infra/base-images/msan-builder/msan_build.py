@@ -236,11 +236,13 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
   ]
 
   BLACKLISTED_PACKAGES = [
-      'defconf',
       'multiarch-support',
   ]
 
   if pkg.name in BLACKLISTED_PACKAGES:
+    return False
+
+  if pkg.section != 'libs':
     return False
 
   if pkg.name in C_OR_CXX_DEPS:
