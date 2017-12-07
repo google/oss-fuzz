@@ -260,7 +260,6 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
   return is_c_or_cxx
 
 
-
 def GetBuildList(package_name):
   """Get list of packages that need to be built including dependencies."""
   apt_cache = apt.Cache()
@@ -299,7 +298,7 @@ class MSanBuilder(object):
     if not self.debug:
       shutil.rmtree(self.work_dir, ignore_errors=True)
 
-  def Build(self, package_name, output_directory):
+  def Build(self, package_name, output_directory, create_subdirs=False):
     """Build the package and write results into the output directory."""
     deb_paths = FindPackageDebs(package_name, self.work_dir)
     if deb_paths:
@@ -314,12 +313,10 @@ class MSanBuilder(object):
       # custom bin directory for custom build scripts to write wrappers.
       custom_bin_dir = os.path.join(self.work_dir, package_name + '_bin')
       os.mkdir(custom_bin_dir)
-
       env = self.env.copy()
       env['PATH'] = custom_bin_dir + ':' + env['PATH']
 
       pkg.Build(source_directory, env, custom_bin_dir)
-
       shutil.rmtree(custom_bin_dir, ignore_errors=True)
 
       deb_paths = FindPackageDebs(package_name, self.work_dir)
@@ -327,39 +324,52 @@ class MSanBuilder(object):
     if not deb_paths:
       raise MSanBuildException('Failed to find .deb packages.')
 
+    if create_subdirs:
+      extract_directory = os.path.join(output_directory, package_name)
+    else:
+      extract_directory = output_directory
+
     extracted_paths = ExtractSharedLibraries(deb_paths, self.work_dir,
-                                             output_directory)
+                                             extract_directory)
     for extracted_path in extracted_paths:
       if not os.path.islink(extracted_path):
-        PatchRpath(extracted_path, output_directory)
+        PatchRpath(extracted_path, extract_directory)
 
 
 def main():
   parser = argparse.ArgumentParser('msan_build.py', description='MSan builder.')
   parser.add_argument('package_names', nargs='+', help='Name of the packages.')
   parser.add_argument('output_dir', help='Output directory.')
+  parser.add_argument('--create-subdirs', action='store_true',
+                      help=('Create subdirectories in the output '
+                            'directory for each package.'))
+  parser.add_argument('--work-dir', help='Work directory.')
+  parser.add_argument('--no-build-deps', action='store_true',
+                      help='Don\'t build dependencies.')
   parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
   parser.add_argument('--log-path', help='Log path for debugging.')
-  parser.add_argument('--work-dir', help='Work directory.')
-  parser.add_argument('--build-deps', action='store_true',
-                      help='Build dependencies as well.')
   args = parser.parse_args()
 
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
-  if args.build_deps:
+  if args.no_build_deps:
+    package_names = args.package_names
+  else:
     all_packages = set()
     package_names = []
+
+    # Get list of packages to build, including all dependencies.
     for package_name in args.package_names:
       for dep in GetBuildList(package_name):
         if dep in all_packages:
           continue
 
+        if args.create_subdirs:
+          os.mkdir(os.path.join(args.output_dir, dep))
+
         all_packages.add(dep)
         package_names.append(dep)
-  else:
-    package_names = args.package_names
 
   print('Going to build:')
   for package_name in package_names:
@@ -368,7 +378,7 @@ def main():
   with MSanBuilder(debug=args.debug, log_path=args.log_path,
                    work_dir=args.work_dir) as builder:
     for package_name in package_names:
-      builder.Build(package_name, args.output_dir)
+      builder.Build(package_name, args.output_dir, args.create_subdirs)
 
 
 if __name__ == '__main__':
