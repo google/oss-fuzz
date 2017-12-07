@@ -24,4 +24,14 @@ RUN cp -R /usr/msan/lib/* /usr/lib/
 
 COPY compiler_wrapper.py msan_build.py wrapper_utils.py /usr/local/bin/
 COPY packages /usr/local/bin/packages
-WORKDIR $SRC
+
+RUN mkdir /msan
+WORKDIR /msan
+ENV PYTHONUNBUFFERED 1
+RUN msan_build.py --work-dir=$WORK --create-subdirs \
+    libarchive13 \
+    libfreetype6 \
+    libpng12-0 \
+    libssl1.0.0 \
+    zlib1g \
+    /msan

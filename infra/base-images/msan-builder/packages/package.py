@@ -55,6 +55,7 @@ class Package(object):
 
   def InstallBuildDeps(self):
     """Install build dependencies for a package."""
+    subprocess.check_call(['apt-get', 'update'])
     subprocess.check_call(['apt-get', 'build-dep', '-y', self.name])
 
   def DownloadSource(self, download_directory):

@@ -23,7 +23,7 @@ BASE_IMAGES = [
 TAG_PREFIX = 'gcr.io/oss-fuzz-base/'
 
 
-def get_steps():
+def get_steps(images):
   steps = [{
       'args': [
           'clone', 'https://github.com/google/oss-fuzz.git',
@@ -52,7 +52,7 @@ def main():
     options = yaml.safe_load(os.environ["GCB_OPTIONS"])
 
   build_body = {
-      'steps': get_steps(),
+      'steps': get_steps(BASE_IMAGES),
       'timeout': str(4 * 3600) + 's',
       'options': options,
       'images': [
