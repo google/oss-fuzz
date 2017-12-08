@@ -35,7 +35,7 @@ CONFOPTS="$CONFOPTS --without-pcap --without-ssl --without-gnutls"
 CONFOPTS="$CONFOPTS --disable-wireshark --disable-tshark --disable-sharkd \
              --disable-dumpcap --disable-capinfos --disable-captype --disable-randpkt --disable-dftest \
              --disable-editcap --disable-mergecap --disable-reordercap --disable-text2pcap \
-             --without-extcap \
+             --without-extcap --disable-fuzzshark \
          "
 
 # Fortify and asan don't like each other ... :(
