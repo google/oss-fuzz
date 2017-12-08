@@ -19,15 +19,19 @@ from __future__ import print_function
 import argparse
 import imp
 import os
+import multiprocessing
+import resource
 import shutil
 import subprocess
 import tempfile
 
+import apt
+
 from packages import package
+import wrapper_utils
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGES_DIR = os.path.join(SCRIPT_DIR, 'packages')
-
 INJECTED_ARGS = [
     '-fsanitize=memory',
     '-fsanitize-memory-track-origins=2',
@@ -52,31 +56,29 @@ def SetUpEnvironment(work_dir):
   bin_dir = os.path.join(work_dir, 'bin')
   os.mkdir(bin_dir)
 
-  os.symlink(compiler_wrapper_path,
-             os.path.join(bin_dir, 'clang'))
-
-  os.symlink(compiler_wrapper_path,
-             os.path.join(bin_dir, 'clang++'))
+  dpkg_host_architecture = wrapper_utils.DpkgHostArchitecture()
+  wrapper_utils.CreateSymlinks(
+      compiler_wrapper_path, bin_dir, [
+          'clang',
+          'clang++',
+          # Not all build rules respect $CC/$CXX, so make additional symlinks.
+          'gcc',
+          'g++',
+          'cc',
+          'c++',
+          dpkg_host_architecture + '-gcc',
+          dpkg_host_architecture + '-g++',
+      ])
 
   env['CC'] = os.path.join(bin_dir, 'clang')
   env['CXX'] = os.path.join(bin_dir, 'clang++')
 
-  # Not all build rules respect $CC/$CXX, so make additional symlinks.
-  dpkg_host_architecture = subprocess.check_output(
-      ['dpkg-architecture', '-qDEB_HOST_GNU_TYPE']).strip()
-  os.symlink(compiler_wrapper_path,
-             os.path.join(bin_dir, dpkg_host_architecture + '-gcc'))
-  os.symlink(compiler_wrapper_path,
-             os.path.join(bin_dir, dpkg_host_architecture + '-g++'))
-
-  os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'gcc'))
-  os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'cc'))
-  os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'g++'))
-  os.symlink(compiler_wrapper_path, os.path.join(bin_dir, 'c++'))
-
   MSAN_OPTIONS = ' '.join(INJECTED_ARGS)
 
-  env['DEB_BUILD_OPTIONS'] = 'nocheck nostrip'
+  # We don't use nostrip because some build rules incorrectly break when it is
+  # passed. Instead we install our own no-op strip binaries.
+  env['DEB_BUILD_OPTIONS'] = ('nocheck parallel=%d' %
+                              multiprocessing.cpu_count())
   env['DEB_CFLAGS_APPEND'] = MSAN_OPTIONS
   env['DEB_CXXFLAGS_APPEND'] = MSAN_OPTIONS + ' -stdlib=libc++'
   env['DEB_CPPFLAGS_APPEND'] = env['DEB_CXXFLAGS_APPEND']
@@ -84,36 +86,62 @@ def SetUpEnvironment(work_dir):
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
 
   # debian/rules can set DPKG_GENSYMBOLS_CHECK_LEVEL explicitly, so override it.
-  dpkg_gensymbols_path = os.path.join(bin_dir, 'dpkg-gensymbols')
-  with open(dpkg_gensymbols_path, 'w') as f:
-    f.write(
+  gen_symbols_wrapper = (
         '#!/bin/sh\n'
         'export DPKG_GENSYMBOLS_CHECK_LEVEL=0\n'
         '/usr/bin/dpkg-gensymbols "$@"\n')
 
-  os.chmod(dpkg_gensymbols_path, 0755)
+  wrapper_utils.InstallWrapper(bin_dir, 'dpkg-gensymbols',
+                               gen_symbols_wrapper)
+
+  # Install no-op strip binaries.
+  no_op_strip = ('#!/bin/sh\n'
+                 'exit 0\n')
+  wrapper_utils.InstallWrapper(
+      bin_dir, 'strip', no_op_strip,
+      [dpkg_host_architecture + '-strip'])
 
   env['PATH'] = bin_dir + ':' + os.environ['PATH']
 
   # Prevent entire build from failing because of bugs/uninstrumented in tools
   # that are part of the build.
-  # TODO(ochang): Figure out some way to suppress reports since they can still
-  # be very noisy.
-  env['MSAN_OPTIONS'] = 'halt_on_error=0:exitcode=0'
+  msan_log_dir = os.path.join(work_dir, 'msan')
+  os.mkdir(msan_log_dir)
+  msan_log_path = os.path.join(msan_log_dir, 'log')
+  env['MSAN_OPTIONS'] = (
+      'halt_on_error=0:exitcode=0:report_umrs=0:log_path=' + msan_log_path)
+
+  # Increase maximum stack size to prevent tests from failing.
+  limit = 128 * 1024 * 1024
+  resource.setrlimit(resource.RLIMIT_STACK, (limit, limit))
   return env
 
 
-def ExtractSharedLibraries(work_directory, output_directory):
-  """Extract all shared libraries from .deb packages."""
-  extract_directory = os.path.join(work_directory, 'extracted')
-  os.mkdir(extract_directory)
+def FindPackageDebs(package_name, work_directory):
+  """Find package debs."""
+  deb_paths = []
 
   for filename in os.listdir(work_directory):
     file_path = os.path.join(work_directory, filename)
     if not file_path.endswith('.deb'):
       continue
 
-    subprocess.check_call(['dpkg-deb', '-x', file_path, extract_directory])
+    if filename.startswith(package_name + '_'):
+      deb_paths.append(file_path)
+
+  return deb_paths
+
+
+def ExtractSharedLibraries(deb_paths, work_directory, output_directory):
+  """Extract shared libraries from .deb packages."""
+  extract_directory = os.path.join(work_directory, 'extracted')
+  if os.path.exists(extract_directory):
+    shutil.rmtree(extract_directory, ignore_errors=True)
+
+  os.mkdir(extract_directory)
+
+  for deb_path in deb_paths:
+    subprocess.check_call(['dpkg-deb', '-x', deb_path, extract_directory])
 
   extracted = []
   for root, _, filenames in os.walk(extract_directory):
@@ -150,14 +178,18 @@ def ExtractSharedLibraries(work_directory, output_directory):
 
 
 def GetPackage(package_name):
-  custom_package_path = os.path.join(PACKAGES_DIR, package_name) + '.py'
+  apt_cache = apt.Cache()
+  version = apt_cache[package_name].versions[0]
+  source_name = version.source_name
+
+  custom_package_path = os.path.join(PACKAGES_DIR, source_name) + '.py'
   if not os.path.exists(custom_package_path):
     print('Using default package build steps.')
-    return package.Package(package_name)
+    return package.Package(source_name, version)
 
   print('Using custom package build steps.')
-  module = imp.load_source('packages.' + package_name, custom_package_path)
-  return module.Package()
+  module = imp.load_source('packages.' + source_name, custom_package_path)
+  return module.Package(version)
 
 
 def PatchRpath(path, output_directory):
@@ -192,6 +224,55 @@ def PatchRpath(path, output_directory):
        processed_rpath, path])
 
 
+def _CollectDependencies(apt_cache, pkg, cache, dependencies):
+  """Collect dependencies that need to be built."""
+  C_OR_CXX_DEPS = [
+      'libc++1',
+      'libc6',
+      'libc++abi1',
+      'libgcc1',
+      'libstdc++6',
+  ]
+
+  BLACKLISTED_PACKAGES = [
+      'multiarch-support',
+  ]
+
+  if pkg.name in BLACKLISTED_PACKAGES:
+    return False
+
+  if pkg.section != 'libs':
+    return False
+
+  if pkg.name in C_OR_CXX_DEPS:
+    return True
+
+  is_c_or_cxx = False
+  for dependency in pkg.versions[0].dependencies:
+    dependency = dependency[0]
+
+    if dependency.name in cache:
+      is_c_or_cxx |= cache[dependency.name]
+    else:
+      is_c_or_cxx |= _CollectDependencies(apt_cache, apt_cache[dependency.name],
+                                          cache, dependencies)
+  if is_c_or_cxx:
+    dependencies.append(pkg.name)
+
+  cache[pkg.name] = is_c_or_cxx
+  return is_c_or_cxx
+
+
+def GetBuildList(package_name):
+  """Get list of packages that need to be built including dependencies."""
+  apt_cache = apt.Cache()
+  pkg = apt_cache[package_name]
+
+  dependencies = []
+  _CollectDependencies(apt_cache, pkg, {}, dependencies)
+  return dependencies
+
+
 class MSanBuilder(object):
   """MSan builder."""
 
@@ -205,6 +286,10 @@ class MSanBuilder(object):
     if not self.work_dir:
       self.work_dir = tempfile.mkdtemp(dir=self.work_dir)
 
+    if os.path.exists(self.work_dir):
+      shutil.rmtree(self.work_dir, ignore_errors=True)
+
+    os.makedirs(self.work_dir)
     self.env = SetUpEnvironment(self.work_dir)
 
     if self.debug and self.log_path:
@@ -216,39 +301,88 @@ class MSanBuilder(object):
     if not self.debug:
       shutil.rmtree(self.work_dir, ignore_errors=True)
 
-  def Build(self, package_name, output_directory):
+  def Build(self, package_name, output_directory, create_subdirs=False):
     """Build the package and write results into the output directory."""
-    pkg = GetPackage(package_name)
+    deb_paths = FindPackageDebs(package_name, self.work_dir)
+    if deb_paths:
+      print('Source package already built for', package_name)
+    else:
+      pkg = GetPackage(package_name)
 
-    pkg.InstallBuildDeps()
-    source_directory = pkg.DownloadSource(self.work_dir)
-    print('Source downloaded to', source_directory)
+      pkg.InstallBuildDeps()
+      source_directory = pkg.DownloadSource(self.work_dir)
+      print('Source downloaded to', source_directory)
 
-    pkg.Build(source_directory, self.env)
-    extracted_paths = ExtractSharedLibraries(self.work_dir, output_directory)
+      # custom bin directory for custom build scripts to write wrappers.
+      custom_bin_dir = os.path.join(self.work_dir, package_name + '_bin')
+      os.mkdir(custom_bin_dir)
+      env = self.env.copy()
+      env['PATH'] = custom_bin_dir + ':' + env['PATH']
+
+      pkg.Build(source_directory, env, custom_bin_dir)
+      shutil.rmtree(custom_bin_dir, ignore_errors=True)
+
+      deb_paths = FindPackageDebs(package_name, self.work_dir)
+
+    if not deb_paths:
+      raise MSanBuildException('Failed to find .deb packages.')
+
+    if create_subdirs:
+      extract_directory = os.path.join(output_directory, package_name)
+    else:
+      extract_directory = output_directory
+
+    extracted_paths = ExtractSharedLibraries(deb_paths, self.work_dir,
+                                             extract_directory)
     for extracted_path in extracted_paths:
       if not os.path.islink(extracted_path):
-        PatchRpath(extracted_path, output_directory)
+        PatchRpath(extracted_path, extract_directory)
 
 
 def main():
   parser = argparse.ArgumentParser('msan_build.py', description='MSan builder.')
-  parser.add_argument('package_name', help='Name of the package.')
+  parser.add_argument('package_names', nargs='+', help='Name of the packages.')
   parser.add_argument('output_dir', help='Output directory.')
+  parser.add_argument('--create-subdirs', action='store_true',
+                      help=('Create subdirectories in the output '
+                            'directory for each package.'))
+  parser.add_argument('--work-dir', help='Work directory.')
+  parser.add_argument('--no-build-deps', action='store_true',
+                      help='Don\'t build dependencies.')
   parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
   parser.add_argument('--log-path', help='Log path for debugging.')
-  parser.add_argument('--work-dir', help='Work directory.')
-
   args = parser.parse_args()
 
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
+  if args.no_build_deps:
+    package_names = args.package_names
+  else:
+    all_packages = set()
+    package_names = []
+
+    # Get list of packages to build, including all dependencies.
+    for package_name in args.package_names:
+      for dep in GetBuildList(package_name):
+        if dep in all_packages:
+          continue
+
+        if args.create_subdirs:
+          os.mkdir(os.path.join(args.output_dir, dep))
+
+        all_packages.add(dep)
+        package_names.append(dep)
+
+  print('Going to build:')
+  for package_name in package_names:
+    print('\t', package_name)
+
   with MSanBuilder(debug=args.debug, log_path=args.log_path,
                    work_dir=args.work_dir) as builder:
-    builder.Build(args.package_name, args.output_dir)
+    for package_name in package_names:
+      builder.Build(package_name, args.output_dir, args.create_subdirs)
 
 
 if __name__ == '__main__':
   main()
-

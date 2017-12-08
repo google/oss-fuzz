@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,24 +15,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang
-MAINTAINER ochang@google.com
-RUN sed -i -r 's/#\s*deb-src/deb-src/g' /etc/apt/sources.list
-RUN apt-get update && apt-get install -y python dpkg-dev patchelf python-apt
-
-# Take all libraries from lib/msan
-RUN cp -R /usr/msan/lib/* /usr/lib/
-
-COPY compiler_wrapper.py msan_build.py wrapper_utils.py /usr/local/bin/
-COPY packages /usr/local/bin/packages
-
-RUN mkdir /msan
-WORKDIR /msan
-ENV PYTHONUNBUFFERED 1
-RUN msan_build.py --work-dir=$WORK --create-subdirs \
-    libarchive13 \
-    libfreetype6 \
-    libpng12-0 \
-    libssl1.0.0 \
-    zlib1g \
-    /msan
+# build sqlite
+$CC -c $CFLAGS sqlite/dist/sqlite3.c -I sqlite/dist
+$CC -c $CFLAGS sqlite_fuzz.c -I sqlite/dist
+$CXX $CXXFLAGS *.o  $LIB_FUZZING_ENGINE -o $OUT/sqlite
+# TODO: add a dictionary, build flags, etc, to better mimic
+# https://github.com/google/oss-fuzz/tree/master/projects/sqlite3

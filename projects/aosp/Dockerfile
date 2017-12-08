@@ -13,25 +13,13 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y curl
 
-FROM gcr.io/oss-fuzz-base/base-clang
-MAINTAINER ochang@google.com
-RUN sed -i -r 's/#\s*deb-src/deb-src/g' /etc/apt/sources.list
-RUN apt-get update && apt-get install -y python dpkg-dev patchelf python-apt
+# Get AOSP's version of sqlite, and get the fuzz target from upstream.
+# Once AOSP updates sqlite we'll be able to use the fuzz target from AOSP.
+RUN git clone https://android.googlesource.com/platform/external/sqlite
+RUN curl https://raw.githubusercontent.com/mackyle/sqlite/6bfffe7cfc8ff834e61f7d92a6509dbbca423b04/test/ossfuzz.c > sqlite_fuzz.c
 
-# Take all libraries from lib/msan
-RUN cp -R /usr/msan/lib/* /usr/lib/
-
-COPY compiler_wrapper.py msan_build.py wrapper_utils.py /usr/local/bin/
-COPY packages /usr/local/bin/packages
-
-RUN mkdir /msan
-WORKDIR /msan
-ENV PYTHONUNBUFFERED 1
-RUN msan_build.py --work-dir=$WORK --create-subdirs \
-    libarchive13 \
-    libfreetype6 \
-    libpng12-0 \
-    libssl1.0.0 \
-    zlib1g \
-    /msan
+# Copy the build file
+COPY build.sh $SRC/

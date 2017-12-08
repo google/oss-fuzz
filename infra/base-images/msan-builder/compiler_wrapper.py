@@ -20,6 +20,8 @@ import os
 import subprocess
 import sys
 
+import msan_build
+
 
 def Is32Bit(args):
   """Return whether or not we're 32-bit."""
@@ -31,18 +33,48 @@ def Is32Bit(args):
   return any(arg in M32_BIT_ARGS for arg in args)
 
 
+def FilterWlArg(arg):
+  """Remove -z,defs and equivalents from a single -Wl option."""
+  parts = arg.split(',')[1:]
+
+  filtered = []
+  for part in parts:
+    if part == 'defs' or part == '--no-undefined':
+      removed = filtered.pop()
+      assert removed == '-z'
+      continue
+
+    filtered.append(part)
+
+  if filtered:
+    return '-Wl,' + ','.join(filtered)
+
+  # Filtered entire argument.
+  return None
+
+
+def _RemoveLastMatching(l, find):
+  for i in xrange(len(l) - 1, -1, -1):
+    if l[i] == find:
+      del l[i]
+      return
+
+  raise IndexError('Not found')
+
+
 def RemoveZDefs(args):
   """Remove unsupported -Wl,-z,defs linker option."""
   filtered = []
 
   for arg in args:
-    if arg == '-Wl,-z,defs' or arg == '-Wl,--no-undefined':
+    if arg == '-Wl,defs' or arg == '-Wl,--no-undefined':
+      _RemoveLastMatching(filtered, '-Wl,-z')
       continue
 
-    if arg == '-Wl,defs':
-      # Remove previous -Wl,-z
-      filtered.pop()
-      continue
+    if arg.startswith('-Wl,'):
+      arg = FilterWlArg(arg)
+      if not arg:
+        continue
 
     filtered.append(arg)
 
@@ -71,6 +103,10 @@ def GetCompilerArgs(args):
       # Disable all warnings.
       '-w',
   ])
+
+  if '-fsanitize=memory' not in args:
+    # If MSan flags weren't added for some reason, add them here.
+    compiler_args.extend(msan_build.INJECTED_ARGS)
 
   return compiler_args
 

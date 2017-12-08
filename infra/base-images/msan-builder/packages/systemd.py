@@ -21,22 +21,22 @@ import os
 import subprocess
 
 import package
+import wrapper_utils
 
 
 class Package(package.Package):
-  """PulseAudio package."""
+  """systemd package."""
 
   def __init__(self, apt_version):
-    super(Package, self).__init__('pulseaudio', apt_version)
+    super(Package, self).__init__('systemd', apt_version)
 
-  def PostDownload(self, source_directory):
-    """Remove blacklisted patches."""
-    # Fix *droid* patches.
-    bad_patch_path = os.path.join(
-        source_directory, 'debian', 'patches',
-        '0600-droid-sync-with-upstream-for-Android-5-support-and-b.patch')
-    if not os.path.exists(bad_patch_path):
-      return
+  def PreBuild(self, source_directory, env, custom_bin_dir):
+    # Hide msan symbols from nm. the systemd build system uses this to find
+    # undefined symbols and errors out if it does.
+    nm_wrapper = (
+        '#!/bin/bash\n'
+        '/usr/bin/nm "$@" | grep -E -v "U (__msan|memset)"\n'
+        'exit ${PIPESTATUS[0]}\n')
 
-    print('Applying custom patches.')
-    package.ApplyPatch(source_directory, 'pulseaudio_fix_android.patch')
+    wrapper_utils.InstallWrapper(custom_bin_dir, 'nm', nm_wrapper,
+                                 [wrapper_utils.DpkgHostArchitecture() + '-nm'])
