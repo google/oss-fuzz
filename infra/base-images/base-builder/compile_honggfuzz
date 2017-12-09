@@ -26,9 +26,8 @@ cp libhfuzz/libhfuzz.a $LIB_FUZZING_ENGINE
 cp honggfuzz $OUT/
 popd > /dev/null
 
-# Relevant coverage flags are added by the compiler/linker
-export COVERAGE_FLAGS=
-export CC=$SRC/honggfuzz/hfuzz_cc/hfuzz-clang
-export CXX=$SRC/honggfuzz/hfuzz_cc/hfuzz-clang++
+# Custom coverage flags, roughly in sync with:
+# https://github.com/google/honggfuzz/blob/oss-fuzz/hfuzz_cc/hfuzz-cc.c
+export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard,indirect-calls,trace-cmp"
 
 echo " done."
