@@ -31,7 +31,9 @@ CFLAGS="" CXXFLAGS="" ./configure --prefix="$FFMPEG_DEPS_PATH"
 make clean
 make -j$(nproc)
 make install
-export PATH=$FFMPEG_DEPS_PATH/bin:$PATH
+
+export PATH="$FFMPEG_DEPS_PATH/bin:$PATH"
+export LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib"
 
 cd $SRC
 bzip2 -f -d alsa-lib-*
@@ -119,7 +121,9 @@ cd $SRC/theora
 CFLAGS="$CFLAGS -fPIC" LDFLAGS="-L$FFMPEG_DEPS_PATH/lib/" \
     CPPFLAGS="$CXXFLAGS -I$FFMPEG_DEPS_PATH/include/" \
     LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib/" \
-    ./autogen.sh --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-examples
+    ./autogen.sh
+./configure --with-ogg="$FFMPEG_DEPS_PATH" --prefix="$FFMPEG_DEPS_PATH" \
+    --enable-static --disable-examples
 make clean
 make -j$(nproc)
 make install

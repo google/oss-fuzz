@@ -22,8 +22,10 @@ if [ -z "${SANITIZER_FLAGS-}" ]; then
   export SANITIZER_FLAGS=${!FLAGS_VAR-}
 fi
 
-# compile script might override environment, use . to call it.
-. compile_${FUZZING_ENGINE}
+if [[ $FUZZING_ENGINE != "none" ]]; then
+  # compile script might override environment, use . to call it.
+  . compile_${FUZZING_ENGINE}
+fi
 
 if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]
 then
@@ -33,10 +35,15 @@ then
 fi
 
 # Coverage flag overrides.
-COVERAGE_FLAGS_VAR="COVERAGE_FLAGS_$SANITIZER"
-if [[ -n ${!COVERAGE_FLAGS_VAR-} ]]
+COVERAGE_FLAGS_VAR="COVERAGE_FLAGS_${SANITIZER}"
+if [[ -n ${!COVERAGE_FLAGS_VAR+x} ]]
 then
   export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
+fi
+
+# Don't need coverage instrumentation for engine-less builds.
+if [[ $FUZZING_ENGINE = "none" ]]; then
+  export COVERAGE_FLAGS=
 fi
 
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"

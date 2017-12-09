@@ -34,7 +34,7 @@ for encoding in $ENCODING_TYPES; do
 
   $CXX $CXXFLAGS -std=c++11 -Ilib/ -DENCODING_${encoding} \
       $SRC/parse_fuzzer.cc -o $OUT/${fuzz_target_name} \
-      -lFuzzingEngine .libs/libexpat.a
+      -lFuzzingEngine lib/.libs/libexpat.a
 
   # Use dictionaries in proper encoding for 16-bit encoding types.
   if [[ $encoding == *"UTF_16"* ]]; then

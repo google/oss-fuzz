@@ -1,0 +1,9 @@
+homepage: "http://virustotal.github.io/yara/"
+primary_contact: "vmalvarez@google.com"
+auto_ccs:
+  - "vmalvarez@virustotal.com"
+  - "plusvic@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

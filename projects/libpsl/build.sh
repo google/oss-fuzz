@@ -15,28 +15,80 @@
 #
 ################################################################################
 
-# avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
-export ASAN_OPTIONS=detect_leaks=0
+export DEPS_PATH=$SRC/deps
+export PKG_CONFIG_PATH=$DEPS_PATH/lib/pkgconfig
+export CPPFLAGS="-I$DEPS_PATH/include"
+export LDFLAGS="-L$DEPS_PATH/lib"
 
-./autogen.sh
-./configure --enable-static --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2
-make clean
+cd $SRC/icu/source
+UBSAN_OPTIONS=detect_leaks=0 \
+CFLAGS="$CFLAGS -fno-sanitize=vptr" \
+CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" \
+CPPFLAGS="$CPPFLAGS -fno-sanitize=vptr" \
+./configure --disable-shared --enable-static --disable-extras --disable-icuio --disable-layoutex \
+  --disable-tests --disable-samples --with-data-packaging=static --prefix=$DEPS_PATH
+# ugly hack to avoid build error
+echo '#include <locale.h>' >>i18n/digitlst.h
 make -j$(nproc)
+make install
+
+cd $SRC/libunistring
+./autogen.sh
+ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
+  ./configure --enable-static --disable-shared --prefix=$DEPS_PATH
+make -j$(nproc)
+make install
+
+cd $SRC/libidn
+ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
+  make CFGFLAGS="--enable-static --disable-shared --disable-doc --prefix=$DEPS_PATH"
+make clean
+make -j1
 make -j$(nproc) check
+make install
+
+cd $SRC/libidn2
+./bootstrap
+ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
+  ./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$DEPS_PATH
+make -j$(nproc)
+make install
+
+
+cd $SRC/libpsl
+./autogen.sh
+export CXXFLAGS="$CXXFLAGS -L$DEPS_PATH/lib/"
+if test $SANITIZER = "undefined"; then
+  # libicu doesn't work with -fsanitizer=undefined, see projects/icu/project.yaml
+  builds="libidn2 libidn none"
+else
+  builds="libicu libidn2 libidn none"
+fi
+for build in $builds; do
+  XLIBS=""
+  if test $build = "none"; then
+    BUILD_FLAGS="--disable-runtime --disable-builtin"
+  else
+    BUILD_FLAGS="--enable-runtime=$build --enable-builtin=$build"
+    if test $build = "libicu"; then
+      XLIBS="-lstdc++"
+    fi
+  fi
+  # older m4 iconv detection has memleaks, so switch leak detection off
+  LIBS=$XLIBS ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
+    ./configure --enable-static --disable-shared --disable-gtk-doc $BUILD_FLAGS --prefix=$DEPS_PATH
+  make clean
+  make -j$(nproc)
+  make -j$(nproc) check
+  make -C fuzz oss-fuzz
+  find fuzz -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
+done
 
 cd fuzz
-make oss-fuzz
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
-for fuzzer in *_fuzzer; do
-    cp -p "${fuzzer}" "$OUT"
-
-    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
-        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
-    fi
-
-    if [ -d "${fuzzer}.in/" ]; then
-        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${fuzzer}.in/"
-    fi
+for dir in *_fuzzer.in; do
+    fuzzer=$(basename $dir .in)
+    zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${dir}/"
 done

@@ -1,4 +1,5 @@
 homepage: "http://www.zlib.net/"
+primary_contact: "glennrp@gmail.com"
 sanitizers:
   - address
   - memory

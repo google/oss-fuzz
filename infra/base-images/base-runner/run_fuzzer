@@ -75,6 +75,8 @@ else
       CMD_LINE="$CMD_LINE -dict=$FUZZER.dict"
     fi
   fi
+
+  CMD_LINE="$CMD_LINE < /dev/null"
 fi
 
 echo $CMD_LINE

@@ -26,14 +26,20 @@ cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 
+OUR_LLVM_REVISION=315377  # For manual bumping.
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K\d+(?=')" scripts/update.py)
+
+if [ $OUR_LLVM_REVISION -gt $LLVM_REVISION ]; then
+  LLVM_REVISION=$OUR_LLVM_REVISION
+fi
+
 echo "Using LLVM revision: $LLVM_REVISION"
 
-cd $SRC && svn co http://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
-cd $SRC/llvm/tools && svn co http://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_REVISION clang
-cd $SRC/llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
-cd $SRC/llvm/projects && svn co http://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
-cd $SRC/llvm/projects && svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
+cd $SRC && svn co https://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
+cd $SRC/llvm/tools && svn co https://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_REVISION clang
+cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
+cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
+cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
 
 # Build & install
 mkdir -p $WORK/llvm
@@ -59,7 +65,7 @@ ninja install-cxx
 rm -rf $WORK/msan
 
 # Pull trunk libfuzzer.
-cd $SRC && git clone https://chromium.googlesource.com/chromium/llvm-project/llvm/lib/Fuzzer libfuzzer
+cd $SRC && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
 
 cp $SRC/llvm/tools/sancov/coverage-report-server.py /usr/local/bin/
 

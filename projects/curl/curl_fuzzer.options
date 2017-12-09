@@ -1,3 +1,0 @@
-[libfuzzer]
-max_len = 10000
-dict = http.dict

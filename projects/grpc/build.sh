@@ -16,19 +16,19 @@
 ################################################################################
 
 FUZZER_FILES="\
-test/core/json/fuzzer.c \
-test/core/client_channel/uri_fuzzer_test.c \
-test/core/http/request_fuzzer.c \
-test/core/http/response_fuzzer.c \
-test/core/nanopb/fuzzer_response.c \
-test/core/nanopb/fuzzer_serverlist.c \
-test/core/slice/percent_decode_fuzzer.c \
-test/core/slice/percent_encode_fuzzer.c \
-test/core/transport/chttp2/hpack_parser_fuzzer_test.c \
-test/core/end2end/fuzzers/api_fuzzer.c \
-test/core/end2end/fuzzers/client_fuzzer.c \
-test/core/end2end/fuzzers/server_fuzzer.c \
-test/core/security/ssl_server_fuzzer.c \
+test/core/json/fuzzer.cc \
+test/core/client_channel/uri_fuzzer_test.cc \
+test/core/http/request_fuzzer.cc \
+test/core/http/response_fuzzer.cc \
+test/core/nanopb/fuzzer_response.cc \
+test/core/nanopb/fuzzer_serverlist.cc \
+test/core/slice/percent_decode_fuzzer.cc \
+test/core/slice/percent_encode_fuzzer.cc \
+test/core/transport/chttp2/hpack_parser_fuzzer_test.cc \
+test/core/end2end/fuzzers/api_fuzzer.cc \
+test/core/end2end/fuzzers/client_fuzzer.cc \
+test/core/end2end/fuzzers/server_fuzzer.cc \
+test/core/security/ssl_server_fuzzer.cc \
 "
 
 FUZZER_DICTIONARIES="\
@@ -42,8 +42,8 @@ bazel-bin/test/core/util/*.a \
 bazel-bin/test/core/end2end/*.a \
 bazel-bin/external/boringssl/libssl.a \
 bazel-bin/external/boringssl/libcrypto.a \
-bazel-bin/external/submodule_cares/*.a \
-bazel-bin/external/submodule_zlib/*.a \
+bazel-bin/external/com_github_cares_cares/*.a \
+bazel-bin/external/com_github_madler_zlib/*.a \
 bazel-bin/third_party/nanopb/*.a \
 bazel-bin/*.a \
 "
@@ -55,19 +55,16 @@ EXTERA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
   $EXTERA_BAZEL_FLAGS \
   $NO_VPTR \
-  :all test/core/util/... test/core/end2end/... third_party/nanopb/... @boringssl//:all @submodule_zlib//:all @submodule_cares//:all
+  :all test/core/util/... test/core/end2end/... third_party/nanopb/... @boringssl//:all @com_github_madler_zlib//:all @com_github_cares_cares//:all
 
 CFLAGS="${CFLAGS} -Iinclude -I."
 CXXFLAGS="${CXXFLAGS} -Iinclude -I. -stdlib=libc++"
 
 for file in $FUZZER_FILES; do
-  fuzzer_name=$(basename $file .c)
-  fuzzer_object="${file::-1}o"
+  fuzzer_name=$(basename $file .cc)
   echo "Building fuzzer $fuzzer_name"
-  $CC $CFLAGS \
-    $file -c -o $fuzzer_object 
   $CXX $CXXFLAGS \
-    $fuzzer_object -o $OUT/$fuzzer_name \
+    $file -o $OUT/$fuzzer_name \
     -lFuzzingEngine ${FUZZER_LIBRARIES}
 done
 

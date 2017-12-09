@@ -17,27 +17,36 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER rockdaboot@gmail.com
 RUN apt-get update && apt-get install -y \
+ make \
  pkg-config \
  gettext \
+ autogen \
  autopoint \
  autoconf \
  automake \
  libtool \
  texinfo \
  flex \
- liblzma-dev \
- libidn11-dev \
- libidn2-0-dev \
- libunistring-dev \
- zlib1g-dev \
- libbz2-dev \
- gnutls-dev \
- libpsl-dev \
- libnghttp2-dev \
- doxygen
+ bison \
+ gettext \
+ gengetopt \
+ curl \
+ gperf \
+ wget \
+ python \
+ lzip \
+ rsync
 
-RUN git clone --depth=1 https://gitlab.com/gnuwget/wget2.git
-RUN cd wget2 && git submodule update --init
+ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
+RUN git clone git://git.savannah.gnu.org/gnulib.git
+RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
+RUN git clone --depth=1 --recursive https://gitlab.com/libidn/libidn2.git
+RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
+RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
+RUN git clone --depth=1 --recursive https://gnunet.org/git/libmicrohttpd.git
+
+RUN git clone --recursive https://gitlab.com/gnuwget/wget2.git
 
 WORKDIR wget2
 COPY build.sh $SRC/

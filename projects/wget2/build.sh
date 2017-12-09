@@ -15,27 +15,102 @@
 #
 ################################################################################
 
+export WGET2_DEPS_PATH=$SRC/wget2_deps
+export PKG_CONFIG_PATH=$WGET2_DEPS_PATH/lib/pkgconfig
+export CPPFLAGS="-I$WGET2_DEPS_PATH/include"
+export LDFLAGS="-L$WGET2_DEPS_PATH/lib"
+export GNULIB_SRCDIR=$SRC/gnulib
+export LLVM_PROFILE_FILE=/tmp/prof.test
+
+cd $SRC/libunistring
+./autogen.sh
+./configure --enable-static --disable-shared --prefix=$WGET2_DEPS_PATH
+make -j$(nproc)
+make install
+
+cd $SRC/libidn2
+./bootstrap
+./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$WGET2_DEPS_PATH
+make -j$(nproc)
+make install
+
+cd $SRC/libpsl
+./autogen.sh
+./configure --enable-static --disable-shared --disable-gtk-doc --enable-runtime=libidn2 --enable-builtin=libidn2 --prefix=$WGET2_DEPS_PATH
+make -j$(nproc)
+make install
+
+GNUTLS_CONFIGURE_FLAGS=""
+NETTLE_CONFIGURE_FLAGS=""
+if [[ $CFLAGS = *sanitize=memory* ]]; then
+  GNUTLS_CONFIGURE_FLAGS="--disable-hardware-acceleration"
+  NETTLE_CONFIGURE_FLAGS="--disable-assembler --disable-fat"
+fi
+
+# We could use GMP from git repository to avoid false positives in
+# sanitizers, but GMP doesn't compile with clang. We use gmp-mini
+# instead.
+cd $SRC/nettle
+bash .bootstrap
+./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --prefix=$WGET2_DEPS_PATH $NETTLE_CONFIGURE_FLAGS
+( make -j$(nproc) || make -j$(nproc) ) && make install
+if test $? != 0;then
+        echo "Failed to compile nettle"
+        exit 1
+fi
+
+cd $SRC/gnutls
+touch .submodule.stamp
+make bootstrap
+GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
+LIBS="-lunistring" \
+CFLAGS="$GNUTLS_CFLAGS" \
+./configure --with-nettle-mini --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
+    --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
+    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --prefix=$WGET2_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
+make -j$(nproc)
+make install
+
+cd $SRC/libmicrohttpd
+./bootstrap
+LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+./configure --prefix=$WGET2_DEPS_PATH --disable-doc --disable-examples --disable-shared --enable-static
+make -j$(nproc)
+make install
+
+
 # avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
 export ASAN_OPTIONS=detect_leaks=0
 
-! test -f lib/Makefile.in && ./bootstrap
-./configure --enable-static --disable-doc
-make clean
-make -j$(nproc) all check
+cd $SRC/wget2
+./bootstrap
 
+# build and run non-networking tests
+LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+  ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support
+make clean
+make -j$(nproc)
+make -j$(nproc) -C unit-tests check
+make -j$(nproc) -C fuzz check
+
+# build for fuzzing
+LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+  ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support
+make clean
+make -j$(nproc) -C lib
+make -j$(nproc) -C include
+make -j$(nproc) -C libwget
+make -j$(nproc) -C src
+
+# build fuzzers
 cd fuzz
-make oss-fuzz
+CXXFLAGS="$CXXFLAGS -L$WGET2_DEPS_PATH/lib/" make oss-fuzz
+
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
-for fuzzer in *_fuzzer; do
-    cp -p "${fuzzer}" "$OUT"
-
-    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
-        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
-    fi
-
-    if [ -d "${fuzzer}.in/" ]; then
-        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${fuzzer}.in/"
-    fi
+for dir in *_fuzzer.in; do
+  fuzzer=$(basename $dir .in)
+  zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${dir}/"
 done
