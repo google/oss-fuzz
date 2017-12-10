@@ -100,7 +100,8 @@ ADD https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/gif.dict
     https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/jpeg.dict \
     https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/png.dict \
     https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/tiff.dict \
-    https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/xml.dict $SRC/
+    https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/xml.dict \
+    https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/html_tags.dict $SRC/
 #fuzzing corpuses
 ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/
 RUN mkdir afl-testcases && cd afl-testcases/ && tar xf $SRC/afl_testcases.tgz && cd .. && \
@@ -147,7 +148,8 @@ ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xlsxfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/pptxfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/mmlfuzzer_seed_corpus.zip \
-    https://dev-www.libreoffice.org/corpus/mtpfuzzer_seed_corpus.zip $SRC/
+    https://dev-www.libreoffice.org/corpus/mtpfuzzer_seed_corpus.zip \
+    https://dev-www.libreoffice.org/corpus/htmlfuzzer_seed_corpus.zip $SRC/
 #clone source
 RUN git clone --depth 1 git://anongit.freedesktop.org/libreoffice/core libreoffice
 WORKDIR libreoffice
