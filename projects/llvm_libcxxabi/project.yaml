@@ -2,6 +2,7 @@ homepage: "http://libcxxabi.llvm.org/"
 primary_contact: "kcc@google.com"
 auto_ccs:
   - "Erik.Pilkington@gmail.com"
+  - "akila_srinivasan@apple.com"
 sanitizers:
   - address
   - memory
