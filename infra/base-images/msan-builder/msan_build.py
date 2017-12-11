@@ -81,7 +81,7 @@ def SetUpEnvironment(work_dir):
                               multiprocessing.cpu_count())
   env['DEB_CFLAGS_APPEND'] = MSAN_OPTIONS
   env['DEB_CXXFLAGS_APPEND'] = MSAN_OPTIONS + ' -stdlib=libc++'
-  env['DEB_CPPFLAGS_APPEND'] = env['DEB_CXXFLAGS_APPEND']
+  env['DEB_CPPFLAGS_APPEND'] = MSAN_OPTIONS
   env['DEB_LDFLAGS_APPEND'] = MSAN_OPTIONS
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
 
