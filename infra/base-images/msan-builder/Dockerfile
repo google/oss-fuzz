@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y python dpkg-dev patchelf python-apt
 # Take all libraries from lib/msan
 RUN cp -R /usr/msan/lib/* /usr/lib/
 
-COPY compiler_wrapper.py msan_build.py wrapper_utils.py /usr/local/bin/
+COPY compiler_wrapper.py msan_build.py patch_build.py wrapper_utils.py /usr/local/bin/
 COPY packages /usr/local/bin/packages
 
 RUN mkdir /msan
