@@ -4,7 +4,7 @@ auto_ccs:
   - "mascasa@google.com"
   - "jdevlieghere@apple.com"
   - "vsk@apple.com"
-  - "akila_srinivasan@apple.com"
+  - "akilsrin@apple.com"
   - "llvm-bugs@lists.llvm.org"
 
 # TODO(kcc): enable msan.
