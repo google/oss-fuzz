@@ -132,8 +132,8 @@ def FindPackageDebs(package_name, work_directory):
   return deb_paths
 
 
-def ExtractSharedLibraries(deb_paths, work_directory, output_directory):
-  """Extract shared libraries from .deb packages."""
+def ExtractLibraries(deb_paths, work_directory, output_directory):
+  """Extract libraries from .deb packages."""
   extract_directory = os.path.join(work_directory, 'extracted')
   if os.path.exists(extract_directory):
     shutil.rmtree(extract_directory, ignore_errors=True)
@@ -149,7 +149,8 @@ def ExtractSharedLibraries(deb_paths, work_directory, output_directory):
       continue
 
     for filename in filenames:
-      if not filename.endswith('.so') and '.so.' not in filename:
+      if (not filename.endswith('.so') and '.so.' not in filename and
+          not filename.endswith('.a') and '.a' not in filename):
         continue
 
       file_path = os.path.join(root, filename)
@@ -268,6 +269,11 @@ def GetBuildList(package_name):
   apt_cache = apt.Cache()
   pkg = apt_cache[package_name]
 
+  if pkg.section == 'libdevel':
+    # Ignore dependencies from -dev packages to keep things simple. These must
+    # be specified alongside the corresponding runtime package.
+    return [package_name]
+
   dependencies = []
   _CollectDependencies(apt_cache, pkg, {}, dependencies)
   return dependencies
@@ -332,8 +338,8 @@ class MSanBuilder(object):
     else:
       extract_directory = output_directory
 
-    extracted_paths = ExtractSharedLibraries(deb_paths, self.work_dir,
-                                             extract_directory)
+    extracted_paths = ExtractLibraries(deb_paths, self.work_dir,
+                                       extract_directory)
     for extracted_path in extracted_paths:
       if not os.path.islink(extracted_path):
         PatchRpath(extracted_path, extract_directory)
