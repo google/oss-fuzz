@@ -31,6 +31,8 @@ ENV PYTHONUNBUFFERED 1
 RUN msan_build.py --work-dir=$WORK --create-subdirs \
     libarchive13 \
     libfreetype6 \
+    libpcre2-posix0 \
+    libpcre3 \
     libpng12-0 \
     libssl1.0.0 \
     zlib1g \
