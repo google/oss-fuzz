@@ -25,12 +25,33 @@ zip -rj afl_testcases.zip corpus/
 make "-j$(nproc)"
 make install
 
+$CXX -std=c++ -I"$WORK/include/ImageMagick-7" "$SRC/encoder_list.cc" \
+    -o "$WORK/encoder_list" \
+    -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16 \
+    "$WORK/lib/libMagick++-7.Q16HDRI.a" \
+    "$WORK/lib/libMagickWand-7.Q16HDRI.a" \
+    "$WORK/lib/libMagickCore-7.Q16HDRI.a"
+
 for f in $SRC/*_fuzzer.cc; do
     fuzzer=$(basename "$f" _fuzzer.cc)
+    # encoder_fuzzer is special
+    if [ "$fuzzer" = "encoder" ]; then
+        continue
+    fi
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include/ImageMagick-7" \
         "$f" -o "$OUT/${fuzzer}_fuzzer" \
         -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16 \
         -lFuzzingEngine "$WORK/lib/libMagick++-7.Q16HDRI.a" \
         "$WORK/lib/libMagickWand-7.Q16HDRI.a" "$WORK/lib/libMagickCore-7.Q16HDRI.a"
     cp afl_testcases.zip "$OUT/${fuzzer}_seed_corpus.zip"
+done
+
+for encoder in $WORK/encoder_list; do
+    $CXX $CXXFLAGS -std=c++11 -I"$WORK/include/ImageMagick-7" \
+        "$SRC/encoder_fuzzer.cc" -o "$OUT/encoder_${encoder}_fuzzer" \
+        -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16 \
+        -DFUZZ_IMAGEMAGICK_ENCODER=$encoder \
+        -lFuzzingEngine "$WORK/lib/libMagick++-7.Q16HDRI.a" \
+        "$WORK/lib/libMagickWand-7.Q16HDRI.a" "$WORK/lib/libMagickCore-7.Q16HDRI.a"
+    cp afl_testcases.zip "$OUT/encoder_${encoder}_seed_corpus.zip"
 done
