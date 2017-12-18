@@ -136,7 +136,7 @@ def FindPackageDebs(package_name, work_directory):
 
     # Also include -dev packages that depend on the runtime package.
     pkg = cache[deb.pkgname]
-    if pkg.section != 'libdevel':
+    if pkg.section != 'libdevel' and pkg.section != 'universe/libdevel':
       continue
 
     # But ignore -dbg packages.
@@ -261,7 +261,7 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
   if pkg.name in BLACKLISTED_PACKAGES:
     return False
 
-  if pkg.section != 'libs':
+  if pkg.section != 'libs' and pkg.section != 'universe/libs':
     return False
 
   if pkg.name in C_OR_CXX_DEPS:
