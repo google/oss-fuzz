@@ -60,6 +60,7 @@ for fuzzer in "${FUZZERS[@]}"; do
   ninja $fuzzer
   cp bin/$fuzzer $OUT
 done
+ninja llvm-as
 
 # isel-fuzzer encodes its default flags in the name.
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
@@ -67,3 +68,29 @@ cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
 mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
 # Same for llvm-opt-fuzzer
 mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
+
+# Build corpus for the llvm-opt-fuzzer
+function build_corpus {
+  local lit_path="${1}"
+  local fuzzer_name="${2}"
+
+  [[ -e "${WORK}/corpus-tmp" ]] && rm -r "${WORK}/corpus-tmp"
+  mkdir "${WORK}/corpus-tmp"
+
+  cd "${SRC}"
+
+  # Compile all lit tests into bitcode. Ignore possible llvm-as failures.
+  find "${lit_path}" -name "*.ll" -print0 |
+      xargs -t -i -0 -n1 sh -c "build/bin/llvm-as "{}" || true"
+
+  # Move freshly created bitcode into temp directory.
+  find "${lit_path}" -name "*.bc" -print0 |
+      xargs -t -i -0 -n1 mv "{}" "${WORK}/corpus-tmp"
+
+  # Archive the corpus.
+  zip -j "${OUT}/${fuzzer_name}_seed_corpus.zip"  "${WORK}"/corpus-tmp/*
+
+  rm -r "${WORK}/corpus-tmp"
+}
+
+build_corpus "llvm/test/Transforms/InstCombine/" "llvm-opt-fuzzer--x86_64-instcombine"
