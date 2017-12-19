@@ -17,12 +17,11 @@
 
 # build project
 # e.g.
-# ./autogen.sh
-# ./configure
-# make -j$(nproc) all
+./autogen.sh
+./configure
+make -j$(nproc) all
 
 # build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     -lFuzzingEngine /path/to/library.a
+$CXX $CXXFLAGS -std=c++11 -Iinclude \
+    ./generic_hash_fuzzer.cc -o $OUT/generic_hash-fuzzer \
+    -lFuzzingEngine /path/to/library.a
