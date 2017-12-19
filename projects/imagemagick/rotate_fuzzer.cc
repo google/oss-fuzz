@@ -4,14 +4,14 @@
 #include <Magick++/Image.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  if (Size < 8) {
+  if (Size < sizeof(double)) {
     return 0;
   }
   double Degrees = *reinterpret_cast<const double *>(Data);
   if (!isfinite(Degrees)) {
     return 0;
   }
-  const Magick::Blob blob(Data + 8, Size - 8);
+  const Magick::Blob blob(Data + sizeof(double), Size - sizeof(double));
   Magick::Image image;
   try {
     image.read(blob);
