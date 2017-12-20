@@ -8,9 +8,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     return 0;
   }
   size_t Width = *reinterpret_cast<const uint16_t *>(Data);
-  size_t Height = *reinterpret_cast<const uint16_t *>(Data + sizeof(uint16_t));
-  const Magick::Blob blob(Data + (sizeof(uint16_t) * 2),
-                          Size - (sizeof(uint16_t) * 2));
+  size_t Height = *reinterpret_cast<const uint16_t *>(Data + sizeof(Width));
+  const Magick::Blob blob(Data + (sizeof(Width) * 2),
+                          Size - (sizeof(Width) * 2));
   Magick::Image image;
   try {
     image.read(blob);
