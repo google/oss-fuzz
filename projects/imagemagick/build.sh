@@ -17,9 +17,12 @@
 # move the corpus
 mkdir afl_testcases
 (cd afl_testcases; tar xvf "$SRC/afl_testcases.tgz")
-mkdir corpus
-find afl_testcases -type f -exec mv -n {} corpus/ \;
-zip -rj afl_testcases.zip corpus/
+for format in gif jpg png bmp ico webp tif; do
+    mkdir $format
+    find afl_testcases -type f -name '*.'$format -exec mv -n {} $format/ \;
+    zip -rj $format.zip $format/
+    cp $format.zip "$OUT/encoder_${format}_seed_corpus.zip"
+done
 
 ./configure --prefix="$WORK" --disable-shared --disable-docs
 make "-j$(nproc)"
@@ -43,15 +46,13 @@ for f in $SRC/*_fuzzer.cc; do
         -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16 \
         -lFuzzingEngine "$WORK/lib/libMagick++-7.Q16HDRI.a" \
         "$WORK/lib/libMagickWand-7.Q16HDRI.a" "$WORK/lib/libMagickCore-7.Q16HDRI.a"
-    cp afl_testcases.zip "$OUT/${fuzzer}_seed_corpus.zip"
 done
 
-for encoder in `$WORK/encoder_list`; do
+for encoder in $("$WORK/encoder_list"); do
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include/ImageMagick-7" \
-        "$SRC/encoder_fuzzer.cc" -o "$OUT/encoder_${encoder}_fuzzer" \
+        "$SRC/encoder_fuzzer.cc" -o "$OUT/encoder_${encoder,,}_fuzzer" \
         -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16 \
         "-DFUZZ_IMAGEMAGICK_ENCODER=$encoder" \
         -lFuzzingEngine "$WORK/lib/libMagick++-7.Q16HDRI.a" \
         "$WORK/lib/libMagickWand-7.Q16HDRI.a" "$WORK/lib/libMagickCore-7.Q16HDRI.a"
-    cp afl_testcases.zip "$OUT/encoder_${encoder}_seed_corpus.zip"
 done
