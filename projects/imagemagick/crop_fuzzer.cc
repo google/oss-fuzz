@@ -4,7 +4,7 @@
 #include <Magick++/Image.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  if ((sizeof(uint16_t) * 2) < 4) {
+  if (Size < 2 * sizeof(uint16_t)) {
     return 0;
   }
   size_t Width = *reinterpret_cast<const uint16_t *>(Data);
