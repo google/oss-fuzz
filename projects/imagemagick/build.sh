@@ -14,16 +14,6 @@
 #
 ################################################################################
 
-# move the corpus
-mkdir afl_testcases
-(cd afl_testcases; tar xvf "$SRC/afl_testcases.tgz")
-for format in gif jpg png bmp ico webp tif; do
-    mkdir $format
-    find afl_testcases -type f -name '*.'$format -exec mv -n {} $format/ \;
-    zip -rj $format.zip $format/
-    cp $format.zip "$OUT/encoder_${format}_seed_corpus.zip"
-done
-
 ./configure --prefix="$WORK" --disable-shared --disable-docs
 make "-j$(nproc)"
 make install
@@ -55,4 +45,13 @@ for encoder in $("$WORK/encoder_list"); do
         "-DFUZZ_IMAGEMAGICK_ENCODER=$encoder" \
         -lFuzzingEngine "$WORK/lib/libMagick++-7.Q16HDRI.a" \
         "$WORK/lib/libMagickWand-7.Q16HDRI.a" "$WORK/lib/libMagickCore-7.Q16HDRI.a"
+done
+
+mkdir afl_testcases
+(cd afl_testcases; tar xvf "$SRC/afl_testcases.tgz")
+for format in gif jpg png bmp ico webp tif; do
+    mkdir $format
+    find afl_testcases -type f -name '*.'$format -exec mv -n {} $format/ \;
+    zip -rj $format.zip $format/
+    cp $format.zip "$OUT/encoder_${format}_seed_corpus.zip"
 done
