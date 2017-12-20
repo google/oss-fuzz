@@ -4,13 +4,15 @@
 #include <Magick++/Image.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  if (Size < 2 * sizeof(uint16_t)) {
+  uint16_t Width;
+  uint16_t Height;
+  if (Size < (sizeof(Width) + sizeof(Height))) {
     return 0;
   }
-  size_t Width = *reinterpret_cast<const uint16_t *>(Data);
-  size_t Height = *reinterpret_cast<const uint16_t *>(Data + sizeof(Width));
-  const Magick::Blob blob(Data + (sizeof(Width) * 2),
-                          Size - (sizeof(Width) * 2));
+  Width = *reinterpret_cast<const uint16_t *>(Data);
+  Height = *reinterpret_cast<const uint16_t *>(Data + sizeof(Width));
+  const Magick::Blob blob(Data + sizeof(Width) + sizeof(Height),
+                          Size - (sizeof(Width) + sizeof(Height)));
   Magick::Image image;
   try {
     image.read(blob);
