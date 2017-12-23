@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 
 #include <string>
-#include "sodium.h"
+extern "C" {
+  #include <sodium.h>
+}
 
 using std::string;
 

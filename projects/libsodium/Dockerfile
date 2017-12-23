@@ -19,4 +19,4 @@ MAINTAINER chriswwolfe@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git libsodium
 WORKDIR libsodium
-COPY build.sh $SRC/
+COPY build.sh generic_hash_fuzzer.cc $SRC/
