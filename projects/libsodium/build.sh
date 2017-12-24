@@ -23,6 +23,9 @@
 make -j$(nproc) all
 
 # build fuzzers
-$CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
-     ../generic_hash_fuzzer.cc -o $OUT/generic_hash_fuzzer \
-     "$WORK/lib/libsodium.a" -lFuzzingEngine
+for f in $SRC/*_fuzzer.cc; do
+    fuzzer=$(basename "$f" _fuzzer.cc)
+    $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
+         "$f" -o "$OUT/${fuzzer}_fuzzer" \
+         "$WORK/lib/libsodium.a" -lFuzzingEngine
+done
