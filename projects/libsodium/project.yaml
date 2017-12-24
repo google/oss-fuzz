@@ -1,4 +1,4 @@
-homepage: "https://github.com/jedisct1/libsodium"
+homepage: "https://libsodium.org"
 primary_contact: "<not me, should be frank>"
 auto_ccs:
  - "chriswwolfe@google.com"
