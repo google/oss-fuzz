@@ -53,6 +53,33 @@ ClamAVState kClamAVState;
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cl_fmap_t *clamav_data = cl_fmap_open_memory(data, size);
 
+    unsigned int scanopt =
+#if defined(CLAMAV_FUZZ_ARCHIVE)
+        CL_SCAN_ARCHIVE;
+#elif defined(CLAMAV_FUZZ_MAIL)
+        CL_SCAN_MAIL;
+#elif defined(CLAMAV_FUZZ_OLE2)
+        CL_SCAN_OLE2;
+#elif defined(CLAMAV_FUZZ_PDF)
+        CL_SCAN_PDF;
+#elif defined(CLAMAV_FUZZ_HTML)
+        CL_SCAN_HTML;
+#elif defined(CLAMAV_FUZZ_PE)
+        CL_SCAN_PE;
+#elif defined(CLAMAV_FUZZ_ALGORITHMIC)
+        CL_SCAN_ALGORITHMIC;
+#elif defined(CLAMAV_FUZZ_ELF)
+        CL_SCAN_ELF;
+#elif defined(CLAMAV_FUZZ_SWF)
+        CL_SCAN_SWF;
+#elif defined(CLAMAV_FUZZ_XMLDOCS)
+        CL_SCAN_XMLDOCS;
+#elif defined(CLAMAV_FUZZ_HWP3)
+        CL_SCAN_HWP3;
+#else
+        CL_SCAN_STDOPT;
+#endif
+
     const char *virus_name = nullptr;
     unsigned long scanned = 0;
     cl_scanmap_callback(
@@ -60,7 +87,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         &virus_name,
         &scanned,
         kClamAVState.engine,
-        CL_SCAN_STDOPT,
+        scanopt,
         nullptr
     );
 
