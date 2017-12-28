@@ -3,7 +3,7 @@
 
 #include <string>
 extern "C" {
-#include <sodium.h>
+  #include <sodium.h>
 }
 
 using std::string;
