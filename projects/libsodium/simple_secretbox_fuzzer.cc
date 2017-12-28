@@ -10,7 +10,7 @@ using std::string;
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   if (sodium_init() == -1) {
-    return 1;
+    return 0;
   }
 
   size_t ciphertext_len = crypto_secretbox_MACBYTES + size;
