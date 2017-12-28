@@ -24,7 +24,7 @@ ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-sco
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover'.
 ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr -fno-sanitize-recover=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr"
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
-ENV SANITIZER_FLAGS_profile "-fprofile-instr-generate -fcoverage-mapping -Wl,-ldl -pthread"
+ENV SANITIZER_FLAGS_profile "-fprofile-instr-generate -fcoverage-mapping -pthread"
 
 # Default build flags for coverage.
 ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"

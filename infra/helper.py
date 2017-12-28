@@ -181,7 +181,7 @@ def _add_engine_args(parser):
 def _add_sanitizer_args(parser):
   """Add common sanitizer args."""
   parser.add_argument('--sanitizer', default='address',
-                      choices=['address', 'memory', 'undefined', 'profile'])
+                      choices=['address', 'memory', 'undefined'])
 
 
 def _add_environment_args(parser):

@@ -27,7 +27,6 @@ CONFIGURATIONS = {
   'sanitizer-memory' : [ 'SANITIZER=memory' ],
   'sanitizer-undefined' : [ 'SANITIZER=undefined' ],
   'sanitizer-coverage' : [ 'SANITIZER=coverage' ],
-  'sanitizer-profile' : [ 'SANITIZER=profile' ],
   'engine-libfuzzer' : [ 'FUZZING_ENGINE=libfuzzer' ],
   'engine-afl' : [ 'FUZZING_ENGINE=afl' ],
   'engine-honggfuzz' : [ 'FUZZING_ENGINE=honggfuzz' ],
@@ -40,8 +39,7 @@ EngineInfo = collections.namedtuple(
 ENGINE_INFO = {
     'libfuzzer': EngineInfo(
         upload_bucket='clusterfuzz-builds',
-        supported_sanitizers=['address', 'memory', 'undefined', 'coverage',
-                              'profile']),
+        supported_sanitizers=['address', 'memory', 'undefined', 'coverage']),
     'afl': EngineInfo(
         upload_bucket='clusterfuzz-builds-afl',
         supported_sanitizers=['address']),
@@ -114,9 +112,6 @@ def get_sanitizers(project_yaml):
   # Always make a coverage build.
   if 'coverage' not in processed_sanitizers:
     processed_sanitizers.append('coverage')
-
-  if 'profile' not in processed_sanitizers:
-    processed_sanitizers.append('profile')
 
   return processed_sanitizers
 
