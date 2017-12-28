@@ -16,8 +16,6 @@
 ################################################################################
 
 # build project
-# e.g.
-
 ./autogen.sh
 ./configure --prefix="$WORK" --disable-shared --enable-static LDFLAGS="$CXXFLAGS"
 make -j$(nproc) all
