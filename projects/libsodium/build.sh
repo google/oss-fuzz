@@ -20,6 +20,8 @@
 ./configure --prefix="$WORK" --disable-shared --enable-static LDFLAGS="$CXXFLAGS"
 make -j$(nproc) all
 
+# in the future, this could pull in fuzzers from $SRC
+
 # build fuzzers
 for f in $SRC/*_fuzzer.cc; do
     fuzzer=$(basename "$f" _fuzzer.cc)
