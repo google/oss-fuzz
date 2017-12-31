@@ -5,23 +5,29 @@ extern "C" {
 
 using std::string;
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
-  if (sodium_init() == -1) {
-    return 0;
-  }
-
-  size_t ciphertext_len = crypto_secretbox_MACBYTES + size;
-
+class SodiumState {
+public:
   unsigned char key[crypto_secretbox_KEYBYTES];
   unsigned char nonce[crypto_secretbox_NONCEBYTES];
+
+  SodiumState() {
+    sodium_init();
+    crypto_secretbox_keygen(key);
+    randombytes_buf(nonce, sizeof nonce);
+  }
+};
+
+SodiumState state;
+
+
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
+  size_t ciphertext_len = crypto_secretbox_MACBYTES + size;
   unsigned char ciphertext[ciphertext_len];
 
-  crypto_secretbox_keygen(key);
-  randombytes_buf(nonce, sizeof nonce);
-  crypto_secretbox_easy(ciphertext, data, size, nonce, key);
+  crypto_secretbox_easy(ciphertext, data, size, state.nonce, state.key);
 
   unsigned char decrypted[size];
-  crypto_secretbox_open_easy(decrypted, ciphertext, ciphertext_len, nonce, key);
+  crypto_secretbox_open_easy(decrypted, ciphertext, ciphertext_len, state.nonce, state.key);
 
   return 0;
 }
