@@ -11,7 +11,7 @@ public:
   unsigned char mac[crypto_auth_BYTES];
 
   SodiumState() {
-    sodium_init();
+    sodium_init(); // this can fail with a non-zero return code
     crypto_auth_keygen(key);
   }
 };
