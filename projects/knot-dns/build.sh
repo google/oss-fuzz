@@ -43,10 +43,6 @@ cd $SRC/nettle
 bash .bootstrap
 ./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --prefix=$DEPS_PATH $NETTLE_CONFIGURE_FLAGS
 ( make -j$(nproc) || make -j$(nproc) ) && make install
-if test $? != 0;then
-        echo "Failed to compile nettle"
-        exit 1
-fi
 
 cd $SRC/gnutls
 touch .submodule.stamp
@@ -78,4 +74,4 @@ make check
 git submodule update --init -- ./packet_libfuzzer.in
 find ./packet_libfuzzer.in/ -type f -exec zip -u $OUT/packet_libfuzzer_seed_corpus.zip {} \;
 git submodule update --init -- ./zscanner_libfuzzer.in
-find ./zscanner_libfuzzer.in/ -type f -exec zip -u $OUT/packet_libfuzzer_seed_corpus.zip {} \;
+find ./zscanner_libfuzzer.in/ -type f -exec zip -u $OUT/zscanner_libfuzzer_seed_corpus.zip {} \;
