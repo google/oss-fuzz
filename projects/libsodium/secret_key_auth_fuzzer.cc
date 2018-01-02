@@ -1,9 +1,6 @@
-#include <string>
 extern "C" {
   #include <sodium.h>
 }
-
-using std::string;
 
 class SodiumState {
 public:
