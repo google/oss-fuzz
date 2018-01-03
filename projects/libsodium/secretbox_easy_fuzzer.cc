@@ -1,6 +1,4 @@
-extern "C" {
-  #include <sodium.h>
-}
+#include <sodium.h>
 
 class SodiumState {
 public:
