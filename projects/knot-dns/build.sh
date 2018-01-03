@@ -66,12 +66,12 @@ autoreconf -if
 make -j$(nproc)
 cd $SRC/knot-dns/tests-fuzz
 make check
-/bin/bash ../libtool   --mode=install /usr/bin/install -c packet_libfuzzer zscanner_libfuzzer '/out'
+/bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner '/out'
 
 
 # Set up fuzzing seeds
 
 git submodule update --init -- ./packet_libfuzzer.in
-find ./packet_libfuzzer.in/ -type f -exec zip -u $OUT/packet_libfuzzer_seed_corpus.zip {} \;
+find ./packet_libfuzzer.in/ -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
 git submodule update --init -- ./zscanner_libfuzzer.in
-find ./zscanner_libfuzzer.in/ -type f -exec zip -u $OUT/zscanner_libfuzzer_seed_corpus.zip {} \;
+find ./zscanner_libfuzzer.in/ -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
