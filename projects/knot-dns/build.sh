@@ -57,7 +57,7 @@ make -j$(nproc)
 make install
 
 
-# Compile knot, install fuzzers to /out
+# Compile knot, install fuzzers to $OUT
 
 cd $SRC/knot-dns
 autoreconf -if
@@ -66,7 +66,7 @@ autoreconf -if
 make -j$(nproc)
 cd $SRC/knot-dns/tests-fuzz
 make check
-/bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner '/out'
+/bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner "$OUT"
 
 
 # Set up fuzzing seeds
