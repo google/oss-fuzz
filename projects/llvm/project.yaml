@@ -7,6 +7,7 @@ auto_ccs:
   - "akilsrin@apple.com"
   - "llvm-bugs@lists.llvm.org"
   - "igmyrj@gmail.com"
+  - "mitchphillips@outlook.com"
 
 # TODO(kcc): enable msan.
 sanitizers:
