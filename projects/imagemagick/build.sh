@@ -53,5 +53,5 @@ for format in gif jpg png bmp ico webp tif; do
     mkdir $format
     find afl_testcases -type f -name '*.'$format -exec mv -n {} $format/ \;
     zip -rj $format.zip $format/
-    cp $format.zip "$OUT/encoder_${format}_seed_corpus.zip"
+    cp $format.zip "$OUT/encoder_${format}_fuzzer_seed_corpus.zip"
 done
