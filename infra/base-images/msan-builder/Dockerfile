@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y python dpkg-dev patchelf python-apt
 # Take all libraries from lib/msan
 RUN cp -R /usr/msan/lib/* /usr/lib/
 
-COPY compiler_wrapper.py msan_build.py wrapper_utils.py /usr/local/bin/
+COPY compiler_wrapper.py msan_build.py patch_build.py wrapper_utils.py /usr/local/bin/
 COPY packages /usr/local/bin/packages
 
 RUN mkdir /msan
@@ -30,8 +30,21 @@ WORKDIR /msan
 ENV PYTHONUNBUFFERED 1
 RUN msan_build.py --work-dir=$WORK --create-subdirs \
     libarchive13 \
+    libattr1 \
+    libbz2-1.0 \
+    libfontconfig1 \
     libfreetype6 \
+    libfribidi0 \
+    libglib2.0-0 \
+    libicu55  \
+    liblz4-1 \
+    liblzma5 \
+    liblzo2-2 \
+    libnettle6 \
+    libpcre2-posix0 \
+    libpcre3 \
     libpng12-0 \
     libssl1.0.0 \
+    libxml2 \
     zlib1g \
     /msan

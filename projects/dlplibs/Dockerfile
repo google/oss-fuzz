@@ -24,9 +24,9 @@ ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
     https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \
     https://dev-www.libreoffice.org/src/libxml2-2.9.7.tar.gz \
-    https://dev-www.libreoffice.org/src/icu4c-60_1-src.tgz \
+    https://dev-www.libreoffice.org/src/icu4c-60_2-src.tgz \
     https://dev-www.libreoffice.org/src/mdds-1.3.1.tar.bz2 \
-    https://dev-www.libreoffice.org/src/boost_1_65_1.tar.bz2 \
+    https://dev-www.libreoffice.org/src/boost_1_66_0.tar.bz2 \
     $SRC/
 # download fuzzing corpora
 ADD https://dev-www.libreoffice.org/corpus/olefuzzer_seed_corpus.zip \

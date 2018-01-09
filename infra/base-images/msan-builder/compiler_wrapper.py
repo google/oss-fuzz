@@ -23,6 +23,11 @@ import sys
 import msan_build
 
 
+def InvokedAsGcc():
+  """Return whether or not we're pretending to be GCC."""
+  return sys.argv[0].endswith('gcc') or sys.argv[0].endswith('g++')
+
+
 def Is32Bit(args):
   """Return whether or not we're 32-bit."""
   M32_BIT_ARGS = [
@@ -103,6 +108,12 @@ def GetCompilerArgs(args):
       # Disable all warnings.
       '-w',
   ])
+
+  if InvokedAsGcc():
+    compiler_args.extend([
+      # For better compatibility with flags passed via -Wa,...
+      '-fno-integrated-as',
+    ])
 
   if '-fsanitize=memory' not in args:
     # If MSan flags weren't added for some reason, add them here.

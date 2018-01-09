@@ -1,0 +1,8 @@
+homepage: "https://www.knot-dns.cz/"
+primary_contact: "knot.dns@gmail.com"
+auto_ccs:
+  - "jonathan.foote@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

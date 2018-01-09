@@ -26,6 +26,7 @@ import subprocess
 import tempfile
 
 import apt
+from apt import debfile
 
 from packages import package
 import wrapper_utils
@@ -81,7 +82,7 @@ def SetUpEnvironment(work_dir):
                               multiprocessing.cpu_count())
   env['DEB_CFLAGS_APPEND'] = MSAN_OPTIONS
   env['DEB_CXXFLAGS_APPEND'] = MSAN_OPTIONS + ' -stdlib=libc++'
-  env['DEB_CPPFLAGS_APPEND'] = env['DEB_CXXFLAGS_APPEND']
+  env['DEB_CPPFLAGS_APPEND'] = MSAN_OPTIONS
   env['DEB_LDFLAGS_APPEND'] = MSAN_OPTIONS
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
 
@@ -120,20 +121,38 @@ def SetUpEnvironment(work_dir):
 def FindPackageDebs(package_name, work_directory):
   """Find package debs."""
   deb_paths = []
+  cache = apt.Cache()
 
   for filename in os.listdir(work_directory):
     file_path = os.path.join(work_directory, filename)
     if not file_path.endswith('.deb'):
       continue
 
-    if filename.startswith(package_name + '_'):
+    # Matching package name.
+    deb = debfile.DebPackage(file_path)
+    if deb.pkgname == package_name:
       deb_paths.append(file_path)
+      continue
+
+    # Also include -dev packages that depend on the runtime package.
+    pkg = cache[deb.pkgname]
+    if pkg.section != 'libdevel' and pkg.section != 'universe/libdevel':
+      continue
+
+    # But ignore -dbg packages.
+    if deb.pkgname.endswith('-dbg'):
+      continue
+
+    for dependency in deb.depends:
+      if any(dep[0] == package_name for dep in dependency):
+        deb_paths.append(file_path)
+        break
 
   return deb_paths
 
 
-def ExtractSharedLibraries(deb_paths, work_directory, output_directory):
-  """Extract shared libraries from .deb packages."""
+def ExtractLibraries(deb_paths, work_directory, output_directory):
+  """Extract libraries from .deb packages."""
   extract_directory = os.path.join(work_directory, 'extracted')
   if os.path.exists(extract_directory):
     shutil.rmtree(extract_directory, ignore_errors=True)
@@ -149,7 +168,8 @@ def ExtractSharedLibraries(deb_paths, work_directory, output_directory):
       continue
 
     for filename in filenames:
-      if not filename.endswith('.so') and '.so.' not in filename:
+      if (not filename.endswith('.so') and '.so.' not in filename and
+          not filename.endswith('.a') and '.a' not in filename):
         continue
 
       file_path = os.path.join(root, filename)
@@ -179,7 +199,7 @@ def ExtractSharedLibraries(deb_paths, work_directory, output_directory):
 
 def GetPackage(package_name):
   apt_cache = apt.Cache()
-  version = apt_cache[package_name].versions[0]
+  version = apt_cache[package_name].candidate
   source_name = version.source_name
 
   custom_package_path = os.path.join(PACKAGES_DIR, source_name) + '.py'
@@ -241,14 +261,14 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
   if pkg.name in BLACKLISTED_PACKAGES:
     return False
 
-  if pkg.section != 'libs':
+  if pkg.section != 'libs' and pkg.section != 'universe/libs':
     return False
 
   if pkg.name in C_OR_CXX_DEPS:
     return True
 
   is_c_or_cxx = False
-  for dependency in pkg.versions[0].dependencies:
+  for dependency in pkg.candidate.dependencies:
     dependency = dependency[0]
 
     if dependency.name in cache:
@@ -327,13 +347,15 @@ class MSanBuilder(object):
     if not deb_paths:
       raise MSanBuildException('Failed to find .deb packages.')
 
+    print('Extracting', ' '.join(deb_paths))
+
     if create_subdirs:
       extract_directory = os.path.join(output_directory, package_name)
     else:
       extract_directory = output_directory
 
-    extracted_paths = ExtractSharedLibraries(deb_paths, self.work_dir,
-                                             extract_directory)
+    extracted_paths = ExtractLibraries(deb_paths, self.work_dir,
+                                       extract_directory)
     for extracted_path in extracted_paths:
       if not os.path.islink(extracted_path):
         PatchRpath(extracted_path, extract_directory)

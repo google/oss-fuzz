@@ -4,7 +4,10 @@ auto_ccs:
   - "mascasa@google.com"
   - "jdevlieghere@apple.com"
   - "vsk@apple.com"
+  - "akilsrin@apple.com"
   - "llvm-bugs@lists.llvm.org"
+  - "igmyrj@gmail.com"
+  - "mitchphillips@outlook.com"
 
 # TODO(kcc): enable msan.
 sanitizers:

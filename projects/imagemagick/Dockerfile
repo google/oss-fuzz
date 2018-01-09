@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +14,10 @@
 #
 ################################################################################
 
-echo -n "Compiling honggfuzz to $LIB_FUZZING_ENGINE ..."
-
-pushd $SRC/honggfuzz > /dev/null
-make clean
-CC=clang CFLAGS= make
-# libhfuzz.a will be added by CC/CXX linker directly during linking,
-# but it's defined here to satisfy the build infrastructure
-cp libhfuzz/libhfuzz.a $LIB_FUZZING_ENGINE
-cp honggfuzz $OUT/
-popd > /dev/null
-
-# Custom coverage flags, roughly in sync with:
-# https://github.com/google/honggfuzz/blob/oss-fuzz/hfuzz_cc/hfuzz-cc.c
-export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard,indirect-calls,trace-cmp"
-
-echo " done."
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER paul.l.kehrer@gmail.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/imagemagick/imagemagick
+ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
+WORKDIR imagemagick
+COPY build.sh $SRC/

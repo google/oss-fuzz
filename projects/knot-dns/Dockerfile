@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +14,15 @@
 #
 ################################################################################
 
-echo -n "Compiling honggfuzz to $LIB_FUZZING_ENGINE ..."
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER jonathan.foote@gmail.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
+RUN apt-get install -y texinfo gperf wget autopoint texinfo flex bison
 
-pushd $SRC/honggfuzz > /dev/null
-make clean
-CC=clang CFLAGS= make
-# libhfuzz.a will be added by CC/CXX linker directly during linking,
-# but it's defined here to satisfy the build infrastructure
-cp libhfuzz/libhfuzz.a $LIB_FUZZING_ENGINE
-cp honggfuzz $OUT/
-popd > /dev/null
+RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
+RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 
-# Custom coverage flags, roughly in sync with:
-# https://github.com/google/honggfuzz/blob/oss-fuzz/hfuzz_cc/hfuzz-cc.c
-export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard,indirect-calls,trace-cmp"
-
-echo " done."
+RUN git clone https://gitlab.labs.nic.cz/knot/knot-dns
+WORKDIR knot-dns
+COPY build.sh $SRC/
