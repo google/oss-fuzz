@@ -32,8 +32,11 @@ $SRC/depot_tools/gn gen out/Fuzz\
     skia_enable_gpu=false
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
-$SRC/depot_tools/ninja -C out/Fuzz fuzz_region_deserialize
+$SRC/depot_tools/ninja -C out/Fuzz fuzz_region_deserialize image_filter_deserialize
 
 cp out/Fuzz/fuzz_region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
 
+cp out/Fuzz/image_filter_deserialize $OUT/image_filter_deserialize
+cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
+cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip

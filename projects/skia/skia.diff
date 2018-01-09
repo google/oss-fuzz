@@ -1,0 +1,33 @@
+diff --git a/src/core/SkBitmap.cpp b/src/core/SkBitmap.cpp
+index 92d445396c..87c3cc4a61 100644
+--- a/src/core/SkBitmap.cpp
++++ b/src/core/SkBitmap.cpp
+@@ -250,6 +250,12 @@ bool SkBitmap::tryAllocPixelsFlags(const SkImageInfo& requestedInfo, uint32_t al
+ 
+     // setInfo may have corrected info (e.g. 565 is always opaque).
+     const SkImageInfo& correctedInfo = this->info();
++    #if defined(IS_FUZZING)
++        size_t bytes = correctedInfo.computeByteSize(correctedInfo.minRowBytes());
++        if (bytes > 50000000) {
++            return reset_return_false(this);
++        }
++    #endif
+ 
+     sk_sp<SkPixelRef> pr = (allocFlags & kZeroPixels_AllocFlag) ?
+         SkMallocPixelRef::MakeZeroed(correctedInfo, correctedInfo.minRowBytes()) :
+diff --git a/src/core/SkMallocPixelRef.cpp b/src/core/SkMallocPixelRef.cpp
+index 2933e48cc4..1515dce27d 100644
+--- a/src/core/SkMallocPixelRef.cpp
++++ b/src/core/SkMallocPixelRef.cpp
+@@ -72,6 +72,11 @@ sk_sp<SkPixelRef> SkMallocPixelRef::MakeUsing(void*(*allocProc)(size_t),
+         if (SkImageInfo::ByteSizeOverflowed(size)) {
+             return nullptr;
+         }
++#if defined(IS_FUZZING)
++        if (size > 50000000) {
++            return nullptr;
++        }
++#endif
+     }
+     void* addr = allocProc(size);
+     if (nullptr == addr) {
