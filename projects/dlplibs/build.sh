@@ -49,7 +49,7 @@ export XML_CFLAGS="$LIBXML_CFLAGS"
 export XML_LIBS="$LIBXML_LIBS"
 popd
 
-tar -xzf $SRC/icu4c-60_1-src.tgz
+tar -xzf $SRC/icu4c-60_2-src.tgz
 pushd icu/source
 patch -p2 < $SRC/icu4c-ubsan.patch
 patch -p3 < $SRC/ofz3670.patch
@@ -61,8 +61,8 @@ export ICU_CFLAGS="-I$(pwd) -I$(pwd)/i18n -I$(pwd)/common"
 export ICU_LIBS="-L$(pwd)/lib -licui18n -licuuc -licudata"
 popd
 
-tar -xjf $SRC/boost_1_65_1.tar.bz2
-pushd boost_1_65_1
+tar -xjf $SRC/boost_1_66_0.tar.bz2
+pushd boost_1_66_0
 patch -p2 < $SRC/ofz2894.patch
 patch -p2 < $SRC/ofz4303.patch
 export CPPFLAGS="-I$(pwd)"
