@@ -1,27 +1,29 @@
+#include <assert.h>
 #include <sodium.h>
 
-class SodiumState {
-public:
+extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
+  assert(sodium_init() >= 0);
+
   unsigned char key[crypto_secretbox_KEYBYTES];
   unsigned char nonce[crypto_secretbox_NONCEBYTES];
 
-  SodiumState() {
-    sodium_init(); // this can fail with a non-zero return code
-    crypto_secretbox_keygen(key);
-    randombytes_buf(nonce, sizeof nonce);
-  }
-};
+  // make sure that seed is just a subset of the data
+  unsigned char seed[randombytes_SEEDBYTES] = {       \
+    'a', 's', 'e', 'e', 'd', 'a', 's', 'e', 'e', 'd', \
+    'a', 's', 'e', 'e', 'd', 'a', 's', 'e', 'e', 'd', \
+    'a', 's', 'e', 'e', 'd', 'a', 's', 'e', 'e', 'd', \
+    'a', 's' };
 
-SodiumState state;
+  randombytes_buf_deterministic(key, crypto_secretbox_KEYBYTES, seed);
+  randombytes_buf_deterministic(nonce, crypto_secretbox_NONCEBYTES, seed);
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   size_t ciphertext_len = crypto_secretbox_MACBYTES + size;
   unsigned char ciphertext[ciphertext_len];
 
-  crypto_secretbox_easy(ciphertext, data, size, state.nonce, state.key);
+  crypto_secretbox_easy(ciphertext, data, size, nonce, key);
 
   unsigned char decrypted[size];
-  crypto_secretbox_open_easy(decrypted, ciphertext, ciphertext_len, state.nonce, state.key);
+  crypto_secretbox_open_easy(decrypted, ciphertext, ciphertext_len, nonce, key);
 
   return 0;
 }
