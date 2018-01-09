@@ -18,14 +18,14 @@
 make "-j$(nproc)"
 make install
 
-$CXX $CXXFLAGS -std=c++11 -I"$WORK/include/ImageMagick-7" "$SRC/imagemagick/fuzz/encoder_list.cc" \
+$CXX $CXXFLAGS -std=c++11 -I"$WORK/include/ImageMagick-7" "$SRC/imagemagick/Magick++/fuzz/encoder_list.cc" \
     -o "$WORK/encoder_list" \
     -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16 \
     "$WORK/lib/libMagick++-7.Q16HDRI.a" \
     "$WORK/lib/libMagickWand-7.Q16HDRI.a" \
     "$WORK/lib/libMagickCore-7.Q16HDRI.a"
 
-for f in $SRC/imagemagick/fuzz/*_fuzzer.cc; do
+for f in $SRC/imagemagick/Magick++/fuzz/*_fuzzer.cc; do
     fuzzer=$(basename "$f" _fuzzer.cc)
     # encoder_fuzzer is special
     if [ "$fuzzer" = "encoder" ]; then
@@ -40,7 +40,7 @@ done
 
 for encoder in $("$WORK/encoder_list"); do
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include/ImageMagick-7" \
-        "$SRC/imagemagick/fuzz/encoder_fuzzer.cc" -o "$OUT/encoder_${encoder,,}_fuzzer" \
+        "$SRC/imagemagick/Magick++/fuzz/encoder_fuzzer.cc" -o "$OUT/encoder_${encoder,,}_fuzzer" \
         -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16 \
         "-DFUZZ_IMAGEMAGICK_ENCODER=$encoder" \
         -lFuzzingEngine "$WORK/lib/libMagick++-7.Q16HDRI.a" \
