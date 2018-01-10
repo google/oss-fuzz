@@ -53,7 +53,8 @@ def SetUpEnvironment(work_dir):
   print('Real clang at', env['REAL_CLANG_PATH'])
   compiler_wrapper_path = os.path.join(SCRIPT_DIR, 'compiler_wrapper.py')
 
-  # Symlink binaries into TMP/bin
+  # 
+    binaries into TMP/bin
   bin_dir = os.path.join(work_dir, 'bin')
   os.mkdir(bin_dir)
 
@@ -182,6 +183,9 @@ def ExtractLibraries(deb_paths, work_directory, output_directory):
 
       target_file_path = os.path.join(output_directory, rel_file_path)
       extracted.append(target_file_path)
+        
+      if os.path.exists(target_file_path):
+        os.remove(target_file_path)
 
       if os.path.islink(file_path):
         link_path = os.readlink(file_path)
