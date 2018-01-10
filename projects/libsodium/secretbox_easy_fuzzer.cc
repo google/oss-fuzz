@@ -1,7 +1,8 @@
 #include <assert.h>
 #include <sodium.h>
+#include <string.h>
 
-// Test globals - I think this is awful, but it is all I can think of
+// Globals - I think this is awful, but it is all I can think of
 const unsigned char *SEED;
 size_t SEED_SIZE;
 
@@ -12,12 +13,23 @@ fake_implementation_name(void) {
 
 static uint32_t
 fake_random(void) {
-  uint32_t r;
-  return r;
+  return 0;
 }
 
 static void
-fake_buf(void * const buf, const size_t size) {}
+fake_buf(void * const buf_, const size_t size) {
+  if (SEED_SIZE < randombytes_SEEDBYTES) {
+    // seed is too small
+    const unsigned char new_seed[randombytes_SEEDBYTES] = { \
+      'N', 'O', 'T', 'E', 'S', 'T', 'D', 'A', 'T', 'A',     \
+      'N', 'O', 'T', 'E', 'S', 'T', 'D', 'A', 'T', 'A',     \
+      'N', 'O', 'T', 'E', 'S', 'T', 'D', 'A', 'T', 'A',     \
+      'N', '0' };
+    randombytes_buf_deterministic(buf_, size, new_seed);
+  } else {
+    randombytes_buf_deterministic(buf_, size, SEED);
+  }
+}
 
 static int
 fake_close(void) {
@@ -26,13 +38,12 @@ fake_close(void) {
 
 struct randombytes_implementation fake_random_implementation = {
   SODIUM_C99(.implementation_name =) fake_implementation_name,
-  SODIUM_C99(.random =) fake_random,
+  SODIUM_C99(.random =) NULL,
   SODIUM_C99(.stir =) NULL,
   SODIUM_C99(.uniform =) NULL,
   SODIUM_C99(.buf =) fake_buf,
-  SODIUM_C99(.close =) fake_close
+  SODIUM_C99(.close =) NULL
 };
-
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   SEED = data;
@@ -42,6 +53,8 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   // use that deterministic random to run the test.
 
   assert(randombytes_set_implementation(&fake_random_implementation) == 0);
+  assert(randombytes_implementation_name() == "fake_random");
+
   assert(sodium_init() >= 0);
 
   unsigned char key[crypto_secretbox_KEYBYTES];
