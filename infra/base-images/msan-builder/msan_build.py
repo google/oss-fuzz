@@ -183,7 +183,7 @@ def ExtractLibraries(deb_paths, work_directory, output_directory):
       target_file_path = os.path.join(output_directory, rel_file_path)
       extracted.append(target_file_path)
         
-      if os.path.exists(target_file_path):
+      if os.path.lexists(target_file_path):
         os.remove(target_file_path)
 
       if os.path.islink(file_path):
