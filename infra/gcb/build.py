@@ -165,6 +165,14 @@ def get_build_steps(project_yaml, dockerfile_path):
           ],
           'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
       },
+      {
+          'name': 'gcr.io/oss-fuzz-base/msan-builder',
+          'args': [
+            'bash',
+            '-c',
+            'cp -r /msan /workspace',
+          ],
+      },
   ]
 
   for fuzzing_engine in project_yaml['fuzzing_engines']:
@@ -185,6 +193,7 @@ def get_build_steps(project_yaml, dockerfile_path):
           bucket, name, stamped_srcmap_file))
 
       env.append('OUT=' + out)
+      env.append('MSAN_LIBS_PATH=/workspace/msan')
 
       workdir = workdir_from_dockerfile(dockerfile_path)
       if not workdir:
