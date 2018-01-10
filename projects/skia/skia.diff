@@ -1,22 +1,51 @@
-diff --git a/src/core/SkBitmap.cpp b/src/core/SkBitmap.cpp
-index 92d445396c..87c3cc4a61 100644
---- a/src/core/SkBitmap.cpp
-+++ b/src/core/SkBitmap.cpp
-@@ -250,6 +250,12 @@ bool SkBitmap::tryAllocPixelsFlags(const SkImageInfo& requestedInfo, uint32_t al
+diff --git a/include/private/SkMalloc.h b/include/private/SkMalloc.h
+index 178e1b83a7..581c38894d 100644
+--- a/include/private/SkMalloc.h
++++ b/include/private/SkMalloc.h
+@@ -64,6 +64,11 @@ static inline void* sk_calloc_throw(size_t size) {
+ }
  
-     // setInfo may have corrected info (e.g. 565 is always opaque).
-     const SkImageInfo& correctedInfo = this->info();
-+    #if defined(IS_FUZZING)
-+        size_t bytes = correctedInfo.computeByteSize(correctedInfo.minRowBytes());
-+        if (bytes > 50000000) {
-+            return reset_return_false(this);
-+        }
-+    #endif
+ static inline void* sk_calloc_canfail(size_t size) {
++#if defined(IS_FUZZING)
++    if (size > 1000000) {
++        return nullptr;
++    }
++#endif
+     return sk_malloc_flags(size, SK_MALLOC_ZERO_INITIALIZE);
+ }
  
-     sk_sp<SkPixelRef> pr = (allocFlags & kZeroPixels_AllocFlag) ?
-         SkMallocPixelRef::MakeZeroed(correctedInfo, correctedInfo.minRowBytes()) :
+@@ -76,6 +81,11 @@ SK_API extern void* sk_realloc_throw(void* buffer, size_t count, size_t elemSize
+  *  These variants return nullptr on failure
+  */
+ static inline void* sk_malloc_canfail(size_t size) {
++#if defined(IS_FUZZING)
++    if (size > 1000000) {
++        return nullptr;
++    }
++#endif
+     return sk_malloc_flags(size, 0);
+ }
+ SK_API extern void* sk_malloc_canfail(size_t count, size_t elemSize);
+diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
+index bf34ae3180..59bfc374a4 100644
+--- a/src/core/SkImageFilter.cpp
++++ b/src/core/SkImageFilter.cpp
+@@ -123,7 +123,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
+         return false;
+     }
+ 
+-    SkFUZZF(("allocInputs: %d\n", count));
++#if defined(IS_FUZZING)
++    if (count > 5) {
++        return false;
++    }
++#endif
++
+     this->allocInputs(count);
+     for (int i = 0; i < count; i++) {
+         if (buffer.readBool()) {
 diff --git a/src/core/SkMallocPixelRef.cpp b/src/core/SkMallocPixelRef.cpp
-index 2933e48cc4..1515dce27d 100644
+index 2933e48cc4..c175b6e268 100644
 --- a/src/core/SkMallocPixelRef.cpp
 +++ b/src/core/SkMallocPixelRef.cpp
 @@ -72,6 +72,11 @@ sk_sp<SkPixelRef> SkMallocPixelRef::MakeUsing(void*(*allocProc)(size_t),
@@ -24,10 +53,207 @@ index 2933e48cc4..1515dce27d 100644
              return nullptr;
          }
 +#if defined(IS_FUZZING)
-+        if (size > 50000000) {
++        if (size > 1000000) {
 +            return nullptr;
 +        }
 +#endif
      }
      void* addr = allocProc(size);
      if (nullptr == addr) {
+diff --git a/src/core/SkPicture.cpp b/src/core/SkPicture.cpp
+index 05bad67397..1c8d0f9b49 100644
+--- a/src/core/SkPicture.cpp
++++ b/src/core/SkPicture.cpp
+@@ -135,6 +135,9 @@ sk_sp<SkPicture> SkPicture::Forwardport(const SkPictInfo& info,
+     if (!data) {
+         return nullptr;
+     }
++    if (!data->opData()) {
++        return nullptr;
++    }
+     SkPicturePlayback playback(data);
+     SkPictureRecorder r;
+     playback.draw(r.beginRecording(info.fCullRect), nullptr/*no callback*/, buffer);
+diff --git a/src/core/SkPictureData.cpp b/src/core/SkPictureData.cpp
+index d0b206e90a..7abd7136c1 100644
+--- a/src/core/SkPictureData.cpp
++++ b/src/core/SkPictureData.cpp
+@@ -497,6 +497,11 @@ bool new_array_from_buffer(SkReadBuffer& buffer, uint32_t inCount,
+ }
+ 
+ bool SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t size) {
++#if defined(IS_FUZZING)
++    if (size > 1000000) {
++        return false;
++    }
++#endif
+     switch (tag) {
+         case SK_PICT_PAINT_BUFFER_TAG: {
+             if (!buffer.validate(SkTFitsIn<int>(size))) {
+@@ -511,6 +516,12 @@ bool SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t
+         case SK_PICT_PATH_BUFFER_TAG:
+             if (size > 0) {
+                 const int count = buffer.readInt();
++            #if defined(IS_FUZZING)
++                // TODO(kjlubick): Should this be an unsigned int?
++                if (count > 20 || count < 0) {
++                    return false;
++                }
++            #endif
+                 fPaths.reset(count);
+                 for (int i = 0; i < count; i++) {
+                     buffer.readPath(&fPaths[i]);
+diff --git a/src/core/SkPictureData.h b/src/core/SkPictureData.h
+index 89ddcfaabe..5e8e3f9e09 100644
+--- a/src/core/SkPictureData.h
++++ b/src/core/SkPictureData.h
+@@ -117,8 +117,7 @@ public:
+ 
+     SkDrawable* getDrawable(SkReadBuffer* reader) const {
+         int index = reader->readInt();
+-        SkASSERT(index > 0 && index <= fDrawableCount);
+-        return fDrawableRefs[index - 1];
++        return reader->validateIndex(index, fDrawableCount - 1) ? fDrawableRefs[index - 1] : nullptr;
+     }
+ 
+     const SkPaint* getPaint(SkReadBuffer* reader) const {
+diff --git a/src/core/SkPicturePlayback.cpp b/src/core/SkPicturePlayback.cpp
+index 4b9e080264..aebf59f918 100644
+--- a/src/core/SkPicturePlayback.cpp
++++ b/src/core/SkPicturePlayback.cpp
+@@ -496,7 +496,6 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
+             const SkPoint* pos = (const SkPoint*)reader->skip(points, sizeof(SkPoint));
+             const SkScalar top = reader->readScalar();
+             const SkScalar bottom = reader->readScalar();
+-            SkDebugf("postexth count %zu pos %p\n", points, pos);
+             BREAK_ON_READ_ERROR(reader);
+ 
+             SkRect clip = canvas->getLocalClipBounds();
+diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
+index 7e4c0fb8a0..f2c5b96918 100644
+--- a/src/core/SkReadBuffer.cpp
++++ b/src/core/SkReadBuffer.cpp
+@@ -291,6 +291,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
+     }
+ 
+     size_t size = SkAbs32(encoded_size);
++#if defined(IS_FUZZING)
++    if (size > 1000000) {
++        this->validate(false);
++        return nullptr;
++    }
++#endif
+     sk_sp<SkData> data = SkData::MakeUninitialized(size);
+     if (!this->readPad32(data->writable_data(), size)) {
+         this->validate(false);
+diff --git a/src/core/SkReadBuffer.h b/src/core/SkReadBuffer.h
+index f4e9f6a0d8..a887f26187 100644
+--- a/src/core/SkReadBuffer.h
++++ b/src/core/SkReadBuffer.h
+@@ -161,6 +161,12 @@ public:
+ 
+     sk_sp<SkData> readByteArrayAsData() {
+         size_t len = this->getArrayCount();
++#if defined(IS_FUZZING)
++        if (len > 1000000) {
++            fReader.skip(fReader.available());
++            return SkData::MakeEmpty();
++        }
++#endif
+         void* buffer = sk_malloc_throw(len);
+         if (!this->readByteArray(buffer, len)) {
+             sk_free(buffer);
+diff --git a/src/core/SkTextBlob.cpp b/src/core/SkTextBlob.cpp
+index 6d89e6f135..99cbee4711 100644
+--- a/src/core/SkTextBlob.cpp
++++ b/src/core/SkTextBlob.cpp
+@@ -800,7 +800,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+             // End-of-runs marker.
+             break;
+         }
+-
++#if defined(IS_FUZZING)
++        if (glyphCount > 10000) {
++            return nullptr;
++        }
++#endif
+         PositioningAndExtended pe;
+         pe.intValue = reader.read32();
+         GlyphPositioning pos = pe.positioning;
+@@ -811,7 +815,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+         if (textSize < 0) {
+             return nullptr;
+         }
+-
++#if defined(IS_FUZZING)
++        if (textSize > 10000) {
++            return nullptr;
++        }
++#endif
+         SkPoint offset;
+         reader.readPoint(&offset);
+         SkPaint font;
+diff --git a/src/effects/SkDashPathEffect.cpp b/src/effects/SkDashPathEffect.cpp
+index 04f9e9e85f..e6976d62d1 100644
+--- a/src/effects/SkDashPathEffect.cpp
++++ b/src/effects/SkDashPathEffect.cpp
+@@ -367,6 +367,11 @@ void SkDashImpl::flatten(SkWriteBuffer& buffer) const {
+ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
+     const SkScalar phase = buffer.readScalar();
+     uint32_t count = buffer.getArrayCount();
++#if defined(IS_FUZZING)
++    if (count > 20) {
++        return nullptr;
++    }
++#endif
+     SkAutoSTArray<32, SkScalar> intervals(count);
+     if (buffer.readScalarArray(intervals.get(), count)) {
+         return SkDashPathEffect::Make(intervals.get(), SkToInt(count), phase);
+diff --git a/src/ports/SkMemory_malloc.cpp b/src/ports/SkMemory_malloc.cpp
+index 206ee4fd91..c6d18d861b 100644
+--- a/src/ports/SkMemory_malloc.cpp
++++ b/src/ports/SkMemory_malloc.cpp
+@@ -47,11 +47,7 @@ void sk_abort_no_print() {
+ 
+ void sk_out_of_memory(void) {
+     SkDEBUGFAIL("sk_out_of_memory");
+-#if defined(IS_FUZZING)
+-    exit(1);
+-#else
+     abort();
+-#endif
+ }
+ 
+ void* sk_realloc_throw(void* addr, size_t size) {
+diff --git a/src/shaders/gradients/SkGradientShader.cpp b/src/shaders/gradients/SkGradientShader.cpp
+index 3367d9e33b..d6d922778a 100644
+--- a/src/shaders/gradients/SkGradientShader.cpp
++++ b/src/shaders/gradients/SkGradientShader.cpp
+@@ -81,6 +81,11 @@ bool SkGradientShaderBase::DescriptorScope::unflatten(SkReadBuffer& buffer) {
+     fCount = buffer.getArrayCount();
+     if (fCount > kStorageCount) {
+         size_t allocSize = (sizeof(SkColor4f) + sizeof(SkScalar)) * fCount;
++#if defined(IS_FUZZING)
++    if (allocSize > 1000000) {
++        return nullptr;
++    }
++#endif
+         fDynamicStorage.reset(allocSize);
+         fColors = (SkColor4f*)fDynamicStorage.get();
+         fPos = (SkScalar*)(fColors + fCount);
+diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
+index 1a714076e7..18ef8d0235 100755
+--- a/src/utils/SkShadowTessellator.cpp
++++ b/src/utils/SkShadowTessellator.cpp
+@@ -245,6 +245,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
+     SkScalar rotSin, rotCos;
+     int numSteps;
+     compute_radial_steps(fPrevOutset, nextNormal, fRadius, &rotSin, &rotCos, &numSteps);
++#if defined(IS_FUZZING)
++        if (numSteps > 50 || numSteps < 0) {
++            return false;
++        }
++#endif
+     SkVector prevNormal = fPrevOutset;
+     for (int i = 0; i < numSteps-1; ++i) {
+         SkVector currNormal;
