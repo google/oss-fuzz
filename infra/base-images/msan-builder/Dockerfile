@@ -28,7 +28,7 @@ COPY packages /usr/local/bin/packages
 RUN mkdir /msan
 WORKDIR /msan
 ENV PYTHONUNBUFFERED 1
-RUN msan_build.py --work-dir=$WORK --create-subdirs \
+RUN msan_build.py --work-dir=$WORK \
     libarchive13 \
     libattr1 \
     libbz2-1.0 \
