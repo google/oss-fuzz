@@ -53,8 +53,7 @@ def SetUpEnvironment(work_dir):
   print('Real clang at', env['REAL_CLANG_PATH'])
   compiler_wrapper_path = os.path.join(SCRIPT_DIR, 'compiler_wrapper.py')
 
-  # 
-    binaries into TMP/bin
+  # Symlink binaries into TMP/bin
   bin_dir = os.path.join(work_dir, 'bin')
   os.mkdir(bin_dir)
 
