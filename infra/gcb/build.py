@@ -165,6 +165,14 @@ def get_build_steps(project_yaml, dockerfile_path):
           ],
           'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
       },
+      {
+          'name': 'gcr.io/oss-fuzz-base/msan-builder',
+          'args': [
+            'bash',
+            '-c',
+            'cp -r /msan /workspace',
+          ],
+      },
   ]
 
   for fuzzing_engine in project_yaml['fuzzing_engines']:
@@ -185,28 +193,42 @@ def get_build_steps(project_yaml, dockerfile_path):
           bucket, name, stamped_srcmap_file))
 
       env.append('OUT=' + out)
+      env.append('MSAN_LIBS_PATH=/workspace/msan')
 
       workdir = workdir_from_dockerfile(dockerfile_path)
       if not workdir:
         workdir = '/src'
 
-      build_steps.extend([
+      build_steps.append({
           # compile
-          {'name': image,
-            'env': env,
-            'args': [
-              'bash',
-              '-c',
-              # Remove /out to break loudly when a build script incorrectly uses
-              # /out instead of $OUT.
-              # `cd /src && cd {workdir}` (where {workdir} is parsed from the
-              # Dockerfile). Container Builder overrides our workdir so we need to add
-              # this step to set it back.
-              # We also remove /work and /src to save disk space after a step.
-              # Container Builder doesn't pass --rm to docker run yet.
-              'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
-            ],
-          },
+          'name': image,
+          'env': env,
+          'args': [
+            'bash',
+            '-c',
+            # Remove /out to break loudly when a build script incorrectly uses
+            # /out instead of $OUT.
+            # `cd /src && cd {workdir}` (where {workdir} is parsed from the
+            # Dockerfile). Container Builder overrides our workdir so we need to add
+            # this step to set it back.
+            # We also remove /work and /src to save disk space after a step.
+            # Container Builder doesn't pass --rm to docker run yet.
+            'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
+          ],
+      })
+
+      if sanitizer == 'memory':
+        # Patch dynamic libraries to use instrumented ones.
+        build_steps.append({
+          'name': 'gcr.io/oss-fuzz-base/msan-builder',
+          'args': [
+            'bash',
+            '-c',
+            'patch_build.py {0}'.format(out),
+          ],
+        })
+
+      build_steps.extend([
           # zip binaries
           {'name': image,
             'args': [
