@@ -224,7 +224,9 @@ def get_build_steps(project_yaml, dockerfile_path):
           'args': [
             'bash',
             '-c',
-            'patch_build.py {0}'.format(out),
+            # TODO(ochang): Replace with just patch_build.py once permission in
+            # image is fixed.
+            'python /usr/local/bin/patch_build.py {0}'.format(out),
           ],
         })
 
