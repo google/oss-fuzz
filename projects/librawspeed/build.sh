@@ -17,6 +17,11 @@
 
 set -e
 
+if [[ $SANITIZER = *undefined* ]]; then
+  CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+  CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+fi
+
 cd "$WORK"
 mkdir build
 cd build
@@ -27,7 +32,7 @@ cmake \
   -DWITH_PUGIXML=OFF -DUSE_XMLLINT=OFF -DWITH_JPEG=OFF -DWITH_ZLIB=OFF \
   -DBUILD_TESTING=OFF -DBUILD_TOOLS=OFF -DBUILD_BENCHMARKING=OFF \
   -DCMAKE_BUILD_TYPE=FUZZ -DBUILD_FUZZERS=ON \
-  -DLIBFUZZER_ARCHIVE:FILEPATH="$LIB_FUZZING_ENGINE" \
+  -DLIB_FUZZING_ENGINE:FILEPATH="$LIB_FUZZING_ENGINE" \
   -DCMAKE_INSTALL_PREFIX:PATH="$OUT" -DCMAKE_INSTALL_BINDIR:PATH="$OUT" \
   "$SRC/librawspeed/"
 

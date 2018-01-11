@@ -30,9 +30,10 @@ The configuration is picked through one or more environment variables.
 
 - *building sqlite3 fuzzer with UBSan (`SANITIZER=undefined`):*
 
-   <pre>
+
+<pre>
 docker run --rm -ti -e <i>SANITIZER</i>=<i>undefined</i> gcr.io/oss-fuzz/sqlite3
-   </pre>
+</pre>
 
 
 # Image Files Layout
