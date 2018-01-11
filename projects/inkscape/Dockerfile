@@ -31,11 +31,10 @@ RUN apt-get update -yqq && apt-get install -y -qq \
   libatspi2.0-dev libthai-dev libdatrie-dev libglib2.0-bin \
   cmake-curses-gui locate vim bash-completion
 RUN git clone --depth 1 https://gitlab.com/inkscape/inkscape.git inkscape
-RUN sed -i 's/SHARED/STATIC/g' inkscape/src/CMakeLists.txt
 RUN apt-get source libgdk-pixbuf2.0-dev libglib2.0-dev libglibmm-2.4-dev \
     libpangomm-1.4-dev libatk1.0-dev libatkmm-1.6-dev libgtk-3-dev libgtkmm-3.0-dev \
     libepoxy-dev libatk-bridge2.0-dev libatspi2.0-dev libsigc++-2.0-dev \
-    libcairomm-1.0-dev libgdl-3-dev libdbus-1-dev
+    libcairomm-1.0-dev libgdl-3-dev libdbus-1-dev pango1.0 libsoup2.4-1 libharfbuzz-dev cairo
 RUN apt-get build-dep -yqq libgdk-pixbuf2.0-dev libglib2.0-dev libglibmm-2.4-dev \
     libpangomm-1.4-dev libatk1.0-dev libatkmm-1.6-dev libgtk-3-dev libgtkmm-3.0-dev \
     libepoxy-dev libatk-bridge2.0-dev libepoxy-dev libatspi2.0-dev libsigc++-2.0-dev \
@@ -43,6 +42,8 @@ RUN apt-get build-dep -yqq libgdk-pixbuf2.0-dev libglib2.0-dev libglibmm-2.4-dev
 RUN git clone https://github.com/silnrsi/graphite.git #no static lib building in apt-cache version
 RUN updatedb
 #prevent manually built from finding those
-RUN dpkg -r --force-depends libsigc++-2.0-dev libglibmm-2.4-dev
+#RUN dpkg -r --force-depends libsigc++-2.0-dev libglibmm-2.4-dev
+RUN apt-get remove -y libsigc++-2.0-dev libglibmm-2.4-dev libharfbuzz-dev libglib2.0-dev libgdk-pixbuf2.0-dev libglib2.0-dev libglibmm-2.4-dev libpangomm-1.4-dev libatk1.0-dev libatkmm-1.6-dev libgtk-3-dev libgtkmm-3.0-dev libepoxy-dev libatk-bridge2.0-dev libepoxy-dev libatspi2.0-dev libsigc++-2.0-dev libcairomm-1.0-dev libgdl-3-dev libdbus-1-dev
+RUN apt-get install -y sqlite3 libsqlite3-dev
 WORKDIR inkscape
 COPY build.sh $SRC/
