@@ -17,6 +17,7 @@
 
 from __future__ import print_function
 import argparse
+import datetime
 import errno
 import os
 import pipes
@@ -434,7 +435,8 @@ def generate(args):
   print('Writing new files to', dir)
 
   template_args = {
-    'project_name' : args.project_name
+    'project_name' : args.project_name,
+    'year': datetime.datetime.now().year
   }
   with open(os.path.join(dir, 'project.yaml'), 'w') as f:
     f.write(templates.PROJECT_YAML_TEMPLATE % template_args)
