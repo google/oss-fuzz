@@ -16,9 +16,20 @@
 ################################################################################
 
 LDFLAGS="$CXXFLAGS" make -j$(nproc) HAVE_GLUT=no build=debug OUT=$WORK
+fuzz_target=pdf_fuzzer
 
 $CXX $CXXFLAGS -std=c++11 -Iinclude \
-    source/fuzz/pdf_fuzzer.cc -o $OUT/pdf_fuzzer \
+    source/fuzz/pdf_fuzzer.cc -o $OUT/$fuzz_target \
     -lFuzzingEngine $WORK/libmupdf.a $WORK/libmupdfthird.a
 
 mv $SRC/*.zip $SRC/*.dict $OUT
+
+if [ ! -f "${OUT}/${fuzz_target}_seed_corpus.zip" ]; then
+  echo "missing seed corpus"
+  exit 1
+fi
+
+if [ ! -f "${OUT}/${fuzz_target}.dict" ]; then
+  echo "missing dictionary"
+  exit 1
+fi
