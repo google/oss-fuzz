@@ -1,6 +1,7 @@
 #ifndef FAKE_RANDOM_H_
 #define FAKE_RANDOM_H_
 
+#include <assert.h>
 #include <sodium.h>
 #include <stdint.h>
 
@@ -34,5 +35,12 @@ struct randombytes_implementation fake_random = {
   .buf = fake_random_buffer,
   .close = NULL
 };
+
+void
+setup_sodium_w_deterministic_random() {
+  assert(randombytes_set_implementation(&fake_random) == 0);
+  assert(randombytes_implementation_name() == "fake_random");
+  assert(sodium_init() >= 0);
+}
 
 #endif // FAKE_RANDOM_H_
