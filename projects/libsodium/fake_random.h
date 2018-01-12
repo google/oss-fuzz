@@ -1,4 +1,3 @@
-extern const unsigned char *SEED;
-extern size_t SEED_SIZE;
+#include <sodium.h>
 
-struct randombytes_implementation fake_random_implementation;
+struct randombytes_implementation fake_random;
