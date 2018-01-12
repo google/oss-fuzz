@@ -1,10 +1,16 @@
 #include <sodium.h>
+#include <string.h>
 
 #include "fake_random.h"
 
 static const char *
 fake_implementation_name(void) {
   return "fake_random";
+}
+
+static unint32_t
+fake_random(void) {
+  return 0;
 }
 
 static void
@@ -18,10 +24,10 @@ fake_random_buffer(void * const buf, const size_t size) {
 }
 
 struct randombytes_implementation fake_random = {
-  SODIUM_C99(.implementation_name =) fake_implementation_name,
-  SODIUM_C99(.random =) NULL,
-  SODIUM_C99(.stir =) NULL,
-  SODIUM_C99(.uniform =) NULL,
-  SODIUM_C99(.buf =) fake_random_buffer,
-  SODIUM_C99(.close =) NULL
+  .implementation_name = fake_implementation_name,
+  .random = fake_random,
+  .stir = NULL,
+  .uniform = NULL,
+  .buf = fake_random_buffer,
+  .close = NULL
 };
