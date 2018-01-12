@@ -15,12 +15,9 @@
 #
 ################################################################################
 
-rm -rf thirdparty/freeglut
-
 LDFLAGS="$CXXFLAGS" make -j$(nproc) HAVE_GLUT=no build=debug OUT=$WORK
 
-$CXX $CXXFLAGS -std=c++11 \
-    -Iinclude \
+$CXX $CXXFLAGS -std=c++11 -Iinclude \
     source/fuzz/pdf_fuzzer.cc -o $OUT/pdf_fuzzer \
     -lFuzzingEngine $WORK/libmupdf.a $WORK/libmupdfthird.a
 

@@ -29,7 +29,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fz_pixmap *pix;
   fz_try(ctx) {
     pdf_document *doc = pdf_open_document_with_stream(ctx, stream);
-    for (int i = 0; i < fz_count_pages(ctx, &doc->super); i++) {
+    for (int i = 0; i < pdf_count_pages(ctx, doc); i++) {
       pix = fz_new_pixmap_from_page_number(ctx, &doc->super, i, &ctm, fz_device_rgb(ctx), 1);
       fz_drop_pixmap(ctx, pix);
     }
