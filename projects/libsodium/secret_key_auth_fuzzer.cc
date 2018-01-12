@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <sodium.h>
 
 #include "fake_random.h"
