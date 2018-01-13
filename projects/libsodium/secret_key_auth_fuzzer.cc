@@ -1,14 +1,19 @@
 #include <sodium.h>
 
-#include "fake_random.h"
+const unsigned char key[crypto_auth_KEYBYTES] = {                \
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,    \
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,    \
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,    \
+  0x00, 0x01                                                     \
+};
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
-  setup_sodium_w_deterministic_random();
+  if (sodium_init() < 0) {
+    return 0;
+  }
 
-  unsigned char key[crypto_auth_KEYBYTES];
   unsigned char mac[crypto_auth_BYTES];
 
-  crypto_auth_keygen(key);
   crypto_auth(mac, data, size, key);
   crypto_auth_verify(mac, data, size, key);
   return 0;

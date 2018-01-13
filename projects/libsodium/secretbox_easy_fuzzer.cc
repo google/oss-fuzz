@@ -1,15 +1,22 @@
 #include <sodium.h>
 
-#include "fake_random.h"
+const unsigned char key[crypto_secretbox_KEYBYTES] = {                \
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,         \
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,         \
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,         \
+  0x00, 0x01                                                          \
+};
+
+const unsigned char nonce[crypto_secretbox_NONCEBYTES] = {            \
+  0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,         \
+  0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,         \
+  0x10, 0x11, 0x12, 0x13                                              \
+};
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
-  setup_sodium_w_deterministic_random();
-
-  unsigned char key[crypto_secretbox_KEYBYTES];
-  unsigned char nonce[crypto_secretbox_NONCEBYTES];
-
-  crypto_secretbox_keygen(key);
-  randombytes_buf(nonce, sizeof nonce);
+  if (sodium_init() < 0) {
+    return 0;
+  }
 
   size_t ciphertext_len = crypto_secretbox_MACBYTES + size;
   unsigned char ciphertext[ciphertext_len];
