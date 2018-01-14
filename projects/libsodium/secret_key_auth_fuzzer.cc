@@ -1,10 +1,10 @@
 #include <sodium.h>
 
-const unsigned char key[crypto_auth_KEYBYTES] = {                \
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,    \
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,    \
-  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,    \
-  0x00, 0x01                                                     \
+const unsigned char key[crypto_auth_KEYBYTES] = {                     \
+  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',                   \
+  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',                   \
+  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',                   \
+  'k', 'e'
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
