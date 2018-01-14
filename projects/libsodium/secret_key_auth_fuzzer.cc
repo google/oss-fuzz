@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <sodium.h>
 
 const unsigned char key[crypto_auth_KEYBYTES] = {                     \
@@ -8,9 +9,7 @@ const unsigned char key[crypto_auth_KEYBYTES] = {                     \
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
-  if (sodium_init() < 0) {
-    return 0;
-  }
+  assert(sodium_init() >= 0);
 
   unsigned char mac[crypto_auth_BYTES];
 

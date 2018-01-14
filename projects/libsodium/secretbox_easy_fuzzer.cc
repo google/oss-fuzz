@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <sodium.h>
 
 const unsigned char key[crypto_secretbox_KEYBYTES] = {                \
@@ -14,9 +15,7 @@ const unsigned char nonce[crypto_secretbox_NONCEBYTES] = {            \
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
-  if (sodium_init() < 0) {
-    return 0;
-  }
+  assert(sodium_init() >= 0);
 
   size_t ciphertext_len = crypto_secretbox_MACBYTES + size;
   unsigned char ciphertext[ciphertext_len];
