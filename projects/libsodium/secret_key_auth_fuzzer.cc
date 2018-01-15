@@ -1,10 +1,10 @@
 #include <assert.h>
 #include <sodium.h>
 
-const unsigned char key[crypto_auth_KEYBYTES] = {                     \
-  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',                   \
-  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',                   \
-  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',                   \
+const unsigned char key[crypto_auth_KEYBYTES] = {
+  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',
+  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',
+  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',
   'k', 'e'
 };
 

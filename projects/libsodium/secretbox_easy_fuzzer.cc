@@ -1,17 +1,17 @@
 #include <assert.h>
 #include <sodium.h>
 
-const unsigned char key[crypto_secretbox_KEYBYTES] = {                \
-  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',                   \
-  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',                   \
-  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',                   \
+const unsigned char key[crypto_secretbox_KEYBYTES] = {
+  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',
+  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',
+  'k', 'e', 'y', 'k', 'e', 'y', 'k', 'e', 'y', 'k',
   'k', 'e'
 };
 
-const unsigned char nonce[crypto_secretbox_NONCEBYTES] = {            \
-  'n', 'o', 'n', 'c', 'e', 'n', 'o', 'n', 'c', 'e',                   \
-  'n', 'o', 'n', 'c', 'e', 'n', 'o', 'n', 'c', 'e',                   \
-  'n', 'o', 'n', 'c',                                                 \
+const unsigned char nonce[crypto_secretbox_NONCEBYTES] = {
+  'n', 'o', 'n', 'c', 'e', 'n', 'o', 'n', 'c', 'e',
+  'n', 'o', 'n', 'c', 'e', 'n', 'o', 'n', 'c', 'e',
+  'n', 'o', 'n', 'c',
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
