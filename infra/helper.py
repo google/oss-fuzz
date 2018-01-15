@@ -75,6 +75,7 @@ def main():
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer.')
   _add_engine_args(run_fuzzer_parser)
+  _add_environment_args(run_fuzzer_parser)
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
@@ -333,6 +334,8 @@ def run_fuzzer(args):
     return 1
 
   env = ['FUZZING_ENGINE=' + args.engine]
+  if args.e:
+    env += args.e
 
   run_args = sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
