@@ -19,11 +19,9 @@ MAINTAINER jonathan@titanous.com
 RUN echo 'deb-src http://archive.ubuntu.com/ubuntu/ xenial main' >> /etc/apt/sources.list &&\
     echo 'deb-src http://archive.ubuntu.com/ubuntu/ xenial-updates main' >> /etc/apt/sources.list &&\
     echo 'deb-src http://security.ubuntu.com/ubuntu/ xenial-security main' >> /etc/apt/sources.list &&\
-    echo 'deb http://archive.ubuntu.com/ubuntu/ artful main' >> /etc/apt/sources.list &&\
-    echo 'deb http://archive.ubuntu.com/ubuntu/ artful-updates main' >> /etc/apt/sources.list &&\
-    echo 'deb http://security.ubuntu.com/ubuntu/ artful-security main' >> /etc/apt/sources.list &&\
-    echo 'APT::Default-Release "xenial";' >> /etc/apt/apt.conf.d/00-ubuntu &&\
-    apt-get update && apt-get install -y python3-pip libmount-dev/artful libselinux1-dev/artful &&\
+    apt-get update && apt-get install -y software-properties-common &&\
+    add-apt-repository ppa:pitti/systemd-semaphore &&\
+    apt-get update && apt-get install -y python3-pip libmount-dev libmount1 &&\
     apt-get build-dep -y systemd &&\
     pip3 install meson ninja
 RUN git clone --depth 1 https://github.com/titanous/systemd systemd
