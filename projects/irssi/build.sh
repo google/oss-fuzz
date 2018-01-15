@@ -44,4 +44,11 @@ ${CXX} ${CXXFLAGS} -DHAVE_CONFIG_H -lFuzzingEngine ${FE_FUZZ_CFLAGS} ${GLIB_CFLA
 	-Wl,-Bstatic ${FE_COMMON_LIBS} ${CORE_LIBS} -lssl -lcrypto ${GLIB_LIBS} -lgmodule-2.0 -lz \
 	-Wl,-Bdynamic -o $OUT/irssi-fuzz
 
+# now build event-get-params-fuzz
+
+${CXX} ${CXXFLAGS} -DHAVE_CONFIG_H -lFuzzingEngine ${FE_FUZZ_CFLAGS} ${GLIB_CFLAGS} \
+	src/fe-fuzz/irc/core/event-get-params.o src/fe-fuzz/module-formats.o -lm \
+	-Wl,-Bstatic ${FE_COMMON_LIBS} ${CORE_LIBS} -lssl -lcrypto ${GLIB_LIBS} -lgmodule-2.0 -lz \
+	-Wl,-Bdynamic -o $OUT/event-get-params-fuzz
+
 cp $SRC/*.options $OUT/
