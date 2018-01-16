@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-conf
 RUN git clone https://github.com/irssi/irssi
 
 WORKDIR irssi
-COPY build.sh *.options $SRC/
+COPY build.sh *.options *.dict $SRC/
