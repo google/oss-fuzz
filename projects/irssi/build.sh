@@ -47,7 +47,7 @@ for target in irssi irc/core/event-get-params fe-common/core/theme-load; do
 done
 
 mkdir $SRC/theme-load-fuzz_corpus
-wget -r -P $SRC/theme-load-fuzz_corpus -nH --cut-dirs=100 -np -l 1 -A theme http://irssi-import.github.io/themes/
+wget -r -P $SRC/theme-load-fuzz_corpus -nH --cut-dirs=100 -np -l 1 -A theme https://irssi-import.github.io/themes/
 zip -j $OUT/theme-load-fuzz_seed_corpus.zip $SRC/theme-load-fuzz_corpus/*
 
 cp $SRC/*.options $SRC/*.dict $OUT/
