@@ -44,11 +44,14 @@ def FilterWlArg(arg):
 
   filtered = []
   for part in parts:
-    if part == 'defs' or part == '--no-undefined':
+    if part == 'defs':
       removed = filtered.pop()
       assert removed == '-z'
       continue
 
+    if part == '--no-undefined':
+      continue
+      
     filtered.append(part)
 
   if filtered:
@@ -72,8 +75,11 @@ def RemoveZDefs(args):
   filtered = []
 
   for arg in args:
-    if arg == '-Wl,defs' or arg == '-Wl,--no-undefined':
+    if arg == '-Wl,defs':
       _RemoveLastMatching(filtered, '-Wl,-z')
+      continue
+      
+    if arg == '-Wl,--no-undefined':
       continue
 
     if arg.startswith('-Wl,'):
