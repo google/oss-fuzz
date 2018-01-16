@@ -24,7 +24,7 @@ export ASAN_OPTIONS=detect_leaks=0
 make clean
 make "-j$(nproc)" CFLAGS="-static -DSUPPRESS_PRINTF_FALLBACK $CFLAGS" CXXFLAGS="-static $CXXFLAGS"
 
-# now build irssi-fuzz itself
+# now build all fuzz targets
 
 export GLIB_CFLAGS="$(pkg-config --static --cflags glib-2.0)"
 export GLIB_LIBS="$(pkg-config --static --libs glib-2.0)"
@@ -39,14 +39,7 @@ FE_COMMON_LIBS="$FE_COMMON_LIBS src/fe-common/core/libfe_common_core.a"
 
 FE_FUZZ_CFLAGS="-I. -Isrc -Isrc/core/ -Isrc/irc/core/ -Isrc/fe-common/core/"
 
-${CXX} ${CXXFLAGS} -DHAVE_CONFIG_H -lFuzzingEngine ${FE_FUZZ_CFLAGS} ${GLIB_CFLAGS} \
-	src/fe-fuzz/irssi.o src/fe-fuzz/module-formats.o -lm \
-	-Wl,-Bstatic ${FE_COMMON_LIBS} ${CORE_LIBS} -lssl -lcrypto ${GLIB_LIBS} -lgmodule-2.0 -lz \
-	-Wl,-Bdynamic -o $OUT/irssi-fuzz
-
-# now build all other fuzz targets
-
-for target in irc/core/event-get-params fe-common/core/theme-load; do
+for target in irssi irc/core/event-get-params fe-common/core/theme-load; do
 	${CXX} ${CXXFLAGS} -DHAVE_CONFIG_H -lFuzzingEngine ${FE_FUZZ_CFLAGS} ${GLIB_CFLAGS} \
 		src/fe-fuzz/${target}.o src/fe-fuzz/module-formats.o -lm \
 		-Wl,-Bstatic ${FE_COMMON_LIBS} ${CORE_LIBS} -lssl -lcrypto ${GLIB_LIBS} -lgmodule-2.0 -lz \
