@@ -62,7 +62,8 @@ make install
 cd $SRC/knot-dns
 autoreconf -if
 
-./configure --with-oss-fuzz=yes --disable-shared --enable-static --with-sanitize-fuzzer  --disable-daemon --disable-utilities --disable-documentation --disable-fastparser --with-module-dnsproxy=no --with-module-noudp=no --with-module-onlinesign=no --with-module-rrl=no --with-module-stats=no --with-module-synthrecord=no --with-module-whoami=no
+./configure --with-oss-fuzz=yes --disable-shared --enable-static --disable-daemon --disable-utilities --disable-documentation --disable-fastparser --with-module-dnsproxy=no --with-module-noudp=no --with-module-onlinesign=no --with-module-rrl=no --with-module-stats=no --with-module-synthrecord=no --with-module-whoami=no
+
 make -j$(nproc)
 cd $SRC/knot-dns/tests-fuzz
 make check
