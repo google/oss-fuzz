@@ -9,7 +9,8 @@ const unsigned char key[crypto_auth_KEYBYTES] = {
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
-  assert(sodium_init() >= 0);
+  int initialized = sodium_init();
+  assert(initialized >= 0);
 
   unsigned char mac[crypto_auth_BYTES];
 

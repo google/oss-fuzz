@@ -15,7 +15,8 @@ const unsigned char nonce[crypto_secretbox_NONCEBYTES] = {
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
-  assert(sodium_init() >= 0);
+  int initialized = sodium_init();
+  assert(initialized >= 0);
 
   size_t ciphertext_len = crypto_secretbox_MACBYTES + size;
   unsigned char ciphertext[ciphertext_len];
