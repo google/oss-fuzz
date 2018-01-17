@@ -1,35 +1,34 @@
 #ifndef FAKE_RANDOM_H_
 #define FAKE_RANDOM_H_
 
-#include <assert.h>
 #include <sodium.h>
+#include <assert.h>
 #include <stdint.h>
+#include <string.h>
+#include <algorithm>
 
-#include "fake_random.h"
+static const unsigned char * SEED_DATA;
+static size_t SEED_SIZE;
 
 static const char *
 fake_implementation_name(void) {
   return "fake_random";
 }
 
-static uint32_t
-fake_randombytes(void) {
-  return 0;
-}
-
 static void
 fake_random_buffer(void * const buf, const size_t size) {
-  static const unsigned char constant_seed[randombytes_SEEDBYTES] = {   \
-    'N', 'O', 'T', 'E', 'S', 'T', 'D', 'A', 'T', 'A',                   \
-    'N', 'O', 'T', 'E', 'S', 'T', 'D', 'A', 'T', 'A',                   \
-    'N', 'O', 'T', 'E', 'S', 'T', 'D', 'A', 'T', 'A',                   \
-    'N', '0'};
-  randombytes_buf_deterministic(buf, size, constant_seed);
+  static unsigned char seed[randombytes_SEEDBYTES];
+  memset(seed, '0', randombytes_SEEDBYTES);
+
+  size_t boundary = std::min((size_t) randombytes_SEEDBYTES, SEED_SIZE);
+  memcpy(&seed, SEED_DATA, boundary);
+
+  randombytes_buf_deterministic(buf, size, seed);
 }
 
 struct randombytes_implementation fake_random = {
   .implementation_name = fake_implementation_name,
-  .random = fake_randombytes,
+  .random = NULL,
   .stir = NULL,
   .uniform = NULL,
   .buf = fake_random_buffer,
@@ -37,10 +36,16 @@ struct randombytes_implementation fake_random = {
 };
 
 void
-setup_sodium_w_deterministic_random() {
-  assert(randombytes_set_implementation(&fake_random) == 0);
+setup_fake_random(const unsigned char * seed, const size_t seed_size) {
+  SEED_DATA = seed;
+  SEED_SIZE = seed_size;
+
+  int fake_random_set = randombytes_set_implementation(&fake_random);
+  assert(fake_random_set == 0);
+
   assert(randombytes_implementation_name() == "fake_random");
-  assert(sodium_init() >= 0);
+  int initialized = sodium_init();
+  assert(initialized >= 0);
 }
 
 #endif // FAKE_RANDOM_H_
