@@ -93,7 +93,7 @@ function build_corpus {
 
   rm -r "${WORK}/corpus-tmp"
 
-  echo -e "[libfuzzer]\n max_len = 0" > "${OUT}"/"${fuzzer_name}".options
+  echo -e "[libfuzzer]\nmax_len = 0" > "${OUT}"/"${fuzzer_name}".options
 }
 
 build_corpus "llvm/test/Transforms/InstCombine/" "llvm-opt-fuzzer--x86_64-instcombine"
