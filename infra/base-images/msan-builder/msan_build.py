@@ -104,6 +104,17 @@ def SetUpEnvironment(work_dir):
 
   env['PATH'] = bin_dir + ':' + os.environ['PATH']
 
+  # nocheck doesn't disable override_dh_auto_test. So we have this hack to try
+  # to disable "make check" or "make test" invocations.
+  make_wrapper = (
+      '#!/bin/bash\n'
+      'if [ "$1" = "test" ] || [ "$1" = "check" ]; then\n'
+      '  exit 0\n'
+      'fi\n'
+      '/usr/bin/make "$@"\n')
+  wrapper_utils.InstallWrapper(bin_dir, 'make',
+                               make_wrapper)
+
   # Prevent entire build from failing because of bugs/uninstrumented in tools
   # that are part of the build.
   msan_log_dir = os.path.join(work_dir, 'msan')
