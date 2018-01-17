@@ -16,13 +16,13 @@
 ################################################################################
 
 # build project
-./configure --prefix="$WORK" --disable-shared --enable-static LDFLAGS="$CXXFLAGS"
+./configure --enable-static LDFLAGS="$CXXFLAGS"
 make -j$(nproc) all
 
 # build fuzzers
 for f in $SRC/*_fuzzer.cc; do
     fuzzer=$(basename "$f" _fuzzer.cc)
-    $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
+    $CXX $CXXFLAGS -std=c++11 -I"$SRC/libsodium/src/libsodium/include" \
          "$f" -o "$OUT/${fuzzer}_fuzzer" \
-         "$WORK/lib/libsodium.a" -lFuzzingEngine
+         "$SRC/libsodium/src/libsodium/.libs/libsodium.a" -lFuzzingEngine
 done
