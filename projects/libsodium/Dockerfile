@@ -19,4 +19,4 @@ MAINTAINER chriswwolfe@gmail.com
 RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git --branch stable libsodium
 WORKDIR libsodium
-COPY build.sh *.cc $SRC/
+COPY build.sh *.cc *.h $SRC/
