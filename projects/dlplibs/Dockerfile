@@ -118,4 +118,4 @@ RUN git clone --depth 1 git://gerrit.libreoffice.org/libabw
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libetonyek
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libqxp
 WORKDIR $SRC
-COPY build.sh abw.dict *.options *.patch $SRC/
+COPY build.sh *.options *.patch $SRC/

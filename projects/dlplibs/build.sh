@@ -189,4 +189,3 @@ cp */src/fuzz/*fuzzer $OUT
 cp */src/fuzz/*.dict $OUT
 cp *_seed_corpus.zip $OUT
 cp *.options $OUT
-cp *.dict $OUT
