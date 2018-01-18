@@ -63,7 +63,6 @@ RUN wget -q --show-progress --progress=bar:force \
     https://sourceforge.net/projects/libmwaw/files/corpus/mswrdfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/mswksfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/123fuzzer_seed_corpus.zip \
-    https://sourceforge.net/projects/libwps/files/corpus/wkfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/wqfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libebook/files/corpus/pdbfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/beaglewksfuzzer_seed_corpus.zip \
@@ -98,6 +97,8 @@ RUN wget -q --show-progress --progress=bar:force \
     https://sourceforge.net/projects/libmwaw/files/corpus/writenowfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/writerplsfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/zwrtfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libmwaw/files/corpus/multiplanfuzzer_seed_corpus.zip \
+    https://sourceforge.net/projects/libwps/files/corpus/mpfuzzer_seed_corpus.zip \
     -P $SRC
 # clone sources
 RUN git clone --depth 1 git://git.code.sf.net/p/libwpd/librevenge
@@ -117,4 +118,4 @@ RUN git clone --depth 1 git://gerrit.libreoffice.org/libabw
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libetonyek
 RUN git clone --depth 1 git://gerrit.libreoffice.org/libqxp
 WORKDIR $SRC
-COPY build.sh abw.dict *.options *.patch $SRC/
+COPY build.sh *.options *.patch $SRC/
