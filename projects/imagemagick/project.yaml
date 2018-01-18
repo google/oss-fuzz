@@ -3,6 +3,7 @@ primary_contact: "dirk@git.imagemagick.org"
 auto_ccs:
   - paul.l.kehrer@gmail.com
   - alex.gaynor@gmail.com
+  - urban-warrior@imagemagick.org
 sanitizers:
   - address
   - memory
