@@ -1,14 +1,11 @@
-#include <fstream>
 #include <memory>
-#include <sstream>
+#include <string>
 #include <unistd.h>
 
 #include "rar.hpp"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  std::stringstream ss;
-  ss << "temp-" << getpid() << ".rar";
-  static const std::string filename = ss.str();
+  static const std::string filename = "temp.rar";
 
   std::unique_ptr<CommandData> cmd_data(new CommandData);
   cmd_data->ParseArg(const_cast<wchar_t *>(L"-p"));
