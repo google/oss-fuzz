@@ -1,0 +1,5 @@
+homepage: "https://freedesktop.org/wiki/Software/systemd/"
+primary_contact: "lennart@poettering.net"
+auto_ccs:
+  - jonathan@titanous.com
+  - zbyszek@in.waw.pl
