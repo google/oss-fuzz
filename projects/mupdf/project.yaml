@@ -1,0 +1,8 @@
+homepage: "https://www.mupdf.com"
+primary_contact: tor.andersson@artifex.com
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - jonathan@titanous.com
