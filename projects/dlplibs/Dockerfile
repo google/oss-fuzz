@@ -63,7 +63,6 @@ RUN wget -q --show-progress --progress=bar:force \
     https://sourceforge.net/projects/libmwaw/files/corpus/mswrdfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/mswksfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/123fuzzer_seed_corpus.zip \
-    https://sourceforge.net/projects/libwps/files/corpus/wkfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libwps/files/corpus/wqfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libebook/files/corpus/pdbfuzzer_seed_corpus.zip \
     https://sourceforge.net/projects/libmwaw/files/corpus/beaglewksfuzzer_seed_corpus.zip \
