@@ -1,4 +1,8 @@
 homepage: "https://www.mupdf.com"
 primary_contact: "<primary_contact_email>"
+sanitizers:
+  - address
+  - undefined
+  - memory
 auto_ccs:
   - jonathan@titanous.com
