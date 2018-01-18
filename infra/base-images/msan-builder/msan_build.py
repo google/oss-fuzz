@@ -215,14 +215,15 @@ def GetPackage(package_name):
   apt_cache = apt.Cache()
   version = apt_cache[package_name].candidate
   source_name = version.source_name
+  local_source_name = source_name.replace('.', '_')
 
-  custom_package_path = os.path.join(PACKAGES_DIR, source_name) + '.py'
+  custom_package_path = os.path.join(PACKAGES_DIR, local_source_name) + '.py'
   if not os.path.exists(custom_package_path):
     print('Using default package build steps.')
     return package.Package(source_name, version)
 
   print('Using custom package build steps.')
-  module = imp.load_source('packages.' + source_name, custom_package_path)
+  module = imp.load_source('packages.' + local_source_name, custom_package_path)
   return module.Package(version)
 
 
