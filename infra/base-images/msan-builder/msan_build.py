@@ -270,6 +270,7 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
   ]
 
   BLACKLISTED_PACKAGES = [
+      'libcapnp-0.5.3',  # fails to compile on newer clang.
       'multiarch-support',
   ]
 
