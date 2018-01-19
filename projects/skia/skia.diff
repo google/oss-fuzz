@@ -59,6 +59,22 @@ index 2933e48cc4..c175b6e268 100644
      }
      void* addr = allocProc(size);
      if (nullptr == addr) {
+diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
+index fb6d47bffe..f064b39e43 100644
+--- a/src/core/SkMaskFilter.cpp
++++ b/src/core/SkMaskFilter.cpp
+@@ -259,6 +259,11 @@ bool SkMaskFilter::filterPath(const SkPath& devPath, const SkMatrix& matrix,
+ 
+     SkMask  srcM, dstM;
+ 
++#if defined(IS_FUZZING)
++    if (devPath.countVerbs() > 1000 || devPath.countPoints() > 1000) {
++        return false;
++    }
++#endif
+     if (!SkDraw::DrawToMask(devPath, &clip.getBounds(), this, &matrix, &srcM,
+                             SkMask::kComputeBoundsAndRenderImage_CreateMode,
+                             style)) {
 diff --git a/src/core/SkPictureData.cpp b/src/core/SkPictureData.cpp
 index 0d729f8a75..b2511eddc3 100644
 --- a/src/core/SkPictureData.cpp
@@ -132,6 +148,18 @@ index 8da4089a17..ba70e511f7 100644
      sk_sp<SkData> data = SkData::MakeUninitialized(size);
      if (!this->readPad32(data->writable_data(), size)) {
          this->validate(false);
+diff --git a/src/core/SkScan_AAAPath.cpp b/src/core/SkScan_AAAPath.cpp
+index 06b3a276ed..23ba449e98 100644
+--- a/src/core/SkScan_AAAPath.cpp
++++ b/src/core/SkScan_AAAPath.cpp
+@@ -1441,7 +1441,6 @@ static void aaa_walk_edges(SkAnalyticEdge* prevHead, SkAnalyticEdge* nextTail,
+         // Even if next - y == SK_Fixed1, we can still break the left-to-right order requirement
+         // of the SKAAClip: |\| (two trapezoids with overlapping middle wedges)
+         bool noRealBlitter = forceRLE; // forceRLE && (nextY - y != SK_Fixed1);
+-
+         while (currE->fUpperY <= y) {
+             SkASSERT(currE->fLowerY >= nextY);
+             SkASSERT(currE->fY == y);
 diff --git a/src/core/SkTextBlob.cpp b/src/core/SkTextBlob.cpp
 index 6d89e6f135..99cbee4711 100644
 --- a/src/core/SkTextBlob.cpp
