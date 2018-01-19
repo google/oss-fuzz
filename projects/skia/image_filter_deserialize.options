@@ -2,3 +2,4 @@
 max_len = 10024
 rss_limit_mb = 0
 malloc_limit_mb = 500
+timeout = 10
