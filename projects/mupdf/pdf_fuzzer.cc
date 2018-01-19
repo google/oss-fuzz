@@ -22,6 +22,7 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   fz_context *ctx = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
+  fz_register_document_handlers(ctx);
 
   fz_stream *stream = fz_open_memory(ctx, data, size);
   fz_matrix ctm;
