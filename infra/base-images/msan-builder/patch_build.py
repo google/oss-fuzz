@@ -56,6 +56,10 @@ def Ldd(binary_path):
 
 def FindLib(path):
   """Find instrumented version of lib."""
+  candidate_path = os.path.join(MSAN_LIBS_PATH, path[1:])
+  if os.path.exists(candidate_path):
+    return candidate_path
+  
   for lib_dir in os.listdir(MSAN_LIBS_PATH):
     candidate_path = os.path.join(MSAN_LIBS_PATH, lib_dir, path[1:])
     if os.path.exists(candidate_path):

@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.  #
+# Copyright 2018 Google Inc.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,4 +14,14 @@
 #
 ################################################################################
 
-. Magick++/fuzz/build.sh
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER jonathan@titanous.com
+RUN apt-get update && apt-get install -y make libtool pkg-config
+RUN git clone --recursive --depth 1 git://git.ghostscript.com/mupdf.git mupdf
+RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
+    zip -q $SRC/pdf_fuzzer_seed_corpus.zip pdf.js/test/pdfs/*.pdf && \
+    rm -rf pdf.js
+ADD https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/pdf.dict $SRC/pdf_fuzzer.dict
+WORKDIR mupdf
+COPY *.cc source/fuzz/
+COPY build.sh *.options $SRC/

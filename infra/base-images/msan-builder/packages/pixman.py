@@ -1,5 +1,6 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.  #
+#!/usr/bin/env python
+# Copyright 2017 Google Inc.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,4 +15,21 @@
 #
 ################################################################################
 
-. Magick++/fuzz/build.sh
+import os
+import shutil
+
+import package
+
+
+class Package(package.Package):
+  """pixman package."""
+
+  def __init__(self, apt_version):
+    super(Package, self).__init__('pixman', apt_version)
+
+  def PostDownload(self, source_directory):
+    # Incorrect checking of GCC vector extension availability.
+    os.system(
+      'sed s/support_for_gcc_vector_extensions=yes/'
+      'support_for_gcc_vector_extensions=no/ -i %s/configure.ac' %
+      source_directory)

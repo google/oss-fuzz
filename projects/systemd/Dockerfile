@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.  #
+# Copyright 2018 Google Inc.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,4 +14,10 @@
 #
 ################################################################################
 
-. Magick++/fuzz/build.sh
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER jonathan@titanous.com
+RUN apt-get update && apt-get install -y gperf m4 gettext libcap-dev python3-pip &&\
+    pip3 install meson ninja
+RUN git clone --depth 1 https://github.com/systemd/systemd systemd
+WORKDIR systemd
+COPY build.sh $SRC/

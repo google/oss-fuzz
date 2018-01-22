@@ -13,13 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
-# TODO(kjlubick): Move this into Skia proper
-
 
 # Append this to build.gn in the skia repo and then build the targets
 test_app("fuzz_region_deserialize") {
   sources = [
-    "fuzz/oss_fuzz/region_deserialize.cpp",
+    "fuzz/oss_fuzz/FuzzRegionDeserialize.cpp",
   ]
   deps = [
     ":flags",
