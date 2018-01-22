@@ -60,10 +60,10 @@ index 2933e48cc4..c175b6e268 100644
      void* addr = allocProc(size);
      if (nullptr == addr) {
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index fb6d47bffe..f064b39e43 100644
+index 75d29e12a8..5157f6dcb3 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
-@@ -259,6 +259,11 @@ bool SkMaskFilter::filterPath(const SkPath& devPath, const SkMatrix& matrix,
+@@ -260,6 +260,11 @@ bool SkMaskFilter::filterPath(const SkPath& devPath, const SkMatrix& matrix,
  
      SkMask  srcM, dstM;
  
@@ -103,20 +103,6 @@ index 0d729f8a75..b2511eddc3 100644
                  fPaths.reset(count);
                  for (int i = 0; i < count; i++) {
                      buffer.readPath(&fPaths[i]);
-diff --git a/src/core/SkPictureData.h b/src/core/SkPictureData.h
-index 89ddcfaabe..5e8e3f9e09 100644
---- a/src/core/SkPictureData.h
-+++ b/src/core/SkPictureData.h
-@@ -117,8 +117,7 @@ public:
- 
-     SkDrawable* getDrawable(SkReadBuffer* reader) const {
-         int index = reader->readInt();
--        SkASSERT(index > 0 && index <= fDrawableCount);
--        return fDrawableRefs[index - 1];
-+        return reader->validateIndex(index, fDrawableCount - 1) ? fDrawableRefs[index - 1] : nullptr;
-     }
- 
-     const SkPaint* getPaint(SkReadBuffer* reader) const {
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
 index 8da4089a17..ba70e511f7 100644
 --- a/src/core/SkReadBuffer.cpp
