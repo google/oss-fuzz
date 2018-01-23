@@ -1,0 +1,293 @@
+diff --git a/include/private/SkMalloc.h b/include/private/SkMalloc.h
+index 178e1b83a7..d06dc3a4c2 100644
+--- a/include/private/SkMalloc.h
++++ b/include/private/SkMalloc.h
+@@ -64,6 +64,11 @@ static inline void* sk_calloc_throw(size_t size) {
+ }
+ 
+ static inline void* sk_calloc_canfail(size_t size) {
++#if defined(IS_FUZZING)
++    if (size > 100000) {
++        return nullptr;
++    }
++#endif
+     return sk_malloc_flags(size, SK_MALLOC_ZERO_INITIALIZE);
+ }
+ 
+@@ -76,6 +81,11 @@ SK_API extern void* sk_realloc_throw(void* buffer, size_t count, size_t elemSize
+  *  These variants return nullptr on failure
+  */
+ static inline void* sk_malloc_canfail(size_t size) {
++#if defined(IS_FUZZING)
++    if (size > 100000) {
++        return nullptr;
++    }
++#endif
+     return sk_malloc_flags(size, 0);
+ }
+ SK_API extern void* sk_malloc_canfail(size_t count, size_t elemSize);
+diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
+index e5ba0eb09f..163ade217d 100644
+--- a/src/core/SkImageFilter.cpp
++++ b/src/core/SkImageFilter.cpp
+@@ -123,6 +123,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
+         return false;
+     }
+ 
++#if defined(IS_FUZZING)
++    if (count > 4) {
++        return false;
++    }
++#endif
++
+     this->allocInputs(count);
+     for (int i = 0; i < count; i++) {
+         if (buffer.readBool()) {
+diff --git a/src/core/SkMallocPixelRef.cpp b/src/core/SkMallocPixelRef.cpp
+index 2933e48cc4..1ae9dd0404 100644
+--- a/src/core/SkMallocPixelRef.cpp
++++ b/src/core/SkMallocPixelRef.cpp
+@@ -73,6 +73,11 @@ sk_sp<SkPixelRef> SkMallocPixelRef::MakeUsing(void*(*allocProc)(size_t),
+             return nullptr;
+         }
+     }
++#if defined(IS_FUZZING)
++    if (size > 100000) {
++        return nullptr;
++    }
++#endif
+     void* addr = allocProc(size);
+     if (nullptr == addr) {
+         return nullptr;
+diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
+index 75d29e12a8..5157f6dcb3 100644
+--- a/src/core/SkMaskFilter.cpp
++++ b/src/core/SkMaskFilter.cpp
+@@ -260,6 +260,11 @@ bool SkMaskFilter::filterPath(const SkPath& devPath, const SkMatrix& matrix,
+ 
+     SkMask  srcM, dstM;
+ 
++#if defined(IS_FUZZING)
++    if (devPath.countVerbs() > 1000 || devPath.countPoints() > 1000) {
++        return false;
++    }
++#endif
+     if (!SkDraw::DrawToMask(devPath, &clip.getBounds(), this, &matrix, &srcM,
+                             SkMask::kComputeBoundsAndRenderImage_CreateMode,
+                             style)) {
+diff --git a/src/core/SkPictureData.cpp b/src/core/SkPictureData.cpp
+index 0d729f8a75..932c016d43 100644
+--- a/src/core/SkPictureData.cpp
++++ b/src/core/SkPictureData.cpp
+@@ -497,6 +497,11 @@ bool new_array_from_buffer(SkReadBuffer& buffer, uint32_t inCount,
+ }
+ 
+ bool SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t size) {
++#if defined(IS_FUZZING)
++    if (size > 1000) {
++        return false;
++    }
++#endif
+     switch (tag) {
+         case SK_PICT_PAINT_BUFFER_TAG: {
+             if (!buffer.validate(SkTFitsIn<int>(size))) {
+@@ -516,6 +521,11 @@ bool SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t
+                 if (count < 0) {
+                     return false;
+                 }
++            #if defined(IS_FUZZING)
++                if (count > 20) {
++                    return false;
++                }
++            #endif
+                 fPaths.reset(count);
+                 for (int i = 0; i < count; i++) {
+                     buffer.readPath(&fPaths[i]);
+diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
+index 8da4089a17..bf2a997420 100644
+--- a/src/core/SkReadBuffer.cpp
++++ b/src/core/SkReadBuffer.cpp
+@@ -256,7 +256,12 @@ bool SkReadBuffer::readScalarArray(SkScalar* values, size_t size) {
+ uint32_t SkReadBuffer::getArrayCount() {
+     const size_t inc = sizeof(uint32_t);
+     fError = fError || !IsPtrAlign4(fReader.peek()) || !fReader.isAvailable(inc);
++#if defined(IS_FUZZING)
++    uint32_t retVal = fError ? 0 : *(uint32_t*)fReader.peek();
++    return retVal < 1000 ? retVal: 1000;
++#else
+     return fError ? 0 : *(uint32_t*)fReader.peek();
++#endif
+ }
+ 
+ sk_sp<SkImage> SkReadBuffer::readImage() {
+@@ -291,6 +296,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
+     }
+ 
+     size_t size = SkAbs32(encoded_size);
++#if defined(IS_FUZZING)
++    if (size > 100000) {
++        this->validate(false);
++        return nullptr;
++    }
++#endif
+     sk_sp<SkData> data = SkData::MakeUninitialized(size);
+     if (!this->readPad32(data->writable_data(), size)) {
+         this->validate(false);
+diff --git a/src/core/SkScan_Path.cpp b/src/core/SkScan_Path.cpp
+index f2a18b631e..39f8ecb2ce 100644
+--- a/src/core/SkScan_Path.cpp
++++ b/src/core/SkScan_Path.cpp
+@@ -253,6 +253,11 @@ static void walk_convex_edges(SkEdge* prevHead, SkPath::FillType,
+             }
+             local_top = local_bot + 1;
+         } else {
++#if defined(IS_FUZZING)
++            if (count > 1000) {
++                count = 1000;
++            }
++#endif
+             do {
+                 int L = SkFixedRoundToInt(left);
+                 int R = SkFixedRoundToInt(rite);
+diff --git a/src/core/SkTextBlob.cpp b/src/core/SkTextBlob.cpp
+index 6d89e6f135..680534d384 100644
+--- a/src/core/SkTextBlob.cpp
++++ b/src/core/SkTextBlob.cpp
+@@ -800,7 +800,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+             // End-of-runs marker.
+             break;
+         }
+-
++#if defined(IS_FUZZING)
++        if (glyphCount > 1000) {
++            return nullptr;
++        }
++#endif
+         PositioningAndExtended pe;
+         pe.intValue = reader.read32();
+         GlyphPositioning pos = pe.positioning;
+@@ -811,7 +815,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+         if (textSize < 0) {
+             return nullptr;
+         }
+-
++#if defined(IS_FUZZING)
++        if (textSize > 1000) {
++            return nullptr;
++        }
++#endif
+         SkPoint offset;
+         reader.readPoint(&offset);
+         SkPaint font;
+diff --git a/src/effects/Sk1DPathEffect.cpp b/src/effects/Sk1DPathEffect.cpp
+index 37cd13052e..5ef2e0c4b8 100644
+--- a/src/effects/Sk1DPathEffect.cpp
++++ b/src/effects/Sk1DPathEffect.cpp
+@@ -15,6 +15,11 @@
+ bool Sk1DPathEffect::filterPath(SkPath* dst, const SkPath& src,
+                                 SkStrokeRec*, const SkRect*) const {
+     SkPathMeasure   meas(src, false);
++#if defined(IS_FUZZING)
++    if (meas.getLength() < 0 || meas.getLength() > 100) {
++        return false;
++    }
++#endif
+     do {
+         SkScalar    length = meas.getLength();
+         SkScalar    distance = this->begin(length);
+@@ -23,6 +28,11 @@ bool Sk1DPathEffect::filterPath(SkPath* dst, const SkPath& src,
+             if (delta <= 0) {
+                 break;
+             }
++#if defined(IS_FUZZING)
++            if (delta <= SK_ScalarNearlyZero) {
++                return false;
++            }
++#endif
+             distance += delta;
+         }
+     } while (meas.nextContour());
+@@ -65,6 +75,11 @@ SkPath1DPathEffect::SkPath1DPathEffect(const SkPath& path, SkScalar advance,
+ 
+ bool SkPath1DPathEffect::filterPath(SkPath* dst, const SkPath& src,
+                             SkStrokeRec* rec, const SkRect* cullRect) const {
++#if defined(IS_FUZZING)
++    if (dst->countVerbs() > 100 || dst->countPoints() > 100) {
++        return false;
++    }
++#endif
+     if (fAdvance > 0) {
+         rec->setFillStyle();
+         return this->INHERITED::filterPath(dst, src, rec, cullRect);
+@@ -109,6 +124,7 @@ static void morphpath(SkPath* dst, const SkPath& src, SkPathMeasure& meas,
+     SkPoint         srcP[4], dstP[3];
+     SkPath::Verb    verb;
+ 
++    //SkDebugf("morphpath Measure %d\n", meas.getLength());
+     while ((verb = iter.next(srcP)) != SkPath::kDone_Verb) {
+         switch (verb) {
+             case SkPath::kMove_Verb:
+diff --git a/src/effects/Sk2DPathEffect.cpp b/src/effects/Sk2DPathEffect.cpp
+index e7ef54b6f7..727aa5221f 100644
+--- a/src/effects/Sk2DPathEffect.cpp
++++ b/src/effects/Sk2DPathEffect.cpp
+@@ -51,6 +51,11 @@ void Sk2DPathEffect::nextSpan(int x, int y, int count, SkPath* path) const {
+     if (!fMatrixIsInvertible) {
+         return;
+     }
++#if defined(IS_FUZZING)
++    if (count > 100) {
++        return;
++    }
++#endif
+ 
+     const SkMatrix& mat = this->getMatrix();
+     SkPoint src, dst;
+diff --git a/src/effects/SkDashPathEffect.cpp b/src/effects/SkDashPathEffect.cpp
+index 04f9e9e85f..e6976d62d1 100644
+--- a/src/effects/SkDashPathEffect.cpp
++++ b/src/effects/SkDashPathEffect.cpp
+@@ -367,6 +367,11 @@ void SkDashImpl::flatten(SkWriteBuffer& buffer) const {
+ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
+     const SkScalar phase = buffer.readScalar();
+     uint32_t count = buffer.getArrayCount();
++#if defined(IS_FUZZING)
++    if (count > 20) {
++        return nullptr;
++    }
++#endif
+     SkAutoSTArray<32, SkScalar> intervals(count);
+     if (buffer.readScalarArray(intervals.get(), count)) {
+         return SkDashPathEffect::Make(intervals.get(), SkToInt(count), phase);
+diff --git a/src/effects/SkLayerDrawLooper.cpp b/src/effects/SkLayerDrawLooper.cpp
+index 7dff657c52..b09597f0a2 100644
+--- a/src/effects/SkLayerDrawLooper.cpp
++++ b/src/effects/SkLayerDrawLooper.cpp
+@@ -261,6 +261,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
+ sk_sp<SkFlattenable> SkLayerDrawLooper::CreateProc(SkReadBuffer& buffer) {
+     int count = buffer.readInt();
+ 
++#if defined(IS_FUZZING)
++    if (count > 100) {
++        count = 100;
++    }
++#endif
+     Builder builder;
+     for (int i = 0; i < count; i++) {
+         LayerInfo info;
+diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
+index 1a714076e7..18ef8d0235 100755
+--- a/src/utils/SkShadowTessellator.cpp
++++ b/src/utils/SkShadowTessellator.cpp
+@@ -245,6 +245,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
+     SkScalar rotSin, rotCos;
+     int numSteps;
+     compute_radial_steps(fPrevOutset, nextNormal, fRadius, &rotSin, &rotCos, &numSteps);
++#if defined(IS_FUZZING)
++        if (numSteps > 50 || numSteps < 0) {
++            return false;
++        }
++#endif
+     SkVector prevNormal = fPrevOutset;
+     for (int i = 0; i < numSteps-1; ++i) {
+         SkVector currNormal;

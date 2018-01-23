@@ -24,3 +24,13 @@ test_app("fuzz_region_deserialize") {
     ":skia",
   ]
 }
+
+test_app("image_filter_deserialize") {
+  sources = [
+    "fuzz/oss_fuzz/image_filter_deserialize.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}

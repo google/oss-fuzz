@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kjlubick@chromium.org
 
-RUN apt-get update && apt-get install -y python
+RUN apt-get update && apt-get install -y python wget
 
 RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git'
 ENV PATH="${SRC}/depot_tools:${PATH}"
@@ -32,6 +32,13 @@ RUN python tools/git-sync-deps
 
 COPY build.sh $SRC/
 
+COPY skia.diff $SRC/skia/skia.diff
+RUN git apply skia.diff
+
 COPY region_deserialize.options $SRC/skia/region_deserialize.options
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn
+
+COPY image_filter_deserialize.options $SRC/skia/image_filter_deserialize.options
+RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
+COPY image_filter_deserialize.cpp $SRC/skia/fuzz/oss_fuzz/image_filter_deserialize.cpp

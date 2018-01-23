@@ -1,0 +1,1 @@
+When bench testing image_filter_deserialize, it may be useful to have malloc_limit_mb = 500, and timeout = 10 to find actionalbe OOM culprits sooner.
