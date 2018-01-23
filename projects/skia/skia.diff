@@ -44,21 +44,21 @@ index e5ba0eb09f..163ade217d 100644
      for (int i = 0; i < count; i++) {
          if (buffer.readBool()) {
 diff --git a/src/core/SkMallocPixelRef.cpp b/src/core/SkMallocPixelRef.cpp
-index 2933e48cc4..7e06652efb 100644
+index 2933e48cc4..1ae9dd0404 100644
 --- a/src/core/SkMallocPixelRef.cpp
 +++ b/src/core/SkMallocPixelRef.cpp
-@@ -72,6 +72,11 @@ sk_sp<SkPixelRef> SkMallocPixelRef::MakeUsing(void*(*allocProc)(size_t),
-         if (SkImageInfo::ByteSizeOverflowed(size)) {
+@@ -73,6 +73,11 @@ sk_sp<SkPixelRef> SkMallocPixelRef::MakeUsing(void*(*allocProc)(size_t),
              return nullptr;
          }
-+#if defined(IS_FUZZING)
-+        if (size > 100000) {
-+            return nullptr;
-+        }
-+#endif
      }
++#if defined(IS_FUZZING)
++    if (size > 100000) {
++        return nullptr;
++    }
++#endif
      void* addr = allocProc(size);
      if (nullptr == addr) {
+         return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
 index 75d29e12a8..5157f6dcb3 100644
 --- a/src/core/SkMaskFilter.cpp
