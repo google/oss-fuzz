@@ -23,15 +23,15 @@ import wrapper_utils
 
 
 class Package(package.Package):
-  """libgcrypt20 package."""
+  """gnutls28 package."""
 
   def __init__(self, apt_version):
-    super(Package, self).__init__('libgcrypt20', apt_version)
+    super(Package, self).__init__('gnutls28', apt_version)
 
   def PreBuild(self, source_directory, env, custom_bin_dir):
     configure_wrapper = (
         '#!/bin/bash\n'
-        '/usr/bin/dh_auto_configure "$@" --disable-asm')
+        '/usr/bin/dh_auto_configure "$@" --disable-hardware-acceleration')
 
     wrapper_utils.InstallWrapper(
         custom_bin_dir, 'dh_auto_configure', configure_wrapper)
