@@ -17,21 +17,8 @@
 #include <stdint.h>
 #include "gd.h"
 
-const uint32_t MAX_PIXEL_SIZE = 10000;
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    gdImagePtr im;
-
-    if (Size > 10) {
-        uint32_t width, height;
-        width = Data[7] + (Data[8] << 8);
-        height = Data[9] + (Data[10] << 8);
-        if (width * height > MAX_PIXEL_SIZE) {
-            return 0;
-        }
-    }
-
-    im = gdImageCreateFromGifPtr(Size, (void*) Data);
+    gdImagePtr im = gdImageCreateFromGifPtr(Size, (void*) Data);
     if (im) gdImageDestroy(im);
     return 0;
 }

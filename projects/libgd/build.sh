@@ -16,6 +16,7 @@
 ################################################################################
 
 ./bootstrap.sh
+sed -i'' -e 's/INT_MAX/100000/' "$SRC/libgd/src/gd_security.c"
 ./configure --prefix="$WORK" --disable-shared
 make -j$(nproc) install
 
