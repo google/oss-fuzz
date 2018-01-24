@@ -16,7 +16,11 @@
 ################################################################################
 
 ./bootstrap.sh
+
+# Limit the size of buffer allocations to avoid bogus OOM issues
+# https://github.com/libgd/libgd/issues/422
 sed -i'' -e 's/INT_MAX/100000/' "$SRC/libgd/src/gd_security.c"
+
 ./configure --prefix="$WORK" --disable-shared
 make -j$(nproc) install
 
