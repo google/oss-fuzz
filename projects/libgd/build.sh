@@ -20,14 +20,15 @@ sed -i'' -e 's/INT_MAX/100000/' "$SRC/libgd/src/gd_security.c"
 ./configure --prefix="$WORK" --disable-shared
 make -j$(nproc) install
 
-for target in tga gif; do
+for target in bmp gif tga; do
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
-      $SRC/${target}_target.cc -o $OUT/${target}_target -lFuzzingEngine -lgd
+      $SRC/${target}_target.cc -o $OUT/${target}_target \
+      -lFuzzingEngine -lgd
 done
 
 mkdir afl_testcases
 (cd afl_testcases; tar xvf "$SRC/afl_testcases.tgz")
-for format in gif; do
+for format in bmp gif; do
     mkdir $format
     find afl_testcases -type f -name '*.'$format -exec mv -n {} $format/ \;
     zip -rj $format.zip $format/
