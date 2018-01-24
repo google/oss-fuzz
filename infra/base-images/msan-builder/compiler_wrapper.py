@@ -109,6 +109,7 @@ def GetCompilerArgs(args, is_cxx):
   compiler_args.extend([
       # FORTIFY_SOURCE is not supported by sanitizers.
       '-U_FORTIFY_SOURCE',
+      '-Wp,-U_FORTIFY_SOURCE',
       # Reduce binary size.
       '-gline-tables-only',
       # Disable all warnings.
