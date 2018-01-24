@@ -15,17 +15,9 @@
 #
 ################################################################################
 
-# build project
-# e.g.
 ./bootstrap.sh
 ./configure --prefix="$WORK" --disable-shared
 make -j$(nproc) install
-
-# build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     -lFuzzingEngine /path/to/library.a
 
 for target in tga gif; do
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
