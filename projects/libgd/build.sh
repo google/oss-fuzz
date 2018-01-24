@@ -31,3 +31,12 @@ for target in tga gif; do
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
       $SRC/${target}_target.cc -o $OUT/${target}_target -lFuzzingEngine -lgd
 done
+
+mkdir afl_testcases
+(cd afl_testcases; tar xvf "$SRC/afl_testcases.tgz")
+for format in gif; do
+    mkdir $format
+    find afl_testcases -type f -name '*.'$format -exec mv -n {} $format/ \;
+    zip -rj $format.zip $format/
+    cp $format.zip "$OUT/${format}_target_seed_corpus.zip"
+done
