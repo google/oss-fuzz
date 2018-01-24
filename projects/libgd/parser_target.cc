@@ -17,8 +17,11 @@
 #include <stdint.h>
 #include "gd.h"
 
+#define PASTE(x) gdImageCreateFrom ## x ## Ptr
+#define CREATE_IMAGE(FORMAT) PASTE(FORMAT)
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    gdImagePtr im = gdImageCreateFromGifPtr(Size, (void*) Data);
+    gdImagePtr im = CREATE_IMAGE(FUZZ_GD_FORMAT)(Size, (void*) Data);
     if (im) gdImageDestroy(im);
     return 0;
 }

@@ -24,9 +24,11 @@ sed -i'' -e 's/INT_MAX/100000/' "$SRC/libgd/src/gd_security.c"
 ./configure --prefix="$WORK" --disable-shared
 make -j$(nproc) install
 
-for target in bmp gif tga; do
+for target in Bmp Gif Tga; do
+    lowercase=$(echo $target | tr "[:upper:]" "[:lower:]")
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
-      $SRC/${target}_target.cc -o $OUT/${target}_target \
+      -DFUZZ_GD_FORMAT=$target \
+      $SRC/parser_target.cc -o $OUT/${lowercase}_target \
       -lFuzzingEngine -lgd
 done
 
