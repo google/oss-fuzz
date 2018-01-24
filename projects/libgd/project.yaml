@@ -1,4 +1,5 @@
 homepage: "https://libgd.org"
-primary_contact: "<primary_contact_email>"
+primary_contact: "security@libgd.org"
 auto_ccs:
+  - vapier@gmail.com
   - tim@tim-smith.us
