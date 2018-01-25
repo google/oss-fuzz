@@ -24,7 +24,7 @@ sed -i'' -e 's/INT_MAX/100000/' "$SRC/libgd/src/gd_security.c"
 ./configure --prefix="$WORK" --disable-shared
 make -j$(nproc) install
 
-for target in Bmp Gif Tga; do
+for target in Bmp Gif Tga Gd Gd2 WBMP; do
     lowercase=$(echo $target | tr "[:upper:]" "[:lower:]")
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
       -DFUZZ_GD_FORMAT=$target \
