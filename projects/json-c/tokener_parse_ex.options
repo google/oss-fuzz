@@ -1,0 +1,2 @@
+[libfuzzer]
+dict = tokener_parse_ex.dict
