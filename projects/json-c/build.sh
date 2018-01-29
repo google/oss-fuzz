@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-# build project
-# e.g.
 ./autogen.sh
 ./configure --enable-static --disable-shared
 make -j$(nproc) all
