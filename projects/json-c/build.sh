@@ -20,7 +20,7 @@
 make -j$(nproc) all
 ar rc json_c.a *.o
 
-cp $SRC/*.dict $SRC/*.options $OUT/
+cp $SRC/*.dict $OUT/
 
 for f in $SRC/*_fuzzer.cc; do
     fuzzer=$(basename "$f" _fuzzer.cc)
