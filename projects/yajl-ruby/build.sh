@@ -22,6 +22,8 @@ cd ext/yajl
 echo '{"a":"\u00f8C","b":1.2,"c":{"d":["foo",{"bar":"baz"}]},"e":null,"f":true,"t":false}' > $WORK/seed.json
 zip -q $OUT/json_fuzzer_seed_corpus.zip $WORK/seed.json
 
+mv $SRC/*.dict $OUT/
+
 $CXX $CXXFLAGS -I. \
     -x c yajl.c yajl_alloc.c yajl_buf.c yajl_lex.c yajl_parser.c yajl_encode.c \
     ../../fuzz/json_fuzzer.c -o $OUT/json_fuzzer \

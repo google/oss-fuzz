@@ -19,4 +19,5 @@ MAINTAINER jonathan@titanous.com
 RUN git clone --depth 1 https://github.com/brianmario/yajl-ruby
 WORKDIR yajl-ruby
 COPY json_fuzzer.c $SRC/yajl-ruby/fuzz/
+COPY json_fuzzer.dict $SRC/
 COPY build.sh $SRC/
