@@ -182,6 +182,7 @@ It's recommended to look at code coverage as a sanity check to make sure that
 [fuzz target](glossary.md#fuzz-target) gets to the code you expect.
 
 ```bash
+$ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
 $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
 ```
 
