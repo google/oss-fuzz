@@ -75,7 +75,7 @@ def load_project_yaml(project_dir):
 
 
 def get_signed_url(path):
-  timestamp = int(time.time() + 60 * 60 * 5)
+  timestamp = int(time.time() + BUILD_TIMEOUT)
   blob = 'PUT\n\n\n{0}\n{1}'.format(
       timestamp, path)
 
