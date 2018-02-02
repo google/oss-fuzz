@@ -26,11 +26,28 @@ index 178e1b83a7..d06dc3a4c2 100644
      return sk_malloc_flags(size, 0);
  }
  SK_API extern void* sk_malloc_canfail(size_t count, size_t elemSize);
+diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
+index 3e4722be4d..ee49a24807 100644
+--- a/src/core/SkDraw.cpp
++++ b/src/core/SkDraw.cpp
+@@ -1111,6 +1111,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+     // transform the path into device space
+     pathPtr->transform(*matrix, devPathPtr);
+ 
++#if defined(IS_FUZZING)
++    if (devPathPtr->countPoints() > 1000) {
++        return;
++    }
++#endif
++
+     this->drawDevPath(*devPathPtr, *paint, drawCoverage, customBlitter, doFill);
+ }
+ 
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index e5ba0eb09f..163ade217d 100644
+index b2220a7651..9fa0b153ef 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
-@@ -123,6 +123,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
+@@ -122,6 +122,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
          return false;
      }
  
@@ -60,10 +77,10 @@ index 2933e48cc4..1ae9dd0404 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index 75d29e12a8..5157f6dcb3 100644
+index 59baa4fbff..93bd273058 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
-@@ -260,6 +260,11 @@ bool SkMaskFilter::filterPath(const SkPath& devPath, const SkMatrix& matrix,
+@@ -263,6 +263,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
  
      SkMask  srcM, dstM;
  
@@ -75,39 +92,56 @@ index 75d29e12a8..5157f6dcb3 100644
      if (!SkDraw::DrawToMask(devPath, &clip.getBounds(), this, &matrix, &srcM,
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
-diff --git a/src/core/SkPictureData.cpp b/src/core/SkPictureData.cpp
-index 0d729f8a75..932c016d43 100644
---- a/src/core/SkPictureData.cpp
-+++ b/src/core/SkPictureData.cpp
-@@ -497,6 +497,11 @@ bool new_array_from_buffer(SkReadBuffer& buffer, uint32_t inCount,
- }
- 
- bool SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t size) {
+diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
+index ab8bf2e1fc..975a849f5d 100644
+--- a/src/core/SkPath.cpp
++++ b/src/core/SkPath.cpp
+@@ -3484,7 +3484,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+                                    SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
+     SkASSERT(!oval.isEmpty());
+     SkASSERT(sweepAngle);
+-
 +#if defined(IS_FUZZING)
-+    if (size > 1000) {
-+        return false;
++    if (sweepAngle > 3600.0f || sweepAngle < 3600.0f) {
++        return;
 +    }
 +#endif
+     path->reset();
+     path->setIsVolatile(true);
+     path->setFillType(SkPath::kWinding_FillType);
+diff --git a/src/core/SkPictureData.cpp b/src/core/SkPictureData.cpp
+index 2ca88ae841..b1c42138ed 100644
+--- a/src/core/SkPictureData.cpp
++++ b/src/core/SkPictureData.cpp
+@@ -495,6 +495,11 @@ bool new_array_from_buffer(SkReadBuffer& buffer, uint32_t inCount,
+ }
+ 
+ void SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t size) {
++#if defined(IS_FUZZING)
++    if (size > 1000) {
++        return;
++    }
++#endif    
      switch (tag) {
          case SK_PICT_PAINT_BUFFER_TAG: {
              if (!buffer.validate(SkTFitsIn<int>(size))) {
-@@ -516,6 +521,11 @@ bool SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t
-                 if (count < 0) {
-                     return false;
+@@ -514,6 +519,11 @@ void SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t
+                 if (!buffer.validate(count >= 0)) {
+                     return;
                  }
-+            #if defined(IS_FUZZING)
++#if defined(IS_FUZZING)
 +                if (count > 20) {
-+                    return false;
++                    return;
 +                }
-+            #endif
++#endif
                  fPaths.reset(count);
                  for (int i = 0; i < count; i++) {
                      buffer.readPath(&fPaths[i]);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index 8da4089a17..bf2a997420 100644
+index d82ec4a046..0e1c95a0b5 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
-@@ -256,7 +256,12 @@ bool SkReadBuffer::readScalarArray(SkScalar* values, size_t size) {
+@@ -262,7 +262,12 @@ bool SkReadBuffer::readScalarArray(SkScalar* values, size_t size) {
  uint32_t SkReadBuffer::getArrayCount() {
      const size_t inc = sizeof(uint32_t);
      fError = fError || !IsPtrAlign4(fReader.peek()) || !fReader.isAvailable(inc);
@@ -120,7 +154,7 @@ index 8da4089a17..bf2a997420 100644
  }
  
  sk_sp<SkImage> SkReadBuffer::readImage() {
-@@ -291,6 +296,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
+@@ -297,6 +302,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
      }
  
      size_t size = SkAbs32(encoded_size);
@@ -133,8 +167,24 @@ index 8da4089a17..bf2a997420 100644
      sk_sp<SkData> data = SkData::MakeUninitialized(size);
      if (!this->readPad32(data->writable_data(), size)) {
          this->validate(false);
+diff --git a/src/core/SkScan_AAAPath.cpp b/src/core/SkScan_AAAPath.cpp
+index 06b3a276ed..f5984f991d 100644
+--- a/src/core/SkScan_AAAPath.cpp
++++ b/src/core/SkScan_AAAPath.cpp
+@@ -1594,6 +1594,11 @@ static SK_ALWAYS_INLINE void aaa_fill_path(const SkPath& path, const SkIRect& cl
+     SkASSERT(blitter);
+ 
+     SkEdgeBuilder builder;
++#if defined(IS_FUZZING)
++    if (path.countPoints() > 1000) {
++        return;
++    }
++#endif
+     int count = builder.build_edges(path, &clipRect, 0, pathContainedInClip,
+                                     SkEdgeBuilder::kAnalyticEdge);
+     SkAnalyticEdge** list = builder.analyticEdgeList();
 diff --git a/src/core/SkScan_Path.cpp b/src/core/SkScan_Path.cpp
-index f2a18b631e..39f8ecb2ce 100644
+index 6234afe873..54457da0ff 100644
 --- a/src/core/SkScan_Path.cpp
 +++ b/src/core/SkScan_Path.cpp
 @@ -253,6 +253,11 @@ static void walk_convex_edges(SkEdge* prevHead, SkPath::FillType,
@@ -180,7 +230,7 @@ index 6d89e6f135..680534d384 100644
          reader.readPoint(&offset);
          SkPaint font;
 diff --git a/src/effects/Sk1DPathEffect.cpp b/src/effects/Sk1DPathEffect.cpp
-index 37cd13052e..5ef2e0c4b8 100644
+index 8a74c16cda..f6a5557914 100644
 --- a/src/effects/Sk1DPathEffect.cpp
 +++ b/src/effects/Sk1DPathEffect.cpp
 @@ -15,6 +15,11 @@
@@ -219,14 +269,6 @@ index 37cd13052e..5ef2e0c4b8 100644
      if (fAdvance > 0) {
          rec->setFillStyle();
          return this->INHERITED::filterPath(dst, src, rec, cullRect);
-@@ -109,6 +124,7 @@ static void morphpath(SkPath* dst, const SkPath& src, SkPathMeasure& meas,
-     SkPoint         srcP[4], dstP[3];
-     SkPath::Verb    verb;
- 
-+    //SkDebugf("morphpath Measure %d\n", meas.getLength());
-     while ((verb = iter.next(srcP)) != SkPath::kDone_Verb) {
-         switch (verb) {
-             case SkPath::kMove_Verb:
 diff --git a/src/effects/Sk2DPathEffect.cpp b/src/effects/Sk2DPathEffect.cpp
 index e7ef54b6f7..727aa5221f 100644
 --- a/src/effects/Sk2DPathEffect.cpp
@@ -259,11 +301,27 @@ index 04f9e9e85f..e6976d62d1 100644
      SkAutoSTArray<32, SkScalar> intervals(count);
      if (buffer.readScalarArray(intervals.get(), count)) {
          return SkDashPathEffect::Make(intervals.get(), SkToInt(count), phase);
+diff --git a/src/effects/SkDiscretePathEffect.cpp b/src/effects/SkDiscretePathEffect.cpp
+index f188bfa818..44270f1675 100644
+--- a/src/effects/SkDiscretePathEffect.cpp
++++ b/src/effects/SkDiscretePathEffect.cpp
+@@ -97,6 +97,11 @@ bool SkDiscretePathEffect::filterPath(SkPath* dst, const SkPath& src,
+ 
+     do {
+         SkScalar    length = meas.getLength();
++#if defined(IS_FUZZING)
++        if (length > 1000) {
++            return false;
++        }
++#endif
+ 
+         if (fSegLength * (2 + doFill) > length) {
+             meas.getSegment(0, length, dst, true);  // to short for us to mangle
 diff --git a/src/effects/SkLayerDrawLooper.cpp b/src/effects/SkLayerDrawLooper.cpp
-index 7dff657c52..b09597f0a2 100644
+index 17aa7a123d..091a4bf9c7 100644
 --- a/src/effects/SkLayerDrawLooper.cpp
 +++ b/src/effects/SkLayerDrawLooper.cpp
-@@ -261,6 +261,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
+@@ -262,6 +262,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
  sk_sp<SkFlattenable> SkLayerDrawLooper::CreateProc(SkReadBuffer& buffer) {
      int count = buffer.readInt();
  
@@ -275,6 +333,22 @@ index 7dff657c52..b09597f0a2 100644
      Builder builder;
      for (int i = 0; i < count; i++) {
          LayerInfo info;
+diff --git a/src/utils/SkInsetConvexPolygon.cpp b/src/utils/SkInsetConvexPolygon.cpp
+index 8a55b13390..e3c78b4e1f 100755
+--- a/src/utils/SkInsetConvexPolygon.cpp
++++ b/src/utils/SkInsetConvexPolygon.cpp
+@@ -180,6 +180,11 @@ bool SkInsetConvexPolygon(const SkPoint* inputPolygonVerts, int inputPolygonSize
+     if (inputPolygonSize < 3) {
+         return false;
+     }
++#if defined(IS_FUZZING)
++    if (inputPolygonSize > 500) {
++        return false;
++    }
++#endif
+ 
+     int winding = get_winding(inputPolygonVerts, inputPolygonSize);
+     if (0 == winding) {
 diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
 index 1a714076e7..18ef8d0235 100755
 --- a/src/utils/SkShadowTessellator.cpp
