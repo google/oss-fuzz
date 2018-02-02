@@ -309,7 +309,6 @@ def build_fuzzers(args):
         '%s:/src/%s' % (_get_absolute_path(args.source_path), args.project_name)
     ]
   command += [
-      '-v', '%s:/root' % os.path.join(BUILD_DIR, 'root', project_name),
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name),
       '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
       '-t', 'gcr.io/oss-fuzz/%s' % project_name
