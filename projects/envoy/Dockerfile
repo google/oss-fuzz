@@ -17,17 +17,16 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER htuch@google.com
 
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties
-RUN add-apt-repository ppa:webupd8team/java
 RUN apt-get update && apt-get -y install  \
-	vim             \
 	build-essential \
 	openjdk-8-jdk   \
 	make            \
-        curl            \
-        autoconf        \
-        libtool
-RUN apt-get -y install cmake wget golang
+    curl            \
+    autoconf        \
+    libtool         \
+    cmake           \
+    wget            \
+    golang
 
 # Install Bazel
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
