@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Disable UBSan vptr since target built with -fno-rtti.
+export CFLAGS="$CFLAGS -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+
 FUZZER_TARGETS="\
 test/common/common:base64_fuzz_test \
 "
