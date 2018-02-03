@@ -15,6 +15,4 @@
 #
 ################################################################################
 
-# TODO: remove me as soon as the chmod is resolved in the repo
-chmod +x fuzzing/oss-fuzz-build.sh
 ./fuzzing/oss-fuzz-build.sh
