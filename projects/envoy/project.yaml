@@ -4,5 +4,3 @@ auto_ccs:
   - "mklein@lyft.com"
   - "alyssar@google.com"
   - "envoy-security@googlegroups.com"
-sanitizers:
-  - address
