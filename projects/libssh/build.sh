@@ -21,8 +21,8 @@ cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
     -DWITH_STATIC_LIB=ON ..
 make "-j$(nproc)"
-popd
 
 $CXX $CXXFLAGS -std=c++11 -Iinclude/ \
-    "$SRC/libssh_server_fuzzer.cc" -o "$OUT/libssh_server_fuzzer" \
-    -lFuzzingEngine ./build/src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
+    "tests/fuszz/ssh_server_fuzzer.cpp" -o "$OUT/libssh_server_fuzzer" \
+    -lFuzzingEngine ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
+popd
