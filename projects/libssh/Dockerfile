@@ -23,4 +23,4 @@ RUN apt-get update && apt-get install -y cmake zlib1g-dev libssl-dev
 RUN git clone https://git.libssh.org/projects/libssh.git
 
 WORKDIR libssh
-COPY build.sh libssh_server_fuzzer.cc $SRC/
+COPY build.sh $SRC/
