@@ -40,6 +40,7 @@ cd $SRC/llvm/tools && svn co https://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_R
 cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
 cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
 cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
+cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/libunwind/trunk@$LLVM_REVISION libunwind
 
 # Build & install
 mkdir -p $WORK/llvm
@@ -58,6 +59,7 @@ cmake -G "Ninja" \
       -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
       -DLLVM_USE_SANITIZER=Memory -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+      -DLIBCXXABI_USE_LLVM_UNWINDER=ON -LIBCXXABI_ENABLE_STATIC_UNWINDER=ON \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
       $SRC/llvm
 ninja cxx
