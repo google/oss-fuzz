@@ -183,7 +183,7 @@ def _add_engine_args(parser):
 def _add_sanitizer_args(parser):
   """Add common sanitizer args."""
   parser.add_argument('--sanitizer', default='address',
-                      choices=['address', 'memory', 'undefined'])
+                      choices=['address', 'memory', 'undefined', 'coverage'])
 
 
 def _add_environment_args(parser):
@@ -309,6 +309,7 @@ def build_fuzzers(args):
         '%s:/src/%s' % (_get_absolute_path(args.source_path), args.project_name)
     ]
   command += [
+      '-v', '%s:/root' % os.path.join(BUILD_DIR, 'root', project_name),
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name),
       '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
       '-t', 'gcr.io/oss-fuzz/%s' % project_name

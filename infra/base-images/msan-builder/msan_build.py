@@ -104,6 +104,17 @@ def SetUpEnvironment(work_dir):
 
   env['PATH'] = bin_dir + ':' + os.environ['PATH']
 
+  # nocheck doesn't disable override_dh_auto_test. So we have this hack to try
+  # to disable "make check" or "make test" invocations.
+  make_wrapper = (
+      '#!/bin/bash\n'
+      'if [ "$1" = "test" ] || [ "$1" = "check" ]; then\n'
+      '  exit 0\n'
+      'fi\n'
+      '/usr/bin/make "$@"\n')
+  wrapper_utils.InstallWrapper(bin_dir, 'make',
+                               make_wrapper)
+
   # Prevent entire build from failing because of bugs/uninstrumented in tools
   # that are part of the build.
   msan_log_dir = os.path.join(work_dir, 'msan')
@@ -204,14 +215,15 @@ def GetPackage(package_name):
   apt_cache = apt.Cache()
   version = apt_cache[package_name].candidate
   source_name = version.source_name
+  local_source_name = source_name.replace('.', '_')
 
-  custom_package_path = os.path.join(PACKAGES_DIR, source_name) + '.py'
+  custom_package_path = os.path.join(PACKAGES_DIR, local_source_name) + '.py'
   if not os.path.exists(custom_package_path):
     print('Using default package build steps.')
     return package.Package(source_name, version)
 
   print('Using custom package build steps.')
-  module = imp.load_source('packages.' + source_name, custom_package_path)
+  module = imp.load_source('packages.' + local_source_name, custom_package_path)
   return module.Package(version)
 
 
@@ -258,6 +270,7 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
   ]
 
   BLACKLISTED_PACKAGES = [
+      'libcapnp-0.5.3',  # fails to compile on newer clang.
       'multiarch-support',
   ]
 

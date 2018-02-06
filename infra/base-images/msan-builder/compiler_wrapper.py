@@ -92,7 +92,7 @@ def RemoveZDefs(args):
   return filtered
 
 
-def GetCompilerArgs(args):
+def GetCompilerArgs(args, is_cxx):
   """Generate compiler args."""
   compiler_args = args[1:]
 
@@ -109,6 +109,7 @@ def GetCompilerArgs(args):
   compiler_args.extend([
       # FORTIFY_SOURCE is not supported by sanitizers.
       '-U_FORTIFY_SOURCE',
+      '-Wp,-U_FORTIFY_SOURCE',
       # Reduce binary size.
       '-gline-tables-only',
       # Disable all warnings.
@@ -125,6 +126,9 @@ def GetCompilerArgs(args):
     # If MSan flags weren't added for some reason, add them here.
     compiler_args.extend(msan_build.INJECTED_ARGS)
 
+  if is_cxx:
+    compiler_args.append('-stdlib=libc++')
+
   return compiler_args
 
 
@@ -140,7 +144,7 @@ def main(args):
   if is_cxx:
     real_clang += '++'
 
-  args = [real_clang] + GetCompilerArgs(args)
+  args = [real_clang] + GetCompilerArgs(args, is_cxx)
   debug_log_path = os.getenv('WRAPPER_DEBUG_LOG_PATH')
   if debug_log_path:
     with open(debug_log_path, 'a') as f:
