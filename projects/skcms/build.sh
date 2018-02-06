@@ -17,9 +17,8 @@
 
 echo "hello world"
 
-# $SRC/depot_tools/ninja -C out/Fuzz fuzz_region_deserialize
+$CC -c $CFLAGS skcms.c
+$CC -c $CFLAGS iccprofile_parse.c
+$CXX $CXXFLAGS *.o  $LIB_FUZZING_ENGINE -o $OUT/fuzz_iccprofile_parse
 
-# cp out/Fuzz/fuzz_region_deserialize $OUT/region_deserialize
-# cp ./region_deserialize.options $OUT/region_deserialize.options
-
-# May need -Wno-c++98-compat-pedantic -Wno-missing-prototypes
+cp iccprofile_parse.options $OUT/iccprofile_parse.options
