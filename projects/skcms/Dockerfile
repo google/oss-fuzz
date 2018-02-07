@@ -22,10 +22,7 @@ RUN apt-get update && apt-get install -y wget
 # checkout all sources needed to build your project
 RUN git clone https://skia.googlesource.com/skcms.git
 
-RUN wget -O $SRC/skcms/iccprofile_parse_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/iccprofile_parse_seed_corpus.zip
-
-COPY iccprofile_parse.c $SRC/skcms/
-COPY iccprofile_atf.c $SRC/skcms/
+RUN wget -O $SRC/skcms/iccprofile_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/iccprofile_seed_corpus.zip
 
 # current directory for build script
 WORKDIR skcms

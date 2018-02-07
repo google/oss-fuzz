@@ -15,15 +15,13 @@
 #
 ################################################################################
 
-echo "hello world"
-
-$CC -c $CFLAGS skcms.c iccprofile_parse.c iccprofile_atf.c
-$CXX $CXXFLAGS skcms.o iccprofile_parse.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_parse
-$CXX $CXXFLAGS skcms.o iccprofile_atf.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_atf
+$CC -c $CFLAGS skcms.c fuzz/fuzz_iccprofile_info.c fuzz/fuzz_iccprofile_atf.c -DIS_FUZZING_WITH_LIBFUZZER
+$CXX $CXXFLAGS skcms.o fuzz_iccprofile_info.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_info
+$CXX $CXXFLAGS skcms.o fuzz_iccprofile_atf.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_atf
 
 # They share the same options
-cp iccprofile.options $OUT/iccprofile_parse.options
+cp iccprofile.options $OUT/iccprofile_info.options
 cp iccprofile.options $OUT/iccprofile_atf.options
 # They all share the same seed corpus of icc profiles
-cp iccprofile_parse_seed_corpus.zip $OUT/iccprofile_parse_seed_corpus.zip
-cp iccprofile_parse_seed_corpus.zip $OUT/iccprofile_atf_seed_corpus.zip
+cp iccprofile_seed_corpus.zip $OUT/iccprofile_info_seed_corpus.zip
+cp iccprofile_seed_corpus.zip $OUT/iccprofile_atf_seed_corpus.zip
