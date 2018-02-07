@@ -17,8 +17,13 @@
 
 echo "hello world"
 
-$CC -c $CFLAGS skcms.c
-$CC -c $CFLAGS iccprofile_parse.c
-$CXX $CXXFLAGS *.o  $LIB_FUZZING_ENGINE -o $OUT/fuzz_iccprofile_parse
+$CC -c $CFLAGS skcms.c iccprofile_parse.c iccprofile_atf.c
+$CXX $CXXFLAGS skcms.o iccprofile_parse.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_parse
+$CXX $CXXFLAGS skcms.o iccprofile_atf.o $LIB_FUZZING_ENGINE -o $OUT/iccprofile_atf
 
-cp iccprofile_parse.options $OUT/iccprofile_parse.options
+# They share the same options
+cp iccprofile.options $OUT/iccprofile_parse.options
+cp iccprofile.options $OUT/iccprofile_atf.options
+# They all share the same seed corpus of icc profiles
+cp iccprofile_parse_seed_corpus.zip $OUT/iccprofile_parse_seed_corpus.zip
+cp iccprofile_parse_seed_corpus.zip $OUT/iccprofile_atf_seed_corpus.zip

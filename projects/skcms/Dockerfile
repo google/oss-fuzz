@@ -17,21 +17,19 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kjlubick@chromium.org
 
-# Can't use apt-get install cmake, it installs 3.5.0, which is too old
-#RUN apt-get update && apt-get install -y wget
-
-#RUN wget -O $TMP/installcmake.sh https://cmake.org/files/v3.10/cmake-3.10.1-Linux-x86_64.sh
-#RUN chmod 755 $TMP/installcmake.sh
-#RUN mkdir -p 777 /opt/cmake
-#RUN $TMP/installcmake.sh --skip-license --prefix=/opt/cmake
+RUN apt-get update && apt-get install -y wget
 
 # checkout all sources needed to build your project
 RUN git clone https://skia.googlesource.com/skcms.git
+
+RUN wget -O $SRC/skcms/iccprofile_parse_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/iccprofile_parse_seed_corpus.zip
+
+COPY iccprofile_parse.c $SRC/skcms/
+COPY iccprofile_atf.c $SRC/skcms/
 
 # current directory for build script
 WORKDIR skcms
 
 COPY build.sh $SRC/
 
-COPY iccprofile_parse.c $SRC/skcms/
-COPY iccprofile_parse.options $SRC/skcms/
+COPY iccprofile.options $SRC/skcms/

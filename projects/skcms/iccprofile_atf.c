@@ -20,15 +20,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (!skcms_ICCProfile_parse(&p, data, size)) {
         return 0;
     }
-    skcms_Matrix3x3 m;
-    skcms_ICCProfile_toXYZD50(&p, &m);
     skcms_TransferFunction tf;
-    skcms_ICCProfile_getTransferFunction(&p, &tf);
-
-    if (p.tag_count > 0) {
-        skcms_ICCTag tag;
-        skcms_ICCProfile_getTagByIndex(&p, 0, &tag);
-        skcms_ICCProfile_getTagByIndex(&p, p.tag_count - 1, &tag);
-    }
+    float f = 0.05;
+    skcms_ICCProfile_approximateTransferFunction(&p, &tf, &f);
     return 0;
 }
