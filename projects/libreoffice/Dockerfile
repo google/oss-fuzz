@@ -118,7 +118,7 @@ RUN svn export https://github.com/khaledhosny/ots/trunk/tests/fonts $SRC/sample-
 RUN svn export https://github.com/unicode-org/text-rendering-tests/trunk/fonts/ $SRC/sample-sft-fonts/unicode-org
 RUN svn export https://github.com/harfbuzz/harfbuzz/trunk/test/shaping/data/in-house/fonts $SRC/sample-sft-fonts/harfbuzz
 ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/sample-sft-fonts/adobe
-RUN zip -q $SRC/sftfuzzer_seed_corpus.zip $SRC/sample-sft-fonts
+RUN zip -qr $SRC/sftfuzzer_seed_corpus.zip $SRC/sample-sft-fonts
 ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xbmfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xpmfuzzer_seed_corpus.zip \
