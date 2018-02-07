@@ -1,6 +1,6 @@
 # OSS-Fuzz - Continuous Fuzzing for Open Source Software
 
-> *Status*: Beta. We are now accepting applications from widely-used open source projects.
+> *Status*: Stable. We are accepting applications from widely-used open source projects.
 
 [FAQ](docs/faq.md)
 | [Ideal Fuzzing Integration](docs/ideal_integration.md)

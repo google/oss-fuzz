@@ -92,7 +92,7 @@ In general, this script will need to:
 *Note*:
 
 1. Please don't assume that the fuzzing engine is libFuzzer and hardcode in your build scripts.
-In future, we will add support for other fuzzing engines like AFL.
+We generate builds for both libFuzzer and AFL fuzzing engine configurations.
 So, link the fuzzing engine using `-lFuzzingEngine`, see example below.
 2. Please make sure that the binary names for your [fuzz targets](glossary.md#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
@@ -182,6 +182,7 @@ It's recommended to look at code coverage as a sanity check to make sure that
 [fuzz target](glossary.md#fuzz-target) gets to the code you expect.
 
 ```bash
+$ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
 $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
 ```
 

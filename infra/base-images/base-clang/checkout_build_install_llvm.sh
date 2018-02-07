@@ -54,11 +54,18 @@ rm -rf $WORK/llvm
 
 mkdir -p $WORK/msan
 cd $WORK/msan
+
+# https://github.com/google/oss-fuzz/issues/1099
+cat <<EOF > $WORK/msan/blacklist.txt
+fun:__gxx_personality_*
+EOF
+
 cmake -G "Ninja" \
       -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
       -DLLVM_USE_SANITIZER=Memory -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
+      -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt" \
       $SRC/llvm
 ninja cxx
 ninja install-cxx

@@ -22,18 +22,21 @@
     --enable-application-coap           \
     --enable-border-router              \
     --enable-cert-log                   \
+    --enable-channel-monitor            \
     --enable-child-supervision          \
     --enable-commissioner               \
     --enable-dhcp6-client               \
     --enable-dhcp6-server               \
+    --enable-dns-client                 \
     --enable-diag                       \
     --enable-dns-client                 \
     --enable-jam-detection              \
     --enable-joiner                     \
     --enable-legacy                     \
-    --enable-mac-whitelist              \
+    --enable-mac-filter                 \
     --enable-mtd-network-diagnostic     \
     --enable-raw-link-api               \
+    --enable-service                    \
     --enable-tmf-proxy                  \
     --disable-docs
 
