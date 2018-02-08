@@ -3,7 +3,7 @@ primary_contact: "kjlubick@chromium.org"
 auto_ccs:
   - "hcm@chromium.org"
   - "mtklein@chromium.org"
-  - "reed@chromium.org"
+  - "reed@google.com"
 sanitizers:
  - address
  - undefined
