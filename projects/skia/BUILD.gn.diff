@@ -44,3 +44,13 @@ test_app("region_set_path") {
     ":skia",
   ]
 }
+
+test_app("textblob_deserialize") {
+  sources = [
+    "fuzz/oss_fuzz/FuzzTextBlobDeserialize.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
