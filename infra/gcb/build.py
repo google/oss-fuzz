@@ -20,6 +20,8 @@ from oauth2client.client import GoogleCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
+BUILD_TIMEOUT = 10 * 60 * 60
+
 CONFIGURATIONS = {
   'sanitizer-address' : [ 'SANITIZER=address' ],
   'sanitizer-memory' : [ 'SANITIZER=memory' ],
@@ -28,6 +30,7 @@ CONFIGURATIONS = {
   'engine-libfuzzer' : [ 'FUZZING_ENGINE=libfuzzer' ],
   'engine-afl' : [ 'FUZZING_ENGINE=afl' ],
   'engine-honggfuzz' : [ 'FUZZING_ENGINE=honggfuzz' ],
+  'engine-none' : [ 'FUZZING_ENGINE=none' ],
 }
 
 EngineInfo = collections.namedtuple(
@@ -43,6 +46,9 @@ ENGINE_INFO = {
     'honggfuzz': EngineInfo(
         upload_bucket='clusterfuzz-builds-honggfuzz',
         supported_sanitizers=['address', 'memory', 'undefined']),
+    'none': EngineInfo(
+        upload_bucket='clusterfuzz-builds-no-engine',
+        supported_sanitizers=['address']),
 }
 
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
@@ -69,7 +75,7 @@ def load_project_yaml(project_dir):
 
 
 def get_signed_url(path):
-  timestamp = int(time.time() + 60 * 60 * 5)
+  timestamp = int(time.time() + BUILD_TIMEOUT)
   blob = 'PUT\n\n\n{0}\n{1}'.format(
       timestamp, path)
 
@@ -159,6 +165,14 @@ def get_build_steps(project_yaml, dockerfile_path):
           ],
           'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
       },
+      {
+          'name': 'gcr.io/oss-fuzz-base/msan-builder',
+          'args': [
+            'bash',
+            '-c',
+            'cp -r /msan /workspace',
+          ],
+      },
   ]
 
   for fuzzing_engine in project_yaml['fuzzing_engines']:
@@ -179,28 +193,44 @@ def get_build_steps(project_yaml, dockerfile_path):
           bucket, name, stamped_srcmap_file))
 
       env.append('OUT=' + out)
+      env.append('MSAN_LIBS_PATH=/workspace/msan')
 
       workdir = workdir_from_dockerfile(dockerfile_path)
       if not workdir:
         workdir = '/src'
 
-      build_steps.extend([
+      build_steps.append({
           # compile
-          {'name': image,
-            'env': env,
-            'args': [
-              'bash',
-              '-c',
-              # Remove /out to break loudly when a build script incorrectly uses
-              # /out instead of $OUT.
-              # `cd /src && cd {workdir}` (where {workdir} is parsed from the
-              # Dockerfile). Container Builder overrides our workdir so we need to add
-              # this step to set it back.
-              # We also remove /work and /src to save disk space after a step.
-              # Container Builder doesn't pass --rm to docker run yet.
-              'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
-            ],
-          },
+          'name': image,
+          'env': env,
+          'args': [
+            'bash',
+            '-c',
+            # Remove /out to break loudly when a build script incorrectly uses
+            # /out instead of $OUT.
+            # `cd /src && cd {workdir}` (where {workdir} is parsed from the
+            # Dockerfile). Container Builder overrides our workdir so we need to add
+            # this step to set it back.
+            # We also remove /work and /src to save disk space after a step.
+            # Container Builder doesn't pass --rm to docker run yet.
+            'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
+          ],
+      })
+
+      if sanitizer == 'memory':
+        # Patch dynamic libraries to use instrumented ones.
+        build_steps.append({
+          'name': 'gcr.io/oss-fuzz-base/msan-builder',
+          'args': [
+            'bash',
+            '-c',
+            # TODO(ochang): Replace with just patch_build.py once permission in
+            # image is fixed.
+            'python /usr/local/bin/patch_build.py {0}'.format(out),
+          ],
+        })
+
+      build_steps.extend([
           # zip binaries
           {'name': image,
             'args': [
@@ -256,7 +286,7 @@ def main():
 
   build_body = {
       'steps': get_build_steps(project_yaml, dockerfile_path),
-      'timeout': str(6 * 3600) + 's',
+      'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': 'oss-fuzz-gcb-logs',
       'images': [ project_yaml['image'] ],

@@ -27,7 +27,7 @@ make -j$(nproc) CC="$CC $CFLAGS" CXX="$CXX $CXXFLAGS" CANONICAL_PREFIXES= all \
   NOISY_LOGGING=
 
 # Build fuzzers
-for fuzzer_archive in $(ls src/*fuzzer*.a); do
+for fuzzer_archive in src/*fuzzer*.a; do
   fuzzer_name=$(basename ${fuzzer_archive%.a})
   $CXX $CXXFLAGS -lFuzzingEngine $fuzzer_archive \
       -o $OUT/$fuzzer_name

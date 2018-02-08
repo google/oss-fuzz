@@ -1,0 +1,10 @@
+homepage: "https://skia.googlesource.com/skcms/+/master"
+primary_contact: "kjlubick@chromium.org"
+auto_ccs:
+  - "mtklein@chromium.org"
+  - "brianosman@chromium.org"
+sanitizers:
+ - address
+ - memory
+ - undefined:
+    experimental: True

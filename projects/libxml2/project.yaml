@@ -4,6 +4,7 @@ auto_ccs:
   - "ddkilzer@apple.com"
   - "benl@google.com"
   - "wellnhofer@aevum.de"
+  - "akilsrin@apple.com"
 sanitizers:
   - address
   - memory

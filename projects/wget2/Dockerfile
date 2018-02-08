@@ -33,7 +33,9 @@ RUN apt-get update && apt-get install -y \
  curl \
  gperf \
  wget \
- python
+ python \
+ lzip \
+ rsync
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git
@@ -44,7 +46,7 @@ RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 RUN git clone --depth=1 --recursive https://gnunet.org/git/libmicrohttpd.git
 
-RUN git clone --depth=1 --recursive https://gitlab.com/gnuwget/wget2.git
+RUN git clone --recursive https://gitlab.com/gnuwget/wget2.git
 
 WORKDIR wget2
 COPY build.sh $SRC/

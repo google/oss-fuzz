@@ -1,0 +1,4 @@
+homepage: "https://libsodium.org"
+primary_contact: "ossfuzzz+sodium@gmail.com"
+auto_ccs:
+ - "chriswwolfe@gmail.com"

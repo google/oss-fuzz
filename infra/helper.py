@@ -17,6 +17,7 @@
 
 from __future__ import print_function
 import argparse
+import datetime
 import errno
 import os
 import pipes
@@ -38,6 +39,7 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder',
     'gcr.io/oss-fuzz-base/base-runner',
     'gcr.io/oss-fuzz-base/base-runner-debug',
+    'gcr.io/oss-fuzz-base/msan-builder',
 ]
 
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
@@ -73,6 +75,7 @@ def main():
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer.')
   _add_engine_args(run_fuzzer_parser)
+  _add_environment_args(run_fuzzer_parser)
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
@@ -174,13 +177,13 @@ def _get_command_string(command):
 def _add_engine_args(parser):
   """Add common engine args."""
   parser.add_argument('--engine', default='libfuzzer',
-                      choices=['libfuzzer', 'afl', 'honggfuzz'])
+                      choices=['libfuzzer', 'afl', 'honggfuzz', 'none'])
 
 
 def _add_sanitizer_args(parser):
   """Add common sanitizer args."""
   parser.add_argument('--sanitizer', default='address',
-                      choices=['address', 'memory', 'undefined'])
+                      choices=['address', 'memory', 'undefined', 'coverage'])
 
 
 def _add_environment_args(parser):
@@ -331,6 +334,8 @@ def run_fuzzer(args):
     return 1
 
   env = ['FUZZING_ENGINE=' + args.engine]
+  if args.e:
+    env += args.e
 
   run_args = sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
@@ -433,7 +438,8 @@ def generate(args):
   print('Writing new files to', dir)
 
   template_args = {
-    'project_name' : args.project_name
+    'project_name' : args.project_name,
+    'year': datetime.datetime.now().year
   }
   with open(os.path.join(dir, 'project.yaml'), 'w') as f:
     f.write(templates.PROJECT_YAML_TEMPLATE % template_args)

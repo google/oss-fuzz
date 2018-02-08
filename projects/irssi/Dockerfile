@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER joseph.bisch@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libglib2.0-dev libncurses5-dev libssl-dev openssl lynx
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libglib2.0-dev libncurses5-dev libssl-dev openssl lynx wget
 RUN git clone https://github.com/irssi/irssi
 
 WORKDIR irssi
-COPY build.sh *.options $SRC/
+COPY build.sh *.options *.dict $SRC/

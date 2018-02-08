@@ -8,7 +8,7 @@
 
 cd ${SRC}/adhd/cras
 ./git_prepare.sh
-./configure --disable-DBUS
+./configure --disable-dbus
 make -j$(nproc)
 
 $CXX $CXXFLAGS $FUZZER_LDFLAGS \

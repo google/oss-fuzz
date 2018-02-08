@@ -84,24 +84,33 @@ export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget2
 ./bootstrap
-LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
-./configure --enable-static --disable-shared --disable-doc --without-plugin-support
-make clean
-make -j$(nproc) all check
 
+# build and run non-networking tests
+LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+  ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support
+make clean
+make -j$(nproc)
+make -j$(nproc) -C unit-tests check
+make -j$(nproc) -C fuzz check
+
+# build for fuzzing
+LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+  ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support
+make clean
+make -j$(nproc) -C lib
+make -j$(nproc) -C include
+make -j$(nproc) -C libwget
+make -j$(nproc) -C src
+
+# build fuzzers
 cd fuzz
 CXXFLAGS="$CXXFLAGS -L$WGET2_DEPS_PATH/lib/" make oss-fuzz
+
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
 
-for fuzzer in *_fuzzer; do
-    cp -p "${fuzzer}" "$OUT"
-
-    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
-        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
-    fi
-
-    if [ -d "${fuzzer}.in/" ]; then
-        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${fuzzer}.in/"
-    fi
+for dir in *_fuzzer.in; do
+  fuzzer=$(basename $dir .in)
+  zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${dir}/"
 done

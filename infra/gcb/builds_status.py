@@ -64,20 +64,7 @@ def upload_status(successes, failures):
 
 
 def is_build_successful(build):
-  if build['status'] == 'SUCCESS':
-    return True
-
-  build_id = build['id']
-  logging_client = logging.Client(project='oss-fuzz')
-  entries = logging_client.list_entries(
-      order_by=logging.DESCENDING,
-      page_size=4,
-      filter_=(
-          'resource.type="build" AND '
-          'resource.labels.build_id="{0}"'.format(build_id)))
-
-  entries = next(entries.pages)
-  return any(entry.payload == 'DONE' for entry in entries)
+  return build['status'] == 'SUCCESS'
 
 
 def find_last_build(builds):
