@@ -5,6 +5,5 @@ auto_ccs:
   - "mtklein@chromium.org"
 sanitizers:
  - address
- - undefined:
-    experimental: True
+ - undefined
  - memory
