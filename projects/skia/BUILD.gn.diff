@@ -54,3 +54,13 @@ test_app("textblob_deserialize") {
     ":skia",
   ]
 }
+
+test_app("path_deserialize") {
+  sources = [
+    "fuzz/oss_fuzz/FuzzPathDeserialize.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
