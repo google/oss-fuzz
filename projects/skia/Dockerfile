@@ -25,12 +25,14 @@ ENV PATH="${SRC}/depot_tools:${PATH}"
 # checkout all sources needed to build your project
 RUN git clone https://skia.googlesource.com/skia.git
 
-RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
-
 # current directory for build script
 WORKDIR skia
 
 RUN python tools/git-sync-deps
+
+RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
+
+RUN wget -O $SRC/skia/region_set_path_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/region_set_path_seed_corpus.zip
 
 COPY build.sh $SRC/
 
@@ -38,7 +40,8 @@ COPY skia.diff $SRC/skia/skia.diff
 RUN git apply skia.diff
 
 COPY region_deserialize.options $SRC/skia/region_deserialize.options
+COPY region_set_path.options $SRC/skia/region_set_path.options
+COPY image_filter_deserialize.options $SRC/skia/image_filter_deserialize.options
+
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn
-
-COPY image_filter_deserialize.options $SRC/skia/image_filter_deserialize.options

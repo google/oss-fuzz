@@ -45,10 +45,14 @@ $SRC/depot_tools/gn gen out/Fuzz\
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize
 
-$SRC/depot_tools/ninja -C out/Fuzz region_deserialize
+$SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
+
+cp out/Fuzz/region_set_path $OUT/region_set_path
+cp ./region_set_path.options $OUT/region_set_path.options
+cp ./region_set_path_seed_corpus.zip $OUT/region_set_path_seed_corpus.zip
 
 cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize
 cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
