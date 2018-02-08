@@ -46,6 +46,8 @@ RUN git apply skia.diff
 COPY region_deserialize.options $SRC/skia/region_deserialize.options
 COPY region_set_path.options $SRC/skia/region_set_path.options
 COPY image_filter_deserialize.options $SRC/skia/image_filter_deserialize.options
+COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
+COPY path_deserialize.options $SRC/skia/path_deserialize.options
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn
