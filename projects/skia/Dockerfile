@@ -26,7 +26,6 @@ ENV PATH="${SRC}/depot_tools:${PATH}"
 RUN git clone https://skia.googlesource.com/skia.git
 
 RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
-COPY image_filter_deserialize.cpp $SRC/skia/fuzz/oss_fuzz/image_filter_deserialize.cpp
 
 # current directory for build script
 WORKDIR skia

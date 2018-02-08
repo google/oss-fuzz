@@ -15,7 +15,7 @@
 ################################################################################
 
 # Append this to build.gn in the skia repo and then build the targets
-test_app("fuzz_region_deserialize") {
+test_app("region_deserialize") {
   sources = [
     "fuzz/oss_fuzz/FuzzRegionDeserialize.cpp",
   ]
@@ -27,7 +27,7 @@ test_app("fuzz_region_deserialize") {
 
 test_app("image_filter_deserialize") {
   sources = [
-    "fuzz/oss_fuzz/image_filter_deserialize.cpp",
+    "fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp",
   ]
   deps = [
     ":flags",
