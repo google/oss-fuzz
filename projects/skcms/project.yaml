@@ -2,7 +2,7 @@ homepage: "https://skia.googlesource.com/skcms/+/master"
 primary_contact: "kjlubick@chromium.org"
 auto_ccs:
   - "mtklein@chromium.org"
-  - "brianosman@chromium.org"
+  - "brianosman@google.com"
 sanitizers:
  - address
  - memory
