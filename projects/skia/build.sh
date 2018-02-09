@@ -46,7 +46,7 @@ $SRC/depot_tools/gn gen out/Fuzz\
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path textblob_deserialize \
-                                   path_deserialize
+                                   path_deserialize image_decode animated_image_decode
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -63,6 +63,14 @@ cp ./textblob_deserialize_seed_corpus.zip $OUT/textblob_deserialize_seed_corpus.
 cp out/Fuzz/path_deserialize $OUT/path_deserialize
 cp ./path_deserialize.options $OUT/path_deserialize.options
 cp ./path_deserialize_seed_corpus.zip $OUT/path_deserialize_seed_corpus.zip
+
+cp out/Fuzz/image_decode $OUT/image_decode
+cp ./image_decode.options $OUT/image_decode.options
+cp ./image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
+
+cp out/Fuzz/animated_image_decode $OUT/animated_image_decode
+cp ./animated_image_decode.options $OUT/animated_image_decode.options
+cp ./animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpus.zip
 
 cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize
 cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options

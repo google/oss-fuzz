@@ -64,3 +64,23 @@ test_app("path_deserialize") {
     ":skia",
   ]
 }
+
+test_app("image_decode") {
+  sources = [
+    "fuzz/oss_fuzz/FuzzImage.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("animated_image_decode") {
+  sources = [
+    "fuzz/oss_fuzz/FuzzAnimatedImage.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
