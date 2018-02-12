@@ -34,7 +34,7 @@ import wrapper_utils
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGES_DIR = os.path.join(SCRIPT_DIR, 'packages')
 
-TRACK_ORIGINS_ARG = '-fsanitize-memory-track-origins=',
+TRACK_ORIGINS_ARG = '-fsanitize-memory-track-origins='
 
 INJECTED_ARGS = [
     '-fsanitize=memory',
@@ -410,7 +410,7 @@ def main():
   parser.add_argument('--log-path', help='Log path for debugging.')
   parser.add_argument('--no-track-origins',
                       action='store_true',
-                      help='Build with --fsanitize-memory-track-origins=0.')
+                      help='Build with -fsanitize-memory-track-origins=0.')
   args = parser.parse_args()
 
   if args.no_track_origins:
