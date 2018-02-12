@@ -331,10 +331,11 @@ def GetBuildList(package_name):
 class MSanBuilder(object):
   """MSan builder."""
 
-  def __init__(self, debug=False, log_path=None, work_dir=None):
+  def __init__(self, debug=False, log_path=None, work_dir=None, no_track_origins=False):
     self.debug = debug
     self.log_path = log_path
     self.work_dir = work_dir
+    self.no_track_origins = no_track_origins
     self.env = None
 
   def __enter__(self):
@@ -349,6 +350,9 @@ class MSanBuilder(object):
 
     if self.debug and self.log_path:
       self.env['WRAPPER_DEBUG_LOG_PATH'] = self.log_path
+
+    if self.no_track_origins:
+      self.env['MSAN_NO_TRACK_ORIGINS'] = '1'
 
     return self
 
@@ -442,7 +446,8 @@ def main():
     print('\t', package_name)
 
   with MSanBuilder(debug=args.debug, log_path=args.log_path,
-                   work_dir=args.work_dir) as builder:
+                   work_dir=args.work_dir,
+                   no_track_origins=args.no_track_origins) as builder:
     for package_name in package_names:
       builder.Build(package_name, args.output_dir, args.create_subdirs)
 
