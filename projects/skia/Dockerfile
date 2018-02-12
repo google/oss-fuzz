@@ -38,6 +38,10 @@ RUN wget -O $SRC/skia/textblob_deserialize_seed_corpus.zip https://storage.googl
 
 RUN wget -O $SRC/skia/path_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/path_deserialize_seed_corpus.zip
 
+RUN wget -O $SRC/skia/image_decode_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_decode_seed_corpus.zip
+
+RUN wget -O $SRC/skia/animated_image_decode_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/animated_image_decode_seed_corpus.zip
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
@@ -48,6 +52,8 @@ COPY region_set_path.options $SRC/skia/region_set_path.options
 COPY image_filter_deserialize.options $SRC/skia/image_filter_deserialize.options
 COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
 COPY path_deserialize.options $SRC/skia/path_deserialize.options
+COPY image_decode.options $SRC/skia/image_decode.options
+COPY animated_image_decode.options $SRC/skia/animated_image_decode.options
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn

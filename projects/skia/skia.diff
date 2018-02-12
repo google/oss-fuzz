@@ -1,36 +1,8 @@
-diff --git a/include/private/SkMalloc.h b/include/private/SkMalloc.h
-index 178e1b83a7..d06dc3a4c2 100644
---- a/include/private/SkMalloc.h
-+++ b/include/private/SkMalloc.h
-@@ -64,6 +64,11 @@ static inline void* sk_calloc_throw(size_t size) {
- }
- 
- static inline void* sk_calloc_canfail(size_t size) {
-+#if defined(IS_FUZZING)
-+    if (size > 100000) {
-+        return nullptr;
-+    }
-+#endif
-     return sk_malloc_flags(size, SK_MALLOC_ZERO_INITIALIZE);
- }
- 
-@@ -76,6 +81,11 @@ SK_API extern void* sk_realloc_throw(void* buffer, size_t count, size_t elemSize
-  *  These variants return nullptr on failure
-  */
- static inline void* sk_malloc_canfail(size_t size) {
-+#if defined(IS_FUZZING)
-+    if (size > 100000) {
-+        return nullptr;
-+    }
-+#endif
-     return sk_malloc_flags(size, 0);
- }
- SK_API extern void* sk_malloc_canfail(size_t count, size_t elemSize);
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 3e4722be4d..ee49a24807 100644
+index 478617f828..f4ead536aa 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1111,6 +1111,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1120,6 +1120,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -40,7 +12,7 @@ index 3e4722be4d..ee49a24807 100644
 +    }
 +#endif
 +
-     this->drawDevPath(*devPathPtr, *paint, drawCoverage, customBlitter, doFill);
+     this->drawDevPath(*devPathPtr, *paint, drawCoverage, customBlitter, doFill, iData);
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
@@ -77,10 +49,10 @@ index 2933e48cc4..1ae9dd0404 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index 59baa4fbff..93bd273058 100644
+index 347e828d0e..dd16dd81a4 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
-@@ -263,6 +263,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
+@@ -264,6 +264,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
  
      SkMask  srcM, dstM;
  
@@ -110,7 +82,7 @@ index ab8bf2e1fc..975a849f5d 100644
      path->setIsVolatile(true);
      path->setFillType(SkPath::kWinding_FillType);
 diff --git a/src/core/SkPictureData.cpp b/src/core/SkPictureData.cpp
-index 2ca88ae841..b1c42138ed 100644
+index 2ca88ae841..3fc4ecf6bd 100644
 --- a/src/core/SkPictureData.cpp
 +++ b/src/core/SkPictureData.cpp
 @@ -495,6 +495,11 @@ bool new_array_from_buffer(SkReadBuffer& buffer, uint32_t inCount,
@@ -121,7 +93,7 @@ index 2ca88ae841..b1c42138ed 100644
 +    if (size > 1000) {
 +        return;
 +    }
-+#endif    
++#endif
      switch (tag) {
          case SK_PICT_PAINT_BUFFER_TAG: {
              if (!buffer.validate(SkTFitsIn<int>(size))) {
@@ -138,10 +110,10 @@ index 2ca88ae841..b1c42138ed 100644
                  for (int i = 0; i < count; i++) {
                      buffer.readPath(&fPaths[i]);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index d82ec4a046..0e1c95a0b5 100644
+index 73e7af0fd7..1f2c87e0bb 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
-@@ -262,7 +262,12 @@ bool SkReadBuffer::readScalarArray(SkScalar* values, size_t size) {
+@@ -263,7 +263,12 @@ bool SkReadBuffer::readScalarArray(SkScalar* values, size_t size) {
  uint32_t SkReadBuffer::getArrayCount() {
      const size_t inc = sizeof(uint32_t);
      fError = fError || !IsPtrAlign4(fReader.peek()) || !fReader.isAvailable(inc);
@@ -154,7 +126,7 @@ index d82ec4a046..0e1c95a0b5 100644
  }
  
  sk_sp<SkImage> SkReadBuffer::readImage() {
-@@ -297,6 +302,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
+@@ -298,6 +303,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
      }
  
      size_t size = SkAbs32(encoded_size);
@@ -168,10 +140,10 @@ index d82ec4a046..0e1c95a0b5 100644
      if (!this->readPad32(data->writable_data(), size)) {
          this->validate(false);
 diff --git a/src/core/SkScan_AAAPath.cpp b/src/core/SkScan_AAAPath.cpp
-index 06b3a276ed..f5984f991d 100644
+index e4e6701cea..c180f417c7 100644
 --- a/src/core/SkScan_AAAPath.cpp
 +++ b/src/core/SkScan_AAAPath.cpp
-@@ -1594,6 +1594,11 @@ static SK_ALWAYS_INLINE void aaa_fill_path(const SkPath& path, const SkIRect& cl
+@@ -1595,6 +1595,11 @@ static SK_ALWAYS_INLINE void aaa_fill_path(const SkPath& path, const SkIRect& cl
      SkASSERT(blitter);
  
      SkEdgeBuilder builder;
@@ -350,7 +322,7 @@ index 8a55b13390..e3c78b4e1f 100755
      int winding = get_winding(inputPolygonVerts, inputPolygonSize);
      if (0 == winding) {
 diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
-index 1a714076e7..18ef8d0235 100755
+index 11e8f2d5c6..60963ef288 100755
 --- a/src/utils/SkShadowTessellator.cpp
 +++ b/src/utils/SkShadowTessellator.cpp
 @@ -245,6 +245,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)

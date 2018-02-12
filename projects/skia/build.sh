@@ -43,10 +43,10 @@ $SRC/depot_tools/gn gen out/Fuzz\
     skia_enable_gpu=false
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
-$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize
+$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize textblob_deserialize
 
-$SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path textblob_deserialize \
-                                   path_deserialize
+$SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
+                                   path_deserialize image_decode animated_image_decode
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -56,13 +56,21 @@ cp ./region_deserialize.options $OUT/region_deserialize.options
 # cp ./region_set_path.options $OUT/region_set_path.options
 # cp ./region_set_path_seed_corpus.zip $OUT/region_set_path_seed_corpus.zip
 
-cp out/Fuzz/textblob_deserialize $OUT/textblob_deserialize
+cp out/Fuzz_mem_constraints/textblob_deserialize $OUT/textblob_deserialize
 cp ./textblob_deserialize.options $OUT/textblob_deserialize.options
 cp ./textblob_deserialize_seed_corpus.zip $OUT/textblob_deserialize_seed_corpus.zip
 
 cp out/Fuzz/path_deserialize $OUT/path_deserialize
 cp ./path_deserialize.options $OUT/path_deserialize.options
 cp ./path_deserialize_seed_corpus.zip $OUT/path_deserialize_seed_corpus.zip
+
+cp out/Fuzz/image_decode $OUT/image_decode
+cp ./image_decode.options $OUT/image_decode.options
+cp ./image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
+
+cp out/Fuzz/animated_image_decode $OUT/animated_image_decode
+cp ./animated_image_decode.options $OUT/animated_image_decode.options
+cp ./animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpus.zip
 
 cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize
 cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
