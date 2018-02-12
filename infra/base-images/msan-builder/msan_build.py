@@ -33,9 +33,11 @@ import wrapper_utils
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGES_DIR = os.path.join(SCRIPT_DIR, 'packages')
+
+TRACK_ORIGINS_ARG = '-fsanitize-memory-track-origins=',
+
 INJECTED_ARGS = [
     '-fsanitize=memory',
-    '-fsanitize-memory-track-origins=2',
     '-fsanitize-recover=memory',
     '-fPIC',
     '-fno-omit-frame-pointer',
@@ -44,6 +46,18 @@ INJECTED_ARGS = [
 
 class MSanBuildException(Exception):
   """Base exception."""
+
+
+def GetTrackOriginsFlag():
+  """Get the track origins flag."""
+  if os.getenv('MSAN_NO_TRACK_ORIGINS'):
+    return TRACK_ORIGINS_ARG + '0'
+
+  return TRACK_ORIGINS_ARG + '2'
+
+
+def GetInjectedFlags():
+  return INJECTED_ARGS + [GetTrackOriginsFlag()]
 
 
 def SetUpEnvironment(work_dir):
@@ -74,7 +88,7 @@ def SetUpEnvironment(work_dir):
   env['CC'] = os.path.join(bin_dir, 'clang')
   env['CXX'] = os.path.join(bin_dir, 'clang++')
 
-  MSAN_OPTIONS = ' '.join(INJECTED_ARGS)
+  MSAN_OPTIONS = ' '.join(GetInjectedFlags())
 
   # We don't use nostrip because some build rules incorrectly break when it is
   # passed. Instead we install our own no-op strip binaries.
@@ -271,6 +285,11 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
 
   BLACKLISTED_PACKAGES = [
       'libcapnp-0.5.3',  # fails to compile on newer clang.
+      'libllvm5.0',
+      'libmircore1',
+      'libmircommon7',
+      'libmirclient9',
+      'libmirprotobuf3',
       'multiarch-support',
   ]
 
@@ -389,7 +408,13 @@ def main():
                       help='Don\'t build dependencies.')
   parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
   parser.add_argument('--log-path', help='Log path for debugging.')
+  parser.add_argument('--no-track-origins',
+                      action='store_true',
+                      help='Build with --fsanitize-memory-track-origins=0.')
   args = parser.parse_args()
+
+  if args.no_track_origins:
+    os.environ['MSAN_NO_TRACK_ORIGINS'] = '1'
 
   if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)

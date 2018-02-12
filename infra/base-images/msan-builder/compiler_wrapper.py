@@ -78,7 +78,7 @@ def RemoveZDefs(args):
     if arg == '-Wl,defs':
       _RemoveLastMatching(filtered, '-Wl,-z')
       continue
-      
+
     if arg == '-Wl,--no-undefined':
       continue
 
@@ -124,7 +124,7 @@ def GetCompilerArgs(args, is_cxx):
 
   if '-fsanitize=memory' not in args:
     # If MSan flags weren't added for some reason, add them here.
-    compiler_args.extend(msan_build.INJECTED_ARGS)
+    compiler_args.extend(msan_build.GetInjectedFlags())
 
   if is_cxx:
     compiler_args.append('-stdlib=libc++')
