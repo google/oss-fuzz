@@ -3,3 +3,5 @@ primary_contact: "guidovranken@gmail.com"
 auto_ccs:
     - "martin.swende@ethereum.org"
     - "cdetrio@ethereum.org"
+    - "openssl-security@openssl.org"
+    - "kurt@roeckx.be"
