@@ -260,7 +260,7 @@ if you are new to contributing via GitHub.
 Please include copyright headers for all files checked in to oss-fuzz:
 
 ```
-# Copyright 2016 Google Inc.
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
