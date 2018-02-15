@@ -202,7 +202,7 @@ export TEMP_VAR_CODEC_TYPE="VIDEO"
 CONDITIONALS=`grep 'DECODER 1$' config.h | sed 's/#define CONFIG_\(.*\)_DECODER 1/\1/'`
 for c in $CONDITIONALS ; do
   fuzzer_name=ffmpeg_AV_CODEC_ID_${c}_fuzzer
-  symbol=`git grep 'REGISTER_[A-Z]*DEC[A-Z ]*('"$c"' *,' libavcodec/allcodecs.c | sed 's/.*, *\([^) ]*\)).*/\1/'`
+  symbol=`echo $c | sed "s/.*/\L\0/"`
   echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
   make tools/target_dec_${symbol}_fuzzer
   mv tools/target_dec_${symbol}_fuzzer $OUT/${fuzzer_name}
