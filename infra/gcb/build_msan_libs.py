@@ -5,6 +5,7 @@
 Usage: build_base_images.py
 """
 
+import datetime
 import os
 import yaml
 
@@ -19,13 +20,34 @@ def main():
   if "GCB_OPTIONS" in os.environ:
     options = yaml.safe_load(os.environ["GCB_OPTIONS"])
 
+  image = 'gcr.io/oss-fuzz-base/msan-builder'
+  steps = build_base_images.get_steps(['msan-builder'])
+  ts = datetime.datetime.utcnow().strftime('%Y%m%d%H%M')
+  upload_name = 'msan-libs-' + ts + '.zip'
+
+  steps.extend([{
+      'name': image,
+      'args': [
+          'bash',
+          '-c',
+          'cd /msan && zip -r /workspace/libs.zip .',
+      ],
+  }, {
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': [
+          'cp',
+          '/workspace/libs.zip',
+          'gs://oss-fuzz-msan-libs/' + upload_name,
+      ],
+  }])
+
   build_body = {
-      'steps': build_base_images.get_steps(['msan-builder']),
+      'steps': steps,
       'timeout': str(6 * 3600) + 's',
       'options': options,
       'images': [
-          'gcr.io/oss-fuzz-base/msan-builder',
-       ],
+          image,
+      ],
   }
 
   credentials = GoogleCredentials.get_application_default()

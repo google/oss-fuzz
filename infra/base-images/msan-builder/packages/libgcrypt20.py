@@ -19,16 +19,7 @@ import os
 import shutil
 
 import package
-
-
-def AddNoAsmArg(config_path):
-  """Add --no-asm to config scripts."""
-  shutil.move(config_path, config_path + '.real')
-  with open(config_path, 'w') as f:
-    f.write(
-        '#!/bin/sh\n'
-        '%s.real --disable-asm "$@"\n' % config_path)
-  os.chmod(config_path, 0755)
+import wrapper_utils
 
 
 class Package(package.Package):
@@ -38,4 +29,9 @@ class Package(package.Package):
     super(Package, self).__init__('libgcrypt20', apt_version)
 
   def PreBuild(self, source_directory, env, custom_bin_dir):
-    AddNoAsmArg(os.path.join(source_directory, 'configure'))
+    configure_wrapper = (
+        '#!/bin/bash\n'
+        '/usr/bin/dh_auto_configure "$@" --disable-asm')
+
+    wrapper_utils.InstallWrapper(
+        custom_bin_dir, 'dh_auto_configure', configure_wrapper)

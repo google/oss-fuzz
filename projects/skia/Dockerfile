@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kjlubick@chromium.org
 
-RUN apt-get update && apt-get install -y python
+RUN apt-get update && apt-get install -y python wget
 
 RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git'
 ENV PATH="${SRC}/depot_tools:${PATH}"
@@ -30,8 +30,30 @@ WORKDIR skia
 
 RUN python tools/git-sync-deps
 
+RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
+
+RUN wget -O $SRC/skia/region_set_path_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/region_set_path_seed_corpus.zip
+
+RUN wget -O $SRC/skia/textblob_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/textblob_deserialize_seed_corpus.zip
+
+RUN wget -O $SRC/skia/path_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/path_deserialize_seed_corpus.zip
+
+RUN wget -O $SRC/skia/image_decode_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_decode_seed_corpus.zip
+
+RUN wget -O $SRC/skia/animated_image_decode_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/animated_image_decode_seed_corpus.zip
+
 COPY build.sh $SRC/
 
+COPY skia.diff $SRC/skia/skia.diff
+RUN git apply skia.diff
+
 COPY region_deserialize.options $SRC/skia/region_deserialize.options
+COPY region_set_path.options $SRC/skia/region_set_path.options
+COPY image_filter_deserialize.options $SRC/skia/image_filter_deserialize.options
+COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
+COPY path_deserialize.options $SRC/skia/path_deserialize.options
+COPY image_decode.options $SRC/skia/image_decode.options
+COPY animated_image_decode.options $SRC/skia/animated_image_decode.options
+
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn

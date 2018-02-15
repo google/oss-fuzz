@@ -5,3 +5,4 @@ sanitizers:
   - memory
 auto_ccs:
   - jonathan@titanous.com
+  - sebastian.rasmussen@artifex.com

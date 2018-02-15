@@ -35,10 +35,11 @@ ASAN_OPTIONS=detect_leaks=0 \
 make -j$(nproc)
 make install
 
-GMP_CONFIGURE_FLAGS=""
-if [[ $CFLAGS = *sanitize=memory* ]]; then
-  GMP_CONFIGURE_FLAGS="--disable-assembly --disable-fat"
-fi
+# always disable assembly in GMP to avoid issues due to SIGILL
+#   https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=3119
+#   https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=3159
+GMP_CONFIGURE_FLAGS="--disable-assembly --disable-fat"
+
 cd $SRC/gmp
 bash .bootstrap
 ASAN_OPTIONS=detect_leaks=0 \

@@ -68,6 +68,10 @@ cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
 mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
 # Same for llvm-opt-fuzzer
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-earlycse
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-simplifycfg
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-gvn
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-sccp
 mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
 
 # Build corpus for the llvm-opt-fuzzer
@@ -97,3 +101,7 @@ function build_corpus {
 }
 
 build_corpus "llvm/test/Transforms/InstCombine/" "llvm-opt-fuzzer--x86_64-instcombine"
+build_corpus "llvm/test/Transforms/EarlyCSE/" "llvm-opt-fuzzer--x86_64-earlycse"
+build_corpus "llvm/test/Transforms/SimplifyCFG/" "llvm-opt-fuzzer--x86_64-simplifycfg"
+build_corpus "llvm/test/Transforms/GVN/" "llvm-opt-fuzzer--x86_64-gvn"
+build_corpus "llvm/test/Transforms/SCCP/" "llvm-opt-fuzzer--x86_64-sccp"
