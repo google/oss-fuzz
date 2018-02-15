@@ -16,8 +16,7 @@
 ################################################################################
 
 cd $SRC/fribidi
-./bootstrap
-./configure --enable-static=yes --enable-shared=no --with-pic=yes --prefix=/work/
+./autogen.sh --enable-static=yes --enable-shared=no --with-pic=yes --prefix=/work/
 # Don't run "make": it's broken. Run "make install".
 make install
 
