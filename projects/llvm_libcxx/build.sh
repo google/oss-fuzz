@@ -18,8 +18,6 @@
 if [[ $SANITIZER = *undefined* ]]; then
   CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fsanitize-trap=unsigned-integer-overflow"
 fi
-# trace-cmp makes this target too slow.
-CXXFLAGS="$CXXFLAGS -fno-sanitize-coverage=trace-cmp"
 
 for f in $(grep -v "#" libcxx/fuzzing/RoutineNames.txt); do
   cat > ${f}_fuzzer.cc <<EOF
