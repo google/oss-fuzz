@@ -67,11 +67,17 @@ ninja llvm-as
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
 mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
+
 # Same for llvm-opt-fuzzer
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-earlycse
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-simplifycfg
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-gvn
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-sccp
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_predication
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-guard_widening
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_vectorize
+
 mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
 
 # Build corpus for the llvm-opt-fuzzer
@@ -105,3 +111,7 @@ build_corpus "llvm/test/Transforms/EarlyCSE/" "llvm-opt-fuzzer--x86_64-earlycse"
 build_corpus "llvm/test/Transforms/SimplifyCFG/" "llvm-opt-fuzzer--x86_64-simplifycfg"
 build_corpus "llvm/test/Transforms/GVN/" "llvm-opt-fuzzer--x86_64-gvn"
 build_corpus "llvm/test/Transforms/SCCP/" "llvm-opt-fuzzer--x86_64-sccp"
+
+build_corpus "llvm/test/Transforms/LoopPredication/" "llvm-opt-fuzzer--x86_64-loop_predication"
+build_corpus "llvm/test/Transforms/GuardWidening/" "llvm-opt-fuzzer--x86_64-guard_widening"
+build_corpus "llvm/test/Transforms/LoopVectorize/" "llvm-opt-fuzzer--x86_64-loop_vectorize"
