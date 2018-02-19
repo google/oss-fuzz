@@ -1,5 +1,7 @@
-homepage: "http://www.harfbuzz.org/"
-primary_contact: "behdad@google.com"
+homepage: "https://github.com/harfbuzz/harfbuzz"
+primary_contact: "behdad@behdad.org"
+auto_ccs:
+  - "harfbuzz-admin@googlegroups.com"
 sanitizers:
  - address
  - undefined
