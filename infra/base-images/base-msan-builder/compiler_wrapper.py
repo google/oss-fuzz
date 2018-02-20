@@ -114,6 +114,8 @@ def GetCompilerArgs(args, is_cxx):
       '-gline-tables-only',
       # Disable all warnings.
       '-w',
+      # LTO isn't supported.
+      '-fno-lto',
   ])
 
   if InvokedAsGcc():
