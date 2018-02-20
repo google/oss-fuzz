@@ -71,7 +71,7 @@ class Package(object):
     """Build .deb packages."""
     self.PreBuild(source_directory, env, custom_bin_dir)
     subprocess.check_call(
-        ['dpkg-buildpackage', '-us', '-uc', '-b'],
+        ['dpkg-buildpackage', '-us', '-uc', '-B'],
         cwd=source_directory, env=env)
     self.PostBuild(source_directory, env, custom_bin_dir)
 
