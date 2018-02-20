@@ -22,6 +22,10 @@ import sys
 
 import msan_build
 
+GCC_ONLY_ARGS = [
+    '-aux-info',
+]
+
 
 def InvokedAsGcc():
   """Return whether or not we're pretending to be GCC."""
@@ -139,7 +143,19 @@ def FindRealClang():
   return os.environ['REAL_CLANG_PATH']
 
 
+def FallbackToGcc(args):
+  """Check whether if we should fall back to GCC."""
+  if not InvokedAsGcc():
+    return False
+
+  return any(arg in GCC_ONLY_ARGS for arg in args[1:])
+
+
 def main(args):
+  if FallbackToGcc(args):
+    sys.exit(subprocess.call(['/usr/bin/' + os.path.basename(args[0])] +
+                             args[1:]))
+
   is_cxx = args[0].endswith('++')
   real_clang = FindRealClang()
 
