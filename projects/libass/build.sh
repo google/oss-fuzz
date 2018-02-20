@@ -17,8 +17,7 @@
 
 cd $SRC/fribidi
 ./autogen.sh --disable-docs --enable-static=yes --enable-shared=no --with-pic=yes --prefix=/work/
-# Don't run "make": it's broken. Run "make install".
-make install
+make
 
 cd $SRC/libass
 
