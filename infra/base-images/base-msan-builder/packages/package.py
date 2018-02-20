@@ -58,6 +58,10 @@ class Package(object):
     subprocess.check_call(['apt-get', 'update'])
     subprocess.check_call(['apt-get', 'build-dep', '-y', self.name])
 
+    # Reload package after update.
+    self.apt_version = (
+        apt.Cache()[self.apt_version.package.name].candidate)
+
   def DownloadSource(self, download_directory):
     """Download the source for a package."""
     self.PreDownload(download_directory)
