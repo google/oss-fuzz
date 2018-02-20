@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,16 @@
 #
 ################################################################################
 
-# Base image for all other images.
+FROM gcr.io/oss-fuzz-base/base-clang
+MAINTAINER ochang@google.com
+RUN sed -i -r 's/#\s*deb-src/deb-src/g' /etc/apt/sources.list
+RUN apt-get update && apt-get install -y python dpkg-dev patchelf python-apt zip
 
-FROM ubuntu:16.04
-MAINTAINER mike.aizatsky@gmail.com
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-5-dev && \
-    apt-get autoremove -y
+# Take all libraries from lib/msan
+RUN cp -R /usr/msan/lib/* /usr/lib/
 
-ENV OUT=/out
-ENV SRC=/src
-ENV WORK=/work
-ENV PATH="$PATH:/out"
+COPY compiler_wrapper.py msan_build.py patch_build.py wrapper_utils.py /usr/local/bin/
+COPY packages /usr/local/bin/packages
 
-RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK
+RUN mkdir /msan
+WORKDIR /msan

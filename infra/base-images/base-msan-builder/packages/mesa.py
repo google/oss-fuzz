@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/usr/bin/env python
+# Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +15,14 @@
 #
 ################################################################################
 
-# Base image for all other images.
+import package
 
-FROM ubuntu:16.04
-MAINTAINER mike.aizatsky@gmail.com
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-5-dev && \
-    apt-get autoremove -y
 
-ENV OUT=/out
-ENV SRC=/src
-ENV WORK=/work
-ENV PATH="$PATH:/out"
+class Package(package.Package):
+  """mesa package."""
 
-RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK
+  def __init__(self, apt_version):
+    super(Package, self).__init__('mesa', apt_version)
+
+  def PreBuild(self, source_directory, env, custom_bin_dir):
+    env['DEB_CXXFLAGS_APPEND'] += ' -std=c++11'
