@@ -78,6 +78,13 @@ cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_predication
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-guard_widening
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_vectorize
 
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_rotate
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unswitch
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unroll
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-licm
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-indvars
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-strength_reduce
+
 mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
 
 # Build corpus for the llvm-opt-fuzzer
@@ -115,3 +122,10 @@ build_corpus "llvm/test/Transforms/SCCP/" "llvm-opt-fuzzer--x86_64-sccp"
 build_corpus "llvm/test/Transforms/LoopPredication/" "llvm-opt-fuzzer--x86_64-loop_predication"
 build_corpus "llvm/test/Transforms/GuardWidening/" "llvm-opt-fuzzer--x86_64-guard_widening"
 build_corpus "llvm/test/Transforms/LoopVectorize/" "llvm-opt-fuzzer--x86_64-loop_vectorize"
+
+build_corpus "llvm/test/Transforms/LoopRotate/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-loop_rotate"
+build_corpus "llvm/test/Transforms/LoopUnswitch/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-loop_unswitch"
+build_corpus "llvm/test/Transforms/LoopUnroll/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-loop_unroll"
+build_corpus "llvm/test/Transforms/LICM/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-licm"
+build_corpus "llvm/test/Transforms/IndVarSimplify/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-indvars"
+build_corpus "llvm/test/Transforms/LoopStrengthReduce/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-strength_reduce"
