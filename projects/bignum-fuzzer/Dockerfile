@@ -22,4 +22,4 @@ RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
 
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
-COPY build.sh *.options $SRC/
+COPY build.sh $SRC/
