@@ -24,7 +24,7 @@ regression ranges where the bug was most likely introduced.
 You can view statistics about your fuzz targets (e.g. speed, coverage information,
 memory usage) on our fuzzer statistics dashboard.
 
-![stats](images/freetype_stats_graphs.PNG?raw=true)
+![stats](images/freetype_stats_graphs.png?raw=true)
 
 ![stats](images/freetype_stats_table.png?raw=true)
 
