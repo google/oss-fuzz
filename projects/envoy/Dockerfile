@@ -26,7 +26,8 @@ RUN apt-get update && apt-get -y install  \
     libtool         \
     cmake           \
     wget            \
-    golang
+    golang          \
+    python
 
 # Install Bazel
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
