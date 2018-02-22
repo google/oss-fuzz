@@ -1,2 +1,2 @@
 [libfuzzer]
-max_len = 512
+max_len = 2000
