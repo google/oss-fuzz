@@ -1,3 +1,3 @@
 [libfuzzer]
-max_len = 10024
+max_len = 200000
 timeout = 10
