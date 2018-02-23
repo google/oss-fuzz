@@ -26,5 +26,6 @@ cd $SRC
 # Copy fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_go_no_negative_num_len_1200_all_operations
 
-cd $OUT
-wget https://transfer.sh/gFacf/fuzzer_openssl_go_no_negative_num_len_1200_all_operations_seed_corpus.zip
+
+# Copy seed corpus to the designated location
+cp $SRC/bignum-fuzzer/corpora/fuzzer_openssl_go_no_negative_num_len_1200_all_operations_seed_corpus.zip $OUT
