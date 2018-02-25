@@ -19,7 +19,7 @@ MAINTAINER git@s.profanter.me
 RUN apt-get update && apt-get install -y make cmake python-six wget
 # We need libmbedtls > 2.5.1 otherwise it does not include the lib for static linking
 RUN wget http://ftp.us.debian.org/debian/pool/main/m/mbedtls/libmbedtls-dev_2.7.0-2_amd64.deb && \
-    wget http://ftp.us.debian.org/debian/pool/main/m/mbedtls/libmbedcrypto0_2.6.0-1_amd64.deb && \
+    wget http://ftp.us.debian.org/debian/pool/main/m/mbedtls/libmbedcrypto1_2.7.0-2_amd64.deb && \
     wget http://ftp.us.debian.org/debian/pool/main/m/mbedtls/libmbedtls10_2.7.0-2_amd64.deb && \
     wget http://ftp.us.debian.org/debian/pool/main/m/mbedtls/libmbedx509-0_2.7.0-2_amd64.deb && \
     dpkg -i *.deb
