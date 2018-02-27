@@ -30,8 +30,22 @@ FUZZER_DICTIONARIES="\
 export DISABLE_GPERFTOOLS_BUILD=1
 sed -i 's#envoy_dependencies()#envoy_dependencies(skip_targets=["tcmalloc_and_profiler"])#' WORKSPACE
 
+# Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
+# compilation and linking.
+#
+# Some flags, such as `-stdlib=libc++`, generate warnings if used on a C source
+# file. Since the build runs with `-Werror` this will cause it to break, so we
+# use `--conlyopt` and `--cxxopt` instead of `--copt`.
+declare -r EXTRA_BAZEL_FLAGS="$(
+for f in ${CFLAGS}; do
+  echo "--conlyopt=${f}" "--linkopt=${f}"
+done
+for f in ${CXXFLAGS}; do
+  echo "--cxxopt=${f}" "--linkopt=${f}"
+done
+)"
+
 # Build Envoy
-declare -r EXTRA_BAZEL_FLAGS="$(for f in ${CXXFLAGS}; do echo --copt=$f --linkopt=$f; done)"
 declare -r BAZEL_BUILD_TARGETS="$(for t in ${FUZZER_TARGETS}; do echo //"$t"_driverless; done)"
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --genrule_strategy=standalone --strip=never \
