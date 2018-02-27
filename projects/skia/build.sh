@@ -46,7 +46,8 @@ $SRC/depot_tools/gn gen out/Fuzz\
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize textblob_deserialize
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
-                                   path_deserialize image_decode animated_image_decode
+                                   path_deserialize image_decode animated_image_decode \
+                                   api_draw_functions api_gradients api_image_filter
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -75,3 +76,15 @@ cp ./animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpu
 cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize
 cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
 cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
+
+cp out/Fuzz/api_draw_functions $OUT/api_draw_functions
+cp ./api_draw_functions.options $OUT/api_draw_functions.options
+cp ./api_draw_functions_seed_corpus.zip $OUT/api_draw_functions_seed_corpus.zip
+
+cp out/Fuzz/api_gradients $OUT/api_gradients
+cp ./api_gradients.options $OUT/api_gradients.options
+cp ./api_gradients_seed_corpus.zip $OUT/api_gradients_seed_corpus.zip
+
+cp out/Fuzz/api_image_filter $OUT/api_image_filter
+cp ./api_image_filter.options $OUT/api_image_filter.options
+cp ./api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip

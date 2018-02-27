@@ -84,3 +84,49 @@ test_app("animated_image_decode") {
     ":skia",
   ]
 }
+
+test_app("api_draw_functions") {
+  sources = [
+    "fuzz/oss_fuzz/FuzzDrawFunctions.cpp",
+    "fuzz/FuzzDrawFunctions.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("api_gradients") {
+  sources = [
+    "fuzz/oss_fuzz/FuzzGradients.cpp",
+    "fuzz/FuzzGradients.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("api_image_filter") {
+  include_dirs = [
+      "tools",
+      "tools/debugger",
+  ]
+  sources = [
+    "fuzz/FuzzCanvas.cpp",
+    "fuzz/oss_fuzz/FuzzAPIImageFilter.cpp",
+    "tools/UrlDataManager.cpp",
+    "tools/debugger/SkDebugCanvas.cpp",
+    "tools/debugger/SkDrawCommand.cpp",
+    "tools/debugger/SkJsonWriteBuffer.cpp",
+    "tools/debugger/SkObjectParser.cpp",
+    "tools/picture_utils.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":gpu_tool_utils",
+    ":skia",
+    "//third_party/jsoncpp",
+    "//third_party/libpng",
+  ]
+}
