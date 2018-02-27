@@ -4,3 +4,7 @@ auto_ccs:
     - glennrp@gmail.com
     - alex.gaynor@gmail.com
     - paul.l.kehrer@gmail.com
+sanitizers:
+    - address
+    - memory
+    - undefined
