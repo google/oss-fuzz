@@ -16,10 +16,10 @@ index b22b8ebebb..aec422fa96 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 6f8ee30602..d3e7bec831 100644
+index 21a89ae5a9..b0d193ea79 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1134,6 +1134,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1138,6 +1138,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -267,10 +267,10 @@ index 6d89e6f135..680534d384 100644
          reader.readPoint(&offset);
          SkPaint font;
 diff --git a/src/effects/Sk1DPathEffect.cpp b/src/effects/Sk1DPathEffect.cpp
-index 3c1291a0cb..dafdf90dbd 100644
+index f73e0768c7..7c48c997e2 100644
 --- a/src/effects/Sk1DPathEffect.cpp
 +++ b/src/effects/Sk1DPathEffect.cpp
-@@ -15,6 +15,11 @@
+@@ -19,6 +19,11 @@
  bool Sk1DPathEffect::filterPath(SkPath* dst, const SkPath& src,
                                  SkStrokeRec*, const SkRect*) const {
      SkPathMeasure   meas(src, false);
@@ -280,8 +280,8 @@ index 3c1291a0cb..dafdf90dbd 100644
 +    }
 +#endif
      do {
+         int governor = MAX_REASONABLE_ITERATIONS;
          SkScalar    length = meas.getLength();
-         SkScalar    distance = this->begin(length);
 diff --git a/src/effects/Sk2DPathEffect.cpp b/src/effects/Sk2DPathEffect.cpp
 index e7ef54b6f7..727aa5221f 100644
 --- a/src/effects/Sk2DPathEffect.cpp
@@ -363,10 +363,10 @@ index 8a55b13390..e3c78b4e1f 100755
      int winding = get_winding(inputPolygonVerts, inputPolygonSize);
      if (0 == winding) {
 diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
-index 11e8f2d5c6..70f4cd47c9 100755
+index 57bf5851fa..3f5eedc83a 100755
 --- a/src/utils/SkShadowTessellator.cpp
 +++ b/src/utils/SkShadowTessellator.cpp
-@@ -245,6 +245,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
+@@ -251,6 +251,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
      SkScalar rotSin, rotCos;
      int numSteps;
      compute_radial_steps(fPrevOutset, nextNormal, fRadius, &rotSin, &rotCos, &numSteps);
@@ -378,16 +378,3 @@ index 11e8f2d5c6..70f4cd47c9 100755
      SkVector prevNormal = fPrevOutset;
      for (int i = 0; i < numSteps-1; ++i) {
          SkVector currNormal;
-@@ -883,6 +888,12 @@ SkSpotShadowTessellator::SkSpotShadowTessellator(const SkPath& path, const SkMat
-     // compute vectors for clip tests
-     this->computeClipVectorsAndTestCentroid();
- 
-+#if defined(IS_FUZZING)
-+    // TODO(kjlubick): This may be a bug, remove gate if fixed.
-+    if (!SkScalarIsFinite(radius)) {
-+        return;
-+    }
-+#endif
-     // generate inner ring
-     if (!SkInsetConvexPolygon(&fPathPolygon[0], fPathPolygon.count(), radius,
-                               &fUmbraPolygon)) {
