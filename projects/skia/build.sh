@@ -44,7 +44,6 @@ $SRC/depot_tools/gn gen out/Fuzz\
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
-                                                   image_filter_deserialize_width \
                                                    textblob_deserialize
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
@@ -79,9 +78,10 @@ cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deseriali
 cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
 cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
 
-cp out/Fuzz_mem_constraints/image_filter_deserialize_width $OUT/image_filter_deserialize_width
+# Use the same binary as image_filter_deserialize.
+cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize_width
 cp ./image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
-# Use same seed corpus as image_filter_deserialize.
+# Use the same seed corpus as image_filter_deserialize.
 cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_width_seed_corpus.zip
 
 cp out/Fuzz/api_draw_functions $OUT/api_draw_functions

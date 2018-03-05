@@ -35,16 +35,6 @@ test_app("image_filter_deserialize") {
   ]
 }
 
-test_app("image_filter_deserialize_width") {
-  sources = [
-    "fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp",
-  ]
-  deps = [
-    ":flags",
-    ":skia",
-  ]
-}
-
 test_app("region_set_path") {
   sources = [
     "fuzz/oss_fuzz/FuzzRegionSetPath.cpp",
