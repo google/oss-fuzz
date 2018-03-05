@@ -43,7 +43,8 @@ $SRC/depot_tools/gn gen out/Fuzz\
     skia_enable_gpu=false
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
-$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize textblob_deserialize
+$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
+                                                   textblob_deserialize
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
@@ -76,6 +77,12 @@ cp ./animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpu
 cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize
 cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
 cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
+
+# Use the same binary as image_filter_deserialize.
+cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize_width
+cp ./image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
+# Use the same seed corpus as image_filter_deserialize.
+cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_width_seed_corpus.zip
 
 cp out/Fuzz/api_draw_functions $OUT/api_draw_functions
 cp ./api_draw_functions.options $OUT/api_draw_functions.options
