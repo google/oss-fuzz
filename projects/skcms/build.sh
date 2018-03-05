@@ -28,3 +28,5 @@ cp iccprofile.options $OUT/fuzz_iccprofile_transform.options
 cp iccprofile_seed_corpus.zip $OUT/iccprofile_info_seed_corpus.zip
 cp iccprofile_seed_corpus.zip $OUT/iccprofile_atf_seed_corpus.zip
 cp iccprofile_seed_corpus.zip $OUT/iccprofile_transform_seed_corpus.zip
+# They all use the same dictionary file.
+cp iccprofile.dict $OUT/iccprofile.dict

@@ -29,4 +29,4 @@ WORKDIR skcms
 
 COPY build.sh $SRC/
 
-COPY iccprofile.options $SRC/skcms/
+COPY iccprofile.options iccprofile.dict $SRC/skcms/
