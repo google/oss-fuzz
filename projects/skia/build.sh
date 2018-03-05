@@ -81,6 +81,7 @@ cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed
 
 cp out/Fuzz_mem_constraints/image_filter_deserialize_width $OUT/image_filter_deserialize_width
 cp ./image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
+# Use same seed corpus as image_filter_deserialize.
 cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_width_seed_corpus.zip
 
 cp out/Fuzz/api_draw_functions $OUT/api_draw_functions
