@@ -1,2 +1,6 @@
 homepage: "https://matt.ucc.asn.au/dropbear/dropbear.html"
 primary_contact: "matt@ucc.asn.au"
+sanitizers:
+  - address
+  - undefined
+  - memory
