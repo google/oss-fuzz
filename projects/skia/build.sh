@@ -78,11 +78,16 @@ cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deseriali
 cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
 cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
 
-# Use the same binary as image_filter_deserialize.
-cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize_width
-cp ./image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
-# Use the same seed corpus as image_filter_deserialize.
-cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_width_seed_corpus.zip
+# Only create the width version of image_filter_desrialize if building with
+# libfuzzer, since it depends on a libfuzzer specific flag.
+if [ "$FUZZING_ENGINE" == "libfuzzer" ]
+then
+  # Use the same binary as image_filter_deserialize.
+  cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize_width
+  cp ./image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
+  # Use the same seed corpus as image_filter_deserialize.
+  cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_width_seed_corpus.zip
+fi
 
 cp out/Fuzz/api_draw_functions $OUT/api_draw_functions
 cp ./api_draw_functions.options $OUT/api_draw_functions.options
