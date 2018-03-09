@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alex.gaynor@gmail.com
 RUN apt-get update && apt-get install -y libssl-dev
-RUN git clone --depth 1 https://github.com/vrtadmin/clamav-devel
+RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav-devel
 WORKDIR clamav-devel
 COPY build.sh clamav_scanfile_fuzzer.cc $SRC/
