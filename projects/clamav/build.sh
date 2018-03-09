@@ -21,6 +21,7 @@ make -j"$(nproc)"
 $CXX $CXXFLAGS -std=c++11 -Ilibclamav/ \
     $SRC/clamav_scanfile_fuzzer.cc -o $OUT/clamav_scanfile_fuzzer \
     -lFuzzingEngine libclamav/.libs/libclamav.a \
+    libclamav/libmspack-0.5alpha/.libs/libclammspack.a \
     -Wl,-Bstatic -lssl -lcrypto -lz -Wl,-Bdynamic
 
 for type in ARCHIVE MAIL OLE2 PDF HTML PE ALGORITHMIC ELF SWF XMLDOCS HWP3; do
@@ -28,5 +29,6 @@ for type in ARCHIVE MAIL OLE2 PDF HTML PE ALGORITHMIC ELF SWF XMLDOCS HWP3; do
         $SRC/clamav_scanfile_fuzzer.cc \
         -o "${OUT}/clamav_scanfile_${type}_fuzzer" "-DCLAMAV_FUZZ_${type}" \
         -lFuzzingEngine libclamav/.libs/libclamav.a \
+        libclamav/libmspack-0.5alpha/.libs/libclammspack.a \
         -Wl,-Bstatic -lssl -lcrypto -lz -Wl,-Bdynamic
 done
