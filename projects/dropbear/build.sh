@@ -34,3 +34,4 @@ make -C $SRC/dropbear/corpus
 cp -v $TARGETS $OUT/
 cp -v *.options $OUT/
 cp -v $SRC/dropbear/corpus/*.zip $OUT/
+cp -v $SRC/dropbear/corpus/*.dict $OUT/
