@@ -6,11 +6,20 @@ We are currently in a beta status, and still working out issues in our service. 
 can only commit to supporting established projects that have a critical impact on infrastructure and
 user security. We will consider each request on a case-by-case basis, but some things we keep in mind are:
 
-  - Exposure to remote attacks (e.g. libraries that are used to process untrusted input)
+  - Exposure to remote attacks (e.g. libraries that are used to process untrusted input).
   - Number of users/other projects depending on this project.
 
 We hope to relax this requirement in the future though, so keep an eye out even if we are not able
 to accept your project at this time!
+
+## How can I find potential fuzz targets in my open source project?
+
+You should look for places in your code that:
+
+  - consume un-trusted data from users or from the network.
+  - consume complex data input or event if it's 'trusted'.
+  - use an algorithm that has two or more implementations (to verify their equivalence).
+  - look for existing fuzz target [examples](https://github.com/google/oss-fuzz/tree/master/projects) and find similarities.
 
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
 
