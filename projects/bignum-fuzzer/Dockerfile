@@ -16,9 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties wget
+RUN apt-get update && apt-get install -y software-properties-common python-software-properties wget curl sudo
 RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
 RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
+
+# Install Rust nightly
+RUN curl -s https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly
 
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
