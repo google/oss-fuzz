@@ -61,10 +61,12 @@ COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
 COPY path_deserialize.options $SRC/skia/path_deserialize.options
 COPY image_decode.options $SRC/skia/image_decode.options
 COPY animated_image_decode.options $SRC/skia/animated_image_decode.options
+
 # API fuzzers can share options
 COPY api_fuzzers.options $SRC/skia/api_draw_functions.options
 COPY api_fuzzers.options $SRC/skia/api_gradients.options
 COPY api_fuzzers.options $SRC/skia/api_image_filter.options
+COPY api_fuzzers.options $SRC/skia/api_path_measure.options
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn

@@ -132,3 +132,15 @@ test_app("api_image_filter") {
     "//third_party/libpng",
   ]
 }
+
+test_app("api_path_measure") {
+  sources = [
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/FuzzPathMeasure.cpp",
+    "fuzz/oss_fuzz/FuzzPathMeasure.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
