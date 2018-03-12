@@ -28,6 +28,7 @@ cd build_DBG.OBJ
     --enable-optimize \
     --disable-shared-js \
     --disable-jemalloc \
+    --disable-tests \
     --enable-address-sanitizer
 
 make "-j$(nproc)"
