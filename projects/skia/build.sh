@@ -53,10 +53,9 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
 
-# TODO(kjlubick) Turn this on after skbug:7491 is resolved
-# cp out/Fuzz/region_set_path $OUT/region_set_path
-# cp ./region_set_path.options $OUT/region_set_path.options
-# cp ./region_set_path_seed_corpus.zip $OUT/region_set_path_seed_corpus.zip
+cp out/Fuzz/region_set_path $OUT/region_set_path
+cp ./region_set_path.options $OUT/region_set_path.options
+cp ./region_set_path_seed_corpus.zip $OUT/region_set_path_seed_corpus.zip
 
 cp out/Fuzz_mem_constraints/textblob_deserialize $OUT/textblob_deserialize
 cp ./textblob_deserialize.options $OUT/textblob_deserialize.options

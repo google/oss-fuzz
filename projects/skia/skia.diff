@@ -16,10 +16,10 @@ index b22b8ebebb..aec422fa96 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 21a89ae5a9..b0d193ea79 100644
+index cf06b7b3b5..bc67d7ef5a 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1138,6 +1138,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1128,6 +1128,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -33,7 +33,7 @@ index 21a89ae5a9..b0d193ea79 100644
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index b2220a7651..9fa0b153ef 100644
+index ae3b53a69e..09458e7ad9 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
 @@ -122,6 +122,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
@@ -82,10 +82,10 @@ index 347e828d0e..dd16dd81a4 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index f754c021eb..c6bb36cca6 100644
+index b54b8dfcdb..8a840bab18 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -1492,6 +1492,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -1485,6 +1485,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -100,7 +100,7 @@ index f754c021eb..c6bb36cca6 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index 279615d799..3398961c57 100644
+index d57e95ad20..ba9a9c5c76 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
 @@ -3349,7 +3349,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
@@ -145,7 +145,7 @@ index 2ca88ae841..3fc4ecf6bd 100644
                  for (int i = 0; i < count; i++) {
                      buffer.readPath(&fPaths[i]);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index 73e7af0fd7..1f2c87e0bb 100644
+index 1bd01d504a..0e57543014 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
 @@ -263,7 +263,12 @@ bool SkReadBuffer::readScalarArray(SkScalar* values, size_t size) {
@@ -161,10 +161,10 @@ index 73e7af0fd7..1f2c87e0bb 100644
  }
  
  sk_sp<SkImage> SkReadBuffer::readImage() {
-@@ -298,6 +303,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
+@@ -294,6 +299,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
+         return nullptr;
      }
  
-     size_t size = SkAbs32(encoded_size);
 +#if defined(IS_FUZZING)
 +    if (size > 100000) {
 +        this->validate(false);
@@ -191,7 +191,7 @@ index e4e6701cea..c180f417c7 100644
                                      SkEdgeBuilder::kAnalyticEdge);
      SkAnalyticEdge** list = builder.analyticEdgeList();
 diff --git a/src/core/SkScan_Hairline.cpp b/src/core/SkScan_Hairline.cpp
-index 1f12efefc5..efb5c101ad 100644
+index 7954ccc5a2..42cad2141a 100644
 --- a/src/core/SkScan_Hairline.cpp
 +++ b/src/core/SkScan_Hairline.cpp
 @@ -118,7 +118,11 @@ void SkScan::HairLineRgn(const SkPoint array[], int arrayCount, const SkRegion*
@@ -237,10 +237,10 @@ index 2373e62d46..25b17480c2 100644
                  int L = SkFixedRoundToInt(left);
                  int R = SkFixedRoundToInt(rite);
 diff --git a/src/core/SkTextBlob.cpp b/src/core/SkTextBlob.cpp
-index 6d89e6f135..680534d384 100644
+index 182cf72ec2..91733188d8 100644
 --- a/src/core/SkTextBlob.cpp
 +++ b/src/core/SkTextBlob.cpp
-@@ -800,7 +800,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+@@ -801,7 +801,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
              // End-of-runs marker.
              break;
          }
@@ -253,8 +253,8 @@ index 6d89e6f135..680534d384 100644
          PositioningAndExtended pe;
          pe.intValue = reader.read32();
          GlyphPositioning pos = pe.positioning;
-@@ -811,7 +815,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
-         if (textSize < 0) {
+@@ -812,7 +816,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+         if (textSize < 0 || static_cast<size_t>(textSize) > reader.size()) {
              return nullptr;
          }
 -
@@ -363,7 +363,7 @@ index 8a55b13390..e3c78b4e1f 100755
      int winding = get_winding(inputPolygonVerts, inputPolygonSize);
      if (0 == winding) {
 diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
-index 57bf5851fa..3f5eedc83a 100755
+index 8815ce646d..7cfb095497 100755
 --- a/src/utils/SkShadowTessellator.cpp
 +++ b/src/utils/SkShadowTessellator.cpp
 @@ -251,6 +251,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)

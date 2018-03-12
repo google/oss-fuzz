@@ -37,6 +37,7 @@ test_app("image_filter_deserialize") {
 
 test_app("region_set_path") {
   sources = [
+    "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzRegionSetPath.cpp",
   ]
   deps = [
@@ -87,8 +88,8 @@ test_app("animated_image_decode") {
 
 test_app("api_draw_functions") {
   sources = [
-    "fuzz/oss_fuzz/FuzzDrawFunctions.cpp",
     "fuzz/FuzzDrawFunctions.cpp",
+    "fuzz/oss_fuzz/FuzzDrawFunctions.cpp",
   ]
   deps = [
     ":flags",
@@ -98,8 +99,8 @@ test_app("api_draw_functions") {
 
 test_app("api_gradients") {
   sources = [
-    "fuzz/oss_fuzz/FuzzGradients.cpp",
     "fuzz/FuzzGradients.cpp",
+    "fuzz/oss_fuzz/FuzzGradients.cpp",
   ]
   deps = [
     ":flags",
@@ -109,11 +110,12 @@ test_app("api_gradients") {
 
 test_app("api_image_filter") {
   include_dirs = [
-      "tools",
-      "tools/debugger",
+    "tools",
+    "tools/debugger",
   ]
   sources = [
     "fuzz/FuzzCanvas.cpp",
+    "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzAPIImageFilter.cpp",
     "tools/UrlDataManager.cpp",
     "tools/debugger/SkDebugCanvas.cpp",
