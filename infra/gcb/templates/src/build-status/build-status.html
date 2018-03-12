@@ -149,7 +149,7 @@
 
       toLocalDate(str) {
         let date = new Date(str);
-        let ds = date.toString()
+        let ds = date.toString();
         let timezone = ds.substring(ds.indexOf("("));
         return date.toLocaleString() + " " + timezone;
       }
