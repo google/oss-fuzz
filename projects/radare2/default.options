@@ -1,0 +1,4 @@
+[libfuzzer]
+close_fd_mask=3
+detect_leaks=0
+rss_limit_mb=0
