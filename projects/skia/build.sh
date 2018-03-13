@@ -103,3 +103,4 @@ cp ./api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip
 
 cp out/Fuzz/api_path_measure $OUT/api_path_measure
 cp ./api_path_measure.options $OUT/api_path_measure.options
+cp ./api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corpus.zip
