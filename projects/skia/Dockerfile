@@ -48,6 +48,8 @@ RUN wget -O $SRC/skia/api_gradients_seed_corpus.zip https://storage.googleapis.c
 
 RUN wget -O $SRC/skia/api_image_filter_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_image_filter_seed_corpus.zip
 
+RUN wget -O $SRC/skia/api_path_measure_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_path_measure_seed_corpus.zip
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
@@ -61,10 +63,12 @@ COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
 COPY path_deserialize.options $SRC/skia/path_deserialize.options
 COPY image_decode.options $SRC/skia/image_decode.options
 COPY animated_image_decode.options $SRC/skia/animated_image_decode.options
+
 # API fuzzers can share options
 COPY api_fuzzers.options $SRC/skia/api_draw_functions.options
 COPY api_fuzzers.options $SRC/skia/api_gradients.options
 COPY api_fuzzers.options $SRC/skia/api_image_filter.options
+COPY api_fuzzers.options $SRC/skia/api_path_measure.options
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn

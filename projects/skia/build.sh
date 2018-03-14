@@ -48,7 +48,8 @@ $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
-                                   api_draw_functions api_gradients api_image_filter
+                                   api_draw_functions api_gradients api_image_filter \
+                                   api_path_measure
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -99,3 +100,7 @@ cp ./api_gradients_seed_corpus.zip $OUT/api_gradients_seed_corpus.zip
 cp out/Fuzz/api_image_filter $OUT/api_image_filter
 cp ./api_image_filter.options $OUT/api_image_filter.options
 cp ./api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip
+
+cp out/Fuzz/api_path_measure $OUT/api_path_measure
+cp ./api_path_measure.options $OUT/api_path_measure.options
+cp ./api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corpus.zip

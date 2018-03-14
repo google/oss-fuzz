@@ -1,3 +1,17 @@
+diff --git a/fuzz/FuzzPathMeasure.cpp b/fuzz/FuzzPathMeasure.cpp
+index e6933a856f..f802cc2250 100644
+--- a/fuzz/FuzzPathMeasure.cpp
++++ b/fuzz/FuzzPathMeasure.cpp
+@@ -22,6 +22,9 @@ DEF_FUZZ(PathMeasure, fuzz) {
+     BuildPath(fuzz, &path, SkPath::Verb::kDone_Verb);
+     SkRect bounds = path.getBounds();
+     SkScalar maxDim = SkTMax(bounds.width(), bounds.height());
++    if (maxDim > 10000000) {
++        return;
++    }
+     SkScalar resScale = maxDim / 1000;
+     SkPathMeasure measure(path, bits & 1, resScale);
+     SkPoint position;
 diff --git a/src/core/SkAAClip.cpp b/src/core/SkAAClip.cpp
 index b22b8ebebb..aec422fa96 100644
 --- a/src/core/SkAAClip.cpp
@@ -66,10 +80,10 @@ index 2933e48cc4..1ae9dd0404 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index 347e828d0e..dd16dd81a4 100644
+index 747e3abdff..760ce03bb9 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
-@@ -264,6 +264,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
+@@ -265,6 +265,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
  
      SkMask  srcM, dstM;
  
@@ -331,7 +345,7 @@ index f188bfa818..44270f1675 100644
          if (fSegLength * (2 + doFill) > length) {
              meas.getSegment(0, length, dst, true);  // to short for us to mangle
 diff --git a/src/effects/SkLayerDrawLooper.cpp b/src/effects/SkLayerDrawLooper.cpp
-index 17aa7a123d..091a4bf9c7 100644
+index 3cd661c640..717dac3710 100644
 --- a/src/effects/SkLayerDrawLooper.cpp
 +++ b/src/effects/SkLayerDrawLooper.cpp
 @@ -262,6 +262,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
