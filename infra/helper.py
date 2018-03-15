@@ -227,10 +227,10 @@ def docker_run(run_args, print_output=True):
 
   try:
     subprocess.check_call(command, stdout=stdout, stderr=subprocess.STDOUT)
-  except subprocess.CalledProcessError:
-    return False
+  except subprocess.CalledProcessError as e:
+    return e.returncode
 
-  return True
+  return 0
 
 
 def docker_build(build_args, pull=False):
@@ -344,7 +344,7 @@ def run_fuzzer(args):
       args.fuzzer_name,
   ] + args.fuzzer_args
 
-  docker_run(run_args)
+  return docker_run(run_args)
 
 
 def coverage(args):
@@ -416,7 +416,7 @@ def reproduce(args):
       '-runs=100',
   ] + args.fuzzer_args
 
-  docker_run(run_args)
+  return docker_run(run_args)
 
 
 def generate(args):
