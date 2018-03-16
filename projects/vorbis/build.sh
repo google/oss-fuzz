@@ -37,5 +37,3 @@ make -j$(nproc)
 make install
 
 $CXX $CXXFLAGS $SRC/decode_fuzzer.cc -o $OUT/decode_fuzzer -L"$WORK/lib" -I"$WORK/include" -lFuzzingEngine -lvorbisfile -lvorbis -logg
-
-echo -e "[libfuzzer]\nmax_len=8192" > "$OUT/fuzzer.options"
