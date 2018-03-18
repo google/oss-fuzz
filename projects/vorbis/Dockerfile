@@ -16,10 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER paul.l.kehrer@mail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config wget
 RUN git clone https://git.xiph.org/ogg.git
 RUN git clone https://git.xiph.org/vorbis.git
 ADD decode_fuzzer.cc $SRC/
-ADD https://upload.wikimedia.org/wikipedia/commons/f/f9/Beep_example.ogg $SRC/sample.ogg
+RUN wget --cut-dirs 3 --recursive --level=1 -A ".ogg" https://people.xiph.org/~xiphmont/test-vectors/vorbis/
 WORKDIR vorbis
 COPY build.sh $SRC/
