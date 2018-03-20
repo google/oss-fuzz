@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-conf
 RUN git clone https://git.xiph.org/ogg.git
 RUN git clone https://git.xiph.org/vorbis.git
 ADD decode_fuzzer.cc $SRC/
+RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/ogg decode_corpus
 RUN wget --cut-dirs 3 --recursive --level=1 -A ".ogg" https://people.xiph.org/~xiphmont/test-vectors/vorbis/
 WORKDIR vorbis
 COPY build.sh $SRC/
