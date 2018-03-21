@@ -144,3 +144,53 @@ test_app("api_path_measure") {
     ":skia",
   ]
 }
+
+test_app("api_raster_n32_canvas") {
+  include_dirs = [
+    "tools",
+    "tools/debugger",
+  ]
+  sources = [
+    "fuzz/FuzzCanvas.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzRasterN32Canvas.cpp",
+    "tools/UrlDataManager.cpp",
+    "tools/debugger/SkDebugCanvas.cpp",
+    "tools/debugger/SkDrawCommand.cpp",
+    "tools/debugger/SkJsonWriteBuffer.cpp",
+    "tools/debugger/SkObjectParser.cpp",
+    "tools/picture_utils.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":gpu_tool_utils",
+    ":skia",
+    "//third_party/jsoncpp",
+    "//third_party/libpng",
+  ]
+}
+
+test_app("api_null_canvas") {
+  include_dirs = [
+    "tools",
+    "tools/debugger",
+  ]
+  sources = [
+    "fuzz/FuzzCanvas.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzNullCanvas.cpp",
+    "tools/UrlDataManager.cpp",
+    "tools/debugger/SkDebugCanvas.cpp",
+    "tools/debugger/SkDrawCommand.cpp",
+    "tools/debugger/SkJsonWriteBuffer.cpp",
+    "tools/debugger/SkObjectParser.cpp",
+    "tools/picture_utils.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":gpu_tool_utils",
+    ":skia",
+    "//third_party/jsoncpp",
+    "//third_party/libpng",
+  ]
+}
