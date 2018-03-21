@@ -26,13 +26,17 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr"
 ./configure
 make clean
 make -j$(nproc) V=1 all
-make -C src V=1 fuzzing
+make CPPFLAGS="-DHB_NO_VISIBILITY" -C src V=1 fuzzing
 
 # Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -Isrc \
-    ./test/fuzzing/hb-fuzzer.cc -o $OUT/hb-fuzzer \
+    ./test/fuzzing/hb-shape-fuzzer.cc -o $OUT/hb-shape-fuzzer \
     -lFuzzingEngine ./src/.libs/libharfbuzz-fuzzing.a
 
-# Archive and copy to $OUT seed corpus if the build succeeded.
-zip -j -r $OUT/hb-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/shaping/data/in-house/fonts
+$CXX $CXXFLAGS -std=c++11 -Isrc \
+    ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer \
+    -lFuzzingEngine ./src/.libs/libharfbuzz-subset-fuzzing.a ./src/.libs/libharfbuzz-fuzzing.a
 
+# Archive and copy to $OUT seed corpus if the build succeeded.
+zip -j -r $OUT/hb-shape-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/shaping/data/in-house/fonts
+zip -j -r $OUT/hb-subset-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/subset/data/fonts $SRC/harfbuzz/test/api/fonts
