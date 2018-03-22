@@ -16,8 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER paul.l.kehrer@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
 RUN git clone --depth 1 https://github.com/imagemagick/imagemagick
+RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
+RUN git clone --depth 1 https://github.com/strukturag/libde265
 ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
 WORKDIR imagemagick
 COPY build.sh $SRC/
