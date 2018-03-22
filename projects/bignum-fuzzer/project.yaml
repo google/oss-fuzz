@@ -5,3 +5,4 @@ auto_ccs:
     - "cdetrio@ethereum.org"
     - "openssl-security@openssl.org"
     - "kurt@roeckx.be"
+    - "security@golang.org"
