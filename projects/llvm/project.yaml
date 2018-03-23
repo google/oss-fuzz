@@ -8,7 +8,9 @@ auto_ccs:
   - "llvm-bugs@lists.llvm.org"
   - "igmyrj@gmail.com"
   - "mitchphillips@outlook.com"
+  - "hiimmitchphillips@gmail.com"
   - "xpl0re@gmail.com"
+  - "lincolngphillips@gmail.com"
 
 # TODO(kcc): enable msan.
 sanitizers:
