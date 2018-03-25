@@ -22,13 +22,15 @@
 #include <stdlib.h>
 
 int LLVMFuzzerInitialize(int *argc, char ***argv) {
-    /*
-     * Turn on all debugging, to help understand what
-     * bits of the parser are running.
-     */
-    snmp_enable_stderrlog();
-    snmp_set_do_debugging(1);
-    debug_register_tokens("");
+    if (getenv("NETSNMP_DEBUGGING") != NULL) {
+        /*
+         * Turn on all debugging, to help understand what
+         * bits of the parser are running.
+         */
+        snmp_enable_stderrlog();
+        snmp_set_do_debugging(1);
+        debug_register_tokens("");
+    }
     return 0;
 }
 
