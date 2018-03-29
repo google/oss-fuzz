@@ -170,7 +170,7 @@ test_app("api_raster_n32_canvas") {
   ]
 }
 
-test_app("null_gl_canvas") {
+test_app("api_null_gl_canvas") {
   include_dirs = [
     "tools",
     "tools/debugger",
