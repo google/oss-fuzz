@@ -220,4 +220,3 @@ test_app("api_null_canvas") {
     "//third_party/libpng",
   ]
 }
-
