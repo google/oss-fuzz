@@ -26,3 +26,10 @@ $CXX $CXXFLAGS $WORK/snmp_pdu_parse_fuzzer.o \
       -lFuzzingEngine snmplib/.libs/libnetsnmp.a \
       -Wl,-Bstatic -lcrypto -Wl,-Bdynamic -lm \
       -o $OUT/snmp_pdu_parse_fuzzer
+
+$CC $CFLAGS -c -Iinclude -Iagent/mibgroup/agentx $SRC/agentx_parse_fuzzer.c -o $WORK/agentx_parse_fuzzer.o
+$CXX $CXXFLAGS $WORK/agentx_parse_fuzzer.o \
+      -lFuzzingEngine snmplib/.libs/libnetsnmp.a \
+      agent/.libs/libnetsnmpagent.a \
+      -Wl,-Bstatic -lcrypto -Wl,-Bdynamic -lm \
+      -o $OUT/agentx_parse_fuzzer

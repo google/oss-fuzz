@@ -23,3 +23,4 @@ COPY build.sh $SRC/
 #
 # Until the project moves the fuzzers to the source tree
 COPY snmp_pdu_parse_fuzzer.c $SRC/
+COPY agentx_parse_fuzzer.c $SRC/
