@@ -35,13 +35,10 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    unsigned char *data_ptr = (unsigned char *)calloc(1, size);
     size_t bytes_remaining = size;
     netsnmp_pdu *pdu = SNMP_MALLOC_TYPEDEF(netsnmp_pdu);
 
-    memcpy(data_ptr, data, size);
-    snmp_pdu_parse(pdu, data_ptr, &bytes_remaining);
+    snmp_pdu_parse(pdu, (unsigned char *)data, &bytes_remaining);
     snmp_free_pdu(pdu);
-    free(data_ptr);
     return 0;
 }

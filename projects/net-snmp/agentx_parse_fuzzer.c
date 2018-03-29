@@ -17,7 +17,7 @@
  */
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
-// We build with the agentx dir in an -I
+/* We build with the agent/mibgroup/agentx dir in an -I */
 #include <protocol.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -37,14 +37,11 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    unsigned char *data_ptr = (unsigned char *)calloc(1, size);
     netsnmp_pdu *pdu = SNMP_MALLOC_TYPEDEF(netsnmp_pdu);
     netsnmp_session session;
 
     session.version = AGENTX_VERSION_1;
-    memcpy(data_ptr, data, size);
-    agentx_parse(&session, pdu, data_ptr, size);
+    agentx_parse(&session, pdu, (unsigned char *)data, size);
     snmp_free_pdu(pdu);
-    free(data_ptr);
     return 0;
 }
