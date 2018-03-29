@@ -44,12 +44,12 @@ $SRC/depot_tools/gn gen out/Fuzz\
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
-                                                   textblob_deserialize
+                                                   textblob_deserialize api_raster_n32_canvas
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
                                    api_draw_functions api_gradients api_image_filter \
-                                   api_path_measure api_raster_n32_canvas api_null_canvas
+                                   api_path_measure api_null_canvas
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -105,7 +105,7 @@ cp out/Fuzz/api_path_measure $OUT/api_path_measure
 cp ./api_path_measure.options $OUT/api_path_measure.options
 cp ./api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corpus.zip
 
-cp out/Fuzz/api_raster_n32_canvas $OUT/api_raster_n32_canvas
+cp out/Fuzz_mem_constraints/api_raster_n32_canvas $OUT/api_raster_n32_canvas
 cp ./api_raster_n32_canvas.options $OUT/api_raster_n32_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_raster_n32_canvas_seed_corpus.zip
 
