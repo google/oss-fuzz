@@ -4,6 +4,7 @@ auto_ccs:
   - "behdad.esfahbod@gmail.com"
   - "behdad@google.com"
   - "ebraminio@gmail.com"
+  - "grieger@google.com"
   - "khaledhosny@eglug.org"
   - "jfkthame@gmail.com"
 sanitizers:

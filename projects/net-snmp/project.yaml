@@ -1,0 +1,7 @@
+homepage: "http://www.net-snmp.org/"
+primary_contact: "hardaker@users.sourceforge.net"
+auto_ccs:
+   - "rstory@freesnmp.com"
+   - "fenner@gmail.com"
+   - "bvanassche@acm.org"
+   - "magfr@lysator.liu.se"

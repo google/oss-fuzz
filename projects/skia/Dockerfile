@@ -50,6 +50,8 @@ RUN wget -O $SRC/skia/api_image_filter_seed_corpus.zip https://storage.googleapi
 
 RUN wget -O $SRC/skia/api_path_measure_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_path_measure_seed_corpus.zip
 
+RUN wget -O $SRC/skia/canvas_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/canvas_seed_corpus.zip
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
@@ -69,6 +71,8 @@ COPY api_fuzzers.options $SRC/skia/api_draw_functions.options
 COPY api_fuzzers.options $SRC/skia/api_gradients.options
 COPY api_fuzzers.options $SRC/skia/api_image_filter.options
 COPY api_fuzzers.options $SRC/skia/api_path_measure.options
+COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
+COPY api_fuzzers.options $SRC/skia/api_null_canvas.options
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn

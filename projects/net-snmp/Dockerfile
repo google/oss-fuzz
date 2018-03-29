@@ -15,12 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER paul.l.kehrer@mail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config wget
-RUN git clone https://git.xiph.org/ogg.git
-RUN git clone https://git.xiph.org/vorbis.git
-ADD decode_fuzzer.cc $SRC/
-RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/ogg decode_corpus
-RUN wget --cut-dirs 3 --recursive --level=1 -A ".ogg" https://people.xiph.org/~xiphmont/test-vectors/vorbis/
-WORKDIR vorbis
+MAINTAINER fenner@gmail.com
+RUN apt-get update && apt-get install -y make autoconf libtool libssl-dev
+RUN git clone --depth 1 git://git.code.sf.net/p/net-snmp/code net-snmp
+WORKDIR net-snmp
 COPY build.sh $SRC/
+#
+# Until the project moves the fuzzers to the source tree
+COPY snmp_pdu_parse_fuzzer.c $SRC/
+COPY agentx_parse_fuzzer.c $SRC/

@@ -22,5 +22,5 @@
 for f in fuzz/c/std/*_fuzzer.cc; do
   b=$(basename $f _fuzzer.cc)
   $CXX $CXXFLAGS -std=c++11 $f -o $OUT/${b}_fuzzer -lFuzzingEngine
-  zip --junk-paths $OUT/${b}_fuzzer_seed_corpus.zip test/testdata/*.$b
+  zip --junk-paths $OUT/${b}_fuzzer_seed_corpus.zip test/data/*.$b
 done

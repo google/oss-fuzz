@@ -17,7 +17,7 @@
 
 cd $SRC
 
-mv people.xiph.org decode_corpus
+mv people.xiph.org/*.ogg decode_corpus/
 zip -r "$OUT/decode_fuzzer_seed_corpus.zip" decode_corpus/
 
 cd $SRC/ogg
