@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kjlubick@chromium.org
 
-RUN apt-get update && apt-get install -y python wget
+RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev patchelf
 
 RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git'
 ENV PATH="${SRC}/depot_tools:${PATH}"

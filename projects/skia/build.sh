@@ -43,6 +43,17 @@ $SRC/depot_tools/gn gen out/Fuzz\
     skia_enable_gpu=false
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
+$SRC/depot_tools/gn gen out/GPU\
+    --args='cc="'$CC'"
+    cxx="'$CXX'"
+    is_debug=false
+    extra_cflags=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING","-DIS_FUZZING_WITH_LIBFUZZER",
+        "-Wno-zero-as-null-pointer-constant", "-Wno-unused-template", "-Wno-cast-qual"]
+    skia_use_system_freetype2=false
+    skia_use_fontconfig=false
+    skia_enable_gpu=true
+    extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
+
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    textblob_deserialize
 
@@ -50,6 +61,8 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
                                    api_draw_functions api_gradients api_image_filter \
                                    api_path_measure
+
+$SRC/depot_tools/ninja -C out/GPU null_gl_canvas
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -104,3 +117,9 @@ cp ./api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip
 cp out/Fuzz/api_path_measure $OUT/api_path_measure
 cp ./api_path_measure.options $OUT/api_path_measure.options
 cp ./api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corpus.zip
+
+# Remove unnecessary dependencies that aren't on runner containers.
+patchelf --remove-needed libGLU.so.1 out/GPU/null_gl_canvas
+patchelf --remove-needed libGL.so.1 out/GPU/null_gl_canvas
+patchelf --remove-needed libX11.so.6 out/GPU/null_gl_canvas
+cp out/GPU/null_gl_canvas $OUT/null_gl_canvas
