@@ -62,7 +62,7 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_draw_functions api_gradients api_image_filter \
                                    api_path_measure api_null_canvas
 
-$SRC/depot_tools/ninja -C out/GPU null_gl_canvas
+$SRC/depot_tools/ninja -C out/GPU api_null_gl_canvas
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -127,7 +127,7 @@ cp ./api_null_canvas.options $OUT/api_null_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_null_canvas_seed_corpus.zip
 
 # Remove unnecessary dependencies that aren't on runner containers.
-patchelf --remove-needed libGLU.so.1 out/GPU/null_gl_canvas
-patchelf --remove-needed libGL.so.1 out/GPU/null_gl_canvas
-patchelf --remove-needed libX11.so.6 out/GPU/null_gl_canvas
-cp out/GPU/null_gl_canvas $OUT/null_gl_canvas
+patchelf --remove-needed libGLU.so.1 out/GPU/api_null_gl_canvas
+patchelf --remove-needed libGL.so.1 out/GPU/api_null_gl_canvas
+patchelf --remove-needed libX11.so.6 out/GPU/api_null_gl_canvas
+cp out/GPU/api_null_gl_canvas $OUT/api_null_gl_canvas
