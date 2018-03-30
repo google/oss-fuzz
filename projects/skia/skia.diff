@@ -235,21 +235,21 @@ index 815130d532..0e778a17d7 100644
              SkFixed startX = SkFDot6ToFixed(x0) + (slope * ((32 - y0) & 63) >> 6);
  
 diff --git a/src/core/SkScan_Path.cpp b/src/core/SkScan_Path.cpp
-index 2373e62d46..25b17480c2 100644
+index 2373e62d46..410fa8a276 100644
 --- a/src/core/SkScan_Path.cpp
 +++ b/src/core/SkScan_Path.cpp
-@@ -254,6 +254,11 @@ static void walk_convex_edges(SkEdge* prevHead, SkPath::FillType,
-             }
-             local_top = local_bot + 1;
-         } else {
+@@ -245,6 +245,11 @@ static void walk_convex_edges(SkEdge* prevHead, SkPath::FillType,
+         SkFixed dRite = riteE->fDX;
+         int count = local_bot - local_top;
+         SkASSERT(count >= 0);
 +#if defined(IS_FUZZING)
-+            if (count > 1000) {
-+                count = 1000;
-+            }
++        if (count > 1000) {
++            return;
++        }
 +#endif
-             do {
-                 int L = SkFixedRoundToInt(left);
-                 int R = SkFixedRoundToInt(rite);
+         if (0 == (dLeft | dRite)) {
+             int L = SkFixedRoundToInt(left);
+             int R = SkFixedRoundToInt(rite);
 diff --git a/src/core/SkTextBlob.cpp b/src/core/SkTextBlob.cpp
 index 182cf72ec2..91733188d8 100644
 --- a/src/core/SkTextBlob.cpp
@@ -361,42 +361,37 @@ index 48954a8938..5a4f354a21 100644
      for (int i = 0; i < count; i++) {
          LayerInfo info;
 diff --git a/src/gpu/GrPathUtils.cpp b/src/gpu/GrPathUtils.cpp
-index 74a53e9e09..872b28ced6 100644
+index 74a53e9e09..885c6be673 100644
 --- a/src/gpu/GrPathUtils.cpp
 +++ b/src/gpu/GrPathUtils.cpp
-@@ -394,7 +394,11 @@ void convert_noninflect_cubic_to_quads(const SkPoint p[4],
+@@ -394,6 +394,11 @@ void convert_noninflect_cubic_to_quads(const SkPoint p[4],
                                         SkPathPriv::FirstDirection dir,
                                         SkTArray<SkPoint, true>* quads,
                                         int sublevel = 0) {
--
-+    #if defined(IS_FUZZING)
-+        if (sublevel >= 7) {
-+            return;
-+        }
-+    #endif
++#if defined(IS_FUZZING)
++    if (sublevel >= 7) {
++        return;
++    }
++#endif
+ 
      // Notation: Point a is always p[0]. Point b is p[1] unless p[1] == p[0], in which case it is
      // p[2]. Point d is always p[3]. Point c is p[2] unless p[2] == p[3], in which case it is p[1].
- 
 diff --git a/src/ports/SkDebug_stdio.cpp b/src/ports/SkDebug_stdio.cpp
-index ec4e3fec77..e2c1a48521 100644
+index ec4e3fec77..bd720fd491 100644
 --- a/src/ports/SkDebug_stdio.cpp
 +++ b/src/ports/SkDebug_stdio.cpp
 @@ -12,9 +12,13 @@
  #include <stdio.h>
  
  void SkDebugf(const char format[], ...) {
--    va_list args;
--    va_start(args, format);
--    vfprintf(stderr, format, args);
--    va_end(args);
-+    #if !defined(IS_FUZZING)
-+        va_list args;
-+        va_start(args, format);
-+        vfprintf(stderr, format, args);
-+        va_end(args);
-+    #else
-+        (void) format;
-+    #endif
++#if !defined(IS_FUZZING)
+     va_list args;
+     va_start(args, format);
+     vfprintf(stderr, format, args);
+     va_end(args);
++#else
++    (void) format;
++#endif
  }
  #endif//!defined(SK_BUILD_FOR_WIN) && !defined(SK_BUILD_FOR_ANDROID)
 diff --git a/src/utils/SkOffsetPolygon.cpp b/src/utils/SkOffsetPolygon.cpp
