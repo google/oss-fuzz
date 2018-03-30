@@ -52,6 +52,8 @@ RUN wget -O $SRC/skia/api_path_measure_seed_corpus.zip https://storage.googleapi
 
 RUN wget -O $SRC/skia/canvas_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/canvas_seed_corpus.zip
 
+RUN wget -O $SRC/skia/encoder_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/encoder_seed_corpus.zip
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
@@ -65,6 +67,7 @@ COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
 COPY path_deserialize.options $SRC/skia/path_deserialize.options
 COPY image_decode.options $SRC/skia/image_decode.options
 COPY animated_image_decode.options $SRC/skia/animated_image_decode.options
+COPY encoder.options $SRC/skia/encoder.options
 
 # API fuzzers can share options
 COPY api_fuzzers.options $SRC/skia/api_draw_functions.options

@@ -60,7 +60,8 @@ $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
                                    api_draw_functions api_gradients api_image_filter \
-                                   api_path_measure api_null_canvas
+                                   api_path_measure api_null_canvas png_encoder \
+                                   jpeg_encoder webp_encoder
 
 $SRC/depot_tools/ninja -C out/GPU api_null_gl_canvas
 
@@ -132,3 +133,16 @@ patchelf --remove-needed libGLU.so.1 out/GPU/api_null_gl_canvas
 patchelf --remove-needed libGL.so.1 out/GPU/api_null_gl_canvas
 patchelf --remove-needed libX11.so.6 out/GPU/api_null_gl_canvas
 cp out/GPU/api_null_gl_canvas $OUT/api_null_gl_canvas
+
+cp out/Fuzz/png_encoder $OUT/png_encoder
+cp ./encoder.options $OUT/png_encoder.options
+cp ./encoder_seed_corpus.zip $OUT/png_encoder_seed_corpus.zip
+
+cp out/Fuzz/jpeg_encoder $OUT/jpeg_encoder
+cp ./encoder.options $OUT/jpeg_encoder.options
+cp ./encoder_seed_corpus.zip $OUT/jpeg_encoder_seed_corpus.zip
+
+cp out/Fuzz/webp_encoder $OUT/webp_encoder
+cp ./encoder.options $OUT/webp_encoder.options
+cp ./encoder_seed_corpus.zip $OUT/webp_encoder_seed_corpus.zip
+
