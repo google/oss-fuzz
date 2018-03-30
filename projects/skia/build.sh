@@ -127,6 +127,7 @@ cp ./api_null_canvas.options $OUT/api_null_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_null_canvas_seed_corpus.zip
 
 # Remove unnecessary dependencies that aren't on runner containers.
+# Libraries found through trial and error (ldd command also helpful).
 patchelf --remove-needed libGLU.so.1 out/GPU/api_null_gl_canvas
 patchelf --remove-needed libGL.so.1 out/GPU/api_null_gl_canvas
 patchelf --remove-needed libX11.so.6 out/GPU/api_null_gl_canvas
