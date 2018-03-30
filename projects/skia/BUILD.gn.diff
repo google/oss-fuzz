@@ -194,3 +194,39 @@ test_app("api_null_canvas") {
     "//third_party/libpng",
   ]
 }
+
+test_app("png_encoder") {
+  sources = [
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/FuzzEncoders.cpp",
+    "fuzz/oss_fuzz/FuzzPNGEncoder.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("jpeg_encoder") {
+  sources = [
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/FuzzEncoders.cpp",
+    "fuzz/oss_fuzz/FuzzJPEGEncoder.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("webp_encoder") {
+  sources = [
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/FuzzEncoders.cpp",
+    "fuzz/oss_fuzz/FuzzWEBPEncoder.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
