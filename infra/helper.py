@@ -99,6 +99,7 @@ def main():
   reproduce_parser.add_argument('testcase_path', help='path of local testcase')
   reproduce_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
                                 nargs=argparse.REMAINDER)
+  _add_environment_args(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash in an image.')
@@ -406,6 +407,9 @@ def reproduce(args):
   if debugger:
     image_name = 'base-runner-debug'
     env += ['DEBUGGER=' + debugger]
+
+  if args.e:
+    env += args.e
 
   run_args = sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
