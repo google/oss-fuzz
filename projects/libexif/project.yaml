@@ -1,0 +1,7 @@
+homepage: "https://libexif.github.io"
+primary_contact: "<primary_contact_email>"
+auto_ccs:
+  - paul.l.kehrer@gmail.com
+sanitizers:
+  - address
+  - memory
