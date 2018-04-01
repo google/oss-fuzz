@@ -3,6 +3,15 @@
 #include <libexif/exif-loader.h>
 
 
+void content_func(ExifEntry *entry, void *user_data) {
+  char buf[10000];
+  exif_entry_get_value(entry, buf, sizeof(buf));
+}
+
+void data_func(ExifContent *content, void *user_data) {
+  exif_content_foreach_entry(content, content_func, NULL);
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   ExifLoader *loader = exif_loader_new();
   ExifData *data;
@@ -15,6 +24,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     exif_loader_unref(loader);
     return 0;
   }
+  exif_data_foreach_content(data, data_func, NULL);
   exif_loader_unref(loader);
   exif_data_unref(data);
   return 0;
