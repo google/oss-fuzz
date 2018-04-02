@@ -32,7 +32,7 @@ created during build-time.
 
 ## argv[0]
 
-You must not modify argv[0]. It is required for certain things to work correctly.
+You must not modify `argv[0]`. It is required for certain things to work correctly.
 
 ## Current working directory
 
