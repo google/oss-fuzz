@@ -170,7 +170,7 @@ test_app("api_raster_n32_canvas") {
   ]
 }
 
-test_app("api_null_gl_canvas") {
+test_app("api_mock_gpu_canvas") {
   include_dirs = [
     "tools",
     "tools/debugger",
@@ -178,7 +178,7 @@ test_app("api_null_gl_canvas") {
   sources = [
     "fuzz/FuzzCanvas.cpp",
     "fuzz/FuzzCommon.cpp",
-    "fuzz/oss_fuzz/FuzzNullGLCanvas.cpp",
+    "fuzz/oss_fuzz/FuzzMockGPUCanvas.cpp",
     "tools/UrlDataManager.cpp",
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
