@@ -4,6 +4,9 @@ auto_ccs:
   - "hcm@chromium.org"
   - "mtklein@chromium.org"
   - "reed@google.com"
+  - "bsalomon@google.com"
+  - "caryclark@google.com"
+  - "liyuqian@google.com"
 sanitizers:
  - address
  - undefined
