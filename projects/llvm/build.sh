@@ -45,6 +45,10 @@ case $SANITIZER in
   *) LLVM_SANITIZER="" ;;
 esac
 
+cd llvm
+git apply $SRC/isel_parser.patch
+cd ..
+
 mkdir build
 cd build
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
@@ -56,7 +60,8 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_LIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE}" \
     -DLLVM_NO_DEAD_STRIP=ON \
     -DCLANG_ENABLE_PROTO_FUZZER=ON \
-    -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}"
+    -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
+    -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly
 for fuzzer in "${FUZZERS[@]}"; do
   ninja $fuzzer
   cp bin/$fuzzer $OUT
@@ -64,30 +69,31 @@ done
 ninja llvm-as
 
 # isel-fuzzer encodes its default flags in the name.
-cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
-cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
-mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64__O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64__O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--wasm32-wasm
+mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64__gisel
 
 # Same for llvm-opt-fuzzer
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-earlycse
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-simplifycfg
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-gvn
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-sccp
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__earlycse
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__simplifycfg
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__gvn
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__sccp
 
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_predication
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-guard_widening
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_vectorize
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__loop_predication
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__guard_widening
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__loop_vectorize
 
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_rotate
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unswitch
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unroll
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-licm
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-indvars
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-strength_reduce
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__loop_rotate
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__loop_unswitch
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__loop_unroll
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__licm
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__indvars
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__strength_reduce
 
-cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-irce
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__irce
 
-mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
+mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64__instcombine
 
 # Build corpus for the llvm-opt-fuzzer
 function build_corpus {

@@ -1,0 +1,22 @@
+diff --git a/lib/FuzzMutate/FuzzerCLI.cpp b/lib/FuzzMutate/FuzzerCLI.cpp
+index 6f5a5c067a9..1cb4d479f2a 100644
+--- a/lib/FuzzMutate/FuzzerCLI.cpp
++++ b/lib/FuzzMutate/FuzzerCLI.cpp
+@@ -44,7 +44,7 @@ void llvm::handleExecNameEncodedBEOpts(StringRef ExecName) {
+     return;
+
+   SmallVector<StringRef, 4> Opts;
+-  NameAndArgs.second.split(Opts, '-');
++  NameAndArgs.second.split(Opts, "__");
+   for (StringRef Opt : Opts) {
+     if (Opt.equals("gisel")) {
+       Args.push_back("-global-isel");
+@@ -81,7 +81,7 @@ void llvm::handleExecNameEncodedOptimizerOpts(StringRef ExecName) {
+     return;
+
+   SmallVector<StringRef, 4> Opts;
+-  NameAndArgs.second.split(Opts, '-');
++  NameAndArgs.second.split(Opts, "__");
+   for (StringRef Opt : Opts) {
+     if (Opt == "instcombine") {
+       Args.push_back("-passes=instcombine");

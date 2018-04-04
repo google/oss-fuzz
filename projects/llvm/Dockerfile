@@ -29,4 +29,5 @@ RUN cd llvm/tools && svn co http://llvm.org/svn/llvm-project/cfe/trunk clang -r 
 RUN cd llvm/projects && svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt -r $(cd ../ && svn info | grep Revision | awk '{print $2}')  >> svn.log 2>&1 
 RUN cd llvm/tools/clang/tools && svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra -r $(cd ../ && svn info | grep Revision | awk '{print $2}')  >> svn.log 2>&1
 
+COPY isel_parser.patch $SRC/isel_parser.patch
 COPY build.sh $SRC/
