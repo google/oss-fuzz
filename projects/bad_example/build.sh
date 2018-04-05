@@ -31,14 +31,15 @@ fi
 # Testcase 3. Ignore the flags provided by OSS-Fuzz.
 ################################################################################
 export CFLAGS="-O1"
+export CXXFLAGS_ORIG="$CXXFLAGS"
 export CXXFLAGS="-O1 -stdlib=libc++"
 
 ./configure
 make -j$(nproc) clean
 make -j$(nproc) all
 
-$CXX -fsanitize=$SANITIZER $CXXFLAGS -std=c++11 -I. \
-    $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_no_instrumentation \
+$CXX -fsanitize=$SANITIZER $CXXFLAGS_ORIG -std=c++11 -I. \
+    $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_bad_instrumentation \
     -lFuzzingEngine ./libz.a
 
 
