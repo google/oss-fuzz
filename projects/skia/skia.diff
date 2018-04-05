@@ -205,7 +205,7 @@ index e4e6701cea..c180f417c7 100644
                                      SkEdgeBuilder::kAnalyticEdge);
      SkAnalyticEdge** list = builder.analyticEdgeList();
 diff --git a/src/core/SkScan_Hairline.cpp b/src/core/SkScan_Hairline.cpp
-index 815130d532..0e778a17d7 100644
+index 815130d532..310d464bb7 100644
 --- a/src/core/SkScan_Hairline.cpp
 +++ b/src/core/SkScan_Hairline.cpp
 @@ -118,7 +118,11 @@ void SkScan::HairLineRgn(const SkPoint array[], int arrayCount, const SkRegion*
@@ -214,7 +214,7 @@ index 815130d532..0e778a17d7 100644
              }
 -
 +#if defined(IS_FUZZING)
-+            if ((ix0 - ix1) > 100000 || (ix0 - ix1) < 0) {
++            if ((ix1 - ix0) > 100000 || (ix1 - ix0) < 0) {
 +                continue; // too big to draw
 +            }
 +#endif
@@ -227,7 +227,7 @@ index 815130d532..0e778a17d7 100644
              }
 -
 +#if defined(IS_FUZZING)
-+            if ((iy0 - iy1) > 100000 || (iy0 - iy1) < 0) {
++            if ((iy1 - iy0) > 100000 || (iy1 - iy0) < 0) {
 +                continue; // too big to draw
 +            }
 +#endif
@@ -251,7 +251,7 @@ index 2373e62d46..410fa8a276 100644
              int L = SkFixedRoundToInt(left);
              int R = SkFixedRoundToInt(rite);
 diff --git a/src/core/SkTextBlob.cpp b/src/core/SkTextBlob.cpp
-index 182cf72ec2..91733188d8 100644
+index eac2430f5f..0d303fdb07 100644
 --- a/src/core/SkTextBlob.cpp
 +++ b/src/core/SkTextBlob.cpp
 @@ -801,7 +801,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
@@ -361,10 +361,10 @@ index 48954a8938..5a4f354a21 100644
      for (int i = 0; i < count; i++) {
          LayerInfo info;
 diff --git a/src/gpu/GrPathUtils.cpp b/src/gpu/GrPathUtils.cpp
-index 74a53e9e09..885c6be673 100644
+index 549a4dd411..13d52e18ca 100644
 --- a/src/gpu/GrPathUtils.cpp
 +++ b/src/gpu/GrPathUtils.cpp
-@@ -394,6 +394,11 @@ void convert_noninflect_cubic_to_quads(const SkPoint p[4],
+@@ -401,6 +401,11 @@ void convert_noninflect_cubic_to_quads(const SkPoint p[4],
                                         SkPathPriv::FirstDirection dir,
                                         SkTArray<SkPoint, true>* quads,
                                         int sublevel = 0) {
@@ -395,10 +395,10 @@ index ec4e3fec77..bd720fd491 100644
  }
  #endif//!defined(SK_BUILD_FOR_WIN) && !defined(SK_BUILD_FOR_ANDROID)
 diff --git a/src/utils/SkOffsetPolygon.cpp b/src/utils/SkOffsetPolygon.cpp
-index c8ebbeb7af..bf0912cd61 100755
+index bfd12d2bc8..fe184b0090 100755
 --- a/src/utils/SkOffsetPolygon.cpp
 +++ b/src/utils/SkOffsetPolygon.cpp
-@@ -180,6 +180,11 @@ bool SkInsetConvexPolygon(const SkPoint* inputPolygonVerts, int inputPolygonSize
+@@ -245,6 +245,11 @@ bool SkInsetConvexPolygon(const SkPoint* inputPolygonVerts, int inputPolygonSize
      if (inputPolygonSize < 3) {
          return false;
      }
