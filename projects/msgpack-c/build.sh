@@ -24,4 +24,6 @@ for f in $SRC/*_fuzzer.cc; do
     $CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
          "$f" -o "$OUT/${fuzzer}_fuzzer" \
          -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
+
+    cp -r "$SRC/msgpack-corpora/${fuzzer}" "$OUT/${fuzzer}_seed_corpus"
 done
