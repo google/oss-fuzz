@@ -25,5 +25,6 @@ for f in $SRC/*_fuzzer.cc; do
          "$f" -o "$OUT/${fuzzer}_fuzzer" \
          -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
 
+    rm -rf "$OUT/${fuzzer}_seed_corpus"
     cp -r "$SRC/msgpack-corpora/${fuzzer}" "$OUT/${fuzzer}_seed_corpus"
 done
