@@ -1,13 +1,18 @@
 #include <msgpack.hpp>
+#include <assert.h>
 
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  const char * input = (const char *) data;
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
-  const char * input = reinterpret_cast<const char *>(data);
-  try {
-    msgpack::unpacked upd;
-    msgpack::unpack(upd, input, size, 0);
-  } catch(...){
-    return 0;
-  }
+  // pack the data manually
+  msgpack::sbuffer sbuf;
+  msgpack::packer<msgpack::sbuffer> packer(sbuf);
+  packer.pack_bin(size);
+  packer.pack_bin_body(input, size);
+
+  //msgpack::unpack(serialized, deserialized);
+  //bool same = memcmp(deserialized, buffer);
+  //assert(same);
+
   return 0;
 }
