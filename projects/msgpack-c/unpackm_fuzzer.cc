@@ -10,9 +10,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   packer.pack_bin(size);
   packer.pack_bin_body(input, size);
 
-  //msgpack::unpack(serialized, deserialized);
-  //bool same = memcmp(deserialized, buffer);
-  //assert(same);
+  msgpack::unpack(sbuf.data(), sbuf.size());
+
+  // bool same = memcmp(data, result.get(), size);
+  // assert(same);
 
   return 0;
 }
