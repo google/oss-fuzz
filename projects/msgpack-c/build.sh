@@ -26,6 +26,6 @@ for f in $SRC/*_fuzzer.cc; do
          -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
 
     if [[ -d "$SRC/msgpack-corpora/${fuzzer}" ]]; then
-        cp -r "$SRC/msgpack-corpora/${fuzzer}" "$OUT/${fuzzer}_seed_corpus"
+        cp -r "$SRC/msgpack-corpora/${fuzzer}/" "$OUT/${fuzzer}_seed_corpus/"
     fi
 done
