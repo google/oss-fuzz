@@ -40,7 +40,7 @@ make -j$(nproc) clean
 make -j$(nproc) all
 
 $CXX -fsanitize=$SANITIZER $CXXFLAGS_ORIG -std=c++11 -I. \
-    $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_bad_instrumentation \
+    $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_partial_instrumentation \
     -lFuzzingEngine ./libz.a
 
 
