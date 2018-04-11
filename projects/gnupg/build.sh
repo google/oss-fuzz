@@ -15,11 +15,53 @@
 #
 ################################################################################
 
+cd ..
+tar -xvf libgpg-error-1.28.tar.bz2
+cd libgpg-error-1.28
+./configure --enable-static --disable-shared
+make
+make install
+cd ..
+tar -xvf libgcrypt-1.8.2.tar.bz2
+cd libgcrypt-1.8.2
+./configure --enable-static --disable-shared
+make
+make install
+cd ..
+tar -xvf libassuan-2.5.1.tar.bz2
+cd libassuan-2.5.1
+./configure --enable-static --disable-shared
+make
+make install
+cd ..
+tar -xvf libksba-1.3.5.tar.bz2
+cd libksba-1.3.5
+./configure --enable-static --disable-shared
+make
+make install
+cd ..
+tar -xvf npth-1.5.tar.bz2
+cd npth-1.5
+./configure --enable-static --disable-shared
+make
+make install
+cd ..
+
+cd gnupg
 # build project
 ./autogen.sh
-./configure
+./configure --disable-doc --enable-maintainer-mode
 make -j$(nproc) all
 
-# fuzzers have already been built
+# build fuzzers
+cd tests/fuzz
 
-cp $SRC/tests/fuzz/fuzz_* $OUT/
+$CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_verify.c -o fuzz_verify.o
+
+$CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_verify.o -o $OUT/fuzz_verify ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
+
+#fuzz_import
+
+cp *.options $OUT/
+
+cp $SRC/fuzz_verify_seed_corpus.zip $OUT/
