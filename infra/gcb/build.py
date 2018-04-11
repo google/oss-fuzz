@@ -228,7 +228,7 @@ def get_build_steps(project_yaml, dockerfile_path):
               # Verify that fuzzers have been built properly and are not broken.
               # TODO(mmoroz): raise a notification if not passing the tests.
               'test_all'
-            ]
+            ],
           },
       ])
 
