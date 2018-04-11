@@ -18,14 +18,8 @@
 cmake -DMSGPACK_CXX11=ON .
 make -j$(nproc) all
 
-for f in $SRC/*_fuzzer.cc; do
-    fuzzer=$(basename "$f" _fuzzer.cc)
+$CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
+     "$SRC/unpack_fuzzer.cc" -o "$OUT/unpack_fuzzer" \
+     -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
 
-    $CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
-         "$f" -o "$OUT/${fuzzer}_fuzzer" \
-         -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
-
-    if [[ -d "$SRC/msgpack-corpora/${fuzzer}" ]]; then
-        cp -r "$SRC/msgpack-corpora/${fuzzer}/" "$OUT/${fuzzer}_seed_corpus/"
-    fi
-done
+cp -r "$SRC/msgpack-corpora/unpack/" "$OUT/unpack_seed_corpus/"
