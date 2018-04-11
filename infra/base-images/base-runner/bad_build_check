@@ -19,34 +19,29 @@
 function check_instrumentation {
   local FUZZER=$1
   local CHECK_FAILED=0
+  local FUZZER_OUTPUT="/tmp/$(basename $FUZZER).output"
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    CHECK_FAILED=$($FUZZER -max_total_time=4 2>&1 | egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c)
+    $FUZZER -runs=4 &>$FUZZER_OUTPUT
+    CHECK_FAILED=$(cat $FUZZER_OUTPUT | egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c)
     if (( $CHECK_FAILED > 0 )); then
-      echo "BAD BUILD: the code does not seem to have coverage instrumentation."
+      echo "BAD BUILD: the target does not seem to have coverage instrumentation."
+      exit 1
     fi
-  fi
 
-  # honggfuzz is not fully integrated, avoid performing the following check.
-  if [[ "$FUZZING_ENGINE" != honggfuzz ]]; then
-    if (( $CHECK_FAILED == 0 )); then
-      # The "example" target has 93 when built with ASan and 67 with UBSan. Real
-      # targets have greater values (arduinojson: 413, libteken: 519, zlib: 586).
-      local THRESHOLD_FOR_NUMBER_OF_EDGES=90
-      if [[ $SANITIZER = undefined ]]; then
-        THRESHOLD_FOR_NUMBER_OF_EDGES=65
-      fi
+    local NUMBER_OF_EDGES=$(cat $FUZZER_OUTPUT | grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*counters\):[[:space:]]+\K[[:digit:]]+")
 
-      local NUMBER_OF_EDGES=$(sancov -print-coverage-pcs $FUZZER | wc -l)
-      if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
-        echo "BAD BUILD: the code does not seem to have coverage instrumentation."
-        CHECK_FAILED=1
-      fi
+    # The "example" target has 93 when built with ASan and 67 with UBSan. Real
+    # targets have greater values (arduinojson: 413, libteken: 519, zlib: 586).
+    local THRESHOLD_FOR_NUMBER_OF_EDGES=90
+    if [[ $SANITIZER = undefined ]]; then
+      THRESHOLD_FOR_NUMBER_OF_EDGES=65
     fi
-  fi
 
-  if (( $CHECK_FAILED > 0 )); then
-    exit 1
+    if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
+      echo "BAD BUILD: the target seems to have only partial coverage instrumentation."
+      exit 1
+    fi
   fi
 }
 
