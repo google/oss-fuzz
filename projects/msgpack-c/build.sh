@@ -22,4 +22,4 @@ $CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
      "$SRC/unpack_fuzzer.cc" -o "$OUT/unpack_fuzzer" \
      -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
 
-cp -r "$SRC/msgpack-corpora/unpack/" "$OUT/unpack_seed_corpus/"
+zip -rj "$SRC/msgpack-corpora/packed" "$OUT/unpack_pack_fuzzer_seed_corpus.zip"
