@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+#compile and link statically dependencies
 cd ..
 tar -xvf libgpg-error-1.28.tar.bz2
 cd libgpg-error-1.28
@@ -47,8 +48,9 @@ make
 make install
 cd ..
 
-cd gnupg
+
 # build project
+cd gnupg
 ./autogen.sh
 ./configure --disable-doc --enable-maintainer-mode
 make -j$(nproc) all
@@ -60,8 +62,12 @@ $CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_veri
 
 $CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_verify.o -o $OUT/fuzz_verify ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
 
-#fuzz_import
 
+$CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_import.c -o fuzz_import.o
+
+$CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_import.o -o $OUT/fuzz_import ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
+
+#export other associated stuff
 cp *.options $OUT/
 
-cp $SRC/fuzz_verify_seed_corpus.zip $OUT/
+mv $SRC/fuzz_verify_seed_corpus.zip $OUT/
