@@ -56,7 +56,8 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_LIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE}" \
     -DLLVM_NO_DEAD_STRIP=ON \
     -DCLANG_ENABLE_PROTO_FUZZER=ON \
-    -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}"
+    -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
+    -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly
 for fuzzer in "${FUZZERS[@]}"; do
   ninja $fuzzer
   cp bin/$fuzzer $OUT
@@ -66,6 +67,7 @@ ninja llvm-as
 # isel-fuzzer encodes its default flags in the name.
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--wasm32-O2
 mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
 
 # Same for llvm-opt-fuzzer
