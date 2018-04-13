@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -u
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,8 @@
 
 # Test every fuzzer. Fails on first fuzzer failure.
 
-N=0
+TOTAL_TARGETS_COUNT=0
+BROKEN_TARGETS_COUNT=0
 for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
   if file "$FUZZER_BINARY" | grep -v ELF > /dev/null 2>&1; then
     continue
@@ -45,13 +46,24 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
   fi
 
   bad_build_check $FUZZER_BINARY
-  N=$[$N+1]
+  if [ $? -ne 0 ]; then
+    BROKEN_TARGETS_COUNT=$[$BROKEN_TARGETS_COUNT+1]
+  fi
+  TOTAL_TARGETS_COUNT=$[$TOTAL_TARGETS_COUNT+1]
 done
 
-if [ "$N" -eq "0" ]; then
+if [ "$TOTAL_TARGETS_COUNT" -eq "0" ]; then
   echo "ERROR: no fuzzers found in $OUT/"
   ls -al $OUT
   exit 1
 fi
 
-echo "$N fuzzers total"
+BROKEN_TARGETS_PERCENTAGE=$[$BROKEN_TARGETS_COUNT*100/$TOTAL_TARGETS_COUNT]
+
+if [ "$BROKEN_TARGETS_PERCENTAGE" -gt "90" ]; then
+  echo "ERROR: $BROKEN_TARGETS_PERCENTAGE % of fuzz targets seem to be broken"
+  exit 1
+fi
+
+echo "$TOTAL_TARGETS_COUNT fuzzers total, $BROKEN_TARGETS_COUNT seem to be " \
+     "broken ($BROKEN_TARGETS_PERCENTAGE%)"
