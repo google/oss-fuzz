@@ -19,7 +19,7 @@ cmake -DMSGPACK_CXX11=ON .
 make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
-     "$SRC/unpack_fuzzer.cc" -o "$OUT/unpack_fuzzer" \
+     "$SRC/unpack_pack_fuzzer.cc" -o "$OUT/unpack_pack_fuzzer" \
      -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
 
-zip -rj "$SRC/msgpack-corpora/packed" "$OUT/unpack_pack_fuzzer_seed_corpus.zip"
+zip -rj "$OUT/unpack_pack_fuzzer_seed_corpus.zip" "$SRC/msgpack-corpora/packed/"
