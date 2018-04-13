@@ -15,7 +15,9 @@
 #
 ################################################################################
 
-cmake -DMSGPACK_CXX11=ON .
+cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
+      -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+      -DMSGPACK_CXX11=ON .
 make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
