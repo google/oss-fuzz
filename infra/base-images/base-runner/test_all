@@ -115,7 +115,7 @@ if [ "$BROKEN_TARGETS_PERCENTAGE" -gt "90" ]; then
   # TODO: figure out how to not fail the "special" cases handled below. Those
   # are from "example" and "c-ares" projects and are too small targets to pass.
   if [ "(ls $OUT/do_stuff_fuzzer $OUT/ares_*_fuzzer | wc -l)" -gt "0" ]; then
-    exit 0;
+    exit 0
   fi
 
   exit 1
