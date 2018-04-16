@@ -38,12 +38,9 @@ function check_instrumentation {
 
     local NUMBER_OF_EDGES=$(cat $FUZZER_OUTPUT | grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*counters\):[[:space:]]+\K[[:digit:]]+")
 
-    # The "example" target has 93 when built with ASan and 67 with UBSan. Real
-    # targets have greater values (arduinojson: 413, libteken: 519, zlib: 586).
-    local THRESHOLD_FOR_NUMBER_OF_EDGES=90
-    if [[ $SANITIZER = undefined ]]; then
-      THRESHOLD_FOR_NUMBER_OF_EDGES=65
-    fi
+    # The "example" target has 73 with ASan, 65 with UBSan, and 6648 with MSan.
+    # Real world targets have greater values (arduinojson: 407, zlib: 664).
+    local THRESHOLD_FOR_NUMBER_OF_EDGES=256
 
     if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
       echo "BAD BUILD: the target seems to have only partial coverage instrumentation." >> $LOG_PATH_FOR_BROKEN_TARGET
