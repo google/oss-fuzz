@@ -1,4 +1,4 @@
-#!/bin/bash -ux
+#!/bin/bash -u
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,7 @@
 # Verify that the given fuzzer has proper coverage instrumentation.
 function check_instrumentation {
   local FUZZER=$1
+  local LOG_PATH_FOR_BROKEN_TARGET=$2
   local CHECK_FAILED=0
   local FUZZER_OUTPUT="/tmp/$(basename $FUZZER).output"
 
@@ -25,7 +26,7 @@ function check_instrumentation {
     $FUZZER -runs=4 &>$FUZZER_OUTPUT
     CHECK_FAILED=$(cat $FUZZER_OUTPUT | egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c)
     if (( $CHECK_FAILED > 0 )); then
-      echo "BAD BUILD: the target does not seem to have coverage instrumentation."
+      echo "BAD BUILD: the target does not seem to have coverage instrumentation." > $LOG_PATH_FOR_BROKEN_TARGET
       exit 1
     fi
 
@@ -39,7 +40,7 @@ function check_instrumentation {
     fi
 
     if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
-      echo "BAD BUILD: the target seems to have only partial coverage instrumentation."
+      echo "BAD BUILD: the target seems to have only partial coverage instrumentation." > $LOG_PATH_FOR_BROKEN_TARGET
       exit 1
     fi
   fi
@@ -48,6 +49,7 @@ function check_instrumentation {
 # Verify that the given fuzzer has been built properly and works as expected.
 function check_startup_crash {
   local FUZZER=$1
+  local LOG_PATH_FOR_BROKEN_TARGET=$2
   local CHECK_PASSED=0
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
@@ -58,7 +60,7 @@ function check_startup_crash {
   fi
 
   if (( $CHECK_PASSED == 0 )); then
-    echo "BAD BUILD: the fuzzer seems to have either startup crash or exit."
+    echo "BAD BUILD: the fuzzer seems to have either startup crash or exit." > $LOG_PATH_FOR_BROKEN_TARGET
     exit 1
   fi
 }
@@ -66,25 +68,27 @@ function check_startup_crash {
 # Mixed sanitizers check for ASan build.
 function check_asan_build {
   local FUZZER=$1
-  local ASAN_CALLS=$2
-  local MSAN_CALLS=$3
-  local UBSAN_CALLS=$4
+  local LOG_PATH_FOR_BROKEN_TARGET=$2
+  local ASAN_CALLS=$3
+  local MSAN_CALLS=$4
+  local UBSAN_CALLS=$5
 
   # Perform all the checks for more verbose error message.
   local CHECK_FAILED=0
 
+  # Instrumentation checks can write several log messages, use >> rather than >.
   if (( $ASAN_CALLS < 1000 )); then
-    echo "BAD BUILD: $FUZZER does not seem to be compiled with ASan."
+    echo "BAD BUILD: $FUZZER does not seem to be compiled with ASan." >> $LOG_PATH_FOR_BROKEN_TARGET
     CHECK_FAILED=1
   fi
 
   if (( $MSAN_CALLS > 0 )); then
-    echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with MSan."
+    echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with MSan." >> $LOG_PATH_FOR_BROKEN_TARGET
     CHECK_FAILED=1
   fi
 
   if (( $UBSAN_CALLS > 250 )); then
-    echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with UBSan."
+    echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with UBSan." >> $LOG_PATH_FOR_BROKEN_TARGET
     CHECK_FAILED=1
   fi
 
@@ -96,25 +100,26 @@ function check_asan_build {
 # Mixed sanitizers check for MSan build.
 function check_msan_build {
   local FUZZER=$1
-  local ASAN_CALLS=$2
-  local MSAN_CALLS=$3
-  local UBSAN_CALLS=$4
+  local LOG_PATH_FOR_BROKEN_TARGET=$2
+  local ASAN_CALLS=$3
+  local MSAN_CALLS=$4
+  local UBSAN_CALLS=$5
 
   # Perform all the checks for more verbose error message.
   local CHECK_FAILED=0
 
   if (( $ASAN_CALLS > 0 )); then
-    echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with ASan."
+    echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with ASan." >> $LOG_PATH_FOR_BROKEN_TARGET
     CHECK_FAILED=1
   fi
 
   if (( $MSAN_CALLS < 1000 )); then
-    echo "BAD BUILD: $FUZZER does not seem to be compiled with UBSan."
+    echo "BAD BUILD: $FUZZER does not seem to be compiled with UBSan." >> $LOG_PATH_FOR_BROKEN_TARGET
     CHECK_FAILED=1
   fi
 
   if (( $UBSAN_CALLS > 250 )); then
-    echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with UBSan."
+    echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with UBSan." >> $LOG_PATH_FOR_BROKEN_TARGET
     CHECK_FAILED=1
   fi
 
@@ -126,9 +131,10 @@ function check_msan_build {
 # Mixed sanitizers check for UBSan build.
 function check_ubsan_build {
   local FUZZER=$1
-  local ASAN_CALLS=$2
-  local MSAN_CALLS=$3
-  local UBSAN_CALLS=$4
+  local LOG_PATH_FOR_BROKEN_TARGET=$2
+  local ASAN_CALLS=$3
+  local MSAN_CALLS=$4
+  local UBSAN_CALLS=$5
 
   if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
     # Ignore UBSan checks for fuzzing engines other than libFuzzer because:
@@ -141,17 +147,17 @@ function check_ubsan_build {
   local CHECK_FAILED=0
 
   if (( $ASAN_CALLS > 0 )); then
-    echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with ASan."
+    echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with ASan." >> $LOG_PATH_FOR_BROKEN_TARGET
     CHECK_FAILED=1
   fi
 
   if (( $MSAN_CALLS > 0 )); then
-    echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with MSan."
+    echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with MSan." >> $LOG_PATH_FOR_BROKEN_TARGET
     CHECK_FAILED=1
   fi
 
   if (( $UBSAN_CALLS < 250 )); then
-    echo "BAD BUILD: $FUZZER does not seem to be compiled with UBSan."
+    echo "BAD BUILD: $FUZZER does not seem to be compiled with UBSan." >> $LOG_PATH_FOR_BROKEN_TARGET
     CHECK_FAILED=1
   fi
 
@@ -163,6 +169,8 @@ function check_ubsan_build {
 # Verify that the given fuzz target is compiled with correct sanitizer.
 function check_mixed_sanitizers {
   local FUZZER=$1
+  local LOG_PATH_FOR_BROKEN_TARGET=$2
+
   local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__asan" -c)
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__msan" -c)
   local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__ubsan" -c)
@@ -170,30 +178,41 @@ function check_mixed_sanitizers {
   local CHECK_FAILED=0
 
   if [[ "$SANITIZER" = address ]]; then
-    check_asan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    check_asan_build $FUZZER $LOG_PATH_FOR_BROKEN_TARGET $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
   elif [[ "$SANITIZER" = memory ]]; then
-    check_msan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    check_msan_build $FUZZER $LOG_PATH_FOR_BROKEN_TARGET $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
   elif [[ "$SANITIZER" = undefined ]]; then
-    check_ubsan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    check_ubsan_build $FUZZER $LOG_PATH_FOR_BROKEN_TARGET $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
   fi
 }
 
 
 function main {
   local FUZZER=$1
+  local LOG_PATH_FOR_BROKEN_TARGET=$2
+
   echo "INFO: performing bad build checks for $FUZZER"
 
-  check_instrumentation $FUZZER
-  check_mixed_sanitizers $FUZZER
-  check_startup_crash $FUZZER
+  check_instrumentation $FUZZER $LOG_PATH_FOR_BROKEN_TARGET
+  check_mixed_sanitizers $FUZZER $LOG_PATH_FOR_BROKEN_TARGET
+  check_startup_crash $FUZZER $LOG_PATH_FOR_BROKEN_TARGET
 }
 
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <fuzz_target_binary>"
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <fuzz_target_binary> <valid_targets_dir> <broken_targets_dir>"
     exit 1
 fi
 
 FUZZER=$1
-main $FUZZER
-echo "INFO: $FUZZER has passed bad_build_check tests."
+VALID_TARGETS_DIR=$2
+BROKEN_TARGETS_DIR=$3
+
+TARGET_NAME="$(basename $FUZZER)"
+LOG_PATH_FOR_BROKEN_TARGET="${BROKEN_TARGETS_DIR}/${TARGET_NAME}"
+
+main $FUZZER $LOG_PATH_FOR_BROKEN_TARGET
+echo "INFO: $FUZZER has passed bad build checks."
+
+# Record valid fuzz target name into the valid targets dir.
+touch ${VALID_TARGETS_DIR}/${TARGET_NAME}

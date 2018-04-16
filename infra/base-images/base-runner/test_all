@@ -18,7 +18,17 @@
 # Test every fuzzer. Fails on first fuzzer failure.
 
 TOTAL_TARGETS_COUNT=0
-BROKEN_TARGETS_COUNT=0
+
+NPROC=$(nproc)
+VALID_TARGETS_DIR="/tmp/valid_fuzz_targets"
+BROKEN_TARGETS_DIR="/tmp/broken_fuzz_targets"
+
+rm -rf $VALID_TARGETS_DIR
+rm -rf $BROKEN_TARGETS_DIR
+
+mkdir $VALID_TARGETS_DIR
+mkdir $BROKEN_TARGETS_DIR
+
 for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
   if file "$FUZZER_BINARY" | grep -v ELF > /dev/null 2>&1; then
     continue
@@ -32,8 +42,6 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
     continue
   fi
 
-  echo "testing $FUZZER"
-
   if [ "$SKIP_TEST_TARGET_RUN" != "1" ]; then
     if [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
       timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
@@ -45,12 +53,21 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
     fi
   fi
 
-  bad_build_check $FUZZER_BINARY
-  if [ $? -ne 0 ]; then
-    BROKEN_TARGETS_COUNT=$[$BROKEN_TARGETS_COUNT+1]
-  fi
+  bad_build_check $FUZZER_BINARY $VALID_TARGETS_DIR $BROKEN_TARGETS_DIR &
+
   TOTAL_TARGETS_COUNT=$[$TOTAL_TARGETS_COUNT+1]
+
+  n_child_proc=$(jobs -p | wc -l)
+  while [ "$n_child_proc" -eq "$NPROC" ]; do
+    sleep 4
+    n_child_proc=$(jobs -p | wc -l)
+  done
 done
+
+wait
+
+VALID_TARGETS_COUNT=$(ls $VALID_TARGETS_DIR | wc -l)
+BROKEN_TARGETS_COUNT=$(ls $BROKEN_TARGETS_DIR | wc -l)
 
 if [ "$TOTAL_TARGETS_COUNT" -eq "0" ]; then
   echo "ERROR: no fuzzers found in $OUT/"
@@ -58,12 +75,33 @@ if [ "$TOTAL_TARGETS_COUNT" -eq "0" ]; then
   exit 1
 fi
 
-BROKEN_TARGETS_PERCENTAGE=$[$BROKEN_TARGETS_COUNT*100/$TOTAL_TARGETS_COUNT]
-
-if [ "$BROKEN_TARGETS_PERCENTAGE" -gt "90" ]; then
-  echo "ERROR: $BROKEN_TARGETS_PERCENTAGE % of fuzz targets seem to be broken"
+if [ "$TOTAL_TARGETS_COUNT" -ne "$[$VALID_TARGETS_COUNT+$BROKEN_TARGETS_COUNT]" ]; then
+  echo "ERROR: bad_build_check seems to have a bug, total number of fuzz" \
+       "does not match number of fuzz targets tested."
+  echo "Total fuzz targets ($TOTAL_TARGETS_COUNT):"
+  ls -al $OUT
+  echo "Valid fuzz targets ($VALID_TARGETS_COUNT):"
+  ls -al $VALID_TARGETS_DIR
+  echo "Total fuzz targets ($BROKEN_TARGETS_COUNT):"
+  ls -al $BROKEN_TARGETS_DIR
   exit 1
 fi
 
-echo "$TOTAL_TARGETS_COUNT fuzzers total, $BROKEN_TARGETS_COUNT seem to be " \
-     "broken ($BROKEN_TARGETS_PERCENTAGE%)"
+BROKEN_TARGETS_PERCENTAGE=$[$BROKEN_TARGETS_COUNT*100/$TOTAL_TARGETS_COUNT]
+
+RETURN_VALUE=0
+
+if [ "$BROKEN_TARGETS_PERCENTAGE" -gt "90" ]; then
+  echo "ERROR: $BROKEN_TARGETS_PERCENTAGE % of fuzz targets seem to be broken"
+  RETURN_VALUE=1
+else
+  echo "$TOTAL_TARGETS_COUNT fuzzers total, $BROKEN_TARGETS_COUNT seem to be" \
+       "broken ($BROKEN_TARGETS_PERCENTAGE%)"
+fi
+
+if [ "$BROKEN_TARGETS_COUNT" -gt "0" ]; then
+  echo "Broken fuzz targets ($BROKEN_TARGETS_COUNT)"
+  for target in $(ls $BROKEN_TARGETS_DIR); do
+    echo "${target}: $(cat ${BROKEN_TARGETS_DIR}/${target})"
+  done
+fi
