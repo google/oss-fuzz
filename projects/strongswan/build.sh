@@ -21,7 +21,7 @@
 
 make -j$(nproc)
 
-fuzzers=$(find fuzz -maxdepth 1 -executable -type f -name \fuzz_*)
+fuzzers=$(find fuzz -maxdepth 1 -executable -type f -name 'fuzz_*')
 for f in $fuzzers; do
 	fuzzer=$(basename $f)
 	cp $f $OUT/
