@@ -54,8 +54,12 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
     fi
   fi
 
+  echo "INFO: performing bad build checks for $FUZZER_BINARY."
+
+  LOG_PATH_FOR_BROKEN_TARGET="${BROKEN_TARGETS_DIR}/${FUZZER}"
+
   # Launch bad build check process in the background.
-  bad_build_check $FUZZER_BINARY $VALID_TARGETS_DIR $BROKEN_TARGETS_DIR &
+  bad_build_check $FUZZER_BINARY > $LOG_PATH_FOR_BROKEN_TARGET &
 
   # Count total number of fuzz targets being tested.
   TOTAL_TARGETS_COUNT=$[$TOTAL_TARGETS_COUNT+1]
@@ -77,6 +81,9 @@ if [ "$TOTAL_TARGETS_COUNT" -eq "0" ]; then
   ls -al $OUT
   exit 1
 fi
+
+# An empty log file indicated that corresponding fuzz target is not broken.
+find $BROKEN_TARGETS_DIR -empty -exec mv {} $VALID_TARGETS_DIR \;
 
 # Calculate number of valid and broken fuzz targets.
 VALID_TARGETS_COUNT=$(ls $VALID_TARGETS_DIR | wc -l)
