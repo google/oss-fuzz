@@ -15,18 +15,22 @@
 #
 ################################################################################
 
+# These are any clang warnings we need to silence.
+DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
+         -Wno-cast-qual -Wno-self-assign"
 # Disable UBSan vptr since target built with -fno-rtti.
-export CFLAGS="$CFLAGS -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+export CFLAGS="$CFLAGS $DISABLE -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS $DISABLE -fno-sanitize=vptr"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
+export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
 export CXXFLAGS_ARR=`echo $CXXFLAGS | sed -e "s/\s/\",\"/g"`
 $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
     --args='cc="'$CC'"
     cxx="'$CXX'"
     is_debug=false
-    extra_cflags=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING","-DIS_FUZZING_WITH_LIBFUZZER",
-        "-Wno-zero-as-null-pointer-constant", "-Wno-unused-template", "-Wno-cast-qual"]
+    extra_cflags_c=["'"$CFLAGS_ARR"'"]
+    extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING","-DIS_FUZZING_WITH_LIBFUZZER"]
     skia_use_system_freetype2=false
     skia_use_fontconfig=false
     skia_enable_gpu=false
@@ -36,8 +40,8 @@ $SRC/depot_tools/gn gen out/Fuzz\
     --args='cc="'$CC'"
     cxx="'$CXX'"
     is_debug=false
-    extra_cflags=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING_WITH_LIBFUZZER",
-        "-Wno-zero-as-null-pointer-constant", "-Wno-unused-template", "-Wno-cast-qual"]
+    extra_cflags_c=["'"$CFLAGS_ARR"'"]
+    extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING_WITH_LIBFUZZER"]
     skia_use_system_freetype2=false
     skia_use_fontconfig=false
     skia_enable_gpu=false
@@ -47,8 +51,8 @@ $SRC/depot_tools/gn gen out/GPU\
     --args='cc="'$CC'"
     cxx="'$CXX'"
     is_debug=false
-    extra_cflags=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING","-DIS_FUZZING_WITH_LIBFUZZER",
-        "-Wno-zero-as-null-pointer-constant", "-Wno-unused-template", "-Wno-cast-qual"]
+    extra_cflags_c=["'"$CFLAGS_ARR"'"]
+    extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING","-DIS_FUZZING_WITH_LIBFUZZER"]
     skia_use_system_freetype2=false
     skia_use_fontconfig=false
     skia_enable_gpu=true
