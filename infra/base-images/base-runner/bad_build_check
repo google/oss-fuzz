@@ -15,7 +15,10 @@
 #
 ################################################################################
 
-# Verify that the given fuzzer has proper coverage instrumentation.
+# Global variable that can be overwritten by any check.
+BAD_BUILD_CHECK_FAILED=0
+
+# Verify that the given fuzz target has proper coverage instrumentation.
 function check_instrumentation {
   local FUZZER=$1
   local LOG_PATH_FOR_BROKEN_TARGET=$2
@@ -26,8 +29,11 @@ function check_instrumentation {
     $FUZZER -runs=4 &>$FUZZER_OUTPUT
     CHECK_FAILED=$(cat $FUZZER_OUTPUT | egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c)
     if (( $CHECK_FAILED > 0 )); then
-      echo "BAD BUILD: the target does not seem to have coverage instrumentation." > $LOG_PATH_FOR_BROKEN_TARGET
-      exit 1
+      echo "BAD BUILD: the target does not seem to have coverage instrumentation." >> $LOG_PATH_FOR_BROKEN_TARGET
+      BAD_BUILD_CHECK_FAILED=1
+
+      # Bail out as the further check does not make any sense, there are 0 PCs.
+      return 1
     fi
 
     local NUMBER_OF_EDGES=$(cat $FUZZER_OUTPUT | grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*counters\):[[:space:]]+\K[[:digit:]]+")
@@ -40,13 +46,13 @@ function check_instrumentation {
     fi
 
     if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
-      echo "BAD BUILD: the target seems to have only partial coverage instrumentation." > $LOG_PATH_FOR_BROKEN_TARGET
-      exit 1
+      echo "BAD BUILD: the target seems to have only partial coverage instrumentation." >> $LOG_PATH_FOR_BROKEN_TARGET
+      BAD_BUILD_CHECK_FAILED=1
     fi
   fi
 }
 
-# Verify that the given fuzzer has been built properly and works as expected.
+# Verify that the given fuzz target has been built properly and works.
 function check_startup_crash {
   local FUZZER=$1
   local LOG_PATH_FOR_BROKEN_TARGET=$2
@@ -59,9 +65,9 @@ function check_startup_crash {
     CHECK_PASSED=1
   fi
 
-  if (( $CHECK_PASSED == 0 )); then
-    echo "BAD BUILD: the fuzzer seems to have either startup crash or exit." > $LOG_PATH_FOR_BROKEN_TARGET
-    exit 1
+  if [ "$CHECK_PASSED" -eq "0" ]; then
+    echo "BAD BUILD: the fuzzer seems to have either startup crash or exit." >> $LOG_PATH_FOR_BROKEN_TARGET
+    BAD_BUILD_CHECK_FAILED=1
   fi
 }
 
@@ -73,27 +79,20 @@ function check_asan_build {
   local MSAN_CALLS=$4
   local UBSAN_CALLS=$5
 
-  # Perform all the checks for more verbose error message.
-  local CHECK_FAILED=0
-
-  # Instrumentation checks can write several log messages, use >> rather than >.
+  # Perform all the checks for more detailed error message.
   if (( $ASAN_CALLS < 1000 )); then
     echo "BAD BUILD: $FUZZER does not seem to be compiled with ASan." >> $LOG_PATH_FOR_BROKEN_TARGET
-    CHECK_FAILED=1
+    BAD_BUILD_CHECK_FAILED=1
   fi
 
   if (( $MSAN_CALLS > 0 )); then
     echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with MSan." >> $LOG_PATH_FOR_BROKEN_TARGET
-    CHECK_FAILED=1
+    BAD_BUILD_CHECK_FAILED=1
   fi
 
   if (( $UBSAN_CALLS > 250 )); then
     echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with UBSan." >> $LOG_PATH_FOR_BROKEN_TARGET
-    CHECK_FAILED=1
-  fi
-
-  if (( $CHECK_FAILED > 0 )); then
-    exit 1
+    BAD_BUILD_CHECK_FAILED=1
   fi
 }
 
@@ -105,26 +104,20 @@ function check_msan_build {
   local MSAN_CALLS=$4
   local UBSAN_CALLS=$5
 
-  # Perform all the checks for more verbose error message.
-  local CHECK_FAILED=0
-
+  # Perform all the checks for more detailed error message.
   if (( $ASAN_CALLS > 0 )); then
     echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with ASan." >> $LOG_PATH_FOR_BROKEN_TARGET
-    CHECK_FAILED=1
+    BAD_BUILD_CHECK_FAILED=1
   fi
 
   if (( $MSAN_CALLS < 1000 )); then
     echo "BAD BUILD: $FUZZER does not seem to be compiled with UBSan." >> $LOG_PATH_FOR_BROKEN_TARGET
-    CHECK_FAILED=1
+    BAD_BUILD_CHECK_FAILED=1
   fi
 
   if (( $UBSAN_CALLS > 250 )); then
     echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with UBSan." >> $LOG_PATH_FOR_BROKEN_TARGET
-    CHECK_FAILED=1
-  fi
-
-  if (( $CHECK_FAILED > 0 )); then
-    exit 1
+    BAD_BUILD_CHECK_FAILED=1
   fi
 }
 
@@ -143,26 +136,20 @@ function check_ubsan_build {
     return 0
   fi
 
-  # Perform all the checks for more verbose error message.
-  local CHECK_FAILED=0
-
+  # Perform all the checks for more detailed error message.
   if (( $ASAN_CALLS > 0 )); then
     echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with ASan." >> $LOG_PATH_FOR_BROKEN_TARGET
-    CHECK_FAILED=1
+    BAD_BUILD_CHECK_FAILED=1
   fi
 
   if (( $MSAN_CALLS > 0 )); then
     echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with MSan." >> $LOG_PATH_FOR_BROKEN_TARGET
-    CHECK_FAILED=1
+    BAD_BUILD_CHECK_FAILED=1
   fi
 
   if (( $UBSAN_CALLS < 250 )); then
     echo "BAD BUILD: $FUZZER does not seem to be compiled with UBSan." >> $LOG_PATH_FOR_BROKEN_TARGET
-    CHECK_FAILED=1
-  fi
-
-  if (( $CHECK_FAILED > 0 )); then
-    exit 1
+    BAD_BUILD_CHECK_FAILED=1
   fi
 }
 
@@ -174,8 +161,6 @@ function check_mixed_sanitizers {
   local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__asan" -c)
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__msan" -c)
   local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__ubsan" -c)
-
-  local CHECK_FAILED=0
 
   if [[ "$SANITIZER" = address ]]; then
     check_asan_build $FUZZER $LOG_PATH_FOR_BROKEN_TARGET $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
@@ -204,15 +189,28 @@ if [ $# -ne 3 ]; then
     exit 1
 fi
 
+# Fuzz target path.
 FUZZER=$1
+
+# Directory where names of valid fuzz targets will be written to. It's expected
+# to have an empty file for every valid fuzz target.
 VALID_TARGETS_DIR=$2
+
+# Directory where names of broken fuzz targets will be written to. It's expected
+# ti have a file with error message for every broken fuzz target.
 BROKEN_TARGETS_DIR=$3
 
 TARGET_NAME="$(basename $FUZZER)"
 LOG_PATH_FOR_BROKEN_TARGET="${BROKEN_TARGETS_DIR}/${TARGET_NAME}"
 
+# In case of an error, main function will write error(s) to the given log path.
 main $FUZZER $LOG_PATH_FOR_BROKEN_TARGET
-echo "INFO: $FUZZER has passed bad build checks."
 
-# Record valid fuzz target name into the valid targets dir.
-touch ${VALID_TARGETS_DIR}/${TARGET_NAME}
+if [ "$BAD_BUILD_CHECK_FAILED" -eq "0" ]; then
+  echo "INFO: $FUZZER has passed bad build checks."
+
+  # Record valid fuzz target name into the valid targets dir.
+  touch ${VALID_TARGETS_DIR}/${TARGET_NAME}
+else
+  echo "INFO: $FUZZER has failed bad build checks."
+fi
