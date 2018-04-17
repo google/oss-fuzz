@@ -20,7 +20,8 @@ MIN_NUMBER_OF_RUNS=4
 
 # The "example" target has 73 with ASan, 65 with UBSan, and 6648 with MSan.
 # Real world targets have greater values (arduinojson: 407, zlib: 664).
-THRESHOLD_FOR_NUMBER_OF_EDGES=256
+# Mercurial's bdiff_fuzzer has 116 PCs when built with ASan.
+THRESHOLD_FOR_NUMBER_OF_EDGES=100
 
 # Threshold values for different sanitizers used by instrumentation checks.
 ASAN_CALLS_THRESHOLD_FOR_ASAN_BUILD=1000
