@@ -39,22 +39,24 @@ function check_instrumentation {
   local CHECK_FAILED=0
   local FUZZER_OUTPUT="/tmp/$(basename $FUZZER).output"
 
-  if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    # Store fuzz target's output into a temp file to be used for further checks.
-    $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
-    CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
-    if (( $CHECK_FAILED > 0 )); then
-      echo "BAD BUILD: the target does not seem to have coverage instrumentation."
+  if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
+    return
+  fi
 
-      # Bail out as the further check does not make any sense, there are 0 PCs.
-      return 1
-    fi
+  # Store fuzz target's output into a temp file to be used for further checks.
+  $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+  CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
+  if (( $CHECK_FAILED > 0 )); then
+    echo "BAD BUILD: the target does not seem to have coverage instrumentation."
 
-    local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*counters\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
+    # Bail out as the further check does not make any sense, there are 0 PCs.
+    return 1
+  fi
 
-    if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
-      echo "BAD BUILD: the target seems to have only partial coverage instrumentation."
-    fi
+  local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*counters\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
+
+  if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
+    echo "BAD BUILD: the target seems to have only partial coverage instrumentation."
   fi
 }
 

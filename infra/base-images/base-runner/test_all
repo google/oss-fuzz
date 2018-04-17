@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# Percentage threshold that needs to be reached for marking a build as failed.
+ALLOWED_BROKEN_TARGETS_PERCENTAGE=10
+
 # Test all fuzz targets in the $OUT/ dir.
 TOTAL_TARGETS_COUNT=0
 
@@ -115,13 +118,13 @@ fi
 BROKEN_TARGETS_PERCENTAGE=$[$BROKEN_TARGETS_COUNT*100/$TOTAL_TARGETS_COUNT]
 
 
-if [ "$BROKEN_TARGETS_PERCENTAGE" -gt "90" ]; then
+if [ "$BROKEN_TARGETS_PERCENTAGE" -gt "$ALLOWED_BROKEN_TARGETS_PERCENTAGE" ]; then
   echo "ERROR: $BROKEN_TARGETS_PERCENTAGE% of fuzz targets seem to be broken." \
        "See the list above for a detailed information."
 
   # TODO: figure out how to not fail the "special" cases handled below. Those
   # are from "example" and "c-ares" projects and are too small targets to pass.
-  if [ "(ls $OUT/do_stuff_fuzzer $OUT/ares_*_fuzzer | wc -l)" -gt "0" ]; then
+  if [ "$(ls $OUT/do_stuff_fuzzer $OUT/ares_*_fuzzer 2>/dev/null | wc -l)" -gt "0" ]; then
     exit 0
   fi
 
