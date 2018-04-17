@@ -23,7 +23,7 @@
 int escape_match(const uint8_t *data, size_t size){
     augeas *aug = aug_init(NULL, NULL, AUG_NONE);
     std::string data_string(reinterpret_cast<const char*>(data), size);
-    char *out;
+    char *out = NULL;
     aug_escape_name(aug, data_string.c_str(), &out);
     if (out != NULL){
         aug_match(aug, out, NULL);
@@ -32,7 +32,7 @@ int escape_match(const uint8_t *data, size_t size){
         aug_match(aug, data_string.c_str(), NULL);
     }
     aug_close(aug);
-    delete[] out;
+    free(out);
     return 0;
 }
 
