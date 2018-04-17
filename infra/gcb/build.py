@@ -195,27 +195,43 @@ def get_build_steps(project_yaml, dockerfile_path):
       env.append('OUT=' + out)
       env.append('MSAN_LIBS_PATH=/workspace/msan')
 
+      # To disable running of all fuzz targets while doing |test_all| step, as
+      # that step is currently being used for performing bad build checks only.
+      env.append('SKIP_TEST_TARGET_RUN=1')
+
       workdir = workdir_from_dockerfile(dockerfile_path)
       if not workdir:
         workdir = '/src'
 
-      build_steps.append({
+      build_steps.extend([
           # compile
-          'name': image,
-          'env': env,
-          'args': [
-            'bash',
-            '-c',
-            # Remove /out to break loudly when a build script incorrectly uses
-            # /out instead of $OUT.
-            # `cd /src && cd {workdir}` (where {workdir} is parsed from the
-            # Dockerfile). Container Builder overrides our workdir so we need to add
-            # this step to set it back.
-            # We also remove /work and /src to save disk space after a step.
-            # Container Builder doesn't pass --rm to docker run yet.
-            'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
-          ],
-      })
+          {'name': image,
+           'env': env,
+           'args': [
+             'bash',
+             '-c',
+             # Remove /out to break loudly when a build script incorrectly uses
+             # /out instead of $OUT.
+             # `cd /src && cd {workdir}` (where {workdir} is parsed from the
+             # Dockerfile). Container Builder overrides our workdir so we need to add
+             # this step to set it back.
+             # We also remove /work and /src to save disk space after a step.
+             # Container Builder doesn't pass --rm to docker run yet.
+             'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
+           ],
+          },
+          # test binaries
+          {'name': 'gcr.io/oss-fuzz-base/base-runner',
+            'env': env,
+            'args': [
+              'bash',
+              '-c',
+              # Verify that fuzzers have been built properly and are not broken.
+              # TODO(mmoroz): raise a notification if not passing the tests.
+              'test_all'
+            ],
+          },
+      ])
 
       if sanitizer == 'memory':
         # Patch dynamic libraries to use instrumented ones.
