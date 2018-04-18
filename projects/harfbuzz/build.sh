@@ -37,6 +37,10 @@ $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer \
     -lFuzzingEngine ./src/.libs/libharfbuzz-subset-fuzzing.a ./src/.libs/libharfbuzz-fuzzing.a
 
+$CXX $CXXFLAGS -std=c++11 -Isrc \
+    ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-get-codepoints-fuzzer \
+    -lFuzzingEngine ./src/.libs/libharfbuzz-subset-fuzzing.a ./src/.libs/libharfbuzz-fuzzing.a
+
 # Archive and copy to $OUT seed corpus if the build succeeded.
 zip -j -r $OUT/hb-shape-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/shaping/data/in-house/fonts
 zip -j -r $OUT/hb-subset-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/api/fonts
