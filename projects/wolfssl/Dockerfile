@@ -23,4 +23,4 @@ RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-ta
 
 WORKDIR wolfssl
 
-COPY build.sh $SRC/
+COPY build.sh *.options $SRC/
