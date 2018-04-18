@@ -67,7 +67,12 @@ $CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_impo
 
 $CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_import.o -o $OUT/fuzz_import ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
 
+$CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_decrypt.c -o fuzz_decrypt.o
+
+$CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_decrypt.o -o $OUT/fuzz_decrypt ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
+
 #export other associated stuff
 cp *.options $OUT/
 
 mv $SRC/fuzz_verify_seed_corpus.zip $OUT/
+mv $SRC/fuzz_import_seed_corpus.zip $OUT/
