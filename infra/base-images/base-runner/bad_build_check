@@ -54,7 +54,7 @@ function check_instrumentation {
     return 1
   fi
 
-  local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*counters\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
+  local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*counters|guards\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
 
   if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
     echo "BAD BUILD: the target seems to have only partial coverage instrumentation."
