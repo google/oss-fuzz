@@ -20,7 +20,18 @@
 # http://gpfault.net/posts/drop-in-libraries.txt.html
 
 for f in fuzz/c/std/*_fuzzer.cc; do
+  # Extract the format name, such as "gzip", from the C++ file name,
+  # "fuzz/c/std/gzip_fuzzer.cc".
   b=$(basename $f _fuzzer.cc)
+
+  # Make the "gzip_fuzzer" binary.
   $CXX $CXXFLAGS -std=c++11 $f -o $OUT/${b}_fuzzer -lFuzzingEngine
-  zip --junk-paths $OUT/${b}_fuzzer_seed_corpus.zip test/data/*.$b
+
+  # Make the optional "gzip_fuzzer_seed_corpus.zip" archive. This means
+  # extracting the "foo/bar/*.gz" out of the matching "gzip: foo/bar/*.gz"
+  # lines in fuzz/c/std/seed_corpora.txt.
+  seeds=$(sed -n -e "/^$b:/s/^$b: *//p" fuzz/c/std/seed_corpora.txt)
+  if [ -n "$seeds" ]; then
+    zip --junk-paths $OUT/${b}_fuzzer_seed_corpus.zip $seeds
+  fi
 done
