@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+WIRESHARK_BUILD_PATH="$WORK/build"
+mkdir -p "$WIRESHARK_BUILD_PATH"
+
 export WIRESHARK_INSTALL_PATH="$WORK/install"
 mkdir -p "$WIRESHARK_INSTALL_PATH"
 
@@ -24,25 +27,38 @@ mkdir -p "$SAMPLES_DIR"
 cp -a $SRC/wireshark-fuzzdb/samples/* "$SAMPLES_DIR"
 
 # compile static version of libs
-# XXX, with static wireshark linking each fuzzer binary is ~240 MB (just libwireshark.a is 423 MBs).
+# XXX, with static wireshark linking each fuzzer binary is ~338 MB (just libwireshark.a is 623 MBs).
 # XXX, wireshark is not ready for including static plugins into binaries.
-CONFOPTS="--disable-shared --enable-static --disable-plugins"
+CMAKE_DEFINES="-DENABLE_STATIC=ON -DENABLE_PLUGINS=OFF"
 
 # disable optional dependencies
-CONFOPTS="$CONFOPTS --without-pcap --without-ssl --without-gnutls"
+CMAKE_DEFINES="$CMAKE_DEFINES -DENABLE_PCAP=OFF -DENABLE_GNUTLS=OFF"
 
 # need only libs, disable programs
-CONFOPTS="$CONFOPTS --disable-wireshark --disable-tshark --disable-sharkd \
-             --disable-dumpcap --disable-capinfos --disable-captype --disable-randpkt --disable-dftest \
-             --disable-editcap --disable-mergecap --disable-reordercap --disable-text2pcap \
-             --without-extcap --disable-fuzzshark \
+# TODO, add something like --without-extcap, which would disable all extcap binaries
+CMAKE_DEFINES="$CMAKE_DEFINES -DBUILD_wireshark=OFF -DBUILD_tshark=OFF -DBUILD_sharkd=OFF \
+             -DBUILD_dumpcap=OFF -DBUILD_capinfos=OFF -DBUILD_captype=OFF -DBUILD_randpkt=OFF -DBUILD_dftest=OFF \
+             -DBUILD_editcap=OFF -DBUILD_mergecap=OFF -DBUILD_reordercap=OFF -DBUILD_text2pcap=OFF \
+             -DBUILD_fuzzshark=OFF \
+             -DBUILD_androiddump=OFF -DBUILD_randpktdump=OFF -DBUILD_udpdump=OFF \
          "
 
 # Fortify and asan don't like each other ... :(
-sed -i '/AC_WIRESHARK_GCC_FORTIFY_SOURCE_CHECK/d' configure.ac
-./autogen.sh
-./configure --prefix="$WIRESHARK_INSTALL_PATH" $CONFOPTS --disable-warnings-as-errors
+# TODO, right now -D_FORTIFY_SOURCE=2 is not added in cmake builds.
+# sed -i '/AC_WIRESHARK_GCC_FORTIFY_SOURCE_CHECK/d' configure.ac
 
+cd "$WIRESHARK_BUILD_PATH"
+
+cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
+      -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+      -DCMAKE_INSTALL_PREFIX="$WIRESHARK_INSTALL_PATH" $CMAKE_DEFINES -DDISABLE_WERROR=ON $SRC/wireshark/
+
+# disable leak checks, lemon is build with ASAN, and it leaks memory during building.
+export ASAN_OPTIONS="detect_leaks=0"
 make "-j$(nproc)"
 make install
+
+# make install didn't install config.h, install it manually
+cp "$WIRESHARK_BUILD_PATH/config.h" "$WIRESHARK_INSTALL_PATH/include/wireshark/"
+
 $SRC/wireshark/tools/oss-fuzzshark/build.sh all
