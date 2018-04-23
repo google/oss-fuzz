@@ -29,3 +29,11 @@ ar rcs libqubes-rpc-filecopy.a ioall.o copy-file.o crc32.o unpack.o pack.o
 $CXX $CXXFLAGS -o $OUT/libqubes-rpc-filecopy -I. -I./fuzzer fuzzer/fuzzer.cc -lFuzzingEngine libqubes-rpc-filecopy.a
 
 cp $SRC/*.options $OUT/
+
+cd $SRC/qubes-os/app-linux-input-proxy
+ 
+make -C fuzz
+cp fuzz/*_fuzzer $OUT/
+cp fuzz/*_seed_corpus.zip $OUT/
+cp fuzz/*.options $OUT/
+

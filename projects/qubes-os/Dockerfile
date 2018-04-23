@@ -32,4 +32,6 @@ RUN git clone -b fuzz --single-branch https://github.com/paraschetal/qubes-linux
     $SRC/qubes-os/builder-debian/scripts/debian-parser control --qubes-build-depends debian $SRC/qubes-os/linux-utils/debian/control | xargs apt-get -y install && \
     $SRC/qubes-os/builder-debian/scripts/debian-parser control --qubes-build-depends stretch $SRC/qubes-os/linux-utils/debian/control | xargs apt-get -y install
 
+RUN git        clone --single-branch https://github.com/QubesOS/qubes-app-linux-input-proxy $SRC/qubes-os/app-linux-input-proxy
+
 COPY build.sh *.options $SRC/
