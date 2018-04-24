@@ -24,14 +24,16 @@ cd $OUT
 FUZZER=$1
 shift
 
-rm -rf /tmp/input/ && mkdir /tmp/input/
+CORPUS_DIR="/tmp/${FUZZER}_corpus"
+
+rm -rf ${CORPUS_DIR} && mkdir ${CORPUS_DIR}/
 
 CORPUS=
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 if [ -f $SEED_CORPUS ]; then
   echo "Using seed corpus: $SEED_CORPUS"
-  unzip -d /tmp/input/ $SEED_CORPUS > /dev/null
-  CORPUS=/tmp/input
+  unzip -d ${CORPUS_DIR}/ $SEED_CORPUS > /dev/null
+  CORPUS=${CORPUS_DIR}
 fi
 
 if [[ "$FUZZING_ENGINE" = afl ]]; then
@@ -43,11 +45,13 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   export AFL_SKIP_CPUFREQ=1
   rm -rf /tmp/afl_output && mkdir /tmp/afl_output
   # AFL expects at least 1 file in the input dir.
-  echo input > /tmp/input/input
-  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i /tmp/input -o /tmp/afl_output $@ $OUT/$FUZZER"
+  echo input > ${CORPUS_DIR}/input
+  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i /tmp/
+
+   -o /tmp/afl_output $@ $OUT/$FUZZER"
 elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   if [ -z "$CORPUS" ]; then
-    CORPUS=/tmp/input
+    CORPUS=${CORPUS_DIR}
   fi
   # Honggfuzz expects at least 1 file in the input dir.
   echo input > $CORPUS/input
