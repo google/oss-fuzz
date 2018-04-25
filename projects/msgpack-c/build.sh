@@ -20,8 +20,11 @@ cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
       -DMSGPACK_CXX11=ON .
 make -j$(nproc) all
 
-$CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
-     "$SRC/unpack_pack_fuzzer.cc" -o "$OUT/unpack_pack_fuzzer" \
-     -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
+for f in $SRC/msgpack-c/fuzz/*_fuzzer.cpp; do
+    fuzzer=$(basename "$f" _fuzzer.cpp)
+    $CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
+         "$f" -o "$OUT/${fuzzer}_fuzzer" \
+         -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
+done
 
 zip -rj "$OUT/unpack_pack_fuzzer_seed_corpus.zip" "$SRC/msgpack-corpora/packed/"
