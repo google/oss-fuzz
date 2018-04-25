@@ -168,17 +168,23 @@ function check_mixed_sanitizers {
 # Verify that the given fuzz target doesn't crash on the seed corpus.
 function check_seed_corpus {
   local FUZZER=$1
-  local FUZZER_OUTPUT="/tmp/$(basename $FUZZER).output"
+  local FUZZER_NAME="$(basename $FUZZER)"
+  local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
 
-  # Set up common fuzzing arguments, otherwise "run_fuzer" errors out.
+  if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
+    return
+  fi
+
+  # Set up common fuzzing arguments, otherwise "run_fuzzer" errors out.
   if [ -z "$FUZZER_ARGS" ]; then
     export FUZZER_ARGS="-rss_limit_mb=2048 -timeout=25"
   fi
 
-  bash -c "run_fuzzer $(basename $FUZZER) -runs=0" &> $FUZZER_OUTPUT
+  bash -c "run_fuzzer $FUZZER_NAME -runs=0" &> $FUZZER_OUTPUT
 
   # Don't output anything if fuzz target hasn't crashed.
   if [ $? -ne 0 ]; then
+    echo "$FUZZER_NAME has a crash input in its seed coprpus:"
     cat $FUZZER_OUTPUT
   fi
 }
