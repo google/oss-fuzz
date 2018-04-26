@@ -24,14 +24,14 @@ cd $OUT
 FUZZER=$1
 shift
 
-rm -rf /tmp/input/ && mkdir /tmp/input/
+CORPUS_DIR="/tmp/${FUZZER}_corpus"
 
-CORPUS=
+rm -rf $CORPUS_DIR && mkdir $CORPUS_DIR
+
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 if [ -f $SEED_CORPUS ]; then
   echo "Using seed corpus: $SEED_CORPUS"
-  unzip -d /tmp/input/ $SEED_CORPUS > /dev/null
-  CORPUS=/tmp/input
+  unzip -d ${CORPUS_DIR}/ $SEED_CORPUS > /dev/null
 fi
 
 if [[ "$FUZZING_ENGINE" = afl ]]; then
@@ -43,14 +43,11 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   export AFL_SKIP_CPUFREQ=1
   rm -rf /tmp/afl_output && mkdir /tmp/afl_output
   # AFL expects at least 1 file in the input dir.
-  echo input > /tmp/input/input
-  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i /tmp/input -o /tmp/afl_output $@ $OUT/$FUZZER"
+  echo input > ${CORPUS_DIR}/input
+  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o /tmp/afl_output $@ $OUT/$FUZZER"
 elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
-  if [ -z "$CORPUS" ]; then
-    CORPUS=/tmp/input
-  fi
   # Honggfuzz expects at least 1 file in the input dir.
-  echo input > $CORPUS/input
+  echo input > $CORPUS_DIR/input
   rm -rf /tmp/honggfuzz_workdir && mkdir /tmp/honggfuzz_workdir
   # --exit_upon_crash: exit whith a first crash seen
   # -R (report): save report file to this location
@@ -62,7 +59,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -n: number of fuzzing threads (and processes)
   CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/HONGGFUZZ.REPORT.TXT -W /tmp/honggfuzz_workdir -v -z -P -f \"$CORPUS\" $@ -- \"$OUT/$FUZZER\""
 else
-  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $@ $CORPUS"
+  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $@ $CORPUS_DIR"
 
   OPTIONS_FILE="${FUZZER}.options"
   if [ -f $OPTIONS_FILE ]; then

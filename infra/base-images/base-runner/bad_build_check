@@ -54,7 +54,7 @@ function check_instrumentation {
     return 1
   fi
 
-  local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*counters|guards\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
+  local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*(counters|guards)\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
 
   if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
     echo "BAD BUILD: the target seems to have only partial coverage instrumentation."
@@ -165,6 +165,30 @@ function check_mixed_sanitizers {
   fi
 }
 
+# Verify that the given fuzz target doesn't crash on the seed corpus.
+function check_seed_corpus {
+  local FUZZER=$1
+  local FUZZER_NAME="$(basename $FUZZER)"
+  local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
+
+  if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
+    return
+  fi
+
+  # Set up common fuzzing arguments, otherwise "run_fuzzer" errors out.
+  if [ -z "$FUZZER_ARGS" ]; then
+    export FUZZER_ARGS="-rss_limit_mb=2048 -timeout=25"
+  fi
+
+  bash -c "run_fuzzer $FUZZER_NAME -runs=0" &> $FUZZER_OUTPUT
+
+  # Don't output anything if fuzz target hasn't crashed.
+  if [ $? -ne 0 ]; then
+    echo "$FUZZER_NAME has a crash input in its seed coprpus:"
+    cat $FUZZER_OUTPUT
+  fi
+}
+
 
 function main {
   local FUZZER=$1
@@ -172,6 +196,7 @@ function main {
   check_instrumentation $FUZZER
   check_mixed_sanitizers $FUZZER
   check_startup_crash $FUZZER
+  check_seed_corpus $FUZZER
 }
 
 
