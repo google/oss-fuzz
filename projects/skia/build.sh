@@ -67,6 +67,7 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_path_measure api_null_canvas png_encoder \
                                    jpeg_encoder webp_encoder
 
+# Note: GPU is also with the mem constraints options.
 $SRC/depot_tools/ninja -C out/GPU api_mock_gpu_canvas
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
@@ -137,7 +138,7 @@ patchelf --remove-needed libGLU.so.1 out/GPU/api_mock_gpu_canvas
 patchelf --remove-needed libGL.so.1 out/GPU/api_mock_gpu_canvas
 patchelf --remove-needed libX11.so.6 out/GPU/api_mock_gpu_canvas
 cp out/GPU/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
-cp ./api_mock_gpu_canvas.options $OUT/mock_gpu_canvas.options
+cp ./api_mock_gpu_canvas.options $OUT/api_mock_gpu_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_mock_gpu_canvas_seed_corpus.zip
 
 cp out/Fuzz/png_encoder $OUT/png_encoder
