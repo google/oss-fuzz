@@ -30,10 +30,10 @@ index b22b8ebebb..aec422fa96 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 5c5247c4cc..a5c9767006 100644
+index 362c8b50fd..5935a7a8ab 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1131,6 +1131,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1128,6 +1128,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -96,10 +96,10 @@ index 7c90634e12..aad2e978ac 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index 1e0830e0bc..d5be638d30 100644
+index 141b60b252..9e3b761f0a 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -1480,6 +1480,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -1479,6 +1479,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -114,7 +114,7 @@ index 1e0830e0bc..d5be638d30 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index 2fd5201066..4cba6a1224 100644
+index 3e4f990930..681ee8c85a 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
 @@ -3347,7 +3347,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
@@ -251,10 +251,10 @@ index 2373e62d46..410fa8a276 100644
              int L = SkFixedRoundToInt(left);
              int R = SkFixedRoundToInt(rite);
 diff --git a/src/core/SkTextBlob.cpp b/src/core/SkTextBlob.cpp
-index eac2430f5f..0d303fdb07 100644
+index 2c29d9d613..0559d7358e 100644
 --- a/src/core/SkTextBlob.cpp
 +++ b/src/core/SkTextBlob.cpp
-@@ -801,7 +801,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+@@ -800,7 +800,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
              // End-of-runs marker.
              break;
          }
@@ -267,7 +267,7 @@ index eac2430f5f..0d303fdb07 100644
          PositioningAndExtended pe;
          pe.intValue = reader.read32();
          GlyphPositioning pos = pe.positioning;
-@@ -812,7 +816,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+@@ -811,7 +815,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
          if (textSize < 0 || static_cast<size_t>(textSize) > reader.size()) {
              return nullptr;
          }
@@ -313,14 +313,15 @@ index a541b91476..53cd354b79 100644
      const SkMatrix& mat = this->getMatrix();
      SkPoint src, dst;
 diff --git a/src/effects/SkDashPathEffect.cpp b/src/effects/SkDashPathEffect.cpp
-index cced73f72e..bd5fc114f7 100644
+index 4cb98b3ad8..2710c122d8 100644
 --- a/src/effects/SkDashPathEffect.cpp
 +++ b/src/effects/SkDashPathEffect.cpp
-@@ -367,6 +367,11 @@ void SkDashImpl::flatten(SkWriteBuffer& buffer) const {
- sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
-     const SkScalar phase = buffer.readScalar();
-     uint32_t count = buffer.getArrayCount();
+@@ -373,6 +373,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
+         return nullptr;
+     }
+ 
 +#if defined(IS_FUZZING)
++    // TODO(kjlubick) Can this be removed now that we have the check above?
 +    if (count > 20) {
 +        return nullptr;
 +    }
@@ -395,7 +396,7 @@ index ec4e3fec77..bd720fd491 100644
  }
  #endif//!defined(SK_BUILD_FOR_WIN) && !defined(SK_BUILD_FOR_ANDROID)
 diff --git a/src/utils/SkOffsetPolygon.cpp b/src/utils/SkOffsetPolygon.cpp
-index 94fe96562d..da6afedd84 100755
+index 47b41250e2..ce69469e80 100755
 --- a/src/utils/SkOffsetPolygon.cpp
 +++ b/src/utils/SkOffsetPolygon.cpp
 @@ -260,6 +260,11 @@ bool SkInsetConvexPolygon(const SkPoint* inputPolygonVerts, int inputPolygonSize
@@ -411,7 +412,7 @@ index 94fe96562d..da6afedd84 100755
      int winding = get_winding(inputPolygonVerts, inputPolygonSize);
      if (0 == winding) {
 diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
-index 5d6a4cc15d..a6bbc30d7c 100755
+index 0bf1adaaa4..347bc951a3 100755
 --- a/src/utils/SkShadowTessellator.cpp
 +++ b/src/utils/SkShadowTessellator.cpp
 @@ -254,6 +254,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
