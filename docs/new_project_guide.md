@@ -204,10 +204,18 @@ custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` exec
 
 ```
 [libfuzzer]
-max_len = 1024
+close_fd_mask = 3
+only_ascii = 1
 ```
 
-[List of available options](http://llvm.org/docs/LibFuzzer.html#options). Use of `max_len` is highly recommended.
+[List of available options](http://llvm.org/docs/LibFuzzer.html#options). Use of `max_len` is not recommended as other fuzzing engines may not support that option. Instead, if
+you need to strictly enforce the input length limit, add a sanity check to the
+beginning of your fuzz target:
+
+```cpp
+if (size < kMinInputLength || size > kMaxInputLength)
+  return 0;
+```
 
 For out of tree [fuzz targets](glossary.md#fuzz-target), you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script.

@@ -19,9 +19,8 @@
 export CFLAGS="$CFLAGS -fno-sanitize=vptr"
 export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 
-FUZZER_TARGETS="\
-test/common/common:base64_fuzz_test \
-"
+declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzz_test.cc)
+declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}"; done)"
 
 FUZZER_DICTIONARIES="\
 "
@@ -46,7 +45,8 @@ done
 )"
 
 # Build Envoy
-declare -r BAZEL_BUILD_TARGETS="$(for t in ${FUZZER_TARGETS}; do echo //"$t"_driverless; done)"
+declare -r BAZEL_BUILD_TARGETS="$(for t in ${FUZZER_TARGETS}; do \
+  echo //"$(dirname "$t")":"$(basename "$t")_driverless"; done)"
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
@@ -56,16 +56,15 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --build_tag_filters=-no_asan --test_tag_filters=-no_asan \
   ${EXTRA_BAZEL_FLAGS} \
   --linkopt="-lFuzzingEngine" \
-  ${BAZEL_BUILD_TARGETS}
+  ${BAZEL_BUILD_TARGETS[*]}
 
 # Copy out test binaries from bazel-bin/ and zip up related test corpuses.
 for t in ${FUZZER_TARGETS}
 do
-  TARGET_PATH="${t/:/\/}"
-  TARGET_BASE="$(expr "$t" : '.*:\(.*\)_fuzz_test')"
-  cp bazel-bin/"${TARGET_PATH}"_driverless "${OUT}"/"${TARGET_BASE}"_fuzz_test
+  TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
+  cp bazel-bin/"${t}"_driverless "${OUT}"/"${TARGET_BASE}"_fuzz_test
   zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
-    "$(dirname "${TARGET_PATH}")"/"${TARGET_BASE}"_corpus/*
+    "$(dirname "${t}")"/"${TARGET_BASE}"_corpus/*
 done
 
 # Copy dictionaries and options files to $OUT/

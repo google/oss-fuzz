@@ -195,10 +195,6 @@ def get_build_steps(project_yaml, dockerfile_path):
       env.append('OUT=' + out)
       env.append('MSAN_LIBS_PATH=/workspace/msan')
 
-      # To disable running of all fuzz targets while doing |test_all| step, as
-      # that step is currently being used for performing bad build checks only.
-      env.append('SKIP_TEST_TARGET_RUN=1')
-
       workdir = workdir_from_dockerfile(dockerfile_path)
       if not workdir:
         workdir = '/src'

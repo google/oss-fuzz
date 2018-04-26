@@ -46,17 +46,6 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
     continue
   fi
 
-  if [ "$SKIP_TEST_TARGET_RUN" != "1" ]; then
-    if [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
-      timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
-    elif [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-      run_fuzzer $FUZZER -max_total_time=20
-    else
-      export AFL_NO_UI=1
-      timeout --preserve-status -s INT 20s run_fuzzer $FUZZER
-    fi
-  fi
-
   echo "INFO: performing bad build checks for $FUZZER_BINARY."
 
   LOG_PATH_FOR_BROKEN_TARGET="${BROKEN_TARGETS_DIR}/${FUZZER}"
