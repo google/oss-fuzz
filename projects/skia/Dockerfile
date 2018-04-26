@@ -76,6 +76,7 @@ COPY api_fuzzers.options $SRC/skia/api_image_filter.options
 COPY api_fuzzers.options $SRC/skia/api_path_measure.options
 COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
 COPY api_fuzzers.options $SRC/skia/api_null_canvas.options
+COPY api_fuzzers.options $SRC/skia/api_mock_gpu_canvas.options
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn
