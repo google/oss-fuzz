@@ -19,7 +19,7 @@ MAINTAINER paul.l.kehrer@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config cmake nasm autopoint
 RUN git clone --depth 1 https://github.com/imagemagick/imagemagick
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
-RUN git clone --depth 1 https://github.com/strukturag/libde265
+RUN git clone --depth 1 https://github.com/strukturag/libheif
 RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
 RUN git clone --depth 1 https://github.com/webmproject/libwebp
 RUN git clone --depth 1 https://github.com/madler/zlib
