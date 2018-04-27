@@ -196,7 +196,9 @@ function main {
   check_instrumentation $FUZZER
   check_mixed_sanitizers $FUZZER
   check_startup_crash $FUZZER
-  check_seed_corpus $FUZZER
+  
+  # TODO: re-enable after introducing bug auto-filing for bad builds.
+  # check_seed_corpus $FUZZER
 }
 
 
