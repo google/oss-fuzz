@@ -24,7 +24,7 @@ You should look for places in your code that:
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
 
 Security access control is important for the kind of issues that OSS-Fuzz detects.
-We will reconsider the Github issue tracker once the
+We will reconsider the GitHub issue tracker once the
 [access control feature](https://github.com/isaacs/github/issues/37) is available.
 
 ## Why do you require a Google account for authentication?
