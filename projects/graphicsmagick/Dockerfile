@@ -20,5 +20,15 @@ RUN apt-get update && apt-get install -y mercurial
 RUN hg clone http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick || \
     hg clone http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick || \
     hg clone http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick
+
+RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
+RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
+RUN git clone --depth 1 https://github.com/webmproject/libwebp
+RUN git clone --depth 1 https://github.com/madler/zlib
+RUN git clone --depth 1 https://git.savannah.nongnu.org/r/freetype/freetype2
+RUN git clone --depth 1 https://github.com/glennrp/libpng
+RUN git clone --depth 1 https://github.com/mm2/Little-CMS
+ADD http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz bzip2-1.0.6.tar.gz
+
 WORKDIR graphicsmagick
 COPY build.sh $SRC/
