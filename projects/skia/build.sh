@@ -133,6 +133,7 @@ cp ./encoder_seed_corpus.zip $OUT/webp_encoder_seed_corpus.zip
 
 # Don't build api_mock_gpu_canvas_fuzzer for AFL since it crashes on startup.
 # This would cause a build breakage now that AFL has build checks.
+# See https://github.com/google/oss-fuzz/issues/1338 for more details.
 if [ "$FUZZING_ENGINE" == "libfuzzer" ]
 then
   $SRC/depot_tools/gn gen out/GPU\
