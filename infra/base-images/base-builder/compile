@@ -62,30 +62,10 @@ echo "CXX=$CXX"
 echo "CFLAGS=$CFLAGS"
 echo "CXXFLAGS=$CXXFLAGS"
 
-# Remove build directory if old build config will cause the entire project to be
-# rebuilt. This prevents old binaries that are not rebuilt (eg afl-fuzz in a
-# libFuzzer build from sticking around and making things like check_build more
-# complicated).
-OSS_FUZZ_BUILD_CONFIG=$OUT/oss-fuzz-build-config
-# if [ -e  $OSS_FUZZ_BUILD_CONFIG ]; then
-#   source $OSS_FUZZ_BUILD_CONFIG
-#   if [[ $FUZZING_ENGINE = $PREVIOUS_FUZZING_ENGINE ]]; then
-#     rm -f $OUT
-#   elif [[ $SANITIZER_FLAGS = $PREVIOUS_SANITIZER_FLAGS ]]; then
-#     rm -rf $OUT
-#   fi
-# fi
-
-rm -rf $OUT
-
-# echo "HIIIIIII"
-# echo "$OSS_FUZZ_BUILD_CONFIG"
-
-# Now save the current build config for use next time.
-# Clobber old file if it exists
-echo "PREVIOUS_FUZZING_ENGINE=${FUZZING_ENGINE}" > $OSS_FUZZ_BUILD_CONFIG
-
-echo "PREVIOUS_SANITIZER_FLAGS=${SANITIZER_FLAGS}" >> $OSS_FUZZ_BUILD_CONFIG
+# Remove old build. This prevents old binaries that are not rebuilt (eg afl-fuzz
+# in a libFuzzer build from sticking around and making things like check_build
+# more complicated).
+rm -rf $OUT/*
 
 echo "---------------------------------------------------------------"
 
