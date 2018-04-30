@@ -72,6 +72,15 @@ def main():
   build_fuzzers_parser.add_argument('source_path', help='path of local source',
                                     nargs='?')
 
+  check_build_parser = subparsers.add_parser(
+      'check_build', help='Checks that fuzzers execute without errors.')
+  _add_engine_args(check_build_parser)
+  _add_sanitizer_args(check_build_parser)
+  _add_environment_args(check_build_parser)
+  check_build_parser.add_argument('project_name', help='name of the project')
+  check_build_parser.add_argument('fuzzer_name', help='name of the fuzzer',
+                                  nargs='?')
+
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer.')
   _add_engine_args(run_fuzzer_parser)
@@ -118,6 +127,8 @@ def main():
     return build_image(args)
   elif args.command == 'build_fuzzers':
     return build_fuzzers(args)
+  elif args.command == 'check_build':
+    return check_build(args)
   elif args.command == 'run_fuzzer':
     return run_fuzzer(args)
   elif args.command == 'coverage':
@@ -324,6 +335,44 @@ def build_fuzzers(args):
     return 1
 
   return 0
+
+
+def check_build(args):
+  """Checks that fuzzers in the container execute without errors."""
+  if not _check_project_exists(args.project_name):
+    return 1
+
+  if (args.fuzzer_name and
+      not _check_fuzzer_exists(args.project_name, args.fuzzer_name)):
+    return 1
+
+  env = [
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer
+  ]
+  if args.e:
+    env += args.e
+
+  run_args = sum([['-e', v] for v in env], []) + [
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-t', 'gcr.io/oss-fuzz-base/base-runner'
+  ]
+
+  if args.fuzzer_name:
+    run_args += [
+        'bad_build_check',
+        os.path.join('/out', args.fuzzer_name)
+    ]
+  else:
+    run_args.append('test_all')
+
+  exit_code = docker_run(run_args)
+  if exit_code == 0:
+    print('Check build passed.')
+  else:
+    print('Check build failed.')
+
+  return exit_code
 
 
 def run_fuzzer(args):

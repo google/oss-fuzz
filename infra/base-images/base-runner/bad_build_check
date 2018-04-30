@@ -48,7 +48,7 @@ function check_instrumentation {
   $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
   CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
   if (( $CHECK_FAILED > 0 )); then
-    echo "BAD BUILD: the target does not seem to have coverage instrumentation."
+    echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
 
     # Bail out as the further check does not make any sense, there are 0 PCs.
     return 1
@@ -57,7 +57,7 @@ function check_instrumentation {
   local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*(counters|guards)\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
 
   if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
-    echo "BAD BUILD: the target seems to have only partial coverage instrumentation."
+    echo "BAD BUILD: $FUZZER seems to have only partial coverage instrumentation."
   fi
 }
 
@@ -74,7 +74,7 @@ function check_startup_crash {
   fi
 
   if [ "$CHECK_PASSED" -eq "0" ]; then
-    echo "BAD BUILD: the fuzzer seems to have either startup crash or exit."
+    echo "BAD BUILD: $FUZZER seems to have either startup crash or exit."
   fi
 }
 
@@ -184,7 +184,7 @@ function check_seed_corpus {
 
   # Don't output anything if fuzz target hasn't crashed.
   if [ $? -ne 0 ]; then
-    echo "$FUZZER_NAME has a crash input in its seed coprpus:"
+    echo "BAD BUILD: $FUZZER has a crashing input in its seed corpus:"
     cat $FUZZER_OUTPUT
   fi
 }
