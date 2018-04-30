@@ -6,6 +6,7 @@ auto_ccs:
   - "HinTak.Leung@gmail.com"
   - "ewaldhew@gmail.com"
   - "apodtele@gmail.com"
+  - "prince.cherusker@gmail.com"
 sanitizers:
   - address
   - undefined
