@@ -366,7 +366,13 @@ def check_build(args):
   else:
     run_args.append('test_all')
 
-  return docker_run(run_args)
+  exit_code = docker_run(run_args)
+  if exit_code == 0:
+    print('Check build passed.')
+  else:
+    print('Check build failed.')
+
+  return exit_code
 
 
 def run_fuzzer(args):
