@@ -25,11 +25,13 @@ FUZZER=$1
 shift
 
 CORPUS_DIR="/tmp/${FUZZER}_corpus"
+FUZZER_OUT="/tmp/${FUZZER}_out"
 
 rm -rf $CORPUS_DIR && mkdir $CORPUS_DIR
+rm -rf $FUZZER_OUT && mkdir $FUZZER_OUT
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
-if [ -f $SEED_CORPUS ]; then
+if [ -f $SEED_CORPUS ] && [ -z ${SKIP_SEED_CORPUS:-} ]; then
   echo "Using seed corpus: $SEED_CORPUS"
   unzip -d ${CORPUS_DIR}/ $SEED_CORPUS > /dev/null
 fi
@@ -41,14 +43,12 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   export UBSAN_OPTIONS="$UBSAN_OPTIONS:symbolize=0"
   export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
   export AFL_SKIP_CPUFREQ=1
-  rm -rf /tmp/afl_output && mkdir /tmp/afl_output
   # AFL expects at least 1 file in the input dir.
   echo input > ${CORPUS_DIR}/input
-  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o /tmp/afl_output $@ $OUT/$FUZZER"
+  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $@ $OUT/$FUZZER"
 elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # Honggfuzz expects at least 1 file in the input dir.
   echo input > $CORPUS_DIR/input
-  rm -rf /tmp/honggfuzz_workdir && mkdir /tmp/honggfuzz_workdir
   # --exit_upon_crash: exit whith a first crash seen
   # -R (report): save report file to this location
   # -W (working dir): where the crashes go
@@ -57,7 +57,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -P: use persistent mode of fuzzing (i.e. LLVMFuzzerTestOneInput)
   # -f: location of the initial (and destination) file corpus
   # -n: number of fuzzing threads (and processes)
-  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/HONGGFUZZ.REPORT.TXT -W /tmp/honggfuzz_workdir -v -z -P -f \"$CORPUS_DIR\" $@ -- \"$OUT/$FUZZER\""
+  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $@ -- \"$OUT/$FUZZER\""
 else
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $@ $CORPUS_DIR"
 

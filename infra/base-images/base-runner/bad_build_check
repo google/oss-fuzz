@@ -37,44 +37,63 @@ UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=200
 # Verify that the given fuzz target has proper coverage instrumentation.
 function check_instrumentation {
   local FUZZER=$1
+  local FUZZER_NAME=$(basename $FUZZER)
+  local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
   local CHECK_FAILED=0
-  local FUZZER_OUTPUT="/tmp/$(basename $FUZZER).output"
 
-  if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
+  if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
+    # Store fuzz target's output into a temp file to be used for further checks.
+    $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
+    if (( $CHECK_FAILED > 0 )); then
+      echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
+
+      # Bail out as the further check does not make any sense, there are 0 PCs.
+      return
+    fi
+
+    local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*(counters|guards)\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
+
+    if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
+      echo "BAD BUILD: $FUZZER seems to have only partial coverage instrumentation."
+    fi
+  elif [[ "$FUZZING_ENGINE" == afl ]]; then
+    AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    CHECK_FAILED=$(egrep "No instrumentation detected" -c $FUZZER_OUTPUT)
+    if (( $CHECK_FAILED > 0 )); then
+      echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
+    fi
+    return
+  else
+    # TODO: add checks for another fuzzing engines if possible.
     return
   fi
 
-  # Store fuzz target's output into a temp file to be used for further checks.
-  $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
-  CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
-  if (( $CHECK_FAILED > 0 )); then
-    echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
-
-    # Bail out as the further check does not make any sense, there are 0 PCs.
-    return 1
-  fi
-
-  local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*(counters|guards)\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
-
-  if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
-    echo "BAD BUILD: $FUZZER seems to have only partial coverage instrumentation."
-  fi
 }
 
 # Verify that the given fuzz target has been built properly and works.
 function check_startup_crash {
   local FUZZER=$1
+  local FUZZER_NAME=$(basename $FUZZER)
+  local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
   local CHECK_PASSED=0
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    CHECK_PASSED=$($FUZZER -runs=$MIN_NUMBER_OF_RUNS 2>&1 | egrep "Done $MIN_NUMBER_OF_RUNS runs" -c)
+    $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    CHECK_PASSED=$(egrep "Done $MIN_NUMBER_OF_RUNS runs" -c $FUZZER_OUTPUT)
+  elif [[ "$FUZZING_ENGINE" = afl ]]; then
+    AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    if [ $(egrep "target binary crashed suddenly" -c $FUZZER_OUTPUT) -eq 0 ]; then
+      CHECK_PASSED=1
+    fi
   else
     # TODO: add checks for another fuzzing engines if possible.
     CHECK_PASSED=1
   fi
 
   if [ "$CHECK_PASSED" -eq "0" ]; then
-    echo "BAD BUILD: $FUZZER seems to have either startup crash or exit."
+    echo "BAD BUILD: $FUZZER seems to have either startup crash or exit:"
+    cat $FUZZER_OUTPUT
   fi
 }
 
@@ -131,7 +150,7 @@ function check_ubsan_build {
     # Ignore UBSan checks for fuzzing engines other than libFuzzer because:
     # A) we (probably) are not going to use those with UBSan
     # B) such builds show indistinguishable number of calls to UBSan
-    return 0
+    return
   fi
 
   # Perform all the checks for more detailed error message.
@@ -196,7 +215,7 @@ function main {
   check_instrumentation $FUZZER
   check_mixed_sanitizers $FUZZER
   check_startup_crash $FUZZER
-  
+
   # TODO: re-enable after introducing bug auto-filing for bad builds.
   # check_seed_corpus $FUZZER
 }
