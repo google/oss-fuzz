@@ -22,6 +22,7 @@ export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
 
 mkdir -p $WORK/afl
 pushd $WORK/afl > /dev/null
+# Add -Wno-pointer-sign to silence warning (AFL is compiled this way).
 $CC $CFLAGS -Wno-pointer-sign -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
 $CXX $CXXFLAGS -std=c++11 -O2 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
 ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
