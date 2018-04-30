@@ -83,7 +83,7 @@ function check_startup_crash {
     CHECK_PASSED=$(egrep "Done $MIN_NUMBER_OF_RUNS runs" -c $FUZZER_OUTPUT)
   elif [[ "$FUZZING_ENGINE" = afl ]]; then
     AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
-    if [ $(egrep "target binary crashed suddenly" -c $FUZZER_OUTPUT) -eq 0 ]; then
+    if [ $(egrep "target binary (crashed|terminated)" -c $FUZZER_OUTPUT) -eq 0 ]; then
       CHECK_PASSED=1
     fi
   else
