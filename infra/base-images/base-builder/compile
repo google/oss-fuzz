@@ -23,8 +23,8 @@ if [ -z "${SANITIZER_FLAGS-}" ]; then
 fi
 
 # Remove old build. This prevents old binaries that are not rebuilt (eg afl-fuzz
-# in a libFuzzer build from sticking around and making things like check_build
-# more complicated).
+# in a libFuzzer) build from sticking around and making things like check_build
+# more complicated.
 rm -rf $OUT/*
 
 if [[ $FUZZING_ENGINE != "none" ]]; then
