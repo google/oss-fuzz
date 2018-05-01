@@ -303,6 +303,14 @@ def build_fuzzers(args):
   if not _build_image(args.project_name):
     return 1
 
+  # Clean old and possibly conflicting artifacts in project's out directory.
+  project_out_dir = os.path.join(BUILD_DIR, 'out', project_name)
+  docker_run([
+      '-v', '%s:/out' % project_out_dir,
+      '-t', 'gcr.io/oss-fuzz/%s' % project_name,
+      '/bin/bash', '-c', 'rm -rf /out/*'
+  ])
+
   env = [
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer
@@ -321,7 +329,7 @@ def build_fuzzers(args):
         '%s:/src/%s' % (_get_absolute_path(args.source_path), args.project_name)
     ]
   command += [
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name),
+      '-v', '%s:/out' % project_out_dir,
       '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
       '-t', 'gcr.io/oss-fuzz/%s' % project_name
   ]
