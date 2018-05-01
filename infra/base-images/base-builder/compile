@@ -22,6 +22,11 @@ if [ -z "${SANITIZER_FLAGS-}" ]; then
   export SANITIZER_FLAGS=${!FLAGS_VAR-}
 fi
 
+# Remove old build. This prevents old binaries that are not rebuilt (eg afl-fuzz
+# in a libFuzzer build) from sticking around and making things like check_build
+# more complicated.
+rm -rf $OUT/*
+
 if [[ $FUZZING_ENGINE != "none" ]]; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
