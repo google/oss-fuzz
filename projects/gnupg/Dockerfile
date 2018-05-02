@@ -26,8 +26,6 @@ RUN curl -O https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2
 RUN curl -O https://www.gnupg.org/ftp/gcrypt/npth/npth-1.5.tar.bz2
 
 #TODO change when merged into master branch of official repo
-RUN curl -O http://catenacyber.fr/fuzz_verify_seed_corpus.zip
-RUN curl -O http://catenacyber.fr/fuzz_import_seed_corpus.zip
 RUN git clone --depth 1 --branch fuzz https://github.com/catenacyber/gnupg.git gnupg
 
 WORKDIR gnupg
