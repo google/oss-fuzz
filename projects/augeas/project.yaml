@@ -4,5 +4,4 @@ auto_ccs:
   - hhan@redhat.com
 sanitizers:
   - address
-  - memory
   - undefined
