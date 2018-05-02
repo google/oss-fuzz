@@ -5,9 +5,8 @@ auto_ccs:
   - "mtklein@chromium.org"
   - "reed@google.com"
   - "bsalomon@google.com"
-  - "caryclark@google.com"
-  - "liyuqian@google.com"
 sanitizers:
  - address
  - undefined
  - memory
+help_url: "https://skia.org/dev/testing/fuzz"
