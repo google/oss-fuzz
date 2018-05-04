@@ -48,18 +48,32 @@ It is preferred to keep and maintain [fuzz targets](glossary.md#fuzz-target) in 
 
 This file stores the metadata about your project. The following attributes are supported:
 
-* `homepage` - Project's homepage.
-* `primary_contact`, `auto_ccs` - Primary contact and CCs list. These people get access to ClusterFuzz 
+### homepage
+Project's homepage.
+
+### primary_contact, auto_ccs
+Primary contact and CCs list. These people get access to ClusterFuzz 
 which includes crash reports, fuzzer statistics, etc and are auto-cced on newly filed bugs in OSS-Fuzz
 tracker.
-* `sanitizers` (optional) - List of sanitizers to use. By default, you shouldn't override this and it 
-will use the default list of supported sanitizers (currently -
-AddressSanitizer("address"), UndefinedBehaviorSanitizer("undefined")).
+
+### sanitizers (optional)
+List of sanitizers to use. By default, it will use the default list of supported
+sanitizers (currently -
+["address"](https://clang.llvm.org/docs/AddressSanitizer.html),
+["undefined"](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)).
+
 If your project does not build with a particular sanitizer configuration and you need some time fixing
 it, then you can use this option to override the defaults temporarily. E.g. For disabling 
 UndefinedBehaviourSanitizer build, then you can just specify all supported sanitizers, except "undefined".
-* `help_url` (optional) - Link to a custom help URL in bug reports instead of the [default OSS-Fuzz guide to reproducing
-crashes](https://github.com/google/oss-fuzz/blob/master/docs/reproducing.md). This can be useful if you assign
+
+[MemorySanitizer ("memory")](https://clang.llvm.org/docs/MemorySanitizer.html) is also supported, but is not enabled by default due to likelihood of false positives.
+For this to work, ensure that your project's runtime dependencies are listed in
+[this file](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
+You may opt-in by adding "memory" to this list.
+
+### help_url
+Link to a custom help URL in bug reports instead of the
+[default OSS-Fuzz guide to reproducing crashes](https://github.com/google/oss-fuzz/blob/master/docs/reproducing.md). This can be useful if you assign
 bugs to members of your project unfamiliar with OSS-Fuzz or if they should follow a different workflow for
 reproducing and fixing bugs than standard one outlined in the reproducing guide.
 
