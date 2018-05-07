@@ -34,6 +34,7 @@ $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
     skia_use_system_freetype2=false
     skia_use_fontconfig=false
     skia_enable_gpu=false
+    skia_enable_skottie=false
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
 $SRC/depot_tools/gn gen out/Fuzz\
@@ -45,6 +46,7 @@ $SRC/depot_tools/gn gen out/Fuzz\
     skia_use_system_freetype2=false
     skia_use_fontconfig=false
     skia_enable_gpu=false
+    skia_enable_skottie=true
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
 
@@ -55,7 +57,7 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
                                    api_draw_functions api_gradients api_image_filter \
                                    api_path_measure api_null_canvas png_encoder \
-                                   jpeg_encoder webp_encoder
+                                   jpeg_encoder webp_encoder skottie_json
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -131,6 +133,9 @@ cp out/Fuzz/webp_encoder $OUT/webp_encoder
 cp ./encoder.options $OUT/webp_encoder.options
 cp ./encoder_seed_corpus.zip $OUT/webp_encoder_seed_corpus.zip
 
+cp out/Fuzz/skottie_json $OUT/skottie_json
+cp ./skottie_json_seed_corpus.zip $OUT/skottie_json_seed_corpus.zip
+
 # Don't build api_mock_gpu_canvas_fuzzer for AFL since it crashes on startup.
 # This would cause a build breakage now that AFL has build checks.
 # See https://github.com/google/oss-fuzz/issues/1338 for more details.
@@ -145,6 +150,7 @@ then
         skia_use_system_freetype2=false
         skia_use_fontconfig=false
         skia_enable_gpu=true
+        skia_enable_skottie=false
         extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
   $SRC/depot_tools/ninja -C out/GPU api_mock_gpu_canvas

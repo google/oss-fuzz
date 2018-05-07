@@ -253,3 +253,13 @@ test_app("webp_encoder") {
   ]
 }
 
+test_app("skottie_json") {
+  sources = [
+    "fuzz/oss_fuzz/FuzzSkottieJSON.cpp",
+  ]
+  deps = [
+    ":experimental_skottie",
+    ":flags",
+    ":skia"
+  ]
+}

@@ -30,10 +30,10 @@ index b22b8ebebb..aec422fa96 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 362c8b50fd..5935a7a8ab 100644
+index 34f5da5cfe..aef442ab89 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1128,6 +1128,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1129,6 +1129,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -47,10 +47,10 @@ index 362c8b50fd..5935a7a8ab 100644
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index c732901765..eed96e048a 100644
+index fac63e5102..3e820e9803 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
-@@ -120,6 +120,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
+@@ -121,6 +121,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
          return false;
      }
  
@@ -80,10 +80,10 @@ index 2933e48cc4..1ae9dd0404 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index 7c90634e12..aad2e978ac 100644
+index 52cdc3cc9b..aaac96cc45 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
-@@ -265,6 +265,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
+@@ -261,6 +261,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
  
      SkMask  srcM, dstM;
  
@@ -96,10 +96,10 @@ index 7c90634e12..aad2e978ac 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index 141b60b252..9e3b761f0a 100644
+index 3ace475714..ca622dac8a 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -1479,6 +1479,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -1393,6 +1393,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -114,10 +114,10 @@ index 141b60b252..9e3b761f0a 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index 3e4f990930..681ee8c85a 100644
+index 510efd6d9d..9692f8a461 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
-@@ -3347,7 +3347,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+@@ -3375,7 +3375,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
                                     SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
      SkASSERT(!oval.isEmpty());
      SkASSERT(sweepAngle);
@@ -131,7 +131,7 @@ index 3e4f990930..681ee8c85a 100644
      path->setIsVolatile(true);
      path->setFillType(SkPath::kWinding_FillType);
 diff --git a/src/core/SkPictureData.cpp b/src/core/SkPictureData.cpp
-index 2ca88ae841..3fc4ecf6bd 100644
+index 2ca88ae841..28b6148f44 100644
 --- a/src/core/SkPictureData.cpp
 +++ b/src/core/SkPictureData.cpp
 @@ -495,6 +495,11 @@ bool new_array_from_buffer(SkReadBuffer& buffer, uint32_t inCount,
@@ -139,7 +139,7 @@ index 2ca88ae841..3fc4ecf6bd 100644
  
  void SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t size) {
 +#if defined(IS_FUZZING)
-+    if (size > 1000) {
++    if (size > 2000) {
 +        return;
 +    }
 +#endif
@@ -159,7 +159,7 @@ index 2ca88ae841..3fc4ecf6bd 100644
                  for (int i = 0; i < count; i++) {
                      buffer.readPath(&fPaths[i]);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index e4f8243401..790ee7414a 100644
+index 48b6881b0a..d6b81eacf8 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
 @@ -263,7 +263,12 @@ bool SkReadBuffer::readScalarArray(SkScalar* values, size_t size) {
@@ -175,7 +175,7 @@ index e4f8243401..790ee7414a 100644
  }
  
  sk_sp<SkImage> SkReadBuffer::readImage() {
-@@ -297,6 +302,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
+@@ -298,6 +303,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
          return nullptr;
      }
  
@@ -189,10 +189,10 @@ index e4f8243401..790ee7414a 100644
      if (!this->readPad32(data->writable_data(), size)) {
          this->validate(false);
 diff --git a/src/core/SkScan_AAAPath.cpp b/src/core/SkScan_AAAPath.cpp
-index e4e6701cea..c180f417c7 100644
+index 5e7f232ff7..e8acd9a109 100644
 --- a/src/core/SkScan_AAAPath.cpp
 +++ b/src/core/SkScan_AAAPath.cpp
-@@ -1595,6 +1595,11 @@ static SK_ALWAYS_INLINE void aaa_fill_path(const SkPath& path, const SkIRect& cl
+@@ -1583,6 +1583,11 @@ static SK_ALWAYS_INLINE void aaa_fill_path(const SkPath& path, const SkIRect& cl
      SkASSERT(blitter);
  
      SkEdgeBuilder builder;
@@ -251,10 +251,10 @@ index 2373e62d46..410fa8a276 100644
              int L = SkFixedRoundToInt(left);
              int R = SkFixedRoundToInt(rite);
 diff --git a/src/core/SkTextBlob.cpp b/src/core/SkTextBlob.cpp
-index 2c29d9d613..0559d7358e 100644
+index e2d3be4518..239ab7fb36 100644
 --- a/src/core/SkTextBlob.cpp
 +++ b/src/core/SkTextBlob.cpp
-@@ -800,7 +800,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+@@ -799,7 +799,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
              // End-of-runs marker.
              break;
          }
@@ -267,7 +267,7 @@ index 2c29d9d613..0559d7358e 100644
          PositioningAndExtended pe;
          pe.intValue = reader.read32();
          GlyphPositioning pos = pe.positioning;
-@@ -811,7 +815,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
+@@ -810,7 +814,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
          if (textSize < 0 || static_cast<size_t>(textSize) > reader.size()) {
              return nullptr;
          }
@@ -378,14 +378,14 @@ index 549a4dd411..13d52e18ca 100644
      // Notation: Point a is always p[0]. Point b is p[1] unless p[1] == p[0], in which case it is
      // p[2]. Point d is always p[3]. Point c is p[2] unless p[2] == p[3], in which case it is p[1].
 diff --git a/src/ports/SkDebug_stdio.cpp b/src/ports/SkDebug_stdio.cpp
-index ec4e3fec77..bd720fd491 100644
+index ec4e3fec77..4bc01d5d51 100644
 --- a/src/ports/SkDebug_stdio.cpp
 +++ b/src/ports/SkDebug_stdio.cpp
 @@ -12,9 +12,13 @@
  #include <stdio.h>
  
  void SkDebugf(const char format[], ...) {
-+#if !defined(IS_FUZZING)
++#if !defined(IS_FUZZING_WITH_LIBFUZZER)
      va_list args;
      va_start(args, format);
      vfprintf(stderr, format, args);
