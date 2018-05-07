@@ -26,6 +26,8 @@ zip -r fuzz/fuzz_x509crt_seed_corpus.zip data_files/*.crt data_files/dir*/*.crt 
 zip -r fuzz/fuzz_x509csr_seed_corpus.zip data_files/*.csr data_files/*.req.*
 zip -r fuzz/fuzz_privkey_seed_corpus.zip data_files/*.key data_files/*.pem
 zip -r fuzz/fuzz_pubkey_seed_corpus.zip data_files/*.pub data_files/*.pubkey data_files/*pub.pem
+zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
+zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
 
 cd fuzz
 # export other associated stuff
@@ -33,7 +35,7 @@ cp *.options $OUT/
 cp fuzz_*_seed_corpus.zip $OUT/
 
 # build fuzzers
-for target in x509crl x509crt x509csr privkey pubkey client server
+for target in x509crl x509crt x509csr privkey pubkey client server dtlsclient dtlsserver
 do
     $CC $CFLAGS -I. -I ../../include -c fuzz_$target.c -o fuzz_$target.o
 
