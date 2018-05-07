@@ -17,7 +17,7 @@
 
 # These are any clang warnings we need to silence.
 DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
-         -Wno-cast-qual -Wno-self-assign"
+         -Wno-cast-qual -Wno-self-assign -Wno-return-std-move-in-c++11"
 # Disable UBSan vptr since target built with -fno-rtti.
 export CFLAGS="$CFLAGS $DISABLE -fno-sanitize=vptr"
 export CXXFLAGS="$CXXFLAGS $DISABLE -fno-sanitize=vptr"
