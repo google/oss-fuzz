@@ -33,30 +33,9 @@ cp *.options $OUT/
 cp fuzz_*_seed_corpus.zip $OUT/
 
 # build fuzzers
-$CC $CFLAGS -I. -I ../../include -c fuzz_x509crl.c -o fuzz_x509crl.o
+for target in x509crl x509crt x509csr privkey pubkey client server
+do
+    $CC $CFLAGS -I. -I ../../include -c fuzz_$target.c -o fuzz_$target.o
 
-$CXX $CXXFLAGS -std=c++11 fuzz_x509crl.o -o $OUT/fuzz_x509crl ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
-
-$CC $CFLAGS -I. -I ../../include -c fuzz_x509crt.c -o fuzz_x509crt.o
-
-$CXX $CXXFLAGS -std=c++11 fuzz_x509crt.o -o $OUT/fuzz_x509crt ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
-
-$CC $CFLAGS -I. -I ../../include -c fuzz_x509csr.c -o fuzz_x509csr.o
-
-$CXX $CXXFLAGS -std=c++11 fuzz_x509csr.o -o $OUT/fuzz_x509csr ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
-
-$CC $CFLAGS -I. -I ../../include -c fuzz_privkey.c -o fuzz_privkey.o
-
-$CXX $CXXFLAGS -std=c++11 fuzz_privkey.o -o $OUT/fuzz_privkey ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
-
-$CC $CFLAGS -I. -I ../../include -c fuzz_pubkey.c -o fuzz_pubkey.o
-
-$CXX $CXXFLAGS -std=c++11 fuzz_pubkey.o -o $OUT/fuzz_pubkey ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
-
-$CC $CFLAGS -I. -I ../../include -c fuzz_client.c -o fuzz_client.o
-
-$CXX $CXXFLAGS -std=c++11 fuzz_client.o -o $OUT/fuzz_client ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
-
-$CC $CFLAGS -I. -I ../../include -c fuzz_server.c -o fuzz_server.o
-
-$CXX $CXXFLAGS -std=c++11 fuzz_server.o -o $OUT/fuzz_server ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
+    $CXX $CXXFLAGS -std=c++11 fuzz_$target.o -o $OUT/fuzz_$target ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
+done
