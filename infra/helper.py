@@ -71,8 +71,14 @@ def main():
   build_fuzzers_parser.add_argument('project_name')
   build_fuzzers_parser.add_argument('source_path', help='path of local source',
                                     nargs='?')
-  build_fuzzers_parser.add_argument('--no-clean', action='store_true',
-                                    help='do not clean existing artifacts.')
+  build_fuzzers_parser.add_argument('--clean', dest='clean',
+                                    action='store_true',
+                                    help='clean existing artifacts.')
+  build_fuzzers_parser.add_argument('--no-clean', dest='clean',
+                                    action='store_false',
+                                    help='do not clean existing artifacts '
+                                    '(default).')
+  build_fuzzers_parser.set_defaults(clean=False)
 
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
@@ -300,21 +306,12 @@ def build_image(args):
 
 def build_fuzzers(args):
   """Build fuzzers."""
-  no_clean = args.no_clean
-  if not no_clean:
-    y_or_n = raw_input(
-        'WARNING: Remove existing build artifacts in /out '
-        '(recommended if build config changed) ? (y/N): ')
-    no_clean = y_or_n.lower() != 'y'
-
   project_name = args.project_name
   if not _build_image(args.project_name):
     return 1
 
   project_out_dir = os.path.join(BUILD_DIR, 'out', project_name)
-  if no_clean:
-    print('Keeping existing build artifacts as-is (if any).')
-  else:
+  if args.clean:
     print('Cleaning existing build artifacts.')
 
     # Clean old and possibly conflicting artifacts in project's out directory.
@@ -323,6 +320,8 @@ def build_fuzzers(args):
         '-t', 'gcr.io/oss-fuzz/%s' % project_name,
         '/bin/bash', '-c', 'rm -rf /out/*'
     ])
+  else:
+    print('Keeping existing build artifacts as-is (if any).')
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
