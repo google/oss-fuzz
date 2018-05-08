@@ -29,8 +29,15 @@ If you are not sure how to build the fuzzer using the project's build system,
 you may also use Docker ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)) commands 
 to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer input to the fuzz target.
 
-## Build failures
-We will also report build failures for your project. To reproduce these, follow the [Building using docker](#building-using-docker) and if necessary the [Reproducing build checks](reproducing-build-checks) sections below.
+- *Pull the latest Docker images:*
+
+```bash
+$ python infra/helper.py pull_images
+```
+
+  Docker images get regularly updated. In some cases, a particular issue can be
+  reproduced only with a fresh images being used.
+
 
 ## Building using Docker
 ```bash
@@ -67,6 +74,14 @@ $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_pa
 ```
 
   This is essentially the previous command that additionally mounts local sources into the running container.
+
+- *Reproduce bad build error:*
+```bash
+$ python infra/helper.py build_image $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
+$ python infra/helper.py check_build $PROJECT_NAME <fuzz_target_name>
+```
+
 - *Fix issue*. Write a patch to fix the issue in your local checkout and then use the previous command to verify the fix (i.e. no crash occurred). 
    [Use gdb](debugging.md#debugging-fuzzers-with-gdb) if needed.
 - *Submit fix*. Submit the fix in the project's repository. ClusterFuzz will automatically pick up the changes, recheck the testcase and will close the issue (in &lt; 1 day).
