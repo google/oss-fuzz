@@ -250,36 +250,6 @@ index 2373e62d46..410fa8a276 100644
          if (0 == (dLeft | dRite)) {
              int L = SkFixedRoundToInt(left);
              int R = SkFixedRoundToInt(rite);
-diff --git a/src/core/SkTextBlob.cpp b/src/core/SkTextBlob.cpp
-index e2d3be4518..239ab7fb36 100644
---- a/src/core/SkTextBlob.cpp
-+++ b/src/core/SkTextBlob.cpp
-@@ -799,7 +799,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
-             // End-of-runs marker.
-             break;
-         }
--
-+#if defined(IS_FUZZING)
-+        if (glyphCount > 1000) {
-+            return nullptr;
-+        }
-+#endif
-         PositioningAndExtended pe;
-         pe.intValue = reader.read32();
-         GlyphPositioning pos = pe.positioning;
-@@ -810,7 +814,11 @@ sk_sp<SkTextBlob> SkTextBlob::MakeFromBuffer(SkReadBuffer& reader) {
-         if (textSize < 0 || static_cast<size_t>(textSize) > reader.size()) {
-             return nullptr;
-         }
--
-+#if defined(IS_FUZZING)
-+        if (textSize > 1000) {
-+            return nullptr;
-+        }
-+#endif
-         SkPoint offset;
-         reader.readPoint(&offset);
-         SkPaint font;
 diff --git a/src/effects/Sk1DPathEffect.cpp b/src/effects/Sk1DPathEffect.cpp
 index 57f2d2b6ce..186ce5d25b 100644
 --- a/src/effects/Sk1DPathEffect.cpp

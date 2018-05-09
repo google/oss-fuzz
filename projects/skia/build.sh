@@ -51,13 +51,13 @@ $SRC/depot_tools/gn gen out/Fuzz\
 
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
-                                                   textblob_deserialize api_raster_n32_canvas
+                                                   api_raster_n32_canvas
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
                                    api_draw_functions api_gradients api_image_filter \
                                    api_path_measure api_null_canvas png_encoder \
-                                   jpeg_encoder webp_encoder skottie_json
+                                   jpeg_encoder webp_encoder skottie_json textblob_deserialize
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -66,7 +66,7 @@ cp out/Fuzz/region_set_path $OUT/region_set_path
 cp ./region_set_path.options $OUT/region_set_path.options
 cp ./region_set_path_seed_corpus.zip $OUT/region_set_path_seed_corpus.zip
 
-cp out/Fuzz_mem_constraints/textblob_deserialize $OUT/textblob_deserialize
+cp out/Fuzz/textblob_deserialize $OUT/textblob_deserialize
 cp ./textblob_deserialize.options $OUT/textblob_deserialize.options
 cp ./textblob_deserialize_seed_corpus.zip $OUT/textblob_deserialize_seed_corpus.zip
 
