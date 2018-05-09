@@ -28,7 +28,7 @@ RUN git clone https://skia.googlesource.com/skia.git
 # current directory for build script
 WORKDIR skia
 
-RUN python tools/git-sync-deps
+RUN bin/sync
 
 RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
 
