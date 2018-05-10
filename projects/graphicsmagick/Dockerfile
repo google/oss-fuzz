@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alex.gaynor@gmail.com
-RUN apt-get update && apt-get install -y mercurial automake cmake libtool
+RUN apt-get update && apt-get install -y mercurial automake cmake libtool pkg-config
 RUN hg clone http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick || \
     hg clone http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick || \
     hg clone http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick
