@@ -28,16 +28,17 @@ If you are not sure how to build the fuzzer using the project's build system,
 you may also use Docker ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)) commands 
 to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer input to the fuzz target.
 
-- *Reproduce using latest OSS-Fuzz build:* 
+## Building using Docker
 
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
-$ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined>
 ```
 
-  This builds the fuzzer from the most recent successful OSS-Fuzz build (usually last night's sources)
-  and feeds the testcase file to the target function. 
+## Reproducing 
+```bash
+$ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
+```
   
   E.g. for building [libxml2](../projects/libxml2) project with UndefinedBehaviorSanitizer instrumentation 
   and reproduce a crash testcase for a fuzzer named `libxml2_xml_read_memory_fuzzer`, it will be: 
@@ -48,7 +49,7 @@ $ python infra/helper.py build_fuzzers --sanitizer undefined libxml2
 $ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Downloads/testcase
 ```
 
-- *Reproduce using local source checkout:*
+## Reproduce using local source checkout
 
 ```bash
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME <source_path>
