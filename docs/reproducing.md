@@ -4,6 +4,7 @@ You've been CC'ed on an OSS-Fuzz issue
 ([examples](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=Type%3ABug%2CBug-Security)), now what?
 Before attempting to fix the bug, you should be able to reliably reproduce it. 
 
+## Fuzz target bugs
 Every issue has a [reproducer](glossary.md#reproducer) (aka "testcase") file attached.
 Download it. If the issue is not public, you will need to login using your
 [Google account](https://support.google.com/accounts/answer/176347?hl=en)
@@ -28,18 +29,20 @@ If you are not sure how to build the fuzzer using the project's build system,
 you may also use Docker ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)) commands 
 to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer input to the fuzz target.
 
-## Building using Docker
+## Build failures
+We will also report build failures for your project. To reproduce these, follow the [Building using docker](#building-using-docker) and if necessary the [Reproducing build checks](reproducing-build-checks) sections below.
 
+## Building using Docker
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
 ```
 
 ## Reproducing build checks
-Our infrastructure runs some sanity tests to make sure that your build was correctly configured. To reproduce these locally, run:
+Our infrastructure runs some sanity tests to make sure that your build was correctly configured, even if it succeeded. To reproduce these locally, run:
 
 ```bash
-$ python infra/helper.py check_build --sanitizer <address/memory/undefined> $PROJECT_NAME $FUZZER_NAME
+$ python infra/helper.py check_build --sanitizer <address/memory/undefined> $PROJECT_NAME <fuzz_target_name>
 ```
 
 ## Reproducing bugs
