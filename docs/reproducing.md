@@ -37,7 +37,7 @@ $ python infra/helper.py pull_images
 
   Docker images get regularly updated with a newer version of build tools, build
   configurations, scripts, and other changes. In some cases, a particular issue
-  can be reproduced only with a fresh images being used.
+  can be reproduced only with a fresh image being used.
 
 ### Reproduce crashes with Docker
 
