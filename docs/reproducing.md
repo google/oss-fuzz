@@ -35,7 +35,14 @@ $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
 ```
 
-## Reproducing 
+## Reproducing build checks
+Our infrastructure runs some sanity tests to make sure that your build was correctly configured. To run these locally, run
+
+```bash
+$ python infra/helper.py check_build $PROJECT_NAME $FUZZER_NAME
+```
+
+## Reproducing bugs
 ```bash
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
