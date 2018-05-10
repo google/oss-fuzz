@@ -39,7 +39,7 @@ $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $P
 Our infrastructure runs some sanity tests to make sure that your build was correctly configured. To run these locally, run
 
 ```bash
-$ python infra/helper.py check_build $PROJECT_NAME $FUZZER_NAME
+$ python infra/helper.py check_build --sanitizer <address/memory/undefined> $PROJECT_NAME $FUZZER_NAME
 ```
 
 ## Reproducing bugs
