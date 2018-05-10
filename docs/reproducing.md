@@ -32,7 +32,7 @@ to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer
 
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined>
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
 ```
 
 ## Reproducing 
