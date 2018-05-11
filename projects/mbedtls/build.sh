@@ -28,6 +28,8 @@ zip -r fuzz/fuzz_privkey_seed_corpus.zip data_files/*.key data_files/*.pem
 zip -r fuzz/fuzz_pubkey_seed_corpus.zip data_files/*.pub data_files/*.pubkey data_files/*pub.pem
 zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
 zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
+zip -r fuzz/fuzz_client_seed_corpus.zip fuzz/corpuses/client
+zip -r fuzz/fuzz_server_seed_corpus.zip fuzz/corpuses/server
 
 cd fuzz
 # export other associated stuff
