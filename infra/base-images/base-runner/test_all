@@ -57,10 +57,10 @@ for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
   TOTAL_TARGETS_COUNT=$[$TOTAL_TARGETS_COUNT+1]
 
   # Do not spawn more processes than the number of CPUs available.
-  n_child_proc=$(jobs -p | wc -l)
+  n_child_proc=$(jobs -rp | wc -l)
   while [ "$n_child_proc" -eq "$NPROC" ]; do
     sleep 4
-    n_child_proc=$(jobs -p | wc -l)
+    n_child_proc=$(jobs -rp | wc -l)
   done
 done
 
