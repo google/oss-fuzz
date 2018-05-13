@@ -30,10 +30,10 @@ index b22b8ebebb..aec422fa96 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 34f5da5cfe..aef442ab89 100644
+index 27cf66da91..1c579e1f25 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1129,6 +1129,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1135,6 +1135,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -47,10 +47,10 @@ index 34f5da5cfe..aef442ab89 100644
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index fac63e5102..3e820e9803 100644
+index 015b77c42c..5f35e8c3ae 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
-@@ -121,6 +121,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
+@@ -117,6 +117,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
          return false;
      }
  
@@ -60,9 +60,9 @@ index fac63e5102..3e820e9803 100644
 +    }
 +#endif
 +
-     this->allocInputs(count);
+     SkASSERT(fInputs.empty());
      for (int i = 0; i < count; i++) {
-         if (buffer.readBool()) {
+         fInputs.push_back(buffer.readBool() ? buffer.readImageFilter() : nullptr);
 diff --git a/src/core/SkMallocPixelRef.cpp b/src/core/SkMallocPixelRef.cpp
 index 2933e48cc4..1ae9dd0404 100644
 --- a/src/core/SkMallocPixelRef.cpp
@@ -159,10 +159,10 @@ index 2ca88ae841..28b6148f44 100644
                  for (int i = 0; i < count; i++) {
                      buffer.readPath(&fPaths[i]);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index 48b6881b0a..d6b81eacf8 100644
+index adf9e64403..0cf4038592 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
-@@ -263,7 +263,12 @@ bool SkReadBuffer::readScalarArray(SkScalar* values, size_t size) {
+@@ -279,7 +279,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
  uint32_t SkReadBuffer::getArrayCount() {
      const size_t inc = sizeof(uint32_t);
      fError = fError || !IsPtrAlign4(fReader.peek()) || !fReader.isAvailable(inc);
@@ -175,7 +175,7 @@ index 48b6881b0a..d6b81eacf8 100644
  }
  
  sk_sp<SkImage> SkReadBuffer::readImage() {
-@@ -298,6 +303,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
+@@ -314,6 +319,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
          return nullptr;
      }
  
@@ -382,10 +382,10 @@ index 47b41250e2..ce69469e80 100755
      int winding = get_winding(inputPolygonVerts, inputPolygonSize);
      if (0 == winding) {
 diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
-index 0bf1adaaa4..347bc951a3 100755
+index 4990db92e7..182796c527 100755
 --- a/src/utils/SkShadowTessellator.cpp
 +++ b/src/utils/SkShadowTessellator.cpp
-@@ -254,6 +254,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
+@@ -270,6 +270,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
      SkScalar rotSin, rotCos;
      int numSteps;
      compute_radial_steps(fPrevOutset, nextNormal, fRadius, &rotSin, &rotCos, &numSteps);
