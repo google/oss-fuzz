@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ mkdir build
 pushd build
   cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_FUZZ_TESTING=ON -DFUZZ_REGRESSION_TESTS=OFF
   pushd c/tests/fuzz/
-    make -j2
+    make -j $(nproc)
   popd
   cp c/tests/fuzz/{fuzz-connection-driver,fuzz-message-decode} $OUT/
 popd
