@@ -1,0 +1,13 @@
+diff --git a/c/tests/fuzz/CMakeLists.txt b/c/tests/fuzz/CMakeLists.txt
+index f870d617..054ec6d6 100644
+--- a/c/tests/fuzz/CMakeLists.txt
++++ b/c/tests/fuzz/CMakeLists.txt
+@@ -33,6 +33,8 @@ add_library (StandaloneFuzzTargetMain STATIC StandaloneFuzzTargetMain.c Standalo
+ macro (pn_add_fuzz_test test)
+   add_executable (${test} ${ARGN})
+   target_link_libraries (${test} qpid-proton-core ${FUZZING_LIBRARY})
++  # -lFuzzingEngine is a C++ library, which needs c++ std lib
++  set_target_properties(${test} PROPERTIES LINKER_LANGUAGE CXX)
+ 
+   if (FUZZ_REGRESSION_TESTS)
+     # StandaloneFuzzTargetMain cannot walk directory trees
