@@ -47,7 +47,7 @@ index 27cf66da91..1c579e1f25 100644
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index 015b77c42c..5f35e8c3ae 100644
+index a9447212d3..d12aefaad3 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
 @@ -117,6 +117,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
@@ -96,10 +96,10 @@ index 52cdc3cc9b..aaac96cc45 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index 3ace475714..ca622dac8a 100644
+index 82dec0ea8c..96ff4b62a8 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -1393,6 +1393,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -1315,6 +1315,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -131,22 +131,10 @@ index 510efd6d9d..9692f8a461 100644
      path->setIsVolatile(true);
      path->setFillType(SkPath::kWinding_FillType);
 diff --git a/src/core/SkPictureData.cpp b/src/core/SkPictureData.cpp
-index 2ca88ae841..28b6148f44 100644
+index 6ce3b5c309..c8140be53b 100644
 --- a/src/core/SkPictureData.cpp
 +++ b/src/core/SkPictureData.cpp
-@@ -495,6 +495,11 @@ bool new_array_from_buffer(SkReadBuffer& buffer, uint32_t inCount,
- }
- 
- void SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t size) {
-+#if defined(IS_FUZZING)
-+    if (size > 2000) {
-+        return;
-+    }
-+#endif
-     switch (tag) {
-         case SK_PICT_PAINT_BUFFER_TAG: {
-             if (!buffer.validate(SkTFitsIn<int>(size))) {
-@@ -514,6 +519,11 @@ void SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t
+@@ -408,6 +408,11 @@ void SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t
                  if (!buffer.validate(count >= 0)) {
                      return;
                  }
@@ -159,7 +147,7 @@ index 2ca88ae841..28b6148f44 100644
                  for (int i = 0; i < count; i++) {
                      buffer.readPath(&fPaths[i]);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index adf9e64403..0cf4038592 100644
+index d41f2902f2..dc90ddd2be 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
 @@ -279,7 +279,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
@@ -175,19 +163,6 @@ index adf9e64403..0cf4038592 100644
  }
  
  sk_sp<SkImage> SkReadBuffer::readImage() {
-@@ -314,6 +319,12 @@ sk_sp<SkImage> SkReadBuffer::readImage() {
-         return nullptr;
-     }
- 
-+#if defined(IS_FUZZING)
-+    if (size > 100000) {
-+        this->validate(false);
-+        return nullptr;
-+    }
-+#endif
-     sk_sp<SkData> data = SkData::MakeUninitialized(size);
-     if (!this->readPad32(data->writable_data(), size)) {
-         this->validate(false);
 diff --git a/src/core/SkScan_AAAPath.cpp b/src/core/SkScan_AAAPath.cpp
 index 5e7f232ff7..e8acd9a109 100644
 --- a/src/core/SkScan_AAAPath.cpp
@@ -382,7 +357,7 @@ index 47b41250e2..ce69469e80 100755
      int winding = get_winding(inputPolygonVerts, inputPolygonSize);
      if (0 == winding) {
 diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
-index 4990db92e7..182796c527 100755
+index ee2375ebf2..3ffe7147a8 100755
 --- a/src/utils/SkShadowTessellator.cpp
 +++ b/src/utils/SkShadowTessellator.cpp
 @@ -270,6 +270,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
