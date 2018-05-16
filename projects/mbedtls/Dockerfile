@@ -20,5 +20,7 @@ MAINTAINER support-mbedtls@arm.com
 RUN apt-get update && apt-get install -y make cmake
 #TODO change when merged into master branch of official repo
 RUN git clone --depth 1 --branch fuzz https://github.com/catenacyber/mbedtls.git mbedtls
+RUN git clone --depth 1 https://github.com/google/boringssl.git boringssl
+RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 WORKDIR mbedtls
 COPY build.sh $SRC/

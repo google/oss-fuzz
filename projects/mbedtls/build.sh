@@ -21,10 +21,14 @@ make -j$(nproc) all
 
 # build corpuses
 cd tests
-zip -r fuzz/fuzz_x509crl_seed_corpus.zip data_files/crl*
-zip -r fuzz/fuzz_x509crt_seed_corpus.zip data_files/*.crt data_files/dir*/*.crt fuzz/corpuses/x509/*
+cp -r ../../openssl/fuzz/corpora/crl fuzz/corpuses/
+cp -r ../../openssl/fuzz/corpora/x509 fuzz/corpuses/
+cp -r ../../boringssl/fuzz/privkey_corpus fuzz/corpuses/
+cp ../../boringssl/fuzz/cert_corpus/* fuzz/corpuses/x509/
+zip -r fuzz/fuzz_x509crl_seed_corpus.zip data_files/crl* fuzz/corpuses/crl
+zip -r fuzz/fuzz_x509crt_seed_corpus.zip data_files/*.crt data_files/dir*/*.crt  fuzz/corpuses/x509/
 zip -r fuzz/fuzz_x509csr_seed_corpus.zip data_files/*.csr data_files/*.req.*
-zip -r fuzz/fuzz_privkey_seed_corpus.zip data_files/*.key data_files/*.pem
+zip -r fuzz/fuzz_privkey_seed_corpus.zip data_files/*.key data_files/*.pem fuzz/corpuses/privkey_corpus
 zip -r fuzz/fuzz_pubkey_seed_corpus.zip data_files/*.pub data_files/*.pubkey data_files/*pub.pem
 zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
 zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
