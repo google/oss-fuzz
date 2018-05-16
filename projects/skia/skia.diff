@@ -30,10 +30,10 @@ index b22b8ebebb..aec422fa96 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 27cf66da91..1c579e1f25 100644
+index 7e526e6098..c728d3e209 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1135,6 +1135,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1138,6 +1138,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -130,22 +130,6 @@ index 510efd6d9d..9692f8a461 100644
      path->reset();
      path->setIsVolatile(true);
      path->setFillType(SkPath::kWinding_FillType);
-diff --git a/src/core/SkPictureData.cpp b/src/core/SkPictureData.cpp
-index 6ce3b5c309..c8140be53b 100644
---- a/src/core/SkPictureData.cpp
-+++ b/src/core/SkPictureData.cpp
-@@ -408,6 +408,11 @@ void SkPictureData::parseBufferTag(SkReadBuffer& buffer, uint32_t tag, uint32_t
-                 if (!buffer.validate(count >= 0)) {
-                     return;
-                 }
-+#if defined(IS_FUZZING)
-+                if (count > 20) {
-+                    return;
-+                }
-+#endif
-                 fPaths.reset(count);
-                 for (int i = 0; i < count; i++) {
-                     buffer.readPath(&fPaths[i]);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
 index d41f2902f2..dc90ddd2be 100644
 --- a/src/core/SkReadBuffer.cpp
