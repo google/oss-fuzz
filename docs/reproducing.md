@@ -76,7 +76,7 @@ $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_pa
 - *Submit fix*. Submit the fix in the project's repository. ClusterFuzz will automatically pick up the changes, recheck the testcase and will close the issue (in &lt; 1 day).
 - *Improve fuzzing support*. Consider [improving fuzzing support](ideal_integration.md) in your project's build and test system.
 
-## Reproducing build checks
+## Reproducing build failures
 Our infrastructure runs some sanity tests to make sure that your build was correctly configured, even if it succeeded. To reproduce these locally, run:
 
 ```bash
