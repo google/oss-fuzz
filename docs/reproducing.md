@@ -45,7 +45,7 @@ $ python infra/helper.py pull_images
 
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> --engine <libfuzzer/afl/hongfuzz> $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
 ```
 
 ## Reproducing bugs
@@ -65,7 +65,7 @@ $ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Down
 ## Reproduce using local source checkout
 
 ```bash
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> --engine <libfuzzer/afl/hongfuzz> $PROJECT_NAME <source_path>
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME <source_path>
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
