@@ -29,6 +29,8 @@ If you are not sure how to build the fuzzer using the project's build system,
 you may also use Docker ([how?](installing_docker.md), [why?](faq.md#why-do-you-use-docker)) commands 
 to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer input to the fuzz target.
 
+## Building using Docker
+
 ### Pull the latest Docker images
 
 ```bash
@@ -39,11 +41,8 @@ $ python infra/helper.py pull_images
   configurations, scripts, and other changes. In some cases, a particular issue
   can be reproduced only with a fresh image being used.
 
-### Reproduce crashes with Docker
+### Build the image and the fuzzers
 
-- *Reproduce using latest OSS-Fuzz build:*
-
-## Building using Docker
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
@@ -53,8 +52,9 @@ $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $P
 Our infrastructure runs some sanity tests to make sure that your build was correctly configured, even if it succeeded. To reproduce these locally, run:
 
 ```bash
-$ python infra/helper.py check_build --sanitizer <address/memory/undefined> $PROJECT_NAME <fuzz_target_name>
-```
+$ python infra/helper.py build_image $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
+$ python infra/helper.py check_build $PROJECT_NAME <fuzz_target_name>```
 
 ## Reproducing bugs
 ```bash
@@ -83,12 +83,3 @@ $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_pa
    [Use gdb](debugging.md#debugging-fuzzers-with-gdb) if needed.
 - *Submit fix*. Submit the fix in the project's repository. ClusterFuzz will automatically pick up the changes, recheck the testcase and will close the issue (in &lt; 1 day).
 - *Improve fuzzing support*. Consider [improving fuzzing support](ideal_integration.md) in your project's build and test system.
-
-
-### Reproducing OSS-Fuzz bad build failures
-
-```bash
-$ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
-$ python infra/helper.py check_build $PROJECT_NAME <fuzz_target_name>
-```
