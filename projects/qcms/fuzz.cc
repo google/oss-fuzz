@@ -5,16 +5,12 @@
 static void transform(qcms_profile* src_profile, qcms_profile* dst_profile,
                       int alpha) {
   // qcms supports GRAY and RGB profiles as input, and RGB as output.
-  // Note that function qcms_transform_create further below also checks
-  // this, yet quitting early here gives slightly better performance.
 
   uint32_t src_color_space = qcms_profile_get_color_space(src_profile);
-  qcms_data_type src_type;
+  qcms_data_type src_type = alpha & 1 ? QCMS_DATA_RGBA_8 : QCMS_DATA_RGB_8;
   if (src_color_space == icSigGrayData)
     src_type = alpha & 1 ? QCMS_DATA_GRAYA_8 : QCMS_DATA_GRAY_8;
-  else if (src_color_space == icSigRgbData)
-    src_type = alpha & 1 ? QCMS_DATA_RGBA_8 : QCMS_DATA_RGB_8;
-  else
+  else if (src_color_space != icSigRgbData)
     return;
 
   uint32_t dst_color_space = qcms_profile_get_color_space(dst_profile);
