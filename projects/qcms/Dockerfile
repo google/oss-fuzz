@@ -20,5 +20,5 @@ RUN apt-get update && apt-get install -y wget unzip
 RUN wget -qO qcms.zip \
     https://hg.mozilla.org/mozilla-central/archive/tip.zip/gfx/qcms/ && \
     unzip -qqj qcms.zip -d qcms
-COPY build.sh fuzz.cc fuzz.dict fuzz.options $SRC/
+COPY build.sh fuzz.cc fuzz.dict $SRC/
 WORKDIR qcms

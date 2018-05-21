@@ -32,4 +32,4 @@ $CXX $CXXFLAGS -std=c++11 \
   -lFuzzingEngine \
   $SRC/fuzz.cc -o $OUT/fuzz
 
-cp $SRC/fuzz.dict $SRC/fuzz.options $OUT
+cp $SRC/fuzz.dict $OUT
