@@ -131,7 +131,7 @@ function check_msan_build {
   fi
 
   if (( $MSAN_CALLS < $MSAN_CALLS_THRESHOLD_FOR_MSAN_BUILD )); then
-    echo "BAD BUILD: $FUZZER does not seem to be compiled with UBSan."
+    echo "BAD BUILD: $FUZZER does not seem to be compiled with MSan."
   fi
 
   if (( $UBSAN_CALLS > $UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD )); then
