@@ -1,0 +1,5 @@
+homepage: "https://poppler.freedesktop.org/"
+primary_contact: "aacid@kde.org"
+sanitizers:
+- address
+- undefined

@@ -1,0 +1,16 @@
+# syntax-relevant characters
+
+name="\x0A"
+name="\x0D"
+name="("
+name=")"
+name="<"
+name=">"
+name="["
+name="]"
+name="{"
+name="}"
+name="/"
+name="%"
+name="<<"
+name=">>"
