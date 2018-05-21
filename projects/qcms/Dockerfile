@@ -16,9 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pdknsk@gmail.com
-RUN apt-get update && apt-get install -y wget unzip
-RUN wget -qO qcms.zip \
-    https://hg.mozilla.org/mozilla-central/archive/tip.zip/gfx/qcms/ && \
-    unzip -qqj qcms.zip -d qcms
+RUN apt-get update && apt-get install -y mercurial
+RUN hg clone https://hg.mozilla.org/mozilla-central/ firefox
 COPY build.sh fuzz.cc fuzz.dict $SRC/
-WORKDIR qcms
+WORKDIR firefox/gfx/qcms
