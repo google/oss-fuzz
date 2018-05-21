@@ -1,0 +1,8 @@
+homepage: "https://poppler.freedesktop.org/"
+primary_contact: aacid@kde.org
+sanitizers:
+  - address
+  - memory
+  - undefined
+auto_ccs:
+  - jonathan@titanous.com
