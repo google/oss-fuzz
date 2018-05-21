@@ -1,0 +1,6 @@
+homepage: "https://hg.mozilla.org/mozilla-central/file/tip/gfx/qcms/"
+primary_contact: "agaynor@mozilla.com"
+sanitizers:
+- address
+- undefined
+- memory
