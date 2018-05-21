@@ -51,7 +51,7 @@ $CXX $CXXFLAGS -std=c++11 -Icpp \
     fuzz/pdf_fuzzer.cc -o $OUT/$fuzz_target \
     -lFuzzingEngine $WORK/poppler/cpp/libpoppler-cpp.a $WORK/poppler/libpoppler.a $WORK/lib/libfreetype.a
 
-mv $SRC/{*.zip,*.dict,*.options} $OUT
+mv $SRC/{*.zip,*.dict} $OUT
 
 if [ ! -f "${OUT}/${fuzz_target}_seed_corpus.zip" ]; then
   echo "missing seed corpus"
@@ -60,10 +60,5 @@ fi
 
 if [ ! -f "${OUT}/${fuzz_target}.dict" ]; then
   echo "missing dictionary"
-  exit 1
-fi
-
-if [ ! -f "${OUT}/${fuzz_target}.options" ]; then
-  echo "missing options"
   exit 1
 fi

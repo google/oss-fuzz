@@ -25,4 +25,4 @@ RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
 ADD https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/pdf.dict $SRC/pdf_fuzzer.dict
 WORKDIR $SRC
 COPY *.cc poppler/fuzz/
-COPY build.sh *.options $SRC/
+COPY build.sh $SRC/
