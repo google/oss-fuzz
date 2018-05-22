@@ -30,6 +30,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   poppler::document *doc = poppler::document::load_from_raw_data((const char *)data, size);
   if (!doc || doc->is_locked()) {
+    delete doc;
     return 0;
   }
 
