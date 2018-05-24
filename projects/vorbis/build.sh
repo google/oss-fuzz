@@ -15,24 +15,4 @@
 #
 ################################################################################
 
-cd $SRC
-
-mv people.xiph.org/*.ogg decode_corpus/
-zip -r "$OUT/decode_fuzzer_seed_corpus.zip" decode_corpus/
-
-cd $SRC/ogg
-./autogen.sh
-./configure --prefix="$WORK" --enable-static --disable-shared --disable-crc
-make clean
-make -j$(nproc)
-make install
-
-
-cd $SRC/vorbis
-./autogen.sh
-./configure --prefix="$WORK" --enable-static --disable-shared
-make clean
-make -j$(nproc)
-make install
-
-$CXX $CXXFLAGS $SRC/decode_fuzzer.cc -o $OUT/decode_fuzzer -L"$WORK/lib" -I"$WORK/include" -lFuzzingEngine -lvorbisfile -lvorbis -logg
+. contrib/oss-fuzz/build.sh
