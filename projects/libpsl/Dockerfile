@@ -34,8 +34,13 @@ RUN apt-get update && apt-get install -y \
  wget \
  python
 
-RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
-RUN git clone --depth=1 --recursive https://gitlab.com/libidn/libidn2.git
+RUN git clone git://git.savannah.gnu.org/gnulib.git
+ENV GNULIB_TOOL=$SRC/gnulib/gnulib-tool
+ENV GNULIB_SRCDIR=$SRC/gnulib
+
+RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
+RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git && \
+    rmdir libidn2/gnulib && ln -s $SRC/gnulib libidn2/gnulib
 RUN git clone --depth=1 https://git.savannah.gnu.org/git/libidn.git
 RUN wget http://download.icu-project.org/files/icu4c/59.1/icu4c-59_1-src.tgz && tar xvfz icu4c-59_1-src.tgz
 
