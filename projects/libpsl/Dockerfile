@@ -42,4 +42,4 @@ RUN wget http://download.icu-project.org/files/icu4c/59.1/icu4c-59_1-src.tgz && 
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 
 WORKDIR libpsl
-COPY build.sh $SRC/
+COPY build.sh config.site $SRC/
