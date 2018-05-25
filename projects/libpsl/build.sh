@@ -19,6 +19,7 @@ export DEPS_PATH=$SRC/deps
 export PKG_CONFIG_PATH=$DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$DEPS_PATH/include"
 export LDFLAGS="-L$DEPS_PATH/lib"
+export CONFIG_SITE=$SRC/config.site
 
 cd $SRC/icu/source
 UBSAN_OPTIONS=detect_leaks=0 \
@@ -65,17 +66,17 @@ else
   builds="libicu libidn2 libidn none"
 fi
 for build in $builds; do
-  XLIBS=""
+  unset LIBS
   if test $build = "none"; then
     BUILD_FLAGS="--disable-runtime --disable-builtin"
   else
     BUILD_FLAGS="--enable-runtime=$build --enable-builtin=$build"
     if test $build = "libicu"; then
-      XLIBS="-lstdc++"
+      export LIBS="-lstdc++"
     fi
   fi
   # older m4 iconv detection has memleaks, so switch leak detection off
-  LIBS=$XLIBS ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
+  ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
     ./configure --enable-static --disable-shared --disable-gtk-doc $BUILD_FLAGS --prefix=$DEPS_PATH
   make clean
   make -j$(nproc)
