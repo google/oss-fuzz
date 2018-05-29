@@ -1,2 +1,6 @@
 homepage: "https://developers.google.com/speed/webp/"
 primary_contact: "jzern@google.com"
+sanitizers:
+- address
+- undefined
+- memory
