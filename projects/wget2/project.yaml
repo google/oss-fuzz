@@ -1,0 +1,7 @@
+homepage: "https://gitlab.com/gnuwget/wget2"
+primary_contact: "rockdaboot@gmail.com"
+auto_ccs:
+  - "tim.ruehsen@gmx.de"
+  - "darnir@gmail.com"
+  - "gscrivan@redhat.com"
+  - "ajuaristi@gmx.es"

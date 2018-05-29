@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins-master
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: jenkins-master
+      labels:
+        app: jenkins-master
+    spec:
+      containers:
+      - name: jenkins
+        image: gcr.io/oss-fuzz-base/jenkins:20170726v4
+        env:
+          - name: JAVA_OPTS
+            value: "-Duser.timezone=America/Los_Angeles -Dhudson.security.csrf.requestfield=Jenkins-Crumb -Xmx16g -Djenkins.security.ApiTokenProperty.showTokenToAdmins=true"
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000
+        volumeMounts:
+        - name: jenkins-home
+          mountPath: "/var/jenkins_home"
+        - name: secrets
+          mountPath: "/var/secrets"
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: "/login"
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 15
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: "4"
+      - name: kubectl-proxy
+        image: lachlanevenson/k8s-kubectl
+        args:
+          - "proxy"
+          - "-p"
+          - "8081"
+      volumes:
+      - name: jenkins-home
+        gcePersistentDisk:
+          pdName: jenkins-home
+          fsType: ext4
+      - name: secrets
+        secret:
+          secretName: secrets
+          items:
+            - key: build-service-account.json
+              path: build-service-account.json
+            - key: base-build-service-account.json
+              path: base-build-service-account.json
+            - key: tls-cert
+              path: cert.pem
+            - key: tls-key
+              path: cert.key

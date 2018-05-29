@@ -1,0 +1,8 @@
+homepage: https://poppler.freedesktop.org/
+primary_contact: tsdgeos@gmail.com
+sanitizers:
+  - address
+  - memory
+  - undefined
+auto_ccs:
+  - jonathan@titanous.com

@@ -25,3 +25,4 @@ $CXX $CXXFLAGS -std=c++11 -Isrc/ \
 
 cp ./magic/magic.mgc $OUT/
 
+zip -j $OUT/magic_fuzzer_seed_corpus.zip ./tests/*.testfile

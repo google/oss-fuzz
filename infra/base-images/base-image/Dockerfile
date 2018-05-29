@@ -19,7 +19,10 @@
 FROM ubuntu:16.04
 MAINTAINER mike.aizatsky@gmail.com
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y libc6-dev binutils libgcc-5-dev && \
+    apt-get autoremove -y
 
 ENV OUT=/out
 ENV SRC=/src

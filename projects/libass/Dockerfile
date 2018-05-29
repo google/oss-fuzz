@@ -14,9 +14,9 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER eugeni.stepanov@gmail.com
-RUN apt-get install -y make autoconf automake libtool pkg-config libfreetype6-dev libfontconfig1-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libfreetype6-dev libfontconfig1-dev
 
 RUN git clone --depth 1 https://github.com/libass/libass.git
 RUN git clone --depth 1 https://github.com/behdad/fribidi.git

@@ -32,7 +32,7 @@ created during build-time.
 
 ## argv[0]
 
-You must not modify argv[0]. It is required for certain things to work correctly.
+You must not modify `argv[0]`. It is required for certain things to work correctly.
 
 ## Current working directory
 
@@ -47,6 +47,8 @@ executable lives in.
 
 `/dev` is also unavailable.
 
-## Network access
+## Hardware
 
-There will be no network interfaces available (not even loopback).
+Your project should not be compiled with `-march=native` or `-mtune=native`
+flags, as the build infrastructure and fuzzing machines may have different CPUs
+as well as other hardware differences. You may however use `-mtune=generic`.

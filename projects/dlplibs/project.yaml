@@ -1,0 +1,6 @@
+homepage: "https://www.documentliberation.org"
+primary_contact: "dtardon@redhat.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

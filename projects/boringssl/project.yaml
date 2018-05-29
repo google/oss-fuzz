@@ -2,6 +2,7 @@ homepage: "https://boringssl.googlesource.com/boringssl/"
 primary_contact: "agl@google.com"
 auto_ccs:
  - "davidben@google.com"
+ - "svaldez@google.com"
 sanitizers:
 - address
 - undefined

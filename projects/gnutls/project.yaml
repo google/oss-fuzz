@@ -2,3 +2,12 @@ homepage: "https://www.gnutls.org"
 primary_contact: "n.mavrogiannopoulos@gmail.com"
 auto_ccs:
   - "alex.gaynor@gmail.com"
+  - "daiki.ueno@gmail.com"
+  - "rockdaboot@gmail.com"
+  - "nisse@google.com"
+  - "anderjuaristi.cictg@gmail.com"
+
+sanitizers:
+  - address
+  - memory
+  - undefined

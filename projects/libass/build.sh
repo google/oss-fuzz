@@ -16,9 +16,7 @@
 ################################################################################
 
 cd $SRC/fribidi
-./bootstrap
-./configure --enable-static=yes --enable-shared=no --with-pic=yes --prefix=/work/
-# Don't run "make": it's broken. Run "make install".
+./autogen.sh --disable-docs --enable-static=yes --enable-shared=no --with-pic=yes --prefix=/work/
 make install
 
 cd $SRC/libass

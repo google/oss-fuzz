@@ -48,16 +48,34 @@ It is preferred to keep and maintain [fuzz targets](glossary.md#fuzz-target) in 
 
 This file stores the metadata about your project. The following attributes are supported:
 
-* `homepage` - Project's homepage.
-* `primary_contact`, `auto_ccs` - Primary contact and CCs list. These people get access to ClusterFuzz 
+### homepage
+Project's homepage.
+
+### primary_contact, auto_ccs
+Primary contact and CCs list. These people get access to ClusterFuzz 
 which includes crash reports, fuzzer statistics, etc and are auto-cced on newly filed bugs in OSS-Fuzz
 tracker.
-* `sanitizers` (optional) - List of sanitizers to use. By default, you shouldn't override this and it 
-will use the default list of supported sanitizers (currently -
-AddressSanitizer("address"), UndefinedBehaviorSanitizer("undefined")). 
+
+### sanitizers (optional)
+List of sanitizers to use. By default, it will use the default list of supported
+sanitizers (currently -
+["address"](https://clang.llvm.org/docs/AddressSanitizer.html),
+["undefined"](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)).
+
 If your project does not build with a particular sanitizer configuration and you need some time fixing
 it, then you can use this option to override the defaults temporarily. E.g. For disabling 
 UndefinedBehaviourSanitizer build, then you can just specify all supported sanitizers, except "undefined".
+
+[MemorySanitizer ("memory")](https://clang.llvm.org/docs/MemorySanitizer.html) is also supported, but is not enabled by default due to likelihood of false positives.
+For this to work, ensure that your project's runtime dependencies are listed in
+[this file](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
+You may opt-in by adding "memory" to this list.
+
+### help_url
+Link to a custom help URL in bug reports instead of the
+[default OSS-Fuzz guide to reproducing crashes](https://github.com/google/oss-fuzz/blob/master/docs/reproducing.md). This can be useful if you assign
+bugs to members of your project unfamiliar with OSS-Fuzz or if they should follow a different workflow for
+reproducing and fixing bugs than standard one outlined in the reproducing guide.
 
 Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
 
@@ -66,14 +84,16 @@ Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/bor
 This file defines the Docker image definition. This is where the build.sh script will be executed in.
 It is very simple for most projects:
 ```docker
-FROM ossfuzz/base-builder               # base image with clang toolchain
+FROM gcr.io/oss-fuzz-base/base-builder    # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                     # maintainer for this file
-RUN apt-get install -y ...                # install required packages to build your project
+RUN apt-get update && apt-get install -y ... # install required packages to build your project
 RUN git clone <git_url> <checkout_dir>    # checkout all sources needed to build your project
 WORKDIR <checkout_dir>                    # current directory for build script
 COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer files in src dir
 ```
 Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
+
+In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`. 
 
 ## build.sh
 
@@ -90,7 +110,7 @@ In general, this script will need to:
 *Note*:
 
 1. Please don't assume that the fuzzing engine is libFuzzer and hardcode in your build scripts.
-In future, we will add support for other fuzzing engines like AFL.
+We generate builds for both libFuzzer and AFL fuzzing engine configurations.
 So, link the fuzzing engine using `-lFuzzingEngine`, see example below.
 2. Please make sure that the binary names for your [fuzz targets](glossary.md#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
@@ -142,6 +162,12 @@ pass them manually to the build tool.
 See [Provided Environment Variables](../infra/base-images/base-builder/README.md#provided-environment-variables) section in
 `base-builder` image documentation for more details.
 
+## Disk space restrictions
+
+Our builders have a disk size of 70GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
+
+In addition to this, please keep the size of the build (everything copied to `$OUT`) small (<10GB uncompressed) -- this will need be repeatedly transferred and unzipped during fuzzing and run on VMs with limited disk space.
+
 ## Fuzzer execution environment
 
 [This page](fuzzer_environment.md) gives information about the environment that
@@ -154,7 +180,7 @@ Use the helper script to build docker image and [fuzz targets](glossary.md#fuzz-
 ```bash
 $ cd /path/to/oss-fuzz
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers -e SANITIZER=<address/memory/undefined> $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
 ```
 
 This should place the built binaries into `/path/to/oss-fuzz/build/out/$PROJECT_NAME`
@@ -174,6 +200,7 @@ It's recommended to look at code coverage as a sanity check to make sure that
 [fuzz target](glossary.md#fuzz-target) gets to the code you expect.
 
 ```bash
+$ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
 $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
 ```
 
@@ -195,10 +222,18 @@ custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` exec
 
 ```
 [libfuzzer]
-max_len = 1024
+close_fd_mask = 3
+only_ascii = 1
 ```
 
-[List of available options](http://llvm.org/docs/LibFuzzer.html#options). Use of `max_len` is highly recommended.
+[List of available options](http://llvm.org/docs/LibFuzzer.html#options). Use of `max_len` is not recommended as other fuzzing engines may not support that option. Instead, if
+you need to strictly enforce the input length limit, add a sanity check to the
+beginning of your fuzz target:
+
+```cpp
+if (size < kMinInputLength || size > kMaxInputLength)
+  return 0;
+```
 
 For out of tree [fuzz targets](glossary.md#fuzz-target), you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script.
@@ -227,7 +262,9 @@ has an appropriate and consistent license.
 Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
 sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
 
-Put your dict file in `$OUT` and specify in .options file:
+Put your dict file in `$OUT`. If the dict filename is the same as your target
+binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the name is different
+(e.g. because it is shared by several targets), specify this in .options file:
 
 ```
 [libfuzzer]
@@ -249,7 +286,7 @@ if you are new to contributing via GitHub.
 Please include copyright headers for all files checked in to oss-fuzz:
 
 ```
-# Copyright 2016 Google Inc.
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -273,4 +310,9 @@ If you are porting a fuzz target from Chromium, keep the original Chromium licen
 Once your change is merged, your project and fuzz targets should be automatically built and run on
 ClusterFuzz after a short while (&lt; 1 day)!<BR><BR>
 Check your project's build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/status.html).<BR>
-Check out the crashes generated and code coverage statistics on [ClusterFuzz](clusterfuzz.md) web interface [here](https://oss-fuzz.com/).
+
+Use [ClusterFuzz](clusterfuzz.md) web interface [here](https://oss-fuzz.com/) to checkout the following items:
+* Crashes generated
+* Code coverage statistics
+* Fuzzer statistics
+* Fuzzer performance analyzer (linked from fuzzer statistics)

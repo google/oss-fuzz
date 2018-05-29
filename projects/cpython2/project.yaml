@@ -1,0 +1,5 @@
+homepage: "https://python.org/"
+primary_contact: "gps@google.com"
+auto_ccs:
+ - "jeanpierreda@google.com"
+ - "alex.gaynor@gmail.com"

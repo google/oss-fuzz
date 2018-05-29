@@ -14,17 +14,26 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-clang
+FROM gcr.io/oss-fuzz-base/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y git subversion jq python3 zip make
+RUN apt-get install -y git subversion jq python3 zip make libunwind8-dev binutils-dev libblocksruntime-dev
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
-ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,function,signed-integer-overflow,shift,vla-bound,vptr -fno-sanitize-recover=undefined"
+
+# Set of '-fsanitize' flags matches '-fno-sanitize-recover'.
+ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr -fno-sanitize-recover=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr"
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
+ENV SANITIZER_FLAGS_profile "-fprofile-instr-generate -fcoverage-mapping -pthread"
 
 # Default build flags for coverage.
-ENV COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard,trace-cmp"
+ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
+
+# Coverage flags for generating coverage reports.
+ENV COVERAGE_FLAGS_coverage="-fsanitize-coverage=bb,no-prune,trace-pc-guard -O0"
+
+# Don't mix sanitizer coverage with clang coverage.
+ENV COVERAGE_FLAGS_profile=""
 
 # Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"
@@ -44,7 +53,13 @@ RUN mkdir afl && \
     tar -xzv --strip-components=1 -f $SRC/afl-latest.tgz && \
     rm -rf $SRC/afl-latest.tgz
 
-COPY compile compile_afl compile_libfuzzer coverage_report srcmap /usr/local/bin/
+ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
+RUN mkdir honggfuzz && \
+    cd honggfuzz && \
+    tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
+    rm -rf $SRC/oss-fuzz.tar.gz
+
+COPY compile compile_afl compile_libfuzzer compile_honggfuzz coverage_report srcmap /usr/local/bin/
 
 CMD ["compile"]
 

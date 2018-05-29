@@ -5,3 +5,6 @@ auto_ccs:
   - "nfxjfg@gmail.com"
   - "chortos@inbox.lv"
   - "vabnick@gmail.com"
+sanitizers:
+  - address
+  - undefined

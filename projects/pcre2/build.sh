@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd pcre2
-
 # build project
 ./autogen.sh
 ./configure --enable-fuzz-support --enable-never-backslash-C --with-match-limit=1000 --with-match-limit-recursion=1000
@@ -26,3 +24,6 @@ make -j$(nproc) all
 # build fuzzer
 $CXX $CXXFLAGS -o $OUT/pcre2_fuzzer \
     -lFuzzingEngine .libs/libpcre2-fuzzsupport.a .libs/libpcre2-8.a
+
+# set up dictionary and options to use it
+cp pcre2_fuzzer.options pcre2_fuzzer.dict $OUT/

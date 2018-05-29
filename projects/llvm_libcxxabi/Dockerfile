@@ -14,10 +14,10 @@
 #
 ################################################################################
 
-FROM ossfuzz/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kcc@google.com
-RUN apt-get install -y subversion
+RUN apt-get update && apt-get install -y subversion
 
-RUN svn co https://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
-WORKDIR libcxxabi
+RUN svn co https://llvm.org/svn/llvm-project/libcxxabi/trunk llvm_libcxxabi
+WORKDIR llvm_libcxxabi
 COPY build.sh $SRC/

@@ -1,0 +1,10 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jenkins-https-ingress
+spec:
+  backend:
+    serviceName: jenkins-master
+    servicePort: 8080
+  tls:
+    - secretName: tls

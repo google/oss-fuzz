@@ -6,7 +6,7 @@ Fuzzers are usually built with one or more  [sanitizer](https://github.com/googl
 You can select sanitizer configuration by specifying `$SANITIZER` build environment variable using `-e` option:
 
 ```bash
-python infra/helper.py build_fuzzers -e SANITIZER=undefined json
+python infra/helper.py build_fuzzers --sanitizer undefined json
 ```
 
 Supported sanitizers:

@@ -16,10 +16,8 @@
 
 # Docker image with head clang installed.
 
-FROM ossfuzz/base-image
+FROM gcr.io/oss-fuzz-base/base-image
 MAINTAINER mike.aizatsky@gmail.com
-
-RUN apt-get install -y libc6-dev binutils libgcc-5-dev
 
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate
@@ -35,6 +33,6 @@ ENV CCC "clang++"
 # FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION is described at
 # http://libfuzzer.info#fuzzer-friendly-build-mode
 
-ENV CFLAGS "-fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
+ENV CFLAGS "-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
 ENV CXXFLAGS_EXTRA "-stdlib=libc++"
 ENV CXXFLAGS "$CFLAGS $CXXFLAGS_EXTRA"

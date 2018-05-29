@@ -1,6 +1,12 @@
 homepage: "https://www.freetype.org/"
 primary_contact: "lemzwerg@gmail.com"
 auto_ccs:
-- "darnold@adobe.com"
+  - "darnold@adobe.com"
+  - "lemzwerg@googlemail.com"
+  - "HinTak.Leung@gmail.com"
+  - "ewaldhew@gmail.com"
+  - "apodtele@gmail.com"
+  - "prince.cherusker@gmail.com"
 sanitizers:
- - address
+  - address
+  - undefined
