@@ -4,3 +4,5 @@ sanitizers:
 - address
 - undefined
 - memory
+auto_ccs:
+- "twsmith@mozilla.com"
