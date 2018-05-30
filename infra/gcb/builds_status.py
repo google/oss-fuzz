@@ -113,8 +113,8 @@ def main():
           projectId='oss-fuzz',
           pageSize=2,
           filter=query_filter).execute()
-    except googleapiclient.errors.HttpError:
-      print >>sys.stderr, 'Failed to list builds for', project
+    except googleapiclient.errors.HttpError as e:
+      print >>sys.stderr, 'Failed to list builds for', project, ':', str(e)
       continue
 
     if not 'builds' in response:
