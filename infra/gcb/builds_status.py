@@ -6,6 +6,7 @@ import sys
 import jinja2
 import json
 import tempfile
+import time
 
 import dateutil.parser
 from oauth2client.client import GoogleCredentials
@@ -19,6 +20,8 @@ from jinja2 import Environment, FileSystemLoader
 STATUS_BUCKET = 'oss-fuzz-build-logs'
 LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+RETRY_COUNT = 3
+RETRY_WAIT = 5
 
 
 def usage():
@@ -94,6 +97,18 @@ def find_last_build(builds):
   return None
 
 
+def execute_with_retries(request):
+  for i in xrange(RETRY_COUNT + 1):
+    try:
+      return request.execute()
+    except Exception as e:
+      print('request failed with {0}, retrying...'.format(str(e)))
+      if i < RETRY_COUNT:
+        time.sleep(RETRY_WAIT)
+        continue
+        
+      raise
+
 def main():
   if len(sys.argv) != 2:
     usage()
@@ -109,10 +124,10 @@ def main():
     print project
     query_filter = ('images="gcr.io/oss-fuzz/{0}"'.format(project))
     try:
-      response = cloudbuild.projects().builds().list(
+      response = execute_with_retries(cloudbuild.projects().builds().list(
           projectId='oss-fuzz',
           pageSize=2,
-          filter=query_filter).execute()
+          filter=query_filter))
     except googleapiclient.errors.HttpError as e:
       print >>sys.stderr, 'Failed to list builds for', project, ':', str(e)
       continue
