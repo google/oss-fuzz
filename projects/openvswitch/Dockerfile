@@ -22,5 +22,5 @@ RUN apt-get update && apt-get install -y make autoconf automake \
 RUN pip install six
 RUN git clone --depth 1 https://github.com/openvswitch/ovs.git openvswitch
 WORKDIR openvswitch
-COPY build.sh target.c $SRC/
+COPY build.sh target-flow-extract.c $SRC/
 COPY *.options *.dict $OUT/
