@@ -18,6 +18,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER capstone.engine@gmail.com
 RUN apt-get update && apt-get install -y make cmake tshark
 #TODO change when merged into master branch of official repo
-RUN git clone --depth 1 --branch fuzz https://github.com/catenacyber/capstone.git capstone
-WORKDIR capstone
+RUN git clone --depth 1 --branch fuzznfix https://github.com/catenacyber/capstone.git capstonenext
+# we fuzz both next and master branches
+RUN git clone --depth 1 --branch fuzzmaster https://github.com/catenacyber/capstone.git capstonemaster
+WORKDIR $SRC
 COPY build.sh $SRC/

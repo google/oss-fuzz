@@ -15,22 +15,27 @@
 #
 ################################################################################
 
-# build project
-mkdir build
-# does not seem to work in source directory
-# + make.sh overwrites CFLAGS
-cd build
-cmake -DCAPSTONE_BUILD_SHARED=0 ..
-make
+for branch in next master
+do
+    cd capstone$branch
+    # build project
+    mkdir build
+    # does not seem to work in source directory
+    # + make.sh overwrites CFLAGS
+    cd build
+    cmake -DCAPSTONE_BUILD_SHARED=0 ..
+    make
 
-cd ../suite/fuzz
-# TODO corpus
+    cd ../suite/fuzz
+    # TODO corpus
 
-# export other associated stuff
-cp *.options $OUT/
+    # export other associated stuff
+    cp *.options $OUT/
 
-# build fuzz target
-$CC $CFLAGS -I../../include/capstone -c fuzz_disasm.c -o fuzz_disasm.o
+    # build fuzz target
+    $CC $CFLAGS -I../../include/ -c fuzz_disasm.c -o fuzz_disasm.o
 
-$CXX $CXXFLAGS fuzz_disasm.o -o $OUT/fuzz_disasm ../../build/libcapstone.a -lFuzzingEngine
+    $CXX $CXXFLAGS fuzz_disasm.o -o $OUT/fuzz_disasm$branch ../../build/libcapstone.a -lFuzzingEngine
 
+    cd ../../../
+done
