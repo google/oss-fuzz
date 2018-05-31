@@ -1,2 +1,7 @@
 homepage: "http://www.openvswitch.org"
 primary_contact: "blp@ovn.org"
+auto_ccs:
+  - "jpettit@ovn.org"
+sanitizers:
+  - address
+  - undefined
