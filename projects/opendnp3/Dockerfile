@@ -15,11 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-#TODO change
 MAINTAINER info@automatak.com
 RUN apt-get update && apt-get install -y make cmake tshark
-#TODO change when merged into master branch of official repo
-RUN git clone --recursive --depth 1 --branch fuzz https://github.com/catenacyber/dnp3.git opendnp3
-RUN git clone --depth 1 https://github.com/ITI/ICS-Security-Tools.git pcaps
+RUN git clone --recursive --depth 1 https://github.com/automatak/dnp3.git opendnp3
 WORKDIR opendnp3
 COPY build.sh $SRC/
