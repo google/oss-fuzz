@@ -2,7 +2,6 @@ homepage: "https://open62541.org/"
 primary_contact: "Stefan.Profanter@gmail.com"
 auto_ccs:
  - "julius.pfrommer@gmail.com"
- - "f.palm@plt.rwth-aachen.de"
  - "chris_paul.iatrou@tu-dresden.de"
 sanitizers:
 - address

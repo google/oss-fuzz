@@ -4,4 +4,5 @@ homepage: "http://www.boost.org/"
 # primary_contact: "someone@boost.org"
 auto_ccs:  
    - "jz.maddock@googlemail.com"
+   - "mclow@boost.org"
 #   - "someone-else@boost.org"

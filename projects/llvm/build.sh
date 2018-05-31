@@ -56,7 +56,8 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_LIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE}" \
     -DLLVM_NO_DEAD_STRIP=ON \
     -DCLANG_ENABLE_PROTO_FUZZER=ON \
-    -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}"
+    -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
+    -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly
 for fuzzer in "${FUZZERS[@]}"; do
   ninja $fuzzer
   cp bin/$fuzzer $OUT
@@ -66,11 +67,28 @@ ninja llvm-as
 # isel-fuzzer encodes its default flags in the name.
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-O2
 cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--x86_64-O2
+cp $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--wasm32-O2
 mv $OUT/llvm-isel-fuzzer $OUT/llvm-isel-fuzzer--aarch64-gisel
+
 # Same for llvm-opt-fuzzer
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-earlycse
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-simplifycfg
 cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-gvn
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-sccp
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_predication
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-guard_widening
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_vectorize
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_rotate
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unswitch
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-loop_unroll
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-licm
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-indvars
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-strength_reduce
+
+cp $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-irce
+
 mv $OUT/llvm-opt-fuzzer $OUT/llvm-opt-fuzzer--x86_64-instcombine
 
 # Build corpus for the llvm-opt-fuzzer
@@ -103,3 +121,17 @@ build_corpus "llvm/test/Transforms/InstCombine/" "llvm-opt-fuzzer--x86_64-instco
 build_corpus "llvm/test/Transforms/EarlyCSE/" "llvm-opt-fuzzer--x86_64-earlycse"
 build_corpus "llvm/test/Transforms/SimplifyCFG/" "llvm-opt-fuzzer--x86_64-simplifycfg"
 build_corpus "llvm/test/Transforms/GVN/" "llvm-opt-fuzzer--x86_64-gvn"
+build_corpus "llvm/test/Transforms/SCCP/" "llvm-opt-fuzzer--x86_64-sccp"
+
+build_corpus "llvm/test/Transforms/LoopPredication/" "llvm-opt-fuzzer--x86_64-loop_predication"
+build_corpus "llvm/test/Transforms/GuardWidening/" "llvm-opt-fuzzer--x86_64-guard_widening"
+build_corpus "llvm/test/Transforms/LoopVectorize/" "llvm-opt-fuzzer--x86_64-loop_vectorize"
+
+build_corpus "llvm/test/Transforms/LoopRotate/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-loop_rotate"
+build_corpus "llvm/test/Transforms/LoopUnswitch/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-loop_unswitch"
+build_corpus "llvm/test/Transforms/LoopUnroll/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-loop_unroll"
+build_corpus "llvm/test/Transforms/LICM/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-licm"
+build_corpus "llvm/test/Transforms/IndVarSimplify/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-indvars"
+build_corpus "llvm/test/Transforms/LoopStrengthReduce/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-strength_reduce"
+
+build_corpus "llvm/test/Transforms/IRCE/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-irce"

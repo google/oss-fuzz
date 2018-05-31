@@ -71,6 +71,23 @@ def main():
   build_fuzzers_parser.add_argument('project_name')
   build_fuzzers_parser.add_argument('source_path', help='path of local source',
                                     nargs='?')
+  build_fuzzers_parser.add_argument('--clean', dest='clean',
+                                    action='store_true',
+                                    help='clean existing artifacts.')
+  build_fuzzers_parser.add_argument('--no-clean', dest='clean',
+                                    action='store_false',
+                                    help='do not clean existing artifacts '
+                                    '(default).')
+  build_fuzzers_parser.set_defaults(clean=False)
+
+  check_build_parser = subparsers.add_parser(
+      'check_build', help='Checks that fuzzers execute without errors.')
+  _add_engine_args(check_build_parser)
+  _add_sanitizer_args(check_build_parser)
+  _add_environment_args(check_build_parser)
+  check_build_parser.add_argument('project_name', help='name of the project')
+  check_build_parser.add_argument('fuzzer_name', help='name of the fuzzer',
+                                  nargs='?')
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer.')
@@ -99,6 +116,7 @@ def main():
   reproduce_parser.add_argument('testcase_path', help='path of local testcase')
   reproduce_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
                                 nargs=argparse.REMAINDER)
+  _add_environment_args(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash in an image.')
@@ -117,6 +135,8 @@ def main():
     return build_image(args)
   elif args.command == 'build_fuzzers':
     return build_fuzzers(args)
+  elif args.command == 'check_build':
+    return check_build(args)
   elif args.command == 'run_fuzzer':
     return run_fuzzer(args)
   elif args.command == 'coverage':
@@ -183,7 +203,7 @@ def _add_engine_args(parser):
 def _add_sanitizer_args(parser):
   """Add common sanitizer args."""
   parser.add_argument('--sanitizer', default='address',
-                      choices=['address', 'memory', 'undefined', 'coverage'])
+                      choices=['address', 'memory', 'undefined', 'coverage', 'profile'])
 
 
 def _add_environment_args(parser):
@@ -227,10 +247,10 @@ def docker_run(run_args, print_output=True):
 
   try:
     subprocess.check_call(command, stdout=stdout, stderr=subprocess.STDOUT)
-  except subprocess.CalledProcessError:
-    return False
+  except subprocess.CalledProcessError as e:
+    return e.returncode
 
-  return True
+  return 0
 
 
 def docker_build(build_args, pull=False):
@@ -287,9 +307,21 @@ def build_image(args):
 def build_fuzzers(args):
   """Build fuzzers."""
   project_name = args.project_name
-
   if not _build_image(args.project_name):
     return 1
+
+  project_out_dir = os.path.join(BUILD_DIR, 'out', project_name)
+  if args.clean:
+    print('Cleaning existing build artifacts.')
+
+    # Clean old and possibly conflicting artifacts in project's out directory.
+    docker_run([
+        '-v', '%s:/out' % project_out_dir,
+        '-t', 'gcr.io/oss-fuzz/%s' % project_name,
+        '/bin/bash', '-c', 'rm -rf /out/*'
+    ])
+  else:
+    print('Keeping existing build artifacts as-is (if any).')
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
@@ -309,7 +341,7 @@ def build_fuzzers(args):
         '%s:/src/%s' % (_get_absolute_path(args.source_path), args.project_name)
     ]
   command += [
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name),
+      '-v', '%s:/out' % project_out_dir,
       '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
       '-t', 'gcr.io/oss-fuzz/%s' % project_name
   ]
@@ -323,6 +355,44 @@ def build_fuzzers(args):
     return 1
 
   return 0
+
+
+def check_build(args):
+  """Checks that fuzzers in the container execute without errors."""
+  if not _check_project_exists(args.project_name):
+    return 1
+
+  if (args.fuzzer_name and
+      not _check_fuzzer_exists(args.project_name, args.fuzzer_name)):
+    return 1
+
+  env = [
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer
+  ]
+  if args.e:
+    env += args.e
+
+  run_args = sum([['-e', v] for v in env], []) + [
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-t', 'gcr.io/oss-fuzz-base/base-runner'
+  ]
+
+  if args.fuzzer_name:
+    run_args += [
+        'bad_build_check',
+        os.path.join('/out', args.fuzzer_name)
+    ]
+  else:
+    run_args.append('test_all')
+
+  exit_code = docker_run(run_args)
+  if exit_code == 0:
+    print('Check build passed.')
+  else:
+    print('Check build failed.')
+
+  return exit_code
 
 
 def run_fuzzer(args):
@@ -344,7 +414,7 @@ def run_fuzzer(args):
       args.fuzzer_name,
   ] + args.fuzzer_args
 
-  docker_run(run_args)
+  return docker_run(run_args)
 
 
 def coverage(args):
@@ -407,6 +477,9 @@ def reproduce(args):
     image_name = 'base-runner-debug'
     env += ['DEBUGGER=' + debugger]
 
+  if args.e:
+    env += args.e
+
   run_args = sum([['-e', v] for v in env], []) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
@@ -416,7 +489,7 @@ def reproduce(args):
       '-runs=100',
   ] + args.fuzzer_args
 
-  docker_run(run_args)
+  return docker_run(run_args)
 
 
 def generate(args):

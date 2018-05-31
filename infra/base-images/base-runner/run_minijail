@@ -43,14 +43,14 @@ shift
 
 echo 'Running:'
 echo minijail0 -U -m \"0 $UID 1\" -T static \
-  -c 0 -n -e -v -p -l -I \
+  -c 0 -n -v -p -l -I \
   -k proc,/proc,proc,1 -P /tmp/chroot \
   -b /lib,/lib,0 -b /lib64,/lib64,0 -b /usr/lib,/usr/lib,0 \
   -b /tmp,/tmp,1 \
   -b $EXE_DIR,$EXE_DIR,0 $FULL_EXE_PATH $@
 
 minijail0 -U -m "0 $UID 1" -T static \
-  -c 0 -n -e -v -p -l -I \
+  -c 0 -n -v -p -l -I \
   -k proc,/proc,proc,1 -P /tmp/chroot \
   -b /lib,/lib,0 -b /lib64,/lib64,0 -b /usr/lib,/usr/lib,0 \
   -b /tmp,/tmp,1 \

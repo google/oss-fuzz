@@ -1,5 +1,10 @@
 homepage: "https://github.com/google/woff2"
 primary_contact: "rsheeter@google.com"
+auto_ccs:
+  - "grieger@google.com"
+  - "nyshadhr@google.com"
+  - "ewa@google.com"
+  - "williamsnathan@google.com"
 sanitizers:
   - address
   - memory

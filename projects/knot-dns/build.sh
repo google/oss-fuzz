@@ -62,7 +62,7 @@ make install
 cd $SRC/knot-dns
 autoreconf -if
 
-./configure --with-oss-fuzz=yes --disable-shared --enable-static --disable-daemon --disable-utilities --disable-documentation --disable-fastparser --with-module-dnsproxy=no --with-module-noudp=no --with-module-onlinesign=no --with-module-rrl=no --with-module-stats=no --with-module-synthrecord=no --with-module-whoami=no
+./configure --with-oss-fuzz=yes --disable-shared --enable-static --disable-daemon --disable-utilities --disable-documentation --disable-fastparser --disable-modules
 
 make -j$(nproc)
 cd $SRC/knot-dns/tests-fuzz
@@ -72,7 +72,7 @@ make check
 
 # Set up fuzzing seeds
 
-git submodule update --init -- ./packet_libfuzzer.in
-find ./packet_libfuzzer.in/ -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
-git submodule update --init -- ./zscanner_libfuzzer.in
-find ./zscanner_libfuzzer.in/ -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;
+git submodule update --init -- ./fuzz_packet.in
+find ./fuzz_packet.in/ -type f -exec zip -u $OUT/fuzz_packet_seed_corpus.zip {} \;
+git submodule update --init -- ./fuzz_zscanner.in
+find ./fuzz_zscanner.in/ -type f -exec zip -u $OUT/fuzz_zscanner_seed_corpus.zip {} \;

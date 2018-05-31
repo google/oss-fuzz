@@ -1,6 +1,6 @@
 // From https://svn.boost.org/trac10/ticket/12818
 // This fuzz target can likely be enhanced to exercise more code.
-// The ideal place for this fuzz target is the bost repository.
+// The ideal place for this fuzz target is the boost repository.
 #include <boost/regex.hpp>
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   try {

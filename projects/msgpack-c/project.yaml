@@ -1,0 +1,9 @@
+homepage: "https://msgpack.org/"
+primary_contact: "redboltz@gmail.com"
+auto_ccs:
+  - nobu.k.jp@gmail.com
+  - chriswwolfe@gmail.com
+sanitizers:
+  - address
+  - memory
+  - undefined

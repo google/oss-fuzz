@@ -43,7 +43,7 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/a8c2c5b8f09e7ede322d5c602ff6a4b6-mythes-1.2.4.tar.gz \
     https://dev-www.libreoffice.org/src/5ade6ae2a99bc1e9e57031ca88d36dad-hyphen-2.8.8.tar.gz \
     https://dev-www.libreoffice.org/src/48d647fbd8ef8889e5a7f422c1bfda94-clucene-core-2.3.3.4.tar.gz \
-    https://dev-www.libreoffice.org/src/boost_1_65_1.tar.bz2 \
+    https://dev-www.libreoffice.org/src/boost_1_66_0.tar.bz2 \
     https://dev-www.libreoffice.org/src/expat-2.2.5.tar.bz2 \
     https://dev-www.libreoffice.org/src/libjpeg-turbo-1.5.2.tar.gz \
     https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
@@ -57,7 +57,7 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/neon-0.30.2.tar.gz \
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
     https://dev-www.libreoffice.org/src/cairo-1.14.10.tar.xz \
-    https://dev-www.libreoffice.org/src/curl-7.57.0.tar.gz \
+    https://dev-www.libreoffice.org/src/curl-7.58.0.tar.gz \
     https://dev-www.libreoffice.org/src/xmlsec1-1.2.25.tar.gz \
     https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.2.tar.xz \
@@ -69,7 +69,7 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/libmspub-0.1.3.tar.xz \
     https://dev-www.libreoffice.org/src/libmwaw-0.3.13.tar.xz \
     https://dev-www.libreoffice.org/src/libodfgen-0.1.6.tar.bz2 \
-    https://dev-www.libreoffice.org/src/liborcus-0.13.1.tar.gz \
+    https://dev-www.libreoffice.org/src/liborcus-0.13.2.tar.gz \
     https://dev-www.libreoffice.org/src/libpagemaker-0.0.4.tar.xz \
     https://dev-www.libreoffice.org/src/libpng-1.6.34.tar.xz \
     https://dev-www.libreoffice.org/src/librevenge-0.0.4.tar.bz2 \
@@ -85,7 +85,7 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/openssl-1.0.2m.tar.gz \
     https://dev-www.libreoffice.org/src/language-subtag-registry-2017-12-14.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.10.tgz \
-    https://dev-www.libreoffice.org/src/harfbuzz-1.7.0.tar.bz2 \
+    https://dev-www.libreoffice.org/src/harfbuzz-1.7.4.tar.bz2 \
     https://dev-www.libreoffice.org/src/bae83fa5dc7f081768daace6e199adc3-glm-0.9.4.6-libreoffice.zip \
     https://dev-www.libreoffice.org/src/icu4c-60_2-src.tgz \
     https://dev-www.libreoffice.org/src/icu4c-60_2-data.zip \
@@ -114,6 +114,11 @@ RUN mkdir afl-testcases && cd afl-testcases/ && tar xf $SRC/afl_testcases.tgz &&
     zip -q $SRC/giffuzzer_seed_corpus.zip afl-testcases/gif*/full/images/* && \
     zip -q $SRC/bmpfuzzer_seed_corpus.zip afl-testcases/bmp*/full/images/* && \
     zip -q $SRC/pngfuzzer_seed_corpus.zip afl-testcases/png*/full/images/*
+RUN svn export https://github.com/khaledhosny/ots/trunk/tests/fonts $SRC/sample-sft-fonts/ots
+RUN svn export https://github.com/unicode-org/text-rendering-tests/trunk/fonts/ $SRC/sample-sft-fonts/unicode-org
+RUN svn export https://github.com/harfbuzz/harfbuzz/trunk/test/shaping/data/in-house/fonts $SRC/sample-sft-fonts/harfbuzz
+ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/sample-sft-fonts/adobe
+RUN zip -qr $SRC/sftfuzzer_seed_corpus.zip $SRC/sample-sft-fonts
 ADD https://dev-www.libreoffice.org/corpus/wmffuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xbmfuzzer_seed_corpus.zip \
     https://dev-www.libreoffice.org/corpus/xpmfuzzer_seed_corpus.zip \

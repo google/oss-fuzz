@@ -15,17 +15,10 @@
 #
 ################################################################################
 
-cd $SRC/qubes-os/linux-utils/
+cd $SRC/qubes-os/app-linux-input-proxy
+ 
+make -C fuzz
+cp fuzz/*_fuzzer $OUT/
+cp fuzz/*_seed_corpus.zip $OUT/
+cp fuzz/*.options $OUT/
 
-cd qrexec-lib
-
-$CC $CFLAGS -c ioall.c
-$CC $CFLAGS -c copy-file.c
-$CC $CFLAGS -c crc32.c
-$CC $CFLAGS -c pack.c
-$CC $CFLAGS -c unpack.c
-ar rcs libqubes-rpc-filecopy.a ioall.o copy-file.o crc32.o unpack.o pack.o
-
-$CXX $CXXFLAGS -o $OUT/libqubes-rpc-filecopy -I. -I./fuzzer fuzzer/fuzzer.cc -lFuzzingEngine libqubes-rpc-filecopy.a
-
-cp $SRC/*.options $OUT/

@@ -22,15 +22,26 @@ export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
 
 mkdir -p $WORK/afl
 pushd $WORK/afl > /dev/null
-$CC $CFLAGS -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
+# Add -Wno-pointer-sign to silence warning (AFL is compiled this way).
+$CC $CFLAGS -Wno-pointer-sign -c $SRC/afl/llvm_mode/afl-llvm-rt.o.c
 $CXX $CXXFLAGS -std=c++11 -O2 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
 ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
 popd > /dev/null
 rm -rf $WORK/afl
 
-# Copy afl tools necessary for fuzzing.
+# Build and copy afl tools necessary for fuzzing.
 pushd $SRC/afl > /dev/null
+
+# Unset CFLAGS and CXXFLAGS while building AFL since we don't want to slow it
+# down with sanitizers.
+INITIAL_CXXFLAGS=$CXXFLAGS
+INITIAL_CFLAGS=$CFLAGS
+unset CXXFLAGS
+unset CFLAGS
 make clean && make
+CFLAGS=$INITIAL_CFLAGS
+CXXFLAGS=$INITIAL_CXXFLAGS
+
 find . -name 'afl-*' -executable -type f | xargs cp -t $OUT
 popd > /dev/null
 

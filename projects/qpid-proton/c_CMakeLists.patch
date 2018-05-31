@@ -1,0 +1,13 @@
+diff --git a/c/CMakeLists.txt b/c/CMakeLists.txt
+index 40b50374..2247e0f1 100644
+--- a/c/CMakeLists.txt
++++ b/c/CMakeLists.txt
+@@ -539,7 +539,7 @@ if (BUILD_WITH_CXX)
+ endif (BUILD_WITH_CXX)
+ 
+ add_library (
+-  qpid-proton-core SHARED
++  qpid-proton-core STATIC
+   ${qpid-proton-core}
+   ${qpid-proton-layers}
+   ${qpid-proton-platform}

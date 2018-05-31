@@ -5,6 +5,7 @@ auto_ccs:
   - "daiki.ueno@gmail.com"
   - "rockdaboot@gmail.com"
   - "nisse@google.com"
+  - "anderjuaristi.cictg@gmail.com"
 
 sanitizers:
   - address

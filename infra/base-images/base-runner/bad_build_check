@@ -1,4 +1,4 @@
-#!/bin/bash -ux
+#!/bin/bash -u
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,56 +15,85 @@
 #
 ################################################################################
 
-# Verify that the given fuzzer has proper coverage instrumentation.
+# A minimal number of runs to test fuzz target with a non-empty input.
+MIN_NUMBER_OF_RUNS=4
+
+# The "example" target has 73 with ASan, 65 with UBSan, and 6648 with MSan.
+# Real world targets have greater values (arduinojson: 407, zlib: 664).
+# Mercurial's bdiff_fuzzer has 116 PCs when built with ASan.
+THRESHOLD_FOR_NUMBER_OF_EDGES=100
+
+# Threshold values for different sanitizers used by instrumentation checks.
+ASAN_CALLS_THRESHOLD_FOR_ASAN_BUILD=1000
+ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD=0
+
+MSAN_CALLS_THRESHOLD_FOR_MSAN_BUILD=1000
+MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD=0
+
+UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD=350
+UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=200
+
+
+# Verify that the given fuzz target has proper coverage instrumentation.
 function check_instrumentation {
   local FUZZER=$1
+  local FUZZER_NAME=$(basename $FUZZER)
+  local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
   local CHECK_FAILED=0
 
-  if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    CHECK_FAILED=$($FUZZER -max_total_time=4 2>&1 | egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c)
+  if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
+    # Store fuzz target's output into a temp file to be used for further checks.
+    $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
     if (( $CHECK_FAILED > 0 )); then
-      echo "BAD BUILD: the code does not seem to have coverage instrumentation."
+      echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
+
+      # Bail out as the further check does not make any sense, there are 0 PCs.
+      return
     fi
-  fi
 
-  # honggfuzz is not fully integrated, avoid performing the following check.
-  if [[ "$FUZZING_ENGINE" != honggfuzz ]]; then
-    if (( $CHECK_FAILED == 0 )); then
-      # The "example" target has 93 when built with ASan and 67 with UBSan. Real
-      # targets have greater values (arduinojson: 413, libteken: 519, zlib: 586).
-      local THRESHOLD_FOR_NUMBER_OF_EDGES=90
-      if [[ $SANITIZER = undefined ]]; then
-        THRESHOLD_FOR_NUMBER_OF_EDGES=65
-      fi
+    local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*(counters|guards)\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
 
-      local NUMBER_OF_EDGES=$(sancov -print-coverage-pcs $FUZZER | wc -l)
-      if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
-        echo "BAD BUILD: the code does not seem to have coverage instrumentation."
-        CHECK_FAILED=1
-      fi
+    if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
+      echo "BAD BUILD: $FUZZER seems to have only partial coverage instrumentation."
     fi
+  elif [[ "$FUZZING_ENGINE" == afl ]]; then
+    AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    CHECK_FAILED=$(egrep "No instrumentation detected" -c $FUZZER_OUTPUT)
+    if (( $CHECK_FAILED > 0 )); then
+      echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
+    fi
+    return
+  else
+    # TODO: add checks for another fuzzing engines if possible.
+    return
   fi
 
-  if (( $CHECK_FAILED > 0 )); then
-    exit 1
-  fi
 }
 
-# Verify that the given fuzzer has been built properly and works as expected.
+# Verify that the given fuzz target has been built properly and works.
 function check_startup_crash {
   local FUZZER=$1
+  local FUZZER_NAME=$(basename $FUZZER)
+  local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
   local CHECK_PASSED=0
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    CHECK_PASSED=$($FUZZER -runs=4 2>&1 | egrep "Done 4 runs" -c)
+    $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    CHECK_PASSED=$(egrep "Done $MIN_NUMBER_OF_RUNS runs" -c $FUZZER_OUTPUT)
+  elif [[ "$FUZZING_ENGINE" = afl ]]; then
+    AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    if [ $(egrep "target binary (crashed|terminated)" -c $FUZZER_OUTPUT) -eq 0 ]; then
+      CHECK_PASSED=1
+    fi
   else
     # TODO: add checks for another fuzzing engines if possible.
     CHECK_PASSED=1
   fi
 
-  if (( $CHECK_PASSED == 0 )); then
-    echo "BAD BUILD: the fuzzer seems to have either startup crash or exit."
-    exit 1
+  if [ "$CHECK_PASSED" -eq "0" ]; then
+    echo "BAD BUILD: $FUZZER seems to have either startup crash or exit:"
+    cat $FUZZER_OUTPUT
   fi
 }
 
@@ -75,26 +104,17 @@ function check_asan_build {
   local MSAN_CALLS=$3
   local UBSAN_CALLS=$4
 
-  # Perform all the checks for more verbose error message.
-  local CHECK_FAILED=0
-
-  if (( $ASAN_CALLS < 1000 )); then
+  # Perform all the checks for more detailed error message.
+  if (( $ASAN_CALLS < $ASAN_CALLS_THRESHOLD_FOR_ASAN_BUILD )); then
     echo "BAD BUILD: $FUZZER does not seem to be compiled with ASan."
-    CHECK_FAILED=1
   fi
 
-  if (( $MSAN_CALLS > 0 )); then
+  if (( $MSAN_CALLS > $MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD )); then
     echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with MSan."
-    CHECK_FAILED=1
   fi
 
-  if (( $UBSAN_CALLS > 250 )); then
+  if (( $UBSAN_CALLS > $UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD )); then
     echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with UBSan."
-    CHECK_FAILED=1
-  fi
-
-  if (( $CHECK_FAILED > 0 )); then
-    exit 1
   fi
 }
 
@@ -105,26 +125,17 @@ function check_msan_build {
   local MSAN_CALLS=$3
   local UBSAN_CALLS=$4
 
-  # Perform all the checks for more verbose error message.
-  local CHECK_FAILED=0
-
-  if (( $ASAN_CALLS > 0 )); then
+  # Perform all the checks for more detailed error message.
+  if (( $ASAN_CALLS > $ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD )); then
     echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with ASan."
-    CHECK_FAILED=1
   fi
 
-  if (( $MSAN_CALLS < 1000 )); then
-    echo "BAD BUILD: $FUZZER does not seem to be compiled with UBSan."
-    CHECK_FAILED=1
+  if (( $MSAN_CALLS < $MSAN_CALLS_THRESHOLD_FOR_MSAN_BUILD )); then
+    echo "BAD BUILD: $FUZZER does not seem to be compiled with MSan."
   fi
 
-  if (( $UBSAN_CALLS > 250 )); then
+  if (( $UBSAN_CALLS > $UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD )); then
     echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with UBSan."
-    CHECK_FAILED=1
-  fi
-
-  if (( $CHECK_FAILED > 0 )); then
-    exit 1
   fi
 }
 
@@ -139,40 +150,30 @@ function check_ubsan_build {
     # Ignore UBSan checks for fuzzing engines other than libFuzzer because:
     # A) we (probably) are not going to use those with UBSan
     # B) such builds show indistinguishable number of calls to UBSan
-    return 0
+    return
   fi
 
-  # Perform all the checks for more verbose error message.
-  local CHECK_FAILED=0
-
-  if (( $ASAN_CALLS > 0 )); then
+  # Perform all the checks for more detailed error message.
+  if (( $ASAN_CALLS > $ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD )); then
     echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with ASan."
-    CHECK_FAILED=1
   fi
 
-  if (( $MSAN_CALLS > 0 )); then
+  if (( $MSAN_CALLS > $MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD )); then
     echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with MSan."
-    CHECK_FAILED=1
   fi
 
-  if (( $UBSAN_CALLS < 250 )); then
+  if (( $UBSAN_CALLS < $UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD )); then
     echo "BAD BUILD: $FUZZER does not seem to be compiled with UBSan."
-    CHECK_FAILED=1
-  fi
-
-  if (( $CHECK_FAILED > 0 )); then
-    exit 1
   fi
 }
 
 # Verify that the given fuzz target is compiled with correct sanitizer.
 function check_mixed_sanitizers {
   local FUZZER=$1
+
   local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__asan" -c)
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__msan" -c)
   local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__ubsan" -c)
-
-  local CHECK_FAILED=0
 
   if [[ "$SANITIZER" = address ]]; then
     check_asan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
@@ -183,14 +184,40 @@ function check_mixed_sanitizers {
   fi
 }
 
+# Verify that the given fuzz target doesn't crash on the seed corpus.
+function check_seed_corpus {
+  local FUZZER=$1
+  local FUZZER_NAME="$(basename $FUZZER)"
+  local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
+
+  if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
+    return
+  fi
+
+  # Set up common fuzzing arguments, otherwise "run_fuzzer" errors out.
+  if [ -z "$FUZZER_ARGS" ]; then
+    export FUZZER_ARGS="-rss_limit_mb=2048 -timeout=25"
+  fi
+
+  bash -c "run_fuzzer $FUZZER_NAME -runs=0" &> $FUZZER_OUTPUT
+
+  # Don't output anything if fuzz target hasn't crashed.
+  if [ $? -ne 0 ]; then
+    echo "BAD BUILD: $FUZZER has a crashing input in its seed corpus:"
+    cat $FUZZER_OUTPUT
+  fi
+}
+
 
 function main {
   local FUZZER=$1
-  echo "INFO: performing bad build checks for $FUZZER"
 
   check_instrumentation $FUZZER
   check_mixed_sanitizers $FUZZER
   check_startup_crash $FUZZER
+
+  # TODO: re-enable after introducing bug auto-filing for bad builds.
+  # check_seed_corpus $FUZZER
 }
 
 
@@ -199,6 +226,7 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
+# Fuzz target path.
 FUZZER=$1
+
 main $FUZZER
-echo "INFO: $FUZZER has passed bad_build_check tests."

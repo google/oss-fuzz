@@ -15,8 +15,4 @@
 #
 ################################################################################
 
-autoreconf --install
-./configure --disable-shared --enable-static
-make -j$(nproc) -C rutil/dns/ares aresfuzz aresfuzzname
-
-cp rutil/dns/ares/{aresfuzz,aresfuzzname} $OUT/
+build/oss-fuzz/build.sh

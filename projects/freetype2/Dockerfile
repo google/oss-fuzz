@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y make autoconf libtool libarchive-dev
 # Get some files for the seed corpus
 ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/font-corpus/
 RUN git clone https://github.com/unicode-org/text-rendering-tests.git && cp text-rendering-tests/fonts/* $SRC/font-corpus
+RUN git clone --depth 1 https://github.com/cherusker/freetype2-testing.git && find freetype2-testing/fuzzing/corpora/legacy -type f -exec cp {} $SRC/font-corpus \;
 
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 WORKDIR freetype2

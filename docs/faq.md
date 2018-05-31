@@ -6,16 +6,25 @@ We are currently in a beta status, and still working out issues in our service. 
 can only commit to supporting established projects that have a critical impact on infrastructure and
 user security. We will consider each request on a case-by-case basis, but some things we keep in mind are:
 
-  - Exposure to remote attacks (e.g. libraries that are used to process untrusted input)
+  - Exposure to remote attacks (e.g. libraries that are used to process untrusted input).
   - Number of users/other projects depending on this project.
 
 We hope to relax this requirement in the future though, so keep an eye out even if we are not able
 to accept your project at this time!
 
+## How can I find potential fuzz targets in my open source project?
+
+You should look for places in your code that:
+
+  - consume un-trusted data from users or from the network.
+  - consume complex data input or event if it's 'trusted'.
+  - use an algorithm that has two or more implementations (to verify their equivalence).
+  - look for existing fuzz target [examples](https://github.com/google/oss-fuzz/tree/master/projects) and find similarities.
+
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
 
 Security access control is important for the kind of issues that OSS-Fuzz detects.
-We will reconsider the Github issue tracker once the
+We will reconsider the GitHub issue tracker once the
 [access control feature](https://github.com/isaacs/github/issues/37) is available.
 
 ## Why do you require a Google account for authentication?
@@ -83,7 +92,10 @@ If your fuzz target is running for many days and does not find bugs or new cover
 - It is also possible that the fuzzer is running too slow (you may check the speed of your targets at https://oss-fuzz.com/)
 
 In either case, look at the [coverage reports](clusterfuzz.md#coverage-reports) for your target(s) and figure out why some parts of the code are not covered. 
-    
+
+## What happens when I rename a fuzz target ?
+If you rename your fuzz targets, the existing bugs for those targets will get closed and fuzzing will start from scratch from a fresh corpora (seed corpus only). Similar corpora will get accumulated over time depending on the number of cpu cycles that original fuzz target has run. If this is not desirable, make sure to copy the accumulated corpora from the original fuzz target (instructions to download [here](corpora.md#downloading-the-corpus)) and restore it to the new GCS location later (instruction to find the new location [here](corpora.md#viewing-the-corpus-for-a-fuzz-target)).
+
 ## Does OSS-Fuzz support AFL?
 OSS-Fuzz *uses* [AFL](http://lcamtuf.coredump.cx/afl/) as one of its [fuzzing engines](glossary.md#fuzzing-engine) but this is an implementation detail. Just follow the [ideal integration guide](ideal_integration.md) and OSS-Fuzz will use all its fuzzing engines on your code.
 

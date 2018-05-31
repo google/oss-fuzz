@@ -44,6 +44,7 @@ bazel-bin/external/boringssl/libssl.a \
 bazel-bin/external/boringssl/libcrypto.a \
 bazel-bin/external/com_github_cares_cares/*.a \
 bazel-bin/external/com_github_madler_zlib/*.a \
+bazel-bin/third_party/address_sorting/*.a \
 bazel-bin/third_party/nanopb/*.a \
 bazel-bin/*.a \
 "
@@ -55,7 +56,8 @@ EXTERA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
   $EXTERA_BAZEL_FLAGS \
   $NO_VPTR \
-  :all test/core/util/... test/core/end2end/... third_party/nanopb/... @boringssl//:all @com_github_madler_zlib//:all @com_github_cares_cares//:all
+  :all test/core/util/... test/core/end2end/... third_party/address_sorting/... \
+  third_party/nanopb/... @boringssl//:all @com_github_madler_zlib//:all @com_github_cares_cares//:all
 
 CFLAGS="${CFLAGS} -Iinclude -I."
 CXXFLAGS="${CXXFLAGS} -Iinclude -I. -stdlib=libc++"

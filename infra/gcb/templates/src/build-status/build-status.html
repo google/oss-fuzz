@@ -77,7 +77,7 @@
                   </template>
                   [[project.name]]
                 </div>
-                <div secondary>
+                <div secondary title$="Last built [[toLocalDate(project.finish_time)]]">
                   Last built [[toLocalDate(project.finish_time)]]
                 </div>
               </paper-item-body>
@@ -149,7 +149,9 @@
 
       toLocalDate(str) {
         let date = new Date(str);
-        return date.toLocaleString();
+        let ds = date.toString();
+        let timezone = ds.substring(ds.indexOf("("));
+        return date.toLocaleString() + " " + timezone;
       }
     }
 
