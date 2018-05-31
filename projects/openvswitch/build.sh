@@ -16,8 +16,8 @@
 ################################################################################
 
 ./boot.sh && ./configure && make -j$(nproc)
-$CC $CFLAGS -c -g $SRC/target.c -I . -I lib/ -I include/ \
-		-o $SRC/target.o
-$CXX $CXXFLAGS $SRC/target.o ./lib/.libs/libopenvswitch.a \
+$CC $CFLAGS -c -g $SRC/target-flow-extract.c -I . -I lib/ -I include/ \
+		-o $SRC/target-flow-extract.o
+$CXX $CXXFLAGS $SRC/target-flow-extract.o ./lib/.libs/libopenvswitch.a \
 	-lz -lssl -lcrypto -latomic -lFuzzingEngine \
 	-o $OUT/flow_extract_fuzzer
