@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# limit allocation size to reduce spurious OOMs
+CFLAGS+=" -DWEBP_MAX_IMAGE_SIZE=838860800"  # 800MiB
+
 ./autogen.sh
 ./configure \
   --enable-libwebpdemux \
