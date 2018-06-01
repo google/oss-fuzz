@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+# temporary hack to make the build honor CFLAGS. Needs proper fix upstream.
+sed -i 's/^CFLAGS.*//g' Makefile
 # build project
 make -j$(nproc) all
 
