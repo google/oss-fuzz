@@ -15,7 +15,8 @@
 #
 ################################################################################
 
-for branch in next master
+#add next branch
+for branch in master
 do
     cd capstone$branch
     # build project
