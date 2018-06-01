@@ -15,8 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER info@automatak.com
-RUN apt-get update && apt-get install -y make cmake tshark
-RUN git clone --recursive --depth 1 https://github.com/automatak/dnp3.git opendnp3
-WORKDIR opendnp3
-COPY build.sh $SRC/
+MAINTAINER kjclev@gmail.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/kjdev/hoextdown.git hoextdown
+WORKDIR hoextdown
+COPY build.sh *.options *.dict $SRC/

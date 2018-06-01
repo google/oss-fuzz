@@ -15,8 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER info@automatak.com
-RUN apt-get update && apt-get install -y make cmake tshark
-RUN git clone --recursive --depth 1 https://github.com/automatak/dnp3.git opendnp3
-WORKDIR opendnp3
+MAINTAINER kinetik@flim.org
+RUN apt-get update && apt-get install -y subversion wget
+RUN git clone https://github.com/kinetiknz/nestegg.git
+
+# collect corpus
+RUN svn export https://github.com/webmproject/libwebm.git/trunk/testing/testdata/
+
+WORKDIR nestegg
 COPY build.sh $SRC/
