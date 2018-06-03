@@ -16,9 +16,8 @@
 ################################################################################
 
 # moz.build
-$CC $CFLAGS \
-  -DNDEBUG -msse2 -Wno-missing-field-initializers \
-  -c \
+$CC $CFLAGS -c \
+  -DNDEBUG -msse -msse2 -Wno-missing-field-initializers \
   chain.c \
   iccread.c \
   matrix.c \
