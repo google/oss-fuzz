@@ -6,3 +6,5 @@ auto_ccs:
     - "openssl-security@openssl.org"
     - "kurt@roeckx.be"
     - "security@golang.org"
+    - "caswell.matt@googlemail.com"
+    - "jz.maddock@gmail.com"
