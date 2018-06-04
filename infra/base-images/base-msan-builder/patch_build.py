@@ -24,7 +24,7 @@ import subprocess
 import sys
 
 INSTRUMENTED_LIBRARIES_DIRNAME = 'instrumented_libraries'
-MSAN_LIBS_PATH = '/msan'
+MSAN_LIBS_PATH = os.getenv('MSAN_LIBS_PATH', '/msan')
 
 
 def IsElf(file_path):
@@ -114,7 +114,8 @@ def PatchBuild(output_directory):
   """Patch build to use msan libs."""
   instrumented_dir = os.path.join(output_directory,
                                   INSTRUMENTED_LIBRARIES_DIRNAME)
-  os.mkdir(instrumented_dir)
+  if not os.path.exists(instrumented_dir):
+    os.mkdir(instrumented_dir)
 
   for root_dir, _, filenames in os.walk(output_directory):
     for filename in filenames:

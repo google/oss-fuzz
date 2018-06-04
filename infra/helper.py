@@ -39,6 +39,7 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder',
     'gcr.io/oss-fuzz-base/base-runner',
     'gcr.io/oss-fuzz-base/base-runner-debug',
+    'gcr.io/oss-fuzz-base/base-msan-builder',
     'gcr.io/oss-fuzz-base/msan-builder',
 ]
 
@@ -235,6 +236,11 @@ def _build_image(image_name, no_cache=False, pull=False):
   return docker_build(build_args, pull=pull)
 
 
+def _env_to_docker_args(env_list):
+  """Turn envirnoment variable list into docker arguments."""
+  return sum([['-e', v] for v in env_list], [])
+
+
 def docker_run(run_args, print_output=True):
   """Call `docker run`."""
   command = ['docker', 'run', '--rm', '-i', '--privileged']
@@ -327,14 +333,22 @@ def build_fuzzers(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer
   ]
-
   if args.e:
     env += args.e
 
+  project_work_dir = os.path.join(BUILD_DIR, 'work', project_name)
+
+  # Copy instrumented libraries.
+  if args.sanitizer == 'memory':
+    docker_run([
+        '-v', '%s:/work' % project_work_dir,
+        'gcr.io/oss-fuzz-base/msan-builder',
+        'bash', '-c', 'cp -r /msan /work'])
+    env.append('MSAN_LIBS_PATH=' + '/work/msan')
+
   command = (
       ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
-      sum([['-e', v] for v in env], [])
-  )
+      _env_to_docker_args(env))
   if args.source_path:
     command += [
         '-v',
@@ -342,7 +356,7 @@ def build_fuzzers(args):
     ]
   command += [
       '-v', '%s:/out' % project_out_dir,
-      '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', project_name),
+      '-v', '%s:/work' % project_work_dir,
       '-t', 'gcr.io/oss-fuzz/%s' % project_name
   ]
 
@@ -353,6 +367,16 @@ def build_fuzzers(args):
   except subprocess.CalledProcessError:
     print('fuzzers build failed.', file=sys.stderr)
     return 1
+
+  # Patch MSan builds to use instrumented shared libraries.
+  if args.sanitizer == 'memory':
+    docker_run([
+        '-v', '%s:/out' % project_out_dir,
+        '-v', '%s:/work' % project_work_dir
+    ] + _env_to_docker_args(env) + [
+        'gcr.io/oss-fuzz-base/base-msan-builder',
+        'patch_build.py', '/out'
+    ])
 
   return 0
 
@@ -373,7 +397,7 @@ def check_build(args):
   if args.e:
     env += args.e
 
-  run_args = sum([['-e', v] for v in env], []) + [
+  run_args = _env_to_docker_args(env) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-t', 'gcr.io/oss-fuzz-base/base-runner'
   ]
@@ -407,7 +431,7 @@ def run_fuzzer(args):
   if args.e:
     env += args.e
 
-  run_args = sum([['-e', v] for v in env], []) + [
+  run_args = _env_to_docker_args(env) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
       'run_fuzzer',
@@ -480,7 +504,7 @@ def reproduce(args):
   if args.e:
     env += args.e
 
-  run_args = sum([['-e', v] for v in env], []) + [
+  run_args = _env_to_docker_args(env) + [
       '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
       '-t', 'gcr.io/oss-fuzz-base/%s' % image_name,
@@ -548,7 +572,7 @@ def shell(args):
     image_project = 'oss-fuzz'
     out_dir = os.path.join(BUILD_DIR, 'out', args.project_name)
 
-  run_args = sum([['-e', v] for v in env], []) + [
+  run_args = _env_to_docker_args(env) + [
       '-v', '%s:/out' % out_dir,
       '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
       '-t', 'gcr.io/%s/%s' % (image_project, args.project_name),
