@@ -54,15 +54,14 @@ $SRC/depot_tools/gn gen out/Fuzz\
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
 
-$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
-                                                   api_raster_n32_canvas
+$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize
 
-# Don't build api_mock_gpu_canvas_fuzzer for AFL since it crashes on startup.
+# Don't build these fuzzers for AFL since it crashes on startup.
 # This would cause a build breakage now that AFL has build checks.
 # See https://github.com/google/oss-fuzz/issues/1338 for more details.
 if [ "$FUZZING_ENGINE" == "libfuzzer" ]
 then
-  $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints api_mock_gpu_canvas
+  $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints api_raster_n32_canvas api_mock_gpu_canvas
 fi
 
 set +e
@@ -78,9 +77,17 @@ set -e
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
-                                   api_draw_functions api_gradients api_image_filter \
-                                   api_path_measure api_null_canvas png_encoder \
+                                   api_draw_functions api_gradients \
+                                   api_path_measure  png_encoder \
                                    jpeg_encoder webp_encoder skottie_json textblob_deserialize
+
+# Don't build these fuzzers for AFL since it crashes on startup.
+# This would cause a build breakage now that AFL has build checks.
+# See https://github.com/google/oss-fuzz/issues/1338 for more details.
+if [ "$FUZZING_ENGINE" == "libfuzzer" ]
+then
+  $SRC/depot_tools/ninja -C out/Fuzz api_null_canvas api_image_filter
+fi
 
 set +e
 for f in out/Fuzz/*; do
