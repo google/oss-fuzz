@@ -25,6 +25,10 @@ export CXXFLAGS="$CXXFLAGS $DISABLE -fno-sanitize=vptr"
 # This splits a space separated list into a quoted, comma separated list for gn.
 export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
 export CXXFLAGS_ARR=`echo $CXXFLAGS | sed -e "s/\s/\",\"/g"`
+
+
+# Even though GPU is "enabled" for all these builds, none really
+# uses the gpu except for api_mock_gpu_canvas
 $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
     --args='cc="'$CC'"
     cxx="'$CXX'"
@@ -33,7 +37,7 @@ $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
     extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING","-DIS_FUZZING_WITH_LIBFUZZER"]
     skia_use_system_freetype2=false
     skia_use_fontconfig=false
-    skia_enable_gpu=false
+    skia_enable_gpu=true
     skia_enable_skottie=false
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
@@ -45,19 +49,56 @@ $SRC/depot_tools/gn gen out/Fuzz\
     extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING_WITH_LIBFUZZER"]
     skia_use_system_freetype2=false
     skia_use_fontconfig=false
-    skia_enable_gpu=false
+    skia_enable_gpu=true
     skia_enable_skottie=true
     extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
 
 
-$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
-                                                   api_raster_n32_canvas
+$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize
+
+# Don't build these fuzzers for AFL since it crashes on startup.
+# This would cause a build breakage now that AFL has build checks.
+# See https://github.com/google/oss-fuzz/issues/1338 for more details.
+if [ "$FUZZING_ENGINE" == "libfuzzer" ]
+then
+  $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints api_raster_n32_canvas api_mock_gpu_canvas
+fi
+
+set +e
+for f in out/Fuzz_mem_constraints/*; do
+  # Remove unnecessary dependencies that aren't on runner containers.
+  # Libraries found through trial and error (ldd command also helpful).
+  # Note: GPU is also with the mem constraints options.
+  patchelf --remove-needed libGLU.so.1 $f
+  patchelf --remove-needed libGL.so.1 $f
+  patchelf --remove-needed libX11.so.6 $f
+done
+set -e
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
-                                   api_draw_functions api_gradients api_image_filter \
-                                   api_path_measure api_null_canvas png_encoder \
+                                   api_draw_functions api_gradients \
+                                   api_path_measure  png_encoder \
                                    jpeg_encoder webp_encoder skottie_json textblob_deserialize
+
+# Don't build these fuzzers for AFL since it crashes on startup.
+# This would cause a build breakage now that AFL has build checks.
+# See https://github.com/google/oss-fuzz/issues/1338 for more details.
+if [ "$FUZZING_ENGINE" == "libfuzzer" ]
+then
+  $SRC/depot_tools/ninja -C out/Fuzz api_null_canvas api_image_filter
+fi
+
+set +e
+for f in out/Fuzz/*; do
+  # Remove unnecessary dependencies that aren't on runner containers.
+  # Libraries found through trial and error (ldd command also helpful).
+  # Note: GPU is also with the mem constraints options.
+  patchelf --remove-needed libGLU.so.1 $f
+  patchelf --remove-needed libGL.so.1 $f
+  patchelf --remove-needed libX11.so.6 $f
+done
+set -e
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -86,7 +127,7 @@ cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deseriali
 cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
 cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
 
-# Only create the width version of image_filter_desrialize if building with
+# Only create the width version of image_filter_deserialize if building with
 # libfuzzer, since it depends on a libfuzzer specific flag.
 if [ "$FUZZING_ENGINE" == "libfuzzer" ]
 then
@@ -136,31 +177,9 @@ cp ./encoder_seed_corpus.zip $OUT/webp_encoder_seed_corpus.zip
 cp out/Fuzz/skottie_json $OUT/skottie_json
 cp ./skottie_json_seed_corpus.zip $OUT/skottie_json_seed_corpus.zip
 
-# Don't build api_mock_gpu_canvas_fuzzer for AFL since it crashes on startup.
-# This would cause a build breakage now that AFL has build checks.
-# See https://github.com/google/oss-fuzz/issues/1338 for more details.
 if [ "$FUZZING_ENGINE" == "libfuzzer" ]
 then
-  $SRC/depot_tools/gn gen out/GPU\
-    --args='cc="'$CC'"
-        cxx="'$CXX'"
-        is_debug=false
-        extra_cflags_c=["'"$CFLAGS_ARR"'"]
-        extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING","-DIS_FUZZING_WITH_LIBFUZZER"]
-        skia_use_system_freetype2=false
-        skia_use_fontconfig=false
-        skia_enable_gpu=true
-        skia_enable_skottie=false
-        extra_ldflags=["-lFuzzingEngine", "'"$CXXFLAGS_ARR"'"]'
-
-  $SRC/depot_tools/ninja -C out/GPU api_mock_gpu_canvas
-  # Remove unnecessary dependencies that aren't on runner containers.
-  # Libraries found through trial and error (ldd command also helpful).
-  # Note: GPU is also with the mem constraints options.
-  patchelf --remove-needed libGLU.so.1 out/GPU/api_mock_gpu_canvas
-  patchelf --remove-needed libGL.so.1 out/GPU/api_mock_gpu_canvas
-  patchelf --remove-needed libX11.so.6 out/GPU/api_mock_gpu_canvas
-  cp out/GPU/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
+  cp out/Fuzz_mem_constraints/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
   cp ./api_mock_gpu_canvas.options $OUT/api_mock_gpu_canvas.options
   cp ./canvas_seed_corpus.zip $OUT/api_mock_gpu_canvas_seed_corpus.zip
 fi
