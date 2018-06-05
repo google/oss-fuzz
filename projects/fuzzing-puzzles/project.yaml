@@ -1,0 +1,13 @@
+homepage: https://github.com/google/fuzzer-test-suite
+primary_contact: kcc@google.com
+auto_ccs:
+  - "kevinwkt@google.com"
+  - "kodewilliams@google.com"
+  - "metzman@google.com"
+  - "mmoroz@google.com"
+
+sanitizers:
+  - undefined
+
+fuzzing_engines:
+  - libfuzzer
