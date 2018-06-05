@@ -146,21 +146,9 @@ cp out/Fuzz/api_gradients $OUT/api_gradients
 cp ./api_gradients.options $OUT/api_gradients.options
 cp ./api_gradients_seed_corpus.zip $OUT/api_gradients_seed_corpus.zip
 
-cp out/Fuzz/api_image_filter $OUT/api_image_filter
-cp ./api_image_filter.options $OUT/api_image_filter.options
-cp ./api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip
-
 cp out/Fuzz/api_path_measure $OUT/api_path_measure
 cp ./api_path_measure.options $OUT/api_path_measure.options
 cp ./api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corpus.zip
-
-cp out/Fuzz_mem_constraints/api_raster_n32_canvas $OUT/api_raster_n32_canvas
-cp ./api_raster_n32_canvas.options $OUT/api_raster_n32_canvas.options
-cp ./canvas_seed_corpus.zip $OUT/api_raster_n32_canvas_seed_corpus.zip
-
-cp out/Fuzz/api_null_canvas $OUT/api_null_canvas
-cp ./api_null_canvas.options $OUT/api_null_canvas.options
-cp ./canvas_seed_corpus.zip $OUT/api_null_canvas_seed_corpus.zip
 
 cp out/Fuzz/png_encoder $OUT/png_encoder
 cp ./encoder.options $OUT/png_encoder.options
@@ -177,9 +165,22 @@ cp ./encoder_seed_corpus.zip $OUT/webp_encoder_seed_corpus.zip
 cp out/Fuzz/skottie_json $OUT/skottie_json
 cp ./skottie_json_seed_corpus.zip $OUT/skottie_json_seed_corpus.zip
 
+# Handle libfuzzer only fuzzers (i.e. those that break afl-fuzz)
 if [ "$FUZZING_ENGINE" == "libfuzzer" ]
 then
   cp out/Fuzz_mem_constraints/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
   cp ./api_mock_gpu_canvas.options $OUT/api_mock_gpu_canvas.options
   cp ./canvas_seed_corpus.zip $OUT/api_mock_gpu_canvas_seed_corpus.zip
+
+  cp out/Fuzz_mem_constraints/api_raster_n32_canvas $OUT/api_raster_n32_canvas
+  cp ./api_raster_n32_canvas.options $OUT/api_raster_n32_canvas.options
+  cp ./canvas_seed_corpus.zip $OUT/api_raster_n32_canvas_seed_corpus.zip
+
+  cp out/Fuzz/api_image_filter $OUT/api_image_filter
+  cp ./api_image_filter.options $OUT/api_image_filter.options
+  cp ./api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip
+
+  cp out/Fuzz/api_null_canvas $OUT/api_null_canvas
+  cp ./api_null_canvas.options $OUT/api_null_canvas.options
+  cp ./canvas_seed_corpus.zip $OUT/api_null_canvas_seed_corpus.zip
 fi
