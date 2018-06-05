@@ -16,7 +16,7 @@
 ################################################################################
 
 #add next branch
-for branch in master
+for branch in master next
 do
     cd capstone$branch
     # build project
@@ -31,7 +31,7 @@ do
     # TODO corpus
 
     # export other associated stuff
-    cp *.options $OUT/
+    cp fuzz_disasm.options $OUT/fuzz_disasm$branch.options
 
     # build fuzz target
     $CC $CFLAGS -I../../include/ -c fuzz_disasm.c -o fuzz_disasm.o
