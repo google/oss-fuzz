@@ -7,7 +7,7 @@ auto_ccs:
   - "grieger@google.com"
   - "khaledhosny@eglug.org"
   - "jfkthame@gmail.com"
-  - "cchapman@typekit.com"
+  - "cchapman@adobe.com"
 sanitizers:
  - address
  - undefined
