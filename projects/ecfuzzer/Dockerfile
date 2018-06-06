@@ -20,5 +20,6 @@ RUN apt-get update && apt-get install -y make cmake
 RUN git clone --depth 1 https://github.com/catenacyber/ecfuzzer.git ecfuzzer
 RUN git clone --depth 1 https://github.com/ARMmbed/mbedtls.git mbedtls
 RUN git clone --depth 1 https://github.com/ANSSI-FR/libecc.git libecc
+RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 WORKDIR $SRC/
 COPY build.sh $SRC/

@@ -21,6 +21,11 @@ cd mbedtls
 cmake . -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc) all
 
+#openssl
+cd ../openssl
+./config
+make build_generated libcrypto.a
+
 #libecc
 cd ../libecc
 #required by libecc
@@ -31,6 +36,7 @@ echo $CFLAGS
 cd ../ecfuzzer
 $CC $CFLAGS -I. -c fuzz_ec.c -o fuzz_ec.o
 $CC $CFLAGS -I. -I../mbedtls/include -c modules/mbedtls.c -o mbedtls.o
+$CC $CFLAGS -I. -I../openssl/include -c modules/openssl.c -o openssl.o
 $CC $CFLAGS -DWITH_STDLIB -I. -I../libecc/src -c modules/libecc.c -o libecc.o
 
-$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o -o $OUT/fuzz_ec ../mbedtls/library/libmbedcrypto.a ../libecc/build/libec.a -lFuzzingEngine
+$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o -o $OUT/fuzz_ec ../mbedtls/library/libmbedcrypto.a ../libecc/build/libec.a ../openssl/libcrypto.a -lFuzzingEngine
