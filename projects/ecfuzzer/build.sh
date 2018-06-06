@@ -24,17 +24,13 @@ make -j$(nproc) all
 #libecc
 cd ../libecc
 #required by libecc
-export ORIGCFLAGS=$CFLAGS
-export CFLAGS="$CFLAGS -fPIC"
-make
-export CFLAGS=$ORIGCFLAGS
+(export CFLAGS="$CFLAGS -fPIC"; make)
+echo $CFLAGS
 
 #build fuzz target
 cd ../ecfuzzer
 $CC $CFLAGS -I. -c fuzz_ec.c -o fuzz_ec.o
-$CC $CFLAGS -I. -I../mbedtls/include -c mbedtls.c -o mbedtls.o
-export CFLAGS="$CFLAGS -DWITH_STDLIB"
-$CC $CFLAGS -I. -I../libecc/src -c libecc.c -o libecc.o
-export CFLAGS=$ORIGCFLAGS
+$CC $CFLAGS -I. -I../mbedtls/include -c modules/mbedtls.c -o mbedtls.o
+$CC $CFLAGS -DWITH_STDLIB -I. -I../libecc/src -c modules/libecc.c -o libecc.o
 
 $CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o -o $OUT/fuzz_ec ../mbedtls/library/libmbedcrypto.a ../libecc/build/libec.a -lFuzzingEngine
