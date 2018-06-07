@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y git subversion jq python3 zip make libunwind8-dev binutils-dev libblocksruntime-dev
+RUN apt-get install -y curl git subversion jq python2.7 python3 zip make libunwind8-dev binutils-dev libblocksruntime-dev
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
@@ -59,7 +59,11 @@ RUN mkdir honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_libfuzzer compile_honggfuzz coverage_report srcmap /usr/local/bin/
+ADD https://sdk.cloud.google.com $SRC/gcloud.bash
+RUN cd $SRC && bash gcloud.bash --disable-prompts && rm gcloud.bash && \
+    ln -s /root/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud && \
+    ln -s /root/google-cloud-sdk/bin/gsutil /usr/local/bin/gsutil
+
+COPY compile compile_afl compile_libfuzzer compile_honggfuzz coverage coverage_report srcmap /usr/local/bin/
 
 CMD ["compile"]
-

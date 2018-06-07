@@ -33,7 +33,7 @@ mkdir $VALID_TARGETS_DIR
 mkdir $BROKEN_TARGETS_DIR
 
 # Main loop that iterates through all fuzz targets and runs the check.
-for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
+for FUZZER_BINARY in $(find $OUT/ -maxdepth 1 -executable -type f); do
   if file "$FUZZER_BINARY" | grep -v ELF > /dev/null 2>&1; then
     continue
   fi

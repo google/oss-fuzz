@@ -22,7 +22,7 @@ mkdir -p $REPORT_DIR
 
 N=0
 TOTAL_FAILURES=0
-for FUZZER_BINARY in $(find $OUT/ -executable -type f); do
+for FUZZER_BINARY in $(find $OUT/ -maxdepth 1 -executable -type f); do
   if file "$FUZZER_BINARY" | grep -v ELF > /dev/null 2>&1; then
     continue
   fi

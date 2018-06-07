@@ -63,6 +63,8 @@ def main():
   build_image_parser.add_argument('project_name')
   build_image_parser.add_argument('--pull', action='store_true',
                                   help='Pull latest base image.')
+  build_image_parser.add_argument('--no-pull', action='store_true',
+                                  help='Do not pull latest base image.')
 
   build_fuzzers_parser = subparsers.add_parser(
       'build_fuzzers', help='Build fuzzers for a project.')
@@ -108,6 +110,10 @@ def main():
   coverage_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
                                nargs=argparse.REMAINDER)
 
+  profile_parser = subparsers.add_parser(
+      'profile', help='Generate code coverage report for the project.')
+  profile_parser.add_argument('project_name', help='name of the project')
+
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
   reproduce_parser.add_argument('--valgrind', action='store_true',
@@ -142,6 +148,8 @@ def main():
     return run_fuzzer(args)
   elif args.command == 'coverage':
     return coverage(args)
+  elif args.command == 'profile':
+    return profile(args)
   elif args.command == 'reproduce':
     return reproduce(args)
   elif args.command == 'shell':
@@ -293,8 +301,15 @@ def docker_pull(image, pull=False):
 
 def build_image(args):
   """Build docker image."""
-  pull = args.pull
-  if not pull:
+  if args.pull and args.no_pull:
+    print('Incompatible arguments --pull and --no-pull.')
+    return 1
+
+  if args.pull:
+    pull = True
+  elif args.no_pull:
+    pull = False
+  else:
     y_or_n = raw_input('Pull latest base images (compiler/runtime)? (y/N): ')
     pull = y_or_n.lower() == 'y'
 
@@ -415,6 +430,33 @@ def check_build(args):
     print('Check build passed.')
   else:
     print('Check build failed.')
+
+  return exit_code
+
+
+def profile(args):
+  """Generate code coverage using clang source based code coverage."""
+  if not _check_project_exists(args.project_name):
+    return 1
+
+  env = [
+      'FUZZING_ENGINE=libfuzzer',
+      'PROJECT=%s' % args.project_name,
+      'SANITIZER=profile'
+  ]
+
+  run_args = _env_to_docker_args(env) + [
+      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-p', '8008:8008',
+      '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
+  ]
+
+  run_args.append('coverage')
+  exit_code = docker_run(run_args)
+  if exit_code == 0:
+    print('Successfully generated clang code coverage report.')
+  else:
+    print('Failed to generate clang code coverage report.')
 
   return exit_code
 

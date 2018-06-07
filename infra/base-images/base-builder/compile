@@ -65,10 +65,18 @@ echo "CXXFLAGS=$CXXFLAGS"
 echo "---------------------------------------------------------------"
 
 BUILD_CMD="bash -eux $SRC/build.sh"
+POST_BUILD_CMD="cp -r $SRC $WORK $OUT"
+
 if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder
   chown -R builder $SRC $OUT $WORK
   su -c "$BUILD_CMD" builder
+  if [ "$SANITIZER" = "profile" ]; then
+    su -c "$POST_BUILD_CMD" builder
+  fi
 else
   $BUILD_CMD
+  if [ "$SANITIZER" = "profile" ]; then
+    $POST_BUILD_CMD
+  fi
 fi
