@@ -21,4 +21,3 @@ $CC $CFLAGS -c -g $SRC/target-flow-extract.c -I . -I lib/ -I include/ \
 $CXX $CXXFLAGS $SRC/target-flow-extract.o ./lib/.libs/libopenvswitch.a \
 	-lz -lssl -lcrypto -latomic -lFuzzingEngine \
 	-o $OUT/flow_extract_fuzzer
-cp $SRC/*.dict $SRC/*.options $OUT/
