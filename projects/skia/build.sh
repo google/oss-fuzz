@@ -167,6 +167,7 @@ cp out/Fuzz/skottie_json $OUT/skottie_json
 cp ./skottie_json_seed_corpus.zip $OUT/skottie_json_seed_corpus.zip
 
 cp out/Fuzz/skjson $OUT/skjson
+cp json.dict $OUT/skjson.dict
 cp ./skjson_seed_corpus.zip $OUT/skjson_seed_corpus.zip
 
 # Handle libfuzzer only fuzzers (i.e. those that break afl-fuzz)
