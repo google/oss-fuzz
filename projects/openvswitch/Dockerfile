@@ -22,4 +22,4 @@ RUN apt-get update && apt-get install -y make autoconf automake \
 RUN pip install six
 RUN git clone --depth 1 https://github.com/openvswitch/ovs.git openvswitch
 WORKDIR openvswitch
-COPY build.sh target-flow-extract.c fuzzer.options ovs.dict $SRC/
+COPY build.sh *_target.c fuzzer.options ovs.dict $SRC/
