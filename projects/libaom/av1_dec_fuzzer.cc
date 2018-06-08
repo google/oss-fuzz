@@ -9,9 +9,6 @@
 #include "aom_ports/mem_ops.h"
 #include "aom/common/ivfdec.h"
 
-// TODO(urvang): Create a 2nd fuzz target that defines DECODE_MODE_threaded.
-#define DECODE_MODE_serial
-
 static const char *const kIVFSignature = "DKIF";
 
 extern "C" void usage_exit(void) { exit(EXIT_FAILURE); }

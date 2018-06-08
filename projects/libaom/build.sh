@@ -35,17 +35,23 @@ $CC $CFLAGS -std=c99 -c \
   -I$WORK \
   $SRC/aom/common/tools_common.c -o $WORK/tools_common.o
 
-# build fuzzer
-fuzzer_name=av1_dec_fuzzer
+# build fuzzers
+fuzzer_modes=( serial threaded )
 
-$CXX $CXXFLAGS -std=c++11 \
-  -I$SRC/aom \
-  -I$WORK \
-  -Wl,--start-group \
-  -lFuzzingEngine \
-  $SRC/${fuzzer_name}.cc -o $OUT/${fuzzer_name} \
-  $WORK/libaom.a $WORK/ivfdec.o $WORK/tools_common.o \
-  -Wl,--end-group
+for mode in "${fuzzer_modes[@]}"; do
+  fuzzer_src_name=av1_dec_fuzzer
+  fuzzer_name=${fuzzer_src_name}_${mode}
 
-# copy seed corpus.
-cp $SRC/dec_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+  $CXX $CXXFLAGS -std=c++11 \
+    -DDECODE_MODE_${mode} \
+    -I$SRC/aom \
+    -I$WORK \
+    -Wl,--start-group \
+    -lFuzzingEngine \
+    $SRC/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
+    $WORK/libaom.a $WORK/ivfdec.o $WORK/tools_common.o \
+    -Wl,--end-group
+
+  # copy seed corpus.
+  cp $SRC/dec_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+done
