@@ -79,7 +79,8 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode animated_image_decode \
                                    api_draw_functions api_gradients \
                                    api_path_measure  png_encoder \
-                                   jpeg_encoder webp_encoder skottie_json textblob_deserialize
+                                   jpeg_encoder webp_encoder skottie_json textblob_deserialize \
+                                   skjson
 
 # Don't build these fuzzers for AFL since it crashes on startup.
 # This would cause a build breakage now that AFL has build checks.
@@ -164,6 +165,9 @@ cp ./encoder_seed_corpus.zip $OUT/webp_encoder_seed_corpus.zip
 
 cp out/Fuzz/skottie_json $OUT/skottie_json
 cp ./skottie_json_seed_corpus.zip $OUT/skottie_json_seed_corpus.zip
+
+cp out/Fuzz/skjson $OUT/skjson
+cp ./skjson_seed_corpus.zip $OUT/skjson_seed_corpus.zip
 
 # Handle libfuzzer only fuzzers (i.e. those that break afl-fuzz)
 if [ "$FUZZING_ENGINE" == "libfuzzer" ]

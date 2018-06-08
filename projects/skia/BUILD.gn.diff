@@ -260,3 +260,11 @@ test_app("skottie_json") {
     "modules/skottie:fuzz",
   ]
 }
+
+test_app("skjson") {
+  deps = [
+    ":flags",
+    ":skia",
+    "modules/skjson:fuzz",
+  ]
+}

@@ -56,6 +56,8 @@ RUN wget -O $SRC/skia/encoder_seed_corpus.zip https://storage.googleapis.com/ski
 
 RUN wget -O $SRC/skia/skottie_json_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skottie_json_seed_corpus.zip
 
+RUN wget -O $SRC/skia/skjson_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skjson_seed_corpus.zip
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
