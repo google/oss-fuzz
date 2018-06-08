@@ -17,20 +17,26 @@
 
 # build projects
 #mbedtls
+(
 cd mbedtls
 cmake . -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc) all
+)
 
 #openssl
-cd ../openssl
+(
+cd openssl
 ./config
 make build_generated libcrypto.a
+)
 
 #libecc
-cd ../libecc
+(
+cd libecc
 #required by libecc
 (export CFLAGS="$CFLAGS -fPIC"; make)
 echo $CFLAGS
+)
 
 #build fuzz target
 cd ../ecfuzzer
