@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pdknsk@gmail.com
 RUN apt-get update && apt-get install -y mercurial
-RUN hg clone https://hg.mozilla.org/mozilla-central/ firefox
+RUN hg clone https://hg.mozilla.org/mozilla-central/
 ADD http://cdn.pwmon.org/oss-fuzz/qcms/fuzz_seed_corpus.zip $SRC/
 COPY build.sh fuzz.cc fuzz.dict $SRC/
-WORKDIR firefox/gfx/qcms
+WORKDIR mozilla-central/gfx/qcms
