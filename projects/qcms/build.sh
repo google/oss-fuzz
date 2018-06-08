@@ -28,7 +28,8 @@ $CC $CFLAGS -c \
 
 $CXX $CXXFLAGS -std=c++11 \
   -I. *.o \
+  -DBUILD_FOR_OSSFUZZ \
   -lFuzzingEngine \
-  $SRC/fuzz.cc -o $OUT/fuzz
+  fuzztest/qcms_fuzzer.cpp -o $OUT/fuzz
 
 cp $SRC/fuzz.dict $SRC/fuzz_seed_corpus.zip $OUT
