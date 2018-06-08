@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER bergmann@tzi.org
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-					pkg-config
+    pkg-config
 RUN git clone --depth 1 https://github.com/obgm/libcoap.git libcoap
 WORKDIR libcoap
 COPY build.sh *_target.c $SRC/

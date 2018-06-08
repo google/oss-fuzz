@@ -16,13 +16,7 @@
 ################################################################################
 
 ./autogen.sh && ./configure --disable-doxygen --disable-manpages \
-       		&& make -j$(nproc)
-
-LIBFUZZER_SRC=$SRC/libfuzzer
-
-### standalone stub
-$CC $CFLAGS -c $LIBFUZZER_SRC/standalone/StandaloneFuzzTargetMain.c \
-	-I $LIBFUZZER_SRC/standalone -o $OUT/standalone.o
+    && make -j$(nproc)
 
 for file in $SRC/*target.c; do
 	b=$(basename $file _target.c)
@@ -31,10 +25,5 @@ for file in $SRC/*target.c; do
 	$CXX $CXXFLAGS $OUT/${b}_target.o ./.libs/libcoap-2.a \
 	-lFuzzingEngine \
 	-o $OUT/${b}_fuzzer
-	$CXX $CXXFLAGS $OUT/${b}_target.o $OUT/standalone.o \
-		-I $LIBFUZZER_SRC/standalone ./.libs/libcoap-2.a \
-		-o $OUT/${b}_standalone
 	rm -f $OUT/${b}_target.o
 done
-rm -f $OUT/standalone.o
-cp $SRC/*.dict $SRC/*.options $OUT/
