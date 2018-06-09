@@ -15,7 +15,7 @@ static uint8_t hash(const uint8_t* data, size_t size) {
   return value;
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   int w, h;
   if (!WebPGetInfo(data, size, &w, &h))
     return 0;
@@ -23,7 +23,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
 
   const uint8_t value = hash(data, size);
-  uint8_t* buf = nullptr;
+  uint8_t* buf = NULL;
 
   // This is verbose, but covers all available variants.
   // For functions that decode into an external buffer, an intentionally
