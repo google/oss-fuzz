@@ -1,29 +1,15 @@
-#include <stdlib.h>
-
+#include "fuzz.h"
 #include "webp/decode.h"
 
-// Arbitrary limit of 4MB buffer to prevent OOM, timeout, or slow execution.
-static const size_t px_limit = 1024 * 1024;
-
-// Reads and sums (up to) 128 spread-out bytes.
-static uint8_t hash(const uint8_t* data, size_t size) {
-  uint8_t value = 0;
-  size_t incr = size / 128;
-  if (!incr) incr = 1;
-  for (size_t i = 0; i < size; i += incr)
-    value += data[i];
-  return value;
-}
-
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   int w, h;
   if (!WebPGetInfo(data, size, &w, &h))
     return 0;
-  if ((size_t)w * h > px_limit)
+  if ((size_t)w * h > fuzz_px_limit)
     return 0;
 
-  const uint8_t value = hash(data, size);
-  uint8_t* buf = nullptr;
+  const uint8_t value = fuzz_hash(data, size);
+  uint8_t* buf = NULL;
 
   // This is verbose, but covers all available variants.
   // For functions that decode into an external buffer, an intentionally
