@@ -466,6 +466,7 @@ def _get_fuzz_targets(project_name):
 
 
 def _get_latest_corpus(project_name, fuzz_target, corpus_dir):
+  """Download the latest corpus for the given fuzz target."""
   corpus_dir = os.path.join(corpus_dir, fuzz_target)
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
@@ -513,10 +514,8 @@ def _get_latest_corpus(project_name, fuzz_target, corpus_dir):
 
 
 def download_corpus(project_name):
-  """Download and unpack corpus backup from GCS bucket."""
+  """Download most recent corpus from GCS for the given project."""
   fuzz_targets = _get_fuzz_targets(project_name)
-  print(fuzz_targets)
-
   corpus_dir = _get_corpus_dir(project_name)
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
@@ -545,7 +544,6 @@ def profile(args):
       '-v', '%s:/out' % _get_output_dir(args.project_name),
       '-v', '%s:/corpus' % _get_corpus_dir(args.project_name),
       '-p', '8008:8008',
-      #'-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
   ]
 

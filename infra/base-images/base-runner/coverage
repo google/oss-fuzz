@@ -16,9 +16,6 @@
 ################################################################################
 cd $OUT
 
-GCS_BUCKET_SUFFIX="-backup.clusterfuzz-external.appspot.com"
-GCS_BACKUP_PATH="/corpus/libFuzzer/"
-
 # This will be used by llvm-cov command to generate the actual report.
 objects=""
 
@@ -31,6 +28,8 @@ done
 
 # Merge all raw dumps.
 llvm-profdata merge -sparse *.profraw -o merged.profdata
+
+# TODO (mmoroz): add script from Chromium for rendering directory view reports.
 
 # Generate HTML report.
 llvm-cov show -format=html -output-dir=report -path-equivalence="/,$OUT" \
