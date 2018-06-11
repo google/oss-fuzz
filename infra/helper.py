@@ -16,6 +16,7 @@
 ################################################################################
 
 from __future__ import print_function
+from concurrent.futures import ThreadPoolExecutor
 import argparse
 import datetime
 import errno
@@ -177,7 +178,7 @@ def _check_project_exists(project_name):
 def _check_fuzzer_exists(project_name, fuzzer_name):
   """Checks if a fuzzer exists."""
   command = ['docker', 'run', '--rm']
-  command.extend(['-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', project_name)])
+  command.extend(['-v', '%s:/out' % _get_output_dir(project_name)])
   command.append('ubuntu:16.04')
 
   command.extend(['/bin/bash', '-c', 'test -f /out/%s' % fuzzer_name])
@@ -201,6 +202,21 @@ def _get_absolute_path(path):
 def _get_command_string(command):
   """Returns a shell escaped command string."""
   return ' '.join(pipes.quote(part) for part in command)
+
+
+def _get_corpus_dir(project_name=''):
+  """Returns path to /corpus directory for the given project (if specified)."""
+  return os.path.join(BUILD_DIR, 'corpus', project_name)
+
+
+def _get_output_dir(project_name=''):
+  """Returns path to /out directory for the given project (if specified)."""
+  return os.path.join(BUILD_DIR, 'out', project_name)
+
+
+def _get_work_dir(project_name=''):
+  """Returns path to /work directory for the given project (if specified)."""
+  return os.path.join(BUILD_DIR, 'work', project_name)
 
 
 def _add_engine_args(parser):
@@ -331,7 +347,7 @@ def build_fuzzers(args):
   if not _build_image(args.project_name):
     return 1
 
-  project_out_dir = os.path.join(BUILD_DIR, 'out', project_name)
+  project_out_dir = _get_output_dir(project_name)
   if args.clean:
     print('Cleaning existing build artifacts.')
 
@@ -351,7 +367,7 @@ def build_fuzzers(args):
   if args.e:
     env += args.e
 
-  project_work_dir = os.path.join(BUILD_DIR, 'work', project_name)
+  project_work_dir = _get_work_dir(project_name)
 
   # Copy instrumented libraries.
   if args.sanitizer == 'memory':
@@ -413,7 +429,7 @@ def check_build(args):
     env += args.e
 
   run_args = _env_to_docker_args(env) + [
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/out' % _get_output_dir(args.project_name),
       '-t', 'gcr.io/oss-fuzz-base/base-runner'
   ]
 
@@ -434,10 +450,90 @@ def check_build(args):
   return exit_code
 
 
+def _get_fuzz_targets(project_name):
+  """Return names of fuzz targest build in the project's /out directory."""
+  command = [
+      'find',
+      _get_output_dir(project_name),
+      '-maxdepth',
+      '1',
+      '-type',
+      'f',
+      '-executable'
+  ]
+  output = subprocess.check_output(command)
+  return [os.path.basename(path) for path in output.split()]
+
+
+def _get_latest_corpus(project_name, fuzz_target, corpus_dir):
+  corpus_dir = os.path.join(corpus_dir, fuzz_target)
+  if not os.path.exists(corpus_dir):
+    os.makedirs(corpus_dir)
+
+  gcs_url = 'gs://%s-backup.clusterfuzz-external.appspot.com' % project_name
+  gcs_url += '/corpus/libFuzzer/%s_%s' % (project_name, fuzz_target)
+  command = [
+      'gsutil',
+      'ls',
+      gcs_url
+  ]
+  output = subprocess.check_output(command).splitlines()
+  if len(output):
+    latest_backup_url = output[-1]
+    archive_path = corpus_dir + '.zip'
+    command = [
+        'gsutil',
+        'cp',
+        latest_backup_url,
+        archive_path
+    ]
+    subprocess.check_call(command)
+    command = [
+        'unzip',
+        '-q',
+        '-f',
+        archive_path,
+        '-d',
+        corpus_dir
+    ]
+    subprocess.check_call(command)
+    os.remove(archive_path)
+  else:
+    # Sync the working corpus copy if a minimized backup is not available.
+    command = [
+        'gsutil',
+        '-m',
+        '-q',
+        'rsync',
+        '-R',
+        gcs_url,
+        corpus_dir
+    ]
+    subprocess.check_call(command)
+
+
+def download_corpus(project_name):
+  """Download and unpack corpus backup from GCS bucket."""
+  fuzz_targets = _get_fuzz_targets(project_name)
+  print(fuzz_targets)
+
+  corpus_dir = _get_corpus_dir(project_name)
+  if not os.path.exists(corpus_dir):
+    os.makedirs(corpus_dir)
+
+  def _download_for_single_target(fuzz_target):
+    _get_latest_corpus(project_name, fuzz_target, corpus_dir)
+
+  with ThreadPoolExecutor() as executor:
+    executor.map(_download_for_single_target, fuzz_targets)
+
+
 def profile(args):
   """Generate code coverage using clang source based code coverage."""
   if not _check_project_exists(args.project_name):
     return 1
+
+  download_corpus(args.project_name)
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
@@ -446,9 +542,11 @@ def profile(args):
   ]
 
   run_args = _env_to_docker_args(env) + [
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/out' % _get_output_dir(args.project_name),
+      '-v', '%s:/corpus' % _get_corpus_dir(args.project_name),
       '-p', '8008:8008',
-      '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
+      #'-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
+      '-t', 'gcr.io/oss-fuzz-base/base-runner',
   ]
 
   run_args.append('coverage')
@@ -474,7 +572,7 @@ def run_fuzzer(args):
     env += args.e
 
   run_args = _env_to_docker_args(env) + [
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/out' % _get_output_dir(args.project_name),
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
       'run_fuzzer',
       args.fuzzer_name,
@@ -498,7 +596,7 @@ def coverage(args):
       '-e', 'ASAN_OPTIONS=coverage_dir=/cov',
       '-e', 'MSAN_OPTIONS=coverage_dir=/cov',
       '-e', 'UBSAN_OPTIONS=coverage_dir=/cov',
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/out' % _get_output_dir(args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
@@ -513,7 +611,7 @@ def coverage(args):
   docker_run(run_args, print_output=False)
 
   run_args = [
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/out' % _get_output_dir(args.project_name),
       '-v', '%s:/cov' % temp_dir,
       '-w', '/cov',
       '-p', '8001:8001',
@@ -547,7 +645,7 @@ def reproduce(args):
     env += args.e
 
   run_args = _env_to_docker_args(env) + [
-      '-v', '%s:/out' % os.path.join(BUILD_DIR, 'out', args.project_name),
+      '-v', '%s:/out' % _get_output_dir(args.project_name),
       '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
       '-t', 'gcr.io/oss-fuzz-base/%s' % image_name,
       'reproduce',
@@ -614,14 +712,14 @@ def shell(args):
 
   if _is_base_image(args.project_name):
     image_project = 'oss-fuzz-base'
-    out_dir = os.path.join(BUILD_DIR, 'out')
+    out_dir = _get_output_dir()
   else:
     image_project = 'oss-fuzz'
-    out_dir = os.path.join(BUILD_DIR, 'out', args.project_name)
+    out_dir = _get_output_dir(args.project_name)
 
   run_args = _env_to_docker_args(env) + [
       '-v', '%s:/out' % out_dir,
-      '-v', '%s:/work' % os.path.join(BUILD_DIR, 'work', args.project_name),
+      '-v', '%s:/work' % _get_work_dir(args.project_name),
       '-t', 'gcr.io/%s/%s' % (image_project, args.project_name),
       '/bin/bash'
   ]
