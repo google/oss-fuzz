@@ -40,6 +40,7 @@ echo $CFLAGS
 
 #build fuzz target
 cd ecfuzzer
+cp fuzz_ec.dict $OUT/
 $CC $CFLAGS -I. -c fuzz_ec.c -o fuzz_ec.o
 $CC $CFLAGS -I. -I../mbedtls/include -c modules/mbedtls.c -o mbedtls.o
 $CC $CFLAGS -I. -I../openssl/include -c modules/openssl.c -o openssl.o
