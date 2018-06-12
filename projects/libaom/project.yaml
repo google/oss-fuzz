@@ -5,3 +5,4 @@ sanitizers:
 - undefined
 auto_ccs:
 - jzern@google.com
+- huisu@google.com
