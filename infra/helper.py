@@ -47,6 +47,14 @@ MAX_PROJECT_NAME_LENGTH = 26
 if sys.version_info[0] >= 3:
     raw_input = input
 
+CORPUS_URL_FORMAT = (
+    'gs://{project_name}-corpus.clusterfuzz-external.appspot.com/libFuzzer/'
+    '{project_name}_{fuzz_target}/')
+CORPUS_BACKUP_URL_FORMAT = (
+  'gs://{project_name}-backup.clusterfuzz-external.appspot.com/corpus/'
+  'libFuzzer/{project_name}_{fuzz_target}/')
+
+
 def main():
   os.chdir(OSSFUZZ_DIR)
   if not os.path.exists(BUILD_DIR):
@@ -465,21 +473,21 @@ def _get_fuzz_targets(project_name):
   return [os.path.basename(path) for path in output.split()]
 
 
-def _get_latest_corpus(project_name, fuzz_target, corpus_dir):
+def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
   """Download the latest corpus for the given fuzz target."""
-  corpus_dir = os.path.join(corpus_dir, fuzz_target)
+  corpus_dir = os.path.join(base_corpus_dir, fuzz_target)
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
 
-  gcs_url = 'gs://%s-backup.clusterfuzz-external.appspot.com' % project_name
-  gcs_url += '/corpus/libFuzzer/%s_%s' % (project_name, fuzz_target)
+  corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project_name,
+                                                      fuzz_target=fuzz_target)
   command = [
       'gsutil',
       'ls',
-      gcs_url
+      corpus_backup_url
   ]
   output = subprocess.check_output(command).splitlines()
-  if len(output):
+  if lenoutput:
     latest_backup_url = output[-1]
     archive_path = corpus_dir + '.zip'
     command = [
@@ -492,7 +500,7 @@ def _get_latest_corpus(project_name, fuzz_target, corpus_dir):
     command = [
         'unzip',
         '-q',
-        '-f',
+        '-o',
         archive_path,
         '-d',
         corpus_dir
@@ -501,13 +509,15 @@ def _get_latest_corpus(project_name, fuzz_target, corpus_dir):
     os.remove(archive_path)
   else:
     # Sync the working corpus copy if a minimized backup is not available.
+    corpus_url = CORPUS_URL_FORMAT.format(project_name=project_name,
+                                          fuzz_target=fuzz_target)
     command = [
         'gsutil',
         '-m',
         '-q',
         'rsync',
         '-R',
-        gcs_url,
+        corpus_url,
         corpus_dir
     ]
     subprocess.check_call(command)
