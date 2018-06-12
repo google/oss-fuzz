@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -u
 # Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,20 +16,46 @@
 ################################################################################
 cd $OUT
 
+LOGS_DIR="$OUT/logs"
+mkdir -p $LOGS_DIR
+
 # This will be used by llvm-cov command to generate the actual report.
 objects=""
 
+# Number of CPUs available, this is needed for running tests in parallel.
+NPROC=$(nproc)
+
+function run_fuzz_target {
+  local fuzz_target=$1
+  corpus_dir="/corpus/${target}"
+  LLVM_PROFILE_FILE="$target.profraw" $target -runs=0 -timeout=100 $corpus_dir \
+      &> $LOGS_DIR/$target.log
+}
+
 # Run each fuzz target on its seed corpus, generate raw coverage dumps.
 for target in $(find . -maxdepth 1 -type f -executable); do
-  corpus_dir="/corpus/${target}"
-  LLVM_PROFILE_FILE="$target.profraw" $target -runs=0 -timeout=100 $corpus_dir
+  echo 'Running $target'
+  run_fuzz_target $target &
   objects="$objects -object=$target"
+
+  # Do not spawn more processes than the number of CPUs available.
+  n_child_proc=$(jobs -rp | wc -l)
+  while [ "$n_child_proc" -eq "$NPROC" ]; do
+    sleep 4
+    n_child_proc=$(jobs -rp | wc -l)
+  done
 done
+
+# Wait for background processes to finish.
+wait
 
 # Merge all raw dumps.
 llvm-profdata merge -sparse *.profraw -o merged.profdata
 
-# TODO (mmoroz): add script from Chromium for rendering directory view reports.
+# Delete unnecessary and (potentially) large .profraw files.
+rm *.profraw
+
+# TODO(mmoroz): add script from Chromium for rendering directory view reports.
 
 # Generate HTML report.
 llvm-cov show -format=html -output-dir=report -path-equivalence="/,$OUT" \
