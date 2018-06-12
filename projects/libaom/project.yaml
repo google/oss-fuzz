@@ -1,0 +1,7 @@
+homepage: "https://aomedia.org/av1-features/get-started/"
+primary_contact: "urvang@google.com"
+sanitizers:
+- address
+- undefined
+auto_ccs:
+- jzern@google.com
