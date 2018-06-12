@@ -46,3 +46,11 @@ $CXX $CXXFLAGS -lFuzzingEngine \
   src/.libs/libwebp.a
 cp $SRC/fuzz_seed_corpus.zip $OUT/fuzz_advanced_api_seed_corpus.zip
 cp $SRC/fuzz_advanced_api.options $OUT
+
+# Animation Decoding API
+$CC $CFLAGS -Isrc -c $SRC/fuzz_animation_api.c
+$CXX $CXXFLAGS -lFuzzingEngine \
+  fuzz_animation_api.o -o $OUT/fuzz_animation_api \
+  src/demux/.libs/libwebpdemux.a src/.libs/libwebp.a
+cp $SRC/fuzz_seed_corpus.zip $OUT/fuzz_animation_api_seed_corpus.zip
+cp $SRC/fuzz_animation_api.options $OUT
