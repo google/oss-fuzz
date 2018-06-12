@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER capstone.engine@gmail.com
-RUN apt-get update && apt-get install -y make cmake tshark
+RUN apt-get update && apt-get install -y make cmake
 RUN git clone --depth 1 --branch master https://github.com/aquynh/capstone.git capstonemaster
-#TODO next branch
+RUN git clone --depth 1 --branch next https://github.com/aquynh/capstone.git capstonenext
 WORKDIR $SRC
 COPY build.sh $SRC/
