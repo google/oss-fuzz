@@ -22,13 +22,10 @@ import errno
 import os
 import pipes
 import re
-import shutil
-import string
 import subprocess
 import sys
 import tempfile
 import templates
-import time
 
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
@@ -46,6 +43,8 @@ BASE_IMAGES = [
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
 MAX_PROJECT_NAME_LENGTH = 26
 
+if sys.version_info[0] >= 3:
+    raw_input = input
 
 def main():
   os.chdir(OSSFUZZ_DIR)
@@ -541,7 +540,7 @@ def generate(args):
   print('Writing new files to', dir)
 
   template_args = {
-    'project_name' : args.project_name,
+    'project_name': args.project_name,
     'year': datetime.datetime.now().year
   }
   with open(os.path.join(dir, 'project.yaml'), 'w') as f:
@@ -573,7 +572,7 @@ def shell(args):
 
   if _is_base_image(args.project_name):
     image_project = 'oss-fuzz-base'
-    out_dir = os.path.join(BUILD_DIR, 'out');
+    out_dir = os.path.join(BUILD_DIR, 'out')
   else:
     image_project = 'oss-fuzz'
     out_dir = os.path.join(BUILD_DIR, 'out', args.project_name)
