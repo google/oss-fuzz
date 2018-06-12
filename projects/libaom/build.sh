@@ -36,14 +36,14 @@ $CC $CFLAGS -std=c99 -c \
   $SRC/aom/common/tools_common.c -o $WORK/tools_common.o
 
 # build fuzzers
-fuzzer_modes=( serial threaded )
+fuzzer_src_name=av1_dec_fuzzer
+fuzzer_modes=( '' '_threaded' )
 
 for mode in "${fuzzer_modes[@]}"; do
-  fuzzer_src_name=av1_dec_fuzzer
-  fuzzer_name=${fuzzer_src_name}_${mode}
+  fuzzer_name=${fuzzer_src_name}${mode}
 
   $CXX $CXXFLAGS -std=c++11 \
-    -DDECODE_MODE_${mode} \
+    -DDECODE_MODE${mode} \
     -I$SRC/aom \
     -I$WORK \
     -Wl,--start-group \
