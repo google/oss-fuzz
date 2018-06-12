@@ -44,6 +44,7 @@ BASE_IMAGES = [
 ]
 
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
+MAX_PROJECT_NAME_LENGTH = 26
 
 
 def main():
@@ -518,6 +519,11 @@ def reproduce(args):
 
 def generate(args):
   """Generate empty project files."""
+  if len(args.project_name) > MAX_PROJECT_NAME_LENGTH:
+    print('Project name needs to be less than or equal to %d characters.' %
+          MAX_PROJECT_NAME_LENGTH, file=sys.stderr)
+    return 1
+
   if not VALID_PROJECT_NAME_REGEX.match(args.project_name):
     print('Invalid project name.', file=sys.stderr)
     return 1
