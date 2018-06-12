@@ -30,12 +30,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   aom_codec_ctx_t codec;
 
-#if defined(DECODE_MODE_serial)
+#if defined(DECODE_MODE)
   const int threads = 1;
 #elif defined(DECODE_MODE_threaded)
   const int threads = 16;
 #else
-#error define one of DECODE_MODE_(serial|threaded)
+#error define one of DECODE_MODE or DECODE_MODE_threaded
 #endif
   aom_codec_dec_cfg_t cfg = {threads, 0, 0};
   if (aom_codec_dec_init(&codec, decoder->codec_interface(), &cfg, 0)) {
