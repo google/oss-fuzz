@@ -17,7 +17,14 @@
 
 ./autogen.sh
 
-./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE" --enable-fuzzing --with-libfuzzer=$LIB_FUZZING_ENGINE --enable-monolithic --disable-shared --enable-static
+./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE" \
+	--enable-imc-test \
+	--enable-tnccs-20 \
+	--enable-fuzzing \
+	--with-libfuzzer=$LIB_FUZZING_ENGINE \
+	--enable-monolithic \
+	--disable-shared \
+	--enable-static
 
 make -j$(nproc)
 
@@ -26,7 +33,6 @@ for f in $fuzzers; do
 	fuzzer=$(basename $f)
 	cp $f $OUT/
 	corpus=${fuzzer#fuzz_}
-	corpus=${corpus%%_*}
 	if [ -d "fuzzing-corpora/${corpus}" ]; then
 		zip -rj $OUT/${fuzzer}_seed_corpus.zip fuzzing-corpora/${corpus}
 	fi
