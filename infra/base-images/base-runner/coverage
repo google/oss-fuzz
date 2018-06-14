@@ -1,0 +1,73 @@
+#!/bin/bash -u
+# Copyright 2018 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+cd $OUT
+
+LOGS_DIR="$OUT/logs"
+mkdir -p $LOGS_DIR
+
+# This will be used by llvm-cov command to generate the actual report.
+objects=""
+
+# Number of CPUs available, this is needed for running tests in parallel.
+NPROC=$(nproc)
+
+function run_fuzz_target {
+  local target=$1
+
+  # Use 100s timeout instead of 25s as code coverage builds can be very slow.
+  local args="-timeout=100 -runs=0 /corpus/${target}"
+
+  LLVM_PROFILE_FILE="$target.profraw" $target $args &> $LOGS_DIR/$target.log
+  if (( $? != 0)); then
+    echo "Error occured while running $target:"
+    cat $LOGS_DIR/$target.log
+  fi
+}
+
+# Run each fuzz target, generate raw coverage dumps.
+for fuzz_target in $(find . -maxdepth 1 -type f -executable); do
+  echo "Running $fuzz_target"
+  run_fuzz_target $fuzz_target &
+  objects="$objects -object=$fuzz_target"
+
+  # Do not spawn more processes than the number of CPUs available.
+  n_child_proc=$(jobs -rp | wc -l)
+  while [ "$n_child_proc" -eq "$NPROC" ]; do
+    sleep 4
+    n_child_proc=$(jobs -rp | wc -l)
+  done
+done
+
+# Wait for background processes to finish.
+wait
+
+# Merge all raw dumps.
+llvm-profdata merge -sparse *.profraw -o merged.profdata
+
+# Delete unnecessary and (potentially) large .profraw files.
+rm *.profraw
+
+# TODO(mmoroz): add script from Chromium for rendering directory view reports.
+
+# Generate HTML report.
+llvm-cov show -format=html -output-dir=report -path-equivalence="/,$OUT" \
+		-instr-profile merged.profdata $objects
+
+# Serve the report locally.
+echo "Serving the report on http://127.0.0.1:8008/"
+cd report
+python3 -m http.server 8008

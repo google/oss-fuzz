@@ -16,6 +16,7 @@ Supported sanitizers:
 | `address` *(default)* | [Address Sanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizer) with [Leak Sanitizer](https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer).
 | `undefined` | [Undefined Behavior Sanitizer](http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html).
 | `memory` | [Memory Sanitizer](https://github.com/google/sanitizers/wiki/MemorySanitizer).<br/>*NOTE: It is critical that you build __all__ the code in your program (including libraries it uses) with Memory Sanitizer. Otherwise, you will see false positive crashes due to an inability to see initializations in uninstrumented code.*
+| `profile` | Used for generating code coverage reports. See [Code Coverage doc](code_coverage.md).
 
 Compiler flag values for predefined configurations are specified in the [Dockerfile](../infra/base-images/base-builder/Dockerfile). 
 These flags can be overriden by specifying `$SANITIZER_FLAGS` directly.
@@ -26,5 +27,4 @@ You can choose which configurations to automatically run your fuzzers with in `p
 sanitizers:
   - address
   - undefined
- ```
-  
+```
