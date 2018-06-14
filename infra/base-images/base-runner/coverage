@@ -41,9 +41,9 @@ function run_fuzz_target {
   local args="-timeout=100"
 
   if (( $DRY_RUN == 1)); then
-    args=" -max_total_time=120"
+    args="$args -max_total_time=120"
   else
-    args=" -runs=0 /corpus/${target}"
+    args="$args -runs=0 /corpus/${target}"
   fi
 
   LLVM_PROFILE_FILE="$target.profraw" $target $args &> $LOGS_DIR/$target.log
