@@ -52,8 +52,8 @@ CORPUS_URL_FORMAT = (
     'gs://{project_name}-corpus.clusterfuzz-external.appspot.com/libFuzzer/'
     '{project_name}_{fuzz_target}/')
 CORPUS_BACKUP_URL_FORMAT = (
-  'gs://{project_name}-backup.clusterfuzz-external.appspot.com/corpus/'
-  'libFuzzer/{project_name}_{fuzz_target}/')
+    'gs://{project_name}-backup.clusterfuzz-external.appspot.com/corpus/'
+    'libFuzzer/{project_name}_{fuzz_target}/')
 
 
 def main():
@@ -123,7 +123,7 @@ def main():
   profile_parser = subparsers.add_parser(
       'profile', help='Generate code coverage report for the project.')
   profile_parser.add_argument('project_name', help='name of the project')
-  profile_parser.add_argument('--no-corpus-download',  action='store_true',
+  profile_parser.add_argument('--no-corpus-download', action='store_true',
                               help='do not download corpus backup from OSS-Fuzz; '
                               'use corpus located in build/corpus/<project>/<fuzz_target>/')
 
