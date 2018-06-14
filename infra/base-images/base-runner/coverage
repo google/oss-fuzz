@@ -14,15 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-DRY_RUN=0
-
-if (( $# > 0 )); then
-  if [ "$1" = "--dry_run" ]; then
-    DRY_RUN=1
-  fi
-fi
-
-
 cd $OUT
 
 LOGS_DIR="$OUT/logs"
@@ -38,13 +29,7 @@ function run_fuzz_target {
   local target=$1
 
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local args="-timeout=100"
-
-  if (( $DRY_RUN == 1)); then
-    args="$args -max_total_time=120"
-  else
-    args="$args -runs=0 /corpus/${target}"
-  fi
+  local args="-timeout=100 -runs=0 /corpus/${target}"
 
   LLVM_PROFILE_FILE="$target.profraw" $target $args &> $LOGS_DIR/$target.log
   if (( $? != 0)); then

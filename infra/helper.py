@@ -123,8 +123,6 @@ def main():
   profile_parser = subparsers.add_parser(
       'profile', help='Generate code coverage report for the project.')
   profile_parser.add_argument('project_name', help='name of the project')
-  profile_parser.add_argument('--dry-run',  action='store_true',
-                              help='run fuzz targets for 120 seconds without a corpus')
   profile_parser.add_argument('--no-corpus-download',  action='store_true',
                               help='do not download corpus backup from OSS-Fuzz; '
                               'use corpus located in build/corpus/<project>/<fuzz_target>/')
@@ -548,7 +546,7 @@ def profile(args):
   """Generate code coverage using clang source based code coverage."""
   if not _check_project_exists(args.project_name):
     return 1
-  if not args.no_corpus_download and not args.dry_run:
+  if not args.no_corpus_download:
     download_corpus(args.project_name)
 
   env = [
@@ -565,9 +563,6 @@ def profile(args):
   ]
 
   run_args.append('coverage')
-
-  if args.dry_run:
-    run_args.append('--dry_run')
 
   exit_code = docker_run(run_args)
   if exit_code == 0:
