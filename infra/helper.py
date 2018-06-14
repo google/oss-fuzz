@@ -16,7 +16,7 @@
 ################################################################################
 
 from __future__ import print_function
-from concurrent.futures import ThreadPoolExecutor
+from multiprocessing.dummy import Pool as ThreadPool
 import argparse
 import datetime
 import errno
@@ -533,8 +533,8 @@ def download_corpus(project_name):
   def _download_for_single_target(fuzz_target):
     _get_latest_corpus(project_name, fuzz_target, corpus_dir)
 
-  with ThreadPoolExecutor() as executor:
-    executor.map(_download_for_single_target, fuzz_targets)
+  thread_pool = ThreadPool(multiprocessing.cpu_count())
+  thread_pool.map(_download_for_single_target, fuzz_targets)
 
 
 def profile(args):
