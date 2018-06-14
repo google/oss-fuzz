@@ -14,6 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
+DRY_RUN=0
+
+if (( $# > 0 )); then
+  if [ "$1" = "--dry_run" ]; then
+    DRY_RUN=1
+  fi
+fi
+
+
 cd $OUT
 
 LOGS_DIR="$OUT/logs"
@@ -26,17 +35,25 @@ objects=""
 NPROC=$(nproc)
 
 function run_fuzz_target {
-  local fuzz_target=$1
-  corpus_dir="/corpus/${target}"
-  LLVM_PROFILE_FILE="$target.profraw" $target -runs=0 -timeout=100 $corpus_dir \
-      &> $LOGS_DIR/$target.log
+  local target=$1
+
+  # Use 100s timeout instead of 25s as code coverage builds can be very slow.
+  local args="-timeout=100"
+
+  if (( $DRY_RUN == 1)); then
+    args=" -max_total_time=120"
+  else
+    args=" -runs=0 /corpus/${target}"
+  fi
+
+  LLVM_PROFILE_FILE="$target.profraw" $target $args &> $LOGS_DIR/$target.log
 }
 
-# Run each fuzz target on its seed corpus, generate raw coverage dumps.
-for target in $(find . -maxdepth 1 -type f -executable); do
-  echo "Running $target"
-  run_fuzz_target $target &
-  objects="$objects -object=$target"
+# Run each fuzz target, generate raw coverage dumps.
+for fuzz_target in $(find . -maxdepth 1 -type f -executable); do
+  echo "Running $fuzz_target"
+  run_fuzz_target $fuzz_target &
+  objects="$objects -object=$fuzz_target"
 
   # Do not spawn more processes than the number of CPUs available.
   n_child_proc=$(jobs -rp | wc -l)
