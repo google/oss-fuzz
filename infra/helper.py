@@ -20,6 +20,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 import argparse
 import datetime
 import errno
+import multiprocessing
 import os
 import pipes
 import re
@@ -122,9 +123,9 @@ def main():
   profile_parser = subparsers.add_parser(
       'profile', help='Generate code coverage report for the project.')
   profile_parser.add_argument('project_name', help='name of the project')
-  profile_parser.add_argument('dry_run',  action='store_true',
+  profile_parser.add_argument('--dry-run',  action='store_true',
                               help='run fuzz targets for 120 seconds without a corpus')
-  profile_parser.add_argument('no_corpus_download',  action='store_true',
+  profile_parser.add_argument('--no-corpus-download',  action='store_true',
                               help='do not download corpus backup from OSS-Fuzz; '
                               'use corpus located in build/corpus/<project>/<fuzz_target>/')
 
@@ -492,7 +493,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
       corpus_backup_url
   ]
   output = subprocess.check_output(command).splitlines()
-  if lenoutput:
+  if output:
     latest_backup_url = output[-1]
     archive_path = corpus_dir + '.zip'
     command = [
@@ -538,6 +539,7 @@ def download_corpus(project_name):
   def _download_for_single_target(fuzz_target):
     _get_latest_corpus(project_name, fuzz_target, corpus_dir)
 
+  print('Downloading corpus for %s' % project_name)
   thread_pool = ThreadPool(multiprocessing.cpu_count())
   thread_pool.map(_download_for_single_target, fuzz_targets)
 
@@ -546,7 +548,6 @@ def profile(args):
   """Generate code coverage using clang source based code coverage."""
   if not _check_project_exists(args.project_name):
     return 1
-
   if not args.no_corpus_download and not args.dry_run:
     download_corpus(args.project_name)
 
@@ -564,6 +565,7 @@ def profile(args):
   ]
 
   run_args.append('coverage')
+
   if args.dry_run:
     run_args.append('--dry_run')
 

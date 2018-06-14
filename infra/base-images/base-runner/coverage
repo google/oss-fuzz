@@ -47,6 +47,10 @@ function run_fuzz_target {
   fi
 
   LLVM_PROFILE_FILE="$target.profraw" $target $args &> $LOGS_DIR/$target.log
+  if (( $? != 0)); then
+    echo "Error occured while running $target:"
+    cat $LOGS_DIR/$target.log
+  fi
 }
 
 # Run each fuzz target, generate raw coverage dumps.
