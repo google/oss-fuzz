@@ -24,5 +24,6 @@ Continuous Integration infrastracture:
 | `build_fuzzers` | Builds fuzz targets for a given project |
 | `run_fuzzer`    | Runs a fuzz target in a docker container |
 | `coverage`      | Runs a fuzz target in a docker container and computes a coverage report |
+| `profile`       | Runs a fuzz target in a docker container and generates a code coverage report. See [Code Coverage doc](../docs/code_coverage.md) |
 | `reproduce`     | Runs a testcase to reproduce a crash |
 | `shell`         | Starts a shell inside the docker image for a project |
