@@ -68,6 +68,6 @@ llvm-cov show -format=html -output-dir=report -path-equivalence="/,$OUT" \
 		-instr-profile merged.profdata $objects
 
 # Serve the report locally.
-echo "Serving the report on http://127.0.0.1:8008/"
+echo "Serving the report on http://127.0.0.1:$HTTP_PORT/"
 cd report
-python3 -m http.server 8008
+python3 -m http.server $HTTP_PORT
