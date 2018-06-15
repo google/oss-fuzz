@@ -464,17 +464,11 @@ def check_build(args):
 
 def _get_fuzz_targets(project_name):
   """Return names of fuzz targest build in the project's /out directory."""
-  command = [
-      'find',
-      _get_output_dir(project_name),
-      '-maxdepth',
-      '1',
-      '-type',
-      'f',
-      '-executable'
+  return [
+    p
+    for p in os.listdir(_get_output_dir(project_name))
+    if os.access(p, os.X_OK)
   ]
-  output = subprocess.check_output(command)
-  return [os.path.basename(path) for path in output.split()]
 
 
 def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
