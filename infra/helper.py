@@ -494,11 +494,13 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
     archive_path = corpus_dir + '.zip'
     command = [
         'gsutil',
+        '-q',
         'cp',
         latest_backup_url,
         archive_path
     ]
     subprocess.check_call(command)
+
     command = [
         'unzip',
         '-q',
@@ -548,7 +550,7 @@ def download_corpus(project_name):
       print('ERROR: corpus download for %s failed: %s' % (fuzz_target, str(e)),
             file=sys.stderr)
 
-  print('Downloading corpus for %s' % project_name)
+  print('Downloading corpus for %s project' % project_name)
   thread_pool = ThreadPool(multiprocessing.cpu_count())
   thread_pool.map(_download_for_single_target, fuzz_targets)
   return True
