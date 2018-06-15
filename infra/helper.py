@@ -477,8 +477,6 @@ def _get_fuzz_targets(project_name):
 
 def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
   """Download the latest corpus for the given fuzz target."""
-  if fuzz_target == 'fuzz-dns-packet':
-    raise Exception('WTF!!!')
   corpus_dir = os.path.join(base_corpus_dir, fuzz_target)
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
