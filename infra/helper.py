@@ -126,6 +126,8 @@ def main():
   profile_parser.add_argument('--no-corpus-download', action='store_true',
                               help='do not download corpus backup from OSS-Fuzz; '
                               'use corpus located in build/corpus/<project>/<fuzz_target>/')
+  profile_parser.add_argument('--port', default='8008', help='specify port for '
+                              'a local HTTP server rendering coverage report')
 
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
@@ -464,11 +466,13 @@ def check_build(args):
 
 def _get_fuzz_targets(project_name):
   """Return names of fuzz targest build in the project's /out directory."""
-  return [
-    p
-    for p in os.listdir(_get_output_dir(project_name))
-    if os.access(p, os.X_OK)
-  ]
+  fuzz_targets = []
+  for name in os.listdir(_get_output_dir(project_name)):
+    path = os.path.join(_get_output_dir(project_name), name)
+    if os.path.isfile(path) and os.access(path, os.X_OK):
+      fuzz_targets.append(name)
+
+  return fuzz_targets
 
 
 def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
@@ -490,11 +494,13 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
     archive_path = corpus_dir + '.zip'
     command = [
         'gsutil',
+        '-q',
         'cp',
         latest_backup_url,
         archive_path
     ]
     subprocess.check_call(command)
+
     command = [
         'unzip',
         '-q',
@@ -523,17 +529,31 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
 
 def download_corpus(project_name):
   """Download most recent corpus from GCS for the given project."""
+  try:
+    with open(os.devnull, 'w') as stdout:
+      subprocess.check_call(['gsutil', '--version'], stdout=stdout)
+  except OSError:
+    print('ERROR: gsutil not found. Please install it from '
+          'https://cloud.google.com/storage/docs/gsutil_install',
+          file=sys.stderr)
+    return False
+
   fuzz_targets = _get_fuzz_targets(project_name)
   corpus_dir = _get_corpus_dir(project_name)
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
 
   def _download_for_single_target(fuzz_target):
-    _get_latest_corpus(project_name, fuzz_target, corpus_dir)
+    try:
+      _get_latest_corpus(project_name, fuzz_target, corpus_dir)
+    except Exception as e:
+      print('ERROR: corpus download for %s failed: %s' % (fuzz_target, str(e)),
+            file=sys.stderr)
 
-  print('Downloading corpus for %s' % project_name)
+  print('Downloading corpus for %s project' % project_name)
   thread_pool = ThreadPool(multiprocessing.cpu_count())
   thread_pool.map(_download_for_single_target, fuzz_targets)
+  return True
 
 
 def profile(args):
@@ -541,18 +561,20 @@ def profile(args):
   if not _check_project_exists(args.project_name):
     return 1
   if not args.no_corpus_download:
-    download_corpus(args.project_name)
+    if not download_corpus(args.project_name):
+     return 1
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
       'PROJECT=%s' % args.project_name,
-      'SANITIZER=profile'
+      'SANITIZER=profile',
+      'HTTP_PORT=%s' % args.port,
   ]
 
   run_args = _env_to_docker_args(env) + [
       '-v', '%s:/out' % _get_output_dir(args.project_name),
       '-v', '%s:/corpus' % _get_corpus_dir(args.project_name),
-      '-p', '8008:8008',
+      '-p', '%s:%s' % (args.port, args.port),
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
   ]
 
