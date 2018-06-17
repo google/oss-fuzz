@@ -11,9 +11,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const uint8_t value = fuzz_hash(data, size);
   uint8_t* buf = NULL;
 
-  // This is verbose, but covers all available variants.
-  // For functions that decode into an external buffer, an intentionally
-  // too small buffer can be given with low probability.
+  // For *Into functions, which decode into an external buffer, an
+  // intentionally too small buffer can be given with low probability.
   if (value < 0x16) {
     buf = WebPDecodeRGBA(data, size, &w, &h);
   } else if (value < 0x2b) {

@@ -2,7 +2,10 @@
 #include <stdlib.h>
 
 // Arbitrary limits to prevent OOM, timeout, or slow execution.
+//
+// The decoded image size, and for animations additionally the canvas size.
 static const size_t fuzz_px_limit = 1024 * 1024;
+// Demuxed or decoded animation frames.
 static const int fuzz_frame_limit = 3;
 
 // Reads and sums (up to) 128 spread-out bytes.
