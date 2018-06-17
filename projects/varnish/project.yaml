@@ -1,0 +1,7 @@
+homepage: "https://varnish-cache.org/"
+primary_contact: "federico.schwindt@gmail.com"
+auto_ccs:
+  - "phk@varnish.org"
+sanitizers:
+  - address
+  - undefined
