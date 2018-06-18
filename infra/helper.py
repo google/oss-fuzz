@@ -557,7 +557,7 @@ def download_corpus(project_name):
 
   print('Downloading corpus for %s project' % project_name)
   thread_pool = ThreadPool(multiprocessing.cpu_count())
-  return not False in thread_pool.map(_download_for_single_target, fuzz_targets)
+  return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
 
 def profile(args):
