@@ -22,9 +22,6 @@ if [ -z "${SANITIZER_FLAGS-}" ]; then
   export SANITIZER_FLAGS=${!FLAGS_VAR-}
 fi
 
-# We don't need to compile fuzzing engine with sanitizers, unless MSan is used.
-FUZZING_ENGINE_SANITIZER_FLAGS=""
-
 if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]; then
   # Take all libraries from lib/msan and MSAN_LIBS_PATH
   # export CXXFLAGS_EXTRA="-L/usr/msan/lib $CXXFLAGS_EXTRA"
@@ -38,12 +35,15 @@ if [[ $SANITIZER_FLAGS = *sanitize=memory* ]]; then
     (cd "$MSAN_LIBS_PATH" && find . -name '*.a' -exec cp --parents '{}' / ';')
   fi
 
-  FUZZING_ENGINE_SANITIZER_FLAGS="$SANITIZER_FLAGS"
+  export FUZZING_ENGINE_SANITIZER_FLAGS="$SANITIZER_FLAGS"
+else
+  # Do not need to compile fuzzing engine with sanitizers, unless MSan is used.
+  export FUZZING_ENGINE_SANITIZER_FLAGS=""
 fi
 
 if [[ $FUZZING_ENGINE != "none" ]]; then
   # compile script might override environment, use . to call it.
-  SANITIZER_FLAGS="$FUZZING_ENGINE_SANITIZER_FLAGS" . compile_${FUZZING_ENGINE}
+  . compile_${FUZZING_ENGINE}
 fi
 
 # Coverage flag overrides.
