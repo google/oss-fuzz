@@ -59,8 +59,8 @@ bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=st
   :all test/core/util/... test/core/end2end/... third_party/address_sorting/... \
   third_party/nanopb/... @boringssl//:all @com_github_madler_zlib//:all @com_github_cares_cares//:all
 
-CFLAGS="${CFLAGS} -Iinclude -I."
-CXXFLAGS="${CXXFLAGS} -Iinclude -I. -stdlib=libc++"
+CFLAGS="${CFLAGS} -Iinclude -Ithird_party/nanopb -I."
+CXXFLAGS="${CXXFLAGS} -Iinclude -Ithird_party/nanopb -I. -stdlib=libc++"
 
 for file in $FUZZER_FILES; do
   fuzzer_name=$(basename $file .cc)
