@@ -2,3 +2,4 @@ homepage: "https://www.strongswan.org"
 primary_contact: "security@strongswan.org"
 auto_ccs:
   - "tobias@strongswan.org"
+  - "andreas.steffen@strongswan.org"
