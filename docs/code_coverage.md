@@ -40,6 +40,8 @@ and try again. Once `gsutil` works, you can run the report generation.
 
 ## Generating code coverage reports
 
+### Full project report
+
 To generate code coverage report using the corpus aggregated on OSS-Fuzz, run:
 
 ```bash
@@ -52,6 +54,22 @@ each fuzz target, then run:
 
 ```bash
 python infra/helper.py profile --no-corpus-download $project_name
+```
+
+### Single fuzz target
+
+You can generate a code coverage report for a particular fuzz target with
+`--fuzz-target` argument:
+
+```bash
+python infra/helper.py profile --fuzz-target=<fuzz_target_name> $project_name
+```
+
+In this mode, you can specify an arbitrary corpus location for the fuzz target
+via `--corpus-dir` to be used instead of the corpus downloaded from OSS-Fuzz:
+
+```bash
+python infra/helper.py profile --fuzz-target=<fuzz_target_name> --corpus-dir=<my_local_corpus_dir> $project_name
 ```
 
 

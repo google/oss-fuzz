@@ -128,6 +128,10 @@ def main():
                               'use corpus located in build/corpus/<project>/<fuzz_target>/')
   profile_parser.add_argument('--port', default='8008', help='specify port for '
                               'a local HTTP server rendering coverage report')
+  profile_parser.add_argument('--fuzz-target', help='specify name of a fuzz '
+                              'target to be run for generating coverage report')
+  profile_parser.add_argument('--corpus-dir', help='specify location of corpus '
+                              'to be used (requires --fuzz-target argument)')
 
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
@@ -530,7 +534,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
     subprocess.check_call(command)
 
 
-def download_corpus(project_name):
+def download_corpus(args):
   """Download most recent corpus from GCS for the given project."""
   try:
     with open(os.devnull, 'w') as stdout:
@@ -541,32 +545,43 @@ def download_corpus(project_name):
           file=sys.stderr)
     return False
 
-  fuzz_targets = _get_fuzz_targets(project_name)
-  corpus_dir = _get_corpus_dir(project_name)
+  if args.fuzz_target:
+    fuzz_targets = [args.fuzz_target]
+  else:
+    fuzz_targets = _get_fuzz_targets(args.project_name)
+
+  corpus_dir = _get_corpus_dir(args.project_name)
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
 
   def _download_for_single_target(fuzz_target):
     try:
-      _get_latest_corpus(project_name, fuzz_target, corpus_dir)
+      _get_latest_corpus(args.project_name, fuzz_target, corpus_dir)
       return True
     except Exception as e:
       print('ERROR: corpus download for %s failed: %s' % (fuzz_target, str(e)),
             file=sys.stderr)
       return False
 
-  print('Downloading corpus for %s project' % project_name)
+  print('Downloading corpus for %s project' % args.project_name)
   thread_pool = ThreadPool(multiprocessing.cpu_count())
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
 
 def profile(args):
   """Generate code coverage using clang source based code coverage."""
+  if args.corpus_dir and not args.fuzz_target:
+    print('ERROR: --corpus-dir requires specifying a particular fuzz target '
+          'using --fuzz-target',
+          file=sys.stderr)
+    return 1
+
   if not _check_project_exists(args.project_name):
     return 1
-  if not args.no_corpus_download:
-    if not download_corpus(args.project_name):
-     return 1
+
+  if not args.no_corpus_download and not args.corpus_dir:
+    if not download_corpus(args):
+      return 1
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
@@ -575,14 +590,27 @@ def profile(args):
       'HTTP_PORT=%s' % args.port,
   ]
 
-  run_args = _env_to_docker_args(env) + [
+  run_args = _env_to_docker_args(env)
+
+  if args.corpus_dir:
+    if not os.path.exists(args.corpus_dir):
+      print('ERROR: the path provided in --corpus-dir argument does not exist',
+          file=sys.stderr)
+      return 1
+    corpus_dir = os.path.realpath(args.corpus_dir)
+    run_args.extend(['-v', '%s:/corpus/%s' % (corpus_dir,  args.fuzz_target)])
+  else:
+    run_args.extend(['-v', '%s:/corpus' % _get_corpus_dir(args.project_name)])
+
+  run_args.extend([
       '-v', '%s:/out' % _get_output_dir(args.project_name),
-      '-v', '%s:/corpus' % _get_corpus_dir(args.project_name),
       '-p', '%s:%s' % (args.port, args.port),
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
-  ]
+  ])
 
   run_args.append('coverage')
+  if args.fuzz_target:
+    run_args.append(args.fuzz_target)
 
   exit_code = docker_run(run_args)
   if exit_code == 0:
