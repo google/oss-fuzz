@@ -571,14 +571,17 @@ def download_corpus(args):
 def profile(args):
   """Generate code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
-    print('ERROR: --corpus-dir argument cannot be used without --fuzz-target',
+    print('ERROR: --corpus-dir requires specifying a particular fuzz target '
+          'using --fuzz-target',
           file=sys.stderr)
     return 1
+
   if not _check_project_exists(args.project_name):
     return 1
+
   if not args.no_corpus_download and not args.corpus_dir:
     if not download_corpus(args):
-     return 1
+      return 1
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
