@@ -27,8 +27,14 @@ do
     cmake -DCAPSTONE_BUILD_SHARED=0 ..
     make
 
-    cd ../suite/fuzz
-    # TODO corpus
+    cd ../bindings/python
+    python setup.py install
+    cd ../suite
+    mkdir fuzz/corpus
+    find MC/ -name *.cs | ./test_corpus.py
+    cd fuzz
+    zip -r fuzz_disasm$branch_seed_corpus.zip corpus/
+    cp fuzz_disasm$branch_seed_corpus.zip $OUT/
 
     # export other associated stuff
     cp fuzz_disasm.options $OUT/fuzz_disasm$branch.options
