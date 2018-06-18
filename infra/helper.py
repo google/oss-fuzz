@@ -50,10 +50,10 @@ if sys.version_info[0] >= 3:
 
 CORPUS_URL_FORMAT = (
     'gs://{project_name}-corpus.clusterfuzz-external.appspot.com/libFuzzer/'
-    '{project_name}_{fuzz_target}/')
+    '{fuzz_target}/')
 CORPUS_BACKUP_URL_FORMAT = (
     'gs://{project_name}-backup.clusterfuzz-external.appspot.com/corpus/'
-    'libFuzzer/{project_name}_{fuzz_target}/')
+    'libFuzzer/{fuzz_target}/')
 
 
 def main():
@@ -480,6 +480,9 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
   corpus_dir = os.path.join(base_corpus_dir, fuzz_target)
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
+
+  if not fuzz_target.startswith(project_name):
+    fuzz_target = '%s_%s' % (project_name, fuzz_target)
 
   corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project_name,
                                                       fuzz_target=fuzz_target)
