@@ -546,14 +546,15 @@ def download_corpus(project_name):
   def _download_for_single_target(fuzz_target):
     try:
       _get_latest_corpus(project_name, fuzz_target, corpus_dir)
+      return True
     except Exception as e:
       print('ERROR: corpus download for %s failed: %s' % (fuzz_target, str(e)),
             file=sys.stderr)
+      return False
 
   print('Downloading corpus for %s project' % project_name)
   thread_pool = ThreadPool(multiprocessing.cpu_count())
-  thread_pool.map(_download_for_single_target, fuzz_targets)
-  return True
+  return not False in thread_pool.map(_download_for_single_target, fuzz_targets)
 
 
 def profile(args):
