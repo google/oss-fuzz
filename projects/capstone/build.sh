@@ -24,15 +24,14 @@ do
     # does not seem to work in source directory
     # + make.sh overwrites CFLAGS
     cd build
-    cmake -DCAPSTONE_BUILD_SHARED=1 ..
+    cmake -DCAPSTONE_BUILD_SHARED=0 ..
     make
 
+    cd ../bindings/python
+    python setup.py install
     cd ../suite
     mkdir fuzz/corpus
-    (
-    export LIBCAPSTONE_PATH=$SRC/capstone$branch/build/ PYTHONPATH=$SRC/capstone$branch/bindings/python/
     find MC/ -name *.cs | ./test_corpus.py
-    )
     cd fuzz
     zip -r fuzz_disasm$branch_seed_corpus.zip corpus/
     cp fuzz_disasm$branch_seed_corpus.zip $OUT/
