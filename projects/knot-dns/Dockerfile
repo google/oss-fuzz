@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jonathan.foote@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
-RUN apt-get install -y texinfo gperf wget autopoint texinfo flex bison
+RUN apt-get install -y texinfo gperf wget autopoint texinfo flex bison gettext
 
 RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
 RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
