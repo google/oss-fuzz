@@ -7,7 +7,7 @@
 #include "aom/aom_decoder.h"
 #include "aom/aomdx.h"
 #include "aom_ports/mem_ops.h"
-#include "aom/common/ivfdec.h"
+#include "common/ivfdec.h"
 
 static const char *const kIVFSignature = "DKIF";
 
