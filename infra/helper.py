@@ -240,7 +240,8 @@ def _get_work_dir(project_name=''):
 def _add_engine_args(parser):
   """Add common engine args."""
   parser.add_argument('--engine', default='libfuzzer',
-                      choices=['libfuzzer', 'afl', 'honggfuzz', 'none'])
+                      choices=['libfuzzer', 'afl', 'honggfuzz', 'perffuzz',
+                               'none'])
 
 
 def _add_sanitizer_args(parser):
