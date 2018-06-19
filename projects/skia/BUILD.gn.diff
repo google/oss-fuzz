@@ -262,9 +262,11 @@ test_app("skottie_json") {
 }
 
 test_app("skjson") {
+  sources = [
+    "fuzz/oss_fuzz/FuzzJSON.cpp",
+  ]
   deps = [
     ":flags",
     ":skia",
-    "modules/skjson:fuzz",
   ]
 }
