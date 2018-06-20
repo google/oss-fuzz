@@ -33,9 +33,16 @@ MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD=0
 # Usually, a non UBSan build (e.g. ASan) has 165 calls to UBSan runtime. The
 # majority of targets built with UBSan have 200+ UBSan calls, but there are
 # some very small targets that may have < 200 UBSan calls even in a UBSan build.
-# Use threshold value of 170 which should satisfy both cases with a little gap.
+# Use the threshold value of 170 (slightly > 165) for UBSan build.
 UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD=170
-UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=170
+
+# It would be risky to use the threshold value close to 165 for non UBSan build,
+# as UBSan runtime may change any time and thus we could have different number
+# of calls to UBSan runtime even in ASan build. With that, we use the threshold
+# value of 200 that would detect unnecessary UBSan instrumentation in the vast
+# majority of targets, except of a handful very small ones, which would not be
+# a big concern either way as the overhead for them would not be significant.
+UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=200
 
 
 # Verify that the given fuzz target has proper coverage instrumentation.
