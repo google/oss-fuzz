@@ -30,8 +30,12 @@ ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD=0
 MSAN_CALLS_THRESHOLD_FOR_MSAN_BUILD=1000
 MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD=0
 
-UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD=350
-UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=200
+# Usually, a non UBSan build (e.g. ASan) has 165 calls to UBSan runtime. The
+# majority of targets built with UBSan have 200+ UBSan calls, but there are
+# some very small targets that may have < 200 UBSan calls even in a UBSan build.
+# Use threshold value of 170 which should satisfy both cases with a little gap.
+UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD=170
+UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=170
 
 
 # Verify that the given fuzz target has proper coverage instrumentation.
@@ -65,7 +69,7 @@ function check_instrumentation {
     fi
     return
   else
-    # TODO: add checks for another fuzzing engines if possible.
+    # TODO: add checks for other fuzzing engines if possible.
     return
   fi
 
