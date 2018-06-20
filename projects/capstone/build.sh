@@ -29,7 +29,7 @@ do
 
     cd ../bindings/python
     python setup.py install
-    cd ../suite
+    cd ../../suite
     mkdir fuzz/corpus
     find MC/ -name *.cs | ./test_corpus.py
     cd fuzz
