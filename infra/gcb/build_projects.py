@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 """Starts project build on Google Cloud Builder.
 
-Usage: build.py <project_dir>
+Usage: build_projects.py <project_dir>
 """
 
 import base64
@@ -137,7 +137,9 @@ def workdir_from_dockerfile(dockerfile):
   return None
 
 
-def get_build_steps(project_yaml, dockerfile_path):
+def get_build_steps(project_dir):
+  project_yaml = load_project_yaml(project_dir)
+  dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
   run_tests = project_yaml['run_tests']
@@ -316,20 +318,13 @@ def get_logs_url(build_id):
   return URL_FORMAT.format(build_id)
 
 
-def main():
-  if len(sys.argv) != 2:
-    usage()
-
-  project_dir = sys.argv[1]
-  project_yaml = load_project_yaml(project_dir)
-  dockerfile_path = os.path.join(project_dir, 'Dockerfile')
-
+def build(build_steps):
   options = {}
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
 
   build_body = {
-      'steps': get_build_steps(project_yaml, dockerfile_path),
+      'steps': build_steps,
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': 'oss-fuzz-gcb-logs',
@@ -344,6 +339,14 @@ def main():
 
   print >> sys.stderr, 'Logs:', get_logs_url(build_id)
   print build_id
+
+
+def main():
+  if len(sys.argv) != 2:
+    usage()
+
+  project_dir = sys.argv[1]
+  build(get_build_steps(project_dir))
 
 
 if __name__ == '__main__':
