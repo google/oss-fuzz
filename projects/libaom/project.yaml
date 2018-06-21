@@ -4,5 +4,6 @@ sanitizers:
 - address
 - undefined
 auto_ccs:
-- jzern@google.com
 - huisu@google.com
+- jaikk@google.com
+- jzern@google.com
