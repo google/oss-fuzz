@@ -31,7 +31,10 @@ do
     python setup.py install
     cd ../../suite
     mkdir fuzz/corpus
+    (
+    export LIBCAPSTONE_PATH=$SRC/capstone$branch/bindings/python/capstone/lib/
     find MC/ -name *.cs | ./test_corpus.py
+    )
     cd fuzz
     zip -r fuzz_disasm$branch_seed_corpus.zip corpus/
     cp fuzz_disasm$branch_seed_corpus.zip $OUT/
