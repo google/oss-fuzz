@@ -26,3 +26,4 @@ for file in $SRC/*target.c; do
 	-o $OUT/${b}_fuzzer
 done
 cp $SRC/*.dict $SRC/*.options $OUT/
+wget -O $OUT/json.dict https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/json.dict
