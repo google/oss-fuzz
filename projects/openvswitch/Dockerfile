@@ -17,8 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER blp@ovn.org
 RUN apt-get update && apt-get install -y make autoconf automake \
-					libtool python python-pip \
-					libz-dev libssl-dev libssl1.0.0
+    libtool python python-pip \
+    libz-dev libssl-dev libssl1.0.0
 RUN pip install six
 RUN git clone --depth 1 https://github.com/openvswitch/ovs.git openvswitch
 WORKDIR openvswitch

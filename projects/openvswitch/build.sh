@@ -20,7 +20,7 @@
 for file in $SRC/*target.c; do
 	b=$(basename $file _target.c)
 	$CC $CFLAGS -c $file -I . -I lib/ -I include/ \
-		-o $OUT/${b}_target.o
+    -o $OUT/${b}_target.o
 	$CXX $CXXFLAGS $OUT/${b}_target.o ./lib/.libs/libopenvswitch.a \
 	-lz -lssl -lcrypto -latomic -lFuzzingEngine \
 	-o $OUT/${b}_fuzzer
