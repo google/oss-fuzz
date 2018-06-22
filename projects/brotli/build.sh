@@ -4,8 +4,9 @@ cmake . -DBUILD_TESTING=OFF
 make clean
 make -j$(nproc) brotlidec-static
 
-$CC $CFLAGS -std=c99 -I. \
-    c/fuzz/decode_fuzzer.c -I./c/include -o $OUT/decode_fuzzer \
+$CC $CFLAGS -c -std=c99 -I. -I./c/include c/fuzz/decode_fuzzer.c 
+
+$CXX $CXXFLAGS ./decode_fuzzer.o  -o $OUT/decode_fuzzer \
     -lFuzzingEngine ./libbrotlidec-static.a ./libbrotlicommon-static.a
 
 cp java/org/brotli/integration/fuzz_data.zip $OUT/decode_fuzzer_seed_corpus.zip
