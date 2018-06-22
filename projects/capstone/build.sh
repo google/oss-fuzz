@@ -30,13 +30,13 @@ do
     cd ../bindings/python
     #better debug info
     sed -i -e 's/#print/print/' capstone/__init__.py
-    python setup.py install
-    cd ../suite
-    mkdir fuzz/corpus
     (
     export CFLAGS=""
-    find MC/ -name *.cs | ./test_corpus.py
+    python setup.py install
     )
+    cd ../suite
+    mkdir fuzz/corpus
+    find MC/ -name *.cs | ./test_corpus.py
     cd fuzz
     zip -r fuzz_disasm$branch_seed_corpus.zip corpus/
     cp fuzz_disasm$branch_seed_corpus.zip $OUT/
