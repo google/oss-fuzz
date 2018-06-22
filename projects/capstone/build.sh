@@ -28,11 +28,13 @@ do
     make
 
     cd ../bindings/python
+    #better debug info
+    sed -i -e 's/#print/print/' capstone/__init__.py
     python setup.py install
-    cd ../../suite
+    cd ../suite
     mkdir fuzz/corpus
     (
-    export LIBCAPSTONE_PATH=$SRC/capstone$branch/bindings/python/capstone/lib/
+    export CFLAGS=""
     find MC/ -name *.cs | ./test_corpus.py
     )
     cd fuzz
