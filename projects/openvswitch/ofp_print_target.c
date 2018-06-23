@@ -18,11 +18,14 @@
 #include "dp-packet.h"
 #include "openvswitch/ofpbuf.h"
 #include "openvswitch/ofp-print.h"
+#include "openvswitch/vlog.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
     struct ofpbuf b;
     if (size < sizeof(struct ofp_header)) return 0;
+
+    vlog_set_verbosity("off");
 
     ofpbuf_use_const(&b, data, size);
     for (;;) {
