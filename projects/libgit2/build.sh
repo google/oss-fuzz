@@ -18,11 +18,15 @@
 # build project
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX="$WORK" -DBUILD_SHARED_LIBS=OFF
+cmake .. -DCMAKE_INSTALL_PREFIX="$WORK" \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DBUILD_CLAR=OFF \
+      -DUSE_HTTPS=OFF \
+      -DUSE_BUNDLED_ZLIB=ON \
+
 make -j$(nproc)
 make install
 
 $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
     /src/fuzz_download_refs.cc -o $OUT/download_refs \
-    -lFuzzingEngine "$WORK/lib/libgit2.a" \
-    /usr/lib/x86_64-linux-gnu/libssl.a /usr/lib/x86_64-linux-gnu/libcrypto.a -lz
+    -lFuzzingEngine "$WORK/lib/libgit2.a"
