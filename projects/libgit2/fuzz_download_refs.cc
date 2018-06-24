@@ -117,7 +117,6 @@ void fuzzer_git_abort(const char *op) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   static git_repository *repo = nullptr;
-  static git_remote *remote = nullptr;
   if (repo == nullptr) {
       git_libgit2_init();
       char tmp[] = "/tmp/git2.XXXXXX";
@@ -128,19 +127,22 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       if (err != 0) {
           fuzzer_git_abort("git_repository_init");
       }
-
-      err = git_remote_create(&remote, repo, "fuzzer", "fuzzer://remote-url");
-      if (err != 0) {
-          fuzzer_git_abort("git_remote_create");
-      }
   }
+
+  int err;
+  git_remote *remote;
+  err = git_remote_create_anonymous(&remote, repo, "fuzzer://remote-url");
+  if (err != 0) {
+      fuzzer_git_abort("git_remote_create");
+  }
+
 
   fuzz_buffer buffer = {data, size};
   git_remote_callbacks callbacks = GIT_REMOTE_CALLBACKS_INIT;
   callbacks.transport = create_fuzzer_transport;
   callbacks.payload = &buffer;
 
-  int err = git_remote_connect(remote, GIT_DIRECTION_FETCH, &callbacks, nullptr, nullptr);
+  err = git_remote_connect(remote, GIT_DIRECTION_FETCH, &callbacks, nullptr, nullptr);
   if (err != 0) {
       goto out;
   }
@@ -148,7 +150,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   git_remote_download(remote, nullptr, nullptr);
 
  out:
-  git_remote_disconnect(remote);
+  git_remote_free(remote);
 
   return 0;
 }
