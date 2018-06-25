@@ -27,14 +27,14 @@ do
     cmake -DCAPSTONE_BUILD_SHARED=0 ..
     make
 
-    cd ../bindings/python
+    cd $SRC/capstone$branch/bindings/python
     #better debug info
     sed -i -e 's/#print/print/' capstone/__init__.py
     (
     export CFLAGS=""
     python setup.py install
     )
-    cd ../../suite
+    cd $SRC/capstone$branch/suite
     mkdir fuzz/corpus
     find MC/ -name *.cs | ./test_corpus.py
     cd fuzz
