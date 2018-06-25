@@ -34,7 +34,7 @@ do
     export CFLAGS=""
     python setup.py install
     )
-    cd ../suite
+    cd ../../suite
     mkdir fuzz/corpus
     find MC/ -name *.cs | ./test_corpus.py
     cd fuzz
