@@ -22,10 +22,14 @@
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
+    static bool isInit = false;
     struct ofpbuf b;
     if (size < sizeof(struct ofp_header)) return 0;
 
-    vlog_set_verbosity("off");
+    if (!isInit) {
+	vlog_set_verbosity("off");
+	isInit = true;
+    }
 
     ofpbuf_use_const(&b, data, size);
     for (;;) {
