@@ -19,10 +19,10 @@
 cd SwiftShader
 export SWIFTSHADER_INCLUDE_PATH=$PWD/include
 rm -rf build
-mkdir -p build
+mkdir build
 
 cd build
-if [ $SANITIZER=="profile" ]; then
+if [ $SANITIZER == "profile" ]; then
   cmake ..
 else
   if [ $SANITIZER == "address" ]; then

@@ -30,7 +30,6 @@ WORKDIR ..
 
 RUN git clone https://skia.googlesource.com/skia.git --depth 1
 
-# current directory for build script
 WORKDIR skia
 
 RUN bin/sync
@@ -91,4 +90,6 @@ COPY json.dict $SRC/skia/json.dict
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn
+
+# current directory for build script
 WORKDIR ..
