@@ -112,7 +112,7 @@ cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed
 if [ "$FUZZING_ENGINE" == "libfuzzer" ]
 then
   # Use the same binary as image_filter_deserialize.
-  cp out/image_filter_deserialize $OUT/image_filter_deserialize_width
+  cp out/Fuzz/image_filter_deserialize $OUT/image_filter_deserialize_width
   cp ./image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
   # Use the same seed corpus as image_filter_deserialize.
   cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_width_seed_corpus.zip
@@ -149,11 +149,11 @@ cp out/Fuzz/skjson $OUT/skjson
 cp json.dict $OUT/skjson.dict
 cp ./skjson_seed_corpus.zip $OUT/skjson_seed_corpus.zip
 
-cp out/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
+cp out/Fuzz/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
 cp ./api_mock_gpu_canvas.options $OUT/api_mock_gpu_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_mock_gpu_canvas_seed_corpus.zip
 
-cp out/api_raster_n32_canvas $OUT/api_raster_n32_canvas
+cp out/Fuzz/api_raster_n32_canvas $OUT/api_raster_n32_canvas
 cp ./api_raster_n32_canvas.options $OUT/api_raster_n32_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_raster_n32_canvas_seed_corpus.zip
 
