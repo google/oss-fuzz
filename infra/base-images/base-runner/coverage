@@ -46,6 +46,10 @@ function run_fuzz_target {
 
 # Run each fuzz target, generate raw coverage dumps.
 for fuzz_target in $FUZZ_TARGETS; do
+  if grep -va $FUZZER_BINARY "LLVMFuzzerTestOneInput" > /dev/null 2>&1; then
+    continue
+  fi
+
   echo "Running $fuzz_target"
   run_fuzz_target $fuzz_target &
   objects="$objects -object=$fuzz_target"
