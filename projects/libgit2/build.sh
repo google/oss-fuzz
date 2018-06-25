@@ -31,3 +31,5 @@ make install
 $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
     /src/fuzz_download_refs.cc -o $OUT/download_refs \
     -lFuzzingEngine "$WORK/lib/libgit2.a"
+
+zip -j "$OUT/download_refs_seed_corpus.zip" $SRC/corpora/download_refs/*
