@@ -31,6 +31,7 @@ readonly FUZZERS=( \
   clang-fuzzer \
   clang-proto-fuzzer \
   clang-loop-proto-fuzzer \
+  clang-llvm-proto-fuzzer \
   clang-format-fuzzer \
   clangd-fuzzer \
   llvm-demangle-fuzzer \
