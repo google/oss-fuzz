@@ -6,3 +6,4 @@ sanitizers:
 - memory
 auto_ccs:
 - vrabaud@google.com
+- yguyon@google.com
