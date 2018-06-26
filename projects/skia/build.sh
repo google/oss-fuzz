@@ -25,8 +25,7 @@ cd build
 if [ $SANITIZER == "profile" ]; then
   cmake ..
 elif [ $SANITIZER == "coverage" ]; then
-  # TODO(metzman): Remove this ugly hack once "coverage" builds are removed from
-  # OSS-Fuzz.
+  # TODO(metzman): Remove this once "coverage" builds are removed from OSS-Fuzz.
   CFLAGS= CXXFLAGS="-stdlib=libc++" cmake ..
 else
   if [ $SANITIZER == "address" ]; then
