@@ -17,15 +17,19 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kjlubick@chromium.org
 
-RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev patchelf
+# Mesa needed to build swiftshader
+RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake
 
-RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git'
+RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
 ENV PATH="${SRC}/depot_tools:${PATH}"
 
-# checkout all sources needed to build your project
-RUN git clone https://skia.googlesource.com/skia.git
+RUN git clone https://swiftshader.googlesource.com/SwiftShader --depth 1
+WORKDIR SwiftShader
+RUN git submodule update --init
+WORKDIR ..
 
-# current directory for build script
+RUN git clone https://skia.googlesource.com/skia.git --depth 1
+
 WORKDIR skia
 
 RUN bin/sync
@@ -86,3 +90,6 @@ COPY json.dict $SRC/skia/json.dict
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn
+
+# current directory for build script
+WORKDIR ..
