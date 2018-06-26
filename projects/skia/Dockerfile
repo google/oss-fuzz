@@ -23,16 +23,17 @@ RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake
 RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
 ENV PATH="${SRC}/depot_tools:${PATH}"
 
-RUN git clone https://swiftshader.googlesource.com/SwiftShader --depth 1
-WORKDIR SwiftShader
-RUN git submodule update --init
-WORKDIR ..
-
 RUN git clone https://skia.googlesource.com/skia.git --depth 1
 
+# current directory for build script
 WORKDIR skia
 
 RUN bin/sync
+
+# Setup SwiftShader
+WORKDIR $SRC/skia/third_party/externals/swiftshader/
+RUN git submodule update --init
+WORKDIR $SRC/skia
 
 RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
 
@@ -90,6 +91,3 @@ COPY json.dict $SRC/skia/json.dict
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn
-
-# current directory for build script
-WORKDIR ..
