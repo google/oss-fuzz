@@ -22,9 +22,12 @@ rm -rf build
 mkdir build
 
 cd build
-echo $CFLAGS
 if [ $SANITIZER == "profile" ]; then
   cmake ..
+elif [ $SANITIZER == "coverage" ]; then
+  # TODO(metzman): Remove this ugly hack once "coverage" builds are removed from
+  # OSS-Fuzz.
+  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake ..
 else
   if [ $SANITIZER == "address" ]; then
     CMAKE_SANITIZER="ASAN"
