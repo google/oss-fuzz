@@ -16,7 +16,7 @@
 ################################################################################
 
 # Build SwiftShader
-cd SwiftShader
+pushd third_party/externals/swiftshader/
 export SWIFTSHADER_INCLUDE_PATH=$PWD/include
 rm -rf build
 mkdir build
@@ -44,7 +44,7 @@ make -j
 cp libGLESv2.so libEGL.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
-cd ../../skia
+popd
 # These are any clang warnings we need to silence.
 DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
          -Wno-cast-qual -Wno-self-assign -Wno-return-std-move-in-c++11"
