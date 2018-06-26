@@ -22,6 +22,7 @@ rm -rf build
 mkdir build
 
 cd build
+echo $CFLAGS
 if [ $SANITIZER == "profile" ]; then
   cmake ..
 else
@@ -47,7 +48,7 @@ DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
          -Wno-cast-qual -Wno-self-assign -Wno-return-std-move-in-c++11"
 # Disable UBSan vptr since target built with -fno-rtti.
 export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr "-DIS_FUZZING_WITH_LIBFUZZER""
 export LDFLAGS="-lFuzzingEngine $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
@@ -57,12 +58,13 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
 # Even though GPU is "enabled" for all these builds, none really
 # uses the gpu except for api_mock_gpu_canvas
+
 $SRC/depot_tools/gn gen out/Fuzz\
     --args='cc="'$CC'"
     cxx="'$CXX'"
     is_debug=false
     extra_cflags_c=["'"$CFLAGS_ARR"'"]
-    extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING_WITH_LIBFUZZER"]
+    extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
     extra_ldflags=["'"$LDFLAGS_ARR"'"]
     skia_use_egl=true
     skia_use_system_freetype2=false
@@ -70,15 +72,30 @@ $SRC/depot_tools/gn gen out/Fuzz\
     skia_enable_gpu=true
     skia_enable_skottie=true'
 
+$SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
+    --args='cc="'$CC'"
+      cxx="'$CXX'"
+      is_debug=false
+      extra_cflags_c=["'"$CFLAGS_ARR"'"]
+      extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"]
+      extra_ldflags=["'"$LDFLAGS_ARR"'"]
+      skia_use_egl=true
+      skia_use_system_freetype2=false
+      skia_use_fontconfig=false
+      skia_enable_gpu=true
+      skia_enable_skottie=false'
+
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode \
                                    animated_image_decode api_draw_functions \
                                    api_gradients api_path_measure png_encoder \
                                    jpeg_encoder webp_encoder skottie_json \
                                    textblob_deserialize skjson \
-                                   api_null_canvas api_image_filter \
-                                   image_filter_deserialize \
-                                   api_raster_n32_canvas api_mock_gpu_canvas
+                                   api_null_canvas api_image_filter
+
+$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
+                                                   api_raster_n32_canvas \
+                                                   api_mock_gpu_canvas
 
 cp out/Fuzz/region_deserialize $OUT/region_deserialize
 cp ./region_deserialize.options $OUT/region_deserialize.options
@@ -103,7 +120,7 @@ cp out/Fuzz/animated_image_decode $OUT/animated_image_decode
 cp ./animated_image_decode.options $OUT/animated_image_decode.options
 cp ./animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpus.zip
 
-cp out/Fuzz/image_filter_deserialize $OUT/image_filter_deserialize
+cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize
 cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
 cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
 
@@ -112,7 +129,7 @@ cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed
 if [ "$FUZZING_ENGINE" == "libfuzzer" ]
 then
   # Use the same binary as image_filter_deserialize.
-  cp out/Fuzz/image_filter_deserialize $OUT/image_filter_deserialize_width
+  cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize_width
   cp ./image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
   # Use the same seed corpus as image_filter_deserialize.
   cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_width_seed_corpus.zip
@@ -149,11 +166,11 @@ cp out/Fuzz/skjson $OUT/skjson
 cp json.dict $OUT/skjson.dict
 cp ./skjson_seed_corpus.zip $OUT/skjson_seed_corpus.zip
 
-cp out/Fuzz/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
+cp out/Fuzz_mem_constraints/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
 cp ./api_mock_gpu_canvas.options $OUT/api_mock_gpu_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_mock_gpu_canvas_seed_corpus.zip
 
-cp out/Fuzz/api_raster_n32_canvas $OUT/api_raster_n32_canvas
+cp out/Fuzz_mem_constraints/api_raster_n32_canvas $OUT/api_raster_n32_canvas
 cp ./api_raster_n32_canvas.options $OUT/api_raster_n32_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_raster_n32_canvas_seed_corpus.zip
 
