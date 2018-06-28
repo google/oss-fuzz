@@ -20,5 +20,8 @@ RUN apt-get update && apt-get install -y autoconf make libtool
 RUN git clone https://chromium.googlesource.com/webm/libwebp
 ADD http://cdn.pwmon.org/oss-fuzz/libwebp/fuzz_seed_corpus.zip $SRC/
 COPY build.sh fuzz.h fuzz.dict $SRC/
-COPY fuzz_simple_api.c fuzz_simple_api.options $SRC/
+COPY fuzz_simple_api.c $SRC/
+COPY fuzz_advanced_api.c $SRC/
+COPY fuzz_animation_api.c $SRC/
+COPY fuzz_demux_api.c $SRC/
 WORKDIR libwebp

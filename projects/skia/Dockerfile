@@ -17,18 +17,23 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kjlubick@chromium.org
 
-RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev patchelf
+# Mesa needed to build swiftshader
+RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake
 
-RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git'
+RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
 ENV PATH="${SRC}/depot_tools:${PATH}"
 
-# checkout all sources needed to build your project
-RUN git clone https://skia.googlesource.com/skia.git
+RUN git clone https://skia.googlesource.com/skia.git --depth 1
 
 # current directory for build script
 WORKDIR skia
 
 RUN bin/sync
+
+# Setup SwiftShader
+WORKDIR $SRC/skia/third_party/externals/swiftshader/
+RUN git submodule update --init
+WORKDIR $SRC/skia
 
 RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
 
