@@ -20,6 +20,7 @@ WEBP_CFLAGS="$CFLAGS -DWEBP_MAX_IMAGE_SIZE=838860800" # 800MiB
 
 ./autogen.sh
 CFLAGS="$WEBP_CFLAGS" ./configure \
+  --enable-asserts \
   --enable-libwebpdemux \
   --enable-libwebpmux \
   --disable-shared \
