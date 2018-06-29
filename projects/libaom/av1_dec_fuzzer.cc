@@ -58,7 +58,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       ++frame_out_cnt;
     }
   }
-
+  aom_codec_destroy(&codec);
   fclose(file);
   free(buffer);
   return 0;
