@@ -1,0 +1,6 @@
+homepage: "https://www.aleksey.com/xmlsec/"
+auto_ccs:
+  - "aleksey@aleksey.com"
+sanitizers:
+  - address
+  - undefined
