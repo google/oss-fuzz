@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+if [ -d $SRC/libaom ]; then
+  # We are reproducing issue with a local repo.
+  # But local repo is implicitly stored in 'libaom' directory due to that
+  # project name; while repo fetched with wget is in 'aom'.
+  # So, we, replace remote one with local one.
+  rm -rf $SRC/aom
+  cp -rf $SRC/libaom $SRC/aom
+fi
+
 # Build libaom
 pushd $WORK
 rm -rf ./*
