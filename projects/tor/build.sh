@@ -68,16 +68,7 @@ export ASAN_OPTIONS=detect_leaks=0
 make clean
 make -j$(nproc) oss-fuzz-fuzzers
 
-TORLIBS="src/or/libtor-testing.a"
-TORLIBS="$TORLIBS src/common/libor-crypto-testing.a"
-TORLIBS="$TORLIBS src/ext/keccak-tiny/libkeccak-tiny.a"
-TORLIBS="$TORLIBS src/common/libcurve25519_donna.a"
-TORLIBS="$TORLIBS src/ext/ed25519/ref10/libed25519_ref10.a"
-TORLIBS="$TORLIBS src/ext/ed25519/donna/libed25519_donna.a"
-TORLIBS="$TORLIBS src/common/libor-testing.a"
-TORLIBS="$TORLIBS src/common/libor-ctime-testing.a"
-TORLIBS="$TORLIBS src/common/libor-event-testing.a"
-TORLIBS="$TORLIBS src/trunnel/libor-trunnel-testing.a"
+TORLIBS="`make show-testing-libs`"
 TORLIBS="$TORLIBS -lm -Wl,-Bstatic -lssl -lcrypto -levent -lz -L${TOR_DEPS}/lib"
 TORLIBS="$TORLIBS -Wl,-Bdynamic"
 
