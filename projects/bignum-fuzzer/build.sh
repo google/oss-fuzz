@@ -70,7 +70,7 @@ make clean
 CXXFLAGS="$BASE_CXXFLAGS -DBNFUZZ_FLAG_NUM_LEN=1200 -DBNFUZZ_FLAG_ALL_OPERATIONS=1 -DBNFUZZ_FLAG_NUM_LOOPS=1"
 LIBFUZZER_LINK="-lFuzzingEngine" make
 
-# Copy OpenSSL/C++-Boost fuzzer to the designated location
+# Copy OpenSSL/libgmp fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_libgmp_num_len_1200_all_operations_num_loops_1
 
 # Copy seed corpora to the designated location
