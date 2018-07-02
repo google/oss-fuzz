@@ -39,7 +39,9 @@ for FUZZER_BINARY in $(find $OUT/ -maxdepth 1 -executable -type f); do
   fi
 
   # Continue if not a fuzz target.
-  grep "LLVMFuzzerTestOneInput" $FUZZER_BINARY > /dev/null 2>&1 || continue
+  if [[ $FUZZING_ENGINE != "none" ]]; then
+    grep "LLVMFuzzerTestOneInput" $FUZZER_BINARY > /dev/null 2>&1 || continue
+  fi
 
   FUZZER=$(basename $FUZZER_BINARY)
   if [[ "$FUZZER" == afl-* ]]; then
