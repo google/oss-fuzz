@@ -48,7 +48,7 @@ function run_fuzz_target {
 for fuzz_target in $FUZZ_TARGETS; do
   # Continue if not a fuzz target.
   if [[ $FUZZING_ENGINE != "none" ]]; then
-    grep "LLVMFuzzerTestOneInput" $FUZZER_BINARY > /dev/null 2>&1 || continue
+    grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
   fi
 
   echo "Running $fuzz_target"
