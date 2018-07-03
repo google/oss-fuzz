@@ -18,9 +18,15 @@
 # Build libaom
 pushd $WORK
 rm -rf ./*
+
+# oss-fuzz has 2 GB total memory allocation limit. So, we limit per-allocation
+# limit in libaom to 1 GB to avoid OOM errors.
+extra_c_flags='-DAOM_MAX_ALLOCABLE_MEMORY=1073741824'
+
 cmake $SRC/aom -DCONFIG_PIC=1 -DCONFIG_SCALABILITY=0 -DCONFIG_LOWBITDEPTH=1 \
   -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DCONFIG_UNIT_TESTS=0 \
-  -DCONFIG_SIZE_LIMIT=1 -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288
+  -DCONFIG_SIZE_LIMIT=1 -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
+  -DAOM_EXTRA_C_FLAGS=${extra_c_flags} -DAOM_EXTRA_CXX_FLAGS=${extra_c_flags}
 make -j$(nproc)
 popd
 
