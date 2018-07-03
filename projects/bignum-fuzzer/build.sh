@@ -6,6 +6,12 @@ fi
 ./config
 make -j$(nproc)
 
+# Build libgmp
+cd $SRC/libgmp
+autoreconf -ivf
+./configure --enable-maintainer-mode
+make -j$(nproc)
+
 # Build OpenSSL module
 cd $SRC/bignum-fuzzer/modules/openssl
 OPENSSL_INCLUDE_PATH=$SRC/openssl/include OPENSSL_LIBCRYPTO_A_PATH=$SRC/openssl/libcrypto.a make
@@ -21,6 +27,10 @@ make
 # Build C++-Boost module
 cd $SRC/bignum-fuzzer/modules/cpp_boost
 make
+
+# Build libgmp module
+cd $SRC/bignum-fuzzer/modules/libgmp
+LIBGMP_INCLUDE_PATH=$SRC/libgmp LIBGMP_A_PATH=$SRC/libgmp/.libs/libgmp.a make
 
 BASE_CXXFLAGS=$CXXFLAGS
 
@@ -53,7 +63,18 @@ LIBFUZZER_LINK="-lFuzzingEngine" make
 # Copy OpenSSL/C++-Boost fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_cpp_boost_num_len_1200_all_operations_num_loops_1
 
+# Build OpenSSL/libgmp fuzzer
+cd $SRC/bignum-fuzzer
+make clean
+./config-modules.sh openssl libgmp
+CXXFLAGS="$BASE_CXXFLAGS -DBNFUZZ_FLAG_NUM_LEN=1200 -DBNFUZZ_FLAG_ALL_OPERATIONS=1 -DBNFUZZ_FLAG_NUM_LOOPS=1"
+LIBFUZZER_LINK="-lFuzzingEngine" make
+
+# Copy OpenSSL/libgmp fuzzer to the designated location
+cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_libgmp_num_len_1200_all_operations_num_loops_1
+
 # Copy seed corpora to the designated location
 cp $SRC/bignum-fuzzer/corpora/fuzzer_openssl_go_no_negative_num_len_1200_all_operations_seed_corpus.zip $OUT
 cp $SRC/bignum-fuzzer/corpora/fuzzer_openssl_rust_num_len_1200_all_operations_num_loops_1_seed_corpus.zip $OUT
 cp $SRC/bignum-fuzzer/corpora/fuzzer_openssl_cpp_boost_num_len_1200_all_operations_num_loops_1_seed_corpus.zip $OUT
+cp $SRC/bignum-fuzzer/corpora/fuzzer_openssl_libgmp_num_len_1200_all_operations_num_loops_1_seed_corpus.zip $OUT
