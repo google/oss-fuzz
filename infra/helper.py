@@ -311,7 +311,7 @@ def _workdir_from_dockerfile(dockerfile_path):
 
       return workdir
 
-  return None
+  return os.path.join('/src', project_name)
 
 
 def docker_run(run_args, print_output=True):
