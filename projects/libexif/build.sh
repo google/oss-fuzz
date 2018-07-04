@@ -23,6 +23,7 @@ make install
 pushd $SRC
 mkdir exif_corpus
 find exif-samples -type f -name '*.jpg' -exec mv -n {} exif_corpus/ \; -o -name '*.tiff' -exec mv -n {} exif_corpus/ \;
+cp libexif/test/testdata/*.jpg exif_corpus
 zip -r "$OUT/exif_loader_fuzzer_seed_corpus.zip" exif_corpus/
 popd
 
