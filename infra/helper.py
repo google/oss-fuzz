@@ -228,7 +228,7 @@ def _get_project_dir(project_name):
 
 
 def _get_dockerfile_path(project_name):
-  """Returns path to the project."""
+  """Returns path to the project Dockerfile."""
   return os.path.join(_get_project_dir(project_name), 'Dockerfile')
 
 
