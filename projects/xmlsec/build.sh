@@ -33,7 +33,7 @@ autoreconf -vfi
 make -j$(nproc) clean
 make -j$(nproc) all
 
-for file in $SRC/*_target.c; do
+for file in $SRC/xmlsec/tests/oss-fuzz/*_target.c; do
     b=$(basename $file _target.c)
     $CC $CFLAGS -c $file -I /usr/include/libxml2 -I ./include/ \
     -o $OUT/${b}_target.o
@@ -41,4 +41,5 @@ for file in $SRC/*_target.c; do
     ./src/openssl/.libs/libxmlsec1-openssl.a -lFuzzingEngine \
     "$XMLSEC_DEPS_PATH"/lib/libxml2.a -lxslt -lz -o $OUT/${b}_fuzzer
 done
-cp $SRC/*.dict $SRC/*.options $OUT/
+cp $SRC/xmlsec/tests/oss-fuzz/config/*.options $OUT/
+wget -O $OUT/xml.dict https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/xml.dict

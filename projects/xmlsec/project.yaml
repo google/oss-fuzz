@@ -1,6 +1,7 @@
 homepage: "https://www.aleksey.com/xmlsec/"
+primary_contact: "aleksey@aleksey.com"
 auto_ccs:
-  - "aleksey@aleksey.com"
+        - xyz
 sanitizers:
   - address
   - undefined
