@@ -300,7 +300,7 @@ def _workdir_from_dockerfile(dockerfile_path):
   with open(dockerfile_path) as f:
     lines = f.readlines()
 
-  for line in lines:
+  for line in reversed(lines):  # reversed to get last WORKDIR.
     match = re.match(WORKDIR_REGEX, line)
     if match:
       workdir = match.group(1)
