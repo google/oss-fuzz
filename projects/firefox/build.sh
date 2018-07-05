@@ -23,16 +23,14 @@ FUZZ_TARGETS=(
 )
 
 # Firefox object (build) directory.
-OBJDIR=obj-fuzz
+OBJDIR=$WORK/obj-fuzz
 
-# Firefox fuzzing (ASAN) build configuration.
+# Firefox fuzzing build configuration.
 cat << EOF > mozconfig
 ac_add_options --disable-debug
 ac_add_options --disable-elf-hack
 ac_add_options --disable-jemalloc
 ac_add_options --disable-crashreporter
-ac_add_options --disable-profiling
-ac_add_options --enable-address-sanitizer
 ac_add_options --enable-fuzzing
 ac_add_options --enable-optimize=-O1
 ac_add_options --enable-debug-symbols=-gline-tables-only
@@ -42,7 +40,14 @@ mk_add_options CFLAGS=
 mk_add_options CXXFLAGS=
 EOF
 
-# Build! Takes 20-25 minutes on a 16 vCPU instance.
+if [[ $SANITIZER = "address" ]]
+then
+cat << EOF >> mozconfig
+ac_add_options --enable-address-sanitizer
+EOF
+fi
+
+# Build! Takes about 15 minutes on a 32 vCPU instance.
 ./mach build
 ./mach gtest buildbutdontrun
 
@@ -132,29 +137,25 @@ REQUIRED_LIBRARIES=(
   libXt.so.6
 )
 
-mkdir $WORK/APT
-chown _apt $WORK/APT # suppress warning message on each file
-cd $WORK/APT
+mkdir $WORK/apt
+chown _apt $WORK/apt # suppress warning message on each file
+cd $WORK/apt
 
 # Download packages which have the required library files.
 # Note that apt-file is very slow, hence parallel is used.
+# Takes only 1-2 minutes on a 32 vCPU instance.
 PACKAGES=($(parallel apt-file search -lx "{}$" ::: ${REQUIRED_LIBRARIES[@]}))
-for PACKAGE in ${PACKAGES[@]}
-do
-  if [[ $PACKAGE =~ dev$ ]]; then continue; fi
-  if [[ $PACKAGE =~ dbg$ ]]; then continue; fi
-  apt-get -q download $PACKAGE
-done
+apt-get -q download ${PACKAGES[@]}
 
-mkdir TMP
+mkdir $WORK/deb
 # Extract downloaded packages.
-find -name \*.deb -exec dpkg --extract "{}" TMP \;
+find $WORK/apt -exec dpkg-deb --extract "{}" $WORK/deb \;
 
 mkdir $OUT/lib
-# Move required libraries (and symlinks) to LD_LIBRARY_PATH set below.
-for LIBRARY in ${REQUIRED_LIBRARIES[@]}
+# Move required libraries (and symlinks). Less than 50MB total.
+for REQUIRED_LIBRARY in ${REQUIRED_LIBRARIES[@]}
 do
-  find TMP -name $LIBRARY\* -exec mv "{}" $OUT/lib \;
+  find $WORK/deb -name "${REQUIRED_LIBRARY}*" -exec mv "{}" $OUT/lib \;
 done
 
 # Build a wrapper binary for each target to set environment variables.
