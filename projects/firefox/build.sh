@@ -52,15 +52,13 @@ fi
 ./mach build
 ./mach gtest buildbutdontrun
 
-# Delete unnecessary files from the object dir, then copy it.
-# Weighs in at about 3GB afterwards. Could be reduced further.
-find $OBJDIR \
-  -regextype posix-extended \
-  -iregex ".+\.(png|bmp|gif|jpg|mp3|mp4|ivf|mov|o)$" \
-  -delete
-rm $OBJDIR/toolkit/library/libxul.so # non-gtest
-rm -r $OBJDIR/toolkit/library/x86* # build artefacts
-cp -R $OBJDIR $OUT
+# Packages Firefox only to immediately extract the archive. Some files are
+# replaced with gtest-variants, which is required by the fuzzing interface.
+# Weighs in shy of 1GB afterwards.
+make -j$(nproc) -C $OBJDIR package
+tar -xf $OBJDIR/dist/firefox*bz2 -C $OUT
+mv $OBJDIR/toolkit/library/gtest/libxul.so $OUT/firefox
+mv $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
 
 # These are taken from running ldd on libraries build for Firefox, with the
 # output manually filtered for libraries which are available on base-runner.
