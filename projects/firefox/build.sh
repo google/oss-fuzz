@@ -20,6 +20,7 @@ FUZZ_TARGETS=(
   ContentParentIPC
   SdpParser
   StunParser
+  # Qcms # needn't be enabled; has its own project with more sanitizers/engines
 )
 
 # Firefox object (build) directory.
