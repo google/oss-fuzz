@@ -38,11 +38,9 @@ ac_add_options --enable-optimize=-O1
 ac_add_options --enable-debug-symbols=-gline-tables-only
 mk_add_options MOZ_OBJDIR=${OBJDIR}
 mk_add_options MOZ_MAKE_FLAGS=-j$(nproc)
+mk_add_options CFLAGS=
+mk_add_options CXXFLAGS=
 EOF
-
-# Disable oss-fuzz flags.
-export CFLAGS=
-export CXXFLAGS=
 
 # Build! Takes 20-25 minutes on a 16 vCPU instance.
 ./mach build
@@ -162,22 +160,9 @@ done
 # Build a wrapper binary for each target to set environment variables.
 for FUZZ_TARGET in ${FUZZ_TARGETS[@]}
 do
-cat << EOF > $FUZZ_TARGET.c
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-int main(int argc, char* argv[]) {
-  setenv("MOZ_RUN_GTEST", "1", 1);
-  setenv("LIBFUZZER", "1", 1);
-  setenv("FUZZER", "${FUZZ_TARGET}", 1);
-  setenv("LD_LIBRARY_PATH", "${OUT}/lib", 0); // not set on base-runner
-  // Temporary (or permanent?) work-around for a bug in the fuzzing interface.
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1466021#c9
-  char* options = getenv("ASAN_OPTIONS");
-  strcat(options, ":detect_stack_use_after_return=0");
-  setenv("ASAN_OPTIONS", options, 1);
-  return execv("${OUT}/${OBJDIR}/dist/bin/firefox", argv);
-}
-EOF
-$CC -g $FUZZ_TARGET.c -o $OUT/$FUZZ_TARGET
+  $CC $CFLAGS -O0 \
+    -DFIREFOX_BINARY=$OUT/firefox/firefox \
+    -DFUZZ_TARGET=$FUZZ_TARGET \
+    -DLIB_PATH=$OUT/lib \
+    $SRC/target.c -o $OUT/$FUZZ_TARGET
 done
