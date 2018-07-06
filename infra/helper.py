@@ -186,7 +186,7 @@ def _is_base_image(image_name):
 
 def _check_project_exists(project_name):
   """Checks if a project exists."""
-  if not os.path.exists(os.path.join(OSSFUZZ_DIR, 'projects', project_name)):
+  if not os.path.exists(_get_project_dir(project_name)):
     print(project_name, 'does not exist', file=sys.stderr)
     return False
 
@@ -220,6 +220,16 @@ def _get_absolute_path(path):
 def _get_command_string(command):
   """Returns a shell escaped command string."""
   return ' '.join(pipes.quote(part) for part in command)
+
+
+def _get_project_dir(project_name):
+  """Returns path to the project."""
+  return os.path.join(OSSFUZZ_DIR, 'projects', project_name)
+
+
+def _get_dockerfile_path(project_name):
+  """Returns path to the project Dockerfile."""
+  return os.path.join(_get_project_dir(project_name), 'Dockerfile')
 
 
 def _get_corpus_dir(project_name=''):
@@ -281,6 +291,27 @@ def _build_image(image_name, no_cache=False, pull=False):
 def _env_to_docker_args(env_list):
   """Turn envirnoment variable list into docker arguments."""
   return sum([['-e', v] for v in env_list], [])
+
+
+def _workdir_from_dockerfile(dockerfile_path):
+  """Parse WORKDIR from the Dockerfile."""
+  WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+
+  with open(dockerfile_path) as f:
+    lines = f.readlines()
+
+  for line in reversed(lines):  # reversed to get last WORKDIR.
+    match = re.match(WORKDIR_REGEX, line)
+    if match:
+      workdir = match.group(1)
+      workdir = workdir.replace('$SRC', '/src')
+
+      if not os.path.isabs(workdir):
+        workdir = os.path.join('/src', workdir)
+
+      return workdir
+
+  return os.path.join('/src', project_name)
 
 
 def docker_run(run_args, print_output=True):
@@ -401,7 +432,9 @@ def build_fuzzers(args):
   if args.source_path:
     command += [
         '-v',
-        '%s:/src/%s' % (_get_absolute_path(args.source_path), args.project_name)
+        '%s:%s' % (_get_absolute_path(args.source_path),
+                   _workdir_from_dockerfile(
+                       _get_dockerfile_path(args.project_name))),
     ]
   command += [
       '-v', '%s:/out' % project_out_dir,
