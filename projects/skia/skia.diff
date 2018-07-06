@@ -325,10 +325,10 @@ index ec4e3fec77..4bc01d5d51 100644
  }
  #endif//!defined(SK_BUILD_FOR_WIN) && !defined(SK_BUILD_FOR_ANDROID)
 diff --git a/src/utils/SkPolyUtils.cpp b/src/utils/SkPolyUtils.cpp
-index ea9d649a5c..d91f301fef 100755
+index e323f21762..b975d00e3c 100755
 --- a/src/utils/SkPolyUtils.cpp
 +++ b/src/utils/SkPolyUtils.cpp
-@@ -279,6 +279,11 @@ bool SkInsetConvexPolygon(const SkPoint* inputPolygonVerts, int inputPolygonSize
+@@ -342,6 +342,11 @@ bool SkInsetConvexPolygon(const SkPoint* inputPolygonVerts, int inputPolygonSize
      if (inputPolygonSize < 3) {
          return false;
      }
@@ -339,12 +339,12 @@ index ea9d649a5c..d91f301fef 100755
 +#endif
  
      // get winding direction
-     int winding = get_winding(inputPolygonVerts, inputPolygonSize);
+     int winding = SkGetPolygonWinding(inputPolygonVerts, inputPolygonSize);
 diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
-index 3d84e8fdad..2ce9151e0d 100755
+index 873e6d2687..9e1a87b22c 100755
 --- a/src/utils/SkShadowTessellator.cpp
 +++ b/src/utils/SkShadowTessellator.cpp
-@@ -502,6 +502,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
+@@ -501,6 +501,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
      SkScalar rotSin, rotCos;
      int numSteps;
      SkComputeRadialSteps(fPrevOutset, nextNormal, fRadius, &rotSin, &rotCos, &numSteps);
