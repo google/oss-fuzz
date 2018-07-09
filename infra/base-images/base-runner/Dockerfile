@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-image
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y zip file libunwind8 binutils libblocksruntime0 \
-    fonts-dejavu python3
+    fonts-dejavu python3 libcap2
 COPY bad_build_check coverage llvm-cov llvm-profdata llvm-symbolizer reproduce \
     run_fuzzer sancov test_all minijail0 run_minijail /usr/local/bin/
 
