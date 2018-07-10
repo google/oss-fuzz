@@ -1,3 +1,4 @@
 homepage: "https://libgit2.github.com/"
-auto_ccs: "nelhage@nelhage.com"
+auto_ccs:
+  - "nelhage@nelhage.com"
 primary_contact: "Patrick Steinhardt <ps@pks.im>"
