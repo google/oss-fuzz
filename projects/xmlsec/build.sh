@@ -27,9 +27,14 @@ make clean
 make -j$(nproc) all
 make install
 
+cd $SRC/libxslt
+./autogen.sh --prefix="$XMLSEC_DEPS_PATH"
+make -j$(nproc)
+make install
+
 cd $SRC/xmlsec
 autoreconf -vfi
-./configure --with-libxml="$XMLSEC_DEPS_PATH"
+./configure --with-libxml="$XMLSEC_DEPS_PATH" --with-libxslt="$XMLSEC_DEPS_PATH"
 make -j$(nproc) clean
 make -j$(nproc) all
 
@@ -39,7 +44,8 @@ for file in $SRC/xmlsec/tests/oss-fuzz/*_target.c; do
     -o $OUT/${b}_target.o
     $CXX $CXXFLAGS $OUT/${b}_target.o ./src/.libs/libxmlsec1.a \
     ./src/openssl/.libs/libxmlsec1-openssl.a -lFuzzingEngine \
-    "$XMLSEC_DEPS_PATH"/lib/libxml2.a -lxslt -lz -o $OUT/${b}_fuzzer
+    "$XMLSEC_DEPS_PATH"/lib/libxslt.a "$XMLSEC_DEPS_PATH"/lib/libxml2.a \
+    -lz -o $OUT/${b}_fuzzer
 done
 cp $SRC/xmlsec/tests/oss-fuzz/config/*.options $OUT/
 wget -O $OUT/xml.dict https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/xml.dict
