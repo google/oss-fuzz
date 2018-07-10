@@ -20,5 +20,5 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool cmake
 RUN git clone --depth 1 -b oss-fuzz https://github.com/libgit2/libgit2 libgit2
 WORKDIR libgit2
 
-COPY fuzz_download_refs.cc build.sh $SRC/
+COPY download_refs_fuzzer.cc build.sh $SRC/
 COPY corpora $SRC/corpora
