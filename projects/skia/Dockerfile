@@ -32,6 +32,9 @@ RUN bin/sync
 
 # Setup SwiftShader
 WORKDIR $SRC/skia/third_party/externals/swiftshader/
+# TODO(metzman): Come up with a better long term solution, such as downloading
+# prebuilt libraries, than pinning swiftshader to a known working revision.
+RUN git checkout bf8fd5b5fb6892dabcc21b4b86d41cd40cb9b4b5
 RUN git submodule update --init
 WORKDIR $SRC/skia
 
