@@ -22,8 +22,6 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzz_test.cc)
 declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}"; done)"
 
-echo FUZZER_TARGETS_CC
-
 FUZZER_DICTIONARIES="\
 "
 
@@ -63,7 +61,7 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
 # Copy out test binaries from bazel-bin/ and zip up related test corpuses.
 for t in ${FUZZER_TARGETS}
 do
-  CORPUS_TARGET=`python $SRC/find_corpus.py $t`
+  CORPUS_TARGET=$(python "${SRC}"/find_corpus.py "$t")
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
   cp bazel-bin/"${t}"_driverless "${OUT}"/"${TARGET_BASE}"_fuzz_test
   zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
