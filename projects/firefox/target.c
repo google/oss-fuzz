@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,12 +11,37 @@
 static const char* magic = "LLVMFuzzerTestOneInput";
 
 int main(int argc, char* argv[]) {
+  char path[PATH_MAX] = {0};
+  if (!getcwd(path, PATH_MAX)) {
+    perror("Couldn't get CWD");
+    exit(1);
+  }
+
+  if (strlen(path) + strlen(*argv) + 20 > PATH_MAX) {
+    fprintf(stderr, "Path length would exceed PATH_MAX\n");
+    exit(1);
+  }
+
+  strcat(path, "/");
+  strcat(path, *argv);
+
+  char* solidus = strrchr(path, '/');
+  *solidus = 0; // terminate string before last /
+
+  char ld_path[PATH_MAX] = {0};
+  strcpy(ld_path, path);
+  strcat(ld_path, "/lib");
+
+  char ff_path[PATH_MAX] = {0};
+  strcpy(ff_path, path);
+  strcat(ff_path, "/firefox/firefox");
+
   if (getenv("LD_LIBRARY_PATH")) {
     // Shouldn't be set. Code can be changed to append if it ever is.
     fprintf(stderr, "LD_LIBRARY_PATH unexpectedly set\n");
     exit(1);
   }
-  if (setenv("LD_LIBRARY_PATH", STRINGIFY(LIB_PATH), 0)) {
+  if (setenv("LD_LIBRARY_PATH", ld_path, 0)) {
     perror("Error setting LD_LIBRARY_PATH");
     exit(1);
   }
@@ -43,5 +69,5 @@ int main(int argc, char* argv[]) {
   }
   free(new_options);
 
-  return execv(STRINGIFY(FIREFOX_BINARY), argv);
+  return execv(ff_path, argv);
 }

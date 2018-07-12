@@ -161,8 +161,6 @@ done
 for FUZZ_TARGET in ${FUZZ_TARGETS[@]}
 do
   $CC $CFLAGS -O0 \
-    -DFIREFOX_BINARY=$OUT/firefox/firefox \
     -DFUZZ_TARGET=$FUZZ_TARGET \
-    -DLIB_PATH=$OUT/lib \
     $SRC/target.c -o $OUT/$FUZZ_TARGET
 done
