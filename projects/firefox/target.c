@@ -12,7 +12,7 @@ static const char* magic = "LLVMFuzzerTestOneInput";
 int main(int argc, char* argv[]) {
   if (getenv("LD_LIBRARY_PATH")) {
     // Shouldn't be set. Code can be changed to append if it ever is.
-    perror("LD_LIBRARY_PATH unexpectedly set");
+    fprintf(stderr, "LD_LIBRARY_PATH unexpectedly set\n");
     exit(1);
   }
   if (setenv("LD_LIBRARY_PATH", STRINGIFY(LIB_PATH), 0)) {
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1466021#c9
   char* options = getenv("ASAN_OPTIONS");
   if (!options) {
-    perror("ASAN_OPTIONS not set ?!");
+    fprintf(stderr, "ASAN_OPTIONS not set ?!\n");
     exit(1);
   }
   char append[] = ":detect_stack_use_after_return=0";
