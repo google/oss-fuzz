@@ -77,6 +77,7 @@ REQUIRED_LIBRARIES=(
   libdbus-1.so.3
   libdbus-glib-1.so.2
   libepoxy.so.0
+  libexpat.so.1
   libffi.so.6
   libFLAC.so.8
   libfontconfig.so.1
