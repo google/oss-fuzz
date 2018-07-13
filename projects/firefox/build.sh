@@ -148,7 +148,7 @@ apt-get -q download ${PACKAGES[@]}
 
 mkdir $WORK/deb
 # Extract downloaded packages.
-find $WORK/apt -exec dpkg-deb --extract "{}" $WORK/deb \;
+find $WORK/apt -type f -exec dpkg-deb --extract "{}" $WORK/deb \;
 
 mkdir $OUT/lib
 # Move required libraries (and symlinks). Less than 50MB total.
