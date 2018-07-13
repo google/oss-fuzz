@@ -64,4 +64,5 @@ for mode in "${fuzzer_modes[@]}"; do
 
   # copy seed corpus.
   cp $SRC/dec_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+  cp $SRC/av1_dictionary $OUT/${fuzzer_name}.dict
 done
