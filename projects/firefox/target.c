@@ -12,9 +12,13 @@ static const char* magic = "LLVMFuzzerTestOneInput";
 
 int main(int argc, char* argv[]) {
   char path[PATH_MAX] = {0};
-  if (!getcwd(path, PATH_MAX)) {
-    perror("Couldn't get CWD");
-    exit(1);
+
+  if (**argv != '/') {
+    if (!getcwd(path, PATH_MAX)) {
+      perror("Couldn't get CWD");
+      exit(1);
+    }
+    strcat(path, "/");
   }
 
   if (strlen(path) + strlen(*argv) + 20 > PATH_MAX) {
@@ -22,7 +26,6 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  strcat(path, "/");
   strcat(path, *argv);
 
   char* solidus = strrchr(path, '/');
