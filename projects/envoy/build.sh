@@ -61,11 +61,11 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
 # Copy out test binaries from bazel-bin/ and zip up related test corpuses.
 for t in ${FUZZER_TARGETS}
 do
-  CORPUS_TARGET=$(python "${SRC}"/find_corpus.py "$t")
+  TARGET_CORPUS=$(python "${SRC}"/find_corpus.py "$t")
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
   cp bazel-bin/"${t}"_driverless "${OUT}"/"${TARGET_BASE}"_fuzz_test
   zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
-    "$(dirname "${t}")"/"${CORPUS_TARGET}"/*
+    "$(dirname "${t}")"/"${TARGET_CORPUS}"/*
 done
 
 # Copy dictionaries and options files to $OUT/
