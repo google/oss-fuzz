@@ -16,7 +16,7 @@ void parse(const char* string)
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    std::string str((const char*)data, size);
+    std::string str(reinterpret_cast<const char*>(data), size);
     parse(str.c_str());
     return 0;
 }
