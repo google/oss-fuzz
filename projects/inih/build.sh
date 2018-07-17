@@ -17,6 +17,7 @@
 
 
 cp $SRC/*.dict $OUT/
+cp $SRC/*.zip $OUT/
 
 for f in $SRC/*_fuzzer.cc; do
     fuzzer=$(basename "$f" _fuzzer.cc)
