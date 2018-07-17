@@ -104,6 +104,10 @@ For a fuzz target to be useful, it must have good coverage in the code that it i
 for your fuzz targets by looking at the [fuzzer stats](https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md#fuzzer-stats) dashboard on ClusterFuzz, as well as
 [coverage reports](https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md#coverage-reports).
 
+To generate an aggregated code coverage report for your project, please see
+[code coverage](https://github.com/google/oss-fuzz/blob/master/docs/code_coverage.md)
+documentation page.
+
 Coverage can often be improved by adding dictionaries, more inputs for seed corpora, and fixing
 timeouts/out-of-memory bugs in your targets.
 
