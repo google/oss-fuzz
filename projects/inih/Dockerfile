@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER zamazan4ik@tut.by
 RUN git clone https://github.com/benhoyt/inih.git inih
 WORKDIR inih
-COPY build.sh *.cc *.dict $SRC/
+COPY build.sh *.cc *.dict *.zip $SRC/
