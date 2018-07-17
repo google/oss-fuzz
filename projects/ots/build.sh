@@ -16,12 +16,13 @@
 ################################################################################
 
 # Build the project.
-./autogen.sh
-./configure
+meson build
 
 # Build the fuzzer.
-make -j$(nproc) V=1 CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN" LDFLAGS="-lFuzzingEngine" ots-fuzzer
-mv ots-fuzzer $OUT/
+export CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN"
+export LDFLAGS="-lFuzzingEngine"
+ninja -v -j$(nproc) -C build ots-fuzzer
+mv build/ots-fuzzer $OUT/
 
 cp $SRC/ots-fuzzer.options $OUT/
 zip -j -r $OUT/ots-fuzzer_seed_corpus.zip $SRC/ots/tests/fonts
