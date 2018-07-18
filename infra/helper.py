@@ -122,7 +122,6 @@ def main():
 
   profile_parser = subparsers.add_parser(
       'profile', help='Generate code coverage report for the project.')
-  profile_parser.add_argument('project_name', help='name of the project')
   profile_parser.add_argument('--no-corpus-download', action='store_true',
                               help='do not download corpus backup from OSS-Fuzz; '
                               'use corpus located in build/corpus/<project>/<fuzz_target>/')
@@ -132,6 +131,9 @@ def main():
                               'target to be run for generating coverage report')
   profile_parser.add_argument('--corpus-dir', help='specify location of corpus '
                               'to be used (requires --fuzz-target argument)')
+  profile_parser.add_argument('project_name', help='name of the project')
+  profile_parser.add_argument('extra_args', help='additional arguments to '
+                              'pass to llvm-cov utility.', nargs='*')
 
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
@@ -621,6 +623,7 @@ def profile(args):
       'PROJECT=%s' % args.project_name,
       'SANITIZER=profile',
       'HTTP_PORT=%s' % args.port,
+      'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
   ]
 
   run_args = _env_to_docker_args(env)
