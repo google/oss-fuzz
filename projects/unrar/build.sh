@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-UNRAR_DEFINES="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DRAR_SMP -DRARDLL -DSILENT -DRAR_NOCRYPT"
+UNRAR_DEFINES="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -DRAR_SMP -DRARDLL -DSILENT"
 UNRAR_WNOS="-Wno-logical-op-parentheses -Wno-switch -Wno-dangling-else"
 UNRAR_SRC_DIR="$SRC/unrar"
 
