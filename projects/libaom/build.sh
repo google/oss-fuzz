@@ -28,12 +28,21 @@ rm -rf ./*
 # overflows in the transform functions.
 extra_c_flags='-DAOM_MAX_ALLOCABLE_MEMORY=1073741824 -DDO_RANGE_CHECK_CLAMP=1'
 
+extra_cmake_flags=
+# MemorySanitizer requires that all program code is instrumented. Therefore we
+# need to replace all inline assembly code that writes to memory with pure C
+# code. Disable all assembly code for MemorySanitizer.
+if [[ $CFLAGS = *sanitize=memory* ]]; then
+  extra_cmake_flags+="-DAOM_TARGET_CPU=generic"
+fi
+
 cmake $SRC/aom -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE='-O3 -g' \
   -DCMAKE_CXX_FLAGS_RELEASE='-O3 -g' -DCMAKE_LD_FLAGS_RELEASE='-O3 -g' \
   -DCONFIG_PIC=1 -DCONFIG_SCALABILITY=0 -DCONFIG_LOWBITDEPTH=1 \
   -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DCONFIG_UNIT_TESTS=0 \
   -DCONFIG_SIZE_LIMIT=1 -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
-  -DAOM_EXTRA_C_FLAGS="${extra_c_flags}" -DAOM_EXTRA_CXX_FLAGS="${extra_c_flags}"
+  -DAOM_EXTRA_C_FLAGS="${extra_c_flags}" \
+  -DAOM_EXTRA_CXX_FLAGS="${extra_c_flags}" ${extra_cmake_flags}
 make -j$(nproc)
 popd
 
