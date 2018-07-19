@@ -1,0 +1,5 @@
+homepage: "https://github.com/apache/systemml"
+primary_contact: "janardhan@apache.org"
+auto_ccs:
+  - "mboehm7@gmail.com"
+  - "npansar@us.ibm.com"
