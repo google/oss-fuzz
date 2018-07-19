@@ -16,7 +16,7 @@
 ################################################################################
 
 # build project
-mkdir build
+mkdir -p build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX="$WORK" \
       -DBUILD_SHARED_LIBS=OFF \
