@@ -15,6 +15,6 @@
 #
 ################################################################################
 
-$CXX $CXXFLAGS $SRC/fuzzing-puzzles/MultipleConstraintsOnSmallInputTest.cpp \
-    -o $OUT/multiple_constraints_on_small_input_afl_fuzzer \
+$CXX $CXXFLAGS $SRC/fuzzing-puzzles/OnlySomeBytesTest.cpp \
+    -o $OUT/only_some_bytes_test_fuzzer \
     -lFuzzingEngine
