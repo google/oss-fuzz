@@ -72,6 +72,17 @@ via `--corpus-dir` to be used instead of the corpus downloaded from OSS-Fuzz:
 python infra/helper.py profile --fuzz-target=<fuzz_target_name> --corpus-dir=<my_local_corpus_dir> $project_name
 ```
 
+### Additional arguments for `llvm-cov`
+
+You may want to use some of the options of [llvm-cov tool], for example,
+`-ignore-filename-regex=` or `-tab-size=`. You can pass those to the helper
+script after `--`:
+
+```bash
+python infra/helper.py profile $project_name -- -ignore-filename-regex='.*code/to/be/ignored/.*' -tab-size=2
+```
+
 
 [Clang Source-based Code Coverage]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [gsutil tool]: https://cloud.google.com/storage/docs/gsutil_install
+[llvm-cov tool]: https://llvm.org/docs/CommandGuide/llvm-cov.html

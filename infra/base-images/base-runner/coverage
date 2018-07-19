@@ -23,7 +23,10 @@ else
 fi
 
 LOGS_DIR="$OUT/logs"
-mkdir -p $LOGS_DIR
+rm -rf $LOGS_DIR && mkdir -p $LOGS_DIR
+
+REPORT_DIR="$OUT/report"
+rm -rf $REPORT_DIR
 
 # This will be used by llvm-cov command to generate the actual report.
 objects=""
@@ -75,10 +78,10 @@ rm *.profraw
 # TODO(mmoroz): add script from Chromium for rendering directory view reports.
 
 # Generate HTML report.
-llvm-cov show -format=html -output-dir=report -path-equivalence="/,$OUT" \
-		-instr-profile merged.profdata $objects
+llvm-cov show -format=html -output-dir=$REPORT_DIR -path-equivalence="/,$OUT" \
+    $COVERAGE_EXTRA_ARGS -instr-profile merged.profdata $objects
 
 # Serve the report locally.
 echo "Serving the report on http://127.0.0.1:$HTTP_PORT/"
-cd report
+cd $REPORT_DIR
 python3 -m http.server $HTTP_PORT
