@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y autoconf cmake libarchive-dev libtool m
 ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/font-corpus/
 RUN git clone https://github.com/unicode-org/text-rendering-tests.git && cp text-rendering-tests/fonts/* $SRC/font-corpus
 
-RUN git clone --depth 1 https://github.com/cherusker/freetype2-testing.git
+RUN git clone --depth 1 https://github.com/freetype/freetype2-testing.git
 WORKDIR freetype2-testing
 
-COPY build.sh *.options $SRC/
+COPY build.sh $SRC/
