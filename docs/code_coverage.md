@@ -75,7 +75,8 @@ python infra/helper.py profile --fuzz-target=<fuzz_target_name> --corpus-dir=<my
 ### Additional arguments for `llvm-cov`
 
 You may want to use some of the options of [llvm-cov tool], for example,
-`-ignore-filename-regex`. You can pass those to the helper script after `--`:
+`-ignore-filename-regex=` or `-tab-size=`. You can pass those to the helper
+script after `--`:
 
 ```bash
 python infra/helper.py profile $project_name -- -ignore-filename-regex='.*code/to/be/ignored/.*' -tab-size=2
