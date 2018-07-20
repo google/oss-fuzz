@@ -15,7 +15,7 @@ BUILD_TIMEOUT = 10 * 60 * 60
 
 CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=profile']
 
-SANITIZER = 'coverage'
+SANITIZER = 'profile'
 
 def usage():
   sys.stderr.write(
@@ -81,12 +81,12 @@ def get_build_steps(project_dir):
        ],
       },
       # Download and unzip corpus backup for every target.
-      {
-        # TODO.
-      },
+      # {
+      #   # TODO.
+      # },
       # test binaries
       {'name': 'gcr.io/oss-fuzz-base/base-runner',
-        'env': env + ['HTTP_PORT=0'],
+        'env': env + ['HTTP_PORT=', 'COVERAGE_EXTRA_ARGS='],
         'args': [
           'bash',
           '-c',
@@ -121,15 +121,17 @@ def get_build_steps(project_dir):
       },
   ])
 
-  return build_steps
+  return build_steps, image
 
 
 def main():
   if len(sys.argv) != 2:
     usage()
 
-  project_dir = sys.argv[1]
-  build_project.build(get_build_steps(project_dir))
+  project_dir = sys.argv[1].rstrip(os.path.sep)
+  steps, image = get_build_steps(project_dir)
+  print steps
+  build_project.run_build(steps, image)
 
 
 if __name__ == "__main__":

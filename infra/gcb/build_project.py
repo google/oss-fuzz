@@ -345,8 +345,9 @@ def main():
   if len(sys.argv) != 2:
     usage()
 
-  project_dir = sys.argv[1]
+  project_dir = sys.argv[1].rstrip(os.path.sep)
   steps, image = get_build_steps(project_dir)
+  print steps
   run_build(steps, image)
 
 
