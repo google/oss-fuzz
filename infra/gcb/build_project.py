@@ -309,7 +309,7 @@ def get_build_steps(project_dir):
           },
       ])
 
-  return build_steps
+  return build_steps, image
 
 
 def get_logs_url(build_id):
@@ -318,7 +318,7 @@ def get_logs_url(build_id):
   return URL_FORMAT.format(build_id)
 
 
-def build(build_steps):
+def run_build(build_steps, image):
   options = {}
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -328,7 +328,7 @@ def build(build_steps):
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': 'oss-fuzz-gcb-logs',
-      'images': [project_yaml['image']],
+      'images': [ image ],
   }
 
   credentials = GoogleCredentials.get_application_default()
@@ -346,7 +346,8 @@ def main():
     usage()
 
   project_dir = sys.argv[1]
-  build(get_build_steps(project_dir))
+  steps, image = get_build_steps(project_dir)
+  run_build(steps, image)
 
 
 if __name__ == '__main__':

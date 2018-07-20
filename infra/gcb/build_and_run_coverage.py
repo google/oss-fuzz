@@ -83,7 +83,7 @@ def get_build_steps(project_dir):
       # Download and unzip corpus backup for every target.
       {
         # TODO.
-      }
+      },
       # test binaries
       {'name': 'gcr.io/oss-fuzz-base/base-runner',
         'env': env + ['HTTP_PORT=0'],
