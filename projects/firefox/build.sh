@@ -60,91 +60,21 @@ tar -xf $OBJDIR/dist/firefox*bz2 -C $OUT
 mv $OBJDIR/toolkit/library/gtest/libxul.so $OUT/firefox
 mv $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
 
-# These are taken from running ldd on libraries build for Firefox, with the
-# output manually filtered for libraries which are available on base-runner.
-# Patching even some libraries out doesn't work (undefined symbol errors).
-REQUIRED_LIBRARIES=(
-  libasyncns.so.0
-  libatk-1.0.so.0
-  libatk-bridge-2.0.so.0
-  libatspi.so.0
-  libboost_filesystem.so.1.58.0
-  libboost_system.so.1.58.0
-  libcairo-gobject.so.2
-  libcairo.so.2
-  libcapnp-0.5.3.so
-  libdatrie.so.1
-  libdbus-1.so.3
-  libdbus-glib-1.so.2
-  libepoxy.so.0
-  libexpat.so.1
-  libffi.so.6
-  libFLAC.so.8
-  libfontconfig.so.1
-  libfreetype.so.6
-  libgdk-3.so.0
-  libgdk_pixbuf-2.0.so.0
-  libgio-2.0.so.0
-  libglib-2.0.so.0
-  libgmodule-2.0.so.0
-  libgobject-2.0.so.0
-  libgraphite2.so.3
-  libgthread-2.0.so.0
-  libgtk-3.so.0
-  libharfbuzz.so.0
-  libICE.so.6
-  libjson-c.so.2
-  libkj-0.5.3.so
-  libmirclient.so.9
-  libmircommon.so.7
-  libmircore.so.1
-  libmirprotobuf.so.3
-  libogg.so.0
-  libpango-1.0.so.0
-  libpangocairo-1.0.so.0
-  libpangoft2-1.0.so.0
-  libpixman-1.so.0
-  libpng12.so.0
-  libprotobuf-lite.so.9
-  libpulse.so.0
-  libpulsecommon-8.0.so
-  libSM.so.6
-  libsndfile.so.1
-  libthai.so.0
-  libvorbis.so.0
-  libvorbisenc.so.2
-  libwayland-client.so.0
-  libwayland-cursor.so.0
-  libwayland-egl.so.1
-  libwrap.so.0
-  libX11-xcb.so.1
-  libX11.so.6
-  libXau.so.6
-  libxcb-render.so.0
-  libxcb-shm.so.0
-  libxcb.so.1
-  libXcomposite.so.1
-  libXcursor.so.1
-  libXdamage.so.1
-  libXdmcp.so.6
-  libXext.so.6
-  libXfixes.so.3
-  libXi.so.6
-  libXinerama.so.1
-  libxkbcommon.so.0
-  libXrandr.so.2
-  libXrender.so.1
-  libXt.so.6
-)
+# Get the absolute paths of the required libraries.
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OUT/firefox
+REQUIRED_LIBRARIES=($(ldd $OUT/firefox/libxul.so | gawk '/=> [/]/ {print $3}'))
+REQUIRED_LIBRARIES=(${REQUIRED_LIBRARIES[@]##$OUT/*})
 
 mkdir $WORK/apt
 chown _apt $WORK/apt # suppress warning message on each file
 cd $WORK/apt
 
-# Download packages which have the required library files.
+# Find and download packages which have the required files, ignoring some.
 # Note that apt-file is very slow, hence parallel is used.
 # Takes only 1-2 minutes on a 32 vCPU instance.
-PACKAGES=($(parallel apt-file search -lx "{}$" ::: ${REQUIRED_LIBRARIES[@]}))
+PACKAGES=($(parallel apt-file search -lFN "{}" ::: ${REQUIRED_LIBRARIES[@]}))
+PACKAGES=(${PACKAGES[@]##libc6*})
+PACKAGES=(${PACKAGES[@]##libstdc++*})
 apt-get -q download ${PACKAGES[@]}
 
 mkdir $WORK/deb
@@ -155,7 +85,7 @@ mkdir $OUT/lib
 # Move required libraries (and symlinks). Less than 50MB total.
 for REQUIRED_LIBRARY in ${REQUIRED_LIBRARIES[@]}
 do
-  find $WORK/deb -name "${REQUIRED_LIBRARY}*" -exec mv "{}" $OUT/lib \;
+  find $WORK/deb -name "${REQUIRED_LIBRARY##*/}*" -exec mv "{}" $OUT/lib \;
 done
 
 # Build a wrapper binary for each target to set environment variables.

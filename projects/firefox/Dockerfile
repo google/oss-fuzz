@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pdknsk@gmail.com
 RUN apt-get update && \
-    apt-get install -y apt-file mercurial parallel && \
+    apt-get install -y apt-file gawk mercurial parallel && \
     apt-file --non-interactive update
 RUN hg clone https://hg.mozilla.org/mozilla-central
 WORKDIR mozilla-central
