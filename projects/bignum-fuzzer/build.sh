@@ -81,7 +81,7 @@ make lib -j$(nproc)
 cd $SRC/boringssl
 mkdir build
 cd build
-cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
 make -j$(nproc)
 
 # Build BoringSSL module
