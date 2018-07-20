@@ -41,7 +41,7 @@ function run_fuzz_target {
   local args="-timeout=100 -runs=0 /corpus/${target}"
 
   LLVM_PROFILE_FILE="$target.profraw" $target $args &> $LOGS_DIR/$target.log
-  if (( $? != 0)); then
+  if (( $? != 0 )); then
     echo "Error occured while running $target:"
     cat $LOGS_DIR/$target.log
   fi
@@ -81,7 +81,9 @@ rm *.profraw
 llvm-cov show -format=html -output-dir=$REPORT_DIR -path-equivalence="/,$OUT" \
     $COVERAGE_EXTRA_ARGS -instr-profile merged.profdata $objects
 
-# Serve the report locally.
-echo "Serving the report on http://127.0.0.1:$HTTP_PORT/"
-cd $REPORT_DIR
-python3 -m http.server $HTTP_PORT
+if [[ -n $HTTP_PORT ]]; then
+  # Serve the report locally.
+  echo "Serving the report on http://127.0.0.1:$HTTP_PORT/"
+  cd $REPORT_DIR
+  python3 -m http.server $HTTP_PORT
+fi
