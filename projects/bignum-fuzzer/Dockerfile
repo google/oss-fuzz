@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties wget curl sudo mercurial autoconf bison texinfo libboost-all-dev
+RUN apt-get update && apt-get install -y software-properties-common python-software-properties wget curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake
 RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
 RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
 
@@ -26,4 +26,6 @@ RUN curl -s https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
+RUN git clone https://boringssl.googlesource.com/boringssl
+RUN git clone --depth 1 https://github.com/ARMmbed/mbedtls
 COPY build.sh $SRC/
