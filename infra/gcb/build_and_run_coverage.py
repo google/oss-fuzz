@@ -9,7 +9,7 @@ import datetime
 import os
 import sys
 
-import build_projects
+import build_project
 
 BUILD_TIMEOUT = 10 * 60 * 60
 
@@ -24,7 +24,7 @@ def usage():
 
 def get_build_steps(project_dir):
   project_name = os.path.basename(project_dir)
-  project_yaml = build_projects.load_project_yaml(project_dir)
+  project_yaml = build_project.load_project_yaml(project_dir)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
@@ -55,12 +55,13 @@ def get_build_steps(project_dir):
   stamped_name = name + '-' + SANITIZER + '-' + ts
   zip_file = stamped_name + '.zip'
   bucket = '%s-coverage.clusterfuzz-external.appspot.com' % project_name
-  upload_url = build_projects.get_signed_url('/{0}/{1}/{2}'.format(
+  # FIXME(mmoroz): existing uploader won't work, need to use `gsutil -m cp -r`.
+  upload_url = build_project.get_signed_url('/{0}/{1}/{2}'.format(
       bucket, name, zip_file))
 
   env.append('OUT=' + out)
 
-  workdir = build_projects.workdir_from_dockerfile(dockerfile_path)
+  workdir = build_project.workdir_from_dockerfile(dockerfile_path)
   if not workdir:
     workdir = '/src'
 
@@ -128,7 +129,7 @@ def main():
     usage()
 
   project_dir = sys.argv[1]
-  build_projects.build(get_build_steps(project_dir))
+  build_project.build(get_build_steps(project_dir))
 
 
 if __name__ == "__main__":
