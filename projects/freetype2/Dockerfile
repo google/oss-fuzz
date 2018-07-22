@@ -24,6 +24,7 @@ RUN apt-get update &&  \
       libarchive-dev   \
       libpng-dev       \
       libtool          \
+      pkg-config       \
       zlib1g-dev       \
       make
 
