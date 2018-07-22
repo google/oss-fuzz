@@ -16,7 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get update && apt-get install -y autoconf cmake libarchive-dev libtool make
+
+RUN apt-get update &&  \
+    apt-get install -y \
+      autoconf         \
+      cmake            \
+      libarchive-dev   \
+      libpng-dev       \
+      libtool          \
+      zlib1g-dev       \
+      make
 
 # Get some files for the seed corpus
 ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/font-corpus/
