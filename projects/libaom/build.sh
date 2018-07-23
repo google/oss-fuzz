@@ -23,10 +23,16 @@ pushd ${build_dir}
 rm -rf ./*
 
 # oss-fuzz has 2 GB total memory allocation limit. So, we limit per-allocation
-# limit in libaom to 1 GB to avoid OOM errors.
-# Also, enable enable DO_RANGE_CHECK_CLAMP to suppress the noise of integer
-# overflows in the transform functions.
-extra_c_flags='-DAOM_MAX_ALLOCABLE_MEMORY=1073741824 -DDO_RANGE_CHECK_CLAMP=1'
+# limit in libaom to 1 GB to avoid OOM errors. A smaller per-allocation is
+# needed for MemorySanitizer (see bug oss-fuzz:9497 and bug oss-fuzz:9499).
+if [[ $CFLAGS = *sanitize=memory* ]]; then
+  extra_c_flags='-DAOM_MAX_ALLOCABLE_MEMORY=536870912'
+else
+  extra_c_flags='-DAOM_MAX_ALLOCABLE_MEMORY=1073741824'
+fi
+# Also, enable DO_RANGE_CHECK_CLAMP to suppress the noise of integer overflows
+# in the transform functions.
+extra_c_flags+=' -DDO_RANGE_CHECK_CLAMP=1'
 
 cmake $SRC/aom -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE='-O3 -g' \
   -DCMAKE_CXX_FLAGS_RELEASE='-O3 -g' -DCMAKE_LD_FLAGS_RELEASE='-O3 -g' \
