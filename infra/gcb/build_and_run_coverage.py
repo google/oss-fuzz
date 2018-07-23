@@ -134,7 +134,6 @@ def main():
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
   steps, image = get_build_steps(project_dir)
-  print steps
   build_project.run_build(steps, image)
 
 
