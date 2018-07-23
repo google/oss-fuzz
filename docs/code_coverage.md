@@ -4,6 +4,18 @@ You can generate code coverage report for your project using [Clang Source-based
 Code Coverage].
 
 
+## Pull the latest Docker images
+
+Docker images get regularly updated with a newer version of build tools, build
+configurations, scripts, and other changes. It is recommended to use the most
+recent images for a better user experience.
+
+
+```bash
+python infra/helper.py pull_images
+```
+
+
 ## Build fuzz targets
 
 Code Coverage report generation requires a special build configuration to be
