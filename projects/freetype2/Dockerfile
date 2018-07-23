@@ -21,7 +21,6 @@ RUN apt-get update &&  \
     apt-get install -y \
       autoconf         \
       cmake            \
-      libarchive-dev   \
       libpng-dev       \
       libtool          \
       pkg-config       \
