@@ -15,12 +15,12 @@
 #
 ################################################################################
 
-# Build the project.
+# Configure the project.
+export CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN"
+export LDFLAGS="-lFuzzingEngine"
 meson build
 
 # Build the fuzzer.
-export CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN"
-export LDFLAGS="-lFuzzingEngine"
 ninja -v -j$(nproc) -C build ots-fuzzer
 mv build/ots-fuzzer $OUT/
 
