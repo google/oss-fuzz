@@ -8,6 +8,7 @@ Usage: build_and_run_coverage.py <project_dir>
 import datetime
 import os
 import sys
+import requests
 
 import build_project
 
@@ -24,12 +25,14 @@ def usage():
 
 def get_build_steps(project_dir):
   project_name = os.path.basename(project_dir)
+#  temporary testing code
+#  get_corpus_backup(project_name)
+#  sys.exit(0)
   project_yaml = build_project.load_project_yaml(project_dir)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
-
-  ts = datetime.datetime.now().strftime('%Y%m%d%H%M')
+  report_date = datetime.datetime.now().strftime('%Y%m%d')
 
   build_steps = [
       {
@@ -52,13 +55,6 @@ def get_build_steps(project_dir):
 
   env = CONFIGURATION[:]
   out = '/workspace/out/' + SANITIZER
-  stamped_name = name + '-' + SANITIZER + '-' + ts
-  zip_file = stamped_name + '.zip'
-  bucket = '%s-coverage.clusterfuzz-external.appspot.com' % project_name
-  # FIXME(mmoroz): existing uploader won't work, need to use `gsutil -m cp -r`.
-  upload_url = build_project.get_signed_url('/{0}/{1}/{2}'.format(
-      bucket, name, zip_file))
-
   env.append('OUT=' + out)
 
   workdir = build_project.workdir_from_dockerfile(dockerfile_path)
@@ -96,19 +92,14 @@ def get_build_steps(project_dir):
   ])
 
   build_steps.extend([
-      # Archive code coverage report.
-      {'name': image,
+      # Upload the report.
+      {'name': 'gcr.io/cloud-builders/gsutil',
         'args': [
-          'bash',
-          '-c',
-          'cd {0} && zip -rq {1} report'.format(out, zip_file)
-        ],
-      },
-      # Upload the archive.
-      {'name': 'gcr.io/oss-fuzz-base/uploader',
-       'args': [
-           os.path.join(out, zip_file),
-           upload_url,
+          '-m', 'cp', '-r',
+          os.path.join(out, 'report'),
+          # TODO: use {0}-coverage.clusterfuzz-external.appspot.com bucket:
+          # 'gs://{0}-coverage.clusterfuzz-external.appspot.com/reports/'.
+          'gs://oss-fuzz-test-coverage/{0}/'.format(project_name) + report_date,
         ],
       },
       # Cleanup.
@@ -122,6 +113,19 @@ def get_build_steps(project_dir):
   ])
 
   return build_steps, image
+
+
+def get_corpus_backup(project_name):
+  # url = 'https://www.googleapis.com/storage/v1/b/{0}-backup.clusterfuzz-external.appspot.com/o'.format(project_name)
+  # url = 'https://www.storage.googleapis.com/v1/b/{0}-backup.clusterfuzz-external.appspot.com/o'.format(project_name)
+  url = '/{0}-backup.clusterfuzz-external.appspot.com/o'.format(project_name)
+  url = build_project.get_signed_url(url)
+  #url.replace('https://storage.googleapis.com', 'https://www.googleapis.com/storage/v1/b')
+  r = requests.get(url) #, params={'delimiter': '/'})
+  print(r.status_code)
+  print(r.text)
+  data = r.json()
+  print(data)
 
 
 def main():
