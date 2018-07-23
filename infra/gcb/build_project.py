@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 """Starts project build on Google Cloud Builder.
 
-Usage: build_projects.py <project_dir>
+Usage: build_project.py <project_dir>
 """
 
 import base64
