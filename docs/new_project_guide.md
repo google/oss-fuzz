@@ -94,8 +94,21 @@ Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/bor
 ### experimental
 A boolean (either True or False) that indicates whether this project is in evaluation mode. This allows a project to be
 fuzzed and generate crash findings, but not file them in the issue tracker. The crashes can be accessed on [ClusterFuzz homepage](clusterfuzz.md#web-interface). This should be only used if you are not a maintainer of the project and have
-less confidence in the efficacy of your fuzz targets.
+less confidence in the efficacy of your fuzz targets. Example:
 
+```
+homepage: "{project_homepage}"
+primary_contact: "{primary_contact}"
+auto_ccs:
+  - "{auto_cc_1}"
+  - "{auto_cc_2}"
+sanitizers:
+  - address
+  - memory
+  - undefined
+help_url: "{help_url}"  
+experimental: True
+```
 ## Dockerfile
 
 This file defines the Docker image definition. This is where the build.sh script will be executed in.
