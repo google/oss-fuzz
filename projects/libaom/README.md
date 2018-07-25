@@ -8,14 +8,14 @@
     https://help.github.com/articles/connecting-to-github-with-ssh/
 1.  Go to https://github.com/google/oss-fuzz and click on “Fork”.
 1.  Go to your own fork of the repo, which will be at
-    https://github.com/<git_username>/oss-fuzz
+    https://github.com/\<git_username\>/oss-fuzz
 1.  Click on “clone or download” and pick “Clone with SSH” method (I found that
-    easier to use for “git push”). Then copy that URL and run “git clone <URL>”
+    easier to use for “git push”). Then copy that URL and run “git clone \<URL\>”
     in terminal. Now you have a local repo, and **your fork** of the remote repo
     will be called “**origin**” in your git config.
 1.  Configure a remote repo pointing to the **upstream repo**
     (https://github.com/google/oss-fuzz) so that it’s called “**upstream**”:
-    *   cd <local_oss_fuzz_repo_directory>/oss-fuzz
+    *   cd \<local_oss_fuzz_repo_directory\>/oss-fuzz
     *   git remote add upstream git@github.com:google/oss-fuzz.git
     *   git remote -v
 
@@ -25,11 +25,11 @@ main project and create a commit + pull request from that.
 ## Workflow for a Pull Request (Patch)
 
 1.  Go to your repo:
-    *   cd <local_oss_fuzz_repo_directory>/oss-fuzz
+    *   cd \<local_oss_fuzz_repo_directory\>/oss-fuzz
 1.  Create a new branch:
     *   git checkout master
     *   git checkout -b new_feature_xyz
-1.  make your changes and commit them locally with “git commit”
+1.  Make your changes and commit them locally with “git commit”
 1.  Push your changes to your fork on github
     *   git push -u origin HEAD
     *   (This will create a branch of the same name “new_feature_xyz” on your
