@@ -17,7 +17,6 @@
 
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
-  ContentParentIPC
   SdpParser
   StunParser
   # Qcms # needn't be enabled; has its own project with more sanitizers/engines
