@@ -1,0 +1,8 @@
+homepage: "https://www.mozilla.org/firefox/"
+primary_contact: "agaynor@mozilla.com"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+auto_ccs:
+- choller@mozilla.com
