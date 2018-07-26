@@ -47,6 +47,9 @@ ac_add_options --enable-address-sanitizer
 EOF
 fi
 
+# Install dependencies.
+./mach bootstrap --no-interactive --application-choice browser
+
 source /root/.cargo/env
 
 # Build! Takes about 15 minutes on a 32 vCPU instance.
@@ -62,7 +65,7 @@ mv $OBJDIR/toolkit/library/gtest/libxul.so $OUT/firefox
 mv $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
 
 # Get the absolute paths of the required libraries.
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OUT/firefox
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:$OUT/firefox
 REQUIRED_LIBRARIES=($(ldd $OUT/firefox/libxul.so | gawk '/=> [/]/ {print $3}'))
 REQUIRED_LIBRARIES=(${REQUIRED_LIBRARIES[@]##$OUT/*})
 
