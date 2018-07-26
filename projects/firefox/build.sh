@@ -50,7 +50,7 @@ fi
 # Install dependencies.
 ./mach bootstrap --no-interactive --application-choice browser
 
-source /root/.cargo/env
+source $HOME/.cargo/env
 
 # Build! Takes about 15 minutes on a 32 vCPU instance.
 ./mach build
