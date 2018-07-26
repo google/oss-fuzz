@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for binary in $(find $OUT/ -executable -type f); do
+  file "$binary" | grep ELF > /dev/null 2>&1 || continue
+  grep "LLVMFuzzerTestOneInput" "$binary" > /dev/null 2>&1 || continue
+
+  basename "$binary"
+done

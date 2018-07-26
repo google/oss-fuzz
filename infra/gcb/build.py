@@ -54,6 +54,8 @@ ENGINE_INFO = {
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
+TARGETS_LIST_FILENAME = 'targets.list'
+
 
 def usage():
   sys.stderr.write(
@@ -191,6 +193,8 @@ def get_build_steps(project_yaml, dockerfile_path):
           bucket, name, zip_file))
       srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(
           bucket, name, stamped_srcmap_file))
+      targets_list_url = get_signed_url('/{0}/{1}/{2}'.format(
+          bucket, name, TARGETS_LIST_FILENAME))
 
       env.append('OUT=' + out)
       env.append('MSAN_LIBS_PATH=/workspace/msan')
@@ -211,9 +215,7 @@ def get_build_steps(project_yaml, dockerfile_path):
              # `cd /src && cd {workdir}` (where {workdir} is parsed from the
              # Dockerfile). Container Builder overrides our workdir so we need to add
              # this step to set it back.
-             # We also remove /work and /src to save disk space after a step.
-             # Container Builder doesn't pass --rm to docker run yet.
-             'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
+             'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'.format(out, workdir),
            ],
           },
           # test binaries
@@ -222,9 +224,16 @@ def get_build_steps(project_yaml, dockerfile_path):
             'args': [
               'bash',
               '-c',
-              # Verify that fuzzers have been built properly and are not broken.
-              # TODO(mmoroz): raise a notification if not passing the tests.
               'test_all'
+            ],
+          },
+          # generate targets list
+          {'name': 'gcr.io/oss-fuzz-base/base-runner',
+            'env': env,
+            'args': [
+              'bash',
+              '-c',
+              'targets_list > /workspace/{0}'.format(TARGETS_LIST_FILENAME),
             ],
           },
       ])
@@ -263,6 +272,13 @@ def get_build_steps(project_yaml, dockerfile_path):
            'args': [
                os.path.join(out, zip_file),
                upload_url,
+            ],
+          },
+          # upload targets list
+          {'name': 'gcr.io/oss-fuzz-base/uploader',
+           'args': [
+               '/workspace/{0}'.format(TARGETS_LIST_FILENAME),
+               targets_list_url,
             ],
           },
           # cleanup
