@@ -47,6 +47,8 @@ ac_add_options --enable-address-sanitizer
 EOF
 fi
 
+source /root/.cargo/env
+
 # Build! Takes about 15 minutes on a 32 vCPU instance.
 ./mach build
 ./mach gtest buildbutdontrun
