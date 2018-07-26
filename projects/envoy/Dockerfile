@@ -21,6 +21,7 @@ RUN apt-get update && apt-get -y install  \
 	build-essential \
 	openjdk-8-jdk   \
 	make            \
+    ninja-build     \
     curl            \
     autoconf        \
     libtool         \
