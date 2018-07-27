@@ -25,16 +25,19 @@ function checkout_with_retries {
   LOCAL_PATH=$2
   CHECKOUT_RETURN_CODE=1
 
-  set -e
+  # Disable exit on error since we might encounter some failures while retrying.
+  set +e
   for i in $(seq 1 $CHECKOUT_RETRIES); do
     rm -rf $LOCAL_PATH
-    CHECKOUT_RETURN_CODE=$(svn co $REPOSITORY $LOCAL_PATH)
+    svn co $REPOSITORY $LOCAL_PATH
+    CHECKOUT_RETURN_CODE=$?
     if [ $CHECKOUT_RETURN_CODE -eq 0 ]; then
       break
     fi
   done
 
-  set +e
+  # Re-enable exit on error. If checkout failed, we'll exit.
+  set -e
   return $CHECKOUT_RETURN_CODE
 }
 
@@ -54,7 +57,7 @@ fi
 
 echo "Using LLVM revision: $LLVM_REVISION"
 
-cd $SRC && checkout_with_retries https://llvm123.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
+cd $SRC && checkout_with_retries https://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
 cd $SRC/llvm/tools && checkout_with_retries https://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_REVISION clang
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
