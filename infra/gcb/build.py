@@ -230,9 +230,9 @@ def get_build_steps(project_yaml, dockerfile_path):
             {'name': 'gcr.io/oss-fuzz-base/base-runner',
               'env': env,
               'args': [
-                'bash',
-                '-c',
-                'test_all'
+                  'bash',
+                  '-c',
+                  'test_all'
               ],
             }
         )
@@ -242,11 +242,11 @@ def get_build_steps(project_yaml, dockerfile_path):
         build_steps.append({
           'name': 'gcr.io/oss-fuzz-base/msan-builder',
           'args': [
-            'bash',
-            '-c',
-            # TODO(ochang): Replace with just patch_build.py once permission in
-            # image is fixed.
-            'python /usr/local/bin/patch_build.py {0}'.format(out),
+              'bash',
+              '-c',
+              # TODO(ochang): Replace with just patch_build.py once permission in
+              # image is fixed.
+              'python /usr/local/bin/patch_build.py {0}'.format(out),
           ],
         })
 
@@ -255,17 +255,17 @@ def get_build_steps(project_yaml, dockerfile_path):
           {'name': 'gcr.io/oss-fuzz-base/base-runner',
             'env': env,
             'args': [
-              'bash',
-              '-c',
-              'targets_list > /workspace/{0}'.format(targets_list_filename),
+                'bash',
+                '-c',
+                'targets_list > /workspace/{0}'.format(targets_list_filename),
             ],
           },
           # zip binaries
           {'name': image,
             'args': [
-              'bash',
-              '-c',
-              'cd {0} && zip -r {1} *'.format(out, zip_file)
+                'bash',
+                '-c',
+                'cd {0} && zip -r {1} *'.format(out, zip_file)
             ],
           },
           # upload srcmap
@@ -292,9 +292,9 @@ def get_build_steps(project_yaml, dockerfile_path):
           # cleanup
           {'name': image,
             'args': [
-              'bash',
-              '-c',
-              'rm -r ' + out,
+                'bash',
+                '-c',
+                'rm -r ' + out,
             ],
           },
       ])
