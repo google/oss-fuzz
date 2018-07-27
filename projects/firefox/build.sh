@@ -51,6 +51,7 @@ fi
 if [ -d "$HOME/.cargo" ]; then rm -rf $HOME/.cargo; fi
 
 # Install dependencies.
+export SHELL=/bin/bash
 ./mach bootstrap --no-interactive --application-choice browser
 
 # Set environment for rustc.
