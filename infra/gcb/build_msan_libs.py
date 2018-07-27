@@ -7,6 +7,7 @@ Usage: build_base_images.py
 import datetime
 import os
 import yaml
+import sys
 
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build
@@ -57,6 +58,7 @@ def main():
       projectId='oss-fuzz-base', body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
 
+  print >> sys.stderr, 'Logs:', build_base_images.get_logs_url(build_id)
   print build_id
 
 

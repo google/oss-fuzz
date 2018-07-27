@@ -5,6 +5,7 @@ Usage: build_base_images.py
 """
 
 import os
+import sys
 import yaml
 
 from oauth2client.client import GoogleCredentials
@@ -46,6 +47,12 @@ def get_steps(images):
   return steps
 
 
+def get_logs_url(build_id):
+  URL_FORMAT = ('https://console.developers.google.com/logs/viewer?'
+                'resource=build%2Fbuild_id%2F{0}&project=oss-fuzz-base')
+  return URL_FORMAT.format(build_id)
+
+
 def main():
   options = {}
   if 'GCB_OPTIONS' in os.environ:
@@ -64,6 +71,7 @@ def main():
       projectId='oss-fuzz-base', body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
 
+  print >> sys.stderr, 'Logs:', get_logs_url(build_id)
   print build_id
 
 
