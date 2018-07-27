@@ -54,7 +54,7 @@ ENGINE_INFO = {
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
-TARGETS_LIST_FILENAME = 'targets.list'
+TARGETS_LIST_BASENAME = 'targets.list'
 
 
 def usage():
@@ -193,8 +193,10 @@ def get_build_steps(project_yaml, dockerfile_path):
           bucket, name, zip_file))
       srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(
           bucket, name, stamped_srcmap_file))
+
+      targets_list_filename = TARGETS_LIST_BASENAME + '.' + sanitizer
       targets_list_url = get_signed_url('/{0}/{1}/{2}'.format(
-          bucket, name, TARGETS_LIST_FILENAME))
+          bucket, name, targets_list_filename))
 
       env.append('OUT=' + out)
       env.append('MSAN_LIBS_PATH=/workspace/msan')
@@ -233,7 +235,7 @@ def get_build_steps(project_yaml, dockerfile_path):
             'args': [
               'bash',
               '-c',
-              'targets_list > /workspace/{0}'.format(TARGETS_LIST_FILENAME),
+              'targets_list > /workspace/{0}'.format(targets_list_filename),
             ],
           },
       ])
@@ -277,7 +279,7 @@ def get_build_steps(project_yaml, dockerfile_path):
           # upload targets list
           {'name': 'gcr.io/oss-fuzz-base/uploader',
            'args': [
-               '/workspace/{0}'.format(TARGETS_LIST_FILENAME),
+               '/workspace/{0}'.format(targets_list_filename),
                targets_list_url,
             ],
           },
