@@ -36,7 +36,7 @@ function checkout_with_retries {
     fi
   done
 
-  # Re-enable exit on error. If checkout failed, we'll exit.
+  # Re-enable exit on error. If checkout failed, script will exit.
   set -e
   return $CHECKOUT_RETURN_CODE
 }
