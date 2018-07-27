@@ -54,6 +54,9 @@ ENGINE_INFO = {
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
+# Projects that should be excluded from testing, e.g. bad build checks, etc.
+TEST_EXCLUSIONS = ['firefox']
+
 
 def usage():
   sys.stderr.write(
@@ -199,7 +202,7 @@ def get_build_steps(project_yaml, dockerfile_path):
       if not workdir:
         workdir = '/src'
 
-      build_steps.extend([
+      build_steps.append(
           # compile
           {'name': image,
            'env': env,
@@ -215,19 +218,23 @@ def get_build_steps(project_yaml, dockerfile_path):
              # Container Builder doesn't pass --rm to docker run yet.
              'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
            ],
-          },
-          # test binaries
-          {'name': 'gcr.io/oss-fuzz-base/base-runner',
-            'env': env,
-            'args': [
-              'bash',
-              '-c',
-              # Verify that fuzzers have been built properly and are not broken.
-              # TODO(mmoroz): raise a notification if not passing the tests.
-              'test_all'
-            ],
-          },
-      ])
+          }
+      )
+
+      if name not in TEST_EXCLUSIONS:
+        build_steps.append(
+            # test binaries
+            {'name': 'gcr.io/oss-fuzz-base/base-runner',
+              'env': env,
+              'args': [
+                'bash',
+                '-c',
+                # Verify that fuzzers are built properly and not broken.
+                # TODO(mmoroz): raise a notification on failing tests.
+                'test_all'
+              ],
+            }
+        )
 
       if sanitizer == 'memory':
         # Patch dynamic libraries to use instrumented ones.
