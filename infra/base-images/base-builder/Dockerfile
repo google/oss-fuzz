@@ -59,6 +59,6 @@ RUN mkdir honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_libfuzzer compile_honggfuzz coverage_report srcmap /usr/local/bin/
+COPY compile compile_afl compile_libfuzzer compile_honggfuzz coverage_report srcmap targets_list /usr/local/bin/
 
 CMD ["compile"]

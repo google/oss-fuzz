@@ -54,6 +54,8 @@ ENGINE_INFO = {
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
+TARGETS_LIST_BASENAME = 'targets.list'
+
 
 def usage():
   sys.stderr.write(
@@ -194,6 +196,10 @@ def get_build_steps(project_yaml, dockerfile_path):
       srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(
           bucket, name, stamped_srcmap_file))
 
+      targets_list_filename = TARGETS_LIST_BASENAME + '.' + sanitizer
+      targets_list_url = get_signed_url('/{0}/{1}/{2}'.format(
+          bucket, name, targets_list_filename))
+
       env.append('OUT=' + out)
       env.append('MSAN_LIBS_PATH=/workspace/msan')
 
@@ -213,9 +219,7 @@ def get_build_steps(project_yaml, dockerfile_path):
              # `cd /src && cd {workdir}` (where {workdir} is parsed from the
              # Dockerfile). Container Builder overrides our workdir so we need to add
              # this step to set it back.
-             # We also remove /work and /src to save disk space after a step.
-             # Container Builder doesn't pass --rm to docker run yet.
-             'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
+             'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'.format(out, workdir),
            ],
           }
       )
@@ -226,11 +230,9 @@ def get_build_steps(project_yaml, dockerfile_path):
             {'name': 'gcr.io/oss-fuzz-base/base-runner',
               'env': env,
               'args': [
-                'bash',
-                '-c',
-                # Verify that fuzzers are built properly and not broken.
-                # TODO(mmoroz): raise a notification on failing tests.
-                'test_all'
+                  'bash',
+                  '-c',
+                  'test_all'
               ],
             }
         )
@@ -240,21 +242,29 @@ def get_build_steps(project_yaml, dockerfile_path):
         build_steps.append({
           'name': 'gcr.io/oss-fuzz-base/msan-builder',
           'args': [
-            'bash',
-            '-c',
-            # TODO(ochang): Replace with just patch_build.py once permission in
-            # image is fixed.
-            'python /usr/local/bin/patch_build.py {0}'.format(out),
+              'bash',
+              '-c',
+              # TODO(ochang): Replace with just patch_build.py once permission in
+              # image is fixed.
+              'python /usr/local/bin/patch_build.py {0}'.format(out),
           ],
         })
 
       build_steps.extend([
+          # generate targets list
+          {'name': 'gcr.io/oss-fuzz-base/base-runner',
+            'args': [
+                'bash',
+                '-c',
+                'targets_list > /workspace/{0}'.format(targets_list_filename),
+            ],
+          },
           # zip binaries
           {'name': image,
             'args': [
-              'bash',
-              '-c',
-              'cd {0} && zip -r {1} *'.format(out, zip_file)
+                'bash',
+                '-c',
+                'cd {0} && zip -r {1} *'.format(out, zip_file)
             ],
           },
           # upload srcmap
@@ -271,12 +281,19 @@ def get_build_steps(project_yaml, dockerfile_path):
                upload_url,
             ],
           },
+          # upload targets list
+          {'name': 'gcr.io/oss-fuzz-base/uploader',
+           'args': [
+               '/workspace/{0}'.format(targets_list_filename),
+               targets_list_url,
+            ],
+          },
           # cleanup
           {'name': image,
             'args': [
-              'bash',
-              '-c',
-              'rm -r ' + out,
+                'bash',
+                '-c',
+                'rm -r ' + out,
             ],
           },
       ])
