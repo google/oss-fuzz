@@ -1,5 +1,4 @@
 #!/usr/bin/python2
-
 """Starts project build on Google Cloud Builder.
 
 Usage: build.py <project_dir>
@@ -23,32 +22,37 @@ from googleapiclient.discovery import build
 BUILD_TIMEOUT = 10 * 60 * 60
 
 CONFIGURATIONS = {
-  'sanitizer-address' : [ 'SANITIZER=address' ],
-  'sanitizer-memory' : [ 'SANITIZER=memory' ],
-  'sanitizer-undefined' : [ 'SANITIZER=undefined' ],
-  'sanitizer-coverage' : [ 'SANITIZER=coverage' ],
-  'engine-libfuzzer' : [ 'FUZZING_ENGINE=libfuzzer' ],
-  'engine-afl' : [ 'FUZZING_ENGINE=afl' ],
-  'engine-honggfuzz' : [ 'FUZZING_ENGINE=honggfuzz' ],
-  'engine-none' : [ 'FUZZING_ENGINE=none' ],
+    'sanitizer-address': ['SANITIZER=address'],
+    'sanitizer-memory': ['SANITIZER=memory'],
+    'sanitizer-undefined': ['SANITIZER=undefined'],
+    'sanitizer-coverage': ['SANITIZER=coverage'],
+    'engine-libfuzzer': ['FUZZING_ENGINE=libfuzzer'],
+    'engine-afl': ['FUZZING_ENGINE=afl'],
+    'engine-honggfuzz': ['FUZZING_ENGINE=honggfuzz'],
+    'engine-none': ['FUZZING_ENGINE=none'],
 }
 
-EngineInfo = collections.namedtuple(
-    'EngineInfo', ['upload_bucket', 'supported_sanitizers'])
+EngineInfo = collections.namedtuple('EngineInfo',
+                                    ['upload_bucket', 'supported_sanitizers'])
 
 ENGINE_INFO = {
-    'libfuzzer': EngineInfo(
-        upload_bucket='clusterfuzz-builds',
-        supported_sanitizers=['address', 'memory', 'undefined', 'coverage']),
-    'afl': EngineInfo(
-        upload_bucket='clusterfuzz-builds-afl',
-        supported_sanitizers=['address']),
-    'honggfuzz': EngineInfo(
-        upload_bucket='clusterfuzz-builds-honggfuzz',
-        supported_sanitizers=['address', 'memory', 'undefined']),
-    'none': EngineInfo(
-        upload_bucket='clusterfuzz-builds-no-engine',
-        supported_sanitizers=['address']),
+    'libfuzzer':
+        EngineInfo(
+            upload_bucket='clusterfuzz-builds',
+            supported_sanitizers=['address', 'memory', 'undefined',
+                                  'coverage']),
+    'afl':
+        EngineInfo(
+            upload_bucket='clusterfuzz-builds-afl',
+            supported_sanitizers=['address']),
+    'honggfuzz':
+        EngineInfo(
+            upload_bucket='clusterfuzz-builds-honggfuzz',
+            supported_sanitizers=['address', 'memory', 'undefined']),
+    'none':
+        EngineInfo(
+            upload_bucket='clusterfuzz-builds-no-engine',
+            supported_sanitizers=['address']),
 }
 
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
@@ -58,8 +62,7 @@ TARGETS_LIST_BASENAME = 'targets.list'
 
 
 def usage():
-  sys.stderr.write(
-    "Usage: " + sys.argv[0] + " <project_dir>\n")
+  sys.stderr.write('Usage: ' + sys.argv[0] + ' <project_dir>\n')
   exit(1)
 
 
@@ -69,8 +72,7 @@ def load_project_yaml(project_dir):
   with open(project_yaml_path) as f:
     project_yaml = yaml.safe_load(f)
     project_yaml.setdefault('name', project_name)
-    project_yaml.setdefault('image',
-        'gcr.io/oss-fuzz/' + project_name)
+    project_yaml.setdefault('image', 'gcr.io/oss-fuzz/' + project_name)
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
     project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
     project_yaml.setdefault('run_tests', True)
@@ -79,8 +81,7 @@ def load_project_yaml(project_dir):
 
 def get_signed_url(path):
   timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = 'PUT\n\n\n{0}\n{1}'.format(
-      timestamp, path)
+  blob = 'PUT\n\n\n{0}\n{1}'.format(timestamp, path)
 
   creds = ServiceAccountCredentials.from_json_keyfile_name(
       os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
@@ -146,7 +147,8 @@ def get_build_steps(project_yaml, dockerfile_path):
   build_steps = [
       {
           'args': [
-              'clone', 'https://github.com/google/oss-fuzz.git',
+              'clone',
+              'https://github.com/google/oss-fuzz.git',
           ],
           'name': 'gcr.io/cloud-builders/git',
       },
@@ -161,20 +163,20 @@ def get_build_steps(project_yaml, dockerfile_path):
           'dir': 'oss-fuzz/projects/' + name,
       },
       {
-          'name': image,
+          'name':
+              image,
           'args': [
-            'bash',
-            '-c',
-            'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+              'bash', '-c',
+              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
           ],
-          'env': [ 'OSSFUZZ_REVISION=$REVISION_ID' ],
+          'env': ['OSSFUZZ_REVISION=$REVISION_ID'],
       },
       {
           'name': 'gcr.io/oss-fuzz-base/msan-builder',
           'args': [
-            'bash',
-            '-c',
-            'cp -r /msan /workspace',
+              'bash',
+              '-c',
+              'cp -r /msan /workspace',
           ],
       },
   ]
@@ -191,10 +193,9 @@ def get_build_steps(project_yaml, dockerfile_path):
       zip_file = stamped_name + '.zip'
       stamped_srcmap_file = stamped_name + '.srcmap.json'
       bucket = ENGINE_INFO[fuzzing_engine].upload_bucket
-      upload_url = get_signed_url('/{0}/{1}/{2}'.format(
-          bucket, name, zip_file))
-      srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(
-          bucket, name, stamped_srcmap_file))
+      upload_url = get_signed_url('/{0}/{1}/{2}'.format(bucket, name, zip_file))
+      srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(bucket, name,
+                                                        stamped_srcmap_file))
 
       targets_list_filename = TARGETS_LIST_BASENAME + '.' + sanitizer
       targets_list_url = get_signed_url('/{0}/{1}/{2}'.format(
@@ -209,92 +210,99 @@ def get_build_steps(project_yaml, dockerfile_path):
 
       build_steps.append(
           # compile
-          {'name': image,
-           'env': env,
-           'args': [
-             'bash',
-             '-c',
-             # Remove /out to break loudly when a build script incorrectly uses
-             # /out instead of $OUT.
-             # `cd /src && cd {workdir}` (where {workdir} is parsed from the
-             # Dockerfile). Container Builder overrides our workdir so we need to add
-             # this step to set it back.
-             'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'.format(out, workdir),
-           ],
-          }
-      )
+          {
+              'name':
+                  image,
+              'env':
+                  env,
+              'args': [
+                  'bash',
+                  '-c',
+                  # Remove /out to break loudly when a build script incorrectly uses
+                  # /out instead of $OUT.
+                  # `cd /src && cd {workdir}` (where {workdir} is parsed from the
+                  # Dockerfile). Container Builder overrides our workdir so we need to add
+                  # this step to set it back.
+                  'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'
+                  .format(out, workdir),
+              ],
+          })
 
       if run_tests:
         build_steps.append(
             # test binaries
-            {'name': 'gcr.io/oss-fuzz-base/base-runner',
-              'env': env,
-              'args': [
-                  'bash',
-                  '-c',
-                  'test_all'
-              ],
-            }
-        )
+            {
+                'name': 'gcr.io/oss-fuzz-base/base-runner',
+                'env': env,
+                'args': ['bash', '-c', 'test_all'],
+            })
 
       if sanitizer == 'memory':
         # Patch dynamic libraries to use instrumented ones.
         build_steps.append({
-          'name': 'gcr.io/oss-fuzz-base/msan-builder',
-          'args': [
-              'bash',
-              '-c',
-              # TODO(ochang): Replace with just patch_build.py once permission in
-              # image is fixed.
-              'python /usr/local/bin/patch_build.py {0}'.format(out),
-          ],
+            'name':
+                'gcr.io/oss-fuzz-base/msan-builder',
+            'args': [
+                'bash',
+                '-c',
+                # TODO(ochang): Replace with just patch_build.py once permission in
+                # image is fixed.
+                'python /usr/local/bin/patch_build.py {0}'.format(out),
+            ],
         })
 
       build_steps.extend([
           # generate targets list
-          {'name': 'gcr.io/oss-fuzz-base/base-runner',
-            'args': [
-                'bash',
-                '-c',
-                'targets_list > /workspace/{0}'.format(targets_list_filename),
-            ],
+          {
+              'name':
+                  'gcr.io/oss-fuzz-base/base-runner',
+              'args': [
+                  'bash',
+                  '-c',
+                  'targets_list > /workspace/{0}'.format(targets_list_filename),
+              ],
           },
           # zip binaries
-          {'name': image,
-            'args': [
-                'bash',
-                '-c',
-                'cd {0} && zip -r {1} *'.format(out, zip_file)
-            ],
+          {
+              'name':
+                  image,
+              'args': [
+                  'bash', '-c', 'cd {0} && zip -r {1} *'.format(out, zip_file)
+              ],
           },
           # upload srcmap
-          {'name': 'gcr.io/oss-fuzz-base/uploader',
-           'args': [
-               '/workspace/srcmap.json',
-               srcmap_url,
-            ],
+          {
+              'name': 'gcr.io/oss-fuzz-base/uploader',
+              'args': [
+                  '/workspace/srcmap.json',
+                  srcmap_url,
+              ],
           },
           # upload binaries
-          {'name': 'gcr.io/oss-fuzz-base/uploader',
-           'args': [
-               os.path.join(out, zip_file),
-               upload_url,
-            ],
+          {
+              'name': 'gcr.io/oss-fuzz-base/uploader',
+              'args': [
+                  os.path.join(out, zip_file),
+                  upload_url,
+              ],
           },
           # upload targets list
-          {'name': 'gcr.io/oss-fuzz-base/uploader',
-           'args': [
-               '/workspace/{0}'.format(targets_list_filename),
-               targets_list_url,
-            ],
+          {
+              'name':
+                  'gcr.io/oss-fuzz-base/uploader',
+              'args': [
+                  '/workspace/{0}'.format(targets_list_filename),
+                  targets_list_url,
+              ],
           },
           # cleanup
-          {'name': image,
-            'args': [
-                'bash',
-                '-c',
-                'rm -r ' + out,
-            ],
+          {
+              'name': image,
+              'args': [
+                  'bash',
+                  '-c',
+                  'rm -r ' + out,
+              ],
           },
       ])
 
@@ -316,26 +324,26 @@ def main():
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
 
   options = {}
-  if "GCB_OPTIONS" in os.environ:
-    options = yaml.safe_load(os.environ["GCB_OPTIONS"])
+  if 'GCB_OPTIONS' in os.environ:
+    options = yaml.safe_load(os.environ['GCB_OPTIONS'])
 
   build_body = {
       'steps': get_build_steps(project_yaml, dockerfile_path),
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': 'oss-fuzz-gcb-logs',
-      'images': [ project_yaml['image'] ],
+      'images': [project_yaml['image']],
   }
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
   build_info = cloudbuild.projects().builds().create(
       projectId='oss-fuzz', body=build_body).execute()
-  build_id =  build_info['metadata']['build']['id']
+  build_id = build_info['metadata']['build']['id']
 
-  print >>sys.stderr, 'Logs:', get_logs_url(build_id)
+  print >> sys.stderr, 'Logs:', get_logs_url(build_id)
   print build_id
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

@@ -1,5 +1,4 @@
 #!/usr/bin/python2
-
 """Build base images on Google Cloud Builder.
 
 Usage: build_base_images.py
@@ -17,8 +16,8 @@ import build_base_images
 
 def main():
   options = {}
-  if "GCB_OPTIONS" in os.environ:
-    options = yaml.safe_load(os.environ["GCB_OPTIONS"])
+  if 'GCB_OPTIONS' in os.environ:
+    options = yaml.safe_load(os.environ['GCB_OPTIONS'])
 
   image = 'gcr.io/oss-fuzz-base/msan-builder'
   steps = build_base_images.get_steps(['base-msan-builder', 'msan-builder'])
@@ -33,7 +32,8 @@ def main():
           'cd /msan && zip -r /workspace/libs.zip .',
       ],
   }, {
-      'name': 'gcr.io/cloud-builders/gsutil',
+      'name':
+          'gcr.io/cloud-builders/gsutil',
       'args': [
           'cp',
           '/workspace/libs.zip',
@@ -53,11 +53,12 @@ def main():
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
-  build_info = cloudbuild.projects().builds().create(projectId='oss-fuzz-base', body=build_body).execute()
-  build_id =  build_info['metadata']['build']['id']
+  build_info = cloudbuild.projects().builds().create(
+      projectId='oss-fuzz-base', body=build_body).execute()
+  build_id = build_info['metadata']['build']['id']
 
   print build_id
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

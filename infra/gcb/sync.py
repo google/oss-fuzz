@@ -22,8 +22,10 @@ VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 def main():
   # Connect to jenkins server.
   jenkins_login = get_jenkins_login()
-  server = jenkins.Jenkins('http://%s:%d' % JENKINS_SERVER,
-                           username=jenkins_login[0], password=jenkins_login[1])
+  server = jenkins.Jenkins(
+      'http://%s:%d' % JENKINS_SERVER,
+      username=jenkins_login[0],
+      password=jenkins_login[1])
 
   for project in get_projects():
     print 'syncing configs for', project
@@ -32,7 +34,7 @@ def main():
       sync_jenkins_job(server, project)
 
     except Exception as e:
-      print >>sys.stderr, 'Failed to setup job with exception', e
+      print >> sys.stderr, 'Failed to setup job with exception', e
 
 
 def _has_dockerfile(project_dir):
@@ -60,13 +62,13 @@ def get_projects():
       continue
 
     if not VALID_PROJECT_NAME.match(name):
-      print >>sys.stderr, 'Invalid project name:', name
+      print >> sys.stderr, 'Invalid project name:', name
       continue
 
     projects.append(name)
 
   if not projects:
-    print >>sys.stderr, 'No projects found.'
+    print >> sys.stderr, 'No projects found.'
 
   return projects
 
