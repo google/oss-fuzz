@@ -5,9 +5,7 @@ import json
 import os
 import re
 import sys
-import urllib2
 import yaml
-import xml.etree.ElementTree as ET
 
 import jenkins
 

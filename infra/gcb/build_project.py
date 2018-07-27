@@ -60,6 +60,8 @@ DEFAULT_SANITIZERS = ['address', 'undefined']
 
 TARGETS_LIST_BASENAME = 'targets.list'
 
+UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
+
 
 def usage():
   sys.stderr.write('Usage: ' + sys.argv[0] + ' <project_dir>\n')
@@ -195,13 +197,11 @@ def get_build_steps(project_dir):
       zip_file = stamped_name + '.zip'
       stamped_srcmap_file = stamped_name + '.srcmap.json'
       bucket = ENGINE_INFO[fuzzing_engine].upload_bucket
-      upload_url = get_signed_url('/{0}/{1}/{2}'.format(bucket, name, zip_file))
-      srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(bucket, name,
-                                                        stamped_srcmap_file))
-
-      targets_list_filename = TARGETS_LIST_BASENAME + '.' + sanitizer
-      targets_list_url = get_signed_url('/{0}/{1}/{2}'.format(
-          bucket, name, targets_list_filename))
+      upload_url = get_signed_url(UPLOAD_URL_FORMAT.format(bucket, name, 
+                                                           zip_file))
+      srcmap_url = get_signed_url(UPLOAD_URL_FORMAT.format(bucket, name,
+                                                           stamped_srcmap_file))
+      targets_list_url = get_targets_list_url(bucket, name, sanitizer)
 
       env.append('OUT=' + out)
       env.append('MSAN_LIBS_PATH=/workspace/msan')
@@ -316,6 +316,12 @@ def get_logs_url(build_id):
   URL_FORMAT = ('https://console.developers.google.com/logs/viewer?'
                 'resource=build%2Fbuild_id%2F{0}&project=oss-fuzz')
   return URL_FORMAT.format(build_id)
+
+
+def get_targets_list_url(bucket, project, sanitizer):
+  filename = TARGETS_LIST_BASENAME + '.' + sanitizer
+  url = UPLOAD_URL_FORMAT.format(bucket, project, filename)
+  return get_signed_url(url)
 
 
 def run_build(build_steps, image):

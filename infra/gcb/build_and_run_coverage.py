@@ -18,6 +18,9 @@ CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=profile']
 
 SANITIZER = 'profile'
 
+CORPUS_BACKUP_URL = ('/{0}-backup.clusterfuzz-external.appspot.com/corpus/'
+                     'libFuzzer/{1]/latest.zip')
+
 def usage():
   sys.stderr.write(
     "Usage: " + sys.argv[0] + " <project_dir>\n")
@@ -76,6 +79,10 @@ def get_build_steps(project_dir):
          'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'.format(out, workdir),
        ],
       },
+  ])
+
+
+  build_steps.extend([
       # Download and unzip corpus backup for every target.
       # {
       #   # TODO.
@@ -116,16 +123,25 @@ def get_build_steps(project_dir):
 
 
 def get_corpus_backup(project_name):
-  # url = 'https://www.googleapis.com/storage/v1/b/{0}-backup.clusterfuzz-external.appspot.com/o'.format(project_name)
-  # url = 'https://www.storage.googleapis.com/v1/b/{0}-backup.clusterfuzz-external.appspot.com/o'.format(project_name)
-  url = '/{0}-backup.clusterfuzz-external.appspot.com/o'.format(project_name)
-  url = build_project.get_signed_url(url)
-  #url.replace('https://storage.googleapis.com', 'https://www.googleapis.com/storage/v1/b')
-  r = requests.get(url) #, params={'delimiter': '/'})
-  print(r.status_code)
-  print(r.text)
-  data = r.json()
-  print(data)
+
+  for fuzz_target in fuzz_targets:
+    url = CORPUS_BACKUP_URL.format(project_name, fuzz_target)
+    url = build_project.get_signed_url(url)
+    r = requests.get(url) #, params={'delimiter': '/'})
+    print(r.status_code)
+    print(r.text)
+    data = r.json()
+    print(data)
+
+def get_targets_list(project_name):
+  # libFuzzer ASan is the default configuration, get list of targets from it.
+  url = build_project.get_targets_list_url(
+      ENGINE_INFO['libfuzzer'].upload_bucket, project_name, 'address')
+  r = requests.get(url)
+  if not r.status_code == 200:
+    sys.stderr.write('Failed to get list of targets from "%s".\n' % url)
+    return None
+    
 
 
 def main():
