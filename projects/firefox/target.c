@@ -8,7 +8,7 @@
 #define STRINGIFY(S) STRINGLIT(S)
 
 // Required for oss-fuzz to consider the binary a target.
-static const char* magic = "LLVMFuzzerTestOneInput";
+static const char* magic __attribute__((used)) = "LLVMFuzzerTestOneInput";
 
 int main(int argc, char* argv[]) {
   char path[PATH_MAX] = {0};
