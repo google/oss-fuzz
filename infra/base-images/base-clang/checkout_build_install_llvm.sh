@@ -19,6 +19,27 @@ LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
+CHECKOUT_RETRIES=10
+function checkout_with_retries {
+  REPOSITORY=$1
+  LOCAL_PATH=$2
+  CHECKOUT_RETURN_CODE=1
+
+  # Disable exit on error since we might encounter some failures while retrying.
+  set +e
+  for i in $(seq 1 $CHECKOUT_RETRIES); do
+    rm -rf $LOCAL_PATH
+    svn co $REPOSITORY $LOCAL_PATH
+    CHECKOUT_RETURN_CODE=$?
+    if [ $CHECKOUT_RETURN_CODE -eq 0 ]; then
+      break
+    fi
+  done
+
+  # Re-enable exit on error. If checkout failed, script will exit.
+  set -e
+  return $CHECKOUT_RETURN_CODE
+}
 
 # Use chromium's clang revision
 mkdir $SRC/chromium_tools
@@ -36,11 +57,11 @@ fi
 
 echo "Using LLVM revision: $LLVM_REVISION"
 
-cd $SRC && svn co https://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
-cd $SRC/llvm/tools && svn co https://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_REVISION clang
-cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
-cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
-cd $SRC/llvm/projects && svn co https://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
+cd $SRC && checkout_with_retries https://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
+cd $SRC/llvm/tools && checkout_with_retries https://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_REVISION clang
+cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
+cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
+cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
 
 # Build & install
 mkdir -p $WORK/llvm
