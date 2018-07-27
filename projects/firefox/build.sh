@@ -47,9 +47,13 @@ ac_add_options --enable-address-sanitizer
 EOF
 fi
 
+# Remove existing cargo configs (if any). Otherwise, mach fails.
+if [ -d "$HOME/.cargo" ]; then rm -rf $HOME/.cargo; fi
+
 # Install dependencies.
 ./mach bootstrap --no-interactive --application-choice browser
 
+# Set environment for rustc.
 source $HOME/.cargo/env
 
 # Build! Takes about 15 minutes on a 32 vCPU instance.
