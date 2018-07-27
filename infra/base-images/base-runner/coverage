@@ -28,6 +28,9 @@ rm -rf $LOGS_DIR && mkdir -p $LOGS_DIR
 REPORT_DIR="$OUT/report"
 rm -rf $REPORT_DIR
 
+PROFILE_FILE="merged.data"
+SUMMARY_FILE="$REPORT_DIR/summary.json"
+
 # This will be used by llvm-cov command to generate the actual report.
 objects=""
 
@@ -70,7 +73,7 @@ done
 wait
 
 # Merge all raw dumps.
-llvm-profdata merge -sparse *.profraw -o merged.profdata
+llvm-profdata merge -sparse *.profraw -o $PROFILE_FILE
 
 # Delete unnecessary and (potentially) large .profraw files.
 rm *.profraw
@@ -79,7 +82,12 @@ rm *.profraw
 
 # Generate HTML report.
 llvm-cov show -format=html -output-dir=$REPORT_DIR -path-equivalence="/,$OUT" \
-    $COVERAGE_EXTRA_ARGS -instr-profile merged.profdata $objects
+    -Xdemangler c++filt -Xdemangler -n $COVERAGE_EXTRA_ARGS \
+    -instr-profile=$PROFILE_FILE $objects
+
+# Export coverage summary in JSON format.
+llvm-cov export -summary-only -instr-profile=$PROFILE_FILE $objects \
+    > $SUMMARY_FILE
 
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
