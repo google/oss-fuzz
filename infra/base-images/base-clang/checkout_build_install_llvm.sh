@@ -29,7 +29,7 @@ function checkout_with_retries {
   for i in $(seq 1 $CHECKOUT_RETRIES); do
     rm -rf $LOCAL_PATH && svn co $REPOSITORY $LOCAL_PATH
     if [ $? -eq 0 ]; then
-      $CHECKOUT_FAILED=0
+      CHECKOUT_FAILED=0
       break
     fi
   done
