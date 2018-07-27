@@ -32,4 +32,5 @@ $CXX $CXXFLAGS -std=c++11 \
   -lFuzzingEngine \
   fuzztest/qcms_fuzzer.cpp -o $OUT/fuzz
 
-cp $SRC/fuzz.dict $SRC/fuzz_seed_corpus.zip $OUT
+cp fuzztest/qcms_fuzzer.dict $OUT/fuzz.dict
+cp $SRC/fuzz_seed_corpus.zip $OUT
