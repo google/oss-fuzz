@@ -256,6 +256,7 @@ def get_build_steps(project_yaml, dockerfile_path):
           {
               'name':
                   'gcr.io/oss-fuzz-base/base-runner',
+              'env': env,
               'args': [
                   'bash',
                   '-c',
