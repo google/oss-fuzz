@@ -73,6 +73,7 @@ def load_project_yaml(project_dir):
         'gcr.io/oss-fuzz/' + project_name)
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
     project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
+    project_yaml.setdefault('run_tests', True)
     return project_yaml
 
 
@@ -138,6 +139,7 @@ def workdir_from_dockerfile(dockerfile):
 def get_build_steps(project_yaml, dockerfile_path):
   name = project_yaml['name']
   image = project_yaml['image']
+  run_tests = project_yaml['run_tests']
 
   ts = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
@@ -205,7 +207,7 @@ def get_build_steps(project_yaml, dockerfile_path):
       if not workdir:
         workdir = '/src'
 
-      build_steps.extend([
+      build_steps.append(
           # compile
           {'name': image,
            'env': env,
@@ -219,26 +221,21 @@ def get_build_steps(project_yaml, dockerfile_path):
              # this step to set it back.
              'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'.format(out, workdir),
            ],
-          },
-          # test binaries
-          {'name': 'gcr.io/oss-fuzz-base/base-runner',
-            'env': env,
-            'args': [
-              'bash',
-              '-c',
-              'test_all'
-            ],
-          },
-          # generate targets list
-          {'name': 'gcr.io/oss-fuzz-base/base-runner',
-            'env': env,
-            'args': [
-              'bash',
-              '-c',
-              'targets_list > /workspace/{0}'.format(targets_list_filename),
-            ],
-          },
-      ])
+          }
+      )
+
+      if run_tests:
+        build_steps.append(
+            # test binaries
+            {'name': 'gcr.io/oss-fuzz-base/base-runner',
+              'env': env,
+              'args': [
+                'bash',
+                '-c',
+                'test_all'
+              ],
+            }
+        )
 
       if sanitizer == 'memory':
         # Patch dynamic libraries to use instrumented ones.
@@ -254,6 +251,15 @@ def get_build_steps(project_yaml, dockerfile_path):
         })
 
       build_steps.extend([
+          # generate targets list
+          {'name': 'gcr.io/oss-fuzz-base/base-runner',
+            'env': env,
+            'args': [
+              'bash',
+              '-c',
+              'targets_list > /workspace/{0}'.format(targets_list_filename),
+            ],
+          },
           # zip binaries
           {'name': image,
             'args': [
