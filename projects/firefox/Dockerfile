@@ -21,5 +21,4 @@ RUN apt-get update && \
     apt-file --non-interactive update
 RUN hg clone https://hg.mozilla.org/mozilla-central
 WORKDIR mozilla-central
-ENV SHELL /bin/bash # required by mach for some reason
 COPY build.sh target.c $SRC/
