@@ -23,22 +23,19 @@ CHECKOUT_RETRIES=10
 function checkout_with_retries {
   REPOSITORY=$1
   LOCAL_PATH=$2
-  CHECKOUT_FAILED=1
+  CHECKOUT_RETURN_CODE=1
 
   set -e
   for i in $(seq 1 $CHECKOUT_RETRIES); do
-    rm -rf $LOCAL_PATH && svn co $REPOSITORY $LOCAL_PATH
-    if [ $? -eq 0 ]; then
-      CHECKOUT_FAILED=0
+    rm -rf $LOCAL_PATH
+    CHECKOUT_RETURN_CODE=$(svn co $REPOSITORY $LOCAL_PATH)
+    if [ $CHECKOUT_RETURN_CODE -eq 0 ]; then
       break
     fi
   done
-  set +e
 
-  # If checkout failed after all retires, do one more desperate attempt with +e.
-  if [ $CHECKOUT_FAILED -eq 1 ]; then
-      rm -rf $LOCAL_PATH && svn co $REPOSITORY $LOCAL_PATH
-  fi
+  set +e
+  return $CHECKOUT_RETURN_CODE
 }
 
 # Use chromium's clang revision
@@ -57,7 +54,7 @@ fi
 
 echo "Using LLVM revision: $LLVM_REVISION"
 
-cd $SRC && checkout_with_retries https://llvm.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
+cd $SRC && checkout_with_retries https://llvm123.org/svn/llvm-project/llvm/trunk@$LLVM_REVISION llvm
 cd $SRC/llvm/tools && checkout_with_retries https://llvm.org/svn/llvm-project/cfe/trunk@$LLVM_REVISION clang
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/compiler-rt/trunk@$LLVM_REVISION compiler-rt
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
