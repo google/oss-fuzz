@@ -71,6 +71,7 @@ def load_project_yaml(project_dir):
         'gcr.io/oss-fuzz/' + project_name)
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
     project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
+    project_yaml.setdefault('run_tests', True)
     return project_yaml
 
 
@@ -136,6 +137,7 @@ def workdir_from_dockerfile(dockerfile):
 def get_build_steps(project_yaml, dockerfile_path):
   name = project_yaml['name']
   image = project_yaml['image']
+  run_tests = project_yaml['run_tests']
 
   ts = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
@@ -199,7 +201,7 @@ def get_build_steps(project_yaml, dockerfile_path):
       if not workdir:
         workdir = '/src'
 
-      build_steps.extend([
+      build_steps.append(
           # compile
           {'name': image,
            'env': env,
@@ -215,19 +217,23 @@ def get_build_steps(project_yaml, dockerfile_path):
              # Container Builder doesn't pass --rm to docker run yet.
              'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile && rm -rf /work && rm -rf /src'.format(out, workdir),
            ],
-          },
-          # test binaries
-          {'name': 'gcr.io/oss-fuzz-base/base-runner',
-            'env': env,
-            'args': [
-              'bash',
-              '-c',
-              # Verify that fuzzers have been built properly and are not broken.
-              # TODO(mmoroz): raise a notification if not passing the tests.
-              'test_all'
-            ],
-          },
-      ])
+          }
+      )
+
+      if run_tests:
+        build_steps.append(
+            # test binaries
+            {'name': 'gcr.io/oss-fuzz-base/base-runner',
+              'env': env,
+              'args': [
+                'bash',
+                '-c',
+                # Verify that fuzzers are built properly and not broken.
+                # TODO(mmoroz): raise a notification on failing tests.
+                'test_all'
+              ],
+            }
+        )
 
       if sanitizer == 'memory':
         # Patch dynamic libraries to use instrumented ones.
