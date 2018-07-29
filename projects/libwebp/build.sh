@@ -31,8 +31,6 @@ CFLAGS="$WEBP_CFLAGS" ./configure \
 make clean
 make -j$(nproc)
 
-cp $SRC/fuzz.dict $OUT
-
 # Simple Decoding API
 $CC $CFLAGS -Isrc -c $SRC/fuzz_simple_api.c
 $CXX $CXXFLAGS -lFuzzingEngine \
