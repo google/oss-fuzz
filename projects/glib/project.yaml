@@ -1,0 +1,4 @@
+homepage: "https://gitlab.gnome.org/GNOME/glib"
+primary_contact: "bugzilla@tecnocode.co.uk"
+auto_ccs:
+- philip.withnall@gmail.com
