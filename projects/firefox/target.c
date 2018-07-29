@@ -13,6 +13,11 @@ static const char* magic __attribute__((used)) = "LLVMFuzzerTestOneInput";
 int main(int argc, char* argv[]) {
   char path[PATH_MAX] = {0};
 
+  printf("argv:");
+  for (int i = 0; i < argc; i++)
+    printf(" <%s>", argv[i]);
+  printf("\n");
+
   if (**argv != '/') {
     if (!getcwd(path, PATH_MAX)) {
       perror("Couldn't get CWD");
@@ -38,6 +43,9 @@ int main(int argc, char* argv[]) {
   char ff_path[PATH_MAX] = {0};
   strcpy(ff_path, path);
   strcat(ff_path, "/firefox/firefox");
+
+  printf("path: %s\n", path);
+  printf("ff_path: %s\n", ff_path);
 
   if (getenv("LD_LIBRARY_PATH")) {
     // Shouldn't be set. Code can be changed to append if it ever is.
@@ -72,5 +80,26 @@ int main(int argc, char* argv[]) {
   }
   free(new_options);
 
-  return execv(ff_path, argv);
+  int ret = execv(ff_path, argv);
+  if (ret) {
+    perror("execv");
+
+    // speculative
+    char** new_argv = (char**)calloc(argc + 1, sizeof(char*));
+    memcpy(new_argv, argv, argc * sizeof(char*));
+    *new_argv = "firefox";
+
+    printf("new_argv:");
+    for (int i = 0; i < argc; i++)
+      printf(" <%s>", new_argv[i]);
+    printf("\n");
+
+    ret = execv(ff_path, new_argv);
+    if (ret)
+      perror("execv-new");
+
+    free(new_argv);
+  }
+
+  return ret;
 }
