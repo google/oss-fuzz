@@ -16,9 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pdknsk@gmail.com
-RUN apt-get update && apt-get install -y autoconf make libtool
+RUN apt-get update && apt-get install -y autoconf make libtool zip
 RUN git clone https://chromium.googlesource.com/webm/libwebp
-ADD http://cdn.pwmon.org/oss-fuzz/libwebp/fuzz_seed_corpus.zip $SRC/
+RUN git clone https://chromium.googlesource.com/webm/libwebp-test-data
 COPY build.sh fuzz.h fuzz.dict $SRC/
 COPY fuzz_simple_api.c $SRC/
 COPY fuzz_advanced_api.c $SRC/
