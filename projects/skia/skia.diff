@@ -12,6 +12,19 @@ index e6933a856f..f802cc2250 100644
      SkScalar resScale = maxDim / 1000;
      SkPathMeasure measure(path, bits & 1, resScale);
      SkPoint position;
+diff --git a/fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp b/fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp
+index f9d9598892..f24a6c97a7 100644
+--- a/fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp
++++ b/fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp
+@@ -19,7 +19,7 @@ void FuzzImageFilterDeserialize(sk_sp<SkData> bytes) {
+     SkCanvas canvas(bitmap);
+     canvas.clear(0x00000000);
+ 
+-    auto flattenable = SkImageFilter::Deserialize(bytes->data(), bytes->size());
++    auto flattenable = SkImageFilter::Deserialize(bytes->data(), bytes->size()+20);
+ 
+     if (flattenable != nullptr) {
+         // Let's see if using the filters can cause any trouble...
 diff --git a/src/core/SkAAClip.cpp b/src/core/SkAAClip.cpp
 index 24a8e58e96..3339cd0e5f 100644
 --- a/src/core/SkAAClip.cpp
