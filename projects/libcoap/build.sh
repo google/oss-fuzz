@@ -18,10 +18,5 @@
 ./autogen.sh && ./configure --disable-doxygen --disable-manpages \
     && make -j$(nproc)
 
-for file in $SRC/libcoap/tests/oss-fuzz/*target.c; do
-	b=$(basename $file _target.c)
-	$CC $CFLAGS -c $file -I include/coap -o $OUT/${b}_target.o
-	$CXX $CXXFLAGS $OUT/${b}_target.o .libs/libcoap-2.a \
-	-lFuzzingEngine -o $OUT/${b}_fuzzer
-	rm -f $OUT/${b}_target.o
-done
+# build all fuzzer targets
+make -C tests/oss-fuzz -f Makefile.oss-fuzz
