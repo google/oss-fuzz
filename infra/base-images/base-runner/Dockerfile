@@ -16,9 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-image
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y zip file libunwind8 binutils libblocksruntime0 fonts-dejavu
-COPY bad_build_check llvm-cov llvm-profdata llvm-symbolizer reproduce \
-    run_fuzzer sancov test_all test_report minijail0 run_minijail /usr/local/bin/
+RUN apt-get install -y zip file libunwind8 binutils libblocksruntime0 \
+    fonts-dejavu python3 libcap2
+COPY bad_build_check coverage llvm-cov llvm-profdata llvm-symbolizer reproduce \
+    run_fuzzer sancov test_all minijail0 run_minijail targets_list /usr/local/bin/
 
 # Default environment options for various sanitizers.
 # Note that these match the settings used in ClusterFuzz and

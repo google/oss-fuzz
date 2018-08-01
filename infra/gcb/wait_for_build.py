@@ -1,5 +1,4 @@
 #!/usr/bin/python2
-
 """Waits for project build on Google Cloud Builder.
 
 Usage: wait_for_build.py <build_id>
@@ -37,8 +36,8 @@ def wait_for_build(build_id, project):
 
     current_status = build_info['status']
     if current_status != status:
-        print datetime.datetime.now(), current_status
-        sys.stdout.flush()
+      print datetime.datetime.now(), current_status
+      sys.stdout.flush()
     status = current_status
     if status in DONE_STATUSES:
       return status == 'SUCCESS'
@@ -51,10 +50,7 @@ def main():
 
   parser = argparse.ArgumentParser(description='Wait for build to complete')
   parser.add_argument(
-      '-p',
-      '--project',
-      help='Cloud Project',
-      default='oss-fuzz')
+      '-p', '--project', help='Cloud Project', default='oss-fuzz')
   parser.add_argument('build_id', help='The Container Builder build ID.')
 
   args = parser.parse_args()

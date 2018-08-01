@@ -260,3 +260,13 @@ test_app("skottie_json") {
     "modules/skottie:fuzz",
   ]
 }
+
+test_app("skjson") {
+  sources = [
+    "fuzz/oss_fuzz/FuzzJSON.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}

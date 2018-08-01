@@ -1,7 +1,5 @@
 homepage: "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS"
-primary_contact: "ttaubert@mozilla.com"
-auto_ccs:
-- "fkiefer@mozilla.com"
+primary_contact: "fkiefer@mozilla.com"
 fuzzing_engines:
   - libfuzzer
   - afl

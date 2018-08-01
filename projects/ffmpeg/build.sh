@@ -97,7 +97,9 @@ make install
 
 cd $SRC/libvpx
 LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
-    --disable-examples --disable-unit-tests
+    --disable-examples --disable-unit-tests \
+    --size-limit=12288x12288 \
+    --extra-cflags="-DVPX_MAX_ALLOCABLE_MEMORY=1073741824"
 make clean
 make -j$(nproc) all
 make install
@@ -164,6 +166,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --extra-ldflags="-L$FFMPEG_DEPS_PATH/lib" \
     --prefix="$FFMPEG_DEPS_PATH" \
     --pkg-config-flags="--static" \
+    --enable-ossfuzz \
     --libfuzzer=-lFuzzingEngine \
     --optflags=-O1 \
     --enable-gpl \

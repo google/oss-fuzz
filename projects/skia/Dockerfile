@@ -17,18 +17,26 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kjlubick@chromium.org
 
-RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev patchelf
+# Mesa needed to build swiftshader
+RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake
 
-RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git'
+RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
 ENV PATH="${SRC}/depot_tools:${PATH}"
 
-# checkout all sources needed to build your project
-RUN git clone https://skia.googlesource.com/skia.git
+RUN git clone https://skia.googlesource.com/skia.git --depth 1
 
 # current directory for build script
 WORKDIR skia
 
 RUN bin/sync
+
+# Setup SwiftShader
+WORKDIR $SRC/skia/third_party/externals/swiftshader/
+# TODO(metzman): Come up with a better long term solution, such as downloading
+# prebuilt libraries, than pinning swiftshader to a known working revision.
+RUN git checkout bf8fd5b5fb6892dabcc21b4b86d41cd40cb9b4b5
+RUN git submodule update --init
+WORKDIR $SRC/skia
 
 RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
 
@@ -56,6 +64,8 @@ RUN wget -O $SRC/skia/encoder_seed_corpus.zip https://storage.googleapis.com/ski
 
 RUN wget -O $SRC/skia/skottie_json_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skottie_json_seed_corpus.zip
 
+RUN wget -O $SRC/skia/skjson_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skjson_seed_corpus.zip
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
@@ -79,6 +89,8 @@ COPY api_fuzzers.options $SRC/skia/api_path_measure.options
 COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
 COPY api_fuzzers.options $SRC/skia/api_null_canvas.options
 COPY api_fuzzers.options $SRC/skia/api_mock_gpu_canvas.options
+
+COPY json.dict $SRC/skia/json.dict
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn

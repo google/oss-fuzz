@@ -62,4 +62,3 @@ RUN mkdir honggfuzz && \
 COPY compile compile_afl compile_libfuzzer compile_honggfuzz coverage_report srcmap /usr/local/bin/
 
 CMD ["compile"]
-

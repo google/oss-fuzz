@@ -1,0 +1,8 @@
+homepage: "https://github.com/kinetiknz/nestegg"
+primary_contact: "mgregan@mozilla.com"
+sanitizers:
+- address
+- memory
+- undefined
+auto_ccs:
+- "twsmith@mozilla.com"
