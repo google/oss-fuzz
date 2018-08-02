@@ -89,7 +89,7 @@ Link to a custom help URL in bug reports instead of the
 bugs to members of your project unfamiliar with OSS-Fuzz or if they should follow a different workflow for
 reproducing and fixing bugs than standard one outlined in the reproducing guide.
 
-Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
+Example: [skia](https://github.com/google/oss-fuzz/blob/master/projects/skia/project.yaml).
 
 ### experimental
 A boolean (either True or False) that indicates whether this project is in evaluation mode. This allows a project to be
