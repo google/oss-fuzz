@@ -17,12 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER varconst@google.com 
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget golang
-RUN apt-get install -y vim
-# If cloning from git repo, use the following two lines
-RUN git clone -b minafarid/fuzzing-oss --depth 1 https://github.com/firebase/firebase-ios-sdk.git
-# If working locally, use the following two lines
-#WORKDIR $WORK
-#ADD firebase-ios-sdk $SRC/firebase-ios-sdk/
-
-# Copy build script.
+RUN git clone --depth 1 https://github.com/firebase/firebase-ios-sdk.git
 COPY build.sh $SRC/

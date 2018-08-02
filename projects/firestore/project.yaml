@@ -3,3 +3,6 @@ primary_contact: "varconst@google.com"
 auto_ccs:
   - "varconst@google.com"
   - "minafarid@google.com"
+sanitizers:
+  - address
+  - undefined

@@ -15,29 +15,22 @@
 #
 ################################################################################
 
-# build project
-# e.g.
-# ./autogen.sh
-# ./configure
-# make -j$(nproc) all
-
-# build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     -lFuzzingEngine /path/to/library.a
-
-# Download cmake binaries becaue the cmake version that is installed using
-# `apt-get install cmake` is older than the minimum requirements.
+# Download binaries for cmake 3.12 because the cmake version that is installed
+# using `apt-get install cmake` is older than the minimum cmake requirements.
 cd $WORK
 wget https://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz
 tar -xzf cmake-3.12.0-Linux-x86_64.tar.gz
-export PATH=$PATH:$WORK/cmake-3.12.0-Linux-x86_64/bin
+rm cmake-3.12.0-Linux-x86_64.tar.gz
+
+# Build the project using cmake with FUZZING option enabled.
 cd $SRC/firebase-ios-sdk
-rm -rf build && mkdir build
-cd build
-echo "Work = ${WORK}"
-ls $WORK
-$WORK/cmake-3.12.0-Linux-x86_64/bin/cmake -DWITH_ASAN=ON -DFUZZING=ON -DOSS_FUZZ=ON -DOSS_FUZZING_ENGINE=${LIB_FUZZING_ENGINE} ..
+mkdir build && cd build
+$WORK/cmake-3.12.0-Linux-x86_64/bin/cmake -DFUZZING=ON ..
 make -j$(nproc)
-cp Firestore/core/src/firebase/firestore/fuzzing/firebase_firestore_fuzzing_serializer $OUT/
+
+# Copy fuzzing targets and their dictionaries to $OUT.
+FUZZERS_DIR=Firestore/core/src/firebase/firestore/fuzzing
+find ${FUZZERS_DIR} -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
+find ${FUZZERS_DIR} -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
+# Zip corpora folders to $OUT.
+find ${FUZZERS_DIR} -name "*_fuzzer_seed_corpus" -type d -execdir zip -r ${OUT}/{}.zip {} ';'
