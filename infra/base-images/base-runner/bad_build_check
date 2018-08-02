@@ -65,6 +65,9 @@ function check_instrumentation {
 
     local NUMBER_OF_EDGES=$(grep -Po "INFO: Loaded [[:digit:]]+ module.*\(.*(counters|guards)\):[[:space:]]+\K[[:digit:]]+" $FUZZER_OUTPUT)
 
+    # If a fuzz target fails to start, grep won't find anything, so bail out early to let check_startup_crash deal with it.
+    [[ -z "$NUMBER_OF_EDGES" ]] && return
+
     if (( $NUMBER_OF_EDGES < $THRESHOLD_FOR_NUMBER_OF_EDGES )); then
       echo "BAD BUILD: $FUZZER seems to have only partial coverage instrumentation."
     fi
