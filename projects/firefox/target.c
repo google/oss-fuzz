@@ -54,6 +54,11 @@ int main(int argc, char* argv[]) {
     perror("Error setting fuzzing variables");
     exit(1);
   }
+  
+  if (setenv("HOME", "/tmp", 0)) {
+    perror("Error setting HOME");
+    exit(1);
+  }
 
   // Temporary (or permanent?) work-around for a bug in the fuzzing interface.
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1466021#c9
