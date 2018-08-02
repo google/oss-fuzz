@@ -30,10 +30,10 @@ index 24a8e58e96..3339cd0e5f 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index bd607553cd..9995982bcc 100644
+index b35d7f9f4c..8ae8967455 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1100,6 +1100,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1098,6 +1098,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -96,7 +96,7 @@ index 3ff4f93405..379f68eb29 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index 0fdf58b6e5..d1a28f36c9 100644
+index 9b8431e591..d0ad8b47bf 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
 @@ -1327,6 +1327,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
@@ -324,36 +324,3 @@ index ec4e3fec77..4bc01d5d51 100644
 +#endif
  }
  #endif//!defined(SK_BUILD_FOR_WIN) && !defined(SK_BUILD_FOR_ANDROID)
-diff --git a/src/utils/SkPolyUtils.cpp b/src/utils/SkPolyUtils.cpp
-index 290fa68f2d..de6cdd84da 100644
---- a/src/utils/SkPolyUtils.cpp
-+++ b/src/utils/SkPolyUtils.cpp
-@@ -347,6 +347,12 @@ bool SkInsetConvexPolygon(const SkPoint* inputPolygonVerts, int inputPolygonSize
-         return false;
-     }
- 
-+#if defined(IS_FUZZING)
-+    if (inputPolygonSize > 500) {
-+        return false;
-+    }
-+#endif
-+
-     // restrict this to match other routines
-     // practically we don't want anything bigger than this anyway
-     if (inputPolygonSize >= (1 << 16)) {
-diff --git a/src/utils/SkShadowTessellator.cpp b/src/utils/SkShadowTessellator.cpp
-index b485f3f68c..8ce24c0879 100644
---- a/src/utils/SkShadowTessellator.cpp
-+++ b/src/utils/SkShadowTessellator.cpp
-@@ -504,6 +504,11 @@ bool SkBaseShadowTessellator::addArc(const SkVector& nextNormal, bool finishArc)
-         // recover as best we can
-         numSteps = 0;
-     }
-+#if defined(IS_FUZZING)
-+    if (numSteps > 50 || numSteps < 0) {
-+        return false;
-+    }
-+#endif
-     SkVector prevNormal = fPrevOutset;
-     for (int i = 0; i < numSteps-1; ++i) {
-         SkVector currNormal;
