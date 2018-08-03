@@ -83,6 +83,8 @@ sanitizers:
  - undefined
  ```
 
+Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
+
 ### help_url
 Link to a custom help URL in bug reports instead of the
 [default OSS-Fuzz guide to reproducing crashes](https://github.com/google/oss-fuzz/blob/master/docs/reproducing.md). This can be useful if you assign
