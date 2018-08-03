@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jonathan@titanous.com
 RUN apt-get update &&\
-    apt-get install -y gperf m4 gettext libcap-dev python3-pip libmount-dev pkg-config &&\
+    apt-get install -y gperf m4 gettext libcap-dev python3-pip libmount-dev pkg-config wget &&\
     pip3 install meson ninja
 RUN git clone --depth 1 https://github.com/systemd/systemd systemd
 WORKDIR systemd
