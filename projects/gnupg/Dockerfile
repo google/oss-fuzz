@@ -19,7 +19,7 @@ MAINTAINER info@g10code.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext bzip2 gnupg
 
 #wait for zesty, or backport ?
-RUN curl -O https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.28.tar.bz2
+RUN curl -O https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.32.tar.bz2
 RUN curl -O https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.8.2.tar.bz2
 RUN curl -O https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-2.5.1.tar.bz2
 RUN curl -O https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2
