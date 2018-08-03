@@ -83,6 +83,7 @@ cd $WORK/apt
 # Takes only 1-2 minutes on a 32 vCPU instance.
 PACKAGES=($(parallel apt-file search -lFN "{}" ::: ${REQUIRED_LIBRARIES[@]}))
 PACKAGES=(${PACKAGES[@]##libc6*})
+PACKAGES=(${PACKAGES[@]##libgcc*})
 PACKAGES=(${PACKAGES[@]##libstdc++*})
 apt-get -q download ${PACKAGES[@]}
 
