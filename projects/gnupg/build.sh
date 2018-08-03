@@ -17,8 +17,8 @@
 
 #compile and link statically dependencies
 cd ..
-tar -xvf libgpg-error-1.28.tar.bz2
-cd libgpg-error-1.28
+tar -xvf libgpg-error-1.32.tar.bz2
+cd libgpg-error-1.32
 ./configure --enable-static --disable-shared
 make
 make install
