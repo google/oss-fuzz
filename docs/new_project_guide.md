@@ -83,13 +83,15 @@ sanitizers:
  - undefined
  ```
 
+Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
+
 ### help_url
 Link to a custom help URL in bug reports instead of the
 [default OSS-Fuzz guide to reproducing crashes](https://github.com/google/oss-fuzz/blob/master/docs/reproducing.md). This can be useful if you assign
 bugs to members of your project unfamiliar with OSS-Fuzz or if they should follow a different workflow for
 reproducing and fixing bugs than standard one outlined in the reproducing guide.
 
-Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
+Example: [skia](https://github.com/google/oss-fuzz/blob/master/projects/skia/project.yaml).
 
 ### experimental
 A boolean (either True or False) that indicates whether this project is in evaluation mode. This allows a project to be
