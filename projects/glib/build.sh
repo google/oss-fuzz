@@ -27,14 +27,6 @@ meson $BUILD \
 
 ninja -C $BUILD
 
-$CC $CFLAGS -I. -Iglib -I$BUILD/glib -c $SRC/fuzz_markup.c
-$CXX $CXXFLAGS -lFuzzingEngine \
-  fuzz_markup.o -o $OUT/fuzz_markup \
-  $BUILD/glib/libglib-2.0.a $BUILD/glib/libcharset/libcharset.a
-cp $SRC/fuzz.options $OUT/fuzz_markup.options
-find glib/tests -type f -size -32k -name "*.gmarkup" \
-  -exec zip -qju $OUT/fuzz_markup_seed_corpus.zip "{}" \;
-
 $CC $CFLAGS -I. -Iglib -I$BUILD/glib -c $SRC/fuzz_bookmark.c
 $CXX $CXXFLAGS -lFuzzingEngine \
   fuzz_bookmark.o -o $OUT/fuzz_bookmark \
