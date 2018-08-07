@@ -18,6 +18,8 @@
 # Required for some reason... I don't ask questions
 export SHELL=/bin/bash
 
+source "$HOME/.cargo/env"
+
 autoconf2.13
 
 mkdir build_DBG.OBJ
