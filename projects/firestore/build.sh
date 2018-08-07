@@ -15,22 +15,27 @@
 #
 ################################################################################
 
-# Download binaries for cmake 3.12 because the cmake version that is installed
-# using `apt-get install cmake` is older than the minimum cmake requirements.
+# The cmake version that is available on Ubuntu 16.04 is 3.5.1. While Firestore
+# itself requires cmake 3.5, it depends on leveldb which requires cmake 3.9
+# (https://github.com/google/leveldb/blob/master/CMakeLists.txt#L5).
+# There is an open issue (https://github.com/google/leveldb/issues/607) to
+# lower the required cmake version of leveldb. Therefore, we need to download
+# a newer version of cmake until leveldb lowers the required version or a newer
+# cmake version becomes available in the OSS Fuzz environment.
 cd $WORK
 wget https://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz
 tar -xzf cmake-3.12.0-Linux-x86_64.tar.gz
 rm cmake-3.12.0-Linux-x86_64.tar.gz
 
-# Build the project using cmake with FUZZING option enabled.
+# Build the project using cmake with FUZZING option enabled to link to OSS Fuzz
+# fuzzing library defined in ${LIB_FUZZING_ENGINE}.
 cd $SRC/firebase-ios-sdk
 mkdir build && cd build
 $WORK/cmake-3.12.0-Linux-x86_64/bin/cmake -DFUZZING=ON ..
 make -j$(nproc)
 
-# Copy fuzzing targets and their dictionaries to $OUT.
+# Copy fuzzing targets, dictionaries, and zipped corpora to $OUT.
 FUZZERS_DIR=Firestore/core/src/firebase/firestore/fuzzing
 find ${FUZZERS_DIR} -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find ${FUZZERS_DIR} -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
-# Zip corpora folders to $OUT.
 find ${FUZZERS_DIR} -name "*_fuzzer_seed_corpus" -type d -execdir zip -r ${OUT}/{}.zip {} ';'
