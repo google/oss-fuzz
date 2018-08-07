@@ -48,5 +48,5 @@ $CXX $CXXFLAGS -lFuzzingEngine \
   fuzz_key.o -o $OUT/fuzz_key \
   $BUILD/glib/libglib-2.0.a $BUILD/glib/libcharset/libcharset.a
 cp $SRC/fuzz.options $OUT/fuzz_key.options
-find glib/tests -type f -size -32k -name "*.ini" \
+find gio/tests -type f -size -32k -name "*.desktop" \
   -exec zip -qju $OUT/fuzz_key_seed_corpus.zip "{}" \;
