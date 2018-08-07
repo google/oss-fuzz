@@ -42,3 +42,10 @@ $CXX $CXXFLAGS -lFuzzingEngine \
 cp $SRC/fuzz.options $OUT/fuzz_key.options
 find gio/tests -type f -size -32k -name "*.desktop" \
   -exec zip -qju $OUT/fuzz_key_seed_corpus.zip "{}" \;
+
+$CC $CFLAGS -I. -Iglib -I$BUILD/glib -c $SRC/fuzz_variant_text.c
+$CXX $CXXFLAGS -lFuzzingEngine \
+  fuzz_variant_text.o -o $OUT/fuzz_variant_text \
+  $BUILD/glib/libglib-2.0.a $BUILD/glib/libcharset/libcharset.a
+cp $SRC/fuzz.options $OUT/fuzz_variant_text.options
+cp $SRC/fuzz_variant_text.dict $OUT

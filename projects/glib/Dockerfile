@@ -21,4 +21,4 @@ RUN apt-get update && \
 RUN pip3 install -U meson ninja
 RUN git clone https://gitlab.gnome.org/GNOME/glib
 WORKDIR glib
-COPY build.sh fuzz.options fuzz_bookmark.c fuzz_markup.c fuzz_key.c $SRC/
+COPY build.sh fuzz* $SRC/
