@@ -19,8 +19,10 @@ MAINTAINER agaynor@mozilla.com
 RUN apt-get update && apt-get install -y \
   autoconf2.13 \
   yasm \
-  python
+  python \
+  curl
 
+RUN curl -sSf https://sh.rustup.rs | sh /dev/stdin -y
 RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
 WORKDIR mozilla-central/js/src/
 COPY build.sh $SRC/
