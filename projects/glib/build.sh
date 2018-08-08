@@ -50,6 +50,12 @@ $CXX $CXXFLAGS -lFuzzingEngine \
 cp $SRC/fuzz.options $OUT/fuzz_variant_text.options
 cp $SRC/fuzz_variant_text.dict $OUT
 
+$CC $CFLAGS -I. -Iglib -I$BUILD/glib -c $SRC/fuzz_variant_binary.c
+$CXX $CXXFLAGS -lFuzzingEngine \
+  fuzz_variant_binary.o -o $OUT/fuzz_variant_binary \
+  $BUILD/glib/libglib-2.0.a $BUILD/glib/libcharset/libcharset.a
+cp $SRC/fuzz.options $OUT/fuzz_variant_binary.options
+
 $CC $CFLAGS -I. -Iglib -Igmodule -I$BUILD -I$BUILD/glib \
   -c $SRC/fuzz_dbus_message.c
 $CXX $CXXFLAGS -lFuzzingEngine \
