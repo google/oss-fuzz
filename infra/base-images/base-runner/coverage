@@ -83,6 +83,7 @@ rm *.profraw
 # Generate HTML report.
 llvm-cov show -format=html -output-dir=$REPORT_DIR -path-equivalence="/,$OUT" \
     -Xdemangler c++filt -Xdemangler -n $COVERAGE_EXTRA_ARGS \
+    -ignore-filename-regex='.*src/libfuzzer/.*' \
     -instr-profile=$PROFILE_FILE $objects
 
 # Export coverage summary in JSON format.
