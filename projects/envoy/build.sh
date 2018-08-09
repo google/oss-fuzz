@@ -49,7 +49,7 @@ declare -r BAZEL_BUILD_TARGETS="$(for t in ${FUZZER_TARGETS}; do \
   echo //"$(dirname "$t")":"$(basename "$t")_driverless"; done)"
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --genrule_strategy=standalone --strip=never \
-  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
+  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --linkopt=-lc++fs \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
   --define force_libcpp=enabled \
