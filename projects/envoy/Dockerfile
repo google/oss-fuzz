@@ -36,5 +36,5 @@ RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN apt-get update && apt-get install -y bazel
 
 RUN git clone https://github.com/envoyproxy/envoy.git
-WORKDIR /src/envoy/
+WORKDIR $SRC/envoy/
 COPY find_corpus.py build.sh $SRC/

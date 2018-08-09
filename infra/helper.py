@@ -295,9 +295,10 @@ def _env_to_docker_args(env_list):
   return sum([['-e', v] for v in env_list], [])
 
 
-def _workdir_from_dockerfile(dockerfile_path):
-  """Parse WORKDIR from the Dockerfile."""
-  WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+def _workdir_from_dockerfile(project_name):
+  """Parse WORKDIR from the Dockerfile for the given project."""
+  WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*(\$SRC/[^\s]+)')
+  dockerfile_path = _get_dockerfile_path(project_name)
 
   with open(dockerfile_path) as f:
     lines = f.readlines()
@@ -435,8 +436,7 @@ def build_fuzzers(args):
     command += [
         '-v',
         '%s:%s' % (_get_absolute_path(args.source_path),
-                   _workdir_from_dockerfile(
-                       _get_dockerfile_path(args.project_name))),
+                   _workdir_from_dockerfile(args.project_name)),
     ]
   command += [
       '-v', '%s:/out' % project_out_dir,
