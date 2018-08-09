@@ -28,7 +28,7 @@ cd ..
 ./autogen.sh
 ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode
 #hack to have a different exported symbol than in openssl
-sed -i -e 's/poly1305_blocks/gcry_poly1305_blocks/' ./cipher/poly1305.c
+#sed -i -e 's/poly1305_blocks/gcry_poly1305_blocks/' ./cipher/poly1305.c
 make
 )
 
@@ -42,7 +42,8 @@ make -j$(nproc) all
 #openssl
 (
 cd openssl
-./config
+#option to not have the same exported function poly1305_blocks as in gcrypt
+./config no-poly1305
 make build_generated libcrypto.a
 )
 
