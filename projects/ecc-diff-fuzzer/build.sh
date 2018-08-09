@@ -27,8 +27,6 @@ make install
 cd ..
 ./autogen.sh
 ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode
-#hack to have a different exported symbol than in openssl
-#sed -i -e 's/poly1305_blocks/gcry_poly1305_blocks/' ./cipher/poly1305.c
 make
 )
 
