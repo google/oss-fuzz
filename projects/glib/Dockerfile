@@ -17,8 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pdknsk@gmail.com
 RUN apt-get update && \
-    apt-get install -y autoconf libtool ninja-build python3-pip
-RUN pip3 install -U meson
+    apt-get install -y autoconf libtool python3-pip
+RUN pip3 install -U meson ninja
 RUN git clone https://gitlab.gnome.org/GNOME/glib
 WORKDIR glib
-COPY build.sh fuzz.options fuzz_bookmark.c fuzz_markup.c fuzz_key.c $SRC/
+COPY build.sh fuzz* $SRC/
