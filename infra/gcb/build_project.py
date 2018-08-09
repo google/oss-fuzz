@@ -81,9 +81,9 @@ def load_project_yaml(project_dir):
     return project_yaml
 
 
-def get_signed_url(path):
+def get_signed_url(path, method='PUT'):
   timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = 'PUT\n\n\n{0}\n{1}'.format(timestamp, path)
+  blob = '{0}\n\n\n{1}\n{2}'.format(method, timestamp, path)
 
   creds = ServiceAccountCredentials.from_json_keyfile_name(
       os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
@@ -201,7 +201,8 @@ def get_build_steps(project_dir):
                                                            zip_file))
       srcmap_url = get_signed_url(UPLOAD_URL_FORMAT.format(bucket, name,
                                                            stamped_srcmap_file))
-      targets_list_url = get_targets_list_url(bucket, name, sanitizer)
+      targets_list_url = get_signed_url(
+          get_targets_list_url(bucket, name, sanitizer))
 
       env.append('OUT=' + out)
       env.append('MSAN_LIBS_PATH=/workspace/msan')
@@ -321,7 +322,7 @@ def get_logs_url(build_id):
 def get_targets_list_url(bucket, project, sanitizer):
   filename = TARGETS_LIST_BASENAME + '.' + sanitizer
   url = UPLOAD_URL_FORMAT.format(bucket, project, filename)
-  return get_signed_url(url)
+  return url
 
 
 def run_build(build_steps, image):

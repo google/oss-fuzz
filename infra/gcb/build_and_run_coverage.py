@@ -9,6 +9,7 @@ import datetime
 import os
 import sys
 import requests
+import urlparse
 
 import build_project
 
@@ -19,7 +20,11 @@ CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=profile']
 SANITIZER = 'profile'
 
 CORPUS_BACKUP_URL = ('/{0}-backup.clusterfuzz-external.appspot.com/corpus/'
-                     'libFuzzer/{1]/latest.zip')
+                     'libFuzzer/{1}/latest.zip')
+COVERAGE_BUCKET_FORMAT = '{0}-coverage.clusterfuzz-external.appspot.com'
+
+GCS_URL_BASENAME = 'https://storage.googleapis.com/'
+
 
 def usage():
   sys.stderr.write(
@@ -28,8 +33,11 @@ def usage():
 
 def get_build_steps(project_dir):
   project_name = os.path.basename(project_dir)
-#  temporary testing code
-#  get_corpus_backup(project_name)
+  # temporary testing code
+  fuzz_targets = get_targets_list(project_name)
+  print(len(' '.join(fuzz_targets)))
+  for f in fuzz_targets:
+    print(build_project.get_signed_url(CORPUS_BACKUP_URL.format(project_name, f), method='GET'))
 #  sys.exit(0)
   project_yaml = build_project.load_project_yaml(project_dir)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
@@ -105,7 +113,7 @@ def get_build_steps(project_dir):
           '-m', 'cp', '-r',
           os.path.join(out, 'report'),
           # TODO: use {0}-coverage.clusterfuzz-external.appspot.com bucket:
-          # 'gs://{0}-coverage.clusterfuzz-external.appspot.com/reports/'.
+          # COVERAGE_BUCKET_FORMAT
           'gs://oss-fuzz-test-coverage/{0}/'.format(project_name) + report_date,
         ],
       },
@@ -133,15 +141,22 @@ def get_corpus_backup(project_name):
     data = r.json()
     print(data)
 
+
 def get_targets_list(project_name):
   # libFuzzer ASan is the default configuration, get list of targets from it.
   url = build_project.get_targets_list_url(
-      ENGINE_INFO['libfuzzer'].upload_bucket, project_name, 'address')
+      build_project.ENGINE_INFO['libfuzzer'].upload_bucket,
+      project_name,
+      'address')
+
+  url = urlparse.urljoin(GCS_URL_BASENAME , url)
   r = requests.get(url)
   if not r.status_code == 200:
     sys.stderr.write('Failed to get list of targets from "%s".\n' % url)
+    sys.stderr.write('Status code: %d \t\tText:\n%s' % (r.status_code, r.text))
     return None
-    
+
+  return r.text.split()
 
 
 def main():
