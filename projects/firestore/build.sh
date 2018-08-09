@@ -35,7 +35,7 @@ $WORK/cmake-3.12.0-Linux-x86_64/bin/cmake -DFUZZING=ON ..
 make -j$(nproc)
 
 # Copy fuzzing targets, dictionaries, and zipped corpora to $OUT.
-FUZZERS_DIR=Firestore/core/test/firebase/firestore/fuzzing
+FUZZERS_DIR=Firestore/fuzzing
 find ${FUZZERS_DIR} -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 find ${FUZZERS_DIR} -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
 find ${FUZZERS_DIR} -name "*_fuzzer_seed_corpus" -type d -execdir zip -r ${OUT}/{}.zip {} ';'
