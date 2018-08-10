@@ -34,10 +34,6 @@ def usage():
 def get_build_steps(project_dir):
   project_name = os.path.basename(project_dir)
   # temporary testing code
-  fuzz_targets = get_targets_list(project_name)
-  print(len(' '.join(fuzz_targets)))
-  for f in fuzz_targets:
-    print(build_project.get_signed_url(CORPUS_BACKUP_URL.format(project_name, f), method='GET'))
 #  sys.exit(0)
   project_yaml = build_project.load_project_yaml(project_dir)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
@@ -89,20 +85,34 @@ def get_build_steps(project_dir):
       },
   ])
 
+  fuzz_targets = get_targets_list(project_name)
+  print(fuzz_targets)
+  for binary_name in fuzz_targets:
+    qualified_name = binary_name
+    if not binary_name.startswith(project_name):
+      qualified_name = '%s_%s' % (project_name, binary_name)
+
+    url = build_project.get_signed_url(
+        CORPUS_BACKUP_URL.format(project_name, qualified_name), method='GET')
+    archive_name = binary_name + '.zip'
+    corpus_dir = os.path.join('/corpus', binary_name)
+
+    build_steps.extend([
+      {'name': 'gcr.io/cloud-builders/wget',
+        'args': ['-O', corpus_dir + '.zip', url],
+        'volumes': [{'name': 'corpus', 'path': '/corpus'}],
+      },
+    ])
 
   build_steps.extend([
-      # Download and unzip corpus backup for every target.
-      # {
-      #   # TODO.
-      # },
-      # test binaries
       {'name': 'gcr.io/oss-fuzz-base/base-runner',
         'env': env + ['HTTP_PORT=', 'COVERAGE_EXTRA_ARGS='],
         'args': [
           'bash',
           '-c',
-          'coverage'
+          'for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && coverage',
         ],
+        'volumes': [{'name': 'corpus', 'path': '/corpus'}],
       },
   ])
 
