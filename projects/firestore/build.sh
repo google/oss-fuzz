@@ -27,6 +27,11 @@ wget https://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.tar.gz
 tar -xzf cmake-3.12.0-Linux-x86_64.tar.gz
 rm cmake-3.12.0-Linux-x86_64.tar.gz
 
+# Disable UBSan vptr since Firestore depends on other libraries that are built
+# with -fno-rtti.
+export CFLAGS="$CFLAGS -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+
 # Build the project using cmake with FUZZING option enabled to link to OSS Fuzz
 # fuzzing library defined in ${LIB_FUZZING_ENGINE}.
 cd $SRC/firebase-ios-sdk
