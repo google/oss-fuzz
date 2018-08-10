@@ -23,5 +23,6 @@ RUN git clone --depth 1 https://github.com/ANSSI-FR/libecc.git libecc
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 ADD https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.32.tar.bz2 libgpg-error-1.32.tar.bz2
 RUN git clone --depth 1 https://github.com/gpg/libgcrypt gcrypt
+RUN git clone --depth 1 https://github.com/weidai11/cryptopp cryptopp
 WORKDIR $SRC/
 COPY build.sh $SRC/
