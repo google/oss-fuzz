@@ -297,7 +297,7 @@ def _env_to_docker_args(env_list):
 
 def _workdir_from_dockerfile(project_name):
   """Parse WORKDIR from the Dockerfile for the given project."""
-  WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*(\$SRC/[^\s]+)')
+  WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
   dockerfile_path = _get_dockerfile_path(project_name)
 
   with open(dockerfile_path) as f:
@@ -312,7 +312,7 @@ def _workdir_from_dockerfile(project_name):
       if not os.path.isabs(workdir):
         workdir = os.path.join('/src', workdir)
 
-      return workdir
+      return os.path.normpath(workdir)
 
   return os.path.join('/src', project_name)
 
@@ -433,10 +433,14 @@ def build_fuzzers(args):
       ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
       _env_to_docker_args(env))
   if args.source_path:
+    workdir = _workdir_from_dockerfile(args.project_name)
+    if workdir == '/src':
+      print('Cannot use local checkout with "WORKDIR /src".', file=sys.stderr)
+      return 1
+
     command += [
         '-v',
-        '%s:%s' % (_get_absolute_path(args.source_path),
-                   _workdir_from_dockerfile(args.project_name)),
+        '%s:%s' % (_get_absolute_path(args.source_path), workdir),
     ]
   command += [
       '-v', '%s:/out' % project_out_dir,
@@ -449,7 +453,7 @@ def build_fuzzers(args):
   try:
     subprocess.check_call(command)
   except subprocess.CalledProcessError:
-    print('fuzzers build failed.', file=sys.stderr)
+    print('Fuzzers build failed.', file=sys.stderr)
     return 1
 
   # Patch MSan builds to use instrumented shared libraries.
