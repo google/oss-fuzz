@@ -297,7 +297,7 @@ def _env_to_docker_args(env_list):
 
 def _workdir_from_dockerfile(project_name):
   """Parse WORKDIR from the Dockerfile for the given project."""
-  WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*(\$SRC/[^\s]+)')
+  WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
   dockerfile_path = _get_dockerfile_path(project_name)
 
   with open(dockerfile_path) as f:
@@ -308,6 +308,10 @@ def _workdir_from_dockerfile(project_name):
     if match:
       workdir = match.group(1)
       workdir = workdir.replace('$SRC', '/src')
+
+      # To prevent overwriting /src with contents of a local checkout.
+      if workdir.rstrip(os.path.sep) == '/src':
+        break
 
       if not os.path.isabs(workdir):
         workdir = os.path.join('/src', workdir)
