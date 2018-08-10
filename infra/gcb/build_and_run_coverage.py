@@ -120,7 +120,7 @@ def get_build_steps(project_dir):
       # Upload the report.
       {'name': 'gcr.io/cloud-builders/gsutil',
         'args': [
-          '-m', 'cp', '-r',
+          '-m', 'rsync', '-r', '-d',
           os.path.join(out, 'report'),
           # TODO: use {0}-coverage.clusterfuzz-external.appspot.com bucket:
           # COVERAGE_BUCKET_FORMAT
