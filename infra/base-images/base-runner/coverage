@@ -59,7 +59,13 @@ for fuzz_target in $FUZZ_TARGETS; do
 
   echo "Running $fuzz_target"
   run_fuzz_target $fuzz_target &
-  objects="$objects -object=$fuzz_target"
+
+  if [[ -z $objects ]]; then
+    # The first object needs to be passed without -object= flag.
+    objects="$fuzz_target"
+  else
+    objects="$objects -object=$fuzz_target"
+  fi
 
   # Do not spawn more processes than the number of CPUs available.
   n_child_proc=$(jobs -rp | wc -l)
@@ -80,15 +86,15 @@ rm *.profraw
 
 # TODO(mmoroz): add script from Chromium for rendering directory view reports.
 
+LLVM_COV_ARGS="-path-equivalence=/,$OUT -instr-profile=$PROFILE_FILE $objects \
+    -ignore-filename-regex=\.\*src/libfuzzer/\.\* $COVERAGE_EXTRA_ARGS"
+
 # Generate HTML report.
-llvm-cov show -format=html -output-dir=$REPORT_DIR -path-equivalence="/,$OUT" \
-    -Xdemangler c++filt -Xdemangler -n $COVERAGE_EXTRA_ARGS \
-    -ignore-filename-regex='.*src/libfuzzer/.*' \
-    -instr-profile=$PROFILE_FILE $objects
+llvm-cov show -format=html -output-dir=$REPORT_DIR \
+    -Xdemangler c++filt -Xdemangler -n $LLVM_COV_ARGS
 
 # Export coverage summary in JSON format.
-llvm-cov export -summary-only -instr-profile=$PROFILE_FILE $objects \
-    > $SUMMARY_FILE
+llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
 
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
