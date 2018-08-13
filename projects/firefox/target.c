@@ -82,5 +82,8 @@ int main(int argc, char* argv[]) {
   }
   free(new_options);
 
-  return execv(ff_path, argv);
+  int ret = execv(ff_path, argv);
+  if (ret)
+    perror("execv");
+  return ret;
 }
