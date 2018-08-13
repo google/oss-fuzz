@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mike.aizatsky@gmail.com
+MAINTAINER prince.cherusker@gmail.com
 
 RUN apt-get update &&  \
     apt-get install -y \
