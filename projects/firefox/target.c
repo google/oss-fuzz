@@ -72,6 +72,9 @@ int main(int argc, char* argv[]) {
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1477846
   ptr = strstr(new_options, "detect_stack_use_after_return=1");
   if (ptr) ptr[30] = '0';
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1477844
+  ptr = strstr(new_options, "detect_leaks=1");
+  if (ptr) ptr[13] = '0';
 
   if (setenv("ASAN_OPTIONS", new_options, 1)) {
     perror("Error setting ASAN_OPTIONS");
