@@ -121,7 +121,6 @@ test_app("api_image_filter") {
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
-    "tools/picture_utils.cpp",
   ]
   deps = [
     ":flags",
@@ -157,7 +156,6 @@ test_app("api_raster_n32_canvas") {
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
-    "tools/picture_utils.cpp",
   ]
   deps = [
     ":flags",
@@ -181,7 +179,6 @@ test_app("api_mock_gpu_canvas") {
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
-    "tools/picture_utils.cpp",
     "tools/LsanSuppressions.cpp"
   ]
   deps = [
@@ -206,7 +203,6 @@ test_app("api_null_canvas") {
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
-    "tools/picture_utils.cpp",
   ]
   deps = [
     ":flags",
