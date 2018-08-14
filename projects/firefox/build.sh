@@ -57,6 +57,10 @@ export SHELL=/bin/bash
 # Set environment for rustc.
 source $HOME/.cargo/env
 
+# Sync internal libFuzzer.
+LLVM_REV=$($CC --version | egrep -1o "[0-9]{6}")
+(cd tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh $LLVM_REV)
+
 # Build! Takes about 15 minutes on a 32 vCPU instance.
 ./mach build
 ./mach gtest buildbutdontrun
