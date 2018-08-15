@@ -102,9 +102,8 @@ def get_build_steps(project_dir):
         CORPUS_BACKUP_URL.format(project_name, qualified_name), method='GET')
 
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
-      download_corpus_args.append('"%s %s"' % (corpus_archive_path, url))
+      download_corpus_args.append('%s %s' % (corpus_archive_path, url))
 
-    print(download_corpus_args)
     build_steps.append(
         # Download corpus.
         {'name': 'gcr.io/oss-fuzz-base/base-runner',
