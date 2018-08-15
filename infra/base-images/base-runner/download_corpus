@@ -16,7 +16,7 @@
 ################################################################################
 
 if (( $# < 1 )); then
-	echo "Usage: $0 \"path_download_to url_download_from\" (can be repeated)" >&2
+  echo "Usage: $0 \"path_download_to url_download_from\" (can be repeated)" >&2
   exit 1
 fi
 
