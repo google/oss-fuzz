@@ -15,18 +15,20 @@ import build_project
 
 BUILD_TIMEOUT = 10 * 60 * 60
 
-CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=profile']
-
 SANITIZER = 'profile'
+CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=%s' % SANITIZER]
 
+# Where corpus backups can be downloaded from.
 CORPUS_BACKUP_URL = ('/{0}-backup.clusterfuzz-external.appspot.com/corpus/'
                      'libFuzzer/{1}/latest.zip')
 
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
 CORPUS_DOWNLOAD_BATCH_SIZE = 100
 
+# Needed for reading public target.list.* files.
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 
+# Where code coverage reports need to be uploaded to.
 UPLOAD_REPORT_URL_FORMAT = (
   'gs://{0}-coverage.clusterfuzz-external.appspot.com/reports/{1}/')
 
@@ -36,8 +38,14 @@ def usage():
     "Usage: " + sys.argv[0] + " <project_dir>\n")
   exit(1)
 
+
 def get_build_steps(project_dir):
   project_name = os.path.basename(project_dir)
+  fuzz_targets = get_targets_list(project_name)
+  if not fuzz_targets:
+    sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
+    sys.exit(1)
+
   project_yaml = build_project.load_project_yaml(project_dir)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
@@ -73,27 +81,27 @@ def get_build_steps(project_dir):
 
   # Compilation step.
   build_steps.append(
-      {'name': image,
-       'env': env,
-       'args': [
-         'bash',
-         '-c',
-         # Remove /out to make sure there are non instrumented binaries.
-         # `cd /src && cd {workdir}` (where {workdir} is parsed from the
-         # Dockerfile). Container Builder overrides our workdir so we need to add
-         # this step to set it back.
-         # Container Builder doesn't pass --rm to docker run yet.
-         'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'.format(out, workdir),
-       ],
+      {
+          'name': image,
+          'env': env,
+          'args': [
+              'bash',
+              '-c',
+               # Remove /out to make sure there are non instrumented binaries.
+               # `cd /src && cd {workdir}` (where {workdir} is parsed from the
+               # Dockerfile). Container Builder overrides our workdir so we need
+               # to add this step to set it back.
+               # Container Builder doesn't pass --rm to docker run yet.
+               'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'.format(out, workdir),
+          ],
       }
   )
 
-  fuzz_targets = get_targets_list(project_name)
 
   # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
   for i in xrange(0,  len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
     download_corpus_args = []
-    for binary_name in fuzz_targets[i:i+CORPUS_DOWNLOAD_BATCH_SIZE]:
+    for binary_name in fuzz_targets[i : i+CORPUS_DOWNLOAD_BATCH_SIZE]:
       qualified_name = binary_name
       if not binary_name.startswith(project_name):
         qualified_name = '%s_%s' % (project_name, binary_name)
@@ -106,56 +114,48 @@ def get_build_steps(project_dir):
 
     build_steps.append(
         # Download corpus.
-        {'name': 'gcr.io/oss-fuzz-base/base-runner',
-          'entrypoint': 'download_corpus',
-          'args': download_corpus_args,
-          'volumes': [{'name': 'corpus', 'path': '/corpus'}],
+        {
+            'name': 'gcr.io/oss-fuzz-base/base-runner',
+            'entrypoint': 'download_corpus',
+            'args': download_corpus_args,
+            'volumes': [{'name': 'corpus', 'path': '/corpus'}],
         }
     )
 
   build_steps.extend([
       # Unpack the corpus and run coverage script.
-      {'name': 'gcr.io/oss-fuzz-base/base-runner',
-        'env': env + ['HTTP_PORT=', 'COVERAGE_EXTRA_ARGS='],
-        'args': [
-          'bash',
-          '-c',
-          'for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && coverage',
-        ],
-        'volumes': [{'name': 'corpus', 'path': '/corpus'}],
+      {
+          'name': 'gcr.io/oss-fuzz-base/base-runner',
+          'env': env + ['HTTP_PORT=', 'COVERAGE_EXTRA_ARGS='],
+          'args': [
+              'bash',
+              '-c',
+              'for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && coverage',
+          ],
+          'volumes': [{'name': 'corpus', 'path': '/corpus'}],
       },
       # Upload the report.
-      {'name': 'gcr.io/cloud-builders/gsutil',
-        'args': [
-          '-m', 'rsync', '-r', '-d',
-          os.path.join(out, 'report'),
-          # FIXME: UPLOAD_REPORT_URL_FORMAT.format(project_name, report_date)
-          'gs://oss-fuzz-test-coverage/{0}/'.format(project_name) + report_date,
-        ],
+      {
+          'name': 'gcr.io/cloud-builders/gsutil',
+          'args': [
+              '-m', 'rsync', '-r', '-d',
+              os.path.join(out, 'report'),
+              # FIXME: UPLOAD_REPORT_URL_FORMAT.format(project_name, report_date)
+              'gs://oss-fuzz-test-coverage/{0}/'.format(project_name) + report_date,
+          ],
       },
       # Cleanup.
-      {'name': image,
-        'args': [
-          'bash',
-          '-c',
-          'rm -r ' + out,
-        ],
+      {
+          'name': image,
+          'args': [
+              'bash',
+              '-c',
+              'rm -r ' + out,
+          ],
       },
   ])
 
   return build_steps, image
-
-
-def get_corpus_backup(project_name):
-
-  for fuzz_target in fuzz_targets:
-    url = CORPUS_BACKUP_URL.format(project_name, fuzz_target)
-    url = build_project.get_signed_url(url)
-    r = requests.get(url) #, params={'delimiter': '/'})
-    print(r.status_code)
-    print(r.text)
-    data = r.json()
-    print(data)
 
 
 def get_targets_list(project_name):
