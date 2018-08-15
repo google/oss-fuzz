@@ -44,26 +44,40 @@ for f in ${CXXFLAGS}; do
 done
 )"
 
-# Build Envoy
-declare -r BAZEL_BUILD_TARGETS="$(for t in ${FUZZER_TARGETS}; do \
-  echo //"$(dirname "$t")":"$(basename "$t")_driverless"; done)"
+declare BAZEL_BUILD_TARGETS=""
+declare FILTERED_FUZZER_TARGETS=""
+for t in ${FUZZER_TARGETS}
+do
+  declare BAZEL_PATH="//"$(dirname "$t")":"$(basename "$t")
+  declare TAGGED=$(bazel query "attr('tags', 'no_fuzz', ${BAZEL_PATH})")
+  if [ -z "${TAGGED}" ]
+  then
+    FILTERED_FUZZER_TARGETS+="$t "
+    BAZEL_BUILD_TARGETS+="${BAZEL_PATH}_driverless "
+  fi
+done
+
+# Build driverless libraries.
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --linkopt=-lc++fs \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
   --define force_libcpp=enabled \
-  --build_tag_filters=-no_asan --test_tag_filters=-no_asan \
+  --build_tag_filters=-no_asan \
   ${EXTRA_BAZEL_FLAGS} \
   --linkopt="-lFuzzingEngine" \
   ${BAZEL_BUILD_TARGETS[*]}
 
-# Copy out test binaries from bazel-bin/ and zip up related test corpuses.
-for t in ${FUZZER_TARGETS}
+# Copy out test driverless binaries from bazel-bin/ and zip up related test
+# corpuses.
+for t in ${FILTERED_FUZZER_TARGETS}
 do
   TARGET_CORPUS=$(python "${SRC}"/find_corpus.py "$t")
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
-  cp bazel-bin/"${t}"_driverless "${OUT}"/"${TARGET_BASE}"_fuzz_test
+  TARGET_DRIVERLESS=bazel-bin/"${t}"_driverless
+  echo "Copying fuzzer $t and corpus"
+  cp "${TARGET_DRIVERLESS}" "${OUT}"/"${TARGET_BASE}"_fuzz_test
   zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
     "$(dirname "${t}")"/"${TARGET_CORPUS}"/*
 done
