@@ -17,12 +17,13 @@ BUILD_TIMEOUT = 10 * 60 * 60
 
 CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=profile']
 
-CORPUS_MAP_FILENAME = 'corpus_urls.txt'
-
 SANITIZER = 'profile'
 
 CORPUS_BACKUP_URL = ('/{0}-backup.clusterfuzz-external.appspot.com/corpus/'
                      'libFuzzer/{1}/latest.zip')
+
+# Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
+CORPUS_DOWNLOAD_BATCH_SIZE = 100
 
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 
@@ -84,63 +85,63 @@ def get_build_steps(project_dir):
          # Container Builder doesn't pass --rm to docker run yet.
          'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'.format(out, workdir),
        ],
-      },
+      }
   )
 
   fuzz_targets = get_targets_list(project_name)
-  corpus_map_body = ''
-  for binary_name in fuzz_targets:
-    qualified_name = binary_name
-    if not binary_name.startswith(project_name):
-      qualified_name = '%s_%s' % (project_name, binary_name)
 
-    url = build_project.get_signed_url(
+  # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
+  for i in xrange(0,  len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
+    download_corpus_args = []
+    for binary_name in fuzz_targets[i:i+CORPUS_DOWNLOAD_BATCH_SIZE]:
+      qualified_name = binary_name
+      if not binary_name.startswith(project_name):
+        qualified_name = '%s_%s' % (project_name, binary_name)
+
+      url = build_project.get_signed_url(
         CORPUS_BACKUP_URL.format(project_name, qualified_name), method='GET')
 
-    corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
+      corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
+      download_corpus_args.append('"%s %s"' % (corpus_archive_path, url))
 
-    corpus_map_body += '%s %s\n' % (corpus_archive_path, url)
-  
-  with open(os.path.join(out, CORPUS_MAP_FILENAME), 'w') as f:
-    f.write(corpus_map_body)
+    print(download_corpus_args)
+    build_steps.append(
+        # Download corpus.
+        {'name': 'gcr.io/oss-fuzz-base/base-runner',
+          'entrypoint': 'download_corpus',
+          'args': download_corpus_args,
+          'volumes': [{'name': 'corpus', 'path': '/corpus'}],
+        }
+    )
 
   build_steps.extend([
-    # Download corpus.
-    {'name': 'gcr.io/oss-fuzz-base/base-runner',
-      'args': [
-        'bash',
-        '-c',
-        'cat /out/%s' % CORPUS_MAP_FILENAME,
-      ],
-      'volumes': [{'name': 'corpus', 'path': '/corpus'}],
-    },
-    # Unpack the corpus and run coverage script.
-    {'name': 'gcr.io/oss-fuzz-base/base-runner',
-      'env': env + ['HTTP_PORT=', 'COVERAGE_EXTRA_ARGS='],
-      'args': [
-        'bash',
-        '-c',
-        'for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && coverage',
-      ],
-      'volumes': [{'name': 'corpus', 'path': '/corpus'}],
-    },
-    # Upload the report.
-    {'name': 'gcr.io/cloud-builders/gsutil',
-      'args': [
-        '-m', 'rsync', '-r', '-d',
-        os.path.join(out, 'report'),
-        # FIXME: UPLOAD_REPORT_URL_FORMAT.format(project_name, report_date)
-        'gs://oss-fuzz-test-coverage/{0}/'.format(project_name) + report_date,
-      ],
-    },
-    # Cleanup.
-    {'name': image,
-      'args': [
-        'bash',
-        '-c',
-        'rm -r ' + out,
-      ],
-    },
+      # Unpack the corpus and run coverage script.
+      {'name': 'gcr.io/oss-fuzz-base/base-runner',
+        'env': env + ['HTTP_PORT=', 'COVERAGE_EXTRA_ARGS='],
+        'args': [
+          'bash',
+          '-c',
+          'for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && coverage',
+        ],
+        'volumes': [{'name': 'corpus', 'path': '/corpus'}],
+      },
+      # Upload the report.
+      {'name': 'gcr.io/cloud-builders/gsutil',
+        'args': [
+          '-m', 'rsync', '-r', '-d',
+          os.path.join(out, 'report'),
+          # FIXME: UPLOAD_REPORT_URL_FORMAT.format(project_name, report_date)
+          'gs://oss-fuzz-test-coverage/{0}/'.format(project_name) + report_date,
+        ],
+      },
+      # Cleanup.
+      {'name': image,
+        'args': [
+          'bash',
+          '-c',
+          'rm -r ' + out,
+        ],
+      },
   ])
 
   return build_steps, image
