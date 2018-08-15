@@ -36,18 +36,32 @@ FE_COMMON_LIBS="src/irc/libirc.a"
 FE_COMMON_LIBS="$FE_COMMON_LIBS src/irc/core/libirc_core.a"
 FE_COMMON_LIBS="$FE_COMMON_LIBS src/fe-common/irc/libfe_common_irc.a"
 FE_COMMON_LIBS="$FE_COMMON_LIBS src/fe-common/core/libfe_common_core.a"
+FE_COMMON_LIBS="$FE_COMMON_LIBS src/fe-common/irc/dcc/libfe_irc_dcc.a"
+FE_COMMON_LIBS="$FE_COMMON_LIBS src/fe-common/irc/notifylist/libfe_irc_notifylist.a"
+FE_COMMON_LIBS="$FE_COMMON_LIBS src/irc/dcc/libirc_dcc.a"
+FE_COMMON_LIBS="$FE_COMMON_LIBS src/irc/flood/libirc_flood.a"
+FE_COMMON_LIBS="$FE_COMMON_LIBS src/irc/notifylist/libirc_notifylist.a"
 
 FE_FUZZ_CFLAGS="-I. -Isrc -Isrc/core/ -Isrc/irc/core/ -Isrc/fe-common/core/"
 
-for target in irssi irc/core/event-get-params fe-common/core/theme-load; do
+for target in irssi irc/core/event-get-params fe-common/core/theme-load server; do
 	${CXX} ${CXXFLAGS} -DHAVE_CONFIG_H -lFuzzingEngine ${FE_FUZZ_CFLAGS} ${GLIB_CFLAGS} \
 		src/fe-fuzz/${target}.o src/fe-fuzz/module-formats.o -lm \
 		-Wl,-Bstatic ${FE_COMMON_LIBS} ${CORE_LIBS} -lssl -lcrypto ${GLIB_LIBS} -lgmodule-2.0 -lz \
 		-Wl,-Bdynamic -o $OUT/${target##*/}-fuzz
 done
 
+# get theme-load-fuzz corpus
 mkdir $SRC/theme-load-fuzz_corpus
 wget -r -P $SRC/theme-load-fuzz_corpus -nH --cut-dirs=100 -np -l 1 -A theme https://irssi-import.github.io/themes/
 zip -j $OUT/theme-load-fuzz_seed_corpus.zip $SRC/theme-load-fuzz_corpus/*
+
+# get other corpora from git repo
+git clone https://github.com/irssi/irssi-fuzzing-corpora
+zip -j $OUT/irssi-fuzz_seed_corpus.zip irssi-fuzzing-corpora/irssi-fuzz-corpus/*
+zip -j $OUT/server-fuzz_seed_corpus.zip irssi-fuzzing-corpora/server-fuzz-corpus/*
+
+# get tokens.txt dictionary from irssi/src/fe-fuzz/
+cp src/fe-fuzz/tokens.txt $OUT/
 
 cp $SRC/*.options $SRC/*.dict $OUT/

@@ -1,0 +1,4 @@
+[libfuzzer]
+detect_leaks = 0
+close_fd_mask = 3
+dict = tokens.txt
