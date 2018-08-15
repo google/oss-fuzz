@@ -26,6 +26,10 @@ ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 ENV SANITIZER_FLAGS_profile "-fprofile-instr-generate -fcoverage-mapping -pthread"
 
+# We use unsigned-integer-overflow as an additional coverage signal and have to
+# suppress error messages. See https://github.com/google/oss-fuzz/issues/910.
+ENV UBSAN_OPTIONS="silence_unsigned_overflow=1"
+
 # Default build flags for coverage.
 ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 
