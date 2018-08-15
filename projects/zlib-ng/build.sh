@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +15,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jonathan@titanous.com
-RUN apt-get update &&\
-    apt-get install -y gperf m4 gettext libcap-dev python3-pip libmount-dev pkg-config wget &&\
-    pip3 install meson ninja
-RUN git clone --depth 1 https://github.com/systemd/systemd systemd
-WORKDIR systemd
-COPY build.sh $SRC/
+export LDSHARED=$CXX
+export LDFLAGS="$CFLAGS -stdlib=libc++"
+./configure
+sed -i "/^LDSHARED=.*/s#=.*#=$CXX#" Makefile
+sed -i 's/$(CC) $(LDFLAGS)/$(CXX) $(LDFLAGS)/g' Makefile
+
+make -j$(nproc) clean
+make -j$(nproc) all
+# FIXME: enable make check once it passes with clang sanitizers.
+# make -j$(nproc) check
+
+find . -name 'compress_fuzzer' -exec cp -v '{}' $OUT ';'
+zip $OUT/compress_fuzzer_seed_corpus.zip *.*

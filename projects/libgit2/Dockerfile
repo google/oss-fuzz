@@ -20,5 +20,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool cmake
 RUN git clone --depth 1 https://github.com/libgit2/libgit2 libgit2
 WORKDIR libgit2
 
-COPY download_refs_fuzzer.cc build.sh $SRC/
-COPY corpora $SRC/corpora
+COPY build.sh $SRC/

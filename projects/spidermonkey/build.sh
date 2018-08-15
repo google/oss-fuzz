@@ -18,6 +18,9 @@
 # Required for some reason... I don't ask questions
 export SHELL=/bin/bash
 
+export RUSTC=/root/.cargo/bin/rustc
+export CARGO=/root/.cargo/bin/cargo
+
 autoconf2.13
 
 mkdir build_DBG.OBJ

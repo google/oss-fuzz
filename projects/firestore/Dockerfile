@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,23 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER prince.cherusker@gmail.com
-
-RUN apt-get update &&  \
-    apt-get install -y \
-      autoconf         \
-      cmake            \
-      libpng-dev       \
-      libtool          \
-      pkg-config       \
-      zlib1g-dev       \
-      make
-
-# Get some files for the seed corpus
-ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/font-corpus/
-RUN git clone https://github.com/unicode-org/text-rendering-tests.git && cp text-rendering-tests/fonts/* $SRC/font-corpus
-
-RUN git clone --depth 1 https://github.com/freetype/freetype2-testing.git
-WORKDIR freetype2-testing
-
+MAINTAINER varconst@google.com 
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget golang
+RUN git clone --depth 1 https://github.com/firebase/firebase-ios-sdk.git
 COPY build.sh $SRC/

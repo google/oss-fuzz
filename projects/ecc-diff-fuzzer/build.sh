@@ -16,6 +16,26 @@
 ################################################################################
 
 # build projects
+#cryptopp
+(
+cd cryptopp
+make
+)
+
+#gcrypt
+(
+cd gcrypt
+tar -xvf ../libgpg-error-1.32.tar.bz2
+cd libgpg-error-1.32
+./configure --enable-static --disable-shared
+make
+make install
+cd ..
+./autogen.sh
+./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode
+make
+)
+
 #mbedtls
 (
 cd mbedtls
@@ -26,7 +46,8 @@ make -j$(nproc) all
 #openssl
 (
 cd openssl
-./config
+#option to not have the same exported function poly1305_blocks as in gcrypt
+./config no-poly1305
 make build_generated libcrypto.a
 )
 
@@ -35,15 +56,19 @@ make build_generated libcrypto.a
 cd libecc
 #required by libecc
 (export CFLAGS="$CFLAGS -fPIC"; make)
-echo $CFLAGS
 )
 
 #build fuzz target
 cd ecfuzzer
+zip -r fuzz_ec_seed_corpus.zip corpus/
+cp fuzz_ec_seed_corpus.zip $OUT/
 cp fuzz_ec.dict $OUT/
+
 $CC $CFLAGS -I. -c fuzz_ec.c -o fuzz_ec.o
 $CC $CFLAGS -I. -I../mbedtls/include -c modules/mbedtls.c -o mbedtls.o
 $CC $CFLAGS -I. -I../openssl/include -c modules/openssl.c -o openssl.o
 $CC $CFLAGS -DWITH_STDLIB -I. -I../libecc/src -c modules/libecc.c -o libecc.o
+$CC $CFLAGS -I. -I../gcrypt/src -c modules/gcrypt.c -o gcrypt.o
+$CXX $CXXFLAGS -I. -I../ -c modules/cryptopp.cpp -o cryptopp.o
 
-$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o -o $OUT/fuzz_ec ../mbedtls/library/libmbedcrypto.a ../libecc/build/libec.a ../openssl/libcrypto.a -lFuzzingEngine
+$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o gcrypt.o cryptopp.o -o $OUT/fuzz_ec ../mbedtls/library/libmbedcrypto.a ../libecc/build/libec.a ../openssl/libcrypto.a ../gcrypt/src/.libs/libgcrypt.a ../cryptopp/libcryptopp.a -lgpg-error -lFuzzingEngine

@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,23 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER prince.cherusker@gmail.com
+MAINTAINER sebpop@gmail.com
+RUN apt-get update && apt-get install -y make
 
-RUN apt-get update &&  \
-    apt-get install -y \
-      autoconf         \
-      cmake            \
-      libpng-dev       \
-      libtool          \
-      pkg-config       \
-      zlib1g-dev       \
-      make
-
-# Get some files for the seed corpus
-ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/font-corpus/
-RUN git clone https://github.com/unicode-org/text-rendering-tests.git && cp text-rendering-tests/fonts/* $SRC/font-corpus
-
-RUN git clone --depth 1 https://github.com/freetype/freetype2-testing.git
-WORKDIR freetype2-testing
-
+# FIXME: point to the official zlib-ng once the patch to enable oss-fuzz is accepted.
+# RUN git clone --depth 1 https://github.com/Dead2/zlib-ng.git
+RUN git clone --depth 1 https://github.com/sebpop/zlib-ng.git
+WORKDIR zlib-ng
 COPY build.sh $SRC/

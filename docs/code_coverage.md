@@ -94,6 +94,12 @@ script after `--`:
 python infra/helper.py profile $project_name -- -ignore-filename-regex='.*code/to/be/ignored/.*' -tab-size=2
 ```
 
+To specify particular source files to be shown in the report, list the filepaths
+at the end of the extra arguments sequence, for example:
+
+```bash
+python infra/helper.py profile zlib -- -tab-size=8 /src/zlib/inftrees.c /src/zlib_uncompress_fuzzer.cc /src/zlib/zutil.c
+```
 
 [Clang Source-based Code Coverage]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [gsutil tool]: https://cloud.google.com/storage/docs/gsutil_install

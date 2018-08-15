@@ -14,11 +14,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jonathan@titanous.com
-RUN apt-get update &&\
-    apt-get install -y gperf m4 gettext libcap-dev python3-pip libmount-dev pkg-config wget &&\
-    pip3 install meson ninja
-RUN git clone --depth 1 https://github.com/systemd/systemd systemd
-WORKDIR systemd
-COPY build.sh $SRC/
+homepage: "https://github.com/Dead2/zlib-ng"
+primary_contact: "zlib-ng@circlestorm.org"
+auto_ccs:
+  - "sebpop@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
