@@ -546,8 +546,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
     return
 
   if output:
-    output = output.splitlines()
-    latest_backup_url = output[-1]
+    latest_backup_url = output.splitlines()[-1]
     archive_path = corpus_dir + '.zip'
     command = [
         'gsutil',
