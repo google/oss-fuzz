@@ -535,12 +535,12 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
       corpus_backup_url
   ]
 
-  listing = subprocess.Popen(
+  corpus_listing = subprocess.Popen(
       command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  output, error = listing.communicate()
+  output, error = corpus_listing.communicate()
 
   # Some fuzz targets (e.g. new ones) may not have corpus yet, just skip those.
-  if listing.returncode:
+  if corpus_listing.returncode:
     print('WARNING: corpus for {0} not found:\n{1}'.format(fuzz_target, error),
           file=sys.stderr)
     return
