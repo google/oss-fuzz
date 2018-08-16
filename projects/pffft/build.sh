@@ -15,18 +15,17 @@
 #
 ################################################################################
 
-WORK_DIR=$WORK/pffft
 SRC_DIR=$SRC/pffft
-cd $WORK_DIR
+cd $WORK
 
 # Building PFFFT as a static library.
 if [ -f libpffft.a ]; then
   rm libpffft.a
 fi
-gcc -c -msse2 -O3 -Wall -W -lm -fpic $SRC_DIR/pffft.c -o pffft.o
+$CXX $CXXFLAGS -c -msse2 -fPIC $SRC_DIR/pffft.c -o pffft.o
 ar rcs libpffft.a pffft.o
 
 # Building PFFFT fuzzers.
 $CXX $CXXFLAGS -std=c++11 -I$SRC_DIR \
      $SRC/pffft_fuzzer.cc -o $OUT/pffft_real_fwbw_fuzzer \
-     -lFuzzingEngine $WORK_DIR/libpffft.a
+     -lFuzzingEngine $WORK/libpffft.a

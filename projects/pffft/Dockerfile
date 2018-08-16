@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alessiob@webrtc.org
-RUN apt-get update && apt-get install -y mercurial gcc
+RUN apt-get update && apt-get install -y mercurial
 RUN hg clone https://bitbucket.org/jpommier/pffft $SRC/pffft
 WORKDIR pffft
 COPY build.sh pffft_fuzzer.cc $SRC/
