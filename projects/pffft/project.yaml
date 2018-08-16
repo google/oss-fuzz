@@ -1,0 +1,8 @@
+homepage: "https://bitbucket.org/jpommier/pffft"
+primary_contact: "alessiob@webrtc.org"
+auto_ccs:
+  - "mbonadei@webrtc.org"
+sanitizers:
+  - address
+  - memory
+  - undefined
