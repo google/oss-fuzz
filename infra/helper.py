@@ -534,8 +534,19 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
       'ls',
       corpus_backup_url
   ]
-  output = subprocess.check_output(command).splitlines()
+
+  listing = subprocess.Popen(
+      command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output, error = listing.communicate()
+
+  # Some fuzz targets (e.g. new ones) may not have corpus yet, just skip those.
+  if listing.returncode:
+    print('WARNING: corpus for {0} not found:\n{1}'.format(fuzz_target, error),
+          file=sys.stderr)
+    return
+
   if output:
+    output = output.splitlines()
     latest_backup_url = output[-1]
     archive_path = corpus_dir + '.zip'
     command = [
