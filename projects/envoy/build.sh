@@ -73,9 +73,10 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
 if [ "$SANITIZER" = "profile" ]
 then
-  # The build invoker expects to pickup the root of source in $SRC, we need this
-  # to look like proc/self/cwd.
-  declare -r REMAP_PATH="${SRC}/proc/self/cwd"
+  # The build invoker looks for sources in $SRC, but it turns out that we need
+  # to not be buried under src/, paths are expected at out/proc/self/cwd by
+  # the profiler.
+  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
   mkdir -p "${REMAP_PATH}"
   # For .cc, we only really care about source/ today.
   rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
