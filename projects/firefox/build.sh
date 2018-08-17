@@ -25,6 +25,8 @@ FUZZ_TARGETS=(
 # Firefox object (build) directory.
 OBJDIR=$WORK/obj-fuzz
 
+[[ $SANITIZER = "coverage" ]] && exit 0
+
 # Firefox fuzzing build configuration.
 cat << EOF > mozconfig
 ac_add_options --disable-debug
