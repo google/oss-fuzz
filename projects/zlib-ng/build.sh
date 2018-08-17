@@ -23,8 +23,7 @@ sed -i 's/$(CC) $(LDFLAGS)/$(CXX) $(LDFLAGS)/g' Makefile
 
 make -j$(nproc) clean
 make -j$(nproc) all
-# FIXME: enable make check once it passes with clang sanitizers.
-# make -j$(nproc) check
+make -j$(nproc) check
 
 find . -name 'compress_fuzzer' -exec cp -v '{}' $OUT ';'
 zip $OUT/compress_fuzzer_seed_corpus.zip *.*
