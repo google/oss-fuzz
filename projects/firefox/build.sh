@@ -36,16 +36,16 @@ ac_add_options --disable-crashreporter
 ac_add_options --enable-fuzzing
 ac_add_options --enable-optimize=-O1
 ac_add_options --enable-debug-symbols=-gline-tables-only
+ac_add_options --enable-address-sanitizer
 mk_add_options MOZ_OBJDIR=${OBJDIR}
 mk_add_options MOZ_MAKE_FLAGS=-j$(nproc)
-mk_add_options CFLAGS=
-mk_add_options CXXFLAGS=
 EOF
 
 if [[ $SANITIZER = "address" ]]
 then
 cat << EOF >> mozconfig
-ac_add_options --enable-address-sanitizer
+mk_add_options CFLAGS=
+mk_add_options CXXFLAGS=
 EOF
 fi
 
