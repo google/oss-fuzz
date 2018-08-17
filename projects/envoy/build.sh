@@ -69,6 +69,23 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --linkopt="-lFuzzingEngine" \
   ${BAZEL_BUILD_TARGETS[*]}
 
+# Profiling with coverage requires that we resolve+copy all Bazel symlinks and
+# also remap everything under proc/self/cwd to correspond to Bazel build paths.
+if [ "$SANITIZER" = "profile" ]
+then
+  # The build invoker expects to pickup the root of source in $SRC, we need this
+  # to look like proc/self/cwd.
+  declare -r REMAP_PATH="${SRC}/proc/self/cwd"
+  mkdir -p "${REMAP_PATH}"
+  # For .cc, we only really care about source/ today.
+  rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
+  # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
+  # filter out the build objects from bazel-out/. Also need to resolve symlinks,
+  # since they don't make sense outside the build container.
+  rsync -avLk --include '*.h' --include '*.cc' --include '*/' --exclude '*' \
+    "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
+fi
+
 # Copy out test driverless binaries from bazel-bin/ and zip up related test
 # corpuses.
 for t in ${FILTERED_FUZZER_TARGETS}
