@@ -28,8 +28,19 @@ rm -rf $LOGS_DIR && mkdir -p $LOGS_DIR
 REPORT_DIR="$OUT/report"
 rm -rf $REPORT_DIR
 
-PROFILE_FILE="merged.data"
+FUZZER_STATS_DIR="$OUT/fuzzer_stats"
+rm -rf $FUZZER_STATS_DIR && mkdir -p $FUZZER_STATS_DIR
+
+PROFILE_FILE="merged.profdata"
 SUMMARY_FILE="$REPORT_DIR/summary.json"
+
+# It's important to use $COVERAGE_EXTRA_ARGS as the last argument, because it
+# can contain paths to source files / directories which are positional args.
+LLVM_COV_COMMON_ARGS="-path-equivalence=/,$OUT \
+    -ignore-filename-regex=.*src/libfuzzer/.* $COVERAGE_EXTRA_ARGS"
+
+# Timeout for running a single fuzz target.
+TIMEOUT=1h
 
 # This will be used by llvm-cov command to generate the actual report.
 objects=""
@@ -39,15 +50,26 @@ NPROC=$(nproc)
 
 function run_fuzz_target {
   local target=$1
+  local profraw_file="$target.profraw"
+  local profdata_file="$target.profdata"
 
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
   local args="-timeout=100 -runs=0 /corpus/${target}"
 
-  LLVM_PROFILE_FILE="$target.profraw" $target $args &> $LOGS_DIR/$target.log
+  export LLVM_PROFILE_FILE=$profraw_file
+  timeout $TIMEOUT $target $args &> $LOGS_DIR/$target.log
   if (( $? != 0 )); then
     echo "Error occured while running $target:"
     cat $LOGS_DIR/$target.log
   fi
+
+  llvm-profdata merge -j=1 -sparse $profraw_file -o $profdata_file
+
+  # Delete unnecessary and (potentially) large .profraw files.
+  rm $profraw_file
+
+  llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
+      $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 }
 
 # Run each fuzz target, generate raw coverage dumps.
@@ -79,15 +101,14 @@ done
 wait
 
 # Merge all raw dumps.
-llvm-profdata merge -sparse *.profraw -o $PROFILE_FILE
-
-# Delete unnecessary and (potentially) large .profraw files.
-rm *.profraw
+rm -f $PROFILE_FILE
+llvm-profdata merge -sparse *.profdata -o $PROFILE_FILE
 
 # TODO(mmoroz): add script from Chromium for rendering directory view reports.
 
-LLVM_COV_ARGS="-path-equivalence=/,$OUT -instr-profile=$PROFILE_FILE $objects \
-    -ignore-filename-regex=\.\*src/libfuzzer/\.\* $COVERAGE_EXTRA_ARGS"
+# It's important to use $LLVM_COV_COMMON_ARGS as the last argument due to
+# positional arguments (SOURCES) that can be passed via $COVERAGE_EXTRA_ARGS.
+LLVM_COV_ARGS="-instr-profile=$PROFILE_FILE $objects $LLVM_COV_COMMON_ARGS"
 
 # Generate HTML report.
 llvm-cov show -format=html -output-dir=$REPORT_DIR \
