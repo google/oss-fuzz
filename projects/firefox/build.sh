@@ -115,13 +115,13 @@ done
 cd $SRC/mozilla-central
 
 # SdpParser
-find media/webrtc/trunk/webrtc/test/fuzzers/corpora/sdp-corpus -type f \
-  -size -32k -exec zip -qju $OUT/SdpParser_seed_corpus.zip "{}" \;
+find media/webrtc/trunk/webrtc/test/fuzzers/corpora/sdp-corpus \
+  -type f -exec zip -qju $OUT/SdpParser_seed_corpus.zip "{}" \;
 cp media/webrtc/trunk/webrtc/test/fuzzers/corpora/sdp.tokens \
   $OUT/SdpParser.dict
 
 # StunParser
-find media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun-corpus -type f \
-  -size -32k -exec zip -qju $OUT/StunParser_seed_corpus.zip "{}" \;
+find media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun-corpus \
+  -type f -exec zip -qju $OUT/StunParser_seed_corpus.zip "{}" \;
 cp media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun.tokens \
   $OUT/StunParser.dict
