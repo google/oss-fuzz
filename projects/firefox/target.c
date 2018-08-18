@@ -60,22 +60,30 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  // Temporary (or permanent?) work-around for a bug in the fuzzing interface.
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1466021#c9
   char* options = getenv("ASAN_OPTIONS");
   if (!options) {
     fprintf(stderr, "ASAN_OPTIONS not set ?!\n");
     exit(1);
   }
-  char append[] = ":detect_stack_use_after_return=0";
-  char* new_options = (char*)malloc(strlen(options) + sizeof(append));
-  memcpy(new_options, options, strlen(options));
-  memcpy(new_options + strlen(options), append, sizeof(append));
+
+  // Temporary (or permanent?) work-arounds for fuzzing interface bugs.
+  char* new_options = strdup(options);
+  char* ptr;
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1477846
+  ptr = strstr(new_options, "detect_stack_use_after_return=1");
+  if (ptr) ptr[30] = '0';
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1477844
+  ptr = strstr(new_options, "detect_leaks=1");
+  if (ptr) ptr[13] = '0';
+
   if (setenv("ASAN_OPTIONS", new_options, 1)) {
     perror("Error setting ASAN_OPTIONS");
     exit(1);
   }
   free(new_options);
 
-  return execv(ff_path, argv);
+  int ret = execv(ff_path, argv);
+  if (ret)
+    perror("execv");
+  return ret;
 }

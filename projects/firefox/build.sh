@@ -25,6 +25,8 @@ FUZZ_TARGETS=(
 # Firefox object (build) directory.
 OBJDIR=$WORK/obj-fuzz
 
+[[ $SANITIZER = "coverage" ]] && exit 0
+
 # Firefox fuzzing build configuration.
 cat << EOF > mozconfig
 ac_add_options --disable-debug
@@ -34,16 +36,16 @@ ac_add_options --disable-crashreporter
 ac_add_options --enable-fuzzing
 ac_add_options --enable-optimize=-O1
 ac_add_options --enable-debug-symbols=-gline-tables-only
+ac_add_options --enable-address-sanitizer
 mk_add_options MOZ_OBJDIR=${OBJDIR}
 mk_add_options MOZ_MAKE_FLAGS=-j$(nproc)
-mk_add_options CFLAGS=
-mk_add_options CXXFLAGS=
 EOF
 
 if [[ $SANITIZER = "address" ]]
 then
 cat << EOF >> mozconfig
-ac_add_options --enable-address-sanitizer
+mk_add_options CFLAGS=
+mk_add_options CXXFLAGS=
 EOF
 fi
 
@@ -56,6 +58,10 @@ export SHELL=/bin/bash
 
 # Set environment for rustc.
 source $HOME/.cargo/env
+
+# Sync internal libFuzzer.
+LLVM_REV=$($CC --version | egrep -1o "[0-9]{6}")
+(cd tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh $LLVM_REV)
 
 # Build! Takes about 15 minutes on a 32 vCPU instance.
 ./mach build
@@ -83,6 +89,7 @@ cd $WORK/apt
 # Takes only 1-2 minutes on a 32 vCPU instance.
 PACKAGES=($(parallel apt-file search -lFN "{}" ::: ${REQUIRED_LIBRARIES[@]}))
 PACKAGES=(${PACKAGES[@]##libc6*})
+PACKAGES=(${PACKAGES[@]##libgcc*})
 PACKAGES=(${PACKAGES[@]##libstdc++*})
 apt-get -q download ${PACKAGES[@]}
 
@@ -104,3 +111,17 @@ do
     -DFUZZ_TARGET=$FUZZ_TARGET \
     $SRC/target.c -o $OUT/$FUZZ_TARGET
 done
+
+cd $SRC/mozilla-central
+
+# SdpParser
+find media/webrtc/trunk/webrtc/test/fuzzers/corpora/sdp-corpus \
+  -type f -exec zip -qju $OUT/SdpParser_seed_corpus.zip "{}" \;
+cp media/webrtc/trunk/webrtc/test/fuzzers/corpora/sdp.tokens \
+  $OUT/SdpParser.dict
+
+# StunParser
+find media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun-corpus \
+  -type f -exec zip -qju $OUT/StunParser_seed_corpus.zip "{}" \;
+cp media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun.tokens \
+  $OUT/StunParser.dict
