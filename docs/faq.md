@@ -93,6 +93,16 @@ If your fuzz target is running for many days and does not find bugs or new cover
 
 In either case, look at the [coverage reports](clusterfuzz.md#coverage-reports) for your target(s) and figure out why some parts of the code are not covered. 
 
+## Why are code coverage reports public?
+
+We work with open source projects and try to keep as much information public as
+possible. The only information that we keep private is the following:
+- Bugs that were found in the past 90 days and were not fixed 30+ days ago.
+- Corpora, as it may contain inputs that are one-mutation-off a bug reproducer.
+
+We believe that making code coverage reports public does not put users at risk,
+as the bugs are still there in both covered and non-covered parts of the code.
+
 ## What happens when I rename a fuzz target ?
 If you rename your fuzz targets, the existing bugs for those targets will get closed and fuzzing will start from scratch from a fresh corpora (seed corpus only). Similar corpora will get accumulated over time depending on the number of cpu cycles that original fuzz target has run. If this is not desirable, make sure to copy the accumulated corpora from the original fuzz target (instructions to download [here](corpora.md#downloading-the-corpus)) and restore it to the new GCS location later (instruction to find the new location [here](corpora.md#viewing-the-corpus-for-a-fuzz-target)).
 

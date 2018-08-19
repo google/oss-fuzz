@@ -1,5 +1,4 @@
 #!/usr/bin/python2
-
 """Starts and runs coverage build on Google Cloud Builder.
 
 Usage: build_and_run_coverage.py <project_dir>
@@ -7,13 +6,11 @@ Usage: build_and_run_coverage.py <project_dir>
 
 import datetime
 import os
-import sys
 import requests
+import sys
 import urlparse
 
 import build_project
-
-BUILD_TIMEOUT = 10 * 60 * 60
 
 SANITIZER = 'profile'
 CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=%s' % SANITIZER]
@@ -29,8 +26,10 @@ CORPUS_DOWNLOAD_BATCH_SIZE = 100
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 
 # Where code coverage reports need to be uploaded to.
-UPLOAD_REPORT_URL_FORMAT = (
-  'gs://{0}-coverage.clusterfuzz-external.appspot.com/reports/{1}/')
+COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
+UPLOAD_FUZZER_STATS_URL_FORMAT = (
+    'gs://%s/{0}/fuzzer_stats/{1}' % COVERAGE_BUCKET_NAME)
+UPLOAD_REPORT_URL_FORMAT = 'gs://%s/{0}/reports/{1}' % COVERAGE_BUCKET_NAME
 
 
 def usage():
@@ -91,12 +90,10 @@ def get_build_steps(project_dir):
                # `cd /src && cd {workdir}` (where {workdir} is parsed from the
                # Dockerfile). Container Builder overrides our workdir so we need
                # to add this step to set it back.
-               # Container Builder doesn't pass --rm to docker run yet.
                'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'.format(out, workdir),
           ],
       }
   )
-
 
   # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
   for i in xrange(0,  len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
@@ -140,17 +137,16 @@ def get_build_steps(project_dir):
           'args': [
               '-m', 'rsync', '-r', '-d',
               os.path.join(out, 'report'),
-              # FIXME: UPLOAD_REPORT_URL_FORMAT.format(project_name, report_date)
-              'gs://oss-fuzz-test-coverage/{0}/'.format(project_name) + report_date,
+              UPLOAD_REPORT_URL_FORMAT.format(project_name, report_date),
           ],
       },
-      # Cleanup.
+      # Upload the fuzzer stats.
       {
-          'name': image,
+          'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
-              'bash',
-              '-c',
-              'rm -r ' + out,
+              '-m', 'rsync', '-r', '-d',
+              os.path.join(out, 'fuzzer_stats'),
+              UPLOAD_FUZZER_STATS_URL_FORMAT.format(project_name, report_date),
           ],
       },
   ])
