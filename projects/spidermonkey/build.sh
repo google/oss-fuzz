@@ -15,11 +15,12 @@
 #
 ################################################################################
 
-# Required for some reason... I don't ask questions
+# Install dependencies.
 export SHELL=/bin/bash
+../../mach bootstrap --no-interactive --application-choice browser
 
-export RUSTC=/root/.cargo/bin/rustc
-export CARGO=/root/.cargo/bin/cargo
+# Set environment for rustc.
+source $HOME/.cargo/env
 
 autoconf2.13
 
