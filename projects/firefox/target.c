@@ -39,11 +39,8 @@ int main(int argc, char* argv[]) {
   strcpy(ff_path, path);
   strcat(ff_path, "/firefox/firefox");
 
-  if (getenv("LD_LIBRARY_PATH")) {
-    // Shouldn't be set. Code can be changed to append if it ever is.
-    fprintf(stderr, "LD_LIBRARY_PATH unexpectedly set\n");
-    exit(1);
-  }
+  // Expects LD_LIBRARY_PATH to not also be set by oss-fuzz.
+  // If it ever is, this has to be replaced with more complex code.
   if (setenv("LD_LIBRARY_PATH", ld_path, 0)) {
     perror("Error setting LD_LIBRARY_PATH");
     exit(1);
