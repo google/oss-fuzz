@@ -59,6 +59,9 @@ export SHELL=/bin/bash
 # Set environment for rustc.
 source $HOME/.cargo/env
 
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1484485
+cargo install cbindgen
+
 # Sync internal libFuzzer.
 LLVM_REV=$($CC --version | egrep -1o "[0-9]{6}")
 (cd tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh $LLVM_REV)
