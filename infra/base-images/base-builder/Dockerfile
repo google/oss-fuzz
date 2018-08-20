@@ -24,7 +24,10 @@ ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-sco
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
 ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,unsigned-integer-overflow,vla-bound,vptr -fno-sanitize-recover=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr"
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
-ENV SANITIZER_FLAGS_profile "-fprofile-instr-generate -fcoverage-mapping -pthread"
+
+# Use '-Wno-unused-command-line-argument' to suppress "warning: -ldl: 'linker' input unused"
+# messages which are treated as errors by some projects.
+ENV SANITIZER_FLAGS_profile "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,-ldl -Wno-unused-command-line-argument"
 
 # We use unsigned-integer-overflow as an additional coverage signal and have to
 # suppress error messages. See https://github.com/google/oss-fuzz/issues/910.
