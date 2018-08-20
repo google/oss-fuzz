@@ -5,13 +5,16 @@ import json
 import os
 import re
 import sys
-import urllib2
 import yaml
-import xml.etree.ElementTree as ET
 
 import jenkins
 
 JENKINS_SERVER = ('localhost', 8080)
+
+JOB_TEMPLATES = [
+    {'prefix': 'projects/', 'config': 'base_job.xml'},
+    {'prefix': 'coverage/', 'config': 'coverage_job.xml'},
+]
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
@@ -87,15 +90,16 @@ def sync_jenkins_job(server, project):
   with open(project_yaml, 'r') as f:
     project_json_string = json.dumps(json.dumps(yaml.safe_load(f)))
 
-  job_name = 'projects/' + project
-  with open(os.path.join(SCRIPT_DIR, 'jenkins_config', 'base_job.xml')) as f:
-    job_config_xml = f.read()
+  for job in JOB_TEMPLATES:
+    job_name = job['prefix'] + project
+    with open(os.path.join(SCRIPT_DIR, 'jenkins_config', job['config'])) as f:
+      job_config_xml = f.read()
 
-  if server.job_exists(job_name):
-    server.reconfig_job(job_name, job_config_xml)
-  else:
-    server.create_job(job_name, job_config_xml)
-    server.build_job(job_name)
+    if server.job_exists(job_name):
+      server.reconfig_job(job_name, job_config_xml)
+    else:
+      server.create_job(job_name, job_config_xml)
+      server.build_job(job_name)
 
 
 if __name__ == '__main__':

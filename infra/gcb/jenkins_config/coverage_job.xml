@@ -29,16 +29,9 @@
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers>
-    <jenkins.triggers.ReverseBuildTrigger>
-      <spec/>
-      <upstreamProjects>infra/base-images</upstreamProjects>
-      <threshold>
-        <name>SUCCESS</name>
-        <ordinal>0</ordinal>
-        <color>BLUE</color>
-        <completeBuild>true</completeBuild>
-      </threshold>
-    </jenkins.triggers.ReverseBuildTrigger>
+    <hudson.triggers.TimerTrigger>
+      <spec>H 6 * * *</spec>
+    </hudson.triggers.TimerTrigger>
   </triggers>
   <concurrentBuild>false</concurrentBuild>
   <builders>
@@ -52,7 +45,7 @@ set -o nounset
 
 cd $WORKSPACE/oss-fuzz/infra/gcb
 pip install -r requirements.txt
-build_id=$(python build_project.py $WORKSPACE/oss-fuzz/$JOB_NAME)
+build_id=$(python build_and_run_coverage.py $WORKSPACE/oss-fuzz/$JOB_NAME)
 python wait_for_build.py $build_id
 </command>
     </hudson.tasks.Shell>

@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 """Starts project build on Google Cloud Builder.
 
-Usage: build.py <project_dir>
+Usage: build_project.py <project_dir>
 """
 
 import base64
@@ -60,6 +60,8 @@ DEFAULT_SANITIZERS = ['address', 'undefined']
 
 TARGETS_LIST_BASENAME = 'targets.list'
 
+UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
+
 
 def usage():
   sys.stderr.write('Usage: ' + sys.argv[0] + ' <project_dir>\n')
@@ -79,9 +81,9 @@ def load_project_yaml(project_dir):
     return project_yaml
 
 
-def get_signed_url(path):
+def get_signed_url(path, method='PUT'):
   timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = 'PUT\n\n\n{0}\n{1}'.format(timestamp, path)
+  blob = '{0}\n\n\n{1}\n{2}'.format(method, timestamp, path)
 
   creds = ServiceAccountCredentials.from_json_keyfile_name(
       os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
@@ -137,7 +139,9 @@ def workdir_from_dockerfile(dockerfile):
   return None
 
 
-def get_build_steps(project_yaml, dockerfile_path):
+def get_build_steps(project_dir):
+  project_yaml = load_project_yaml(project_dir)
+  dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
   run_tests = project_yaml['run_tests']
@@ -193,13 +197,12 @@ def get_build_steps(project_yaml, dockerfile_path):
       zip_file = stamped_name + '.zip'
       stamped_srcmap_file = stamped_name + '.srcmap.json'
       bucket = ENGINE_INFO[fuzzing_engine].upload_bucket
-      upload_url = get_signed_url('/{0}/{1}/{2}'.format(bucket, name, zip_file))
-      srcmap_url = get_signed_url('/{0}/{1}/{2}'.format(bucket, name,
-                                                        stamped_srcmap_file))
-
-      targets_list_filename = TARGETS_LIST_BASENAME + '.' + sanitizer
-      targets_list_url = get_signed_url('/{0}/{1}/{2}'.format(
-          bucket, name, targets_list_filename))
+      upload_url = get_signed_url(UPLOAD_URL_FORMAT.format(bucket, name, 
+                                                           zip_file))
+      srcmap_url = get_signed_url(UPLOAD_URL_FORMAT.format(bucket, name,
+                                                           stamped_srcmap_file))
+      targets_list_url = get_signed_url(
+          get_targets_list_url(bucket, name, sanitizer))
 
       env.append('OUT=' + out)
       env.append('MSAN_LIBS_PATH=/workspace/msan')
@@ -307,7 +310,7 @@ def get_build_steps(project_yaml, dockerfile_path):
           },
       ])
 
-  return build_steps
+  return build_steps, image
 
 
 def get_logs_url(build_id):
@@ -316,24 +319,23 @@ def get_logs_url(build_id):
   return URL_FORMAT.format(build_id)
 
 
-def main():
-  if len(sys.argv) != 2:
-    usage()
+def get_targets_list_url(bucket, project, sanitizer):
+  filename = TARGETS_LIST_BASENAME + '.' + sanitizer
+  url = UPLOAD_URL_FORMAT.format(bucket, project, filename)
+  return url
 
-  project_dir = sys.argv[1]
-  project_yaml = load_project_yaml(project_dir)
-  dockerfile_path = os.path.join(project_dir, 'Dockerfile')
 
+def run_build(build_steps, image):
   options = {}
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
 
   build_body = {
-      'steps': get_build_steps(project_yaml, dockerfile_path),
+      'steps': build_steps,
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': 'oss-fuzz-gcb-logs',
-      'images': [project_yaml['image']],
+      'images': [ image ],
   }
 
   credentials = GoogleCredentials.get_application_default()
@@ -344,6 +346,15 @@ def main():
 
   print >> sys.stderr, 'Logs:', get_logs_url(build_id)
   print build_id
+
+
+def main():
+  if len(sys.argv) != 2:
+    usage()
+
+  project_dir = sys.argv[1].rstrip(os.path.sep)
+  steps, image = get_build_steps(project_dir)
+  run_build(steps, image)
 
 
 if __name__ == '__main__':
