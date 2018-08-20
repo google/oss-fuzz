@@ -103,8 +103,9 @@ def get_build_steps(project_dir):
     download_corpus_args = []
     for binary_name in fuzz_targets[i : i+CORPUS_DOWNLOAD_BATCH_SIZE]:
       qualified_name = binary_name
-      if not binary_name.startswith(project_name):
-        qualified_name = '%s_%s' % (project_name, binary_name)
+      qualified_name_prefix = '%s_' % project_name
+      if not binary_name.startswith(qualified_name_prefix):
+        qualified_name = qualified_name_prefix + binary_name
 
       url = build_project.get_signed_url(
         CORPUS_BACKUP_URL.format(project_name, qualified_name), method='GET')
