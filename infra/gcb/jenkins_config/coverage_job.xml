@@ -45,7 +45,8 @@ set -o nounset
 
 cd $WORKSPACE/oss-fuzz/infra/gcb
 pip install -r requirements.txt
-build_id=$(python build_and_run_coverage.py $WORKSPACE/oss-fuzz/$JOB_NAME)
+project_dir=$WORKSPACE/oss-fuzz/coverage/$(basename $JOB_NAME)
+build_id=$(python build_and_run_coverage.py $project_dir)
 python wait_for_build.py $build_id
 </command>
     </hudson.tasks.Shell>
