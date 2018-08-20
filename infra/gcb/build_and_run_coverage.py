@@ -43,7 +43,10 @@ def get_build_steps(project_dir):
   fuzz_targets = get_targets_list(project_name)
   if not fuzz_targets:
     sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
-    sys.exit(1)
+
+    # Exit with 0 not to mark code coverage job as failed in a case when project
+    # did not have any successful builds and there are no fuzz targets recorded.
+    exit(0)
 
   project_yaml = build_project.load_project_yaml(project_dir)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
