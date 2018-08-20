@@ -201,6 +201,7 @@ def get_build_steps(project_dir):
                                                            zip_file))
       srcmap_url = get_signed_url(UPLOAD_URL_FORMAT.format(bucket, name,
                                                            stamped_srcmap_file))
+      targets_list_filename = get_targets_list_filename(sanitizer)
       targets_list_url = get_signed_url(
           get_targets_list_url(bucket, name, sanitizer))
 
@@ -319,8 +320,12 @@ def get_logs_url(build_id):
   return URL_FORMAT.format(build_id)
 
 
+def get_targets_list_filename(sanitizer):
+  return TARGETS_LIST_BASENAME + '.' + sanitizer
+
+
 def get_targets_list_url(bucket, project, sanitizer):
-  filename = TARGETS_LIST_BASENAME + '.' + sanitizer
+  filename = get_targets_list_filename(sanitizer)
   url = UPLOAD_URL_FORMAT.format(bucket, project, filename)
   return url
 
