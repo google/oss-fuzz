@@ -25,15 +25,17 @@ fi
 DUMPS_DIR="$OUT/dumps"
 FUZZER_STATS_DIR="$OUT/fuzzer_stats"
 LOGS_DIR="$OUT/logs"
-REPORT_DIR="$OUT/report"
+REPORT_ROOT_DIR="$OUT/report"
+REPORT_PLATFORM_DIR="$OUT/report/linux"
 
-for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_DIR; do
+for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR \
+                 $REPORT_PLATFORM_DIR; do
   rm -rf $directory
   mkdir -p $directory
 done
 
 PROFILE_FILE="$DUMPS_DIR/merged.profdata"
-SUMMARY_FILE="$REPORT_DIR/summary.json"
+SUMMARY_FILE="$REPORT_PLATFORM_DIR/summary.json"
 
 # Use path mapping, as $SRC directory from the builder is copied into $OUT/$SRC.
 PATH_EQUIVALENCE_ARGS="-path-equivalence=/,$OUT"
@@ -123,7 +125,7 @@ objects="$objects $shared_libraries"
 LLVM_COV_ARGS="-instr-profile=$PROFILE_FILE $objects $LLVM_COV_COMMON_ARGS"
 
 # Generate HTML report.
-llvm-cov show -format=html -output-dir=$REPORT_DIR \
+llvm-cov show -format=html -output-dir=$REPORT_ROOT_DIR \
     -Xdemangler c++filt -Xdemangler -n $LLVM_COV_ARGS
 
 # Export coverage summary in JSON format.
@@ -131,11 +133,11 @@ llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
 
 # Post process HTML report.
 coverage_helper -v post_process -src-root-dir=$OUT -summary-file=$SUMMARY_FILE \
-    -output-dir=$REPORT_DIR $PATH_EQUIVALENCE_ARGS
+    -output-dir=$REPORT_ROOT_DIR $PATH_EQUIVALENCE_ARGS
 
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
   echo "Serving the report on http://127.0.0.1:$HTTP_PORT/linux/index.html"
-  cd $REPORT_DIR
+  cd $REPORT_ROOT_DIR
   python3 -m http.server $HTTP_PORT
 fi
