@@ -25,20 +25,24 @@ fi
 DUMPS_DIR="$OUT/dumps"
 FUZZER_STATS_DIR="$OUT/fuzzer_stats"
 LOGS_DIR="$OUT/logs"
-REPORT_DIR="$OUT/report"
+REPORT_ROOT_DIR="$OUT/report"
+REPORT_PLATFORM_DIR="$OUT/report/linux"
 
-for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_DIR; do
+for directory in $DUMPS_DIR $FUZZER_STATS_DIR $LOGS_DIR $REPORT_ROOT_DIR \
+                 $REPORT_PLATFORM_DIR; do
   rm -rf $directory
   mkdir -p $directory
 done
 
-
 PROFILE_FILE="$DUMPS_DIR/merged.profdata"
-SUMMARY_FILE="$REPORT_DIR/summary.json"
+SUMMARY_FILE="$REPORT_PLATFORM_DIR/summary.json"
+
+# Use path mapping, as $SRC directory from the builder is copied into $OUT/$SRC.
+PATH_EQUIVALENCE_ARGS="-path-equivalence=/,$OUT"
 
 # It's important to use $COVERAGE_EXTRA_ARGS as the last argument, because it
 # can contain paths to source files / directories which are positional args.
-LLVM_COV_COMMON_ARGS="-path-equivalence=/,$OUT \
+LLVM_COV_COMMON_ARGS="$PATH_EQUIVALENCE_ARGS \
     -ignore-filename-regex=.*src/libfuzzer/.* $COVERAGE_EXTRA_ARGS"
 
 # Timeout for running a single fuzz target.
@@ -74,7 +78,7 @@ function run_fuzz_target {
   # Delete unnecessary and (potentially) large .profraw files.
   rm $profraw_file_mask
 
-  shared_libraries=$(coverage_helper.py shared_libs -object=$target)
+  shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$target)
   llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 }
@@ -113,7 +117,7 @@ llvm-profdata merge -sparse $DUMPS_DIR/*.profdata -o $PROFILE_FILE
 
 # TODO(mmoroz): add script from Chromium for rendering directory view reports.
 # The first path in $objects does not have -object= prefix (llvm-cov format).
-shared_libraries=$(coverage_helper.py shared_libs -object=$objects)
+shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$objects)
 objects="$objects $shared_libraries"
 
 # It's important to use $LLVM_COV_COMMON_ARGS as the last argument due to
@@ -121,15 +125,19 @@ objects="$objects $shared_libraries"
 LLVM_COV_ARGS="-instr-profile=$PROFILE_FILE $objects $LLVM_COV_COMMON_ARGS"
 
 # Generate HTML report.
-llvm-cov show -format=html -output-dir=$REPORT_DIR \
+llvm-cov show -format=html -output-dir=$REPORT_ROOT_DIR \
     -Xdemangler c++filt -Xdemangler -n $LLVM_COV_ARGS
 
 # Export coverage summary in JSON format.
 llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
 
+# Post process HTML report.
+coverage_helper -v post_process -src-root-dir=$SRC -summary-file=$SUMMARY_FILE \
+    -output-dir=$REPORT_ROOT_DIR $PATH_EQUIVALENCE_ARGS
+
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
-  echo "Serving the report on http://127.0.0.1:$HTTP_PORT/"
-  cd $REPORT_DIR
+  echo "Serving the report on http://127.0.0.1:$HTTP_PORT/linux/index.html"
+  cd $REPORT_ROOT_DIR
   python3 -m http.server $HTTP_PORT
 fi
