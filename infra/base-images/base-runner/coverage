@@ -130,8 +130,8 @@ llvm-cov show -format=html -output-dir=$REPORT_DIR \
 llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
 
 # Post process HTML report.
-coverage_helper -v post_process -output-dir=$REPORT_DIR -src-root-dir=$OUT \
-    -summary-file=$SUMMARY_FILE $PATH_EQUIVALENCE_ARGS
+coverage_helper -v post_process -src-root-dir=$OUT -summary-file=$SUMMARY_FILE \
+    -output-dir=$REPORT_DIR $PATH_EQUIVALENCE_ARGS
 
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
