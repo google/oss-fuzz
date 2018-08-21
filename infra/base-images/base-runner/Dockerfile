@@ -17,8 +17,10 @@
 FROM gcr.io/oss-fuzz-base/base-image
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y zip file libunwind8 binutils libblocksruntime0 \
-    fonts-dejavu python3 libcap2 wget
-COPY bad_build_check coverage coverage_helper.py download_corpus llvm-cov \
+    fonts-dejavu python3 python3-pip libcap2 wget git
+RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage
+RUN pip3 install -r /opt/code_coverage/requirements.txt
+COPY bad_build_check coverage coverage_helper download_corpus llvm-cov \
 		llvm-profdata llvm-symbolizer reproduce run_fuzzer sancov test_all \
 		minijail0 run_minijail targets_list /usr/local/bin/
 
