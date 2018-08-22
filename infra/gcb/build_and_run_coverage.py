@@ -32,6 +32,15 @@ UPLOAD_FUZZER_STATS_URL_FORMAT = (
 UPLOAD_REPORT_URL_FORMAT = 'gs://%s/{0}/reports/{1}' % COVERAGE_BUCKET_NAME
 
 
+def skip_build(message):
+  """Exit with 0 code not to mark code coverage job as failed."""
+  sys.stderr.write('%s\n' % message)
+
+  # Since the script should print build_id, print '0' as a special value.
+  print '0'
+  exit(0)
+
+
 def usage():
   sys.stderr.write(
     "Usage: " + sys.argv[0] + " <project_dir>\n")
@@ -40,17 +49,14 @@ def usage():
 
 def get_build_steps(project_dir):
   project_name = os.path.basename(project_dir)
+  project_yaml = build_project.load_project_yaml(project_dir)
+  if project_yaml['disabled']:
+    skip_build('Project "%s" is disabled.' % project_name)
+
   fuzz_targets = get_targets_list(project_name)
   if not fuzz_targets:
-    sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
+    skip_build('No fuzz targets found for project "%s".' % project_name)
 
-    # Exit with 0 not to mark code coverage job as failed in a case when project
-    # did not have any successful builds and there are no fuzz targets recorded.
-    # The script should print build_id, print '0' as a special value.
-    print '0'
-    exit(0)
-
-  project_yaml = build_project.load_project_yaml(project_dir)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
@@ -171,7 +177,7 @@ def get_targets_list(project_name):
   r = requests.get(url)
   if not r.status_code == 200:
     sys.stderr.write('Failed to get list of targets from "%s".\n' % url)
-    sys.stderr.write('Status code: %d \t\tText:\n%s' % (r.status_code, r.text))
+    sys.stderr.write('Status code: %d \t\tText:\n%s\n' % (r.status_code, r.text))
     return None
 
   return r.text.split()
