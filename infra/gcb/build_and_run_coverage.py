@@ -119,7 +119,7 @@ def get_build_steps(project_dir):
 
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
-    print(download_corpus_args)
+
     build_steps.append(
         # Download corpus.
         {
