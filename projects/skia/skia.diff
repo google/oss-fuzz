@@ -30,10 +30,10 @@ index 24a8e58e96..3339cd0e5f 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index b35d7f9f4c..8ae8967455 100644
+index 945b8580e0..c1cdcfecba 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1098,6 +1098,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1101,6 +1101,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -80,7 +80,7 @@ index 8bef6c355c..3ecc3bcaf9 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index 3ff4f93405..379f68eb29 100644
+index e001f58250..8c65cfaaee 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
 @@ -261,6 +261,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
@@ -96,10 +96,10 @@ index 3ff4f93405..379f68eb29 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index 9b8431e591..d0ad8b47bf 100644
+index 15aa44eebc..92bba3f6c8 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -1327,6 +1327,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -1277,6 +1277,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -114,10 +114,10 @@ index 9b8431e591..d0ad8b47bf 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index 99ac492967..c4d3fc9be0 100644
+index b51bb2d07c..38f86dde00 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
-@@ -3377,7 +3377,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+@@ -3394,7 +3394,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
                                     SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
      SkASSERT(!oval.isEmpty());
      SkASSERT(sweepAngle);
@@ -210,12 +210,12 @@ index e5dd774c3b..075a1f53d2 100644
              int L = SkFixedRoundToInt(left);
              int R = SkFixedRoundToInt(rite);
 diff --git a/src/effects/Sk1DPathEffect.cpp b/src/effects/Sk1DPathEffect.cpp
-index 9195933444..1d1538b03b 100644
+index 72a128d16e..78716de1bb 100644
 --- a/src/effects/Sk1DPathEffect.cpp
 +++ b/src/effects/Sk1DPathEffect.cpp
 @@ -19,6 +19,11 @@
- bool Sk1DPathEffect::filterPath(SkPath* dst, const SkPath& src,
-                                 SkStrokeRec*, const SkRect*) const {
+ bool Sk1DPathEffect::onFilterPath(SkPath* dst, const SkPath& src,
+                                   SkStrokeRec*, const SkRect*) const {
      SkPathMeasure   meas(src, false);
 +#if defined(IS_FUZZING)
 +    if (meas.getLength() < 0 || meas.getLength() > 100) {
@@ -226,7 +226,7 @@ index 9195933444..1d1538b03b 100644
          int governor = MAX_REASONABLE_ITERATIONS;
          SkScalar    length = meas.getLength();
 diff --git a/src/effects/Sk2DPathEffect.cpp b/src/effects/Sk2DPathEffect.cpp
-index 6c2c4c2854..30826fa36b 100644
+index 24586827c4..9f5661c382 100644
 --- a/src/effects/Sk2DPathEffect.cpp
 +++ b/src/effects/Sk2DPathEffect.cpp
 @@ -51,6 +51,11 @@ void Sk2DPathEffect::nextSpan(int x, int y, int count, SkPath* path) const {
@@ -242,10 +242,10 @@ index 6c2c4c2854..30826fa36b 100644
      const SkMatrix& mat = this->getMatrix();
      SkPoint src, dst;
 diff --git a/src/effects/SkDashPathEffect.cpp b/src/effects/SkDashPathEffect.cpp
-index aa3803a95c..a345430dcf 100644
+index cc414f7c16..25a4cb37bc 100644
 --- a/src/effects/SkDashPathEffect.cpp
 +++ b/src/effects/SkDashPathEffect.cpp
-@@ -382,6 +382,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
+@@ -387,6 +387,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
          return nullptr;
      }
  
@@ -259,10 +259,10 @@ index aa3803a95c..a345430dcf 100644
      if (buffer.readScalarArray(intervals.get(), count)) {
          return SkDashPathEffect::Make(intervals.get(), SkToInt(count), phase);
 diff --git a/src/effects/SkDiscretePathEffect.cpp b/src/effects/SkDiscretePathEffect.cpp
-index 46cd42bece..76c81d1b49 100644
+index 2c913d8d9e..61b9629766 100644
 --- a/src/effects/SkDiscretePathEffect.cpp
 +++ b/src/effects/SkDiscretePathEffect.cpp
-@@ -97,6 +97,11 @@ bool SkDiscretePathEffect::filterPath(SkPath* dst, const SkPath& src,
+@@ -97,6 +97,11 @@ bool SkDiscretePathEffect::onFilterPath(SkPath* dst, const SkPath& src,
  
      do {
          SkScalar    length = meas.getLength();

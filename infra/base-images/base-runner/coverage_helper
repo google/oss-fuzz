@@ -1,5 +1,5 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.
+#!/bin/bash -u
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,27 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-# Install dependencies.
-export SHELL=/bin/bash
-../../mach bootstrap --no-interactive --application-choice browser
-
-# Set environment for rustc.
-source $HOME/.cargo/env
-
-autoconf2.13
-
-mkdir build_DBG.OBJ
-cd build_DBG.OBJ
-
-../configure \
-    --enable-debug \
-    --enable-optimize \
-    --disable-shared-js \
-    --disable-jemalloc \
-    --disable-tests \
-    --enable-address-sanitizer
-
-make "-j$(nproc)"
-
-cp dist/bin/js $OUT
+python3 /opt/code_coverage/coverage_utils.py $@

@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,26 +15,17 @@
 #
 ################################################################################
 
-# Install dependencies.
-export SHELL=/bin/bash
-../../mach bootstrap --no-interactive --application-choice browser
+SRC_DIR=$SRC/pffft
+cd $WORK
 
-# Set environment for rustc.
-source $HOME/.cargo/env
+# Building PFFFT as a static library.
+if [ -f libpffft.a ]; then
+  rm libpffft.a
+fi
+$CXX $CXXFLAGS -c -msse2 -fPIC $SRC_DIR/pffft.c -o pffft.o
+ar rcs libpffft.a pffft.o
 
-autoconf2.13
-
-mkdir build_DBG.OBJ
-cd build_DBG.OBJ
-
-../configure \
-    --enable-debug \
-    --enable-optimize \
-    --disable-shared-js \
-    --disable-jemalloc \
-    --disable-tests \
-    --enable-address-sanitizer
-
-make "-j$(nproc)"
-
-cp dist/bin/js $OUT
+# Building PFFFT fuzzers.
+$CXX $CXXFLAGS -std=c++11 -I$SRC_DIR \
+     $SRC/pffft_fuzzer.cc -o $OUT/pffft_real_fwbw_fuzzer \
+     -lFuzzingEngine $WORK/libpffft.a

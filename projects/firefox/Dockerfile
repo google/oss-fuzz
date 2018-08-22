@@ -22,3 +22,5 @@ RUN apt-get update && \
 RUN hg clone https://hg.mozilla.org/mozilla-central
 WORKDIR mozilla-central
 COPY build.sh target.c $SRC/
+# Recent node.js versions not available on Ubuntu.
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -

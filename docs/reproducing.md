@@ -82,4 +82,5 @@ Our infrastructure runs some sanity tests to make sure that your build was corre
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> --engine <libfuzzer/afl/hongfuzz> $PROJECT_NAME
-$ python infra/helper.py check_build  --sanitizer <address/memory/undefined> --engine <libfuzzer/afl/hongfuzz> $PROJECT_NAME <fuzz_target_name>```
+$ python infra/helper.py check_build  --sanitizer <address/memory/undefined> --engine <libfuzzer/afl/hongfuzz> $PROJECT_NAME <fuzz_target_name>
+```
