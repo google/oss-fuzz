@@ -73,6 +73,7 @@ def load_project_yaml(project_dir):
   project_yaml_path = os.path.join(project_dir, 'project.yaml')
   with open(project_yaml_path) as f:
     project_yaml = yaml.safe_load(f)
+    project_yaml.setdefault('disabled', False)
     project_yaml.setdefault('name', project_name)
     project_yaml.setdefault('image', 'gcr.io/oss-fuzz/' + project_name)
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
