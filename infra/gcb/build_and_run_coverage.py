@@ -33,9 +33,10 @@ UPLOAD_REPORT_URL_FORMAT = 'gs://%s/{0}/reports/{1}' % COVERAGE_BUCKET_NAME
 
 
 def skip_build(message):
-  # Exit with 0 not to mark code coverage job as failed.
-  # Since the script should print build_id, print '0' as a special value.
+  """Exit with 0 code not to mark code coverage job as failed."""
   sys.stderr.write('%s\n' % message)
+
+  # Since the script should print build_id, print '0' as a special value.
   print '0'
   exit(0)
 
