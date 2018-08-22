@@ -47,7 +47,11 @@ cd $WORKSPACE/oss-fuzz/infra/gcb
 pip install -r requirements.txt
 project_dir=$WORKSPACE/oss-fuzz/projects/$(basename $JOB_NAME)
 build_id=$(python build_and_run_coverage.py $project_dir)
-python wait_for_build.py $build_id
+if [[ "$build_id" == "0" ]]; then
+  echo "Intentionally skipping code coverage job."
+else
+  python wait_for_build.py $build_id
+fi
 </command>
     </hudson.tasks.Shell>
   </builders>

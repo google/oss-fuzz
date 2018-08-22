@@ -46,6 +46,8 @@ def get_build_steps(project_dir):
 
     # Exit with 0 not to mark code coverage job as failed in a case when project
     # did not have any successful builds and there are no fuzz targets recorded.
+    # The script should print build_id, print '0' as a special value.
+    print '0'
     exit(0)
 
   project_yaml = build_project.load_project_yaml(project_dir)
