@@ -16,6 +16,20 @@
 ################################################################################
 
 # build projects
+#nettle
+(
+cd nettle
+tar -xvf ../gmp-6.1.2.tar.bz2
+cd gmp-6.1.2
+./configure
+make
+make install
+cd ..
+autoreconf
+./configure
+make
+)
+
 #cryptopp
 (
 cd cryptopp
@@ -70,5 +84,6 @@ $CC $CFLAGS -I. -I../openssl/include -c modules/openssl.c -o openssl.o
 $CC $CFLAGS -DWITH_STDLIB -I. -I../libecc/src -c modules/libecc.c -o libecc.o
 $CC $CFLAGS -I. -I../gcrypt/src -c modules/gcrypt.c -o gcrypt.o
 $CXX $CXXFLAGS -I. -I../ -c modules/cryptopp.cpp -o cryptopp.o
+$CC $CFLAGS -I. -I../ -c modules/nettle.c -o nettle.o
 
-$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o gcrypt.o cryptopp.o -o $OUT/fuzz_ec ../mbedtls/library/libmbedcrypto.a ../libecc/build/libec.a ../openssl/libcrypto.a ../gcrypt/src/.libs/libgcrypt.a ../cryptopp/libcryptopp.a -lgpg-error -lFuzzingEngine
+$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o gcrypt.o cryptopp.o nettle.o -o $OUT/fuzz_ec ../mbedtls/library/libmbedcrypto.a ../libecc/build/libec.a ../openssl/libcrypto.a ../nettle/libhogweed.a ../nettle/libnettle.a ../nettle/gmp-6.1.2/.libs/libgmp.a ../gcrypt/src/.libs/libgcrypt.a ../cryptopp/libcryptopp.a -lgpg-error -lFuzzingEngine
