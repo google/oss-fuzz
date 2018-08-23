@@ -97,10 +97,11 @@ mkdir $WORK/deb
 find $WORK/apt -type f -exec dpkg-deb --extract "{}" $WORK/deb \;
 
 mkdir $OUT/lib
-# Move required libraries (and symlinks). Less than 50MB total.
+# Move required libraries. Less than 50MB total.
 for REQUIRED_LIBRARY in ${REQUIRED_LIBRARIES[@]}
 do
-  find $WORK/deb -name "${REQUIRED_LIBRARY##*/}*" -exec mv "{}" $OUT/lib \;
+  find $WORK/deb \
+    -xtype f -name "${REQUIRED_LIBRARY##*/}" -exec cp -uL "{}" $OUT/lib \;
 done
 
 # Build a wrapper binary for each target to set environment variables.
