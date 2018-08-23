@@ -73,6 +73,11 @@ function run_fuzz_target {
     cat $LOGS_DIR/$target.log
   fi
 
+  if (( $(du -c $profraw_file_mask | tail -n 1 | cut -f 1) == 0 )); then
+    # Skip fuzz targets that failed to produce profile dumps.
+    return 0
+  fi
+
   llvm-profdata merge -j=1 -sparse $profraw_file_mask -o $profdata_file
 
   # Delete unnecessary and (potentially) large .profraw files.
@@ -111,6 +116,9 @@ done
 # Wait for background processes to finish.
 wait
 
+# From this point on the script does not tolerate any errors.
+set -e
+
 # Merge all dumps from the individual targets.
 rm -f $PROFILE_FILE
 llvm-profdata merge -sparse $DUMPS_DIR/*.profdata -o $PROFILE_FILE
@@ -132,7 +140,7 @@ llvm-cov show -format=html -output-dir=$REPORT_ROOT_DIR \
 llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
 
 # Post process HTML report.
-coverage_helper -v post_process -src-root-dir=$SRC -summary-file=$SUMMARY_FILE \
+coverage_helper -v post_process -src-root-dir=/ -summary-file=$SUMMARY_FILE \
     -output-dir=$REPORT_ROOT_DIR $PATH_EQUIVALENCE_ARGS
 
 if [[ -n $HTTP_PORT ]]; then
