@@ -134,7 +134,7 @@ def main():
       continue
 
     builds = response['builds']
-    print(builds)
+
     last_build = find_last_build(builds)
     if not last_build:
       print >> sys.stderr, 'Failed to get build for', project
