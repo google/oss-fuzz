@@ -18,14 +18,18 @@
 SRC_DIR=$SRC/pffft
 cd $WORK
 
-# Building PFFFT as a static library.
-if [ -f libpffft.a ]; then
-  rm libpffft.a
-fi
-$CXX $CXXFLAGS -c -msse2 -fPIC $SRC_DIR/pffft.c -o pffft.o
-ar rcs libpffft.a pffft.o
+build_fuzzer() {
+  # Aliases for the arguments.
+  fft_transform=$1
 
-# Building PFFFT fuzzers.
-$CXX $CXXFLAGS -std=c++11 -I$SRC_DIR \
-     $SRC/pffft_fuzzer.cc -o $OUT/pffft_real_fwbw_fuzzer \
-     -lFuzzingEngine $WORK/libpffft.a
+  fuzz_target_name=pffft_${fft_transform,,}_fuzzer
+  $CXX $CXXFLAGS -std=c++11 -msse2 \
+       -DTRANSFORM_${fft_transform} \
+       $SRC/pffft/pffft.c $SRC/pffft/pffft_fuzzer.cc \
+       -o $OUT/${fuzz_target_name} \
+       -lFuzzingEngine
+}
+
+# Build fuzzers.
+build_fuzzer REAL
+build_fuzzer COMPLEX

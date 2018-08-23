@@ -23,7 +23,17 @@
 
 namespace {
 
-constexpr size_t kSizeOfFloat = sizeof(float);
+#if defined(TRANSFORM_REAL)
+// Real FFT.
+constexpr pffft_transform_t kTransform = PFFFT_REAL;
+constexpr size_t kSizeOfOneSample = sizeof(float);
+#elif defined(TRANSFORM_COMPLEX)
+// Complex FFT.
+constexpr pffft_transform_t kTransform = PFFFT_COMPLEX;
+constexpr size_t kSizeOfOneSample = 2 * sizeof(float);  // Real plus imaginary.
+#else
+#error FFT transform type not defined.
+#endif
 
 bool IsValidSize(size_t n) {
   if (n == 0) { return false; }
@@ -41,29 +51,44 @@ bool IsValidSize(size_t n) {
   return factorization[0] >= 5 && n == 1;
 }
 
+float* AllocatePffftBuffer(size_t number_of_bytes) {
+  return static_cast<float*>(pffft_aligned_malloc(number_of_bytes));
+}
+
 }  // namespace
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Set the number of FFT points to use |data| as input vector.
   // The latter is truncated if the number of bytes is not an integer
-  // multiple of the size of a float.
-  const size_t fft_size = size / kSizeOfFloat;
+  // multiple of the size of one sample (which is either a real or a complex
+  // floating point number).
+  const size_t fft_size = size / kSizeOfOneSample;
   if (!IsValidSize(fft_size)) {
     return 0;
   }
 
-  const size_t number_of_bytes = fft_size * kSizeOfFloat;
+  const size_t number_of_bytes = fft_size * kSizeOfOneSample;
   assert(number_of_bytes <= size);
-  float* buf = static_cast<float*>(pffft_aligned_malloc(number_of_bytes));
-  std::memcpy(buf, reinterpret_cast<const float*>(data), number_of_bytes);
 
-  PFFFT_Setup* pffft_setup = pffft_new_setup(fft_size, PFFFT_REAL);
+  // Allocate input and output buffers.
+  float* in = AllocatePffftBuffer(number_of_bytes);
+  float* out = AllocatePffftBuffer(number_of_bytes);
 
-  pffft_transform(pffft_setup, buf, buf, NULL, PFFFT_FORWARD);
-  pffft_transform(pffft_setup, buf, buf, NULL, PFFFT_BACKWARD);
-  
-  pffft_aligned_free(buf);
+  // Copy input data.
+  std::memcpy(in, reinterpret_cast<const float*>(data), number_of_bytes);
+
+  // Setup FFT.
+  PFFFT_Setup* pffft_setup = pffft_new_setup(fft_size, kTransform);
+
+  // Call different PFFFT functions to maximize the coverage.
+  pffft_transform(pffft_setup, in, out, nullptr, PFFFT_FORWARD);
+  pffft_zconvolve_accumulate(pffft_setup, out, out, out, 1.f);
+  pffft_transform_ordered(pffft_setup, in, out, nullptr, PFFFT_BACKWARD);
+
+  // Release memory.
+  pffft_aligned_free(in);
+  pffft_aligned_free(out);
   pffft_destroy_setup(pffft_setup);
 
   return 0;
