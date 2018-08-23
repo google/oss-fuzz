@@ -22,6 +22,8 @@ CORPUS_BACKUP_URL = ('/{0}-backup.clusterfuzz-external.appspot.com/corpus/'
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
 CORPUS_DOWNLOAD_BATCH_SIZE = 100
 
+COVERAGE_BUILD_TAG = 'coverage'
+
 # Needed for reading public target.list.* files.
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 
@@ -189,7 +191,7 @@ def main():
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
   steps, image = get_build_steps(project_dir)
-  build_project.run_build(steps, image)
+  build_project.run_build(steps, image, COVERAGE_BUILD_TAG)
 
 
 if __name__ == "__main__":
