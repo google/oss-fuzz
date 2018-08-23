@@ -19,4 +19,6 @@ MAINTAINER alessiob@webrtc.org
 RUN apt-get update && apt-get install -y mercurial
 RUN hg clone https://bitbucket.org/jpommier/pffft $SRC/pffft
 WORKDIR pffft
-COPY build.sh pffft_fuzzer.cc $SRC/
+COPY build.sh $SRC
+# TODO(alessiob): Move the fuzzing source code to pffft upstream.
+COPY pffft_fuzzer.cc $SRC/pffft
