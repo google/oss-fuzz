@@ -117,16 +117,14 @@ done
 cd $SRC/mozilla-central
 
 # SdpParser
-find media/webrtc/trunk/webrtc/test/fuzzers/corpora/sdp-corpus \
-  -type f -exec zip -qju $OUT/SdpParser_seed_corpus.zip "{}" \;
-cp media/webrtc/trunk/webrtc/test/fuzzers/corpora/sdp.tokens \
-  $OUT/SdpParser.dict
+find media/webrtc -iname "*.sdp" \
+  -type f -exec zip -qu $OUT/SdpParser_seed_corpus.zip "{}" \;
+cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
 
 # StunParser
-find media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun-corpus \
-  -type f -exec zip -qju $OUT/StunParser_seed_corpus.zip "{}" \;
-cp media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun.tokens \
-  $OUT/StunParser.dict
+find media/webrtc -iname "*.stun" \
+  -type f -exec zip -qu $OUT/StunParser_seed_corpus.zip "{}" \;
+cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
 
 # ContentParentIPC
 cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
