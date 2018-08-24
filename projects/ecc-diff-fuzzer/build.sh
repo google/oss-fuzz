@@ -21,7 +21,9 @@
 cd nettle
 tar -xvf ../gmp-6.1.2.tar.bz2
 cd gmp-6.1.2
-./configure
+#do not use assembly instructions as we do not know if they will be available on the machine who will run the fuzzer
+#we could do instead --enable-fat
+./configure --disable-assembly
 make
 make install
 cd ..
