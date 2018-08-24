@@ -19,7 +19,6 @@ from jinja2 import Environment, FileSystemLoader
 import build_project
 
 STATUS_BUCKET = 'oss-fuzz-build-logs'
-LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RETRY_COUNT = 3
 RETRY_WAIT = 5
