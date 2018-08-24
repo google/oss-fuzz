@@ -76,34 +76,16 @@ tar -xf $OBJDIR/dist/firefox*bz2 -C $OUT
 mv $OBJDIR/toolkit/library/gtest/libxul.so $OUT/firefox
 mv $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
 
-# Get the absolute paths of the required libraries.
+# Get the absolute paths of the required system libraries.
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:$OUT/firefox
 REQUIRED_LIBRARIES=($(ldd $OUT/firefox/libxul.so | gawk '/=> [/]/ {print $3}'))
 REQUIRED_LIBRARIES=(${REQUIRED_LIBRARIES[@]##$OUT/*})
 
-mkdir $WORK/apt
-chown _apt $WORK/apt # suppress warning message on each file
-cd $WORK/apt
-
-# Find and download packages which have the required files, ignoring some.
-# Note that apt-file is very slow, hence parallel is used.
-# Takes only 1-2 minutes on a 32 vCPU instance.
-PACKAGES=($(parallel apt-file search -lFN "{}" ::: ${REQUIRED_LIBRARIES[@]}))
-PACKAGES=(${PACKAGES[@]##libc6*})
-PACKAGES=(${PACKAGES[@]##libgcc*})
-PACKAGES=(${PACKAGES[@]##libstdc++*})
-apt-get -q download ${PACKAGES[@]}
-
-mkdir $WORK/deb
-# Extract downloaded packages.
-find $WORK/apt -type f -exec dpkg-deb --extract "{}" $WORK/deb \;
-
-mkdir $OUT/lib
-# Move required libraries. Less than 50MB total.
+# Copy libraries. Less than 50MB total.
+mkdir -p $OUT/lib
 for REQUIRED_LIBRARY in ${REQUIRED_LIBRARIES[@]}
 do
-  find $WORK/deb \
-    -xtype f -name "${REQUIRED_LIBRARY##*/}" -exec cp -uL "{}" $OUT/lib \;
+  cp -L $REQUIRED_LIBRARY $OUT/lib
 done
 
 # Build a wrapper binary for each target to set environment variables.
@@ -113,8 +95,6 @@ do
     -DFUZZ_TARGET=$FUZZ_TARGET \
     $SRC/target.c -o $OUT/$FUZZ_TARGET
 done
-
-cd $SRC/mozilla-central
 
 # SdpParser
 find media/webrtc -iname "*.sdp" \
