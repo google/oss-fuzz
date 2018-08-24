@@ -19,6 +19,7 @@
 FUZZ_TARGETS=(
   SdpParser
   StunParser
+  ContentParentIPC
   ContentSecurityPolicyParser
   # Qcms # needn't be enabled; has its own project with more sanitizers/engines
 )
@@ -126,6 +127,9 @@ find media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun-corpus \
   -type f -exec zip -qju $OUT/StunParser_seed_corpus.zip "{}" \;
 cp media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun.tokens \
   $OUT/StunParser.dict
+
+# ContentParentIPC
+cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
 
 # ContentSecurityPolicyParser
 cp dom/security/fuzztest/csp_fuzzer.dict $OUT/ContentSecurityPolicyParser.dict

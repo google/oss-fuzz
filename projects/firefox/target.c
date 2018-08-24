@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     strcat(path, "/");
   }
 
-  if (strlen(path) + strlen(*argv) + 16 >= PATH_MAX) {
+  if (strlen(path) + strlen(*argv) + 40 >= PATH_MAX) {
     fprintf(stderr, "Path length would exceed PATH_MAX\n");
     exit(1);
   }
@@ -41,6 +41,12 @@ int main(int argc, char* argv[]) {
   setenv("MOZ_RUN_GTEST", "1", 1);
   setenv("LIBFUZZER", "1", 1);
   setenv("FUZZER", STRINGIFY(FUZZ_TARGET), 1);
+
+  // ContentParentIPC
+  char blacklist_path[PATH_MAX] = {0};
+  strcpy(blacklist_path, path);
+  strcat(blacklist_path, "/firefox/libfuzzer.content.blacklist.txt");
+  setenv("MOZ_IPC_MESSAGE_FUZZ_BLACKLIST", blacklist_path, 1);
 
   // Temporary (or permanent?) work-arounds for fuzzing interface bugs.
   char* options = getenv("ASAN_OPTIONS");
