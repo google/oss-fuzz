@@ -40,22 +40,11 @@ int main(int argc, char* argv[]) {
   strcat(ff_path, "/firefox/firefox");
 
   // Expects LD_LIBRARY_PATH to not also be set by oss-fuzz.
-  // If it ever is, this has to be replaced with more complex code.
-  if (setenv("LD_LIBRARY_PATH", ld_path, 0)) {
-    perror("Error setting LD_LIBRARY_PATH");
-    exit(1);
-  }
-
-  if (setenv("MOZ_RUN_GTEST", "1", 1) || setenv("LIBFUZZER", "1", 1) ||
-      setenv("FUZZER", STRINGIFY(FUZZ_TARGET), 1)) {
-    perror("Error setting fuzzing variables");
-    exit(1);
-  }
-  
-  if (setenv("HOME", "/tmp", 0)) {
-    perror("Error setting HOME");
-    exit(1);
-  }
+  setenv("LD_LIBRARY_PATH", ld_path, 0);
+  setenv("HOME", "/tmp", 0);
+  setenv("MOZ_RUN_GTEST", "1", 1);
+  setenv("LIBFUZZER", "1", 1);
+  setenv("FUZZER", STRINGIFY(FUZZ_TARGET), 1);
 
   char* options = getenv("ASAN_OPTIONS");
   if (options) {
@@ -68,10 +57,7 @@ int main(int argc, char* argv[]) {
     // https://bugzilla.mozilla.org/show_bug.cgi?id=1477844
     ptr = strstr(new_options, "detect_leaks=1");
     if (ptr) ptr[13] = '0';
-    if (setenv("ASAN_OPTIONS", new_options, 1)) {
-      perror("Error setting ASAN_OPTIONS");
-      exit(1);
-    }
+    setenv("ASAN_OPTIONS", new_options, 1);
     free(new_options);
   }
 
