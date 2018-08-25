@@ -51,14 +51,12 @@ mk_add_options CXXFLAGS=
 EOF
 fi
 
-# Remove existing cargo configs (if any). Otherwise, mach fails.
-if [ -d "$HOME/.cargo" ]; then rm -rf $HOME/.cargo; fi
-
-# Install dependencies.
+# Install dependencies. Note that bootstrap installs cargo, which must be added
+# to PATH via source. In a successive run (for a different sanitizer), the
+# cargo installation carries over, but bootstrap fails if cargo is not in PATH.
 export SHELL=/bin/bash
+[ -f "$HOME/.cargo/env" ] && source $HOME/.cargo/env
 ./mach bootstrap --no-interactive --application-choice browser
-
-# Set environment for rustc.
 source $HOME/.cargo/env
 
 # Update internal libFuzzer.
