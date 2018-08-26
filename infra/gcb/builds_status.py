@@ -16,8 +16,9 @@ from google.cloud import logging
 from google.cloud import storage
 from jinja2 import Environment, FileSystemLoader
 
+import build_project
+
 STATUS_BUCKET = 'oss-fuzz-build-logs'
-LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RETRY_COUNT = 3
 RETRY_WAIT = 5
@@ -79,7 +80,7 @@ def find_last_build(builds):
       storage_client = storage.Client()
 
       status_bucket = storage_client.get_bucket(STATUS_BUCKET)
-      gcb_bucket = storage_client.get_bucket(LOGS_BUCKET)
+      gcb_bucket = storage_client.get_bucket(build_project.GCB_LOGS_BUCKET)
       log_name = 'log-{0}.txt'.format(build['id'])
       log = gcb_bucket.blob(log_name)
       dest_log = status_bucket.blob(log_name)
@@ -119,7 +120,8 @@ def main():
   failures = []
   for project in scan_project_names(projects_dir):
     print project
-    query_filter = ('images="gcr.io/oss-fuzz/{0}"'.format(project))
+    query_filter = ('images="gcr.io/oss-fuzz/{0}" AND tags="{1}"'.format(
+        project, build_project.FUZZING_BUILD_TAG))
     try:
       response = execute_with_retries(cloudbuild.projects().builds().list(
           projectId='oss-fuzz', pageSize=2, filter=query_filter))
@@ -131,6 +133,7 @@ def main():
       continue
 
     builds = response['builds']
+
     last_build = find_last_build(builds)
     if not last_build:
       print >> sys.stderr, 'Failed to get build for', project

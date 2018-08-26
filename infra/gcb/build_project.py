@@ -21,6 +21,10 @@ from googleapiclient.discovery import build
 
 BUILD_TIMEOUT = 10 * 60 * 60
 
+FUZZING_BUILD_TAG = 'fuzzing'
+
+GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
+
 CONFIGURATIONS = {
     'sanitizer-address': ['SANITIZER=address'],
     'sanitizer-memory': ['SANITIZER=memory'],
@@ -73,6 +77,7 @@ def load_project_yaml(project_dir):
   project_yaml_path = os.path.join(project_dir, 'project.yaml')
   with open(project_yaml_path) as f:
     project_yaml = yaml.safe_load(f)
+    project_yaml.setdefault('disabled', False)
     project_yaml.setdefault('name', project_name)
     project_yaml.setdefault('image', 'gcr.io/oss-fuzz/' + project_name)
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
@@ -330,7 +335,7 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def run_build(build_steps, image):
+def run_build(build_steps, image, tag):
   options = {}
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -339,8 +344,9 @@ def run_build(build_steps, image):
       'steps': build_steps,
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
-      'logsBucket': 'oss-fuzz-gcb-logs',
+      'logsBucket': GCB_LOGS_BUCKET,
       'images': [ image ],
+      'tags': [ tag ],
   }
 
   credentials = GoogleCredentials.get_application_default()
@@ -359,7 +365,7 @@ def main():
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
   steps, image = get_build_steps(project_dir)
-  run_build(steps, image)
+  run_build(steps, image, FUZZING_BUILD_TAG)
 
 
 if __name__ == '__main__':

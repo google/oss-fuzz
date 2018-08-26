@@ -75,11 +75,13 @@ if [ "${BUILD_UID-0}" -ne "0" ]; then
   chown -R builder $SRC $OUT $WORK
   su -c "$BUILD_CMD" builder
   if [ "$SANITIZER" = "profile" ]; then
-    su -c "$COPY_SOURCES_CMD" builder
+    # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
+    su -c "$COPY_SOURCES_CMD" builder || true
   fi
 else
   $BUILD_CMD
   if [ "$SANITIZER" = "profile" ]; then
-    $COPY_SOURCES_CMD
+    # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
+    $COPY_SOURCES_CMD || true
   fi
 fi

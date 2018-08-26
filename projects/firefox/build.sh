@@ -59,9 +59,6 @@ export SHELL=/bin/bash
 # Set environment for rustc.
 source $HOME/.cargo/env
 
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1484485
-cargo install cbindgen
-
 # Update internal libFuzzer.
 (cd tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh HEAD)
 
@@ -100,10 +97,11 @@ mkdir $WORK/deb
 find $WORK/apt -type f -exec dpkg-deb --extract "{}" $WORK/deb \;
 
 mkdir $OUT/lib
-# Move required libraries (and symlinks). Less than 50MB total.
+# Move required libraries. Less than 50MB total.
 for REQUIRED_LIBRARY in ${REQUIRED_LIBRARIES[@]}
 do
-  find $WORK/deb -name "${REQUIRED_LIBRARY##*/}*" -exec mv "{}" $OUT/lib \;
+  find $WORK/deb \
+    -xtype f -name "${REQUIRED_LIBRARY##*/}" -exec cp -uL "{}" $OUT/lib \;
 done
 
 # Build a wrapper binary for each target to set environment variables.

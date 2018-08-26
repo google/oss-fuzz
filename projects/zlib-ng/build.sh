@@ -25,5 +25,10 @@ make -j$(nproc) clean
 make -j$(nproc) all
 make -j$(nproc) check
 
-find . -name 'compress_fuzzer' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 zip $OUT/compress_fuzzer_seed_corpus.zip *.*
+cd $OUT
+ln -s compress_fuzzer_seed_corpus.zip example_small_fuzzer_seed_corpus.zip
+ln -s compress_fuzzer_seed_corpus.zip example_large_fuzzer_seed_corpus.zip
+ln -s compress_fuzzer_seed_corpus.zip example_flush_fuzzer_seed_corpus.zip
+ln -s compress_fuzzer_seed_corpus.zip example_dict_fuzzer_seed_corpus.zip
