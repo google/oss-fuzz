@@ -6,6 +6,7 @@
     "paper-item": "PolymerElements/paper-item#2.0-preview",
     "app-layout": "PolymerElements/app-layout#2.0-preview",
     "paper-card": "PolymerElements/paper-card#2.0-preview",
+    "paper-tabs": "PolymerElements/paper-tabs#2.0-preview",
     "iron-icons": "PolymerElements/iron-icons#2.0-preview",
     "iron-ajax": "PolymerElements/iron-ajax#2.0-preview",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0-preview",
