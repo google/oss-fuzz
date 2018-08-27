@@ -16,9 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pdknsk@gmail.com
-RUN apt-get update && \
-    apt-get install -y apt-file gawk mercurial parallel && \
-    apt-file --non-interactive update
-RUN hg clone https://hg.mozilla.org/mozilla-central
+RUN apt-get update && apt-get install -y gawk mercurial
+RUN hg clone --uncompressed https://hg.mozilla.org/mozilla-central
+RUN git clone --depth 1 https://github.com/mozillasecurity/fuzzdata
 WORKDIR mozilla-central
-COPY build.sh target.c $SRC/
+COPY build.sh target.c *options $SRC/

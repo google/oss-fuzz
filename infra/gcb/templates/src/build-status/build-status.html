@@ -8,6 +8,7 @@
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
@@ -35,6 +36,13 @@
 
       paper-item {
         cursor: pointer;
+      }
+
+      paper-tabs {
+        -webkit-font-smoothing: antialiased;
+        width: 100%;
+        margin-bottom: 1px;
+        height: 40px;
       }
 
       :host {
@@ -67,6 +75,12 @@
     </app-header>
     <div class="layout horizontal">
       <paper-card class="projects">
+        <div class="card-tabs">
+          <paper-tabs selected="fuzzing" id="build_type" attr-for-selected="type" on-click="onChanged">
+            <paper-tab type="fuzzing">Fuzzing Builds</paper-tab>
+            <paper-tab type="coverage">Coverage Builds</paper-tab>
+          </paper-tabs>
+        </div>
         <div class="card-content">
           <template is="dom-repeat" items="[[status.projects]]" as="project">
             <paper-item on-tap="onTap">
@@ -102,7 +116,8 @@
         </div>
       </paper-card>
     </div>
-    <iron-ajax auto handle-as="json" url="/status.json" on-response="onResponse"></iron-ajax>
+      <iron-ajax id="status_fuzzing" auto handle-as="json" url="/status.json" on-response="onResponseForFuzzing"></iron-ajax>
+      <iron-ajax id="status_coverage" auto handle-as="json" url="/status-coverage.json" on-response="onResponseForCoverage"></iron-ajax>
     <iron-ajax id="logxhr" auto handle-as="text" on-response="onLogResponse"></iron-ajax>
   </template>
 
@@ -123,8 +138,16 @@
         };
       }
 
-      onResponse(e) {
-        this.status = e.detail.response;
+      onResponseForFuzzing(e) {
+        this.status_fuzzing = e.detail.response;
+        if (!this.status) {
+          // Show status of the fuzzing builds by default.
+          this.status = this.status_fuzzing;
+        }
+      }
+
+      onResponseForCoverage(e) {
+        this.status_coverage = e.detail.response;
       }
 
       onLogResponse(e) {
@@ -137,6 +160,14 @@
         this.build_id = e.model.project.build_id;
         this.log = '';
         this.loading_log = true;
+      }
+
+      onChanged(e) {
+        if (this.$.build_type.selected == 'coverage') {
+          this.status = this.status_coverage
+        } else {
+          this.status = this.status_fuzzing
+        }
       }
 
       showMessage(loading_log, log) {
@@ -153,7 +184,7 @@
         let timezone = ds.substring(ds.indexOf("("));
         return date.toLocaleString() + " " + timezone;
       }
-    }
+    };
 
     window.customElements.define(BuildStatus.is, BuildStatus);
   </script>

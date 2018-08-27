@@ -59,9 +59,9 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/openldap-2.4.45.tgz \
     https://dev-www.libreoffice.org/src/neon-0.30.2.tar.gz \
     https://dev-www.libreoffice.org/src/e80ebae4da01e77f68744319f01d52a3-pixman-0.34.0.tar.gz \
-    https://dev-www.libreoffice.org/src/cairo-1.14.10.tar.xz \
+    https://dev-www.libreoffice.org/src/cairo-1.15.12.tar.xz \
     https://dev-www.libreoffice.org/src/curl-7.60.0.tar.gz \
-    https://dev-www.libreoffice.org/src/xmlsec1-1.2.25.tar.gz \
+    https://dev-www.libreoffice.org/src/xmlsec1-1.2.26.tar.gz \
     https://dev-www.libreoffice.org/src/liblangtag-0.6.2.tar.bz2 \
     https://dev-www.libreoffice.org/src/libabw-0.1.2.tar.xz \
     https://dev-www.libreoffice.org/src/libcdr-0.1.4.tar.xz \
@@ -80,18 +80,18 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/libvisio-0.1.6.tar.xz \
     https://dev-www.libreoffice.org/src/libwpd-0.10.2.tar.xz \
     https://dev-www.libreoffice.org/src/libwpg-0.3.2.tar.xz \
-    https://dev-www.libreoffice.org/src/libwps-0.4.9.tar.xz \
+    https://dev-www.libreoffice.org/src/libwps-0.4.10.tar.xz \
     https://dev-www.libreoffice.org/src/libzmf-0.0.2.tar.xz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \
-    https://dev-www.libreoffice.org/src/poppler-0.59.0.tar.xz \
+    https://dev-www.libreoffice.org/src/poppler-0.66.0.tar.xz \
     https://dev-www.libreoffice.org/src/mdds-1.3.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/openssl-1.0.2o.tar.gz \
-    https://dev-www.libreoffice.org/src/language-subtag-registry-2018-03-30.tar.bz2 \
+    https://dev-www.libreoffice.org/src/language-subtag-registry-2018-04-23.tar.bz2 \
     https://dev-www.libreoffice.org/src/graphite2-minimal-1.3.10.tgz \
-    https://dev-www.libreoffice.org/src/harfbuzz-1.7.4.tar.bz2 \
+    https://dev-www.libreoffice.org/src/harfbuzz-1.8.4.tar.bz2 \
     https://dev-www.libreoffice.org/src/bae83fa5dc7f081768daace6e199adc3-glm-0.9.4.6-libreoffice.zip \
-    https://dev-www.libreoffice.org/src/icu4c-61_1-src.tgz \
-    https://dev-www.libreoffice.org/src/icu4c-61_1-data.zip \
+    https://dev-www.libreoffice.org/src/icu4c-62_1-src.tgz \
+    https://dev-www.libreoffice.org/src/icu4c-62_1-data.zip \
     https://dev-www.libreoffice.org/src/libxml2-2.9.8.tar.gz \
     https://dev-www.libreoffice.org/src/libxslt-1.1.32.tar.gz \
     https://dev-www.libreoffice.org/src/hunspell-1.6.2.tar.gz \
@@ -102,9 +102,10 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/gpgme-1.9.0.tar.bz2 \
     https://dev-www.libreoffice.org/src/libassuan-2.5.1.tar.bz2 \
     https://dev-www.libreoffice.org/src/libgpg-error-1.27.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libepubgen-0.1.0.tar.bz2 \
-    https://dev-www.libreoffice.org/src/libnumbertext-1.0.1-3.tar.xz \
-    https://dev-www.libreoffice.org/src/libqxp-0.0.1.tar.xz $SRC/
+    https://dev-www.libreoffice.org/src/libepubgen-0.1.1.tar.xz \
+    https://dev-www.libreoffice.org/src/libnumbertext-1.0.4.tar.xz \
+    https://dev-www.libreoffice.org/src/libqxp-0.0.1.tar.xz \
+    https://dev-www.libreoffice.org/src/a233181e03d3c307668b4c722d881661-mariadb_client-2.0.0-src.tar.gz $SRC/
 #fuzzing dictionaries
 ADD https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/gif.dict \
     https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/jpeg.dict \
