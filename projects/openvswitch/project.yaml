@@ -3,6 +3,7 @@ primary_contact: "blp@ovn.org"
 auto_ccs:
   - "jpettit@ovn.org"
   - "pfaffben@gmail.com" 
+  - "pkusunyifeng@gmail.com"
 sanitizers:
   - address
   - undefined

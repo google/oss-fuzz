@@ -15,15 +15,16 @@
 #
 ################################################################################
 
-./boot.sh && ./configure && make -j$(nproc)
+./boot.sh && ./configure && make -j$(nproc) && make oss-fuzz-targets
 
-for file in $SRC/*target.c; do
-	b=$(basename $file _target.c)
-	$CC $CFLAGS -c $file -I . -I lib/ -I include/ \
-    -o $OUT/${b}_target.o
-	$CXX $CXXFLAGS $OUT/${b}_target.o ./lib/.libs/libopenvswitch.a \
-	-lz -lssl -lcrypto -latomic -lFuzzingEngine \
-	-o $OUT/${b}_fuzzer
-done
-cp $SRC/*.dict $SRC/*.options $OUT/
+cp $SRC/openvswitch/tests/oss-fuzz/config/*.options $OUT/
+cp $SRC/openvswitch/tests/oss-fuzz/config/*.dict $OUT/
 wget -O $OUT/json.dict https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/json.dict
+
+for file in $SRC/openvswitch/tests/oss-fuzz/*_target;
+do
+       cp $file $OUT/
+       name=$(basename $file)
+       corp_name=$(basename $file _target)
+       zip -j $OUT/${name}_seed_corpus.zip $SRC/ovs-fuzzing-corpus/${corp_name}_seed_corpus/*
+done
