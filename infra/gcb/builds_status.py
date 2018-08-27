@@ -99,7 +99,7 @@ def execute_with_retries(request):
 
 
 def update_build_status(
-    cloudbuild, projects, build_tag, status_filename='status.json'):
+    cloudbuild, projects, build_tag, status_filename):
   successes = []
   failures = []
   for project in projects:
@@ -152,7 +152,8 @@ def main():
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = gcb_build('cloudbuild', 'v1', credentials=credentials)
 
-  update_build_status(cloudbuild, projects, build_project.FUZZING_BUILD_TAG)
+  update_build_status(cloudbuild, projects, build_project.FUZZING_BUILD_TAG,
+                      status_filename='status.json')
   update_build_status(cloudbuild, projects,
                       build_and_run_coverage.COVERAGE_BUILD_TAG,
                       status_filename='status-coverage.json')
