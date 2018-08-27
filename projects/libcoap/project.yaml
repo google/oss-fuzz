@@ -1,0 +1,4 @@
+homepage: "https://libcoap.net/"
+primary_contact: "bergmann@tzi.org"
+auto_ccs:
+    - "libcoap@gmail.com"

@@ -15,9 +15,14 @@
 #
 ################################################################################
 
+# limit allocation size to reduce spurious OOMs
+WEBP_CFLAGS="$CFLAGS -DWEBP_MAX_IMAGE_SIZE=838860800" # 800MiB
+
 ./autogen.sh
-./configure \
+CFLAGS="$WEBP_CFLAGS" ./configure \
+  --enable-asserts \
   --enable-libwebpdemux \
+  --enable-libwebpmux \
   --disable-shared \
   --disable-jpeg \
   --disable-tiff \
@@ -26,13 +31,39 @@
 make clean
 make -j$(nproc)
 
-cp $SRC/fuzz.dict $OUT
+find $SRC/libwebp-test-data -type f -size -32k -iname "*.webp" \
+  -exec zip -qju fuzz_seed_corpus.zip "{}" \;
 
 # Simple Decoding API
-$CXX $CXXFLAGS -std=c++11 \
-  -Isrc \
-  -lFuzzingEngine \
-  $SRC/fuzz_simple_api.cc -o $OUT/fuzz_simple_api \
+$CC $CFLAGS -Isrc -c $SRC/fuzz_simple_api.c
+$CXX $CXXFLAGS -lFuzzingEngine \
+  fuzz_simple_api.o -o $OUT/fuzz_simple_api \
   src/.libs/libwebp.a
-cp $SRC/fuzz_seed_corpus.zip $OUT/fuzz_simple_api_seed_corpus.zip
-cp $SRC/fuzz_simple_api.options $OUT
+cp fuzz_seed_corpus.zip $OUT/fuzz_simple_api_seed_corpus.zip
+cp $SRC/fuzz.dict $OUT/fuzz_simple_api.dict
+
+# Advanced Decoding API
+$CC $CFLAGS -Isrc -c $SRC/fuzz_advanced_api.c
+$CXX $CXXFLAGS -lFuzzingEngine \
+  fuzz_advanced_api.o -o $OUT/fuzz_advanced_api \
+  src/.libs/libwebp.a
+cp fuzz_seed_corpus.zip $OUT/fuzz_advanced_api_seed_corpus.zip
+cp $SRC/fuzz.dict $OUT/fuzz_advanced_api.dict
+
+# Animation Decoding API
+$CC $CFLAGS -Isrc -c $SRC/fuzz_animation_api.c
+$CXX $CXXFLAGS -lFuzzingEngine \
+  fuzz_animation_api.o -o $OUT/fuzz_animation_api \
+  src/demux/.libs/libwebpdemux.a \
+  src/.libs/libwebp.a
+cp fuzz_seed_corpus.zip $OUT/fuzz_animation_api_seed_corpus.zip
+cp $SRC/fuzz.dict $OUT/fuzz_animation_api.dict
+
+# (De)mux API
+$CC $CFLAGS -Isrc -c $SRC/fuzz_demux_api.c
+$CXX $CXXFLAGS -lFuzzingEngine \
+  fuzz_demux_api.o -o $OUT/fuzz_demux_api \
+  src/demux/.libs/libwebpdemux.a src/mux/.libs/libwebpmux.a \
+  src/.libs/libwebp.a
+cp fuzz_seed_corpus.zip $OUT/fuzz_demux_api_seed_corpus.zip
+cp $SRC/fuzz.dict $OUT/fuzz_demux_api.dict

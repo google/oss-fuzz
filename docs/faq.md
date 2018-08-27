@@ -2,9 +2,8 @@
 
 ## What kind of projects are you accepting?
 
-We are currently in a beta status, and still working out issues in our service. At this point, we
-can only commit to supporting established projects that have a critical impact on infrastructure and
-user security. We will consider each request on a case-by-case basis, but some things we keep in mind are:
+We accept established projects that have a critical impact on infrastructure and user security.
+We will consider each request on a case-by-case basis, but some things we keep in mind are:
 
   - Exposure to remote attacks (e.g. libraries that are used to process untrusted input).
   - Number of users/other projects depending on this project.
@@ -92,6 +91,12 @@ If your fuzz target is running for many days and does not find bugs or new cover
 - It is also possible that the fuzzer is running too slow (you may check the speed of your targets at https://oss-fuzz.com/)
 
 In either case, look at the [coverage reports](clusterfuzz.md#coverage-reports) for your target(s) and figure out why some parts of the code are not covered. 
+
+## Why are code coverage reports public?
+
+We work with open source projects and try to keep as much information public as
+possible. We believe that public code coverage reports do not put users at risk,
+as they do not indicate the presence of bugs or lack thereof.
 
 ## What happens when I rename a fuzz target ?
 If you rename your fuzz targets, the existing bugs for those targets will get closed and fuzzing will start from scratch from a fresh corpora (seed corpus only). Similar corpora will get accumulated over time depending on the number of cpu cycles that original fuzz target has run. If this is not desirable, make sure to copy the accumulated corpora from the original fuzz target (instructions to download [here](corpora.md#downloading-the-corpus)) and restore it to the new GCS location later (instruction to find the new location [here](corpora.md#viewing-the-corpus-for-a-fuzz-target)).

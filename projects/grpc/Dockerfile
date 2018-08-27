@@ -40,5 +40,5 @@ RUN chmod +x ./bazel-0.10.0-installer-linux-x86_64.sh
 RUN ./bazel-0.10.0-installer-linux-x86_64.sh
 
 RUN git clone --recursive https://github.com/grpc/grpc grpc
-WORKDIR /src/grpc/
+WORKDIR $SRC/grpc/
 COPY build.sh $SRC/

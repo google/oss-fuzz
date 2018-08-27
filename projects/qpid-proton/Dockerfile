@@ -25,4 +25,3 @@ RUN git clone git://git.apache.org/qpid-proton.git
 WORKDIR qpid-proton
 COPY build.sh $SRC/
 COPY c_tests_fuzz_CMakeLists.patch $SRC/
-COPY c_CMakeLists.patch $SRC/

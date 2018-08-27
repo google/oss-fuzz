@@ -2,6 +2,7 @@ homepage: "https://qpid.apache.org/proton/"
 primary_contact: "jross@apache.org"
 auto_ccs:
  - "security@apache.org"
+ - "astitcher@apache.org"
  - "jdanek@redhat.com"
 sanitizers:
  - address

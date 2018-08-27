@@ -33,7 +33,7 @@ ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosext
     https://dev-www.libreoffice.org/src/33e1e61fab06a547851ed308b4ffef42-dejavu-fonts-ttf-2.37.zip \
     https://dev-www.libreoffice.org/src/368f114c078f94214a308a74c7e991bc-crosextrafonts-20130214.tar.gz \
     https://dev-www.libreoffice.org/src/5c781723a0d9ed6188960defba8e91cf-liberation-fonts-ttf-2.00.1.tar.gz \
-    https://dev-www.libreoffice.org/src/49a64f3bcf20a7909ba2751349231d6652ded9cd2840e961b5164d09de3ffa63-opens___.ttf \
+    https://dev-www.libreoffice.org/extern/49a64f3bcf20a7909ba2751349231d6652ded9cd2840e961b5164d09de3ffa63-opens___.ttf \
     https://dev-www.libreoffice.org/src/noto-fonts-20171024.tar.gz \
     https://dev-www.libreoffice.org/src/amiri-0.109.zip \
     https://dev-www.libreoffice.org/src/ttf-kacst_2.01+mry.tar.gz \
