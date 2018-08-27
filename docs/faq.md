@@ -2,9 +2,8 @@
 
 ## What kind of projects are you accepting?
 
-We are currently in a beta status, and still working out issues in our service. At this point, we
-can only commit to supporting established projects that have a critical impact on infrastructure and
-user security. We will consider each request on a case-by-case basis, but some things we keep in mind are:
+We accept established projects that have a critical impact on infrastructure and user security.
+We will consider each request on a case-by-case basis, but some things we keep in mind are:
 
   - Exposure to remote attacks (e.g. libraries that are used to process untrusted input).
   - Number of users/other projects depending on this project.
