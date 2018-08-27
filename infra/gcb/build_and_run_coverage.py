@@ -29,9 +29,7 @@ GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 
 # Where code coverage reports need to be uploaded to.
 COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
-UPLOAD_FUZZER_STATS_URL_FORMAT = (
-    'gs://%s/{0}/fuzzer_stats/{1}' % COVERAGE_BUCKET_NAME)
-UPLOAD_REPORT_URL_FORMAT = 'gs://%s/{0}/reports/{1}' % COVERAGE_BUCKET_NAME
+UPLOAD_URL_FORMAT= 'gs://%s/{project}/{type}/{date}' % COVERAGE_BUCKET_NAME
 
 
 def skip_build(message):
@@ -151,7 +149,8 @@ def get_build_steps(project_dir):
           'args': [
               '-m', 'rsync', '-r', '-d',
               os.path.join(out, 'report'),
-              UPLOAD_REPORT_URL_FORMAT.format(project_name, report_date),
+              UPLOAD_URL_FORMAT.format(
+                  project=project_name, type='reports', date=report_date),
           ],
       },
       # Upload the fuzzer stats.
@@ -160,7 +159,18 @@ def get_build_steps(project_dir):
           'args': [
               '-m', 'rsync', '-r', '-d',
               os.path.join(out, 'fuzzer_stats'),
-              UPLOAD_FUZZER_STATS_URL_FORMAT.format(project_name, report_date),
+              UPLOAD_URL_FORMAT.format(
+                  project=project_name, type='fuzzer_stats', date=report_date),
+          ],
+      },
+      # Upload the fuzzer logs.
+      {
+          'name': 'gcr.io/cloud-builders/gsutil',
+          'args': [
+              '-m', 'rsync', '-r', '-d',
+              os.path.join(out, 'logs'),
+              UPLOAD_URL_FORMAT.format(
+                  project=project_name, type='logs', date=report_date),
           ],
       },
   ])
