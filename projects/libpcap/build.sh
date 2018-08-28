@@ -33,7 +33,7 @@ $CXX $CXXFLAGS fuzz_filter.o -o $OUT/fuzz_filter libpcap.a -lFuzzingEngine
 # export other associated stuff
 cd ..
 cp testprogs/fuzz/fuzz_*.options $OUT/
-#builds corpus
+# builds corpus
 cd $SRC/tcpdump/
 zip -r fuzz_pcap_seed_corpus.zip tests/
 cp fuzz_pcap_seed_corpus.zip $OUT/
