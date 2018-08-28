@@ -104,3 +104,7 @@ done
 for d in $FUZZER_DICTIONARIES; do
   cp "$d" "${OUT}"/
 done
+
+# Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build
+# cache.
+rm -f bazel-*
