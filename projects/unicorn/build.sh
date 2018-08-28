@@ -17,7 +17,7 @@
 
 cd unicorn
 ./make.sh
-#we could test with make fuzz
+# we could test with make fuzz
 
 # build fuzz target
 cd tests/fuzz
@@ -27,6 +27,6 @@ do
 
     $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target ../../libunicorn.a -lFuzzingEngine
 
-    #TODO corpuses
+    # TODO corpuses
     cp fuzz_emu.options $OUT/fuzz_$target.options
 done
