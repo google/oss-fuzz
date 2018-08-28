@@ -36,6 +36,6 @@ $CXX $CXXFLAGS fuzz_pcap.o -o $OUT/fuzz_pcap libnetdissect.a ../../libpcap/build
 # export other associated stuff
 cd ..
 cp fuzz/fuzz_*.options $OUT/
-#builds corpus
+# builds corpus
 zip -r fuzz_pcap_seed_corpus.zip tests/*.pcap
 cp fuzz_pcap_seed_corpus.zip $OUT/
