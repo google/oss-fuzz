@@ -17,7 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER unicorn.emu@gmail.com
 RUN apt-get update && apt-get install -y make python
-#TODO change to main repo
-RUN git clone --depth 1 --branch fuzz https://github.com/catenacyber/unicorn.git
+RUN git clone --depth 1 https://github.com/unicorn-engine/unicorn.git
 WORKDIR $SRC
 COPY build.sh $SRC/
