@@ -80,11 +80,24 @@ then
   mkdir -p "${REMAP_PATH}"
   # For .cc, we only really care about source/ today.
   rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
+  rsync -av "${SRC}"/envoy/test "${REMAP_PATH}"
+  rsync -avLk "${SRC}"/envoy/bazel-envoy/external "${REMAP_PATH}"
   # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
   # filter out the build objects from bazel-out/. Also need to resolve symlinks,
   # since they don't make sense outside the build container.
-  rsync -avLk --include '*.h' --include '*.cc' --include '*/' --exclude '*' \
+  rsync -avLk --include '*.h' --include '*.cc' --include '*.hpp' \
+    --include '*/' --exclude '*' \
     "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
+  # As above, but for /root/.cache.
+  # TODO(htuch): disabled for now, this would mostly be useful for .build
+  # artifact, e.g.
+  # /builder/home/.cache/bazel/_bazel_root/4e9824db8e7d11820cfa25090ed4ed10/external/envoy_deps_cache_b22e04bff96538ea37e715942da6315c/yaml-cpp.dep.build/yaml-cpp-0f9a586ca1dc29c2ecb8dd715a315b93e3f40f79/src/parse.cpp
+  # but, we don't know how to recover them today, as they are gone by this
+  # phase.
+  #
+  # rsync -avLk --relative --include '*.h' --include '*.cc' --include '*.c' \
+  #   --include '*/' --exclude '*' \
+  #   /root/.cache "${OUT}"
 fi
 
 # Copy out test driverless binaries from bazel-bin/ and zip up related test
