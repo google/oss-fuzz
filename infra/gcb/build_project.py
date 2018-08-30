@@ -83,6 +83,7 @@ def load_project_yaml(project_dir):
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
     project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
     project_yaml.setdefault('run_tests', True)
+    project_yaml.setdefault('coverage_extra_args', '')
     return project_yaml
 
 
