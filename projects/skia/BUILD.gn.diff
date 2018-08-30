@@ -143,6 +143,18 @@ test_app("api_path_measure") {
   ]
 }
 
+test_app("api_pathop") {
+  sources = [
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/FuzzPathop.cpp",
+    "fuzz/oss_fuzz/FuzzPathop.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
 test_app("api_raster_n32_canvas") {
   include_dirs = [
     "tools",
