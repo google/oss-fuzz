@@ -135,7 +135,10 @@ def get_build_steps(project_dir):
       # Unpack the corpus and run coverage script.
       {
           'name': 'gcr.io/oss-fuzz-base/base-runner',
-          'env': env + ['HTTP_PORT=', 'COVERAGE_EXTRA_ARGS='],
+          'env': env + [
+              'HTTP_PORT=',
+              'COVERAGE_EXTRA_ARGS=%s' % project_yaml['coverage_extra_args']
+          ],
           'args': [
               'bash',
               '-c',

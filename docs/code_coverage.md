@@ -87,19 +87,26 @@ python infra/helper.py profile --fuzz-target=<fuzz_target_name> --corpus-dir=<my
 ### Additional arguments for `llvm-cov`
 
 You may want to use some of the options of [llvm-cov tool], for example,
-`-ignore-filename-regex=` or `-tab-size=`. You can pass those to the helper
-script after `--`:
+`-ignore-filename-regex=`. You can pass those to the helper script after `--`:
 
 ```bash
-python infra/helper.py profile $project_name -- -ignore-filename-regex='.*code/to/be/ignored/.*' -tab-size=2
+python infra/helper.py profile $project_name -- -ignore-filename-regex=.*code/to/be/ignored/.* <other_extra_args>
 ```
 
-To specify particular source files to be shown in the report, list the filepaths
-at the end of the extra arguments sequence, for example:
+To specify particular source files or directories to show in the report, list
+their paths at the end of the extra arguments sequence, for example:
 
 ```bash
-python infra/helper.py profile zlib -- -tab-size=8 /src/zlib/inftrees.c /src/zlib_uncompress_fuzzer.cc /src/zlib/zutil.c
+python infra/helper.py profile zlib -- <other_extra_args> /src/zlib/inftrees.c /src/zlib_uncompress_fuzzer.cc /src/zlib/zutil.c
 ```
+
+If you want OSS-Fuzz to use some extra arguments when generating code coverage
+reports for your project, add the arguments into `project.yaml` file as follows:
+
+```yaml
+coverage_extra_args: -ignore-filename-regex=.*crc.* -ignore-filename-regex=.*adler.* <other_extra_args>
+```
+
 
 [Clang Source-based Code Coverage]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [gsutil tool]: https://cloud.google.com/storage/docs/gsutil_install
