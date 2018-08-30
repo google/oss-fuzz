@@ -93,8 +93,8 @@ You may want to use some of the options of [llvm-cov tool], for example,
 python infra/helper.py profile $project_name -- -ignore-filename-regex=.*code/to/be/ignored/.* <other_extra_args>
 ```
 
-To specify particular source files or directories to be shown in the report,
-list the paths at the end of the extra arguments sequence, for example:
+To specify particular source files or directories to show in the report, list
+their paths at the end of the extra arguments sequence, for example:
 
 ```bash
 python infra/helper.py profile zlib -- <other_extra_args> /src/zlib/inftrees.c /src/zlib_uncompress_fuzzer.cc /src/zlib/zutil.c
