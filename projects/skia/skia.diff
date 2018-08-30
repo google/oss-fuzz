@@ -13,7 +13,7 @@ index e6933a856f..f802cc2250 100644
      SkPathMeasure measure(path, bits & 1, resScale);
      SkPoint position;
 diff --git a/src/core/SkAAClip.cpp b/src/core/SkAAClip.cpp
-index 24a8e58e96..3339cd0e5f 100644
+index 33947382c4..543f51244c 100644
 --- a/src/core/SkAAClip.cpp
 +++ b/src/core/SkAAClip.cpp
 @@ -1549,6 +1549,12 @@ static void operateY(SkAAClip::Builder& builder, const SkAAClip& A,
@@ -30,7 +30,7 @@ index 24a8e58e96..3339cd0e5f 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 945b8580e0..c1cdcfecba 100644
+index 0a7b12729c..f8dedcc6b7 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
 @@ -1101,6 +1101,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
@@ -47,7 +47,7 @@ index 945b8580e0..c1cdcfecba 100644
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index e6ea213146..3eecbc36bb 100644
+index b6ed9b316d..d0bcfd1f2a 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
 @@ -88,6 +88,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
@@ -80,7 +80,7 @@ index 8bef6c355c..3ecc3bcaf9 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index e001f58250..8c65cfaaee 100644
+index 470f98468a..7fa1b7c97c 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
 @@ -261,6 +261,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
@@ -96,7 +96,7 @@ index e001f58250..8c65cfaaee 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index 15aa44eebc..92bba3f6c8 100644
+index ae56f2ebf8..063be43489 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
 @@ -1277,6 +1277,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
@@ -148,7 +148,7 @@ index e1c9d02ec0..1d98600921 100644
  
  /*  Format:
 diff --git a/src/core/SkScan_AAAPath.cpp b/src/core/SkScan_AAAPath.cpp
-index 9dbb271890..1f2602d159 100644
+index 16ecb91dac..b8c9ee8f37 100644
 --- a/src/core/SkScan_AAAPath.cpp
 +++ b/src/core/SkScan_AAAPath.cpp
 @@ -1588,6 +1588,11 @@ static SK_ALWAYS_INLINE void aaa_fill_path(const SkPath& path, const SkIRect& cl
@@ -226,7 +226,7 @@ index 72a128d16e..78716de1bb 100644
          int governor = MAX_REASONABLE_ITERATIONS;
          SkScalar    length = meas.getLength();
 diff --git a/src/effects/Sk2DPathEffect.cpp b/src/effects/Sk2DPathEffect.cpp
-index 24586827c4..9f5661c382 100644
+index fb6a88e0fb..8253a1284d 100644
 --- a/src/effects/Sk2DPathEffect.cpp
 +++ b/src/effects/Sk2DPathEffect.cpp
 @@ -51,6 +51,11 @@ void Sk2DPathEffect::nextSpan(int x, int y, int count, SkPath* path) const {

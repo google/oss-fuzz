@@ -93,7 +93,7 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_gradients api_path_measure png_encoder \
                                    jpeg_encoder webp_encoder skottie_json \
                                    textblob_deserialize skjson \
-                                   api_null_canvas api_image_filter
+                                   api_null_canvas api_image_filter api_pathop
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -148,6 +148,10 @@ cp ./api_gradients_seed_corpus.zip $OUT/api_gradients_seed_corpus.zip
 cp out/Fuzz/api_path_measure $OUT/api_path_measure
 cp ./api_path_measure.options $OUT/api_path_measure.options
 cp ./api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corpus.zip
+
+cp out/Fuzz/api_pathop $OUT/api_pathop
+cp ./api_pathop.options $OUT/api_pathop.options
+cp ./api_pathop_seed_corpus.zip $OUT/api_pathop_seed_corpus.zip
 
 cp out/Fuzz/png_encoder $OUT/png_encoder
 cp ./encoder.options $OUT/png_encoder.options
