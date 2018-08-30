@@ -93,19 +93,18 @@ You may want to use some of the options of [llvm-cov tool], for example,
 python infra/helper.py profile $project_name -- -ignore-filename-regex=.*code/to/be/ignored/.* <other_extra_args>
 ```
 
-To specify particular source files to be shown in the report, list the filepaths
-or path to particular directories at the end of the extra arguments sequence,
-for example:
+To specify particular source files or directories to be shown in the report,
+list the paths at the end of the extra arguments sequence, for example:
 
 ```bash
 python infra/helper.py profile zlib -- <other_extra_args> /src/zlib/inftrees.c /src/zlib_uncompress_fuzzer.cc /src/zlib/zutil.c
 ```
 
-If you want OSS-Fuzz to use the extra arguments when generating code coverage
-reports for your project, add them into `project.yaml` file as follows:
+If you want OSS-Fuzz to use some extra arguments when generating code coverage
+reports for your project, add the arguments into `project.yaml` file as follows:
 
 ```yaml
-coverage_extra_args: -ignore-filename-regex=.*crc.* -ignore-filename-regex=.*adler.*
+coverage_extra_args: -ignore-filename-regex=.*crc.* -ignore-filename-regex=.*adler.* <other_extra_args>
 ```
 
 
