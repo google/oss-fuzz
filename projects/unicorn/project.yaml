@@ -6,3 +6,6 @@ sanitizers:
 - address
 - memory
 - undefined
+
+# FIXME: Remove after unicorn-engine/unicorn#1007 is checked in.
+disabled: true
