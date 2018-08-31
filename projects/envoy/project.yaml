@@ -3,4 +3,5 @@ primary_contact: "htuch@google.com"
 auto_ccs:
   - "mklein@lyft.com"
   - "alyssar@google.com"
+  - "dio@tetrate.io"
   - "envoy-security@googlegroups.com"
