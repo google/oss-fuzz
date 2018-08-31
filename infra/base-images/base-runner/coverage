@@ -64,7 +64,7 @@ function run_fuzz_target {
   local profdata_file="$DUMPS_DIR/$target.profdata"
 
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local args="-timeout=100 -runs=0 /corpus/${target}"
+  local args="-timeout=100 -runs=0 -close_fd_mask=3 /corpus/${target}"
 
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $target $args &> $LOGS_DIR/$target.log
