@@ -98,6 +98,7 @@ done
 find media/webrtc -iname "*.sdp" \
   -type f -exec zip -qu $OUT/SdpParser_seed_corpus.zip "{}" \;
 cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
+cp $SRC/SdpParser.options $OUT
 
 # StunParser
 find media/webrtc -iname "*.stun" \
