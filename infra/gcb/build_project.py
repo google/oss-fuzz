@@ -94,7 +94,6 @@ def get_signed_url(path, method='PUT', content_type=''):
   creds = ServiceAccountCredentials.from_json_keyfile_name(
       os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
   client_id = creds.service_account_email
-
   signature = base64.b64encode(creds.sign_blob(blob)[1])
   values = {
       'GoogleAccessId': client_id,

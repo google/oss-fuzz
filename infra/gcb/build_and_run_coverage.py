@@ -207,7 +207,6 @@ def get_build_steps(project_dir):
       LATEST_REPORT_INFO_URL.format(project=project_name),
       method='PUT',
       content_type='application/json')
-
   latest_report_info_body = json.dumps(
       {
           'fuzzer_stats_dir': upload_fuzzer_stats_url,
