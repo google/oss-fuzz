@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+[[ $SANITIZER = "coverage" ]] && touch $OUT/exit && exit 0
+
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
   SdpParser
@@ -24,32 +26,9 @@ FUZZ_TARGETS=(
   # Qcms # needn't be enabled; has its own project with more sanitizers/engines
 )
 
-# Firefox object (build) directory.
-OBJDIR=$WORK/obj-fuzz
-
-[[ $SANITIZER = "coverage" ]] && touch $OUT/empty && exit 0
-
-# Firefox fuzzing build configuration.
-cat << EOF > mozconfig
-ac_add_options --disable-debug
-ac_add_options --disable-elf-hack
-ac_add_options --disable-jemalloc
-ac_add_options --disable-crashreporter
-ac_add_options --enable-fuzzing
-ac_add_options --enable-optimize=-O1
-ac_add_options --enable-debug-symbols=-gline-tables-only
-ac_add_options --enable-address-sanitizer
-mk_add_options MOZ_OBJDIR=${OBJDIR}
-mk_add_options MOZ_MAKE_FLAGS=-j$(nproc)
-EOF
-
-if [[ $SANITIZER = "address" ]]
-then
-cat << EOF >> mozconfig
-mk_add_options CFLAGS=
-mk_add_options CXXFLAGS=
-EOF
-fi
+# Firefox object (build) directory and configuration file.
+export MOZ_OBJDIR=$WORK/obj-fuzz
+export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 
 # Install dependencies. Note that bootstrap installs cargo, which must be added
 # to PATH via source. In a successive run (for a different sanitizer), the
