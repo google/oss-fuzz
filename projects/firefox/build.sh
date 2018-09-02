@@ -34,7 +34,7 @@ export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 # to PATH via source. In a successive run (for a different sanitizer), the
 # cargo installation carries over, but bootstrap fails if cargo is not in PATH.
 export SHELL=/bin/bash
-[ -f "$HOME/.cargo/env" ] && source $HOME/.cargo/env
+[[ -f "$HOME/.cargo/env" ]] && source $HOME/.cargo/env
 ./mach bootstrap --no-interactive --application-choice browser
 source $HOME/.cargo/env
 
