@@ -53,17 +53,14 @@ tar -xf $MOZ_OBJDIR/dist/firefox*bz2 -C $OUT
 cp -L $MOZ_OBJDIR/dist/bin/gtest/libxul.so $OUT/firefox
 cp $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
 
-# Get the absolute paths of the required system libraries.
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:$OUT/firefox
-REQUIRED_LIBRARIES=($(ldd $OUT/firefox/libxul.so | gawk '/=> [/]/ {print $3}'))
-REQUIRED_LIBRARIES=(${REQUIRED_LIBRARIES[@]##$OUT/*})
+# Get absolute paths of the required system libraries.
+LIBRARIES=$({
+  xargs -I{} ldd $OUT/firefox/{} | gawk '/=> [/]/ {print $3}' | sort -u
+} < $OUT/firefox/dependentlibs.list)
 
 # Copy libraries. Less than 50MB total.
 mkdir -p $OUT/lib
-for REQUIRED_LIBRARY in ${REQUIRED_LIBRARIES[@]}
-do
-  cp -L $REQUIRED_LIBRARY $OUT/lib
-done
+for LIBRARY in $LIBRARIES; do cp -L $LIBRARY $OUT/lib; done
 
 # Build a wrapper binary for each target to set environment variables.
 for FUZZ_TARGET in ${FUZZ_TARGETS[@]}
