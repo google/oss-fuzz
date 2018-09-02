@@ -7,6 +7,7 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+  - undefined
 run_tests: False
 # libraries from $OUT/firefox/dependentlibs.list
 coverage_extra_args: >
