@@ -87,9 +87,9 @@ def load_project_yaml(project_dir):
     return project_yaml
 
 
-def get_signed_url(path, method='PUT'):
+def get_signed_url(path, method='PUT', content_type=''):
   timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = '{0}\n\n\n{1}\n{2}'.format(method, timestamp, path)
+  blob = '{0}\n\n{1}\n{2}\n{3}'.format(method, content_type, timestamp, path)
 
   creds = ServiceAccountCredentials.from_json_keyfile_name(
       os.environ['GOOGLE_APPLICATION_CREDENTIALS'])

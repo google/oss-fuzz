@@ -5,6 +5,7 @@ Usage: build_and_run_coverage.py <project_dir>
 """
 
 import datetime
+import json
 import os
 import requests
 import sys
@@ -14,6 +15,7 @@ import build_project
 
 SANITIZER = 'profile'
 CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=%s' % SANITIZER]
+PLATFORM = 'linux'
 
 # Where corpus backups can be downloaded from.
 CORPUS_BACKUP_URL = ('/{0}-backup.clusterfuzz-external.appspot.com/corpus/'
@@ -29,7 +31,18 @@ GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 
 # Where code coverage reports need to be uploaded to.
 COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
-UPLOAD_URL_FORMAT= 'gs://%s/{project}/{type}/{date}' % COVERAGE_BUCKET_NAME
+
+# Link to the code coverage report in HTML format.
+HTML_REPORT_URL_FORMAT = (
+    '%s%s/{project}/reports/{date}/{platform}/index.html' % (
+    GCS_URL_BASENAME, COVERAGE_BUCKET_NAME))
+
+# This is needed for ClusterFuzz to pick up the most recent reports data.
+LATEST_REPORT_INFO_URL = (
+    '/%s/latest_report_info/{project}.json' % COVERAGE_BUCKET_NAME)
+
+# Link where to upload code coverage report files to.
+UPLOAD_URL_FORMAT = 'gs://%s/{project}/{type}/{date}' % COVERAGE_BUCKET_NAME
 
 
 def skip_build(message):
@@ -121,8 +134,8 @@ def get_build_steps(project_dir):
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
 
+    # Download corpus.
     build_steps.append(
-        # Download corpus.
         {
             'name': 'gcr.io/oss-fuzz-base/base-runner',
             'entrypoint': 'download_corpus',
@@ -131,8 +144,8 @@ def get_build_steps(project_dir):
         }
     )
 
-  build_steps.extend([
-      # Unpack the corpus and run coverage script.
+  # Unpack the corpus and run coverage script.
+  build_steps.append(
       {
           'name': 'gcr.io/oss-fuzz-base/base-runner',
           'env': env + [
@@ -145,28 +158,39 @@ def get_build_steps(project_dir):
               'for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && coverage',
           ],
           'volumes': [{'name': 'corpus', 'path': '/corpus'}],
-      },
-      # Upload the report.
+      }
+  )
+
+  # Upload the report.
+  upload_report_url = UPLOAD_URL_FORMAT.format(
+      project=project_name, type='reports', date=report_date)
+  build_steps.append(
       {
           'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
               '-m', 'rsync', '-r', '-d',
               os.path.join(out, 'report'),
-              UPLOAD_URL_FORMAT.format(
-                  project=project_name, type='reports', date=report_date),
+              upload_report_url,
           ],
-      },
-      # Upload the fuzzer stats.
+      }
+  )
+
+  # Upload the fuzzer stats.
+  upload_fuzzer_stats_url = UPLOAD_URL_FORMAT.format(
+      project=project_name, type='fuzzer_stats', date=report_date)
+  build_steps.append(
       {
           'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
               '-m', 'rsync', '-r', '-d',
               os.path.join(out, 'fuzzer_stats'),
-              UPLOAD_URL_FORMAT.format(
-                  project=project_name, type='fuzzer_stats', date=report_date),
+              upload_fuzzer_stats_url,
           ],
-      },
-      # Upload the fuzzer logs.
+      }
+  )
+
+  # Upload the fuzzer logs.
+  build_steps.append(
       {
           'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
@@ -175,9 +199,35 @@ def get_build_steps(project_dir):
               UPLOAD_URL_FORMAT.format(
                   project=project_name, type='logs', date=report_date),
           ],
-      },
-  ])
+      }
+  )
 
+  # Update the latest report information file for ClusterFuzz.
+  latest_report_info_url = build_project.get_signed_url(
+      LATEST_REPORT_INFO_URL.format(project=project_name),
+      method='PUT',
+      content_type='application/json')
+  latest_report_info_body = json.dumps(
+      {
+          'fuzzer_stats_dir': upload_fuzzer_stats_url,
+          'html_report_url': HTML_REPORT_URL_FORMAT.format(
+              project=project_name, date=report_date, platform=PLATFORM),
+          'report_summary_path': os.path.join(
+              upload_report_url, PLATFORM, 'summary.json'),
+      }
+  )
+
+  build_steps.append(
+      {
+          'name': 'gcr.io/cloud-builders/curl',
+          'args': [
+              '-H', 'Content-Type: application/json',
+              '-X', 'PUT',
+              '-d', latest_report_info_body,
+              latest_report_info_url,
+          ],
+      }
+  )
   return build_steps, image
 
 
