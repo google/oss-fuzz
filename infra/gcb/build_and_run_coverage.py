@@ -150,7 +150,7 @@ def get_build_steps(project_dir):
           'name': 'gcr.io/oss-fuzz-base/base-runner',
           'env': env + [
               'HTTP_PORT=',
-              'COVERAGE_EXTRA_ARGS=%s' % project_yaml['coverage_extra_args']
+              'COVERAGE_EXTRA_ARGS=%s' % project_yaml['coverage_extra_args'].strip()
           ],
           'args': [
               'bash',
