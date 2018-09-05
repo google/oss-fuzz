@@ -5,3 +5,4 @@ auto_ccs:
   - "alyssar@google.com"
   - "dio@tetrate.io"
   - "envoy-security@googlegroups.com"
+coverage_extra_args: -ignore-filename-regex='.*\.cache.*'
