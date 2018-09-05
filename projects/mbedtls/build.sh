@@ -16,7 +16,7 @@
 ################################################################################
 
 # build project
-#TODO change when merged into master branch of official repo
+# TODO change when merged into master branch of official repo
 git apply ../fuzz.diff
 cmake .
 make -j$(nproc) all
