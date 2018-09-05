@@ -24,11 +24,11 @@ make
 
 
 # build fuzz targets
-$CC $CFLAGS -I.. -c ../testprogs/fuzz/fuzz_pcap.c -o fuzz_pcap.o
-$CXX $CXXFLAGS fuzz_pcap.o -o $OUT/fuzz_pcap libpcap.a -lFuzzingEngine
-
-$CC $CFLAGS -I.. -c ../testprogs/fuzz/fuzz_filter.c -o fuzz_filter.o
-$CXX $CXXFLAGS fuzz_filter.o -o $OUT/fuzz_filter libpcap.a -lFuzzingEngine
+for target in pcap filter both
+do
+    $CC $CFLAGS -I.. -c ../testprogs/fuzz/fuzz_$target.c -o fuzz_$target.o
+    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target libpcap.a -lFuzzingEngine
+done
 
 # export other associated stuff
 cd ..
