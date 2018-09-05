@@ -58,6 +58,8 @@ RUN wget -O $SRC/skia/api_image_filter_seed_corpus.zip https://storage.googleapi
 
 RUN wget -O $SRC/skia/api_path_measure_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_path_measure_seed_corpus.zip
 
+RUN wget -O $SRC/skia/api_pathop_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_pathop_seed_corpus.zip
+
 RUN wget -O $SRC/skia/canvas_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/canvas_seed_corpus.zip
 
 RUN wget -O $SRC/skia/encoder_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/encoder_seed_corpus.zip
@@ -85,10 +87,11 @@ COPY encoder.options $SRC/skia/encoder.options
 COPY api_fuzzers.options $SRC/skia/api_draw_functions.options
 COPY api_fuzzers.options $SRC/skia/api_gradients.options
 COPY api_fuzzers.options $SRC/skia/api_image_filter.options
-COPY api_fuzzers.options $SRC/skia/api_path_measure.options
-COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
-COPY api_fuzzers.options $SRC/skia/api_null_canvas.options
 COPY api_fuzzers.options $SRC/skia/api_mock_gpu_canvas.options
+COPY api_fuzzers.options $SRC/skia/api_null_canvas.options
+COPY api_fuzzers.options $SRC/skia/api_path_measure.options
+COPY api_fuzzers.options $SRC/skia/api_pathop.options
+COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
 
 COPY json.dict $SRC/skia/json.dict
 

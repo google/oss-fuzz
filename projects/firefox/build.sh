@@ -106,6 +106,7 @@ cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
 
 # ContentParentIPC
 cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
+cp $SRC/ContentParentIPC.options $OUT
 
 # ContentSecurityPolicyParser
 cp dom/security/fuzztest/csp_fuzzer.dict $OUT/ContentSecurityPolicyParser.dict

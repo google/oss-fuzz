@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +15,18 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER pdknsk@gmail.com
-RUN apt-get update && apt-get install -y mercurial
-RUN hg clone --uncompressed https://hg.mozilla.org/mozilla-central/
-COPY build.sh $SRC/
-WORKDIR mozilla-central/gfx/qcms
+cd unicorn
+./make.sh
+#we could test with make fuzz
+
+# build fuzz target
+cd tests/fuzz
+ls fuzz_*.c | cut -d_ -f2-4 | cut -d. -f1 | while read target
+do
+    $CC $CFLAGS -I../../include -c fuzz_$target.c -o fuzz_$target.o
+
+    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target ../../libunicorn.a -lFuzzingEngine
+
+    #TODO corpuses
+    cp fuzz_emu.options $OUT/fuzz_$target.options
+done

@@ -16,9 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alessiob@webrtc.org
-RUN apt-get update && apt-get install -y mercurial
+RUN apt-get update && apt-get install -y mercurial python-numpy
 RUN hg clone https://bitbucket.org/jpommier/pffft $SRC/pffft
 WORKDIR pffft
 COPY build.sh $SRC
 # TODO(alessiob): Move the fuzzing source code to pffft upstream.
+COPY generate_seed_corpus.py $SRC/pffft
 COPY pffft_fuzzer.cc $SRC/pffft
