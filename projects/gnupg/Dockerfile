@@ -25,8 +25,8 @@ RUN curl -O https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-2.5.1.tar.bz2
 RUN curl -O https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2
 RUN curl -O https://www.gnupg.org/ftp/gcrypt/npth/npth-1.5.tar.bz2
 
-#TODO change when merged into master branch of official repo
-RUN git clone --depth 1 --branch fuzz https://github.com/catenacyber/gnupg.git gnupg
+RUN git clone --depth 1 git://git.gnupg.org/gnupg.git gnupg
+ADD https://catenacyber.fr/fuzzgnupg.diff fuzz.diff
 
 WORKDIR gnupg
 COPY build.sh $SRC/

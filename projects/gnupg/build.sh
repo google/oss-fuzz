@@ -51,6 +51,7 @@ cd ..
 
 # build project
 cd gnupg
+git apply ../fuzz.diff
 ./autogen.sh
 ./configure --disable-doc --enable-maintainer-mode
 make -j$(nproc) all
