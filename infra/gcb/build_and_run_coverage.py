@@ -18,8 +18,8 @@ CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=%s' % SANITIZER]
 PLATFORM = 'linux'
 
 # Where corpus backups can be downloaded from.
-CORPUS_BACKUP_URL = ('/{0}-backup.clusterfuzz-external.appspot.com/corpus/'
-                     'libFuzzer/{1}/latest.zip')
+CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
+                     'corpus/libFuzzer/{fuzzer}/latest.zip')
 
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
 CORPUS_DOWNLOAD_BATCH_SIZE = 100
@@ -34,15 +34,15 @@ COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
 
 # Link to the code coverage report in HTML format.
 HTML_REPORT_URL_FORMAT = (
-    '%s%s/{project}/reports/{date}/{platform}/index.html' % (
-    GCS_URL_BASENAME, COVERAGE_BUCKET_NAME))
+    GCS_URL_BASENAME + COVERAGE_BUCKET_NAME +
+    '/{project}/reports/{date}/{platform}/index.html')
 
 # This is needed for ClusterFuzz to pick up the most recent reports data.
 LATEST_REPORT_INFO_URL = (
-    '/%s/latest_report_info/{project}.json' % COVERAGE_BUCKET_NAME)
+    '/' + COVERAGE_BUCKET_NAME + '/latest_report_info/{project}.json')
 
 # Link where to upload code coverage report files to.
-UPLOAD_URL_FORMAT = 'gs://%s/{project}/{type}/{date}' % COVERAGE_BUCKET_NAME
+UPLOAD_URL_FORMAT = 'gs://' + COVERAGE_BUCKET_NAME + '/{project}/{type}/{date}'
 
 
 def skip_build(message):
@@ -129,7 +129,9 @@ def get_build_steps(project_dir):
         qualified_name = qualified_name_prefix + binary_name
 
       url = build_project.get_signed_url(
-        CORPUS_BACKUP_URL.format(project_name, qualified_name), method='GET')
+          CORPUS_BACKUP_URL.format(
+              project=project_name, fuzzer=qualified_name),
+          method='GET')
 
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
@@ -212,6 +214,7 @@ def get_build_steps(project_dir):
           'fuzzer_stats_dir': upload_fuzzer_stats_url,
           'html_report_url': HTML_REPORT_URL_FORMAT.format(
               project=project_name, date=report_date, platform=PLATFORM),
+          'report_date': report_date,
           'report_summary_path': os.path.join(
               upload_report_url, PLATFORM, 'summary.json'),
       }
