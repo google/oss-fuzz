@@ -134,14 +134,17 @@ def get_build_steps(project_dir):
           method='GET')
 
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
-      download_corpus_args.append('%s %s' % (corpus_archive_path, url))
+      download_corpus_args.append('\'%s %s\'' % (corpus_archive_path, url))
 
     # Download corpus.
     build_steps.append(
         {
             'name': 'gcr.io/oss-fuzz-base/base-runner',
-            'entrypoint': 'download_corpus',
-            'args': download_corpus_args,
+            'args': [
+                'bash',
+                '-c',
+                'download_corpus %s || true' % ' '.join(download_corpus_args),
+          ],
             'volumes': [{'name': 'corpus', 'path': '/corpus'}],
         }
     )
