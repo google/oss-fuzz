@@ -1,0 +1,985 @@
+diff --git a/configure.ac b/configure.ac
+index 78a03c420..57a0949fc 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -956,6 +956,15 @@ AC_CHECK_LIB(util, openpty,
+              ])
+ AC_SUBST(LIBUTIL_LIBS)
+ 
++# TODO choose when to build fuzzing with option ?
++AC_CHECK_LIB(FuzzingEngine, main,
++              [ LIB_FUZZING_ENGINE="-lFuzzingEngine"
++                have_fuzz=yes
++             ])
++AC_SUBST(LIB_FUZZING_ENGINE)
++AC_CHECK_PROG(HAVE_CLANGXX, clang++, 1)
++AM_CONDITIONAL(HAVE_LIB_FUZZING_ENGINE, [test "$have_fuzz" = yes -a "$HAVE_CLANGXX" = 1])
++
+ # shred is used to clean temporary plain text files.
+ AC_PATH_PROG(SHRED, shred, /usr/bin/shred)
+ AC_DEFINE_UNQUOTED(SHRED,
+@@ -2053,6 +2062,7 @@ tests/migrations/Makefile
+ tests/gpgsm/Makefile
+ tests/gpgme/Makefile
+ tests/pkits/Makefile
++tests/fuzz/Makefile
+ g10/gpg.w32-manifest
+ ])
+ 
+diff --git a/g10/Makefile.am b/g10/Makefile.am
+index 3b4464364..2b0104a84 100644
+--- a/g10/Makefile.am
++++ b/g10/Makefile.am
+@@ -47,6 +47,7 @@ endif
+ # NB: We use noinst_ for gpg and gpgv so that we can install them with
+ # the install-hook target under the name gpg2/gpgv2.
+ noinst_PROGRAMS = gpg
++noinst_LIBRARIES = libgpg.a
+ if !HAVE_W32CE_SYSTEM
+ noinst_PROGRAMS += gpgv
+ endif
+@@ -159,6 +160,9 @@ gpg_SOURCES  = gpg.c \
+ 	keyedit.c keyedit.h	\
+ 	$(gpg_sources)
+ 
++libgpg_a_SOURCES  = keyedit.c keyedit.h	\
++	$(gpg_sources)
++
+ gpgcompose_SOURCES  = gpgcompose.c  $(gpg_sources)
+ gpgv_SOURCES = gpgv.c           \
+ 	      $(common_source)  \
+diff --git a/g10/armor.c b/g10/armor.c
+index cc8096862..36df613fd 100644
+--- a/g10/armor.c
++++ b/g10/armor.c
+@@ -299,7 +299,9 @@ static void
+ invalid_armor(void)
+ {
+     write_status(STATUS_BADARMOR);
++#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+     g10_exit(1); /* stop here */
++#endif
+ }
+ 
+ 
+diff --git a/g10/call-dirmngr.h b/g10/call-dirmngr.h
+index 285c4cb4d..7af328c2a 100644
+--- a/g10/call-dirmngr.h
++++ b/g10/call-dirmngr.h
+@@ -19,6 +19,8 @@
+ #ifndef GNUPG_G10_CALL_DIRMNGR_H
+ #define GNUPG_G10_CALL_DIRMNGR_H
+ 
++#include "options.h"
++
+ void gpg_dirmngr_deinit_session_data (ctrl_t ctrl);
+ 
+ gpg_error_t gpg_dirmngr_ks_list (ctrl_t ctrl, char **r_keyserver);
+diff --git a/g10/compress-bz2.c b/g10/compress-bz2.c
+index 45aa40dfc..1a74a89d7 100644
+--- a/g10/compress-bz2.c
++++ b/g10/compress-bz2.c
+@@ -155,8 +155,15 @@ do_uncompress( compress_filter_context_t *zfx, bz_stream *bzs,
+ 		  (unsigned)bzs->avail_in, (unsigned)bzs->avail_out, zrc);
+       if( zrc == BZ_STREAM_END )
+ 	rc = -1; /* eof */
+-      else if( zrc != BZ_OK && zrc != BZ_PARAM_ERROR )
+-	log_fatal("bz2lib inflate problem: rc=%d\n", zrc );
++      else if( zrc != BZ_OK && zrc != BZ_PARAM_ERROR ) {
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++            log_error("bz2lib inflate problem: rc=%d\n", zrc );
++            rc = GPG_ERR_BAD_DATA;
++            break;
++#else
++            log_fatal("bz2lib inflate problem: rc=%d\n", zrc );
++#endif
++        }
+       else if (zrc == BZ_OK && eofseen
+                && !bzs->avail_in && bzs->avail_out > 0)
+         {
+diff --git a/g10/compress.c b/g10/compress.c
+index e7a6f2b11..9a9ab5460 100644
+--- a/g10/compress.c
++++ b/g10/compress.c
+@@ -204,10 +204,19 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
+ 	if( zrc == Z_STREAM_END )
+ 	    rc = -1; /* eof */
+ 	else if( zrc != Z_OK && zrc != Z_BUF_ERROR ) {
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++        rc = -1;
++        zrc = Z_BUF_ERROR;
++	    if( zs->msg )
++		log_error("zlib inflate problem: %s\n", zs->msg );
++	    else
++		log_error("zlib inflate problem: rc=%d\n", zrc );
++#else
+ 	    if( zs->msg )
+ 		log_fatal("zlib inflate problem: %s\n", zs->msg );
+ 	    else
+ 		log_fatal("zlib inflate problem: rc=%d\n", zrc );
++#endif
+ 	}
+     } while (zs->avail_out && zrc != Z_STREAM_END && zrc != Z_BUF_ERROR
+              && !leave);
+diff --git a/g10/parse-packet.c b/g10/parse-packet.c
+index 92c65294a..52abf87b0 100644
+--- a/g10/parse-packet.c
++++ b/g10/parse-packet.c
+@@ -743,7 +743,12 @@ parse (parse_packet_ctx_t ctx, PACKET *pkt, int onlykeypkts, off_t * retpos,
+        * the uncompressing layer - in some error cases it just loops
+        * and spits out 0xff bytes. */
+       log_error ("%s: garbled packet detected\n", iobuf_where (inp));
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++      rc = gpg_error (GPG_ERR_INV_PACKET);
++      goto leave;
++#else
+       g10_exit (2);
++#endif
+     }
+ 
+   if (out && pkttype)
+diff --git a/g10/plaintext.c b/g10/plaintext.c
+index c5d1ddb7f..b42abf029 100644
+--- a/g10/plaintext.c
++++ b/g10/plaintext.c
+@@ -655,10 +655,16 @@ ask_for_detached_datafile (gcry_md_hd_t md, gcry_md_hd_t md2,
+ 
+   if (!fp)
+     {
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++        errno = ENOENT;
++        rc = gpg_error_from_syserror ();
++        goto leave;
++#else
+       if (opt.verbose)
+ 	log_info (_("reading stdin ...\n"));
+       fp = iobuf_open (NULL);
+       log_assert (fp);
++#endif
+     }
+   do_hash (md, md2, fp, textmode);
+   iobuf_close (fp);
+diff --git a/g10/sig-check.c b/g10/sig-check.c
+index 0ec384347..70d302d86 100644
+--- a/g10/sig-check.c
++++ b/g10/sig-check.c
+@@ -715,8 +715,9 @@ check_revocation_keys (ctrl_t ctrl, PKT_public_key *pk, PKT_signature *sig)
+ 	    {
+               gcry_md_hd_t md;
+ 
+-              if (gcry_md_open (&md, sig->digest_algo, 0))
+-                BUG ();
++              rc = gcry_md_open (&md, sig->digest_algo, 0);
++              if (rc)
++                  return rc;
+               hash_public_key(md,pk);
+ 	      /* Note: check_signature only checks that the signature
+ 		 is good.  It does not fail if the key is revoked.  */
+diff --git a/m4/iconv.m4 b/m4/iconv.m4
+index 66bc76f48..2d6d6e423 100644
+--- a/m4/iconv.m4
++++ b/m4/iconv.m4
+@@ -83,6 +83,7 @@ int main ()
+         size_t res = iconv (cd_utf8_to_88591,
+                             (char **) &inptr, &inbytesleft,
+                             &outptr, &outbytesleft);
++        iconv_close(cd_utf8_to_88591);
+         if (res == 0)
+           return 1;
+       }
+@@ -107,17 +108,19 @@ int main ()
+       }
+   }
+ #endif
++  iconv_t ic;
+   /* Test against HP-UX 11.11 bug: No converter from EUC-JP to UTF-8 is
+      provided.  */
+   if (/* Try standardized names.  */
+-      iconv_open ("UTF-8", "EUC-JP") == (iconv_t)(-1)
++      (ic = iconv_open ("UTF-8", "EUC-JP")) == (iconv_t)(-1)
+       /* Try IRIX, OSF/1 names.  */
+-      && iconv_open ("UTF-8", "eucJP") == (iconv_t)(-1)
++      && (ic = iconv_open ("UTF-8", "eucJP")) == (iconv_t)(-1)
+       /* Try AIX names.  */
+-      && iconv_open ("UTF-8", "IBM-eucJP") == (iconv_t)(-1)
++      && (ic = iconv_open ("UTF-8", "IBM-eucJP")) == (iconv_t)(-1)
+       /* Try HP-UX names.  */
+-      && iconv_open ("utf8", "eucJP") == (iconv_t)(-1))
++      && (ic = iconv_open ("utf8", "eucJP")) == (iconv_t)(-1))
+     return 1;
++  iconv_close(ic);
+   return 0;
+ }], [am_cv_func_iconv_works=yes], [am_cv_func_iconv_works=no],
+         [case "$host_os" in
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index b9be6aaa6..d6659eaf1 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -18,7 +18,13 @@
+ 
+ ## Process this file with automake to produce Makefile.in
+ 
+-SUBDIRS = gpgscm openpgp migrations gpgsm gpgme pkits .
++SUBDIRS = gpgscm openpgp migrations gpgsm gpgme pkits
++
++if MAINTAINER_MODE
++SUBDIRS += fuzz
++endif
++
++SUBDIRS += .
+ 
+ GPGSM = ../sm/gpgsm
+ 
+diff --git a/tests/fuzz/Makefile.am b/tests/fuzz/Makefile.am
+new file mode 100644
+index 000000000..3bf039a54
+--- /dev/null
++++ b/tests/fuzz/Makefile.am
+@@ -0,0 +1,84 @@
++# Makefile.am - For tests/fuzz
++# Copyright (C) 2018 Free Software Foundation, Inc.
++#
++# This file is part of GnuPG.
++#
++# GnuPG is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3 of the License, or
++# (at your option) any later version.
++#
++# GnuPG is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, see <https://www.gnu.org/licenses/>.
++# Process this file with automake to create Makefile.in
++
++
++# Programs required before we can run these tests.
++required_pgms = ../../g10/gpg$(EXEEXT)
++
++
++# Force linking with clang++ even if we have pure C fuzzing targets
++CCLD = clang++
++AM_LDFLAGS = -stdlib=libc++
++
++AM_CPPFLAGS = -I$(top_srcdir)/common -I$(top_srcdir)/g10
++include $(top_srcdir)/am/cmacros.am
++
++noinst_PROGRAMS = fuzz_verify fuzz_import fuzz_decrypt fuzz_list
++
++fuzz_verify_SOURCES = fuzz_verify.c
++
++fuzz_verify_LDADD = $(top_srcdir)/g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a  $(LIB_FUZZING_ENGINE) \
++         $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
++             $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
++	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
++
++fuzz_verify_DEPENDENCIES = fuzz_verify_seed_corpus.zip
++
++fuzz_verify_seed_corpus.zip:
++	cd .. && zip -r fuzz/fuzz_verify_seed_corpus.zip openpgp/tofu/conflicting/* openpgp/tofu/cross-sigs/* openpgp/samplemsgs/*
++
++fuzz_import_SOURCES = fuzz_import.c
++
++fuzz_import_LDADD =  $(top_srcdir)/g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a  $(LIB_FUZZING_ENGINE)\
++         $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
++             $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
++	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
++
++fuzz_import_DEPENDENCIES = fuzz_import_seed_corpus.zip
++
++fuzz_import_seed_corpus.zip:
++	cd .. && zip -r fuzz/fuzz_import_seed_corpus.zip openpgp/samplekeys/* openpgp/key-selection/* openpgp/*.asc openpgp/trust-pgp/*.asc openpgp/tofu/conflicting/* openpgp/tofu/cross-sigs/*
++
++fuzz_decrypt_SOURCES = fuzz_decrypt.c
++
++fuzz_decrypt_LDADD =  $(top_srcdir)/g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a  $(LIB_FUZZING_ENGINE)\
++         $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
++             $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
++	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
++
++fuzz_decrypt_DEPENDENCIES = fuzz_decrypt_seed_corpus.zip
++
++fuzz_decrypt_seed_corpus.zip:
++	cd .. && zip -r fuzz/fuzz_decrypt_seed_corpus.zip openpgp/tofu/conflicting/* openpgp/tofu/cross-sigs/* openpgp/samplemsgs/*
++
++fuzz_list_SOURCES = fuzz_list.c
++
++fuzz_list_LDADD =  $(top_srcdir)/g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a  $(LIB_FUZZING_ENGINE)\
++$(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
++$(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
++$(LIBICONV) $(resource_objs) $(extra_sys_libs)
++
++fuzz_list_DEPENDENCIES = fuzz_list_seed_corpus.zip
++
++fuzz_list_seed_corpus.zip:
++	cd .. && zip -r fuzz/fuzz_list_seed_corpus.zip openpgp/
++
++# We need to depend on a couple of programs so that the tests don't
++# start before all programs are built.
++all-local: $(required_pgms)
+diff --git a/tests/fuzz/fuzz_decrypt.c b/tests/fuzz/fuzz_decrypt.c
+new file mode 100644
+index 000000000..c8c334a31
+--- /dev/null
++++ b/tests/fuzz/fuzz_decrypt.c
+@@ -0,0 +1,146 @@
++#include <stdint.h>
++#include <stddef.h>
++#include <stdlib.h>
++#include <stdio.h>
++#include <stdbool.h>
++#include <ftw.h>
++
++#include "config.h"
++#include "gpg.h"
++#include "../common/types.h"
++#include "../common/iobuf.h"
++#include "keydb.h"
++#include "keyedit.h"
++#include "../common/util.h"
++#include "main.h"
++#include "call-dirmngr.h"
++#include "trustdb.h"
++
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <sys/types.h>
++#include <unistd.h>
++#include <sys/mount.h>
++
++static bool initialized = false;
++ctrl_t ctrlGlobal;
++int fd;
++char *filename;
++
++//hack not to include gpg.c which has main function
++int g10_errors_seen = 0;
++
++void
++g10_exit( int rc )
++{
++    gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
++    gcry_control (GCRYCTL_TERM_SECMEM );
++    exit (rc);
++}
++
++static void
++gpg_deinit_default_ctrl (ctrl_t ctrl)
++{
++#ifdef USE_TOFU
++    tofu_closedbs (ctrl);
++#endif
++    gpg_dirmngr_deinit_session_data (ctrl);
++
++    keydb_release (ctrl->cached_getkey_kdb);
++}
++
++static void
++my_gcry_logger (void *dummy, int level, const char *format, va_list arg_ptr)
++{
++    return;
++}
++
++static int unlink_cb(const char *fpath, const struct stat *sb, int typeflag)
++{
++    if (typeflag == FTW_F){
++        unlink(fpath);
++    }
++    return 0;
++}
++
++static void rmrfdir(char *path)
++{
++    ftw(path, unlink_cb, 16);
++    if (rmdir(path) != 0) {
++        printf("failed rmdir, errno=%d\n", errno);
++    }
++}
++
++int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
++
++    if (! initialized) {
++        ctrlGlobal = (ctrl_t) malloc(sizeof(*ctrlGlobal));
++        if (!ctrlGlobal) {
++            exit(1);
++        }
++        //deletes previous tmp dir and (re)create it as a ramfs
++        //system("umount /tmp/fuzzdirdecrypt");
++        rmrfdir("/tmp/fuzzdirdecrypt");
++        mkdir("/tmp/fuzzdirdecrypt", 0700);
++        //system("mount -t tmpfs -o size=64M tmpfs /tmp/fuzzdirdecrypt");
++        filename=strdup("/tmp/fuzzdirdecrypt/fuzz.gpg");
++        if (!filename) {
++            free(ctrlGlobal);
++            return 0;
++        }
++        fd = open("/tmp/fuzzdirdecrypt/fuzz.gpg", O_RDWR | O_CREAT, 0600);
++        if (fd == -1) {
++            free(ctrlGlobal);
++            free(filename);
++            return 0;
++        }
++        gnupg_set_homedir("/tmp/fuzzdirdecrypt/");
++        if (keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
++                                KEYDB_RESOURCE_FLAG_DEFAULT) != GPG_ERR_NO_ERROR) {
++            free(filename);
++            free(ctrlGlobal);
++            close(fd);
++            return 0;
++        }
++        if (setup_trustdb (1, NULL) != GPG_ERR_NO_ERROR) {
++            free(filename);
++            free(ctrlGlobal);
++            close(fd);
++            return 0;
++        }
++        //populate /tmp/fuzzdirdecrypt/ as homedir ~/.gnupg
++        strlist_t sl = NULL;
++        public_key_list (ctrlGlobal, sl, 0);
++        free_strlist(sl);
++        //no output for stderr
++        log_set_file("/tmp/fuzzdecrypt.log");
++        gcry_set_log_handler (my_gcry_logger, NULL);
++        gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
++        //overwrite output file
++        opt.batch = 1;
++        opt.answer_yes = 1;
++        initialized = true;
++    }
++
++    memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));
++    ctrlGlobal->magic = SERVER_CONTROL_MAGIC;
++
++    if (ftruncate(fd, Size) == -1) {
++        return 0;
++    }
++    if (lseek (fd, 0, SEEK_SET) < 0) {
++        return 0;
++    }
++    if (write (fd, Data, Size) != Size) {
++        return 0;
++    }
++
++    decrypt_messages(ctrlGlobal, 1, &filename);
++    gpg_deinit_default_ctrl (ctrlGlobal);
++    memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));
++    ctrlGlobal->magic = SERVER_CONTROL_MAGIC;
++    decrypt_message(ctrlGlobal, filename);
++    gpg_deinit_default_ctrl (ctrlGlobal);
++
++    return 0;
++}
+diff --git a/tests/fuzz/fuzz_decrypt.options b/tests/fuzz/fuzz_decrypt.options
+new file mode 100644
+index 000000000..9dd056806
+--- /dev/null
++++ b/tests/fuzz/fuzz_decrypt.options
+@@ -0,0 +1,3 @@
++[libfuzzer]
++max_len = 65536
++close_fd_mask = 1
+diff --git a/tests/fuzz/fuzz_import.c b/tests/fuzz/fuzz_import.c
+new file mode 100644
+index 000000000..3fd1f1c42
+--- /dev/null
++++ b/tests/fuzz/fuzz_import.c
+@@ -0,0 +1,153 @@
++#include <stdint.h>
++#include <stddef.h>
++#include <stdlib.h>
++#include <stdio.h>
++#include <stdbool.h>
++#include <ftw.h>
++
++#include "config.h"
++#include "gpg.h"
++#include "../common/types.h"
++#include "../common/iobuf.h"
++#include "keydb.h"
++#include "keyedit.h"
++#include "../common/util.h"
++#include "main.h"
++#include "call-dirmngr.h"
++#include "trustdb.h"
++
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <sys/types.h>
++#include <unistd.h>
++#include <sys/mount.h>
++
++static bool initialized = false;
++ctrl_t ctrlGlobal;
++int fd;
++char *filename;
++
++//hack not to include gpg.c which has main function
++int g10_errors_seen = 0;
++
++void
++g10_exit( int rc )
++{
++    gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
++    gcry_control (GCRYCTL_TERM_SECMEM );
++    exit (rc);
++}
++
++static void
++gpg_deinit_default_ctrl (ctrl_t ctrl)
++{
++#ifdef USE_TOFU
++    tofu_closedbs (ctrl);
++#endif
++    gpg_dirmngr_deinit_session_data (ctrl);
++
++    keydb_release (ctrl->cached_getkey_kdb);
++}
++
++static void
++my_gcry_logger (void *dummy, int level, const char *format, va_list arg_ptr)
++{
++    return;
++}
++
++static int unlink_cb(const char *fpath, const struct stat *sb, int typeflag)
++{
++    if (typeflag == FTW_F){
++        unlink(fpath);
++    }
++    return 0;
++}
++
++static void rmrfdir(char *path)
++{
++    ftw(path, unlink_cb, 16);
++    if (rmdir(path) != 0) {
++        printf("failed rmdir, errno=%d\n", errno);
++    }
++}
++
++int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
++    if (! initialized) {
++        ctrlGlobal = (ctrl_t) malloc(sizeof(*ctrlGlobal));
++        if (!ctrlGlobal) {
++            exit(1);
++        }
++        //deletes previous tmp dir and (re)create it as a ramfs
++        //system("umount /tmp/fuzzdirimport");
++        rmrfdir("/tmp/fuzzdirimport");
++        if (mkdir("/tmp/fuzzdirimport", 0700) < 0) {
++            printf("failed mkdir, errno=%d\n", errno);
++            if (errno != EEXIST) {
++                return 0;
++            }
++        }
++        //system("mount -t tmpfs -o size=64M tmpfs /tmp/fuzzdirimport");
++        filename=strdup("/tmp/fuzzdirimport/fuzz.gpg");
++        if (!filename) {
++            free(ctrlGlobal);
++            return 0;
++        }
++        fd = open(filename, O_RDWR | O_CREAT, 0666);
++        if (fd == -1) {
++            free(filename);
++            free(ctrlGlobal);
++            printf("failed open, errno=%d\n", errno);
++            return 0;
++        }
++        gnupg_set_homedir("/tmp/fuzzdirimport/");
++        gpg_error_t gpgerr = keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG, KEYDB_RESOURCE_FLAG_DEFAULT);
++        if (gpgerr != GPG_ERR_NO_ERROR) {
++            free(filename);
++            free(ctrlGlobal);
++            close(fd);
++            printf("failed keydb_add_resource, errno=%d\n", gpgerr);
++            return 0;
++        }
++        gpgerr = setup_trustdb (1, NULL);
++        if (gpgerr != GPG_ERR_NO_ERROR) {
++            free(filename);
++            free(ctrlGlobal);
++            close(fd);
++            printf("failed setup_trustdb, errno=%d\n", gpgerr);
++            return 0;
++        }
++        //populate /tmp/fuzzdirimport/ as homedir ~/.gnupg
++        strlist_t sl = NULL;
++        public_key_list (ctrlGlobal, sl, 0);
++        free_strlist(sl);
++        //no output for stderr
++        log_set_file("/tmp/fuzzimport.log");
++        gcry_set_log_handler (my_gcry_logger, NULL);
++        gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
++        initialized = true;
++    }
++
++    memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));
++    ctrlGlobal->magic = SERVER_CONTROL_MAGIC;
++
++    if (ftruncate(fd, Size) == -1) {
++        return 0;
++    }
++    if (lseek (fd, 0, SEEK_SET) < 0) {
++        return 0;
++    }
++    if (write (fd, Data, Size) != Size) {
++        return 0;
++    }
++
++    import_keys (ctrlGlobal, &filename, 1, NULL, IMPORT_REPAIR_KEYS, 0, NULL);
++    gpg_deinit_default_ctrl (ctrlGlobal);
++    /*memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));
++    ctrlGlobal->magic = SERVER_CONTROL_MAGIC;
++    PKT_public_key pk;
++    get_pubkey_fromfile (ctrlGlobal, &pk, filename);
++    release_public_key_parts (&pk);
++    gpg_deinit_default_ctrl (ctrlGlobal);*/
++
++    return 0;
++}
+diff --git a/tests/fuzz/fuzz_import.options b/tests/fuzz/fuzz_import.options
+new file mode 100644
+index 000000000..678d526b1
+--- /dev/null
++++ b/tests/fuzz/fuzz_import.options
+@@ -0,0 +1,2 @@
++[libfuzzer]
++max_len = 65536
+diff --git a/tests/fuzz/fuzz_list.c b/tests/fuzz/fuzz_list.c
+new file mode 100644
+index 000000000..937fdd5ea
+--- /dev/null
++++ b/tests/fuzz/fuzz_list.c
+@@ -0,0 +1,163 @@
++#include <stdint.h>
++#include <stddef.h>
++#include <stdlib.h>
++#include <stdio.h>
++#include <stdbool.h>
++#include <ftw.h>
++
++#include "config.h"
++#include "gpg.h"
++#include "../common/types.h"
++#include "../common/iobuf.h"
++#include "keydb.h"
++#include "keyedit.h"
++#include "../common/util.h"
++#include "main.h"
++#include "call-dirmngr.h"
++#include "trustdb.h"
++
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <sys/types.h>
++#include <unistd.h>
++#include <sys/mount.h>
++
++static bool initialized = false;
++ctrl_t ctrlGlobal;
++int fd;
++char *filename;
++
++//hack not to include gpg.c which has main function
++int g10_errors_seen = 0;
++
++void
++g10_exit( int rc )
++{
++    gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
++    gcry_control (GCRYCTL_TERM_SECMEM );
++    exit (rc);
++}
++
++static void
++gpg_deinit_default_ctrl (ctrl_t ctrl)
++{
++#ifdef USE_TOFU
++    tofu_closedbs (ctrl);
++#endif
++    gpg_dirmngr_deinit_session_data (ctrl);
++
++    keydb_release (ctrl->cached_getkey_kdb);
++}
++
++static void
++my_gcry_logger (void *dummy, int level, const char *format, va_list arg_ptr)
++{
++    return;
++}
++
++static int unlink_cb(const char *fpath, const struct stat *sb, int typeflag)
++{
++    if (typeflag == FTW_F){
++        unlink(fpath);
++    }
++    return 0;
++}
++
++static void rmrfdir(char *path)
++{
++    ftw(path, unlink_cb, 16);
++    if (rmdir(path) != 0) {
++        printf("failed rmdir, errno=%d\n", errno);
++    }
++}
++
++int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
++    IOBUF a;
++    armor_filter_context_t *afx = NULL;
++
++    if (! initialized) {
++        ctrlGlobal = (ctrl_t) malloc(sizeof(*ctrlGlobal));
++        if (!ctrlGlobal) {
++            exit(1);
++        }
++        //deletes previous tmp dir and (re)create it as a ramfs
++        //system("umount /tmp/fuzzdirlist");
++        rmrfdir("/tmp/fuzzdirlist");
++        if (mkdir("/tmp/fuzzdirlist", 0700) < 0) {
++            printf("failed mkdir, errno=%d\n", errno);
++            if (errno != EEXIST) {
++                return 0;
++            }
++        }
++        //system("mount -t tmpfs -o size=64M tmpfs /tmp/fuzzdirlist");
++        filename=strdup("/tmp/fuzzdirlist/fuzz.gpg");
++        if (!filename) {
++            free(ctrlGlobal);
++            return 0;
++        }
++        fd = open(filename, O_RDWR | O_CREAT, 0666);
++        if (fd == -1) {
++            free(filename);
++            free(ctrlGlobal);
++            printf("failed open, errno=%d\n", errno);
++            return 0;
++        }
++        gnupg_set_homedir("/tmp/fuzzdirlist/");
++        gpg_error_t gpgerr = keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG, KEYDB_RESOURCE_FLAG_DEFAULT);
++        if (gpgerr != GPG_ERR_NO_ERROR) {
++            free(filename);
++            free(ctrlGlobal);
++            close(fd);
++            printf("failed keydb_add_resource, errno=%d\n", gpgerr);
++            return 0;
++        }
++        gpgerr = setup_trustdb (1, NULL);
++        if (gpgerr != GPG_ERR_NO_ERROR) {
++            free(filename);
++            free(ctrlGlobal);
++            close(fd);
++            printf("failed setup_trustdb, errno=%d\n", gpgerr);
++            return 0;
++        }
++        //populate /tmp/fuzzdirlist/ as homedir ~/.gnupg
++        strlist_t sl = NULL;
++        public_key_list (ctrlGlobal, sl, 0);
++        free_strlist(sl);
++        //no output for stderr
++        log_set_file("/tmp/fuzzlist.log");
++        gcry_set_log_handler (my_gcry_logger, NULL);
++        gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
++        opt.list_packets=1;
++        set_packet_list_mode(1);
++        initialized = true;
++    }
++
++    memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));
++    ctrlGlobal->magic = SERVER_CONTROL_MAGIC;
++
++    if (ftruncate(fd, Size) == -1) {
++        return 0;
++    }
++    if (lseek (fd, 0, SEEK_SET) < 0) {
++        return 0;
++    }
++    if (write (fd, Data, Size) != Size) {
++        return 0;
++    }
++
++    a = iobuf_open(filename);
++    if( !a ) {
++        printf("failed iobuf_open\n");
++        return 0;
++    }
++    if( use_armor_filter( a ) ) {
++        afx = new_armor_context ();
++        push_armor_filter (afx, a);
++    }
++    proc_packets (ctrlGlobal, NULL, a );
++    iobuf_close(a);
++    release_armor_context (afx);
++    gpg_deinit_default_ctrl (ctrlGlobal);
++
++    return 0;
++}
+diff --git a/tests/fuzz/fuzz_list.options b/tests/fuzz/fuzz_list.options
+new file mode 100644
+index 000000000..9dd056806
+--- /dev/null
++++ b/tests/fuzz/fuzz_list.options
+@@ -0,0 +1,3 @@
++[libfuzzer]
++max_len = 65536
++close_fd_mask = 1
+diff --git a/tests/fuzz/fuzz_verify.c b/tests/fuzz/fuzz_verify.c
+new file mode 100644
+index 000000000..15412583f
+--- /dev/null
++++ b/tests/fuzz/fuzz_verify.c
+@@ -0,0 +1,143 @@
++#include <stdint.h>
++#include <stddef.h>
++#include <stdlib.h>
++#include <stdio.h>
++#include <stdbool.h>
++#include <ftw.h>
++
++#include "config.h"
++#include "gpg.h"
++#include "../common/types.h"
++#include "../common/iobuf.h"
++#include "keydb.h"
++#include "keyedit.h"
++#include "../common/util.h"
++#include "main.h"
++#include "call-dirmngr.h"
++#include "trustdb.h"
++
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <sys/types.h>
++#include <unistd.h>
++#include <sys/mount.h>
++
++static bool initialized = false;
++ctrl_t ctrlGlobal;
++int fd;
++char *filename;
++
++//hack not to include gpg.c which has main function
++int g10_errors_seen = 0;
++
++void
++g10_exit( int rc )
++{
++    gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
++    gcry_control (GCRYCTL_TERM_SECMEM );
++    exit (rc);
++}
++
++static void
++gpg_deinit_default_ctrl (ctrl_t ctrl)
++{
++#ifdef USE_TOFU
++    tofu_closedbs (ctrl);
++#endif
++    gpg_dirmngr_deinit_session_data (ctrl);
++
++    keydb_release (ctrl->cached_getkey_kdb);
++}
++
++static void
++my_gcry_logger (void *dummy, int level, const char *format, va_list arg_ptr)
++{
++    return;
++}
++
++static int unlink_cb(const char *fpath, const struct stat *sb, int typeflag)
++{
++    if (typeflag == FTW_F){
++        unlink(fpath);
++    }
++    return 0;
++}
++
++static void rmrfdir(char *path)
++{
++    ftw(path, unlink_cb, 16);
++    if (rmdir(path) != 0) {
++        printf("failed rmdir, errno=%d\n", errno);
++    }
++}
++
++int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
++
++    if (! initialized) {
++        ctrlGlobal = (ctrl_t) malloc(sizeof(*ctrlGlobal));
++        if (!ctrlGlobal) {
++            exit(1);
++        }
++        //deletes previous tmp dir and (re)create it as a ramfs
++        //system("umount /tmp/fuzzdirverify");
++        rmrfdir("/tmp/fuzzdirverify");
++        mkdir("/tmp/fuzzdirverify/", 0700);
++        //system("mount -t tmpfs -o size=64M tmpfs /tmp/fuzzdirverify");
++        filename=strdup("/tmp/fuzzdirverify/fuzz.gpg");
++        if (!filename) {
++            free(ctrlGlobal);
++            return 0;
++        }
++        fd = open("/tmp/fuzzdirverify/fuzz.gpg", O_RDWR | O_CREAT, 0600);
++        if (fd == -1) {
++            free(ctrlGlobal);
++            free(filename);
++            return 0;
++        }
++        gnupg_set_homedir("/tmp/fuzzdirverify/");
++        if (keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
++                                KEYDB_RESOURCE_FLAG_DEFAULT) != GPG_ERR_NO_ERROR) {
++            free(filename);
++            free(ctrlGlobal);
++            close(fd);
++            return 0;
++        }
++        if (setup_trustdb (1, NULL) != GPG_ERR_NO_ERROR) {
++            free(filename);
++            free(ctrlGlobal);
++            close(fd);
++            return 0;
++        }
++        //populate /tmp/fuzzdirverify/ as homedir ~/.gnupg
++        strlist_t sl = NULL;
++        public_key_list (ctrlGlobal, sl, 0);
++        free_strlist(sl);
++        //no output for stderr
++        log_set_file("/tmp/fuzzverify.log");
++        gcry_set_log_handler (my_gcry_logger, NULL);
++        gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
++        initialized = true;
++    }
++
++    memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));
++    ctrlGlobal->magic = SERVER_CONTROL_MAGIC;
++
++    if (ftruncate(fd, Size) == -1) {
++        return 0;
++    }
++    if (lseek (fd, 0, SEEK_SET) < 0) {
++        return 0;
++    }
++    if (write (fd, Data, Size) != Size) {
++        return 0;
++    }
++
++    verify_signatures(ctrlGlobal, 1, &filename);
++    gpg_deinit_default_ctrl (ctrlGlobal);
++    memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));
++    ctrlGlobal->magic = SERVER_CONTROL_MAGIC;
++    verify_files(ctrlGlobal, 1, &filename);
++    gpg_deinit_default_ctrl (ctrlGlobal);
++
++    return 0;
++}
+diff --git a/tests/fuzz/fuzz_verify.options b/tests/fuzz/fuzz_verify.options
+new file mode 100644
+index 000000000..678d526b1
+--- /dev/null
++++ b/tests/fuzz/fuzz_verify.options
+@@ -0,0 +1,2 @@
++[libfuzzer]
++max_len = 65536

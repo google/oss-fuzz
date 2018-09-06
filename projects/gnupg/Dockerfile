@@ -26,7 +26,7 @@ RUN curl -O https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2
 RUN curl -O https://www.gnupg.org/ftp/gcrypt/npth/npth-1.5.tar.bz2
 
 RUN git clone --depth 1 git://git.gnupg.org/gnupg.git gnupg
-ADD https://catenacyber.fr/fuzzgnupg.diff fuzz.diff
 
 WORKDIR gnupg
+COPY fuzzgnupg.diff $SRC/fuzz.diff
 COPY build.sh $SRC/
