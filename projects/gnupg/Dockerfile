@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER info@g10code.com
+MAINTAINER p.antoine@catenacyber.fr
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext bzip2 gnupg
 
 #wait for zesty, or backport ?
