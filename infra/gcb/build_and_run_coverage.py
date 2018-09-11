@@ -121,7 +121,6 @@ def get_build_steps(project_dir):
 
   # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
   for i in xrange(0,  len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
-    download_corpus_args = []
     for binary_name in fuzz_targets[i : i+CORPUS_DOWNLOAD_BATCH_SIZE]:
       qualified_name = binary_name
       qualified_name_prefix = '%s_' % project_name
@@ -134,17 +133,14 @@ def get_build_steps(project_dir):
           method='GET')
 
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
-      download_corpus_args.append('\'%s %s\'' % (corpus_archive_path, url))
+      download_corpus_args.append('%s %s' % (corpus_archive_path, url))
 
     # Download corpus.
     build_steps.append(
         {
             'name': 'gcr.io/oss-fuzz-base/base-runner',
-            'args': [
-                'bash',
-                '-c',
-                'download_corpus %s || true' % ' '.join(download_corpus_args),
-          ],
+            'entrypoint': 'download_corpus',
+            'args': download_corpus_args,
             'volumes': [{'name': 'corpus', 'path': '/corpus'}],
         }
     )
