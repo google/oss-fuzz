@@ -17,7 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER keystone.engine@gmail.com
 RUN apt-get update && apt-get install -y make cmake
-#TODO move to main repo
-RUN git clone --depth 1 --branch fuzz https://github.com/catenacyber/keystone.git
+RUN git clone --depth 1 https://github.com/keystone-engine/keystone.git
 WORKDIR $SRC
 COPY build.sh $SRC/
