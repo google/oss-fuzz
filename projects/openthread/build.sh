@@ -32,6 +32,7 @@
     --enable-dns-client                 \
     --enable-diag                       \
     --enable-dns-client                 \
+    --enable-ftd                        \
     --enable-jam-detection              \
     --enable-joiner                     \
     --enable-legacy                     \
