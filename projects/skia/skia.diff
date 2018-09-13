@@ -30,10 +30,10 @@ index 33947382c4..543f51244c 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 0a7b12729c..f8dedcc6b7 100644
+index ae97d05aa1..7e008cd4a6 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1101,6 +1101,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1100,6 +1100,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -96,10 +96,10 @@ index 470f98468a..7fa1b7c97c 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index ae56f2ebf8..063be43489 100644
+index ee362ec0b5..dde9cbfbb6 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -1277,6 +1277,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -1292,6 +1292,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -275,10 +275,10 @@ index 2c913d8d9e..61b9629766 100644
          if (fSegLength * (2 + doFill) > length) {
              meas.getSegment(0, length, dst, true);  // to short for us to mangle
 diff --git a/src/effects/SkLayerDrawLooper.cpp b/src/effects/SkLayerDrawLooper.cpp
-index 1610809456..125f8f4a18 100644
+index 7604e2ddfb..adfa3d0c04 100644
 --- a/src/effects/SkLayerDrawLooper.cpp
 +++ b/src/effects/SkLayerDrawLooper.cpp
-@@ -261,6 +261,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
+@@ -264,6 +264,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
  sk_sp<SkFlattenable> SkLayerDrawLooper::CreateProc(SkReadBuffer& buffer) {
      int count = buffer.readInt();
  
@@ -290,22 +290,6 @@ index 1610809456..125f8f4a18 100644
      Builder builder;
      for (int i = 0; i < count; i++) {
          LayerInfo info;
-diff --git a/src/gpu/GrPathUtils.cpp b/src/gpu/GrPathUtils.cpp
-index 549a4dd411..13d52e18ca 100644
---- a/src/gpu/GrPathUtils.cpp
-+++ b/src/gpu/GrPathUtils.cpp
-@@ -401,6 +401,11 @@ void convert_noninflect_cubic_to_quads(const SkPoint p[4],
-                                        SkPathPriv::FirstDirection dir,
-                                        SkTArray<SkPoint, true>* quads,
-                                        int sublevel = 0) {
-+#if defined(IS_FUZZING)
-+    if (sublevel >= 7) {
-+        return;
-+    }
-+#endif
- 
-     // Notation: Point a is always p[0]. Point b is p[1] unless p[1] == p[0], in which case it is
-     // p[2]. Point d is always p[3]. Point c is p[2] unless p[2] == p[3], in which case it is p[1].
 diff --git a/src/ports/SkDebug_stdio.cpp b/src/ports/SkDebug_stdio.cpp
 index ec4e3fec77..4bc01d5d51 100644
 --- a/src/ports/SkDebug_stdio.cpp

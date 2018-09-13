@@ -67,3 +67,14 @@ $CXX $CXXFLAGS -lFuzzingEngine \
   src/.libs/libwebp.a
 cp fuzz_seed_corpus.zip $OUT/fuzz_demux_api_seed_corpus.zip
 cp $SRC/fuzz.dict $OUT/fuzz_demux_api.dict
+
+# Encode then Decode
+$CC $CFLAGS -Isrc -I. -c $SRC/fuzz_webp_enc_dec.cc
+$CXX $CXXFLAGS -lFuzzingEngine \
+  fuzz_webp_enc_dec.o -o $OUT/fuzz_webp_enc_dec \
+  imageio/.libs/libimagedec.a imageio/.libs/libimageio_util.a \
+  src/demux/.libs/libwebpdemux.a src/mux/.libs/libwebpmux.a \
+  src/.libs/libwebp.a
+cp fuzz_seed_corpus.zip $OUT/fuzz_webp_enc_dec_seed_corpus.zip
+mkdir -p $OUT/libwebp-test-data
+cp $SRC/libwebp-test-data/*.ppm $OUT/libwebp-test-data/
