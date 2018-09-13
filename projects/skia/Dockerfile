@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake
 RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
 ENV PATH="${SRC}/depot_tools:${PATH}"
 
-RUN git clone https://skia.googlesource.com/skia.git --depth 1
+RUN git clone https://skia.googlesource.com/skia.git
 
 # current directory for build script
 WORKDIR skia
