@@ -5,6 +5,7 @@
 #include <string.h>
 #include <memory>
 
+#include "config/aom_config.h"
 #include "aom/aom_decoder.h"
 #include "aom/aomdx.h"
 #include "aom_ports/mem_ops.h"
@@ -38,7 +39,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 #else
 #error define one of DECODE_MODE or DECODE_MODE_threaded
 #endif
-  aom_codec_dec_cfg_t cfg = {threads, 0, 0};
+  aom_codec_dec_cfg_t cfg = {threads, 0, 0, CONFIG_LOWBITDEPTH};
   if (aom_codec_dec_init(&codec, decoder->codec_interface(), &cfg, 0)) {
     return 0;
   }
