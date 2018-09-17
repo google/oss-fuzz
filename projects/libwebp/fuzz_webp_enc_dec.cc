@@ -14,11 +14,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "webp/encode.h"
 #include "webp/decode.h"
-#include "imageio/image_dec.h"
-#include "imageio/imageio_util.h"
+#include "img_alpha.h"
+#include "img_grid.h"
+#include "img_peak.h"
 #include "dsp/dsp.h"
 
 namespace {
@@ -118,42 +120,32 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   VP8GetCPUInfo = kVP8CPUInfos[Extract(4, data, size, &bit_pos)];
 
   // Pick a source picture.
-  const char* kImageNames[] = {
-      "libwebp-test-data/grid.ppm",
-      "libwebp-test-data/peak.ppm"};
-  const size_t kNumValidImages = 2;
-  const size_t kNbImageNames = sizeof(kImageNames) / sizeof(kImageNames[0]);
-  const size_t image_index = Extract(kNbImageNames - 1, data, size, &bit_pos);
-  const char* file = kImageNames[image_index];
-
-  // Load the source picture.
-  const uint8_t* image_data = nullptr;
-  size_t image_size = 0;
-  if (!ImgIoUtilReadFile(file, &image_data, &image_size)) {
-    fprintf(stderr, "Can't load input image: %s\n", file);
-    WebPPictureFree(&pic);
-    WebPFree((void*)image_data);
-    abort();
-  }
+  const uint8_t* kImagesData[] = {
+      kImgAlphaData,
+      kImgGridData,
+      kImgPeakData
+  };
+  const int kImagesWidth[] = {
+      kImgAlphaWidth,
+      kImgGridWidth,
+      kImgPeakWidth
+  };
+  const int kImagesHeight[] = {
+      kImgAlphaHeight,
+      kImgGridHeight,
+      kImgPeakHeight
+  };
+  const size_t kNbImages = sizeof(kImagesData) / sizeof(kImagesData[0]);
+  const size_t image_index = Extract(kNbImages - 1, data, size, &bit_pos);
+  const uint8_t* const image_data = kImagesData[image_index];
+  pic.width = kImagesWidth[image_index];
+  pic.height = kImagesHeight[image_index];
+  pic.argb_stride = pic.width * 4 * sizeof(uint8_t);
 
   // Read the bytes.
-  WebPImageReader reader = WebPGuessImageReader(image_data, image_size);
-  if (!reader(image_data, image_size, &pic, 1, nullptr)) {
-    if (image_index < kNumValidImages) {
-      fprintf(stderr, "Can't read input image: %s\n", file);
-      WebPPictureFree(&pic);
-      WebPFree((void*)image_data);
-      abort();
-    } else {  // We expect the reader to fail.
-      WebPPictureFree(&pic);
-      WebPFree((void*)image_data);
-      return 0;
-    }
-  } else if (image_index >= kNumValidImages) {
-    // We expect the reader to fail and it did not.
-    fprintf(stderr, "Can read input but actually shouldn't: %s\n", file);
+  if (!WebPPictureImportRGBA(&pic, image_data, pic.argb_stride)) {
+    fprintf(stderr, "Can't read input image: %zu\n", image_index);
     WebPPictureFree(&pic);
-    WebPFree((void*)image_data);
     abort();
   }
 
@@ -175,7 +167,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
         fprintf(stderr, "WebPPictureCrop failed. Parameters: %d,%d,%d,%d\n",
                 cropped_left, cropped_top, cropped_width, cropped_height);
         WebPPictureFree(&pic);
-        WebPFree((void*)image_data);
         abort();
       }
     } else {
@@ -185,7 +176,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
         fprintf(stderr, "WebPPictureRescale failed. Parameters: %d,%d\n",
                 scaled_width, scaled_height);
         WebPPictureFree(&pic);
-        WebPFree((void*)image_data);
         abort();
       }
     }
@@ -203,11 +193,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   pic.writer = WebPMemoryWrite;
   pic.custom_ptr = &memory_writer;
   if (!WebPEncode(&config, &pic)) {
-    fprintf(stderr, "WebPEncode failed. Error code: %d\nFile: %s\n",
-            pic.error_code, file);
+    fprintf(stderr, "WebPEncode failed. Error code: %d\nFile: %zu\n",
+            pic.error_code, image_index);
     WebPMemoryWriterClear(&memory_writer);
     WebPPictureFree(&pic);
-    WebPFree((void*)image_data);
     abort();
   }
 
@@ -217,11 +206,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   const size_t out_size = memory_writer.size;
   uint8_t* const rgba = WebPDecodeBGRA(out_data, out_size, &w, &h);
   if (rgba == nullptr || w != pic.width || h != pic.height) {
-    fprintf(stderr, "WebPDecodeBGRA failed.\nFile: %s\n", file);
+    fprintf(stderr, "WebPDecodeBGRA failed.\nFile: %zu\n", image_index);
     WebPFree(rgba);
     WebPMemoryWriterClear(&memory_writer);
     WebPPictureFree(&pic);
-    WebPFree((void*)image_data);
     abort();
   }
 
@@ -241,12 +229,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
         }
         if (v1 != v2) {
           fprintf(stderr,
-                  "Lossless compression failed pixel-exactness.\nFile: %s\n",
-                  file);
+                  "Lossless compression failed pixel-exactness.\nFile: %zu\n",
+                  image_index);
           WebPFree(rgba);
           WebPMemoryWriterClear(&memory_writer);
           WebPPictureFree(&pic);
-          WebPFree((void*)image_data);
           abort();
         }
       }
@@ -256,6 +243,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   WebPFree(rgba);
   WebPMemoryWriterClear(&memory_writer);
   WebPPictureFree(&pic);
-  WebPFree((void*)image_data);
   return 0;
 }
