@@ -6,5 +6,3 @@ sanitizers:
 - address
 - memory
 - undefined
-
-disabled: true
