@@ -4,6 +4,7 @@ auto_ccs:
   - "jpettit@ovn.org"
   - "pfaffben@gmail.com" 
   - "pkusunyifeng@gmail.com"
+  - "bshas3@gmail.com"
 sanitizers:
   - address
   - undefined
