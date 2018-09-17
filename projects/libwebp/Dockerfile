@@ -23,6 +23,7 @@ ADD https://storage.googleapis.com/downloads.webmproject.org/webp/testdata/fuzze
 RUN unzip fuzz_seed_corpus.zip -d libwebp-test-data/
 RUN rm fuzz_seed_corpus.zip
 COPY build.sh fuzz.h fuzz.dict $SRC/
+COPY img_alpha.h img_grid.h img_peak.h $SRC/
 COPY fuzz_simple_api.c $SRC/
 COPY fuzz_advanced_api.c $SRC/
 COPY fuzz_animation_api.c $SRC/
