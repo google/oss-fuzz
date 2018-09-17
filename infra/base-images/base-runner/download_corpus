@@ -24,3 +24,7 @@ for pair in "$@"; do
   read path url <<< "$pair"
   wget -q -O $path $url
 done
+
+# Always exit with 0 as we do not track wget return codes and should not rely
+# on the latest command execution.
+exit 0

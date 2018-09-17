@@ -18,7 +18,7 @@
 ./autogen.sh
 ./configure
 make clean -s
-make -j$(nproc) -s
+(cd src && make -j$(nproc) -s)
 
 ./test/fuzzers/build_google_oss_fuzzers.sh
 ./test/fuzzers/build_seed_corpus.sh

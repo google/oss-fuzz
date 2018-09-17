@@ -27,4 +27,5 @@ COPY fuzz_simple_api.c $SRC/
 COPY fuzz_advanced_api.c $SRC/
 COPY fuzz_animation_api.c $SRC/
 COPY fuzz_demux_api.c $SRC/
+COPY fuzz_webp_enc_dec.cc $SRC/
 WORKDIR libwebp
