@@ -1,0 +1,11 @@
+homepage: "https://github.com/silnrsi/graphite"
+primary_contact: "tim_eves@sil.org"
+auto_ccs:
+ - "martin_hosken@sil.org"
+ - "twsmith@mozilla.com"
+ - "jfkthame@gmail.com"
+sanitizers:
+ - address
+ - memory:
+    experimental: True
+ - undefined
