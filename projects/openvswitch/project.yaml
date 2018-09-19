@@ -7,4 +7,5 @@ auto_ccs:
   - "bshas3@gmail.com"
 sanitizers:
   - address
+  - memory
   - undefined
