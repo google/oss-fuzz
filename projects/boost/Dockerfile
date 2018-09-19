@@ -23,4 +23,4 @@ WORKDIR boost
 # The actual build will need to use CXX/CXXFLAGS provided by OSS-Fuzz.
 RUN ./bootstrap.sh && ./b2 headers
 # Preferably, move boost_regex_fuzzer.cc to the boost repository.
-COPY build.sh boost_regex_fuzzer.cc $SRC/
+COPY build.sh *.cc $SRC/
