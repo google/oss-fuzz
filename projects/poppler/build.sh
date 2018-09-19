@@ -46,9 +46,8 @@ make -j$(nproc) poppler poppler-cpp
 
 fuzz_target=pdf_fuzzer
 
-pushd $SRC/poppler
-$CXX $CXXFLAGS -std=c++11 -Icpp \
-    fuzz/pdf_fuzzer.cc -o $OUT/$fuzz_target \
+$CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp \
+    $SRC/fuzz/pdf_fuzzer.cc -o $OUT/$fuzz_target \
     -lFuzzingEngine $WORK/poppler/cpp/libpoppler-cpp.a $WORK/poppler/libpoppler.a $WORK/lib/libfreetype.a
 
 mv $SRC/{*.zip,*.dict} $OUT
