@@ -37,7 +37,7 @@ else
   else
     exit 1
   fi
-  cmake .. -D$CMAKE_SANITIZER=1
+  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -D$CMAKE_SANITIZER=1
 fi
 
 make -j
