@@ -70,11 +70,12 @@ do
     $SRC/target.c -o $OUT/$FUZZ_TARGET
 done
 
+cp $SRC/*.options $OUT
+
 # SdpParser
 find media/webrtc -iname "*.sdp" \
   -type f -exec zip -qu $OUT/SdpParser_seed_corpus.zip "{}" \;
 cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
-cp $SRC/SdpParser.options $OUT
 
 # StunParser
 find media/webrtc -iname "*.stun" \
@@ -83,7 +84,6 @@ cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
 
 # ContentParentIPC
 cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
-cp $SRC/ContentParentIPC.options $OUT
 
 # ContentSecurityPolicyParser
 cp dom/security/fuzztest/csp_fuzzer.dict $OUT/ContentSecurityPolicyParser.dict
