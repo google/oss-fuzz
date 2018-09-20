@@ -27,7 +27,7 @@ ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
 # Use '-Wno-unused-command-line-argument' to suppress "warning: -ldl: 'linker' input unused"
 # messages which are treated as errors by some projects.
-ENV SANITIZER_FLAGS_profile "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,-ldl -Wno-unused-command-line-argument"
+ENV SANITIZER_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,-ldl -Wno-unused-command-line-argument"
 
 # We use unsigned-integer-overflow as an additional coverage signal and have to
 # suppress error messages. See https://github.com/google/oss-fuzz/issues/910.
@@ -35,12 +35,6 @@ ENV UBSAN_OPTIONS="silence_unsigned_overflow=1"
 
 # Default build flags for coverage.
 ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
-
-# Coverage flags for generating coverage reports.
-ENV COVERAGE_FLAGS_coverage="-fsanitize-coverage=bb,no-prune,trace-pc-guard -O0"
-
-# Don't mix sanitizer coverage with clang coverage.
-ENV COVERAGE_FLAGS_profile=""
 
 # Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"
@@ -66,6 +60,6 @@ RUN mkdir honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_libfuzzer compile_honggfuzz coverage_report srcmap /usr/local/bin/
+COPY compile compile_afl compile_libfuzzer compile_honggfuzz /usr/local/bin/
 
 CMD ["compile"]
