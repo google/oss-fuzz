@@ -20,6 +20,6 @@ RUN apt-get update && apt-get install -y gawk mercurial
 RUN hg clone --uncompressed https://hg.mozilla.org/mozilla-central
 RUN git clone --depth 1 https://github.com/mozillasecurity/fuzzdata
 WORKDIR mozilla-central
-COPY build.sh target.c *options $SRC/
-COPY *diff $SRC/mozilla-central
+COPY build.sh target.c *.options mozconfig.* $SRC/
+COPY *.diff $SRC/mozilla-central/
 RUN hg patch --no-commit ContentSecurityPolicyParser.diff

@@ -1,0 +1,6 @@
+. $SRC/mozconfig.profile
+
+ac_add_options --enable-address-sanitizer
+
+unset CFLAGS
+unset CXXFLAGS
