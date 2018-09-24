@@ -48,7 +48,7 @@ source $HOME/.cargo/env
 # Packages Firefox only to immediately extract the archive. Some files are
 # replaced with gtest-variants, which is required by the fuzzing interface.
 # Weighs in shy of 1GB afterwards. About double for profile builds.
-make -j$(nproc) -C $MOZ_OBJDIR package
+./mach package
 tar -xf $MOZ_OBJDIR/dist/firefox*bz2 -C $OUT
 cp -L $MOZ_OBJDIR/dist/bin/gtest/libxul.so $OUT/firefox
 cp $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
