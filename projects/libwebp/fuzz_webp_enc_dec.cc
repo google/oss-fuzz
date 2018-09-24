@@ -186,6 +186,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
       pic.width * pic.height >= 16 * 16) {
     config.lossless = 0;
   }
+  if (config.alpha_quality == 100 && config.method == 6 &&
+      pic.width * pic.height >= 16 * 16) {
+    config.alpha_quality = 99;
+  }
 
   // Encode.
   WebPMemoryWriter memory_writer;
