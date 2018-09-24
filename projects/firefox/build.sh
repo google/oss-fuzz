@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+[[ $SANITIZER = "coverage" ]] && touch $OUT/exit && exit 0
+
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
   SdpParser
@@ -24,38 +26,15 @@ FUZZ_TARGETS=(
   # Qcms # needn't be enabled; has its own project with more sanitizers/engines
 )
 
-# Firefox object (build) directory.
-OBJDIR=$WORK/obj-fuzz
-
-[[ $SANITIZER = "coverage" ]] && touch $OUT/empty && exit 0
-
-# Firefox fuzzing build configuration.
-cat << EOF > mozconfig
-ac_add_options --disable-debug
-ac_add_options --disable-elf-hack
-ac_add_options --disable-jemalloc
-ac_add_options --disable-crashreporter
-ac_add_options --enable-fuzzing
-ac_add_options --enable-optimize=-O1
-ac_add_options --enable-debug-symbols=-gline-tables-only
-ac_add_options --enable-address-sanitizer
-mk_add_options MOZ_OBJDIR=${OBJDIR}
-mk_add_options MOZ_MAKE_FLAGS=-j$(nproc)
-EOF
-
-if [[ $SANITIZER = "address" ]]
-then
-cat << EOF >> mozconfig
-mk_add_options CFLAGS=
-mk_add_options CXXFLAGS=
-EOF
-fi
+# Firefox object (build) directory and configuration file.
+export MOZ_OBJDIR=$WORK/obj-fuzz
+export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 
 # Install dependencies. Note that bootstrap installs cargo, which must be added
 # to PATH via source. In a successive run (for a different sanitizer), the
 # cargo installation carries over, but bootstrap fails if cargo is not in PATH.
 export SHELL=/bin/bash
-[ -f "$HOME/.cargo/env" ] && source $HOME/.cargo/env
+[[ -f "$HOME/.cargo/env" ]] && source $HOME/.cargo/env
 ./mach bootstrap --no-interactive --application-choice browser
 source $HOME/.cargo/env
 
@@ -68,23 +47,20 @@ source $HOME/.cargo/env
 
 # Packages Firefox only to immediately extract the archive. Some files are
 # replaced with gtest-variants, which is required by the fuzzing interface.
-# Weighs in shy of 1GB afterwards.
-make -j$(nproc) -C $OBJDIR package
-tar -xf $OBJDIR/dist/firefox*bz2 -C $OUT
-mv $OBJDIR/toolkit/library/gtest/libxul.so $OUT/firefox
-mv $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
+# Weighs in shy of 1GB afterwards. About double for profile builds.
+make -j$(nproc) -C $MOZ_OBJDIR package
+tar -xf $MOZ_OBJDIR/dist/firefox*bz2 -C $OUT
+cp -L $MOZ_OBJDIR/dist/bin/gtest/libxul.so $OUT/firefox
+cp $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
 
-# Get the absolute paths of the required system libraries.
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:$OUT/firefox
-REQUIRED_LIBRARIES=($(ldd $OUT/firefox/libxul.so | gawk '/=> [/]/ {print $3}'))
-REQUIRED_LIBRARIES=(${REQUIRED_LIBRARIES[@]##$OUT/*})
+# Get absolute paths of the required system libraries.
+LIBRARIES=$({
+  xargs -I{} ldd $OUT/firefox/{} | gawk '/=> [/]/ {print $3}' | sort -u
+} < $OUT/firefox/dependentlibs.list)
 
 # Copy libraries. Less than 50MB total.
 mkdir -p $OUT/lib
-for REQUIRED_LIBRARY in ${REQUIRED_LIBRARIES[@]}
-do
-  cp -L $REQUIRED_LIBRARY $OUT/lib
-done
+for LIBRARY in $LIBRARIES; do cp -L $LIBRARY $OUT/lib; done
 
 # Build a wrapper binary for each target to set environment variables.
 for FUZZ_TARGET in ${FUZZ_TARGETS[@]}
@@ -93,6 +69,8 @@ do
     -DFUZZ_TARGET=$FUZZ_TARGET \
     $SRC/target.c -o $OUT/$FUZZ_TARGET
 done
+
+cp $SRC/*.options $OUT
 
 # SdpParser
 find media/webrtc -iname "*.sdp" \
@@ -106,7 +84,6 @@ cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
 
 # ContentParentIPC
 cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
-cp $SRC/ContentParentIPC.options $OUT
 
 # ContentSecurityPolicyParser
 cp dom/security/fuzztest/csp_fuzzer.dict $OUT/ContentSecurityPolicyParser.dict
