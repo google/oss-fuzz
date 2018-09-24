@@ -1,6 +1,4 @@
 . $SRC/mozconfig.profile
 
 ac_add_options --enable-undefined-sanitizer=bool,bounds,return,pointer-overflow,signed-integer-overflow,vla-bound
-
-unset CFLAGS
-unset CXXFLAGS
+mk_add_options CFLAGS= CXXFLAGS=
