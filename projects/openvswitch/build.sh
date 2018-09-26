@@ -28,6 +28,6 @@ do
        corp_name=$(basename $file _target)
        corp_dir=$SRC/ovs-fuzzing-corpus/${corp_name}_seed_corpus
        if [ -d ${corp_dir} ]; then
-           zip -j $OUT/${name}_seed_corpus.zip $SRC/ovs-fuzzing-corpus/${corp_name}_seed_corpus/*
+           zip -j $OUT/${name}_seed_corpus.zip ${corp_dir}/*
        fi
 done
