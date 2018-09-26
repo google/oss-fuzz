@@ -1,9 +1,9 @@
 diff --git a/fuzz/FuzzPathMeasure.cpp b/fuzz/FuzzPathMeasure.cpp
-index e6933a856f..f802cc2250 100644
+index 62e7b7434c..f64faab8be 100644
 --- a/fuzz/FuzzPathMeasure.cpp
 +++ b/fuzz/FuzzPathMeasure.cpp
 @@ -22,6 +22,9 @@ DEF_FUZZ(PathMeasure, fuzz) {
-     BuildPath(fuzz, &path, SkPath::Verb::kDone_Verb);
+     FuzzEvilPath(fuzz, &path, SkPath::Verb::kDone_Verb);
      SkRect bounds = path.getBounds();
      SkScalar maxDim = SkTMax(bounds.width(), bounds.height());
 +    if (maxDim > 10000000) {
@@ -96,10 +96,10 @@ index 470f98468a..7fa1b7c97c 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index ee362ec0b5..dde9cbfbb6 100644
+index f22cdefed5..7dbefb507e 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -1292,6 +1292,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -1296,6 +1296,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -114,10 +114,10 @@ index ee362ec0b5..dde9cbfbb6 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index b51bb2d07c..38f86dde00 100644
+index bfe9cc23c9..c77c9d80cb 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
-@@ -3394,7 +3394,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+@@ -3424,7 +3424,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
                                     SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
      SkASSERT(!oval.isEmpty());
      SkASSERT(sweepAngle);
@@ -242,7 +242,7 @@ index fb6a88e0fb..8253a1284d 100644
      const SkMatrix& mat = this->getMatrix();
      SkPoint src, dst;
 diff --git a/src/effects/SkDashPathEffect.cpp b/src/effects/SkDashPathEffect.cpp
-index cc414f7c16..25a4cb37bc 100644
+index 8c4abdd2e5..05b9434eef 100644
 --- a/src/effects/SkDashPathEffect.cpp
 +++ b/src/effects/SkDashPathEffect.cpp
 @@ -387,6 +387,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
@@ -275,7 +275,7 @@ index 2c913d8d9e..61b9629766 100644
          if (fSegLength * (2 + doFill) > length) {
              meas.getSegment(0, length, dst, true);  // to short for us to mangle
 diff --git a/src/effects/SkLayerDrawLooper.cpp b/src/effects/SkLayerDrawLooper.cpp
-index 7604e2ddfb..adfa3d0c04 100644
+index ce22a66b55..6216057be1 100644
 --- a/src/effects/SkLayerDrawLooper.cpp
 +++ b/src/effects/SkLayerDrawLooper.cpp
 @@ -264,6 +264,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
