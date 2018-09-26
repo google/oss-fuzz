@@ -1,20 +1,3 @@
-diff --git a/fuzz/FuzzMain.cpp b/fuzz/FuzzMain.cpp
-index b37e633212..8a5f7c1795 100644
---- a/fuzz/FuzzMain.cpp
-+++ b/fuzz/FuzzMain.cpp
-@@ -6,6 +6,7 @@
-  */
- 
- #include "Fuzz.h"
-+#include "FuzzCommon.h"
- #include "SkCanvas.h"
- #include "SkCodec.h"
- #include "SkCommandLineFlags.h"
-@@ -676,3 +677,4 @@ static void fuzz_sksl2glsl(sk_sp<SkData> bytes) {
-     SkDebugf("[terminated] Success! Compiled input.\n");
- }
- #endif
-+
 diff --git a/fuzz/FuzzPathMeasure.cpp b/fuzz/FuzzPathMeasure.cpp
 index 62e7b7434c..f64faab8be 100644
 --- a/fuzz/FuzzPathMeasure.cpp
