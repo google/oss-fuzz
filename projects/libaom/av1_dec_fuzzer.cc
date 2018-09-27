@@ -41,12 +41,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 #if defined(DECODE_MODE)
   const unsigned int threads = 1;
 #elif defined(DECODE_MODE_threaded)
-  // Skip the IVF header if enough data is available.
-  const size_t hash_offset = (size > 12) ? 12 : 0;
-  const size_t hash_size =
-      std::min(size - hash_offset, static_cast<size_t>(100));
-  const std::string data_string(
-      reinterpret_cast<const char *>(data + hash_offset), hash_size);
+  // Hash the first 32 bytes, read above and interpreted as the IVF header.
+  const std::string data_string(reinterpret_cast<const char *>(data), 32);
   const auto data_hash =
       static_cast<unsigned int>(std::hash<std::string>()(data_string));
   // Set thread count in the range [2, 64].
