@@ -167,15 +167,6 @@ def get_build_steps(project_dir):
           'dir': 'oss-fuzz/projects/' + name,
       },
       {
-          'name':
-              image,
-          'args': [
-              'bash', '-c',
-              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-          ],
-          'env': ['OSSFUZZ_REVISION=$REVISION_ID'],
-      },
-      {
           'name': 'gcr.io/oss-fuzz-base/msan-builder',
           'args': [
               'bash',
@@ -195,12 +186,9 @@ def get_build_steps(project_dir):
       out = '/workspace/out/' + sanitizer
       stamped_name = name + '-' + sanitizer + '-' + ts
       zip_file = stamped_name + '.zip'
-      stamped_srcmap_file = stamped_name + '.srcmap.json'
       bucket = ENGINE_INFO[fuzzing_engine].upload_bucket
       upload_url = get_signed_url(UPLOAD_URL_FORMAT.format(bucket, name, 
                                                            zip_file))
-      srcmap_url = get_signed_url(UPLOAD_URL_FORMAT.format(bucket, name,
-                                                           stamped_srcmap_file))
       targets_list_filename = get_targets_list_filename(sanitizer)
       targets_list_url = get_signed_url(
           get_targets_list_url(bucket, name, sanitizer))
@@ -273,14 +261,6 @@ def get_build_steps(project_dir):
                   image,
               'args': [
                   'bash', '-c', 'cd {0} && zip -r {1} *'.format(out, zip_file)
-              ],
-          },
-          # upload srcmap
-          {
-              'name': 'gcr.io/oss-fuzz-base/uploader',
-              'args': [
-                  '/workspace/srcmap.json',
-                  srcmap_url,
               ],
           },
           # upload binaries
