@@ -6,9 +6,9 @@ Your fuzz targets will be run on a [Google Compute Engine](https://cloud.google.
 
 You should not make any assumptions on the availability of dependent packages 
 in the execution environment. Packages that are installed via
-[Dockerfile](https://github.com/google/oss-fuzz/blob/master/docs/new_project_guide.md#dockerfile)
+[Dockerfile](new_project_guide.md#dockerfile)
 or built as part of 
-[build.sh](https://github.com/google/oss-fuzz/blob/master/docs/new_project_guide.md#buildsh)
+[build.sh](new_project_guide.md#buildsh)
 are not available on the bot runtime environment (where the fuzz targets run).
 
 If you need these dependencies in the runtime environment, you can either
@@ -17,7 +17,7 @@ If you need these dependencies in the runtime environment, you can either
 and then link statically against them
 ([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/build.sh#L40))
 - Or build the dependencies statically in
-[build.sh](https://github.com/google/oss-fuzz/blob/master/docs/new_project_guide.md#buildsh)
+[build.sh](new_project_guide.md#buildsh)
 ([example](https://github.com/google/oss-fuzz/blob/master/projects/ffmpeg/build.sh#L26)).
 
 All build artifacts needed during fuzz target execution should be inside the `$OUT`
