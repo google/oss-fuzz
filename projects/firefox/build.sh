@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-[[ $SANITIZER = "coverage" ]] && touch $OUT/exit && exit 0
-
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
   SdpParser
