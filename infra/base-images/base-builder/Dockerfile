@@ -63,6 +63,6 @@ RUN mkdir honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_libfuzzer compile_honggfuzz /usr/local/bin/
+COPY compile compile_afl compile_libfuzzer compile_honggfuzz srcmap /usr/local/bin/
 
 CMD ["compile"]
