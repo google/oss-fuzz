@@ -4,12 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <memory>
 #if defined(DECODE_MODE_threaded)
 #include <algorithm>
-#include <functional>
-#include <string>
 #endif
+#include <memory>
 
 #include "config/aom_config.h"
 #include "aom/aom_decoder.h"
@@ -41,12 +39,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 #if defined(DECODE_MODE)
   const unsigned int threads = 1;
 #elif defined(DECODE_MODE_threaded)
-  // Hash the first 32 bytes, read above and interpreted as the IVF header.
-  const std::string data_string(reinterpret_cast<const char *>(data), 32);
-  const auto data_hash =
-      static_cast<unsigned int>(std::hash<std::string>()(data_string));
   // Set thread count in the range [2, 64].
-  const unsigned int threads = std::max((data_hash & 0x3f) + 1, 2u);
+  const unsigned int threads = std::max((header[0] & 0x3f) + 1, 2);
 #else
 #error define one of DECODE_MODE or DECODE_MODE_threaded
 #endif
