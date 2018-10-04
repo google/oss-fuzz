@@ -71,7 +71,7 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
-if [ "$SANITIZER" = "profile" ]
+if [ "$SANITIZER" = "coverage" ]
 then
   # The build invoker looks for sources in $SRC, but it turns out that we need
   # to not be buried under src/, paths are expected at out/proc/self/cwd by

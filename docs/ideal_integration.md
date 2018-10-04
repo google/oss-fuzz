@@ -101,11 +101,11 @@ The syntax is described [here](http://libfuzzer.info/#dictionaries).
 
 ## Coverage
 For a fuzz target to be useful, it must have good coverage in the code that it is testing. You can view the coverage
-for your fuzz targets by looking at the [fuzzer stats](https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md#fuzzer-stats) dashboard on ClusterFuzz, as well as
-[coverage reports](https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md#coverage-reports).
+for your fuzz targets by looking at the [fuzzer stats](clusterfuzz.md#fuzzer-stats) dashboard on ClusterFuzz, as well as
+[coverage reports](clusterfuzz.md#coverage-reports).
 
 To generate an aggregated code coverage report for your project, please see
-[code coverage](https://github.com/google/oss-fuzz/blob/master/docs/code_coverage.md)
+[code coverage](code_coverage.md)
 documentation page.
 
 Coverage can often be improved by adding dictionaries, more inputs for seed corpora, and fixing
@@ -114,7 +114,7 @@ timeouts/out-of-memory bugs in your targets.
 ## Performance
 Fuzz targets should also be performant, as high memory usage and/or slow execution speed can slow the down
 the growth of coverage and finding of new bugs. ClusterFuzz provides a
-[performance analyzer](https://github.com/google/oss-fuzz/blob/master/docs/clusterfuzz.md)
+[performance analyzer](clusterfuzz.md)
 for each fuzz target that shows problems that are impacting the performance of the fuzz target.
 
 ## Example

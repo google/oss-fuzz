@@ -49,7 +49,7 @@ then
   export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
 fi
 
-# Don't need coverage instrumentation for engine-less builds.
+ # Don't need coverage instrumentation for engine-less builds.
 if [[ $FUZZING_ENGINE = "none" ]]; then
   export COVERAGE_FLAGS=
 fi
@@ -74,13 +74,13 @@ if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder
   chown -R builder $SRC $OUT $WORK
   su -c "$BUILD_CMD" builder
-  if [ "$SANITIZER" = "profile" ]; then
+  if [ "$SANITIZER" = "coverage" ]; then
     # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
     su -c "$COPY_SOURCES_CMD" builder || true
   fi
 else
   $BUILD_CMD
-  if [ "$SANITIZER" = "profile" ]; then
+  if [ "$SANITIZER" = "coverage" ]; then
     # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
     $COPY_SOURCES_CMD || true
   fi

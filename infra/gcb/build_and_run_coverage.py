@@ -13,7 +13,7 @@ import urlparse
 
 import build_project
 
-SANITIZER = 'profile'
+SANITIZER = 'coverage'
 CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=%s' % SANITIZER]
 PLATFORM = 'linux'
 
