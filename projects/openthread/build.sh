@@ -20,6 +20,7 @@
 ./configure                             \
     --enable-fuzz-targets               \
     --enable-application-coap           \
+    --enable-application-coap-secure    \
     --enable-border-agent               \
     --enable-border-router              \
     --enable-cert-log                   \
