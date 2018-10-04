@@ -181,14 +181,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
     }
   }
 
-  // Skip the cruncher except on small images, it's likely to timeout.
-  if (config.lossless && config.quality == 100. && config.method == 6 &&
-      pic.width * pic.height >= 16 * 16) {
-    config.lossless = 0;
-  }
-  if (config.alpha_quality == 100 && config.method == 6 &&
-      pic.width * pic.height >= 16 * 16) {
-    config.alpha_quality = 99;
+  // Skip slow settings on big images, it's likely to timeout.
+  if (pic.width * pic.height > 16 * 16) {
+    if (config.lossless) {
+      if (config.quality >= 99.0f && config.method >= 5) {
+        config.quality = 99.0f;
+        config.method = 5;
+      }
+    } else {
+      if (config.quality >= 99.0f && config.method == 6) {
+        config.quality = 99.0f;
+      }
+    }
   }
 
   // Encode.
