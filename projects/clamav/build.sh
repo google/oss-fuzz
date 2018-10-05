@@ -24,7 +24,7 @@ $CXX $CXXFLAGS -std=c++11 -Ilibclamav/ \
     libclamav/libmspack-0.5alpha/.libs/libclammspack.a \
     -Wl,-Bstatic -lssl -lcrypto -lz -Wl,-Bdynamic -ldl
 
-for type in ARCHIVE MAIL OLE2 PDF HTML PE ALGORITHMIC ELF SWF XMLDOCS HWP3; do
+for type in ARCHIVE MAIL OLE2 PDF HTML PE ELF SWF XMLDOCS HWP3; do
     $CXX $CXXFLAGS -std=c++11 -Ilibclamav/ \
         $SRC/clamav_scanfile_fuzzer.cc \
         -o "${OUT}/clamav_scanfile_${type}_fuzzer" "-DCLAMAV_FUZZ_${type}" \

@@ -53,32 +53,32 @@ ClamAVState kClamAVState;
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cl_fmap_t *clamav_data = cl_fmap_open_memory(data, size);
 
-    unsigned int scanopt =
+    unsigned int parseopt =
 #if defined(CLAMAV_FUZZ_ARCHIVE)
-        CL_SCAN_ARCHIVE;
+        CL_SCAN_PARSE_ARCHIVE;
 #elif defined(CLAMAV_FUZZ_MAIL)
-        CL_SCAN_MAIL;
+        CL_SCAN_PARSE_MAIL;
 #elif defined(CLAMAV_FUZZ_OLE2)
-        CL_SCAN_OLE2;
+        CL_SCAN_PARSE_OLE2;
 #elif defined(CLAMAV_FUZZ_PDF)
-        CL_SCAN_PDF;
+        CL_SCAN_PARSE_PDF;
 #elif defined(CLAMAV_FUZZ_HTML)
-        CL_SCAN_HTML;
+        CL_SCAN_PARSE_HTML;
 #elif defined(CLAMAV_FUZZ_PE)
-        CL_SCAN_PE;
-#elif defined(CLAMAV_FUZZ_ALGORITHMIC)
-        CL_SCAN_ALGORITHMIC;
+        CL_SCAN_PARSE_PE;
 #elif defined(CLAMAV_FUZZ_ELF)
-        CL_SCAN_ELF;
+        CL_SCAN_PARSE_ELF;
 #elif defined(CLAMAV_FUZZ_SWF)
-        CL_SCAN_SWF;
+        CL_SCAN_PARSE_SWF;
 #elif defined(CLAMAV_FUZZ_XMLDOCS)
-        CL_SCAN_XMLDOCS;
+        CL_SCAN_PARSE_XMLDOCS;
 #elif defined(CLAMAV_FUZZ_HWP3)
-        CL_SCAN_HWP3;
+        CL_SCAN_PARSE_HWP3;
 #else
-        CL_SCAN_STDOPT;
+        ~0;
 #endif
+    struct cl_scan_options options = {0};
+    options.parse = parseopt;
 
     const char *virus_name = nullptr;
     unsigned long scanned = 0;
@@ -87,7 +87,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         &virus_name,
         &scanned,
         kClamAVState.engine,
-        scanopt,
+        &options,
         nullptr
     );
 
