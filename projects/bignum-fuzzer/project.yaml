@@ -13,3 +13,5 @@ auto_ccs:
     - "davidben@google.com"
     - "svaldez@google.com"
     - "support-mbedtls@arm.com"
+fuzzing_engines:
+    - libfuzzer
