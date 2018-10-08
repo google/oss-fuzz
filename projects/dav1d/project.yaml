@@ -1,0 +1,9 @@
+homepage: "https://code.videolan.org/videolan/dav1d"
+primary_contact: "janne.grunau@gmail.com"
+auto_ccs:
+  - "rsbultje@gmail.com"
+  - "dav1d-fuzz@videolan.org"
+sanitizers:
+  - address
+  - memory
+experimental: True
