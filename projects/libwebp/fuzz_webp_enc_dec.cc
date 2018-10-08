@@ -193,6 +193,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
         config.quality = 99.0f;
       }
     }
+    if (config.alpha_quality == 100 && config.method == 6) {
+      config.alpha_quality = 99;
+    }
   }
 
   // Encode.
