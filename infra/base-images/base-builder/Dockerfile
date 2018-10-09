@@ -37,7 +37,7 @@ ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 
 # Use '-Wno-unused-command-line-argument' to suppress "warning: -ldl: 'linker' input unused"
 # messages which are treated as errors by some projects.
-ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,-ldl -Wno-unused-command-line-argument"
+ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -Wl,--no-as-needed -Wl,-lpthread -Wl,-ldl -Wl,-lm -Wno-unused-command-line-argument"
 
 # Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"
