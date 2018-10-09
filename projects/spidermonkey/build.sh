@@ -27,13 +27,15 @@ autoconf2.13
 mkdir build_DBG.OBJ
 cd build_DBG.OBJ
 
+# Temporarily disable cranelift (see bug 1497570)
 ../configure \
     --enable-debug \
     --enable-optimize \
     --disable-shared-js \
     --disable-jemalloc \
     --disable-tests \
-    --enable-address-sanitizer
+    --enable-address-sanitizer \
+    --disable-cranelift
 
 make "-j$(nproc)"
 
