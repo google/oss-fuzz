@@ -22,9 +22,13 @@ cd lzo-*
 ./configure && make -j$(nproc)
 
 # build fuzzers
-$CC -c -I include/lzo -I minilzo/ $SRC/lzo_compress_target.c
-$CXX $CXXFLAGS -std=c++11 -I include/lzo -I minilzo lzo_compress_target.o \
-    -o $OUT/lzo_compress_target -lFuzzingEngine src/.libs/liblzo2.a
+for file in $SRC/*.c;
+do
+    name=$(basename $file)
+    $CC -c -I include/lzo -I minilzo/ ${file} -o ${name}.o
+    $CXX $CXXFLAGS -std=c++11 -I include/lzo -I minilzo ${name}.o \
+        -o $OUT/${name} -lFuzzingEngine src/.libs/liblzo2.a
+done
 
 # copy fuzzer options
 cp $SRC/*.options $OUT/

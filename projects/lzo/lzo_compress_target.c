@@ -52,7 +52,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
             printf("internal error - lzo_init() failed !!!\n");
             return 0;
         }
-	isInit = true;
+        isInit = true;
     }
 
     /* Compress with LZO1X-1. */
