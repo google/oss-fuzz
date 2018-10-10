@@ -32,3 +32,4 @@ done
 
 # copy fuzzer options
 cp $SRC/*.options $OUT/
+zip -j $OUT/lzo_decompress_target_seed_corpus.zip $SRC/lzo_decompress_target_seeds/*
