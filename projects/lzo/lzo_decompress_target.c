@@ -22,6 +22,13 @@
 #include <stdbool.h>
 #include <assert.h>
 #include "minilzo.h"
+#include "lzo1b.h"
+#include "lzo1c.h"
+#include "lzo1f.h"
+#include "lzo1x.h"
+#include "lzo1y.h"
+#include "lzo1z.h"
+#include "lzo2a.h"
 
 /* Work-memory needed for compression. Allocate memory in units
  * of 'lzo_align_t' (instead of 'char') to make sure it is properly aligned.
@@ -31,22 +38,34 @@
 
 static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 
+typedef int (*decompress_function)( const lzo_bytep, lzo_uint  ,
+                                lzo_bytep, lzo_uintp,
+                                lzo_voidp  );
+
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     int r;
     lzo_uint new_len;
-
-    if (size == 0)
-    {
-	return 0;
+    if (size < 2){
+        return 0;
     }
-
     /* We want to compress the data block at 'in' with length 'IN_LEN' to
      * the block at 'out'. Because the input block may be incompressible,
      * we must provide a little more output space in case that compression
      * is not possible.
     */
-    unsigned char __LZO_MMODEL in[size];
+    unsigned char __LZO_MMODEL out[size];
+
+    decompress_function funcArr[7] = {NULL};
+    funcArr[0] = &lzo1x_decompress_safe;
+    funcArr[1] = &lzo1b_decompress_safe;
+    funcArr[2] = &lzo1c_decompress_safe;
+    funcArr[2] = &lzo1f_decompress_safe;
+    funcArr[3] = &lzo1x_decompress_safe;
+    funcArr[4] = &lzo1y_decompress_safe;
+    funcArr[5] = &lzo1z_decompress_safe;
+    funcArr[6] = &lzo2a_decompress_safe;
+
 
     static bool isInit = false;
     if (!isInit)
@@ -60,9 +79,9 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
 
     /* Decompress. */
+    int idx = data[0] % 7;
     new_len = size;
-    r = lzo1x_decompress(data,size,in,&new_len,NULL);
-    assert(r == LZO_E_OK && new_len == size);
+    r = (*funcArr[idx])(&data[1],size-1,out,&new_len,NULL);
     printf("decompressed %lu bytes back into %lu bytes\n",
             (unsigned long) size, (unsigned long) new_len);
     return 0;
