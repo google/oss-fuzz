@@ -24,7 +24,7 @@ cd lzo-*
 # build fuzzers
 for file in $SRC/*.c;
 do
-    name=$(basename $file)
+    name=$(basename $file .c)
     $CC -c -I include/lzo -I minilzo/ ${file} -o ${name}.o
     $CXX $CXXFLAGS -std=c++11 -I include/lzo -I minilzo ${name}.o \
         -o $OUT/${name} -lFuzzingEngine src/.libs/liblzo2.a
