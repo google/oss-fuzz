@@ -34,7 +34,6 @@ static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     int r;
-    lzo_uint out_len;
     lzo_uint new_len;
     /* We want to compress the data block at 'in' with length 'IN_LEN' to
      * the block at 'out'. Because the input block may be incompressible,
@@ -42,7 +41,6 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
      * is not possible.
     */
     unsigned char __LZO_MMODEL in[size];
-    unsigned char __LZO_MMODEL out[size + size/16 + 64 + 3];
 
     static bool isInit = false;
     if (!isInit)
@@ -52,27 +50,14 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
             printf("internal error - lzo_init() failed !!!\n");
             return 0;
         }
-	isInit = true;
-    }
-
-    /* Compress with LZO1X-1. */
-    r = lzo1x_1_compress(data,size,out,&out_len,wrkmem);
-    assert(r == LZO_E_OK);
-    printf("compressed %lu bytes into %lu bytes\n",
-            (unsigned long) size, (unsigned long) out_len);
-    
-    /* check for an incompressible block */
-    if (out_len >= size)
-    {
-        printf("This block contains incompressible data.\n");
-        return 0;
+        isInit = true;
     }
 
     /* Decompress. */
     new_len = size;
-    r = lzo1x_decompress(out,out_len,in,&new_len,NULL);
+    r = lzo1x_decompress(data,size,in,&new_len,NULL);
     assert(r == LZO_E_OK && new_len == size);
     printf("decompressed %lu bytes back into %lu bytes\n",
-            (unsigned long) out_len, (unsigned long) size);
+            (unsigned long) size, (unsigned long) new_len);
     return 0;
 }

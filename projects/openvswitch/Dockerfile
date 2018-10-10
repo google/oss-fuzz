@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y make autoconf automake \
     libtool python python-pip \
     libz-dev libssl-dev libssl1.0.0 wget
 RUN pip install six
-RUN git clone --depth 1 https://github.com/openvswitch/ovs.git openvswitch
+RUN git clone -b ossfuzz-add-ofctl --depth 1 https://github.com/bshastry/ovs.git openvswitch
 RUN git clone --depth 1 https://github.com/openvswitch/ovs-fuzzing-corpus.git \
     ovs-fuzzing-corpus
 WORKDIR openvswitch
