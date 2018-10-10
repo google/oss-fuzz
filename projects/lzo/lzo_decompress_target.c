@@ -61,8 +61,11 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     /* Decompress. */
     new_len = size;
-    r = lzo1x_decompress(data,size,in,&new_len,NULL);
-    assert(r == LZO_E_OK && new_len == size);
+    r = lzo1x_decompress_safe(data,size,in,&new_len,NULL);
+    if (r != LZO_E_OK)
+    {
+        printf("error thrown by lzo1x_decompress_safe: %d\n", r);
+    }
     printf("decompressed %lu bytes back into %lu bytes\n",
             (unsigned long) size, (unsigned long) new_len);
     return 0;
