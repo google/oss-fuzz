@@ -21,7 +21,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "minilzo.h"
 #include "lzo1b.h"
 #include "lzo1c.h"
 #include "lzo1f.h"
@@ -42,6 +41,19 @@ typedef int (*decompress_function)( const lzo_bytep, lzo_uint  ,
                                 lzo_bytep, lzo_uintp,
                                 lzo_voidp  );
 
+#define NUM_DECOMP   7
+
+static decompress_function funcArr[NUM_DECOMP] =
+{
+        &lzo1b_decompress_safe,
+        &lzo1c_decompress_safe,
+        &lzo1f_decompress_safe,
+        &lzo1x_decompress_safe,
+        &lzo1y_decompress_safe,
+        &lzo1z_decompress_safe,
+        &lzo2a_decompress_safe
+};
+
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     int r;
@@ -56,17 +68,6 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     */
     unsigned char __LZO_MMODEL out[size];
 
-    decompress_function funcArr[7] = {NULL};
-    funcArr[0] = &lzo1x_decompress_safe;
-    funcArr[1] = &lzo1b_decompress_safe;
-    funcArr[2] = &lzo1c_decompress_safe;
-    funcArr[2] = &lzo1f_decompress_safe;
-    funcArr[3] = &lzo1x_decompress_safe;
-    funcArr[4] = &lzo1y_decompress_safe;
-    funcArr[5] = &lzo1z_decompress_safe;
-    funcArr[6] = &lzo2a_decompress_safe;
-
-
     static bool isInit = false;
     if (!isInit)
     {
@@ -79,7 +80,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
 
     /* Decompress. */
-    int idx = data[0] % 7;
+    int idx = data[0] % NUM_DECOMP;
     new_len = size;
     r = (*funcArr[idx])(&data[1],size-1,out,&new_len,NULL);
     printf("decompressed %lu bytes back into %lu bytes\n",
