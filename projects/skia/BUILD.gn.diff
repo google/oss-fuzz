@@ -306,3 +306,16 @@ test_app("skjson") {
     ":skia",
   ]
 }
+
+test_app("api_polyutils") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/FuzzPolyUtils.cpp",
+    "fuzz/oss_fuzz/FuzzPolyUtils.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
