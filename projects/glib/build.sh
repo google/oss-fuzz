@@ -34,5 +34,5 @@ find fuzzing -type f -name "*.dict" -exec cp "{}" $OUT \;
 
 for CORPUS in $(find fuzzing -type f -name "*.corpus"); do
   BASENAME=${CORPUS##*/}
-  zip $OUT/${BASENAME:0:-7}_seed_corpus.zip . -ws -r -i@$CORPUS
+  zip $OUT/${BASENAME%%.*}_seed_corpus.zip . -ws -r -i@$CORPUS
 done
