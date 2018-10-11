@@ -68,6 +68,8 @@ RUN wget -O $SRC/skia/skottie_json_seed_corpus.zip https://storage.googleapis.co
 
 RUN wget -O $SRC/skia/skjson_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skjson_seed_corpus.zip
 
+RUN wget -O $SRC/skia/api_polyutils_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_polyutils_seed_corpus.zip
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
@@ -91,6 +93,7 @@ COPY api_fuzzers.options $SRC/skia/api_mock_gpu_canvas.options
 COPY api_fuzzers.options $SRC/skia/api_null_canvas.options
 COPY api_fuzzers.options $SRC/skia/api_path_measure.options
 COPY api_fuzzers.options $SRC/skia/api_pathop.options
+COPY api_fuzzers.options $SRC/skia/api_polyutils.options
 COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
 
 COPY json.dict $SRC/skia/json.dict
