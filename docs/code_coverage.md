@@ -23,7 +23,7 @@ used. In order to produce such build for your project, run:
 
 ```bash
 python infra/helper.py build_image $project_name
-python infra/helper.py build_fuzzers --sanitizer=profile $project_name
+python infra/helper.py build_fuzzers --sanitizer=coverage $project_name
 ```
 
 
@@ -57,7 +57,7 @@ and try again. Once `gsutil` works, you can run the report generation.
 To generate code coverage report using the corpus aggregated on OSS-Fuzz, run:
 
 ```bash
-python infra/helper.py profile $project_name
+python infra/helper.py coverage $project_name
 ```
 
 If you want to generate code coverage report using the corpus you have locally,
@@ -65,7 +65,7 @@ copy the corpus into `build/corpus/$project_name/$fuzz_target/` directories for
 each fuzz target, then run:
 
 ```bash
-python infra/helper.py profile --no-corpus-download $project_name
+python infra/helper.py coverage --no-corpus-download $project_name
 ```
 
 ### Single fuzz target
@@ -74,14 +74,14 @@ You can generate a code coverage report for a particular fuzz target with
 `--fuzz-target` argument:
 
 ```bash
-python infra/helper.py profile --fuzz-target=<fuzz_target_name> $project_name
+python infra/helper.py coverage --fuzz-target=<fuzz_target_name> $project_name
 ```
 
 In this mode, you can specify an arbitrary corpus location for the fuzz target
 via `--corpus-dir` to be used instead of the corpus downloaded from OSS-Fuzz:
 
 ```bash
-python infra/helper.py profile --fuzz-target=<fuzz_target_name> --corpus-dir=<my_local_corpus_dir> $project_name
+python infra/helper.py coverage --fuzz-target=<fuzz_target_name> --corpus-dir=<my_local_corpus_dir> $project_name
 ```
 
 ### Additional arguments for `llvm-cov`
@@ -90,14 +90,14 @@ You may want to use some of the options of [llvm-cov tool], for example,
 `-ignore-filename-regex=`. You can pass those to the helper script after `--`:
 
 ```bash
-python infra/helper.py profile $project_name -- -ignore-filename-regex=.*code/to/be/ignored/.* <other_extra_args>
+python infra/helper.py coverage $project_name -- -ignore-filename-regex=.*code/to/be/ignored/.* <other_extra_args>
 ```
 
 To specify particular source files or directories to show in the report, list
 their paths at the end of the extra arguments sequence, for example:
 
 ```bash
-python infra/helper.py profile zlib -- <other_extra_args> /src/zlib/inftrees.c /src/zlib_uncompress_fuzzer.cc /src/zlib/zutil.c
+python infra/helper.py coverage zlib -- <other_extra_args> /src/zlib/inftrees.c /src/zlib_uncompress_fuzzer.cc /src/zlib/zutil.c
 ```
 
 If you want OSS-Fuzz to use some extra arguments when generating code coverage
