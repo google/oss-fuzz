@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y python3-pip
 RUN pip3 install -U meson ninja
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib
 WORKDIR glib
-COPY build.sh fuzz* $SRC/
+COPY build.sh $SRC/
