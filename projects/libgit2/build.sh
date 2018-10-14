@@ -32,7 +32,9 @@ for fuzzer in ../fuzzers/*_fuzzer.c
 do
     fuzzer_name=$(basename "${fuzzer%.c}")
 
-    $CC $CFLAGS -c -I"$WORK/include" "$fuzzer" -o "$WORK/$fuzzer_name.o"
+    $CC $CFLAGS -c -I"$WORK/include" -I"$SRC/libgit2/src" \
+        -DLIBGIT2_NO_FEATURES_H \
+        "$fuzzer" -o "$WORK/$fuzzer_name.o"
     $CXX $CXXFLAGS -std=c++11 -o "$OUT/$fuzzer_name" \
         -lFuzzingEngine "$WORK/$fuzzer_name.o" "$WORK/lib/libgit2.a"
 
