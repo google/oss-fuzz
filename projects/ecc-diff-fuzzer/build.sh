@@ -63,7 +63,7 @@ make -j$(nproc) all
 (
 cd openssl
 #option to not have the same exported function poly1305_blocks as in gcrypt
-./config no-poly1305
+./config no-poly1305 no-shared no-threads
 make build_generated libcrypto.a
 )
 
