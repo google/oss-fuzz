@@ -76,7 +76,6 @@ make install
 export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget
-git checkout -b oss-fuzz origin/oss-fuzz
 ./bootstrap
 
 # build and run non-networking tests
