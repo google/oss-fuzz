@@ -1,6 +1,9 @@
 homepage: "https://www.tcpdump.org"
 primary_contact: "security@tcpdump.org"
-auto_ccs : "p.antoine@catenacyber.fr"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+- "infrastation@gmail.com"
+- "guy@alum.mit.edu"
 
 sanitizers:
 - address
