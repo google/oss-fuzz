@@ -24,7 +24,7 @@ mkdir -p ${build}
 
 # build library
 meson -Dbuild_asm=false -Dbuild_tools=false -Dbuild_tests=false   \
-      -Db_lundef=false -Ddefault_library=static -Dbuildtype=debug \
+      -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
       ${build}
 ninja -j $(nproc) -C ${build}
 
