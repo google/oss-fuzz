@@ -91,7 +91,7 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    jpeg_encoder webp_encoder skottie_json \
                                    textblob_deserialize skjson \
                                    api_null_canvas api_image_filter api_pathop \
-                                   api_polyutils
+                                   api_polyutils android_codec image_decode_incremental
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -189,3 +189,12 @@ cp ./canvas_seed_corpus.zip $OUT/api_null_canvas_seed_corpus.zip
 cp out/Fuzz/api_polyutils $OUT/api_polyutils
 cp ./api_polyutils.options $OUT/api_polyutils.options
 cp ./api_polyutils_seed_corpus.zip $OUT/api_polyutils_seed_corpus.zip
+
+# These 2 can use the same corpus as the (non animated) image_decode.
+cp out/Fuzz/android_codec $OUT/android_codec
+cp ./android_codec.options $OUT/android_codec.options
+cp ./image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
+
+cp out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
+cp ./image_decode_incremental.options $OUT/image_decode_incremental.options
+cp ./image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
