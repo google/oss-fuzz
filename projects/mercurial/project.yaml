@@ -7,5 +7,7 @@ auto_ccs:
   - "martinvonz@google.com"
 sanitizers:
   - address
-  - memory
   - undefined
+  # TODO: re-enable memory when we figure out how to work with cpython
+  # and msan at the same time.
+  # - memory

@@ -15,29 +15,30 @@
 #
 ################################################################################
 
+cd libpcap
 # build project
-mkdir -p build
+mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX="$WORK" \
-      -DBUILD_SHARED_LIBS=OFF \
-      -DBUILD_CLAR=OFF \
-      -DUSE_HTTPS=OFF \
-      -DUSE_SSH=OFF \
-      -DUSE_BUNDLED_ZLIB=ON \
+cmake ..
+make
 
-make -j$(nproc)
-make install
 
-for fuzzer in ../fuzzers/*_fuzzer.c
+# build fuzz targets
+for target in pcap filter both
 do
-    fuzzer_name=$(basename "${fuzzer%.c}")
-
-    $CC $CFLAGS -c -I"$WORK/include" -I"$SRC/libgit2/src" \
-        -DLIBGIT2_NO_FEATURES_H \
-        "$fuzzer" -o "$WORK/$fuzzer_name.o"
-    $CXX $CXXFLAGS -std=c++11 -o "$OUT/$fuzzer_name" \
-        -lFuzzingEngine "$WORK/$fuzzer_name.o" "$WORK/lib/libgit2.a"
-
-    zip -j "$OUT/${fuzzer_name}_seed_corpus.zip" \
-        ../fuzzers/corpora/${fuzzer_name%_fuzzer}/*
+    $CC $CFLAGS -I.. -c ../testprogs/fuzz/fuzz_$target.c -o fuzz_$target.o
+    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target libpcap.a -lFuzzingEngine
 done
+
+# export other associated stuff
+cd ..
+cp testprogs/fuzz/fuzz_*.options $OUT/
+# builds corpus
+cd $SRC/tcpdump/
+zip -r fuzz_pcap_seed_corpus.zip tests/
+cp fuzz_pcap_seed_corpus.zip $OUT/
+cd $SRC/libpcap/testprogs/BPF
+mkdir corpus
+ls *.txt | while read i; do tail -1 $i > corpus/$i; done
+zip -r fuzz_filter_seed_corpus.zip corpus/
+cp fuzz_filter_seed_corpus.zip $OUT/

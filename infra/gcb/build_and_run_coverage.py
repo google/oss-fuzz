@@ -92,6 +92,15 @@ def get_build_steps(project_dir):
           ],
           'dir': 'oss-fuzz/projects/' + name,
       },
+      {
+          'name':
+              image,
+          'args': [
+              'bash', '-c',
+              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+          ],
+          'env': ['OSSFUZZ_REVISION=$REVISION_ID'],
+      },
   ]
 
   env = CONFIGURATION[:]
@@ -200,6 +209,21 @@ def get_build_steps(project_dir):
               os.path.join(out, 'logs'),
               UPLOAD_URL_FORMAT.format(
                   project=project_name, type='logs', date=report_date),
+          ],
+      }
+  )
+
+  # Upload srcmap.
+  srcmap_upload_url = UPLOAD_URL_FORMAT.format(
+      project=project_name, type='srcmap', date=report_date)
+  srcmap_upload_url = srcmap_upload_url.rstrip('/') + '.json'
+  build_steps.append(
+      {
+          'name': 'gcr.io/cloud-builders/gsutil',
+          'args': [
+              'cp',
+              '/workspace/srcmap.json',
+              srcmap_upload_url,
           ],
       }
   )
