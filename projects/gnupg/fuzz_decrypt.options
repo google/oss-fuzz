@@ -1,3 +1,2 @@
 [libfuzzer]
-max_len = 65536
 close_fd_mask = 1
