@@ -1,0 +1,8 @@
+homepage: "http://www.bzip.org/"
+primary_contact: "jseward@acm.org"
+auto_ccs:
+  - "bshas3@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
