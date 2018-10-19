@@ -38,13 +38,17 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     nOut = size*2;
     char *outbuf = malloc(nOut);
     r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, (char *)data, size, 0, 0);
+
     if (r != BZ_OK) {
+#ifdef __DEBUG__
         fprintf(stdout, "Decompression error: %d\n", r);
+#endif
+        free(outbuf);
+        return 0;
     }
-    else {
-        assert(nOut == size);
-        assert(memcmp(data, outbuf, size) == 0);
-    }
+
+    assert(nOut == size);
+    assert(memcmp(data, outbuf, size) == 0);
     free(outbuf);
     return 0;
 }
