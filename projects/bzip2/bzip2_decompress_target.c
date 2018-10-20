@@ -22,6 +22,9 @@
 #include <assert.h>
 #include <string.h>
 
+// See comments in bzip2_compress_target.c
+static const unsigned int blockSize = 1000*1000;
+
 extern int BZ2_bzBuffToBuffDecompress(char* dest,
                                       unsigned int* destLen,
                                       char*         source,
@@ -35,20 +38,17 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     int r;
     unsigned int nZ, nOut;
 
-    nOut = size*2;
+    // See: https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L39
+    nOut = blockSize*2;
     char *outbuf = malloc(nOut);
-    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, (char *)data, size, 0, 0);
+    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, (char *)data, size,
+            /*small=*/0, /*verbosity=*/0);
 
     if (r != BZ_OK) {
 #ifdef __DEBUG__
         fprintf(stdout, "Decompression error: %d\n", r);
 #endif
-        free(outbuf);
-        return 0;
     }
-
-    assert(nOut == size);
-    assert(memcmp(data, outbuf, size) == 0);
     free(outbuf);
     return 0;
 }

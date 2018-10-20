@@ -37,14 +37,37 @@ extern int BZ2_bzBuffToBuffDecompress(char* dest,
                                       int           small,
                                       int           verbosity);
 
+/* Buffer size used for (de)compression.
+ * The hard coded value has been borrowed from here:
+ * https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L35
+ * #define M_BLOCK 1000000
+ *
+ * #define M_BLOCK_OUT (M_BLOCK + 1000000)
+ * uchar inbuf[M_BLOCK];
+ * uchar outbuf[M_BLOCK_OUT];
+ * uchar zbuf[M_BLOCK + 600 + (M_BLOCK / 100)];
+ *
+ * Legend:
+ *   - inbuf: For buffereing contents read from a call to fread()
+ *   - zbuf: For storing compressed output
+ *   - outbuf: For storing decompressed output
+ */
+static const unsigned int blockSize = 1000*1000;
+
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     int r;
     unsigned int nZ, nOut;
-    char *zbuf = malloc(size + 600 + (size / 100));
 
-    r = BZ2_bzBuffToBuffCompress(zbuf, &nZ, (char *)data, size, 9, 0, 30);
+    // See: https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L42
+    char *zbuf = malloc(blockSize + 600 + (blockSize / 100));
+
+    nZ = blockSize;
+
+    // Choose highest compression (blockSize100k=9)
+    r = BZ2_bzBuffToBuffCompress(zbuf, &nZ, (char *)data, size,
+            /*blockSize100k=*/9, /*verbosity=*/0, /*workFactor=*/30);
     if (r != BZ_OK) {
 #ifdef __DEBUG__
         fprintf(stdout, "Compression error: %d\n", r);
@@ -53,9 +76,10 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
 
-    nOut = size*2;
+    nOut = blockSize*2;
     char *outbuf = malloc(nOut);
-    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, zbuf, nZ, 0, 0);
+    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, zbuf, nZ, /*small=*/0,
+            /*verbosity=*/0);
     if (r != BZ_OK) {
 #ifdef __DEBUG__
         fprintf(stdout, "Decompression error: %d\n", r);
