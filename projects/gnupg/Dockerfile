@@ -29,4 +29,5 @@ RUN git clone --depth 1 git://git.gnupg.org/gnupg.git gnupg
 
 WORKDIR gnupg
 COPY fuzzgnupg.diff $SRC/fuzz.diff
+COPY fuzz_* $SRC/
 COPY build.sh $SRC/
