@@ -35,14 +35,15 @@ extern int BZ2_bzBuffToBuffDecompress(char* dest,
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    int r;
+    int r, small;
     unsigned int nZ, nOut;
 
     // See: https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L39
     nOut = blockSize*2;
     char *outbuf = malloc(nOut);
+    small = size % 2;
     r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, (char *)data, size,
-            /*small=*/0, /*verbosity=*/0);
+            small, /*verbosity=*/0);
 
     if (r != BZ_OK) {
 #ifdef __DEBUG__

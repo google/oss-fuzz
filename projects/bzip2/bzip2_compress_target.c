@@ -57,17 +57,22 @@ static const unsigned int blockSize = 1000*1000;
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    int r;
+    int r, blockSize100k, workFactor, small;
     unsigned int nZ, nOut;
 
     // See: https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L42
     char *zbuf = malloc(blockSize + 600 + (blockSize / 100));
 
     nZ = blockSize;
+    blockSize100k = (size % 11) + 1;
+    if (blockSize100k > 9) {
+        blockSize100k = 9;
+    }
+    workFactor = size % 251;
 
     // Choose highest compression (blockSize100k=9)
     r = BZ2_bzBuffToBuffCompress(zbuf, &nZ, (char *)data, size,
-            /*blockSize100k=*/9, /*verbosity=*/0, /*workFactor=*/30);
+            blockSize100k, /*verbosity=*/0, workFactor);
     if (r != BZ_OK) {
 #ifdef __DEBUG__
         fprintf(stdout, "Compression error: %d\n", r);
@@ -78,7 +83,8 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     nOut = blockSize*2;
     char *outbuf = malloc(nOut);
-    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, zbuf, nZ, /*small=*/0,
+    small = size % 2;
+    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, zbuf, nZ, small,
             /*verbosity=*/0);
     if (r != BZ_OK) {
 #ifdef __DEBUG__
