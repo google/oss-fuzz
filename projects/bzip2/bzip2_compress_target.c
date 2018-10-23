@@ -37,33 +37,23 @@ extern int BZ2_bzBuffToBuffDecompress(char* dest,
                                       int           small,
                                       int           verbosity);
 
-/* Buffer size used for (de)compression.
- * The hard coded value has been borrowed from here:
- * https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L35
- * #define M_BLOCK 1000000
- *
- * #define M_BLOCK_OUT (M_BLOCK + 1000000)
- * uchar inbuf[M_BLOCK];
- * uchar outbuf[M_BLOCK_OUT];
- * uchar zbuf[M_BLOCK + 600 + (M_BLOCK / 100)];
- *
- * Legend:
- *   - inbuf: For buffereing contents read from a call to fread()
- *   - zbuf: For storing compressed output
- *   - outbuf: For storing decompressed output
- */
-static const unsigned int blockSize = 1000*1000;
-
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     int r, blockSize100k, workFactor, small;
     unsigned int nZ, nOut;
 
-    // See: https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L42
-    char *zbuf = malloc(blockSize + 600 + (blockSize / 100));
+    /* Copying @julian-seward1's comment from
+     * https://github.com/google/oss-fuzz/pull/1887#discussion_r226852388
+     *
+     * They just reflect the fact that the worst case output size is 101%
+     * of the input size + 600 bytes (I assume -- this is now nearly 20
+     * years old). Since the buffer is in mallocville, presumably asan
+     * will complain if it gets overrun. I doubt that will happen though.
+     */
+    nZ = size + 600 + (size / 100);
+    char *zbuf = malloc(nZ);
 
-    nZ = blockSize;
     blockSize100k = (size % 11) + 1;
     if (blockSize100k > 9) {
         blockSize100k = 9;
@@ -81,7 +71,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
 
-    nOut = blockSize*2;
+    nOut = size*2;
     char *outbuf = malloc(nOut);
     small = size % 2;
     r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, zbuf, nZ, small,
