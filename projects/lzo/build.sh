@@ -25,7 +25,7 @@ cd lzo-*
 for file in $SRC/*.c;
 do
     name=$(basename $file .c)
-    $CC -c -I include -I minilzo -I include/lzo ${file} -o ${name}.o
+    $CC $CFLAGS -c -I include -I minilzo -I include/lzo ${file} -o ${name}.o
     $CXX $CXXFLAGS -std=c++11 -I include -I minilzo -I include/lzo ${name}.o \
         -o $OUT/${name} -lFuzzingEngine src/.libs/liblzo2.a
 done
