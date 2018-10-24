@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "minilzo.h"
+#include "lzo1x.h"
 
 /* Work-memory needed for compression. Allocate memory in units
  * of 'lzo_align_t' (instead of 'char') to make sure it is properly aligned.
@@ -49,7 +49,9 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     {
         if (lzo_init() != LZO_E_OK)
         {
+#ifdef __DEBUG__
             printf("internal error - lzo_init() failed !!!\n");
+#endif
             return 0;
         }
         isInit = true;
@@ -58,21 +60,27 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     /* Compress with LZO1X-1. */
     r = lzo1x_1_compress(data,size,out,&out_len,wrkmem);
     assert(r == LZO_E_OK);
+#ifdef __DEBUG__
     printf("compressed %lu bytes into %lu bytes\n",
             (unsigned long) size, (unsigned long) out_len);
+#endif
     
     /* check for an incompressible block */
     if (out_len >= size)
     {
+#ifdef __DEBUG__
         printf("This block contains incompressible data.\n");
+#endif
         return 0;
     }
 
-    /* Decompress. */
+    // Decompress
     new_len = size;
-    r = lzo1x_decompress(out,out_len,in,&new_len,NULL);
+    r = lzo1x_decompress(out,out_len,in,&new_len,/*wrkmem=*/NULL);
     assert(r == LZO_E_OK && new_len == size);
+#ifdef __DEBUG__
     printf("decompressed %lu bytes back into %lu bytes\n",
             (unsigned long) out_len, (unsigned long) size);
+#endif
     return 0;
 }

@@ -29,14 +29,6 @@
 #include "lzo1z.h"
 #include "lzo2a.h"
 
-/* Work-memory needed for compression. Allocate memory in units
- * of 'lzo_align_t' (instead of 'char') to make sure it is properly aligned.
- */
-#define HEAP_ALLOC(var,size) \
-    lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ]
-
-static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
-
 typedef int (*decompress_function)( const lzo_bytep, lzo_uint  ,
                                 lzo_bytep, lzo_uintp,
                                 lzo_voidp  );
@@ -73,17 +65,26 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     {
         if (lzo_init() != LZO_E_OK)
         {
+#ifdef __DEBUG__
             printf("internal error - lzo_init() failed !!!\n");
+#endif
             return 0;
         }
         isInit = true;
     }
 
-    /* Decompress. */
+    // Decompress.
     int idx = data[0] % NUM_DECOMP;
     new_len = size;
-    r = (*funcArr[idx])(&data[1],size-1,out,&new_len,NULL);
+    // Work memory not necessary for decompression
+    r = (*funcArr[idx])(&data[1],size-1,out,&new_len, /*wrkmem=*/NULL);
+#ifdef __DEBUG__
+    if (r != LZO_E_OK)
+    {
+        printf("error thrown by lzo1x_decompress_safe: %d\n", r);
+    }
     printf("decompressed %lu bytes back into %lu bytes\n",
             (unsigned long) size, (unsigned long) new_len);
+#endif
     return 0;
 }
