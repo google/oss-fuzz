@@ -84,6 +84,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     unsigned long scanned = 0;
     cl_scanmap_callback(
         clamav_data,
+        nullptr,
         &virus_name,
         &scanned,
         kClamAVState.engine,
