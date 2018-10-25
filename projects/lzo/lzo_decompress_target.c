@@ -46,19 +46,24 @@ static decompress_function funcArr[NUM_DECOMP] =
         &lzo2a_decompress_safe
 };
 
+/* lzo (de)compresses data in blocks. Block size is the
+ * size of one such block. This size has a default value of 256KB.
+ */
+static const bufSize = 256 * 1024L;
+
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     int r;
     lzo_uint new_len;
-    if (size < 2){
+    if (size < 1){
         return 0;
     }
-    /* We want to compress the data block at 'in' with length 'IN_LEN' to
-     * the block at 'out'. Because the input block may be incompressible,
-     * we must provide a little more output space in case that compression
-     * is not possible.
-    */
-    unsigned char __LZO_MMODEL out[size];
+    /* Buffer into which compressed data provided by the fuzzer
+     * is going to be decompressed. The buffer size is chosen
+     * to be equal to the default block size (256KB) for
+     * (de)compression.
+     */
+    unsigned char __LZO_MMODEL out[bufSize];
 
     static bool isInit = false;
     if (!isInit)
@@ -74,10 +79,10 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
 
     // Decompress.
-    int idx = data[0] % NUM_DECOMP;
-    new_len = size;
+    int idx = size % NUM_DECOMP;
+    new_len = bufSize;
     // Work memory not necessary for decompression
-    r = (*funcArr[idx])(&data[1],size-1,out,&new_len, /*wrkmem=*/NULL);
+    r = (*funcArr[idx])(data, size, out, &new_len, /*wrkmem=*/NULL);
 #ifdef __DEBUG__
     if (r != LZO_E_OK)
     {
