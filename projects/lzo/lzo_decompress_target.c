@@ -49,7 +49,7 @@ static decompress_function funcArr[NUM_DECOMP] =
 /* lzo (de)compresses data in blocks. Block size is the
  * size of one such block. This size has a default value of 256KB.
  */
-static const bufSize = 256 * 1024L;
+static const size_t bufSize = 256 * 1024L;
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
