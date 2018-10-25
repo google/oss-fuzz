@@ -30,10 +30,10 @@ index 33947382c4..543f51244c 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index ae97d05aa1..7e008cd4a6 100644
+index 2bd40011c3..e8bdad1d57 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1100,6 +1100,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1098,6 +1098,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -80,7 +80,7 @@ index 8bef6c355c..3ecc3bcaf9 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index 470f98468a..7fa1b7c97c 100644
+index f374af998a..0cbd0c3729 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
 @@ -261,6 +261,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
@@ -96,10 +96,10 @@ index 470f98468a..7fa1b7c97c 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index f22cdefed5..7dbefb507e 100644
+index 0a6f9e2248..cf9761bf9d 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -1296,6 +1296,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -539,6 +539,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -114,10 +114,10 @@ index f22cdefed5..7dbefb507e 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index bfe9cc23c9..c77c9d80cb 100644
+index af8cf9e0bf..a4ba33a889 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
-@@ -3424,7 +3424,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+@@ -3419,7 +3419,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
                                     SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
      SkASSERT(!oval.isEmpty());
      SkASSERT(sweepAngle);
@@ -131,10 +131,10 @@ index bfe9cc23c9..c77c9d80cb 100644
      path->setIsVolatile(true);
      path->setFillType(SkPath::kWinding_FillType);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index e1c9d02ec0..1d98600921 100644
+index 14097f9579..5db732ac36 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
-@@ -279,7 +279,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
+@@ -266,7 +266,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
  uint32_t SkReadBuffer::getArrayCount() {
      const size_t inc = sizeof(uint32_t);
      fError = fError || !IsPtrAlign4(fReader.peek()) || !fReader.isAvailable(inc);
@@ -147,22 +147,6 @@ index e1c9d02ec0..1d98600921 100644
  }
  
  /*  Format:
-diff --git a/src/core/SkScan_AAAPath.cpp b/src/core/SkScan_AAAPath.cpp
-index 16ecb91dac..b8c9ee8f37 100644
---- a/src/core/SkScan_AAAPath.cpp
-+++ b/src/core/SkScan_AAAPath.cpp
-@@ -1588,6 +1588,11 @@ static SK_ALWAYS_INLINE void aaa_fill_path(const SkPath& path, const SkIRect& cl
-     SkASSERT(blitter);
- 
-     SkEdgeBuilder builder;
-+#if defined(IS_FUZZING)
-+    if (path.countPoints() > 1000) {
-+        return;
-+    }
-+#endif
-     int count = builder.build_edges(path, &clipRect, 0, pathContainedInClip,
-                                     SkEdgeBuilder::kAnalyticEdge);
-     SkAnalyticEdge** list = builder.analyticEdgeList();
 diff --git a/src/core/SkScan_Hairline.cpp b/src/core/SkScan_Hairline.cpp
 index d9c0408b34..8f44cba5f3 100644
 --- a/src/core/SkScan_Hairline.cpp
@@ -194,7 +178,7 @@ index d9c0408b34..8f44cba5f3 100644
              SkFixed startX = SkFDot6ToFixed(x0) + (slope * ((32 - y0) & 63) >> 6);
  
 diff --git a/src/core/SkScan_Path.cpp b/src/core/SkScan_Path.cpp
-index e5dd774c3b..075a1f53d2 100644
+index f14559afa4..d23e3bf169 100644
 --- a/src/core/SkScan_Path.cpp
 +++ b/src/core/SkScan_Path.cpp
 @@ -249,6 +249,11 @@ static void walk_convex_edges(SkEdge* prevHead, SkPath::FillType,
@@ -242,10 +226,10 @@ index fb6a88e0fb..8253a1284d 100644
      const SkMatrix& mat = this->getMatrix();
      SkPoint src, dst;
 diff --git a/src/effects/SkDashPathEffect.cpp b/src/effects/SkDashPathEffect.cpp
-index 8c4abdd2e5..05b9434eef 100644
+index ebb643a29d..4259a6f681 100644
 --- a/src/effects/SkDashPathEffect.cpp
 +++ b/src/effects/SkDashPathEffect.cpp
-@@ -387,6 +387,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
+@@ -386,6 +386,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
          return nullptr;
      }
  
