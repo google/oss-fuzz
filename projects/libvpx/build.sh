@@ -52,7 +52,7 @@ for decoder in "${fuzzer_decoders[@]}"; do
         -Wl,--start-group \
         -lFuzzingEngine \
         $SRC/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
-        ${build_dir}/libvpx.a ${build_dir}/ivfdec.c.o ${build_dir}/tools_common.c.o \
+        ${build_dir}/libvpx.a ${build_dir}/tools_common.c.o \
         -Wl,--end-group
 
     cp $SRC/vpx_dec_fuzzer.dict $OUT/${fuzzer_name}.dict

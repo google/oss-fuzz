@@ -19,6 +19,41 @@
 
 static void close_file(FILE *file) { fclose(file); }
 
+static int read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
+                   size_t *buffer_size) {
+  char raw_header[IVF_FRAME_HDR_SZ] = { 0 };
+  size_t frame_size = 0;
+
+  if (fread(raw_header, IVF_FRAME_HDR_SZ, 1, infile) == 1) {
+    frame_size = mem_get_le32(raw_header);
+
+    if (frame_size > 256 * 1024 * 1024) {
+      frame_size = 0;
+    }
+
+    if (frame_size > *buffer_size) {
+      uint8_t *new_buffer = (uint8_t *)realloc(*buffer, 2 * frame_size);
+
+      if (new_buffer) {
+        *buffer = new_buffer;
+        *buffer_size = 2 * frame_size;
+      } else {
+        frame_size = 0;
+      }
+    }
+  }
+
+  if (!feof(infile)) {
+    if (fread(*buffer, 1, frame_size, infile) != frame_size) {
+      return 1;
+    }
+
+    *bytes_read = frame_size;
+    return 0;
+  }
+
+  return 1;
+}
 extern "C" void usage_exit(void) { exit(EXIT_FAILURE); }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -59,7 +94,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t buffer_size = 0;
   size_t frame_size = 0;
 
-  while (!ivf_read_frame(file.get(), &buffer, &frame_size, &buffer_size)) {
+  while (!read_frame(file.get(), &buffer, &frame_size, &buffer_size)) {
     const vpx_codec_err_t err =
         vpx_codec_decode(&codec, buffer, frame_size, nullptr, 0);
     static_cast<void>(err);
