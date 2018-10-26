@@ -32,23 +32,21 @@ extern int BZ2_bzBuffToBuffDecompress(char* dest,
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    int r;
+    int r, small;
     unsigned int nZ, nOut;
 
+    // See: https://github.com/google/bzip2-rpc/blob/master/unzcrash.c#L39
     nOut = size*2;
     char *outbuf = malloc(nOut);
-    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, (char *)data, size, 0, 0);
+    small = size % 2;
+    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, (char *)data, size,
+            small, /*verbosity=*/0);
 
     if (r != BZ_OK) {
 #ifdef __DEBUG__
         fprintf(stdout, "Decompression error: %d\n", r);
 #endif
-        free(outbuf);
-        return 0;
     }
-
-    assert(nOut == size);
-    assert(memcmp(data, outbuf, size) == 0);
     free(outbuf);
     return 0;
 }

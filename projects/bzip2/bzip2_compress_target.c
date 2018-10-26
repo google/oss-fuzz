@@ -40,11 +40,29 @@ extern int BZ2_bzBuffToBuffDecompress(char* dest,
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    int r;
+    int r, blockSize100k, workFactor, small;
     unsigned int nZ, nOut;
-    char *zbuf = malloc(size + 600 + (size / 100));
 
-    r = BZ2_bzBuffToBuffCompress(zbuf, &nZ, (char *)data, size, 9, 0, 30);
+    /* Copying @julian-seward1's comment from
+     * https://github.com/google/oss-fuzz/pull/1887#discussion_r226852388
+     *
+     * They just reflect the fact that the worst case output size is 101%
+     * of the input size + 600 bytes (I assume -- this is now nearly 20
+     * years old). Since the buffer is in mallocville, presumably asan
+     * will complain if it gets overrun. I doubt that will happen though.
+     */
+    nZ = size + 600 + (size / 100);
+    char *zbuf = malloc(nZ);
+
+    blockSize100k = (size % 11) + 1;
+    if (blockSize100k > 9) {
+        blockSize100k = 9;
+    }
+    workFactor = size % 251;
+
+    // Choose highest compression (blockSize100k=9)
+    r = BZ2_bzBuffToBuffCompress(zbuf, &nZ, (char *)data, size,
+            blockSize100k, /*verbosity=*/0, workFactor);
     if (r != BZ_OK) {
 #ifdef __DEBUG__
         fprintf(stdout, "Compression error: %d\n", r);
@@ -55,7 +73,9 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     nOut = size*2;
     char *outbuf = malloc(nOut);
-    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, zbuf, nZ, 0, 0);
+    small = size % 2;
+    r = BZ2_bzBuffToBuffDecompress(outbuf, &nOut, zbuf, nZ, small,
+            /*verbosity=*/0);
     if (r != BZ_OK) {
 #ifdef __DEBUG__
         fprintf(stdout, "Decompression error: %d\n", r);
