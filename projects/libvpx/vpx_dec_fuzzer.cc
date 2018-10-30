@@ -58,7 +58,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (file == nullptr) {
     return 0;
   }
-
+  // Ensure input contains at least one file header and one frame header
+  if (size < IVF_FILE_HDR_SZ + IVF_FRAME_HDR_SZ) {
+      return 0;
+  }
   char header[IVF_FILE_HDR_SZ];
   if (fread(header, 1, IVF_FILE_HDR_SZ, file.get()) != IVF_FILE_HDR_SZ) {
     return 0;
@@ -77,7 +80,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   const unsigned int threads = 1;
 #elif defined(DECODE_MODE_threaded)
   // Set thread count in the range [2, 64].
-  const unsigned int threads = std::max((header[0] & 0x3f) + 1, 2);
+  const unsigned int threads = std::max((data[IVF_FILE_HDR_SZ] & 0x3f) + 1, 2);
 #else
 #error define one of DECODE_MODE or DECODE_MODE_threaded
 #endif
