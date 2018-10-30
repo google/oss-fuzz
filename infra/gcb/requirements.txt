@@ -29,7 +29,7 @@ python-dateutil==2.7.3
 python-jenkins==1.0.0
 pytz==2018.4
 PyYAML==3.12
-requests==2.18.4
+requests==2.2.0
 rsa==3.4.2
 six==1.11.0
 uritemplate==3.0.0
