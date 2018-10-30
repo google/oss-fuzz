@@ -44,11 +44,7 @@ static int read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
   }
 
   if (!feof(infile)) {
-    if (fread(*buffer, 1, frame_size, infile) != frame_size) {
-      return 1;
-    }
-
-    *bytes_read = frame_size;
+    *bytes_read = fread(*buffer, 1, frame_size, infile);
     return 0;
   }
 
