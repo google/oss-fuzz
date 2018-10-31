@@ -45,6 +45,7 @@ done
 )"
 
 declare BAZEL_BUILD_TARGETS=""
+declare BAZEL_CORPUS_TARGETS=""
 declare FILTERED_FUZZER_TARGETS=""
 for t in ${FUZZER_TARGETS}
 do
@@ -54,6 +55,7 @@ do
   then
     FILTERED_FUZZER_TARGETS+="$t "
     BAZEL_BUILD_TARGETS+="${BAZEL_PATH}_driverless "
+    BAZEL_CORPUS_TARGETS+="${BAZEL_PATH}_corpus_tar "
   fi
 done
 
@@ -67,7 +69,7 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --build_tag_filters=-no_asan \
   ${EXTRA_BAZEL_FLAGS} \
   --linkopt="-lFuzzingEngine" \
-  ${BAZEL_BUILD_TARGETS[*]}
+  ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
@@ -100,17 +102,27 @@ then
   #   /root/.cache "${OUT}"
 fi
 
-# Copy out test driverless binaries from bazel-bin/ and zip up related test
-# corpuses.
+# Copy out test driverless binaries from bazel-bin/.
 for t in ${FILTERED_FUZZER_TARGETS}
 do
-  TARGET_CORPUS=$(python "${SRC}"/find_corpus.py "$t")
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
   TARGET_DRIVERLESS=bazel-bin/"${t}"_driverless
-  echo "Copying fuzzer $t and corpus"
+  echo "Copying fuzzer $t"
   cp "${TARGET_DRIVERLESS}" "${OUT}"/"${TARGET_BASE}"_fuzz_test
+done
+
+
+# Zip up related test corpuses.
+for t in ${FILTERED_FUZZER_TARGETS}
+do
+  echo "Extracting and zipping fuzzer $t corpus"
+  CORPUS_UNTAR_PATH=/tmp/corpus
+  rm -rf "${CORPUS_UNTAR_PATH}"
+  mkdir -p "${CORPUS_UNTAR_PATH}"
+  tar -C "${CORPUS_UNTAR_PATH}" -xvf bazel-bin/"${t}"_corpus_tar.tar
+  TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
   zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
-    "$(dirname "${t}")"/"${TARGET_CORPUS}"/*
+    /tmp/corpus
 done
 
 # Copy dictionaries and options files to $OUT/
