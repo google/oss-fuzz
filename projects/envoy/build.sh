@@ -111,19 +111,21 @@ do
   cp "${TARGET_DRIVERLESS}" "${OUT}"/"${TARGET_BASE}"_fuzz_test
 done
 
-
 # Zip up related test corpuses.
+# TODO(htuch): just use the .tar directly when
+# https://github.com/google/oss-fuzz/issues/1918 is fixed.
+CORPUS_UNTAR_PATH="${PWD}"/_tmp_corpus
 for t in ${FILTERED_FUZZER_TARGETS}
 do
   echo "Extracting and zipping fuzzer $t corpus"
-  CORPUS_UNTAR_PATH=/tmp/corpus
   rm -rf "${CORPUS_UNTAR_PATH}"
   mkdir -p "${CORPUS_UNTAR_PATH}"
   tar -C "${CORPUS_UNTAR_PATH}" -xvf bazel-bin/"${t}"_corpus_tar.tar
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
   zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
-    /tmp/corpus
+    "${CORPUS_UNTAR_PATH}"/*
 done
+rm -rf "${CORPUS_UNTAR_PATH}"
 
 # Copy dictionaries and options files to $OUT/
 for d in $FUZZER_DICTIONARIES; do
