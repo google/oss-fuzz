@@ -105,6 +105,7 @@ def main():
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer.')
   _add_engine_args(run_fuzzer_parser)
+  _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
@@ -677,7 +678,12 @@ def run_fuzzer(args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  env = ['FUZZING_ENGINE=' + args.engine]
+  env = [
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer,
+      'RUN_FUZZER_MODE=interactive',
+  ]
+
   if args.e:
     env += args.e
 
