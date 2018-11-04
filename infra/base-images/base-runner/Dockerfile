@@ -43,7 +43,6 @@ COPY bad_build_check \
     reproduce \
     run_fuzzer \
     run_minijail \
-    sancov \
     targets_list \
     test_all \
     /usr/local/bin/

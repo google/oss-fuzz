@@ -20,6 +20,7 @@
 ./configure                             \
     --enable-fuzz-targets               \
     --enable-application-coap           \
+    --enable-application-coap-secure    \
     --enable-border-agent               \
     --enable-border-router              \
     --enable-cert-log                   \
@@ -32,6 +33,7 @@
     --enable-dns-client                 \
     --enable-diag                       \
     --enable-dns-client                 \
+    --enable-ftd                        \
     --enable-jam-detection              \
     --enable-joiner                     \
     --enable-legacy                     \

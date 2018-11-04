@@ -22,11 +22,8 @@ rm -rf build
 mkdir build
 
 cd build
-if [ $SANITIZER == "profile" ]; then
+if [ $SANITIZER == "coverage" ]; then
   cmake ..
-elif [ $SANITIZER == "coverage" ]; then
-  # TODO(metzman): Remove this once "coverage" builds are removed from OSS-Fuzz.
-  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake ..
 else
   if [ $SANITIZER == "address" ]; then
     CMAKE_SANITIZER="ASAN"
@@ -37,7 +34,7 @@ else
   else
     exit 1
   fi
-  cmake .. -D$CMAKE_SANITIZER=1
+  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -D$CMAKE_SANITIZER=1
 fi
 
 make -j
@@ -93,7 +90,8 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_gradients api_path_measure png_encoder \
                                    jpeg_encoder webp_encoder skottie_json \
                                    textblob_deserialize skjson \
-                                   api_null_canvas api_image_filter
+                                   api_null_canvas api_image_filter api_pathop \
+                                   api_polyutils android_codec image_decode_incremental
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -149,6 +147,10 @@ cp out/Fuzz/api_path_measure $OUT/api_path_measure
 cp ./api_path_measure.options $OUT/api_path_measure.options
 cp ./api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corpus.zip
 
+cp out/Fuzz/api_pathop $OUT/api_pathop
+cp ./api_pathop.options $OUT/api_pathop.options
+cp ./api_pathop_seed_corpus.zip $OUT/api_pathop_seed_corpus.zip
+
 cp out/Fuzz/png_encoder $OUT/png_encoder
 cp ./encoder.options $OUT/png_encoder.options
 cp ./encoder_seed_corpus.zip $OUT/png_encoder_seed_corpus.zip
@@ -183,3 +185,16 @@ cp ./api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip
 cp out/Fuzz/api_null_canvas $OUT/api_null_canvas
 cp ./api_null_canvas.options $OUT/api_null_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_null_canvas_seed_corpus.zip
+
+cp out/Fuzz/api_polyutils $OUT/api_polyutils
+cp ./api_polyutils.options $OUT/api_polyutils.options
+cp ./api_polyutils_seed_corpus.zip $OUT/api_polyutils_seed_corpus.zip
+
+# These 2 can use the same corpus as the (non animated) image_decode.
+cp out/Fuzz/android_codec $OUT/android_codec
+cp ./android_codec.options $OUT/android_codec.options
+cp ./image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
+
+cp out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
+cp ./image_decode_incremental.options $OUT/image_decode_incremental.options
+cp ./image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip

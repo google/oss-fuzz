@@ -23,6 +23,6 @@ RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
     zip -q $SRC/pdf_fuzzer_seed_corpus.zip pdf.js/test/pdfs/*.pdf && \
     rm -rf pdf.js
 ADD https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/pdf.dict $SRC/pdf_fuzzer.dict
-WORKDIR $SRC
-COPY *.cc poppler/fuzz/
+WORKDIR $SRC/poppler
+COPY *.cc $SRC/fuzz/
 COPY build.sh $SRC/

@@ -21,49 +21,18 @@ rm -rf $BUILD
 mkdir $BUILD
 
 meson $BUILD \
+  -Db_lundef=false \
   -Ddefault_library=static \
   -Dlibmount=false \
   -Dselinux=false
 
 ninja -C $BUILD
 
-$CC $CFLAGS -I. -Iglib -I$BUILD/glib -c $SRC/fuzz_bookmark.c
-$CXX $CXXFLAGS -lFuzzingEngine \
-  fuzz_bookmark.o -o $OUT/fuzz_bookmark \
-  $BUILD/glib/libglib-2.0.a $BUILD/glib/libcharset/libcharset.a
-cp $SRC/fuzz.options $OUT/fuzz_bookmark.options
-find glib/tests -type f -size -32k -name "*.xbel" \
-  -exec zip -qju $OUT/fuzz_bookmark_seed_corpus.zip "{}" \;
+find $BUILD/fuzzing -maxdepth 1 -executable -type f -exec cp "{}" $OUT \;
 
-$CC $CFLAGS -I. -Iglib -I$BUILD/glib -c $SRC/fuzz_key.c
-$CXX $CXXFLAGS -lFuzzingEngine \
-  fuzz_key.o -o $OUT/fuzz_key \
-  $BUILD/glib/libglib-2.0.a $BUILD/glib/libcharset/libcharset.a
-cp $SRC/fuzz.options $OUT/fuzz_key.options
-find gio/tests -type f -size -32k -name "*.desktop" \
-  -exec zip -qju $OUT/fuzz_key_seed_corpus.zip "{}" \;
+find fuzzing -type f -name "*.dict" -exec cp "{}" $OUT \;
 
-$CC $CFLAGS -I. -Iglib -I$BUILD/glib -c $SRC/fuzz_variant_text.c
-$CXX $CXXFLAGS -lFuzzingEngine \
-  fuzz_variant_text.o -o $OUT/fuzz_variant_text \
-  $BUILD/glib/libglib-2.0.a $BUILD/glib/libcharset/libcharset.a
-cp $SRC/fuzz.options $OUT/fuzz_variant_text.options
-cp $SRC/fuzz_variant_text.dict $OUT
-
-$CC $CFLAGS -I. -Iglib -I$BUILD/glib -c $SRC/fuzz_variant_binary.c
-$CXX $CXXFLAGS -lFuzzingEngine \
-  fuzz_variant_binary.o -o $OUT/fuzz_variant_binary \
-  $BUILD/glib/libglib-2.0.a $BUILD/glib/libcharset/libcharset.a
-cp $SRC/fuzz.options $OUT/fuzz_variant_binary.options
-
-$CC $CFLAGS -I. -Iglib -Igmodule -I$BUILD -I$BUILD/glib \
-  -c $SRC/fuzz_dbus_message.c
-$CXX $CXXFLAGS -lFuzzingEngine \
-  fuzz_dbus_message.o -o $OUT/fuzz_dbus_message \
-  $BUILD/gio/libgio-2.0.a $BUILD/gmodule/libgmodule-2.0.a \
-  $BUILD/gobject/libgobject-2.0.a $BUILD/glib/libglib-2.0.a \
-  $BUILD/glib/libcharset/libcharset.a $BUILD/glib/pcre/libpcre.a \
-  $BUILD/gio/xdgmime/libxdgmime.a $BUILD/gio/inotify/libinotify.a \
-  $BUILD/subprojects/zlib*/libz.a $BUILD/subprojects/libffi/src/libffi.a \
-  -Bstatic -lresolv
-cp $SRC/fuzz.options $OUT/fuzz_dbus_message.options
+for CORPUS in $(find fuzzing -type f -name "*.corpus"); do
+  BASENAME=${CORPUS##*/}
+  zip $OUT/${BASENAME%%.*}_seed_corpus.zip . -ws -r -i@$CORPUS
+done

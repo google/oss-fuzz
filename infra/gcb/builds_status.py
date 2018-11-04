@@ -14,8 +14,8 @@ import googleapiclient
 from googleapiclient.discovery import build as gcb_build
 from google.cloud import logging
 from google.cloud import storage
-from jinja2 import Environment, FileSystemLoader
 
+import build_and_run_coverage
 import build_project
 
 STATUS_BUCKET = 'oss-fuzz-build-logs'
@@ -38,10 +38,8 @@ def scan_project_names(projects_dir):
   return sorted(projects)
 
 
-def upload_status(successes, failures):
+def upload_status(successes, failures, status_filename):
   """Upload main status page."""
-  env = Environment(
-      loader=FileSystemLoader(os.path.join(SCRIPT_DIR, 'templates')))
   data = {
       'projects': failures + successes,
       'failures': failures,
@@ -51,14 +49,7 @@ def upload_status(successes, failures):
 
   storage_client = storage.Client()
   bucket = storage_client.get_bucket(STATUS_BUCKET)
-
-  blob = bucket.blob('status.html')
-  blob.cache_control = 'no-cache'
-  blob.upload_from_string(
-      env.get_template('status_template.html').render(data),
-      content_type='text/html')
-
-  blob = bucket.blob('status.json')
+  blob = bucket.blob(status_filename)
   blob.cache_control = 'no-cache'
   blob.upload_from_string(json.dumps(data), content_type='application/json')
 
@@ -107,21 +98,14 @@ def execute_with_retries(request):
       raise
 
 
-def main():
-  if len(sys.argv) != 2:
-    usage()
-
-  projects_dir = sys.argv[1]
-
-  credentials = GoogleCredentials.get_application_default()
-  cloudbuild = gcb_build('cloudbuild', 'v1', credentials=credentials)
-
+def update_build_status(
+    cloudbuild, projects, build_tag, status_filename):
   successes = []
   failures = []
-  for project in scan_project_names(projects_dir):
+  for project in projects:
     print project
     query_filter = ('images="gcr.io/oss-fuzz/{0}" AND tags="{1}"'.format(
-        project, build_project.FUZZING_BUILD_TAG))
+        project, build_tag))
     try:
       response = execute_with_retries(cloudbuild.projects().builds().list(
           projectId='oss-fuzz', pageSize=2, filter=query_filter))
@@ -155,7 +139,24 @@ def main():
           'success': False,
       })
 
-  upload_status(successes, failures)
+  upload_status(successes, failures, status_filename)
+
+
+def main():
+  if len(sys.argv) != 2:
+    usage()
+
+  projects_dir = sys.argv[1]
+  projects = scan_project_names(projects_dir)
+
+  credentials = GoogleCredentials.get_application_default()
+  cloudbuild = gcb_build('cloudbuild', 'v1', credentials=credentials)
+
+  update_build_status(cloudbuild, projects, build_project.FUZZING_BUILD_TAG,
+                      status_filename='status.json')
+  update_build_status(cloudbuild, projects,
+                      build_and_run_coverage.COVERAGE_BUILD_TAG,
+                      status_filename='status-coverage.json')
 
 
 if __name__ == '__main__':

@@ -18,11 +18,35 @@
 SRC_DIR=$SRC/pffft
 cd $WORK
 
+# Deploy the seed corpus.
+SEED_CORPUS_ZIP_PATH=$OUT/pffft_fuzzers_seed_corpus.zip
+if [ -d seed_corpus_tmp ]; then 
+  rm -fr seed_corpus_tmp
+fi
+mkdir seed_corpus_tmp
+python $SRC_DIR/generate_seed_corpus.py seed_corpus_tmp
+cd seed_corpus_tmp
+zip -q $SEED_CORPUS_ZIP_PATH ./*
+cd ..
+rm -fr seed_corpus_tmp
+
 build_fuzzer() {
   # Aliases for the arguments.
   fft_transform=$1
 
+  # Fuzzer name.
   fuzz_target_name=pffft_${fft_transform,,}_fuzzer
+
+  # Add a symbolic link for the seed corpus (same corpus for all the
+  # generated fuzzers).
+  ls -la $OUT/*.zip
+  FUZZER_SEED_CORPUS_PATH=$OUT/${fuzz_target_name}_seed_corpus.zip
+  if [ -e $FUZZER_SEED_CORPUS_PATH ]; then
+    rm $FUZZER_SEED_CORPUS_PATH
+  fi
+  ln -s $SEED_CORPUS_ZIP_PATH $FUZZER_SEED_CORPUS_PATH
+
+  # Compile fuzzer.
   $CXX $CXXFLAGS -std=c++11 -msse2 \
        -DTRANSFORM_${fft_transform} \
        $SRC/pffft/pffft.c $SRC/pffft/pffft_fuzzer.cc \

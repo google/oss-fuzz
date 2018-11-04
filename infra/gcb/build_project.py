@@ -29,7 +29,6 @@ CONFIGURATIONS = {
     'sanitizer-address': ['SANITIZER=address'],
     'sanitizer-memory': ['SANITIZER=memory'],
     'sanitizer-undefined': ['SANITIZER=undefined'],
-    'sanitizer-coverage': ['SANITIZER=coverage'],
     'engine-libfuzzer': ['FUZZING_ENGINE=libfuzzer'],
     'engine-afl': ['FUZZING_ENGINE=afl'],
     'engine-honggfuzz': ['FUZZING_ENGINE=honggfuzz'],
@@ -43,8 +42,7 @@ ENGINE_INFO = {
     'libfuzzer':
         EngineInfo(
             upload_bucket='clusterfuzz-builds',
-            supported_sanitizers=['address', 'memory', 'undefined',
-                                  'coverage']),
+            supported_sanitizers=['address', 'memory', 'undefined']),
     'afl':
         EngineInfo(
             upload_bucket='clusterfuzz-builds-afl',
@@ -83,12 +81,13 @@ def load_project_yaml(project_dir):
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
     project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
     project_yaml.setdefault('run_tests', True)
+    project_yaml.setdefault('coverage_extra_args', '')
     return project_yaml
 
 
-def get_signed_url(path, method='PUT'):
+def get_signed_url(path, method='PUT', content_type=''):
   timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = '{0}\n\n\n{1}\n{2}'.format(method, timestamp, path)
+  blob = '{0}\n\n{1}\n{2}\n{3}'.format(method, content_type, timestamp, path)
 
   creds = ServiceAccountCredentials.from_json_keyfile_name(
       os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
@@ -119,10 +118,6 @@ def get_sanitizers(project_yaml):
     elif isinstance(sanitizer, dict):
       for key in sanitizer.iterkeys():
         processed_sanitizers.append(key)
-
-  # Always make a coverage build.
-  if 'coverage' not in processed_sanitizers:
-    processed_sanitizers.append('coverage')
 
   return processed_sanitizers
 

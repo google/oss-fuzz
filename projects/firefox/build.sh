@@ -19,44 +19,21 @@
 FUZZ_TARGETS=(
   SdpParser
   StunParser
+  ContentParentIPC
+  ContentSecurityPolicyParser
   # Qcms # needn't be enabled; has its own project with more sanitizers/engines
 )
 
-# Firefox object (build) directory.
-OBJDIR=$WORK/obj-fuzz
+# Firefox object (build) directory and configuration file.
+export MOZ_OBJDIR=$WORK/obj-fuzz
+export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 
-[[ $SANITIZER = "coverage" ]] && touch $OUT/empty && exit 0
-
-# Firefox fuzzing build configuration.
-cat << EOF > mozconfig
-ac_add_options --disable-debug
-ac_add_options --disable-elf-hack
-ac_add_options --disable-jemalloc
-ac_add_options --disable-crashreporter
-ac_add_options --enable-fuzzing
-ac_add_options --enable-optimize=-O1
-ac_add_options --enable-debug-symbols=-gline-tables-only
-ac_add_options --enable-address-sanitizer
-mk_add_options MOZ_OBJDIR=${OBJDIR}
-mk_add_options MOZ_MAKE_FLAGS=-j$(nproc)
-EOF
-
-if [[ $SANITIZER = "address" ]]
-then
-cat << EOF >> mozconfig
-mk_add_options CFLAGS=
-mk_add_options CXXFLAGS=
-EOF
-fi
-
-# Remove existing cargo configs (if any). Otherwise, mach fails.
-if [ -d "$HOME/.cargo" ]; then rm -rf $HOME/.cargo; fi
-
-# Install dependencies.
+# Install dependencies. Note that bootstrap installs cargo, which must be added
+# to PATH via source. In a successive run (for a different sanitizer), the
+# cargo installation carries over, but bootstrap fails if cargo is not in PATH.
 export SHELL=/bin/bash
+[[ -f "$HOME/.cargo/env" ]] && source $HOME/.cargo/env
 ./mach bootstrap --no-interactive --application-choice browser
-
-# Set environment for rustc.
 source $HOME/.cargo/env
 
 # Update internal libFuzzer.
@@ -68,41 +45,20 @@ source $HOME/.cargo/env
 
 # Packages Firefox only to immediately extract the archive. Some files are
 # replaced with gtest-variants, which is required by the fuzzing interface.
-# Weighs in shy of 1GB afterwards.
-make -j$(nproc) -C $OBJDIR package
-tar -xf $OBJDIR/dist/firefox*bz2 -C $OUT
-mv $OBJDIR/toolkit/library/gtest/libxul.so $OUT/firefox
-mv $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
+# Weighs in shy of 1GB afterwards. About double for coverage builds.
+./mach package
+tar -xf $MOZ_OBJDIR/dist/firefox*bz2 -C $OUT
+cp -L $MOZ_OBJDIR/dist/bin/gtest/libxul.so $OUT/firefox
+cp $OUT/firefox/dependentlibs.list $OUT/firefox/dependentlibs.list.gtest
 
-# Get the absolute paths of the required libraries.
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:$OUT/firefox
-REQUIRED_LIBRARIES=($(ldd $OUT/firefox/libxul.so | gawk '/=> [/]/ {print $3}'))
-REQUIRED_LIBRARIES=(${REQUIRED_LIBRARIES[@]##$OUT/*})
+# Get absolute paths of the required system libraries.
+LIBRARIES=$({
+  xargs -I{} ldd $OUT/firefox/{} | gawk '/=> [/]/ {print $3}' | sort -u
+} < $OUT/firefox/dependentlibs.list)
 
-mkdir $WORK/apt
-chown _apt $WORK/apt # suppress warning message on each file
-cd $WORK/apt
-
-# Find and download packages which have the required files, ignoring some.
-# Note that apt-file is very slow, hence parallel is used.
-# Takes only 1-2 minutes on a 32 vCPU instance.
-PACKAGES=($(parallel apt-file search -lFN "{}" ::: ${REQUIRED_LIBRARIES[@]}))
-PACKAGES=(${PACKAGES[@]##libc6*})
-PACKAGES=(${PACKAGES[@]##libgcc*})
-PACKAGES=(${PACKAGES[@]##libstdc++*})
-apt-get -q download ${PACKAGES[@]}
-
-mkdir $WORK/deb
-# Extract downloaded packages.
-find $WORK/apt -type f -exec dpkg-deb --extract "{}" $WORK/deb \;
-
-mkdir $OUT/lib
-# Move required libraries. Less than 50MB total.
-for REQUIRED_LIBRARY in ${REQUIRED_LIBRARIES[@]}
-do
-  find $WORK/deb \
-    -xtype f -name "${REQUIRED_LIBRARY##*/}" -exec cp -uL "{}" $OUT/lib \;
-done
+# Copy libraries. Less than 50MB total.
+mkdir -p $OUT/lib
+for LIBRARY in $LIBRARIES; do cp -L $LIBRARY $OUT/lib; done
 
 # Build a wrapper binary for each target to set environment variables.
 for FUZZ_TARGET in ${FUZZ_TARGETS[@]}
@@ -112,16 +68,20 @@ do
     $SRC/target.c -o $OUT/$FUZZ_TARGET
 done
 
-cd $SRC/mozilla-central
+cp $SRC/*.options $OUT
 
 # SdpParser
-find media/webrtc/trunk/webrtc/test/fuzzers/corpora/sdp-corpus \
-  -type f -exec zip -qju $OUT/SdpParser_seed_corpus.zip "{}" \;
-cp media/webrtc/trunk/webrtc/test/fuzzers/corpora/sdp.tokens \
-  $OUT/SdpParser.dict
+find media/webrtc -iname "*.sdp" \
+  -type f -exec zip -qu $OUT/SdpParser_seed_corpus.zip "{}" \;
+cp $SRC/fuzzdata/dicts/sdp.dict $OUT/SdpParser.dict
 
 # StunParser
-find media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun-corpus \
-  -type f -exec zip -qju $OUT/StunParser_seed_corpus.zip "{}" \;
-cp media/webrtc/trunk/webrtc/test/fuzzers/corpora/stun.tokens \
-  $OUT/StunParser.dict
+find media/webrtc -iname "*.stun" \
+  -type f -exec zip -qu $OUT/StunParser_seed_corpus.zip "{}" \;
+cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
+
+# ContentParentIPC
+cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
+
+# ContentSecurityPolicyParser
+cp dom/security/fuzztest/csp_fuzzer.dict $OUT/ContentSecurityPolicyParser.dict

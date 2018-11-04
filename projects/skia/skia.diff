@@ -1,9 +1,9 @@
 diff --git a/fuzz/FuzzPathMeasure.cpp b/fuzz/FuzzPathMeasure.cpp
-index e6933a856f..f802cc2250 100644
+index 62e7b7434c..f64faab8be 100644
 --- a/fuzz/FuzzPathMeasure.cpp
 +++ b/fuzz/FuzzPathMeasure.cpp
 @@ -22,6 +22,9 @@ DEF_FUZZ(PathMeasure, fuzz) {
-     BuildPath(fuzz, &path, SkPath::Verb::kDone_Verb);
+     FuzzEvilPath(fuzz, &path, SkPath::Verb::kDone_Verb);
      SkRect bounds = path.getBounds();
      SkScalar maxDim = SkTMax(bounds.width(), bounds.height());
 +    if (maxDim > 10000000) {
@@ -13,7 +13,7 @@ index e6933a856f..f802cc2250 100644
      SkPathMeasure measure(path, bits & 1, resScale);
      SkPoint position;
 diff --git a/src/core/SkAAClip.cpp b/src/core/SkAAClip.cpp
-index 24a8e58e96..3339cd0e5f 100644
+index 33947382c4..543f51244c 100644
 --- a/src/core/SkAAClip.cpp
 +++ b/src/core/SkAAClip.cpp
 @@ -1549,6 +1549,12 @@ static void operateY(SkAAClip::Builder& builder, const SkAAClip& A,
@@ -30,10 +30,10 @@ index 24a8e58e96..3339cd0e5f 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 945b8580e0..c1cdcfecba 100644
+index 2bd40011c3..e8bdad1d57 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -1101,6 +1101,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -1098,6 +1098,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -47,7 +47,7 @@ index 945b8580e0..c1cdcfecba 100644
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index e6ea213146..3eecbc36bb 100644
+index b6ed9b316d..d0bcfd1f2a 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
 @@ -88,6 +88,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
@@ -80,7 +80,7 @@ index 8bef6c355c..3ecc3bcaf9 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index e001f58250..8c65cfaaee 100644
+index f374af998a..0cbd0c3729 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
 @@ -261,6 +261,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
@@ -96,10 +96,10 @@ index e001f58250..8c65cfaaee 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index 15aa44eebc..92bba3f6c8 100644
+index 0a6f9e2248..cf9761bf9d 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -1277,6 +1277,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -539,6 +539,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -114,10 +114,10 @@ index 15aa44eebc..92bba3f6c8 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index b51bb2d07c..38f86dde00 100644
+index af8cf9e0bf..a4ba33a889 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
-@@ -3394,7 +3394,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+@@ -3419,7 +3419,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
                                     SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
      SkASSERT(!oval.isEmpty());
      SkASSERT(sweepAngle);
@@ -131,10 +131,10 @@ index b51bb2d07c..38f86dde00 100644
      path->setIsVolatile(true);
      path->setFillType(SkPath::kWinding_FillType);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index e1c9d02ec0..1d98600921 100644
+index 14097f9579..5db732ac36 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
-@@ -279,7 +279,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
+@@ -266,7 +266,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
  uint32_t SkReadBuffer::getArrayCount() {
      const size_t inc = sizeof(uint32_t);
      fError = fError || !IsPtrAlign4(fReader.peek()) || !fReader.isAvailable(inc);
@@ -147,22 +147,6 @@ index e1c9d02ec0..1d98600921 100644
  }
  
  /*  Format:
-diff --git a/src/core/SkScan_AAAPath.cpp b/src/core/SkScan_AAAPath.cpp
-index 9dbb271890..1f2602d159 100644
---- a/src/core/SkScan_AAAPath.cpp
-+++ b/src/core/SkScan_AAAPath.cpp
-@@ -1588,6 +1588,11 @@ static SK_ALWAYS_INLINE void aaa_fill_path(const SkPath& path, const SkIRect& cl
-     SkASSERT(blitter);
- 
-     SkEdgeBuilder builder;
-+#if defined(IS_FUZZING)
-+    if (path.countPoints() > 1000) {
-+        return;
-+    }
-+#endif
-     int count = builder.build_edges(path, &clipRect, 0, pathContainedInClip,
-                                     SkEdgeBuilder::kAnalyticEdge);
-     SkAnalyticEdge** list = builder.analyticEdgeList();
 diff --git a/src/core/SkScan_Hairline.cpp b/src/core/SkScan_Hairline.cpp
 index d9c0408b34..8f44cba5f3 100644
 --- a/src/core/SkScan_Hairline.cpp
@@ -194,7 +178,7 @@ index d9c0408b34..8f44cba5f3 100644
              SkFixed startX = SkFDot6ToFixed(x0) + (slope * ((32 - y0) & 63) >> 6);
  
 diff --git a/src/core/SkScan_Path.cpp b/src/core/SkScan_Path.cpp
-index e5dd774c3b..075a1f53d2 100644
+index f14559afa4..d23e3bf169 100644
 --- a/src/core/SkScan_Path.cpp
 +++ b/src/core/SkScan_Path.cpp
 @@ -249,6 +249,11 @@ static void walk_convex_edges(SkEdge* prevHead, SkPath::FillType,
@@ -226,7 +210,7 @@ index 72a128d16e..78716de1bb 100644
          int governor = MAX_REASONABLE_ITERATIONS;
          SkScalar    length = meas.getLength();
 diff --git a/src/effects/Sk2DPathEffect.cpp b/src/effects/Sk2DPathEffect.cpp
-index 24586827c4..9f5661c382 100644
+index fb6a88e0fb..8253a1284d 100644
 --- a/src/effects/Sk2DPathEffect.cpp
 +++ b/src/effects/Sk2DPathEffect.cpp
 @@ -51,6 +51,11 @@ void Sk2DPathEffect::nextSpan(int x, int y, int count, SkPath* path) const {
@@ -242,10 +226,10 @@ index 24586827c4..9f5661c382 100644
      const SkMatrix& mat = this->getMatrix();
      SkPoint src, dst;
 diff --git a/src/effects/SkDashPathEffect.cpp b/src/effects/SkDashPathEffect.cpp
-index cc414f7c16..25a4cb37bc 100644
+index ebb643a29d..4259a6f681 100644
 --- a/src/effects/SkDashPathEffect.cpp
 +++ b/src/effects/SkDashPathEffect.cpp
-@@ -387,6 +387,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
+@@ -386,6 +386,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
          return nullptr;
      }
  
@@ -275,10 +259,10 @@ index 2c913d8d9e..61b9629766 100644
          if (fSegLength * (2 + doFill) > length) {
              meas.getSegment(0, length, dst, true);  // to short for us to mangle
 diff --git a/src/effects/SkLayerDrawLooper.cpp b/src/effects/SkLayerDrawLooper.cpp
-index 1610809456..125f8f4a18 100644
+index ce22a66b55..6216057be1 100644
 --- a/src/effects/SkLayerDrawLooper.cpp
 +++ b/src/effects/SkLayerDrawLooper.cpp
-@@ -261,6 +261,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
+@@ -264,6 +264,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
  sk_sp<SkFlattenable> SkLayerDrawLooper::CreateProc(SkReadBuffer& buffer) {
      int count = buffer.readInt();
  
@@ -290,22 +274,6 @@ index 1610809456..125f8f4a18 100644
      Builder builder;
      for (int i = 0; i < count; i++) {
          LayerInfo info;
-diff --git a/src/gpu/GrPathUtils.cpp b/src/gpu/GrPathUtils.cpp
-index 549a4dd411..13d52e18ca 100644
---- a/src/gpu/GrPathUtils.cpp
-+++ b/src/gpu/GrPathUtils.cpp
-@@ -401,6 +401,11 @@ void convert_noninflect_cubic_to_quads(const SkPoint p[4],
-                                        SkPathPriv::FirstDirection dir,
-                                        SkTArray<SkPoint, true>* quads,
-                                        int sublevel = 0) {
-+#if defined(IS_FUZZING)
-+    if (sublevel >= 7) {
-+        return;
-+    }
-+#endif
- 
-     // Notation: Point a is always p[0]. Point b is p[1] unless p[1] == p[0], in which case it is
-     // p[2]. Point d is always p[3]. Point c is p[2] unless p[2] == p[3], in which case it is p[1].
 diff --git a/src/ports/SkDebug_stdio.cpp b/src/ports/SkDebug_stdio.cpp
 index ec4e3fec77..4bc01d5d51 100644
 --- a/src/ports/SkDebug_stdio.cpp

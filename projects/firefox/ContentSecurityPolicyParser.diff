@@ -1,0 +1,11 @@
+diff --git a/dom/security/nsCSPContext.cpp b/dom/security/nsCSPContext.cpp
+--- a/dom/security/nsCSPContext.cpp
++++ b/dom/security/nsCSPContext.cpp
+@@ -756,6 +756,7 @@ nsCSPContext::logToConsole(const char* a
+                            uint32_t aColumnNumber,
+                            uint32_t aSeverityFlag)
+ {
++  return;
+   // we are passing aName as the category so we can link to the
+   // appropriate MDN docs depending on the specific error.
+   nsDependentCString category(aName);

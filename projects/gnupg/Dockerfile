@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER info@g10code.com
+MAINTAINER p.antoine@catenacyber.fr
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext bzip2 gnupg
 
 #wait for zesty, or backport ?
@@ -25,8 +25,9 @@ RUN curl -O https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-2.5.1.tar.bz2
 RUN curl -O https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.3.5.tar.bz2
 RUN curl -O https://www.gnupg.org/ftp/gcrypt/npth/npth-1.5.tar.bz2
 
-#TODO change when merged into master branch of official repo
-RUN git clone --depth 1 --branch fuzz https://github.com/catenacyber/gnupg.git gnupg
+RUN git clone --depth 1 git://git.gnupg.org/gnupg.git gnupg
 
 WORKDIR gnupg
+COPY fuzzgnupg.diff $SRC/fuzz.diff
+COPY fuzz_* $SRC/
 COPY build.sh $SRC/

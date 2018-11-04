@@ -52,12 +52,25 @@ bazel-bin/*.a \
 # build grpc
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
 NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
-EXTERA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
+EXTRA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
-  $EXTERA_BAZEL_FLAGS \
+  $EXTRA_BAZEL_FLAGS \
   $NO_VPTR \
   :all test/core/util/... test/core/end2end/... third_party/address_sorting/... \
   third_party/nanopb/... @boringssl//:all @com_github_madler_zlib//:all @com_github_cares_cares//:all
+
+# Copied from projects/envoy/build.sh which also uses Bazel.
+# Profiling with coverage requires that we resolve+copy all Bazel symlinks and
+# also remap everything under proc/self/cwd to correspond to Bazel build paths.
+if [ "$SANITIZER" = "coverage" ]
+then
+  # The build invoker looks for sources in $SRC, but it turns out that we need
+  # to not be buried under src/, paths are expected at out/proc/self/cwd by
+  # the profiler.
+  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
+  mkdir -p "${REMAP_PATH}"
+  rsync -av "${SRC}"/grpc "${REMAP_PATH}"
+fi
 
 CFLAGS="${CFLAGS} -Iinclude -Ithird_party/nanopb -I."
 CXXFLAGS="${CXXFLAGS} -Iinclude -Ithird_party/nanopb -I. -stdlib=libc++"

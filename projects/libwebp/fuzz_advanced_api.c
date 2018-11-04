@@ -1,20 +1,33 @@
+// Copyright 2018 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 #include "fuzz.h"
 #include "webp/decode.h"
 
-int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   WebPDecoderConfig config;
-  if (!WebPInitDecoderConfig(&config))
-    return 0;
-  if (WebPGetFeatures(data, size, &config.input) != VP8_STATUS_OK)
-    return 0;
-  if ((size_t)config.input.width * config.input.height > fuzz_px_limit)
-    return 0;
+  if (!WebPInitDecoderConfig(&config)) return 0;
+  if (WebPGetFeatures(data, size, &config.input) != VP8_STATUS_OK) return 0;
+  if ((size_t)config.input.width * config.input.height > kFuzzPxLimit) return 0;
 
   // Using two independent criteria ensures that all combinations of options
   // can reach each path at the decoding stage, with meaningful differences.
 
-  const uint8_t value = fuzz_hash(data, size);
-  float factor = value / 255.f; // 0-1
+  const uint8_t value = FuzzHash(data, size);
+  const float factor = value / 255.f;  // 0-1
 
   config.options.flip = value & 1;
   config.options.bypass_filtering = value & 2;
@@ -43,17 +56,14 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size % 3) {
     // Decodes incrementally in chunks of increasing size.
     WebPIDecoder* idec = WebPIDecode(NULL, 0, &config);
-    if (!idec)
-      return 0;
+    if (!idec) return 0;
     VP8StatusCode status;
     if (size & 8) {
       size_t available_size = value + 1;
       while (1) {
-        if (available_size > size)
-          available_size = size;
+        if (available_size > size) available_size = size;
         status = WebPIUpdate(idec, data, available_size);
-        if (status != VP8_STATUS_SUSPENDED || available_size == size)
-          break;
+        if (status != VP8_STATUS_SUSPENDED || available_size == size) break;
         available_size *= 2;
       }
     } else {
@@ -62,11 +72,11 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       const uint8_t* new_data = data;
       size_t new_size = value + 1;
       while (1) {
-        if (new_data + new_size > data + size)
+        if (new_data + new_size > data + size) {
           new_size = data + size - new_data;
+        }
         status = WebPIAppend(idec, new_data, new_size);
-        if (status != VP8_STATUS_SUSPENDED || new_size == 0)
-          break;
+        if (status != VP8_STATUS_SUSPENDED || new_size == 0) break;
         new_data += new_size;
         new_size *= 2;
       }

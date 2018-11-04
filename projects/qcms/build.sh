@@ -32,5 +32,6 @@ $CXX $CXXFLAGS -std=c++11 \
   -lFuzzingEngine \
   fuzztest/qcms_fuzzer.cpp -o $OUT/fuzz
 
+find fuzztest -iname "*.icc" \
+  -type f -exec zip -qju $OUT/fuzz_seed_corpus.zip "{}" \;
 cp fuzztest/qcms_fuzzer.dict $OUT/fuzz.dict
-cp $SRC/fuzz_seed_corpus.zip $OUT

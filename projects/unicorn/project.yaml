@@ -1,0 +1,8 @@
+homepage: "https://www.unicorn-engine.org"
+primary_contact: "unicorn.emu@gmail.com"
+auto_ccs : "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- memory
+- undefined
