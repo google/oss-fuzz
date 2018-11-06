@@ -27,28 +27,6 @@ shift
 CORPUS_DIR="/tmp/${FUZZER}_corpus"
 FUZZER_OUT="/tmp/${FUZZER}_out"
 
-function get_dictionary() {
-  local options_file="$FUZZER.options"
-  local dict_file="$FUZZER.dict"
-  local dict=""
-  if [[ -f "$options_file" ]]; then
-    dict=$(sed -n 's/^\s*dict\s*=\s*\(.*\)/\1/p' "$options_file" | tail -1)
-  fi
-  if [[ -z "$dict" && -f "$dict_file" ]]; then
-    dict="$dict_file"
-  fi
-  [[ -z "$dict" ]] && return
-  if [[ "$FUZZING_ENGINE" = "libfuzzer" ]]; then
-     printf -- "-dict=%s" "$dict"
-  elif [[ "$FUZZING_ENGINE" = "afl" ]]; then
-     printf -- "-x %s" "$dict"
-  elif [[ "$FUZZING_ENGINE" = "honggfuzz" ]]; then
-     printf -- "--dict %s" "$dict"
-  else
-     printf "Unexpected FUZZING_ENGINE: $FUZZING_ENGINE, ignoring\n" >&2
-  fi
-}
-
 rm -rf $CORPUS_DIR && mkdir $CORPUS_DIR
 rm -rf $FUZZER_OUT && mkdir $FUZZER_OUT
 
@@ -67,7 +45,7 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   export AFL_SKIP_CPUFREQ=1
   # AFL expects at least 1 file in the input dir.
   echo input > ${CORPUS_DIR}/input
-  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* $OUT/$FUZZER"
+  CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $* $OUT/$FUZZER"
 elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # Honggfuzz expects at least 1 file in the input dir.
   echo input > $CORPUS_DIR/input
@@ -79,7 +57,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -P: use persistent mode of fuzzing (i.e. LLVMFuzzerTestOneInput)
   # -f: location of the initial (and destination) file corpus
   # -n: number of fuzzing threads (and processes)
-  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
+  CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $* -- \"$OUT/$FUZZER\""
 else
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $* $CORPUS_DIR"
 
