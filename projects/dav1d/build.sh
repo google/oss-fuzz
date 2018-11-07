@@ -23,21 +23,20 @@ rm -rf ${build}
 mkdir -p ${build}
 
 # build library
-meson -Dbuild_asm=false -Dbuild_tools=false -Dbuild_tests=false   \
+meson -Dbuild_asm=false -Dbuild_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
       ${build}
 ninja -j $(nproc) -C ${build}
 
-# build fuzzer
-$CC $CFLAGS -Iinclude \
-    -o ${build}/dav1d_fuzzer.o -c tests/libfuzzer/dav1d_fuzzer.c
-$CXX $CXXFLAGS -lFuzzingEngine \
-    ${build}/dav1d_fuzzer.o -o $OUT/dav1d_fuzzer \
-    ${build}/src/libdav1d.a
-
-# get see corpus
+# prepare seed corpus
 rm -rf ${WORK}/tmp
 mkdir -p ${WORK}/tmp/testdata
 unzip -q $SRC/dav1d_fuzzer_seed_corpus.zip -d ${WORK}/tmp/testdata
-cp $SRC/dec_fuzzer_seed_corpus.zip $OUT/dav1d_fuzzer_seed_corpus.zip
-(cd ${WORK}/tmp && zip -q -m -r -0 $OUT/dav1d_fuzzer_seed_corpus.zip testdata)
+cp $SRC/dec_fuzzer_seed_corpus.zip ${WORK}/tmp/seed_corpus.zip
+(cd ${WORK}/tmp && zip -q -m -r -0 ${WORK}/tmp/seed_corpus.zip testdata)
+
+# copy fuzzers and link testdata
+for fuzzer in $(find ${build} -name 'dav1d_fuzzer*'); do
+	cp "${fuzzer}" $OUT/
+	cp ${WORK}/tmp/seed_corpus.zip $OUT/$(basename "$fuzzer")_seed_corpus.zip
+done
