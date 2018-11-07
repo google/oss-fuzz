@@ -319,3 +319,28 @@ test_app("api_polyutils") {
     ":skia",
   ]
 }
+
+test_app("android_codec") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzAndroidCodec.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("image_decode_incremental") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzIncrementalImage.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+

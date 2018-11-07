@@ -106,3 +106,8 @@ OSS-Fuzz *uses* [AFL](http://lcamtuf.coredump.cx/afl/) as one of its [fuzzing en
 
 ## Does OSS-Fuzz support Honggfuzz?
 Analogically to [AFL](#does-oss-fuzz-support-afl).
+
+## What are the specs on your machines?
+OSS-Fuzz builders have 32CPU/28.8GB RAM.
+
+Fuzzing machines only have a single core and fuzz targets should not use more than 2GB of RAM.

@@ -51,6 +51,8 @@ cd ..
 
 # build project
 cd gnupg
+mkdir tests/fuzz
+cp ../fuzz_* tests/fuzz
 git apply ../fuzz.diff
 ./autogen.sh
 ./configure --disable-doc --enable-maintainer-mode

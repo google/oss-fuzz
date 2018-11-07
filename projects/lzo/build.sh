@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +15,21 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER paul.l.kehrer@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake nasm
-RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
-RUN git clone --depth 1 https://github.com/madler/zlib
-RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
-RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit
-ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
-ADD https://raw.githubusercontent.com/mcarpenter/afl/master/dictionaries/tiff.dict tiff.dict
-WORKDIR libtiff
-COPY build.sh $SRC/
+# build project
+cd $SRC
+tar xzf lzo.tar.gz
+cd lzo-*
+./configure && make -j$(nproc)
+
+# build fuzzers
+for file in $SRC/*.c;
+do
+    name=$(basename $file .c)
+    $CC $CFLAGS -c -I include -I minilzo -I include/lzo ${file} -o ${name}.o
+    $CXX $CXXFLAGS -std=c++11 -I include -I minilzo -I include/lzo ${name}.o \
+        -o $OUT/${name} -lFuzzingEngine src/.libs/liblzo2.a
+done
+
+# copy fuzzer options
+cp $SRC/*.options $OUT/
+zip -j $OUT/lzo_decompress_target_seed_corpus.zip $SRC/lzo_decompress_target_seeds/*

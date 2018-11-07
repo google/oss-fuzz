@@ -15,26 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER htuch@google.com
-
-RUN apt-get update && apt-get -y install  \
-	build-essential \
-	openjdk-8-jdk   \
-	make            \
-    ninja-build     \
-    curl            \
-    autoconf        \
-    libtool         \
-    cmake           \
-    wget            \
-    golang          \
-    python
-
-# Install Bazel
-RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN apt-get update && apt-get install -y bazel
-
-RUN git clone https://github.com/envoyproxy/envoy.git
-WORKDIR $SRC/envoy/
-COPY build.sh $SRC/
+MAINTAINER bshas3@gmail.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget
+RUN wget https://fossies.org/linux/misc/bzip2-1.0.6.tar.gz
+COPY build.sh *.c $SRC/
+WORKDIR $SRC

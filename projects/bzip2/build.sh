@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +15,23 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER paul.l.kehrer@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake nasm
-RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
-RUN git clone --depth 1 https://github.com/madler/zlib
-RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
-RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit
-ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
-ADD https://raw.githubusercontent.com/mcarpenter/afl/master/dictionaries/tiff.dict tiff.dict
-WORKDIR libtiff
-COPY build.sh $SRC/
+tar xzf bzip2-*.tar.gz && rm -f bzip2-*.tar.gz
+cd bzip2-*
+SRCL=(blocksort.o huffman.o crctable.o randtable.o compress.o decompress.o bzlib.o)
+
+for source in ${SRCL[@]}; do
+    name=$(basename $source .o)
+    $CC $CFLAGS -c ${name}.c
+done
+rm -f libbz2.a
+ar cq libbz2.a ${SRCL[@]} && ranlib libbz2.a
+
+# build fuzzers
+for file in $SRC/*.c;
+do
+    name=$(basename $file .c)
+    $CC $CFLAGS -c -I . $SRC/${name}.c -o $OUT/${name}.o
+    $CXX $CXXFLAGS -o $OUT/${name} $OUT/${name}.o -lFuzzingEngine \
+    libbz2.a
+    rm -f $OUT/${name}.o
+done
