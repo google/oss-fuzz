@@ -25,7 +25,12 @@ FUZZER=$1
 shift
 
 CORPUS_DIR="/tmp/${FUZZER}_corpus"
-FUZZER_OUT="/tmp/${FUZZER}_out"
+
+if [[ "$RUN_FUZZER_MODE" = interactive ]]; then
+  FUZZER_OUT="$OUT/${FUZZER}_${FUZZING_ENGINE}_${SANITIZER}_out"
+else
+  FUZZER_OUT="/tmp/${FUZZER}_${FUZZING_ENGINE}_${SANITIZER}_out"
+fi
 
 function get_dictionary() {
   local options_file="$FUZZER.options"
