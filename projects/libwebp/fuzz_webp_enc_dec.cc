@@ -16,98 +16,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "fuzz.h"
 #include "webp/encode.h"
 #include "webp/decode.h"
-#include "img_alpha.h"
-#include "img_grid.h"
-#include "img_peak.h"
-#include "dsp/dsp.h"
 
 namespace {
 
-const VP8CPUInfo LibGetCPUInfo = VP8GetCPUInfo;
+const VP8CPUInfo default_VP8GetCPUInfo = VP8GetCPUInfo;
 
-int GetCPUInfoNoSSE41(CPUFeature feature) {
-  if (feature == kSSE4_1 || feature == kAVX) return 0;
-  return LibGetCPUInfo(feature);
-}
-
-int GetCPUInfoNoAVX(CPUFeature feature) {
-  if (feature == kAVX) return 0;
-  return LibGetCPUInfo(feature);
-}
-
-int GetCPUInfoForceSlowSSSE3(CPUFeature feature) {
-  if (feature == kSlowSSSE3 && LibGetCPUInfo(kSSE3)) {
-    return 1;  // we have SSE3 -> force SlowSSSE3
-  }
-  return LibGetCPUInfo(feature);
-}
-
-int GetCPUInfoOnlyC(CPUFeature feature) {
-  return false;
-}
-
-const VP8CPUInfo kVP8CPUInfos[5] = {
-    GetCPUInfoOnlyC, GetCPUInfoForceSlowSSSE3,
-    GetCPUInfoNoSSE41, GetCPUInfoNoAVX, LibGetCPUInfo
-};
-
-static uint32_t Extract(uint32_t max, const uint8_t data[], size_t size,
-                        uint32_t* const bit_pos) {
-  uint32_t v = 0;
-  int range = 1;
-  while (*bit_pos < 8 * size && range <= max) {
-    const uint8_t mask = 1u << (*bit_pos & 7);
-    v = (v << 1) | !!(data[*bit_pos >> 3] & mask);
-    range <<= 1;
-    ++*bit_pos;
-  }
-  return v % (max + 1);
-}
-
-static int max(int a, int b) { return ((a < b) ? b : a); }
-
-}  //  namespace
+}  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
-  // Extract a configuration from the packed bits.
-  WebPConfig config;
-  if (!WebPConfigInit(&config)) {
-    fprintf(stderr, "WebPConfigInit failed.\n");
-    abort();
-  }
   uint32_t bit_pos = 0;
-  config.lossless = Extract(1, data, size, &bit_pos);
-  config.quality = Extract(100, data, size, &bit_pos);
-  config.method = Extract(6, data, size, &bit_pos);
-  config.image_hint =
-      (WebPImageHint)Extract(WEBP_HINT_LAST - 1, data, size, &bit_pos);
-  config.segments = 1 + Extract(3, data, size, &bit_pos);
-  config.sns_strength = Extract(100, data, size, &bit_pos);
-  config.filter_strength = Extract(100, data, size, &bit_pos);
-  config.filter_sharpness = Extract(7, data, size, &bit_pos);
-  config.filter_type = Extract(1, data, size, &bit_pos);
-  config.autofilter = Extract(1, data, size, &bit_pos);
-  config.alpha_compression = Extract(1, data, size, &bit_pos);
-  config.alpha_filtering = Extract(2, data, size, &bit_pos);
-  config.alpha_quality = Extract(100, data, size, &bit_pos);
-  config.pass = 1 + Extract(9, data, size, &bit_pos);
-  config.show_compressed = 1;
-  config.preprocessing = Extract(2, data, size, &bit_pos);
-  config.partitions = Extract(3, data, size, &bit_pos);
-  config.partition_limit = 10 * Extract(10, data, size, &bit_pos);
-  config.emulate_jpeg_size = Extract(1, data, size, &bit_pos);
-  config.thread_level = Extract(1, data, size, &bit_pos);
-  config.low_memory = Extract(1, data, size, &bit_pos);
-  config.near_lossless = 20 * Extract(5, data, size, &bit_pos);
-  config.exact = Extract(1, data, size, &bit_pos);
-  config.use_delta_palette = Extract(1, data, size, &bit_pos);
-  config.use_sharp_yuv = Extract(1, data, size, &bit_pos);
-  if (!WebPValidateConfig(&config)) {
-    fprintf(stderr, "WebPValidateConfig failed.\n");
-    abort();
-  }
+
+  ExtractAndDisableOptimizations(default_VP8GetCPUInfo, data, size, &bit_pos);
 
   // Init the source picture.
   WebPPicture pic;
@@ -117,79 +39,35 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   }
   pic.use_argb = Extract(1, data, size, &bit_pos);
 
-  VP8GetCPUInfo = kVP8CPUInfos[Extract(4, data, size, &bit_pos)];
-
-  // Pick a source picture.
-  const uint8_t* kImagesData[] = {
-      kImgAlphaData,
-      kImgGridData,
-      kImgPeakData
-  };
-  const int kImagesWidth[] = {
-      kImgAlphaWidth,
-      kImgGridWidth,
-      kImgPeakWidth
-  };
-  const int kImagesHeight[] = {
-      kImgAlphaHeight,
-      kImgGridHeight,
-      kImgPeakHeight
-  };
-  const size_t kNbImages = sizeof(kImagesData) / sizeof(kImagesData[0]);
-  const size_t image_index = Extract(kNbImages - 1, data, size, &bit_pos);
-  const uint8_t* const image_data = kImagesData[image_index];
-  pic.width = kImagesWidth[image_index];
-  pic.height = kImagesHeight[image_index];
-  pic.argb_stride = pic.width * 4 * sizeof(uint8_t);
-
-  // Read the bytes.
-  if (!WebPPictureImportRGBA(&pic, image_data, pic.argb_stride)) {
-    fprintf(stderr, "Can't read input image: %zu\n", image_index);
+  // Read the source picture.
+  if (!ExtractSourcePicture(&pic, data, size, &bit_pos)) {
+    fprintf(stderr, "Can't read input image.\n");
     WebPPictureFree(&pic);
     abort();
   }
 
   // Crop and scale.
-  const bool alter_input = Extract(1, data, size, &bit_pos) != 0;
-  const bool crop_or_scale = Extract(1, data, size, &bit_pos) != 0;
-  const int width_ratio = 1 + Extract(7, data, size, &bit_pos);
-  const int height_ratio = 1 + Extract(7, data, size, &bit_pos);
-  if (alter_input) {
-    if (crop_or_scale) {
-      const uint32_t left_ratio = 1 + Extract(7, data, size, &bit_pos);
-      const uint32_t top_ratio = 1 + Extract(7, data, size, &bit_pos);
-      const int cropped_width = max(1, pic.width / width_ratio);
-      const int cropped_height = max(1, pic.height / height_ratio);
-      const int cropped_left = (pic.width - cropped_width) / left_ratio;
-      const int cropped_top = (pic.height - cropped_height) / top_ratio;
-      if (!WebPPictureCrop(&pic, cropped_left, cropped_top, cropped_width,
-                           cropped_height)) {
-        fprintf(stderr, "WebPPictureCrop failed. Parameters: %d,%d,%d,%d\n",
-                cropped_left, cropped_top, cropped_width, cropped_height);
-        WebPPictureFree(&pic);
-        abort();
-      }
-    } else {
-      const int scaled_width = 1 + pic.width * width_ratio / 4;
-      const int scaled_height = 1 + pic.height * height_ratio / 4;
-      if (!WebPPictureRescale(&pic, scaled_width, scaled_height)) {
-        fprintf(stderr, "WebPPictureRescale failed. Parameters: %d,%d\n",
-                scaled_width, scaled_height);
-        WebPPictureFree(&pic);
-        abort();
-      }
-    }
+  if (!ExtractAndCropOrScale(&pic, data, size, &bit_pos)) {
+    fprintf(stderr, "ExtractAndCropOrScale failed.");
+    WebPPictureFree(&pic);
+    abort();
   }
 
+  // Extract a configuration from the packed bits.
+  WebPConfig config;
+  if (!ExtractWebPConfig(&config, data, size, &bit_pos)) {
+    fprintf(stderr, "ExtractWebPConfig failed.\n");
+    abort();
+  }
   // Skip slow settings on big images, it's likely to timeout.
-  if (pic.width * pic.height > 16 * 16) {
+  if (pic.width * pic.height > 32 * 32) {
     if (config.lossless) {
-      if (config.quality >= 99.0f && config.method >= 5) {
+      if (config.quality > 99.0f && config.method >= 5) {
         config.quality = 99.0f;
         config.method = 5;
       }
     } else {
-      if (config.quality >= 99.0f && config.method == 6) {
+      if (config.quality > 99.0f && config.method == 6) {
         config.quality = 99.0f;
       }
     }
@@ -204,8 +82,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   pic.writer = WebPMemoryWrite;
   pic.custom_ptr = &memory_writer;
   if (!WebPEncode(&config, &pic)) {
-    fprintf(stderr, "WebPEncode failed. Error code: %d\nFile: %zu\n",
-            pic.error_code, image_index);
+    fprintf(stderr, "WebPEncode failed. Error code: %d\n", pic.error_code);
     WebPMemoryWriterClear(&memory_writer);
     WebPPictureFree(&pic);
     abort();
@@ -217,7 +94,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   const size_t out_size = memory_writer.size;
   uint8_t* const rgba = WebPDecodeBGRA(out_data, out_size, &w, &h);
   if (rgba == nullptr || w != pic.width || h != pic.height) {
-    fprintf(stderr, "WebPDecodeBGRA failed.\nFile: %zu\n", image_index);
+    fprintf(stderr, "WebPDecodeBGRA failed.\n");
     WebPFree(rgba);
     WebPMemoryWriterClear(&memory_writer);
     WebPPictureFree(&pic);
@@ -239,9 +116,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
           }
         }
         if (v1 != v2) {
-          fprintf(stderr,
-                  "Lossless compression failed pixel-exactness.\nFile: %zu\n",
-                  image_index);
+          fprintf(stderr, "Lossless compression failed pixel-exactness.\n");
           WebPFree(rgba);
           WebPMemoryWriterClear(&memory_writer);
           WebPPictureFree(&pic);
