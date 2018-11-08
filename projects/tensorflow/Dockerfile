@@ -18,9 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mihaimaruseac@google.com
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        clang \
         curl \
-        git \
         python-dev \
         rsync \
         && \
