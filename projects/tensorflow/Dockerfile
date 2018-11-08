@@ -33,3 +33,6 @@ RUN apt-get update && apt-get install -y bazel
 RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
 WORKDIR $SRC/tensorflow
 COPY build.sh $SRC/
+
+# Custom environment variables
+ENV TF_CPP_MIN_LOG_LEVEL=100
