@@ -103,7 +103,7 @@ def main():
                                   nargs='?')
 
   run_fuzzer_parser = subparsers.add_parser(
-      'run_fuzzer', help='Run a fuzzer.')
+      'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
   _add_engine_args(run_fuzzer_parser)
   _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
@@ -129,9 +129,6 @@ def main():
   coverage_parser.add_argument('extra_args', help='additional arguments to '
                                'pass to llvm-cov utility.', nargs='*')
 
-  profile_parser = subparsers.add_parser(
-      'profile', help='"profile" command was renamed to "coverage".')
-
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
   reproduce_parser.add_argument('--valgrind', action='store_true',
@@ -144,7 +141,7 @@ def main():
   _add_environment_args(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
-      'shell', help='Run /bin/bash in an image.')
+      'shell', help='Run /bin/bash within the builder container.')
   shell_parser.add_argument('project_name', help='name of the project')
   _add_engine_args(shell_parser)
   _add_sanitizer_args(shell_parser)
@@ -166,10 +163,6 @@ def main():
     return run_fuzzer(args)
   elif args.command == 'coverage':
     return coverage(args)
-  elif args.command == 'profile':
-    print(
-        'ERROR: "profile" command was renamed to "coverage".', file=sys.stderr)
-    return 1
   elif args.command == 'reproduce':
     return reproduce(args)
   elif args.command == 'shell':
