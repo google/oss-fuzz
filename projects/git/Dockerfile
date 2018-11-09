@@ -21,7 +21,7 @@ RUN apt-get update && \
         libdbd-sqlite3-perl liberror-perl libexpat1-dev libhttp-date-perl \
         libio-pty-perl libmailtools-perl libpcre2-dev libpcre3-dev libsvn-perl \
         libtime-modules-perl libyaml-perl libz-dev python subversion tcl unzip \
-        asciidoc docbook-xsl xmlto libssl-dev
+        asciidoc docbook-xsl xmlto libssl-dev zip
 RUN git clone --depth 1 https://github.com/git/git git
 WORKDIR git
 COPY build.sh $SRC/
