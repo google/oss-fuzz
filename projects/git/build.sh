@@ -16,7 +16,7 @@
 ################################################################################
 
 # build fuzzers
-make -j$(nproc) CC=$CC CXX=$CXX CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" \
+make -j$(nproc) CC=$CC CXX=$CXX CFLAGS="$CXXFLAGS" \
   LIB_FUZZING_ENGINE=$LIB_FUZZING_ENGINE fuzz-all
 
 # copy fuzzers
