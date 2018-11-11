@@ -71,8 +71,7 @@ CFLAGS="$GNUTLS_CFLAGS" \
 make -j$(nproc)
 make install
 
-cd $SRC/libmicrohttpd
-./bootstrap
+cd $SRC/libmicrohttpd-*
 LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
 ./configure --prefix=$WGET2_DEPS_PATH --disable-doc --disable-examples --disable-shared --enable-static
 make -j$(nproc)
