@@ -15,18 +15,15 @@
 #
 ################################################################################
 
-export LDSHARED=$CXX
-export LDFLAGS="$CFLAGS -std=c++11"
-./configure
-sed -i "/^LDSHARED=.*/s#=.*#=$CXX#" Makefile
-sed -i 's/$(CC) $(LDFLAGS)/$(CXX) $(LDFLAGS)/g' Makefile
+# Build project
+cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DBUILD_FUZZ_TEST=ON
+make clean
+make -j$(nproc)
 
-make -j$(nproc) clean
-make -j$(nproc) all
-make -j$(nproc) check
+# Package seed corpus 
+zip -j $OUT/unzip_fuzzer_seed_corpus.zip test/fuzz/unzip_fuzzer_seed_corpus/*
 
-zip $OUT/seed_corpus.zip *.*
-for f in $(find . -name '*_fuzzer'); do
-    cp -v $f $OUT
-    (cd $OUT; ln -s seed_corpus.zip $(basename $f)_seed_corpus.zip)
-done
+# Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';'
