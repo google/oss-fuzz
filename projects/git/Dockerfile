@@ -17,7 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER steadmon@google.com
 RUN apt-get update && \
-    apt-get install -y cvs cvsps gettext libcgi-pm-perl libcurl4-gnutls-dev \
+    apt-get install --no-install-recommends -y \
+        cvs cvsps gettext libcgi-pm-perl libcurl4-gnutls-dev \
         libdbd-sqlite3-perl liberror-perl libexpat1-dev libhttp-date-perl \
         libio-pty-perl libmailtools-perl libpcre2-dev libpcre3-dev libsvn-perl \
         libtime-modules-perl libyaml-perl libz-dev python subversion tcl unzip \
