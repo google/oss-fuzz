@@ -22,19 +22,18 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 
 # Build the library.
 ./autogen.sh
-./configure
+./configure --enable-static --disable-shared
 make clean
-make -j$(nproc) V=1 all
-make CPPFLAGS="-DHB_NO_VISIBILITY" -C src V=1 libs
+make -j$(nproc) CPPFLAGS="-DHB_NO_VISIBILITY" V=1 all
 
 # Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-shape-fuzzer.cc -o $OUT/hb-shape-fuzzer \
-    -lFuzzingEngine ./src/.libs/libharfbuzz.so
+    -lFuzzingEngine ./src/.libs/libharfbuzz.a
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer \
-    -lFuzzingEngine ./src/.libs/libharfbuzz-subset.so ./src/.libs/libharfbuzz.so
+    -lFuzzingEngine ./src/.libs/libharfbuzz-subset.a ./src/.libs/libharfbuzz.a
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 mkdir all-fonts
