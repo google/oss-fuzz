@@ -35,23 +35,19 @@ popd
 
 # build fuzzers
 fuzzer_src_name=vpx_dec_fuzzer
-fuzzer_modes=( '' '_threaded' )
 fuzzer_decoders=( 'vp9' 'vp8' )
 for decoder in "${fuzzer_decoders[@]}"; do
-    for mode in "${fuzzer_modes[@]}"; do
-      fuzzer_name=${fuzzer_src_name}${mode}"_"${decoder}
+  fuzzer_name=${fuzzer_src_name}"_"${decoder}
 
-      $CXX $CXXFLAGS -std=c++11 \
-        -DDECODE_MODE${mode} \
-        -DDECODER=${decoder} \
-        -I$SRC/libvpx \
-        -I${build_dir} \
-        -Wl,--start-group \
-        -lFuzzingEngine \
-        $SRC/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
-        ${build_dir}/libvpx.a ${build_dir}/tools_common.c.o \
-        -Wl,--end-group
+  $CXX $CXXFLAGS -std=c++11 \
+    -DDECODER=${decoder} \
+    -I$SRC/libvpx \
+    -I${build_dir} \
+    -Wl,--start-group \
+    -lFuzzingEngine \
+    $SRC/libvpx/examples/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
+    ${build_dir}/libvpx.a ${build_dir}/tools_common.c.o \
+    -Wl,--end-group
 
-    cp $SRC/vpx_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
-    done
+  cp $SRC/vpx_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
 done
