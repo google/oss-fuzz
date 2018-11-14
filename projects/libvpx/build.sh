@@ -43,9 +43,8 @@ for decoder in "${fuzzer_decoders[@]}"; do
 
       $CXX $CXXFLAGS -std=c++11 \
         -DDECODE_MODE${mode} \
-        -DENABLE_${decoder} \
+        -DDECODER=${decoder} \
         -I$SRC/libvpx \
-        -I$SRC/libvpx/third_party/libyuv/include \
         -I${build_dir} \
         -Wl,--start-group \
         -lFuzzingEngine \
