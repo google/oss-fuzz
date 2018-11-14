@@ -36,8 +36,6 @@ $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer \
     -lFuzzingEngine ./src/.libs/libharfbuzz-subset.so ./src/.libs/libharfbuzz.so
 
-cp ./src/.libs/libharfbuzz-subset.so.* ./src/.libs/libharfbuzz.so.* $OUT
-
 # Archive and copy to $OUT seed corpus if the build succeeded.
 mkdir all-fonts
 for d in \
