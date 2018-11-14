@@ -8,13 +8,16 @@
 #include "zlib.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
-  uint32_t crc1 = crc32(0L, NULL, 0);
-  uint32_t crc2 = crc32(0L, NULL, 0);
-  uint32_t adler1 = adler32(0L, NULL, 0);
-  uint32_t adler2 = adler32(0L, NULL, 0);;
+  uint32_t crc0 = crc32(0L, NULL, 0);
+  uint32_t crc1 = crc0;
+  uint32_t crc2 = crc0;
+  uint32_t adler0 = adler32(0L, NULL, 0);
+  uint32_t adler1 = adler0;
+  uint32_t adler2 = adler0;
   /* Checksum with a buffer of size equal to the first byte in the input. */
   uint32_t buffSize = data[0];
   uint32_t offset = 0;
+  z_crc_t op[32];
 
   /* Discard inputs larger than 1Mb. */
   static size_t kMaxSize = 1024 * 1024;
@@ -26,22 +29,34 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     ++buffSize;
 
   /* CRC32 */
-  for (offset = 0; offset + buffSize <= dataLen; offset += buffSize)
+  crc32_combine_gen(op, buffSize);
+  for (offset = 0; offset + buffSize <= dataLen; offset += buffSize) {
+    uint32_t crc3 = crc32_z(crc0, data + offset, buffSize);
+    uint32_t crc4 = crc32_combine_op(crc1, crc3, op);
     crc1 = crc32_z(crc1, data + offset, buffSize);
+    assert(crc1 == crc4);
+  }
   crc1 = crc32_z(crc1, data + offset, dataLen % buffSize);
 
-  crc2 = crc32_z(crc2, data, dataLen);
+  crc2 = crc32(crc2, data, (uint32_t) dataLen);
 
   assert(crc1 == crc2);
   assert(crc32_combine(crc1, crc2, dataLen) ==
          crc32_combine(crc1, crc1, dataLen));
+
+  /* Fast CRC32 combine. */
+  crc32_combine_gen(op, dataLen);
+  assert(crc32_combine_op(crc1, crc2, op) ==
+         crc32_combine_op(crc2, crc1, op));
+  assert(crc32_combine(crc1, crc2, dataLen) ==
+         crc32_combine_op(crc2, crc1, op));
 
   /* Adler32 */
   for (offset = 0; offset + buffSize <= dataLen; offset += buffSize)
     adler1 = adler32_z(adler1, data + offset, buffSize);
   adler1 = adler32_z(adler1, data + offset, dataLen % buffSize);
 
-  adler2 = adler32_z(adler2, data, dataLen);
+  adler2 = adler32(adler2, data, (uint32_t) dataLen);
 
   assert(adler1 == adler2);
   assert(adler32_combine(adler1, adler2, dataLen) ==
