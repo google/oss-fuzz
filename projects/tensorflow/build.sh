@@ -32,6 +32,11 @@ yes "" | ./configure
 CFLAGS="${CFLAGS} -fno-sanitize=vptr"
 CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
 
+# Due to a bazel bug, we need to compile with -O2
+# See https://github.com/bazelbuild/bazel/issues/6697
+CFLAGS="${CFLAGS} -O2"
+CXXFLAGS="${CXXFLAGS} -O2"
+
 # Due to statically linking boringssl dependency, we have to define one extra
 # flag when compiling for memory fuzzing (see the boringssl project).
 if [ "$SANITIZER" = "memory" ]
