@@ -180,6 +180,8 @@ When build.sh script is executed, the following locations are available within t
 While files layout is fixed within a container, the environment variables are
 provided to be able to write retargetable scripts.
 
+### Requirements
+
 You *must* use the special compiler flags needed to build your project and fuzz targets.
 These flags are provided in the following environment variables:
 
@@ -187,6 +189,8 @@ These flags are provided in the following environment variables:
 | -------------          | --------
 | `$CC`, `$CXX`, `$CCC`  | The C and C++ compiler binaries.
 | `$CFLAGS`, `$CXXFLAGS` | C and C++ compiler flags.
+
+You *must* use `$CXX` as a linker, even if you project is written in pure C.
 
 Most well-crafted build scripts will automatically use these variables. If not,
 pass them manually to the build tool.
