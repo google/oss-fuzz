@@ -190,7 +190,7 @@ These flags are provided in the following environment variables:
 | `$CC`, `$CXX`, `$CCC`  | The C and C++ compiler binaries.
 | `$CFLAGS`, `$CXXFLAGS` | C and C++ compiler flags.
 
-You *must* use `$CXX` as a linker, even if you project is written in pure C.
+You *must* use `$CXX` as a linker, even if your project is written in pure C.
 
 Most well-crafted build scripts will automatically use these variables. If not,
 pass them manually to the build tool.
