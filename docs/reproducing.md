@@ -84,3 +84,5 @@ $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> --engine <libfuzzer/afl/honggfuzz> $PROJECT_NAME
 $ python infra/helper.py check_build  --sanitizer <address/memory/undefined> --engine <libfuzzer/afl/honggfuzz> $PROJECT_NAME <fuzz_target_name>
 ```
+
+For reproducing a `coverage` build failure, follow [Code Coverage page](code_coverage.md) to build your project and generate a code coverage report.
