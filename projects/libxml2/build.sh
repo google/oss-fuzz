@@ -21,10 +21,14 @@
 make -j$(nproc) clean
 make -j$(nproc) all
 
+seed_corpus_temp_file="$OUT/xml_seed_corpus.zip"
+zip -r $seed_corpus_temp_file $SRC/libxml2/test
+
 for fuzzer in libxml2_xml_read_memory_fuzzer libxml2_xml_reader_for_file_fuzzer libxml2_xml_regexp_compile_fuzzer; do
   $CXX $CXXFLAGS -std=c++11 -Iinclude/ \
       $SRC/$fuzzer.cc -o $OUT/$fuzzer \
       -lFuzzingEngine .libs/libxml2.a
-done
 
-cp $SRC/*.dict $SRC/*.options $OUT/
+  cp $SRC/*.dict $OUT/$fuzzer.dict
+  cp $seed_corpus_temp_file $OUT/${fuzzer}_seed_corpus.zip
+done
