@@ -17,7 +17,7 @@
 ################################################################################
 
 ./autogen.sh
-./configure
+./configure --with-http=no
 make -j$(nproc) clean
 make -j$(nproc) all
 
