@@ -22,6 +22,4 @@ RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 WORKDIR libxml2
 
 COPY build.sh $SRC/
-COPY libxml2_xml_read_memory_fuzzer.* \
-     libxml2_xml_regexp_compile_fuzzer.* \
-     xml.dict $SRC/
+COPY *.cc *.h *.options *.dict $SRC/
