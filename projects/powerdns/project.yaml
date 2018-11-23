@@ -1,0 +1,7 @@
+homepage: "https://www.powerdns.com/"
+primary_contact: "remi.gacogne@powerdns.com"
+auto_ccs:
+  - "powerdnsossfuzz@gmail.com"
+sanitizers:
+  - address
+  - undefined
