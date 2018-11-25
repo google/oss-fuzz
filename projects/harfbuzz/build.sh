@@ -39,6 +39,7 @@ $CXX $CXXFLAGS -std=c++11 -Isrc \
 mkdir all-fonts
 for d in \
 	test/shaping/data/in-house/fonts \
+	test/shaping/data/aots/fonts \
 	test/shaping/data/text-rendering-tests/fonts \
 	test/api/fonts \
 	test/fuzzing/fonts \
