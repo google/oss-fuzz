@@ -83,7 +83,7 @@ def load_project_yaml(project_dir):
     project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
     project_yaml.setdefault('run_tests', True)
     project_yaml.setdefault('coverage_extra_args', '')
-    project_yaml.setdefault('tags', {})
+    project_yaml.setdefault('labels', {})
     return project_yaml
 
 
@@ -257,14 +257,14 @@ def get_build_steps(project_dir):
             ],
         })
 
-      if project_yaml['tags']:
+      if project_yaml['labels']:
         # write target labels
         build_steps.append({
               'name': image,
               'env': env,
               'args': [
                   '/usr/local/bin/write_labels.py',
-                  json.dumps(project_yaml['tags']),
+                  json.dumps(project_yaml['labels']),
                   out,
               ],
 
