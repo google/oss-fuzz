@@ -9,6 +9,6 @@ sanitizers:
   - address
   - memory
   - undefined
-tags:
+labels:
   libxml2_xml_reader_for_file_fuzzer:
     - sundew
