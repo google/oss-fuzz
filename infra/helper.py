@@ -98,6 +98,9 @@ def main():
   _add_engine_args(check_build_parser)
   _add_sanitizer_args(check_build_parser)
   _add_environment_args(check_build_parser)
+  check_build_parser.add_argument('--run-minijail', dest='run_minijail',
+                                    action='store_true',
+                                    help='run fuzzers with run-minijail.')
   check_build_parser.add_argument('project_name', help='name of the project')
   check_build_parser.add_argument('fuzzer_name', help='name of the fuzzer',
                                   nargs='?')
@@ -474,6 +477,8 @@ def check_build(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer
   ]
+  if args.run_minijail:
+    env += ["RUN_MINIJAIL=yes"]
   if args.e:
     env += args.e
 
