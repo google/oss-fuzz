@@ -199,20 +199,24 @@ function check_ubsan_build {
 # Verify that the given fuzz target is compiled with correct sanitizer.
 function check_mixed_sanitizers {
   local FUZZER=$1
+  local result=0
 
   local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__asan" -c)
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__msan" -c)
   local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__ubsan" -c)
 
   if [[ "$SANITIZER" = address ]]; then
-    return $(check_asan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS)
+    check_asan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    result=$?
   elif [[ "$SANITIZER" = memory ]]; then
-    return $(check_msan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS)
+    check_msan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    result=$?
   elif [[ "$SANITIZER" = undefined ]]; then
-    return $(check_ubsan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS)
+    check_ubsan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    result=$?
   fi
 
-  return 0
+  return $result
 }
 
 # Verify that the given fuzz target doesn't crash on the seed corpus.
