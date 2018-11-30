@@ -28,7 +28,7 @@ We will reconsider the GitHub issue tracker once the
 
 ## Why do you require a Google account for authentication?
 
-Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Google account for authentication. Note that an alternate email address associated with a Google acount does not work due to appengine api limitations.
+Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Google account for authentication. Note that an alternate email address associated with a Google account does not work due to appengine api limitations.
 
 ## Why do you use Docker?
 
@@ -78,7 +78,7 @@ Using that, you can debug the root cause and see which category the bug falls in
 - If this is a bug is due to an incorrect usage of the dependent project's API 
 in your project, then you need to fix your usage to call the API correctly.
 - If this is a real bug in the dependent project, then you should CC the maintainers
-of that project on the bug. Once cced, they will get automatic access to all the
+of that project on the bug. Once CCed, they will get automatic access to all the
 information necessary to reproduce the issue. If this project is maintained in OSS-Fuzz,
 you can search for contacts in the respective project.yaml file.
 

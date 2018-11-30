@@ -5,7 +5,7 @@ Core infrastructure:
 * [`base-images`](base-images/) - docker images for building fuzz targets & corresponding jenkins
   pipeline.
 
-Continuous Integration infrastracture:
+Continuous Integration infrastructure:
 
 * [`libfuzzer-pipeline.groovy`](libfuzzer-pipeline.groovy/) - jenkins pipeline that runs for each OSS-Fuzz
   project.
