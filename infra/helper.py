@@ -484,8 +484,9 @@ def check_build(args):
 
   if args.fuzzer_name:
     run_args += [
-        'bad_build_check',
-        os.path.join('/out', args.fuzzer_name)
+        'bash',
+        '-c',
+        '[[ $(bad_build_check {0} | tee /dev/tty | wc -l) -eq 0 ]]'.format(os.path.join('/out', args.fuzzer_name))
     ]
   else:
     run_args.append('test_all')
