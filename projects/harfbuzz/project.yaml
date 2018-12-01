@@ -10,6 +10,7 @@ auto_ccs:
   - "dr.khaled.hosny@gmail.com"
   - "jfkthame@gmail.com"
   - "cchapman@adobe.com"
+  - "ariza@typekit.com"
 sanitizers:
  - address
  - undefined
