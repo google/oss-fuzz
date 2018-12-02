@@ -25,6 +25,7 @@ RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://github.com/webmproject/libwebp
 RUN git clone --depth 1 https://github.com/madler/zlib
 RUN git clone --depth 1 https://github.com/xz-mirror/xz
+RUN git clone --depth 1 https://github.com/facebook/zstd
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone --depth 1 https://git.savannah.nongnu.org/r/freetype/freetype2
 RUN git clone --depth 1 https://github.com/glennrp/libpng
