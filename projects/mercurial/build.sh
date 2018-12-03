@@ -15,5 +15,39 @@
 #
 ################################################################################
 
+pushd /Python-2.7.15/
+ls
+patch -p1 <<'EOF'
+Index: v2_7_unstable/Python/pymath.c
+===================================================================
+--- v2_7_unstable.orig/Python/pymath.c
++++ v2_7_unstable/Python/pymath.c
+@@ -18,6 +18,7 @@ double _Py_force_double(double x)
+ /* inline assembly for getting and setting the 387 FPU control word on
+    gcc/x86 */
+
++__attribute__((no_sanitize_memory))
+ unsigned short _Py_get_387controlword(void) {
+     unsigned short cw;
+     __asm__ __volatile__ ("fnstcw %0" : "=m" (cw));
+Index: v2_7_unstable/Modules/_ctypes/callproc.c
+===================================================================
+--- v2_7_unstable.orig/Modules/_ctypes/callproc.c
++++ v2_7_unstable/Modules/_ctypes/callproc.c
+@@ -1166,6 +1166,10 @@ PyObject *_ctypes_callproc(PPROC pProc,
+
+     rtype = _ctypes_get_ffi_type(restype);
+     resbuf = alloca(max(rtype->size, sizeof(ffi_arg)));
++    /* ffi_call actually initializes resbuf, but from asm, which
++     * MemorySanitizer can't detect. Avoid false positives from MSan. */
++    if (resbuf != NULL)
++        memset(resbuf, 0, max(rtype->size, sizeof(ffi_arg)));
+
+     avalues = (void **)alloca(sizeof(void *) * argcount);
+     atypes = (ffi_type **)alloca(sizeof(ffi_type *) * argcount);
+EOF
+popd
+
 cd contrib/fuzz
+export PYLDFLAGS=$(echo $CFLAGS | xargs -n 1 echo | egrep -- '-fsanitize=(memory|address)')
 make oss-fuzz
