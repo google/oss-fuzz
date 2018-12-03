@@ -96,13 +96,12 @@ declare -r LINK_ARGS="\
 -B/usr/local/bin -B/usr/bin -Wl,--gc-sections \
 "
 
-# For each fuzzer target, try to build it it bazel. It should fail during the
-# linking phase and then we would manually link it.
+# This should always look as successful despite linking error mentioned above.
+bazel build ${EXTRA_FLAGS} -k //tensorflow/core/kernels/fuzzing:all || true
+
+# For each fuzzer target, we only have to link it manually to get the binary.
 for fuzzer in ${FUZZERS}; do
   fz=${fuzzer}_fuzz
-
-  # This should always look as successful despite linking error.
-  bazel build ${EXTRA_FLAGS} //tensorflow/core/kernels/fuzzing:${fz} || true
 
   # Get the file with the parameters for linking or fail if it didn't exist.
   lfile=`ls -1 bazel-bin/tensorflow/core/kernels/fuzzing/${fz}*.params | head -n1`
