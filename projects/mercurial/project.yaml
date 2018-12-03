@@ -8,6 +8,4 @@ auto_ccs:
 sanitizers:
   - address
   - undefined
-  # TODO: re-enable memory when we figure out how to work with cpython
-  # and msan at the same time.
-  # - memory
+  - memory
