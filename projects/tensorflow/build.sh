@@ -118,5 +118,18 @@ then
   rsync -aLk ${SRC}/tensorflow ${REMAP_PATH}
 fi
 
+# Now that all is done, we just have to copy the existing corpora and
+# dictionaries to have them available in the runtime environment.
+# The tweaks to the filenames below are to make sure corpora/dictionary have
+# similar names as the fuzzer binary.
+for dict in tensorflow/core/kernels/fuzzing/dictionaries/*; do
+  name=$(basename -- $dict)
+  cp ${dict} ${OUT}/${name/.dict/_fuzz.dict}
+done
+for corpus in tensorflow/core/kernels/fuzzing/corpus/*; do
+  name=$(basename -- $corpus)
+  zip ${OUT}/${name}_fuzz.zip ${corpus}/*
+done
+
 # Finally, make sure we don't accidentally run with stuff from the bazel cache.
 rm -f bazel-*
