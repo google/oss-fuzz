@@ -68,6 +68,7 @@ $SRC/depot_tools/gn gen out/Fuzz\
     skia_use_egl=true
     skia_use_system_freetype2=false
     skia_use_fontconfig=false
+    skia_use_wuffs=true
     skia_enable_gpu=true
     skia_enable_skottie=true'
 
@@ -81,6 +82,7 @@ $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
       skia_use_egl=true
       skia_use_system_freetype2=false
       skia_use_fontconfig=false
+      skia_use_wuffs=true
       skia_enable_gpu=true
       skia_enable_skottie=false'
 
