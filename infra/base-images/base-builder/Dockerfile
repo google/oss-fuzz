@@ -21,19 +21,23 @@ RUN apt-get install -y git subversion jq python3 zip make libunwind8-dev binutil
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
 
-# Set of '-fsanitize' flags matches '-fno-sanitize-recover'.
-ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr -fno-sanitize-recover=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr"
+# Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
+ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,unsigned-integer-overflow,vla-bound,vptr -fno-sanitize-recover=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr"
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
-ENV SANITIZER_FLAGS_profile "-fprofile-instr-generate -fcoverage-mapping -pthread"
 
-# Default build flags for coverage.
+# Do not use any sanitizers in the coverage build.
+ENV SANITIZER_FLAGS_coverage ""
+
+# We use unsigned-integer-overflow as an additional coverage signal and have to
+# suppress error messages. See https://github.com/google/oss-fuzz/issues/910.
+ENV UBSAN_OPTIONS="silence_unsigned_overflow=1"
+
+# Default build flags for coverage feedback.
 ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 
-# Coverage flags for generating coverage reports.
-ENV COVERAGE_FLAGS_coverage="-fsanitize-coverage=bb,no-prune,trace-pc-guard -O0"
-
-# Don't mix sanitizer coverage with clang coverage.
-ENV COVERAGE_FLAGS_profile=""
+# Use '-Wno-unused-command-line-argument' to suppress "warning: -ldl: 'linker' input unused"
+# messages which are treated as errors by some projects.
+ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,--no-as-needed -Wl,-ldl -Wl,-lm -Wno-unused-command-line-argument"
 
 # Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"
@@ -59,6 +63,6 @@ RUN mkdir honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_libfuzzer compile_honggfuzz coverage_report srcmap /usr/local/bin/
+COPY compile compile_afl compile_libfuzzer compile_honggfuzz srcmap write_labels.py /usr/local/bin/
 
 CMD ["compile"]

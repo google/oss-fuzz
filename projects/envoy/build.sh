@@ -44,30 +44,96 @@ for f in ${CXXFLAGS}; do
 done
 )"
 
-# Build Envoy
-declare -r BAZEL_BUILD_TARGETS="$(for t in ${FUZZER_TARGETS}; do \
-  echo //"$(dirname "$t")":"$(basename "$t")_driverless"; done)"
+declare BAZEL_BUILD_TARGETS=""
+declare BAZEL_CORPUS_TARGETS=""
+declare FILTERED_FUZZER_TARGETS=""
+for t in ${FUZZER_TARGETS}
+do
+  declare BAZEL_PATH="//"$(dirname "$t")":"$(basename "$t")
+  declare TAGGED=$(bazel query "attr('tags', 'no_fuzz', ${BAZEL_PATH})")
+  if [ -z "${TAGGED}" ]
+  then
+    FILTERED_FUZZER_TARGETS+="$t "
+    BAZEL_BUILD_TARGETS+="${BAZEL_PATH}_driverless "
+    BAZEL_CORPUS_TARGETS+="${BAZEL_PATH}_corpus_tar "
+  fi
+done
+
+# Build driverless libraries.
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --genrule_strategy=standalone --strip=never \
-  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
+  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --linkopt=-lc++fs \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
   --define force_libcpp=enabled \
-  --build_tag_filters=-no_asan --test_tag_filters=-no_asan \
+  --build_tag_filters=-no_asan \
   ${EXTRA_BAZEL_FLAGS} \
   --linkopt="-lFuzzingEngine" \
-  ${BAZEL_BUILD_TARGETS[*]}
+  ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
 
-# Copy out test binaries from bazel-bin/ and zip up related test corpuses.
-for t in ${FUZZER_TARGETS}
+# Profiling with coverage requires that we resolve+copy all Bazel symlinks and
+# also remap everything under proc/self/cwd to correspond to Bazel build paths.
+if [ "$SANITIZER" = "coverage" ]
+then
+  # The build invoker looks for sources in $SRC, but it turns out that we need
+  # to not be buried under src/, paths are expected at out/proc/self/cwd by
+  # the profiler.
+  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
+  mkdir -p "${REMAP_PATH}"
+  # For .cc, we only really care about source/ today.
+  rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
+  rsync -av "${SRC}"/envoy/test "${REMAP_PATH}"
+  # Clean up symlinks with a missing referrant.
+  find "${SRC}"/envoy/bazel-envoy/external -follow -type l -ls -delete || echo "Symlink cleanup soft fail"
+  rsync -avLk "${SRC}"/envoy/bazel-envoy/external "${REMAP_PATH}"
+  # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
+  # filter out the build objects from bazel-out/. Also need to resolve symlinks,
+  # since they don't make sense outside the build container.
+  rsync -avLk --include '*.h' --include '*.cc' --include '*.hpp' \
+    --include '*/' --exclude '*' \
+    "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
+  # As above, but for /root/.cache.
+  # TODO(htuch): disabled for now, this would mostly be useful for .build
+  # artifact, e.g.
+  # /builder/home/.cache/bazel/_bazel_root/4e9824db8e7d11820cfa25090ed4ed10/external/envoy_deps_cache_b22e04bff96538ea37e715942da6315c/yaml-cpp.dep.build/yaml-cpp-0f9a586ca1dc29c2ecb8dd715a315b93e3f40f79/src/parse.cpp
+  # but, we don't know how to recover them today, as they are gone by this
+  # phase.
+  #
+  # rsync -avLk --relative --include '*.h' --include '*.cc' --include '*.c' \
+  #   --include '*/' --exclude '*' \
+  #   /root/.cache "${OUT}"
+fi
+
+# Copy out test driverless binaries from bazel-bin/.
+for t in ${FILTERED_FUZZER_TARGETS}
 do
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
-  cp bazel-bin/"${t}"_driverless "${OUT}"/"${TARGET_BASE}"_fuzz_test
-  zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
-    "$(dirname "${t}")"/"${TARGET_BASE}"_corpus/*
+  TARGET_DRIVERLESS=bazel-bin/"${t}"_driverless
+  echo "Copying fuzzer $t"
+  cp "${TARGET_DRIVERLESS}" "${OUT}"/"${TARGET_BASE}"_fuzz_test
 done
+
+# Zip up related test corpuses.
+# TODO(htuch): just use the .tar directly when
+# https://github.com/google/oss-fuzz/issues/1918 is fixed.
+CORPUS_UNTAR_PATH="${PWD}"/_tmp_corpus
+for t in ${FILTERED_FUZZER_TARGETS}
+do
+  echo "Extracting and zipping fuzzer $t corpus"
+  rm -rf "${CORPUS_UNTAR_PATH}"
+  mkdir -p "${CORPUS_UNTAR_PATH}"
+  tar -C "${CORPUS_UNTAR_PATH}" -xvf bazel-bin/"${t}"_corpus_tar.tar
+  TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
+  zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
+    "${CORPUS_UNTAR_PATH}"/*
+done
+rm -rf "${CORPUS_UNTAR_PATH}"
 
 # Copy dictionaries and options files to $OUT/
 for d in $FUZZER_DICTIONARIES; do
   cp "$d" "${OUT}"/
 done
+
+# Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build
+# cache.
+rm -f bazel-*

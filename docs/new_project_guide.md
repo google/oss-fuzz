@@ -71,14 +71,46 @@ For this to work, ensure that your project's runtime dependencies are listed in
 [this file](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
 You may opt-in by adding "memory" to this list.
 
-### help_url
-Link to a custom help URL in bug reports instead of the
-[default OSS-Fuzz guide to reproducing crashes](https://github.com/google/oss-fuzz/blob/master/docs/reproducing.md). This can be useful if you assign
-bugs to members of your project unfamiliar with OSS-Fuzz or if they should follow a different workflow for
-reproducing and fixing bugs than standard one outlined in the reproducing guide.
+If you want to test a particular sanitizer (e.g. memory) and see what crashes it generates without filing
+them in the issue tracker, you can set the experimental flag. The crashes can be accessed on [ClusterFuzz
+homepage](clusterfuzz.md#web-interface). Example:
+
+```
+sanitizers:
+ - address
+ - memory:
+    experimental: True
+ - undefined
+ ```
 
 Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
 
+### help_url
+Link to a custom help URL in bug reports instead of the
+[default OSS-Fuzz guide to reproducing crashes](reproducing.md). This can be useful if you assign
+bugs to members of your project unfamiliar with OSS-Fuzz or if they should follow a different workflow for
+reproducing and fixing bugs than standard one outlined in the reproducing guide.
+
+Example: [skia](https://github.com/google/oss-fuzz/blob/master/projects/skia/project.yaml).
+
+### experimental
+A boolean (either True or False) that indicates whether this project is in evaluation mode. This allows a project to be
+fuzzed and generate crash findings, but not file them in the issue tracker. The crashes can be accessed on [ClusterFuzz homepage](clusterfuzz.md#web-interface). This should be only used if you are not a maintainer of the project and have
+less confidence in the efficacy of your fuzz targets. Example:
+
+```
+homepage: "{project_homepage}"
+primary_contact: "{primary_contact}"
+auto_ccs:
+  - "{auto_cc_1}"
+  - "{auto_cc_2}"
+sanitizers:
+  - address
+  - memory
+  - undefined
+help_url: "{help_url}"  
+experimental: True
+```
 ## Dockerfile
 
 This file defines the Docker image definition. This is where the build.sh script will be executed in.
@@ -148,6 +180,8 @@ When build.sh script is executed, the following locations are available within t
 While files layout is fixed within a container, the environment variables are
 provided to be able to write retargetable scripts.
 
+### Requirements
+
 You *must* use the special compiler flags needed to build your project and fuzz targets.
 These flags are provided in the following environment variables:
 
@@ -155,6 +189,8 @@ These flags are provided in the following environment variables:
 | -------------          | --------
 | `$CC`, `$CXX`, `$CCC`  | The C and C++ compiler binaries.
 | `$CFLAGS`, `$CXXFLAGS` | C and C++ compiler flags.
+
+You *must* use `$CXX` as a linker, even if your project is written in pure C.
 
 Most well-crafted build scripts will automatically use these variables. If not,
 pass them manually to the build tool.
@@ -263,8 +299,9 @@ Dictionaries hugely improve fuzzing efficiency for inputs with lots of similar
 sequences of bytes. [libFuzzer documentation](http://libfuzzer.info#dictionaries)
 
 Put your dict file in `$OUT`. If the dict filename is the same as your target
-binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the name is different
-(e.g. because it is shared by several targets), specify this in .options file:
+binary name (i.e. `%fuzz_target%.dict`), it will be automatically used. If the
+name is different (e.g. because it is shared by several targets), specify this
+in .options file:
 
 ```
 [libfuzzer]

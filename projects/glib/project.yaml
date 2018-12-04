@@ -1,0 +1,11 @@
+homepage: "https://www.gnu.org/directory/glib.html"
+primary_contact: "bugzilla@tecnocode.co.uk"
+auto_ccs:
+- philip.withnall@gmail.com
+- mwl458@gmail.com
+- iain@orangesquash.org.uk
+sanitizers:
+- address
+- undefined
+- memory
+help_url: https://gitlab.gnome.org/GNOME/glib/tree/master/fuzzing#how-to-reproduce-oss-fuzz-bugs-locally

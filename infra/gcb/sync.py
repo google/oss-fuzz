@@ -5,13 +5,16 @@ import json
 import os
 import re
 import sys
-import urllib2
 import yaml
-import xml.etree.ElementTree as ET
 
 import jenkins
 
 JENKINS_SERVER = ('localhost', 8080)
+
+JOB_TEMPLATES = [
+    {'prefix': 'projects/', 'config': 'base_job.xml'},
+    {'prefix': 'coverage/', 'config': 'coverage_job.xml'},
+]
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
@@ -22,8 +25,10 @@ VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 def main():
   # Connect to jenkins server.
   jenkins_login = get_jenkins_login()
-  server = jenkins.Jenkins('http://%s:%d' % JENKINS_SERVER,
-                           username=jenkins_login[0], password=jenkins_login[1])
+  server = jenkins.Jenkins(
+      'http://%s:%d' % JENKINS_SERVER,
+      username=jenkins_login[0],
+      password=jenkins_login[1])
 
   for project in get_projects():
     print 'syncing configs for', project
@@ -32,7 +37,7 @@ def main():
       sync_jenkins_job(server, project)
 
     except Exception as e:
-      print >>sys.stderr, 'Failed to setup job with exception', e
+      print >> sys.stderr, 'Failed to setup job with exception', e
 
 
 def _has_dockerfile(project_dir):
@@ -60,13 +65,13 @@ def get_projects():
       continue
 
     if not VALID_PROJECT_NAME.match(name):
-      print >>sys.stderr, 'Invalid project name:', name
+      print >> sys.stderr, 'Invalid project name:', name
       continue
 
     projects.append(name)
 
   if not projects:
-    print >>sys.stderr, 'No projects found.'
+    print >> sys.stderr, 'No projects found.'
 
   return projects
 
@@ -85,15 +90,16 @@ def sync_jenkins_job(server, project):
   with open(project_yaml, 'r') as f:
     project_json_string = json.dumps(json.dumps(yaml.safe_load(f)))
 
-  job_name = 'projects/' + project
-  with open(os.path.join(SCRIPT_DIR, 'jenkins_config', 'base_job.xml')) as f:
-    job_config_xml = f.read()
+  for job in JOB_TEMPLATES:
+    job_name = job['prefix'] + project
+    with open(os.path.join(SCRIPT_DIR, 'jenkins_config', job['config'])) as f:
+      job_config_xml = f.read()
 
-  if server.job_exists(job_name):
-    server.reconfig_job(job_name, job_config_xml)
-  else:
-    server.create_job(job_name, job_config_xml)
-    server.build_job(job_name)
+    if server.job_exists(job_name):
+      server.reconfig_job(job_name, job_config_xml)
+    else:
+      server.create_job(job_name, job_config_xml)
+      server.build_job(job_name)
 
 
 if __name__ == '__main__':

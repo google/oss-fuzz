@@ -20,8 +20,11 @@
 ./configure                             \
     --enable-fuzz-targets               \
     --enable-application-coap           \
+    --enable-application-coap-secure    \
+    --enable-border-agent               \
     --enable-border-router              \
     --enable-cert-log                   \
+    --enable-channel-manager            \
     --enable-channel-monitor            \
     --enable-child-supervision          \
     --enable-commissioner               \
@@ -30,6 +33,7 @@
     --enable-dns-client                 \
     --enable-diag                       \
     --enable-dns-client                 \
+    --enable-ftd                        \
     --enable-jam-detection              \
     --enable-joiner                     \
     --enable-legacy                     \
@@ -37,7 +41,7 @@
     --enable-mtd-network-diagnostic     \
     --enable-raw-link-api               \
     --enable-service                    \
-    --enable-tmf-proxy                  \
+    --enable-udp-proxy                  \
     --disable-docs
 
 make -j$(nproc)

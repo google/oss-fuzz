@@ -103,8 +103,9 @@ def main():
                                   nargs='?')
 
   run_fuzzer_parser = subparsers.add_parser(
-      'run_fuzzer', help='Run a fuzzer.')
+      'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
   _add_engine_args(run_fuzzer_parser)
+  _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
@@ -112,31 +113,26 @@ def main():
                                  nargs=argparse.REMAINDER)
 
   coverage_parser = subparsers.add_parser(
-      'coverage', help='Run a fuzzer for a while and generate coverage.')
-  coverage_parser.add_argument('--run_time', default=60,
-                      help='time in seconds to run fuzzer')
+      'coverage', help='Generate code coverage report for the project.')
+  coverage_parser.add_argument('--no-corpus-download', action='store_true',
+                               help='do not download corpus backup from '
+                               'OSS-Fuzz; use corpus located in '
+                               'build/corpus/<project>/<fuzz_target>/')
+  coverage_parser.add_argument('--port', default='8008', help='specify port for'
+                               ' a local HTTP server rendering coverage report')
+  coverage_parser.add_argument('--fuzz-target', help='specify name of a fuzz '
+                               'target to be run for generating coverage '
+                               'report')
+  coverage_parser.add_argument('--corpus-dir', help='specify location of corpus'
+                               ' to be used (requires --fuzz-target argument)')
   coverage_parser.add_argument('project_name', help='name of the project')
-  coverage_parser.add_argument('fuzzer_name', help='name of the fuzzer')
-  coverage_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                               nargs=argparse.REMAINDER)
-
-  profile_parser = subparsers.add_parser(
-      'profile', help='Generate code coverage report for the project.')
-  profile_parser.add_argument('project_name', help='name of the project')
-  profile_parser.add_argument('--no-corpus-download', action='store_true',
-                              help='do not download corpus backup from OSS-Fuzz; '
-                              'use corpus located in build/corpus/<project>/<fuzz_target>/')
-  profile_parser.add_argument('--port', default='8008', help='specify port for '
-                              'a local HTTP server rendering coverage report')
-  profile_parser.add_argument('--fuzz-target', help='specify name of a fuzz '
-                              'target to be run for generating coverage report')
-  profile_parser.add_argument('--corpus-dir', help='specify location of corpus '
-                              'to be used (requires --fuzz-target argument)')
+  coverage_parser.add_argument('extra_args', help='additional arguments to '
+                               'pass to llvm-cov utility.', nargs='*')
 
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
   reproduce_parser.add_argument('--valgrind', action='store_true',
-                       help='run with valgrind')
+                                help='run with valgrind')
   reproduce_parser.add_argument('project_name', help='name of the project')
   reproduce_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   reproduce_parser.add_argument('testcase_path', help='path of local testcase')
@@ -145,7 +141,7 @@ def main():
   _add_environment_args(reproduce_parser)
 
   shell_parser = subparsers.add_parser(
-      'shell', help='Run /bin/bash in an image.')
+      'shell', help='Run /bin/bash within the builder container.')
   shell_parser.add_argument('project_name', help='name of the project')
   _add_engine_args(shell_parser)
   _add_sanitizer_args(shell_parser)
@@ -167,8 +163,6 @@ def main():
     return run_fuzzer(args)
   elif args.command == 'coverage':
     return coverage(args)
-  elif args.command == 'profile':
-    return profile(args)
   elif args.command == 'reproduce':
     return reproduce(args)
   elif args.command == 'shell':
@@ -186,7 +180,7 @@ def _is_base_image(image_name):
 
 def _check_project_exists(project_name):
   """Checks if a project exists."""
-  if not os.path.exists(os.path.join(OSSFUZZ_DIR, 'projects', project_name)):
+  if not os.path.exists(_get_project_dir(project_name)):
     print(project_name, 'does not exist', file=sys.stderr)
     return False
 
@@ -222,6 +216,16 @@ def _get_command_string(command):
   return ' '.join(pipes.quote(part) for part in command)
 
 
+def _get_project_dir(project_name):
+  """Returns path to the project."""
+  return os.path.join(OSSFUZZ_DIR, 'projects', project_name)
+
+
+def _get_dockerfile_path(project_name):
+  """Returns path to the project Dockerfile."""
+  return os.path.join(_get_project_dir(project_name), 'Dockerfile')
+
+
 def _get_corpus_dir(project_name=''):
   """Returns path to /corpus directory for the given project (if specified)."""
   return os.path.join(BUILD_DIR, 'corpus', project_name)
@@ -246,7 +250,7 @@ def _add_engine_args(parser):
 def _add_sanitizer_args(parser):
   """Add common sanitizer args."""
   parser.add_argument('--sanitizer', default='address',
-                      choices=['address', 'memory', 'undefined', 'coverage', 'profile'])
+                      choices=['address', 'memory', 'undefined', 'coverage'])
 
 
 def _add_environment_args(parser):
@@ -281,6 +285,28 @@ def _build_image(image_name, no_cache=False, pull=False):
 def _env_to_docker_args(env_list):
   """Turn envirnoment variable list into docker arguments."""
   return sum([['-e', v] for v in env_list], [])
+
+
+def _workdir_from_dockerfile(project_name):
+  """Parse WORKDIR from the Dockerfile for the given project."""
+  WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
+  dockerfile_path = _get_dockerfile_path(project_name)
+
+  with open(dockerfile_path) as f:
+    lines = f.readlines()
+
+  for line in reversed(lines):  # reversed to get last WORKDIR.
+    match = re.match(WORKDIR_REGEX, line)
+    if match:
+      workdir = match.group(1)
+      workdir = workdir.replace('$SRC', '/src')
+
+      if not os.path.isabs(workdir):
+        workdir = os.path.join('/src', workdir)
+
+      return os.path.normpath(workdir)
+
+  return os.path.join('/src', project_name)
 
 
 def docker_run(run_args, print_output=True):
@@ -399,9 +425,14 @@ def build_fuzzers(args):
       ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
       _env_to_docker_args(env))
   if args.source_path:
+    workdir = _workdir_from_dockerfile(args.project_name)
+    if workdir == '/src':
+      print('Cannot use local checkout with "WORKDIR /src".', file=sys.stderr)
+      return 1
+
     command += [
         '-v',
-        '%s:/src/%s' % (_get_absolute_path(args.source_path), args.project_name)
+        '%s:%s' % (_get_absolute_path(args.source_path), workdir),
     ]
   command += [
       '-v', '%s:/out' % project_out_dir,
@@ -414,7 +445,7 @@ def build_fuzzers(args):
   try:
     subprocess.check_call(command)
   except subprocess.CalledProcessError:
-    print('fuzzers build failed.', file=sys.stderr)
+    print('Fuzzers build failed.', file=sys.stderr)
     return 1
 
   # Patch MSan builds to use instrumented shared libraries.
@@ -495,9 +526,19 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
       'ls',
       corpus_backup_url
   ]
-  output = subprocess.check_output(command).splitlines()
+
+  corpus_listing = subprocess.Popen(
+      command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output, error = corpus_listing.communicate()
+
+  # Some fuzz targets (e.g. new ones) may not have corpus yet, just skip those.
+  if corpus_listing.returncode:
+    print('WARNING: corpus for {0} not found:\n{1}'.format(fuzz_target, error),
+          file=sys.stderr)
+    return
+
   if output:
-    latest_backup_url = output[-1]
+    latest_backup_url = output.splitlines()[-1]
     archive_path = corpus_dir + '.zip'
     command = [
         'gsutil',
@@ -568,7 +609,7 @@ def download_corpus(args):
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
 
-def profile(args):
+def coverage(args):
   """Generate code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
     print('ERROR: --corpus-dir requires specifying a particular fuzz target '
@@ -586,8 +627,9 @@ def profile(args):
   env = [
       'FUZZING_ENGINE=libfuzzer',
       'PROJECT=%s' % args.project_name,
-      'SANITIZER=profile',
+      'SANITIZER=coverage',
       'HTTP_PORT=%s' % args.port,
+      'COVERAGE_EXTRA_ARGS=%s' % ' '.join(args.extra_args),
   ]
 
   run_args = _env_to_docker_args(env)
@@ -629,7 +671,12 @@ def run_fuzzer(args):
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
     return 1
 
-  env = ['FUZZING_ENGINE=' + args.engine]
+  env = [
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer,
+      'RUN_FUZZER_MODE=interactive',
+  ]
+
   if args.e:
     env += args.e
 
@@ -641,47 +688,6 @@ def run_fuzzer(args):
   ] + args.fuzzer_args
 
   return docker_run(run_args)
-
-
-def coverage(args):
-  """Runs a fuzzer in the container."""
-  if not _check_project_exists(args.project_name):
-    return 1
-
-  if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
-    return 1
-
-  temp_dir = tempfile.mkdtemp()
-
-  run_args = [
-      '-e', 'FUZZING_ENGINE=libfuzzer',
-      '-e', 'ASAN_OPTIONS=coverage_dir=/cov',
-      '-e', 'MSAN_OPTIONS=coverage_dir=/cov',
-      '-e', 'UBSAN_OPTIONS=coverage_dir=/cov',
-      '-v', '%s:/out' % _get_output_dir(args.project_name),
-      '-v', '%s:/cov' % temp_dir,
-      '-w', '/cov',
-      '-t', 'gcr.io/oss-fuzz-base/base-runner',
-      'run_fuzzer',
-      args.fuzzer_name,
-      '-dump_coverage=1',
-      '-max_total_time=%s' % args.run_time
-  ] + args.fuzzer_args
-
-  print('This may take a while (running your fuzzer for %s seconds)...' %
-        args.run_time)
-  docker_run(run_args, print_output=False)
-
-  run_args = [
-      '-v', '%s:/out' % _get_output_dir(args.project_name),
-      '-v', '%s:/cov' % temp_dir,
-      '-w', '/cov',
-      '-p', '8001:8001',
-      '-t', 'gcr.io/oss-fuzz/%s' % args.project_name,
-      'coverage_report', '/out/%s' % args.fuzzer_name,
-  ]
-
-  docker_run(run_args)
 
 
 def reproduce(args):

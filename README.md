@@ -107,6 +107,7 @@ OSS-Fuzz will adhere to following disclosure principles:
   * 2017-05-08 ([1](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
 [2](https://testing.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
 [3](https://security.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html))
+  * 2018-11-06 ([1](https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html))
 
 ## Build Status
 [This page](https://oss-fuzz-build-logs.storage.googleapis.com/index.html)

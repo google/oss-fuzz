@@ -13,7 +13,7 @@
 # Run e.g. "make all LIB_FUZZING_ENGINE=/path/to/libFuzzer.a"
 # to link the fuzzer(s) against a real fuzzing engine.
 #
-# OSS-Fuzz will define it's own value for LIB_FUZZING_ENGINE.
+# OSS-Fuzz will define its own value for LIB_FUZZING_ENGINE.
 LIB_FUZZING_ENGINE ?= standalone_fuzz_target_runner.o
 
 # Values for CC, CFLAGS, CXX, CXXFLAGS are provided by OSS-Fuzz.

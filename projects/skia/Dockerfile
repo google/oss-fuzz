@@ -32,6 +32,9 @@ RUN bin/sync
 
 # Setup SwiftShader
 WORKDIR $SRC/skia/third_party/externals/swiftshader/
+# TODO(metzman): Come up with a better long term solution, such as downloading
+# prebuilt libraries, than pinning swiftshader to a known working revision.
+RUN git checkout bf8fd5b5fb6892dabcc21b4b86d41cd40cb9b4b5
 RUN git submodule update --init
 WORKDIR $SRC/skia
 
@@ -55,6 +58,8 @@ RUN wget -O $SRC/skia/api_image_filter_seed_corpus.zip https://storage.googleapi
 
 RUN wget -O $SRC/skia/api_path_measure_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_path_measure_seed_corpus.zip
 
+RUN wget -O $SRC/skia/api_pathop_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_pathop_seed_corpus.zip
+
 RUN wget -O $SRC/skia/canvas_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/canvas_seed_corpus.zip
 
 RUN wget -O $SRC/skia/encoder_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/encoder_seed_corpus.zip
@@ -62,6 +67,8 @@ RUN wget -O $SRC/skia/encoder_seed_corpus.zip https://storage.googleapis.com/ski
 RUN wget -O $SRC/skia/skottie_json_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skottie_json_seed_corpus.zip
 
 RUN wget -O $SRC/skia/skjson_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skjson_seed_corpus.zip
+
+RUN wget -O $SRC/skia/api_polyutils_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_polyutils_seed_corpus.zip
 
 COPY build.sh $SRC/
 
@@ -74,18 +81,24 @@ COPY image_filter_deserialize.options $SRC/skia/image_filter_deserialize.options
 COPY image_filter_deserialize_width.options $SRC/skia/image_filter_deserialize_width.options
 COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
 COPY path_deserialize.options $SRC/skia/path_deserialize.options
-COPY image_decode.options $SRC/skia/image_decode.options
-COPY animated_image_decode.options $SRC/skia/animated_image_decode.options
 COPY encoder.options $SRC/skia/encoder.options
+
+# Codec fuzzers can share options
+COPY image_codec.options $SRC/skia/android_codec.options
+COPY image_codec.options $SRC/skia/animated_image_decode.options
+COPY image_codec.options $SRC/skia/image_decode.options
+COPY image_codec.options $SRC/skia/image_decode_incremental.options
 
 # API fuzzers can share options
 COPY api_fuzzers.options $SRC/skia/api_draw_functions.options
 COPY api_fuzzers.options $SRC/skia/api_gradients.options
 COPY api_fuzzers.options $SRC/skia/api_image_filter.options
-COPY api_fuzzers.options $SRC/skia/api_path_measure.options
-COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
-COPY api_fuzzers.options $SRC/skia/api_null_canvas.options
 COPY api_fuzzers.options $SRC/skia/api_mock_gpu_canvas.options
+COPY api_fuzzers.options $SRC/skia/api_null_canvas.options
+COPY api_fuzzers.options $SRC/skia/api_path_measure.options
+COPY api_fuzzers.options $SRC/skia/api_pathop.options
+COPY api_fuzzers.options $SRC/skia/api_polyutils.options
+COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
 
 COPY json.dict $SRC/skia/json.dict
 

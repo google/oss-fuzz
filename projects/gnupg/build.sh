@@ -17,8 +17,8 @@
 
 #compile and link statically dependencies
 cd ..
-tar -xvf libgpg-error-1.28.tar.bz2
-cd libgpg-error-1.28
+tar -xvf libgpg-error-1.32.tar.bz2
+cd libgpg-error-1.32
 ./configure --enable-static --disable-shared
 make
 make install
@@ -51,6 +51,9 @@ cd ..
 
 # build project
 cd gnupg
+mkdir tests/fuzz
+cp ../fuzz_* tests/fuzz
+git apply ../fuzz.diff
 ./autogen.sh
 ./configure --disable-doc --enable-maintainer-mode
 make -j$(nproc) all
@@ -61,15 +64,9 @@ cd tests/fuzz
 cp *.options $OUT/
 cp fuzz_*_seed_corpus.zip $OUT/
 
-$CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_verify.c -o fuzz_verify.o
+ls fuzz_*.c | cut -d_ -f2 | cut -d. -f1 | while read target
+do
+    $CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_$target.c -o fuzz_$target.o
 
-$CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_verify.o -o $OUT/fuzz_verify ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
-
-
-$CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_import.c -o fuzz_import.o
-
-$CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_import.o -o $OUT/fuzz_import ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
-
-$CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_decrypt.c -o fuzz_decrypt.o
-
-$CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_decrypt.o -o $OUT/fuzz_decrypt ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
+    $CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_$target.o -o $OUT/fuzz_$target ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
+done

@@ -4,3 +4,4 @@ auto_ccs:
   - "zlowram@gmail.com"
 sanitizers:
   - address
+run_tests: False

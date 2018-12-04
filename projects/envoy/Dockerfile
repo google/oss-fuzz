@@ -21,6 +21,7 @@ RUN apt-get update && apt-get -y install  \
 	build-essential \
 	openjdk-8-jdk   \
 	make            \
+    ninja-build     \
     curl            \
     autoconf        \
     libtool         \
@@ -35,5 +36,5 @@ RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN apt-get update && apt-get install -y bazel
 
 RUN git clone https://github.com/envoyproxy/envoy.git
-WORKDIR /src/envoy/
+WORKDIR $SRC/envoy/
 COPY build.sh $SRC/

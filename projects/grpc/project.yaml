@@ -12,3 +12,4 @@ auto_ccs:
   - "yashkt@google.com"
   - "yuxuanli@google.com"
   - "zyc@google.com"
+coverage_extra_args: -ignore-filename-regex=.*\.cache.*

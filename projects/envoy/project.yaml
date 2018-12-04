@@ -3,4 +3,7 @@ primary_contact: "htuch@google.com"
 auto_ccs:
   - "mklein@lyft.com"
   - "alyssar@google.com"
+  - "dio@tetrate.io"
+  - "jbuckland@google.com"
   - "envoy-security@googlegroups.com"
+coverage_extra_args: -ignore-filename-regex=.*\.cache.*

@@ -15,14 +15,23 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get update && apt-get install -y make autoconf libtool libarchive-dev
+MAINTAINER prince.cherusker@gmail.com
+
+RUN apt-get update &&  \
+    apt-get install -y \
+      autoconf         \
+      cmake            \
+      libpng-dev       \
+      libtool          \
+      pkg-config       \
+      zlib1g-dev       \
+      make
 
 # Get some files for the seed corpus
 ADD https://github.com/adobe-fonts/adobe-variable-font-prototype/releases/download/1.001/AdobeVFPrototype.otf $SRC/font-corpus/
 RUN git clone https://github.com/unicode-org/text-rendering-tests.git && cp text-rendering-tests/fonts/* $SRC/font-corpus
-RUN git clone --depth 1 https://github.com/cherusker/freetype2-testing.git && find freetype2-testing/fuzzing/corpora/legacy -type f -exec cp {} $SRC/font-corpus \;
 
-RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
-WORKDIR freetype2
-COPY build.sh *.options $SRC/
+RUN git clone --depth 1 https://github.com/freetype/freetype2-testing.git
+WORKDIR freetype2-testing
+
+COPY build.sh $SRC/

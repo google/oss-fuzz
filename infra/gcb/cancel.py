@@ -1,5 +1,4 @@
 #!/usr/bin/python2
-
 """Cancels project build on Google Cloud Builder.
 
 Usage: cancel.py <build_id>
@@ -19,9 +18,9 @@ from oauth2client.client import GoogleCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
+
 def usage():
-  sys.stderr.write(
-    "Usage: " + sys.argv[0] + " <build_id>\n")
+  sys.stderr.write('Usage: ' + sys.argv[0] + ' <build_id>\n')
   exit(1)
 
 
@@ -37,5 +36,5 @@ def main():
       projectId='oss-fuzz', id=build_id, body={}).execute()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

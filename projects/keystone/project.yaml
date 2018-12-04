@@ -1,0 +1,8 @@
+homepage: "https://www.keystone-engine.org"
+primary_contact: "keystone.engine@gmail.com"
+auto_ccs : "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- memory
+- undefined

@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER vakh@chromium.org
 RUN apt-get update && apt-get install -y make build-essential
 
-RUN git clone --depth 1 https://github.com/aawc/unrar.git
+RUN git clone -b v5.6.8 --depth 1 https://github.com/aawc/unrar.git
 WORKDIR unrar
 
 COPY build.sh $SRC/

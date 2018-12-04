@@ -2,9 +2,8 @@
 
 ## What kind of projects are you accepting?
 
-We are currently in a beta status, and still working out issues in our service. At this point, we
-can only commit to supporting established projects that have a critical impact on infrastructure and
-user security. We will consider each request on a case-by-case basis, but some things we keep in mind are:
+We accept established projects that have a critical impact on infrastructure and user security.
+We will consider each request on a case-by-case basis, but some things we keep in mind are:
 
   - Exposure to remote attacks (e.g. libraries that are used to process untrusted input).
   - Number of users/other projects depending on this project.
@@ -29,7 +28,7 @@ We will reconsider the GitHub issue tracker once the
 
 ## Why do you require a Google account for authentication?
 
-Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Google account for authentication. Note that an alternate email address associated with a Google acount does not work due to appengine api limitations.
+Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Google account for authentication. Note that an alternate email address associated with a Google account does not work due to appengine api limitations.
 
 ## Why do you use Docker?
 
@@ -79,7 +78,7 @@ Using that, you can debug the root cause and see which category the bug falls in
 - If this is a bug is due to an incorrect usage of the dependent project's API 
 in your project, then you need to fix your usage to call the API correctly.
 - If this is a real bug in the dependent project, then you should CC the maintainers
-of that project on the bug. Once cced, they will get automatic access to all the
+of that project on the bug. Once CCed, they will get automatic access to all the
 information necessary to reproduce the issue. If this project is maintained in OSS-Fuzz,
 you can search for contacts in the respective project.yaml file.
 
@@ -93,6 +92,12 @@ If your fuzz target is running for many days and does not find bugs or new cover
 
 In either case, look at the [coverage reports](clusterfuzz.md#coverage-reports) for your target(s) and figure out why some parts of the code are not covered. 
 
+## Why are code coverage reports public?
+
+We work with open source projects and try to keep as much information public as
+possible. We believe that public code coverage reports do not put users at risk,
+as they do not indicate the presence of bugs or lack thereof.
+
 ## What happens when I rename a fuzz target ?
 If you rename your fuzz targets, the existing bugs for those targets will get closed and fuzzing will start from scratch from a fresh corpora (seed corpus only). Similar corpora will get accumulated over time depending on the number of cpu cycles that original fuzz target has run. If this is not desirable, make sure to copy the accumulated corpora from the original fuzz target (instructions to download [here](corpora.md#downloading-the-corpus)) and restore it to the new GCS location later (instruction to find the new location [here](corpora.md#viewing-the-corpus-for-a-fuzz-target)).
 
@@ -101,3 +106,8 @@ OSS-Fuzz *uses* [AFL](http://lcamtuf.coredump.cx/afl/) as one of its [fuzzing en
 
 ## Does OSS-Fuzz support Honggfuzz?
 Analogically to [AFL](#does-oss-fuzz-support-afl).
+
+## What are the specs on your machines?
+OSS-Fuzz builders have 32CPU/28.8GB RAM.
+
+Fuzzing machines only have a single core and fuzz targets should not use more than 2GB of RAM.

@@ -1,11 +1,19 @@
 diff --git a/c/tests/fuzz/CMakeLists.txt b/c/tests/fuzz/CMakeLists.txt
-index f870d617..054ec6d6 100644
+index f870d617..c9d46168 100644
 --- a/c/tests/fuzz/CMakeLists.txt
 +++ b/c/tests/fuzz/CMakeLists.txt
-@@ -33,6 +33,8 @@ add_library (StandaloneFuzzTargetMain STATIC StandaloneFuzzTargetMain.c Standalo
+@@ -32,7 +32,15 @@ add_library (StandaloneFuzzTargetMain STATIC StandaloneFuzzTargetMain.c Standalo
+ 
  macro (pn_add_fuzz_test test)
    add_executable (${test} ${ARGN})
-   target_link_libraries (${test} qpid-proton-core ${FUZZING_LIBRARY})
+-  target_link_libraries (${test} qpid-proton-core ${FUZZING_LIBRARY})
++  # prefer static lib for the fuzzer, if available
++  if (BUILD_STATIC_LIBS)
++    set(FUZZING_QPID_PROTON_CORE_LIBRARY qpid-proton-core-static)
++  else()
++    set(FUZZING_QPID_PROTON_CORE_LIBRARY qpid-proton-core)
++  endif()
++  target_link_libraries (${test} ${FUZZING_QPID_PROTON_CORE_LIBRARY} ${FUZZING_LIBRARY})
 +  # -lFuzzingEngine is a C++ library, which needs c++ std lib
 +  set_target_properties(${test} PROPERTIES LINKER_LANGUAGE CXX)
  

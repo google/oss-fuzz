@@ -15,21 +15,27 @@
 #
 ################################################################################
 
-# Required for some reason... I don't ask questions
+# Install dependencies.
 export SHELL=/bin/bash
+../../mach bootstrap --no-interactive --application-choice browser
+
+# Set environment for rustc.
+source $HOME/.cargo/env
 
 autoconf2.13
 
 mkdir build_DBG.OBJ
 cd build_DBG.OBJ
 
+# Temporarily disable cranelift (see bug 1497570)
 ../configure \
     --enable-debug \
     --enable-optimize \
     --disable-shared-js \
     --disable-jemalloc \
     --disable-tests \
-    --enable-address-sanitizer
+    --enable-address-sanitizer \
+    --disable-cranelift
 
 make "-j$(nproc)"
 

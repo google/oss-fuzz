@@ -29,6 +29,7 @@ Following the expat example above, this would be:
 ```bash
 gsutil -m rsync gs://expat-corpus.clusterfuzz-external.appspot.com/libFuzzer/expat_parse_fuzzer <local_directory>
 ```
+
 ## Corpus backups
 
 We also keep daily zipped backups of your corpora. These can be accessed from the `corpus_backup` column of the fuzzer statistics page. Downloading these can also be significantly faster than `gsutil -m rsync` on the corpus bucket.

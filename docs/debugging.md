@@ -10,9 +10,20 @@ $ compile                                     # run compilation manually
 
 ## Debugging Fuzzers with GDB
 
-If you decide to debug a fuzzer with gdb (which is already installed in base-runner-debug image),
-you will need to start a container in privileged mode:
+If you wish to debug a fuzz target with gdb, you may use the base-runner-debug
+image:
 
 ```bash
-docker run -ti --privileged -v /tmp/out:/out gcr.io/oss-fuzz-base/base-runner-debug gdb /out/<fuzz_target_name>
+# Copy input testcase into host output directory so that it can be accessed
+# within the Docker image.
+$ cp /path/to/testcase build/out/$PROJECT_NAME
+
+# Run Docker image containing GDB.
+$ python infra/helper.py shell base-runner-debug
+$ gdb --args /out/$PROJECT_NAME/$FUZZ_TARGET_NAME /out/$PROJECT_NAME/testcase
 ```
+
+Note that the base-runner-debug image does not have access to your sources, so
+you will not be able to do source code level debugging. We recommend integrating
+your fuzz target upstream as part of [ideal integration](ideal_integration.md)
+for debugging purposes.

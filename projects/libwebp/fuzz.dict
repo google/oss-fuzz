@@ -1,13 +1,17 @@
 # https://developers.google.com/speed/webp/docs/riff_container
 
-name="ALPH"
-name="ANIM"
-name="ANMF"
-name="EXIF"
-name="ICCP"
-name="RIFF"
-name="VP8 "
-name="VP8L"
-name="VP8X"
-name="WEBP"
-name="XMP "
+# FourCC
+"ALPH"
+"ANIM"
+"ANMF"
+"EXIF"
+"ICCP"
+"RIFF"
+"VP8 "
+"VP8L"
+"VP8X"
+"WEBP"
+"XMP "
+
+# VP8 signature
+"\x9D\x01\x2A"

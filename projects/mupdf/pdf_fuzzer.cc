@@ -17,30 +17,126 @@
 */
 
 #include <cstdint>
+#include <stdlib.h>
+#include <string.h>
+#include <inttypes.h>
 
 #include <mupdf/fitz.h>
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  fz_context *ctx = fz_new_context(nullptr, nullptr, FZ_STORE_DEFAULT);
-  fz_register_document_handlers(ctx);
+#define ALIGNMENT 16
+#define MAX_ALLOCATION (1024 * 1024 * 1024)
 
-  fz_stream *stream = fz_open_memory(ctx, data, size);
-  fz_matrix ctm = fz_identity;
-  fz_pixmap *pix = NULL;
+static uint64_t total = 0;
+
+static void *
+fz_malloc_ossfuzz(void *opaque, size_t size)
+{
+	char *ptr = NULL;
+
+	if (size == 0)
+		return NULL;
+	if (size > SIZE_MAX - ALIGNMENT)
+		return NULL;
+
+	if (size > MAX_ALLOCATION - ALIGNMENT - total)
+		return NULL;
+
+	ptr = (char *) malloc(size + ALIGNMENT);
+	if (ptr == NULL)
+		return NULL;
+
+	memcpy(ptr, &size, sizeof(size));
+	total += size + ALIGNMENT;
+
+	return ptr + ALIGNMENT;
+}
+
+static void
+fz_free_ossfuzz(void *opaque, void *ptr)
+{
+	size_t size;
+
+	if (ptr == NULL)
+		return;
+
+	ptr = ((char *) ptr) - ALIGNMENT;
+
+	memcpy(&size, ptr, sizeof(size));
+	total -= size - ALIGNMENT;
+	free(ptr);
+}
+
+static void *
+fz_realloc_ossfuzz(void *opaque, void *old, size_t size)
+{
+	size_t oldsize;
+	char *ptr;
+
+	if (old == NULL)
+		return fz_malloc_ossfuzz(opaque, size);
+	if (size == 0)
+	{
+		fz_free_ossfuzz(opaque, old);
+		return NULL;
+	}
+	if (size > SIZE_MAX - ALIGNMENT)
+		return NULL;
+
+	old = ((char *) old) - ALIGNMENT;
+	memcpy(&oldsize, old, sizeof(oldsize));
+
+	if (size > MAX_ALLOCATION - total + oldsize)
+		return NULL;
+
+	ptr = (char *) realloc(old, size + ALIGNMENT);
+	if (ptr == NULL)
+		return NULL;
+
+	total -= oldsize + ALIGNMENT;
+	memcpy(ptr, &size, sizeof(size));
+	total += size + ALIGNMENT;
+
+	return ptr + ALIGNMENT;
+}
+
+static fz_alloc_context fz_alloc_ossfuzz =
+{
+	NULL,
+	fz_malloc_ossfuzz,
+	fz_realloc_ossfuzz,
+	fz_free_ossfuzz
+};
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  fz_context *ctx = fz_new_context(&fz_alloc_ossfuzz, nullptr, FZ_STORE_DEFAULT);
+
+  fz_stream *stream = NULL;
   fz_document *doc = NULL;
+  fz_pixmap *pix = NULL;
+
+  fz_var(stream);
+  fz_var(doc);
+  fz_var(pix);
+
   fz_try(ctx) {
+    fz_register_document_handlers(ctx);
+    stream = fz_open_memory(ctx, data, size);
     doc = fz_open_document_with_stream(ctx, "pdf", stream);
+
     for (int i = 0; i < fz_count_pages(ctx, doc); i++) {
-      pix = fz_new_pixmap_from_page_number(ctx, doc, i, &ctm, fz_device_rgb(ctx), 0);
+      pix = fz_new_pixmap_from_page_number(ctx, doc, i, fz_identity, fz_device_rgb(ctx), 0);
       fz_drop_pixmap(ctx, pix);
+      pix = NULL;
     }
   }
-  fz_catch(ctx) {}
-
-  if (doc) {
+  fz_always(ctx) {
+    fz_drop_pixmap(ctx, pix);
     fz_drop_document(ctx, doc);
+    fz_drop_stream(ctx, stream);
   }
-  fz_drop_stream(ctx, stream);
+  fz_catch(ctx) {
+  }
+
   fz_drop_context(ctx);
 
   return 0;

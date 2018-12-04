@@ -17,30 +17,34 @@
 
 # Disable:
 # 1. UBSan vptr since target built with -fno-rtti.
-# 2. UBSan function to avoid crashes with void* cast crashes.
-export CFLAGS="$CFLAGS -fno-sanitize=function,vptr"
-export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr"
+export CFLAGS="$CFLAGS -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 
 # Build the library.
 ./autogen.sh
-./configure
+./configure --enable-static --disable-shared
 make clean
-make -j$(nproc) V=1 all
-make CPPFLAGS="-DHB_NO_VISIBILITY" -C src V=1 fuzzing
+make -j$(nproc) CPPFLAGS="-DHB_NO_VISIBILITY" V=1 all
 
 # Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-shape-fuzzer.cc -o $OUT/hb-shape-fuzzer \
-    -lFuzzingEngine ./src/.libs/libharfbuzz-fuzzing.a
+    -lFuzzingEngine ./src/.libs/libharfbuzz.a
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer \
-    -lFuzzingEngine ./src/.libs/libharfbuzz-subset-fuzzing.a ./src/.libs/libharfbuzz-fuzzing.a
-
-$CXX $CXXFLAGS -std=c++11 -Isrc \
-    ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-get-codepoints-fuzzer \
-    -lFuzzingEngine ./src/.libs/libharfbuzz-subset-fuzzing.a ./src/.libs/libharfbuzz-fuzzing.a
+    -lFuzzingEngine ./src/.libs/libharfbuzz-subset.a ./src/.libs/libharfbuzz.a
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
-zip -j -r $OUT/hb-shape-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/shaping/data/in-house/fonts
-zip -j -r $OUT/hb-subset-fuzzer_seed_corpus.zip $SRC/harfbuzz/test/api/fonts
+mkdir all-fonts
+for d in \
+	test/shaping/data/in-house/fonts \
+	test/shaping/data/aots/fonts \
+	test/shaping/data/text-rendering-tests/fonts \
+	test/api/fonts \
+	test/fuzzing/fonts \
+	; do
+	cp $d/* all-fonts/
+done
+zip $OUT/hb-shape-fuzzer_seed_corpus.zip all-fonts/*
+cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-subset-fuzzer_seed_corpus.zip
