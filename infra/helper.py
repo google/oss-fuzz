@@ -129,6 +129,21 @@ def main():
   coverage_parser.add_argument('extra_args', help='additional arguments to '
                                'pass to llvm-cov utility.', nargs='*')
 
+  regression_parser = subparsers.add_parser(
+      'regression', help='Download all the corpora for the project and run the fuzzers against them.')
+  _add_engine_args(regression_parser)
+  _add_sanitizer_args(regression_parser)
+  _add_environment_args(regression_parser)
+  regression_parser.add_argument('--no-corpus-download', action='store_true',
+                               help='do not download corpus backup from '
+                               'OSS-Fuzz; use corpus located in '
+                               'build/corpus/<project>/<fuzz_target>/')
+  regression_parser.add_argument('--fuzz-target', help='specify name of a fuzz '
+                               'target to be run')
+  regression_parser.add_argument('--corpus-dir', help='specify location of corpus'
+                               ' to be used (requires --fuzz-target argument)')
+  regression_parser.add_argument('project_name', help='name of the project')
+
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
   reproduce_parser.add_argument('--valgrind', action='store_true',
@@ -163,6 +178,8 @@ def main():
     return run_fuzzer(args)
   elif args.command == 'coverage':
     return coverage(args)
+  elif args.command == 'regression':
+    return regression(args)
   elif args.command == 'reproduce':
     return reproduce(args)
   elif args.command == 'shell':
@@ -662,6 +679,51 @@ def coverage(args):
 
   return exit_code
 
+
+def regression(args):
+  """Download all the corpora and run the fuzzers against them."""
+  if args.corpus_dir and not args.fuzz_target:
+    print('ERROR: --corpus-dir requires specifying a particular fuzz target '
+          'using --fuzz-target',
+          file=sys.stderr)
+    return 1
+
+  if not _check_project_exists(args.project_name):
+    return 1
+
+  if not args.no_corpus_download and not args.corpus_dir:
+    if not download_corpus(args):
+      return 1
+
+  env = [
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer,
+      'RUN_FUZZER_MODE=regression',
+  ]
+
+  if args.e:
+    env += args.e
+
+  run_args = _env_to_docker_args(env) + [
+      '-v', '%s:/out' % _get_output_dir(args.project_name),
+  ]
+
+  if args.corpus_dir:
+    if not os.path.exists(args.corpus_dir):
+      print('ERROR: the path provided in --corpus-dir argument does not exist',
+          file=sys.stderr)
+      return 1
+    corpus_dir = os.path.realpath(args.corpus_dir)
+    run_args.extend(['-v', '%s:/corpus/%s' % (corpus_dir,  args.fuzz_target)])
+  else:
+    run_args.extend(['-v', '%s:/corpus' % _get_corpus_dir(args.project_name)])
+
+  run_args.extend(['-t', 'gcr.io/oss-fuzz-base/base-runner', 'regression'])
+
+  if args.fuzz_target:
+    run_args.append(args.fuzz_target)
+
+  return docker_run(run_args)
 
 def run_fuzzer(args):
   """Runs a fuzzer in the container."""

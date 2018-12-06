@@ -26,6 +26,11 @@ shift
 
 CORPUS_DIR="/tmp/${FUZZER}_corpus"
 
+if [[ "$RUN_FUZZER_MODE" = regression && "$FUZZING_ENGINE" != libfuzzer ]]; then
+  echo "regression is supported only with the libfuzzer engine"
+  exit 1
+fi
+
 if [[ "$RUN_FUZZER_MODE" = interactive ]]; then
   FUZZER_OUT="$OUT/${FUZZER}_${FUZZING_ENGINE}_${SANITIZER}_out"
 else
@@ -86,7 +91,11 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -n: number of fuzzing threads (and processes)
   CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
 else
-  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $* $CORPUS_DIR"
+  CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"
+
+  if [[ "$RUN_FUZZER_MODE" != "regression" ]]; then
+    CMD_LINE="$CMD_LINE $CORPUS_DIR"
+  fi
 
   OPTIONS_FILE="${FUZZER}.options"
   if [ -f $OPTIONS_FILE ]; then
@@ -100,8 +109,16 @@ else
     fi
   fi
 
-  CMD_LINE="$CMD_LINE < /dev/null"
+  if [[ "$RUN_FUZZER_MODE" != "regression" ]]; then
+    CMD_LINE="$CMD_LINE < /dev/null"
+  fi
 fi
 
-echo $CMD_LINE
-bash -c "$CMD_LINE"
+if [[ "$RUN_FUZZER_MODE" != "regression" ]]; then
+  echo $CMD_LINE
+  bash -c "$CMD_LINE"
+else
+  set -o pipefail
+  find /corpus/${FUZZER} $CORPUS_DIR -type f | xargs $CMD_LINE -runs=1
+  exit $?
+fi

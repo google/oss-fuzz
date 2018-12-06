@@ -40,6 +40,7 @@ COPY bad_build_check \
     llvm-profdata \
     llvm-symbolizer \
     minijail0 \
+    regression \
     reproduce \
     run_fuzzer \
     run_minijail \
