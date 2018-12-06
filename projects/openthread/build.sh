@@ -33,15 +33,18 @@
     --enable-dns-client                 \
     --enable-diag                       \
     --enable-dns-client                 \
+    --enable-ecdsa                      \
     --enable-ftd                        \
     --enable-jam-detection              \
     --enable-joiner                     \
     --enable-legacy                     \
     --enable-mac-filter                 \
     --enable-mtd-network-diagnostic     \
+    --enable-platform-udp               \
     --enable-raw-link-api               \
     --enable-service                    \
-    --enable-udp-proxy                  \
+    --enable-sntp-client                \
+    --enable-udp-forward                \
     --disable-docs
 
 make -j$(nproc)
