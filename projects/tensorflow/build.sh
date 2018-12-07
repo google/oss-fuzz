@@ -128,7 +128,7 @@ for dict in tensorflow/core/kernels/fuzzing/dictionaries/*; do
 done
 for corpus in tensorflow/core/kernels/fuzzing/corpus/*; do
   name=$(basename -- $corpus)
-  zip ${OUT}/${name}_fuzz.zip ${corpus}/*
+  zip ${OUT}/${name}_fuzz_seed_corpus.zip ${corpus}/*
 done
 
 # Finally, make sure we don't accidentally run with stuff from the bazel cache.
