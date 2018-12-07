@@ -1,6 +1,6 @@
 homepage: "https://perfetto.dev"
 primary_contact: "fmayer@google.com"
 auto_ccs:
-  - "primiano@google.com"
+  - "perfetto-oss-fuzz@google.com"
 sanitizers:
   - address
