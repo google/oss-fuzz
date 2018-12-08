@@ -4,3 +4,4 @@ auto_ccs:
   - "perfetto-oss-fuzz@google.com"
 sanitizers:
   - address
+disabled: true
