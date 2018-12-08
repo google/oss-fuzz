@@ -226,6 +226,13 @@ directory on your machine (and `$OUT` in the container).
 container to make sure that they work properly:
 
 ```bash
+$ python infra/helper.py check_build $PROJECT_NAME
+```
+
+Please fix any failures pointed by the `check_build` command above. To test changes against
+a particular fuzz target, run using:
+
+```bash
 $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>
 ```
 
