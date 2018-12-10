@@ -55,5 +55,6 @@ for decoder in "${fuzzer_decoders[@]}"; do
     ${build_dir}/libvpx.a ${build_dir}/tools_common.c.o \
     -Wl,--end-group
 
+  cp $SRC/vpx_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
   cp $SRC/vpx_dec_fuzzer.dict $OUT/${fuzzer_name}.dict
 done
