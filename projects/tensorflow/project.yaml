@@ -3,3 +3,7 @@ primary_contact: "mihaimaruseac@google.com"
 auto_ccs:
  - "dga@google.com"
  - "frankchn@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
