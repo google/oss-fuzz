@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER fmayer@google.com
 
 RUN apt-get update
-RUN apt-get -y install python git curl
+RUN apt-get -y install python curl
 
 RUN git clone --depth=1 https://android.googlesource.com/platform/external/perfetto/ $SRC/perfetto
 
