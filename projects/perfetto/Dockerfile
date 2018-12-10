@@ -20,7 +20,7 @@ MAINTAINER fmayer@google.com
 RUN apt-get update
 RUN apt-get -y install python curl
 
-RUN git clone --depth=1 https://android.googlesource.com/platform/external/perfetto/ $SRC/perfetto
+RUN git clone https://android.googlesource.com/platform/external/perfetto/ $SRC/perfetto
 
 RUN $SRC/perfetto/infra/oss-fuzz/init_container
 
