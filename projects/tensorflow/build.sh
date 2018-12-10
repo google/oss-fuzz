@@ -97,7 +97,7 @@ declare -r LINK_ARGS="\
 "
 
 # This should always look as successful despite linking error mentioned above.
-bazel build ${EXTRA_FLAGS} -k //tensorflow/core/kernels/fuzzing:all || true
+bazel build --jobs=2 ${EXTRA_FLAGS} -k //tensorflow/core/kernels/fuzzing:all || true
 
 # For each fuzzer target, we only have to link it manually to get the binary.
 for fuzzer in ${FUZZERS}; do
