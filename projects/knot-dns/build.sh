@@ -39,7 +39,9 @@ if [[ $CFLAGS = *sanitize=memory* ]]; then
   NETTLE_CONFIGURE_FLAGS="--disable-assembler --disable-fat"
 fi
 
+
 cd $SRC/nettle
+git checkout tags/nettle_3.4.1_release_20181204
 bash .bootstrap
 ./configure --enable-mini-gmp --enable-static --disable-shared --disable-documentation --prefix=$DEPS_PATH $NETTLE_CONFIGURE_FLAGS
 ( make -j$(nproc) || make -j$(nproc) ) && make install
