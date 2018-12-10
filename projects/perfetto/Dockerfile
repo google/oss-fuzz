@@ -24,6 +24,6 @@ RUN git clone --depth=1 https://android.googlesource.com/platform/external/perfe
 
 RUN $SRC/perfetto/infra/oss-fuzz/init_container
 
-WORKDIR /src/perfetto
+WORKDIR $SRC/perfetto
 RUN tools/install-build-deps --no-android
 COPY build.sh $SRC/
