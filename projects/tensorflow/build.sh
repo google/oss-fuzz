@@ -108,11 +108,9 @@ for fuzzer in ${FUZZERS}; do
 
   # Manually link everything.
   ${CXX} ${CXXFLAGS} -lFuzzingEngine -o ${OUT}/${fz} ${LINK_ARGS} -Wl,@${lfile}
-done
 
-# Reduce the size of the fuzzers by just stripping them
-for fz in ${OUT}/*; do
-  strip $fz
+  # Reduce the size of the fuzzers by just stripping them
+  strip ${OUT}/$fz
 done
 
 # For coverage, we need one extra step, see the envoy and grpc projects.
