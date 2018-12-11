@@ -110,6 +110,11 @@ for fuzzer in ${FUZZERS}; do
   ${CXX} ${CXXFLAGS} -lFuzzingEngine -o ${OUT}/${fz} ${LINK_ARGS} -Wl,@${lfile}
 done
 
+# Reduce the size of the fuzzers by just stripping them
+for fz in ${OUT}/*; do
+  strip $fz
+done
+
 # For coverage, we need one extra step, see the envoy and grpc projects.
 if [ "$SANITIZER" = "coverage" ]
 then
