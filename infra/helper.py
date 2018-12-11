@@ -129,6 +129,11 @@ def main():
   coverage_parser.add_argument('extra_args', help='additional arguments to '
                                'pass to llvm-cov utility.', nargs='*')
 
+  download_corpora_parser = subparsers.add_parser(
+      'download_corpora', help='Download all corpora for a project.')
+  download_corpora_parser.add_argument('--fuzz-target', help='specify name of a fuzz target')
+  download_corpora_parser.add_argument('project_name', help='name of the project')
+
   reproduce_parser = subparsers.add_parser(
       'reproduce', help='Reproduce a crash.')
   reproduce_parser.add_argument('--valgrind', action='store_true',
@@ -159,6 +164,8 @@ def main():
     return build_fuzzers(args)
   elif args.command == 'check_build':
     return check_build(args)
+  elif args.command == 'download_corpora':
+    return download_corpora(args)
   elif args.command == 'run_fuzzer':
     return run_fuzzer(args)
   elif args.command == 'coverage':
@@ -575,8 +582,11 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
     subprocess.check_call(command)
 
 
-def download_corpus(args):
-  """Download most recent corpus from GCS for the given project."""
+def download_corpora(args):
+  """Download most recent corpora from GCS for the given project."""
+  if not _check_project_exists(args.project_name):
+    return 1
+
   try:
     with open(os.devnull, 'w') as stdout:
       subprocess.check_call(['gsutil', '--version'], stdout=stdout)
@@ -604,7 +614,7 @@ def download_corpus(args):
             file=sys.stderr)
       return False
 
-  print('Downloading corpus for %s project' % args.project_name)
+  print('Downloading corpora for %s project to %s' % (args.project_name, corpus_dir))
   thread_pool = ThreadPool(multiprocessing.cpu_count())
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
@@ -621,7 +631,7 @@ def coverage(args):
     return 1
 
   if not args.no_corpus_download and not args.corpus_dir:
-    if not download_corpus(args):
+    if not download_corpora(args):
       return 1
 
   env = [
