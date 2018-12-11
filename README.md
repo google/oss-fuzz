@@ -117,7 +117,7 @@ gives the latest build logs for each project.
 
 ## Web Interface
 
-* [oss-fuzz.com](https://oss-fuzz.com)
+* The main page: [oss-fuzz.com](https://oss-fuzz.com)
 * [ClusterFuzz documentation](docs/clusterfuzz.md)
 
 ## Trophies
