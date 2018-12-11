@@ -2,6 +2,8 @@ homepage: "https://perfetto.dev"
 primary_contact: "fmayer@google.com"
 auto_ccs:
   - "perfetto-oss-fuzz@google.com"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
   - address
 disabled: true
