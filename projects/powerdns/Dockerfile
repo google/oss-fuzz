@@ -14,10 +14,20 @@
 #
 ################################################################################
 
+# base image with clang toolchain
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jzern@google.com
-RUN apt-get update && apt-get install -y yasm wget gcc
-RUN git clone https://chromium.googlesource.com/webm/libvpx
-ADD https://storage.googleapis.com/downloads.webmproject.org/test_data/fuzzer/vpx_fuzzer_seed_corpus.zip $SRC/
-COPY build.sh vpx_dec_fuzzer.dict $SRC/
-WORKDIR libvpx
+
+# maintainer for this file
+MAINTAINER remi.gacogne@powerdns.com
+
+# install required packages to build your project
+RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex libboost-all-dev libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel
+
+# checkout all sources needed to build your project
+RUN git clone https://github.com/PowerDNS/pdns.git pdns
+
+# current directory for build script
+WORKDIR pdns
+
+# copy build script and other fuzzer files in src dir
+COPY build.sh $SRC/

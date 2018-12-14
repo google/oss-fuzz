@@ -1,0 +1,13 @@
+homepage: "https://perfetto.dev"
+primary_contact: "fmayer@google.com"
+auto_ccs:
+  - "hjd@google.com"
+  - "lalitm@google.com"
+  - "perfetto-oss-fuzz@google.com"
+  - "primiano@google.com"
+  - "rsavitski@google.com"
+  - "taylori@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

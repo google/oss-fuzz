@@ -28,9 +28,8 @@ OSS-Fuzz aims to make common open source software more secure and stable by
 combining modern fuzzing techniques and scalable
 distributed execution.
 
-At the first stage of the project we use
-[libFuzzer](http://llvm.org/docs/LibFuzzer.html) with
-[Sanitizers](https://github.com/google/sanitizers). More fuzzing engines will be added later.
+We support [libFuzzer](http://llvm.org/docs/LibFuzzer.html) and [AFL](http://lcamtuf.coredump.cx/afl/) as fuzzing engines
+in combination with [Sanitizers](https://github.com/google/sanitizers).
 [ClusterFuzz](docs/clusterfuzz.md)
 provides a distributed fuzzer execution environment and reporting.
 
@@ -114,6 +113,11 @@ OSS-Fuzz will adhere to following disclosure principles:
 gives the latest build logs for each project.
 
 (Internal only) [Builds dashboard](https://builder.oss-fuzz.com).
+
+## Web Interface
+
+* The main page: [oss-fuzz.com](https://oss-fuzz.com)
+* [ClusterFuzz documentation](docs/clusterfuzz.md)
 
 ## Trophies
 

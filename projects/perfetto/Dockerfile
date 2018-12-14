@@ -15,9 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jzern@google.com
-RUN apt-get update && apt-get install -y yasm wget gcc
-RUN git clone https://chromium.googlesource.com/webm/libvpx
-ADD https://storage.googleapis.com/downloads.webmproject.org/test_data/fuzzer/vpx_fuzzer_seed_corpus.zip $SRC/
-COPY build.sh vpx_dec_fuzzer.dict $SRC/
-WORKDIR libvpx
+MAINTAINER fmayer@google.com
+
+RUN apt-get update
+RUN apt-get -y install python curl
+
+RUN git clone --depth=1 https://android.googlesource.com/platform/external/perfetto/ $SRC/perfetto
+
+RUN $SRC/perfetto/infra/oss-fuzz/init_container
+
+WORKDIR $SRC/perfetto
+COPY build.sh $SRC/
