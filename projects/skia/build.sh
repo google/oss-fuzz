@@ -60,17 +60,20 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
 $SRC/depot_tools/gn gen out/Fuzz\
     --args='cc="'$CC'"
-    cxx="'$CXX'"
-    is_debug=false
-    extra_cflags_c=["'"$CFLAGS_ARR"'"]
-    extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
-    extra_ldflags=["'"$LDFLAGS_ARR"'"]
-    skia_use_egl=true
-    skia_use_system_freetype2=false
-    skia_use_fontconfig=false
-    skia_use_wuffs=true
-    skia_enable_gpu=true
-    skia_enable_skottie=true'
+      cxx="'$CXX'"
+      is_debug=false
+      extra_cflags_c=["'"$CFLAGS_ARR"'"]
+      extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
+      extra_ldflags=["'"$LDFLAGS_ARR"'"]
+      skia_enable_fontmgr_custom=false
+      skia_enable_fontmgr_custom_empty=true
+      skia_enable_gpu=true
+      skia_enable_skottie=true
+      skia_use_egl=true
+      skia_use_fontconfig=false
+      skia_use_freetype=true
+      skia_use_system_freetype2=false
+      skia_use_wuffs=true'
 
 $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
     --args='cc="'$CC'"
@@ -79,12 +82,15 @@ $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]
-      skia_use_egl=true
-      skia_use_system_freetype2=false
-      skia_use_fontconfig=false
-      skia_use_wuffs=true
+      skia_enable_fontmgr_custom=false
+      skia_enable_fontmgr_custom_empty=true
       skia_enable_gpu=true
-      skia_enable_skottie=false'
+      skia_enable_skottie=true
+      skia_use_egl=true
+      skia_use_fontconfig=false
+      skia_use_freetype=true
+      skia_use_system_freetype2=false
+      skia_use_wuffs=true'
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode \
