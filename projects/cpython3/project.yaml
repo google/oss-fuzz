@@ -3,3 +3,8 @@ primary_contact: "gps@google.com"
 auto_ccs:
  - "jeanpierreda@google.com"
  - "alex.gaynor@gmail.com"
+ - "kusano@google.com"
+
+sanitizers:
+  - address
+  - undefined
