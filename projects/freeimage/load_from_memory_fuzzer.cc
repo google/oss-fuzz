@@ -15,15 +15,16 @@ bool SafeToLoadFromMemory(FREE_IMAGE_FORMAT fif) {
 
 }  // namespace
 
-extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  FreeImage_Initialise();
-  return 0;
-}
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static bool initialized = false;
+  if (!initialized) {
+    FreeImage_Initialise();
+  }
+
   if (size > 100 * 1000) {
     return EXIT_SUCCESS;
   }
+
   std::vector<uint8_t> fuzzer_data_vector(data, data + size);
   FIMEMORY* fiMem = FreeImage_OpenMemory(
       reinterpret_cast<unsigned char*>(fuzzer_data_vector.data()),
@@ -35,5 +36,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     FreeImage_Unload(fiBitmap);
   }
   FreeImage_CloseMemory(fiMem);
+
   return EXIT_SUCCESS;
 }
