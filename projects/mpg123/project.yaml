@@ -1,0 +1,7 @@
+homepage: "https://www.mpg123.de"
+primary_contact: "kusano@google.com"
+
+sanitizers:
+  - address
+  - undefined
+  - memory
