@@ -22,7 +22,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   if (size > 100 * 1000) {
-    return EXIT_SUCCESS;
+    return 0;
   }
 
   std::vector<uint8_t> fuzzer_data_vector(data, data + size);
@@ -37,5 +37,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
   FreeImage_CloseMemory(fiMem);
 
-  return EXIT_SUCCESS;
+  return 0;
 }
