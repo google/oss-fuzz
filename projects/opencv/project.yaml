@@ -1,0 +1,13 @@
+homepage: "https://opencv.org/"
+primary_contact: "kusano@google.com"
+
+sanitizers:
+  - address
+  - undefined
+  - memory
+
+labels:
+  imdecode_fuzzer:
+    - sundew
+  imread_fuzzer:
+    - sundew
