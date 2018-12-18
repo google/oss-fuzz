@@ -15,12 +15,6 @@
 #
 ################################################################################
 
-# build project
-# e.g.
-# ./autogen.sh
-# ./configure
-# make -j$(nproc) all
-
 pushd mpg123
 ./configure --prefix=$WORK --enable-static
 make -j$(nproc)
@@ -29,18 +23,3 @@ popd
 
 $CC $CXXFLAGS read_fuzzer.c -I$WORK/include $WORK/lib/libmpg123.a \
   -lFuzzingEngine -lc++ -o $OUT/read_fuzzer
-
-#libtoolize
-#aclocal
-#autoheader
-#automake --add-missing
-#autoconf
-#./configure --enable-static=yes --prefix=$WORK
-#make -j$(nproc)
-#make install
-
-# build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     -lFuzzingEngine /path/to/library.a
