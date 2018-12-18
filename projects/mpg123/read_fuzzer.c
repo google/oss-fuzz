@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "mpg123.h"
@@ -42,12 +43,12 @@ static void fuzzer_release_tmpfile(char* filename) {
   free(filename);
 }
 
-int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  mpg123_init();
-  return 0;
-}
-
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static bool initialized = false;
+  if (!initialized) {
+    mpg123_init();
+    initialized = true;
+  }
   char* filename = fuzzer_get_tmpfile(data, size);
   if (filename == NULL) {
     return 0;
