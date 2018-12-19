@@ -5,7 +5,6 @@ experimental: true
 
 sanitizers:
   - address
-  - memory
   - undefined
 
 labels:
