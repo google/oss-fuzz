@@ -49,7 +49,6 @@ class ByteStream {
   // sizeof(int) bytes. For n<=0, returns 0 and consumes 0 bytes.
   int GetNextInt(int n);
 
- private:
   // The remaining capacity of the ByteStream.
   size_t capacity() const { return size_ - position_; }
 
@@ -64,6 +63,8 @@ class ByteStream {
     position_ += requested;
     return region;
   }
+
+ private:
 
   // Directly initialize T by copying sizeof(T) bytes into results if there is
   // sufficient capacity in the stream. If there is not sufficient capacity
