@@ -21,6 +21,8 @@
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     TidyDoc tdoc = tidyCreate();
 
+    // At the time this fuzzer was written, the configuration parser could
+    // only be exercised via a file interface.
     char* tmpfile = fuzzer_get_tmpfile(data, size);
     tidyLoadConfig(tdoc, tmpfile);
     fuzzer_release_tmpfile(tmpfile);
