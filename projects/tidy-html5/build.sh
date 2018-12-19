@@ -16,13 +16,18 @@
 #
 ################################################################################
 
-mkdir -p $WORK/tidy-html5
-cd $WORK/tidy-html5
+mkdir -p ${WORK}/tidy-html5
+cd ${WORK}/tidy-html5
 
-cmake -GNinja $SRC/tidy-html5/
+cmake -GNinja ${SRC}/tidy-html5/
 ninja
 
-$CC $CFLAGS -c $SRC/tidy_fuzzer.c -o tidy_fuzzer.o
-$CXX $CXXFLAGS -std=c++11 tidy_fuzzer.o \
-    -o $OUT/tidy_fuzzer \
-    -lFuzzingEngine libtidys.a
+for fuzzer in tidy_config_fuzzer tidy_fuzzer; do
+    ${CC} ${CFLAGS} -c -I${SRC}/tidy-html5/include \
+        $SRC/${fuzzer}.c -o ${fuzzer}.o
+    ${CXX} ${CXXFLAGS} -std=c++11 ${fuzzer}.o \
+        -o $OUT/${fuzzer} \
+        -lFuzzingEngine libtidys.a
+done
+
+cp ${SRC}/*.options ${OUT}/

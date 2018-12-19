@@ -25,4 +25,4 @@ RUN apt-get update && \
 RUN git clone https://github.com/htacg/tidy-html5.git tidy-html5
 WORKDIR tidy-html5
 COPY build.sh $SRC/
-COPY *.c $SRC/
+COPY *.c *.h *.options $SRC/
