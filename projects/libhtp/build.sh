@@ -17,8 +17,6 @@
 
 # build project
 cd libhtp
-# TODO remove
-git apply ../fuzz.diff
 sh autogen.sh
 ./configure
 make
