@@ -37,11 +37,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         break;
       }
       const size_t next_size = std::min(stream.GetNextSizeT(), stream.capacity());
-      const uint8_t* next_input = stream.UncheckedConsume(next_size);
+      uint8_t* next_input = (uint8_t*)malloc(sizeof(uint8_t) * next_size);
+      memcpy(next_input, stream.UncheckedConsume(next_size), next_size);
       decode_ret = mpg123_decode(
           handle, reinterpret_cast<const unsigned char*>(next_input),
           next_size, output_buffer.data(), output_buffer.size(),
           &output_written);
+      free(next_input);
     } else if (decode_ret != MPG123_ERR && decode_ret != MPG123_NEED_MORE) {
       decode_ret = mpg123_decode(handle, nullptr, 0, output_buffer.data(),
                                  output_buffer.size(), &output_written);
