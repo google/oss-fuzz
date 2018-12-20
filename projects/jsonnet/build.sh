@@ -20,14 +20,14 @@ pushd jsonnet/build
 cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
   -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
   -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC_LIB=ON ..
-make -j$(nproc)
+make CC=clang CXX=clang++ -j$(nproc)
 make install
 popd
 
-INSTALL_DIR="$SRC/jsonnet"
+mkdir -p $OUT/lib
+cp -L ${WORK}/lib/libjsonnet.so $OUT/lib
 
-for fuzzer in convert_jsonnet_fuzzer; do
-  $CXX $CXXFLAGS -std=c++11 -I${WORK}/include/include \
-    -lFuzzingEngine $fuzzer.cc \
-    -o $OUT/$fuzzer
-done
+fuzzer=convert_jsonnet_fuzzer
+$CXX $CXXFLAGS -std=c++11 -I${WORK}/include/include \
+  -lFuzzingEngine $fuzzer.cc \
+  -o $OUT/$fuzzer

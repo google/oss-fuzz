@@ -1,7 +1,7 @@
 homepage: "https://github.com/google/jsonnet"
-primary_contact: "wwweiwang@google.com"
+primary_contact: "dcunnin@google.com"
 auto_ccs:
-  - "dcunnin@google.com"
+  - "wwweiwang@google.com"
 experimental: True
 
 sanitizers:
