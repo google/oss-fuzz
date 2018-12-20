@@ -1,0 +1,12 @@
+homepage: "https://github.com/google/jsonnet"
+primary_contact: "wwweiwang@google.com"
+auto_ccs:
+  - "dcunnin@google.com"
+experimental: True
+
+sanitizers:
+  - address
+  
+labels:
+  data_context_fuzzer:
+    - sundew
