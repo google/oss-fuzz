@@ -16,7 +16,8 @@
 #
 ################################################################################
 
-mkdir -p ${WORK}/tidy-html5
+# Work directory may be reused across builds, so make sure it's clean.
+rm -rf ${WORK}/tidy-html5 && mkdir ${WORK}/tidy-html5
 cd ${WORK}/tidy-html5
 
 cmake -GNinja ${SRC}/tidy-html5/
@@ -25,9 +26,8 @@ ninja
 for fuzzer in tidy_config_fuzzer tidy_fuzzer; do
     ${CC} ${CFLAGS} -c -I${SRC}/tidy-html5/include \
         $SRC/${fuzzer}.c -o ${fuzzer}.o
-    ${CXX} ${CXXFLAGS} -std=c++11 ${fuzzer}.o \
-        -o $OUT/${fuzzer} \
-        -lFuzzingEngine libtidys.a
+    ${CXX} ${CXXFLAGS} -std=c++11 -o $OUT/${fuzzer} \
+        ${fuzzer}.o -lFuzzingEngine libtidys.a
 done
 
 cp ${SRC}/*.options ${OUT}/
