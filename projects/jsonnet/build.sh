@@ -17,7 +17,7 @@
 
 mkdir jsonnet/build
 pushd jsonnet/build
-cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=$WORK ..
+cmake -D CMAKE_INSTALL_PREFIX=$WORK ..
 make CC=clang CXX=clang++ -j$(nproc)
 popd
 
@@ -26,5 +26,5 @@ INSTALL_DIR="$SRC/jsonnet"
 for fuzzer in convert_jsonnet_fuzzer; do
   $CXX $CXXFLAGS -I${INSTALL_DIR}/include \
     -lFuzzingEngine $fuzzer.cc \
-    -o $OUT/$fuzzer
+    -o $OUT/$fuzzer ${INSTALL_DIR}/libjsonnet.a
 done
