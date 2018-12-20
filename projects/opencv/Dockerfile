@@ -18,7 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y build-essential cmake pkg-config
 RUN git clone --depth 1 https://github.com/opencv/opencv.git opencv
 WORKDIR $SRC/
-COPY build.sh $SRC/
 
-COPY imdecode_fuzzer.cc  $SRC/
-COPY imread_fuzzer.cc  $SRC/
+COPY build.sh $SRC/
+COPY *.cc *.h $SRC/
