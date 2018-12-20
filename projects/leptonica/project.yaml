@@ -1,0 +1,8 @@
+homepage: "http://www.leptonica.com"
+primary_contact: "taking@google.com"
+auto_ccs: "taking@google.com"
+sanitizers:
+ - address
+ - undefined
+ - memory
+experimental: True
