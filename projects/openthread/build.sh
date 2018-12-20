@@ -40,7 +40,6 @@
     --enable-legacy                     \
     --enable-mac-filter                 \
     --enable-mtd-network-diagnostic     \
-    --enable-platform-udp               \
     --enable-raw-link-api               \
     --enable-service                    \
     --enable-sntp-client                \
