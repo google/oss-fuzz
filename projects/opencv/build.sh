@@ -26,8 +26,8 @@ popd
 
 for fuzzer in imdecode_fuzzer imread_fuzzer; do
 $CXX $CXXFLAGS -lFuzzingEngine $fuzzer.cc -std=c++11 \
--I/work/include/opencv4/opencv -I/work/include/opencv4 -L/work/lib \
--L/work/lib/opencv4/3rdparty -L/src/opencv/build/lib -lopencv_dnn \
+-I$WORK/include/opencv4/opencv -I$WORK/include/opencv4 -L$WORK/lib \
+-L$WORK/lib/opencv4/3rdparty -L$SRC/opencv/build/lib -lopencv_dnn \
 -lopencv_objdetect -lopencv_photo -lopencv_ml -lopencv_gapi -lopencv_stitching \
 -lopencv_video -lopencv_calib3d -lopencv_features2d -lopencv_highgui \
 -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_flann \
