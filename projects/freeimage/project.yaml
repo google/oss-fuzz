@@ -1,4 +1,4 @@
-homepage: "https://www.mpg123.de"
+homepage: "http://freeimage.sourceforge.net/"
 primary_contact: "kusano@google.com"
 
 experimental: true
@@ -6,8 +6,7 @@ experimental: true
 sanitizers:
   - address
   - undefined
-  - memory
 
 labels:
-  read_fuzzer:
+  load_from_memory_fuzzer:
     - sundew

@@ -1,4 +1,4 @@
-homepage: "https://www.mpg123.de"
+homepage: "https://opencv.org/"
 primary_contact: "kusano@google.com"
 
 experimental: true
@@ -9,5 +9,7 @@ sanitizers:
   - memory
 
 labels:
-  read_fuzzer:
+  imdecode_fuzzer:
+    - sundew
+  imread_fuzzer:
     - sundew

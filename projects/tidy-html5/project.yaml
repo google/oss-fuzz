@@ -1,0 +1,12 @@
+homepage: "http://www.html-tidy.org/"
+primary_contact: "sbucur@google.com"
+auto_ccs:
+  - "nmarrow@google.com"
+  - "pmokati@google.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+labels:
+  tidy_fuzzer:
+    - sundew
