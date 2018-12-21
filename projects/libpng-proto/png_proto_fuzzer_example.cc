@@ -2,7 +2,6 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <vector>
 #include <zlib.h>  // for crc32
 
 #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
@@ -60,12 +59,14 @@ std::string ProtoToPng(const PngProto &png_proto) {
       auto &other_chunk = chunk.other_chunk();
       char type[5] = {0};
       if (other_chunk.has_known_type()) {
-        static const std::vector<const char *> known_chunks = {
+        static const char * known_chunks[] = {
             "bKGD", "cHRM", "dSIG", "eXIf", "gAMA", "hIST", "iCCP",
             "iTXt", "pHYs", "sBIT", "sPLT", "sRGB", "sTER", "tEXt",
             "tIME", "tRNS", "zTXt", "sCAL", "pCAL", "oFFs",
         };
-        size_t chunk_idx = other_chunk.known_type() % known_chunks.size();
+        size_t known_chunks_size =
+            sizeof(known_chunks) / sizeof(known_chunks[0]);
+        size_t chunk_idx = other_chunk.known_type() % known_chunks_size;
         memcpy(type, known_chunks[chunk_idx], 4);
       } else if (other_chunk.has_unknown_type()) {
         uint32_t unknown_type_int = other_chunk.unknown_type();
