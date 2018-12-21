@@ -18,8 +18,10 @@ message IDAT {
 }
 
 message OtherChunk {
-  required uint32 type = 1;
-  required uint32 auxtype = 2;
+  oneof type {
+    uint32 known_type = 1;
+    uint32 unknown_type = 2;
+  }
   required bytes data = 3;
 }
 

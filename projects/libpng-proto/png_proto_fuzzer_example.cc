@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <vector>
 #include <zlib.h>  // for crc32
 
 #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
@@ -42,8 +43,8 @@ std::string ProtoToPng(
   auto &ihdr = png_proto.ihdr();
   // Avoid large images.
   // They may have interesting bugs, but OOMs are going to kill fuzzing.
-  uint32_t w = ihdr.width() & 0x00000fff;
-  uint32_t h = ihdr.height() & 0x00000fff;
+  uint32_t w = std::min(ihdr.width(), 4096U);
+  uint32_t h = std::min(ihdr.height(), 4096U);
   WriteInt(ihdr_str, w);
   WriteInt(ihdr_str, h);
   WriteInt(ihdr_str, ihdr.other1());
@@ -58,18 +59,22 @@ std::string ProtoToPng(
       WriteChunk(all, "IDAT", chunk.idat().data());
     } else if (chunk.has_other_chunk()) {
       auto &other_chunk = chunk.other_chunk();
-      const char *type = nullptr;
-      char auxtype[5] = {0};
-      uint32_t auxtype_int = other_chunk.auxtype();
-      memcpy(auxtype, &auxtype_int, 4);
-      const char *known_chunks[] = {
-          "bKGD", "cHRM", "dSIG", "eXIf", "gAMA", "hIST", "iCCP",
-          "iTXt", "pHYs", "sBIT", "sPLT", "sRGB", "sTER", "tEXt",
-          "tIME", "tRNS", "zTXt", "sCAL", "pCAL", "oFFs",
-      };
-      size_t chunk_idx = other_chunk.type() % 32;
-      type = chunk_idx < sizeof(known_chunks) / sizeof(known_chunks[0]) ?
-          known_chunks[chunk_idx] : &auxtype[0];
+      char type[5] = {0};
+      if (other_chunk.has_known_type()) {
+        static const std::vector<const char *> known_chunks = {
+            "bKGD", "cHRM", "dSIG", "eXIf", "gAMA", "hIST", "iCCP",
+            "iTXt", "pHYs", "sBIT", "sPLT", "sRGB", "sTER", "tEXt",
+            "tIME", "tRNS", "zTXt", "sCAL", "pCAL", "oFFs",
+        };
+        size_t chunk_idx = other_chunk.known_type() % known_chunks.size();
+        memcpy(type, known_chunks[chunk_idx], 4);
+      } else if (other_chunk.has_unknown_type()) {
+        uint32_t unknown_type_int = other_chunk.unknown_type();
+        memcpy(type, &unknown_type_int, 4);
+      } else {
+        continue;
+      }
+      type[4] = 0;
       WriteChunk(all, type, other_chunk.data());
     }
   }
