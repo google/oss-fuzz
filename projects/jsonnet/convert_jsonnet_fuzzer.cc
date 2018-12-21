@@ -3,7 +3,9 @@
 #include <cstring>
 #include <string>
 
-#include <libjsonnet.h>
+extern "C" {
+#include "libjsonnet.h"
+}
 
 char* ImportCallback(void* ctx, const char* base, const char* rel,
                      char** found_here, int* success) {
