@@ -22,4 +22,6 @@ RUN tar -xvf snapshot
 RUN mv mpg123* mpg123
 WORKDIR $SRC
 COPY read_fuzzer.c $SRC/
+COPY decode_fuzzer.cc $SRC/
+COPY byte_stream.h $SRC/
 COPY build.sh $SRC/
