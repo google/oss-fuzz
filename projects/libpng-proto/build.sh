@@ -7,7 +7,7 @@
 
 # Compile png_fuzz_proto.proto; should produce two files in genfiles/:
 # png_fuzz_proto.pb.cc  png_fuzz_proto.pb.h
-mkdir genfiles && LPM/external.protobuf/bin/protoc png_fuzz_proto.proto --cpp_out=genfiles
+rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc png_fuzz_proto.proto --cpp_out=genfiles
 
 # compile the upstream-provided vanilla fuzz target
 # but replace LLVMFuzzerTestOneInput with FuzzPNG so that
