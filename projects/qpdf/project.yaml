@@ -1,0 +1,11 @@
+homepage: "http://qpdf.sourceforge.net/"
+primary_contact: "taking@google.com"
+
+sanitizers:
+  - address
+  - undefined
+  - memory
+
+labels:
+  read_fuzzer:
+    - sundew
