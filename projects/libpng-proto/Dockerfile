@@ -22,5 +22,4 @@ RUN apt-get update && \
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON && ninja)
-RUN cp libpng/contrib/oss-fuzz/build.sh $SRC/build-orig.sh
 COPY build.sh png_fuzz_proto.proto  png_proto_fuzzer_example.cc $SRC/
