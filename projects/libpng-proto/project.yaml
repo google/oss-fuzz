@@ -1,0 +1,7 @@
+homepage: "http://www.libpng.org/pub/png/libpng.html"
+primary_contact: "kcc@google.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
