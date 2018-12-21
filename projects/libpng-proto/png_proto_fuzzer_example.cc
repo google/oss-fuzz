@@ -34,8 +34,7 @@ static void WriteChunk(std::stringstream &out, const char *type,
   WriteInt(out, crc);
 }
 
-std::string ProtoToPng(
-    const testing::sanitizer_common::fuzzer_examples::PngProto &png_proto) {
+std::string ProtoToPng(const PngProto &png_proto) {
   std::stringstream all;
   const unsigned char header[] = {0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
   all.write((const char*)header, sizeof(header));
@@ -93,8 +92,7 @@ std::string ProtoToPng(
 // The actual fuzz target that consumes the PNG data.
 extern "C" int FuzzPNG(const uint8_t* data, size_t size);
 
-DEFINE_PROTO_FUZZER(
-    const testing::sanitizer_common::fuzzer_examples::PngProto &png_proto) {
+DEFINE_PROTO_FUZZER(const PngProto &png_proto) {
   auto s = ProtoToPng(png_proto);
   FuzzPNG((const uint8_t*)s.data(), s.size());
 }

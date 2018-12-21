@@ -38,4 +38,4 @@ message PngProto {
   repeated PngChunk chunks = 2;
 }
 
-package testing.sanitizer_common.fuzzer_examples;
+// package fuzzer_examples;
