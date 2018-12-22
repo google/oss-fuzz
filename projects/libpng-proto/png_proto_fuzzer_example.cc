@@ -16,20 +16,33 @@ static void WriteByte(std::stringstream &out, uint8_t x) {
   out.write((char *)&x, sizeof(x));
 }
 
+static std::string Compress(const std::string &s) {
+  std::string out(s.size() + 100, '\0');
+  size_t out_len = out.size();
+  compress((uint8_t *)&out[0], &out_len, (uint8_t *)s.data(), s.size());
+  out.resize(out_len);
+  return out;
+}
+
 // Chunk is written as:
 //  * 4-byte length
 //  * 4-byte type
 //  * the data itself
 //  * 4-byte crc (of type and data)
 static void WriteChunk(std::stringstream &out, const char *type,
-                       const std::string &chunk) {
-  uint32_t len = chunk.size();
+                       const std::string &chunk, bool compress = false) {
+  std::string compressed;
+  const std::string *s = &chunk;
+  if (compress) {
+    compressed = Compress(chunk);
+    s = &compressed;
+  }
+  uint32_t len = s->size();
   uint32_t crc = crc32(crc32(0, (const unsigned char *)type, 4),
-                       (const unsigned char *)chunk.data(), chunk.size());
+                       (const unsigned char *)s->data(), s->size());
   WriteInt(out, len);
   out.write(type, 4);
-  // TODO: IDAT chunks are compressed, so we better compress them here.
-  out.write(chunk.data(), chunk.size());
+  out.write(s->data(), s->size());
   WriteInt(out, crc);
 }
 
@@ -54,7 +67,7 @@ std::string ProtoToPng(const PngProto &png_proto) {
     if (chunk.has_plte()) {
       WriteChunk(all, "PLTE", chunk.plte().data());
     } else if (chunk.has_idat()) {
-      WriteChunk(all, "IDAT", chunk.idat().data());
+      WriteChunk(all, "IDAT", chunk.idat().data(), true);
     } else if (chunk.has_other_chunk()) {
       auto &other_chunk = chunk.other_chunk();
       char type[5] = {0};
