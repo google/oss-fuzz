@@ -1,5 +1,5 @@
 homepage: "https://android.googlesource.com/platform/external/libldac"
-primary_contact: "chisato.kenmochi@sony.com"
+primary_contact: "Chisato.Kenmochi@sony.com"
 auto_ccs:
   - "cdiehl@mozilla.com"
 sanitizers:
