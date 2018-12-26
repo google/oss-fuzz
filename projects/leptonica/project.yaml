@@ -1,0 +1,12 @@
+homepage: "http://www.leptonica.com"
+primary_contact: "taking@google.com"
+auto_ccs:
+  - "kusano@google.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+experimental: True
+labels:
+  tidy_fuzzer:
+    - sundew
