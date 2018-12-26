@@ -30,10 +30,10 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN apt-get update && apt-get install -y bazel
 
-# Downgrade Bazel to latest supported version (0.19.2)
-RUN curl -fSsL -O https://github.com/bazelbuild/bazel/releases/download/0.19.2/bazel-0.19.2-installer-linux-x86_64.sh
-RUN chmod +x ./bazel-0.19.2-installer-linux-x86_64.sh
-RUN ./bazel-0.19.2-installer-linux-x86_64.sh
+# Downgrade Bazel to latest supported version (0.21.0)
+RUN curl -fSsL -O https://github.com/bazelbuild/bazel/releases/download/0.21.0/bazel-0.21.0-installer-linux-x86_64.sh
+RUN chmod +x ./bazel-0.21.0-installer-linux-x86_64.sh
+RUN ./bazel-0.21.0-installer-linux-x86_64.sh
 
 RUN git clone --depth 1 https://github.com/tensorflow/tensorflow tensorflow
 WORKDIR $SRC/tensorflow
