@@ -18,7 +18,7 @@
 # Generate the list of fuzzers we have (only the base/op name).
 FUZZING_BUILD_FILE="tensorflow/core/kernels/fuzzing/BUILD"
 declare -r FUZZERS=$(
-  grep '^tf_ops_fuzz_target' ${FUZZING_BUILD_FILE} | cut -d'"' -f2
+  grep '^tf_ops_fuzz_target' ${FUZZING_BUILD_FILE} | cut -d'"' -f2 | head -n5
 )
 
 # Since Docker container has bazel-0.19 we need the following trick to allow
