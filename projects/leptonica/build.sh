@@ -76,6 +76,7 @@ export WEBP_CFLAGS="$CFLAGS -DWEBP_MAX_IMAGE_SIZE=838860800" # 800MiB
   CFLAGS="$WEBP_CFLAGS"
 make clean
 make -j$(nproc)
+make install
 popd
 
 # libtiff
