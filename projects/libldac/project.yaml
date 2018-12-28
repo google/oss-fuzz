@@ -4,5 +4,4 @@ auto_ccs:
   - "cdiehl@mozilla.com"
 sanitizers:
   - address
-  - memory
   - undefined
