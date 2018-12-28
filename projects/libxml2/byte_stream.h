@@ -32,6 +32,11 @@ class ByteStream {
   ByteStream(const ByteStream&) = delete;
   ByteStream& operator=(const ByteStream&) = delete;
 
+  // Returns a pointer to the chunk of data of |size| bytes, where |size| is
+  // either a requested value or all the bytes that are available. If the
+  // requested |size| is 0, return all the bytes that are available.
+  const uint8_t* GetNextChunk(size_t* size);
+
   // Returns a string. Strings are obtained from the byte stream by reading a
   // size_t N followed by N char elements. If there are fewer than N bytes left
   // in the stream, this returns as many bytes as are available.
@@ -93,6 +98,15 @@ class ByteStream {
   const size_t size_;
   size_t position_;
 };
+
+inline const uint8_t* ByteStream::GetNextChunk(size_t* size) {
+  if (*size)
+    *size = std::min(*size, capacity());
+  else
+    *size = capacity();
+
+  return UncheckedConsume(*size);
+}
 
 inline std::string ByteStream::GetNextString() {
   const size_t requested_size = GetNextSizeT();
