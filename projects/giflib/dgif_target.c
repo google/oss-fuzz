@@ -65,8 +65,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 	}
 	DGifSlurp(GifFile);
 
-	/*if (fclose(in))
-		fuzz_error("failed fclose");*/
-	EGifCloseFile(GifFile, &Error);
+	DGifCloseFile(GifFile, &Error);
 	return 0;
 }
