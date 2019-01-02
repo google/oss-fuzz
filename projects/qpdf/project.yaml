@@ -7,5 +7,5 @@ sanitizers:
   - memory
 
 labels:
-  read_fuzzer:
+  qpdf_read_memory_fuzzer:
     - sundew
