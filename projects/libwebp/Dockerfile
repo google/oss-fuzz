@@ -19,7 +19,7 @@ MAINTAINER yguyon@google.com
 RUN apt-get update && apt-get install -y autoconf make libtool zip
 RUN git clone https://chromium.googlesource.com/webm/libwebp
 RUN git clone https://chromium.googlesource.com/webm/libwebp-test-data
-ADD https://storage.googleapis.com/downloads.webmproject.org/webp/testdata/fuzzer/fuzz_seed_corpus.zip ./
+ADD https://storage.googleapis.com/downloads.webmproject.org/webp/testdata/fuzzer/fuzz_seed_corpus.zip $SRC/
 RUN unzip fuzz_seed_corpus.zip -d libwebp-test-data/
 RUN rm fuzz_seed_corpus.zip
 COPY build.sh fuzz.h fuzz.dict $SRC/
@@ -27,6 +27,7 @@ COPY img_alpha.h img_grid.h img_peak.h $SRC/
 COPY fuzz_simple_api.c $SRC/
 COPY fuzz_advanced_api.c $SRC/
 COPY fuzz_animation_api.c $SRC/
+COPY fuzz_webp_animencoder.cc $SRC/
 COPY fuzz_demux_api.c $SRC/
 COPY fuzz_webp_enc_dec.cc $SRC/
 WORKDIR libwebp

@@ -1,0 +1,13 @@
+homepage: "http://libsass.org/"
+primary_contact: "kusano@google.com"
+
+experimental: true
+
+sanitizers:
+  - address
+  - memory
+  - undefined
+
+labels:
+  data_context_fuzze:
+    - sundew

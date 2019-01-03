@@ -19,7 +19,7 @@ Supported sanitizers:
 | `profile` | Used for generating code coverage reports. See [Code Coverage doc](code_coverage.md).
 
 Compiler flag values for predefined configurations are specified in the [Dockerfile](../infra/base-images/base-builder/Dockerfile). 
-These flags can be overriden by specifying `$SANITIZER_FLAGS` directly.
+These flags can be overridden by specifying `$SANITIZER_FLAGS` directly.
 
 You can choose which configurations to automatically run your fuzzers with in `project.yaml` file (e.g. [sqlite3](../projects/sqlite3/project.yaml)):
 

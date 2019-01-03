@@ -71,9 +71,8 @@ CFLAGS="$GNUTLS_CFLAGS" \
 make -j$(nproc)
 make install
 
-cd $SRC/libmicrohttpd
-./bootstrap
-LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+cd $SRC/libmicrohttpd-*
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
 ./configure --prefix=$WGET2_DEPS_PATH --disable-doc --disable-examples --disable-shared --enable-static
 make -j$(nproc)
 make install
@@ -86,7 +85,7 @@ cd $SRC/wget2
 ./bootstrap
 
 # build and run non-networking tests
-LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
   ./configure -C --enable-static --disable-shared --disable-doc --without-plugin-support
 make clean
 make -j$(nproc)
@@ -94,7 +93,7 @@ make -j$(nproc) -C unit-tests check
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
   ./configure -C --enable-fuzzing --enable-static --disable-shared --disable-doc --without-plugin-support
 make clean
 make -j$(nproc) -C lib

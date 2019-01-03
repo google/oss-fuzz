@@ -10,4 +10,4 @@ sanitizers:
   - address
   - memory
   - undefined
-experimental: True
+coverage_extra_args: -ignore-filename-regex=.*dump.h

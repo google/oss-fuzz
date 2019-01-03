@@ -69,6 +69,9 @@ for build in $builds; do
   unset LIBS
   if test $build = "none"; then
     BUILD_FLAGS="--disable-runtime --disable-builtin"
+    # convert PSL to NFC
+    cp -p list/public_suffix_list.dat list/public_suffix_list.dat.org
+    LC_ALL=C.UTF-8 python3 -c $'import unicodedata\nimport sys\nfor line in sys.stdin:\n  sys.stdout.write(unicodedata.normalize("NFC", line))' <list/public_suffix_list.dat.org >list/public_suffix_list.dat
   else
     BUILD_FLAGS="--enable-runtime=$build --enable-builtin=$build"
     if test $build = "libicu"; then

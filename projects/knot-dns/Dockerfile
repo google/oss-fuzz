@@ -16,13 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jonathan.foote@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
-RUN apt-get install -y texinfo gperf wget autopoint texinfo flex bison gettext
+RUN apt-get update && \
+    apt-get install -y autoconf autogen automake autopoint bison flex gettext \
+                       gperf libtool make pkg-config texinfo wget
 
 RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
-RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+RUN git clone https://git.lysator.liu.se/nettle/nettle.git
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
 
-RUN git clone https://gitlab.labs.nic.cz/knot/knot-dns
+RUN git clone --depth=1 https://gitlab.labs.nic.cz/knot/knot-dns
 WORKDIR knot-dns
 COPY build.sh $SRC/

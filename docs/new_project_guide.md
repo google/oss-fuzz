@@ -180,6 +180,8 @@ When build.sh script is executed, the following locations are available within t
 While files layout is fixed within a container, the environment variables are
 provided to be able to write retargetable scripts.
 
+### Requirements
+
 You *must* use the special compiler flags needed to build your project and fuzz targets.
 These flags are provided in the following environment variables:
 
@@ -187,6 +189,8 @@ These flags are provided in the following environment variables:
 | -------------          | --------
 | `$CC`, `$CXX`, `$CCC`  | The C and C++ compiler binaries.
 | `$CFLAGS`, `$CXXFLAGS` | C and C++ compiler flags.
+
+You *must* use `$CXX` as a linker, even if your project is written in pure C.
 
 Most well-crafted build scripts will automatically use these variables. If not,
 pass them manually to the build tool.
@@ -220,6 +224,13 @@ directory on your machine (and `$OUT` in the container).
 
 *Note*: You *must* run these fuzz target binaries inside the base-runner docker
 container to make sure that they work properly:
+
+```bash
+$ python infra/helper.py check_build $PROJECT_NAME
+```
+
+Please fix any failures pointed by the `check_build` command above. To test changes against
+a particular fuzz target, run using:
 
 ```bash
 $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>

@@ -1,3 +1,5 @@
+source $HOME/.cargo/env
+
 cd $SRC/openssl
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
