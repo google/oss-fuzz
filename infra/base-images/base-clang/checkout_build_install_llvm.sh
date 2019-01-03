@@ -96,8 +96,6 @@ rm -rf $WORK/msan
 # Pull trunk libfuzzer.
 cd $SRC && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
 
-cp $SRC/llvm/tools/sancov/coverage-report-server.py /usr/local/bin/
-
 # Cleanup
 rm -rf $SRC/llvm
 rm -rf $SRC/chromium_tools
