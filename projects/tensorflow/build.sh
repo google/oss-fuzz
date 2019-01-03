@@ -21,11 +21,6 @@ declare -r FUZZERS=$(
   grep '^tf_ops_fuzz_target' ${FUZZING_BUILD_FILE} | cut -d'"' -f2 | head -n5
 )
 
-# Since Docker container has bazel-0.19 we need the following trick to allow
-# --config=monolithic and other needed flags.
-echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
-yes "" | ./configure
-
 # Add a few more flags to make sure fuzzers build and run successfully.
 # Note the c++11/libc++ flags to build using the same toolchain as the one used
 # to build libFuzzingEngine.
