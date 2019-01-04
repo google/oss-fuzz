@@ -61,7 +61,7 @@ fi
 
 cd $SRC/gnutls
 touch .submodule.stamp
-make bootstrap
+./bootstrap
 GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
 LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
