@@ -19,4 +19,3 @@ MAINTAINER esr@thyrsus.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 RUN git clone --depth=1 https://git.code.sf.net/p/giflib/code $SRC/giflib-code
 COPY *.c *.options build.sh $SRC/
-COPY *.dict $OUT/
