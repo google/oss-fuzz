@@ -34,7 +34,8 @@ readonly FUZZERS=( \
   clang-llvm-proto-fuzzer \
   clang-format-fuzzer \
   clangd-fuzzer \
-  llvm-demangle-fuzzer \
+  llvm-itanium-demangle-fuzzer \
+  llvm-microsoft-demangle-fuzzer \
   llvm-dwarfdump-fuzzer \
   llvm-isel-fuzzer \
   llvm-special-case-list-fuzzer \
