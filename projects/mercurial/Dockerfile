@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER security@mercurial-scm.org
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
   python-dev mercurial curl
-RUN cd / && curl https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz | tar xzf -
+RUN cd $SRC && curl https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz | tar xzf -
 RUN hg clone https://www.mercurial-scm.org/repo/hg mercurial
 WORKDIR mercurial
 COPY build.sh $SRC/
