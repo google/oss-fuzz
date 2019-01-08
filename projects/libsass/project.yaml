@@ -9,5 +9,5 @@ sanitizers:
   - undefined
 
 labels:
-  data_context_fuzze:
+  data_context_fuzzer:
     - sundew

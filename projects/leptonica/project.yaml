@@ -8,5 +8,5 @@ sanitizers:
   - memory
 experimental: True
 labels:
-  tidy_fuzzer:
+  pix_rotate_shear_fuzzer:
     - sundew
