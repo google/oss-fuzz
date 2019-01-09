@@ -15,8 +15,7 @@
 #
 ################################################################################
 
-pushd /Python-2.7.15/
-ls
+pushd $SRC/Python-2.7.15/
 patch -p1 <<'EOF'
 Index: v2_7_unstable/Python/pymath.c
 ===================================================================
@@ -46,8 +45,19 @@ Index: v2_7_unstable/Modules/_ctypes/callproc.c
      avalues = (void **)alloca(sizeof(void *) * argcount);
      atypes = (ffi_type **)alloca(sizeof(ffi_type *) * argcount);
 EOF
+
+if [ -e $OUT/sanpy/cflags -a "$(cat $OUT/sanpy/cflags)" = "${CFLAGS}" ] ; then
+    echo 'Python cflags unchanged, no need to rebuild'
+else
+    rm -rf $OUT/sanpy
+    ASAN_OPTIONS=detect_leaks=0 ./configure --without-pymalloc \
+                --prefix=$OUT/sanpy CFLAGS="${CFLAGS}" LINKCC="${CXX}" \
+                LDFLAGS="${CXXFLAGS}"
+    grep -v HAVE_GETC_UNLOCKED < pyconfig.h > tmp && mv tmp pyconfig.h
+    ASAN_OPTIONS=detect_leaks=0 make && make install
+    echo "${CFLAGS}" > $OUT/sanpy/cflags
+fi
 popd
 
 cd contrib/fuzz
-export PYLDFLAGS=$(echo $CFLAGS | xargs -n 1 echo | egrep -- '-fsanitize=(memory|address)')
-make oss-fuzz
+make clean oss-fuzz
