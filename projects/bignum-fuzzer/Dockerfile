@@ -20,9 +20,6 @@ RUN apt-get update && apt-get install -y software-properties-common python-softw
 RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
 RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
 
-# Install Rust nightly
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
