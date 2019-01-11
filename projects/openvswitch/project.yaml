@@ -5,6 +5,7 @@ auto_ccs:
   - "pfaffben@gmail.com" 
   - "pkusunyifeng@gmail.com"
   - "bshas3@gmail.com"
+  - "cpp.code.lv@gmail.com"
 sanitizers:
   - address
   - memory
