@@ -68,6 +68,14 @@ std::string ProtoToPng(const PngProto &png_proto) {
       WriteChunk(all, "PLTE", chunk.plte().data());
     } else if (chunk.has_idat()) {
       WriteChunk(all, "IDAT", chunk.idat().data(), true);
+    } else if (chunk.has_iccp()) {
+      std::stringstream iccp_str;
+      iccp_str << chunk.iccp().name();
+      WriteByte(iccp_str, 0);
+      WriteByte(iccp_str, 0);
+      auto compressed_data = Compress(chunk.iccp().data());
+      iccp_str.write(compressed_data.data(), compressed_data.size());
+      WriteChunk(all, "iCCP", iccp_str.str());
     } else if (chunk.has_other_chunk()) {
       auto &other_chunk = chunk.other_chunk();
       char type[5] = {0};

@@ -17,6 +17,11 @@ message IDAT {
   required bytes data = 1;
 }
 
+message iCCP  {
+  required string name = 1;
+  required bytes data = 2;
+}
+
 message OtherChunk {
   oneof type {
     uint32 known_type = 1;
@@ -29,6 +34,7 @@ message PngChunk {
   oneof chunk {
     PLTE plte = 1;
     IDAT idat = 2;
+    iCCP iccp = 3;
     OtherChunk other_chunk = 10000;
   }
 }
