@@ -1,0 +1,6 @@
+homepage: "https://github.com/OpenSC/OpenSC/"
+primary_contact: "frankmorgner@gmail.com"
+auto_ccs:
+  - "martin@martinpaljak.net"
+  - "viktor.tarasov@gmail.com"
+  - "ludovic.rousseau@gmail.com"
