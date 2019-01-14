@@ -110,8 +110,8 @@ if [ "$SANITIZER" = "coverage" ]
 then
   declare -r REMAP_PATH=${OUT}/proc/self/cwd
   mkdir -p ${REMAP_PATH}
-  rsync -ak ${SRC}/tensorflow ${REMAP_PATH}
-  rsync -ak ${SRC}/third_party ${REMAP_PATH}
+  rsync -ak ${SRC}/tensorflow/tensorflow ${REMAP_PATH}
+  rsync -ak ${SRC}/tensorflow/third_party ${REMAP_PATH}
 fi
 
 # Now that all is done, we just have to copy the existing corpora and
