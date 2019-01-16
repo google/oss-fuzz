@@ -22,7 +22,8 @@ RUN apt-get update && \
         cmake ninja-build && \
     apt-get clean
 
-RUN git clone https://github.com/htacg/tidy-html5.git tidy-html5
+RUN git clone -b next --single-branch \
+    https://github.com/htacg/tidy-html5.git tidy-html5
 WORKDIR tidy-html5
 COPY build.sh $SRC/
 COPY *.c *.h *.options $SRC/
