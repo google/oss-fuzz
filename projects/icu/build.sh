@@ -25,7 +25,7 @@ CFLAGS="$CFLAGS $DEFINES"
 CXXFLAGS="$CXXFLAGS $DEFINES"
 
 CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS CC=$CC CXX=$CXX \
-  /bin/bash $SRC/icu/source/runConfigureICU Linux \
+  /bin/bash $SRC/icu/icu4c/source/runConfigureICU Linux \
    --with-library-bits=64 --with-data-packaging=static --enable-static --disable-shared
 
 export ASAN_OPTIONS="detect_leaks=0"
@@ -43,9 +43,9 @@ FUZZERS="break_iterator_fuzzer \
   "
 for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 \
-    $SRC/$fuzzer.cc -o $OUT/$fuzzer \
-    -I$SRC/icu/source/common -I$SRC/icu/source/i18n -L$WORK/icu/lib \
+    $SRC/icu/icu4c/source/test/fuzzer/$fuzzer.cc -o $OUT/$fuzzer \
+    -I$SRC/icu/icu4c/source/common -I$SRC/icu/icu4c/source/i18n -L$WORK/icu/lib \
     -lFuzzingEngine -licui18n -licuuc -licutu -licudata
 done
 
-cp $SRC/*.dict $SRC/*.options  $OUT/
+cp $SRC/icu/icu4c/source/test/fuzzer/*.dict  $OUT/
