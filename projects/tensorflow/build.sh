@@ -112,6 +112,15 @@ then
   mkdir -p ${REMAP_PATH}
   rsync -ak ${SRC}/tensorflow/tensorflow ${REMAP_PATH}
   rsync -ak ${SRC}/tensorflow/third_party ${REMAP_PATH}
+
+  # Also copy bazel generated files (via genrules)
+  declare -r BAZEL_PREFIX=bazel-out/k8-opt
+  declare -r REMAP_BAZEL_PATH=${REMAP_PATH}/${BAZEL_PREFIX}
+  mkdir -p ${REMAP_BAZEL_PATH}
+  rsync -ak ${SRC}/tensorflow/${BAZEL_PREFIX}/genfiles ${REMAP_BAZEL_PATH}
+
+  # Finally copy the external archives source files
+  rsync -ak ${SRC}/tensorflow/bazel-tensorflow/external ${REMAP_PATH}
 fi
 
 # Now that all is done, we just have to copy the existing corpora and
