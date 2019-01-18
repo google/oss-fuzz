@@ -27,6 +27,7 @@
     --enable-channel-manager            \
     --enable-channel-monitor            \
     --enable-child-supervision          \
+    --enable-cli                        \
     --enable-commissioner               \
     --enable-dhcp6-client               \
     --enable-dhcp6-server               \
