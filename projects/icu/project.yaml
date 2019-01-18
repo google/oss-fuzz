@@ -1,6 +1,6 @@
 homepage: "http://site.icu-project.org/"
 auto_ccs:
- - "icu-security@unicode.org"
+ - icu-security@unicode.org
 sanitizers:
  - address
  - memory
