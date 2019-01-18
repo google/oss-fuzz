@@ -1,6 +1,9 @@
 homepage: "http://site.icu-project.org/"
 auto_ccs:
  - icu-security@unicode.org
+ - andy.heninger@gmail.com
+ - markus.icu@gmail.com
+ - jefgen.msft@gmail.com
 sanitizers:
  - address
  - memory
