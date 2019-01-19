@@ -70,7 +70,7 @@ std::string ProtoToPng(const PngProto &png_proto) {
       WriteChunk(all, "IDAT", chunk.idat().data(), true);
     } else if (chunk.has_iccp()) {
       std::stringstream iccp_str;
-      iccp_str << chunk.iccp().name();
+      iccp_str << "xyz";  // don't fuzz iCCP name field.
       WriteByte(iccp_str, 0);
       WriteByte(iccp_str, 0);
       auto compressed_data = Compress(chunk.iccp().data());
