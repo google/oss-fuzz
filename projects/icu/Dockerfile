@@ -19,4 +19,4 @@ MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get update && apt-get install -y make
 
 RUN git clone --depth 1 https://github.com/unicode-org/icu.git icu
-COPY build.sh *.dict $SRC/
+COPY build.sh $SRC/
