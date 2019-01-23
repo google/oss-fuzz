@@ -18,8 +18,8 @@
 #
 # Build the library.
 #
+rm -rf ${WORK}/build
 mkdir -p ${WORK}/build
-rm -r ${WORK}/build/*
 cd ${WORK}/build
 ${SRC}/clamav-devel/configure --enable-fuzz=yes --with-libjson=no --with-pcre=no --enable-static=yes --enable-shared=no --disable-llvm --host=x86_64-unknown-linux-gnu
 make clean
