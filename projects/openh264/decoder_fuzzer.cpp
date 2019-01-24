@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <memory>
+
 #include "codec_def.h"
 #include "codec_app_def.h"
 #include "codec_api.h"
@@ -28,17 +30,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   ISVCDecoder *pDecoder;
   SDecodingParam sDecParam = {0};
   SBufferInfo sDstBufInfo;
-  uint8_t* pBuf;
+  std::unique_ptr<uint8_t[]> pBuf(new uint8_t[size + 4]);
   uint8_t* pData[3] = {NULL};
   uint8_t uiStartCode[4] = {0, 0, 0, 1};
 
-  pBuf = new uint8_t[size + 4];
-  if (pBuf == NULL) {
-    goto label_exit;
-  }
-  memcpy (pBuf, data, size);
-  memcpy (pBuf + size, &uiStartCode[0], 4);
-  memset (&sDstBufInfo, 0, sizeof(SBufferInfo));
+  memcpy(pBuf.get(), data, size);
+  memcpy(pBuf.get() + size, &uiStartCode[0], 4);
+  memset(&sDstBufInfo, 0, sizeof(SBufferInfo));
 
   // TODO: is this the best/fastest ERROR_CON to use?
   sDecParam.eEcActiveIdc = ERROR_CON_SLICE_COPY;
@@ -72,19 +70,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
       continue;
     }
 
-    pDecoder->DecodeFrameNoDelay (pBuf + iBufPos, iSliceSize, pData, &sDstBufInfo);
+    pDecoder->DecodeFrameNoDelay (pBuf.get() + iBufPos, iSliceSize, pData, &sDstBufInfo);
     iBufPos += iSliceSize;
   }
 
 label_cleanup:
   pDecoder->Uninitialize ();
   WelsDestroyDecoder (pDecoder);
-
-label_exit:
-  if (pBuf) {
-    delete[] pBuf;
-    pBuf = NULL;
-  }
 
   return 0;
 }
