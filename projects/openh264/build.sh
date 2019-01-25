@@ -16,8 +16,16 @@
 ################################################################################
 
 # prepare corpus
-zip -q0r ${OUT}/decoder_fuzzer_seed_corpus.zip ./res/
+svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/h264 corpus/
+mv ./res/*.264 ./corpus/
+zip -q0r ${OUT}/decoder_fuzzer_seed_corpus.zip ./corpus/
 
 # build 
-make -j$(nproc) USE_ASM=No BUILDTYPE=Debug libraries
+if [[ $CXXFLAGS = *sanitize=memory* ]]
+then
+  ASM_BUILD=No
+else
+  ASM_BUILD=Yes
+fi
+make -j$(nproc) USE_ASM=$ASM_BUILD BUILDTYPE=Debug libraries
 $CXX $CXXFLAGS -o $OUT/decoder_fuzzer -I./codec/api/svc -I./codec/console/common/inc -I./codec/common/inc -L. -lFuzzingEngine $SRC/decoder_fuzzer.cpp libopenh264.a
