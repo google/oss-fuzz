@@ -16,7 +16,9 @@
 ################################################################################
 
 # prepare corpus
-zip -q0r ${OUT}/decoder_fuzzer_seed_corpus.zip ./res/
+svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/h264 corpus/
+mv ./res/*.264 ./corpus/
+zip -q0r ${OUT}/decoder_fuzzer_seed_corpus.zip ./corpus/
 
 # build 
 make -j$(nproc) USE_ASM=No BUILDTYPE=Debug libraries
