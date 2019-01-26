@@ -29,7 +29,7 @@ $CXX $CXXFLAGS png_proto_fuzzer_example.cc libpng_read_fuzzer.o genfiles/png_fuz
 
 echo > dummy.cc
 
-# Also compile another target, w/o protos but with a specialized custom mutator.
+# A target, w/o protos but with a specialized custom mutator.
 $CXX $CXXFLAGS -c libpng/contrib/oss-fuzz/libpng_read_fuzzer.cc -I libpng
 $CXX $CXXFLAGS dummy.cc \
    -include fuzzer-test-suite/libpng-1.2.56/png_mutator.h \
@@ -39,4 +39,15 @@ $CXX $CXXFLAGS dummy.cc \
   libpng/.libs/libpng16.a \
   $LIB_FUZZING_ENGINE \
   -o $OUT/png_custom_mutator_fuzzer_example
+
+# An experimental out-of-tree target, with a specialized custom mutator.
+$CXX $CXXFLAGS libpng_transforms_fuzzer.cc \
+   -include fuzzer-test-suite/libpng-1.2.56/png_mutator.h \
+   -D PNG_MUTATOR_DEFINE_LIBFUZZER_CUSTOM_MUTATOR \
+   -I libpng \
+  -lz \
+  libpng/.libs/libpng16.a \
+  $LIB_FUZZING_ENGINE \
+  -o $OUT/png_transforms_fuzzer
+
 
