@@ -1,3 +1,7 @@
+# Install Rust nightly
+curl https://sh.rustup.rs -sSf | sh -s -- -y
+source $HOME/.cargo/env
+
 cd $SRC/openssl
 if [[ $CFLAGS = *sanitize=memory* ]]
 then

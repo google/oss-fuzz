@@ -20,7 +20,11 @@ MAINTAINER officesecurity@lists.freedesktop.org
 RUN sed -i -e '/^#\s*deb-src.*\smain\s\+restricted/s/^#//' /etc/apt/sources.list
 #build requirements
 RUN apt-get update && apt-get build-dep -y libreoffice
-RUN apt-get update && apt-get install -y wget yasm locales && locale-gen en_US.UTF-8
+RUN apt-get install -y wget yasm locales && locale-gen en_US.UTF-8
+#xenial gperf too old
+RUN sed -i -e 's/xenial/bionic/g' /etc/apt/sources.list
+RUN apt-get update && apt-get install gperf
+
 #cache build dependencies
 ADD https://dev-www.libreoffice.org/src/c74b7223abe75949b4af367942d96c7a-crosextrafonts-carlito-20130920.tar.gz \
     https://dev-www.libreoffice.org/src/e7a384790b13c29113e22e596ade9687-LinLibertineG-20120116.zip \

@@ -28,12 +28,21 @@ test_app("region_deserialize") {
 }
 
 test_app("image_filter_deserialize") {
+  include_dirs = [
+    "tools",
+    "tools/fonts",
+  ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp",
+    "tools/Resources.cpp",
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":skia",
   ]
@@ -52,12 +61,21 @@ test_app("region_set_path") {
 }
 
 test_app("textblob_deserialize") {
+  include_dirs = [
+    "tools",
+    "tools/fonts",
+  ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzTextBlobDeserialize.cpp",
+    "tools/Resources.cpp",
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":skia",
   ]
@@ -179,18 +197,24 @@ test_app("api_raster_n32_canvas") {
   include_dirs = [
     "tools",
     "tools/debugger",
+    "tools/fonts",
   ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCanvas.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzRasterN32Canvas.cpp",
+    "tools/Resources.cpp",
     "tools/UrlDataManager.cpp",
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":gpu_tool_utils",
     ":skia",
@@ -203,19 +227,25 @@ test_app("api_mock_gpu_canvas") {
   include_dirs = [
     "tools",
     "tools/debugger",
+    "tools/fonts",
   ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCanvas.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzMockGPUCanvas.cpp",
+    "tools/LsanSuppressions.cpp",
+    "tools/Resources.cpp",
     "tools/UrlDataManager.cpp",
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
-    "tools/LsanSuppressions.cpp"
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":gpu_tool_utils",
     ":skia",
@@ -228,18 +258,24 @@ test_app("api_null_canvas") {
   include_dirs = [
     "tools",
     "tools/debugger",
+    "tools/fonts",
   ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCanvas.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzNullCanvas.cpp",
+    "tools/Resources.cpp",
     "tools/UrlDataManager.cpp",
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":gpu_tool_utils",
     ":skia",

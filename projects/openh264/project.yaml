@@ -1,0 +1,8 @@
+homepage: "https://www.openh264.org"
+primary_contact: "huili2@cisco.com"
+auto_ccs:
+  - "twsmith@mozilla.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

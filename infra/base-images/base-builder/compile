@@ -76,12 +76,12 @@ if [ "${BUILD_UID-0}" -ne "0" ]; then
   su -c "$BUILD_CMD" builder
   if [ "$SANITIZER" = "coverage" ]; then
     # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
-    su -c "$COPY_SOURCES_CMD" builder || true
+    su -c "$COPY_SOURCES_CMD" builder 2>/dev/null || true
   fi
 else
   $BUILD_CMD
   if [ "$SANITIZER" = "coverage" ]; then
     # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
-    $COPY_SOURCES_CMD || true
+    $COPY_SOURCES_CMD 2>/dev/null || true
   fi
 fi

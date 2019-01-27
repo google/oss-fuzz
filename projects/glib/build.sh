@@ -23,8 +23,7 @@ mkdir $BUILD
 meson $BUILD \
   -Db_lundef=false \
   -Ddefault_library=static \
-  -Dlibmount=false \
-  -Dselinux=false
+  -Dlibmount=false
 
 ninja -C $BUILD
 
