@@ -1,0 +1,6 @@
+homepage: https://cgit.kde.org/kimageformats.git/
+primary_contact: tsdgeos@gmail.com
+sanitizers:
+  - address
+  - memory
+  - undefined
