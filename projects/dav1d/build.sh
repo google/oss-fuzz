@@ -50,6 +50,7 @@ fi
 
 meson -Dbuild_asm=$BUILD_ASM -Dbuild_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
+      -Dlogging=false \
       ${build}
 ninja -j $(nproc) -C ${build}
 
@@ -64,5 +65,4 @@ cp $SRC/dec_fuzzer_seed_corpus.zip ${WORK}/tmp/seed_corpus.zip
 for fuzzer in $(find ${build} -name 'dav1d_fuzzer*'); do
 	cp "${fuzzer}" $OUT/
 	cp ${WORK}/tmp/seed_corpus.zip $OUT/$(basename "$fuzzer")_seed_corpus.zip
-	cp $SRC/fuzzer.options $OUT/$(basename "$fuzzer").options
 done

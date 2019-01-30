@@ -23,4 +23,4 @@ RUN curl --silent -O https://storage.googleapis.com/aom-test-data/fuzzer/dec_fuz
 RUN curl --silent -O https://jannau.net/dav1d_fuzzer_seed_corpus.zip
 RUN git clone --depth 1 https://code.videolan.org/videolan/dav1d.git dav1d
 WORKDIR dav1d
-COPY build.sh fuzzer.options $SRC/
+COPY build.sh $SRC/
