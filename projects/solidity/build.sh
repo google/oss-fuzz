@@ -27,12 +27,13 @@ cd $SRC/boost
 
 # Build solidity
 cd $SRC/solidity
-git submodule update --init --recursive
 BASE_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$BASE_CXXFLAGS -I/usr/local/include/c++/v1 -L/usr/local/lib"
-mkdir -p build && cd build && rm -rf *
+mkdir -p build
+cd build
+rm -rf *
 
-# This environment variable turns on fuzzer harness compilation/link
+# Build solidity
 cmake -DUSE_Z3=OFF -DUSE_CVC4=OFF -DOSSFUZZ=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DBoost_FOUND=1 \
@@ -50,9 +51,14 @@ cmake -DUSE_Z3=OFF -DUSE_CVC4=OFF -DOSSFUZZ=ON \
   -DBoost_UNIT_TEST_FRAMEWORK_LIBRARY=/usr/local/lib/libboost_unit_test_framework.a \
   -DBoost_UNIT_TEST_FRAMEWORK_LIBRARIES=/usr/local/lib/libboost_unit_test_framework.a \
   $SRC/solidity
-make ossfuzz -j $(nproc) && cp test/tools/ossfuzz/*_ossfuzz $OUT/
+make ossfuzz -j $(nproc)
+
+# Copy fuzzer binary, seed corpus, fuzzer options, and dictionary
+cp test/tools/ossfuzz/*_ossfuzz $OUT/
 rm -f $OUT/*.zip
 find $SRC/solidity $SRC/sol_corpus -iname "*.sol" -exec zip -ujq \
   $OUT/solc_opt_ossfuzz_seed_corpus.zip "{}" \;
 cp $OUT/solc_opt_ossfuzz_seed_corpus.zip \
   $OUT/solc_noopt_ossfuzz_seed_corpus.zip
+cp $SRC/solidity/test/tools/ossfuzz/config/*.options $OUT/
+cp $SRC/solidity/test/tools/ossfuzz/config/solidity.dict $OUT/
