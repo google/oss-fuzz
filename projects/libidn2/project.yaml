@@ -3,3 +3,7 @@ primary_contact: "rockdaboot@gmail.com"
 auto_ccs:
   - "n.mavrogiannopoulos@gmail.com"
   - "simon@josefsson.org"
+sanitizers:
+  - address
+  - memory
+  - undefined
