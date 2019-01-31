@@ -51,6 +51,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   const size_t kPngSignatureSize = 8;
   const size_t kIHDRSize = 4 + 4 + 13 + 4;
   const size_t kMaxImageSize = 1 << 20;
+  const size_t kMaxHeight = 1 << 10;
 
   auto Read32 = [&](const uint8_t *p) {
     uint32_t res;
@@ -64,7 +65,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (png_sig_cmp(data, 0, kPngSignatureSize)) return 0;
   uint32_t width = __builtin_bswap32(Read32(data + kPngSignatureSize + 8));
   uint32_t height = __builtin_bswap32(Read32(data + kPngSignatureSize + 12));
+  // Reject too large images because they will OOM.
+  // Also reject images with a too large height, because large height
+  // will cause too many mallocs.
+  // These two heuristics are far from optimal and may cause us to lose some
+  // coverage. But w/o them fuzzing is way too slow.
   if ((uint64_t)width * height > kMaxImageSize) return 0;
+  if (height > kMaxHeight) return 0;
 
   // Find the fUZz chunk and it's contents.
   const size_t fUZz_chunk_size = 16;
