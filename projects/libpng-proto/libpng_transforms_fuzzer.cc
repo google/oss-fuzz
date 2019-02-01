@@ -132,3 +132,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   png_image_free(&image);
   return 0;
 }
+
+extern "C" const char *__asan_default_options() {
+  // TODO: remove this once
+  // https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=12716
+  // is fixed.
+  return "detect_leaks=0";
+}
