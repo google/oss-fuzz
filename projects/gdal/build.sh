@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+# build libproj.a (proj master required)
+cd proj
+./autogen.sh
+./configure --disable-shared --prefix=$SRC/install
+make clean -s
+make -j$(nproc) -s
+make install
+cd ..
+
 # build libcurl.a (builing against Ubuntu libcurl.a doesn't work easily)
 cd curl
 ./buildconf
@@ -37,11 +46,11 @@ cd ../..
 # build gdal
 cd gdal
 export LDFLAGS=${CXXFLAGS}
-./configure --without-libtool --with-liblzma --with-expat --with-sqlite3 --with-xerces --with-webp --with-netcdf=$SRC/install --with-curl=$SRC/install --without-hdf5 --with-jpeg=internal
+./configure --without-libtool --with-liblzma --with-expat --with-sqlite3 --with-xerces --with-webp --with-netcdf=$SRC/install --with-curl=$SRC/install --without-hdf5 --with-jpeg=internal --with-proj=$SRC/install
 make clean -s
 make -j$(nproc) -s static-lib
 
-export EXTRA_LIBS="-Wl,-Bstatic -lwebp -llzma -lexpat -lsqlite3 -lgif -lpng12 -lz"
+export EXTRA_LIBS="-Wl,-Bstatic -lproj -lwebp -llzma -lexpat -lsqlite3 -lgif -lpng12 -lz"
 # Xerces-C related
 export EXTRA_LIBS="$EXTRA_LIBS -lxerces-c -licuuc -licudata"
 # netCDF related
