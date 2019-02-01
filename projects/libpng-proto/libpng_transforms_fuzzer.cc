@@ -107,5 +107,28 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     png_read_png(reader.png_ptr, reader.info_ptr, transforms, nullptr);
   }
   png_destroy_read_struct(&reader.png_ptr, &reader.info_ptr, &reader.end_info);
+
+  // Run the same image through another libpng API.
+  // There is probably some redundancy here (I don't know what I am doing!)
+  png_image image;
+  memset(&image, 0, sizeof(image));
+  image.version = PNG_IMAGE_VERSION;
+  if (png_image_begin_read_from_memory(&image, data, size)) {
+    const size_t kMaxBufferSize = 64 << 20;
+    image.format = fUZz_beg ? Read32(fUZz_beg + 4) : PNG_FORMAT_RGBA;
+    size_t image_size = PNG_IMAGE_SIZE(image);
+    if (image_size <= kMaxBufferSize) {
+      png_bytep buffer = new png_byte[image_size];
+      const size_t kColorMapSize = 256 * 4;
+      // Do we need to take color & colormap from the fuzzed input?
+      png_color color = {1, 2, 3};
+      png_uint_16 colormap[256*4] = {0};
+      for (size_t i = 0; i < kColorMapSize; i++)
+        colormap[i] = i;
+      png_image_finish_read(&image, &color, buffer, 0, colormap);
+      delete[] buffer;
+    }
+  }
+  png_image_free(&image);
   return 0;
 }
