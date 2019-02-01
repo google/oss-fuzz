@@ -35,7 +35,9 @@ LDFLAGS="$CXXFLAGS" LD=$CXX $SRC/libvpx/configure \
     --size-limit=12288x12288 \
     --extra-cflags="${extra_c_flags}" \
     --disable-webm-io \
-    --enable-debug
+    --enable-debug \
+    --disable-vp8-encoder \
+    --disable-vp9-encoder
 make -j$(nproc) all
 popd
 
