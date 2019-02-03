@@ -57,6 +57,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         b.setData((const char *)data, size);
         b.open(QIODevice::ReadOnly);
         h->setDevice(&b);
+        h->canRead();
         h->read(&i);
     }
     qDeleteAll(handlers);
