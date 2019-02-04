@@ -16,7 +16,7 @@
 ################################################################################
 
 ./autogen.sh
-./configure
+./configure --disable-shared
 make clean -s
 (cd src && make -j$(nproc) -s)
 
