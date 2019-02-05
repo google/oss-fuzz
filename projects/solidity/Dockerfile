@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
     build-essential cmake libbz2-dev
-RUN git clone --depth 1 https://github.com/ethereum/solidity.git solidity
+RUN git clone --recursive https://github.com/ethereum/solidity.git solidity
 RUN git clone --depth 1 https://github.com/holiman/solfuzzz.git sol_corpus
 RUN git clone --recursive -b boost-1.69.0 https://github.com/boostorg/boost.git boost
 COPY build.sh $SRC/
