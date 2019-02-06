@@ -1,7 +1,7 @@
 homepage: "http://www.graphicsmagick.org/"
 primary_contact: "bobjfriesenhahn@gmail.com"
 auto_ccs:
-    - glennrp@gmail.com
+    - troyjp@gmail.com
     - alex.gaynor@gmail.com
     - paul.l.kehrer@gmail.com
 sanitizers:
