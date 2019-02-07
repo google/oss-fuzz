@@ -4,6 +4,7 @@ auto_ccs:
  - andy.heninger@gmail.com
  - markus.icu@gmail.com
  - jefgen.msft@gmail.com
+ - shane@unicode.org
 sanitizers:
  - address
  - memory
