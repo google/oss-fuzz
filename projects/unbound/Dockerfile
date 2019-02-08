@@ -20,5 +20,4 @@ RUN apt-get install -y make libtool libssl-dev libexpat-dev
 RUN git clone --depth=1 https://github.com/NLnetLabs/unbound unbound
 WORKDIR unbound
 COPY parse_packet_fuzzer.c .
-COPY parse_packet_fuzzer_seed_corpus.zip .
 COPY build.sh $SRC/

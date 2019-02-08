@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-cp parse_packet_fuzzer_seed_corpus.zip $OUT/
 # util/storage/lookup3.c has some code that triggers the address sanitizer, but
 # according to a comment is OK. -DVALGRIND turns on an alternate version of that
 # code.
@@ -28,7 +27,7 @@ $CXX $CXXFLAGS -std=c++11 \
   -lFuzzingEngine \
   -lssl -lcrypto -pthread \
   -o $OUT/parse_packet_fuzzer \
-  parse_packet_fuzzer.o
+  parse_packet_fuzzer.o \
   dns.o infra.o rrset.o dname.o \
   msgencode.o as112.o msgparse.o msgreply.o packed_rrset.o iterator.o \
   iter_delegpt.o iter_donotq.o iter_fwd.o iter_hints.o iter_priv.o \
@@ -44,3 +43,5 @@ $CXX $CXXFLAGS -std=c++11 \
   getentropy_linux.o reallocarray.o libunbound.o \
   explicit_bzero.o libworker.o context.o \
   strlcpy.o arc4random.o arc4random_uniform.o arc4_lock.o
+
+wget --directory-prefix $OUT https://github.com/jsha/unbound/raw/fuzzing-corpora/testdata/parse_packet_fuzzer_seed_corpus.zip
