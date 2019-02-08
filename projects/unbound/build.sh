@@ -1,5 +1,20 @@
 #!/bin/bash -eux
-cp fuzztest_seed_corpus.zip $OUT/
+# Copyright 2019 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+cp parse_packet_fuzzer_seed_corpus.zip $OUT/
 # util/storage/lookup3.c has some code that triggers the address sanitizer, but
 # according to a comment is OK. -DVALGRIND turns on an alternate version of that
 # code.
@@ -7,13 +22,14 @@ CFLAGS="${CFLAGS} -DVALGRIND=1"
 ./configure
 make all
 
-$CC $CFLAGS -I. -DSRCDIR=. -c -o fuzztest.o fuzztest.c
+$CC $CFLAGS -I. -DSRCDIR=. -c -o parse_packet_fuzzer.o parse_packet_fuzzer.c
 
 $CXX $CXXFLAGS -std=c++11 \
   -lFuzzingEngine \
-  -lssl -lcrypto \
-  -o $OUT/fuzztest \
-  -pthread fuzztest.o dns.o infra.o rrset.o dname.o \
+  -lssl -lcrypto -pthread \
+  -o $OUT/parse_packet_fuzzer \
+  parse_packet_fuzzer.o
+  dns.o infra.o rrset.o dname.o \
   msgencode.o as112.o msgparse.o msgreply.o packed_rrset.o iterator.o \
   iter_delegpt.o iter_donotq.o iter_fwd.o iter_hints.o iter_priv.o \
   iter_resptype.o iter_scrub.o iter_utils.o localzone.o mesh.o modstack.o view.o \
