@@ -162,7 +162,6 @@ test_app("api_image_filter") {
     ":flags",
     ":gpu_tool_utils",
     ":skia",
-    "//third_party/jsoncpp",
     "//third_party/libpng",
   ]
 }
@@ -218,7 +217,6 @@ test_app("api_raster_n32_canvas") {
     ":flags",
     ":gpu_tool_utils",
     ":skia",
-    "//third_party/jsoncpp",
     "//third_party/libpng",
   ]
 }
@@ -249,7 +247,6 @@ test_app("api_mock_gpu_canvas") {
     ":flags",
     ":gpu_tool_utils",
     ":skia",
-    "//third_party/jsoncpp",
     "//third_party/libpng",
   ]
 }
@@ -279,7 +276,6 @@ test_app("api_null_canvas") {
     ":flags",
     ":gpu_tool_utils",
     ":skia",
-    "//third_party/jsoncpp",
     "//third_party/libpng",
   ]
 }
