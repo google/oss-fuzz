@@ -32,8 +32,7 @@ We support [libFuzzer](http://llvm.org/docs/LibFuzzer.html) and [AFL](http://lca
 in combination with [Sanitizers](https://github.com/google/sanitizers).
 [ClusterFuzz](docs/clusterfuzz.md)
 provides a distributed fuzzer execution environment and reporting. You can
-download ClusterFuzz to run yourself on closed-source code
-[here](https://github.com/google/clusterfuzz).
+checkout ClusterFuzz [here](https://github.com/google/clusterfuzz).
 
 Currently OSS-Fuzz supports C and C++ code (other languages supported by [LLVM](http://llvm.org) may work too).
 
