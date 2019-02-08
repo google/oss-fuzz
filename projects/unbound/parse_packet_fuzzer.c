@@ -3,10 +3,9 @@
 #include "util/fptr_wlist.h"
 #include "sldns/sbuffer.h"
 
-struct regional *region = regional_create();
-
 int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len)
 {
+  struct regional *region = regional_create();
 	sldns_buffer pktbuf;
 	sldns_buffer_init_frm_data(&pktbuf, (void*)buf, len);
 
