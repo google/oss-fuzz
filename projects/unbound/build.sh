@@ -19,7 +19,7 @@
 # code.
 CFLAGS="${CFLAGS} -DVALGRIND=1"
 ./configure
-make all
+make -j6 all
 
 $CC $CFLAGS -I. -DSRCDIR=. -c -o parse_packet_fuzzer.o parse_packet_fuzzer.c
 
