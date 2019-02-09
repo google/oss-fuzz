@@ -16,7 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jsha@letsencrypt.org
 RUN apt-get update
-RUN apt-get install -y make libtool libssl-dev libexpat-dev
+RUN apt-get install -y make libtool libssl-dev libexpat-dev wget
 RUN git clone --depth=1 https://github.com/NLnetLabs/unbound unbound
 WORKDIR unbound
 COPY parse_packet_fuzzer.c .
