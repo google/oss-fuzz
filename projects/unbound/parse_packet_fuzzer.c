@@ -5,7 +5,7 @@
 
 int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len)
 {
-	static struct regional *region = regional_create();
+	struct regional *region = regional_create();
 	sldns_buffer pktbuf;
 	sldns_buffer_init_frm_data(&pktbuf, (void*)buf, len);
 
