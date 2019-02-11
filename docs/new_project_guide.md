@@ -129,7 +129,7 @@ In the above example, the git clone will check out the source to `$SRC/<checkout
 
 ## build.sh
 
-This file describes how to build [fuzz targets](glossary.md#fuzz-target) for your project.
+This file describes how to build binaries for [fuzz targets](glossary.md#fuzz-target) in your project.
 The script will be executed within the image built from `Dockerfile`.
 
 In general, this script will need to:
