@@ -129,6 +129,6 @@ gives a list of publicly-viewable fixed bugs found by OSS-Fuzz.
 * [libFuzzer documentation](http://libfuzzer.info)
 * [libFuzzer tutorial](http://tutorial.libfuzzer.info)
 * [libFuzzer workshop](https://github.com/Dor1s/libfuzzer-workshop)
+* [Structure-Aware Fuzzing with libFuzzer](https://github.com/google/fuzzer-test-suite/blob/master/tutorial/structure-aware-fuzzing.md)
 * [Chromium Fuzzing Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)
 * [ClusterFuzz](https://github.com/google/clusterfuzz)
-
