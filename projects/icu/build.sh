@@ -37,7 +37,6 @@ $CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cc \
      -I$SRC/icu4c/source/test/fuzzer
 
 FUZZERS="break_iterator_fuzzer \
-  break_iterator_utf32_fuzzer \
   converter_fuzzer \
   locale_fuzzer \
   number_format_fuzzer \
