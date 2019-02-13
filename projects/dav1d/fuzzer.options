@@ -1,3 +1,0 @@
-[libfuzzer]
-# TODO: remove this when error logging can be suppressed during compilation.
-close_fd_mask = 2

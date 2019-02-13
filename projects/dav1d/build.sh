@@ -29,27 +29,11 @@ BUILD_ASM="true"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
   BUILD_ASM="false"
-else
-	# Build the specific nasm version without memory instrumentation.
-	pushd $SRC
-
-	BUILD_DEPS="$SRC/build_deps"
-	mkdir -p $BUILD_DEPS
-
-	tar xzf nasm-*
-	cd nasm-*
-	CFLAGS="" CXXFLAGS="" ./configure --prefix="$BUILD_DEPS"
-	make clean
-	make -j$(nproc)
-	make install
-
-	export PATH="$BUILD_DEPS/bin:$PATH"
-	export LD_LIBRARY_PATH="$BUILD_DEPS/lib"
-	popd
 fi
 
 meson -Dbuild_asm=$BUILD_ASM -Dbuild_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
+      -Dlogging=false \
       ${build}
 ninja -j $(nproc) -C ${build}
 
@@ -64,5 +48,4 @@ cp $SRC/dec_fuzzer_seed_corpus.zip ${WORK}/tmp/seed_corpus.zip
 for fuzzer in $(find ${build} -name 'dav1d_fuzzer*'); do
 	cp "${fuzzer}" $OUT/
 	cp ${WORK}/tmp/seed_corpus.zip $OUT/$(basename "$fuzzer")_seed_corpus.zip
-	cp $SRC/fuzzer.options $OUT/$(basename "$fuzzer").options
 done

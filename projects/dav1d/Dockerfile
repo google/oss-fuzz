@@ -16,11 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER janne-vlc@jannau.net
-RUN apt-get update && apt-get install -y curl python3-pip wget && \
+
+ADD bionic.list /etc/apt/sources.list.d/bionic.list
+ADD nasm_apt.pin /etc/apt/preferences
+
+RUN apt-get update && apt-get install -y curl python3-pip nasm && \
     pip3 install meson ninja
-RUN wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.02/nasm-2.13.02.tar.gz
 RUN curl --silent -O https://storage.googleapis.com/aom-test-data/fuzzer/dec_fuzzer_seed_corpus.zip
 RUN curl --silent -O https://jannau.net/dav1d_fuzzer_seed_corpus.zip
 RUN git clone --depth 1 https://code.videolan.org/videolan/dav1d.git dav1d
 WORKDIR dav1d
-COPY build.sh fuzzer.options $SRC/
+COPY build.sh $SRC/
