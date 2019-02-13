@@ -29,23 +29,6 @@ BUILD_ASM="true"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
   BUILD_ASM="false"
-else
-	# Build the specific nasm version without memory instrumentation.
-	pushd $SRC
-
-	BUILD_DEPS="$SRC/build_deps"
-	mkdir -p $BUILD_DEPS
-
-	tar xzf nasm-*
-	cd nasm-*
-	CFLAGS="" CXXFLAGS="" ./configure --prefix="$BUILD_DEPS"
-	make clean
-	make -j$(nproc)
-	make install
-
-	export PATH="$BUILD_DEPS/bin:$PATH"
-	export LD_LIBRARY_PATH="$BUILD_DEPS/lib"
-	popd
 fi
 
 meson -Dbuild_asm=$BUILD_ASM -Dbuild_tools=false -Dfuzzing_engine=oss-fuzz \
