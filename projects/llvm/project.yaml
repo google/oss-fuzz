@@ -12,6 +12,7 @@ auto_ccs:
   - "xpl0re@gmail.com"
   - "jfb@chromium.org"
   - "eneyman@google.com"
+  - "bigcheesegs@gmail.com"
 
 # TODO(kcc): enable msan.
 sanitizers:
