@@ -23,15 +23,6 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 export FFMPEG_DEPS_PATH=$SRC/ffmpeg_deps
 mkdir -p $FFMPEG_DEPS_PATH
 
-# Build latest nasm without memory instrumentation.
-cd $SRC
-tar xzf nasm-*
-cd nasm-*
-CFLAGS="" CXXFLAGS="" ./configure --prefix="$FFMPEG_DEPS_PATH"
-make clean
-make -j$(nproc)
-make install
-
 export PATH="$FFMPEG_DEPS_PATH/bin:$PATH"
 export LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib"
 
