@@ -5,6 +5,7 @@ auto_ccs:
   - "benl@google.com"
   - "wellnhofer@aevum.de"
   - "akilsrin@apple.com"
+  - "garybradski@gmail.com"
 sanitizers:
   - address
   - memory
