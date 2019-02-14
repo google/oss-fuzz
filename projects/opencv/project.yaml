@@ -3,6 +3,9 @@ primary_contact: "kusano@google.com"
 
 experimental: true
 
+auto_ccs:
+  - "vrabaud@google.com"
+
 sanitizers:
   - address
   - undefined
