@@ -1,7 +1,7 @@
 homepage: "http://www.libpng.org/pub/png/libpng.html"
 primary_contact: "kcc@google.com"
+#  - address is disabled until https://github.com/glennrp/libpng/issues/275 is fixed
 sanitizers:
-  - address
   - undefined
 fuzzing_engines:
   - libfuzzer
