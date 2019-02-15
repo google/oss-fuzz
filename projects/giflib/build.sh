@@ -1,14 +1,19 @@
+SOURCES=(dgif_lib.c egif_lib.c getarg.c gifalloc.c gif_err.c gif_font.c \
+        gif_hash.c openbsd-reallocarray.c qprintf.c quantize.c)
 cd $SRC/giflib-code
-./autogen.sh
-make
-cd ..
-for file in $SRC/*.c;
+rm -f *.o
+for file in ${SOURCES[@]};
 do
     name=$(basename $file .c)
-    $CC $CFLAGS -c -I giflib-code/lib ${file} -o ${name}.o
-    $CXX $CXXFLAGS -std=c++11 -I giflib-code/lib ${name}.o \
-        -o $OUT/${name} -lFuzzingEngine giflib-code/lib/.libs/libgif.a
+    $CC -c -I . $CFLAGS $file -o $name.o
 done
+ar rc libgif.a *.o
+
+cd $SRC
+$CC $CFLAGS -c -I giflib-code dgif_target.c -o dgif_target.o
+$CXX $CXXFLAGS -std=c++11 -I giflib-code dgif_target.o \
+        -o $OUT/dgif_target -lFuzzingEngine giflib-code/libgif.a
+
 # Place dict and config in OUT
 wget -O $OUT/gif.dict \
   https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/gif.dict \

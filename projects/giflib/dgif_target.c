@@ -1,25 +1,3 @@
-/*****************************************************************************
-
-gif2rgb - convert GIF to 24-bit RGB pixel triples or vice-versa
-
-*****************************************************************************/
-
-/***************************************************************************
-
-Toshio Kuratomi had written this in a comment about the rgb2gif code:
-
-  Besides fixing bugs, what's really needed is for someone to work out how to
-  calculate a colormap for writing GIFs from rgb sources.  Right now, an rgb
-  source that has only two colors (b/w) is being converted into an 8 bit GIF....
-  Which is horrendously wasteful without compression.
-
-I (ESR) took this off the main to-do list in 2012 because I don't think
-the GIFLIB project actually needs to be in the converters-and-tools business.
-Plenty of hackers do that; our job is to supply stable library capability
-with our utilities mainly interesting as test tools.
-
-***************************************************************************/
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -28,43 +6,71 @@ with our utilities mainly interesting as test tools.
 #include <fcntl.h>
 #include <stdint.h>
 
-#ifdef _WIN32
-#include <io.h>
-#endif /* _WIN32 */
-
 #include "gif_lib.h"
 
-#define PROGRAM_NAME "gif2rgb"
+struct gifUserData {
+	size_t gifLen;
+	void *gifData;
+};
 
-/* ===========================================================================
- * Display error message and exit
- */
-void fuzz_error(const char *msg)
-{
-    fprintf(stderr, "%s: %s\n", "gif2rgb_fuzzer", msg);
-    exit(1);
+int stub_input_reader (GifFileType *gifFileType, GifByteType *gifByteType, int len) {
+	struct gifUserData *gud = gifFileType->UserData;
+	int read_len = (len > gud->gifLen ? gud->gifLen : len);
+	memcpy(gifByteType, gud->gifData, read_len);
+	return read_len;
 }
-/* end */
+
+void sponge(GifFileType *GifFileIn, int *ErrorCode) {
+	GifFileType *GifFileOut = (GifFileType *)NULL;
+	if ((GifFileOut = EGifOpenFileHandle(1, ErrorCode)) == NULL) {
+		return;
+	}
+
+	/*
+	 * Your operations on in-core structures go here.
+	 * This code just copies the header and each image from the incoming file.
+	 */
+	GifFileOut->SWidth = GifFileIn->SWidth;
+	GifFileOut->SHeight = GifFileIn->SHeight;
+	GifFileOut->SColorResolution = GifFileIn->SColorResolution;
+	GifFileOut->SBackGroundColor = GifFileIn->SBackGroundColor;
+	if (GifFileIn->SColorMap) {
+		GifFileOut->SColorMap = GifMakeMapObject(
+				GifFileIn->SColorMap->ColorCount,
+				GifFileIn->SColorMap->Colors);
+	} else {
+		GifFileOut->SColorMap = NULL;
+	}
+
+	for (int i = 0; i < GifFileIn->ImageCount; i++)
+		(void) GifMakeSavedImage(GifFileOut, &GifFileIn->SavedImages[i]);
+
+	// We ignore error since it is irrelevant in the context of this
+	// test harness.
+	EGifSpew(GifFileOut);
+	return;
+}
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 {
-	char *inFileName = "/tmp/gif.gif";
-	FILE *in = fopen(inFileName, "w");
-	if(in==NULL){
-		fuzz_error("failed fopen");
-	}
-	int Error = 0;
-	if (fwrite(Data, 1, (unsigned)Size, in) != Size)
-		fuzz_error("failed fwrite");
-	if (fclose(in))
-		fuzz_error("failed fclose");
 	GifFileType *GifFile;
-	GifFile = DGifOpenFileName(inFileName, &Error);
-	if (GifFile == NULL){
-		return 0;
-	}
-	DGifSlurp(GifFile);
+	int Error;
+	void *gifData = malloc(Size);
+	memcpy(gifData, (void *)Data, Size);
+	struct gifUserData gUData = {Size, gifData};
 
+	GifFile = DGifOpen((void *)&gUData, stub_input_reader, &Error);
+	if (GifFile == NULL){
+		goto freebuf;
+	}
+	if (DGifSlurp(GifFile) == GIF_ERROR) {
+		goto cleanup;
+	}
+	sponge(GifFile, &Error);
+
+cleanup:
 	DGifCloseFile(GifFile, &Error);
+freebuf:
+	free(gifData);
 	return 0;
 }
