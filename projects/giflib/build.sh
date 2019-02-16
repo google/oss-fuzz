@@ -10,7 +10,7 @@ done
 ar rc libgif.a *.o
 
 cd $SRC
-$CC $CFLAGS -c -I giflib-code dgif_target.c -o dgif_target.o
+$CC $CFLAGS -Wall -c -I giflib-code dgif_target.c -o dgif_target.o
 $CXX $CXXFLAGS -std=c++11 -I giflib-code dgif_target.o \
         -o $OUT/dgif_target -lFuzzingEngine giflib-code/libgif.a
 
