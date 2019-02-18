@@ -65,12 +65,21 @@ do
 done
 
 # Build driverless libraries.
+# TODO(htuch): Remove the CC/CXX/CFLAGS/CXXFLAGS passing, this is only there for
+# cmake_external limitation in understanding --cxxopt etc., it should not be
+# necessary once
+# https://github.com/bazelbuild/rules_foreign_cc/issues/154#issuecomment-466504751
+# is resolved and we cleanup libc++ support in the main repo.
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --linkopt=-lc++fs \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
   --define force_libcpp=enabled \
+  --action_env CC \
+  --action_env CXX \
+  --action_env CFLAGS \
+  --action_env CXXFLAGS \
   --build_tag_filters=-no_asan \
   ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
@@ -93,19 +102,10 @@ then
   # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
   # filter out the build objects from bazel-out/. Also need to resolve symlinks,
   # since they don't make sense outside the build container.
-  rsync -avLk --include '*.h' --include '*.cc' --include '*.hpp' \
-    --include '*/' --exclude '*' \
-    "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
-  # As above, but for /root/.cache.
-  # TODO(htuch): disabled for now, this would mostly be useful for .build
-  # artifact, e.g.
-  # /builder/home/.cache/bazel/_bazel_root/4e9824db8e7d11820cfa25090ed4ed10/external/envoy_deps_cache_b22e04bff96538ea37e715942da6315c/yaml-cpp.dep.build/yaml-cpp-0f9a586ca1dc29c2ecb8dd715a315b93e3f40f79/src/parse.cpp
-  # but, we don't know how to recover them today, as they are gone by this
-  # phase.
-  #
-  # rsync -avLk --relative --include '*.h' --include '*.cc' --include '*.c' \
-  #   --include '*/' --exclude '*' \
-  #   /root/.cache "${OUT}"
+  declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
+    "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
+  rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
+  rsync -avLk "${RSYNC_FILTER_ARGS[@]}" /root "${OUT}"
 fi
 
 # Copy out test driverless binaries from bazel-bin/.
