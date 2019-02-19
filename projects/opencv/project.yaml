@@ -5,6 +5,7 @@ experimental: true
 
 auto_ccs:
   - "vrabaud@google.com"
+  - "alexander.a.alekhin@gmail.com"
 
 sanitizers:
   - address
