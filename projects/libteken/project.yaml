@@ -1,5 +1,5 @@
 homepage: "http://svn.freebsd.org/base/head/sys/teken/"
-primary_contact: "ed@freebsd.org"
+primary_contact: "ed@nuxi.nl"
 sanitizers:
   - address
   - memory
