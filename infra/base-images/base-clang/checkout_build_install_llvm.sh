@@ -66,9 +66,22 @@ cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project
 # Build & install
 mkdir -p $WORK/llvm
 cd $WORK/llvm
+TARGET_TO_BUILD=
+case $(uname -m) in
+    x86_64)
+        TARGET_TO_BUILD=X86
+        ;;
+    aarch64)
+        TARGET_TO_BUILD=AArch64
+        ;;
+    *)
+        echo "Error: unsupported target $(uname -m)"
+        exit 1
+        ;;
+esac
 cmake -G "Ninja" \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
-      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
+      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       $SRC/llvm
 ninja
 ninja install
@@ -86,7 +99,7 @@ cmake -G "Ninja" \
       -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
       -DLLVM_USE_SANITIZER=Memory -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
-      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
+      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt" \
       $SRC/llvm
 ninja cxx
