@@ -4,6 +4,8 @@ primary_contact: "kusano@google.com"
 experimental: true
 
 auto_ccs:
+  - "alexander.a.alekhin@gmail.com"
+  - "garybradski@gmail.com"
   - "vrabaud@google.com"
 
 sanitizers:

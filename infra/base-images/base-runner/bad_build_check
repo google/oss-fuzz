@@ -200,10 +200,22 @@ function check_ubsan_build {
 function check_mixed_sanitizers {
   local FUZZER=$1
   local result=0
-
-  local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__asan" -c)
-  local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__msan" -c)
-  local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "callq\s+[0-9a-f]+\s+<__ubsan" -c)
+  local CALL_INSN=
+  case $(uname -m) in
+      x86_64)
+          CALL_INSN="callq\s+[0-9a-f]+\s+<"
+          ;;
+      aarch64)
+          CALL_INSN="bl\s+[0-9a-f]+\s+<"
+          ;;
+      *)
+          echo "Error: unsupported machine hardware $(uname -m)"
+          exit 1
+          ;;
+  esac
+  local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__asan" -c)
+  local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
+  local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__ubsan" -c)
 
   if [[ "$SANITIZER" = address ]]; then
     check_asan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS

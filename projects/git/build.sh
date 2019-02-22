@@ -19,7 +19,7 @@
 make -j$(nproc) CC=$CC CXX=$CXX CFLAGS="$CFLAGS" FUZZ_CXXFLAGS="$CXXFLAGS" \
   LIB_FUZZING_ENGINE=$LIB_FUZZING_ENGINE fuzz-all
 
-FUZZERS="fuzz-pack-headers fuzz-pack-idx"
+FUZZERS="fuzz-pack-headers fuzz-pack-idx fuzz-commit-graph"
 
 # copy fuzzers
 for fuzzer in $FUZZERS ; do
@@ -32,6 +32,10 @@ for packfile in .git/objects/pack/*.pack ; do
   dd ibs=1 skip=12 if=$packfile of=$packfile.trimmed
 done
 zip -j $OUT/fuzz-pack-headers_seed_corpus.zip .git/objects/pack/*.pack.trimmed
+
+# build commit-graph corpus
+./git commit-graph write
+zip -j $OUT/fuzz-commit-graph_seed_corpus .git/objects/info/commit-graph
 
 # Mute stderr
 for fuzzer in $FUZZERS ; do
