@@ -1,0 +1,6 @@
+homepage: "https://github.com/cisco/libsrtp"
+primary_contact: "richbarn@cisco.com"
+auto_ccs:
+    - "guidovranken@gmail.com"
+fuzzing_engines:
+    - libfuzzer
