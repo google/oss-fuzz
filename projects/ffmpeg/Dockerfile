@@ -26,7 +26,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool build-es
 
 RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
-RUN wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.1.0.tar.bz2
+RUN wget https://www.alsa-project.org/files/pub/lib/alsa-lib-1.1.0.tar.bz2
 RUN git clone --depth 1 git://anongit.freedesktop.org/mesa/drm
 RUN git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git
 ADD https://sourceforge.net/projects/lame/files/latest/download lame.tar.gz
