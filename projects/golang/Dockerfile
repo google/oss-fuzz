@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,4 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
 
 RUN apt-get update && apt-get install -y build-essential wget
+RUN wget https://dl.google.com/go/go1.11.1.linux-amd64.tar.gz
+RUN mkdir -p go/packages/src/github.com/guidovranken && cd go/packages/src/github.com/guidovranken && git clone https://github.com/guidovranken/libfuzzer-go
+RUN mkdir -p go/packages/src/github.com/dvyukov && cd go/packages/src/github.com/dvyukov && git clone https://github.com/dvyukov/go-fuzz-corpus
 COPY build.sh $SRC/
