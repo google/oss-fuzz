@@ -106,7 +106,7 @@ then
     "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
   rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
   rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
-  ls -laR "${OUT}${HOME}/.cache"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
 fi
 
 # Copy out test driverless binaries from bazel-bin/.
