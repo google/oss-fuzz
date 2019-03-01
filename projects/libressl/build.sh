@@ -29,7 +29,7 @@ cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
       $CMAKE_DEFINES $SRC/libressl/
 make -j$(nproc)
 
-LIBRESSL_FUZZERS=$SRC/libressl.fuzzers/fuzz
+LIBRESSL_FUZZERS=$SRC/libressl.fuzzers
 fuzzerFiles=$(find $LIBRESSL_FUZZERS -name "*.c" | egrep -v 'driver.c|test-corpus.c')
 
 find . -name "*.a"
