@@ -105,7 +105,11 @@ If you rename your fuzz targets, the existing bugs for those targets will get cl
 OSS-Fuzz *uses* [AFL](http://lcamtuf.coredump.cx/afl/) as one of its [fuzzing engines](glossary.md#fuzzing-engine) but this is an implementation detail. Just follow the [ideal integration guide](ideal_integration.md) and OSS-Fuzz will use all its fuzzing engines on your code.
 
 ## Does OSS-Fuzz support Honggfuzz?
-Analogically to [AFL](#does-oss-fuzz-support-afl).
+OSS-Fuzz (the service) does not use honggfuzz to find bugs.
+That is because [ClusterFuzz](https://github.com/google/clusterfuzz) (the infrastructure OSS-Fuzz runs on) does not support honggfuzz. 
+However, OSS-Fuzz supports **building** fuzz targets for use with honggfuzz, similar to the way it
+supports [AFL](#does-oss-fuzz-support-afl). 
+Currently OSS-Fuzz builders do builds for libFuzzer, AFL, and honggfuzz.
 
 ## What are the specs on your machines?
 OSS-Fuzz builders have 32CPU/28.8GB RAM.
