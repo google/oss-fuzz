@@ -19,7 +19,9 @@ cd $SRC/tpm2-tss/
 
 export LD_LIBRARY_PATH=/usr/local/bin
 
-GEN_FUZZ=1 ./bootstrap
+export GEN_FUZZ=1
+
+./bootstrap
 ./configure \
   CC=clang \
   CXX=clang++ \
