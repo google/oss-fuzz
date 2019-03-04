@@ -33,7 +33,7 @@ ADD https://sourceforge.net/projects/lame/files/latest/download lame.tar.gz
 RUN git clone --depth 1 git://anongit.freedesktop.org/xorg/lib/libXext
 RUN git clone --depth 1 git://anongit.freedesktop.org/git/xorg/lib/libXfixes
 RUN git clone --depth 1 https://github.com/01org/libva
-RUN git clone --depth 1 git://people.freedesktop.org/~aplattner/libvdpau
+RUN git clone --depth 1 -b libvdpau-1.2 git://people.freedesktop.org/~aplattner/libvdpau
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libvpx
 RUN git clone --depth 1 git://git.xiph.org/ogg.git
 RUN git clone --depth 1 git://git.xiph.org/opus.git
