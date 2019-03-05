@@ -25,10 +25,16 @@ popd
 
 ./autogen.sh
 export CFLAGS="$CFLAGS -DDISABLE_NOTIFICATIONS -DDISABLE_WARNINGS"
+# Build fixed-point fuzzer
+PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-static --disable-shared --enable-fixed
+make -j$(nproc)
+make install
+$CXX $CXXFLAGS contrib/oss-fuzz/speexdec_fuzzer.cc -o $OUT/speex_decode_fuzzer_fixed -L"$WORK/lib" -I"$WORK/include" -lFuzzingEngine -lspeex -logg
+# Build floating-point fuzzer
 PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-static --disable-shared
 make -j$(nproc)
 make install
-$CXX $CXXFLAGS contrib/oss-fuzz/speexdec_fuzzer.cc -o $OUT/speex_decode_fuzzer -L"$WORK/lib" -I"$WORK/include" -lFuzzingEngine -lspeex -logg
+$CXX $CXXFLAGS contrib/oss-fuzz/speexdec_fuzzer.cc -o $OUT/speex_decode_fuzzer_float -L"$WORK/lib" -I"$WORK/include" -lFuzzingEngine -lspeex -logg
 
 # build samples and prepare corpus
 cd src/
