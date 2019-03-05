@@ -25,6 +25,13 @@ cd $SRC/boost
      system regex filesystem unit_test_framework program_options \
      install -j $(($(nproc)/2))
 
+
+# Compile proto C++ bindings
+cd $SRC
+LPM/external.protobuf/bin/protoc \
+    --proto_path=$SRC/solidity/test/tools/ossfuzz yulProto.proto \
+    --cpp_out=$SRC/solidity/test/tools/ossfuzz
+
 # Build solidity
 cd $SRC/solidity
 BASE_CXXFLAGS="$CXXFLAGS"
@@ -51,7 +58,7 @@ cmake -DUSE_Z3=OFF -DUSE_CVC4=OFF -DOSSFUZZ=ON \
   -DBoost_UNIT_TEST_FRAMEWORK_LIBRARY=/usr/local/lib/libboost_unit_test_framework.a \
   -DBoost_UNIT_TEST_FRAMEWORK_LIBRARIES=/usr/local/lib/libboost_unit_test_framework.a \
   $SRC/solidity
-make ossfuzz -j $(nproc)
+make ossfuzz ossfuzz_proto -j $(nproc)
 
 # Copy fuzzer binary, seed corpus, fuzzer options, and dictionary
 cp test/tools/ossfuzz/*_ossfuzz $OUT/
@@ -60,5 +67,10 @@ find $SRC/solidity $SRC/sol_corpus -iname "*.sol" -exec zip -ujq \
   $OUT/solc_opt_ossfuzz_seed_corpus.zip "{}" \;
 cp $OUT/solc_opt_ossfuzz_seed_corpus.zip \
   $OUT/solc_noopt_ossfuzz_seed_corpus.zip
+for dir in $SRC/solidity-fuzzing-corpus/*;
+do
+	name=$(basename $dir)
+	zip -ujq $OUT/$name.zip $dir/* &>/dev/null
+done
 cp $SRC/solidity/test/tools/ossfuzz/config/*.options $OUT/
 cp $SRC/solidity/test/tools/ossfuzz/config/solidity.dict $OUT/
