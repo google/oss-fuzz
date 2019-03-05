@@ -4,4 +4,3 @@ auto_ccs:
  - "smalyshev@gmail.com"
 sanitizers:
  - address
- - undefined
