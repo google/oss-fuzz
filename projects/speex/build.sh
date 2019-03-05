@@ -39,5 +39,6 @@ $CXX $CXXFLAGS contrib/oss-fuzz/speexdec_fuzzer.cc -o $OUT/speex_decode_fuzzer_f
 # build samples and prepare corpus
 cd src/
 ./generate-samples.sh
-zip -j0r ${OUT}/speex_decode_fuzzer_seed_corpus.zip ./samples/
+zip -j0r ${OUT}/speex_decode_fuzzer_fixed_seed_corpus.zip ./samples/
+ln -s ${OUT}/speex_decode_fuzzer_fixed_seed_corpus.zip ${OUT}/speex_decode_fuzzer_float_seed_corpus.zip
 cd ..
