@@ -31,10 +31,8 @@ make -j$(nproc)
 cd $SRC/tesseract-ocr-fuzzers
 
 mv $SRC/tessdata $OUT
-export TESSDATA_PREFIX=$(realpath $OUT/tessdata)
 
 $CXX $CXXFLAGS \
-    -DTESSDATA_PREFIX="\"$TESSDATA_PREFIX\"" \
     -I $SRC/tesseract/src/api \
     -I $SRC/tesseract/src/ccstruct \
     -I $SRC/tesseract/src/ccmain \
