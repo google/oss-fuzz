@@ -47,5 +47,5 @@ $CXX $CXXFLAGS \
      /usr/lib/x86_64-linux-gnu/libjpeg.a \
      /usr/lib/x86_64-linux-gnu/libjbig.a \
      /usr/lib/x86_64-linux-gnu/liblzma.a \
-     /usr/lib/x86_64-linux-gnu/libz.a \
+     -lz \
      -lFuzzingEngine
