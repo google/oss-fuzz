@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
 RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpng-dev libjpeg8-dev libtiff5-dev zlib1g-dev wget
 RUN wget https://github.com/DanBloomberg/leptonica/releases/download/1.77.0/leptonica-1.77.0.tar.gz
-RUN git clone --recursive https://github.com/tesseract-ocr/tesseract
-RUN git clone --recursive https://github.com/tesseract-ocr/tessdata
+RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract
+RUN git clone --depth 1 https://github.com/tesseract-ocr/tessdata
 RUN git clone https://github.com/guidovranken/tesseract-ocr-fuzzers
 COPY build.sh $SRC/
