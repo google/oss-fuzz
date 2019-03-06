@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,37 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    build-essential cmake libbz2-dev ninja-build zlib1g-dev
-RUN git clone --recursive https://github.com/ethereum/solidity.git solidity
-RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
-RUN git clone --recursive -b boost-1.69.0 https://github.com/boostorg/boost.git boost
-RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
+
+MAINTAINER mail@joachim-bauch.de
+
+RUN apt-get update && apt-get install -y \
+    autoconf \
+    automake \
+    build-essential \
+    cmake \
+    libtool \
+    make \
+    mercurial \
+    pkg-config \
+    yasm
+
+RUN git clone \
+    --depth 1 \
+    --branch master \
+    https://github.com/strukturag/libde265.git \
+    libde265
+
+RUN hg clone \
+    --branch stable \
+    http://hg.videolan.org/x265 \
+    x265
+
+RUN git clone \
+    --depth 1 \
+    --branch master \
+    https://github.com/strukturag/libheif.git \
+    libheif
+
+WORKDIR libheif
+
 COPY build.sh $SRC/
