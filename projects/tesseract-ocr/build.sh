@@ -30,7 +30,7 @@ make -j$(nproc)
 
 cd $SRC/tesseract-ocr-fuzzers
 
-mv $SRC/tessdata $OUT
+cp -R $SRC/tessdata $OUT
 
 $CXX $CXXFLAGS \
     -I $SRC/tesseract/src/api \
