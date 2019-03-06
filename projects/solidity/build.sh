@@ -63,10 +63,6 @@ make ossfuzz ossfuzz_proto -j $(nproc)
 # Copy fuzzer binary, seed corpus, fuzzer options, and dictionary
 cp test/tools/ossfuzz/*_ossfuzz $OUT/
 rm -f $OUT/*.zip
-find $SRC/solidity $SRC/sol_corpus -iname "*.sol" -exec zip -ujq \
-  $OUT/solc_opt_ossfuzz_seed_corpus.zip "{}" \;
-cp $OUT/solc_opt_ossfuzz_seed_corpus.zip \
-  $OUT/solc_noopt_ossfuzz_seed_corpus.zip
 for dir in $SRC/solidity-fuzzing-corpus/*;
 do
 	name=$(basename $dir)
