@@ -25,7 +25,7 @@ ldconfig
 
 cd $SRC/tesseract
 ./autogen.sh
-CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG" ./configure --disable-graphics
+CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG" ./configure --disable-graphics --disable-shared
 make -j$(nproc)
 
 cd $SRC/tesseract-ocr-fuzzers
