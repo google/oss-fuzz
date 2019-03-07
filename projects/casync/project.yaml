@@ -7,3 +7,4 @@ sanitizers:
 auto_ccs:
   - zbyszek@in.waw.pl
   - poettering@gmail.com
+  - fsumsal@redhat.com
