@@ -37,5 +37,5 @@ sed -i 's/@DX_RULES@/# @DX_RULES@/g' Makefile
 make -j $(nproc) fuzz-targets
 
 for filename in $(ls test/fuzz/*.fuzz); do
-  cp -v $filename $OUT/$(echo $(basename filename) | sed -e 's/\./_/g')
+  cp -v $filename $OUT/$(echo $(basename $filename .fuzz))
 done
