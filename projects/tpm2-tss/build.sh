@@ -36,4 +36,6 @@ export GEN_FUZZ=1
 sed -i 's/@DX_RULES@/# @DX_RULES@/g' Makefile
 make -j $(nproc) fuzz-targets
 
-cp -v test/fuzz/*.fuzz $OUT/
+for filename in $(ls test/fuzz/*.fuzz); do
+  cp -v $filename $OUT/$(echo $(basename filename) | sed -e 's/\./_/g')
+done
