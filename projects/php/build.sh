@@ -23,6 +23,7 @@
 make
 cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
 cp sapi/fuzzer/php-fuzz-json $OUT/
+cp sapi/fuzzer/php-fuzz-exif $OUT/
 for fuzzerName in `ls sapi/fuzzer/corpus`; do
 	zip -j $OUT/php-fuzz-${fuzzerName}_seed_corpus.zip sapi/fuzzer/corpus/${fuzzerName}/*
 done
