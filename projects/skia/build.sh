@@ -99,7 +99,8 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    jpeg_encoder webp_encoder skottie_json \
                                    textblob_deserialize skjson \
                                    api_null_canvas api_image_filter api_pathop \
-                                   api_polyutils android_codec image_decode_incremental
+                                   api_polyutils android_codec image_decode_incremental \
+                                   sksl2glsl sksl2spirv sksl2metal
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -206,3 +207,15 @@ cp ./image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
 cp out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
 cp ./image_decode_incremental.options $OUT/image_decode_incremental.options
 cp ./image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
+
+cp out/Fuzz/sksl2glsl $OUT/sksl2glsl
+cp ./sksl2glsl.options $OUT/sksl2glsl.options
+cp ./sksl_seed_corpus.zip $OUT/sksl2glsl_seed_corpus.zip
+
+cp out/Fuzz/sksl2spirv $OUT/sksl2spirv
+cp ./sksl2spirv.options $OUT/sksl2spirv.options
+cp ./sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
+
+cp out/Fuzz/sksl2metal $OUT/sksl2metal
+cp ./sksl2metal.options $OUT/sksl2metal.options
+cp ./sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
