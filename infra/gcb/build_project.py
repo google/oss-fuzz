@@ -20,7 +20,7 @@ from oauth2client.client import GoogleCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
-BUILD_TIMEOUT = 10 * 60 * 60
+BUILD_TIMEOUT = 12 * 60 * 60
 
 FUZZING_BUILD_TAG = 'fuzzing'
 
