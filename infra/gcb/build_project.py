@@ -58,7 +58,7 @@ ENGINE_INFO = {
             supported_sanitizers=['address']),
 }
 
-DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
+DEFAULT_ENGINES = ['libfuzzer', 'afl']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 TARGETS_LIST_BASENAME = 'targets.list'
