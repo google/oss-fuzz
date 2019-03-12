@@ -255,7 +255,7 @@ def get_build_steps(project_dir):
           ],
       }
   )
-  return build_steps 
+  return build_steps
 
 
 def get_targets_list(project_name):
