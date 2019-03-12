@@ -326,7 +326,7 @@ def get_build_steps(project_dir):
           },
       ])
 
-  return build_steps, image
+  return build_steps
 
 
 def get_logs_url(build_id):
@@ -345,7 +345,7 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def run_build(build_steps, image, tag):
+def run_build(build_steps, tag):
   options = {}
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -355,7 +355,6 @@ def run_build(build_steps, image, tag):
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
-      'images': [ image ],
       'tags': [ tag ],
   }
 
@@ -374,8 +373,8 @@ def main():
     usage()
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
-  steps, image = get_build_steps(project_dir)
-  run_build(steps, image, FUZZING_BUILD_TAG)
+  steps = get_build_steps(project_dir)
+  run_build(steps, FUZZING_BUILD_TAG)
 
 
 if __name__ == '__main__':
