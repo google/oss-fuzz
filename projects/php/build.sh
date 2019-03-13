@@ -15,15 +15,26 @@
 #
 ################################################################################
 
+mkdir -p $OUT/lib/
+cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
+cp /usr/lib/x86_64-linux-gnu/libonig.so.2 $OUT/lib/
 # build project
 ./buildconf
 ./configure --enable-fuzzer --enable-option-checking=fatal --disable-libxml --disable-dom \
 	--disable-simplexml --disable-xml --disable-xmlreader --disable-xmlwriter --without-pear \
-	--enable-exif --disable-phpdbg --disable-cgi
+	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring
 make
-cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
-cp sapi/fuzzer/php-fuzz-json $OUT/
-cp sapi/fuzzer/php-fuzz-exif $OUT/
+
+FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring"
+for fuzzerName in $FUZZERS; do
+	cp sapi/fuzzer/$fuzzerName $OUT/
+	# for loading missing libs like libonig
+	chrpath -r '$ORIGIN/lib' $OUT/$fuzzerName
+	# copy runtime options
+	cp $SRC/runtime.options $OUT/${fuzzerName}.options
+done
+# copy corpora from source
 for fuzzerName in `ls sapi/fuzzer/corpus`; do
 	zip -j $OUT/php-fuzz-${fuzzerName}_seed_corpus.zip sapi/fuzzer/corpus/${fuzzerName}/*
 done
+

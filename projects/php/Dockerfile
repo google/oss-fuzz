@@ -17,10 +17,11 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER stas@php.net
 RUN apt-get update && apt-get install -y make autoconf automake libtool bison re2c make ca-certificates curl \
-	xz-utils dpkg-dev file libc-dev pkg-config libcurl4-openssl-dev libedit-dev libsqlite3-dev libssl-dev zlib1g-dev
+	xz-utils dpkg-dev file libc-dev pkg-config libcurl4-openssl-dev libedit-dev libsqlite3-dev libssl-dev \
+	zlib1g-dev libonig-dev chrpath
 RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src
 RUN git clone --depth 1 https://github.com/smalyshev/php-fuzzing-sapi.git php-src/sapi/fuzzer
 WORKDIR php-src
-COPY build.sh $SRC/
+COPY build.sh *.options $SRC/
 # This ideally will be gone eventually, right now used for more flexibility in tweaking Makefile options
 # COPY Makefile.frag $SRC/php-src/sapi/fuzzer
