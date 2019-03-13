@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool bison re
 	xz-utils dpkg-dev file libc-dev pkg-config libcurl4-openssl-dev libedit-dev libsqlite3-dev libssl-dev \
 	zlib1g-dev libonig-dev chrpath
 RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src
-RUN git clone --depth 1 https://github.com/smalyshev/php-fuzzing-sapi.git php-src/sapi/fuzzer
+RUN git clone --depth 1 https://github.com/php/php-fuzzing-sapi.git php-src/sapi/fuzzer
 WORKDIR php-src
 COPY build.sh *.options $SRC/
 # This ideally will be gone eventually, right now used for more flexibility in tweaking Makefile options
