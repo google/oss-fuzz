@@ -16,7 +16,7 @@
 ################################################################################
 
 #add next branch
-for branch in master next
+for branch in v4 next
 do
     cd capstone$branch
     # build project
