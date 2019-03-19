@@ -1,0 +1,10 @@
+homepage: "https://www.libressl.org/"
+primary_contact: "libressl-fuzzing@openbsd.org"
+auto_ccs:
+ - "bcook@openbsd.org"
+ - "miwaxe@gmail.com"
+sanitizers:
+ - address
+ - memory:
+    experimental: True
+ - undefined
