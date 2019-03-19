@@ -5,6 +5,4 @@ auto_ccs:
  - "miwaxe@gmail.com"
 sanitizers:
  - address
- - memory:
-    experimental: True
  - undefined
