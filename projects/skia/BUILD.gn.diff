@@ -411,3 +411,15 @@ test_app("sksl2metal") {
     ":skia",
   ]
 }
+
+test_app("sksl2pipeline") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSKSL2Pipeline.cpp",
+  ]
+  deps = [
+    ":gpu_tool_utils",
+    ":skia",
+  ]
+}
