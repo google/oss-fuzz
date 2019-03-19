@@ -1,7 +1,7 @@
 homepage: "https://www.libressl.org/"
 primary_contact: "libressl-fuzzing@openbsd.org"
 auto_ccs:
- - "bcook@openbsd.org"
+ - "busterb@gmail.com"
  - "miwaxe@gmail.com"
 sanitizers:
  - address
