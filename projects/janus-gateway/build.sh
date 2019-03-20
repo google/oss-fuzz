@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -eu
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,27 +15,4 @@
 #
 ################################################################################
 
-cd $SRC/tpm2-tss/
-
-export LD_LIBRARY_PATH=/usr/local/bin
-
-export GEN_FUZZ=1
-
-./bootstrap
-./configure \
-  CC=clang \
-  CXX=clang++ \
-  --enable-debug \
-  --with-fuzzing=ossfuzz \
-  --enable-tcti-fuzzing \
-  --enable-tcti-device=no \
-  --enable-tcti-mssim=no \
-  --disable-doxygen-doc \
-  --disable-shared
-
-sed -i 's/@DX_RULES@/# @DX_RULES@/g' Makefile
-make -j $(nproc) fuzz-targets
-
-for filename in $(ls test/fuzz/*.fuzz); do
-  cp -v $filename $OUT/$(echo $(basename $filename .fuzz))
-done
+FUZZ_ENV=oss-fuzz $SRC/janus-gateway/fuzzers/build.sh

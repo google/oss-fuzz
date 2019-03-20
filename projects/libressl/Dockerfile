@@ -1,5 +1,4 @@
-#!/bin/sh
-# Copyright 2019 Google Inc.
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,27 +14,11 @@
 #
 ################################################################################
 
-cd $SRC/tpm2-tss/
-
-export LD_LIBRARY_PATH=/usr/local/bin
-
-export GEN_FUZZ=1
-
-./bootstrap
-./configure \
-  CC=clang \
-  CXX=clang++ \
-  --enable-debug \
-  --with-fuzzing=ossfuzz \
-  --enable-tcti-fuzzing \
-  --enable-tcti-device=no \
-  --enable-tcti-mssim=no \
-  --disable-doxygen-doc \
-  --disable-shared
-
-sed -i 's/@DX_RULES@/# @DX_RULES@/g' Makefile
-make -j $(nproc) fuzz-targets
-
-for filename in $(ls test/fuzz/*.fuzz); do
-  cp -v $filename $OUT/$(echo $(basename $filename .fuzz))
-done
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER ab@pompel.me
+RUN apt-get update && apt-get install -y make cmake
+RUN git clone --depth 1 https://github.com/libressl-portable/portable.git libressl
+RUN git clone --depth 1 https://github.com/libressl-portable/fuzz.git libressl.fuzzers
+WORKDIR libressl
+RUN ./update.sh
+COPY build.sh *.options $SRC/

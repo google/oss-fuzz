@@ -1,5 +1,5 @@
-#!/bin/sh
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,27 +15,11 @@
 #
 ################################################################################
 
-cd $SRC/tpm2-tss/
+pushd $SRC/picotls
+cmake -DBUILD_FUZZER=ON -DOSS_FUZZ=ON .
+make
+cp ./fuzz-* $OUT/
 
-export LD_LIBRARY_PATH=/usr/local/bin
-
-export GEN_FUZZ=1
-
-./bootstrap
-./configure \
-  CC=clang \
-  CXX=clang++ \
-  --enable-debug \
-  --with-fuzzing=ossfuzz \
-  --enable-tcti-fuzzing \
-  --enable-tcti-device=no \
-  --enable-tcti-mssim=no \
-  --disable-doxygen-doc \
-  --disable-shared
-
-sed -i 's/@DX_RULES@/# @DX_RULES@/g' Makefile
-make -j $(nproc) fuzz-targets
-
-for filename in $(ls test/fuzz/*.fuzz); do
-  cp -v $filename $OUT/$(echo $(basename $filename .fuzz))
-done
+zip -jr $OUT/fuzz-client-hello_seed_corpus.zip $SRC/picotls/fuzz/fuzz-client-hello-corpus
+zip -jr $OUT/fuzz-server-hello_seed_corpus.zip $SRC/picotls/fuzz/fuzz-server-hello-corpus
+popd

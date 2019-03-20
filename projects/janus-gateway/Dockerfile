@@ -15,13 +15,29 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER stas@php.net
-RUN apt-get update && apt-get install -y make autoconf automake libtool bison re2c make ca-certificates curl \
-	xz-utils dpkg-dev file libc-dev pkg-config libcurl4-openssl-dev libedit-dev libsqlite3-dev libssl-dev \
-	zlib1g-dev libonig-dev chrpath
-RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src
-RUN git clone --depth 1 https://github.com/php/php-fuzzing-sapi.git php-src/sapi/fuzzer
-WORKDIR php-src
-COPY build.sh *.options $SRC/
-# This ideally will be gone eventually, right now used for more flexibility in tweaking Makefile options
-# COPY Makefile.frag $SRC/php-src/sapi/fuzzer
+MAINTAINER toppi.ale@gmail.com
+RUN apt-get update && apt-get install -y \
+	autoconf autoconf-archive \
+	automake \
+	gengetopt \
+	gtk-doc-tools \
+	libconfig-dev \
+	libglib2.0-dev \
+	libgnutls-dev \
+	libini-config-dev \
+	libjansson-dev \
+	libnice-dev \
+	libssl-dev \
+	libtool \
+	openssl \
+	pkg-config
+
+# install libsrtp dep from source
+RUN git clone --single-branch --branch 2_2_x_throttle https://github.com/cisco/libsrtp.git libsrtp
+RUN cd libsrtp && ./configure --enable-openssl && make -j$(nproc) shared_library && make install
+
+# fetch Janus code
+RUN git clone --single-branch --branch master https://github.com/meetecho/janus-gateway.git janus-gateway
+
+WORKDIR $SRC
+COPY build.sh $SRC/

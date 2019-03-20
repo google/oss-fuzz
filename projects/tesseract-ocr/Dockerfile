@@ -1,4 +1,3 @@
-#!/bin/sh
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,27 +14,11 @@
 #
 ################################################################################
 
-cd $SRC/tpm2-tss/
-
-export LD_LIBRARY_PATH=/usr/local/bin
-
-export GEN_FUZZ=1
-
-./bootstrap
-./configure \
-  CC=clang \
-  CXX=clang++ \
-  --enable-debug \
-  --with-fuzzing=ossfuzz \
-  --enable-tcti-fuzzing \
-  --enable-tcti-device=no \
-  --enable-tcti-mssim=no \
-  --disable-doxygen-doc \
-  --disable-shared
-
-sed -i 's/@DX_RULES@/# @DX_RULES@/g' Makefile
-make -j $(nproc) fuzz-targets
-
-for filename in $(ls test/fuzz/*.fuzz); do
-  cp -v $filename $OUT/$(echo $(basename $filename .fuzz))
-done
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER guidovranken@gmail.com
+RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpng-dev libjpeg8-dev libtiff5-dev zlib1g-dev
+RUN git clone --depth 1 https://github.com/danbloomberg/leptonica
+RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract
+RUN git clone --depth 1 https://github.com/tesseract-ocr/tessdata
+RUN git clone https://github.com/guidovranken/tesseract-ocr-fuzzers
+COPY build.sh $SRC/

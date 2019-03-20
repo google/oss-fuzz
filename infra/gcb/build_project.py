@@ -20,7 +20,7 @@ from oauth2client.client import GoogleCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
-BUILD_TIMEOUT = 10 * 60 * 60
+BUILD_TIMEOUT = 12 * 60 * 60
 
 FUZZING_BUILD_TAG = 'fuzzing'
 
@@ -58,7 +58,7 @@ ENGINE_INFO = {
             supported_sanitizers=['address']),
 }
 
-DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
+DEFAULT_ENGINES = ['libfuzzer', 'afl']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 TARGETS_LIST_BASENAME = 'targets.list'
@@ -326,7 +326,7 @@ def get_build_steps(project_dir):
           },
       ])
 
-  return build_steps, image
+  return build_steps
 
 
 def get_logs_url(build_id):
@@ -345,7 +345,7 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def run_build(build_steps, image, tag):
+def run_build(build_steps, tag):
   options = {}
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -355,7 +355,6 @@ def run_build(build_steps, image, tag):
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
-      'images': [ image ],
       'tags': [ tag ],
   }
 
@@ -374,8 +373,8 @@ def main():
     usage()
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
-  steps, image = get_build_steps(project_dir)
-  run_build(steps, image, FUZZING_BUILD_TAG)
+  steps = get_build_steps(project_dir)
+  run_build(steps, FUZZING_BUILD_TAG)
 
 
 if __name__ == '__main__':

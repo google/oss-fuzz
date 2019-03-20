@@ -182,6 +182,8 @@ provided to be able to write retargetable scripts.
 
 ### Requirements
 
+Only binaries without any extension will be accepted as targets. Extensions are reserved for other artifacts like .dict, etc.
+
 You *must* use the special compiler flags needed to build your project and fuzz targets.
 These flags are provided in the following environment variables:
 

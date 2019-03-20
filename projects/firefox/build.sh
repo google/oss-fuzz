@@ -20,8 +20,9 @@ FUZZ_TARGETS=(
   SdpParser
   StunParser
   ContentParentIPC
-  ContentSecurityPolicyParser
-  # Qcms # needn't be enabled; has its own project with more sanitizers/engines
+# Targets which are available but disabled.
+  # Qcms
+  # ContentSecurityPolicyParser
 )
 
 # Firefox object (build) directory and configuration file.
@@ -82,6 +83,3 @@ cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
 
 # ContentParentIPC
 cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
-
-# ContentSecurityPolicyParser
-cp dom/security/fuzztest/csp_fuzzer.dict $OUT/ContentSecurityPolicyParser.dict
