@@ -69,4 +69,4 @@ do
 	zip -ujq $OUT/$name.zip $dir/* &>/dev/null
 done
 cp $SRC/solidity/test/tools/ossfuzz/config/*.options $OUT/
-cp $SRC/solidity/test/tools/ossfuzz/config/solidity.dict $OUT/
+cp $SRC/solidity/test/tools/ossfuzz/config/*.dict $OUT/
