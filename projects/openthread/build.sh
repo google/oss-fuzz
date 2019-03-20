@@ -27,6 +27,7 @@
     --enable-channel-manager            \
     --enable-channel-monitor            \
     --enable-child-supervision          \
+    --enable-cli                        \
     --enable-commissioner               \
     --enable-dhcp6-client               \
     --enable-dhcp6-server               \
@@ -40,7 +41,8 @@
     --enable-legacy                     \
     --enable-mac-filter                 \
     --enable-mtd-network-diagnostic     \
-    --enable-platform-udp               \
+    --enable-ncp                        \
+    --with-ncp-bus=uart                 \
     --enable-raw-link-api               \
     --enable-service                    \
     --enable-sntp-client                \

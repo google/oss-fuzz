@@ -18,13 +18,8 @@
 # Generate the list of fuzzers we have (only the base/op name).
 FUZZING_BUILD_FILE="tensorflow/core/kernels/fuzzing/BUILD"
 declare -r FUZZERS=$(
-  grep '^tf_ops_fuzz_target' ${FUZZING_BUILD_FILE} | cut -d'"' -f2
+  grep '^tf_ops_fuzz_target' ${FUZZING_BUILD_FILE} | cut -d'"' -f2 | head -n5
 )
-
-# Since Docker container has bazel-0.19 we need the following trick to allow
-# --config=monolithic and other needed flags.
-echo "  write_to_bazelrc('import %workspace%/tools/bazel.rc')" >> configure.py
-yes "" | ./configure
 
 # Add a few more flags to make sure fuzzers build and run successfully.
 # Note the c++11/libc++ flags to build using the same toolchain as the one used
@@ -115,7 +110,17 @@ if [ "$SANITIZER" = "coverage" ]
 then
   declare -r REMAP_PATH=${OUT}/proc/self/cwd
   mkdir -p ${REMAP_PATH}
-  rsync -ak ${SRC}/tensorflow ${REMAP_PATH}
+  rsync -ak ${SRC}/tensorflow/tensorflow ${REMAP_PATH}
+  rsync -ak ${SRC}/tensorflow/third_party ${REMAP_PATH}
+
+  # Also copy bazel generated files (via genrules)
+  declare -r BAZEL_PREFIX=bazel-out/k8-opt
+  declare -r REMAP_BAZEL_PATH=${REMAP_PATH}/${BAZEL_PREFIX}
+  mkdir -p ${REMAP_BAZEL_PATH}
+  rsync -ak ${SRC}/tensorflow/${BAZEL_PREFIX}/genfiles ${REMAP_BAZEL_PATH}
+
+  # Finally copy the external archives source files
+  rsync -ak ${SRC}/tensorflow/bazel-tensorflow/external ${REMAP_PATH}
 fi
 
 # Now that all is done, we just have to copy the existing corpora and

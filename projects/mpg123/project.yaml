@@ -11,3 +11,5 @@ sanitizers:
 labels:
   read_fuzzer:
     - sundew
+  decode_fuzzer:
+    - sundew

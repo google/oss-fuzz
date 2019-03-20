@@ -38,19 +38,6 @@ void run_tidy_parser(TidyBuffer* data_buffer,
     tidyRelease(tdoc);
 }
 
-void attach_string_to_buffer(const uint8_t* data,
-                             size_t size,
-                             TidyBuffer* buffer) {
-    // Use a NULL-terminated copy to make it more likely to expose
-    // buffer overflows.
-    char *data_string = strndup((const char*)data, size);
-    if (data_string == NULL) {
-        perror("Could not allocate string buffer.");
-        abort();
-    }
-    tidyBufAttach(buffer, (byte*)data_string, strlen(data_string) + 1);
-}
-
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     TidyBuffer data_buffer;
     TidyBuffer output_buffer;
@@ -59,11 +46,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     tidyBufInit(&output_buffer);
     tidyBufInit(&error_buffer);
 
-    attach_string_to_buffer(data, size, &data_buffer);
+    tidyBufAttach(&data_buffer, (byte*)data, size);
     run_tidy_parser(&data_buffer, &output_buffer, &error_buffer);
-    
+
     tidyBufFree(&error_buffer);
     tidyBufFree(&output_buffer);
-    tidyBufFree(&data_buffer);
+    tidyBufDetach(&data_buffer);
     return 0;
 }

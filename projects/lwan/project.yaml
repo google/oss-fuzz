@@ -1,0 +1,4 @@
+homepage: "https://github.com/lpereira/lwan"
+primary_contact: "leandro.pereira@gmail.com"
+sanitizers:
+  - address

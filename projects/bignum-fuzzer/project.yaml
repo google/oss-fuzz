@@ -5,7 +5,6 @@ auto_ccs:
     - "cdetrio@ethereum.org"
     - "openssl-security@openssl.org"
     - "kurt@roeckx.be"
-    - "security@golang.org"
     - "caswell.matt@googlemail.com"
     - "jz.maddock@gmail.com"
     - "jz.maddock@googlemail.com"
@@ -13,5 +12,4 @@ auto_ccs:
     - "davidben@google.com"
     - "svaldez@google.com"
     - "support-mbedtls@arm.com"
-fuzzing_engines:
-    - libfuzzer
+    - "libmpdec@gmail.com"

@@ -5,5 +5,7 @@ auto_ccs:
   - "alyssar@google.com"
   - "dio@tetrate.io"
   - "jbuckland@google.com"
+  - "jmarantz@google.com"
+  - "lizan@tetrate.io"
   - "envoy-security@googlegroups.com"
-coverage_extra_args: -ignore-filename-regex=.*\.cache.*
+coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*

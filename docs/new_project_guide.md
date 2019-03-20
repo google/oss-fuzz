@@ -129,7 +129,7 @@ In the above example, the git clone will check out the source to `$SRC/<checkout
 
 ## build.sh
 
-This file describes how to build [fuzz targets](glossary.md#fuzz-target) for your project.
+This file describes how to build binaries for [fuzz targets](glossary.md#fuzz-target) in your project.
 The script will be executed within the image built from `Dockerfile`.
 
 In general, this script will need to:
@@ -181,6 +181,8 @@ While files layout is fixed within a container, the environment variables are
 provided to be able to write retargetable scripts.
 
 ### Requirements
+
+Only binaries without any extension will be accepted as targets. Extensions are reserved for other artifacts like .dict, etc.
 
 You *must* use the special compiler flags needed to build your project and fuzz targets.
 These flags are provided in the following environment variables:

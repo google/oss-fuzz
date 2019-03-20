@@ -23,6 +23,6 @@ RUN apt-get update && \
         libio-pty-perl libmailtools-perl libpcre2-dev libpcre3-dev libsvn-perl \
         libtime-modules-perl libyaml-perl libz-dev python subversion tcl unzip \
         asciidoc docbook-xsl xmlto libssl-dev zip
-RUN git clone --depth 1 https://github.com/git/git git
+RUN git clone https://github.com/git/git git
 WORKDIR git
 COPY build.sh $SRC/

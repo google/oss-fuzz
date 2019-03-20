@@ -23,3 +23,6 @@ popd
 
 $CC $CXXFLAGS read_fuzzer.c -I$WORK/include $WORK/lib/libmpg123.a \
   -lFuzzingEngine -lc++ -o $OUT/read_fuzzer
+
+$CXX $CXXFLAGS decode_fuzzer.cc -I$WORK/include $WORK/lib/libmpg123.a \
+  -lFuzzingEngine -o $OUT/decode_fuzzer

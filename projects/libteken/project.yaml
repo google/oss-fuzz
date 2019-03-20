@@ -1,4 +1,5 @@
-homepage: "http://80386.nl/projects/libteken/"
+homepage: "http://svn.freebsd.org/base/head/sys/teken/"
+primary_contact: "ed@nuxi.nl"
 sanitizers:
   - address
   - memory

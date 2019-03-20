@@ -1,0 +1,11 @@
+homepage: "https://www.openh264.org"
+primary_contact: "huili2@cisco.com"
+auto_ccs:
+  - "guangwwa@cisco.com"
+  - "sijchen@cisco.com"
+  - "twsmith@mozilla.com"
+  - "yanqian@cisco.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

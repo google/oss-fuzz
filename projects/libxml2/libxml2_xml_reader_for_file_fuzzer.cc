@@ -31,10 +31,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   ByteStream stream(data, size);
   const int options = stream.GetNextInt();
   const std::string encoding = stream.GetNextString();
-  const std::string file_contents = stream.GetNextString();
-  FuzzerTemporaryFile file(
-      reinterpret_cast<const uint8_t*>(file_contents.c_str()),
-      file_contents.size());
+  size_t file_contents_size = 0;
+  const uint8_t* file_contents = stream.GetNextChunk(&file_contents_size);
+
+  // Intentionally pass raw data as the API does not require trailing \0.
+  FuzzerTemporaryFile file(file_contents, file_contents_size);
 
   xmlTextReaderPtr xmlReader =
       xmlReaderForFile(file.filename(), encoding.c_str(), options);

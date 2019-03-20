@@ -15,4 +15,7 @@
 #
 ################################################################################
 
+export CFLAGS="$CFLAGS -Wno-extra-semi-stmt"
+export CXXFLAGS="$CXXFLAGS -Wno-extra-semi-stmt"
+
 $SRC/perfetto/infra/oss-fuzz/build_fuzzers

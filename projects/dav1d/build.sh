@@ -23,8 +23,17 @@ rm -rf ${build}
 mkdir -p ${build}
 
 # build library
-meson -Dbuild_asm=false -Dbuild_tools=false -Dfuzzing_engine=oss-fuzz \
+BUILD_ASM="true"
+
+# MemorySanitizer may report false positives if used with asm code.
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+  BUILD_ASM="false"
+fi
+
+meson -Dbuild_asm=$BUILD_ASM -Dbuild_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
+      -Dlogging=false \
       ${build}
 ninja -j $(nproc) -C ${build}
 

@@ -255,7 +255,7 @@ def get_build_steps(project_dir):
           ],
       }
   )
-  return build_steps, image
+  return build_steps
 
 
 def get_targets_list(project_name):
@@ -280,8 +280,8 @@ def main():
     usage()
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
-  steps, image = get_build_steps(project_dir)
-  build_project.run_build(steps, image, COVERAGE_BUILD_TAG)
+  steps = get_build_steps(project_dir)
+  build_project.run_build(steps, COVERAGE_BUILD_TAG)
 
 
 if __name__ == "__main__":
