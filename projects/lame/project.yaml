@@ -1,0 +1,4 @@
+homepage: "https://sourceforge.net/projects/lame/"
+primary_contact: "guidovranken@gmail.com"
+sanitizers:
+ - address
