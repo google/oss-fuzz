@@ -345,7 +345,7 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def run_build(build_steps, tag):
+def run_build(build_steps, project_name, tag):
   options = {}
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -355,7 +355,10 @@ def run_build(build_steps, tag):
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
-      'tags': [ tag ],
+      'tags': [
+          project_name,
+          tag,
+      ],
   }
 
   credentials = GoogleCredentials.get_application_default()
@@ -374,7 +377,9 @@ def main():
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
   steps = get_build_steps(project_dir)
-  run_build(steps, FUZZING_BUILD_TAG)
+
+  project_name = os.path.basename(project_dir)
+  run_build(steps, project_name, FUZZING_BUILD_TAG)
 
 
 if __name__ == '__main__':
