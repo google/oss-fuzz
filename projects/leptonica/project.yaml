@@ -3,7 +3,7 @@ primary_contact: "taking@google.com"
 auto_ccs:
   - "kusano@google.com"
   - "dbloomberg@google.com"
-  - "sweil@google.com"
+  - "stjoweil@googlemail.com"
 sanitizers:
   - address
   - undefined
