@@ -23,7 +23,7 @@ if [[ $CFLAGS = *sanitize=memory* ]]
 then
   CFLAGS+=" -DOPENSSL_NO_ASM=1"
 fi
-./config
+./config --debug
 make -j$(nproc)
 
 # Build libgmp
