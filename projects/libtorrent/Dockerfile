@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER github@pauldreik.se
+MAINTAINER oss-fuzz-libtorrent@pauldreik.se
 RUN echo "CXX=$CXX"
 RUN echo "CXXFLAGS=$CXXFLAGS"
 RUN apt-get update && apt-get install -y make wget libssl-dev libgeoip-dev pkg-config
@@ -27,8 +27,8 @@ RUN cd boost_1_69_0 && ./bootstrap.sh --with-toolset=clang --prefix=/usr --with-
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.0/cmake-3.14.0-Linux-x86_64.sh
 RUN sh cmake-3.14.0-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
 
-RUN git clone --depth 1 https://github.com/pauldreik/fuzzlibtorrent.git
-RUN git -C fuzzlibtorrent submodule update --init --depth 100
+RUN git clone --depth 10 https://github.com/pauldreik/fuzzlibtorrent.git
+RUN git -C fuzzlibtorrent submodule update --init --depth 10
 WORKDIR fuzzlibtorrent
 COPY build.sh $SRC/
 
