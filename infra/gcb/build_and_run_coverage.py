@@ -13,7 +13,7 @@ import urlparse
 
 import build_project
 
-SANITIZER = 'profile'
+SANITIZER = 'coverage'
 CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=%s' % SANITIZER]
 PLATFORM = 'linux'
 
@@ -91,6 +91,15 @@ def get_build_steps(project_dir):
               '.',
           ],
           'dir': 'oss-fuzz/projects/' + name,
+      },
+      {
+          'name':
+              image,
+          'args': [
+              'bash', '-c',
+              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+          ],
+          'env': ['OSSFUZZ_REVISION=$REVISION_ID'],
       },
   ]
 
@@ -204,6 +213,21 @@ def get_build_steps(project_dir):
       }
   )
 
+  # Upload srcmap.
+  srcmap_upload_url = UPLOAD_URL_FORMAT.format(
+      project=project_name, type='srcmap', date=report_date)
+  srcmap_upload_url = srcmap_upload_url.rstrip('/') + '.json'
+  build_steps.append(
+      {
+          'name': 'gcr.io/cloud-builders/gsutil',
+          'args': [
+              'cp',
+              '/workspace/srcmap.json',
+              srcmap_upload_url,
+          ],
+      }
+  )
+
   # Update the latest report information file for ClusterFuzz.
   latest_report_info_url = build_project.get_signed_url(
       LATEST_REPORT_INFO_URL.format(project=project_name),
@@ -231,7 +255,7 @@ def get_build_steps(project_dir):
           ],
       }
   )
-  return build_steps, image
+  return build_steps
 
 
 def get_targets_list(project_name):
@@ -256,8 +280,8 @@ def main():
     usage()
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
-  steps, image = get_build_steps(project_dir)
-  build_project.run_build(steps, image, COVERAGE_BUILD_TAG)
+  steps = get_build_steps(project_dir)
+  build_project.run_build(steps, COVERAGE_BUILD_TAG)
 
 
 if __name__ == "__main__":

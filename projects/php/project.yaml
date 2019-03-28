@@ -1,0 +1,6 @@
+homepage: "http://php.net/"
+primary_contact: "stas@php.net"
+auto_ccs:
+ - "smalyshev@gmail.com"
+sanitizers:
+ - address

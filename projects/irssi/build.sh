@@ -41,7 +41,7 @@ FE_FUZZ_CFLAGS="-I. -Isrc -Isrc/core/ -Isrc/irc/core/ -Isrc/fe-common/core/"
 
 for target in irssi irc/core/event-get-params fe-common/core/theme-load; do
 	${CXX} ${CXXFLAGS} -DHAVE_CONFIG_H -lFuzzingEngine ${FE_FUZZ_CFLAGS} ${GLIB_CFLAGS} \
-		src/fe-fuzz/${target}.o src/fe-fuzz/module-formats.o -lm \
+		src/fe-fuzz/${target}.o src/fe-text/module-formats.o -lm \
 		-Wl,-Bstatic ${FE_COMMON_LIBS} ${CORE_LIBS} -lssl -lcrypto ${GLIB_LIBS} -lgmodule-2.0 -lz \
 		-Wl,-Bdynamic -o $OUT/${target##*/}-fuzz
 done

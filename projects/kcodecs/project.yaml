@@ -1,0 +1,6 @@
+homepage: https://cgit.kde.org/kcodecs.git/
+primary_contact: tsdgeos@gmail.com
+sanitizers:
+  - address
+  - memory
+  - undefined

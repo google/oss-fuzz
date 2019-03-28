@@ -1,6 +1,6 @@
 # ClusterFuzz
 
-[ClusterFuzz](https://blog.chromium.org/2012/04/fuzzing-for-security.html) is the distributed fuzzing infrastructure behind OSS-Fuzz. It was initially built
+[ClusterFuzz](https://github.com/google/clusterfuzz) is the distributed fuzzing infrastructure behind OSS-Fuzz. It was initially built
 for fuzzing Chrome at scale.
 
 ## Web interface

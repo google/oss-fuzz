@@ -28,12 +28,21 @@ test_app("region_deserialize") {
 }
 
 test_app("image_filter_deserialize") {
+  include_dirs = [
+    "tools",
+    "tools/fonts",
+  ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp",
+    "tools/Resources.cpp",
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":skia",
   ]
@@ -52,12 +61,21 @@ test_app("region_set_path") {
 }
 
 test_app("textblob_deserialize") {
+  include_dirs = [
+    "tools",
+    "tools/fonts",
+  ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzTextBlobDeserialize.cpp",
+    "tools/Resources.cpp",
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":skia",
   ]
@@ -144,7 +162,6 @@ test_app("api_image_filter") {
     ":flags",
     ":gpu_tool_utils",
     ":skia",
-    "//third_party/jsoncpp",
     "//third_party/libpng",
   ]
 }
@@ -179,22 +196,27 @@ test_app("api_raster_n32_canvas") {
   include_dirs = [
     "tools",
     "tools/debugger",
+    "tools/fonts",
   ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCanvas.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzRasterN32Canvas.cpp",
+    "tools/Resources.cpp",
     "tools/UrlDataManager.cpp",
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":gpu_tool_utils",
     ":skia",
-    "//third_party/jsoncpp",
     "//third_party/libpng",
   ]
 }
@@ -203,23 +225,28 @@ test_app("api_mock_gpu_canvas") {
   include_dirs = [
     "tools",
     "tools/debugger",
+    "tools/fonts",
   ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCanvas.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzMockGPUCanvas.cpp",
+    "tools/LsanSuppressions.cpp",
+    "tools/Resources.cpp",
     "tools/UrlDataManager.cpp",
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
-    "tools/LsanSuppressions.cpp"
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":gpu_tool_utils",
     ":skia",
-    "//third_party/jsoncpp",
     "//third_party/libpng",
   ]
 }
@@ -228,22 +255,27 @@ test_app("api_null_canvas") {
   include_dirs = [
     "tools",
     "tools/debugger",
+    "tools/fonts",
   ]
   sources = [
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCanvas.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzNullCanvas.cpp",
+    "tools/Resources.cpp",
     "tools/UrlDataManager.cpp",
     "tools/debugger/SkDebugCanvas.cpp",
     "tools/debugger/SkDrawCommand.cpp",
     "tools/debugger/SkJsonWriteBuffer.cpp",
+    "tools/fonts/SkTestFontMgr.cpp",
+    "tools/fonts/SkTestSVGTypeface.cpp",
+    "tools/fonts/SkTestTypeface.cpp",
   ]
   deps = [
+    ":experimental_svg_model",
     ":flags",
     ":gpu_tool_utils",
     ":skia",
-    "//third_party/jsoncpp",
     "//third_party/libpng",
   ]
 }
@@ -303,6 +335,91 @@ test_app("skjson") {
   ]
   deps = [
     ":flags",
+    ":skia",
+  ]
+}
+
+test_app("api_polyutils") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/FuzzPolyUtils.cpp",
+    "fuzz/oss_fuzz/FuzzPolyUtils.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("android_codec") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzAndroidCodec.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("image_decode_incremental") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzIncrementalImage.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("sksl2glsl") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSKSL2GLSL.cpp",
+  ]
+  deps = [
+    ":gpu_tool_utils",
+    ":skia",
+  ]
+}
+
+test_app("sksl2spirv") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSKSL2SPIRV.cpp",
+  ]
+  deps = [
+    ":gpu_tool_utils",
+    ":skia",
+  ]
+}
+
+test_app("sksl2metal") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSKSL2Metal.cpp",
+  ]
+  deps = [
+    ":gpu_tool_utils",
+    ":skia",
+  ]
+}
+
+test_app("sksl2pipeline") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSKSL2Pipeline.cpp",
+  ]
+  deps = [
+    ":gpu_tool_utils",
     ":skia",
   ]
 }

@@ -19,7 +19,7 @@
 technique for uncovering various kinds of programming errors in software.
 Many of these detectable errors (e.g. [buffer overflow](https://en.wikipedia.org/wiki/Buffer_overflow)) can have serious security implications.
 
-We successfully deployed 
+We successfully deployed
 [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html)
 and found [hundreds](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=label%3AStability-LibFuzzer+-status%3ADuplicate%2CWontFix) of security vulnerabilities and stability bugs. We now want to share the experience and the service with the open source community. 
 
@@ -28,11 +28,11 @@ OSS-Fuzz aims to make common open source software more secure and stable by
 combining modern fuzzing techniques and scalable
 distributed execution.
 
-At the first stage of the project we use
-[libFuzzer](http://llvm.org/docs/LibFuzzer.html) with
-[Sanitizers](https://github.com/google/sanitizers). More fuzzing engines will be added later.
+We support [libFuzzer](http://llvm.org/docs/LibFuzzer.html) and [AFL](http://lcamtuf.coredump.cx/afl/) as fuzzing engines
+in combination with [Sanitizers](https://github.com/google/sanitizers).
 [ClusterFuzz](docs/clusterfuzz.md)
-provides a distributed fuzzer execution environment and reporting.
+provides a distributed fuzzer execution environment and reporting. You can
+checkout ClusterFuzz [here](https://github.com/google/clusterfuzz).
 
 Currently OSS-Fuzz supports C and C++ code (other languages supported by [LLVM](http://llvm.org) may work too).
 
@@ -43,7 +43,7 @@ Currently OSS-Fuzz supports C and C++ code (other languages supported by [LLVM](
 The following process is used for projects in OSS-Fuzz:
 
 - A maintainer of an opensource project or an outside volunteer creates
-one or more [fuzz targets](http://libfuzzer.info/#fuzz-target) 
+one or more [fuzz targets](http://libfuzzer.info/#fuzz-target)
 and [integrates](docs/ideal_integration.md) them with the project's build and test system.
 - The project is [accepted to OSS-Fuzz](#accepting-new-projects).
 - When [ClusterFuzz](docs/clusterfuzz.md) finds a bug, an issue is automatically
@@ -60,7 +60,7 @@ and [integrates](docs/ideal_integration.md) them with the project's build and te
 <!-- NOTE: this anchor is referenced by oss-fuzz blog post -->
 ## Accepting New Projects
 
-To be accepted to OSS-Fuzz, an open-source project must 
+To be accepted to OSS-Fuzz, an open-source project must
 have a significant user base and/or be critical to the global IT infrastructure.
 To submit a new project:
 - [Create a pull request](https://help.github.com/articles/creating-a-pull-request/) with new 
@@ -79,7 +79,7 @@ To submit a new project:
 Following [Google's standard disclosure policy](https://googleprojectzero.blogspot.com/2015/02/feedback-and-data-driven-updates-to.html)
 OSS-Fuzz will adhere to following disclosure principles:
   - **Deadline**. After notifying project authors, we will open reported
-    issues to the public in 90 days, or 30 days after the fix is released 
+    issues to the public in 90 days, or 30 days after the fix is released
     (whichever comes earlier).
   - **Weekends and holidays**. If a deadline is due to expire on a weekend,
     the deadline will be moved to the next normal work day.
@@ -100,19 +100,25 @@ OSS-Fuzz will adhere to following disclosure principles:
 * [Projects](projects) lists OSS projects currently analyzed by OSS-Fuzz.
 * [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
   while containing some Chrome-specific bits, is an excellent guide to making your fuzzer better.
-* Blog posts: 
+* Blog posts:
   * 2016-12-01 ([1](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
 [2](https://testing.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
 [3](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
   * 2017-05-08 ([1](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
 [2](https://testing.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
 [3](https://security.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html))
+  * 2018-11-06 ([1](https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html))
 
 ## Build Status
 [This page](https://oss-fuzz-build-logs.storage.googleapis.com/index.html)
 gives the latest build logs for each project.
 
 (Internal only) [Builds dashboard](https://builder.oss-fuzz.com).
+
+## Web Interface
+
+* The main page: [oss-fuzz.com](https://oss-fuzz.com)
+* [ClusterFuzz for OSS-Fuzz documentation](docs/clusterfuzz.md)
 
 ## Trophies
 
@@ -123,6 +129,6 @@ gives a list of publicly-viewable fixed bugs found by OSS-Fuzz.
 * [libFuzzer documentation](http://libfuzzer.info)
 * [libFuzzer tutorial](http://tutorial.libfuzzer.info)
 * [libFuzzer workshop](https://github.com/Dor1s/libfuzzer-workshop)
+* [Structure-Aware Fuzzing with libFuzzer](https://github.com/google/fuzzer-test-suite/blob/master/tutorial/structure-aware-fuzzing.md)
 * [Chromium Fuzzing Page](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/)
-* [ClusterFuzz](https://blog.chromium.org/2012/04/fuzzing-for-security.html)
-
+* [ClusterFuzz](https://github.com/google/clusterfuzz)

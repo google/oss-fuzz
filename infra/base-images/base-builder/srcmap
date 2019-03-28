@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2016 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,7 +48,7 @@ for DOT_HG_DIR in $(find $SRC -name ".hg" -type d); do
   HG_DIR=$(dirname $DOT_HG_DIR)
   cd $HG_DIR
   HG_URL=$(hg paths default)
-  HG_REV=$(hg --debug id -i)
+  HG_REV=$(hg --debug id -r. -i)
   jq_inplace $SRCMAP ".\"$HG_DIR\" = { type: \"hg\", url: \"$HG_URL\", rev: \"$HG_REV\" }"
 done
 

@@ -22,11 +22,8 @@ rm -rf build
 mkdir build
 
 cd build
-if [ $SANITIZER == "profile" ]; then
+if [ $SANITIZER == "coverage" ]; then
   cmake ..
-elif [ $SANITIZER == "coverage" ]; then
-  # TODO(metzman): Remove this once "coverage" builds are removed from OSS-Fuzz.
-  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake ..
 else
   if [ $SANITIZER == "address" ]; then
     CMAKE_SANITIZER="ASAN"
@@ -47,7 +44,7 @@ export SWIFTSHADER_LIB_PATH=$OUT
 popd
 # These are any clang warnings we need to silence.
 DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
-         -Wno-cast-qual -Wno-self-assign -Wno-return-std-move-in-c++11"
+         -Wno-cast-qual"
 # Disable UBSan vptr since target built with -fno-rtti.
 export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
 export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr "-DIS_FUZZING_WITH_LIBFUZZER""
@@ -63,16 +60,20 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
 $SRC/depot_tools/gn gen out/Fuzz\
     --args='cc="'$CC'"
-    cxx="'$CXX'"
-    is_debug=false
-    extra_cflags_c=["'"$CFLAGS_ARR"'"]
-    extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
-    extra_ldflags=["'"$LDFLAGS_ARR"'"]
-    skia_use_egl=true
-    skia_use_system_freetype2=false
-    skia_use_fontconfig=false
-    skia_enable_gpu=true
-    skia_enable_skottie=true'
+      cxx="'$CXX'"
+      is_debug=false
+      extra_cflags_c=["'"$CFLAGS_ARR"'"]
+      extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
+      extra_ldflags=["'"$LDFLAGS_ARR"'"]
+      skia_enable_fontmgr_custom=false
+      skia_enable_fontmgr_custom_empty=true
+      skia_enable_gpu=true
+      skia_enable_skottie=true
+      skia_use_egl=true
+      skia_use_fontconfig=false
+      skia_use_freetype=true
+      skia_use_system_freetype2=false
+      skia_use_wuffs=true'
 
 $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
     --args='cc="'$CC'"
@@ -81,11 +82,15 @@ $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]
-      skia_use_egl=true
-      skia_use_system_freetype2=false
-      skia_use_fontconfig=false
+      skia_enable_fontmgr_custom=false
+      skia_enable_fontmgr_custom_empty=true
       skia_enable_gpu=true
-      skia_enable_skottie=false'
+      skia_enable_skottie=true
+      skia_use_egl=true
+      skia_use_fontconfig=false
+      skia_use_freetype=true
+      skia_use_system_freetype2=false
+      skia_use_wuffs=true'
 
 $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    path_deserialize image_decode \
@@ -93,7 +98,9 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_gradients api_path_measure png_encoder \
                                    jpeg_encoder webp_encoder skottie_json \
                                    textblob_deserialize skjson \
-                                   api_null_canvas api_image_filter api_pathop
+                                   api_null_canvas api_image_filter api_pathop \
+                                   api_polyutils android_codec image_decode_incremental \
+                                   sksl2glsl sksl2spirv sksl2metal sksl2pipeline
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -187,3 +194,32 @@ cp ./api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip
 cp out/Fuzz/api_null_canvas $OUT/api_null_canvas
 cp ./api_null_canvas.options $OUT/api_null_canvas.options
 cp ./canvas_seed_corpus.zip $OUT/api_null_canvas_seed_corpus.zip
+
+cp out/Fuzz/api_polyutils $OUT/api_polyutils
+cp ./api_polyutils.options $OUT/api_polyutils.options
+cp ./api_polyutils_seed_corpus.zip $OUT/api_polyutils_seed_corpus.zip
+
+# These 2 can use the same corpus as the (non animated) image_decode.
+cp out/Fuzz/android_codec $OUT/android_codec
+cp ./android_codec.options $OUT/android_codec.options
+cp ./image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
+
+cp out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
+cp ./image_decode_incremental.options $OUT/image_decode_incremental.options
+cp ./image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
+
+cp out/Fuzz/sksl2glsl $OUT/sksl2glsl
+cp ./sksl2glsl.options $OUT/sksl2glsl.options
+cp ./sksl_seed_corpus.zip $OUT/sksl2glsl_seed_corpus.zip
+
+cp out/Fuzz/sksl2spirv $OUT/sksl2spirv
+cp ./sksl2spirv.options $OUT/sksl2spirv.options
+cp ./sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
+
+cp out/Fuzz/sksl2metal $OUT/sksl2metal
+cp ./sksl2metal.options $OUT/sksl2metal.options
+cp ./sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
+
+cp out/Fuzz/sksl2pipeline $OUT/sksl2pipeline
+cp ./sksl2pipeline.options $OUT/sksl2pipeline.options
+cp ./sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip

@@ -28,7 +28,7 @@ We will reconsider the GitHub issue tracker once the
 
 ## Why do you require a Google account for authentication?
 
-Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Google account for authentication. Note that an alternate email address associated with a Google acount does not work due to appengine api limitations.
+Our [ClusterFuzz](clusterfuzz.md) fuzzing infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) require a Google account for authentication. Note that an alternate email address associated with a Google account does not work due to appengine api limitations.
 
 ## Why do you use Docker?
 
@@ -78,7 +78,7 @@ Using that, you can debug the root cause and see which category the bug falls in
 - If this is a bug is due to an incorrect usage of the dependent project's API 
 in your project, then you need to fix your usage to call the API correctly.
 - If this is a real bug in the dependent project, then you should CC the maintainers
-of that project on the bug. Once cced, they will get automatic access to all the
+of that project on the bug. Once CCed, they will get automatic access to all the
 information necessary to reproduce the issue. If this project is maintained in OSS-Fuzz,
 you can search for contacts in the respective project.yaml file.
 
@@ -105,4 +105,13 @@ If you rename your fuzz targets, the existing bugs for those targets will get cl
 OSS-Fuzz *uses* [AFL](http://lcamtuf.coredump.cx/afl/) as one of its [fuzzing engines](glossary.md#fuzzing-engine) but this is an implementation detail. Just follow the [ideal integration guide](ideal_integration.md) and OSS-Fuzz will use all its fuzzing engines on your code.
 
 ## Does OSS-Fuzz support Honggfuzz?
-Analogically to [AFL](#does-oss-fuzz-support-afl).
+OSS-Fuzz (the service) does not use honggfuzz to find bugs.
+That is because [ClusterFuzz](https://github.com/google/clusterfuzz) (the infrastructure OSS-Fuzz runs on) does not support honggfuzz. 
+However, OSS-Fuzz supports **building** fuzz targets for use with honggfuzz, similar to the way it
+supports [AFL](#does-oss-fuzz-support-afl). 
+Currently OSS-Fuzz builders do builds for libFuzzer, AFL, and honggfuzz.
+
+## What are the specs on your machines?
+OSS-Fuzz builders have 32CPU/28.8GB RAM.
+
+Fuzzing machines only have a single core and fuzz targets should not use more than 2GB of RAM.

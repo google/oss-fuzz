@@ -1,4 +1,9 @@
 homepage: "https://www.tensorflow.org"
-primary_contact: "frankchn@google.com"
+primary_contact: "mihaimaruseac@google.com"
 auto_ccs:
  - "dga@google.com"
+ - "frankchn@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

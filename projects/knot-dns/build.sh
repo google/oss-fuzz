@@ -22,9 +22,9 @@
 export DEPS_PATH=$SRC/knot_deps
 export PKG_CONFIG_PATH=$DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$DEPS_PATH/include"
-export CXXFLAGS="$CPPFLAGS -std=c++11 $CXXFLAGS"
-export CFLAGS="$CPPFLAGS $CFLAGS"
 export LDFLAGS="-L$DEPS_PATH/lib"
+export GNULIB_SRCDIR=$SRC/gnulib
+export GNULIB_TOOL=$SRC/gnulib/gnulib-tool
 
 cd $SRC/libunistring
 ./autogen.sh
@@ -46,7 +46,7 @@ bash .bootstrap
 
 cd $SRC/gnutls
 touch .submodule.stamp
-make bootstrap
+./bootstrap
 GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
 LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \

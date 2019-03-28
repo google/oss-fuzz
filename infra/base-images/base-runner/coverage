@@ -62,9 +62,19 @@ function run_fuzz_target {
   local profraw_file="$DUMPS_DIR/$target.%1m.profraw"
   local profraw_file_mask="$DUMPS_DIR/$target.*.profraw"
   local profdata_file="$DUMPS_DIR/$target.profdata"
+  local corpus_real="/corpus/${target}"
 
+  # -merge=1 requires an output directory, create a dummy dir for that.
+  local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
+  rm -rf $corpus_dummy && mkdir -p $corpus_dummy
+
+  # Use -merge=1 instead of -runs=0 because merge is crash resistant and would
+  # let to get coverage using all corpus files even if there are crash inputs.
+  # Merge should not introduce any significant overhead compared to -runs=0,
+  # because (A) corpuses are already minimized; (B) we do not use sancov, and so
+  # libFuzzer always finishes merge with an empty output dir.
   # Use 100s timeout instead of 25s as code coverage builds can be very slow.
-  local args="-timeout=100 -runs=0 -close_fd_mask=3 /corpus/${target}"
+  local args="-merge=1 -timeout=100 -close_fd_mask=3 $corpus_dummy $corpus_real"
 
   export LLVM_PROFILE_FILE=$profraw_file
   timeout $TIMEOUT $target $args &> $LOGS_DIR/$target.log
@@ -72,6 +82,8 @@ function run_fuzz_target {
     echo "Error occured while running $target:"
     cat $LOGS_DIR/$target.log
   fi
+
+  rm -rf $corpus_dummy
 
   if (( $(du -c $profraw_file_mask | tail -n 1 | cut -f 1) == 0 )); then
     # Skip fuzz targets that failed to produce profile dumps.

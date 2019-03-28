@@ -7,6 +7,7 @@ Usage: build_project.py <project_dir>
 import base64
 import collections
 import datetime
+import json
 import os
 import re
 import subprocess
@@ -19,7 +20,7 @@ from oauth2client.client import GoogleCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
-BUILD_TIMEOUT = 10 * 60 * 60
+BUILD_TIMEOUT = 12 * 60 * 60
 
 FUZZING_BUILD_TAG = 'fuzzing'
 
@@ -29,7 +30,6 @@ CONFIGURATIONS = {
     'sanitizer-address': ['SANITIZER=address'],
     'sanitizer-memory': ['SANITIZER=memory'],
     'sanitizer-undefined': ['SANITIZER=undefined'],
-    'sanitizer-coverage': ['SANITIZER=coverage'],
     'engine-libfuzzer': ['FUZZING_ENGINE=libfuzzer'],
     'engine-afl': ['FUZZING_ENGINE=afl'],
     'engine-honggfuzz': ['FUZZING_ENGINE=honggfuzz'],
@@ -43,8 +43,7 @@ ENGINE_INFO = {
     'libfuzzer':
         EngineInfo(
             upload_bucket='clusterfuzz-builds',
-            supported_sanitizers=['address', 'memory', 'undefined',
-                                  'coverage']),
+            supported_sanitizers=['address', 'memory', 'undefined']),
     'afl':
         EngineInfo(
             upload_bucket='clusterfuzz-builds-afl',
@@ -59,7 +58,7 @@ ENGINE_INFO = {
             supported_sanitizers=['address']),
 }
 
-DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
+DEFAULT_ENGINES = ['libfuzzer', 'afl']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 TARGETS_LIST_BASENAME = 'targets.list'
@@ -84,6 +83,7 @@ def load_project_yaml(project_dir):
     project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
     project_yaml.setdefault('run_tests', True)
     project_yaml.setdefault('coverage_extra_args', '')
+    project_yaml.setdefault('labels', {})
     return project_yaml
 
 
@@ -120,10 +120,6 @@ def get_sanitizers(project_yaml):
     elif isinstance(sanitizer, dict):
       for key in sanitizer.iterkeys():
         processed_sanitizers.append(key)
-
-  # Always make a coverage build.
-  if 'coverage' not in processed_sanitizers:
-    processed_sanitizers.append('coverage')
 
   return processed_sanitizers
 
@@ -261,6 +257,19 @@ def get_build_steps(project_dir):
             ],
         })
 
+      if project_yaml['labels']:
+        # write target labels
+        build_steps.append({
+              'name': image,
+              'env': env,
+              'args': [
+                  '/usr/local/bin/write_labels.py',
+                  json.dumps(project_yaml['labels']),
+                  out,
+              ],
+
+        })
+
       build_steps.extend([
           # generate targets list
           {
@@ -317,7 +326,7 @@ def get_build_steps(project_dir):
           },
       ])
 
-  return build_steps, image
+  return build_steps
 
 
 def get_logs_url(build_id):
@@ -336,7 +345,7 @@ def get_targets_list_url(bucket, project, sanitizer):
   return url
 
 
-def run_build(build_steps, image, tag):
+def run_build(build_steps, project_name, tag):
   options = {}
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
@@ -346,8 +355,10 @@ def run_build(build_steps, image, tag):
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
-      'images': [ image ],
-      'tags': [ tag ],
+      'tags': [
+          project_name,
+          tag,
+      ],
   }
 
   credentials = GoogleCredentials.get_application_default()
@@ -365,8 +376,10 @@ def main():
     usage()
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
-  steps, image = get_build_steps(project_dir)
-  run_build(steps, image, FUZZING_BUILD_TAG)
+  steps = get_build_steps(project_dir)
+
+  project_name = os.path.basename(project_dir)
+  run_build(steps, project_name, FUZZING_BUILD_TAG)
 
 
 if __name__ == '__main__':

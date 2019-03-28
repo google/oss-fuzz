@@ -1,0 +1,9 @@
+homepage: "https://github.com/OISF/libhtp"
+primary_contact: "vjulien@oisf.net"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- memory
+- undefined

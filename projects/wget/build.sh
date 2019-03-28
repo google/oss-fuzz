@@ -61,7 +61,7 @@ fi
 
 cd $SRC/gnutls
 touch .submodule.stamp
-make bootstrap
+./bootstrap
 GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
 LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
@@ -76,18 +76,17 @@ make install
 export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget
-git checkout -b oss-fuzz origin/oss-fuzz
 ./bootstrap
 
 # build and run non-networking tests
-LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
   ./configure -C
 make clean
 make -j$(nproc)
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
   ./configure --enable-fuzzing -C
 make clean
 make -j$(nproc) -C lib

@@ -1,0 +1,19 @@
+homepage: "https://opencv.org/"
+primary_contact: "garybradski@gmail.com"
+
+auto_ccs:
+  - "alexander.a.alekhin@gmail.com"
+  - "garybradski@gmail.com"
+  - "vrabaud@google.com"
+  - "kusano@google.com"
+
+sanitizers:
+  - address
+  - undefined
+  - memory
+
+labels:
+  imdecode_fuzzer:
+    - sundew
+  imread_fuzzer:
+    - sundew

@@ -1,8 +1,12 @@
 // Fuzzing of AV1 decoder.
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#if defined(DECODE_MODE_threaded)
+#include <algorithm>
+#endif
 #include <memory>
 
 #include "config/aom_config.h"
@@ -33,9 +37,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   aom_codec_ctx_t codec;
 #if defined(DECODE_MODE)
-  const int threads = 1;
+  const unsigned int threads = 1;
 #elif defined(DECODE_MODE_threaded)
-  const int threads = 16;
+  // Set thread count in the range [2, 64].
+  const unsigned int threads = std::max((header[0] & 0x3f) + 1, 2);
 #else
 #error define one of DECODE_MODE or DECODE_MODE_threaded
 #endif

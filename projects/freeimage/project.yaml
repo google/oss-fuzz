@@ -1,0 +1,12 @@
+homepage: "http://freeimage.sourceforge.net/"
+primary_contact: "kusano@google.com"
+
+experimental: true
+
+sanitizers:
+  - address
+  - undefined
+
+labels:
+  load_from_memory_fuzzer:
+    - sundew

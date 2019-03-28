@@ -25,7 +25,7 @@ CFLAGS="$CFLAGS $DEFINES"
 CXXFLAGS="$CXXFLAGS $DEFINES"
 
 CFLAGS=$CFLAGS CXXFLAGS=$CXXFLAGS CC=$CC CXX=$CXX \
-  /bin/bash $SRC/icu/source/runConfigureICU Linux \
+  /bin/bash $SRC/icu/icu4c/source/runConfigureICU Linux \
    --with-library-bits=64 --with-data-packaging=static --enable-static --disable-shared
 
 export ASAN_OPTIONS="detect_leaks=0"
@@ -33,19 +33,37 @@ export UBSAN_OPTIONS="detect_leaks=0"
 
 make -j$(nproc)
 
+$CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cc \
+     -I$SRC/icu4c/source/test/fuzzer
+
 FUZZERS="break_iterator_fuzzer \
-  break_iterator_utf32_fuzzer \
   converter_fuzzer \
+  locale_fuzzer \
   number_format_fuzzer \
   ucasemap_fuzzer \
+  uloc_canonicalize_fuzzer \
+  uloc_for_language_tag_fuzzer \
+  uloc_get_name_fuzzer \
+  uloc_is_right_to_left_fuzzer \
+  uloc_open_keywords_fuzzer \
   unicode_string_codepage_create_fuzzer \
   uregex_open_fuzzer
   "
 for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 \
-    $SRC/$fuzzer.cc -o $OUT/$fuzzer \
-    -I$SRC/icu/source/common -I$SRC/icu/source/i18n -L$WORK/icu/lib \
+    $SRC/icu/icu4c/source/test/fuzzer/$fuzzer.cc -o $OUT/$fuzzer locale_util.o \
+    -I$SRC/icu/icu4c/source/common -I$SRC/icu/icu4c/source/i18n -L$WORK/icu/lib \
     -lFuzzingEngine -licui18n -licuuc -licutu -licudata
 done
 
-cp $SRC/*.dict $SRC/*.options  $OUT/
+CORPUS="uloc_canonicalize_fuzzer_seed_corpus \
+  uloc_for_language_tag_fuzzer_seed_corpus \
+  uloc_get_name_fuzzer_seed_corpus \
+  uloc_is_right_to_left_fuzzer_seed_corpus \
+  uloc_open_keywords_fuzzer_seed_corpus
+  "
+for corpus in $CORPUS; do
+  zip $OUT/$corpus.zip $SRC/icu/icu4c/source/test/fuzzer/$corpus.txt
+done
+
+cp $SRC/icu/icu4c/source/test/fuzzer/*.dict  $OUT/

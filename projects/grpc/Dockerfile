@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mattkwong@google.com
+MAINTAINER yangg@google.com
 
 RUN apt-get update && apt-get install -y software-properties-common python-software-properties
 RUN add-apt-repository ppa:webupd8team/java
@@ -28,16 +28,24 @@ RUN apt-get update && apt-get -y install  \
         autoconf        \
         libtool
 
-# Install Bazel
-RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN apt-get update && apt-get install -y bazel
-# Downgrade Bazel to 0.10
-# Installing Bazel via apt-get first is required before installing 0.10 to
-# allow gRPC to build without errors
-RUN curl -fSsL -O https://github.com/bazelbuild/bazel/releases/download/0.10.0/bazel-0.10.0-installer-linux-x86_64.sh
-RUN chmod +x ./bazel-0.10.0-installer-linux-x86_64.sh
-RUN ./bazel-0.10.0-installer-linux-x86_64.sh
+# Install dependencies
+
+RUN apt-get update && apt-get install -y \
+    python-all-dev \
+    python3-all-dev \
+    python-pip
+
+# Install Python packages from PyPI
+RUN pip install --upgrade pip==10.0.1
+RUN pip install virtualenv
+RUN pip install futures==2.2.0 enum34==1.0.4 protobuf==3.5.2.post1 six==1.10.0 twisted==17.5.0
+
+#========================
+# Bazel installation
+
+RUN apt-get update && apt-get install -y wget && apt-get clean
+RUN wget -q https://github.com/bazelbuild/bazel/releases/download/0.17.1/bazel-0.17.1-linux-x86_64 -O /usr/local/bin/bazel
+RUN chmod 755 /usr/local/bin/bazel
 
 RUN git clone --recursive https://github.com/grpc/grpc grpc
 WORKDIR $SRC/grpc/

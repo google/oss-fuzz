@@ -1,0 +1,15 @@
+homepage: "https://www.mpg123.de"
+primary_contact: "kusano@google.com"
+
+experimental: true
+
+sanitizers:
+  - address
+  - undefined
+  - memory
+
+labels:
+  read_fuzzer:
+    - sundew
+  decode_fuzzer:
+    - sundew
