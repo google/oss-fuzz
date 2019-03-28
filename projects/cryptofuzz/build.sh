@@ -43,7 +43,7 @@ cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl_seed_corpu
 # Compile Openssl (without assembly)
 cd $SRC/openssl
 make clean
-./config --debug enable-md2 enable-rc5
+./config --debug no-asm enable-md2 enable-rc5
 make -j$(nproc)
 
 # Compile Cryptofuzz OpenSSL (without assembly) module
