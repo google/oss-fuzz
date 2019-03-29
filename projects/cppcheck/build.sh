@@ -17,7 +17,7 @@
 
 # build fuzzer
 
-cd fuzzer-cli
+cd $SRC/cppcheck/oss-fuzz
 make oss-fuzz-client
 cp oss-fuzz-client $OUT/
 

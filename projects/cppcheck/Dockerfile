@@ -17,8 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER daniel.marjamaki@gmail.com
 
-RUN git clone https://github.com/orbitcowboy/afl_cppcheck.git afl_cppcheck
-RUN git clone https://github.com/danmar/cppcheck.git afl_cppcheck/cppcheck
+RUN git clone https://github.com/danmar/cppcheck.git
 
 WORKDIR afl_cppcheck
 COPY build.sh $SRC/
