@@ -19,6 +19,6 @@ MAINTAINER daniel.marjamaki@gmail.com
 
 RUN git clone https://github.com/danmar/cppcheck.git
 
-WORKDIR afl_cppcheck
+WORKDIR cppcheck
 COPY build.sh $SRC/
 
