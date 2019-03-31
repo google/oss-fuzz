@@ -28,6 +28,8 @@
 #include <QCoreApplication>
 #include <QImage>
 
+#include "kra.h"
+#include "ora.h"
 #include "pcx_p.h"
 #include "pic_p.h"
 #include "psd_p.h"
@@ -42,6 +44,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     QCoreApplication a(argc, nullptr);
 
     const QVector<QImageIOHandler*> handlers = {
+        new KraHandler(),
+        new OraHandler(),
         new PCXHandler(),
         new SoftimagePICHandler(),
         new PSDHandler(),

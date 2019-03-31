@@ -16,7 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER tsdgeos@gmail.com
+RUN apt-get install --yes cmake
+RUN git clone --depth 1 https://github.com/madler/zlib.git
+RUN git clone --depth 1 https://github.com/nih-at/libzip.git
+RUN git clone --depth 1 git://anongit.kde.org/extra-cmake-modules
 RUN git clone --depth 1  git://code.qt.io/qt/qtbase.git
+RUN git clone --depth 1 git://anongit.kde.org/karchive
 RUN git clone --depth 1 git://anongit.kde.org/kimageformats
 COPY build.sh $SRC
 COPY kimgio_fuzzer.cc $SRC
