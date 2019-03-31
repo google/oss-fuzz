@@ -1,0 +1,8 @@
+homepage: "https://www.7-zip.org/sdk.html"
+primary_contact: "ipavlov@users.sourceforge.net"
+auto_ccs:
+  - "mail@joachim-bauch.de"
+sanitizers:
+  - address
+  - memory
+  - undefined
