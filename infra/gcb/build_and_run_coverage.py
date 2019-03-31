@@ -280,8 +280,9 @@ def main():
     usage()
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
+  project_name = os.path.basename(project_dir)
   steps = get_build_steps(project_dir)
-  build_project.run_build(steps, COVERAGE_BUILD_TAG)
+  build_project.run_build(steps, project_name, COVERAGE_BUILD_TAG)
 
 
 if __name__ == "__main__":
