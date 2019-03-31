@@ -1,4 +1,19 @@
 cd $SRC
+cd zlib
+./configure --static
+make install -j$(nproc)
+
+cd $SRC
+cd libzip
+cmake . -DBUILD_SHARED_LIBS=OFF
+make install -j$(nproc)
+
+cd $SRC
+cd extra-cmake-modules
+cmake .
+make install -j$(nproc)
+
+cd $SRC
 cd qtbase
 # add the flags to Qt build too, we may as well sanitize Qt too (and also fixes memory sanitizer build)
 sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
@@ -12,6 +27,11 @@ cd src
 ../bin/qmake -o Makefile src.pro
 make sub-gui -j$(nproc)
 
-$CXX $CXXFLAGS -fPIC -std=c++11 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/pcx.cpp $SRC/kimageformats/src/imageformats/pic.cpp  $SRC/kimageformats/src/imageformats/psd.cpp  $SRC/kimageformats/src/imageformats/ras.cpp  $SRC/kimageformats/src/imageformats/rgb.cpp  $SRC/kimageformats/src/imageformats/tga.cpp $SRC/kimageformats/src/imageformats/xcf.cpp -o $OUT/kimgio_fuzzer -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/  -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -L $SRC/qtbase/lib -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread -lFuzzingEngine
+cd $SRC
+cd karchive
+cmake . -DBUILD_SHARED_LIBS=OFF -DQt5Core_DIR=$SRC/qtbase/lib/cmake/Qt5Core/ -DBUILD_TESTING=OFF
+make install -j$(nproc)
+
+$CXX $CXXFLAGS -fPIC -std=c++11 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/kra.cpp $SRC/kimageformats/src/imageformats/ora.cpp $SRC/kimageformats/src/imageformats/pcx.cpp $SRC/kimageformats/src/imageformats/pic.cpp  $SRC/kimageformats/src/imageformats/psd.cpp  $SRC/kimageformats/src/imageformats/ras.cpp  $SRC/kimageformats/src/imageformats/rgb.cpp  $SRC/kimageformats/src/imageformats/tga.cpp $SRC/kimageformats/src/imageformats/xcf.cpp -o $OUT/kimgio_fuzzer -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -L $SRC/qtbase/lib -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread -lFuzzingEngine /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive
 
 zip -qr $OUT/kimgio_fuzzer_seed_corpus.zip $SRC/kimageformats/autotests/read/  $SRC/kimageformats/autotests/write/  $SRC/kimageformats/autotests/pic/
