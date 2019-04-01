@@ -16,8 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool build-essential
+
+RUN apt-get update && apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake
+
+# BoringSSL needs Go to build
+RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
+RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
+
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
 RUN git clone --depth 1 https://github.com/openssl/openssl
+RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
+
 COPY build.sh $SRC/

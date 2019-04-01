@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+##############################################################################
 # Compile Openssl (with assembly)
 cd $SRC/openssl
 ./config --debug enable-md2 enable-rc5
@@ -40,6 +41,7 @@ cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl_seed_corpus.zip
 
+##############################################################################
 # Compile Openssl (without assembly)
 cd $SRC/openssl
 make clean
@@ -60,3 +62,49 @@ cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-noasm
 cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-noasm_seed_corpus.zip
+
+##############################################################################
+# Compile BoringSSL (with assembly)
+cd $SRC/boringssl
+rm -rf build ; mkdir build
+cd build
+cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
+make -j$(nproc)
+
+# Compile Cryptofuzz BoringSSL (with assembly) module
+cd $SRC/cryptofuzz/modules/openssl
+OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" make -B
+
+# Compile Cryptofuzz
+cd $SRC/cryptofuzz
+LIBFUZZER_LINK="-lFuzzingEngine" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+
+# Copy fuzzer
+cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl
+# Copy dictionary
+cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-boringssl.dict
+# Copy seed corpus
+cp $SRC/cryptofuzz-corpora/boringssl_latest.zip $OUT/cryptofuzz-boringssl_seed_corpus.zip
+
+##############################################################################
+# Compile BoringSSL (with assembly)
+cd $SRC/boringssl
+rm -rf build ; mkdir build
+cd build
+cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
+make -j$(nproc)
+
+# Compile Cryptofuzz BoringSSL (with assembly) module
+cd $SRC/cryptofuzz/modules/openssl
+OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" make -B
+
+# Compile Cryptofuzz
+cd $SRC/cryptofuzz
+LIBFUZZER_LINK="-lFuzzingEngine" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+
+# Copy fuzzer
+cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl-noasm
+# Copy dictionary
+cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-boringssl-noasm.dict
+# Copy seed corpus
+cp $SRC/cryptofuzz-corpora/boringssl_latest.zip $OUT/cryptofuzz-boringssl-noasm_seed_corpus.zip
