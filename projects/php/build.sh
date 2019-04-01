@@ -17,7 +17,7 @@
 
 mkdir -p $OUT/lib/
 cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
-cp /usr/lib/x86_64-linux-gnu/libonig.so.2 $OUT/lib/
+cp /usr/lib/x86_64-linux-gnu/libonig.so.5 $OUT/lib/
 # build project
 ./buildconf
 ./configure --enable-fuzzer --enable-option-checking=fatal --disable-libxml --disable-dom \

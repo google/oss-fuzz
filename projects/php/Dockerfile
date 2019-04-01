@@ -18,7 +18,9 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER stas@php.net
 RUN apt-get update && apt-get install -y make autoconf automake libtool bison re2c make ca-certificates curl \
 	xz-utils dpkg-dev file libc-dev pkg-config libcurl4-openssl-dev libedit-dev libsqlite3-dev libssl-dev \
-	zlib1g-dev libonig-dev chrpath
+	zlib1g-dev chrpath
+ADD cosmic.list /etc/apt/sources.list.d/cosmic.list
+RUN apt-get update && apt-get install -y libonig5 libonig-dev
 RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src
 RUN git clone --depth 1 https://github.com/php/php-fuzzing-sapi.git php-src/sapi/fuzzer
 WORKDIR php-src
