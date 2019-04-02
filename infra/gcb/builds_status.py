@@ -141,11 +141,10 @@ def get_builds(cloudbuild):
 
 
 def update_build_status(
-    cloudbuild, projects, build_tag_suffix, status_filename):
+    builds, projects, build_tag_suffix, status_filename):
   successes = []
   failures = []
 
-  builds = get_builds(cloudbuild)
   for project in projects:
     print project
 
@@ -183,9 +182,10 @@ def main():
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = gcb_build('cloudbuild', 'v1', credentials=credentials)
 
-  update_build_status(cloudbuild, projects, build_project.FUZZING_BUILD_TAG,
+  builds = get_builds(cloudbuild)
+  update_build_status(builds, projects, build_project.FUZZING_BUILD_TAG,
                       status_filename='status.json')
-  update_build_status(cloudbuild, projects,
+  update_build_status(builds, projects,
                       build_and_run_coverage.COVERAGE_BUILD_TAG,
                       status_filename='status-coverage.json')
 
