@@ -75,6 +75,9 @@ def find_last_build(builds, project, build_tag_suffix):
     if tag not in build['tags']:
       continue
 
+    if not 'finishTime' in build:
+      continue
+
     finish_time = dateutil.parser.parse(build['finishTime'], ignoretz=True)
     if (datetime.datetime.utcnow() - finish_time >=
         datetime.timedelta(minutes=DELAY_MINUTES)):
