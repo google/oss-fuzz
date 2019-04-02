@@ -22,7 +22,7 @@ STATUS_BUCKET = 'oss-fuzz-build-logs'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RETRY_COUNT = 3
 RETRY_WAIT = 5
-MAX_BUILD_RESULTS = 1000
+MAX_BUILD_RESULTS = 2000
 BUILDS_PAGE_SIZE = 256
 
 
