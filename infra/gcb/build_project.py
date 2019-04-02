@@ -356,8 +356,7 @@ def run_build(build_steps, project_name, tag):
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
       'tags': [
-          project_name,
-          tag,
+          project_name + '-' + tag,
       ],
   }
 
