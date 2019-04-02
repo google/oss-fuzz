@@ -22,6 +22,8 @@ STATUS_BUCKET = 'oss-fuzz-build-logs'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RETRY_COUNT = 3
 RETRY_WAIT = 5
+MAX_BUILD_RESULTS = 2000
+BUILDS_PAGE_SIZE = 256
 
 
 def usage():
@@ -58,11 +60,22 @@ def is_build_successful(build):
   return build['status'] == 'SUCCESS'
 
 
-def find_last_build(builds):
+def find_last_build(builds, project, build_tag_suffix):
   DELAY_MINUTES = 40
+  tag = project + '-' + build_tag_suffix
+
+  builds = builds.get(tag)
+  if not builds:
+    return None
 
   for build in builds:
     if build['status'] == 'WORKING':
+      continue
+
+    if tag not in build['tags']:
+      continue
+
+    if not 'finishTime' in build:
       continue
 
     finish_time = dateutil.parser.parse(build['finishTime'], ignoretz=True)
@@ -98,27 +111,44 @@ def execute_with_retries(request):
       raise
 
 
-def update_build_status(
-    cloudbuild, projects, build_tag, status_filename):
-  successes = []
-  failures = []
-  for project in projects:
-    print project
-    query_filter = ('images="gcr.io/oss-fuzz/{0}" AND tags="{1}"'.format(
-        project, build_tag))
-    try:
-      response = execute_with_retries(cloudbuild.projects().builds().list(
-          projectId='oss-fuzz', pageSize=2, filter=query_filter))
-    except googleapiclient.errors.HttpError as e:
-      print >> sys.stderr, 'Failed to list builds for', project, ':', str(e)
-      continue
+def get_builds(cloudbuild):
+  """Get a batch of the latest builds (up to MAX_BUILD_RESULTS), grouped by
+  tag."""
+  ungrouped_builds = []
+  next_page_token = None
+
+  while True:
+    page_size = min(BUILDS_PAGE_SIZE, MAX_BUILD_RESULTS - len(ungrouped_builds))
+    response = execute_with_retries(cloudbuild.projects().builds().list(
+        projectId='oss-fuzz', pageSize=page_size, pageToken=next_page_token))
 
     if not 'builds' in response:
-      continue
+      print >> sys.stderr, 'Invalid response', response
+      return None
 
-    builds = response['builds']
+    ungrouped_builds.extend(response['builds'])
+    if len(ungrouped_builds) >= MAX_BUILD_RESULTS:
+      break
 
-    last_build = find_last_build(builds)
+    next_page_token = response.get('nextPageToken')
+
+  builds = {}
+  for build in ungrouped_builds:
+    for tag in build['tags']:
+      builds.setdefault(tag, []).append(build)
+
+  return builds
+
+
+def update_build_status(
+    builds, projects, build_tag_suffix, status_filename):
+  successes = []
+  failures = []
+
+  for project in projects:
+    print project
+
+    last_build = find_last_build(builds, project, build_tag_suffix)
     if not last_build:
       print >> sys.stderr, 'Failed to get build for', project
       continue
@@ -152,9 +182,10 @@ def main():
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = gcb_build('cloudbuild', 'v1', credentials=credentials)
 
-  update_build_status(cloudbuild, projects, build_project.FUZZING_BUILD_TAG,
+  builds = get_builds(cloudbuild)
+  update_build_status(builds, projects, build_project.FUZZING_BUILD_TAG,
                       status_filename='status.json')
-  update_build_status(cloudbuild, projects,
+  update_build_status(builds, projects,
                       build_and_run_coverage.COVERAGE_BUILD_TAG,
                       status_filename='status-coverage.json')
 
