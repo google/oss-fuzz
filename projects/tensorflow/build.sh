@@ -27,6 +27,9 @@ declare -r FUZZERS=$(
 CFLAGS="${CFLAGS} -fno-sanitize=vptr"
 CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
 
+# Make sure we run ./configure to detect when we are using a Bazel out of range
+yes "" | ./configure
+
 # See https://github.com/bazelbuild/bazel/issues/6697
 sed '/::kM..SeedBytes/d' -i tensorflow/stream_executor/rng.cc
 
