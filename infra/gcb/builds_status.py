@@ -66,6 +66,7 @@ def find_last_build(builds, project, build_tag_suffix):
 
   builds = builds.get(tag)
   if not builds:
+    print >>sys.stderr, 'Failed to find builds with tag', tag
     return None
 
   for build in builds:
@@ -123,7 +124,7 @@ def get_builds(cloudbuild):
         projectId='oss-fuzz', pageSize=page_size, pageToken=next_page_token))
 
     if not 'builds' in response:
-      print >> sys.stderr, 'Invalid response', response
+      print >> sys.stderr, 'Invalid response from builds list:', response
       return None
 
     ungrouped_builds.extend(response['builds'])
