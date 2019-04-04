@@ -30,6 +30,16 @@ curl -fSsL -O https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERS
 chmod +x ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
 ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
 
+# Finally, check instalation before proceeding to compile
+INSTALLED_VERSION=$(
+  bazel version | grep 'Build label' | cut -d: -f2 | tr -d '[:space:]'
+)
+if [ ${INSTALLED_VERSION} != ${BAZEL_VERSION} ]; then
+  echo "Couldn't install required Bazel. "
+  echo "Want ${BAZEL_VERSION}. Got ${INSTALLED_VERSION}."
+  exit 1
+fi
+
 # Generate the list of fuzzers we have (only the base/op name).
 FUZZING_BUILD_FILE="tensorflow/core/kernels/fuzzing/BUILD"
 declare -r FUZZERS=$(
