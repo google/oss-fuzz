@@ -251,13 +251,14 @@ def _get_work_dir(project_name=''):
 def _add_engine_args(parser):
   """Add common engine args."""
   parser.add_argument('--engine', default='libfuzzer',
-                      choices=['libfuzzer', 'afl', 'honggfuzz', 'none'])
+                      choices=['libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none'])
 
 
 def _add_sanitizer_args(parser):
   """Add common sanitizer args."""
-  parser.add_argument('--sanitizer', default='address',
-                      choices=['address', 'memory', 'undefined', 'coverage'])
+  parser.add_argument(
+      '--sanitizer', default='address',
+      choices=['address', 'memory', 'undefined', 'coverage', 'dataflow'])
 
 
 def _add_environment_args(parser):

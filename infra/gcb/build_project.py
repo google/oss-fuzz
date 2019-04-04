@@ -28,11 +28,13 @@ GCB_LOGS_BUCKET = 'oss-fuzz-gcb-logs'
 
 CONFIGURATIONS = {
     'sanitizer-address': ['SANITIZER=address'],
+    'sanitizer-dataflow': ['SANITIZER=dataflow'],
     'sanitizer-memory': ['SANITIZER=memory'],
     'sanitizer-undefined': ['SANITIZER=undefined'],
     'engine-libfuzzer': ['FUZZING_ENGINE=libfuzzer'],
     'engine-afl': ['FUZZING_ENGINE=afl'],
     'engine-honggfuzz': ['FUZZING_ENGINE=honggfuzz'],
+    'engine-dataflow': ['FUZZING_ENGINE=dataflow'],
     'engine-none': ['FUZZING_ENGINE=none'],
 }
 
@@ -52,6 +54,10 @@ ENGINE_INFO = {
         EngineInfo(
             upload_bucket='clusterfuzz-builds-honggfuzz',
             supported_sanitizers=['address', 'memory', 'undefined']),
+    'dataflow':
+        EngineInfo(
+            upload_bucket='clusterfuzz-builds-dataflow',
+            supported_sanitizers=['dataflow']),
     'none':
         EngineInfo(
             upload_bucket='clusterfuzz-builds-no-engine',
