@@ -15,6 +15,16 @@
 #
 ################################################################################
 
+# First, determine the latest Bazel we can support
+BAZEL_VERSION=$(
+  grep 'current_bazel_version =' configure.py | \
+  cut -d, -f2 | cut -d\' -f2 | tr -d '[:space:]'
+)
+if [ -z ${BAZEL_VERSION} ]; then
+  echo "Couldn't find a valid bazel version in configure.py script"
+  exit 1
+fi
+
 # Generate the list of fuzzers we have (only the base/op name).
 FUZZING_BUILD_FILE="tensorflow/core/kernels/fuzzing/BUILD"
 declare -r FUZZERS=$(
