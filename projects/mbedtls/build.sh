@@ -47,5 +47,5 @@ for target in x509crl x509crt x509csr privkey pubkey client server dtlsclient dt
 do
     $CC $CFLAGS -I. -I ../../include -c fuzz_$target.c -o fuzz_$target.o
 
-    $CXX $CXXFLAGS -std=c++11 fuzz_$target.o -o $OUT/fuzz_$target ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
+    $CXX $CXXFLAGS -std=c++11 fuzz_$target.o -o $OUT/fuzz_$target ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a $LIB_FUZZING_ENGINE
 done

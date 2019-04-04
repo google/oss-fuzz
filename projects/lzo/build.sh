@@ -27,7 +27,7 @@ do
     name=$(basename $file .c)
     $CC $CFLAGS -c -I include -I minilzo -I include/lzo ${file} -o ${name}.o
     $CXX $CXXFLAGS -std=c++11 -I include -I minilzo -I include/lzo ${name}.o \
-        -o $OUT/${name} -lFuzzingEngine src/.libs/liblzo2.a
+        -o $OUT/${name} $LIB_FUZZING_ENGINE src/.libs/liblzo2.a
 done
 
 # copy fuzzer options

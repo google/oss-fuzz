@@ -17,6 +17,6 @@ $CXX $CXXFLAGS $FUZZER_LDFLAGS \
   -I ${SRC}/adhd/cras/src/common \
   ${SRC}/adhd/cras/src/.libs/libcrasserver.a \
   -lpthread -lrt -ludev -ldl -lm \
-  -lFuzzingEngine \
+  $LIB_FUZZING_ENGINE \
   -Wl,-Bstatic -liniparser -lasound -lspeexdsp -Wl,-Bdynamic
 zip -j ${OUT}/rclient_message_corpus.zip ${SRC}/adhd/cras/src/fuzz/corpus/*

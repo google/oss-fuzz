@@ -53,7 +53,7 @@ for fuzzer in $FUZZERS; do
   $CXX $CXXFLAGS -std=c++11 \
     $SRC/icu/icu4c/source/test/fuzzer/$fuzzer.cc -o $OUT/$fuzzer locale_util.o \
     -I$SRC/icu/icu4c/source/common -I$SRC/icu/icu4c/source/i18n -L$WORK/icu/lib \
-    -lFuzzingEngine -licui18n -licuuc -licutu -licudata
+    $LIB_FUZZING_ENGINE -licui18n -licuuc -licutu -licudata
 done
 
 CORPUS="uloc_canonicalize_fuzzer_seed_corpus \

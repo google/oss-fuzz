@@ -46,4 +46,4 @@ $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
   "$WORK/lib/libjpeg.a" \
   "$WORK/lib/libz.a" \
   -pthread \
-  -lFuzzingEngine
+  $LIB_FUZZING_ENGINE

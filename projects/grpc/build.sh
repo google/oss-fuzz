@@ -80,7 +80,7 @@ for file in $FUZZER_FILES; do
   echo "Building fuzzer $fuzzer_name"
   $CXX $CXXFLAGS \
     $file -o $OUT/$fuzzer_name \
-    -lFuzzingEngine ${FUZZER_LIBRARIES}
+    $LIB_FUZZING_ENGINE ${FUZZER_LIBRARIES}
 done
 
 # Copy dictionaries and options files to $OUT/

@@ -22,7 +22,7 @@ make -j$(nproc)
 
 for fuzzer in augeas_escape_name_fuzzer; do
     $CXX $CXXFLAGS -std=c++11 -Isrc/ `xml2-config --cflags` \
-        $SRC/$fuzzer.cc -o $OUT/$fuzzer -lFuzzingEngine \
+        $SRC/$fuzzer.cc -o $OUT/$fuzzer $LIB_FUZZING_ENGINE \
         src/.libs/libaugeas.a src/.libs/libfa.a ./gnulib/lib/.libs/libgnu.a \
         /usr/lib/x86_64-linux-gnu/libxml2.a
 done

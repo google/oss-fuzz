@@ -88,4 +88,4 @@ $CC $CFLAGS -I. -I../gcrypt/src -c modules/gcrypt.c -o gcrypt.o
 $CXX $CXXFLAGS -I. -I../ -c modules/cryptopp.cpp -o cryptopp.o
 $CC $CFLAGS -I. -I../ -c modules/nettle.c -o nettle.o
 
-$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o gcrypt.o cryptopp.o nettle.o -o $OUT/fuzz_ec ../mbedtls/library/libmbedcrypto.a ../libecc/build/libec.a ../libecc/src/external_deps/rand.o ../openssl/libcrypto.a ../nettle/libhogweed.a ../nettle/libnettle.a ../nettle/gmp-6.1.2/.libs/libgmp.a ../gcrypt/src/.libs/libgcrypt.a ../cryptopp/libcryptopp.a -lgpg-error -lFuzzingEngine
+$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o gcrypt.o cryptopp.o nettle.o -o $OUT/fuzz_ec ../mbedtls/library/libmbedcrypto.a ../libecc/build/libec.a ../libecc/src/external_deps/rand.o ../openssl/libcrypto.a ../nettle/libhogweed.a ../nettle/libnettle.a ../nettle/gmp-6.1.2/.libs/libgmp.a ../gcrypt/src/.libs/libgcrypt.a ../cryptopp/libcryptopp.a -lgpg-error $LIB_FUZZING_ENGINE

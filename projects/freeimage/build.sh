@@ -26,4 +26,4 @@ popd
 INSTALL_DIR=$SRC/FreeImage/Dist
 
 $CXX $CXXFLAGS -I${INSTALL_DIR}/ load_from_memory_fuzzer.cc \
-  ${INSTALL_DIR}/libfreeimage.a -lFuzzingEngine -o $OUT/load_from_memory_fuzzer
+  ${INSTALL_DIR}/libfreeimage.a $LIB_FUZZING_ENGINE -o $OUT/load_from_memory_fuzzer

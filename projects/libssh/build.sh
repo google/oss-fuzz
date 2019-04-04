@@ -25,5 +25,5 @@ make "-j$(nproc)"
 $CXX $CXXFLAGS -std=c++11 -I$SRC/libssh/include/ \
     "$SRC/libssh/tests/fuzz/ssh_server_fuzzer.cpp" \
     -o "$OUT/libssh_server_fuzzer" \
-    -lFuzzingEngine ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
+    $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
 popd
