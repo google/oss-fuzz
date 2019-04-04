@@ -18,5 +18,5 @@ for f in $(find $SRC -name '*_fuzzer.c'); do
     $CC $CFLAGS -I. $f -c -o /tmp/$b.o
     $CXX $CXXFLAGS -o $OUT/$b /tmp/$b.o -stdlib=libc++ -lFuzzingEngine ./libz.a
     rm -f /tmp/$b.o
-    ln -s $OUT/seed_corpus.zip $OUT/${b}_seed_corpus.zip
+    ln -sf $OUT/seed_corpus.zip $OUT/${b}_seed_corpus.zip
 done
