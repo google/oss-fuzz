@@ -1,0 +1,6 @@
+cmake . -DBUILD_SHARED_LIBS=OFF -DICAL_GLIB=False
+make install -j$(nproc)
+
+$CXX $CXXFLAGS -std=c++11 $SRC/libical_fuzzer.cc -lFuzzingEngine /usr/local/lib/libical.a -o $OUT/libical_fuzzer
+
+find . -name *.ics -print | zip -q $OUT/libical_fuzzer_seed_corpus.zip -@
