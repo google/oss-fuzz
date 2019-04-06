@@ -17,9 +17,9 @@
 
 mkdir build
 cd build
-cmake -DBUILD_SHARED_LIBS=Off ..
+cmake ../fuzzers -Dbuild_tests=On -Doss_fuzz_mode=On -DBUILD_SHARED_LIBS=Off
 make
-cp fuzzers/fuzzer_* $OUT
+cp fuzzer_* $OUT
 pushd $OUT
 for f in bdecode http_parser magnet ; do
 wget https://www.pauldreik.se/fuzzer_${f}_seed_corpus.zip

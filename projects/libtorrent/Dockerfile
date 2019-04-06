@@ -27,8 +27,8 @@ RUN cd boost_1_69_0 && ./bootstrap.sh --with-toolset=clang --prefix=/usr --with-
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.0/cmake-3.14.0-Linux-x86_64.sh
 RUN sh cmake-3.14.0-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
 
-RUN git clone --depth 10 https://github.com/pauldreik/fuzzlibtorrent.git
-RUN git -C fuzzlibtorrent submodule update --init --depth 10
-WORKDIR fuzzlibtorrent
+RUN git clone --single-branch --branch ossfuzz https://github.com/pauldreik/libtorrent.git
+
+WORKDIR libtorrent
 COPY build.sh $SRC/
 
