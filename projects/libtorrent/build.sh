@@ -17,8 +17,8 @@
 
 mkdir build
 cd build
-cmake ../fuzzers -Dbuild_tests=On -Doss_fuzz_mode=On -DBUILD_SHARED_LIBS=Off
-make
+cmake ../fuzzers -Dexpose_internal_functions=On -Doss_fuzz_mode=On -DBUILD_SHARED_LIBS=Off -GNinja
+cmake --build .
 cp fuzzer_* $OUT
 pushd $OUT
 for f in bdecode http_parser magnet ; do
