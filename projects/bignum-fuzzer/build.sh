@@ -97,6 +97,10 @@ LIBFUZZER_LINK="-lFuzzingEngine" make
 # Copy OpenSSL/libgmp fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_libgmp_num_len_1200_all_operations_num_loops_1
 
+# Build mbedtls
+cd $SRC/mbedtls
+make lib -j$(nproc)
+
 # Build BoringSSL
 cd $SRC/boringssl
 mkdir build
@@ -108,6 +112,20 @@ make -j$(nproc)
 cd $SRC/bignum-fuzzer/modules/openssl
 make clean
 CFLAGS="$CFLAGS -DBIGNUM_FUZZER_BORINGSSL" OPENSSL_INCLUDE_PATH=$SRC/boringssl/include OPENSSL_LIBCRYPTO_A_PATH=$SRC/boringssl/build/crypto/libcrypto.a make
+
+# Build mbedtls module
+cd $SRC/bignum-fuzzer/modules/mbedtls
+MBEDTLS_LIBMBEDCRYPTO_A_PATH=$SRC/mbedtls/library/libmbedcrypto.a MBEDTLS_INCLUDE_PATH=$SRC/mbedtls/include make
+
+# Build BoringSSL/mbedtls fuzzer
+cd $SRC/bignum-fuzzer
+make clean
+./config-modules.sh boringssl mbedtls
+CXXFLAGS="$BASE_CXXFLAGS -DBNFUZZ_FLAG_NUM_LEN=100 -DBNFUZZ_FLAG_ALL_OPERATIONS=1 -DBNFUZZ_FLAG_NUM_LOOPS=1"
+LIBFUZZER_LINK="-lFuzzingEngine" make
+
+# Copy BoringSSL/mbedtls fuzzer to the designated location
+cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_boringssl_mbedtls_num_len_100_all_operations_num_loops_1
 
 # Build BoringSSL/libmpdec fuzzer
 cd $SRC/bignum-fuzzer
@@ -124,4 +142,5 @@ cp $SRC/bignum-fuzzer/corpora/fuzzer_openssl_go_no_negative_num_len_1200_all_ope
 cp $SRC/bignum-fuzzer/corpora/fuzzer_openssl_rust_num_len_1200_all_operations_num_loops_1_seed_corpus.zip $OUT
 cp $SRC/bignum-fuzzer/corpora/fuzzer_openssl_cpp_boost_num_len_1200_all_operations_num_loops_1_seed_corpus.zip $OUT
 cp $SRC/bignum-fuzzer/corpora/fuzzer_openssl_libgmp_num_len_1200_all_operations_num_loops_1_seed_corpus.zip $OUT
+cp $SRC/bignum-fuzzer/corpora/fuzzer_boringssl_mbedtls_num_len_100_all_operations_num_loops_1_seed_corpus.zip $OUT
 cp $SRC/bignum-fuzzer/corpora/fuzzer_boringssl_mbedtls_num_len_100_all_operations_num_loops_1_seed_corpus.zip $OUT/fuzzer_boringssl_libmpdec_num_len_100_all_operations_num_loops_1_seed_corpus.zip
