@@ -16,22 +16,8 @@
 #
 ################################################################################
 
-build_protobuf() {
-  ./autogen.sh
-  ./configure --disable-shared
-  make -j $(nproc)
-  make check -j $(nproc)
-  make install
-  ldconfig
-}
-
-(cd protobuf-3.3.0 && build_protobuf)
-
 readonly FUZZERS=( \
   clang-fuzzer \
-  clang-proto-fuzzer \
-  clang-loop-proto-fuzzer \
-  clang-llvm-proto-fuzzer \
   clang-format-fuzzer \
   clangd-fuzzer \
   llvm-itanium-demangle-fuzzer \
@@ -58,7 +44,6 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
     -DLLVM_LIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE}" \
     -DLLVM_NO_DEAD_STRIP=ON \
-    -DCLANG_ENABLE_PROTO_FUZZER=ON \
     -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
     -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly
 for fuzzer in "${FUZZERS[@]}"; do
