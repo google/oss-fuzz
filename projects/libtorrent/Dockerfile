@@ -18,17 +18,17 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER oss-fuzz-libtorrent@pauldreik.se
 RUN echo "CXX=$CXX"
 RUN echo "CXXFLAGS=$CXXFLAGS"
-RUN apt-get update && apt-get install -y make wget libssl-dev libgeoip-dev pkg-config
+RUN apt-get update && apt-get install -y make ninja-build wget libssl-dev libgeoip-dev pkg-config
 
-RUN wget https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz
+RUN wget --no-verbose https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz
 RUN tar xvzf boost_1_69_0.tar.gz
-RUN cd boost_1_69_0 && ./bootstrap.sh --with-toolset=clang --prefix=/usr --with-libraries=system && ./b2 clean && ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" install
+RUN cd boost_1_69_0 && ./bootstrap.sh --with-toolset=clang --prefix=/usr --with-libraries=system && ./b2 clean && ./b2 toolset=clang cxxflags="$CXXFLAGS" install
 
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.0/cmake-3.14.0-Linux-x86_64.sh
+RUN wget --no-verbose https://github.com/Kitware/CMake/releases/download/v3.14.0/cmake-3.14.0-Linux-x86_64.sh
 RUN sh cmake-3.14.0-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
 
-RUN git clone --depth 10 https://github.com/pauldreik/fuzzlibtorrent.git
-RUN git -C fuzzlibtorrent submodule update --init --depth 10
-WORKDIR fuzzlibtorrent
+RUN git clone --single-branch --branch ossfuzz https://github.com/pauldreik/libtorrent.git
+
+WORKDIR libtorrent
 COPY build.sh $SRC/
 

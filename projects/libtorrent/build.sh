@@ -15,12 +15,14 @@
 #
 ################################################################################
 
+#create zip files with initial corpus, taken from version control.
+for f in $(ls fuzzers/initial_corpus/) ;do
+  zip -j -r $OUT/fuzzer_${f}_seed_corpus.zip fuzzers/initial_corpus/$f
+done
+
 mkdir build
 cd build
-cmake -DBUILD_SHARED_LIBS=Off ..
-make
-cp fuzzers/fuzzer_* $OUT
-pushd $OUT
-for f in bdecode http_parser magnet ; do
-wget https://www.pauldreik.se/fuzzer_${f}_seed_corpus.zip
-done  
+cmake ../fuzzers -Dexpose_internal_functions=On -Doss_fuzz_mode=On -DBUILD_SHARED_LIBS=Off -GNinja
+cmake --build .
+cp fuzzer_* $OUT
+
