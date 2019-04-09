@@ -109,6 +109,9 @@ rm -rf $WORK/msan
 # Pull trunk libfuzzer.
 cd $SRC && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
 
+# Copy DataFlow scripts for collecting and merging the traces.
+cp libfuzzer/scripts/*_data_flow.py /usr/local/bin/
+
 # Cleanup
 rm -rf $SRC/llvm
 rm -rf $SRC/chromium_tools

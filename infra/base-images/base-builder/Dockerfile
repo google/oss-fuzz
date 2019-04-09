@@ -23,7 +23,10 @@ ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-sco
 
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
 ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,unsigned-integer-overflow,vla-bound,vptr -fno-sanitize-recover=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr"
+
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
+
+ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow -fsanitize-coverage=trace-pc-guard,pc-table,func,trace-cmp"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -63,6 +66,7 @@ RUN mkdir honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_libfuzzer compile_honggfuzz srcmap write_labels.py /usr/local/bin/
+COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+    srcmap write_labels.py /usr/local/bin/
 
 CMD ["compile"]

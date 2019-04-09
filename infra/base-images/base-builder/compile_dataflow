@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 #
 ################################################################################
 
-echo -n "Compiling libFuzzer to $LIB_FUZZING_ENGINE... "
+echo -n "Compiling DataFlow to $LIB_FUZZING_ENGINE... "
 mkdir -p $WORK/libfuzzer
 pushd $WORK/libfuzzer > /dev/null
 
-# Use -fPIC to allow preloading (LD_PRELOAD).
-$CXX $CXXFLAGS -std=c++11 -O2 -fPIC $SANITIZER_FLAGS -fno-sanitize=vptr \
-    -c $SRC/libfuzzer/*.cpp -I$SRC/libfuzzer
+# Intentionally do not use $SANITIZER_FLAGS, we need -fsanitize=dataflow only.
+$CXX $CXXFLAGS -fsanitize=dataflow -std=c++11 -O2 -c \
+    $SRC/libfuzzer/dataflow/*.cpp
 ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
 popd > /dev/null
 rm -rf $WORK/libfuzzer
