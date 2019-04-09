@@ -27,5 +27,7 @@ RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
 RUN git clone https://github.com/openssl/openssl
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
+RUN git clone --depth 1 https://github.com/libressl-portable/portable libressl
+RUN cd $SRC/libressl && ./update.sh
 
 COPY build.sh $SRC/

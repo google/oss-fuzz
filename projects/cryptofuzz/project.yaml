@@ -7,6 +7,9 @@ auto_ccs:
     - "agl@google.com"
     - "davidben@google.com"
     - "svaldez@google.com"
+    - "beck@obtuse.com"
+    - "joel.sing@gmail.com"
+    - "kinichiro.inoguchi@gmail.com"
 sanitizers:
  - address
  - undefined
