@@ -95,7 +95,9 @@ def load_project_yaml(project_dir):
     project_yaml.setdefault('image', 'gcr.io/oss-fuzz/' + project_name)
     project_yaml.setdefault('architectures', DEFAULT_ARCHITECTURES)
     project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
+    project_yaml['sanitizers'] = DEFAULT_SANITIZERS
     project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
+    project_yaml['fuzzing_engines'] = DEFAULT_ENGINES
     project_yaml.setdefault('run_tests', True)
     project_yaml.setdefault('coverage_extra_args', '')
     project_yaml.setdefault('labels', {})
