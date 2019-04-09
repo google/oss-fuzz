@@ -18,7 +18,10 @@
 # Build project
 autoreconf
 env
-env CFLAGS="" ./configure --with-cflags-after="$CFLAGS" --with-ldflags-after="-g $CFLAGS"
+env CFLAGS="" ./configure \
+	--with-cflags="-DWITH_XMSS=1" \
+	--with-cflags-after="$CFLAGS" \
+	--with-ldflags-after="-g $CFLAGS"
 make -j$(nproc) all
 
 # Build fuzzers
