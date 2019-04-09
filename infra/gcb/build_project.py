@@ -173,6 +173,8 @@ def get_build_steps(project_dir):
       {
           'args': [
               'clone',
+              '-b',
+              'df_test',
               'https://github.com/google/oss-fuzz.git',
           ],
           'name': 'gcr.io/cloud-builders/git',
