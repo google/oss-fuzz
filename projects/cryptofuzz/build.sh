@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+cd $SRC/openssl
+git checkout 9efa0ae0b602c1c0e356009a58410a2e8b80201a
+
 export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then

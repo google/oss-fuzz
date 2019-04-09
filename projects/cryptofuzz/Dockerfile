@@ -25,7 +25,7 @@ RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
 
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
-RUN git clone --depth 1 https://github.com/openssl/openssl
+RUN git clone https://github.com/openssl/openssl
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 
 COPY build.sh $SRC/
