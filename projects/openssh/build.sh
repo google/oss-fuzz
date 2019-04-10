@@ -18,7 +18,10 @@
 # Build project
 autoreconf
 env
-env CFLAGS="" ./configure --with-cflags-after="$CFLAGS" --with-ldflags-after="-g $CFLAGS"
+env CFLAGS="" ./configure \
+	--with-cflags="-DWITH_XMSS=1" \
+	--with-cflags-after="$CFLAGS" \
+	--with-ldflags-after="-g $CFLAGS"
 make -j$(nproc) all
 
 # Build fuzzers
@@ -30,8 +33,12 @@ $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/sig_fuzz.cc -o $OUT/sig_fuzz \
 	-lssh -lopenbsd-compat $STATIC_CRYPTO -lFuzzingEngine
+$CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
+	regress/misc/fuzz-harness/authopt_fuzz.cc -o $OUT/authopt_fuzz \
+	auth-options.o -lssh -lopenbsd-compat $STATIC_CRYPTO -lFuzzingEngine
 
 # Prepare seed corpora
 CASES="$SRC/openssh-fuzz-cases"
 (set -e ; cd ${CASES}/key ; zip -r $OUT/pubkey_fuzz_seed_corpus.zip .)
 (set -e ; cd ${CASES}/sig ; zip -r $OUT/sig_fuzz_seed_corpus.zip .)
+(set -e ; cd ${CASES}/authopt ; zip -r $OUT/authopt_fuzz_seed_corpus.zip .)
