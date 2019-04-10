@@ -24,6 +24,8 @@ ADD https://github.com/facebook/zstd/releases/download/fuzz-corpora/block_decomp
     https://github.com/facebook/zstd/releases/download/fuzz-corpora/simple_round_trip_seed_corpus.zip \
     https://github.com/facebook/zstd/releases/download/fuzz-corpora/stream_decompress_seed_corpus.zip \
     https://github.com/facebook/zstd/releases/download/fuzz-corpora/stream_round_trip_seed_corpus.zip \
+    https://github.com/facebook/zstd/releases/download/fuzz-corpora/dictionary_decompress_seed_corpus.zip \
+    https://github.com/facebook/zstd/releases/download/fuzz-corpora/dictionary_round_trip_seed_corpus.zip \
     $SRC/
 # Clone source
 RUN git clone --depth 1 https://github.com/facebook/zstd
