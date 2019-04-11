@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Generate lookup tables. This only needs to be done once.
+cd $SRC/cryptofuzz
+python gen_repository.py
+
 cd $SRC/openssl
 git checkout 9efa0ae0b602c1c0e356009a58410a2e8b80201a
 
