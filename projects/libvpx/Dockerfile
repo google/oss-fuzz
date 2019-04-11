@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER jzern@google.com
 RUN apt-get update && apt-get install -y yasm wget gcc
 RUN git clone https://chromium.googlesource.com/webm/libvpx

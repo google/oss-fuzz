@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER stas@php.net
 RUN apt-get update && apt-get install -y make autoconf automake libtool bison re2c make ca-certificates curl \
 	xz-utils dpkg-dev file libc-dev pkg-config libcurl4-openssl-dev libedit-dev libsqlite3-dev libssl-dev \

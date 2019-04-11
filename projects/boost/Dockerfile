@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 RUN apt-get update && apt-get install -y g++
 
 RUN git clone --recursive https://github.com/boostorg/boost.git

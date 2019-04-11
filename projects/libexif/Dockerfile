@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER paul.l.kehrer@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext autopoint
 RUN git clone --depth 1 https://github.com/libexif/libexif

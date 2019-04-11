@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER steadmon@google.com
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \

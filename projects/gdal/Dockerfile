@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER even.rouault@spatialys.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool g++ zlib1g-dev libsqlite3-dev libexpat-dev liblzma-dev libxerces-c-dev libpng12-dev libgif-dev libwebp-dev libicu-dev libnetcdf-dev curl cmake libssl-dev sqlite3
 #   libgeos-dev libjpeg-dev libcurl4-gnutls-dev libxml2-dev netcdf-bin libpoppler-dev libspatialite-dev libhdf4-alt-dev libhdf5-serial-dev  poppler-utils libfreexl-dev unixodbc-dev libepsilon-dev libpcre3-dev

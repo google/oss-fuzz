@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER jsha@letsencrypt.org
 RUN apt-get update
 RUN apt-get install -y make libtool libssl-dev libexpat-dev wget

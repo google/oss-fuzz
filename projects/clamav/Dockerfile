@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER clamav.fuzz@gmail.com
 RUN apt-get update && apt-get install -y libssl-dev
 RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav-devel.git

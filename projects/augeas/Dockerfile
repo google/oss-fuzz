@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER hhan@redhat.com
 RUN apt-get update && apt-get install -y libreadline-dev libselinux1-dev \
     libxml2-dev make autoconf automake libtool pkg-config bison flex

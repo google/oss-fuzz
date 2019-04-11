@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER dvyukov@google.com
 
 RUN git clone --depth 1 https://github.com/curl/curl.git /src/curl

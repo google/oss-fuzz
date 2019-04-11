@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER info@automatak.com
 RUN apt-get update && apt-get install -y make cmake tshark
 RUN git clone --recursive --depth 1 https://github.com/automatak/dnp3.git opendnp3

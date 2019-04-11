@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER robryk@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool libpng-dev pkg-config curl
 

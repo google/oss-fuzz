@@ -4,7 +4,7 @@
 #
 # Defines a docker image that can build cras fuzzers.
 #
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER dgreid@chromium.org
 
 RUN apt-get -y update && \

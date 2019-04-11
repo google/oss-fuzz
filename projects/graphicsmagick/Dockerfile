@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER alex.gaynor@gmail.com
 RUN apt-get update && apt-get install -y mercurial automake autopoint cmake libtool nasm pkg-config
 RUN hg clone -b default http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick || \

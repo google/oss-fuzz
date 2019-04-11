@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER guidovranken@gmail.com
 RUN apt-get update && apt-get install -y software-properties-common python-software-properties wget curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake
 RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go

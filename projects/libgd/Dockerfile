@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER ossfuzz@tds.xyz
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool pkg-config libz-dev
