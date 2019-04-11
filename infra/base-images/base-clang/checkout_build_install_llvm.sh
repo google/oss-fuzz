@@ -63,7 +63,9 @@ cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
 
-# Build & install
+# Build & install. We build clang in two stages because gcc can't build a
+# static version of libcxxabi
+# (see https://github.com/google/oss-fuzz/issues/2164).
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
 cd $WORK/llvm-stage1
 
