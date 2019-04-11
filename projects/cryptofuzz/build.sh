@@ -25,30 +25,33 @@ then
 fi
 
 ##############################################################################
-# Compile LibreSSL (with assembly)
-cd $SRC/libressl
-rm -rf build ; mkdir build
-cd build
-cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
-make -j$(nproc)
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    # Compile LibreSSL (with assembly)
+    cd $SRC/libressl
+    rm -rf build ; mkdir build
+    cd build
+    cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    make -j$(nproc)
 
-# Compile Cryptofuzz LibreSSL (with assembly) module
-cd $SRC/cryptofuzz/modules/openssl
-OPENSSL_INCLUDE_PATH="$SRC/libressl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/libressl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBRESSL" make -B
+    # Compile Cryptofuzz LibreSSL (with assembly) module
+    cd $SRC/cryptofuzz/modules/openssl
+    OPENSSL_INCLUDE_PATH="$SRC/libressl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/libressl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBRESSL" make -B
 
-# Compile Cryptofuzz
-cd $SRC/cryptofuzz
-LIBFUZZER_LINK="-lFuzzingEngine" CXXFLAGS="$CXXFLAGS -I $SRC/libressl/include -DCRYPTOFUZZ_LIBRESSL" make -B -j$(nproc)
+    # Compile Cryptofuzz
+    cd $SRC/cryptofuzz
+    LIBFUZZER_LINK="-lFuzzingEngine" CXXFLAGS="$CXXFLAGS -I $SRC/libressl/include -DCRYPTOFUZZ_LIBRESSL" make -B -j$(nproc)
 
-# Generate dictionary
-./generate_dict
+    # Generate dictionary
+    ./generate_dict
 
-# Copy fuzzer
-cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-libressl
-# Copy dictionary
-cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-libressl.dict
-# Copy seed corpus
-cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-libressl_seed_corpus.zip
+    # Copy fuzzer
+    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-libressl
+    # Copy dictionary
+    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-libressl.dict
+    # Copy seed corpus
+    cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-libressl_seed_corpus.zip
+fi
 
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
