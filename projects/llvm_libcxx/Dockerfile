@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
 RUN svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
 COPY build.sh $SRC/

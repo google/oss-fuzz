@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER yangg@google.com
 
 RUN apt-get update && apt-get install -y software-properties-common python-software-properties

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 #TODO change
 MAINTAINER support-mbedtls@arm.com
 RUN apt-get update && apt-get install -y make cmake

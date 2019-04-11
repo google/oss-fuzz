@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER oss-fuzz-libtorrent@pauldreik.se
 RUN echo "CXX=$CXX"
 RUN echo "CXXFLAGS=$CXXFLAGS"

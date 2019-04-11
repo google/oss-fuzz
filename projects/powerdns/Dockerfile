@@ -15,7 +15,7 @@
 ################################################################################
 
 # base image with clang toolchain
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 
 # maintainer for this file
 MAINTAINER remi.gacogne@powerdns.com

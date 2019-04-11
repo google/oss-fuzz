@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER taking@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake nasm

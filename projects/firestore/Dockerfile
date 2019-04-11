@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER varconst@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget golang python python-protobuf python-six
 RUN git clone --depth 1 https://github.com/firebase/firebase-ios-sdk.git

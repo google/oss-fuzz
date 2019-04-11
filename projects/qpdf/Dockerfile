@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER taking@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake nasm
 RUN git clone --depth 1 https://github.com/qpdf/qpdf.git qpdf

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER lebedev.ri@gmail.com
 RUN apt-get update && apt-get install -y cmake make
 RUN git clone --depth 1 https://github.com/darktable-org/rawspeed.git librawspeed

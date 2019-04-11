@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y curl
 
 # Get AOSP's version of sqlite, and get the fuzz target from upstream.

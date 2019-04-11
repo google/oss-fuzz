@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER daniel.marjamaki@gmail.com
 
 RUN git clone https://github.com/danmar/cppcheck.git

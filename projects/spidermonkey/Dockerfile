@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER agaynor@mozilla.com
 RUN apt-get update && apt-get install -y \
   autoconf2.13 \

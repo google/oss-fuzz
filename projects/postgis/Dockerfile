@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER lr@pcorp.us
 RUN echo deb http://archive.ubuntu.com/ubuntu/ disco main restricted universe multiverse >> /etc/apt/sources.list
 RUN apt-get update && apt-get install -y make autoconf automake libtool g++ postgresql-server-dev-11 libgeos-dev libproj-dev libxml2-dev pkg-config libjson-c-dev

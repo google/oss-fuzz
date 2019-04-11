@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER nigeltao@golang.org
 RUN git clone --depth 1 https://github.com/google/wuffs.git
 WORKDIR wuffs

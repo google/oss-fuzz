@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
     build-essential cmake libbz2-dev ninja-build zlib1g-dev
 RUN git clone --recursive https://github.com/ethereum/solidity.git solidity

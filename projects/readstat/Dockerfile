@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER emmiller@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake gettext libtool zip zlib1g-dev
 

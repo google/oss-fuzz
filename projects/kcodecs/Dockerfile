@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER tsdgeos@gmail.com
 RUN apt-get install --yes cmake gperf
 RUN git clone --depth 1  git://code.qt.io/qt/qtbase.git

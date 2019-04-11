@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER nathan.moinvaziri@gmail.com
 RUN apt-get update && apt-get install -y make cmake pkg-config
 

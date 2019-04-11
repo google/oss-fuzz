@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER flim@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 

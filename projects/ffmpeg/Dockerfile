@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
 ADD bionic.list /etc/apt/sources.list.d/bionic.list
 ADD nasm_apt.pin /etc/apt/preferences

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder:testing
+FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER eugeni.stepanov@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config libfreetype6-dev libfontconfig1-dev
 
