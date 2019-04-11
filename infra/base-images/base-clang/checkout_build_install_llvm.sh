@@ -63,9 +63,12 @@ cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
 
-# Build & install
-mkdir -p $WORK/llvm
-cd $WORK/llvm
+# Build & install. We build clang in two stages because gcc can't build a
+# static version of libcxxabi
+# (see https://github.com/google/oss-fuzz/issues/2164).
+mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
+cd $WORK/llvm-stage1
+
 TARGET_TO_BUILD=
 case $(uname -m) in
     x86_64)
@@ -80,12 +83,21 @@ case $(uname -m) in
         ;;
 esac
 cmake -G "Ninja" \
-      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      $SRC/llvm
+ninja
+
+cd $WORK/llvm-stage2
+export CC=$WORK/llvm-stage1/bin/clang
+export CXX=$WORK/llvm-stage1/bin/clang++
+cmake -G "Ninja" \
+      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       $SRC/llvm
 ninja
 ninja install
-rm -rf $WORK/llvm
+rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
 mkdir -p $WORK/msan
 cd $WORK/msan
