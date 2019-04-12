@@ -67,11 +67,11 @@ then
 
     # Compile Cryptofuzz OpenSSL (with assembly) module
     cd $SRC/cryptofuzz/modules/openssl
-    OPENSSL_INCLUDE_PATH="$SRC/openssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl/libcrypto.a" make
+    OPENSSL_INCLUDE_PATH="$SRC/openssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl/libcrypto.a" make -B
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="-lFuzzingEngine" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -j$(nproc)
+    LIBFUZZER_LINK="-lFuzzingEngine" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
