@@ -46,8 +46,10 @@ ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthrea
 ENV SANITIZER="address"
 ENV FUZZING_ENGINE="libfuzzer"
 
+# DEPRECATED - NEW CODE SHOULD NOT USE THIS. OLD CODE SHOULD STOP. Please use
+# LIB_FUZZING_ENGINE instead.
 # Path to fuzzing engine library to support some old users of
-# LIB_FUZZING_ENGINE. This will be removed. Please use LIB_FUZZING_ENGINE.
+# LIB_FUZZING_ENGINE.
 ENV LIB_FUZZING_ENGINE_DEPRECATED="/usr/lib/libFuzzingEngine.a"
 
 # Argument passed to compiler to link against fuzzing engine.
