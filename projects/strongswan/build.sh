@@ -17,11 +17,13 @@
 
 ./autogen.sh
 
+# TODO: Stop using LIB_FUZZING_ENGINE_OLD and get this working with
+# LIB_FUZZING_ENGINE.
 ./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE" \
 	--enable-imc-test \
 	--enable-tnccs-20 \
 	--enable-fuzzing \
-	--with-libfuzzer=$LIB_FUZZING_ENGINE \
+	--with-libfuzzer=$LIB_FUZZING_ENGINE_OLD \
 	--enable-monolithic \
 	--disable-shared \
 	--enable-static

@@ -18,8 +18,10 @@
 # configure script needs leak checking disabled to not fail
 export ASAN_OPTIONS=detect_leaks=0
 ./autogen.sh
+# TODO: Stop using LIB_FUZZING_ENGINE_OLD and get this working with
+# LIB_FUZZING_ENGINE.
 ./configure --with-perl=no --disable-shared --without-textui --with-fuzzer \
-	--with-fuzzer-lib=$LIB_FUZZING_ENGINE \
+	--with-fuzzer-lib=$LIB_FUZZING_ENGINE_OLD \
 	CC=$CC CXX=$CXX PKG_CONFIG="pkg-config --static"
 make clean
 make "-j$(nproc)" CFLAGS="-static -DSUPPRESS_PRINTF_FALLBACK $CFLAGS" CXXFLAGS="-static $CXXFLAGS"
