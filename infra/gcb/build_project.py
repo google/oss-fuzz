@@ -154,7 +154,7 @@ def get_build_steps(project_dir):
         'args': [
           'clone',
           '-b',
-          'lf-build',
+          'test-lfe',
           '--single-branch',
           'https://github.com/google/oss-fuzz.git',
           ],
