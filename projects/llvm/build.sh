@@ -37,7 +37,7 @@ esac
 mkdir build
 cd build
 # TODO: Stop using LIB_FUZZING_ENGINE_DEPRECATED and make this build use
-# LIB_FUZZING_ENGINE.
+# LIB_FUZZING_ENGINE (see https://github.com/google/oss-fuzz/issues/2317).
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DCMAKE_C_COMPILER="${CC}" \

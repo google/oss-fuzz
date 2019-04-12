@@ -27,7 +27,7 @@ mkdir build
 cd build
 
 # TODO: Stop using LIB_FUZZING_ENGINE_DEPRECATED and make this build use
-# LIB_FUZZING_ENGINE.
+# LIB_FUZZING_ENGINE (see https://github.com/google/oss-fuzz/issues/2317).
 cmake \
   -G"Unix Makefiles" -DBINARY_PACKAGE_BUILD=ON \
   -DWITH_PTHREADS=OFF -DWITH_OPENMP=OFF \

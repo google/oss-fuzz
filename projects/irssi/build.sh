@@ -19,7 +19,7 @@
 export ASAN_OPTIONS=detect_leaks=0
 ./autogen.sh
 # TODO: Stop using LIB_FUZZING_ENGINE_DEPRECATED and make this build use
-# LIB_FUZZING_ENGINE.
+# LIB_FUZZING_ENGINE (see https://github.com/google/oss-fuzz/issues/2317).
 ./configure --with-perl=no --disable-shared --without-textui --with-fuzzer \
 	--with-fuzzer-lib=$LIB_FUZZING_ENGINE_DEPRECATED \
 	CC=$CC CXX=$CXX PKG_CONFIG="pkg-config --static"
