@@ -14,7 +14,7 @@
 #
 ##############################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER nickm@torproject.org
 RUN apt-get update && apt-get install -y autoconf automake make libtool
 RUN git clone --depth 1 https://git.torproject.org/tor.git

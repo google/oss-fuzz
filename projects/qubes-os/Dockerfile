@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER paras.chetal@gmail.com
 
 RUN apt-get update && apt-get -y install build-essential automake libtool git python

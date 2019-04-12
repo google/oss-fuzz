@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER guidovranken@gmail.com
 RUN apt-get update && apt-get install -y sudo autoconf build-essential libssl-dev pkg-config
 

@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER rquattle@google.com
 
 RUN apt-get -y update \

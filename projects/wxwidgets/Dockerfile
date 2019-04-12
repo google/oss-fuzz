@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER vadim@wxwidgets.org
 RUN apt-get update && apt-get install -y make
 RUN git clone --recurse-submodules --depth 1 https://github.com/wxWidgets/wxWidgets.git wxwidgets

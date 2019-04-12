@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER glennrp@gmail.com
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool zlib1g-dev

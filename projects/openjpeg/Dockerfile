@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER antonin@gmail.com
 RUN apt-get update && apt-get install -y make cmake g++
 RUN git clone --depth 1 https://github.com/uclouvain/openjpeg openjpeg

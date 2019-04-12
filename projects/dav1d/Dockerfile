@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER janne-vlc@jannau.net
 
 ADD bionic.list /etc/apt/sources.list.d/bionic.list

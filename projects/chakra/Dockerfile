@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER ochang@google.com
 RUN apt-get update && apt-get install -y build-essential cmake libicu-dev python
 RUN git clone --depth 1 https://github.com/Microsoft/ChakraCore.git chakra

@@ -1,4 +1,4 @@
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER zlowram@gmail.com
 RUN apt-get update
 RUN git clone https://github.com/radare/radare2 radare2

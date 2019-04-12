@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER djm@mindrot.org
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN apt-get install -y libz-dev libssl1.0.0 libssl-dev libedit-dev zip

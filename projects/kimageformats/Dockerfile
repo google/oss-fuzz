@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER tsdgeos@gmail.com
 RUN apt-get install --yes cmake
 RUN git clone --depth 1 https://github.com/madler/zlib.git

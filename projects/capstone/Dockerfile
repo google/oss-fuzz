@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER capstone.engine@gmail.com
 RUN apt-get update && apt-get install -y make cmake python python-setuptools
 RUN git clone --depth 1 --branch v4 https://github.com/aquynh/capstone.git capstonev4

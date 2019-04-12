@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER pdknsk@gmail.com
 RUN apt-get update && apt-get install -y mercurial
 RUN hg clone --uncompressed https://hg.mozilla.org/mozilla-central/

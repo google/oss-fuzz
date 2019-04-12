@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER kcc@google.com
 RUN apt-get update -y
 RUN apt-get install -y autoconf automake libtool curl make g++ unzip wget git \

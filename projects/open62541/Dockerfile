@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+FROM gcr.io/oss-fuzz-base/base-builder:testing
 MAINTAINER git@s.profanter.me
 RUN apt-get update && apt-get install -y make cmake python-six wget
 # We need libmbedtls > 2.5.1 otherwise it does not include the lib for static linking
