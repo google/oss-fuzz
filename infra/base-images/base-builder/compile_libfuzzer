@@ -25,5 +25,7 @@ $CXX $CXXFLAGS -std=c++11 -O2 -fPIC $SANITIZER_FLAGS -fno-sanitize=vptr \
 ar r $LIB_FUZZING_ENGINE_DEPRECATED $WORK/libfuzzer/*.o
 popd > /dev/null
 rm -rf $WORK/libfuzzer
+# Override variable as libFuzzer builds do not link directly against an
+# engine library, but use -fsanitize=fuzzer to instruct clang to do so.
 export LIB_FUZZING_ENGINE="-fsanitize=fuzzer"
 echo " done."
