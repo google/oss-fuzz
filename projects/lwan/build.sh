@@ -34,6 +34,6 @@ for fuzzer in $SRC/lwan/src/bin/fuzz/*_fuzzer.cc; do
 	$CXX $CXXFLAGS -std=c++11 \
 		-Wl,-whole-archive $WORK/lwan/src/lib/liblwan.a -Wl,-no-whole-archive \
 		-I$SRC/lwan/src/lib $fuzzer \
-		-lFuzzingEngine -lpthread -lz \
+		$LIB_FUZZING_ENGINE -lpthread -lz \
 		-o $OUT/$executable
 done

@@ -29,7 +29,7 @@ for target in Bmp Gif Tga Gd Gd2 WBMP; do
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
       -DFUZZ_GD_FORMAT=$target \
       $SRC/parser_target.cc -o $OUT/${lowercase}_target \
-      -lFuzzingEngine -lgd -Wl,-Bstatic -lz -Wl,-Bdynamic
+      $LIB_FUZZING_ENGINE -lgd -Wl,-Bstatic -lz -Wl,-Bdynamic
 done
 
 mkdir afl_testcases

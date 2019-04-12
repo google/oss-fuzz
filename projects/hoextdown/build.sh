@@ -25,7 +25,7 @@ $CC $CFLAGS -c -std=c99 -Isrc \
     "$SRC/hoextdown/test/hoedown_fuzzer.c" -o $WORK/hoedown_fuzzer.o
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     $WORK/hoedown_fuzzer.o -o $OUT/hoedown_fuzzer \
-    -lFuzzingEngine "$SRC/hoextdown/libhoedown.a"
+    $LIB_FUZZING_ENGINE "$SRC/hoextdown/libhoedown.a"
 
 cp $SRC/*.options $OUT/
 cp $SRC/*.dict $OUT/

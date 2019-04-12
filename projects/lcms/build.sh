@@ -26,7 +26,7 @@ for F in $FUZZERS; do
         $SRC/$F.c -o $SRC/$F.o
     $CXX $CXXFLAGS \
         $SRC/$F.o -o $OUT/$F \
-        -lFuzzingEngine src/.libs/liblcms2.a
+        $LIB_FUZZING_ENGINE src/.libs/liblcms2.a
 done
 
 cp $SRC/icc.dict $SRC/*.options $OUT/

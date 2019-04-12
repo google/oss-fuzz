@@ -75,7 +75,7 @@ for mode in "${fuzzer_modes[@]}"; do
     -I$SRC/aom \
     -I${build_dir} \
     -Wl,--start-group \
-    -lFuzzingEngine \
+    $LIB_FUZZING_ENGINE \
     $SRC/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
     ${build_dir}/libaom.a ${build_dir}/ivfdec.o ${build_dir}/tools_common.o \
     -Wl,--end-group

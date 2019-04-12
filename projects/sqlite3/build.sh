@@ -38,6 +38,6 @@ $CC $CFLAGS -I. -c \
 
 $CXX $CXXFLAGS \
     $SRC/sqlite3/test/ossfuzz.o -o $OUT/ossfuzz \
-    -lFuzzingEngine ./sqlite3.o
+    $LIB_FUZZING_ENGINE ./sqlite3.o
 
 cp $SRC/*.options $SRC/*.dict $SRC/*.zip $OUT/

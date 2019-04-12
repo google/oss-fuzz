@@ -47,7 +47,7 @@ do
     # build fuzz target
     $CC $CFLAGS -I../../include/ -c fuzz_disasm.c -o fuzz_disasm.o
 
-    $CXX $CXXFLAGS fuzz_disasm.o -o $OUT/fuzz_disasm$branch ../../build/libcapstone.a -lFuzzingEngine
+    $CXX $CXXFLAGS fuzz_disasm.o -o $OUT/fuzz_disasm$branch ../../build/libcapstone.a $LIB_FUZZING_ENGINE
 
     cd ../../../
 done

@@ -62,7 +62,7 @@ BASE_CXXFLAGS=$CXXFLAGS
 cd $SRC/bignum-fuzzer
 ./config-modules.sh openssl go
 CXXFLAGS="$BASE_CXXFLAGS -DBNFUZZ_FLAG_NO_NEGATIVE=1 -DBNFUZZ_FLAG_NUM_LEN=1200 -DBNFUZZ_FLAG_ALL_OPERATIONS=1"
-LIBFUZZER_LINK="-lFuzzingEngine" make
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make
 
 # Copy OpenSSL/Go fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_go_no_negative_num_len_1200_all_operations
@@ -72,7 +72,7 @@ cd $SRC/bignum-fuzzer
 make clean
 ./config-modules.sh openssl rust
 CXXFLAGS="$BASE_CXXFLAGS -DBNFUZZ_FLAG_NUM_LEN=1200 -DBNFUZZ_FLAG_ALL_OPERATIONS=1 -DBNFUZZ_FLAG_NUM_LOOPS=1"
-LIBFUZZER_LINK="-lFuzzingEngine" make
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make
 
 # Copy OpenSSL/Rust fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_rust_num_len_1200_all_operations_num_loops_1
@@ -82,7 +82,7 @@ cd $SRC/bignum-fuzzer
 make clean
 ./config-modules.sh openssl cpp_boost
 CXXFLAGS="$BASE_CXXFLAGS -DBNFUZZ_FLAG_NUM_LEN=1200 -DBNFUZZ_FLAG_ALL_OPERATIONS=1 -DBNFUZZ_FLAG_NUM_LOOPS=1"
-LIBFUZZER_LINK="-lFuzzingEngine" make
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make
 
 # Copy OpenSSL/C++-Boost fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_cpp_boost_num_len_1200_all_operations_num_loops_1
@@ -92,7 +92,7 @@ cd $SRC/bignum-fuzzer
 make clean
 ./config-modules.sh openssl libgmp
 CXXFLAGS="$BASE_CXXFLAGS -DBNFUZZ_FLAG_NUM_LEN=1200 -DBNFUZZ_FLAG_ALL_OPERATIONS=1 -DBNFUZZ_FLAG_NUM_LOOPS=1"
-LIBFUZZER_LINK="-lFuzzingEngine" make
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make
 
 # Copy OpenSSL/libgmp fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_libgmp_num_len_1200_all_operations_num_loops_1
@@ -122,7 +122,7 @@ cd $SRC/bignum-fuzzer
 make clean
 ./config-modules.sh boringssl mbedtls
 CXXFLAGS="$BASE_CXXFLAGS -DBNFUZZ_FLAG_NUM_LEN=100 -DBNFUZZ_FLAG_ALL_OPERATIONS=1 -DBNFUZZ_FLAG_NUM_LOOPS=1"
-LIBFUZZER_LINK="-lFuzzingEngine" make
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make
 
 # Copy BoringSSL/mbedtls fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_boringssl_mbedtls_num_len_100_all_operations_num_loops_1
@@ -132,7 +132,7 @@ cd $SRC/bignum-fuzzer
 make clean
 ./config-modules.sh boringssl libmpdec
 CXXFLAGS="$BASE_CXXFLAGS -DBNFUZZ_FLAG_NUM_LEN=100 -DBNFUZZ_FLAG_ALL_OPERATIONS=1 -DBNFUZZ_FLAG_NUM_LOOPS=1"
-LIBFUZZER_LINK="-lFuzzingEngine" make
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make
 
 # Copy BoringSSL/libmpdec fuzzer to the designated location
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_boringssl_libmpdec_num_len_100_all_operations_num_loops_1

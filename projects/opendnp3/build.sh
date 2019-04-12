@@ -29,5 +29,5 @@ cp *.options $OUT/
 # build fuzz target
 $CXX $CXXFLAGS -I. -I ../../libs/include/ -c fuzzdnp3.cpp -o fuzzdnp3.o
 
-$CXX $CXXFLAGS -std=c++14 fuzzdnp3.o -o $OUT/fuzz_dnp3 ../../../libasiodnp3.a ../../../libdnp3decode.a ../../../libasiopal.a ../../../libopendnp3.a ../../../libopenpal.a -lFuzzingEngine
+$CXX $CXXFLAGS -std=c++14 fuzzdnp3.o -o $OUT/fuzz_dnp3 ../../../libasiodnp3.a ../../../libdnp3decode.a ../../../libasiopal.a ../../../libopendnp3.a ../../../libopenpal.a $LIB_FUZZING_ENGINE
 

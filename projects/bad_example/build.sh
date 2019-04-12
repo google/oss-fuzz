@@ -8,7 +8,7 @@ make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_valid_build \
-    -lFuzzingEngine ./libz.a
+    $LIB_FUZZING_ENGINE ./libz.a
 
 
 # Testcase 2. Silent startup crash.
@@ -19,7 +19,7 @@ make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -I. -DINTENTIONAL_STARTUP_CRASH \
     $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_startup_crash \
-    -lFuzzingEngine ./libz.a
+    $LIB_FUZZING_ENGINE ./libz.a
 
 
 # The latest two examples won't for for coverage build, bail out.
@@ -41,7 +41,7 @@ make -j$(nproc) all
 
 $CXX -fsanitize=$SANITIZER $CXXFLAGS_ORIG -std=c++11 -I. \
     $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_partial_instrumentation \
-    -lFuzzingEngine ./libz.a
+    $LIB_FUZZING_ENGINE ./libz.a
 
 
 # Testcase 4. Completely ignore the flags provided by OSS-Fuzz.
@@ -52,7 +52,7 @@ make -j$(nproc) all
 
 $CXX -fsanitize=$SANITIZER $CXXFLAGS -std=c++11 -I. \
     $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_no_instrumentation \
-    -lFuzzingEngine ./libz.a
+    $LIB_FUZZING_ENGINE ./libz.a
 
 
 # Testcase 5. Enable multiple sanitizers.
@@ -72,4 +72,4 @@ make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/bad_example_fuzzer.cc -o $OUT/bad_example_mixed_sanitizers \
-    -lFuzzingEngine ./libz.a
+    $LIB_FUZZING_ENGINE ./libz.a

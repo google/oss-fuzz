@@ -29,4 +29,4 @@ rm -v $UNRAR_SRC_DIR/libunrar.so
 
 # build fuzzer
 $CXX $CXXFLAGS -I. $UNRAR_SRC_DIR/unrar_fuzzer.cc -o $OUT/unrar_fuzzer \
-     $UNRAR_DEFINES -lFuzzingEngine -L$UNRAR_SRC_DIR -lunrar
+     $UNRAR_DEFINES $LIB_FUZZING_ENGINE -L$UNRAR_SRC_DIR -lunrar
