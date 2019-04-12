@@ -47,8 +47,8 @@ ENV SANITIZER="address"
 ENV FUZZING_ENGINE="libfuzzer"
 
 # Path to fuzzing engine library to support some old users of
-# LIB_FUZZING_ENGINE. Deprecated, please use LIB_FUZZING_ENGINE.
-ENV LIB_FUZZING_ENGINE_OLD="/usr/lib/libFuzzingEngine.a"
+# LIB_FUZZING_ENGINE. This will be removed. Please use LIB_FUZZING_ENGINE.
+ENV LIB_FUZZING_ENGINE_DEPRECATED="/usr/lib/libFuzzingEngine.a"
 
 # Argument passed to compiler to link against fuzzing engine.
 # Defaults to the path, but is "-fsanitize=fuzzer" in libFuzzer builds.

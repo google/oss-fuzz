@@ -36,7 +36,7 @@ esac
 
 mkdir build
 cd build
-# TODO: Stop using LIB_FUZZING_ENGINE_OLD and get this working with
+# TODO: Stop using LIB_FUZZING_ENGINE_DEPRECATED and make this build use
 # LIB_FUZZING_ENGINE.
 cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DLLVM_ENABLE_ASSERTIONS=ON \
@@ -44,7 +44,7 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
     -DCMAKE_CXX_COMPILER="${CXX}" \
     -DCMAKE_C_FLAGS="${CFLAGS}" \
     -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
-    -DLLVM_LIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE_OLD}" \
+    -DLLVM_LIB_FUZZING_ENGINE="${LIB_FUZZING_ENGINE_DEPRECATED}" \
     -DLLVM_NO_DEAD_STRIP=ON \
     -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
     -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly
