@@ -190,7 +190,7 @@ These flags are provided in the following environment variables:
 | -------------          | --------
 | `$CC`, `$CXX`, `$CCC`  | The C and C++ compiler binaries.
 | `$CFLAGS`, `$CXXFLAGS` | C and C++ compiler flags.
-| `$LIB_FUZZING_ENGINE`  | C++ compiler flag to link fuzz target against the prebuilt engine library (e.g. libFuzzer).
+| `$LIB_FUZZING_ENGINE`  | C++ compiler argument to link fuzz target against the prebuilt engine library (e.g. libFuzzer).
 
 You *must* use `$CXX` as a linker, even if your project is written in pure C.
 
