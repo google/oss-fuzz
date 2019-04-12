@@ -15,6 +15,10 @@ import time
 import urllib
 import yaml
 
+sys.path.append(os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), 'ENV', 'lib', 'python2.7',
+    'site-packages'))
+
 from oauth2client.client import GoogleCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
@@ -72,8 +76,6 @@ ENGINE_INFO = {
 DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['dataflow'] #  ['libfuzzer', 'afl']
 DEFAULT_SANITIZERS = ['dataflow'] #  ['address', 'undefined']
-DEFAULT_ENGINES = ['libfuzzer', 'afl']
-DEFAULT_SANITIZERS = ['address', 'undefined']
 
 TARGETS_LIST_BASENAME = 'targets.list'
 
