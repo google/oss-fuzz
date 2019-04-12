@@ -47,8 +47,8 @@ cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 
-OUR_LLVM_REVISION=342582  # For manual bumping.
-FORCE_OUR_REVISION=0  # To allow for manual downgrades.
+OUR_LLVM_REVISION=356356  # For manual bumping.
+FORCE_OUR_REVISION=1  # To allow for manual downgrades.
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K\d+(?=')" scripts/update.py)
 
 if [ $OUR_LLVM_REVISION -gt $LLVM_REVISION ] || [ $FORCE_OUR_REVISION -ne 0 ]; then
