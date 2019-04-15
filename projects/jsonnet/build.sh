@@ -25,7 +25,7 @@ popd
 INSTALL_DIR="$SRC/jsonnet"
 
 fuzzer=convert_jsonnet_fuzzer
-$CXX $CXXFLAGS -I${INSTALL_DIR}/include $LIB_FUZZING_ENGINE \
+$CXX $CXXFLAGS -I${INSTALL_DIR}/include -lFuzzingEngine \
   $fuzzer.cc -o $OUT/$fuzzer \
   ${INSTALL_DIR}/build/libjsonnet.a \
   ${INSTALL_DIR}/build/libmd5.a

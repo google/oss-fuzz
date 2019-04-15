@@ -31,7 +31,7 @@ popd
 
 pushd $SRC
 for fuzzer in imdecode_fuzzer imread_fuzzer; do
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.cc -std=c++11 \
+$CXX $CXXFLAGS -lFuzzingEngine $fuzzer.cc -std=c++11 \
 -I$install_dir/include/opencv4 -L$install_dir/lib \
 -L$install_dir/lib/opencv4/3rdparty \
 -lopencv_dnn -lopencv_objdetect -lopencv_photo -lopencv_ml -lopencv_gapi \
