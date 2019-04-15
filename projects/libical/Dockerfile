@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER tsdgeos@gmail.com
-RUN apt-get install --yes cmake
+RUN apt-get update && apt-get install --yes cmake
 RUN git clone --depth 1 https://github.com/libical/libical.git
 COPY build.sh $SRC
 COPY libical_fuzzer.cc $SRC
