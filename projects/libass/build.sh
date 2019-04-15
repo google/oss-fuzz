@@ -28,7 +28,7 @@ make -j$(nproc)
 
 $CXX $CXXFLAGS -std=c++11 -I$SRC/libass -L/work/lib \
     $SRC/libass_fuzzer.cc -o $OUT/libass_fuzzer \
-    -lFuzzingEngine libass/.libs/libass.a \
+    $LIB_FUZZING_ENGINE libass/.libs/libass.a \
     -Wl,-Bstatic -lfontconfig  -lfribidi -lfreetype -lz -lpng12 \
     -lexpat -Wl,-Bdynamic
 

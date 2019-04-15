@@ -17,7 +17,7 @@
 
 # Configure the project.
 export CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN"
-export LDFLAGS="-lFuzzingEngine"
+export LDFLAGS="$LIB_FUZZING_ENGINE"
 meson build
 
 # Build the fuzzer.

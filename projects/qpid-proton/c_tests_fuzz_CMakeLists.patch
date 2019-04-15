@@ -25,7 +25,7 @@ index b4470d59..211252c4 100644
 +    set(FUZZING_QPID_PROTON_CORE_LIBRARY qpid-proton-core)
 +  endif()
 +  target_link_libraries (${test} ${FUZZING_QPID_PROTON_CORE_LIBRARY} ${FUZZING_LIBRARY})
-+  # -lFuzzingEngine is a C++ library, which needs c++ std lib
++  # $LIB_FUZZING_ENGINE is a C++ library, which needs c++ std lib
 +  set_target_properties(${test} PROPERTIES LINKER_LANGUAGE CXX)
 +
    list(APPEND fuzz_test_src ${ARGN})

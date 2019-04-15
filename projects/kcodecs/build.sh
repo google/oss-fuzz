@@ -41,6 +41,6 @@ make -j$(nproc) VERBOSE=1
 $CXX $CXXFLAGS -fPIC -std=c++11 $SRC/kcodecs_fuzzer.cc -o $OUT/kcodecs_fuzzer \
                -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/kcodecs/src \
                -I $SRC/kcodecs/src/probers -L $SRC/qtbase/lib -L $SRC/kcodecs/lib \
-               -lQt5Core -lm -lqtpcre2 -ldl -lpthread -lFuzzingEngine -lKF5Codecs
+               -lQt5Core -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE -lKF5Codecs
 
 zip -qr $OUT/kcodecs_fuzzer_seed_corpus.zip $SRC/uchardet/test/ $SRC/kcodecs/autotests/data

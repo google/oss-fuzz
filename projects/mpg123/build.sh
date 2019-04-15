@@ -22,7 +22,7 @@ make install
 popd
 
 $CC $CXXFLAGS read_fuzzer.c -I$WORK/include $WORK/lib/libmpg123.a \
-  -lFuzzingEngine -lc++ -o $OUT/read_fuzzer
+  $LIB_FUZZING_ENGINE -lc++ -o $OUT/read_fuzzer
 
 $CXX $CXXFLAGS decode_fuzzer.cc -I$WORK/include $WORK/lib/libmpg123.a \
-  -lFuzzingEngine -o $OUT/decode_fuzzer
+  $LIB_FUZZING_ENGINE -o $OUT/decode_fuzzer

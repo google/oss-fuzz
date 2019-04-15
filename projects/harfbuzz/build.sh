@@ -29,11 +29,11 @@ make -j$(nproc) CPPFLAGS="-DHB_NO_VISIBILITY" V=1 all
 # Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-shape-fuzzer.cc -o $OUT/hb-shape-fuzzer \
-    -lFuzzingEngine ./src/.libs/libharfbuzz.a
+    $LIB_FUZZING_ENGINE ./src/.libs/libharfbuzz.a
 
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer \
-    -lFuzzingEngine ./src/.libs/libharfbuzz-subset.a ./src/.libs/libharfbuzz.a
+    $LIB_FUZZING_ENGINE ./src/.libs/libharfbuzz-subset.a ./src/.libs/libharfbuzz.a
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 mkdir all-fonts

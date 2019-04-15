@@ -45,7 +45,7 @@ for build in "${BUILDS[@]}"; do
     $CXX $CXXFLAGS \
       $fuzzer.o \
       -o $OUT/${fuzzer}_${build} \
-      -lFuzzingEngine .libs/libopus.a
+      $LIB_FUZZING_ENGINE .libs/libopus.a
 
     # Setup the .options and test corpus zip files using the corresponding
     # fuzzer's name

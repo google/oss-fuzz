@@ -43,7 +43,7 @@ for file in $SRC/xmlsec/tests/oss-fuzz/*_target.c; do
     $CC $CFLAGS -c $file -I /usr/include/libxml2 -I ./include/ \
     -o $OUT/${b}_target.o
     $CXX $CXXFLAGS $OUT/${b}_target.o ./src/.libs/libxmlsec1.a \
-    ./src/openssl/.libs/libxmlsec1-openssl.a -lFuzzingEngine \
+    ./src/openssl/.libs/libxmlsec1-openssl.a $LIB_FUZZING_ENGINE \
     "$XMLSEC_DEPS_PATH"/lib/libxslt.a "$XMLSEC_DEPS_PATH"/lib/libxml2.a \
     -lz -o $OUT/${b}_fuzzer
 done

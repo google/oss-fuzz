@@ -115,5 +115,5 @@ $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
   "$WORK/lib/libjbig.a" \
   "$WORK/lib/libzstd.a" \
   "$WORK/lib/libz.a" \
-  -lFuzzingEngine
+  $LIB_FUZZING_ENGINE
 

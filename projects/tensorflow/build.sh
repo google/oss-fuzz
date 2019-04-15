@@ -130,7 +130,7 @@ for fuzzer in ${FUZZERS}; do
   lfile=`ls -1 bazel-bin/tensorflow/core/kernels/fuzzing/${fz}*.params | head -n1`
 
   # Manually link everything.
-  ${CXX} ${CXXFLAGS} -lFuzzingEngine -o ${OUT}/${fz} ${LINK_ARGS} -Wl,@${lfile}
+  ${CXX} ${CXXFLAGS} $LIB_FUZZING_ENGINE -o ${OUT}/${fz} ${LINK_ARGS} -Wl,@${lfile}
 done
 
 # For coverage, we need one extra step, see the envoy and grpc projects.

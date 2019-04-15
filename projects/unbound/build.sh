@@ -24,7 +24,7 @@ make -j6 all
 $CC $CFLAGS -I. -DSRCDIR=. -c -o parse_packet_fuzzer.o parse_packet_fuzzer.c
 
 $CXX $CXXFLAGS -std=c++11 \
-  -lFuzzingEngine \
+  $LIB_FUZZING_ENGINE \
   -lssl -lcrypto -pthread \
   -o $OUT/parse_packet_fuzzer \
   parse_packet_fuzzer.o \
