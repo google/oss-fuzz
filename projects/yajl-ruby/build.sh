@@ -25,4 +25,4 @@ mv $SRC/*.dict $OUT/
 $CXX $CXXFLAGS -I. \
     -x c yajl.c yajl_alloc.c yajl_buf.c yajl_lex.c yajl_parser.c yajl_encode.c \
     ../../fuzz/json_fuzzer.c -o $OUT/json_fuzzer \
-    $LIB_FUZZING_ENGINE
+    -lFuzzingEngine
