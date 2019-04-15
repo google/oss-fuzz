@@ -46,7 +46,14 @@ ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthrea
 ENV SANITIZER="address"
 ENV FUZZING_ENGINE="libfuzzer"
 
-# Path to fuzzing engine library.
+# DEPRECATED - NEW CODE SHOULD NOT USE THIS. OLD CODE SHOULD STOP. Please use
+# LIB_FUZZING_ENGINE instead.
+# Path to fuzzing engine library to support some old users of
+# LIB_FUZZING_ENGINE.
+ENV LIB_FUZZING_ENGINE_DEPRECATED="/usr/lib/libFuzzingEngine.a"
+
+# Argument passed to compiler to link against fuzzing engine.
+# Defaults to the path, but is "-fsanitize=fuzzer" in libFuzzer builds.
 ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 
 # TODO: remove after tpm2 catchup.

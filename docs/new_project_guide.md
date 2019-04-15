@@ -143,7 +143,7 @@ In general, this script will need to:
 
 1. Please don't assume that the fuzzing engine is libFuzzer and hardcode in your build scripts.
 We generate builds for both libFuzzer and AFL fuzzing engine configurations.
-So, link the fuzzing engine using `-lFuzzingEngine`, see example below.
+So, link the fuzzing engine using $LIB_FUZZING_ENGINE, see example below.
 2. Please make sure that the binary names for your [fuzz targets](glossary.md#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 
@@ -161,7 +161,7 @@ make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/ \
     $SRC/parse_fuzzer.cc -o $OUT/parse_fuzzer \
-    -lFuzzingEngine .libs/libexpat.a
+    $LIB_FUZZING_ENGINE .libs/libexpat.a
 
 cp $SRC/*.dict $SRC/*.options $OUT/
 ```
@@ -175,7 +175,6 @@ When build.sh script is executed, the following locations are available within t
 | `/out/` | `$OUT`         | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
 | `/src/` | `$SRC`         | Directory to checkout source files |
 | `/work/`| `$WORK`        | Directory for storing intermediate files |
-| `/usr/lib/libFuzzingEngine.a` | `$LIB_FUZZING_ENGINE` | Location of prebuilt fuzzing engine library (e.g. libFuzzer ) that needs to be linked with all fuzz targets (`-lFuzzingEngine`).
 
 While files layout is fixed within a container, the environment variables are
 provided to be able to write retargetable scripts.
@@ -191,6 +190,7 @@ These flags are provided in the following environment variables:
 | -------------          | --------
 | `$CC`, `$CXX`, `$CCC`  | The C and C++ compiler binaries.
 | `$CFLAGS`, `$CXXFLAGS` | C and C++ compiler flags.
+| `$LIB_FUZZING_ENGINE`  | C++ compiler argument to link fuzz target against the prebuilt engine library (e.g. libFuzzer).
 
 You *must* use `$CXX` as a linker, even if your project is written in pure C.
 

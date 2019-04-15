@@ -17,11 +17,13 @@
 
 ./autogen.sh
 
+# TODO: Stop using LIB_FUZZING_ENGINE_DEPRECATED and make this build use
+# LIB_FUZZING_ENGINE (see https://github.com/google/oss-fuzz/issues/2317).
 ./configure CFLAGS="$CFLAGS -DNO_CHECK_MEMWIPE" \
 	--enable-imc-test \
 	--enable-tnccs-20 \
 	--enable-fuzzing \
-	--with-libfuzzer=$LIB_FUZZING_ENGINE \
+	--with-libfuzzer=$LIB_FUZZING_ENGINE_DEPRECATED \
 	--enable-monolithic \
 	--disable-shared \
 	--enable-static
