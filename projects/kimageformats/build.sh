@@ -32,6 +32,24 @@ cd karchive
 cmake . -DBUILD_SHARED_LIBS=OFF -DQt5Core_DIR=$SRC/qtbase/lib/cmake/Qt5Core/ -DBUILD_TESTING=OFF
 make install -j$(nproc)
 
-$CXX $CXXFLAGS -fPIC -std=c++11 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/kra.cpp $SRC/kimageformats/src/imageformats/ora.cpp $SRC/kimageformats/src/imageformats/pcx.cpp $SRC/kimageformats/src/imageformats/pic.cpp  $SRC/kimageformats/src/imageformats/psd.cpp  $SRC/kimageformats/src/imageformats/ras.cpp  $SRC/kimageformats/src/imageformats/rgb.cpp  $SRC/kimageformats/src/imageformats/tga.cpp $SRC/kimageformats/src/imageformats/xcf.cpp -o $OUT/kimgio_fuzzer -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -L $SRC/qtbase/lib -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread -lFuzzingEngine /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive
+cd $SRC
+cd kimageformats
+HANDLER_TYPES="KraHandler kra
+        OraHandler ora
+        PCXHandler pcx
+        SoftimagePICHandler pic
+        PSDHandler psd
+        RASHandler ras
+        RGBHandler rgb
+        TGAHandler tga
+        XCFHandler xcf"
 
-zip -qr $OUT/kimgio_fuzzer_seed_corpus.zip $SRC/kimageformats/autotests/read/  $SRC/kimageformats/autotests/write/  $SRC/kimageformats/autotests/pic/
+echo "$HANDLER_TYPES" | while read class format; do
+(
+  fuzz_target_name=kimgio_${format}_fuzzer
+
+  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++11 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp -o $OUT/$fuzz_target_name -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -L $SRC/qtbase/lib -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread -lFuzzingEngine /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive
+
+  find . -name "*.${format}" | zip -q $OUT/${fuzz_target_name}_seed_corpus.zip -@
+)
+done
