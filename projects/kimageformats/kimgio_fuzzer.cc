@@ -20,7 +20,7 @@
   Usage:
     python infra/helper.py build_image kimageformats
     python infra/helper.py build_fuzzers --sanitizer undefined|address|memory kimageformats
-    python infra/helper.py run_fuzzer kimageformats kimgio_fuzzer
+    python infra/helper.py run_fuzzer kimageformats kimgio_[kra|ora|pcx|pic|psd|ras|rgb|tga|xcf]_fuzzer
 */
 
 
@@ -43,28 +43,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     int argc = 0;
     QCoreApplication a(argc, nullptr);
 
-    const QVector<QImageIOHandler*> handlers = {
-        new KraHandler(),
-        new OraHandler(),
-        new PCXHandler(),
-        new SoftimagePICHandler(),
-        new PSDHandler(),
-        new RASHandler(),
-        new RGBHandler(),
-        new TGAHandler(),
-        new XCFHandler()
-    };
+    QImageIOHandler* handler = new HANDLER();
 
-    for (QImageIOHandler *h : handlers) {
-        QImage i;
-        QBuffer b;
-        b.setData((const char *)data, size);
-        b.open(QIODevice::ReadOnly);
-        h->setDevice(&b);
-        h->canRead();
-        h->read(&i);
-    }
-    qDeleteAll(handlers);
+    QImage i;
+    QBuffer b;
+    b.setData((const char *)data, size);
+    b.open(QIODevice::ReadOnly);
+    handler->setDevice(&b);
+    handler->canRead();
+    handler->read(&i);
+
+    delete handler;
 
     return 0;
 }
