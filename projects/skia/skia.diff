@@ -71,11 +71,11 @@ index 7f625cf466..c90a9c99bd 100644
              return nullptr;
          }
      }
-+    #if defined(IS_FUZZING)
++#if defined(IS_FUZZING)
 +    if (size > 100000) {
 +        return nullptr;
 +    }
-+    #endif
++#endif
      void* addr = sk_calloc_canfail(size);
      if (nullptr == addr) {
          return nullptr;
