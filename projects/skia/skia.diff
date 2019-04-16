@@ -30,10 +30,10 @@ index baf8277e03..7480e0ea9e 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 837e5f3127..8e0233f9d6 100644
+index 90bdf4772d..48ffbdfb79 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -960,6 +960,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -959,6 +959,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
      pathPtr->transform(*matrix, devPathPtr);
  
@@ -47,10 +47,10 @@ index 837e5f3127..8e0233f9d6 100644
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index 4de7124689..2558e4ff14 100644
+index 01767c8618..18305a4f4f 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
-@@ -88,6 +88,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
+@@ -91,6 +91,12 @@ bool SkImageFilter::Common::unflatten(SkReadBuffer& buffer, int expectedCount) {
          return false;
      }
  
@@ -64,10 +64,10 @@ index 4de7124689..2558e4ff14 100644
      for (int i = 0; i < count; i++) {
          fInputs.push_back(buffer.readBool() ? buffer.readImageFilter() : nullptr);
 diff --git a/src/core/SkMallocPixelRef.cpp b/src/core/SkMallocPixelRef.cpp
-index 8bef6c355c..3ecc3bcaf9 100644
+index 7f625cf466..c90a9c99bd 100644
 --- a/src/core/SkMallocPixelRef.cpp
 +++ b/src/core/SkMallocPixelRef.cpp
-@@ -73,6 +73,11 @@ sk_sp<SkPixelRef> SkMallocPixelRef::MakeUsing(void*(*allocProc)(size_t),
+@@ -70,6 +70,11 @@ sk_sp<SkPixelRef> SkMallocPixelRef::MakeAllocate(const SkImageInfo& info, size_t
              return nullptr;
          }
      }
@@ -76,11 +76,11 @@ index 8bef6c355c..3ecc3bcaf9 100644
 +        return nullptr;
 +    }
 +#endif
-     void* addr = allocProc(size);
+     void* addr = sk_calloc_canfail(size);
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index 07e00a8f6f..714154a0bd 100644
+index 766be2bedf..32ec8184cb 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
 @@ -261,6 +261,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
@@ -96,10 +96,10 @@ index 07e00a8f6f..714154a0bd 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index 2b39c38bbe..9da25322d1 100644
+index 919e49f31d..0a90eec722 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -527,6 +527,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -452,6 +452,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -114,10 +114,10 @@ index 2b39c38bbe..9da25322d1 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index 1fc75d237a..f502346616 100644
+index 35939679c6..95312d4864 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
-@@ -3785,7 +3785,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+@@ -3791,7 +3791,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
                                     SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
      SkASSERT(!oval.isEmpty());
      SkASSERT(sweepAngle);
@@ -131,10 +131,10 @@ index 1fc75d237a..f502346616 100644
      path->setIsVolatile(true);
      path->setFillType(SkPath::kWinding_FillType);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index 9380cb1283..12696e3669 100644
+index 9febf01bfa..d1b701fe62 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
-@@ -268,7 +268,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
+@@ -277,7 +277,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
  uint32_t SkReadBuffer::getArrayCount() {
      const size_t inc = sizeof(uint32_t);
      fError = fError || !IsPtrAlign4(fReader.peek()) || !fReader.isAvailable(inc);
@@ -178,7 +178,7 @@ index d9c0408b34..8f44cba5f3 100644
              SkFixed startX = SkFDot6ToFixed(x0) + (slope * ((32 - y0) & 63) >> 6);
  
 diff --git a/src/effects/Sk1DPathEffect.cpp b/src/effects/Sk1DPathEffect.cpp
-index 72a128d16e..78716de1bb 100644
+index fbb73f5959..3cafd47f65 100644
 --- a/src/effects/Sk1DPathEffect.cpp
 +++ b/src/effects/Sk1DPathEffect.cpp
 @@ -19,6 +19,11 @@
@@ -243,10 +243,10 @@ index 2c913d8d9e..61b9629766 100644
          if (fSegLength * (2 + doFill) > length) {
              meas.getSegment(0, length, dst, true);  // to short for us to mangle
 diff --git a/src/effects/SkLayerDrawLooper.cpp b/src/effects/SkLayerDrawLooper.cpp
-index a0b5006375..cbd028602b 100644
+index cd3f51bac3..d2b5050f0c 100644
 --- a/src/effects/SkLayerDrawLooper.cpp
 +++ b/src/effects/SkLayerDrawLooper.cpp
-@@ -264,6 +264,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
+@@ -228,6 +228,11 @@ void SkLayerDrawLooper::flatten(SkWriteBuffer& buffer) const {
  sk_sp<SkFlattenable> SkLayerDrawLooper::CreateProc(SkReadBuffer& buffer) {
      int count = buffer.readInt();
  
