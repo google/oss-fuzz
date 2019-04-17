@@ -29,6 +29,8 @@ ninja -v liblwan.a
 
 zip -jr $OUT/request_fuzzer_seed_corpus.zip $SRC/lwan/fuzz/corpus/corpus-request-*
 
+cp $SRC/lwan/fuzz/*.dict $OUT/
+
 for fuzzer in $SRC/lwan/src/bin/fuzz/*_fuzzer.cc; do
 	executable=$(basename $fuzzer .cc)
 	$CXX $CXXFLAGS -std=c++11 \
