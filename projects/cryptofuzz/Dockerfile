@@ -25,12 +25,7 @@ RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
 
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
-RUN git clone https://github.com/openssl/openssl
-
-# The OpenSSL build system is currently broken, see also: https://github.com/google/oss-fuzz/issues/2314
-# Lock OpenSSL to an older commit that does not cause build problems.
-# This should be removed as soon as OpenSSL's build system is repaired.
-RUN cd openssl && git checkout 9efa0ae0b602c1c0e356009a58410a2e8b80201a
+RUN git clone --depth 1 https://github.com/openssl/openssl
 
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 RUN git clone --depth 1 https://github.com/libressl-portable/portable libressl

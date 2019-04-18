@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
+# https://github.com/google/oss-fuzz/issues/2336
+
 # Generate lookup tables. This only needs to be done once.
 cd $SRC/cryptofuzz
 python gen_repository.py
@@ -43,7 +46,7 @@ then
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/libressl/include -DCRYPTOFUZZ_LIBRESSL" make -B -j$(nproc)
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/libressl/include -DCRYPTOFUZZ_LIBRESSL" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
@@ -62,7 +65,7 @@ then
     # Compile Openssl (with assembly)
     cd $SRC/openssl
     ./config --debug enable-md2 enable-rc5
-    make -j$(nproc)
+    make || true
 
     # Compile Cryptofuzz OpenSSL (with assembly) module
     cd $SRC/cryptofuzz/modules/openssl
@@ -70,7 +73,7 @@ then
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
@@ -88,7 +91,7 @@ fi
 cd $SRC/openssl
 ./config --debug no-asm enable-md2 enable-rc5
 make clean
-make -j$(nproc)
+make || true
 
 # Compile Cryptofuzz OpenSSL (without assembly) module
 cd $SRC/cryptofuzz/modules/openssl
@@ -96,7 +99,7 @@ OPENSSL_INCLUDE_PATH="$SRC/openssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/opens
 
 # Compile Cryptofuzz
 cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
 
 # Generate dictionary
 ./generate_dict
@@ -124,7 +127,7 @@ then
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
@@ -151,7 +154,7 @@ OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/bor
 
 # Compile Cryptofuzz
 cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
 
 # Generate dictionary
 ./generate_dict
