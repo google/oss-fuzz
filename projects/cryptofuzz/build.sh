@@ -20,7 +20,6 @@ cd $SRC/cryptofuzz
 python gen_repository.py
 
 cd $SRC/openssl
-git checkout 9efa0ae0b602c1c0e356009a58410a2e8b80201a
 
 export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
@@ -36,7 +35,7 @@ then
     rm -rf build ; mkdir build
     cd build
     cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
-    make -j$(nproc)
+    make -j$(nproc) crypto
 
     # Compile Cryptofuzz LibreSSL (with assembly) module
     cd $SRC/cryptofuzz/modules/openssl
@@ -117,7 +116,7 @@ then
     rm -rf build ; mkdir build
     cd build
     cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
-    make -j$(nproc)
+    make -j$(nproc) crypto
 
     # Compile Cryptofuzz BoringSSL (with assembly) module
     cd $SRC/cryptofuzz/modules/openssl
@@ -144,7 +143,7 @@ cd $SRC/boringssl
 rm -rf build ; mkdir build
 cd build
 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
-make -j$(nproc)
+make -j$(nproc) crypto
 
 # Compile Cryptofuzz BoringSSL (with assembly) module
 cd $SRC/cryptofuzz/modules/openssl
