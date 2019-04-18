@@ -62,7 +62,7 @@ then
     # Compile Openssl (with assembly)
     cd $SRC/openssl
     ./config --debug enable-md2 enable-rc5
-    make -j$(nproc)
+    make || true
 
     # Compile Cryptofuzz OpenSSL (with assembly) module
     cd $SRC/cryptofuzz/modules/openssl
@@ -88,7 +88,7 @@ fi
 cd $SRC/openssl
 ./config --debug no-asm enable-md2 enable-rc5
 make clean
-make -j$(nproc)
+make || true
 
 # Compile Cryptofuzz OpenSSL (without assembly) module
 cd $SRC/cryptofuzz/modules/openssl
