@@ -18,6 +18,9 @@
 
 cd tests/fuzz
 
+# Download the seed corpora
+make -j seedcorpora
+# Build all of the fuzzers
 ./fuzz.py build all
 
 for target in $(./fuzz.py list); do
@@ -33,5 +36,5 @@ for target in $(./fuzz.py list); do
         cp "$target.dict" "$OUT"
     fi
 
-    cp "$SRC/${target}_seed_corpus.zip" "$OUT"
+    cp "corpora/${target}_seed_corpus.zip" "$OUT"
 done
