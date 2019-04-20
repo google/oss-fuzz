@@ -1,0 +1,44 @@
+syntax = "proto2";
+// Proto description of the gif format.
+// Refer to: https://www.fileformat.info/format/gif/egff.htm
+// https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
+
+//message IHDR {
+//  required bool new_version = 1;
+//}
+
+message LogicalScreenDescriptor {
+    required uint32 ScreenWidth = 1;
+    required uint32 ScreenHeight= 2;
+    required uint32 Packed = 3;
+    required uint32 BackgroundColor = 4;
+    required uint32 AspectRatio = 5;
+}
+
+message GlobalColorTable {
+    required bytes colors = 1;
+}
+
+message ImageDescriptor {
+  required uint32 Seperator =1;
+  required uint32 Left =2;
+  required uint32 Top = 3;
+  required uint32 Width = 4;
+  required uint32 Height = 5;
+  required uint32 Packed = 6;
+}
+
+message ImageChunk{
+  required ImageDescriptor imDescriptor =1;
+  optional bytes localColorTable = 2;
+  required bytes imageData = 3;
+}
+
+message GifProto {
+  //required IHDR ihdr = 1;
+  required LogicalScreenDescriptor lsd = 2;
+  optional GlobalColorTable gct = 3;
+  repeated ImageChunk chunks = 4;
+}
+
+// package fuzzer_examples;
