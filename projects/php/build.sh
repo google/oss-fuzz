@@ -20,7 +20,7 @@ cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
 cp /usr/lib/x86_64-linux-gnu/libonig.so.5 $OUT/lib/
 # build project
 ./buildconf
-./configure --enable-fuzzer --enable-option-checking=fatal --disable-libxml --disable-dom \
+./configure --enable-fuzzer --enable-option-checking=fatal --without-libxml --disable-dom \
 	--disable-simplexml --disable-xml --disable-xmlreader --disable-xmlwriter --without-pear \
 	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring
 make
