@@ -15,14 +15,24 @@
 #
 ################################################################################
 
-#create zip files with initial corpus, taken from version control.
-for f in $(ls fuzzers/initial_corpus/) ;do
-  zip -j -r $OUT/fuzzer_${f}_seed_corpus.zip fuzzers/initial_corpus/$f
+export PATH=${PATH}:${PWD}/../boost_1_69_0/tools/build/src/engine/bin.linuxx86_64
+export BOOST_ROOT=${PWD}/../boost_1_69_0
+export BOOST_BUILD_PATH=${PWD}/../boost_1_69_0/tools/build
+
+(cd ${PWD}/../boost_1_69_0 && ./bootstrap.sh)
+
+echo "CXX=$CXX"
+echo "CXXFLAGS=$CXXFLAGS"
+
+echo "using clang : ossfuzz : $CXX : <compileflags>\"$CXXFLAGS\" <linkflags>\"$CXXFLAGS\" <linkflags>\"${LIB_FUZZING_ENGINE}\" ;" >project-config.jam
+cat project-config.jam
+cd fuzzers
+b2 clang-ossfuzz -j$(nproc) crypto=openssl fuzz=external sanitize=off stage
+cp fuzzers/* $OUT
+
+wget https://github.com/arvidn/libtorrent/releases/download/libtorrent_1_2_0/corpus.zip
+unzip -q corpus.zip
+cd corpus
+for f in *; do
+zip -q -r ${OUT}/fuzzer_${f}_seed_corpus.zip ${f}
 done
-
-mkdir build
-cd build
-cmake ../fuzzers -Dexpose_internal_functions=On -Doss_fuzz_mode=On -DBUILD_SHARED_LIBS=Off -GNinja
-cmake --build .
-cp fuzzer_* $OUT
-

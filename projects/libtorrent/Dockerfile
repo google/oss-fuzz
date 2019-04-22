@@ -15,20 +15,13 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER oss-fuzz-libtorrent@pauldreik.se
-RUN echo "CXX=$CXX"
-RUN echo "CXXFLAGS=$CXXFLAGS"
-RUN apt-get update && apt-get install -y make ninja-build wget libssl-dev libgeoip-dev pkg-config
+MAINTAINER arvid@libtorrent.org
+RUN apt-get update && apt-get install -y wget libssl-dev
 
 RUN wget --no-verbose https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz
 RUN tar xvzf boost_1_69_0.tar.gz
-RUN cd boost_1_69_0 && ./bootstrap.sh --with-toolset=clang --prefix=/usr --with-libraries=system && ./b2 clean && ./b2 toolset=clang cxxflags="$CXXFLAGS" install
 
-RUN wget --no-verbose https://github.com/Kitware/CMake/releases/download/v3.14.0/cmake-3.14.0-Linux-x86_64.sh
-RUN sh cmake-3.14.0-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir
-
-RUN git clone --single-branch --branch ossfuzz https://github.com/pauldreik/libtorrent.git
-
+RUN git clone --depth 1 --single-branch --branch RC_1_2 --recurse-submodules https://github.com/arvidn/libtorrent.git
 WORKDIR libtorrent
 COPY build.sh $SRC/
 
