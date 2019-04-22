@@ -95,8 +95,9 @@ def main():
 
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
-  _add_engine_args(check_build_parser, ['libfuzzer', 'afl'])
-  _add_sanitizer_args(check_build_parser, ['address', 'memory', 'undefined'])
+  _add_engine_args(check_build_parser, choices=['libfuzzer', 'afl'])
+  _add_sanitizer_args(check_build_parser,
+                      choices=['address', 'memory', 'undefined'])
   _add_environment_args(check_build_parser)
   check_build_parser.add_argument('project_name', help='name of the project')
   check_build_parser.add_argument('fuzzer_name', help='name of the fuzzer',
