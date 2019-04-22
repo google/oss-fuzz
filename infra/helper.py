@@ -96,12 +96,12 @@ def main():
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
   _add_engine_args(check_build_parser, choices=['libfuzzer', 'afl'])
-  _add_sanitizer_args(check_build_parser,
-                      choices=['address', 'memory', 'undefined'])
+  _add_sanitizer_args(
+      check_build_parser, choices=['address', 'memory', 'undefined'])
   _add_environment_args(check_build_parser)
   check_build_parser.add_argument('project_name', help='name of the project')
-  check_build_parser.add_argument('fuzzer_name', help='name of the fuzzer',
-                                  nargs='?')
+  check_build_parser.add_argument(
+      'fuzzer_name', help='name of the fuzzer', nargs='?')
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
@@ -249,17 +249,17 @@ def _get_work_dir(project_name=''):
   return os.path.join(BUILD_DIR, 'work', project_name)
 
 
-def _add_engine_args(parser, choices=None):
+def _add_engine_args(
+        parser,
+        choices=('libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none')):
   """Add common engine args."""
-  if choices is None:
-    choices = ['libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none']
   parser.add_argument('--engine', default='libfuzzer', choices=choices)
 
 
-def _add_sanitizer_args(parser, choices=None):
+def _add_sanitizer_args(
+        parser,
+        choices=('address', 'memory', 'undefined', 'coverage', 'dataflow')):
   """Add common sanitizer args."""
-  if choices is None:
-    choices = ['address', 'memory', 'undefined', 'coverage', 'dataflow']
   parser.add_argument('--sanitizer', default='address', choices=choices)
 
 
