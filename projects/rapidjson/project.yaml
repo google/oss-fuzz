@@ -1,0 +1,6 @@
+homepage: "https://github.com/tencent/rapidjson"
+primary_contact: "guidovranken@gmail.com"
+sanitizers:
+ - address
+ - undefined
+ - memory
