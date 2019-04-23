@@ -249,6 +249,11 @@ def _get_work_dir(project_name=''):
   return os.path.join(BUILD_DIR, 'work', project_name)
 
 
+def _add_architecture_args(parser, choices=('i386', 'x86_64')):
+  """Add common architecture args."""
+  parser.add_argument('--architecture', default='x86_64', choices=choices)
+
+
 def _add_engine_args(
         parser,
         choices=('libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none')):
@@ -416,7 +421,8 @@ def build_fuzzers(args):
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer
+      'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture
   ]
   if args.e:
     env += args.e

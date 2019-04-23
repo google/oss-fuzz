@@ -22,6 +22,10 @@ if [ -z "${SANITIZER_FLAGS-}" ]; then
   export SANITIZER_FLAGS=${!FLAGS_VAR-}
 fi
 
+if [[ $ARCHITECTURE == "i386" ]]; then
+    export CFLAGS="$CFLAGS -m32"
+    export CXXFLAGS="$CXXFLAGS -m32"
+fi
 if [[ $FUZZING_ENGINE != "none" ]]; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
