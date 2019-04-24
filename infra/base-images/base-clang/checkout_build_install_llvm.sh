@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2.7"
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2.7 g++-multilib"
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
