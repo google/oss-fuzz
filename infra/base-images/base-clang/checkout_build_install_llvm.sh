@@ -111,7 +111,6 @@ cmake -G "Ninja" \
 
 ninja cxx
 ninja install-cxx
-
 rm -rf $WORK/i386
 
 mkdir -p $WORK/msan
