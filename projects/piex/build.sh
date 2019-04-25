@@ -18,5 +18,9 @@
 git checkout fuzzers
 cd fuzzers
 make
+
 cp fuzzer-tiff_parser $OUT/
 cp fuzzer-tiff_parser_seed_corpus.zip $OUT/
+
+cp fuzzer-piex $OUT/
+cp fuzzer-piex_seed_corpus.zip $OUT/
