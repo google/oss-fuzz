@@ -45,6 +45,7 @@ ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthrea
 # Default sanitizer and fuzzing engine to use.
 ENV SANITIZER="address"
 ENV FUZZING_ENGINE="libfuzzer"
+ENV ARCHITECTURE="x86_64"
 
 # DEPRECATED - NEW CODE SHOULD NOT USE THIS. OLD CODE SHOULD STOP. Please use
 # LIB_FUZZING_ENGINE instead.
