@@ -22,4 +22,4 @@ apt-get install -y  libtool ninja-build cmake
 RUN git clone --depth=1 https://git.code.sf.net/p/giflib/code $SRC/giflib-code
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
-COPY *.c *.options build.sh *.cc *.proto $SRC/
+COPY *.c *.options build.sh *.h *.cc *.cpp *.proto $SRC/

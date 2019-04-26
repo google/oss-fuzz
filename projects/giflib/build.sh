@@ -25,6 +25,7 @@ LPM/src/libprotobuf-mutator.a \
 LPM/external.protobuf/lib/libprotobuf.a \
  -o dgif_protobuf_target.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 -I giflib-code dgif_protobuf_target.o genfiles/gif_fuzz_proto.pb.cc \
+ProtoToGif.cpp \
 -I LPM/external.protobuf/include \
 -I genfiles \
 LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \

@@ -3,9 +3,7 @@ syntax = "proto2";
 // Refer to: https://www.fileformat.info/format/gif/egff.htm
 // https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
 
-//message IHDR {
-//  required bool new_version = 1;
-//}
+// TODO: Desribe messages included as empty stubs
 
 message LogicalScreenDescriptor {
     required uint32 ScreenWidth = 1;
@@ -28,17 +26,51 @@ message ImageDescriptor {
   required uint32 Packed = 6;
 }
 
-message ImageChunk{
+message ImageChunk {
+  oneof chunk_oneof {
+    BasicChunk basic = 1;
+    PlainTextChunk plaintext = 2;
+    ApplicationExtension appExt = 3;
+    CommentExtension comExt = 4;
+  }
+}
+
+message GraphicControlExtension {
+}
+
+message PlainTextExtension {
+}
+
+message BasicChunk {
   required ImageDescriptor imDescriptor =1;
   optional bytes localColorTable = 2;
   required bytes imageData = 3;
+  optional GraphicControlExtension gcExt = 4;
 }
 
+message PlainTextChunk {
+  optional GraphicControlExtension gcExt = 1;
+  required PlainTextExtension ptExt = 2;
+}
+
+message ApplicationExtension {
+
+}
+
+message CommentExtension {
+
+}
+
+// Stubs
+message Header {}
+message Trailer {}
+
 message GifProto {
-  //required IHDR ihdr = 1;
+  required Header header = 1;
   required LogicalScreenDescriptor lsd = 2;
   optional GlobalColorTable gct = 3;
   repeated ImageChunk chunks = 4;
+  required Trailer trailer = 5;
 }
 
-// package fuzzer_examples;
+package gifProtoFuzzer;
