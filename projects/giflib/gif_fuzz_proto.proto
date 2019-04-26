@@ -3,7 +3,7 @@ syntax = "proto2";
 // Refer to: https://www.fileformat.info/format/gif/egff.htm
 // https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
 
-// TODO: Desribe messages included as empty stubs
+// TODO: Verify if this is correct
 
 message LogicalScreenDescriptor {
     required uint32 ScreenWidth = 1;
@@ -26,19 +26,11 @@ message ImageDescriptor {
   required uint32 Packed = 6;
 }
 
-message ImageChunk {
-  oneof chunk_oneof {
-    BasicChunk basic = 1;
-    PlainTextChunk plaintext = 2;
-    ApplicationExtension appExt = 3;
-    CommentExtension comExt = 4;
-  }
-}
-
 message GraphicControlExtension {
 }
 
 message PlainTextExtension {
+  repeated SubBlock subs = 1;
 }
 
 message LocalColorTable {
@@ -62,22 +54,26 @@ message BasicChunk {
   optional GraphicControlExtension gcExt = 4;
 }
 
-message PlainTextChunk {
-  optional GraphicControlExtension gcExt = 1;
-  required PlainTextExtension ptExt = 2;
-}
-
 message ApplicationExtension {
-
+  required fixed64 appid = 1;
+  repeated SubBlock subs = 2;
 }
 
 message CommentExtension {
-
+  repeated SubBlock subs = 1;
 }
 
-// Stubs
 message Header {}
 message Trailer {}
+
+message ImageChunk {
+  oneof chunk_oneof {
+    BasicChunk basic = 1;
+    PlainTextExtension plaintext = 2;
+    ApplicationExtension appExt = 3;
+    CommentExtension comExt = 4;
+  }
+}
 
 message GifProto {
   required Header header = 1;

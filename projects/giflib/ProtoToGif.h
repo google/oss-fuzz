@@ -21,7 +21,7 @@ namespace gifProtoFuzzer {
 		void visit(const ImageDescriptor&);
 		void visit(const LocalColorTable&);
 		void visit(const GraphicControlExtension&);
-		void visit(const PlainTextChunk&);
+		void visit(const PlainTextExtension&);
 		void visit(const ApplicationExtension&);
 		void visit(const CommentExtension&);
 		void visit(const Trailer&);
@@ -30,8 +30,7 @@ namespace gifProtoFuzzer {
 		void writeByte(uint8_t x);
 		void writeWord(uint16_t x);
 		void writeInt(uint32_t x);
-		void writeChunk(const ImageChunk &chunk);
-		void writeBasicChunk(const BasicChunk &chunk);
+		void writeLong(uint64_t x);
 		static uint16_t extractWordFromUInt32(uint32_t a);
 		static uint8_t extractByteFromUInt32(uint32_t a);
 
