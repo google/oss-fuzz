@@ -45,6 +45,7 @@ void ProtoConverter::visit(LogicalScreenDescriptor const& lsd)
 void ProtoConverter::visit(GlobalColorTable const& gct)
 {
 	// TODO: This has to contain exactly 3*2^(m_GlobalColorExp + 1) bytes
+	// IMPORTANT
 	m_output.write(gct.colors().data(), gct.colors().size());
 }
 
@@ -54,7 +55,6 @@ void ProtoConverter::visit(GraphicControlExtension const&)
 
 void ProtoConverter::visit(ImageChunk const& chunk)
 {
-	// TODO: Implement converters for different chunk types
 	switch (chunk.chunk_oneof_case())
 	{
 		case ImageChunk::kBasic:
@@ -86,6 +86,7 @@ void ProtoConverter::visit(const BasicChunk &chunk)
 void ProtoConverter::visit(LocalColorTable const& lct)
 {
 	// TODO: This has to contain exactly 3*2^(m_LocalColorExp + 1) bytes
+	// IMPORTANT
 	m_output.write(lct.colors().data(), lct.colors().size());
 }
 
@@ -106,7 +107,7 @@ void ProtoConverter::visit(ImageDescriptor const& descriptor)
 
 void ProtoConverter::visit(SubBlock const& block)
 {
-	// TODO: Write as many bytes as len
+	// TODO: Write as many bytes as len (IMPORTANT)
 	uint8_t len = extractByteFromUInt32(block.len());
 	if (len == 0)
 		writeByte(0x00);
