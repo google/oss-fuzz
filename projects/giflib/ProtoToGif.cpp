@@ -12,7 +12,7 @@ void ProtoConverter::visit(GifProto const& gif)
 {
 	visit(gif.header());
 	visit(gif.lsd());
-	if (gif.has_gct())
+	if (m_hasGCT)
 		visit(gif.gct());
 	for (auto const& chunk: gif.chunks())
 		visit(chunk);
@@ -27,18 +27,31 @@ void ProtoConverter::visit(Header const&)
 
 void ProtoConverter::visit(LogicalScreenDescriptor const& lsd)
 {
-	uint16_t w = extractTwo(lsd.screenwidth());
-	uint16_t h = extractTwo(lsd.screenheight());
-	writeWord(w);
-	writeWord(h);
-	writeByte(lsd.packed());
-	writeByte(lsd.backgroundcolor());
-	writeByte(lsd.aspectratio());
+	writeWord(extractWordFromUInt32(lsd.screenwidth()));
+	writeWord(extractWordFromUInt32(lsd.screenheight()));
+
+	uint8_t packedByte = extractByteFromUInt32(lsd.packed());
+	// If MSB of packed byte is 1, GCT follows
+	if (packedByte & 0x80) {
+		m_hasGCT = true;
+		// N: 2^(N+1) colors in GCT
+		m_globalColorExp = packedByte & 0x07;
+	}
+	writeByte(packedByte);
+	writeByte(extractByteFromUInt32(lsd.backgroundcolor()));
+	writeByte(extractByteFromUInt32(lsd.aspectratio()));
 }
 
 void ProtoConverter::visit(GlobalColorTable const& gct)
 {
+	// TODO: This has to contain exactly 3*2^(m_GlobalColorExp + 1) bytes
 	m_output.write(gct.colors().data(), gct.colors().size());
+}
+
+void ProtoConverter::visit(LocalColorTable const& lct)
+{
+	// TODO: This has to contain exactly 3*2^(m_LocalColorExp + 1) bytes
+	m_output.write(lct.colors().data(), lct.colors().size());
 }
 
 void ProtoConverter::visit(BasicChunk const& chunk)
@@ -86,8 +99,7 @@ void ProtoConverter::visit(ApplicationExtension const&)
 
 void ProtoConverter::visit(Trailer const&)
 {
-	const unsigned char trailer[] = {0x3B};
-	m_output.write((const char*)trailer, sizeof(trailer));
+	writeByte(0x3B);
 }
 
 void ProtoConverter::writeByte(uint8_t x)
@@ -107,29 +119,60 @@ void ProtoConverter::writeInt(uint32_t x)
 	m_output.write((char *)&x, sizeof(x));
 }
 
-uint16_t ProtoConverter::extractTwo(uint32_t a)
+uint16_t ProtoConverter::extractWordFromUInt32(uint32_t a)
 {
 	uint16_t first_byte = (a & 0xFF);
 	uint16_t second_byte = ((a >> 8) & 0xFF) << 8;
 	return first_byte | second_byte;
 }
 
+uint8_t ProtoConverter::extractByteFromUInt32(uint32_t a)
+{
+	uint8_t byte = a & 0x80;
+	return byte;
+}
+
+void ProtoConverter::visit(SubBlock const& block)
+{
+	uint8_t len = extractByteFromUInt32(block.len());
+	if (len == 0)
+		writeByte(0x00);
+	else
+		m_output.write(block.data().data(), block.data().size());
+}
+
+void ProtoConverter::visit(ImageData const& img)
+{
+	// TODO: Verify we are writing the image data correctly
+	// LZW
+	writeByte(extractByteFromUInt32(img.lzw()));
+	// Sub-blocks
+	for (auto const& block: img.subs())
+		visit(block);
+	// NULL sub block signals end of image data
+	writeByte(0x00);
+}
+
 void ProtoConverter::writeBasicChunk(const BasicChunk &chunk)
 {
 	// TODO: Convert graphic control extension
-	auto &imDescriptor = chunk.imdescriptor();
-	writeByte(imDescriptor.seperator());
-	uint16_t l = extractTwo(imDescriptor.left());
-	uint16_t t = extractTwo(imDescriptor.top());
-	uint16_t w = extractTwo(imDescriptor.height());
-	uint16_t h = extractTwo(imDescriptor.width());
-	writeWord(l);
-	writeWord(t);
-	writeWord(w);
-	writeWord(h);
-	writeByte(imDescriptor.packed());
-	if(chunk.has_localcolortable()){
-		m_output.write(chunk.localcolortable().data(),chunk.localcolortable().size());
+	visit(chunk.imdescriptor());
+	if(m_hasLCT)
+		visit(chunk.lct());
+	visit(chunk.img());
+}
+
+void ProtoConverter::visit(ImageDescriptor const& descriptor)
+{
+	// TODO: Remove seperator from proto since it is always 2C
+	writeByte(0x2C);
+	writeWord(extractWordFromUInt32(descriptor.left()));
+	writeWord(extractWordFromUInt32(descriptor.top()));
+	writeWord(extractWordFromUInt32(descriptor.height()));
+	writeWord(extractWordFromUInt32(descriptor.width()));
+	uint8_t packedByte = extractByteFromUInt32(descriptor.packed());
+	if (packedByte & 0x80) {
+		m_hasLCT = true;
+		m_localColorExp = packedByte & 0x07;
 	}
-	m_output.write(chunk.imagedata().data(),chunk.imagedata().size());
 }

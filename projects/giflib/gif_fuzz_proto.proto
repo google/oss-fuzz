@@ -41,10 +41,24 @@ message GraphicControlExtension {
 message PlainTextExtension {
 }
 
+message LocalColorTable {
+  required bytes colors = 1;
+}
+
+message SubBlock {
+  required uint32 len = 1;
+  required bytes data = 2;
+}
+
+message ImageData {
+  required uint32 lzw = 1;
+  repeated SubBlock subs = 2;
+}
+
 message BasicChunk {
   required ImageDescriptor imDescriptor =1;
-  optional bytes localColorTable = 2;
-  required bytes imageData = 3;
+  required LocalColorTable lct = 2;
+  required ImageData img = 3;
   optional GraphicControlExtension gcExt = 4;
 }
 
@@ -68,7 +82,7 @@ message Trailer {}
 message GifProto {
   required Header header = 1;
   required LogicalScreenDescriptor lsd = 2;
-  optional GlobalColorTable gct = 3;
+  required GlobalColorTable gct = 3;
   repeated ImageChunk chunks = 4;
   required Trailer trailer = 5;
 }
