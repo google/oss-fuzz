@@ -64,15 +64,6 @@ do
   fi
 done
 
-# Override sanitizers, useful for non-Envoy code that we're trying to fix and
-# that is acting as a build blockers.
-declare -r BLACKLIST_PATH=blacklist.txt
-cat <<EOF > "${BLACKLIST_PATH}"
-# TODO(htuch): remove when we
-# havehttps://github.com/protocolbuffers/protobuf/pull/5901.
-fun:*FastInt64ToBufferLeft*
-EOF
-
 # Build driverless libraries.
 # TODO(htuch): Remove the CC/CXX/CFLAGS/CXXFLAGS passing, this is only there for
 # cmake_external limitation in understanding --cxxopt etc., it should not be
@@ -82,7 +73,6 @@ EOF
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --linkopt=-lc++fs \
-  --copt=-fsanitize-blacklist="${BLACKLIST_PATH}" \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
   --define force_libcpp=enabled \
