@@ -135,6 +135,8 @@ int fuzz_dgif_ala_android(const uint8_t *Data, size_t Size)
 		if (!willBeCleared(gcb)) {
 			lastUnclearedFrame = i;
 		}
+		// Draw
+		GifDrawText8x8(&GifFile->SavedImages[i], 0, 0, "legend", 42);
 	}
 #if GIF_DEBUG
 	ALOGD("FrameSequence_gif created with size %d %d, frames %d dur %ld",
