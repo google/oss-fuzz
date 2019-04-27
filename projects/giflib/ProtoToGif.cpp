@@ -85,6 +85,7 @@ void ProtoConverter::visit(ImageChunk const& chunk)
 void ProtoConverter::visit(const BasicChunk &chunk)
 {
 	// TODO: Convert graphic control extension
+	m_hasLCT = false;
 	visit(chunk.imdescriptor());
 	if(m_hasLCT)
 		visit(chunk.lct());
