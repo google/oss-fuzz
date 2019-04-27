@@ -16,3 +16,4 @@ struct gifUserData {
 int stub_input_reader (GifFileType *gifFileType, GifByteType *gifByteType, int len);
 int fuzz_dgif(const uint8_t *Data, size_t Size);
 int fuzz_dgif_extended(const uint8_t *Data, size_t Size);
+int fuzz_dgif_ala_android(const uint8_t *Data, size_t Size);
