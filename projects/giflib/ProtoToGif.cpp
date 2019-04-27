@@ -119,6 +119,8 @@ void ProtoConverter::visit(ImageDescriptor const& descriptor)
 		m_hasLCT = true;
 		m_localColorExp = packedByte & 0x07;
 	}
+	else
+		m_hasLCT = false;
 }
 
 void ProtoConverter::visit(SubBlock const& block)
