@@ -90,12 +90,8 @@ int fuzz_dgif_ala_android(const uint8_t *Data, size_t Size)
 		return 0;
 	}
 
-	int returnCode = DGifSlurp(GifFile);
-
-	if(returnCode != GIF_OK){
-#if 0
-		PrintGifError(returnCode);
-#endif
+	if(DGifSlurp(GifFile) != GIF_OK){
+		PrintGifError(GifFile->Error);
 		DGifCloseFile(GifFile, &Error);
 		free(gifData);
 		return 0;
