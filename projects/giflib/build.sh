@@ -11,8 +11,8 @@ done
 ar rc libgif.a *.o
 
 cd $SRC
-$CC $CFLAGS $LIB_FUZZING_ENGINE -Wall -c -I giflib-code dgif_target.c -o dgif_target.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 -I giflib-code dgif_target.o \
+$CXX $CFLAGS $LIB_FUZZING_ENGINE -Wall -c -I giflib-code dgif_target.cc -o dgif_target.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11  -I giflib-code dgif_fuzz_common.cc dgif_target.o  \
         -o $OUT/dgif_target giflib-code/libgif.a
 
 rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc gif_fuzz_proto.proto --cpp_out=genfiles
@@ -22,7 +22,7 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -Wall -c -I giflib-code dgif_protobuf_target.
 -I LPM/external.protobuf/include \
  -o dgif_protobuf_target.o
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 -I giflib-code dgif_protobuf_target.o genfiles/gif_fuzz_proto.pb.cc \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 -I. -I giflib-code dgif_protobuf_target.o dgif_fuzz_common.cc genfiles/gif_fuzz_proto.pb.cc \
 ProtoToGif.cpp \
 -I LPM/external.protobuf/include \
 -I genfiles \
