@@ -27,6 +27,10 @@ message ImageDescriptor {
 }
 
 message GraphicControlExtension {
+  required uint32 Packed = 1;
+  required uint32 DelayTime = 2;
+  required uint32 transparentColorIndex = 3;
+
 }
 
 message PlainTextExtension {

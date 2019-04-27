@@ -44,13 +44,21 @@ void ProtoConverter::visit(LogicalScreenDescriptor const& lsd)
 
 void ProtoConverter::visit(GlobalColorTable const& gct)
 {
-	// TODO: This has to contain exactly 3*2^(m_GlobalColorExp + 1) bytes
-	// IMPORTANT
-	m_output.write(gct.colors().data(), gct.colors().size());
+	// This has to contain exactly 3*2^(m_GlobalColorExp + 1) bytes
+	std::size_t tableSize = std::min(gct.colors().size(),ProtoConverter::tableExpToTableSize(m_globalColorExp));
+	m_output.write(gct.colors().data(), tableSize);
 }
 
-void ProtoConverter::visit(GraphicControlExtension const&)
+void ProtoConverter::visit(GraphicControlExtension const& gce)
 {
+	writeByte(0x21); // Extension Introducer
+	writeByte(0xF9); // Graphic Control Label
+	writeByte(4); // Block size
+	uint8_t packedByte = extractByteFromUInt32(gce.packed());
+	writeByte(packedByte);
+	writeInt(gce.delaytime());
+	writeByte(gce.transparentcolorindex());
+	writeByte(0x0); // Block Terminator
 }
 
 void ProtoConverter::visit(ImageChunk const& chunk)
@@ -85,9 +93,9 @@ void ProtoConverter::visit(const BasicChunk &chunk)
 
 void ProtoConverter::visit(LocalColorTable const& lct)
 {
-	// TODO: This has to contain exactly 3*2^(m_LocalColorExp + 1) bytes
-	// IMPORTANT
-	m_output.write(lct.colors().data(), lct.colors().size());
+	// This has to contain exactly 3*2^(m_LocalColorExp + 1) bytes
+	long tableSize = std::min(lct.colors().size(),ProtoConverter::tableExpToTableSize(m_localColorExp));
+	m_output.write(lct.colors().data(), tableSize);
 }
 
 void ProtoConverter::visit(ImageDescriptor const& descriptor)
@@ -109,10 +117,12 @@ void ProtoConverter::visit(SubBlock const& block)
 {
 	// TODO: Write as many bytes as len (IMPORTANT)
 	uint8_t len = extractByteFromUInt32(block.len());
-	if (len == 0)
+	if (len == 0){
 		writeByte(0x00);
-	else
-		m_output.write(block.data().data(), block.data().size());
+	} else {
+		std::size_t write_len = std::min((std::size_t)len, block.data().size());
+		m_output.write(block.data().data(), write_len);
+	}
 }
 
 void ProtoConverter::visit(ImageData const& img)
@@ -213,4 +223,17 @@ uint8_t ProtoConverter::extractByteFromUInt32(uint32_t a)
 {
 	uint8_t byte = a & 0x80;
 	return byte;
+}
+
+/**
+ * Given an exponent, returns the global/local color table size, given by 3*2^(exp+1)
+ * @param tableExp The exponent
+ * @return The actual color table size
+ */
+std::size_t ProtoConverter::tableExpToTableSize(uint32_t tableExp){
+	//[TODO 27/04/2019 VU]: Could we run into integer overflows here? And would that be a problem?]
+	//[TODO 27/04/2019 VU]: This return std::size_t. But stringstream.write() takes streamsize. Could this cause an issue?
+	//[TODO 27/04/2019 VU]: Should it really be exactly the same size? Or do we want some deterministic randomness here?
+	std::size_t tableSize = 3*((std::size_t)std::pow(2,tableExp+1));
+	return tableSize;
 }
