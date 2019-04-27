@@ -3,6 +3,8 @@
 
 using namespace std;
 
+extern "C" void PrintGifError(int ErrorCode);
+
 int stub_input_reader (GifFileType *gifFileType, GifByteType *gifByteType, int len) {
 	struct gifUserData *gud = (struct gifUserData *)gifFileType->UserData;
 	if (gud->gifLen == 0)
@@ -91,7 +93,9 @@ int fuzz_dgif_ala_android(const uint8_t *Data, size_t Size)
 	int returnCode = DGifSlurp(GifFile);
 
 	if(returnCode != GIF_OK){
-		cerr << GifErrorString(returnCode) << endl;
+#if 0
+		PrintGifError(returnCode);
+#endif
 		DGifCloseFile(GifFile, &Error);
 		free(gifData);
 		return 0;
