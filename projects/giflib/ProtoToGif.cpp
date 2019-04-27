@@ -3,6 +3,10 @@
 using namespace gifProtoFuzzer;
 using namespace std;
 
+constexpr unsigned char ProtoConverter::m_sig[];
+constexpr unsigned char ProtoConverter::m_ver89a[];
+constexpr unsigned char ProtoConverter::m_ver87a[];
+
 string ProtoConverter::gifProtoToString(GifProto const& proto)
 {
 	visit(proto);
@@ -20,10 +24,23 @@ void ProtoConverter::visit(GifProto const& gif)
 	visit(gif.trailer());
 }
 
-void ProtoConverter::visit(Header const&)
+void ProtoConverter::visit(Header const& header)
 {
-	const unsigned char header[] = {0x47,0x49,0x46,0x38,0x39,0x61};
-	m_output.write((const char*)header, sizeof(header));
+	// Signature GIF
+	m_output.write((const char*)m_sig, sizeof(m_sig));
+
+	switch (header.ver()) {
+		case Header::ENA:
+			m_output.write((const char*) m_ver89a, sizeof(m_ver89a));
+			break;
+		case Header::ESA:
+			m_output.write((const char*) m_ver87a, sizeof(m_ver87a));
+			break;
+		// We simply don't write anything if it's an invalid version
+		// Bytes that follow (LSD) will be interpreted as version
+		case Header::INV:
+			break;
+	}
 }
 
 void ProtoConverter::visit(LogicalScreenDescriptor const& lsd)

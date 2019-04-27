@@ -67,7 +67,15 @@ message CommentExtension {
   repeated SubBlock subs = 1;
 }
 
-message Header {}
+message Header {
+  enum Version {
+    ENA = 1;
+    ESA = 2;
+    INV = 3;
+  }
+  required Version ver = 1;
+}
+
 message Trailer {}
 
 message ImageChunk {

@@ -42,5 +42,9 @@ namespace gifProtoFuzzer {
 		bool m_hasLCT = false;
 		uint8_t m_globalColorExp = 0;
 		uint8_t m_localColorExp = 0;
+
+		static constexpr unsigned char m_sig[] = {0x47, 0x49, 0x46};
+		static constexpr unsigned char m_ver89a[] = {0x38, 0x39, 0x61};
+		static constexpr unsigned char m_ver87a[] = {0x38, 0x37, 0x61};
 	};
 }
