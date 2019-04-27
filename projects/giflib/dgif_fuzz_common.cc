@@ -1,4 +1,7 @@
 #include "dgif_fuzz_common.h"
+#include <iostream>
+
+using namespace std;
 
 int stub_input_reader (GifFileType *gifFileType, GifByteType *gifByteType, int len) {
 	struct gifUserData *gud = (struct gifUserData *)gifFileType->UserData;
@@ -85,7 +88,10 @@ int fuzz_dgif_ala_android(const uint8_t *Data, size_t Size)
 		return 0;
 	}
 
-	if(DGifSlurp(GifFile) != GIF_OK){
+	int returnCode = DGifSlurp(GifFile);
+
+	if(returnCode != GIF_OK){
+		cerr << GifErrorString(returnCode) << endl;
 		DGifCloseFile(GifFile, &Error);
 		free(gifData);
 		return 0;
@@ -132,11 +138,11 @@ int fuzz_dgif_ala_android(const uint8_t *Data, size_t Size)
 	}
 #if GIF_DEBUG
 	ALOGD("FrameSequence_gif created with size %d %d, frames %d dur %ld",
-            mGif->SWidth, mGif->SHeight, mGif->ImageCount, durationMs);
-    for (int i = 0; i < mGif->ImageCount; i++) {
-        DGifSavedExtensionToGCB(mGif, i, &gcb);
+            GifFile->SWidth, GifFile->SHeight, GifFile->ImageCount, durationMs);
+    for (int i = 0; i < GifFile->ImageCount; i++) {
+        DGifSavedExtensionToGCB(GifFile, i, &gcb);
         ALOGD("    Frame %d - must preserve %d, restore point %d, trans color %d",
-                i, mPreservedFrames[i], mRestoringFrames[i], gcb.TransparentColor);
+                i, preservedFrames[i], restoringFrames[i], gcb.TransparentColor);
     }
 #endif
 	const ColorMapObject* cmap = GifFile->SColorMap;
