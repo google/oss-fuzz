@@ -35,7 +35,7 @@ namespace gifProtoFuzzer {
 		void writeLong(uint64_t x);
 		static uint16_t extractWordFromUInt32(uint32_t a);
 		static uint8_t extractByteFromUInt32(uint32_t a);
-		static std::size_t tableExpToTableSize(uint32_t tableExp);
+		static uint32_t tableExpToTableSize(uint32_t tableExp);
 
 		std::stringstream m_output;
 		bool m_hasGCT = false;

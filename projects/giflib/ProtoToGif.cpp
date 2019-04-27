@@ -1,8 +1,9 @@
 #include "ProtoToGif.h"
 
 using namespace gifProtoFuzzer;
+using namespace std;
 
-std::string ProtoConverter::gifProtoToString(GifProto const& proto)
+string ProtoConverter::gifProtoToString(GifProto const& proto)
 {
 	visit(proto);
 	return m_output.str();
@@ -44,8 +45,9 @@ void ProtoConverter::visit(LogicalScreenDescriptor const& lsd)
 
 void ProtoConverter::visit(GlobalColorTable const& gct)
 {
-	// This has to contain exactly 3*2^(m_GlobalColorExp + 1) bytes
-	std::size_t tableSize = std::min(gct.colors().size(),ProtoConverter::tableExpToTableSize(m_globalColorExp));
+	//[TODO 27/04/2019 VU]: Should it really be exactly the same size? Or do we want some deterministic randomness here?
+	// TODO BS: We never overflow expected table size due to the use of min
+	uint32_t tableSize = min((uint32_t)gct.colors().size(), tableExpToTableSize(m_globalColorExp));
 	m_output.write(gct.colors().data(), tableSize);
 }
 
@@ -55,9 +57,12 @@ void ProtoConverter::visit(GraphicControlExtension const& gce)
 	writeByte(0xF9); // Graphic Control Label
 	writeByte(4); // Block size
 	uint8_t packedByte = extractByteFromUInt32(gce.packed());
+	// packed byte
 	writeByte(packedByte);
-	writeInt(gce.delaytime());
-	writeByte(gce.transparentcolorindex());
+	// Delay time is 2 bytes
+	writeWord(extractWordFromUInt32(gce.delaytime()));
+	// Transparent color index is 1 byte
+	writeByte(extractByteFromUInt32(gce.transparentcolorindex()));
 	writeByte(0x0); // Block Terminator
 }
 
@@ -84,8 +89,9 @@ void ProtoConverter::visit(ImageChunk const& chunk)
 
 void ProtoConverter::visit(const BasicChunk &chunk)
 {
-	// TODO: Convert graphic control extension
-	m_hasLCT = false;
+	// Visit GCExt if necessary
+	if (chunk.has_gcext())
+		visit(chunk.gcext());
 	visit(chunk.imdescriptor());
 	if(m_hasLCT)
 		visit(chunk.lct());
@@ -94,8 +100,9 @@ void ProtoConverter::visit(const BasicChunk &chunk)
 
 void ProtoConverter::visit(LocalColorTable const& lct)
 {
-	// This has to contain exactly 3*2^(m_LocalColorExp + 1) bytes
-	long tableSize = std::min(lct.colors().size(),ProtoConverter::tableExpToTableSize(m_localColorExp));
+	//[TODO 27/04/2019 VU]: Should it really be exactly the same size? Or do we want some deterministic randomness here?
+	// TODO BS: We never overflow expected table size due to the use of min
+	uint32_t tableSize = min((uint32_t)lct.colors().size(), tableExpToTableSize(m_localColorExp));
 	m_output.write(lct.colors().data(), tableSize);
 }
 
@@ -116,12 +123,12 @@ void ProtoConverter::visit(ImageDescriptor const& descriptor)
 
 void ProtoConverter::visit(SubBlock const& block)
 {
-	// TODO: Write as many bytes as len (IMPORTANT)
 	uint8_t len = extractByteFromUInt32(block.len());
 	if (len == 0){
 		writeByte(0x00);
 	} else {
-		std::size_t write_len = std::min((std::size_t)len, block.data().size());
+		// TODO BS: We never overflow expected block size due to the use of min
+		uint32_t write_len = min((uint32_t)len, (uint32_t)block.data().size());
 		m_output.write(block.data().data(), write_len);
 	}
 }
@@ -140,6 +147,10 @@ void ProtoConverter::visit(ImageData const& img)
 
 void ProtoConverter::visit(PlainTextExtension const& ptExt)
 {
+	// Visit GCExt if necessary
+	if (ptExt.has_gcext())
+		visit(ptExt.gcext());
+
 	// First two bytes are 0x21 0x01
 	writeByte(0x21);
 	writeByte(0x01);
@@ -231,10 +242,9 @@ uint8_t ProtoConverter::extractByteFromUInt32(uint32_t a)
  * @param tableExp The exponent
  * @return The actual color table size
  */
-std::size_t ProtoConverter::tableExpToTableSize(uint32_t tableExp){
-	//[TODO 27/04/2019 VU]: Could we run into integer overflows here? And would that be a problem?]
-	//[TODO 27/04/2019 VU]: This return std::size_t. But stringstream.write() takes streamsize. Could this cause an issue?
-	//[TODO 27/04/2019 VU]: Should it really be exactly the same size? Or do we want some deterministic randomness here?
-	std::size_t tableSize = 3*((std::size_t)std::pow(2,tableExp+1));
+uint32_t ProtoConverter::tableExpToTableSize(uint32_t tableExp){
+	// 0 <= tableExp <= 7
+	// 6 <= tableSize <= 768
+	uint32_t tableSize = 3*(pow(2,tableExp+1));
 	return tableSize;
 }

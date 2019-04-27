@@ -30,11 +30,11 @@ message GraphicControlExtension {
   required uint32 Packed = 1;
   required uint32 DelayTime = 2;
   required uint32 transparentColorIndex = 3;
-
 }
 
 message PlainTextExtension {
   repeated SubBlock subs = 1;
+  optional GraphicControlExtension gcExt = 2;
 }
 
 message LocalColorTable {

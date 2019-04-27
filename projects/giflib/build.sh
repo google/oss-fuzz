@@ -20,10 +20,8 @@ rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc gif_fuzz_p
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -Wall -c -I giflib-code dgif_protobuf_target.cc -I libprotobuf-mutator/ \
 -I genfiles \
 -I LPM/external.protobuf/include \
-LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
-LPM/src/libprotobuf-mutator.a \
-LPM/external.protobuf/lib/libprotobuf.a \
  -o dgif_protobuf_target.o
+
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 -I giflib-code dgif_protobuf_target.o genfiles/gif_fuzz_proto.pb.cc \
 ProtoToGif.cpp \
 -I LPM/external.protobuf/include \
@@ -32,6 +30,7 @@ LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
 LPM/src/libprotobuf-mutator.a \
 LPM/external.protobuf/lib/libprotobuf.a \
         -o $OUT/dgif_protobuf_target -fsanitize=fuzzer giflib-code/libgif.a
+
 # Place dict and config in OUT
 wget -O $OUT/gif.dict \
   https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/gif.dict \
