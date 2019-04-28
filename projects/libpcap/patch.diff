@@ -1,0 +1,24 @@
+diff --git a/optimize.c b/optimize.c
+index 4afd063f..90e8c571 100644
+--- a/optimize.c
++++ b/optimize.c
+@@ -1888,7 +1888,7 @@ opt_root(struct block **b)
+ static void
+ opt_loop(opt_state_t *opt_state, struct icode *ic, int do_stmts)
+ {
+-
++	int loopCounter = 0;
+ #ifdef BDEBUG
+ 	if (pcap_optimizer_debug > 1 || pcap_print_dot_graph) {
+ 		printf("opt_loop(root, %d) begin\n", do_stmts);
+@@ -1909,6 +1909,10 @@ opt_loop(opt_state_t *opt_state, struct icode *ic, int do_stmts)
+ 			opt_dump(opt_state, ic);
+ 		}
+ #endif
++		loopCounter++;
++		if (loopCounter > 1000) {
++			break;
++		}
+ 	} while (!opt_state->done);
+ }
+ 
