@@ -24,7 +24,7 @@ then
   CFLAGS+=" -DOPENSSL_NO_ASM=1"
 fi
 ./config --debug no-fips no-shared no-tests
-make -j$(nproc)
+make || true
 
 # Build libgmp
 cd $SRC/libgmp
