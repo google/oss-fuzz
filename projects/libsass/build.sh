@@ -22,5 +22,5 @@ popd
 
 INSTALL_DIR="$SRC/libsass"
 
-$CXX $CXXFLAGS -I${INSTALL_DIR}/include -lFuzzingEngine data_context_fuzzer.cc \
-  -o $OUT/data_context_fuzzer ${INSTALL_DIR}/lib/libsass.a
+$CXX $CXXFLAGS -I${INSTALL_DIR}/include data_context_fuzzer.cc \
+  $LIB_FUZZING_ENGINE -o $OUT/data_context_fuzzer ${INSTALL_DIR}/lib/libsass.a

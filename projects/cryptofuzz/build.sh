@@ -46,7 +46,7 @@ then
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/libressl/include -DCRYPTOFUZZ_LIBRESSL" make -B -j$(nproc)
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/libressl/include -DCRYPTOFUZZ_LIBRESSL" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
@@ -73,7 +73,7 @@ then
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
@@ -99,7 +99,7 @@ OPENSSL_INCLUDE_PATH="$SRC/openssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/opens
 
 # Compile Cryptofuzz
 cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
 
 # Generate dictionary
 ./generate_dict
@@ -127,7 +127,7 @@ then
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
@@ -154,7 +154,7 @@ OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/bor
 
 # Compile Cryptofuzz
 cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE_DEPRECATED" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
 
 # Generate dictionary
 ./generate_dict
