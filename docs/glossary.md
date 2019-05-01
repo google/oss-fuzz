@@ -26,7 +26,7 @@ It is recommended to use it for regression testing as well (see [ideal integrati
 ## Fuzzer
 
 The most overloaded term and used in a variety of contexts, which makes it bad.
-Sometimes, "Fuzzer" is referred to a [fuzz target](#fuzz-target),
+Sometimes, "Fuzzer" is referred to a [fuzz target](#fuzz-target), 
 a [fuzzing engine](#fuzzing-engine),
 a [mutation engine](#mutation-engine),
 a [test generator](#test-generator) or 
