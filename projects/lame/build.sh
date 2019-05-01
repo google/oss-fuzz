@@ -25,6 +25,6 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
-$CXX -std=c++17 -Wall -Wextra -Werror $CXXFLAGS -I fuzzing-headers/include/ -I $SRC/lame/include/ fuzzer-encoder.cpp -lFuzzingEngine $SRC/lame/libmp3lame/.libs/libmp3lame.a -lm -o $OUT/fuzzer-encoder
+$CXX -std=c++17 -Wall -Wextra -Werror $CXXFLAGS -I fuzzing-headers/include/ -I $SRC/lame/include/ fuzzer-encoder.cpp $LIB_FUZZING_ENGINE $SRC/lame/libmp3lame/.libs/libmp3lame.a -lm -o $OUT/fuzzer-encoder
 cp fuzzer-encoder_seed_corpus.zip $OUT/
 cp fuzzer-encoder.dict $OUT/

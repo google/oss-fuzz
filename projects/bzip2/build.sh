@@ -31,7 +31,7 @@ for file in $SRC/*.c;
 do
     name=$(basename $file .c)
     $CC $CFLAGS -c -I . $SRC/${name}.c -o $OUT/${name}.o
-    $CXX $CXXFLAGS -o $OUT/${name} $OUT/${name}.o -lFuzzingEngine \
+    $CXX $CXXFLAGS -o $OUT/${name} $OUT/${name}.o $LIB_FUZZING_ENGINE \
     libbz2.a
     rm -f $OUT/${name}.o
 done

@@ -28,5 +28,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   assert(result == 0); return 0;
 }
 EOF
-  $CXX $CXXFLAGS -std=c++11 ${f}_fuzzer.cc ./libcxx/fuzzing/fuzzing.cpp -I ./libcxx  -o $OUT/$f -lFuzzingEngine
+  $CXX $CXXFLAGS -std=c++11 ${f}_fuzzer.cc ./libcxx/fuzzing/fuzzing.cpp -I ./libcxx  -o $OUT/$f $LIB_FUZZING_ENGINE
 done

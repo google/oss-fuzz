@@ -21,7 +21,7 @@ make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -Ilib/includes \
     fuzz/fuzz_target.cc -o $OUT/nghttp2_fuzzer \
-    -lFuzzingEngine lib/.libs/libnghttp2.a
+    $LIB_FUZZING_ENGINE lib/.libs/libnghttp2.a
 
 cp $SRC/*.options $OUT
 

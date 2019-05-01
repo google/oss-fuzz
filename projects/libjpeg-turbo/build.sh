@@ -21,6 +21,6 @@ make install
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/libjpeg_turbo_fuzzer.cc -o $OUT/libjpeg_turbo_fuzzer \
-    -lFuzzingEngine "$WORK/lib/libturbojpeg.a"
+    $LIB_FUZZING_ENGINE "$WORK/lib/libturbojpeg.a"
 
 cp $SRC/libjpeg_turbo_fuzzer_seed_corpus.zip $OUT/

@@ -50,7 +50,7 @@ do
     if [ -f CMakeFiles/fuzz_disasm.dir/suite/fuzz/platform.c.o ]; then
         FUZZO="$FUZZO CMakeFiles/fuzz_disasm.dir/suite/fuzz/platform.c.o"
     fi
-    $CXX $CXXFLAGS $FUZZO -o $OUT/fuzz_disasm$branch libcapstone.a -lFuzzingEngine
+    $CXX $CXXFLAGS $FUZZO -o $OUT/fuzz_disasm$branch libcapstone.a $LIB_FUZZING_ENGINE
 
     cd ../../
 done
