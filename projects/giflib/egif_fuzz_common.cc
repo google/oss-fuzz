@@ -31,14 +31,7 @@ int fuzz_egif(const uint8_t *Data, size_t Size)
 		return 0;
 	}
 
-	if(DGifSlurp(GifFile) != GIF_OK){
-		PrintGifError(GifFile->Error);
-		DGifCloseFile(GifFile, &Error);
-		free(gifData);
-		return 0;
-	}
-
-	DGifCloseFile(GifFile, &Error);
+	EGifCloseFile(GifFile, &Error);
 	free(gifData);
 	return 0;
 }
