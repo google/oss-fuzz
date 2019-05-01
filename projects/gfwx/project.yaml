@@ -1,0 +1,6 @@
+homepage: "http://www.gfwx.org/"
+primary_contact: "fyffe@google.com"
+sanitizers:
+ - address
+ - undefined
+ - memory
