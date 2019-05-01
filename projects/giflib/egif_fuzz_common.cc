@@ -2,7 +2,7 @@
 
 //using namespace std;
 
-//extern "C" void PrintGifError(int ErrorCode);
+extern "C" void PrintGifError(int ErrorCode);
 
 int stub_output_writer (GifFileType *gifFileType, const uint8_t *buf, int len) {
 	struct gifUserData *gud = (struct gifUserData *)gifFileType->UserData;
