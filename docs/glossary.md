@@ -6,6 +6,13 @@ Naming things is hard, so this page tries to reduce confusion around fuzzing-rel
 Or **test corpus**, or **fuzzing corpus**.<BR>
 A set of [test inputs](#test-input). In most contexts, it refers to a set of minimal test inputs that generate maximal code coverage.
 
+## Cross-pollination
+The term is taken from botany, where one plant pollinates a plant of another variety.
+In fuzzing, cross-pollination means using a corpus for one
+[fuzz target](#fuzz-target) to expand a [corpus](#corpus) for another fuzz target.
+For example, if there are two libraries that process the same common data
+format, it is often benefitial to cross-pollinate their respective corpora.
+
 ## Fuzz Target
 Or **Target Function**, or **Fuzzing Target Function**, or **Fuzzing Entry Point**.<BR>
 A function to which we apply fuzzing. A [specific signature](http://libfuzzer.info#fuzz-target) is required for OSS-Fuzz.
@@ -19,7 +26,7 @@ It is recommended to use it for regression testing as well (see [ideal integrati
 ## Fuzzer
 
 The most overloaded term and used in a variety of contexts, which makes it bad.
-Sometimes, "Fuzzer" is referred to a [fuzz target](#fuzz-target), 
+Sometimes, "Fuzzer" is referred to a [fuzz target](#fuzz-target),
 a [fuzzing engine](#fuzzing-engine),
 a [mutation engine](#mutation-engine),
 a [test generator](#test-generator) or 
