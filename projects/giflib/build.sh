@@ -11,13 +11,13 @@ done
 ar rc libgif.a *.o
 
 cd $SRC
-$CXX $CFLAGS $LIB_FUZZING_ENGINE -Wall -c -I giflib-code dgif_target.cc -o dgif_target.o
+$CXX $CFLAGS -Wall -c -I giflib-code dgif_target.cc -o dgif_target.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11  -I giflib-code dgif_fuzz_common.cc dgif_target.o  \
         -o $OUT/dgif_target giflib-code/libgif.a
 
 rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc gif_fuzz_proto.proto --cpp_out=genfiles
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -Wall -c -I giflib-code dgif_protobuf_target.cc -I libprotobuf-mutator/ \
+$CXX $CXXFLAGS -Wall -c -I giflib-code dgif_protobuf_target.cc -I libprotobuf-mutator/ \
 -I genfiles \
 -I LPM/external.protobuf/include \
  -o dgif_protobuf_target.o

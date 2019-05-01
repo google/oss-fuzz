@@ -136,7 +136,15 @@ int fuzz_dgif_ala_android(const uint8_t *Data, size_t Size)
 			lastUnclearedFrame = i;
 		}
 		// Draw
-		GifDrawText8x8(&GifFile->SavedImages[i], 0, 0, "legend", 42);
+		// assert(y+8 <= Image->ImageDesc.Height);
+		// assert(x+8*strlen(legend) <= Image->ImageDesc.Width);
+		int imgHeight = GifFile->SavedImages[i].ImageDesc.Height;
+		int imgWidth = GifFile->SavedImages[i].ImageDesc.Width;
+		// TODO: Source x,y, string, and color from fuzzer input
+		int x, y = 0;
+		int strLen = 6;
+		if (y+8 <= imgHeight && x+8*strLen <= imgWidth)
+			GifDrawText8x8(&GifFile->SavedImages[i], 0, 0, "legend", 42);
 	}
 #if GIF_DEBUG
 	ALOGD("FrameSequence_gif created with size %d %d, frames %d dur %ld",
@@ -157,6 +165,7 @@ int fuzz_dgif_ala_android(const uint8_t *Data, size_t Size)
 			bgColor = gifColorToColor8888(cmap->Colors[GifFile->SBackGroundColor]);
 		}
 	}
+
 	DGifCloseFile(GifFile, &Error);
 	free(gifData);
 	delete[] preservedFrames;
