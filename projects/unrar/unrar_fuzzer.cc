@@ -5,6 +5,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <system_error>
 #include <unistd.h>
 
 #include "rar.hpp"
@@ -15,10 +16,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // unrar likes to create files in the current directory.
   // So, the following few lines created and 'cd' to a directory named 'o'
   // in the current working directory.
-  fs::path original_path = fs::current_path();
+  std::error_code code, ok;
+  fs::path original_path = fs::current_path(code);
+  if (code != ok) return code.value();
+
   fs::path out_path = original_path / "o";
-  bool created = fs::create_directory(out_path);
-  fs::current_path(out_path);
+  bool created = fs::create_directory(out_path, code);
+  if (code != ok) return code.value();
+
+  fs::current_path(out_path, code);
+  if (code != ok) return code.value();
 
   static const std::string filename = "temp.rar";
   std::ofstream file(filename,
