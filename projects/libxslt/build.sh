@@ -48,7 +48,7 @@ for fuzzer in xpath xslt; do
     $CXX $CXXFLAGS \
         tests/fuzz/$fuzzer.o \
         -o $OUT/$fuzzer \
-        -lFuzzingEngine \
+        $LIB_FUZZING_ENGINE \
         libexslt/.libs/libexslt.a libxslt/.libs/libxslt.a \
         ../libxml2/.libs/libxml2.a \
         $CRYPTO_LIBS
