@@ -3,3 +3,7 @@ primary_contact: "pab.systerel@gmail.com"
 auto_ccs:
   - "mcl.systerel@gmail.com"
   - "vincent.lacroix@systerel.fr"
+sanitizers:
+ - address
+ - memory
+ - undefined
