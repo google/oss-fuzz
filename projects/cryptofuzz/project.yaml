@@ -10,6 +10,7 @@ auto_ccs:
     - "beck@obtuse.com"
     - "joel.sing@gmail.com"
     - "kinichiro.inoguchi@gmail.com"
+    - "github@pureftpd.org"
 sanitizers:
  - address
  - undefined
