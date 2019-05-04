@@ -53,7 +53,7 @@ for decoder in "${fuzzer_decoders[@]}"; do
     -I$SRC/libvpx \
     -I${build_dir} \
     -Wl,--start-group \
-    -lFuzzingEngine \
+    $LIB_FUZZING_ENGINE \
     $SRC/libvpx/examples/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
     ${build_dir}/libvpx.a \
     -Wl,--end-group

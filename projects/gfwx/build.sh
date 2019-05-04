@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,15 @@
 #
 ################################################################################
 
-make guetzli_static
-$CXX $CXXFLAGS -std=c++11 -I. fuzz_target.cc $LIB_FUZZING_ENGINE \
-  -o $OUT/guetzli_fuzzer bin/Release/libguetzli_static.a
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DMSAN"
+fi
 
-cp $SRC/guetzli_fuzzer_seed_corpus.zip $OUT/
+make
+
+cp fuzzer-encoder $OUT/
+cp fuzzer-encoder_seed_corpus.zip $OUT/
+
+cp fuzzer-decoder $OUT/
+cp fuzzer-decoder_seed_corpus.zip $OUT/

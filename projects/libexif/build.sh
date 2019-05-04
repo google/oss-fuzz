@@ -27,4 +27,4 @@ cp libexif/test/testdata/*.jpg exif_corpus
 zip -r "$OUT/exif_loader_fuzzer_seed_corpus.zip" exif_corpus/
 popd
 
-$CXX $CXXFLAGS -std=c++11 -I"$WORK/include" "$SRC/exif_loader_fuzzer.cc" -o $OUT/exif_loader_fuzzer -lFuzzingEngine "$WORK/lib/libexif.a"
+$CXX $CXXFLAGS -std=c++11 -I"$WORK/include" "$SRC/exif_loader_fuzzer.cc" -o $OUT/exif_loader_fuzzer $LIB_FUZZING_ENGINE "$WORK/lib/libexif.a"

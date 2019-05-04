@@ -26,7 +26,7 @@ make install
 
 # put linker arguments into the environment, appending to any existing ones
 export LDFLAGS="${LDFLAGS-""}"
-export LDLIBS="${LDLIBS-""} -lwolfssl -lFuzzingEngine"
+export LDLIBS="${LDLIBS-""} -lwolfssl $LIB_FUZZING_ENGINE"
 
 # make and export targets to $OUT; environment overridding internal variables
 cd "${target_dir}"

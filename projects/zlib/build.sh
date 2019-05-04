@@ -9,14 +9,14 @@ make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/zlib_uncompress_fuzzer.cc -o $OUT/zlib_uncompress_fuzzer \
-    -lFuzzingEngine ./libz.a
+    $LIB_FUZZING_ENGINE ./libz.a
 
 zip $OUT/seed_corpus.zip *.*
 
 for f in $(find $SRC -name '*_fuzzer.c'); do
     b=$(basename -s .c $f)
     $CC $CFLAGS -I. $f -c -o /tmp/$b.o
-    $CXX $CXXFLAGS -o $OUT/$b /tmp/$b.o -stdlib=libc++ -lFuzzingEngine ./libz.a
+    $CXX $CXXFLAGS -o $OUT/$b /tmp/$b.o -stdlib=libc++ $LIB_FUZZING_ENGINE ./libz.a
     rm -f /tmp/$b.o
     ln -sf $OUT/seed_corpus.zip $OUT/${b}_seed_corpus.zip
 done

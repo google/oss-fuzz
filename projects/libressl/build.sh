@@ -48,7 +48,7 @@ for F in $fuzzerFiles; do
 
   $CXX $CXXFLAGS \
       -o $OUT/${fuzzerName} -fsanitize-recover=address \
-      $WORK/driver.o $WORK/${fuzzerName}.o ./ssl/libssl.a ./crypto/libcrypto.a ./tls/libtls.a -lFuzzingEngine
+      $WORK/driver.o $WORK/${fuzzerName}.o ./ssl/libssl.a ./crypto/libcrypto.a ./tls/libtls.a $LIB_FUZZING_ENGINE
 
   if [ -d "$LIBRESSL_FUZZERS/corpora/${fuzzerName}/" ]; then
     zip -j $OUT/${fuzzerName}_seed_corpus.zip $LIBRESSL_FUZZERS/corpora/${fuzzerName}/*

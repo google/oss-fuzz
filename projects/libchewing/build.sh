@@ -32,7 +32,7 @@ for variant in default random_init dynamic_config; do
       -o $OUT/chewing_${variant}_fuzzer \
       $WORK/chewing_${variant}_fuzzer.o $WORK/chewing_fuzzer_common.o \
       test/stress.o test/.libs/libtesthelper.a src/.libs/libchewing.a \
-      -lFuzzingEngine
+      $LIB_FUZZING_ENGINE
 done
 
 # install data files

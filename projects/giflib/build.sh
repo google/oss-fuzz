@@ -12,7 +12,7 @@ ar rc libgif.a *.o
 cd $SRC
 $CC $CFLAGS -Wall -c -I giflib-code dgif_target.c -o dgif_target.o
 $CXX $CXXFLAGS -std=c++11 -I giflib-code dgif_target.o \
-        -o $OUT/dgif_target -lFuzzingEngine giflib-code/libgif.a
+        -o $OUT/dgif_target $LIB_FUZZING_ENGINE giflib-code/libgif.a
 
 # Place dict and config in OUT
 wget -O $OUT/gif.dict \

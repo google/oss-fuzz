@@ -21,7 +21,7 @@ make -j$(nproc)
 
 # build fuzzers
 $CXX $CXXFLAGS -o $OUT/zip ./tests/fuzz/zip.cpp \
-    -lFuzzingEngine `./wx-config --cxxflags --libs base`
+    $LIB_FUZZING_ENGINE `./wx-config --cxxflags --libs base`
 
 # and copy their corpora
 zip -j $OUT/zip_seed_corpus.zip $SRC/wxwidgets/tests/fuzz/corpus/zip/*
