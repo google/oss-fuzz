@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
 
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake
+RUN apt-get update && apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake libboost-all-dev
 
 # BoringSSL needs Go to build
 RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
@@ -30,5 +30,6 @@ RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 RUN git clone --depth 1 https://github.com/libressl-portable/portable libressl
 RUN cd $SRC/libressl && ./update.sh
+RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 
 COPY build.sh $SRC/
