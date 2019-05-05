@@ -50,9 +50,6 @@ int fuzz_dgif_extended(const uint8_t *Data, size_t Size)
     for (int i = 0; i < GifFile->ImageCount; i++) {
         DGifSavedExtensionToGCB(GifFile, i, &gcb);
     }
-    for (int i = 0; i < GifFile->ImageCount; i++) {
-        DGifSavedExtensionToGCB(GifFile, i, &gcb);
-    }
     const ColorMapObject* cmap = GifFile->SColorMap;
     if (cmap) {
         DGifSavedExtensionToGCB(GifFile, 0, &gcb);
