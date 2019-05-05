@@ -19,7 +19,8 @@ git checkout fuzzer
 ./configure --fuzzing --disable-doc --disable-nls --disable-idn
 make fuzz
 
-cp fuzz/address-fuzz $OUT/
-cp fuzz/corpus_address.zip $OUT/address-fuzz_seed_corpus.zip
-cp fuzz/rfc822_headers_dict.txt $OUT/address-fuzz.dict
-cp fuzz/address-fuzz.options $OUT/
+cd fuzz
+cp address-fuzz $OUT/
+zip -q -r $OUT/address-fuzz_seed_corpus.zip corpus_address
+cp rfc822_headers_dict.txt $OUT/address-fuzz.dict
+cp address-fuzz.options $OUT/
