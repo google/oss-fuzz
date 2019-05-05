@@ -141,7 +141,8 @@ int fuzz_dgif_ala_android(const uint8_t *Data, size_t Size)
 		int imgHeight = GifFile->SavedImages[i].ImageDesc.Height;
 		int imgWidth = GifFile->SavedImages[i].ImageDesc.Width;
 		// TODO: Source x,y, string, and color from fuzzer input
-		int x, y = 0;
+		int x = 0;
+		int y = 0;
 		int strLen = 6;
 		if (y+8 <= imgHeight && x+8*strLen <= imgWidth)
 			GifDrawText8x8(&GifFile->SavedImages[i], 0, 0, "legend", 42);
