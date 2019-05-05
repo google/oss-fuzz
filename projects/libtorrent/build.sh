@@ -30,7 +30,7 @@ cd fuzzers
 b2 clang-ossfuzz -j$(nproc) crypto=openssl fuzz=external sanitize=off stage-large
 cp fuzzers/* $OUT
 
-wget https://github.com/arvidn/libtorrent/releases/download/libtorrent_1_2_1/corpus.zip
+wget --no-verbose https://github.com/arvidn/libtorrent/releases/download/libtorrent-1_2_1/corpus.zip
 unzip -q corpus.zip
 cd corpus
 for f in *; do

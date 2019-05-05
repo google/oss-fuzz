@@ -19,7 +19,7 @@ MAINTAINER arvid@libtorrent.org
 RUN apt-get update && apt-get install -y wget libssl-dev
 
 RUN wget --no-verbose https://dl.bintray.com/boostorg/release/1.69.0/source/boost_1_69_0.tar.gz
-RUN tar xvzf boost_1_69_0.tar.gz
+RUN tar xzf boost_1_69_0.tar.gz
 
 RUN git clone --depth 1 --single-branch --branch RC_1_2 --recurse-submodules https://github.com/arvidn/libtorrent.git
 WORKDIR libtorrent
