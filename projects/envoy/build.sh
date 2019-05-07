@@ -65,21 +65,11 @@ do
 done
 
 # Build driverless libraries.
-# TODO(htuch): Remove the CC/CXX/CFLAGS/CXXFLAGS passing, this is only there for
-# cmake_external limitation in understanding --cxxopt etc., it should not be
-# necessary once
-# https://github.com/bazelbuild/rules_foreign_cc/issues/154#issuecomment-466504751
-# is resolved and we cleanup libc++ support in the main repo.
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --genrule_strategy=standalone --strip=never \
-  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --linkopt=-lc++fs \
+  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
-  --define force_libcpp=enabled \
-  --action_env CC \
-  --action_env CXX \
-  --action_env CFLAGS \
-  --action_env CXXFLAGS \
   --build_tag_filters=-no_asan \
   ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
