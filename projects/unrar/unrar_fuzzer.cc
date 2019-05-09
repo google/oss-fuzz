@@ -53,7 +53,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // 'cd' back to the original directory and delete 'o' along with
   // all its contents.
-  fs::current_path(original_path);
-  fs::remove_all(out_path);
+  fs::current_path(original_path, code);
+  if (code != ok) return code.value();
+  fs::remove_all(out_path, code);
+  if (code != ok) return code.value();
   return 0;
 }
