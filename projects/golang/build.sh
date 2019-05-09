@@ -42,12 +42,12 @@ export -f compile_fuzzer
 #find $GOPATH/src/github.com/dvyukov/go-fuzz-corpus -mindepth 1 -maxdepth 1 -type d -exec bash -c 'compile_fuzzer "$@"' bash {} \;
 
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/asn1
-compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/bzip2
+#compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/bzip2
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/csv
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/elliptic
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/flate
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/fmt
-compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/gif
+#compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/gif
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/gzip
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/httpreq
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/httpresp
@@ -59,7 +59,7 @@ compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/multipart
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/png
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/tar
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/time
-compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/url
+#compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/url
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/xml
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/zip
 compile_fuzzer $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/zlib
