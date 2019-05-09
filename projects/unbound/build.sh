@@ -23,6 +23,9 @@ make -j6 all
 
 $CC $CFLAGS -I. -DSRCDIR=. -c -o parse_packet_fuzzer.o parse_packet_fuzzer.c
 
+# get the LIBOBJS with the replaced functions needed for linking.
+LIBOBJS=`make --eval 'echolibobjs: ; @echo "$(LIBOBJS)"' echolibobjs`
+
 $CXX $CXXFLAGS -std=c++11 \
   $LIB_FUZZING_ENGINE \
   -lssl -lcrypto -pthread \
@@ -39,9 +42,8 @@ $CXX $CXXFLAGS -std=c++11 \
   validator.o val_kcache.o val_kentry.o val_neg.o val_nsec3.o val_nsec.o \
   val_secalgo.o val_sigcrypt.o val_utils.o dns64.o cachedb.o redis.o authzone.o \
   respip.o netevent.o listen_dnsport.o outside_network.o ub_event.o keyraw.o \
-  sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o strlcat.o \
-  getentropy_linux.o reallocarray.o libunbound.o \
-  explicit_bzero.o libworker.o context.o \
-  strlcpy.o arc4random.o arc4random_uniform.o arc4_lock.o
+  sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o libunbound.o \
+  libworker.o context.o \
+  $LIBOBJS
 
 wget --directory-prefix $OUT https://github.com/jsha/unbound/raw/fuzzing-corpora/testdata/parse_packet_fuzzer_seed_corpus.zip
