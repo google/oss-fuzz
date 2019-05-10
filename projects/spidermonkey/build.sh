@@ -35,7 +35,7 @@ cd build_DBG.OBJ
     --disable-jemalloc \
     --disable-tests \
     --enable-address-sanitizer \
-     --disable-cranelift
+    --disable-cranelift
 
 make "-j$(nproc)"
 
