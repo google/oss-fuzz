@@ -18,14 +18,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // in the current working directory.
   std::error_code code, ok;
   fs::path original_path = fs::current_path(code);
-  if (code != ok) return code.value();
+  if (code != ok) return 0;
 
   fs::path out_path = original_path / "o";
   bool created = fs::create_directory(out_path, code);
-  if (code != ok) return code.value();
+  if (code != ok) return 0;
 
   fs::current_path(out_path, code);
-  if (code != ok) return code.value();
+  if (code != ok) return 0;
 
   static const std::string filename = "temp.rar";
   std::ofstream file(filename,
@@ -53,7 +53,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // 'cd' back to the original directory and delete 'o' along with
   // all its contents.
-  fs::current_path(original_path);
-  fs::remove_all(out_path);
+  fs::current_path(original_path, code);
+  if (code != ok) return 0;
+  fs::remove_all(out_path, code);
+  if (code != ok) return 0;
   return 0;
 }
