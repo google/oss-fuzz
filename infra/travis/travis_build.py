@@ -15,18 +15,15 @@
 #
 ################################################################################
 
+from __future__ import print_function
+
 import os
 import re
 import subprocess
-import sys
 import yaml
 
 
 DEFAULT_FUZZING_ENGINES = ['afl', 'libfuzzer']
-
-
-class HelperCommandException(Exception):
-  pass
 
 
 def get_modified_projects():
@@ -39,7 +36,7 @@ def get_modified_projects():
 
 def get_oss_fuzz_root():
   """Get the absolute path of the root of the oss-fuzz checkout."""
-  script_path = sys.argv[0]
+  script_path = os.path.realpath(__file__)
   return os.path.abspath(
       os.path.dirname(os.path.dirname(os.path.dirname(script_path))))
 
@@ -49,10 +46,7 @@ def execute_helper_command(helper_command):
   root = get_oss_fuzz_root()
   script_path = os.path.join(root, 'infra', 'helper.py')
   command = ['python', script_path] + helper_command
-  process = subprocess.Popen(command)
-  process.wait()
-  if process.returncode != 0:
-    raise HelperCommandException('Command failed')
+  subprocess.check_call(command)
 
 
 def build_fuzzers(project, sanitizer, engine):
@@ -75,7 +69,7 @@ def build_project(project):
   root = get_oss_fuzz_root()
   project_yaml_path = os.path.join(root, 'projects', project, 'project.yaml')
   with open(project_yaml_path) as fp:
-    project_yaml = yaml.safe_load(fp.read())
+    project_yaml = yaml.safe_load(fp)
 
   if project_yaml.get('disabled', False):
     return
@@ -105,7 +99,7 @@ def main():
   for project in projects:
     try:
       build_project(project)
-    except HelperCommandException:
+    except subprocess.CalledProcessError:
       failures.append(project)
 
   if failures:
