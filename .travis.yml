@@ -1,0 +1,13 @@
+language: python
+dist: xenial
+
+services:
+  - docker
+
+before_install:
+  - git fetch origin +refs/heads/$TRAVIS_BRANCH
+
+install:
+  - pip install -r infra/gcb/requirements.txt
+
+script: ./infra/travis/travis_build.py
