@@ -10,4 +10,4 @@ before_install:
 install:
   - pip install -r infra/gcb/requirements.txt
 
-script: ./infra/travis/travis_build.bash
+script: ./infra/travis/travis_build.py
