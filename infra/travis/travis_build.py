@@ -82,12 +82,12 @@ def build_project(project):
 
   fuzzing_engines = project_yaml.get('fuzzing_engines', DEFAULT_FUZZING_ENGINES)
   if 'none' in fuzzing_engines:
-    # Build w/ASAN and None
+    # no engine builds always use ASAN.
     build_fuzzers(project, 'address', 'none')
     return
 
   if 'afl' in fuzzing_engines:
-    # Build w/ASAN and AFL.
+    # AFL builds always use ASAN.
     build_fuzzers(project, 'address', 'afl')
     check_build(project, 'address', 'afl')
 
