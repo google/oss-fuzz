@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+"""Build modified projects."""
 
 from __future__ import print_function
 
