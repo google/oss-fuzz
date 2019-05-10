@@ -26,6 +26,7 @@ $CXX $CXXFLAGS -I . ../boost_ptree_xmlread_fuzzer.cc  $LIB_FUZZING_ENGINE -o boo
 $CXX $CXXFLAGS -I . ../boost_ptree_jsonread_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_ptree_jsonread_fuzzer
 $CXX $CXXFLAGS -I . ../boost_ptree_iniread_fuzzer.cc  $LIB_FUZZING_ENGINE -o boost_ptree_iniread_fuzzer
 $CXX $CXXFLAGS -I . ../boost_ptree_inforead_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_ptree_inforead_fuzzer
+$CXX $CXXFLAGS -I . ../boost_mpint_fuzzer.cc $LIB_FUZZING_ENGINE -o boost_mpint_fuzzer
 
 # Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
