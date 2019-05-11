@@ -17,8 +17,8 @@
 ################################################################################
 
 if [ "$SANITIZER" = undefined ]; then
-    export CFLAGS="$CFLAGS -fno-sanitize=unsigned-integer-overflow,float-divide-by-zero"
-    export CXXFLAGS="$CXXFLAGS -fno-sanitize=unsigned-integer-overflow,float-divide-by-zero"
+    export CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+    export CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
 fi
 
 if [ "$SANITIZER" = memory ]; then
@@ -31,12 +31,32 @@ else
 fi
 
 cd ../libxml2
-./autogen.sh --without-python --disable-shared
+./autogen.sh \
+    --disable-shared \
+    --without-c14n \
+    --without-legacy \
+    --without-push \
+    --without-python \
+    --without-reader \
+    --without-regexps \
+    --without-sax1 \
+    --without-schemas \
+    --without-schematron \
+    --without-valid \
+    --without-writer \
+    --without-zlib \
+    --without-lzma
 make -j$(nproc) V=1
 
 cd ../libxslt
-./autogen.sh --without-python $CRYPTO_CONF --disable-shared \
-    --with-libxml-src=../libxml2
+./autogen.sh \
+    --with-libxml-src=../libxml2 \
+    --disable-shared \
+    --without-python \
+    $CRYPTO_CONF \
+    --without-debug \
+    --without-debugger \
+    --without-profiler
 make -j$(nproc) V=1
 
 for file in xpath xslt fuzz; do
