@@ -18,6 +18,8 @@
 # TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
 # https://github.com/google/oss-fuzz/issues/2336
 
+export LINK_FLAGS=""
+
 # Generate lookup tables. This only needs to be done once.
 cd $SRC/cryptofuzz
 python gen_repository.py
@@ -28,6 +30,49 @@ export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
+fi
+
+##############################################################################
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    # Compile cryptopp (with assembly)
+    cd $SRC/cryptopp
+    make -j$(nproc)
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
+    export LIBCRYPTOPP_A_PATH="$SRC/cryptopp/libcryptopp.a"
+    export CRYPTOPP_INCLUDE_PATH="$SRC/cryptopp"
+
+    # Compile Cryptofuzz cryptopp (with assembly) module
+    cd $SRC/cryptofuzz/modules/cryptopp
+    make -B
+fi
+
+##############################################################################
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    # Compile libgpg-error (dependency of libgcrypt)
+    cd $SRC/
+    tar jxvf libgpg-error-1.36.tar.bz2
+    cd libgpg-error-1.36/
+    ./configure --enable-static
+    make -j$(nproc)
+    make install
+    export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
+
+    # Compile libgcrypt (with assembly)
+    cd $SRC/libgcrypt
+    autoreconf -ivf
+    ./configure --enable-static --disable-doc
+    make -j$(nproc)
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGCRYPT"
+    export LIBGCRYPT_A_PATH="$SRC/libgcrypt/src/.libs/libgcrypt.a"
+    export LIBGCRYPT_INCLUDE_PATH="$SRC/libgcrypt/src"
+
+    # Compile Cryptofuzz libgcrypt (with assembly) module
+    cd $SRC/cryptofuzz/modules/libgcrypt
+    make -B
 fi
 
 ##############################################################################
