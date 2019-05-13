@@ -25,6 +25,7 @@ import yaml
 
 
 DEFAULT_FUZZING_ENGINES = ['afl', 'libfuzzer']
+DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
 def get_modified_projects():
@@ -47,6 +48,7 @@ def execute_helper_command(helper_command):
   root = get_oss_fuzz_root()
   script_path = os.path.join(root, 'infra', 'helper.py')
   command = ['python', script_path] + helper_command
+  print('Running command: %s' % ' '.join(command))
   subprocess.check_call(command)
 
 
@@ -89,22 +91,22 @@ def build_project(project):
   if 'libfuzzer' not in fuzzing_engines:
     return
 
-  for sanitizer in project_yaml['sanitizers']:
+  for sanitizer in project_yaml.get('sanitizers', DEFAULT_SANITIZERS):
     build_fuzzers(project, sanitizer, 'libfuzzer')
     check_build(project, sanitizer, 'libfuzzer')
 
 
 def main():
   projects = get_modified_projects()
-  failures = []
+  failed_projects = []
   for project in projects:
     try:
       build_project(project)
     except subprocess.CalledProcessError:
-      failures.append(project)
+      failed_projects.append(project)
 
-  if failures:
-    print('Failures:', ' '.join(failures))
+  if failed_projects:
+    print('Failed projects:', ' '.join(failed_projects))
     exit(1)
 
 if __name__ == '__main__':
