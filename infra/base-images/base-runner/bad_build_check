@@ -44,6 +44,12 @@ UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD=170
 # a big concern either way as the overhead for them would not be significant.
 UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=200
 
+# ASan builds on i386 generally have about 250 UBSan runtime calls.
+if [[ $ARCHITECTURE == 'i386' ]]
+then
+  UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=280
+fi
+
 
 # Verify that the given fuzz target has proper coverage instrumentation.
 function check_instrumentation {
@@ -203,7 +209,12 @@ function check_mixed_sanitizers {
   local CALL_INSN=
   case $(uname -m) in
       x86_64)
+        if [[ $ARCHITECTURE == 'i386' ]]
+        then
+          CALL_INSN="call\s+[0-9a-f]+\s+<"
+        else
           CALL_INSN="callq\s+[0-9a-f]+\s+<"
+        fi
           ;;
       aarch64)
           CALL_INSN="bl\s+[0-9a-f]+\s+<"
@@ -258,6 +269,29 @@ function check_seed_corpus {
   return 0
 }
 
+function check_architecture {
+  local FUZZER=$1
+  local FUZZER_NAME=$(basename $FUZZER)
+  FILE_OUTPUT=$(file $FUZZER)
+  if [[ $ARCHITECTURE == "x86_64" ]]
+  then
+    echo $FILE_OUTPUT | grep "x86-64" > /dev/null
+  elif [[ $ARCHITECTURE == "i386" ]]
+  then
+    echo $FILE_OUTPUT | grep "80386" > /dev/null
+  else
+    echo "UNSUPPORTED ARCHITECTURE"
+    return 1
+  fi
+  result=$?
+  if [[ $result != 0 ]]
+  then
+    echo "BAD BUILD $FUZZER is not built for architecture: $ARCHITECTURE"
+    echo "file command output: $FILE_OUTPUT"
+    echo "check_mixed_sanitizers test will fail."
+  fi
+  return $result
+}
 
 function main {
   local FUZZER=$1
@@ -265,6 +299,10 @@ function main {
   local result=0
 
   check_instrumentation $FUZZER
+  result=$?
+  checks_failed=$(( $checks_failed + $result ))
+
+  check_architecture $FUZZER
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 
