@@ -117,5 +117,6 @@ def main():
     print('Failed projects:', ' '.join(failed_projects))
     exit(1)
 
+
 if __name__ == '__main__':
   main()
