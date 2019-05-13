@@ -32,8 +32,10 @@ def get_modified_projects():
   """Get a list of all the projects modified in this commit."""
   master_head_sha = subprocess.check_output(
       ['git', 'merge-base', 'HEAD', 'FETCH_HEAD']).strip()
+  print('master_head_sha', master_head_sha)
   output = str(subprocess.check_output(
       ['git', 'diff', '--name-only', 'HEAD', master_head_sha]))
+  print('output', output)
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
   return set(re.findall(projects_regex, output))
 
