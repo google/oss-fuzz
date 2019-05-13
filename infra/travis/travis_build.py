@@ -32,7 +32,7 @@ def get_modified_projects():
   output = subprocess.check_output(['git', 'diff', 'origin/master',
                                     '--name-status'])
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
-  return re.findall(projects_regex, output)
+  return set(re.findall(projects_regex, output))
 
 
 def get_oss_fuzz_root():
