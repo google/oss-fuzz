@@ -62,11 +62,13 @@ def build_fuzzers(project, sanitizer, engine, architecture='x86_64'):
   ])
 
 
-def check_build(project, sanitizer, engine):
+def check_build(project, sanitizer, engine, architecture='x86_64'):
   """Execute helper.py's check_build command on |project|, assuming it was most
   recently built with |sanitizer| and |engine|."""
-  execute_helper_command(
-      ['check_build', project, '--engine', engine, '--sanitizer', sanitizer])
+  execute_helper_command([
+      'check_build', project, '--engine', engine, '--sanitizer', sanitizer,
+      '--architecture', architecture
+  ])
 
 
 def build_project(project):
@@ -101,7 +103,7 @@ def build_project(project):
   if 'i386' in project_yaml.get('architectures', []):
     # i386 builds always use libFuzzer and ASAN.
     build_fuzzers(project, 'address', 'libfuzzer', 'i386')
-    check_build(project, 'address', 'libfuzzer')
+    check_build(project, 'address', 'libfuzzer', 'i386')
 
 
 def main():
