@@ -48,13 +48,13 @@ def execute_helper_command(helper_command):
   root = get_oss_fuzz_root()
   script_path = os.path.join(root, 'infra', 'helper.py')
   command = ['python', script_path] + helper_command
+  print('Running command: %s' % ' '.join(command))
   subprocess.check_call(command)
 
 
 def build_fuzzers(project, sanitizer, engine):
   """Execute helper.py's build_fuzzers command on |project|. Build the fuzzers
   with |sanitizer| and |engine|."""
-  print('Building {0} with {1} and {2}'.format(project, sanitizer, engine))
   execute_helper_command(
       ['build_fuzzers', project, '--engine', engine, '--sanitizer', sanitizer])
 
