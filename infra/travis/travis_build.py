@@ -98,7 +98,7 @@ def build_project(project):
     build_fuzzers(project, sanitizer, 'libfuzzer')
     check_build(project, sanitizer, 'libfuzzer')
 
-  if 'i386' in project_yaml.get('architectures', ['x86_64']):
+  if 'i386' in project_yaml.get('architectures', []):
     # i386 builds always use libFuzzer and ASAN.
     build_fuzzers(project, 'address', 'libfuzzer', 'i386')
     check_build(project, 'address', 'libfuzzer')
