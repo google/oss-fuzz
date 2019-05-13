@@ -16,7 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-clang
 MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y git subversion jq python3 zip make libunwind8-dev binutils-dev libblocksruntime-dev
+RUN apt-get install -y git \
+    subversion \
+    jq \
+    python3 \
+    zip \
+    make \
+    libunwind8-dev \
+    binutils-dev \
+    libblocksruntime-dev \
+    libc6-dev-i386
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
@@ -42,9 +51,10 @@ ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 # messages which are treated as errors by some projects.
 ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,--no-as-needed -Wl,-ldl -Wl,-lm -Wno-unused-command-line-argument"
 
-# Default sanitizer and fuzzing engine to use.
+# Default sanitizer, fuzzing engine and architecture to use.
 ENV SANITIZER="address"
 ENV FUZZING_ENGINE="libfuzzer"
+ENV ARCHITECTURE="x86_64"
 
 # DEPRECATED - NEW CODE SHOULD NOT USE THIS. OLD CODE SHOULD STOP. Please use
 # LIB_FUZZING_ENGINE instead.

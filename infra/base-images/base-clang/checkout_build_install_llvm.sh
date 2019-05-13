@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2.7"
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2.7 g++-multilib"
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
@@ -98,6 +98,20 @@ cmake -G "Ninja" \
 ninja
 ninja install
 rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
+
+mkdir -p $WORK/i386
+cd $WORK/i386
+cmake -G "Ninja" \
+      -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+      -DCMAKE_INSTALL_PREFIX=/usr/i386/ -DLIBCXX_ENABLE_SHARED=OFF \
+      -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" \
+      -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      $SRC/llvm
+
+ninja cxx
+ninja install-cxx
+rm -rf $WORK/i386
 
 mkdir -p $WORK/msan
 cd $WORK/msan

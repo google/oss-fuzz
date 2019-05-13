@@ -23,7 +23,6 @@ import re
 import subprocess
 import yaml
 
-
 DEFAULT_FUZZING_ENGINES = ['afl', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
@@ -54,11 +53,13 @@ def execute_helper_command(helper_command):
   subprocess.check_call(command)
 
 
-def build_fuzzers(project, sanitizer, engine):
+def build_fuzzers(project, sanitizer, engine, architecture='x86_64'):
   """Execute helper.py's build_fuzzers command on |project|. Build the fuzzers
   with |sanitizer| and |engine|."""
-  execute_helper_command(
-      ['build_fuzzers', project, '--engine', engine, '--sanitizer', sanitizer])
+  execute_helper_command([
+      'build_fuzzers', project, '--engine', engine, '--sanitizer', sanitizer,
+      '--architecture', architecture
+  ])
 
 
 def check_build(project, sanitizer, engine):
@@ -97,6 +98,11 @@ def build_project(project):
     build_fuzzers(project, sanitizer, 'libfuzzer')
     check_build(project, sanitizer, 'libfuzzer')
 
+  if 'i386' in project_yaml.get('architectures', []):
+    # i386 builds always use libFuzzer and ASAN.
+    build_fuzzers(project, 'address', 'libfuzzer', 'i386')
+    check_build(project, 'address', 'libfuzzer')
+
 
 def main():
   projects = get_modified_projects()
@@ -110,6 +116,7 @@ def main():
   if failed_projects:
     print('Failed projects:', ' '.join(failed_projects))
     exit(1)
+
 
 if __name__ == '__main__':
   main()

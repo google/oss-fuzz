@@ -78,6 +78,7 @@ def main():
 
   build_fuzzers_parser = subparsers.add_parser(
       'build_fuzzers', help='Build fuzzers for a project.')
+  _add_architecture_args(build_fuzzers_parser)
   _add_engine_args(build_fuzzers_parser)
   _add_sanitizer_args(build_fuzzers_parser)
   _add_environment_args(build_fuzzers_parser)
@@ -95,6 +96,7 @@ def main():
 
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
+  _add_architecture_args(check_build_parser)
   _add_engine_args(check_build_parser, choices=['libfuzzer', 'afl'])
   _add_sanitizer_args(
       check_build_parser, choices=['address', 'memory', 'undefined'])
@@ -149,6 +151,7 @@ def main():
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
   shell_parser.add_argument('project_name', help='name of the project')
+  _add_architecture_args(shell_parser)
   _add_engine_args(shell_parser)
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
@@ -247,6 +250,11 @@ def _get_output_dir(project_name=''):
 def _get_work_dir(project_name=''):
   """Returns path to /work directory for the given project (if specified)."""
   return os.path.join(BUILD_DIR, 'work', project_name)
+
+
+def _add_architecture_args(parser, choices=('x86_64', 'i386')):
+  """Add common architecture args."""
+  parser.add_argument('--architecture', default='x86_64', choices=choices)
 
 
 def _add_engine_args(
@@ -416,7 +424,8 @@ def build_fuzzers(args):
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer
+      'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture
   ]
   if args.e:
     env += args.e
