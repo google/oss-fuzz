@@ -76,8 +76,8 @@ function check_instrumentation {
     CHECK_FAILED=$(egrep "No instrumentation detected" -c $FUZZER_OUTPUT)
     if (( $CHECK_FAILED > 0 )); then
       echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
+      return 1
     fi
-    return 1
   fi
 
   # TODO: add checks for other fuzzing engines if possible.
@@ -264,6 +264,7 @@ function main {
   local checks_failed=0
   local result=0
 
+  export RUN_FUZZER_MODE="batch"
   check_instrumentation $FUZZER
   result=$?
   checks_failed=$(( $checks_failed + $result ))
