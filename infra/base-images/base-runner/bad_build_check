@@ -64,7 +64,7 @@ function check_instrumentation {
     CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
     if (( $CHECK_FAILED > 0 )); then
       echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
-
+      cat $FUZZER_OUTPUT
       # Bail out as the further check does not make any sense, there are 0 PCs.
       return 1
     fi
@@ -79,11 +79,12 @@ function check_instrumentation {
     fi
   elif [[ "$FUZZING_ENGINE" == afl ]]; then
     AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
-    CHECK_FAILED=$(egrep "No instrumentation detected" -c $FUZZER_OUTPUT)
-    if (( $CHECK_FAILED > 0 )); then
+    CHECK_PASSED=$(egrep "All set and ready to roll" -c $FUZZER_OUTPUT)
+    if (( $CHECK_PASSED == 0 )); then
       echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
+      cat $FUZZER_OUTPUT
+      return 1
     fi
-    return 1
   fi
 
   # TODO: add checks for other fuzzing engines if possible.
@@ -298,6 +299,7 @@ function main {
   local checks_failed=0
   local result=0
 
+  export RUN_FUZZER_MODE="batch"
   check_instrumentation $FUZZER
   result=$?
   checks_failed=$(( $checks_failed + $result ))
