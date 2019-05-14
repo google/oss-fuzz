@@ -11,6 +11,7 @@ auto_ccs:
     - "joel.sing@gmail.com"
     - "kinichiro.inoguchi@gmail.com"
     - "github@pureftpd.org"
+    - "jussi.kivilinna@gmail.com"
 sanitizers:
  - address
  - undefined
