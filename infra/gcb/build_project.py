@@ -10,7 +10,6 @@ import datetime
 import json
 import os
 import re
-import subprocess
 import sys
 import time
 import urllib
@@ -212,7 +211,10 @@ def get_build_steps(project_dir):
         env = CONFIGURATIONS['engine-' + fuzzing_engine][:]
         env.extend(CONFIGURATIONS['sanitizer-' + sanitizer])
         out = '/workspace/out/' + sanitizer
-        stamped_name = name + '-' + sanitizer + '-' + ts
+        if architecture == 'x86_64':
+          stamped_name = '-'.join([name, sanitizer, ts])
+        else:
+          stamped_name = '-'.join([name, sanitizer, architecture, ts])
         zip_file = stamped_name + '.zip'
         stamped_srcmap_file = stamped_name + '.srcmap.json'
         bucket = ENGINE_INFO[fuzzing_engine].upload_bucket
