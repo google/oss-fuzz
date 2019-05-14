@@ -24,7 +24,7 @@ fi
 
 if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
-    export CXXFLAGS_EXTRA="-L/usr/i386/lib $CXXFLAGS_EXTRA"
+    cp -R /usr/i386/lib/* /usr/lib
 fi
 if [[ $FUZZING_ENGINE != "none" ]]; then
   # compile script might override environment, use . to call it.

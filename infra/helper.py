@@ -795,7 +795,8 @@ def shell(args):
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer
+      'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture,
   ]
 
   if args.e:
