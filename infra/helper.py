@@ -425,7 +425,7 @@ def build_fuzzers(args):
   env = [
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
-      'ARCHITECTURE=' + args.architecture
+      'ARCHITECTURE=' + args.architecture,
   ]
   if args.e:
     env += args.e
@@ -491,7 +491,8 @@ def check_build(args):
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer
+      'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture,
   ]
   if args.e:
     env += args.e
@@ -794,7 +795,8 @@ def shell(args):
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer
+      'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture,
   ]
 
   if args.e:
