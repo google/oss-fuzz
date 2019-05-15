@@ -72,13 +72,17 @@ def check_build(project, engine, sanitizer, architecture):
   ])
 
 
-def is_build(engine, sanitizer, architecture):
-  """Is travis specifiying a build with fuzzing |engine|, |sanitizer|, and
-  |architecture|?"""
-  return (engine == os.getenv('TRAVIS_ENGINE') and
-          sanitizer == os.getenv('TRAVIS_SANITIZER') and
-          architecture == os.getenv('TRAVIS_ARCHITECTURE'))
+def should_build(project_yaml):
+  """Is the build specified by travis enabled in the |project_yaml|?"""
+  def is_enabled(env_var, yaml_name, defaults):
+    """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
+    section)? Uses |defaults| if |yaml_name| section is unspecified."""
+    return os.getenv(env_var) in project_yaml.get(yaml_name, defaults):
 
+  return (is_enabled('TRAVIS_ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
+          is_enabled('TRAVIS_SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
+          is_enabled(
+              'TRAVIS_ARCHITECTURE', 'architectures', DEFAULT_ARCHITECTURES))
 
 def build_project(project):
   """Do the build of |project| that is specified by the TRAVIS_* environment
@@ -92,16 +96,16 @@ def build_project(project):
     print('Project {0} is disabled, not building.'.format(project))
     return
 
+  if not should_build(project_yaml, engine, sanitizer, architecture):
+    print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
+           'not enabled for this project. Not building.').format(
+               os.getenv('TRAVIS_ENGINE'), os.getenv('TRAVIS_SANITIZER'),
+               os.getenv('TRAVIS_ARCHITECTURE')))
+    return
+
   print('Building project', project)
-  for architecture in project_yaml.get('architecture', DEFAULT_ARCHITECTURES):
-    for engine in project_yaml.get('fuzzing_engines', DEFAULT_ENGINES):
-      for sanitizer in project_yaml.get('sanitizers', DEFAULT_SANITIZERS):
-
-        if not is_build(engine, sanitizer, architecture):
-          continue
-
-        build_fuzzers(project, engine, sanitizer, architecture)
-        check_build(project, engine, sanitizer, architecture)
+  build_fuzzers(project, engine, sanitizer, architecture)
+  check_build(project, engine, sanitizer, architecture)
 
 
 def main():
