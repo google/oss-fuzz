@@ -102,8 +102,8 @@ def build_project(project):
 
   if not should_build(project_yaml):
     print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
-           'not enabled for this project. Not building.').format(
-               engine, sanitizer, architecture))
+           'not enabled for this project: {3}. Not building.').format(
+               engine, sanitizer, architecture, project))
 
     return
 
