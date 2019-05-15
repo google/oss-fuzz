@@ -103,6 +103,7 @@ def build_project(project):
         build_fuzzers(project, engine, sanitizer, architecture)
         check_build(project, engine, sanitizer, architecture)
 
+
 def main():
   projects = get_modified_projects()
   failed_projects = []
