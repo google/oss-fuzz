@@ -82,16 +82,16 @@ def is_build(engine, sanitizer, architecture):
 def build_project(project):
   """Do the build of |project| that is specified by the TRAVIS_* environment
   variables (TRAVIS_SANITIZER, TRAVIS_ENGINE, and TRAVIS_ARCHITECTURE)."""
-  print('Building project', project)
   root = get_oss_fuzz_root()
   project_yaml_path = os.path.join(root, 'projects', project, 'project.yaml')
   with open(project_yaml_path) as fp:
     project_yaml = yaml.safe_load(fp)
 
   if project_yaml.get('disabled', False):
+    print('Project {0} is disabled, not building.'.format(project))
     return
 
-  built = False
+  print('Building project', project)
   for architecture in project_yaml.get('architecture', DEFAULT_ARCHITECTURES):
     for engine in project_yaml.get('fuzzing_engines', DEFAULT_ENGINES):
       for sanitizer in project_yaml.get('sanitizers', DEFAULT_SANITIZERS):
@@ -99,8 +99,6 @@ def build_project(project):
         if not is_build(engine, sanitizer, architecture):
           continue
 
-        assert not built
-        built = True
         build_fuzzers(project, engine, sanitizer, architecture)
         check_build(project, engine, sanitizer, architecture)
 
