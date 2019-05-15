@@ -71,9 +71,10 @@ def check_build(project, engine, sanitizer, architecture):
       '--architecture', architecture
   ])
 
+
 def is_build(engine, sanitizer, architecture):
-  """Has travis specified to do a build with fuzzing engine: |engine|,
-  sanitizer: |sanitizer| and architecture: |architecture| or not."""
+  """Is travis specifiying a build with fuzzing |engine|, |sanitizer|, and
+  |architecture|?"""
   return (engine == os.getenv('TRAVIS_ENGINE') and
           sanitizer == os.getenv('TRAVIS_SANITIZER') and
           architecture == os.getenv('TRAVIS_ARCHITECTURE'))
