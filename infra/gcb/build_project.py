@@ -37,8 +37,9 @@ CONFIGURATIONS = {
     'engine-none': ['FUZZING_ENGINE=none'],
 }
 
-EngineInfo = collections.namedtuple('EngineInfo',
-                                    ['upload_bucket', 'supported_sanitizers'])
+EngineInfo = collections.namedtuple(
+    'EngineInfo',
+    ['upload_bucket', 'supported_sanitizers', 'supported_architectures'])
 
 ENGINE_INFO = {
     'libfuzzer':
@@ -184,8 +185,7 @@ def get_build_steps(project_dir):
           'dir': 'oss-fuzz/projects/' + name,
       },
       {
-          'name':
-              image,
+          'name': image,
           'args': [
               'bash', '-c',
               'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
@@ -223,11 +223,11 @@ def get_build_steps(project_dir):
               UPLOAD_URL_FORMAT.format(bucket, name, stamped_srcmap_file))
         else:
           upload_url = get_signed_url(
-              NON_x86_64_UPLOAD_URL_FORMAT.format(
-                  bucket, name, architecture, zip_file))
+              NON_x86_64_UPLOAD_URL_FORMAT.format(bucket, name, architecture,
+                                                  zip_file))
           srcmap_url = get_signed_url(
-              NON_x86_64_UPLOAD_URL_FORMAT.format(
-                  bucket, name, architecture, stamped_srcmap_file))
+              NON_x86_64_UPLOAD_URL_FORMAT.format(bucket, name, architecture,
+                                                  stamped_srcmap_file))
 
         targets_list_filename = get_targets_list_filename(sanitizer)
         targets_list_url = get_signed_url(
@@ -317,8 +317,8 @@ def get_build_steps(project_dir):
                 'name':
                     image,
                 'args': [
-                    'bash', '-c', 'cd {0} && zip -r {1} *'.format(
-                        out, zip_file)
+                    'bash', '-c',
+                    'cd {0} && zip -r {1} *'.format(out, zip_file)
                 ],
             },
             # upload srcmap
