@@ -10,4 +10,33 @@ before_install:
 install:
   - pip install -r infra/travis/requirements.txt
 
+matrix:
+  include:
+    - name: "libfuzzer address x86_64"
+      env:
+        - TRAVIS_ENGINE=libfuzzer
+        - TRAVIS_SANITIZER=address
+        - TRAVIS_ARCHITECTURE=x86_64
+    - name: "libfuzzer memory x86_64"
+      env:
+        - TRAVIS_ENGINE=libfuzzer
+        - TRAVIS_SANITIZER=memory
+        - TRAVIS_ARCHITECTURE=x86_64
+    - name: "libfuzzer undefined x86_64"
+      env:
+        - TRAVIS_SANITIZER=undefined
+        - TRAVIS_ENGINE=libfuzzer
+        - TRAVIS_ARCHITECTURE=x86_64
+    - name: "afl address x86_64"
+      env:
+        - TRAVIS_ENGINE=afl
+        - TRAVIS_SANITIZER=address
+        - TRAVIS_ARCHITECTURE=x86_64
+    - name: "none address x86_64"
+      env:
+        - TRAVIS_ENGINE=none
+        - TRAVIS_SANITIZER=address
+        - TRAVIS_ARCHITECTURE=x86_64
+      # TODO(metzman) Add a libfuzzer address i386 job.
+
 script: ./infra/travis/travis_build.py
