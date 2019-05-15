@@ -56,7 +56,7 @@ for FUZZER_BINARY in $(find $OUT/ -maxdepth 1 -executable -type f); do
   LOG_PATH_FOR_BROKEN_TARGET="${BROKEN_TARGETS_DIR}/${FUZZER}"
 
   # Launch bad build check process in the background.
-  bad_build_check $FUZZER_BINARY > $LOG_PATH_FOR_BROKEN_TARGET &
+  bad_build_check $FUZZER_BINARY &> $LOG_PATH_FOR_BROKEN_TARGET &
 
   # Count total number of fuzz targets being tested.
   TOTAL_TARGETS_COUNT=$[$TOTAL_TARGETS_COUNT+1]
