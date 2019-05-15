@@ -63,7 +63,7 @@ def build_fuzzers(project, engine, sanitizer, architecture):
   ])
 
 
-def check_build(project, engine, sanitizer, architecture='x86_64'):
+def check_build(project, engine, sanitizer, architecture):
   """Execute helper.py's check_build command on |project|, assuming it was most
   recently built with |engine| and |sanitizer| for |architecture|."""
   execute_helper_command([
