@@ -77,7 +77,7 @@ def should_build(project_yaml):
   def is_enabled(env_var, yaml_name, defaults):
     """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
     section)? Uses |defaults| if |yaml_name| section is unspecified."""
-    return os.getenv(env_var) in project_yaml.get(yaml_name, defaults):
+    return os.getenv(env_var) in project_yaml.get(yaml_name, defaults)
 
   return (is_enabled('TRAVIS_ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
           is_enabled('TRAVIS_SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
@@ -96,11 +96,15 @@ def build_project(project):
     print('Project {0} is disabled, not building.'.format(project))
     return
 
-  if not should_build(project_yaml, engine, sanitizer, architecture):
+  engine = os.getenv('TRAVIS_ENGINE')
+  sanitizer = os.getenv('TRAVIS_SANITIZER')
+  architecture = os.getenv('TRAVIS_ARCHITECTURE')
+
+  if not should_build(project_yaml):
     print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
            'not enabled for this project. Not building.').format(
-               os.getenv('TRAVIS_ENGINE'), os.getenv('TRAVIS_SANITIZER'),
-               os.getenv('TRAVIS_ARCHITECTURE')))
+               engine, sanitizer, architecture))
+
     return
 
   print('Building project', project)
