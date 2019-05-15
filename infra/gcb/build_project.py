@@ -76,7 +76,7 @@ DEFAULT_SANITIZERS = ['address', 'undefined']
 TARGETS_LIST_BASENAME = 'targets.list'
 
 UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
-NON_X86_64_URL_FORMAT = '/{0}/{1}/{2}/{3}'
+NON_X86_64_UPLOAD_URL_FORMAT = '/{0}/{1}/{2}/{3}'
 
 
 def usage():
@@ -223,10 +223,10 @@ def get_build_steps(project_dir):
               UPLOAD_URL_FORMAT.format(bucket, name, stamped_srcmap_file))
         else:
           upload_url = get_signed_url(
-              NON_x86_64_UPLOAD_URL_FORMAT.format(bucket, name, architecture,
+              NON_X86_64_UPLOAD_URL_FORMAT.format(bucket, name, architecture,
                                                   zip_file))
           srcmap_url = get_signed_url(
-              NON_x86_64_UPLOAD_URL_FORMAT.format(bucket, name, architecture,
+              NON_X86_64_UPLOAD_URL_FORMAT.format(bucket, name, architecture,
                                                   stamped_srcmap_file))
 
         targets_list_filename = get_targets_list_filename(sanitizer)
