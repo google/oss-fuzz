@@ -23,7 +23,8 @@ import re
 import subprocess
 import yaml
 
-DEFAULT_FUZZING_ENGINES = ['afl', 'libfuzzer']
+DEFAULT_ARCHITECTURES = ['x86_64']
+DEFAULT_ENGINES = ['afl', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
@@ -53,26 +54,34 @@ def execute_helper_command(helper_command):
   subprocess.check_call(command)
 
 
-def build_fuzzers(project, sanitizer, engine, architecture='x86_64'):
+def build_fuzzers(project, engine, sanitizer, architecture):
   """Execute helper.py's build_fuzzers command on |project|. Build the fuzzers
-  with |sanitizer| and |engine|."""
+  with |engine| and |sanitizer| for |architecture|."""
   execute_helper_command([
       'build_fuzzers', project, '--engine', engine, '--sanitizer', sanitizer,
       '--architecture', architecture
   ])
 
 
-def check_build(project, sanitizer, engine, architecture='x86_64'):
+def check_build(project, engine, sanitizer, architecture='x86_64'):
   """Execute helper.py's check_build command on |project|, assuming it was most
-  recently built with |sanitizer| and |engine|."""
+  recently built with |engine| and |sanitizer| for |architecture|."""
   execute_helper_command([
       'check_build', project, '--engine', engine, '--sanitizer', sanitizer,
       '--architecture', architecture
   ])
 
+def is_build(engine, sanitizer, architecture):
+  """Has travis specified to do a build with fuzzing engine: |engine|,
+  sanitizer: |sanitizer| and architecture: |architecture| or not."""
+  return (engine == os.getenv('TRAVIS_ENGINE') and
+          sanitizer == os.getenv('TRAVIS_SANITIZER') and
+          architecture == os.getenv('TRAVIS_ARCHITECTURE'))
+
 
 def build_project(project):
-  """Do all build of |project|."""
+  """Do the build of |project| that is specified by the TRAVIS_* environment
+  variables (TRAVIS_SANITIZER, TRAVIS_ENGINE, and TRAVIS_ARCHITECTURE)."""
   print('Building project', project)
   root = get_oss_fuzz_root()
   project_yaml_path = os.path.join(root, 'projects', project, 'project.yaml')
@@ -82,29 +91,18 @@ def build_project(project):
   if project_yaml.get('disabled', False):
     return
 
-  fuzzing_engines = project_yaml.get('fuzzing_engines', DEFAULT_FUZZING_ENGINES)
-  if 'none' in fuzzing_engines:
-    # no engine builds always use ASAN.
-    build_fuzzers(project, 'address', 'none')
-    return
+  built = False
+  for architecture in project_yaml.get('architecture', DEFAULT_ARCHITECTURES):
+    for engine in project_yaml.get('fuzzing_engines', DEFAULT_ENGINES):
+      for sanitizer in project_yaml.get('sanitizers', DEFAULT_SANITIZERS):
 
-  if 'afl' in fuzzing_engines:
-    # AFL builds always use ASAN.
-    build_fuzzers(project, 'address', 'afl')
-    check_build(project, 'address', 'afl')
+        if not is_build(engine, sanitizer, architecture):
+          continue
 
-  if 'libfuzzer' not in fuzzing_engines:
-    return
-
-  for sanitizer in project_yaml.get('sanitizers', DEFAULT_SANITIZERS):
-    build_fuzzers(project, sanitizer, 'libfuzzer')
-    check_build(project, sanitizer, 'libfuzzer')
-
-  if 'i386' in project_yaml.get('architectures', []):
-    # i386 builds always use libFuzzer and ASAN.
-    build_fuzzers(project, 'address', 'libfuzzer', 'i386')
-    check_build(project, 'address', 'libfuzzer', 'i386')
-
+        assert not built
+        built = True
+        build_fuzzers(project, engine, sanitizer, architecture)
+        check_build(project, engine, sanitizer, architecture)
 
 def main():
   projects = get_modified_projects()
