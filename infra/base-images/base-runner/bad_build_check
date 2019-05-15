@@ -51,8 +51,9 @@ then
 fi
 
 
-# Verify that the given fuzz target has proper coverage instrumentation.
-function check_instrumentation {
+# Verify that the given fuzz target is corectly built to run with a particular
+# engine.
+function check_engine {
   local FUZZER=$1
   local FUZZER_NAME=$(basename $FUZZER)
   local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
@@ -81,7 +82,7 @@ function check_instrumentation {
     AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "All set and ready to roll" -c $FUZZER_OUTPUT)
     if (( $CHECK_PASSED == 0 )); then
-      echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
+      echo "BAD BUILD: fuzzing $FUZZER with afl-fuzz failed."
       cat $FUZZER_OUTPUT
       return 1
     fi
@@ -300,7 +301,7 @@ function main {
   local result=0
 
   export RUN_FUZZER_MODE="batch"
-  check_instrumentation $FUZZER
+  check_engine $FUZZER
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 
