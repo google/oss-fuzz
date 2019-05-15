@@ -16,7 +16,7 @@
 ################################################################################
 
 # Percentage threshold that needs to be reached for marking a build as failed.
-ALLOWED_BROKEN_TARGETS_PERCENTAGE=10
+ALLOWED_BROKEN_TARGETS_PERCENTAGE=${ALLOWED_BROKEN_TARGETS_PERCENTAGE:-10}
 
 # Test all fuzz targets in the $OUT/ dir.
 TOTAL_TARGETS_COUNT=0
