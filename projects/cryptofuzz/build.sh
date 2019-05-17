@@ -19,6 +19,7 @@
 # https://github.com/google/oss-fuzz/issues/2336
 
 export LINK_FLAGS=""
+export INCLUDE_PATH_FLAGS=""
 
 # Generate lookup tables. This only needs to be done once.
 cd $SRC/cryptofuzz
@@ -93,6 +94,28 @@ then
     make -B
 fi
 
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    # Compile EverCrypt (with assembly)
+    cd $SRC/
+    tar zxvf evercrypt-v0.1alpha1.tar.gz
+    mv hacl-star-evercrypt-v0.1alpha1 evercrypt
+
+    cd $SRC/evercrypt/dist/generic
+    make -j$(nproc) || true
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_EVERCRYPT"
+    export EVERCRYPT_A_PATH="$SRC/evercrypt/dist/generic/libevercrypt.a"
+    export KREMLIN_A_PATH="$SRC/evercrypt/dist/kremlin/kremlib/dist/minimal/*.o"
+    export EVERCRYPT_INCLUDE_PATH="$SRC/evercrypt/dist"
+    export KREMLIN_INCLUDE_PATH="$SRC/evercrypt/dist/kremlin/include"
+    export INCLUDE_PATH_FLAGS="$INCLUDE_PATH_FLAGS -I $EVERCRYPT_INCLUDE_PATH -I $KREMLIN_INCLUDE_PATH"
+
+    # Compile Cryptofuzz EverCrypt (with assembly) module
+    cd $SRC/cryptofuzz/modules/evercrypt
+    make -B
+fi
+
 ##############################################################################
 # Compile Cryptofuzz reference (without assembly) module
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_REFERENCE"
@@ -127,7 +150,7 @@ then
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/libressl/include -DCRYPTOFUZZ_LIBRESSL" make -B -j$(nproc)
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/libressl/include -DCRYPTOFUZZ_LIBRESSL $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
@@ -154,7 +177,7 @@ then
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
@@ -180,7 +203,7 @@ OPENSSL_INCLUDE_PATH="$SRC/openssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/opens
 
 # Compile Cryptofuzz
 cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
 
 # Generate dictionary
 ./generate_dict
@@ -208,7 +231,7 @@ then
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
 
     # Generate dictionary
     ./generate_dict
@@ -235,7 +258,7 @@ OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/bor
 
 # Compile Cryptofuzz
 cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include" make -B -j$(nproc)
+LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl/include $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
 
 # Generate dictionary
 ./generate_dict
