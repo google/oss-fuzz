@@ -37,6 +37,10 @@ matrix:
         - TRAVIS_ENGINE=none
         - TRAVIS_SANITIZER=address
         - TRAVIS_ARCHITECTURE=x86_64
-      # TODO(metzman) Add a libfuzzer address i386 job.
+    - name: "libfuzzer address i386"
+      env:
+        - TRAVIS_ENGINE=libfuzzer
+        - TRAVIS_SANITIZER=address
+        - TRAVIS_ARCHITECTURE=i386
 
 script: ./infra/travis/travis_build.py
