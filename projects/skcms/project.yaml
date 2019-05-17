@@ -7,3 +7,6 @@ sanitizers:
  - address
  - memory
  - undefined
+architecures:
+  - x86_64
+  - i386
