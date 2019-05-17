@@ -34,5 +34,4 @@ cp $SRC/mruby/oss-fuzz/config/mruby.dict $OUT
 cp $SRC/mruby/oss-fuzz/config/mruby_fuzzer.options $OUT
 
 # seeds
-find $SRC/mruby_seeds -exec zip -ujq \
-    $OUT/mruby_fuzzer_seed_corpus.zip "{}" \;
+zip -rq $OUT/mruby_fuzzer_seed_corpus $SRC/mruby_seeds
