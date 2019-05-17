@@ -76,7 +76,6 @@ DEFAULT_SANITIZERS = ['address', 'undefined']
 TARGETS_LIST_BASENAME = 'targets.list'
 
 UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
-NON_X86_64_UPLOAD_URL_FORMAT = '/{0}/{1}/{2}/{3}'
 
 
 def usage():
@@ -218,18 +217,12 @@ def get_build_steps(project_dir):
         zip_file = stamped_name + '.zip'
         stamped_srcmap_file = stamped_name + '.srcmap.json'
         bucket = ENGINE_INFO[fuzzing_engine].upload_bucket
-        if architecture == 'x86_64':
-          upload_url = get_signed_url(
-              UPLOAD_URL_FORMAT.format(bucket, name, zip_file))
-          srcmap_url = get_signed_url(
-              UPLOAD_URL_FORMAT.format(bucket, name, stamped_srcmap_file))
-        else:
-          upload_url = get_signed_url(
-              NON_X86_64_UPLOAD_URL_FORMAT.format(bucket, name, architecture,
-                                                  zip_file))
-          srcmap_url = get_signed_url(
-              NON_X86_64_UPLOAD_URL_FORMAT.format(bucket, name, architecture,
-                                                  stamped_srcmap_file))
+        if architecture != 'x86_64':
+          bucket += '-' + architecture
+        upload_url = get_signed_url(
+            UPLOAD_URL_FORMAT.format(bucket, name, zip_file))
+        srcmap_url = get_signed_url(
+            UPLOAD_URL_FORMAT.format(bucket, name, stamped_srcmap_file))
 
         targets_list_filename = get_targets_list_filename(sanitizer)
         targets_list_url = get_signed_url(
