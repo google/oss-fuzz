@@ -32,6 +32,7 @@
 #include <KF5/KArchive/ktar.h>
 #include <KF5/KArchive/kzip.h>
 #include <KF5/KArchive/kar.h>
+#include <KF5/KArchive/kcompressiondevice.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
@@ -41,14 +42,22 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     QBuffer b;
     b.setData((const char *)data, size);
 
+    std::unique_ptr<KCompressionDevice> gzipKD(new KCompressionDevice(&b, false, KCompressionDevice::GZip));
+    std::unique_ptr<KCompressionDevice> bzipKD(new KCompressionDevice(&b, false, KCompressionDevice::BZip2));
+    std::unique_ptr<KCompressionDevice> xzKD(new KCompressionDevice(&b, false, KCompressionDevice::Xz));
+
     const QVector<KArchive*> handlers = {
         new K7Zip(&b),
         new KTar(&b),
+        new KTar(gzipKD.get()),
+        new KTar(bzipKD.get()),
+        new KTar(xzKD.get()),
         new KZip(&b),
         new KAr(&b)
     };
 
     for (KArchive *h : handlers) {
+        b.reset();
         h->open(QIODevice::ReadOnly);
         h->close();
     }
