@@ -27,6 +27,9 @@ python gen_repository.py
 
 cd $SRC/openssl
 
+# This enables runtime checks for C++-specific undefined behaviour.
+export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
+
 export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
@@ -98,7 +101,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile EverCrypt (with assembly)
     cd $SRC/
-    tar zxvf evercrypt-v0.1alpha1.tar.gz
+    tar zxvf hacl-star-evercrypt-v0.1alpha1-bugfix.tar.gz
     mv hacl-star-evercrypt-v0.1alpha1 evercrypt
 
     cd $SRC/evercrypt/dist/generic
@@ -169,7 +172,7 @@ then
     # Compile Openssl (with assembly)
     cd $SRC/openssl
     ./config --debug enable-md2 enable-rc5
-    make || true
+    make -j$(nproc)
 
     # Compile Cryptofuzz OpenSSL (with assembly) module
     cd $SRC/cryptofuzz/modules/openssl
@@ -195,7 +198,7 @@ fi
 cd $SRC/openssl
 ./config --debug no-asm enable-md2 enable-rc5
 make clean
-make || true
+make -j$(nproc)
 
 # Compile Cryptofuzz OpenSSL (without assembly) module
 cd $SRC/cryptofuzz/modules/openssl
