@@ -98,7 +98,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile EverCrypt (with assembly)
     cd $SRC/
-    tar zxvf evercrypt-v0.1alpha1.tar.gz
+    tar zxvf hacl-star-evercrypt-v0.1alpha1-bugfix.tar.gz
     mv hacl-star-evercrypt-v0.1alpha1 evercrypt
 
     cd $SRC/evercrypt/dist/generic
