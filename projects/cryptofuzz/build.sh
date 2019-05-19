@@ -27,6 +27,9 @@ python gen_repository.py
 
 cd $SRC/openssl
 
+# This enables runtime checks for C++-specific undefined behaviour.
+export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
+
 export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
