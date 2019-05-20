@@ -523,6 +523,9 @@ def _get_fuzz_targets(project_name):
   """Return names of fuzz targest build in the project's /out directory."""
   fuzz_targets = []
   for name in os.listdir(_get_output_dir(project_name)):
+    if name.startswith('afl-'):
+      continue
+
     path = os.path.join(_get_output_dir(project_name), name)
     if os.path.isfile(path) and os.access(path, os.X_OK):
       fuzz_targets.append(name)
