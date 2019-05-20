@@ -1,0 +1,8 @@
+homepage: "https://www.7-zip.org"
+primary_contact: "p.antoine@catenacyber.fr"
+#TODO Igor Pavlov
+
+sanitizers:
+- address
+- memory
+- undefined
