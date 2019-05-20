@@ -15,7 +15,12 @@
 #
 ################################################################################
 
-# build project
+# Build LPM
+(mkdir LPM && cd LPM && cmake $SRC/libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
+
+# Instrument mruby
+(
+cd $SRC/mruby
 export LD=clang
 export LDFLAGS="$CFLAGS"
 ./minirake clean && ./minirake -j$(nproc) all
@@ -28,11 +33,33 @@ $CC -c $CFLAGS -Iinclude \
 $CXX $CXXFLAGS $OUT/${name}.o $LIB_FUZZING_ENGINE -lm \
     $SRC/mruby/build/host/lib/libmruby.a -o $OUT/${name}
 rm -f $OUT/${name}.o
+)
+
+# Build proto fuzzer: ASan and UBSan
+if [[ $CFLAGS != *sanitize=memory* ]]; then
+    PROTO_FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_proto_fuzzer.cpp
+    PROTO_CONVERTER=$SRC/mruby/oss-fuzz/proto_to_ruby.cpp
+    rm -rf genfiles
+    mkdir genfiles
+    LPM/external.protobuf/bin/protoc --proto_path=mruby/oss-fuzz ruby.proto --cpp_out=genfiles
+    $CXX $CXXFLAGS $PROTO_FUZZ_TARGET genfiles/ruby.pb.cc $PROTO_CONVERTER \
+      -I genfiles -I mruby/oss-fuzz  -I libprotobuf-mutator/ -I .  \
+      -I LPM/external.protobuf/include \
+      -I mruby/include -lz -lm \
+      LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
+      LPM/src/libprotobuf-mutator.a \
+      LPM/external.protobuf/lib/libprotobuf.a \
+      mruby/build/host/lib/libmruby.a \
+      $LIB_FUZZING_ENGINE \
+      -o $OUT/mruby_proto_fuzzer
+
+    # Copy config
+    cp $SRC/mruby/oss-fuzz/config/mruby_proto_fuzzer.options $OUT
+fi
 
 # dict and config
 cp $SRC/mruby/oss-fuzz/config/mruby.dict $OUT
 cp $SRC/mruby/oss-fuzz/config/mruby_fuzzer.options $OUT
 
 # seeds
-find $SRC/mruby_seeds -exec zip -ujq \
-    $OUT/mruby_fuzzer_seed_corpus.zip "{}" \;
+zip -rq $OUT/mruby_fuzzer_seed_corpus $SRC/mruby_seeds
