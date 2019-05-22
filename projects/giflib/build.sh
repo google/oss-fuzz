@@ -15,7 +15,7 @@ $CXX $CFLAGS -Wall -c -I giflib-code dgif_target.cc -o dgif_target.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11  -I giflib-code dgif_fuzz_common.cc dgif_target.o  \
         -o $OUT/dgif_target giflib-code/libgif.a
 
-$CXX $CFLAGS -Wall -c -I giflib-code egif_target.cc -o egif_target.o
+$CXX $CXXFLAGS -Wall -c -I giflib-code egif_target.cc -o egif_target.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11  -I giflib-code egif_fuzz_common.cc egif_target.o  \
         -o $OUT/egif_target giflib-code/libgif.a
 
@@ -33,7 +33,7 @@ ProtoToGif.cpp \
 LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
 LPM/src/libprotobuf-mutator.a \
 LPM/external.protobuf/lib/libprotobuf.a \
-        -o $OUT/dgif_protobuf_target -fsanitize=fuzzer giflib-code/libgif.a
+        -o $OUT/dgif_protobuf_target giflib-code/libgif.a
 
 
 # Place dict and config in OUT
