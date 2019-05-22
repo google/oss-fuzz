@@ -113,7 +113,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         public_key_list (ctrlGlobal, sl, 0);
         free_strlist(sl);
         //no output for stderr
-        log_set_file("/tmp/fuzzdecrypt.log");
+        log_set_file("/dev/null");
         gcry_set_log_handler (my_gcry_logger, NULL);
         gnupg_initialize_compliance (GNUPG_MODULE_NAME_GPG);
         //overwrite output file
