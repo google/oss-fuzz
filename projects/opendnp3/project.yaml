@@ -1,8 +1,10 @@
 homepage: "http://www.automatak.com/opendnp3/"
 primary_contact: "info@automatak.com"
-auto_ccs : "p.antoine@catenacyber.fr"
+auto_ccs :
+  - "p.antoine@catenacyber.fr"
+  - "emile@automatak.com"
 
 sanitizers:
-- address
-- memory
-- undefined
+  - address
+  - memory
+  - undefined
