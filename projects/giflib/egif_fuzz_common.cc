@@ -4,7 +4,8 @@
 
 extern "C" void PrintGifError(int ErrorCode);
 
-int stub_output_writer (GifFileType *gifFileType, const uint8_t *buf, int len) {
+int stub_output_writer(GifFileType *gifFileType, const uint8_t *buf, int len)
+{
 	struct gifUserData *gud = (struct gifUserData *)gifFileType->UserData;
 
 	if (gud == NULL || gud->gifData == NULL || len == 0)
@@ -25,7 +26,8 @@ int fuzz_egif(const uint8_t *Data, size_t Size)
 	struct gifUserData gUData = {Size, gifData};
 
 	GifFile = EGifOpen((void *)&gUData, stub_output_writer, &Error);
-	if (GifFile == NULL) {
+	if (GifFile == NULL)
+	{
 		PrintGifError(GifFile->Error);
 		free(gifData);
 		return 0;
