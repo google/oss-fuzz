@@ -1,0 +1,7 @@
+homepage: "https://github.com/uNetworking/uWebSockets"
+primary_contact: "alexhultman@gmail.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
