@@ -1,0 +1,100 @@
+syntax = "proto2";
+// Proto description of the gif format.
+// Refer to: https://www.fileformat.info/format/gif/egff.htm
+// https://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
+
+// TODO: Verify if this is correct
+
+message LogicalScreenDescriptor {
+    required uint32 ScreenWidth = 1;
+    required uint32 ScreenHeight= 2;
+    required uint32 Packed = 3;
+    required uint32 BackgroundColor = 4;
+    required uint32 AspectRatio = 5;
+}
+
+message GlobalColorTable {
+    required bytes colors = 1;
+}
+
+message ImageDescriptor {
+  required uint32 Seperator =1;
+  required uint32 Left =2;
+  required uint32 Top = 3;
+  required uint32 Width = 4;
+  required uint32 Height = 5;
+  required uint32 Packed = 6;
+}
+
+message GraphicControlExtension {
+  required uint32 Packed = 1;
+  required uint32 DelayTime = 2;
+  required uint32 transparentColorIndex = 3;
+}
+
+message PlainTextExtension {
+  repeated SubBlock subs = 1;
+  optional GraphicControlExtension gcExt = 2;
+}
+
+message LocalColorTable {
+  required bytes colors = 1;
+}
+
+message SubBlock {
+  required uint32 len = 1;
+  required bytes data = 2;
+}
+
+message ImageData {
+  required uint32 lzw = 1;
+  repeated SubBlock subs = 2;
+}
+
+message BasicChunk {
+  required ImageDescriptor imDescriptor =1;
+  required LocalColorTable lct = 2;
+  required ImageData img = 3;
+  optional GraphicControlExtension gcExt = 4;
+}
+
+message ApplicationExtension {
+  required fixed64 appid = 1;
+  repeated SubBlock subs = 2;
+}
+
+message CommentExtension {
+  repeated SubBlock subs = 1;
+}
+
+message Header {
+  enum Version {
+    ENA = 1;
+    ESA = 2;
+    INV = 3;
+  }
+  required Version ver = 1;
+}
+
+message Trailer {}
+
+message ImageChunk {
+  oneof chunk_oneof {
+    BasicChunk basic = 1;
+    PlainTextExtension plaintext = 2;
+    ApplicationExtension appExt = 3;
+    CommentExtension comExt = 4;
+  }
+}
+
+message GifProto {
+  required Header header = 1;
+  required LogicalScreenDescriptor lsd = 2;
+  // Instead of making GCT optional here, we condition its visit on LSD's packed byte
+  // in the converter
+  required GlobalColorTable gct = 3;
+  repeated ImageChunk chunks = 4;
+  required Trailer trailer = 5;
+}
+
+package gifProtoFuzzer;
