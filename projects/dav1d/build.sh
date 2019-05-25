@@ -33,7 +33,7 @@ fi
 
 meson -Dbuild_asm=$BUILD_ASM -Dbuild_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
-      -Dlogging=false \
+      -Dlogging=false -Dfuzzer_ldflags=$LIB_FUZZING_ENGINE \
       ${build}
 ninja -j $(nproc) -C ${build}
 
