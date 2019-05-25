@@ -104,9 +104,6 @@ then
     make -C portable -j$(npro) libevercrypt.a
     make -C kremlin/kremlib/dist/minimal -j$(nproc)
 
-    cd $SRC/evercrypt/dist/generic
-    make -j$(nproc) || true
-
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_EVERCRYPT"
     export EVERCRYPT_A_PATH="$SRC/evercrypt/dist/portable/libevercrypt.a"
     export KREMLIN_A_PATH="$SRC/evercrypt/dist/kremlin/kremlib/dist/minimal/*.o"
