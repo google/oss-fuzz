@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER p.antoine@catenacyber.fr
 RUN apt-get update && apt-get install -y make cmake bzip2 autoconf automake libtool
 RUN git clone --depth 1 https://github.com/catenacyber/elliptic-curve-differential-fuzzer.git ecfuzzer
-RUN git clone --depth 1 https://github.com/ARMmbed/mbedtls.git mbedtls
+RUN git clone --recursive --depth 1 https://github.com/ARMmbed/mbedtls.git mbedtls
 RUN git clone --depth 1 https://github.com/ANSSI-FR/libecc.git libecc
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 ADD https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.32.tar.bz2 libgpg-error-1.32.tar.bz2
