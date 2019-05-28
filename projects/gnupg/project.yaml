@@ -1,4 +1,2 @@
 homepage: "https://www.gnupg.org"
 primary_contact: "p.antoine@catenacyber.fr"
-fuzzing_engines:
-  - libfuzzer
