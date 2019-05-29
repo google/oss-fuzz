@@ -33,17 +33,17 @@ export UBSAN_OPTIONS="detect_leaks=0"
 
 make -j$(nproc)
 
-$CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cc \
+$CXX $CXXFLAGS -std=c++11 -c $SRC/icu/icu4c/source/test/fuzzer/locale_util.cpp \
      -I$SRC/icu4c/source/test/fuzzer
 
 FUZZER_PATH=$SRC/icu/icu4c/source/test/fuzzer
-# Assumes that all fuzzers files end with'_fuzzer.cc'.
-FUZZERS=$FUZZER_PATH/*_fuzzer.cc
+# Assumes that all fuzzers files end with'_fuzzer.cpp'.
+FUZZERS=$FUZZER_PATH/*_fuzzer.cpp
 
 for fuzzer in $FUZZERS; do
   file=${fuzzer:${#FUZZER_PATH}+1}
   $CXX $CXXFLAGS -std=c++11 \
-    $fuzzer -o $OUT/${file/.cc/} locale_util.o \
+    $fuzzer -o $OUT/${file/.cpp/} locale_util.o \
     -I$SRC/icu/icu4c/source/common -I$SRC/icu/icu4c/source/i18n -L$WORK/icu/lib \
     $LIB_FUZZING_ENGINE -licui18n -licuuc -licutu -licudata
 done
