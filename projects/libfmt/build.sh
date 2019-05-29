@@ -23,9 +23,16 @@
 mkdir build
 cd build
 
-cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug \
+# use C++ 14 instead of 17, because even if clang is
+# bleeding edge, cmake is old in the oss fuzz image.
+
+cmake .. \
+-GNinja \
+-DCMAKE_BUILD_TYPE=Debug \
+-DCMAKE_CXX_STANDARD=14 \
 -DFMT_DOC=Off \
 -DFMT_TEST=Off \
+-DFMT_SAFE_DURATION_CAST=On \
 -DFMT_FUZZ=On \
 -DFMT_FUZZ_LINKMAIN=Off \
 -DFMT_FUZZ_LDFLAGS=$LIB_FUZZING_ENGINE
