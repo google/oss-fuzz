@@ -21,11 +21,6 @@ if [ "$SANITIZER" = undefined ]; then
     export CXXFLAGS="$CXXFLAGS -fno-sanitize=unsigned-integer-overflow,float-divide-by-zero"
 fi
 
-cd ../libxml2
-./autogen.sh --without-python --disable-shared
-make -j$(nproc) V=1
-
-cd ../libxslt
 if [ "$SANITIZER" = memory ]; then
     # This would require an instrumented libgcrypt build.
     CRYPTO_CONF=--without-crypto
@@ -34,21 +29,30 @@ else
     CRYPTO_CONF=--with-crypto
     CRYPTO_LIBS=-lgcrypt
 fi
+
+cd ../libxml2
+./autogen.sh --without-python --disable-shared
+make -j$(nproc) V=1
+
+cd ../libxslt
 ./autogen.sh --without-python $CRYPTO_CONF --disable-shared \
     --with-libxml-src=../libxml2
 make -j$(nproc) V=1
 
-for fuzzer in xpath xslt; do
+for file in xpath xslt fuzz; do
     # Compile as C
     $CC $CFLAGS \
         -I. -I../libxml2/include \
-        -c tests/fuzz/$fuzzer.c \
-        -o tests/fuzz/$fuzzer.o \
+        -c tests/fuzz/$file.c \
+        -o tests/fuzz/$file.o
+done
+
+for fuzzer in xpath xslt; do
     # Link with $CXX
     $CXX $CXXFLAGS \
-        tests/fuzz/$fuzzer.o \
+        tests/fuzz/$fuzzer.o tests/fuzz/fuzz.o \
         -o $OUT/$fuzzer \
-        -lFuzzingEngine \
+        $LIB_FUZZING_ENGINE \
         libexslt/.libs/libexslt.a libxslt/.libs/libxslt.a \
         ../libxml2/.libs/libxml2.a \
         $CRYPTO_LIBS

@@ -66,7 +66,7 @@ rm -f $OUT/*.zip
 for dir in $SRC/solidity-fuzzing-corpus/*;
 do
 	name=$(basename $dir)
-	zip -ujq $OUT/$name.zip $dir/* &>/dev/null
+	zip -rjq $OUT/$name $dir
 done
 cp $SRC/solidity/test/tools/ossfuzz/config/*.options $OUT/
 cp $SRC/solidity/test/tools/ossfuzz/config/*.dict $OUT/

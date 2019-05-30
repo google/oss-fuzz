@@ -3,10 +3,11 @@
 > *Status*: Stable. We are accepting applications from widely-used open source projects.
 
 [FAQ](docs/faq.md)
-| [Ideal Fuzzing Integration](docs/ideal_integration.md)
+| [Integration Rewards](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html)
 | [New Project Guide](docs/new_project_guide.md)
+| [Ideal Fuzzing Integration](docs/ideal_integration.md)
 | [Reproducing Bugs](docs/reproducing.md)
-| [Projects](projects)
+| [Current Projects](projects)
 | [Projects Issue Tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 | [Glossary](docs/glossary.md)
 

@@ -44,9 +44,16 @@ UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD=170
 # a big concern either way as the overhead for them would not be significant.
 UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=200
 
+# ASan builds on i386 generally have about 250 UBSan runtime calls.
+if [[ $ARCHITECTURE == 'i386' ]]
+then
+  UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=280
+fi
 
-# Verify that the given fuzz target has proper coverage instrumentation.
-function check_instrumentation {
+
+# Verify that the given fuzz target is corectly built to run with a particular
+# engine.
+function check_engine {
   local FUZZER=$1
   local FUZZER_NAME=$(basename $FUZZER)
   local FUZZER_OUTPUT="/tmp/$FUZZER_NAME.output"
@@ -58,7 +65,7 @@ function check_instrumentation {
     CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
     if (( $CHECK_FAILED > 0 )); then
       echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
-
+      cat $FUZZER_OUTPUT
       # Bail out as the further check does not make any sense, there are 0 PCs.
       return 1
     fi
@@ -72,12 +79,16 @@ function check_instrumentation {
       echo "BAD BUILD: $FUZZER seems to have only partial coverage instrumentation."
     fi
   elif [[ "$FUZZING_ENGINE" == afl ]]; then
-    AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
-    CHECK_FAILED=$(egrep "No instrumentation detected" -c $FUZZER_OUTPUT)
-    if (( $CHECK_FAILED > 0 )); then
-      echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
+    # TODO(https://github.com/google/oss-fuzz/issues/2470): Dont use
+    # AFL_DRIVER_DONT_DEFER by default, support .options files in
+    # bad_build_check instead.
+    AFL_DRIVER_DONT_DEFER=1 AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    CHECK_PASSED=$(egrep "All set and ready to roll" -c $FUZZER_OUTPUT)
+    if (( $CHECK_PASSED == 0 )); then
+      echo "BAD BUILD: fuzzing $FUZZER with afl-fuzz failed."
+      cat $FUZZER_OUTPUT
+      return 1
     fi
-    return 1
   fi
 
   # TODO: add checks for other fuzzing engines if possible.
@@ -95,7 +106,10 @@ function check_startup_crash {
     $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "Done $MIN_NUMBER_OF_RUNS runs" -c $FUZZER_OUTPUT)
   elif [[ "$FUZZING_ENGINE" = afl ]]; then
-    AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    # TODO(https://github.com/google/oss-fuzz/issues/2470): Dont use
+    # AFL_DRIVER_DONT_DEFER by default, support .options files in
+    # bad_build_check instead.
+    AFL_DRIVER_DONT_DEFER=1 AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
     if [ $(egrep "target binary (crashed|terminated)" -c $FUZZER_OUTPUT) -eq 0 ]; then
       CHECK_PASSED=1
     fi
@@ -201,18 +215,23 @@ function check_mixed_sanitizers {
   local FUZZER=$1
   local result=0
   local CALL_INSN=
-  case $(uname -m) in
+  if [[ $ARCHITECTURE == 'i386' ]]
+  then
+    CALL_INSN="call\s+[0-9a-f]+\s+<"
+  else
+    case $(uname -m) in
       x86_64)
-          CALL_INSN="callq\s+[0-9a-f]+\s+<"
-          ;;
+        CALL_INSN="callq\s+[0-9a-f]+\s+<"
+        ;;
       aarch64)
-          CALL_INSN="bl\s+[0-9a-f]+\s+<"
-          ;;
+        CALL_INSN="bl\s+[0-9a-f]+\s+<"
+        ;;
       *)
-          echo "Error: unsupported machine hardware $(uname -m)"
-          exit 1
-          ;;
-  esac
+        echo "Error: unsupported machine hardware $(uname -m)"
+        exit 1
+        ;;
+    esac
+  fi
   local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__asan" -c)
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
   local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__ubsan" -c)
@@ -258,13 +277,41 @@ function check_seed_corpus {
   return 0
 }
 
+function check_architecture {
+  local FUZZER=$1
+  local FUZZER_NAME=$(basename $FUZZER)
+  FILE_OUTPUT=$(file $FUZZER)
+  if [[ $ARCHITECTURE == "x86_64" ]]
+  then
+    echo $FILE_OUTPUT | grep "x86-64" > /dev/null
+  elif [[ $ARCHITECTURE == "i386" ]]
+  then
+    echo $FILE_OUTPUT | grep "80386" > /dev/null
+  else
+    echo "UNSUPPORTED ARCHITECTURE"
+    return 1
+  fi
+  result=$?
+  if [[ $result != 0 ]]
+  then
+    echo "BAD BUILD $FUZZER is not built for architecture: $ARCHITECTURE"
+    echo "file command output: $FILE_OUTPUT"
+    echo "check_mixed_sanitizers test will fail."
+  fi
+  return $result
+}
 
 function main {
   local FUZZER=$1
   local checks_failed=0
   local result=0
 
-  check_instrumentation $FUZZER
+  export RUN_FUZZER_MODE="batch"
+  check_engine $FUZZER
+  result=$?
+  checks_failed=$(( $checks_failed + $result ))
+
+  check_architecture $FUZZER
   result=$?
   checks_failed=$(( $checks_failed + $result ))
 

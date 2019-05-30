@@ -1,0 +1,8 @@
+homepage: https://www.mruby.org/
+primary_contact: "yukihiro@gmail.com"
+auto_ccs:
+  - "bshas3@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

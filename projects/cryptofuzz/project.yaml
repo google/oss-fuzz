@@ -10,6 +10,11 @@ auto_ccs:
     - "beck@obtuse.com"
     - "joel.sing@gmail.com"
     - "kinichiro.inoguchi@gmail.com"
+    - "github@pureftpd.org"
+    - "jussi.kivilinna@gmail.com"
+    - "szanella@gmail.com"
+    - "karthik.bhargavan@gmail.com"
+    - "jonathan.protzenko@gmail.com"
 sanitizers:
  - address
  - undefined

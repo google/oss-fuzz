@@ -22,6 +22,7 @@ RUN apt-get install -y \
     fonts-dejavu \
     git \
     libblocksruntime0 \
+    libc6-dev-i386 \
     libcap2 \
     libunwind8 \
     python3 \

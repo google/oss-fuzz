@@ -11,6 +11,7 @@ auto_ccs:
   - "jfkthame@gmail.com"
   - "cchapman@adobe.com"
   - "ariza@typekit.com"
+  - "qxliu@google.com"
 sanitizers:
  - address
  - undefined

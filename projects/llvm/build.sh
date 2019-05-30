@@ -128,4 +128,4 @@ build_corpus "llvm/test/Transforms/LoopStrengthReduce/" "llvm-opt-fuzzer--x86_64
 
 build_corpus "llvm/test/Transforms/IRCE/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-irce"
 
-zip -j "${OUT}/clangd-fuzzer_seed_corpus.zip"  llvm/tools/clang/tools/extra/test/clangd/*
+zip -j "${OUT}/clangd-fuzzer_seed_corpus.zip"  llvm/tools/clang/tools/extra/clangd/test/*

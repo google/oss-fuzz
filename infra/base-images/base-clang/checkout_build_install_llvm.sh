@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2.7"
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2.7 g++-multilib"
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
@@ -49,7 +49,7 @@ cd clang
 
 OUR_LLVM_REVISION=359254  # For manual bumping.
 FORCE_OUR_REVISION=0  # To allow for manual downgrades.
-LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K\d+(?=')" scripts/update.py)
+LLVM_REVISION=$(grep -Po "CLANG_SVN_REVISION = '\K\d+(?=')" scripts/update.py)
 
 if [ $OUR_LLVM_REVISION -gt $LLVM_REVISION ] || [ $FORCE_OUR_REVISION -ne 0 ]; then
   LLVM_REVISION=$OUR_LLVM_REVISION
@@ -99,6 +99,20 @@ ninja
 ninja install
 rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
+mkdir -p $WORK/i386
+cd $WORK/i386
+cmake -G "Ninja" \
+      -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+      -DCMAKE_INSTALL_PREFIX=/usr/i386/ -DLIBCXX_ENABLE_SHARED=OFF \
+      -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" \
+      -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      $SRC/llvm
+
+ninja cxx
+ninja install-cxx
+rm -rf $WORK/i386
+
 mkdir -p $WORK/msan
 cd $WORK/msan
 
@@ -120,9 +134,6 @@ rm -rf $WORK/msan
 
 # Pull trunk libfuzzer.
 cd $SRC && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
-
-# Copy DataFlow scripts for collecting and merging the traces.
-cp libfuzzer/scripts/*_data_flow.py /usr/local/bin/
 
 # Cleanup
 rm -rf $SRC/llvm

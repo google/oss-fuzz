@@ -22,7 +22,6 @@ zip -q $OUT/json_fuzzer_seed_corpus.zip $WORK/seed.json
 
 mv $SRC/*.dict $OUT/
 
-$CXX $CXXFLAGS -I. \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I. \
     -x c yajl.c yajl_alloc.c yajl_buf.c yajl_lex.c yajl_parser.c yajl_encode.c \
-    ../../fuzz/json_fuzzer.c -o $OUT/json_fuzzer \
-    -lFuzzingEngine
+    ../../fuzz/json_fuzzer.c -o $OUT/json_fuzzer

@@ -30,6 +30,7 @@ RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone --depth 1 https://git.savannah.nongnu.org/r/freetype/freetype2
 RUN git clone --depth 1 https://github.com/glennrp/libpng
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS
+RUN git clone https://git.ghostscript.com/ghostpdl.git
 ADD http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz bzip2-1.0.6.tar.gz
 
 WORKDIR graphicsmagick
