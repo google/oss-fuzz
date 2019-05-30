@@ -17,13 +17,15 @@
 
 # Build the lib.
 INCLUDES=$(for f in $(find fdk-aac -name include); do echo -I $f; done)
+EXTRA_FLAGS=-fno-sanitize=shift
 for f in fdk-aac/*/src/*.cpp; do
-  $CXX $CXXFLAGS $INCLUDES -c $f &
+  # exclude -fno-sanitize=shift as there are shallow errors.
+  $CXX $CXXFLAGS $INCLUDES $EXTRA_FLAGS -c $f &
 done
 wait
 
 # Build the fuzz targets.
 for target_cpp in *.cpp; do
   target=$(basename $target_cpp .cpp)
-  $CXX $CXXFLAGS $target_cpp $INCLUDES *.o -lm  $LIB_FUZZING_ENGINE -o $OUT/$target
+  $CXX $CXXFLAGS $EXTRA_FLAGS $target_cpp $INCLUDES *.o -lm  $LIB_FUZZING_ENGINE -o $OUT/$target
 done
