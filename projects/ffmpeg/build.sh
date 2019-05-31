@@ -203,6 +203,12 @@ for c in $CONDITIONALS ; do
   mv tools/target_dec_${symbol}_fuzzer $OUT/${fuzzer_name}
 done
 
+# Build fuzzer for demuxer
+fuzzer_name=ffmpeg_DEMUXER_fuzzer
+echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
+make tools/target_dem_fuzzer
+mv tools/target_dem_fuzzer $OUT/${fuzzer_name}
+
 # Find relevant corpus in test samples and archive them for every fuzzer.
 #cd $SRC
 #python group_seed_corpus.py $TEST_SAMPLES_PATH $OUT/
