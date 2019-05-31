@@ -43,3 +43,5 @@ set -x
 zip -q $SEED_CORPUS_PATH.zip $SEED_CORPUS_PATH
 rm -rf $SEED_CORPUS_PATH
 
+echo -en "[libfuzzer]\ndetect_leaks=0\n" > $OUT/njs_process_script_fuzzer.options
+

@@ -1,8 +1,24 @@
+// Copyright 2019 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <njs_core.h>
 #include <njs_builtin.h>
+
+// The vast majority of the code was copied from njs/njs_shell.c.
 
 typedef struct {
     uint8_t                 disassemble;
@@ -309,26 +325,6 @@ njs_create_vm(njs_opts_t *opts, njs_vm_opt_t *vm_options)
 }
 
 
-static void
-njs_output(njs_vm_t *vm, njs_opts_t *opts, njs_ret_t ret)
-{
-    nxt_str_t  out;
-
-    if (njs_vm_retval_dump(vm, &out, 1) != NXT_OK) {
-        out = nxt_string_value("failed to get retval from VM");
-        ret = NJS_ERROR;
-    }
-
-    if (ret != NJS_OK) {
-        nxt_error("%V\n", &out);
-
-    } else if (opts->interactive) {
-        nxt_print(out.start, out.length);
-        nxt_printf("\n");
-    }
-}
-
-
 static nxt_int_t
 njs_process_events(njs_console_t *console, njs_opts_t *opts)
 {
@@ -380,8 +376,6 @@ njs_process_script(njs_console_t *console, njs_opts_t *opts,
         ret = njs_vm_start(vm);
     }
 
-    njs_output(vm, opts, ret);
-
     for ( ;; ) {
         if (!njs_vm_pending(vm)) {
             break;
@@ -403,10 +397,6 @@ njs_process_script(njs_console_t *console, njs_opts_t *opts,
         }
 
         ret = njs_vm_run(vm);
-
-        if (ret == NJS_ERROR) {
-            njs_output(vm, opts, ret);
-        }
     }
 
     return ret;

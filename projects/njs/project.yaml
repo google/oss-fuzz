@@ -1,2 +1,4 @@
-homepage: "<your_project_homepage>"
+homepage: "https://nginx.org/en/docs/njs/"
 primary_contact: "<primary_contact_email>"
+experimental: True
+
