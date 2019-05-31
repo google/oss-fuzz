@@ -1,0 +1,7 @@
+homepage: "https://nginx.org/en/docs/njs/"
+primary_contact: "mmoroz@google.com"
+experimental: True
+sanitizers:
+  - address
+  - undefined
+  - memory
