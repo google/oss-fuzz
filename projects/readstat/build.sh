@@ -31,6 +31,10 @@ zip $OUT/fuzz_format_sas7bcat_seed_corpus.zip corpus/sas7bcat/test-case-*
 zip $OUT/fuzz_format_sas7bdat_seed_corpus.zip corpus/sas7bdat*/test-case-*
 zip $OUT/fuzz_format_xport_seed_corpus.zip corpus/xpt*/test-case-*
 
+cp ./fuzz_format_spss_commands.dict $OUT/fuzz_format_spss_commands.dict
+cp ./fuzz_format_stata_commands.dict $OUT/fuzz_format_stata_commands.dict
+cp ./fuzz_format_sas_commands.dict $OUT/fuzz_format_sas_commands.dict
+
 READSTAT_FUZZERS="
     fuzz_compression_sav \
     fuzz_grammar_spss_format \
