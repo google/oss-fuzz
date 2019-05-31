@@ -262,6 +262,8 @@ njs_interactive_shell(njs_opts_t *opts, njs_vm_opt_t *vm_options, nxt_str_t *lin
     }
 
     njs_process_script(vm_options->external, opts, line);
+    njs_vm_destroy(vm);
+    vm = NULL;
 
     return NXT_OK;
 }
