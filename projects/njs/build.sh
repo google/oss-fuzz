@@ -27,7 +27,7 @@ $CC $CFLAGS -Inxt -Ibuild -Injs -c \
     $SRC/njs_process_script_fuzzer.c -o build/njs_process_script_fuzzer.o
 
 $CXX $CXXFLAGS build/njs_process_script_fuzzer.o -o $OUT/njs_process_script_fuzzer \
-    -lFuzzingEngine build/libnxt.a build/libnjs.a -lm -lpcre -lreadline
+    $LIB_FUZZING_ENGINE build/libnxt.a build/libnjs.a -lm -lpcre -lreadline
 
 SEED_CORPUS_PATH=$OUT/njs_process_script_fuzzer_seed_corpus
 mkdir -p $SEED_CORPUS_PATH
