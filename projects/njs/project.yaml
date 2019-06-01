@@ -4,4 +4,4 @@ experimental: True
 sanitizers:
   - address
   - undefined
-  - memory
+
