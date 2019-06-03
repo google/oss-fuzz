@@ -15,6 +15,14 @@
 #
 ################################################################################
 
+# Build pcre dependency to be linked statically.
+pushd $SRC/pcre
+./autogen.sh
+./configure
+make -j$(nproc) clean
+make -j$(nproc) all
+popd
+
 # build project
 rm -rf build
 
@@ -26,8 +34,10 @@ make njs
 $CC $CFLAGS -Inxt -Ibuild -Injs -c \
     $SRC/njs_process_script_fuzzer.c -o build/njs_process_script_fuzzer.o
 
-$CXX $CXXFLAGS build/njs_process_script_fuzzer.o -o $OUT/njs_process_script_fuzzer \
-    $LIB_FUZZING_ENGINE build/libnxt.a build/libnjs.a -lm -lpcre -lreadline
+$CXX $CXXFLAGS build/njs_process_script_fuzzer.o \
+    -o $OUT/njs_process_script_fuzzer \
+    $LIB_FUZZING_ENGINE build/libnxt.a build/libnjs.a \
+    $SRC/pcre/.libs/libpcre.a -lm -lreadline
 
 SEED_CORPUS_PATH=$OUT/njs_process_script_fuzzer_seed_corpus
 mkdir -p $SEED_CORPUS_PATH
@@ -42,4 +52,3 @@ set -x
 
 zip -q $SEED_CORPUS_PATH.zip $SEED_CORPUS_PATH
 rm -rf $SEED_CORPUS_PATH
-
