@@ -16,5 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kcc@google.com
-RUN git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git
+RUN git clone --depth 1 https://android.googlesource.com/platform/external/aac/
 COPY build.sh *.cpp $SRC/

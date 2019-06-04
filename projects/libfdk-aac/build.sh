@@ -16,10 +16,10 @@
 ################################################################################
 
 # Build the lib.
-INCLUDES=$(for f in $(find fdk-aac -name include); do echo -I $f; done)
-EXTRA_FLAGS=-fno-sanitize=shift
-for f in fdk-aac/*/src/*.cpp; do
-  # exclude -fno-sanitize=shift as there are shallow errors.
+INCLUDES=$(for f in $(find aac -name include); do echo -I $f; done)
+# exclude -fno-sanitize=shift-base as there are shallow errors.
+EXTRA_FLAGS=-fno-sanitize=shift-base
+for f in aac/*/src/*.cpp; do
   $CXX $CXXFLAGS $INCLUDES $EXTRA_FLAGS -c $f &
 done
 wait
