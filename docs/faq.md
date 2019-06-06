@@ -23,10 +23,11 @@ You should look for places in your code that:
 ## My project is not open source. Can I use OSS-Fuzz?
 
 You cannot use OSS-Fuzz, but you can use [ClusterFuzz] which OSS-Fuzz is based
-on. ClusterFuzz is a fuzzing intrastructure. OSS-Fuzz is a production instance
-of ClusterFuzz, plus the code living in [OSS-Fuzz repository]: build scripts,
-`project.yaml` files with contacts, etc. You can deploy your own instance of
-ClusterFuzz and use it for fuzzing at scale.
+on. ClusterFuzz is an open-source fuzzing infrastructure that you can deploy in
+your own environment and run continuously at scale.
+
+OSS-Fuzz is a production instance of ClusterFuzz, plus the code living in
+[OSS-Fuzz repository]: build scripts, `project.yaml` files with contacts, etc.
 
 [ClusterFuzz]: https://github.com/google/clusterfuzz
 [OSS-Fuzz repository]: https://github.com/google/oss-fuzz
