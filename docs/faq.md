@@ -1,7 +1,5 @@
 # Frequently Asked Questions
 
-[TOC]
-
 ## What kind of projects are you accepting?
 
 We accept established projects that have a critical impact on infrastructure and user security.
