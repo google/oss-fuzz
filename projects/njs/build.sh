@@ -18,7 +18,7 @@
 # Build pcre dependency to be linked statically.
 pushd $SRC/pcre
 ./autogen.sh
-./configure
+CFLAGS="$CFLAGS -fno-use-cxa-atexit" CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit" ./configure
 make -j$(nproc) clean
 make -j$(nproc) all
 popd
