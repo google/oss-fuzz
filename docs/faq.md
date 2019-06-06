@@ -1,5 +1,7 @@
 # Frequently Asked Questions
 
+[TOC]
+
 ## What kind of projects are you accepting?
 
 We accept established projects that have a critical impact on infrastructure and user security.
@@ -19,6 +21,17 @@ You should look for places in your code that:
   - consume complex data input or event if it's 'trusted'.
   - use an algorithm that has two or more implementations (to verify their equivalence).
   - look for existing fuzz target [examples](https://github.com/google/oss-fuzz/tree/master/projects) and find similarities.
+
+## My project is not open source. Can I use OSS-Fuzz?
+
+You cannot use OSS-Fuzz, but you can use [ClusterFuzz] which OSS-Fuzz is based
+on. ClusterFuzz is a fuzzing intrastructure. OSS-Fuzz is a production instance
+of ClusterFuzz, plus the code living in [OSS-Fuzz repository]: build scripts,
+`project.yaml` files with contacts, etc. You can deploy your own instance of
+ClusterFuzz and use it for fuzzing at scale.
+
+[ClusterFuzz]: https://github.com/google/clusterfuzz
+[OSS-Fuzz repository]: https://github.com/google/oss-fuzz
 
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
 
