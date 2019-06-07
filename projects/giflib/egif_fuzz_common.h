@@ -6,6 +6,7 @@
 struct gifUserData
 {
 	size_t gifLen;
+	size_t allocatedSize;
 	uint8_t *gifData;
 };
 
