@@ -60,7 +60,7 @@ export CFLAGS="$CFLAGS -DTEST_LIBFUZZER -DCONFIG_NO_STDOUT_DEBUG"
 
 for target in json x509; do
   make test-${target} TEST_FUZZ=y
-  cp -v "test-${target}" "${OUT}/"
+  mv -v "test-${target}" "${OUT}/"
 done
 
 # AFL compatible targets --------------------------------------------------
@@ -95,13 +95,13 @@ export CFLAGS="$CFLAGS -Dmain=fuzzer_main"
   make clean
   CFLAGS="$CFLAGS -DEXTRA_ARGS='\"-m\",'" \
     make -C "ap-mgmt-fuzzer"
-  cp -v "ap-mgmt-fuzzer/ap-mgmt-fuzzer" "${OUT}/"
+  mv -v "ap-mgmt-fuzzer/ap-mgmt-fuzzer" "${OUT}/"
 
   # wnm-fuzzer
   patch_afl_fuzzer "wnm-fuzzer/wnm-fuzzer.c"
   rm -v "libfuzzer_entry.o"
   make -C "wnm-fuzzer"
-  cp -v "wnm-fuzzer/wnm-fuzzer" "${OUT}/"
+  mv -v "wnm-fuzzer/wnm-fuzzer" "${OUT}/"
 
   # TODO: Investigate leak and remove if not false positive.
   print_ignore_leaks_options > "${OUT}/wnm-fuzzer.options"
@@ -126,23 +126,23 @@ recompile_libfuzzer_entry() {
   CFLAGS="$CFLAGS -DEXTRA_ARGS=\"server\",\"read\"," \
     recompile_libfuzzer_entry
   make test-tls TEST_FUZZ=y
-  cp -v "test-tls" "${OUT}/test-tls-server-read"
+  mv -v "test-tls" "${OUT}/test-tls-server-read"
 
   CFLAGS="$CFLAGS -DEXTRA_ARGS=\"client\",\"read\"," \
     recompile_libfuzzer_entry
   make test-tls TEST_FUZZ=y
-  cp -v "test-tls" "${OUT}/test-tls-client-read"
+  mv -v "test-tls" "${OUT}/test-tls-client-read"
 )
 
 (
-  export LIBS="../libfuzzer_entry.o"
+  export LDFLAGS="$LDFLAGS ../libfuzzer_entry.o"
 
   # eapol-fuzzer
   patch_afl_fuzzer "eapol-fuzzer/eapol-fuzzer.c"
   make -C "eapol-fuzzer" clean
   recompile_libfuzzer_entry
   make -C "eapol-fuzzer"
-  cp -v "eapol-fuzzer/eapol-fuzzer" "${OUT}/"
+  mv -v "eapol-fuzzer/eapol-fuzzer" "${OUT}/"
 
   # p2p-fuzzer variants
   patch_afl_fuzzer "p2p-fuzzer/p2p-fuzzer.c"
@@ -150,11 +150,11 @@ recompile_libfuzzer_entry() {
   CFLAGS="$CFLAGS -DEXTRA_ARGS=\"action\"," \
     recompile_libfuzzer_entry
   make -C "p2p-fuzzer"
-  cp -v "p2p-fuzzer/p2p-fuzzer" "${OUT}/p2p-fuzzer-action"
+  mv -v "p2p-fuzzer/p2p-fuzzer" "${OUT}/p2p-fuzzer-action"
   CFLAGS="$CFLAGS -DEXTRA_ARGS=\"proberesp\"," \
     recompile_libfuzzer_entry
   make -C "p2p-fuzzer"
-  cp -v "p2p-fuzzer/p2p-fuzzer" "${OUT}/p2p-fuzzer-proberesp"
+  mv -v "p2p-fuzzer/p2p-fuzzer" "${OUT}/p2p-fuzzer-proberesp"
 )
 
 # Copy required data.

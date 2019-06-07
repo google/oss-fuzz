@@ -20,7 +20,11 @@ RUN echo "CXX=$CXX"
 RUN echo "CXXFLAGS=$CXXFLAGS"
 RUN apt-get update && apt-get install -y cmake ninja-build
 
-RUN git clone --single-branch --branch fuzz https://github.com/pauldreik/fmt.git
+RUN git clone --single-branch --branch fuzz \
+  https://github.com/pauldreik/fmt.git \
+  --recursive
+# this requires git>=2.9.0
+#--shallow-submodules
 
 WORKDIR fmt
 COPY build.sh $SRC/

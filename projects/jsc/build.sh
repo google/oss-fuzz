@@ -36,6 +36,7 @@ ln -s libicu.a libicui18n.a
 
 export CFLAGS="$CFLAGS -DU_STATIC_IMPLEMENTATION"
 export CXXFLAGS="$CXXFLAGS -DU_STATIC_IMPLEMENTATION"
+export ICU_ROOT=$DEPS_PATH
 
 cd $SRC/WebKit
 Tools/Scripts/build-jsc \
