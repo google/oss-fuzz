@@ -10,7 +10,3 @@ RUN apt-get install -y build-essential libncursesw5-dev \
 RUN git clone https://github.com/python/cpython.git cpython3
 WORKDIR cpython3
 COPY build.sh $SRC/
-
-# apply a temporary patch until it is merged upstream
-COPY import_patch.diff $SRC/
-RUN git apply $SRC/import_patch.diff
