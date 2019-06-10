@@ -89,3 +89,8 @@ else
     $COPY_SOURCES_CMD 2>/dev/null || true
   fi
 fi
+
+if [[ "$FUZZING_ENGINE" = "dataflow" ]]; then
+  # Remove seed corpus as it can be huge but is not needed for a dataflow build.
+  rm $OUT/*.zip
+fi

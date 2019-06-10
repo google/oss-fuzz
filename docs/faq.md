@@ -20,6 +20,18 @@ You should look for places in your code that:
   - use an algorithm that has two or more implementations (to verify their equivalence).
   - look for existing fuzz target [examples](https://github.com/google/oss-fuzz/tree/master/projects) and find similarities.
 
+## My project is not open source. Can I use OSS-Fuzz?
+
+You cannot use OSS-Fuzz, but you can use [ClusterFuzz] which OSS-Fuzz is based
+on. ClusterFuzz is an open-source fuzzing infrastructure that you can deploy in
+your own environment and run continuously at scale.
+
+OSS-Fuzz is a production instance of ClusterFuzz, plus the code living in
+[OSS-Fuzz repository]: build scripts, `project.yaml` files with contacts, etc.
+
+[ClusterFuzz]: https://github.com/google/clusterfuzz
+[OSS-Fuzz repository]: https://github.com/google/oss-fuzz
+
 ## Why do you use a [different issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) for reporting bugs in OSS projects?
 
 Security access control is important for the kind of issues that OSS-Fuzz detects.

@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER steadmon@google.com
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y \
-        cvs cvsps gettext libcgi-pm-perl libcurl4-gnutls-dev \
-        libdbd-sqlite3-perl liberror-perl libexpat1-dev libhttp-date-perl \
-        libio-pty-perl libmailtools-perl libpcre2-dev libpcre3-dev libsvn-perl \
-        libtime-modules-perl libyaml-perl libz-dev python subversion tcl unzip \
-        asciidoc docbook-xsl xmlto libssl-dev zip
-RUN git clone https://github.com/git/git git
-WORKDIR git
-RUN git checkout origin/next
-COPY build.sh $SRC/
+MAINTAINER mmoroz@chromium.org
+RUN apt-get update && apt-get install -y make autoconf automake libtool \
+    mercurial libpcre3-dev libreadline-dev subversion
+RUN hg clone http://hg.nginx.org/njs
+RUN svn co svn://vcs.exim.org/pcre/code/trunk pcre
+
+WORKDIR njs
+COPY build.sh njs_process_script_fuzzer.c $SRC/
