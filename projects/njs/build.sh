@@ -16,12 +16,12 @@
 ################################################################################
 
 # Build pcre dependency to be linked statically.
-pushd $SRC/pcre
-./autogen.sh
-CFLAGS="$CFLAGS -fno-use-cxa-atexit" CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit" ./configure
-make -j$(nproc) clean
-make -j$(nproc) all
-popd
+# pushd $SRC/pcre
+# ./autogen.sh
+# CFLAGS="$CFLAGS -fno-use-cxa-atexit" CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit" ./configure
+# make -j$(nproc) clean
+# make -j$(nproc) all
+# popd
 
 # build project
 rm -rf build
@@ -37,7 +37,7 @@ $CC $CFLAGS -Inxt -Ibuild -Injs -c \
 $CXX $CXXFLAGS build/njs_process_script_fuzzer.o \
     -o $OUT/njs_process_script_fuzzer \
     $LIB_FUZZING_ENGINE build/libnxt.a build/libnjs.a \
-    $SRC/pcre/.libs/libpcre.a -lm -lreadline
+    -lpcre -lm -lreadline
 
 SEED_CORPUS_PATH=$OUT/njs_process_script_fuzzer_seed_corpus
 mkdir -p $SEED_CORPUS_PATH
