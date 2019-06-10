@@ -1,5 +1,7 @@
 homepage: "http://qpdf.sourceforge.net/"
 primary_contact: "taking@google.com"
+auto_ccs:
+  - "qberkenbilt@gmail.com"
 
 sanitizers:
   - address

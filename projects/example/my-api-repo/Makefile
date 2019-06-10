@@ -24,10 +24,10 @@ LIB_FUZZING_ENGINE ?= standalone_fuzz_target_runner.o
 # You may add extra compiler flags like this:
 CXXFLAGS += -std=c++11
 
+all: do_stuff_unittest do_stuff_fuzzer
+
 clean:
 	rm -fv *.a *.o *unittest *_fuzzer *_seed_corpus.zip crash-* *.zip
-
-all: do_stuff_unittest do_stuff_fuzzer
 
 # Continuos integration system should run "make clean && make check"
 check: all
@@ -40,7 +40,7 @@ do_stuff_unittest: do_stuff_unittest.cpp my_api.a
 
 # Fuzz target, links against $LIB_FUZZING_ENGINE, so that
 # you may choose which fuzzing engine to use.
-do_stuff_fuzzer: do_stuff_fuzzer.cpp my_api.a standalone_fuzz_target_runner.o
+do_stuff_fuzzer: do_stuff_fuzzer.cpp my_api.a ${LIB_FUZZING_ENGINE}
 	${CXX} ${CXXFLAGS} $< my_api.a ${LIB_FUZZING_ENGINE} -o $@
 	zip -q -r do_stuff_fuzzer_seed_corpus.zip do_stuff_test_data
 
