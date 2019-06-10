@@ -92,5 +92,5 @@ fi
 
 if [[ "$FUZZING_ENGINE" = "dataflow" ]]; then
   # Remove seed corpus as it can be huge but is not needed for a dataflow build.
-  rm $OUT/*.zip
+  rm -f $OUT/*.zip
 fi
