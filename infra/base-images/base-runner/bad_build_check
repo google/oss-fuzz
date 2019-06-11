@@ -97,7 +97,7 @@ function check_engine {
   elif [[ "$FUZZING_ENGINE" == dataflow ]]; then
     # TODO(https://github.com/google/oss-fuzz/issues/1632): add check for
     # binaries compiled with dataflow engine when the interface becomes stable.
-    echo "Skipping check_engine for dataflow engine build."
+    return 0
   fi
 
   # TODO: add checks for other fuzzing engines if possible.
@@ -125,7 +125,7 @@ function check_startup_crash {
   elif [[ "$FUZZING_ENGINE" = dataflow ]]; then
     # TODO(https://github.com/google/oss-fuzz/issues/1632): add check for
     # binaries compiled with dataflow engine when the interface becomes stable.
-    echo "Skipping check_startup_crash for dataflow engine build."
+    CHECK_PASSED=1
   else
     # TODO: add checks for another fuzzing engines if possible.
     CHECK_PASSED=1
@@ -144,7 +144,7 @@ function check_startup_crash {
 function check_asan_build {
   local FUZZER=$1
   local ASAN_CALLS=$2
-  local DFSAN_CALLS=$2
+  local DFSAN_CALLS=$3
   local MSAN_CALLS=$4
   local UBSAN_CALLS=$5
 
@@ -176,7 +176,7 @@ function check_asan_build {
 function check_dfsan_build {
   local FUZZER=$1
   local ASAN_CALLS=$2
-  local DFSAN_CALLS=$2
+  local DFSAN_CALLS=$3
   local MSAN_CALLS=$4
   local UBSAN_CALLS=$5
 
@@ -209,7 +209,7 @@ function check_dfsan_build {
 function check_msan_build {
   local FUZZER=$1
   local ASAN_CALLS=$2
-  local DFSAN_CALLS=$2
+  local DFSAN_CALLS=$3
   local MSAN_CALLS=$4
   local UBSAN_CALLS=$5
 
@@ -241,7 +241,7 @@ function check_msan_build {
 function check_ubsan_build {
   local FUZZER=$1
   local ASAN_CALLS=$2
-  local DFSAN_CALLS=$2
+  local DFSAN_CALLS=$3
   local MSAN_CALLS=$4
   local UBSAN_CALLS=$5
 
