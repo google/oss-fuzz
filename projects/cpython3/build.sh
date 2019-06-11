@@ -2,6 +2,7 @@
 
 # Ignore memory leaks from python scripts invoked in the build
 export ASAN_OPTIONS="detect_leaks=0"
+export MSAN_OPTIONS="halt_on_error=0:exitcode=0"
 
 # Remove -pthread from CFLAGS, this trips up ./configure
 # which thinks pthreads are available without any CLI flags
@@ -33,6 +34,15 @@ do
   # Link with C++ compiler to appease libfuzzer
   $CXX $CXXFLAGS $WORK/$fuzz_test.o -o $OUT/$fuzz_test \
     $LIB_FUZZING_ENGINE $($OUT/bin/python3-config --ldflags --embed)
+
+  # Zip up and copy any seed corpus
+  if [ -d "${FUZZ_DIR}/${fuzz_test}_corpus" ]; then
+    zip -j "${OUT}/${fuzz_test}_seed_corpus.zip" ${FUZZ_DIR}/${fuzz_test}_corpus/*
+  fi
+  # Copy over the dictionary for this test
+  if [ -e "${FUZZ_DIR}/dictionaries/${fuzz_test}.dict" ]; then
+    cp "${FUZZ_DIR}/dictionaries/${fuzz_test}.dict" "$OUT/${fuzz_test}.dict"
+  fi
 done
 
 # A little bit hacky but we have to copy $OUT/include to

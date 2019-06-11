@@ -2,4 +2,8 @@ homepage: "https://python.org/"
 primary_contact: "gps@google.com"
 auto_ccs:
  - "alex.gaynor@gmail.com"
+sanitizers:
+ - address
+ - memory
+ - undefined
 experimental: True
