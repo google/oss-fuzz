@@ -162,15 +162,12 @@ def main():
   args = parser.parse_args()
 
   # We have different default values for `sanitizer` depending on the `engine`.
-  try:
-    if not args.sanitizer:
-      if args.engine == 'dataflow':
-        args.sanitizer = 'dataflow'
-      else:
-        args.sanitizer = 'address'
-  except:
-    # Some commands do not have `sanitizer` argument.
-    pass
+  # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
+  if hasattr(args, 'sanitizer') and not args.sanitizer:
+    if args.engine == 'dataflow':
+      args.sanitizer = 'dataflow'
+    else:
+      args.sanitizer = 'address'
 
   if args.command == 'generate':
     return generate(args)
