@@ -10,5 +10,6 @@ engines:
   - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory
   - undefined

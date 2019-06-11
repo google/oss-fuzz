@@ -160,6 +160,8 @@ def main():
                                              help='Pull base images.')
 
   args = parser.parse_args()
+
+  # We have different default values for `sanitizer` depending on the `engine`.
   try:
     if not args.sanitizer:
       if args.engine == 'dataflow':

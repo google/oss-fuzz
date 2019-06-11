@@ -95,7 +95,7 @@ function check_engine {
       return 1
     fi
   elif [[ "$FUZZING_ENGINE" == dataflow ]]; then
-    # TODO(https://github.com/google/clusterfuzz/issues/503): add check for
+    # TODO(https://github.com/google/oss-fuzz/issues/1632): add check for
     # binaries compiled with dataflow engine when the interface becomes stable.
     echo "Skipping check_engine for dataflow engine build."
   fi
@@ -123,7 +123,7 @@ function check_startup_crash {
       CHECK_PASSED=1
     fi
   elif [[ "$FUZZING_ENGINE" = dataflow ]]; then
-    # TODO(https://github.com/google/clusterfuzz/issues/503): add check for
+    # TODO(https://github.com/google/oss-fuzz/issues/1632): add check for
     # binaries compiled with dataflow engine when the interface becomes stable.
     echo "Skipping check_startup_crash for dataflow engine build."
   else
