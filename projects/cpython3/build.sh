@@ -34,3 +34,13 @@ do
   $CXX $CXXFLAGS $WORK/$fuzz_test.o -o $OUT/$fuzz_test \
     $LIB_FUZZING_ENGINE $($OUT/bin/python3-config --ldflags --embed)
 done
+
+# A little bit hacky but we have to copy $OUT/include to
+# $OUT/$OUT/include as the coverage build needs all source
+# files used in execution and expects it to be there.
+#   See projects/tensorflow/build.sh for prior art
+if [ "$SANITIZER" = "coverage" ]
+then
+  mkdir -p $OUT/$OUT
+  cp -r $OUT/include $OUT/$OUT/
+fi
