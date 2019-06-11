@@ -14,7 +14,7 @@ int stub_output_writer(GifFileType *gifFileType, const uint8_t *buf, int len)
 	if (gud->allocatedSize < (gud->gifLen + len))
 	{
 		// Reallocate gifFileType
-		int newSize = gud->allocatedSize * 2;
+		int newSize = (gud->gifLen + len) * 2;
 		uint8_t *oldGud = gud->gifData;
 		gud->gifData = (uint8_t *)realloc(oldGud, newSize);
 		if (gud->gifData == NULL)
