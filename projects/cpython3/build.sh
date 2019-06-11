@@ -2,6 +2,7 @@
 
 # Ignore memory leaks from python scripts invoked in the build
 export ASAN_OPTIONS="detect_leaks=0"
+export MSAN_OPTIONS="halt_on_error=0:exitcode=0"
 
 # Remove -pthread from CFLAGS, this trips up ./configure
 # which thinks pthreads are available without any CLI flags
