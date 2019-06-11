@@ -17,146 +17,32 @@
 
 cd 'tests'
 
-# Make seed corpora
-(
-  # Need clean environment for building test-tls used to create seed corpus.
-  unset CC
-  unset CXX
-  unset CFLAGS
-  unset CXXFLAGS
-  unset LDFLAGS
-
-  make clean
-  make test-tls
-
-  for x in client server; do
-    ./test-tls $x write "${WORK}/test-tls-${x}.msg"
-    (cd "$WORK" && zip "${OUT}/test-tls-${x}-read_seed_corpus.zip" test-tls-${x}.msg)
-  done
-
-  (
-    cd p2p-fuzzer
-    zip "${OUT}/p2p-fuzzer-proberesp_seed_corpus.zip" proberesp*.dat
-    zip "${OUT}/p2p-fuzzer-action_seed_corpus.zip" go*.dat inv*.dat p2ps*.dat
-  )
-
-  (cd eapol-fuzzer && zip "${OUT}/eapol-fuzzer_seed_corpus.zip" *.dat)
-  (cd ap-mgmt-fuzzer && zip "${OUT}/ap-mgmt-fuzzer_seed_corpus.zip" multi.dat)
-  (cd wnm-fuzzer && zip "${OUT}/wnm-fuzzer_seed_corpus.zip" *.dat)
-
-  echo '{"a":[[]],"b":1,"c":"q","d":{"e":[{}]}}' > "${WORK}/test.json"
-  (cd "$WORK" && zip "${OUT}/test-json_seed_corpus.zip" *.json)
-
-  # TODO: test-x509
-)
-
-
-make clean
 export LDO=$CXX
 export LDFLAGS="$CXXFLAGS $LIB_FUZZING_ENGINE"
-export CFLAGS="$CFLAGS -DTEST_LIBFUZZER -DCONFIG_NO_STDOUT_DEBUG"
+export CFLAGS="$CFLAGS -MMD"
 
-# libFuzzer native targets (enabled via TEST_LIBFUZZER) ------------------
+# Specific to hostap's rules.include: set empty, as we directly set required
+# sanitizer flags in CFLAGS and LDFLAGS (above).
+export FUZZ_FLAGS=
 
-for target in json x509; do
-  make test-${target} TEST_FUZZ=y
-  mv -v "test-${target}" "${OUT}/"
-done
-
-# AFL compatible targets --------------------------------------------------
-
-patch_afl_fuzzer() {
+for target in fuzzing/*; do
+  [[ -d "$target" ]] || continue
   (
-    printf '#include <stddef.h>
-char* get_fuzzer_input(const char*, size_t*);
-void free_fuzzer_input(void*);
-#define os_readfile get_fuzzer_input
-#define os_free free_fuzzer_input
-'
-    cat "$1"
-  ) > "${1}_"
-  mv "${1}_" "$1"
-}
+    cd "$target"
+    make clean
 
-print_ignore_leaks_options() {
-  cat <<EOF
-[libfuzzer]
-detect_leaks = 0
-EOF
-}
+    if [[ "$target" == "fuzzing/tls-server" ]]; then
+      export CFLAGS="$CFLAGS -DCERTDIR='\"hwsim/auth_serv/\"'"
+    fi
 
-export CFLAGS="$CFLAGS -Dmain=fuzzer_main"
+    make -j$(nproc) V=1 LIBFUZZER=y
+    mv -v "${target##*/}" "${OUT}/"
 
-(
-  export OBJS="../libfuzzer_entry.o"
-
-  # ap-mgmt-fuzzer
-  patch_afl_fuzzer "ap-mgmt-fuzzer/ap-mgmt-fuzzer.c"
-  make clean
-  CFLAGS="$CFLAGS -DEXTRA_ARGS='\"-m\",'" \
-    make -C "ap-mgmt-fuzzer"
-  mv -v "ap-mgmt-fuzzer/ap-mgmt-fuzzer" "${OUT}/"
-
-  # wnm-fuzzer
-  patch_afl_fuzzer "wnm-fuzzer/wnm-fuzzer.c"
-  rm -v "libfuzzer_entry.o"
-  make -C "wnm-fuzzer"
-  mv -v "wnm-fuzzer/wnm-fuzzer" "${OUT}/"
-
-  # TODO: Investigate leak and remove if not false positive.
-  print_ignore_leaks_options > "${OUT}/wnm-fuzzer.options"
-)
-
-# The below Makefiles do not honor OBJS.
-recompile_libfuzzer_entry() {
-  rm -vf "libfuzzer_entry.o"
-  $CC $CFLAGS -c -o "libfuzzer_entry.o" "libfuzzer_entry.c"
-}
-
-# test-tls variants
-(
-  export LDFLAGS="$LDFLAGS libfuzzer_entry.o"
-  make clean
-
-  # test-tls uses fopen to open the input file.
-  sed -i '1i\
-#define fopen fopen_fuzzer_input
-' "test-tls.c"
-
-  CFLAGS="$CFLAGS -DEXTRA_ARGS=\"server\",\"read\"," \
-    recompile_libfuzzer_entry
-  make test-tls TEST_FUZZ=y
-  mv -v "test-tls" "${OUT}/test-tls-server-read"
-
-  CFLAGS="$CFLAGS -DEXTRA_ARGS=\"client\",\"read\"," \
-    recompile_libfuzzer_entry
-  make test-tls TEST_FUZZ=y
-  mv -v "test-tls" "${OUT}/test-tls-client-read"
-)
-
-(
-  export LDFLAGS="$LDFLAGS ../libfuzzer_entry.o"
-
-  # eapol-fuzzer
-  patch_afl_fuzzer "eapol-fuzzer/eapol-fuzzer.c"
-  make -C "eapol-fuzzer" clean
-  recompile_libfuzzer_entry
-  make -C "eapol-fuzzer"
-  mv -v "eapol-fuzzer/eapol-fuzzer" "${OUT}/"
-
-  # p2p-fuzzer variants
-  patch_afl_fuzzer "p2p-fuzzer/p2p-fuzzer.c"
-  make -C "p2p-fuzzer" clean
-  CFLAGS="$CFLAGS -DEXTRA_ARGS=\"action\"," \
-    recompile_libfuzzer_entry
-  make -C "p2p-fuzzer"
-  mv -v "p2p-fuzzer/p2p-fuzzer" "${OUT}/p2p-fuzzer-action"
-  CFLAGS="$CFLAGS -DEXTRA_ARGS=\"proberesp\"," \
-    recompile_libfuzzer_entry
-  make -C "p2p-fuzzer"
-  mv -v "p2p-fuzzer/p2p-fuzzer" "${OUT}/p2p-fuzzer-proberesp"
-)
+    if [[ -d 'corpus' ]]; then
+      (cd 'corpus' && zip "${OUT}/${target##*/}_seed_corpus.zip" *)
+    fi
+  )
+done
 
 # Copy required data.
 cp -a "hwsim" "${OUT}/"
-
