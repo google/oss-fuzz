@@ -4,7 +4,7 @@ auto_ccs:
   - "Yann.collet.73@gmail.com"
   - "terrelln@fb.com"
   - "cyan@fb.com"
-engines:
+fuzzing_engines:
   - libfuzzer
   - afl
   - dataflow
