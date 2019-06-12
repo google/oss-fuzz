@@ -35,7 +35,7 @@ ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero
 
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
-ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow -fsanitize-coverage=trace-pc-guard,pc-table,func,trace-cmp"
+ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -50,6 +50,9 @@ ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 # Use '-Wno-unused-command-line-argument' to suppress "warning: -ldl: 'linker' input unused"
 # messages which are treated as errors by some projects.
 ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,--no-as-needed -Wl,-ldl -Wl,-lm -Wno-unused-command-line-argument"
+
+# Coverage isntrumentation flags for dataflow builds.
+ENV COVERAGE_FLAGS_dataflow="-fsanitize-coverage=trace-pc-guard,pc-table,func,trace-cmp"
 
 # Default sanitizer, fuzzing engine and architecture to use.
 ENV SANITIZER="address"

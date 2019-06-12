@@ -97,9 +97,9 @@ def main():
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
   _add_architecture_args(check_build_parser)
-  _add_engine_args(check_build_parser, choices=['libfuzzer', 'afl'])
+  _add_engine_args(check_build_parser, choices=['libfuzzer', 'afl', 'dataflow'])
   _add_sanitizer_args(
-      check_build_parser, choices=['address', 'memory', 'undefined'])
+      check_build_parser, choices=['address', 'memory', 'undefined', 'dataflow'])
   _add_environment_args(check_build_parser)
   check_build_parser.add_argument('project_name', help='name of the project')
   check_build_parser.add_argument(
@@ -160,6 +160,15 @@ def main():
                                              help='Pull base images.')
 
   args = parser.parse_args()
+
+  # We have different default values for `sanitizer` depending on the `engine`.
+  # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
+  if hasattr(args, 'sanitizer') and not args.sanitizer:
+    if args.engine == 'dataflow':
+      args.sanitizer = 'dataflow'
+    else:
+      args.sanitizer = 'address'
+
   if args.command == 'generate':
     return generate(args)
   elif args.command == 'build_image':
@@ -268,7 +277,11 @@ def _add_sanitizer_args(
         parser,
         choices=('address', 'memory', 'undefined', 'coverage', 'dataflow')):
   """Add common sanitizer args."""
-  parser.add_argument('--sanitizer', default='address', choices=choices)
+  parser.add_argument(
+      '--sanitizer',
+      default=None,
+      choices=choices,
+      help='the default is "address"; "dataflow" for "dataflow" engine')
 
 
 def _add_environment_args(parser):

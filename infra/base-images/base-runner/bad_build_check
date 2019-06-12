@@ -27,6 +27,11 @@ THRESHOLD_FOR_NUMBER_OF_EDGES=100
 ASAN_CALLS_THRESHOLD_FOR_ASAN_BUILD=1000
 ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD=0
 
+# The value below can definitely be higher (like 500-1000), but avoid being too
+# agressive here while still evaluating the DFT-based fuzzing approach.
+DFSAN_CALLS_THRESHOLD_FOR_DFSAN_BUILD=100
+DFSAN_CALLS_THRESHOLD_FOR_NON_DFSAN_BUILD=0
+
 MSAN_CALLS_THRESHOLD_FOR_MSAN_BUILD=1000
 MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD=0
 
@@ -89,6 +94,10 @@ function check_engine {
       cat $FUZZER_OUTPUT
       return 1
     fi
+  elif [[ "$FUZZING_ENGINE" == dataflow ]]; then
+    # TODO(https://github.com/google/oss-fuzz/issues/1632): add check for
+    # binaries compiled with dataflow engine when the interface becomes stable.
+    return 0
   fi
 
   # TODO: add checks for other fuzzing engines if possible.
@@ -113,6 +122,10 @@ function check_startup_crash {
     if [ $(egrep "target binary (crashed|terminated)" -c $FUZZER_OUTPUT) -eq 0 ]; then
       CHECK_PASSED=1
     fi
+  elif [[ "$FUZZING_ENGINE" = dataflow ]]; then
+    # TODO(https://github.com/google/oss-fuzz/issues/1632): add check for
+    # binaries compiled with dataflow engine when the interface becomes stable.
+    CHECK_PASSED=1
   else
     # TODO: add checks for another fuzzing engines if possible.
     CHECK_PASSED=1
@@ -131,12 +144,18 @@ function check_startup_crash {
 function check_asan_build {
   local FUZZER=$1
   local ASAN_CALLS=$2
-  local MSAN_CALLS=$3
-  local UBSAN_CALLS=$4
+  local DFSAN_CALLS=$3
+  local MSAN_CALLS=$4
+  local UBSAN_CALLS=$5
 
   # Perform all the checks for more detailed error message.
   if (( $ASAN_CALLS < $ASAN_CALLS_THRESHOLD_FOR_ASAN_BUILD )); then
     echo "BAD BUILD: $FUZZER does not seem to be compiled with ASan."
+    return 1
+  fi
+
+  if (( $DFSAN_CALLS > $DFSAN_CALLS_THRESHOLD_FOR_NON_DFSAN_BUILD )); then
+    echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with DFSan."
     return 1
   fi
 
@@ -153,16 +172,55 @@ function check_asan_build {
   return 0
 }
 
+# Mixed sanitizers check for DFSan build.
+function check_dfsan_build {
+  local FUZZER=$1
+  local ASAN_CALLS=$2
+  local DFSAN_CALLS=$3
+  local MSAN_CALLS=$4
+  local UBSAN_CALLS=$5
+
+  # Perform all the checks for more detailed error message.
+  if (( $ASAN_CALLS > $ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD )); then
+    echo "BAD BUILD: DFSan build of $FUZZER seems to be compiled with ASan."
+    return 1
+  fi
+
+  if (( $DFSAN_CALLS < $DFSAN_CALLS_THRESHOLD_FOR_DFSAN_BUILD )); then
+    echo "BAD BUILD: $FUZZER does not seem to be compiled with DFSan."
+    return 1
+  fi
+
+  if (( $MSAN_CALLS > $MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD )); then
+    echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with MSan."
+    return 1
+  fi
+
+  if (( $UBSAN_CALLS > $UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD )); then
+    echo "BAD BUILD: ASan build of $FUZZER seems to be compiled with UBSan."
+    return 1
+  fi
+
+  return 0
+}
+
+
 # Mixed sanitizers check for MSan build.
 function check_msan_build {
   local FUZZER=$1
   local ASAN_CALLS=$2
-  local MSAN_CALLS=$3
-  local UBSAN_CALLS=$4
+  local DFSAN_CALLS=$3
+  local MSAN_CALLS=$4
+  local UBSAN_CALLS=$5
 
   # Perform all the checks for more detailed error message.
   if (( $ASAN_CALLS > $ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD )); then
     echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with ASan."
+    return 1
+  fi
+
+  if (( $DFSAN_CALLS > $DFSAN_CALLS_THRESHOLD_FOR_NON_DFSAN_BUILD )); then
+    echo "BAD BUILD: MSan build of $FUZZER seems to be compiled with DFSan."
     return 1
   fi
 
@@ -183,8 +241,9 @@ function check_msan_build {
 function check_ubsan_build {
   local FUZZER=$1
   local ASAN_CALLS=$2
-  local MSAN_CALLS=$3
-  local UBSAN_CALLS=$4
+  local DFSAN_CALLS=$3
+  local MSAN_CALLS=$4
+  local UBSAN_CALLS=$5
 
   if [[ "$FUZZING_ENGINE" != libfuzzer ]]; then
     # Ignore UBSan checks for fuzzing engines other than libFuzzer because:
@@ -196,6 +255,11 @@ function check_ubsan_build {
   # Perform all the checks for more detailed error message.
   if (( $ASAN_CALLS > $ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD )); then
     echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with ASan."
+    return 1
+  fi
+
+  if (( $DFSAN_CALLS > $DFSAN_CALLS_THRESHOLD_FOR_NON_DFSAN_BUILD )); then
+    echo "BAD BUILD: UBSan build of $FUZZER seems to be compiled with DFSan."
     return 1
   fi
 
@@ -233,17 +297,21 @@ function check_mixed_sanitizers {
     esac
   fi
   local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__asan" -c)
+  local DFSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__dfsan" -c)
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
   local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__ubsan" -c)
 
   if [[ "$SANITIZER" = address ]]; then
-    check_asan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    check_asan_build $FUZZER $ASAN_CALLS $DFSAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    result=$?
+  elif [[ "$SANITIZER" = dataflow ]]; then
+    check_dfsan_build $FUZZER $ASAN_CALLS $DFSAN_CALLS $MSAN_CALLS $UBSAN_CALLS
     result=$?
   elif [[ "$SANITIZER" = memory ]]; then
-    check_msan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    check_msan_build $FUZZER $ASAN_CALLS $DFSAN_CALLS $MSAN_CALLS $UBSAN_CALLS
     result=$?
   elif [[ "$SANITIZER" = undefined ]]; then
-    check_ubsan_build $FUZZER $ASAN_CALLS $MSAN_CALLS $UBSAN_CALLS
+    check_ubsan_build $FUZZER $ASAN_CALLS $DFSAN_CALLS $MSAN_CALLS $UBSAN_CALLS
     result=$?
   fi
 
@@ -302,6 +370,7 @@ function check_architecture {
 }
 
 function main {
+  return 1
   local FUZZER=$1
   local checks_failed=0
   local result=0
@@ -330,8 +399,8 @@ function main {
 
 
 if [ $# -ne 1 ]; then
-    echo "Usage: $0 <fuzz_target_binary>"
-    exit 1
+  echo "Usage: $0 <fuzz_target_binary>"
+  exit 1
 fi
 
 # Fuzz target path.
