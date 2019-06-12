@@ -22,7 +22,7 @@ case $SANITIZER in
 esac
 ./configure $FLAGS --prefix $OUT
 
-make -j$(nproc) install
+make -j$(nproc) altinstall
 
 FUZZ_DIR=Modules/_xxtestfuzz
 for fuzz_test in $(cat $FUZZ_DIR/fuzz_tests.txt)
