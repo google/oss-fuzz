@@ -19,8 +19,7 @@ echo -n "Compiling DataFlow to $LIB_FUZZING_ENGINE... "
 mkdir -p $WORK/libfuzzer
 pushd $WORK/libfuzzer > /dev/null
 
-# Intentionally do not use $SANITIZER_FLAGS, we need -fsanitize=dataflow only.
-$CXX $CXXFLAGS -fsanitize=dataflow -std=c++11 -O2 -c \
+$CXX $CXXFLAGS $SANITIZER_FLAGS -std=c++11 -O2 -c \
     $SRC/libfuzzer/dataflow/*.cpp
 ar r $LIB_FUZZING_ENGINE $WORK/libfuzzer/*.o
 popd > /dev/null
