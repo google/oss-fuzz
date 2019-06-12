@@ -51,7 +51,7 @@ ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 # messages which are treated as errors by some projects.
 ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,--no-as-needed -Wl,-ldl -Wl,-lm -Wno-unused-command-line-argument"
 
-# COverage isntrumentation flags for dataflow builds.
+# Coverage isntrumentation flags for dataflow builds.
 ENV COVERAGE_FLAGS_dataflow="-fsanitize-coverage=trace-pc-guard,pc-table,func,trace-cmp"
 
 # Default sanitizer, fuzzing engine and architecture to use.
