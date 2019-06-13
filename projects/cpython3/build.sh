@@ -22,18 +22,19 @@ case $SANITIZER in
 esac
 ./configure $FLAGS --prefix $OUT
 
-make -j$(nproc) install
+# We use altinstall to avoid having the Makefile create symlinks
+make -j$(nproc) altinstall
 
 FUZZ_DIR=Modules/_xxtestfuzz
 for fuzz_test in $(cat $FUZZ_DIR/fuzz_tests.txt)
 do
   # Build (but don't link) the fuzzing stub with a C compiler
-  $CC $CFLAGS $($OUT/bin/python3-config --cflags) $FUZZ_DIR/fuzzer.c \
+  $CC $CFLAGS $($OUT/bin/python*-config --cflags) $FUZZ_DIR/fuzzer.c \
     -D _Py_FUZZ_ONE -D _Py_FUZZ_$fuzz_test -c -Wno-unused-function \
     -o $WORK/$fuzz_test.o
   # Link with C++ compiler to appease libfuzzer
   $CXX $CXXFLAGS $WORK/$fuzz_test.o -o $OUT/$fuzz_test \
-    $LIB_FUZZING_ENGINE $($OUT/bin/python3-config --ldflags --embed)
+    $LIB_FUZZING_ENGINE $($OUT/bin/python*-config --ldflags --embed)
 
   # Zip up and copy any seed corpus
   if [ -d "${FUZZ_DIR}/${fuzz_test}_corpus" ]; then
