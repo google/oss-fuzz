@@ -1,13 +1,6 @@
 homepage: "http://qpdf.sourceforge.net/"
-primary_contact: "taking@google.com"
-auto_ccs:
-  - "qberkenbilt@gmail.com"
-
+primary_contact: "qberkenbilt@gmail.com"
 sanitizers:
   - address
   - undefined
   - memory
-
-labels:
-  qpdf_read_memory_fuzzer:
-    - sundew
