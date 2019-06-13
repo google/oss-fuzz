@@ -173,6 +173,45 @@ def update_build_status(
   upload_status(successes, failures, status_filename)
 
 
+def update_build_badges(
+    builds, projects, build_tag, coverage_tag, badge_prefix):
+  # Retrieve the images directory relative to this script's location
+  image_directory = os.path.join(
+      os.path.dirname(__file__), 'badge_images')
+
+  for project in projects:
+    last_build = find_last_build(builds, project, build_tag)
+    last_coverage_build = find_last_build(builds, projects, coverage_tag)
+    if not last_build or not last_coverage_build:
+      continue
+
+    badge = 'building'
+    if not is_build_successful(last_coverage_build):
+      badge = 'coverage_failing'
+    if not is_build_successful(last_build):
+      badge = 'failing'
+
+    print("[badge] {}: {}".format(project, badge))
+
+    storage_client = storage.Client()
+    status_bucket = storage_client.get_bucket(STATUS_BUCKET)
+
+    # Supported image types for badges
+    image_types = {
+        'svg': 'image/svg+xml',
+        'png': 'image/png'
+    }
+    for extension, mime_type in image_types.items():
+      badge_name = '{}.{}'.format(badge, extension)
+      blob_name = '{}{}.{}'.format(badge_prefix, project, extension)
+
+      badge_blob = status_bucket.blob(blob_name)
+      badge_blob.upload_from_filename(
+          os.path.join(image_directory, badge_name),
+          content_type=mime_type
+      )
+
+
 def main():
   if len(sys.argv) != 2:
     usage()
@@ -189,6 +228,11 @@ def main():
   update_build_status(builds, projects,
                       build_and_run_coverage.COVERAGE_BUILD_TAG,
                       status_filename='status-coverage.json')
+
+  update_build_badges(builds, projects,
+                      build_tag=build_project.FUZZING_BUILD_TAG,
+                      coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG,
+                      badge_prefix='badges/')
 
 
 if __name__ == '__main__':
