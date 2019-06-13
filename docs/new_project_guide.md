@@ -54,7 +54,8 @@ Project's homepage.
 ### primary_contact, auto_ccs
 Primary contact and CCs list. These people get access to ClusterFuzz 
 which includes crash reports, fuzzer statistics, etc and are auto-cced on newly filed bugs in OSS-Fuzz
-tracker.
+tracker. To get full access to these artifacts, you should use a [Google account](https://support.google.com/accounts/answer/176347?hl=en)
+here ([why?](faq.md#why-do-you-require-a-google-account-for-authentication)).
 
 ### sanitizers (optional)
 List of sanitizers to use. By default, it will use the default list of supported
@@ -292,7 +293,7 @@ of good sample inputs is one of the best ways to improve [fuzz target](glossary.
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
 to the [fuzz target](glossary.md#fuzz-target)'s binary in `$OUT` during the build. Individual files in this
-archive will be used as starting inputs for mutations. You can store the corpus
+archive will be used as starting inputs for mutations. The name of each file in the corpus is the sha1 checksum (which you can get using the `sha1sum` or `shasum` comand) of its contents. You can store the corpus
 next to source files, generate during build or fetch it using curl or any other
 tool of your choice.
 (example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L41)).
@@ -300,6 +301,8 @@ tool of your choice.
 Seed corpus files will be used for cross-mutations and portions of them might appear
 in bug reports or be used for further security research. It is important that corpus
 has an appropriate and consistent license.
+
+See also [Accessing Corpora](corpora.md) for information about getting access to the corpus we are currently using for your fuzz targets.
 
 
 ### Dictionaries
@@ -362,3 +365,5 @@ Use [ClusterFuzz](clusterfuzz.md) web interface [here](https://oss-fuzz.com/) to
 * Code coverage statistics
 * Fuzzer statistics
 * Fuzzer performance analyzer (linked from fuzzer statistics)
+
+Note that your Google Account must be listed in [project.yaml](#projectyaml) for you to have access to the ClusterFuzz web interface.
