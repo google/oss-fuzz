@@ -6,6 +6,7 @@
 | [Integration Rewards](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html)
 | [New Project Guide](docs/new_project_guide.md)
 | [Ideal Fuzzing Integration](docs/ideal_integration.md)
+| [Accessing Corpora](docs/corpora.md)
 | [Reproducing Bugs](docs/reproducing.md)
 | [Current Projects](projects)
 | [Projects Issue Tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
@@ -13,6 +14,8 @@
 
 
 [Create New Issue](https://github.com/google/oss-fuzz/issues/new) for questions or feedback about OSS-Fuzz.
+
+Not sure where to start? Look at [New Project Guide](docs/new_project_guide.md).
 
 ## Introduction
 
