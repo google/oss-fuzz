@@ -20,6 +20,7 @@ import build_project
 
 STATUS_BUCKET = 'oss-fuzz-build-logs'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BADGE_DIR = 'badges/'
 RETRY_COUNT = 3
 RETRY_WAIT = 5
 MAX_BUILD_RESULTS = 2000
@@ -173,15 +174,10 @@ def update_build_status(
   upload_status(successes, failures, status_filename)
 
 
-def update_build_badges(
-    builds, projects, build_tag, coverage_tag, badge_prefix):
-  # Retrieve the images directory relative to this script's location
-  image_directory = os.path.join(
-      os.path.dirname(__file__), 'badge_images')
-
+def update_build_badges(builds, projects, build_tag, coverage_tag):
   for project in projects:
     last_build = find_last_build(builds, project, build_tag)
-    last_coverage_build = find_last_build(builds, projects, coverage_tag)
+    last_coverage_build = find_last_build(builds, project, coverage_tag)
     if not last_build or not last_coverage_build:
       continue
 
@@ -202,14 +198,19 @@ def update_build_badges(
         'png': 'image/png'
     }
     for extension, mime_type in image_types.items():
-      badge_name = '{}.{}'.format(badge, extension)
-      blob_name = '{}{}.{}'.format(badge_prefix, project, extension)
+      badge_name = '{badge}.{extension}'.format(
+          badge=badge, extension=extension)
+      # Retrieve the image relative to this script's location
+      badge_file = os.path.join(
+          SCRIPT_DIR, 'badge_images', image_directory, badge_name)
+
+      # The uploaded blob name should look like `badges/project.png`
+      blob_name = '{badge_dir}{project_name}.{extension}'.format(
+          badge_dir=BADGE_DIR, project_name=project,
+          extension=extension)
 
       badge_blob = status_bucket.blob(blob_name)
-      badge_blob.upload_from_filename(
-          os.path.join(image_directory, badge_name),
-          content_type=mime_type
-      )
+      badge_blob.upload_from_filename(badge_file, content_type=mime_type)
 
 
 def main():
@@ -231,8 +232,7 @@ def main():
 
   update_build_badges(builds, projects,
                       build_tag=build_project.FUZZING_BUILD_TAG,
-                      coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG,
-                      badge_prefix='badges/')
+                      coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
 
 
 if __name__ == '__main__':
