@@ -1,0 +1,4 @@
+homepage: https://android.googlesource.com/platform/external/aac/
+primary_contact: audio-fdk@iis.fraunhofer.de
+auto_ccs:
+  - "jmtrivi@google.com"
