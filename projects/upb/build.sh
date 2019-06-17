@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+export CFLAGS="$CFLAGS -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr" 
+
+declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzzer.cc)
+declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "{t:2:-3}"; done)"
+
+FUZZER_DICTIONARIES="\
+"
+
 # Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
 # compilation and linking.
 #
