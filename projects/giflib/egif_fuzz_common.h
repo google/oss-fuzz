@@ -1,4 +1,5 @@
 #include "gif_lib.h"
+#include "assert.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +7,7 @@
 struct gifUserData
 {
 	size_t gifLen;
+	size_t allocatedSize;
 	uint8_t *gifData;
 };
 
