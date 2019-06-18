@@ -33,7 +33,7 @@ do
     -D _Py_FUZZ_ONE -D _Py_FUZZ_$fuzz_test -c -Wno-unused-function \
     -o $WORK/$fuzz_test.o
   # Link with C++ compiler to appease libfuzzer
-  $CXX $CXXFLAGS $WORK/$fuzz_test.o -o $OUT/$fuzz_test \
+  $CXX $CXXFLAGS -rdynamic $WORK/$fuzz_test.o -o $OUT/$fuzz_test \
     $LIB_FUZZING_ENGINE $($OUT/bin/python*-config --ldflags --embed)
 
   # Zip up and copy any seed corpus
