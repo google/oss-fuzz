@@ -2,6 +2,7 @@ homepage: "https://speex.org/"
 primary_contact: "tmatth@videolan.org"
 auto_ccs:
   - "twsmith@mozilla.com"
+  - "le.businessman@gmail.com"
 sanitizers:
   - address
   - memory
