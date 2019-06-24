@@ -22,49 +22,43 @@ tests/file_descriptor_parsenew_fuzzer.cc \
 FUZZER_DICTIONARIES="\
 "
 
-FUZZER_LIBRARIES="\
-bazel-bin/*.a \
-bazel-bin/bazel/*.a \
-bazel-bin/*.a \
-"
+# FUZZER_LIBRARIES="\
+# bazel-bin/*.a \
+# bazel-bin/bazel/*.a \
+# bazel-bin/*.a \
+# "
 
 # build upb
 NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
 EXTRA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
   $EXTRA_BAZEL_FLAGS \
-  $NO_VPTR \
-  :all
+  $NO_VPTR -k \
+  :file_descriptor_parsenew_fuzzer || true
 
 # Copied from projects/envoy/build.sh which also uses Bazel.
-# Profiling with coverage requires that we resolve+copy all Bazel symlinks and
-# also remap everything under proc/self/cwd to correspond to Bazel build paths.
 if [ "$SANITIZER" = "coverage" ]
 then
-  # The build invoker looks for sources in $SRC, but it turns out that we need
-  # to not be buried under src/, paths are expected at out/proc/self/cwd by
-  # the profiler.
-  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
-  mkdir -p "${REMAP_PATH}"
-  rsync -av "${SRC}"/upb "${REMAP_PATH}"
+  declare -r REMAP_PATH=${OUT}/proc/self/cwd
+  mkdir -p ${REMAP_PATH}
+  rsync -ak ${SRC}/upb ${REMAP_PATH}
+
 fi
 
-CFLAGS="${CFLAGS} -fno-sanitize=vptr"
-CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
-
-for file in $FUZZER_FILES; do
-  fuzzer_name=$(basename $file .cc)
-  echo "Building fuzzer $fuzzer_name"
-  $CXX $CXXFLAGS \
-    $file -o $OUT/$fuzzer_name \
-    $LIB_FUZZING_ENGINE ${FUZZER_LIBRARIES}
-done
-
-# Copy dictionaries and options files to $OUT/
+# Now that all is done, we just have to copy the existing corpora and
+# dictionaries to have them available in the runtime environment.
+# The tweaks to the filenames below are to make sure corpora/dictionary have
+# similar names as the fuzzer binary.
 for dict in $FUZZER_DICTIONARIES; do
   cp $dict $OUT/
 done
 
-cp $SRC/upb/tests/options/*.options $OUT/
+CORPUS_UNTAR_PATH="${PWD}"/_tmp_corpus
+echo "Extracting and zipping fuzzer corpus"
+rm -rf "${CORPUS_UNTAR_PATH}"
+mkdir -p "${CORPUS_UNTAR_PATH}"
 
-zip $OUT/file_descriptor_parsenew_fuzzer.zip tests/corpus/*
+zip $OUT/file_descriptor_parsenew_fuzzer.zip "${CORPUS_UNTAR_PATH}"/*
+
+# Finally, make sure we don't accidentally run with stuff from the bazel cache.
+rm -f bazel-*
