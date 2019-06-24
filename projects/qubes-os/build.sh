@@ -22,3 +22,9 @@ cp fuzz/*_fuzzer $OUT/
 cp fuzz/*_seed_corpus.zip $OUT/
 cp fuzz/*.options $OUT/
 
+cd $SRC/qubes-os/qubes-core-qubesdb
+
+make -C fuzz
+cp fuzz/*_fuzzer $OUT/
+cp fuzz/*_seed_corpus.zip $OUT/
+cp fuzz/*.options $OUT/
