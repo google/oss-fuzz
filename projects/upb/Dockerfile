@@ -31,6 +31,6 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN apt-get update && apt-get install -y bazel
 
-RUN git clone --depth 1 https://github.com/Google-Autofuzz/upb.git upb
+RUN git clone --depth 1 https://github.com/protocolbuffers/upb.git upb
 WORKDIR upb
 COPY build.sh $SRC/

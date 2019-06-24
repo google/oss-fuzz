@@ -34,7 +34,7 @@ EXTRA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=l
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
   $EXTRA_BAZEL_FLAGS \
   $NO_VPTR \
-  :all bazel/... @lua//:all
+  :all
 
 # Copied from projects/envoy/build.sh which also uses Bazel.
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
@@ -49,8 +49,8 @@ then
   rsync -av "${SRC}"/upb "${REMAP_PATH}"
 fi
 
-CFLAGS="${CFLAGS} -Iinclude -Ithird_party/nanopb -I."
-CXXFLAGS="${CXXFLAGS} -Iinclude -Ithird_party/nanopb -I. -stdlib=libc++"
+CFLAGS="${CFLAGS} -fno-sanitize=vptr"
+CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
 
 for file in $FUZZER_FILES; do
   fuzzer_name=$(basename $file .cc)
