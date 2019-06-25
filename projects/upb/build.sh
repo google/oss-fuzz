@@ -17,32 +17,38 @@
 FUZZER_DICTIONARIES="\
 "
 
-# build fuzz target
 NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
 EXTRA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
   $EXTRA_BAZEL_FLAGS \
-  $NO_VPTR -k \
+  $NO_VPTR \
+  -k \
   :file_descriptor_parsenew_fuzzer || true
 
 # Copied from projects/envoy/build.sh which also uses Bazel.
+# Profiling with coverage requires that we resolve+copy all Bazel symlinks and
+# also remap everything under proc/self/cwd to correspond to Bazel build paths.
 if [ "$SANITIZER" = "coverage" ]
 then
-  declare -r REMAP_PATH=${OUT}/proc/self/cwd
-  mkdir -p ${REMAP_PATH}
-  rsync -ak ${SRC}/upb ${REMAP_PATH}
+  # The build invoker looks for sources in $SRC, but it turns out that we need
+  # to not be buried under src/, paths are expected at out/proc/self/cwd by
+  # the profiler.
+  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
+  mkdir -p "${REMAP_PATH}"
+  rsync -av "${SRC}"/upb "${REMAP_PATH}"
 fi
 
-# Now that all is done, we just have to copy the existing corpora and
-# dictionaries to have them available in the runtime environment.
-# The tweaks to the filenames below are to make sure corpora/dictionary have
-# similar names as the fuzzer binary.
+file=file_descriptor_parsenew_fuzzer
+echo "${file}"
+TARGET_DRIVERLESS=bazel-bin/"${file}"
+echo "copying fuzzer"
+cp "${TARGET_DRIVERLESS}" "${OUT}"/"${file}"_fuzz_test
+
+# Copy dictionaries and options files to $OUT/
 for dict in $FUZZER_DICTIONARIES; do
   cp $dict $OUT/
 done
 
-# Zip corpus
+# Don't have a consistent naming convention between fuzzer files and corpus
+# directories so we resort to hard coding zipping corpses
 zip $OUT/file_descriptor_parsenew_fuzzer_seed_corpus.zip tests/*
-
-# Finally, make sure we don't accidentally run with stuff from the bazel cache.
-rm -f bazel-*
