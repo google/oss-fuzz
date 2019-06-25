@@ -14,21 +14,10 @@
 # limitations under the License.
 #
 ################################################################################
-
-FUZZER_FILES="\
-tests/file_descriptor_parsenew_fuzzer.cc \
-"
-
 FUZZER_DICTIONARIES="\
 "
 
-# FUZZER_LIBRARIES="\
-# bazel-bin/*.a \
-# bazel-bin/bazel/*.a \
-# bazel-bin/*.a \
-# "
-
-# build upb
+# build fuzz target
 NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
 EXTRA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
@@ -42,7 +31,6 @@ then
   declare -r REMAP_PATH=${OUT}/proc/self/cwd
   mkdir -p ${REMAP_PATH}
   rsync -ak ${SRC}/upb ${REMAP_PATH}
-
 fi
 
 # Now that all is done, we just have to copy the existing corpora and
@@ -53,12 +41,8 @@ for dict in $FUZZER_DICTIONARIES; do
   cp $dict $OUT/
 done
 
-CORPUS_UNTAR_PATH="${PWD}"/_tmp_corpus
-echo "Extracting and zipping fuzzer corpus"
-rm -rf "${CORPUS_UNTAR_PATH}"
-mkdir -p "${CORPUS_UNTAR_PATH}"
-
-zip $OUT/file_descriptor_parsenew_fuzzer.zip "${CORPUS_UNTAR_PATH}"/*
+# Zip corpus
+zip $OUT/file_descriptor_parsenew_fuzzer_seed_corpus.zip tests/*
 
 # Finally, make sure we don't accidentally run with stuff from the bazel cache.
 rm -f bazel-*
