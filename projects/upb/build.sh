@@ -20,10 +20,11 @@ FUZZER_DICTIONARIES="\
 NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
 EXTRA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
+  --verbose_failures \
   $EXTRA_BAZEL_FLAGS \
   $NO_VPTR \
   -k \
-  :file_descriptor_parsenew_fuzzer || true
+  :file_descriptor_parsenew_fuzzer
 
 # Copied from projects/envoy/build.sh which also uses Bazel.
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
