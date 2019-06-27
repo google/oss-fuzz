@@ -1,0 +1,6 @@
+homepage: "https://ghostscript.com"
+primary_contact: "skau@google.com"
+auto_ccs:
+  - "skau@google.com"
+sanitizers:
+  - address
