@@ -17,33 +17,33 @@
 
 #compile and link statically dependencies
 cd ..
-tar -xvf libgpg-error-1.32.tar.bz2
-cd libgpg-error-1.32
-./configure --enable-static --disable-shared
+cd libgpg-error
+./autogen.sh
+./configure --disable-doc --enable-static --disable-shared
 make
 make install
 cd ..
-tar -xvf libgcrypt-1.8.2.tar.bz2
-cd libgcrypt-1.8.2
-./configure --enable-static --disable-shared
+cd libgcrypt
+./autogen.sh
+./configure --disable-doc --enable-static --disable-shared
 make
 make install
 cd ..
-tar -xvf libassuan-2.5.1.tar.bz2
-cd libassuan-2.5.1
-./configure --enable-static --disable-shared
+cd libassuan
+./autogen.sh
+./configure --disable-doc --enable-static --disable-shared
 make
 make install
 cd ..
-tar -xvf libksba-1.3.5.tar.bz2
-cd libksba-1.3.5
-./configure --enable-static --disable-shared
+cd libksba
+./autogen.sh
+./configure --disable-doc --enable-static --disable-shared
 make
 make install
 cd ..
-tar -xvf npth-1.5.tar.bz2
-cd npth-1.5
-./configure --enable-static --disable-shared
+cd npth
+./autogen.sh
+./configure --disable-doc --enable-static --disable-shared
 make
 make install
 cd ..
