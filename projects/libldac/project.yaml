@@ -2,5 +2,10 @@ homepage: "https://android.googlesource.com/platform/external/libldac"
 primary_contact: "Chisato.Kenmochi@sony.com"
 auto_ccs:
   - "cdiehl@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow

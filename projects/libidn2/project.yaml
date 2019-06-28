@@ -3,7 +3,12 @@ primary_contact: "rockdaboot@gmail.com"
 auto_ccs:
   - "n.mavrogiannopoulos@gmail.com"
   - "simon@josefsson.org"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory
   - undefined

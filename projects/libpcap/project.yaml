@@ -4,8 +4,12 @@ auto_ccs :
 - "p.antoine@catenacyber.fr"
 - "infra.station@gmail.com"
 - "guy@alum.mit.edu"
-
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
-- address
-- memory
-- undefined
+  - address
+  - dataflow
+  - memory
+  - undefined

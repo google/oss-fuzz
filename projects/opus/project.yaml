@@ -2,7 +2,12 @@ homepage: "https://opus-codec.org/"
 primary_contact: "jmvalin@jmvalin.ca"
 auto_ccs:
 - "flim@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory
   - undefined

@@ -1,8 +1,12 @@
 homepage: "https://www.capstone-engine.org"
 primary_contact: "capstone.engine@gmail.com"
 auto_ccs : "p.antoine@catenacyber.fr"
-
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
-- address
-- memory
-- undefined
+  - address
+  - dataflow
+  - memory
+  - undefined

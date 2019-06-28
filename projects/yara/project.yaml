@@ -3,7 +3,13 @@ primary_contact: "vmalvarez@google.com"
 auto_ccs:
   - "vmalvarez@virustotal.com"
   - "plusvic@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory
   - undefined
+  

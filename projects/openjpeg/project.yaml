@@ -2,3 +2,11 @@ homepage: "http://www.openjpeg.org/"
 primary_contact: "antonin@gmail.com"
 auto_ccs:
   - "even.rouault@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
+sanitizers:
+  - address
+  - dataflow
+  - undefined

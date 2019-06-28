@@ -1,2 +1,10 @@
 homepage: "https://github.com/kjdev/hoextdown"
 primary_contact: "kjclev@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
+sanitizers:
+  - address
+  - dataflow
+  - undefined
