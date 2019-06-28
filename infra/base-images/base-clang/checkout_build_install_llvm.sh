@@ -135,6 +135,10 @@ rm -rf $WORK/msan
 # Pull trunk libfuzzer.
 cd $SRC && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
 
+# Install the FuzzedDataProvider library, but don't fail the whole LLVM build if
+# it fails. The header might be eventually moved.
+cp libfuzzer/utils/FuzzedDataProvider.h /usr/include || true
+
 # Cleanup
 rm -rf $SRC/llvm
 rm -rf $SRC/chromium_tools
