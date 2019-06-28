@@ -14,9 +14,9 @@ auto_ccs:
   - "eneyman@google.com"
   - "bigcheesegs@gmail.com"
 
-# TODO(kcc): enable msan.
 sanitizers:
   - address
+  - memory
 
 # The LLVM build currently supports only libFuzzer
 fuzzing_engines:
