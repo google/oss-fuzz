@@ -6,4 +6,5 @@ auto_ccs:
   - "terrelln@fb.com"
 sanitizers:
   - address
+  - memory
   - undefined
