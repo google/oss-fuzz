@@ -1,4 +1,0 @@
-homepage: "<https://github.com/protocolbuffers/upb>"
-primary_contact: "<jhaberman@gmail.com>"
-sanitizers:
-  - address
