@@ -1,0 +1,5 @@
+homepage: "https://github.com/lvandeve/lodepng"
+primary_contact: "lvandeve@gmail.com"
+sanitizers:
+- address
+- undefined
