@@ -370,7 +370,6 @@ function check_architecture {
 }
 
 function main {
-  return 1
   local FUZZER=$1
   local checks_failed=0
   local result=0
