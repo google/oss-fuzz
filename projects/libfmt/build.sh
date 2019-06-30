@@ -40,4 +40,3 @@ cmake .. \
 cmake --build .
 
 cp bin/fuzzer_* $OUT
-
