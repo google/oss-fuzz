@@ -37,7 +37,7 @@ static int gs_stdout(void *inst, const char *buf, int len)
 static int gs_to_raster_fuzz(const unsigned char *buf, size_t size)
 {
 	int ret;
-	void *gs;
+	void *gs = NULL;
 
 	/* Mostly stolen from cups-filters gstoraster. */
 	char *args[] = {
