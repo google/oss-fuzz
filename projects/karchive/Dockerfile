@@ -19,7 +19,7 @@ MAINTAINER tsdgeos@gmail.com
 RUN apt-get update && apt-get install --yes cmake make autoconf automake autopoint libtool wget
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git
-RUN wget https://sourceware.org/pub/bzip2/bzip2-1.0.6.tar.gz
+RUN wget https://sourceware.org/pub/bzip2/bzip2-1.0.7.tar.gz
 RUN git clone https://git.tukaani.org/xz.git
 RUN git clone --depth 1 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 git://anongit.kde.org/extra-cmake-modules
