@@ -54,3 +54,10 @@ $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
     -o "$OUT/gstoraster_fuzzer" \
     $CUPS_LIBS \
     $LIB_FUZZING_ENGINE bin/gs.a
+
+mkdir -p "$WORK/seeds"
+for f in examples/*.{ps,pdf}; do
+  s=$(sha1sum "$f" | awk '{print $1}')
+  cp "$f" "$WORK/seeds/$s"
+done
+zip -j "$OUT/gstoraster_fuzzer_seed_corpus.zip" "$WORK"/seeds/*
