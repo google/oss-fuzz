@@ -28,5 +28,4 @@ $CXX $CXXFLAGS -std=c++11 -I. \
 find $SRC/libzip/regress -name "*.zip" | \
      xargs zip $OUT/zip_read_fuzzer_seed_corpus.zip
 
-cp $SRC/libzip/regress/libzip.dict \
-   $SRC/libzip/regress/zip_read_fuzzer.options $OUT/
+cp $SRC/libzip/regress/zip_read_fuzzer.dict $OUT/
