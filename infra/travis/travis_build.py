@@ -28,16 +28,20 @@ DEFAULT_ENGINES = ['afl', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
-def get_modified_projects():
-  """Get a list of all the projects modified in this commit."""
+def get_modified_buildable_projects():
+  """Returns a list of all the projects modified in this commit that have a
+  build.sh file."""
   master_head_sha = subprocess.check_output(
       ['git', 'merge-base', 'HEAD', 'FETCH_HEAD']).decode().strip()
   output = subprocess.check_output(
       ['git', 'diff', '--name-only', 'HEAD', master_head_sha]).decode()
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
-  projects = set(re.findall(projects_regex, output))
-  import ipdb; ipdb.set_trace()
-  return
+  modified_projects = set(re.findall(projects_regex, output))
+  projects_dir = os.path.abspath(
+      os.path.join(__file__, '..', '..', '..', 'projects'))
+  return [project for project in modified_projects
+          if os.path.exists(os.path.join(projects_dir, project, 'build.sh'))
+  ]
 
 
 def get_oss_fuzz_root():
@@ -115,7 +119,7 @@ def build_project(project):
 
 
 def main():
-  projects = get_modified_projects()
+  projects = get_modified_buildable_projects()
   failed_projects = []
   for project in projects:
     try:
