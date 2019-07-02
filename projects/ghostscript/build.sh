@@ -42,7 +42,7 @@ CUPS_LDFLAGS=$($CUPSCONFIG --ldflags)
 CUPS_LIBS=$($CUPSCONFIG --image --libs)
 export CXXFLAGS="$CXXFLAGS $CUPS_CFLAGS"
 
-autoconf
+./autogen.sh
 CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS" ./configure \
   --enable-freetype --enable-fontconfig \
   --enable-cups --with-ijs --with-jbig2dec \
