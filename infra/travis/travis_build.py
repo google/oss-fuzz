@@ -28,14 +28,27 @@ DEFAULT_ENGINES = ['afl', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
-def get_modified_projects():
-  """Get a list of all the projects modified in this commit."""
+def get_modified_buildable_projects():
+  """Returns a list of all the projects modified in this commit that have a
+  build.sh file."""
   master_head_sha = subprocess.check_output(
       ['git', 'merge-base', 'HEAD', 'FETCH_HEAD']).decode().strip()
   output = subprocess.check_output(
       ['git', 'diff', '--name-only', 'HEAD', master_head_sha]).decode()
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
-  return set(re.findall(projects_regex, output))
+  modified_projects = set(re.findall(projects_regex, output))
+  projects_dir = os.path.join(get_oss_fuzz_root(), 'projects')
+  # Filter out projects without build.sh files since new projects and reverted
+  # projects frequently don't have them. In these cases we don't want Travis's
+  # builds to fail.
+  modified_buildable_projects = []
+  for project in modified_projects:
+    if not os.path.exists(os.path.join(projects_dir, project, 'build.sh')):
+      print('Project {0} does not have a build.sh. skipping build.'.format(
+          project))
+      continue
+    modified_buildable_projects.append(project)
+  return modified_buildable_projects
 
 
 def get_oss_fuzz_root():
@@ -74,6 +87,7 @@ def check_build(project, engine, sanitizer, architecture):
 
 def should_build(project_yaml):
   """Is the build specified by travis enabled in the |project_yaml|?"""
+
   def is_enabled(env_var, yaml_name, defaults):
     """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
     section)? Uses |defaults| if |yaml_name| section is unspecified."""
@@ -81,8 +95,9 @@ def should_build(project_yaml):
 
   return (is_enabled('TRAVIS_ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
           is_enabled('TRAVIS_SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
-          is_enabled(
-              'TRAVIS_ARCHITECTURE', 'architectures', DEFAULT_ARCHITECTURES))
+          is_enabled('TRAVIS_ARCHITECTURE', 'architectures',
+                     DEFAULT_ARCHITECTURES))
+
 
 def build_project(project):
   """Do the build of |project| that is specified by the TRAVIS_* environment
@@ -93,7 +108,7 @@ def build_project(project):
     project_yaml = yaml.safe_load(fp)
 
   if project_yaml.get('disabled', False):
-    print('Project {0} is disabled, not building.'.format(project))
+    print('Project {0} is disabled, skipping build.'.format(project))
     return
 
   engine = os.getenv('TRAVIS_ENGINE')
@@ -102,7 +117,7 @@ def build_project(project):
 
   if not should_build(project_yaml):
     print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
-           'not enabled for this project: {3}. Not building.').format(
+           'not enabled for this project: {3}. skipping build.').format(
                engine, sanitizer, architecture, project))
 
     return
@@ -113,7 +128,7 @@ def build_project(project):
 
 
 def main():
-  projects = get_modified_projects()
+  projects = get_modified_buildable_projects()
   failed_projects = []
   for project in projects:
     try:
