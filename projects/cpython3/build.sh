@@ -2,25 +2,30 @@
 
 # Ignore memory leaks from python scripts invoked in the build
 export ASAN_OPTIONS="detect_leaks=0"
-export MSAN_OPTIONS="halt_on_error=0:exitcode=0"
+export MSAN_OPTIONS="halt_on_error=0:exitcode=0:report_umrs=0"
 
 # Remove -pthread from CFLAGS, this trips up ./configure
 # which thinks pthreads are available without any CLI flags
 CFLAGS=${CFLAGS//"-pthread"/}
 
-FLAGS=""
+FLAGS=()
 case $SANITIZER in
   address)
-    FLAGS="--with-address-sanitizer"
+    FLAGS+=("--with-address-sanitizer")
     ;;
   memory)
-    FLAGS="--with-memory-sanitizer"
+    FLAGS+=("--with-memory-sanitizer")
+    # installing ensurepip takes a while with MSAN instrumentation, so
+    # we disable it here
+    FLAGS+=("--without-ensurepip")
+    # -msan-keep-going is needed to allow MSAN's halt_on_error to function
+    FLAGS+=("CFLAGS=-mllvm -msan-keep-going=1")
     ;;
   undefined)
-    FLAGS="--with-undefined-behavior-sanitizer"
+    FLAGS+=("--with-undefined-behavior-sanitizer")
     ;;
 esac
-./configure $FLAGS --prefix $OUT
+./configure "${FLAGS[@]}" --prefix $OUT
 
 # We use altinstall to avoid having the Makefile create symlinks
 make -j$(nproc) altinstall
