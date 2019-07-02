@@ -39,9 +39,13 @@ def get_modified_buildable_projects():
   modified_projects = set(re.findall(projects_regex, output))
   projects_dir = os.path.abspath(
       os.path.join(__file__, '..', '..', '..', 'projects'))
-  return [project for project in modified_projects
-          if os.path.exists(os.path.join(projects_dir, project, 'build.sh'))
-  ]
+  modified_buildable_projects = []
+  for project in modified_projects:
+    if not os.path.exists(os.path.join(projects_dir, project, 'build.sh')):
+      print('{0} does not have a project.yaml. Not building.'.format(project))
+      continue
+    modified_buildable_projects.append(project)
+  return modified_buildable_projects
 
 
 def get_oss_fuzz_root():
