@@ -44,7 +44,8 @@ def get_modified_buildable_projects():
   modified_buildable_projects = []
   for project in modified_projects:
     if not os.path.exists(os.path.join(projects_dir, project, 'build.sh')):
-      print('{0} does not have a build.sh. Not building.'.format(project))
+      print('Project {0} does not have a build.sh. skipping build.'.format(
+          project))
       continue
     modified_buildable_projects.append(project)
   return modified_buildable_projects
@@ -107,7 +108,7 @@ def build_project(project):
     project_yaml = yaml.safe_load(fp)
 
   if project_yaml.get('disabled', False):
-    print('Project {0} is disabled, not building.'.format(project))
+    print('Project {0} is disabled, skipping build.'.format(project))
     return
 
   engine = os.getenv('TRAVIS_ENGINE')
@@ -116,7 +117,7 @@ def build_project(project):
 
   if not should_build(project_yaml):
     print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
-           'not enabled for this project: {3}. Not building.').format(
+           'not enabled for this project: {3}. skipping build.').format(
                engine, sanitizer, architecture, project))
 
     return
