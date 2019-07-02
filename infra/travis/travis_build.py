@@ -42,7 +42,7 @@ def get_modified_buildable_projects():
   modified_buildable_projects = []
   for project in modified_projects:
     if not os.path.exists(os.path.join(projects_dir, project, 'build.sh')):
-      print('{0} does not have a project.yaml. Not building.'.format(project))
+      print('{0} does not have a build.sh. Not building.'.format(project))
       continue
     modified_buildable_projects.append(project)
   return modified_buildable_projects
@@ -93,6 +93,7 @@ def should_build(project_yaml):
           is_enabled('TRAVIS_SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
           is_enabled(
               'TRAVIS_ARCHITECTURE', 'architectures', DEFAULT_ARCHITECTURES))
+
 
 def build_project(project):
   """Do the build of |project| that is specified by the TRAVIS_* environment
