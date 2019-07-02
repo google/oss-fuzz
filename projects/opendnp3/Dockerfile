@@ -25,6 +25,6 @@ RUN apt-get update && apt-get install -y make wget tshark
 RUN wget -q -O - https://github.com/Kitware/CMake/releases/download/v3.14.4/cmake-3.14.4-Linux-x86_64.sh > /tmp/install_cmake.sh && \
     cd /usr && bash /tmp/install_cmake.sh -- --skip-license && \
     rm /tmp/install_cmake.sh
-RUN git clone --recursive -b master --depth 1 https://github.com/dnp3/opendnp3.git opendnp3
+RUN git clone --recursive -b release-2.x --depth 1 https://github.com/dnp3/opendnp3.git opendnp3
 WORKDIR opendnp3
 COPY build.sh $SRC/
