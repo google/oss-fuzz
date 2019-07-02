@@ -35,7 +35,9 @@ def get_modified_projects():
   output = subprocess.check_output(
       ['git', 'diff', '--name-only', 'HEAD', master_head_sha]).decode()
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
-  return set(re.findall(projects_regex, output))
+  projects = set(re.findall(projects_regex, output))
+  import ipdb; ipdb.set_trace()
+  return
 
 
 def get_oss_fuzz_root():
