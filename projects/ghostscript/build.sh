@@ -52,6 +52,7 @@ make -j$(nproc) libgs
 $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
     fuzz/gstoraster_fuzzer.cc \
     -o "$OUT/gstoraster_fuzzer" \
+    -Wl,-rpath='$ORIGIN' \
     $CUPS_LIBS \
     $LIB_FUZZING_ENGINE bin/gs.a
 
