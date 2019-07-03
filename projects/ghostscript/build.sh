@@ -42,7 +42,7 @@ CUPS_LDFLAGS=$($CUPSCONFIG --ldflags)
 CUPS_LIBS=$($CUPSCONFIG --image --libs)
 export CXXFLAGS="$CXXFLAGS $CUPS_CFLAGS"
 
-autoconf
+./autogen.sh
 CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS" ./configure \
   --enable-freetype --enable-fontconfig \
   --enable-cups --with-ijs --with-jbig2dec \
@@ -52,6 +52,7 @@ make -j$(nproc) libgs
 $CXX $CXXFLAGS $CUPS_LDFLAGS -std=c++11 -I. \
     fuzz/gstoraster_fuzzer.cc \
     -o "$OUT/gstoraster_fuzzer" \
+    -Wl,-rpath='$ORIGIN' \
     $CUPS_LIBS \
     $LIB_FUZZING_ENGINE bin/gs.a
 
