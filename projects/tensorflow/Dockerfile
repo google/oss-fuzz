@@ -20,6 +20,7 @@ MAINTAINER mihaimaruseac@google.com
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         python-dev \
+        python-future \
         rsync \
         && \
     apt-get clean && \

@@ -72,5 +72,5 @@ BUILD_TEMPLATE = """\
 # e.g.
 # $CXX $CXXFLAGS -std=c++11 -Iinclude \\
 #     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \\
-#     -lFuzzingEngine /path/to/library.a
+#     $LIB_FUZZING_ENGINE /path/to/library.a
 """

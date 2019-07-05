@@ -53,8 +53,15 @@ $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $P
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
   
-  E.g. for building [libxml2](../projects/libxml2) project with UndefinedBehaviorSanitizer instrumentation 
-  and reproduce a crash testcase for a fuzzer named `libxml2_xml_read_memory_fuzzer`, it will be: 
+  Find the type of sanitizer used in the report using the value in the **Sanitizer** column. It is one of the
+  following:
+  * **address** for AddressSanitizer
+  * **memory** for MemorySanitizer
+  * **undefined** for UndefinedBehaviorSanitizer
+
+  E.g. for building [libxml2](../projects/libxml2) project with UndefinedBehaviorSanitizer (undefined)
+  instrumentation and reproduce a crash testcase for a fuzzer named `libxml2_xml_read_memory_fuzzer`,
+  it will be: 
 
 ```bash
 $ python infra/helper.py build_image libxml2

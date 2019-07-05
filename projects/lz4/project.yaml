@@ -1,0 +1,10 @@
+homepage: "https://github.com/lz4/lz4"
+primary_contact: "Yann.collet.73@gmail.com"
+auto_ccs:
+  - "NickRTerrell@gmail.com"
+  - "cyan@fb.com"
+  - "terrelln@fb.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

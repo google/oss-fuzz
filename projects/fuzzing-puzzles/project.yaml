@@ -11,3 +11,5 @@ sanitizers:
 
 fuzzing_engines:
   - afl
+
+disabled: True

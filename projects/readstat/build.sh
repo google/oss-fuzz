@@ -24,14 +24,23 @@ make
 make generate_corpus
 ./generate_corpus
 
-zip $OUT/fuzz_format_dta_seed_corpus.zip corpus/dta*/test-case-*
-zip $OUT/fuzz_format_por_seed_corpus.zip corpus/por/test-case-*
-zip $OUT/fuzz_format_sav_seed_corpus.zip corpus/sav*/test-case-* corpus/zsav/test-case-*
-zip $OUT/fuzz_format_sas7bcat_seed_corpus.zip corpus/sas7bcat/test-case-*
-zip $OUT/fuzz_format_sas7bdat_seed_corpus.zip corpus/sas7bdat*/test-case-*
-zip $OUT/fuzz_format_xport_seed_corpus.zip corpus/xpt*/test-case-*
+zip $OUT/fuzz_format_dta_seed_corpus.zip ./fuzz/corpus/dta*/test-case-*
+zip $OUT/fuzz_format_por_seed_corpus.zip ./fuzz/corpus/por/test-case-*
+zip $OUT/fuzz_format_sav_seed_corpus.zip ./fuzz/corpus/sav*/test-case-* ./fuzz/corpus/zsav/test-case-*
+zip $OUT/fuzz_format_sas7bcat_seed_corpus.zip ./fuzz/corpus/sas7bcat/test-case-*
+zip $OUT/fuzz_format_sas7bdat_seed_corpus.zip ./fuzz/corpus/sas7bdat*/test-case-*
+zip $OUT/fuzz_format_xport_seed_corpus.zip ./fuzz/corpus/xpt*/test-case-*
+
+cp ./fuzz/dict/fuzz_format_spss_commands.dict $OUT/fuzz_format_spss_commands.dict
+cp ./fuzz/dict/fuzz_format_stata_commands.dict $OUT/fuzz_format_stata_commands.dict
+cp ./fuzz/dict/fuzz_format_sas_commands.dict $OUT/fuzz_format_sas_commands.dict
 
 READSTAT_FUZZERS="
+    fuzz_compression_sav \
+    fuzz_grammar_spss_format \
+    fuzz_format_sas_commands \
+    fuzz_format_spss_commands \
+    fuzz_format_stata_dictionary \
     fuzz_format_dta \
     fuzz_format_por \
     fuzz_format_sav \

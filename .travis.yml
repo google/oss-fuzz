@@ -42,5 +42,10 @@ matrix:
         - TRAVIS_ENGINE=libfuzzer
         - TRAVIS_SANITIZER=address
         - TRAVIS_ARCHITECTURE=i386
+    - name: "dataflow dataflow x86_64"
+      env:
+        - TRAVIS_ENGINE=dataflow
+        - TRAVIS_SANITIZER=dataflow
+        - TRAVIS_ARCHITECTURE=x86_64
 
 script: ./infra/travis/travis_build.py

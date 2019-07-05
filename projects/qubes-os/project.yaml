@@ -4,6 +4,3 @@ auto_ccs:
  - "joanna@invisiblethingslab.com"
  - "marmarek@invisiblethingslab.com"
  - "paras.chetal@gmail.com"
-sanitizers:
- - address
- - memory

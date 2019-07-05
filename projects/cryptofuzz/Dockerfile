@@ -34,6 +34,8 @@ RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp/
 RUN git clone --depth 1 https://dev.gnupg.org/source/libgcrypt.git
 RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2
-RUN wget https://github.com/project-everest/hacl-star/releases/download/evercrypt-v0.1alpha1/hacl-star-evercrypt-v0.1alpha1-bugfix.tar.gz
+RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star evercrypt
+RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0-stable.zip
+RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_0_2-stable.zip
 
 COPY build.sh $SRC/

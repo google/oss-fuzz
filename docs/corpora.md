@@ -2,6 +2,10 @@
 
 If you would like to access the corpora that we are using for your fuzz targets (synthesized by the fuzzing engines), please follow these steps.
 
+## Obtain access
+
+In order to get access to a project's corpora, you must first be listed as the primary contact or an auto cc in the project's `project.yaml` file as described in the [New Project Guide](new_project_guide.md#projectyaml). If you don't do this, most of the links below won't work.
+
 ## Install Google Cloud SDK
 
 The corpora for fuzz targets are stored on [Google Cloud Storage](https://cloud.google.com/storage/). To access them, you will need to [install](https://cloud.google.com/storage/docs/gsutil_install) the gsutil tool, which is part of the Google Cloud SDK.

@@ -3,6 +3,11 @@ primary_contact: "daede003@umn.edu"
 auto_ccs:
   - paul.l.kehrer@gmail.com
   - agaynor@mozilla.com
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory

@@ -20,4 +20,3 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool g++
 RUN git clone --depth 1 git://w1.fi/srv/git/hostap.git hostap
 WORKDIR hostap
 COPY build.sh $SRC/
-COPY libfuzzer_entry.c $SRC/hostap/tests/

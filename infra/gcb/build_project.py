@@ -256,15 +256,6 @@ def get_build_steps(project_dir):
                 ],
             })
 
-        if run_tests:
-          build_steps.append(
-              # test binaries
-              {
-                  'name': 'gcr.io/oss-fuzz-base/base-runner',
-                  'env': env,
-                  'args': ['bash', '-c', 'test_all'],
-              })
-
         if sanitizer == 'memory':
           # Patch dynamic libraries to use instrumented ones.
           build_steps.append({
@@ -278,6 +269,15 @@ def get_build_steps(project_dir):
                   'python /usr/local/bin/patch_build.py {0}'.format(out),
               ],
           })
+
+        if run_tests:
+          build_steps.append(
+              # test binaries
+              {
+                  'name': 'gcr.io/oss-fuzz-base/base-runner',
+                  'env': env,
+                  'args': ['bash', '-c', 'test_all'],
+              })
 
         if project_yaml['labels']:
           # write target labels

@@ -49,7 +49,7 @@ cd clang
 
 OUR_LLVM_REVISION=359254  # For manual bumping.
 FORCE_OUR_REVISION=0  # To allow for manual downgrades.
-LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K\d+(?=')" scripts/update.py)
+LLVM_REVISION=$(grep -Po "CLANG_SVN_REVISION = '\K\d+(?=')" scripts/update.py)
 
 if [ $OUR_LLVM_REVISION -gt $LLVM_REVISION ] || [ $FORCE_OUR_REVISION -ne 0 ]; then
   LLVM_REVISION=$OUR_LLVM_REVISION
@@ -134,9 +134,6 @@ rm -rf $WORK/msan
 
 # Pull trunk libfuzzer.
 cd $SRC && svn co https://llvm.org/svn/llvm-project/compiler-rt/trunk/lib/fuzzer libfuzzer
-
-# Copy DataFlow scripts for collecting and merging the traces.
-cp libfuzzer/scripts/*_data_flow.py /usr/local/bin/
 
 # Cleanup
 rm -rf $SRC/llvm

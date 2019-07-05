@@ -1,6 +1,11 @@
 homepage: "https://github.com/google/brotli"
 primary_contact: "eustas@chromium.org"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory
   - undefined

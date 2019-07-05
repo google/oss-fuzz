@@ -3,7 +3,12 @@ primary_contact: "glennrp@gmail.com"
 auto_ccs:
   - "sebpop@gmail.com"
   - "cblume@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory
   - undefined

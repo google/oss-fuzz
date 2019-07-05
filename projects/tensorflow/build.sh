@@ -17,8 +17,8 @@
 
 # First, determine the latest Bazel we can support
 BAZEL_VERSION=$(
-  grep 'current_bazel_version =' configure.py | \
-  cut -d, -f2 | cut -d\' -f2 | tr -d '[:space:]'
+  grep '_TF_MAX_BAZEL_VERSION =' configure.py | \
+  cut -d\' -f2 | tr -d '[:space:]'
 )
 if [ -z ${BAZEL_VERSION} ]; then
   echo "Couldn't find a valid bazel version in configure.py script"

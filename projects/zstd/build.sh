@@ -26,12 +26,6 @@ make -j seedcorpora
 for target in $(./fuzz.py list); do
     cp "$target" "$OUT"
 
-    options=default.options
-    if [ -f "$target.options" ]; then
-        options="$target.options"
-    fi
-    cp "$options" "$OUT/$target.options"
-
     if [ -f "$target.dict" ]; then
         cp "$target.dict" "$OUT"
     fi

@@ -25,4 +25,5 @@ RUN apt-get update && \
         asciidoc docbook-xsl xmlto libssl-dev zip
 RUN git clone https://github.com/git/git git
 WORKDIR git
+RUN git checkout origin/next
 COPY build.sh $SRC/
