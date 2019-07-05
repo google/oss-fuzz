@@ -59,7 +59,12 @@ then
     cd $SRC/
     tar jxvf libgpg-error-1.36.tar.bz2
     cd libgpg-error-1.36/
-    ./configure --enable-static
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./configure --enable-static
+    else
+        ./configure --enable-static --host=i386
+    fi
     make -j$(nproc) >/dev/null 2>&1
     make install
     export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
@@ -67,7 +72,12 @@ then
     # Compile libgcrypt (with assembly)
     cd $SRC/libgcrypt
     autoreconf -ivf
-    ./configure --enable-static --disable-doc
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./configure --enable-static --disable-doc
+    else
+        ./configure --enable-static --disable-doc --host=i386
+    fi
     make -j$(nproc) >/dev/null 2>&1
 
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGCRYPT"
@@ -97,7 +107,7 @@ then
     make -B
 fi
 
-if [[ $CFLAGS != *sanitize=memory* ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     # Compile EverCrypt (with assembly)
     cd $SRC/evercrypt/dist
@@ -135,7 +145,7 @@ cd $SRC/cryptofuzz/modules/monero
 make -B
 
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     # Compile LibreSSL (with assembly)
     cd $SRC/libressl
@@ -168,7 +178,12 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile Openssl (with assembly)
     cd $SRC/openssl
-    ./config --debug enable-md2 enable-rc5
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./config --debug enable-md2 enable-rc5
+    else
+        setarch i386 ./config --debug enable-md2 enable-rc5
+    fi
     make -j$(nproc) >/dev/null 2>&1
 
     # Compile Cryptofuzz OpenSSL (with assembly) module
@@ -193,7 +208,12 @@ fi
 ##############################################################################
 # Compile Openssl (without assembly)
 cd $SRC/openssl
-./config --debug no-asm enable-md2 enable-rc5
+if [[ $CFLAGS != *-m32* ]]
+then
+    ./config --debug no-asm enable-md2 enable-rc5
+else
+    setarch i386 ./config --debug no-asm enable-md2 enable-rc5
+fi
 make clean
 make -j$(nproc) >/dev/null 2>&1
 
@@ -216,7 +236,7 @@ cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-noasm.dict
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-noasm_seed_corpus.zip
 
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
     # Compile BoringSSL (with assembly)
     cd $SRC/boringssl
@@ -279,7 +299,12 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile Openssl 1.1.0 (with assembly)
     cd $SRC/openssl-OpenSSL_1_1_0-stable/
-    ./config --debug enable-md2 enable-rc5 $CFLAGS
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./config --debug enable-md2 enable-rc5 $CFLAGS
+    else
+        setarch i386 ./config --debug enable-md2 enable-rc5 $CFLAGS
+    fi
     make depend
     make -j$(nproc) >/dev/null 2>&1
 
@@ -306,7 +331,12 @@ fi
 # Compile Openssl 1.1.0 (without assembly)
 cd $SRC/openssl-OpenSSL_1_1_0-stable/
 make clean || true
-./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
+if [[ $CFLAGS != *-m32* ]]
+then
+    ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
+else
+    setarch i386 ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
+fi
 make depend
 make -j$(nproc) >/dev/null 2>&1
 
@@ -335,7 +365,12 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile Openssl 1.0.2 (with assembly)
     cd $SRC/openssl-OpenSSL_1_0_2-stable/
-    ./config --debug enable-md2 enable-rc5 $CFLAGS
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./config --debug enable-md2 enable-rc5 $CFLAGS
+    else
+        setarch i386 ./config --debug enable-md2 enable-rc5 $CFLAGS
+    fi
     make depend
     make -j$(nproc) >/dev/null 2>&1
 
@@ -362,7 +397,12 @@ fi
 # Compile Openssl 1.0.2 (without assembly)
 cd $SRC/openssl-OpenSSL_1_0_2-stable/
 make clean || true
-./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
+if [[ $CFLAGS != *-m32* ]]
+then
+    ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
+else
+    setarch i386 ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
+fi
 make depend
 make -j$(nproc) >/dev/null 2>&1
 
