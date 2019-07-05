@@ -57,6 +57,7 @@ make -j$(nproc)
 make install
 
 cd $SRC/python-library-fuzzers
+rm $CPYTHON_INSTALL_PATH/lib/python3.9/lib-dynload/_tkinter*.so
 make
 
 cp $SRC/python-library-fuzzers/fuzzer-html $OUT/
@@ -75,3 +76,15 @@ cp $SRC/python-library-fuzzers/fuzzer-json $OUT/
 cp $SRC/python-library-fuzzers/json.py $OUT/
 zip -j $OUT/fuzzer-json_seed_corpus.zip corp-json/*
 
+cp $SRC/python-library-fuzzers/fuzzer-difflib $OUT/
+cp $SRC/python-library-fuzzers/difflib.py $OUT/
+zip -j $OUT/fuzzer-difflib_seed_corpus.zip corp-difflib/*
+
+cp $SRC/python-library-fuzzers/fuzzer-csv $OUT/
+cp $SRC/python-library-fuzzers/csv.py $OUT/
+zip -j $OUT/fuzzer-csv_seed_corpus.zip corp-csv/*
+
+cp $SRC/python-library-fuzzers/fuzzer-decode $OUT/
+cp $SRC/python-library-fuzzers/decode.py $OUT/
+zip -j $OUT/fuzzer-decode_seed_corpus.zip corp-decode/*
+cp $SRC/python-library-fuzzers/fuzzer-decode.dict $OUT/
