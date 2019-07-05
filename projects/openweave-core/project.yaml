@@ -1,0 +1,7 @@
+homepage: "https://openweave.io/"
+primary_contact: "TBD"
+auto_ccs:
+  - "bshas3@gmail.com"
+sanitizers:
+  - address
+  - undefined
