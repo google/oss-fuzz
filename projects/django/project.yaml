@@ -1,0 +1,7 @@
+homepage: "https://www.djangoproject.com/"
+primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+ - "f.apolloner@gmail.com"
+sanitizers:
+ - address
+ - undefined
