@@ -16,8 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER cdunn2001@gmail.com
-RUN apt-get update && apt-get install -y make python
-RUN apt-get update && apt-get install -y make wget tshark
+RUN apt-get update && apt-get install -y make python wget
 
 # The CMake version that is available on Ubuntu 16.04 is 3.5.1. jsoncpp
 # needs CMake 3.8 or higher Therefore, we

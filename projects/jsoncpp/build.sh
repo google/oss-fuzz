@@ -25,8 +25,6 @@ cmake -D CMAKE_BUILD_TYPE=Release \
 
 make install "-j$(nproc)"
 
-find . -name "*.a"
-
 $CXX $CXXFLAGS -std=c++11 $SRC/jsoncpp/src/test_lib_json/fuzz.cpp \
  $LIB_FUZZING_ENGINE ./src/lib_json/libjsoncpp.a -o $OUT/jsoncpp_fuzzer
 
