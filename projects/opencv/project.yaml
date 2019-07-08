@@ -6,6 +6,7 @@ auto_ccs:
   - "garybradski@gmail.com"
   - "vrabaud@google.com"
   - "kusano@google.com"
+  - "maksim.shabunin@gmail.com"
 
 sanitizers:
   - address
