@@ -1,6 +1,4 @@
 cd $SRC/libsrtp
-git checkout fuzzing
-git fetch origin fuzzing
 autoreconf -ivf
 ./configure
 LIBFUZZER="$LIB_FUZZING_ENGINE" make srtp-fuzzer
