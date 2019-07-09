@@ -17,21 +17,12 @@
 
 build_dir=$WORK/build
 
-mkdir -p $build_dir/gecode
-pushd $build_dir/gecode
-cmake $SRC/gecode -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$OUT
-cmake --build . --target install -- -j$(nproc)
-export GECODE_ROOT=$OUT
-popd
-
-mkdir -p $build_dir/minizinc
-pushd $build_dir/minizinc
-cmake $SRC/minizinc -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$OUT
+mkdir -p $build_dir
+pushd $build_dir
+cmake $SRC/minizinc -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$WORK/install
 cmake --build . --target install -- -j$(nproc)
 popd
 
-# build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     $LIB_FUZZING_ENGINE /path/to/library.a
+$CXX $CXXFLAGS -std=c++11 -I$WORK/install/include $SRC/minizinc/minizinc_fuzzer.cpp -o $OUT/minizinc_fuzzer $LIB_FUZZING_ENGINE $WORK/install/lib/libmzn.a
+
+mv $WORK/install/share $OUT

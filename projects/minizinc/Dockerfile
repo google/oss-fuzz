@@ -17,8 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER Harsil S. Patel <harsil.patel@monash.edu>
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake git build-essential
-RUN git clone --depth 1 https://github.com/MiniZinc/libminizinc.git $SRC/minizinc
-RUN git clone --depth 1 https://github.com/Gecode/gecode.git $SRC/gecode
-WORKDIR $SRC
+RUN git clone --depth 1 --branch develop https://github.com/MiniZinc/libminizinc.git minizinc
+COPY minizinc_fuzzer.cpp minizinc/
+WORKDIR minizinc
 COPY build.sh $SRC/
-# COPY gecode.msc $OUT/share/solvers/gecode.msc
