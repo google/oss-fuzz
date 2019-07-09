@@ -26,4 +26,9 @@ $CXX $CXXFLAGS -std=c++11 -I$SRC/libssh/include/ \
     "$SRC/libssh/tests/fuzz/ssh_server_fuzzer.cpp" \
     -o "$OUT/libssh_server_fuzzer" \
     $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
+
+$CXX $CXXFLAGS -std=c++11 -I$SRC/libssh/include/ \
+    "$SRC/libssh/tests/fuzz/ssh_client_fuzzer.cpp" \
+    -o "$OUT/libssh_client_fuzzer" \
+    $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
 popd
