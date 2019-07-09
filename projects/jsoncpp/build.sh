@@ -15,8 +15,11 @@
 #
 ################################################################################
 
-mkdir -p build
-pushd build
+mkdir -p $WORK/jsoncpp
+cd $WORK/jsoncpp
+
+CFLAGS="$CFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
+CXXFLAGS="$CXXFLAGS -DBORINGSSL_UNSAFE_FUZZER_MODE"
 
 cmake -D CMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
@@ -25,7 +28,5 @@ cmake -D CMAKE_BUILD_TYPE=Release \
 
 make install "-j$(nproc)"
 
-$CXX $CXXFLAGS -std=c++11 $SRC/jsoncpp/src/test_lib_json/fuzz.cpp \
- $LIB_FUZZING_ENGINE ./src/lib_json/libjsoncpp.a -o $OUT/jsoncpp_fuzzer
-
-popd
+$CXX $CXXFLAGS -std=c++11 -I.. $SRC/jsoncpp/src/test_lib_json/fuzz.cpp \
+ -lFuzzingEngine ./src/lib_json/libjsoncpp.a -o $OUT/jsoncpp_fuzzer

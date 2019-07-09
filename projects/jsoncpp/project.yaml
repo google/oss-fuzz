@@ -3,4 +3,5 @@ primary_contact: "cdunn2001@gmail.com"
 sanitizers:
   - address
   - undefined
-experimental: True
+fuzzing_engines:
+  - libfuzzer

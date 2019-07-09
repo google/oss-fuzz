@@ -28,5 +28,4 @@ RUN wget -q -O - https://github.com/Kitware/CMake/releases/download/v3.14.4/cmak
     rm /tmp/install_cmake.sh
 RUN git clone --depth 1 https://github.com/open-source-parsers/jsoncpp.git jsoncpp
 
-WORKDIR jsoncpp
 COPY build.sh $SRC/
