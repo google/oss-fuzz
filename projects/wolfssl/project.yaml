@@ -5,8 +5,13 @@ auto_ccs:
  - "kaleb@wolfssl.com"
  - "levi@wolfssl.com"
  - "testing@wolfssl.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
- - address
- - memory:
+  - address
+  - dataflow
+  - memory:
     experimental: True
- - undefined
+  - undefined

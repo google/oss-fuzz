@@ -1,7 +1,12 @@
 homepage: "http://www.littlecms.com/"
 primary_contact: "marti.maria.s@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory:
      experimental: True
   - undefined

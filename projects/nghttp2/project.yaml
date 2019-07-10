@@ -1,6 +1,11 @@
 homepage: "https://nghttp2.org/"
 primary_contact: "tatsuhiro.t@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory
   - undefined

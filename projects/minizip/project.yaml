@@ -16,7 +16,12 @@
 
 homepage: "https://github.com/nmoinvaz/minizip"
 primary_contact: "nathan.moinvaziri@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory
   - undefined

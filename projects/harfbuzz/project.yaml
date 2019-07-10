@@ -12,7 +12,12 @@ auto_ccs:
   - "cchapman@adobe.com"
   - "ariza@typekit.com"
   - "qxliu@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
- - address
- - undefined
- - memory
+  - address
+  - dataflow
+  - memory
+  - undefined

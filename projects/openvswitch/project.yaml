@@ -6,7 +6,12 @@ auto_ccs:
   - "pkusunyifeng@gmail.com"
   - "bshas3@gmail.com"
   - "cpp.code.lv@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
 sanitizers:
   - address
+  - dataflow
   - memory
   - undefined

@@ -1,3 +1,11 @@
 homepage: "https://tls.mbed.org"
 primary_contact: "support-mbedtls@arm.com"
 auto_ccs : "p.antoine@catenacyber.fr"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - dataflow
+sanitizers:
+  - address
+  - dataflow
+  - undefined
