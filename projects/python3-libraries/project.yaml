@@ -1,0 +1,9 @@
+homepage: "https://python.org/"
+primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+ - "gps@google.com"
+ - "alex.gaynor@gmail.com"
+ - "ammar@ammaraskar.com"
+sanitizers:
+ - address
+ - undefined
