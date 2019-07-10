@@ -15,8 +15,7 @@
 #
 ################################################################################
 
-tar xzf bzip2-*.tar.gz && rm -f bzip2-*.tar.gz
-cd bzip2-*
+cd bzip2
 SRCL=(blocksort.o huffman.o crctable.o randtable.o compress.o decompress.o bzlib.o)
 
 for source in ${SRCL[@]}; do
