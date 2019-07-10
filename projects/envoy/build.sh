@@ -87,7 +87,7 @@ then
   rsync -avLk "${SRC}"/envoy/bazel-envoy/external "${REMAP_PATH}"
   # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
   # filter out the build objects from bazel-out/. Also need to resolve symlinks,
-  # since they don't make sense outside the build cbcontainer.
+  # since they don't make sense outside the build container.
   declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
     "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
   rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
