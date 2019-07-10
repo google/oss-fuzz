@@ -34,3 +34,11 @@ do
     libbz2.a
     rm -f $OUT/${name}.o
 done
+
+# build decompress seed corpus from ".bz2" samples
+# 1) look for all ".bz2" files in ./bzip2 and ./bzip2-test that are <100k
+# 2) remove base file name collisions
+# 3) add to (bzip2_decompress_target_seed_corpus.zip) archive
+find $SRC/bzip2* -type f -name "*.bz2" -size -100k \
+  | awk -F/ '{a[$NF]=$0}END{for(i in a)print a[i]}' \
+  | zip -j0r bzip2_decompress_target_seed_corpus.zip -@
