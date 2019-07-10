@@ -25,10 +25,6 @@ declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}";
 FUZZER_DICTIONARIES="\
 "
 
-# Skip gperftools, ASAN runs don't use tcmalloc.
-export DISABLE_GPERFTOOLS_BUILD=1
-sed -i 's#envoy_dependencies()#envoy_dependencies(skip_targets=["tcmalloc_and_profiler","tcmalloc_debug"])#' WORKSPACE
-
 # Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
 # compilation and linking.
 #
@@ -70,7 +66,7 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
-  --build_tag_filters=-no_asan \
+  --define force_libcpp=enabled --build_tag_filters=-no_asan \
   ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
 
@@ -91,7 +87,7 @@ then
   rsync -avLk "${SRC}"/envoy/bazel-envoy/external "${REMAP_PATH}"
   # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
   # filter out the build objects from bazel-out/. Also need to resolve symlinks,
-  # since they don't make sense outside the build container.
+  # since they don't make sense outside the build cbcontainer.
   declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
     "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
   rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
