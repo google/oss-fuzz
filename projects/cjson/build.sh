@@ -18,7 +18,7 @@
 mkdir build
 cd build
 cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_CJSON_TEST=OFF ..
-make -j5
+make -j$(nproc)
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/cjson/fuzzing/cjson_read_fuzzer.cc \
@@ -28,5 +28,4 @@ $CXX $CXXFLAGS -std=c++11 -I. \
 find $SRC/cjson/fuzzing/inputs -name "*" | \
      xargs zip $OUT/cjson_read_fuzzer_seed_corpus.zip
 
-cp $SRC/cjson/fuzzing/json.dict $SRC/cjson/fuzzing/cjson_read_fuzzer.dict
-cp $SRC/cjson/fuzzing/cjson_read_fuzzer.dict $OUT/
+cp $SRC/cjson/fuzzing/json.dict $OUT/cjson_read_fuzzer.dict
