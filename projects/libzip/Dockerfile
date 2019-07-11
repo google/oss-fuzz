@@ -22,7 +22,6 @@ MAINTAINER randy408@protonmail.com
 RUN apt-get update && apt-get install -y cmake pkg-config zlib1g-dev
 
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git
-RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
 
 WORKDIR libzip
 COPY build.sh $SRC/
