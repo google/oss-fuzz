@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 MAINTAINER randy408@protonmail.com
 
-RUN apt-get update && apt-get install -y cmake pkg-config
+RUN apt-get update && apt-get install -y cmake
 
 RUN git clone --depth 1 https://github.com/DaveGamble/cJSON.git cjson
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
