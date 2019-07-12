@@ -1,0 +1,363 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 758df9761e8..837a8c6b071 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -461,6 +461,7 @@ ENDIF()
+ 
+ OPTION(DISABLE_SHARED 
+  "Don't build shared libraries, compile code as position-dependent" OFF)
++OPTION(FUZZING "Fuzzing" OFF)
+ IF(DISABLE_SHARED)
+   MESSAGE("Dynamic plugins are disabled.")
+ ENDIF()
+@@ -1140,6 +1141,10 @@ IF(NOT WITHOUT_SERVER)
+   ADD_SUBDIRECTORY(sql)
+ ENDIF()
+ 
++IF (FUZZING)
++  ADD_SUBDIRECTORY(fuzz)
++ENDIF()
++
+ # scripts/mysql_config depends on client and server targets loaded above.
+ # It is referenced by some of the directories below, so we insert it here.
+ ADD_SUBDIRECTORY(scripts)
+diff --git a/include/mysql.h b/include/mysql.h
+index 561960cd925..a11ccb42299 100644
+--- a/include/mysql.h
++++ b/include/mysql.h
+@@ -260,7 +260,8 @@ enum mysql_protocol_type {
+   MYSQL_PROTOCOL_TCP,
+   MYSQL_PROTOCOL_SOCKET,
+   MYSQL_PROTOCOL_PIPE,
+-  MYSQL_PROTOCOL_MEMORY
++  MYSQL_PROTOCOL_MEMORY,
++  MYSQL_PROTOCOL_FUZZ
+ };
+ 
+ enum mysql_ssl_mode {
+diff --git a/include/violite.h b/include/violite.h
+index b0c5c6958ba..7ef140dc163 100644
+--- a/include/violite.h
++++ b/include/violite.h
+@@ -106,12 +106,14 @@ enum enum_vio_type : int {
+   */
+   VIO_TYPE_PLUGIN = 7,
+ 
++  VIO_TYPE_FUZZ = 8,
++
+   FIRST_VIO_TYPE = VIO_TYPE_TCPIP,
+   /*
+     If a new type is added, please update LAST_VIO_TYPE. In addition, please
+     change get_vio_type_name() in vio/vio.c to return correct name for it.
+   */
+-  LAST_VIO_TYPE = VIO_TYPE_PLUGIN
++  LAST_VIO_TYPE = VIO_TYPE_FUZZ
+ };
+ 
+ /**
+@@ -457,4 +459,20 @@ struct Vio {
+ #define SSL_handle void *
+ #endif
+ 
++
++//Vio fuzzing
++bool vio_connect_fuzz(MYSQL_VIO vio, struct sockaddr *addr, socklen_t len,
++                        int timeout);
++int vio_socket_timeout_fuzz(Vio *vio, uint which, bool b);
++void sock_initfuzz(const uint8_t *Data, size_t Size);
++size_t vio_read_buff_fuzz(Vio *vio, uchar *buf, size_t size);
++size_t vio_write_buff_fuzz(Vio *vio, const uchar *buf, size_t size);
++bool vio_is_connected_fuzz(Vio *vio);
++bool vio_was_timeout_fuzz(Vio *vio);
++int vio_shutdown_fuzz(Vio *vio);
++int vio_keepalive_fuzz(Vio *vio, bool set_keep_alive);
++int vio_io_wait_fuzz(Vio *vio, enum enum_vio_io_event event, int timeout);
++int vio_fastsend_fuzz(Vio *vio);
++bool vio_should_retry_fuzz(Vio *vio);
++
+ #endif /* vio_violite_h_ */
+diff --git a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
+index 2606e908124..20a80adcd5b 100644
+--- a/libmysql/CMakeLists.txt
++++ b/libmysql/CMakeLists.txt
+@@ -319,7 +319,7 @@ IF(NOT DISABLE_SHARED)
+     ENDIF()
+ 
+     GET_TARGET_PROPERTY(libmysql_link_flags libmysql LINK_FLAGS)
+-    IF(LINK_FLAG_NO_UNDEFINED)
++    IF(LINK_FLAG_NO_UNDEFINED AND NOT FUZZING)
+       SET(libmysql_link_flags
+         "${libmysql_link_flags} ${LINK_FLAG_NO_UNDEFINED}")
+       SET(libmysql_link_flags
+diff --git a/mysys_ssl/my_rnd.cc b/mysys_ssl/my_rnd.cc
+index d4b3ec4b851..aaaf8bdb93c 100644
+--- a/mysys_ssl/my_rnd.cc
++++ b/mysys_ssl/my_rnd.cc
+@@ -50,6 +50,9 @@
+ */
+ 
+ double my_rnd(struct rand_struct *rand_st) {
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++    return 65.43;
++#endif
+   rand_st->seed1 = (rand_st->seed1 * 3 + rand_st->seed2) % rand_st->max_value;
+   rand_st->seed2 = (rand_st->seed1 + rand_st->seed2 + 33) % rand_st->max_value;
+   return (((double)rand_st->seed1) / rand_st->max_value_dbl);
+@@ -66,6 +69,12 @@ Fill a buffer with random bytes using the SSL library routines
+ */
+ int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
+   int rc;
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++    for (size_t i = 0; i < buffer_size; i++)
++        buffer[i] = i;
++    return 0;
++#endif
++
+   rc = RAND_bytes(buffer, (int)buffer_size);
+ 
+   if (!rc) {
+@@ -89,6 +98,10 @@ int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
+ double my_rnd_ssl(struct rand_struct *rand_st) {
+   unsigned int res;
+ 
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++    return 34.56;
++#endif
++
+   if (my_rand_buffer((unsigned char *)&res, sizeof(res)))
+     return my_rnd(rand_st);
+
+diff --git a/sql/mysqld.cc b/sql/mysqld.cc
+index 13479e3c474..5d165982fe6 100644
+--- a/sql/mysqld.cc
++++ b/sql/mysqld.cc
+@@ -6124,7 +6124,9 @@ int mysqld_main(int argc, char **argv)
+     unireg_abort(MYSQLD_ABORT_EXIT);  // Will do exit
+   }
+ 
++#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+   my_init_signals();
++#endif
+ 
+   size_t guardize = 0;
+ #ifndef _WIN32
+@@ -6598,8 +6600,10 @@ int mysqld_main(int argc, char **argv)
+     unireg_abort(MYSQLD_ABORT_EXIT);
+ 
+ #ifndef _WIN32
++#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+   //  Start signal handler thread.
+   start_signal_handler();
++#endif
+ #endif
+ 
+   /* set all persistent options */
+@@ -6771,6 +6775,10 @@ int mysqld_main(int argc, char **argv)
+ 
+   (void)RUN_HOOK(server_state, before_handle_connection, (NULL));
+ 
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++  return 0;
++#endif
++
+ #if defined(_WIN32)
+   setup_conn_event_handler_threads();
+ #else
+@@ -9501,6 +9509,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
+ 
+   if (opt_short_log_format) opt_specialflag |= SPECIAL_SHORT_LOG_FORMAT;
+ 
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++  Connection_handler_manager::thread_handling = Connection_handler_manager::SCHEDULER_NO_THREADS;
++#endif
+   if (Connection_handler_manager::init()) {
+     LogErr(ERROR_LEVEL, ER_CONNECTION_HANDLING_OOM);
+     return 1;
+diff --git a/vio/CMakeLists.txt b/vio/CMakeLists.txt
+index f46858dd4bf..09c0a62ef8c 100644
+--- a/vio/CMakeLists.txt
++++ b/vio/CMakeLists.txt
+@@ -25,6 +25,7 @@ SET(VIO_SOURCES
+   viosocket.cc
+   viossl.cc
+   viosslfactories.cc
++  viofuzz.cc
+ )
+ 
+ IF(WIN32)
+diff --git a/vio/vio.cc b/vio/vio.cc
+index de46703eb82..01e8695f574 100644
+--- a/vio/vio.cc
++++ b/vio/vio.cc
+@@ -300,6 +300,27 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
+     return false;
+   }
+ #endif /* HAVE_OPENSSL */
++  if (type == VIO_TYPE_FUZZ) {
++    vio->viodelete = vio_delete;
++    vio->vioerrno = vio_errno;
++    vio->read = vio_read_buff_fuzz;
++    vio->write = vio_write_buff_fuzz;
++    vio->fastsend = vio_fastsend_fuzz;
++    vio->viokeepalive = vio_keepalive_fuzz;
++    vio->should_retry = vio_should_retry_fuzz;
++    vio->was_timeout = vio_was_timeout_fuzz;
++    vio->vioshutdown = vio_shutdown_fuzz;
++    vio->peer_addr = vio_peer_addr;
++    vio->timeout = vio_socket_timeout_fuzz;
++    vio->io_wait = vio_io_wait_fuzz;
++    vio->is_connected = vio_is_connected_fuzz;
++    vio->has_data = vio->read_buffer ? vio_buff_has_data : has_no_data;
++    vio->is_blocking = vio_is_blocking;
++    vio->set_blocking = vio_set_blocking;
++    vio->set_blocking_flag = vio_set_blocking_flag;
++    vio->is_blocking_flag = false;
++    return false;
++  }
+   vio->viodelete = vio_delete;
+   vio->vioerrno = vio_errno;
+   vio->read = vio->read_buffer ? vio_read_buff : vio_read;
+@@ -577,7 +598,8 @@ static const vio_string vio_type_names[] = {{"", 0},
+                                             {STRING_WITH_LEN("SSL/TLS")},
+                                             {STRING_WITH_LEN("Shared Memory")},
+                                             {STRING_WITH_LEN("Internal")},
+-                                            {STRING_WITH_LEN("Plugin")}};
++                                            {STRING_WITH_LEN("Plugin")},
++                                            {STRING_WITH_LEN("Fuzz")}};
+ 
+ void get_vio_type_name(enum enum_vio_type vio_type, const char **str,
+                        int *len) {
+diff --git a/vio/viofuzz.cc b/vio/viofuzz.cc
+new file mode 100644
+index 00000000000..d8c2987d7be
+--- /dev/null
++++ b/vio/viofuzz.cc
+@@ -0,0 +1,128 @@
++
++#include "my_config.h"
++
++#include <errno.h>
++#include <fcntl.h>
++#include <sys/types.h>
++#include <time.h>
++#ifndef _WIN32
++#include <netdb.h>
++#endif
++#include <stdio.h>
++#include <stdlib.h>
++
++#include "my_compiler.h"
++#include "my_dbug.h"
++#include "my_inttypes.h"
++#include "my_io.h"
++#include "my_macros.h"
++#include "vio/vio_priv.h"
++
++#ifdef FIONREAD_IN_SYS_FILIO
++#include <sys/filio.h>
++#endif
++#ifndef _WIN32
++#include <netinet/tcp.h>
++#endif
++#ifdef HAVE_POLL_H
++#include <poll.h>
++#endif
++#ifdef HAVE_SYS_IOCTL_H
++#include <sys/ioctl.h>
++#endif
++
++static const uint8_t *fuzzBuffer;
++static size_t fuzzSize;
++static size_t fuzzPos;
++
++
++void sock_initfuzz(const uint8_t *Data, size_t Size) {
++    fuzzPos = 0;
++    fuzzSize = Size;
++    fuzzBuffer = Data;
++}
++
++bool vio_connect_fuzz(Vio *vio, struct sockaddr *addr, socklen_t len,
++                        int timeout) {
++  int ret, wait;
++  int retry_count = 0;
++  DBUG_ENTER("vio_socket_connect");
++
++  /* Only for socket-based transport types. */
++  DBUG_ASSERT(vio->type == VIO_TYPE_SOCKET || vio->type == VIO_TYPE_TCPIP);
++
++  /* Initiate the connection. */
++  ret=0;
++
++  DBUG_RETURN(MY_TEST(ret));
++}
++
++
++int vio_socket_timeout_fuzz(Vio *vio, uint which, bool b) {
++    DBUG_ENTER("vio_socket_timeout_fuzz\n");
++    return 0;
++}
++
++
++size_t vio_read_buff_fuzz(Vio *vio, uchar *bufp, size_t size) {
++    DBUG_ENTER("vio_read_buff_fuzz.\n");
++    if (size > fuzzSize - fuzzPos) {
++        size = fuzzSize - fuzzPos;
++    }
++    if (fuzzPos < fuzzSize) {
++        memcpy(bufp, fuzzBuffer + fuzzPos, size);
++    }
++    fuzzPos += size;
++#ifdef FUZZ_DEBUG
++    printf("net cli %d ", size);
++    for (int i=0; i<size; i++)
++        printf("%02x ", bufp[i]);
++    printf("\n");
++#endif
++    return size;
++}
++
++size_t vio_write_buff_fuzz(Vio *vio, const uchar *bufp, size_t size) {
++    DBUG_ENTER("vio_write_buff_fuzz\n");
++#ifdef FUZZ_DEBUG
++    printf("net srv %d ", size);
++    for (int i=0; i<size; i++)
++        printf("%02x ", bufp[i]);
++    printf("\n");
++#endif
++    return size;
++}
++
++bool vio_is_connected_fuzz(Vio *vio) {
++    DBUG_ENTER("vio_is_connected_fuzz\n");
++    return (fuzzPos < fuzzSize);
++}
++
++bool vio_was_timeout_fuzz(Vio *vio) {
++    DBUG_ENTER("vio_was_timeout_fuzz\n");
++    return false;
++}
++
++int vio_shutdown_fuzz(Vio *vio) {
++    DBUG_ENTER("vio_shutdown_fuzz");
++    return 0;
++}
++
++int vio_keepalive_fuzz(Vio *vio, bool set_keep_alive) {
++    DBUG_ENTER("vio_keepalive_fuzz\n");
++    return 0;
++}
++int vio_io_wait_fuzz(Vio *vio, enum enum_vio_io_event event, int timeout) {
++    DBUG_ENTER("vio_io_wait_fuzz");
++    return 1;
++}
++
++int vio_fastsend_fuzz(Vio *vio) {
++    DBUG_ENTER("vio_fastsend_fuzz\n");
++    return 0;
++}
++
++bool vio_should_retry_fuzz(Vio *vio) {
++    DBUG_ENTER("vio_should_retry_fuzz\n");
++    return (fuzzPos < fuzzSize);
++}
