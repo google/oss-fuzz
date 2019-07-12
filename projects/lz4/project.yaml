@@ -4,6 +4,7 @@ auto_ccs:
   - "NickRTerrell@gmail.com"
   - "cyan@fb.com"
   - "terrelln@fb.com"
+  - "felixh@fb.com"
 sanitizers:
   - address
   - memory

@@ -1,9 +1,11 @@
 homepage: "http://facebook.github.io/zstd/"
-primary_contact: "NickRTerrell@gmail.com"
+primary_contact: "terrelln@fb.com"
 auto_ccs:
+  - "NickRTerrell@gmail.com"
   - "Yann.collet.73@gmail.com"
-  - "terrelln@fb.com"
   - "cyan@fb.com"
+  - "felixh@fb.com"
+  - "dpc@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
