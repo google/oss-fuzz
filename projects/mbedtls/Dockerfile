@@ -22,5 +22,4 @@ RUN git clone --recursive --depth 1 https://github.com/ARMmbed/mbedtls.git mbedt
 RUN git clone --depth 1 https://github.com/google/boringssl.git boringssl
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 WORKDIR mbedtls
-COPY fuzzmbedtls.diff $SRC/fuzz.diff
 COPY build.sh $SRC/
