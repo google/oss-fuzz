@@ -147,6 +147,7 @@ We generate builds for both libFuzzer and AFL fuzzing engine configurations.
 So, link the fuzzing engine using $LIB_FUZZING_ENGINE, see example below.
 2. Please make sure that the binary names for your [fuzz targets](glossary.md#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
+3. Please don't remove source code files. They are needed for code coverage.
 
 For expat, this looks like [this](https://github.com/google/oss-fuzz/blob/master/projects/expat/build.sh):
 
