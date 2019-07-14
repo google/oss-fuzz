@@ -173,6 +173,9 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --enable-libx264 \
     --enable-libx265 \
     --enable-nonfree \
+    --disable-muxers \
+    --disable-protocols \
+    --disable-devices \
     --disable-shared
 make clean
 make -j$(nproc) install
