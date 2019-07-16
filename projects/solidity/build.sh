@@ -27,8 +27,7 @@ cd $SRC/boost
 
 
 # Compile proto C++ bindings
-cd $SRC
-LPM/external.protobuf/bin/protoc \
+protoc \
     --proto_path=$SRC/solidity/test/tools/ossfuzz yulProto.proto \
     --cpp_out=$SRC/solidity/test/tools/ossfuzz
 

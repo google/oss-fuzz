@@ -16,10 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    build-essential cmake libbz2-dev ninja-build zlib1g-dev
+    build-essential cmake libbz2-dev ninja-build zlib1g-dev wget
 RUN git clone --recursive https://github.com/ethereum/solidity.git solidity
 RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
 RUN git clone --recursive -b boost-1.69.0 https://github.com/boostorg/boost.git boost
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
+RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr" && ninja && ninja install && cd external.protobuf && cp -Rf bin lib include /usr)
 COPY build.sh $SRC/
