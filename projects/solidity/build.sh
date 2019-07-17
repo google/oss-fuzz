@@ -25,10 +25,37 @@ cd $SRC/boost
      system regex filesystem unit_test_framework program_options \
      install -j $(($(nproc)/2))
 
+# Newer cmake version required for evmone
+CMAKE_NEW=${SRC}/cmake-3.14.5/bin/cmake
+
+# Instrument evmone and dependencies
+cd $SRC/ethash
+mkdir -p build
+cd build
+$CMAKE_NEW .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DETHASH_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX="/usr"
+ninja
+ninja install
+
+cd $SRC/intx
+mkdir -p build
+cd build
+$CMAKE_NEW .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DINTX_TESTING=OFF -DINTX_BENCHMARKING=OFF -DCMAKE_INSTALL_PREFIX="/usr"
+ninja
+ninja install
+
+cd $SRC/evmone
+mkdir -p build
+cd build
+$CMAKE_NEW .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="/usr"
+ninja
+ninja install
 
 # Compile proto C++ bindings
 protoc \
     --proto_path=$SRC/solidity/test/tools/ossfuzz yulProto.proto \
+    --cpp_out=$SRC/solidity/test/tools/ossfuzz
+protoc \
+    --proto_path=$SRC/solidity/test/tools/ossfuzz abiV2Proto.proto \
     --cpp_out=$SRC/solidity/test/tools/ossfuzz
 
 # Build solidity
@@ -57,7 +84,7 @@ cmake -DUSE_Z3=OFF -DUSE_CVC4=OFF -DOSSFUZZ=ON \
   -DBoost_UNIT_TEST_FRAMEWORK_LIBRARY=/usr/local/lib/libboost_unit_test_framework.a \
   -DBoost_UNIT_TEST_FRAMEWORK_LIBRARIES=/usr/local/lib/libboost_unit_test_framework.a \
   $SRC/solidity
-make ossfuzz ossfuzz_proto -j $(nproc)
+make ossfuzz ossfuzz_proto ossfuzz_abiv2 -j $(nproc)
 
 # Copy fuzzer binary, seed corpus, fuzzer options, and dictionary
 cp test/tools/ossfuzz/*_ossfuzz $OUT/
