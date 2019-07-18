@@ -32,16 +32,12 @@ FUZZER_DICTIONARIES="\
 # file. Since the build runs with `-Werror` this will cause it to break, so we
 # use `--conlyopt` and `--cxxopt` instead of `--copt`.
 #
-# While we shouldn't need to set --host_linkopt, it turns out that some builds
-# with host toolchains, e.g. protobuf, pickup the fact that we're doing ASAN for
-# the target when building libraries but don't cleanly handle the host link for
-# build tools (protoc). It seems somewhat harmless to be building protoc ASAN.
 declare -r EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
-  echo "--conlyopt=${f}" "--linkopt=${f}" "--host_linkopt=${f}"
+  echo "--conlyopt=${f}" "--linkopt=${f}"
 done
 for f in ${CXXFLAGS}; do
-  echo "--cxxopt=${f}" "--linkopt=${f}" "--host_linkopt=${f}"
+  echo "--cxxopt=${f}" "--linkopt=${f}"
 done
 )"
 
@@ -67,7 +63,7 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
   --define force_libcpp=enabled --build_tag_filters=-no_asan \
-  ${EXTRA_BAZEL_FLAGS} \
+  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
