@@ -16,6 +16,7 @@ auto_ccs:
     - "karthik.bhargavan@gmail.com"
     - "jonathan.protzenko@gmail.com"
     - "richard@levitte.org"
+    - "ppzgs1@gmail.com"
 sanitizers:
  - address
  - undefined
