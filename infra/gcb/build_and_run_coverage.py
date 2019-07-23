@@ -179,7 +179,7 @@ def get_build_steps(project_dir):
       {
           'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
-              '-m', 'rsync', '-r', '-d',
+              '-m', 'cp', '-r',
               os.path.join(out, 'report'),
               upload_report_url,
           ],
@@ -193,7 +193,7 @@ def get_build_steps(project_dir):
       {
           'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
-              '-m', 'rsync', '-r', '-d',
+              '-m', 'cp', '-r',
               os.path.join(out, 'fuzzer_stats'),
               upload_fuzzer_stats_url,
           ],
@@ -205,7 +205,7 @@ def get_build_steps(project_dir):
       {
           'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
-              '-m', 'rsync', '-r', '-d',
+              '-m', 'cp', '-r',
               os.path.join(out, 'logs'),
               UPLOAD_URL_FORMAT.format(
                   project=project_name, type='logs', date=report_date),
