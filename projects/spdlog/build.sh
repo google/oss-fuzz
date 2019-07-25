@@ -18,9 +18,6 @@
 # build project
 cmake . && make -j$(nproc)
 
-find . -name "*.a"
-find . -name "spdlog.h"
-
 # build fuzzers
 $CXX $CXXFLAGS -std=c++11 -Iinclude \
     $SRC/log_fuzzer.cc $LIB_FUZZING_ENGINE ./libspdlog.a \

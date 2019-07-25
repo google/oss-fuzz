@@ -17,10 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER gmelman1@gmail.com
 
-RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN apt-get update && apt-get install --yes cmake
-ADD https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3-Linux-x86_64.tar.gz $WORK
-RUN cd $WORK && tar -xzf cmake-3.14.3-Linux-x86_64.tar.gz && rm cmake-3.14.3-Linux-x86_64.tar.gz
 
 RUN git clone --depth 1 https://github.com/gabime/spdlog.git
 WORKDIR spdlog

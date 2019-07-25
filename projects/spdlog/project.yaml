@@ -1,9 +1,6 @@
 homepage: "https://github.com/google/zopfli"
 primary_contact: "gmelman1@gmail.com"
-fuzzing_engines:
-  - libfuzzer
-  - afl
 sanitizers:
   - address
   - memory
-  -undefined
+  - undefined
