@@ -18,7 +18,7 @@
 # Configure the project.
 export CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN"
 export LDFLAGS="$LIB_FUZZING_ENGINE"
-meson build
+meson build || (cat build/meson-logs/meson-log.txt && false)
 
 # Build the fuzzer.
 ninja -v -j$(nproc) -C build ots-fuzzer
