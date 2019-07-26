@@ -20,6 +20,9 @@ make -j$(nproc) clean
 make -j$(nproc) libzopfli.a
 
 # build fuzzers
-$CXX $CXXFLAGS -std=c++11 -I. -Isrc/zopfli\
-    $SRC/zopfli_compress_fuzzer.cc ./libzopfli.a -o $OUT/zopfli_compress_fuzzer\
-    $LIB_FUZZING_ENGINE
+for f in $(find $SRC -name '*_fuzzer.cc'); do
+  b=$(basename -s .cc $f)
+  $CXX $CXXFLAGS -std=c++11 -I. -Isrc/zopfli\
+  $f ./libzopfli.a -o $OUT/$b\
+  $LIB_FUZZING_ENGINE
+done

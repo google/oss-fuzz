@@ -1,8 +1,5 @@
 homepage: "https://github.com/google/zopfli"
-primary_contact: "<primary_contact_email>"
-fuzzing_engines:
-  - libfuzzer
-  - afl
+primary_contact: "lode@google.com"
 sanitizers:
   - address
   - memory
