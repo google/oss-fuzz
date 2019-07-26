@@ -1,0 +1,9 @@
+homepage: "https://github.com/GNUAspell/aspell"
+primary_contact: "kevinatkn@gmail.com"
+auto_ccs:
+  - "cmeister2@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory:
+      experimental: true
