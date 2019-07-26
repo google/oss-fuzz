@@ -1,0 +1,9 @@
+homepage: "https://github.com/google/zopfli"
+primary_contact: "<primary_contact_email>"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+sanitizers:
+  - address
+  - memory
+  - undefined
