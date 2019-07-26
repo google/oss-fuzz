@@ -19,8 +19,9 @@
 cmake . && make -j$(nproc)
 
 # build fuzzers
-$CXX $CXXFLAGS -std=c++11 -Iinclude \
-    $SRC/log_fuzzer.cc $LIB_FUZZING_ENGINE ./libspdlog.a \
-    -o $OUT/log_fuzzer
-
-zip $OUT/seed_corpus.zip *.*
+for f in $(find $SRC -name '*_fuzzer.cc'); do
+    b=$(basename -s .cc $f)
+    $CXX $CXXFLAGS -std=c++11 -Iinclude \
+    $f $LIB_FUZZING_ENGINE ./libspdlog.a \
+    -o $OUT/$b
+done
