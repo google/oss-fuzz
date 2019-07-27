@@ -17,7 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER cmeister2@gmail.com
 
-RUN git clone --depth 1 https://github.com/gnuaspell/aspell.git /src/aspell
+# RUN git clone --depth 1 https://github.com/gnuaspell/aspell.git /src/aspell
+RUN git clone --depth 1 -b cmeister2/ossfuzz https://github.com/cmeister2/aspell.git /src/aspell
 
 WORKDIR $SRC/aspell
 COPY build.sh $SRC/
