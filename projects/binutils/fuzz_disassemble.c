@@ -5,6 +5,8 @@
 
 #include <stdint.h>
 
+#define MAX_TEXT_SIZE 80
+
 typedef struct
 {
     char *buffer;
@@ -17,11 +19,11 @@ static int objdump_sprintf (SFILE *f, const char *format, ...)
     va_list args;
 
     va_start (args, format);
-    if (f->pos >= 80){
+    if (f->pos >= MAX_TEXT_SIZE){
         printf("buffer needs more space\n");
         return 0;
     }
-    n = vsnprintf (f->buffer + f->pos, 80 - f->pos, format, args);
+    n = vsnprintf (f->buffer + f->pos, MAX_TEXT_SIZE - f->pos, format, args);
     va_end (args);
     f->pos += n;
 
@@ -34,7 +36,7 @@ static void objdump_print_address (bfd_vma vma, struct disassemble_info *inf)
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    char AssemblyText[80];
+    char AssemblyText[MAX_TEXT_SIZE];
     struct disassemble_info disasm_info;
     SFILE s;
     bfd abfd;
