@@ -15,14 +15,21 @@
 #
 ################################################################################
 
+# setup
+build=$WORK/build
+
+# cleanup
+rm -rf $build
+mkdir -p $build
+
 # Configure the project.
-export CXXFLAGS="$CXXFLAGS -DOTS_FUZZER_NO_MAIN"
-export LDFLAGS="$LIB_FUZZING_ENGINE"
-meson build || (cat build/meson-logs/meson-log.txt && false)
+meson -Dfuzzer_ldflags=$LIB_FUZZING_ENGINE \
+      $build \
+   || (cat build/meson-logs/meson-log.txt && false)
 
 # Build the fuzzer.
-ninja -v -j$(nproc) -C build ots-fuzzer
-mv build/ots-fuzzer $OUT/
+ninja -v -j$(nproc) -C $build ots-fuzzer
+mv $build/ots-fuzzer $OUT/
 
 cp $SRC/ots-fuzzer.options $OUT/
 zip -j -r $OUT/ots-fuzzer_seed_corpus.zip $SRC/ots/tests/fonts
