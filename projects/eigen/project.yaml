@@ -1,0 +1,5 @@
+homepage: "http://eigen.tuxfamily.org/index.php?title=Main_Page"
+primary_contact: "<primary_contact_email>"
+sanitizers:
+  - address
+  - memory
