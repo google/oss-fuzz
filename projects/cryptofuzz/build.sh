@@ -36,6 +36,14 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
+# Compile Cityhash
+cd $SRC/cityhash
+./configure >/dev/null 2>&1
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -I$SRC/cityhash/src"
+export CRYPTOFUZZ_REFERENCE_CITY_O_PATH="$SRC/cityhash/src/city.o"
+
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
