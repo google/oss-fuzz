@@ -181,6 +181,34 @@ then
     cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-libressl_seed_corpus.zip
 fi
 
+if [[ $CFLAGS != *-m32* ]]
+then
+    # Compile LibreSSL (without assembly)
+    cd $SRC/libressl
+    rm -rf build ; mkdir build
+    cd build
+    cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DENABLE_ASM=OFF ..
+    make -j$(nproc) crypto >/dev/null 2>&1
+
+    # Compile Cryptofuzz LibreSSL (without assembly) module
+    cd $SRC/cryptofuzz/modules/openssl
+    OPENSSL_INCLUDE_PATH="$SRC/libressl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/libressl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBRESSL" make -B
+
+    # Compile Cryptofuzz
+    cd $SRC/cryptofuzz
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/libressl/include -DCRYPTOFUZZ_LIBRESSL $INCLUDE_PATH_FLAGS" make -B -j$(nproc) >/dev/null 2>&1
+
+    # Generate dictionary
+    ./generate_dict
+
+    # Copy fuzzer
+    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-libressl-noasm
+    # Copy dictionary
+    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-libressl-noasm.dict
+    # Copy seed corpus
+    cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-libressl-noasm_seed_corpus.zip
+fi
+
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
