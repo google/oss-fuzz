@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER your@email.com
+MAINTAINER eigen-core-team@lists.tuxfamily.org
 RUN apt-get update && apt-get install --yes cmake mercurial
 RUN hg clone https://GOOGLE-AUTOFUZZ@bitbucket.org/eigen/eigen
 WORKDIR eigen
