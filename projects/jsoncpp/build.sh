@@ -18,12 +18,14 @@
 mkdir -p $WORK/jsoncpp
 cd $WORK/jsoncpp
 
+# Build project
 cmake -D CMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
     -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
     -Wno-dev $SRC/jsoncpp/
-
 make install "-j$(nproc)"
 
+# json_styled_writer_fuzzer
 $CXX $CXXFLAGS -std=c++11 -I.. $SRC/jsoncpp/src/test_lib_json/fuzz.cpp \
  $LIB_FUZZING_ENGINE ./src/lib_json/libjsoncpp.a -o $OUT/jsoncpp_fuzzer
+cp $SRC/jsoncpp/src/test_lib_json/fuzz.dict $OUT/fuzz.dict

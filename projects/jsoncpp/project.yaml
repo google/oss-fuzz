@@ -2,4 +2,5 @@ homepage: "https://github.com/open-source-parsers/jsoncpp/"
 primary_contact: "cdunn2001@gmail.com"
 sanitizers:
   - address
+  - memory
   - undefined
