@@ -63,7 +63,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   int error;
   mpg123_handle* handle = mpg123_new(NULL, &error);
-  if (handle == NULL) {
+  if (handle == NULL || mpg123_param(handle,
+      MPG123_ADD_FLAGS, MPG123_QUIET, 0.) != MPG123_OK) {
     free(outmemory);
     fuzzer_release_tmpfile(filename);
     return 0;

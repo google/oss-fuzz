@@ -19,7 +19,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  ret = mpg123_open_feed(handle);
+  ret = mpg123_param(handle, MPG123_ADD_FLAGS, MPG123_QUIET, 0.);
+  if(ret == MPG123_OK)
+    ret = mpg123_open_feed(handle);
   if (ret != MPG123_OK) {
     mpg123_delete(handle);
     return 0;
