@@ -38,6 +38,7 @@ RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star
 RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0-stable.zip
 RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_0_2-stable.zip
 RUN git clone --depth 1 https://github.com/google/cityhash.git
+RUN git clone --depth 1 https://github.com/golang/go
 RUN apt-get remove -y libunwind8
 
 COPY build.sh $SRC/
