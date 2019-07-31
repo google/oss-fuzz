@@ -25,10 +25,34 @@ export INCLUDE_PATH_FLAGS=""
 cd $SRC/cryptofuzz
 python gen_repository.py
 
-cd $SRC/openssl
+if [[ $CFLAGS = *-m32* ]]
+then
+    export GOARCH=386
+    export CGO_ENABLED=1
+fi
+
+export GO111MODULE=off
+cd $SRC/go/src
+./make.bash
+export GOROOT=$(realpath $SRC/go)
+export GOPATH=$GOROOT/packages
+mkdir $GOPATH
+export PATH=$GOROOT/bin:$PATH
+export PATH=$GOROOT/packages/bin:$PATH
+
+apt-get remove golang-1.9-go -y
+rm /usr/bin/go
+
+go get golang.org/x/crypto/blake2b
+go get golang.org/x/crypto/blake2s
+go get golang.org/x/crypto/md4
+go get golang.org/x/crypto/ripemd160
 
 # This enables runtime checks for C++-specific undefined behaviour.
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
+
+# Prevent Boost compilation error with -std=c++17
+export CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR"
 
 export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
@@ -151,6 +175,15 @@ make -B
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MONERO"
 cd $SRC/cryptofuzz/modules/monero
 make -B
+
+##############################################################################
+# Compile Cryptofuzz Golang module
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_GOLANG"
+    cd $SRC/cryptofuzz/modules/golang
+    make -B
+fi
 
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
