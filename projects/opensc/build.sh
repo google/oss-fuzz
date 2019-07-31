@@ -16,7 +16,7 @@
 ################################################################################
 
 ./bootstrap
-./configure --disable-shared --disable-pcsc --enable-ctapi --enable-fuzzing FUZZING_LIBS="$LIB_FUZZING_ENGINE"
+./configure --disable-shared --disable-pcsc --enable-ctapi --enable-fuzzing LIBS="$CFLAGS"
 make -j4
 
 cp src/tests/fuzzing/fuzz_asn1_print $OUT
