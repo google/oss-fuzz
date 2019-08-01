@@ -15,5 +15,7 @@
 #
 ################################################################################
 
-# Run the OSS-Fuzz script in the project.
-./ossfuzz/ossfuzz.sh
+# Run the OSS-Fuzz script in the fuzzer project.
+pushd $SRC/aspell-fuzz
+./ossfuzz.sh
+popd
