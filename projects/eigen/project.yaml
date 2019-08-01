@@ -3,3 +3,4 @@ primary_contact: "eigen-core-team@lists.tuxfamily.org"
 sanitizers:
   - address
   - memory
+  - undefined

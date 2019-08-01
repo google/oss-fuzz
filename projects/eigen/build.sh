@@ -22,9 +22,8 @@ make install
 cd ..
 
 # build fuzzers
-for f in $(find $SRC -name '*_fuzzer.cc'); do
-  b=$(basename -s .cc $f)
-  $CXX $CXXFLAGS -std=c++11 -I. -Isrc/Eigen/Core\
-  $f -o $OUT/$b \
-  $LIB_FUZZING_ENGINE
+for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
+  fuzz_basename=$(basename -s .cc $fuzzers)
+  $CXX $CXXFLAGS -std=c++11 -I. -Isrc/Eigen/Core \
+  $fuzzers -o $OUT/$fuzz_basename $LIB_FUZZING_ENGINE
 done
