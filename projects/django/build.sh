@@ -67,5 +67,6 @@ make
 
 cp -R $SRC/django/* $OUT/
 
-cp $SRC/django-fuzzers/fuzzer-util $OUT/
-cp $SRC/django-fuzzers/util.py $OUT/
+cp $SRC/django-fuzzers/fuzzer-utils $OUT/
+cp $SRC/django-fuzzers/utils.py $OUT/
+zip -j $OUT/fuzzer-utils_seed_corpus.zip $SRC/django-fuzzers/corp-utils/*
