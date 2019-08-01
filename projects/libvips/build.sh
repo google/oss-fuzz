@@ -96,7 +96,7 @@ popd
   --disable-gtk-doc-html \
   --disable-dependency-tracking \
   --prefix=$WORK
-make -j$(nproc)
+make -j$(nproc) CCLD=$CXX
 make install
 
 # Merge the seed corpus in a single directory, exclude files larger than 2k
