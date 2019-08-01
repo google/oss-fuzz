@@ -31,24 +31,26 @@ make njs
 
 # build fuzzers
 # e.g.
-$CC $CFLAGS -Inxt -Ibuild -Injs -c \
+$CC $CFLAGS -Inxt -Ibuild -Isrc -c \
     $SRC/njs_process_script_fuzzer.c -o build/njs_process_script_fuzzer.o
 
 $CXX $CXXFLAGS build/njs_process_script_fuzzer.o \
     -o $OUT/njs_process_script_fuzzer \
-    $LIB_FUZZING_ENGINE build/libnxt.a build/libnjs.a \
+    $LIB_FUZZING_ENGINE build/libnjs.a \
     $SRC/pcre/.libs/libpcre.a -lm -lreadline
 
 SEED_CORPUS_PATH=$OUT/njs_process_script_fuzzer_seed_corpus
 mkdir -p $SEED_CORPUS_PATH
 
 set +x
-cat njs/test/njs_interactive_test.c njs/test/njs_unit_test.c \
+cat src/test/njs_interactive_test.c src/test/njs_unit_test.c \
     | egrep -o '".*"' | awk '{print substr($0,2,length($0)-2)}' | sort | uniq \
     | while IFS= read -r line; do
       echo $line > $SEED_CORPUS_PATH/$(echo $line | sha1sum | awk '{ print $1 }');
     done
 set -x
+
+cp -r test/fs test/module $SEED_CORPUS_PATH
 
 zip -q $SEED_CORPUS_PATH.zip $SEED_CORPUS_PATH
 rm -rf $SEED_CORPUS_PATH
