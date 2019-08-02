@@ -1,0 +1,8 @@
+homepage: "https://www.djangoproject.com/"
+primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+ - "f.apolloner+django@gmail.com"
+ - "info+django+security@markusholtermann.eu"
+sanitizers:
+ - address
+ - undefined
