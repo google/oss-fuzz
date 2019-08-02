@@ -17,36 +17,38 @@
 
 ./bootstrap
 
+export CPPFLAGS="                                     \
+    -DOPENTHREAD_CONFIG_BORDER_AGENT_ENABLE=1         \
+    -DOPENTHREAD_CONFIG_BORDER_ROUTER_ENABLE=1        \
+    -DOPENTHREAD_CONFIG_CHANNEL_MANAGER_ENABLE=1      \
+    -DOPENTHREAD_CONFIG_CHANNEL_MONITOR_ENABLE=1      \
+    -DOPENTHREAD_CONFIG_CHILD_SUPERVISION_ENABLE=1    \
+    -DOPENTHREAD_CONFIG_COAP_API_ENABLE=1             \
+    -DOPENTHREAD_CONFIG_COAP_SECURE_API_ENABLE=1      \
+    -DOPENTHREAD_CONFIG_COMMISSIONER_ENABLE=1         \
+    -DOPENTHREAD_CONFIG_DHCP6_CLIENT_ENABLE=1         \
+    -DOPENTHREAD_CONFIG_DHCP6_SERVER_ENABLE=1         \
+    -DOPENTHREAD_CONFIG_DIAG_ENABLE=1                 \
+    -DOPENTHREAD_CONFIG_DNS_CLIENT_ENABLE=1           \
+    -DOPENTHREAD_CONFIG_ECDSA_ENABLE=1                \
+    -DOPENTHREAD_CONFIG_LEGACY_ENABLE=1               \
+    -DOPENTHREAD_CONFIG_JAM_DETECTION_ENABLE=1        \
+    -DOPENTHREAD_CONFIG_JOINER_ENABLE=1               \
+    -DOPENTHREAD_CONFIG_LINK_RAW_ENABLE=1             \
+    -DOPENTHREAD_CONFIG_MAC_FILTER_ENABLE=1           \
+    -DOPENTHREAD_CONFIG_NCP_UART_ENABLE=1             \
+    -DOPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE=1     \
+    -DOPENTHREAD_CONFIG_SNTP_CLIENT_ENABLE=1          \
+    -DOPENTHREAD_CONFIG_TMF_NETDATA_SERVICE_ENABLE=1  \
+    -DOPENTHREAD_CONFIG_TMF_NETWORK_DIAG_MTD_ENABLE=1 \
+    -DOPENTHREAD_CONFIG_UDP_FORWARD_ENABLE=1"
+
 ./configure                             \
     --enable-fuzz-targets               \
-    --enable-application-coap           \
-    --enable-application-coap-secure    \
-    --enable-border-agent               \
-    --enable-border-router              \
-    --enable-cert-log                   \
-    --enable-channel-manager            \
-    --enable-channel-monitor            \
-    --enable-child-supervision          \
     --enable-cli                        \
-    --enable-commissioner               \
-    --enable-dhcp6-client               \
-    --enable-dhcp6-server               \
-    --enable-dns-client                 \
-    --enable-diag                       \
-    --enable-dns-client                 \
-    --enable-ecdsa                      \
     --enable-ftd                        \
-    --enable-jam-detection              \
     --enable-joiner                     \
-    --enable-legacy                     \
-    --enable-mac-filter                 \
-    --enable-mtd-network-diagnostic     \
     --enable-ncp                        \
-    --with-ncp-bus=uart                 \
-    --enable-raw-link-api               \
-    --enable-service                    \
-    --enable-sntp-client                \
-    --enable-udp-forward                \
     --disable-docs
 
 make -j$(nproc)
