@@ -5,3 +5,6 @@ sanitizers:
  - undefined
  - memory
 experimental: True
+architectures:
+ - x86_64
+ - i386
