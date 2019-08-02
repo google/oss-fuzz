@@ -62,7 +62,7 @@ fi
 
 # Compile Cityhash
 cd $SRC/cityhash
-./configure >/dev/null 2>&1
+./configure --disable-shared >/dev/null 2>&1
 make -j$(nproc) >/dev/null 2>&1
 
 export CXXFLAGS="$CXXFLAGS -I$SRC/cityhash/src"
