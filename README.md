@@ -102,7 +102,7 @@ OSS-Fuzz will adhere to following disclosure principles:
 * [Fuzzer execution environment](docs/fuzzer_environment.md) documents the
   environment under which your fuzzers will be run.
 * [Projects](projects) lists OSS projects currently analyzed by OSS-Fuzz.
-* [Chrome's Efficient Fuzzer Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzer.md) 
+* [Chrome's Efficient Fuzzing Guide](https://chromium.googlesource.com/chromium/src/testing/libfuzzer/+/HEAD/efficient_fuzzing.md) 
   while containing some Chrome-specific bits, is an excellent guide to making your fuzzer better.
 * Blog posts:
   * 2016-12-01 ([1](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
