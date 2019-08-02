@@ -20,11 +20,18 @@
 #include "sql/sql_plugin.h"
 #include "violite.h"
 #include <stdlib.h>
+#include <libgen.h>
 
 using namespace std;
 FILE *logfile = NULL;
 Connection_handler_manager * chm;
 extern int mysqld_main(int argc, char **argv);
+char *filepath = NULL;
+
+extern "C" int LLVMFuzzerInitialize(const int* argc, char*** argv) {
+    filepath = dirname((*argv)[0]);
+    return 0;
+}
 
 class Channel_info_fuzz : public Channel_info {
     bool m_is_admin_conn;
@@ -56,6 +63,8 @@ class Channel_info_fuzz : public Channel_info {
     virtual bool is_admin_connection() const { return m_is_admin_conn; }
 };
 
+#define MAX_SIZE 256
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     if (Size < 1) {
         return 0;
@@ -66,8 +75,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
          * mysqld --user=root --initialize-insecure --log-error-verbosity=5 --datadir=/out/mysql/data/ --basedir=/out/mysql/
          */
         system("rm -Rf /tmp/mysql");
-        system("cp -r /out/mysql/data /tmp/mysql");
+        char command[MAX_SIZE];
+        char argbase[MAX_SIZE];
+        char arginitfile[MAX_SIZE];
+        snprintf(command, MAX_SIZE-1, "cp -r %s/mysql/data /tmp/mysql", filepath);
+        //unsafe
+        system(command);
 
+        snprintf(argbase, MAX_SIZE-1, "--basedir=%s/mysql/", filepath);
+        snprintf(arginitfile, MAX_SIZE-1, "--init-file=%s/init.sql", filepath);
         char *fakeargv[] = {const_cast<char *>("fuzz_mysqld"),
             const_cast<char *>("--user=root"),
             const_cast<char *>("--secure-file-priv=NULL"),
@@ -79,8 +95,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
             const_cast<char *>("--event-scheduler=DISABLED"),
             const_cast<char *>("--thread_stack=1048576"),
             const_cast<char *>("--datadir=/tmp/mysql/"),
-            const_cast<char *>("--basedir=/out/mysql/"),
-            const_cast<char *>("--init-file=/out/init.sql"),
+            const_cast<char *>(argbase),
+            const_cast<char *>(arginitfile),
             0};
         int fakeargc = 12;
         mysqld_main(fakeargc, fakeargv);
