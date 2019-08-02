@@ -1,8 +1,8 @@
 diff --git a/configure.ac b/configure.ac
-index 7975d31..e0b7b7e 100644
+index 7975d31..528861c 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -4399,6 +4399,34 @@ AC_DEFINE_UNQUOTED([DYNAMIC_INTERLEAVE], [$ntp_dynamic_interleave],
+@@ -4399,6 +4399,37 @@ AC_DEFINE_UNQUOTED([DYNAMIC_INTERLEAVE], [$ntp_dynamic_interleave],
      [support dynamic interleave?])
  AC_MSG_RESULT([$ntp_ok])
  
@@ -10,10 +10,15 @@ index 7975d31..e0b7b7e 100644
 +    AS_HELP_STRING([--enable-fuzztargets], [Enable fuzz targets]),[enable_fuzztargets=$enableval],[enable_fuzztargets=no])
 +AM_CONDITIONAL([BUILD_FUZZTARGETS], [test "x$enable_fuzztargets" = "xyes"])
 +AS_IF([test "x$enable_fuzztargets" = "xyes"], [
-+    AC_MSG_CHECKING([whether $CXX accepts -fsanitize=fuzzer])
++    AC_PROG_CXX
 +    AC_LANG_PUSH(C++)
++    AS_IF([test "x$LIB_FUZZING_ENGINE" = "x"], [
++        LIB_FUZZING_ENGINE=-fsanitize=fuzzer
++        AC_SUBST(LIB_FUZZING_ENGINE)
++    ])
 +    tmp_saved_flags=$[]_AC_LANG_PREFIX[]FLAGS
-+    _AC_LANG_PREFIX[]FLAGS="$[]_AC_LANG_PREFIX[]FLAGS -fsanitize=fuzzer"
++    _AC_LANG_PREFIX[]FLAGS="$[]_AC_LANG_PREFIX[]FLAGS $LIB_FUZZING_ENGINE"
++    AC_MSG_CHECKING([whether $CXX accepts $LIB_FUZZING_ENGINE])
 +    AC_LINK_IFELSE([AC_LANG_SOURCE([[
 +#include <sys/types.h>
 +extern "C" int LLVMFuzzerTestOneInput(const unsigned char *Data, size_t Size);
@@ -24,11 +29,9 @@ index 7975d31..e0b7b7e 100644
 +}
 +        ]])],
 +        [ AC_MSG_RESULT(yes)
-+#          AX_APPEND_COMPILE_FLAGS([-fsanitize=fuzzer-no-link], [CFLAGS])
-+#          AX_APPEND_COMPILE_FLAGS([-fsanitize=fuzzer-no-link], [CXXFLAGS])
 +          has_sanitizefuzzer=yes],
-+        AC_MSG_RESULT(no)
-+    ])
++        [ AC_MSG_RESULT(no) ]
++    )
 +    _AC_LANG_PREFIX[]FLAGS=$tmp_saved_flags, []
 +    AC_LANG_POP()
 +])
@@ -37,7 +40,7 @@ index 7975d31..e0b7b7e 100644
  NTP_UNITYBUILD
  
  dnl  gtest is needed for our tests subdirs. It would be nice if we could
-@@ -4459,6 +4487,7 @@ AC_CONFIG_FILES([tests/ntpd/Makefile])
+@@ -4459,6 +4490,7 @@ AC_CONFIG_FILES([tests/ntpd/Makefile])
  AC_CONFIG_FILES([tests/ntpq/Makefile])
  AC_CONFIG_FILES([tests/sandbox/Makefile])
  AC_CONFIG_FILES([tests/sec-2853/Makefile])
@@ -58,10 +61,10 @@ index af502b9..60a2379 100644
 +endif
 diff --git a/tests/fuzz/Makefile.am b/tests/fuzz/Makefile.am
 new file mode 100644
-index 0000000..4a0a643
+index 0000000..7f482b5
 --- /dev/null
 +++ b/tests/fuzz/Makefile.am
-@@ -0,0 +1,14 @@
+@@ -0,0 +1,13 @@
 +include $(top_srcdir)/includes.mf
 +
 +bin_PROGRAMS = fuzz_ntpd_receive
@@ -71,8 +74,7 @@ index 0000000..4a0a643
 +fuzz_ntpd_receive_LDADD = ../../ntpd/libntpd.a $(LIBPARSE) ../../libntp/libntp.a $(LDADD_LIBNTP) $(LIBOPTS_LDADD) $(PTHREAD_LIBS) $(LIBM) $(LDADD_NTP) $(LSCF) $(LDADD_LIBUTIL)
 +
 +if HAS_SANITIZEFUZZER
-+    fuzz_ntpd_receive_CFLAGS += -fsanitize=fuzzer
-+    fuzz_ntpd_receive_LDFLAGS = -fsanitize=fuzzer -stdlib=libc++
++    fuzz_ntpd_receive_LDFLAGS = $(LIB_FUZZING_ENGINE) -stdlib=libc++
 +else
 +    fuzz_ntpd_receive_SOURCES += onefile.c
 +endif
