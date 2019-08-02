@@ -74,7 +74,7 @@ index 0000000..7f482b5
 +fuzz_ntpd_receive_LDADD = ../../ntpd/libntpd.a $(LIBPARSE) ../../libntp/libntp.a $(LDADD_LIBNTP) $(LIBOPTS_LDADD) $(PTHREAD_LIBS) $(LIBM) $(LDADD_NTP) $(LSCF) $(LDADD_LIBUTIL)
 +
 +if HAS_SANITIZEFUZZER
-+    fuzz_ntpd_receive_LDFLAGS = $(LIB_FUZZING_ENGINE) -stdlib=libc++
++    fuzz_ntpd_receive_LDFLAGS = $(LIB_FUZZING_ENGINE)
 +else
 +    fuzz_ntpd_receive_SOURCES += onefile.c
 +endif
