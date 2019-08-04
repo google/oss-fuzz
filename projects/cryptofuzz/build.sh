@@ -62,7 +62,12 @@ fi
 
 # Compile Cityhash
 cd $SRC/cityhash
-./configure --disable-shared >/dev/null 2>&1
+if [[ $CFLAGS != *-m32* ]]
+then
+    CXXFLAGS="$CXXFLAGS -msse4.2" ./configure --disable-shared >/dev/null 2>&1
+else
+    ./configure --disable-shared >/dev/null 2>&1
+fi
 make -j$(nproc) >/dev/null 2>&1
 
 export CXXFLAGS="$CXXFLAGS -I$SRC/cityhash/src"
