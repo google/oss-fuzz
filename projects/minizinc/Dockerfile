@@ -16,8 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER Harsil S. Patel <harsil.patel@monash.edu>
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake git build-essential
+RUN apt-get update && apt-get install -y make autoconf automake libtool cmake git build-essential curl
+RUN curl -L https://gitlab.com/minizinc/minizinc-afl-seed-corpus/-/archive/master/minizinc-afl-seed-corpus-master.zip -o $SRC/minizinc_fuzzer_seed_corpus.zip
 RUN git clone --depth 1 --branch develop https://github.com/MiniZinc/libminizinc.git minizinc
 COPY minizinc_fuzzer.cpp minizinc/
 WORKDIR minizinc
-COPY build.sh $SRC/
+COPY build.sh minizinc_fuzzer.dict minizinc_fuzzer.options $SRC/

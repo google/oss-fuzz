@@ -10,7 +10,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     try {
       MznSolver slv(std::cout,std::cerr);
       try {
-        std::string model = std::string(reinterpret_cast<const char*>(data), size);
+        std::string model = std::string(reinterpret_cast<const char*>(Data), Size);
         std::vector<std::string> args({"-c","--solver","org.minizinc.mzn-fzn"});
         fSuccess = (slv.run(args, model, "minizinc", "model.mzn") != SolverInstance::ERROR);
       } catch (const LocationException& e) {

@@ -25,4 +25,8 @@ popd
 
 $CXX $CXXFLAGS -std=c++11 -I$WORK/install/include $SRC/minizinc/minizinc_fuzzer.cpp -o $OUT/minizinc_fuzzer $LIB_FUZZING_ENGINE $WORK/install/lib/libmzn.a
 
+rm -rf $OUT/share
 mv $WORK/install/share $OUT
+mv $SRC/minizinc_fuzzer_seed_corpus.zip $OUT/minizinc_fuzzer_seed_corpus.zip
+mv $SRC/minizinc_fuzzer.dict $OUT/minizinc_fuzzer.dict
+mv $SRC/minizinc_fuzzer.options $OUT/minizinc_fuzzer.options
