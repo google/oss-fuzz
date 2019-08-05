@@ -7,4 +7,3 @@ sanitizers:
   - address
   - memory:
      experimental: True
-  - undefined
