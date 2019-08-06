@@ -1,7 +1,7 @@
 homepage: "https://www.djangoproject.com/"
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
- - "f.apolloner+django@gmail.com"
+ - "f.apolloner@gmail.com"
  - "info+django+security@markusholtermann.eu"
  - "jammamarkus@gmail.com"
 fuzzing_engines:
