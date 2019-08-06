@@ -19,27 +19,16 @@
 export ASAN_OPTIONS="detect_leaks=0"
 export MSAN_OPTIONS="halt_on_error=0:exitcode=0:report_umrs=0"
 
+
 # Remove -pthread from CFLAGS, this trips up ./configure
 # which thinks pthreads are available without any CLI flags
 CFLAGS=${CFLAGS//"-pthread"/}
 
-FLAGS=()
-case $SANITIZER in
-  address)
-    FLAGS+=("--with-address-sanitizer")
-    ;;
-  memory)
-    FLAGS+=("--with-memory-sanitizer")
-    # installing ensurepip takes a while with MSAN instrumentation, so
-    # we disable it here
-    FLAGS+=("--without-ensurepip")
-    # -msan-keep-going is needed to allow MSAN's halt_on_error to function
-    FLAGS+=("CFLAGS=-mllvm -msan-keep-going=1")
-    ;;
-  undefined)
-    FLAGS+=("--with-undefined-behavior-sanitizer")
-    ;;
-esac
+# Disable ASAN
+CFLAGS=${CFLAGS//-fsanitize=address/}
+CFLAGS=${CFLAGS//-fsanitize-address-use-after-scope/}
+CXXFLAGS=${CXXFLAGS//-fsanitize=address/}
+CXXFLAGS=${CXXFLAGS//-fsanitize-address-use-after-scope/}
 
 export CPYTHON_INSTALL_PATH=$OUT/cpython-install
 rm -rf $CPYTHON_INSTALL_PATH
@@ -53,9 +42,9 @@ cp $SRC/django-fuzzers/python_coverage.h Python/
 sed -i '1 s/^.*$/#include "python_coverage.h"/g' Python/ceval.c
 sed -i 's/case TARGET\(.*\): {/\0\nfuzzer_record_code_coverage(f->f_code, f->f_lasti);/g' Python/ceval.c
 
-./configure "${FLAGS[@]}" --prefix=$CPYTHON_INSTALL_PATH
-make -j$(nproc)
-make install
+LDFLAGS=$CFLAGS ./configure --prefix=$CPYTHON_INSTALL_PATH
+LDFLAGS=$CFLAGS make -j$(nproc)
+LDFLAGS=$CFLAGS make install
 
 rm -rf $OUT/django-dependencies
 mkdir $OUT/django-dependencies
