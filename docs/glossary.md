@@ -27,12 +27,12 @@ regression testing as well (see [ideal integration](ideal_integration.md)).
 Or **Fuzzer Build**.
 
 This refers to a build that contains all the [fuzz targets] for a given
-[project](#project), is run  with a specific [fuzzing engine], in a specific
-build mode (e.g. with enabled/disabled assertions),  and optionally combined
+[project](#project), is run with a specific [fuzzing engine], in a specific
+build mode (e.g. with enabled/disabled assertions), and optionally combined
 with a [sanitizer].
 
 For example, we have a "libfuzzer_asan_sqlite" job type, indicating a build of
-all sqlite3 [fuzz targets] using  [libFuzzer](http://libfuzzer.info) and
+all sqlite3 [fuzz targets] using [libFuzzer](http://libfuzzer.info) and
 [ASan](http://clang.llvm.org/docs/AddressSanitizer.html).
 
 ### Project
@@ -40,8 +40,8 @@ all sqlite3 [fuzz targets] using  [libFuzzer](http://libfuzzer.info) and
 A project is an open source software project that is integrated with OSS-Fuzz.
 Each project has a single set of configuration files 
 (example: [expat](https://github.com/google/oss-fuzz/tree/master/projects/expat))
-and  may have one or more [fuzz targets]
-(example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)). 
+and may have one or more [fuzz targets]
+(example: [openssl](https://github.com/openssl/openssl/blob/master/fuzz/)).
 
 ### Reproducer
 
