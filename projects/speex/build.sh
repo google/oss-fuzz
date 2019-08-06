@@ -30,11 +30,13 @@ PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-stat
 make -j$(nproc)
 make install
 $CXX $CXXFLAGS contrib/oss-fuzz/speexdec_fuzzer.cc -o $OUT/speex_decode_fuzzer_fixed -L"$WORK/lib" -I"$WORK/include" $LIB_FUZZING_ENGINE -lspeex -logg
+echo -en "[libfuzzer]\nmax_len = 4096\n" > $OUT/speex_decode_fuzzer_fixed.options
 # Build floating-point fuzzer
 PKG_CONFIG_PATH="$WORK"/lib/pkgconfig ./configure --prefix="$WORK" --enable-static --disable-shared
 make -j$(nproc)
 make install
 $CXX $CXXFLAGS contrib/oss-fuzz/speexdec_fuzzer.cc -o $OUT/speex_decode_fuzzer_float -L"$WORK/lib" -I"$WORK/include" $LIB_FUZZING_ENGINE -lspeex -logg
+echo -en "[libfuzzer]\nmax_len = 4096\n" > $OUT/speex_decode_fuzzer_float.options
 
 # build samples and prepare corpus
 cd src/
