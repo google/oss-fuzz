@@ -47,7 +47,7 @@ and  may have one or more [fuzz targets]
 
 Or a **testcase**.
 
-A [test input](#test-input) that causes a specific bug to reproduce. 
+A [test input] that causes a specific bug to reproduce.
 
 [fuzz targets]: https://github.com/google/fuzzing/blob/master/docs/glossary.md#fuzz-target
 [fuzzing engine]: https://github.com/google/fuzzing/blob/master/docs/glossary.md#fuzzing-engine
