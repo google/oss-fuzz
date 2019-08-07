@@ -1,8 +1,16 @@
+---
+layout: default
+title: New project guide
+parent: Getting started
+nav_order: 2
+permalink: /getting-started/new-project-guide/
+---
+
 # Setting up a New Project
 
 ## Prerequisites
-- [Integrate](ideal_integration.md) one or more [Fuzz Targets](glossary.md#fuzz-target)
-  with the project you want to fuzz.<BR>
+- [Integrate]({{ site.baseurl }}/advanced-topics/ideal-integration/) one or more [Fuzz Targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
+  with the project you want to fuzz.
   Examples:
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
 [SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338),
@@ -14,21 +22,29 @@
 [pcre2](http://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
 [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/tools/target_dec_fuzzer.c).
 
-- [Install Docker](installing_docker.md). ([Why Docker?](faq.md#why-do-you-use-docker))
+- Install Docker using the instructions 
+  [here](https://docs.docker.com/engine/installation).
+  Googlers: [go/installdocker](https://goto.google.com/installdocker).
+  [Why Docker?]({{ site.baseurl }}/faq/#why-do-you-use-docker)
 
+  *NOTE: (Optional) If you want to run `docker` without `sudo`, follow the
+  [Create a docker group](https://docs.docker.com/engine/installation/linux/ubuntulinux/#/create-a-docker-group) section.*
+  *NOTE: Docker images can consume significant disk space. Run*
+  *[docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)*
+  *periodically to garbage collect unused images.*
 
 ## Overview
 
 To add a new OSS project to OSS-Fuzz, you need a project subdirectory
-inside the [`projects/`](../projects) directory in [OSS-Fuzz repository](https://github.com/google/oss-fuzz).
+inside the [`projects/`](https://github.com/google/oss-fuzz/tree/master/projects) directory in [OSS-Fuzz repository](https://github.com/google/oss-fuzz).
 Example: [boringssl](https://github.com/google/boringssl) project is located in
-[`projects/boringssl`](../projects/boringssl).
+[`projects/boringssl`](https://github.com/google/oss-fuzz/tree/master/projects/boringssl).
 
 The project directory needs to contain the following three configuration files:
 
 * `projects/<project_name>/project.yaml` - provides metadata about the project.
 * `projects/<project_name>/Dockerfile` - defines the container environment with information
-on dependencies needed to build the project and its [fuzz targets](glossary.md#fuzz-target).
+on dependencies needed to build the project and its [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target).
 * `projects/<project_name>/build.sh` - build script that executes inside the container and
 generates project build.
 
@@ -42,7 +58,7 @@ $ export PROJECT_NAME=<project_name>
 $ python infra/helper.py generate $PROJECT_NAME
 ```
 
-It is preferred to keep and maintain [fuzz targets](glossary.md#fuzz-target) in your own source code repository. If this is not possible due to various reasons, you can store them inside the OSS-Fuzz's project directory created above.
+It is preferred to keep and maintain [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your own source code repository. If this is not possible due to various reasons, you can store them inside the OSS-Fuzz's project directory created above.
 
 ## project.yaml
 
@@ -55,7 +71,7 @@ Project's homepage.
 Primary contact and CCs list. These people get access to ClusterFuzz 
 which includes crash reports, fuzzer statistics, etc and are auto-cced on newly filed bugs in OSS-Fuzz
 tracker. To get full access to these artifacts, you should use a [Google account](https://support.google.com/accounts/answer/176347?hl=en)
-here ([why?](faq.md#why-do-you-require-a-google-account-for-authentication)).
+here ([why?]({{ site.baseurl }}/faq/#why-do-you-require-a-google-account-for-authentication)).
 
 ### sanitizers (optional)
 List of sanitizers to use. By default, it will use the default list of supported
@@ -74,7 +90,7 @@ You may opt-in by adding "memory" to this list.
 
 If you want to test a particular sanitizer (e.g. memory) and see what crashes it generates without filing
 them in the issue tracker, you can set the experimental flag. The crashes can be accessed on [ClusterFuzz
-homepage](clusterfuzz.md#web-interface). Example:
+homepage]({{ site.baseurl }}/furthur-reading/clusterfuzz#web-interface). Example:
 
 ```
 sanitizers:
@@ -88,7 +104,7 @@ Example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/bor
 
 ### help_url
 Link to a custom help URL in bug reports instead of the
-[default OSS-Fuzz guide to reproducing crashes](reproducing.md). This can be useful if you assign
+[default OSS-Fuzz guide to reproducing crashes]({{ site.baseurl }}/advanced-topics/reproducing/). This can be useful if you assign
 bugs to members of your project unfamiliar with OSS-Fuzz or if they should follow a different workflow for
 reproducing and fixing bugs than standard one outlined in the reproducing guide.
 
@@ -96,7 +112,7 @@ Example: [skia](https://github.com/google/oss-fuzz/blob/master/projects/skia/pro
 
 ### experimental
 A boolean (either True or False) that indicates whether this project is in evaluation mode. This allows a project to be
-fuzzed and generate crash findings, but not file them in the issue tracker. The crashes can be accessed on [ClusterFuzz homepage](clusterfuzz.md#web-interface). This should be only used if you are not a maintainer of the project and have
+fuzzed and generate crash findings, but not file them in the issue tracker. The crashes can be accessed on [ClusterFuzz homepage]({{ site.baseurl }}/furthur-reading/clusterfuzz#web-interface). This should be only used if you are not a maintainer of the project and have
 less confidence in the efficacy of your fuzz targets. Example:
 
 ```
@@ -124,20 +140,20 @@ RUN git clone <git_url> <checkout_dir>    # checkout all sources needed to build
 WORKDIR <checkout_dir>                    # current directory for build script
 COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer files in src dir
 ```
-Expat example: [expat/Dockerfile](../projects/expat/Dockerfile)
+Expat example: [expat/Dockerfile](https://github.com/google/oss-fuzz/tree/master/projects/expat/Dockerfile)
 
 In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`. 
 
 ## build.sh
 
-This file describes how to build binaries for [fuzz targets](glossary.md#fuzz-target) in your project.
+This file describes how to build binaries for [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your project.
 The script will be executed within the image built from `Dockerfile`.
 
 In general, this script will need to:
 
 1. Build the project using your build system *with* correct compiler and its flags provided as
   *environment variables* (see below).
-2. Build the [fuzz targets](glossary.md#fuzz-target), linking your project's build and libFuzzer.
+2. Build the [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target), linking your project's build and libFuzzer.
    Resulting binaries should be placed in `$OUT`.
 
 *Note*:
@@ -145,7 +161,7 @@ In general, this script will need to:
 1. Please don't assume that the fuzzing engine is libFuzzer and hardcode in your build scripts.
 We generate builds for both libFuzzer and AFL fuzzing engine configurations.
 So, link the fuzzing engine using $LIB_FUZZING_ENGINE, see example below.
-2. Please make sure that the binary names for your [fuzz targets](glossary.md#fuzz-target) contain only
+2. Please make sure that the binary names for your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 3. Please don't remove source code files. They are needed for code coverage.
 
@@ -199,7 +215,7 @@ You *must* use `$CXX` as a linker, even if your project is written in pure C.
 Most well-crafted build scripts will automatically use these variables. If not,
 pass them manually to the build tool.
 
-See [Provided Environment Variables](../infra/base-images/base-builder/README.md#provided-environment-variables) section in
+See [Provided Environment Variables](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/README.md#provided-environment-variables) section in
 `base-builder` image documentation for more details.
 
 ## Disk space restrictions
@@ -210,12 +226,12 @@ In addition to this, please keep the size of the build (everything copied to `$O
 
 ## Fuzzer execution environment
 
-[This page](fuzzer_environment.md) gives information about the environment that
-your [fuzz targets](glossary.md#fuzz-target) will run on ClusterFuzz, and the assumptions that you can make.
+[This page]({{ site.baseurl }}/furthur-reading/fuzzer-environment/) gives information about the environment that
+your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) will run on ClusterFuzz, and the assumptions that you can make.
 
 ## Testing locally
 
-Use the helper script to build docker image and [fuzz targets](glossary.md#fuzz-target).
+Use the helper script to build docker image and [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target).
 
 ```bash
 $ cd /path/to/oss-fuzz
@@ -241,10 +257,10 @@ $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>
 ```
 
 If everything works locally, then it should also work on our automated builders and ClusterFuzz.
-If it fails, check out [this](fuzzer_environment.md#dependencies) entry.
+If it fails, check out [this]({{ site.baseurl }}/furthur-reading/fuzzer-environment/#dependencies) entry.
 
 It's recommended to look at code coverage as a sanity check to make sure that
-[fuzz target](glossary.md#fuzz-target) gets to the code you expect.
+[fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target) gets to the code you expect.
 
 ```bash
 $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
@@ -257,8 +273,8 @@ of the supported build configurations with the above commands (build_fuzzers -> 
 
 ## Debugging Problems
 
-[Debugging](debugging.md) document lists ways to debug your build scripts or
-[fuzz targets](glossary.md#fuzz-target)
+[Debugging]({{ site.baseurl }}/advanced-topics/debugging/) document lists ways to debug your build scripts or
+[fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
 in case you run into problems.
 
 
@@ -282,7 +298,7 @@ if (size < kMinInputLength || size > kMaxInputLength)
   return 0;
 ```
 
-For out of tree [fuzz targets](glossary.md#fuzz-target), you will likely add options file using docker's
+For out of tree [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target), you will likely add options file using docker's
 `COPY` directive and will copy it into output in build script.
 (example: [woff2](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options)).
 
@@ -290,10 +306,10 @@ For out of tree [fuzz targets](glossary.md#fuzz-target), you will likely add opt
 ### Seed Corpus
 
 OSS-Fuzz uses evolutionary fuzzing algorithms. Supplying seed corpus consisting
-of good sample inputs is one of the best ways to improve [fuzz target](glossary.md#fuzz-target)'s coverage.
+of good sample inputs is one of the best ways to improve [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s coverage.
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
-to the [fuzz target](glossary.md#fuzz-target)'s binary in `$OUT` during the build. Individual files in this
+to the [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s binary in `$OUT` during the build. Individual files in this
 archive will be used as starting inputs for mutations. The name of each file in the corpus is the sha1 checksum (which you can get using the `sha1sum` or `shasum` comand) of its contents. You can store the corpus
 next to source files, generate during build or fetch it using curl or any other
 tool of your choice.
@@ -303,7 +319,7 @@ Seed corpus files will be used for cross-mutations and portions of them might ap
 in bug reports or be used for further security research. It is important that corpus
 has an appropriate and consistent license.
 
-See also [Accessing Corpora](corpora.md) for information about getting access to the corpus we are currently using for your fuzz targets.
+See also [Accessing Corpora]({{ site.baseurl }}/advanced-topics/corpora/) for information about getting access to the corpus we are currently using for your fuzz targets.
 
 
 ### Dictionaries
@@ -321,7 +337,7 @@ in .options file:
 dict = dictionary_name.dict
 ```
 
-It is common for several [fuzz targets](glossary.md#fuzz-target)
+It is common for several [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
 to reuse the same dictionary if they are fuzzing very similar inputs.
 (example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
 
@@ -358,10 +374,11 @@ If you are porting a fuzz target from Chromium, keep the original Chromium licen
 ## The end
 
 Once your change is merged, your project and fuzz targets should be automatically built and run on
-ClusterFuzz after a short while (&lt; 1 day)!<BR><BR>
-Check your project's build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/index.html).<BR>
+ClusterFuzz after a short while (&lt; 1 day)!
 
-Use [ClusterFuzz](clusterfuzz.md) web interface [here](https://oss-fuzz.com/) to checkout the following items:
+Check your project's build status [here](https://oss-fuzz-build-logs.storage.googleapis.com/index.html).
+
+Use [ClusterFuzz]({{ site.baseurl }}/furthur-reading/clusterfuzz) web interface [here](https://oss-fuzz.com/) to checkout the following items:
 * Crashes generated
 * Code coverage statistics
 * Fuzzer statistics

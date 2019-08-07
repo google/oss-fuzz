@@ -1,7 +1,19 @@
+---
+layout: default
+title: Code coverage
+parent: Advanced topics
+nav_order: 2
+permalink: /advanced-topics/code-coverage
+---
+
 # Code Coverage
 
 You can generate code coverage report for your project using [Clang Source-based
 Code Coverage].
+
+- TOC
+{:toc}
+---
 
 
 ## Pull the latest Docker images
@@ -106,7 +118,6 @@ reports for your project, add the arguments into `project.yaml` file as follows:
 ```yaml
 coverage_extra_args: -ignore-filename-regex=.*crc.* -ignore-filename-regex=.*adler.* <other_extra_args>
 ```
-
 
 [Clang Source-based Code Coverage]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [gsutil tool]: https://cloud.google.com/storage/docs/gsutil_install
