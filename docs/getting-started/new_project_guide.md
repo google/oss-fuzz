@@ -6,7 +6,11 @@ nav_order: 2
 permalink: /getting-started/new-project-guide/
 ---
 
-# Setting up a New Project
+# Setting up a new project
+
+- TOC
+{:toc}
+---
 
 ## Prerequisites
 - [Integrate]({{ site.baseurl }}/advanced-topics/ideal-integration/) one or more [Fuzz Targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
