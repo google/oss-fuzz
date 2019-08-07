@@ -72,7 +72,7 @@ building and execution.
 
 ## How do you handle timeouts and OOMs?
 
-If a single input to a [fuzz target]({{ site.baseurl }}/glossary/#fuzz-target)
+If a single input to a [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)
 requires more than **~25 seconds** or more than **2GB RAM** to process, we
 report this as a timeout or an OOM (out-of-memory) bug
 (examples: [timeouts](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=%22Crash+Type%3A+Timeout%22),
@@ -156,7 +156,7 @@ new location [here]({{ site.baseurl }}/advanced-topics/corpora/#viewing-the-corp
 
 ## Does OSS-Fuzz support AFL?
 OSS-Fuzz *uses* [AFL](http://lcamtuf.coredump.cx/afl/) as one of its
-[fuzzing engines]({{ site.baseurl }}/glossary/#fuzzing-engine) but this is an implementation
+[fuzzing engines]({{ site.baseurl }}/reference/glossary/#fuzzing-engine) but this is an implementation
 detail. Just follow the
 [ideal integration guide]({{ site.baseurl }}/advanced-topics/ideal-integration/)
 and OSS-Fuzz will use all its fuzzing engines on your code.

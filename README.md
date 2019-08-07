@@ -17,7 +17,7 @@ distributed execution.
 
 We support [libFuzzer](http://llvm.org/docs/LibFuzzer.html) and [AFL](http://lcamtuf.coredump.cx/afl/) as fuzzing engines
 in combination with [Sanitizers](https://github.com/google/sanitizers).
-[ClusterFuzz](docs/clusterfuzz.md)
+[ClusterFuzz](https://google.github.io/oss-fuzz/furthur-reading/clusterfuzz)
 provides a distributed fuzzer execution environment and reporting. You can
 checkout ClusterFuzz [here](https://github.com/google/clusterfuzz).
 

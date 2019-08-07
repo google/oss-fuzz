@@ -18,7 +18,7 @@ reproduce it.
 ---
 
 ## Fuzz target bugs
-Every issue has a [reproducer]({{ site.baseurl }}/glossary/#reproducer)
+Every issue has a [reproducer]({{ site.baseurl }}/reference/glossary/#reproducer)
 (aka "testcase") file attached.
 Download it. If the issue is not public, you will need to login using your
 [Google account](https://support.google.com/accounts/answer/176347?hl=en)

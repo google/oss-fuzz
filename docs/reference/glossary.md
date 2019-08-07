@@ -2,7 +2,7 @@
 layout: default
 title: Glossary
 nav_order: 1
-permalink: /glossary/
+permalink: /reference/glossary/
 parent: Reference
 ---
 

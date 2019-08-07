@@ -6,13 +6,13 @@ nav_order: 4
 permalink: /advanced-topics/debugging
 ---
 
-# Debugging
+# Debugging issues
 
 - TOC
 {:toc}
 ---
 
-## Debugging Build Scripts
+## Debugging build scripts
 
 While developing your build script, it may be useful to run bash within the
 container:
@@ -22,7 +22,7 @@ $ python infra/helper.py shell $PROJECT_NAME  # runs /bin/bash within container
 $ compile                                     # run compilation manually
 ```
 
-## Debugging Fuzzers with GDB
+## Debugging fuzzers with GDB
 
 If you wish to debug a fuzz target with gdb, you may use the base-runner-debug
 image:
