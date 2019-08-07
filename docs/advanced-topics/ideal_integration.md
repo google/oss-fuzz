@@ -1,3 +1,11 @@
+---
+layout: default
+title: Ideal integration
+parent: Advanced topics
+nav_order: 1
+permalink: /advanced-topics/ideal-integration
+---
+
 # Ideal integration with OSS-Fuzz 
 OSS projects have different build and test systems. So, we can not expect them
 to have a unified way of implementing and maintaining fuzz targets and integrating
@@ -47,7 +55,7 @@ An ideal build integration for OSS-Fuzz would look like this:
 * For every fuzz target `foo` in the project, there is a build rule that builds `foo_fuzzer`,
 a binary that contains the fuzzing entry point (`LLVMFuzzerTestOneInput`)
 and all the code it depends on, and that uses the `main()` function from `$LIB_FUZZING_ENGINE`
-(env var [provided](new_project_guide.md) by OSS-Fuzz environment).
+(env var [provided]({{ site.baseurl }}/getting-started/new-project-guide/) by OSS-Fuzz environment).
 * The build system supports changing the compiler and passing extra compiler
 flags so that the build command for a `foo_fuzzer` looks similar to this:
 
@@ -101,11 +109,11 @@ The syntax is described [here](http://libfuzzer.info/#dictionaries).
 
 ## Coverage
 For a fuzz target to be useful, it must have good coverage in the code that it is testing. You can view the coverage
-for your fuzz targets by looking at the [fuzzer stats](clusterfuzz.md#fuzzer-stats) dashboard on ClusterFuzz, as well as
-[coverage reports](clusterfuzz.md#coverage-reports).
+for your fuzz targets by looking at the [fuzzer stats]({{ site.baseurl }}/furthur-reading/clusterfuzz#fuzzer-stats) dashboard on ClusterFuzz, as well as
+[coverage reports]({{ site.baseurl }}/furthur-reading/clusterfuzz#coverage-reports).
 
 To generate an aggregated code coverage report for your project, please see
-[code coverage](code_coverage.md)
+[code coverage]({{ site.baseurl }}/advanced-topics/code-coverage)
 documentation page.
 
 Coverage can often be improved by adding dictionaries, more inputs for seed corpora, and fixing
@@ -114,11 +122,11 @@ timeouts/out-of-memory bugs in your targets.
 ## Performance
 Fuzz targets should also be performant, as high memory usage and/or slow execution speed can slow the down
 the growth of coverage and finding of new bugs. ClusterFuzz provides a
-[performance analyzer](clusterfuzz.md)
+[performance analyzer]({{ site.baseurl }}/furthur-reading/clusterfuzz)
 for each fuzz target that shows problems that are impacting the performance of the fuzz target.
 
 ## Example
-You may look at a simple [example](../projects/example/my-api-repo) that covers most of the items above. 
+You may look at a simple [example](https://github.com/google/oss-fuzz/tree/master/projects/example/my-api-repo) that covers most of the items above. 
 
 ## Not a project member?
 
@@ -128,7 +136,7 @@ and the project maintainers are not interested in helping.
 
 In such cases, we can host the fuzz targets, dictionaries, etc in OSS-Fuzz's 
 repository and mention them in the Dockerfile.
-Examples: [libxml2](../projects/libxml2), [c-ares](../projects/c-ares), [expat](../projects/expat).
+Examples: [libxml2](https://github.com/google/oss-fuzz/tree/master/projects/libxml2), [c-ares](https://github.com/google/oss-fuzz/tree/master/projects/c-ares), [expat](https://github.com/google/oss-fuzz/tree/master/projects/expat).
 This is far from ideal because the fuzz targets will not be continuously tested 
 and hence may quickly bitrot.
 

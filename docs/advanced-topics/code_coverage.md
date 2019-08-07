@@ -1,3 +1,11 @@
+---
+layout: default
+title: Code coverage
+parent: Advanced topics
+nav_order: 2
+permalink: /advanced-topics/code-coverage
+---
+
 # Code Coverage
 
 You can generate code coverage report for your project using [Clang Source-based

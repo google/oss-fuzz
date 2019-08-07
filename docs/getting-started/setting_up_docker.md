@@ -1,10 +1,18 @@
-# Installing Docker
+---
+layout: default
+title: Setting up Docker
+parent: New project guide
+nav_order: 1
+permalink: /getting-started/setting-up-docker/
+---
+
+# Setting up Docker
 
 Follow the [Official Guide](https://docs.docker.com/engine/installation).
 
 Googlers: [go/installdocker](https://goto.google.com/installdocker).
 
-[Why Docker?](faq.md#why-do-you-use-docker)
+[Why Docker?]({{ site.baseurl }}/faq/#why-do-you-use-docker)
 
 *NOTE: (Optional) If you want to run `docker` without `sudo`, follow the [Create a docker group](https://docs.docker.com/engine/installation/linux/ubuntulinux/#/create-a-docker-group) section.*
 

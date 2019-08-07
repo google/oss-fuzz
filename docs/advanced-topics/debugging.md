@@ -1,3 +1,11 @@
+---
+layout: default
+title: Debugging
+parent: Advanced topics
+nav_order: 4
+permalink: /advanced-topics/debugging
+---
+
 ## Debugging Build Scripts
 
 While developing your build script, it may be useful to run bash within the
@@ -25,5 +33,6 @@ $ gdb --args /out/$PROJECT_NAME/$FUZZ_TARGET_NAME /out/$PROJECT_NAME/testcase
 
 Note that the base-runner-debug image does not have access to your sources, so
 you will not be able to do source code level debugging. We recommend integrating
-your fuzz target upstream as part of [ideal integration](ideal_integration.md)
+your fuzz target upstream as part of
+[ideal integration]({{ site.baseurl }}/advanced-topics/ideal-integration/)
 for debugging purposes.
