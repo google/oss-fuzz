@@ -119,7 +119,6 @@ reports for your project, add the arguments into `project.yaml` file as follows:
 coverage_extra_args: -ignore-filename-regex=.*crc.* -ignore-filename-regex=.*adler.* <other_extra_args>
 ```
 
-
 [Clang Source-based Code Coverage]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [gsutil tool]: https://cloud.google.com/storage/docs/gsutil_install
 [llvm-cov tool]: https://llvm.org/docs/CommandGuide/llvm-cov.html
