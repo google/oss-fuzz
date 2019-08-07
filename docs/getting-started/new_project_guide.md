@@ -2,7 +2,6 @@
 layout: default
 title: New project guide
 parent: Getting started
-has_children: true
 nav_order: 2
 permalink: /getting-started/new-project-guide/
 ---
@@ -23,8 +22,16 @@ permalink: /getting-started/new-project-guide/
 [pcre2](http://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup),
 [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/tools/target_dec_fuzzer.c).
 
-- [Install Docker]({{ site.baseurl }}/getting-started/setting-up-docker/). ([Why Docker?]({{ site.baseurl }}/faq/#why-do-you-use-docker))
+- Install Docker using the instructions 
+  [here](https://docs.docker.com/engine/installation).
+  Googlers: [go/installdocker](https://goto.google.com/installdocker).
+  [Why Docker?]({{ site.baseurl }}/faq/#why-do-you-use-docker)
 
+  *NOTE: (Optional) If you want to run `docker` without `sudo`, follow the
+  [Create a docker group](https://docs.docker.com/engine/installation/linux/ubuntulinux/#/create-a-docker-group) section.*
+  *NOTE: Docker images can consume significant disk space. Run*
+  *[docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)*
+  *periodically to garbage collect unused images.*
 
 ## Overview
 

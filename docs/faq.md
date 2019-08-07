@@ -8,6 +8,10 @@ permalink: /faq/
 
 # Frequently Asked Questions
 
+- TOC
+{:toc}
+---
+
 ## What kind of projects are you accepting?
 
 We accept established projects that have a critical impact on infrastructure and

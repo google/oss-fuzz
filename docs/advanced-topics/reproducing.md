@@ -12,6 +12,10 @@ You've been CC'ed on an OSS-Fuzz issue
 ([examples](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=Type%3ABug%2CBug-Security)), now what?
 Before attempting to fix the bug, you should be able to reliably reproduce it. 
 
+- TOC
+{:toc}
+---
+
 ## Fuzz target bugs
 Every issue has a [reproducer]({{ site.baseurl }}/glossary/#reproducer) (aka "testcase") file attached.
 Download it. If the issue is not public, you will need to login using your
@@ -34,7 +38,7 @@ Depending on the nature of the bug, the fuzz target binary needs to be built wit
 (e.g. if this is a buffer overflow, with [AddressSanitizer](http://clang.llvm.org/docs/AddressSanitizer.html)).
 
 If you are not sure how to build the fuzzer using the project's build system,
-you may also use Docker ([how?]({{ site.baseurl }}/getting-started/setting-up-docker/), [why?]({{ site.baseurl }}/faq/#why-do-you-use-docker)) commands 
+you may also use Docker ([how?]({{ site.baseurl }}/getting-started/new-project-guide/#prerequisites), [why?]({{ site.baseurl }}/faq/#why-do-you-use-docker)) commands 
 to replicate the exact build steps used by OSS-Fuzz and then feed the reproducer input to the fuzz target.
 
 ## Building using Docker

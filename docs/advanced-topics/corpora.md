@@ -11,6 +11,10 @@ permalink: /advanced-topics/corpora
 If you would like to access the corpora that we are using for your fuzz targets
 (synthesized by the fuzzing engines), please follow these steps.
 
+- TOC
+{:toc}
+---
+
 ## Obtain access
 
 In order to get access to a project's corpora, you must first be listed as the

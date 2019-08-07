@@ -1,7 +1,6 @@
 ---
 layout: default
 title: Rewards
-has_children: true
 nav_order: 5
 permalink: /rewards/
 ---

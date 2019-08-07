@@ -12,6 +12,10 @@ Your fuzz targets will be run on a
 [Google Compute Engine](https://cloud.google.com/compute/) VM (Linux) with some
 [security restrictions](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-runner/run_minijail).
 
+- TOC
+{:toc}
+---
+
 ## Runtime Dependencies
 
 You should not make any assumptions on the availability of dependent packages 

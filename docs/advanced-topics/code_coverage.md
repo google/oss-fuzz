@@ -11,6 +11,10 @@ permalink: /advanced-topics/code-coverage
 You can generate code coverage report for your project using [Clang Source-based
 Code Coverage].
 
+- TOC
+{:toc}
+---
+
 
 ## Pull the latest Docker images
 

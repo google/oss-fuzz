@@ -12,6 +12,10 @@ permalink: /furthur-reading/clusterfuzz/
 infrastructure behind OSS-Fuzz. It was initially built for fuzzing Chrome at
 scale.
 
+- TOC
+{:toc}
+---
+
 ## Web interface
 
 ClusterFuzz provides a [web interface](https://oss-fuzz.com)

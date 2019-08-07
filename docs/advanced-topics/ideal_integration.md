@@ -14,6 +14,10 @@ them with OSS-Fuzz. However, we will still try to give recommendations on the pr
 Here are several features (starting from the easiest) that will make automated fuzzing
 simple and efficient, and will allow to catch regressions early on in the development cycle. 
 
+- TOC
+{:toc}
+---
+
 ## TL;DR
 Every [fuzz target](http://libfuzzer.info/#fuzz-target):
 * Is [maintained by code owners](#fuzz-target) in their RCS (Git, SVN, etc).

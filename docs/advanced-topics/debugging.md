@@ -6,6 +6,12 @@ nav_order: 4
 permalink: /advanced-topics/debugging
 ---
 
+# Debugging
+
+- TOC
+{:toc}
+---
+
 ## Debugging Build Scripts
 
 While developing your build script, it may be useful to run bash within the
