@@ -25,7 +25,7 @@ case $SANITIZER in
     FLAGS+=("--with-undefined-behavior-sanitizer")
     ;;
 esac
-./configure "${FLAGS[@]}" --prefix $OUT
+./configure "${FLAGS[@]:-}" --prefix $OUT
 
 # We use altinstall to avoid having the Makefile create symlinks
 make -j$(nproc) altinstall
