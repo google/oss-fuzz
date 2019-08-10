@@ -84,6 +84,8 @@ then
   # For .cc, we only really care about source/ today.
   rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
   rsync -av "${SRC}"/envoy/test "${REMAP_PATH}"
+  # Remove filesystem loop manually.
+  rm -rf "${SRC}"/envoy/bazel-envoy/external/envoy
   # Clean up symlinks with a missing referrant.
   find "${SRC}"/envoy/bazel-envoy/external -follow -type l -ls -delete || echo "Symlink cleanup soft fail"
   rsync -avLk "${SRC}"/envoy/bazel-envoy/external "${REMAP_PATH}"
