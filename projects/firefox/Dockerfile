@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,14 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pdknsk@gmail.com
-RUN apt-get update && apt-get install -y gawk mercurial
-RUN hg clone --uncompressed https://hg.mozilla.org/mozilla-central
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  python \
+  gawk \
+  software-properties-common
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+  libstdc++6
+RUN git clone --depth 1 https://github.com/mozilla/gecko-dev mozilla-central
 RUN git clone --depth 1 https://github.com/mozillasecurity/fuzzdata
 WORKDIR mozilla-central
 COPY build.sh target.c *.options mozconfig.* $SRC/
