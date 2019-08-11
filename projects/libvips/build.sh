@@ -55,17 +55,6 @@ make -j$(nproc)
 make install
 popd
 
-# libmagick
-pushd $SRC/imagemagick
-./configure \
-  --disable-shared \
-  --disable-docs \
-  --with-utilities=no \
-  --prefix=$WORK
-make -j$(nproc)
-make install
-popd
-
 # libgif
 pushd $SRC/libgif
 make libgif.a libgif.so install-include install-lib OFLAGS="-O2" PREFIX=$WORK
@@ -131,7 +120,6 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libexif.a \
     $WORK/lib/libturbojpeg.a \
     $WORK/lib/libpng.a \
-    $WORK/lib/libMagickCore-7.Q16HDRI.a \
     $WORK/lib/libz.a \
     $WORK/lib/libgif.a \
     $WORK/lib/libwebpmux.a \
