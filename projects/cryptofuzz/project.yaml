@@ -23,4 +23,4 @@ sanitizers:
  - memory
 architectures:
  - x86_64
- - i386
+ - x86

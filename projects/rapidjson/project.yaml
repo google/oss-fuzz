@@ -7,4 +7,4 @@ sanitizers:
 experimental: True
 architectures:
  - x86_64
- - i386
+ - x86
