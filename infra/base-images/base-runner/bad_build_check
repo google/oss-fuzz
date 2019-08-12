@@ -49,8 +49,8 @@ UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD=170
 # a big concern either way as the overhead for them would not be significant.
 UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=200
 
-# ASan builds on x86 generally have about 250 UBSan runtime calls.
-if [[ $ARCHITECTURE == 'x86' ]]
+# ASan builds on i386 generally have about 250 UBSan runtime calls.
+if [[ $ARCHITECTURE == 'i386' ]]
 then
   UBSAN_CALLS_THRESHOLD_FOR_NON_UBSAN_BUILD=280
 fi
@@ -279,7 +279,7 @@ function check_mixed_sanitizers {
   local FUZZER=$1
   local result=0
   local CALL_INSN=
-  if [[ $ARCHITECTURE == 'x86' ]]
+  if [[ $ARCHITECTURE == 'i386' ]]
   then
     CALL_INSN="call\s+[0-9a-f]+\s+<"
   else
@@ -352,7 +352,7 @@ function check_architecture {
   if [[ $ARCHITECTURE == "x86_64" ]]
   then
     echo $FILE_OUTPUT | grep "x86-64" > /dev/null
-  elif [[ $ARCHITECTURE == "x86" ]]
+  elif [[ $ARCHITECTURE == "i386" ]]
   then
     echo $FILE_OUTPUT | grep "80386" > /dev/null
   else

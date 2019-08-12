@@ -46,7 +46,7 @@ ENGINE_INFO = {
         EngineInfo(
             upload_bucket='clusterfuzz-builds',
             supported_sanitizers=['address', 'memory', 'undefined'],
-            supported_architectures=['x86_64', 'x86']),
+            supported_architectures=['x86_64', 'i386']),
     'afl':
         EngineInfo(
             upload_bucket='clusterfuzz-builds-afl',
@@ -120,7 +120,7 @@ def get_signed_url(path, method='PUT', content_type=''):
 
 def is_supported_configuration(fuzzing_engine, sanitizer, architecture):
   fuzzing_engine_info = ENGINE_INFO[fuzzing_engine]
-  if architecture == 'x86' and sanitizer != 'address':
+  if architecture == 'i386' and sanitizer != 'address':
     return False
   return (sanitizer in fuzzing_engine_info.supported_sanitizers and
           architecture in fuzzing_engine_info.supported_architectures)
