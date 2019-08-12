@@ -20,7 +20,7 @@ import build_project
 
 STATUS_BUCKET = 'oss-fuzz-build-logs'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-BADGE_DIR = 'badges/'
+BADGE_DIR = 'badges'
 RETRY_COUNT = 3
 RETRY_WAIT = 5
 MAX_BUILD_RESULTS = 2000
@@ -202,10 +202,10 @@ def update_build_badges(builds, projects, build_tag, coverage_tag):
           badge=badge, extension=extension)
       # Retrieve the image relative to this script's location
       badge_file = os.path.join(
-          SCRIPT_DIR, 'badge_images', image_directory, badge_name)
+          SCRIPT_DIR, 'badge_images', badge_name)
 
       # The uploaded blob name should look like `badges/project.png`
-      blob_name = '{badge_dir}{project_name}.{extension}'.format(
+      blob_name = '{badge_dir}/{project_name}.{extension}'.format(
           badge_dir=BADGE_DIR, project_name=project,
           extension=extension)
 
