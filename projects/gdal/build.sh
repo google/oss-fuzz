@@ -25,10 +25,8 @@ X64_PACKAGES="zlib1g-dev libexpat-dev liblzma-dev \
               libssl-dev libsqlite3-dev"
 
 if [ "$ARCHITECTURE" = "i386" ]; then
-    apt-get remove -y *-dev:amd64 || echo "go on"
     apt-get install -y $I386_PACKAGES automake libtool autoconf
 else
-    apt-get remove -y *-dev:i386 || echo "go on"
     apt-get install -y $X64_PACKAGES
 fi
 
