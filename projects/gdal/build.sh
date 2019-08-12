@@ -15,10 +15,26 @@
 #
 ################################################################################
 
+I386_PACKAGES="zlib1g-dev:i386 libexpat-dev:i386 liblzma-dev:i386 \
+              libxerces-c-dev:i386 libpng12-dev:i386 libgif-dev:i386 \
+              libwebp-dev:i386 libicu-dev:i386 libnetcdf-dev:i386 \
+              libssl-dev:i386 libsqlite3-dev:i386"
+X64_PACKAGES="zlib1g-dev libexpat-dev liblzma-dev \
+              libxerces-c-dev libpng12-dev libgif-dev \
+              libwebp-dev libicu-dev libnetcdf-dev \
+              libssl-dev libsqlite3-dev"
+
+if [ "$ARCHITECTURE" = "i386" ]; then
+    apt-get install -y $I386_PACKAGES automake libtool autoconf
+else
+    apt-get install -y $X64_PACKAGES
+fi
+
+
 # build libproj.a (proj master required)
 cd proj
 ./autogen.sh
-./configure --disable-shared --prefix=$SRC/install
+SQLITE3_CFLAGS=-I/usr/include SQLITE3_LIBS=-lsqlite3 ./configure --disable-shared --prefix=$SRC/install
 make clean -s
 make -j$(nproc) -s
 make install
@@ -46,7 +62,7 @@ cd ../..
 # build gdal
 cd gdal
 export LDFLAGS=${CXXFLAGS}
-./configure --without-libtool --with-liblzma --with-expat --with-sqlite3 --with-xerces --with-webp --with-netcdf=$SRC/install --with-curl=$SRC/install --without-hdf5 --with-jpeg=internal --with-proj=$SRC/install
+./configure --without-libtool --with-liblzma --with-expat --with-sqlite3 --with-xerces --with-webp --with-netcdf=$SRC/install --with-curl=$SRC/install/bin/curl-config --without-hdf5 --with-jpeg=internal --with-proj=$SRC/install
 make clean -s
 make -j$(nproc) -s static-lib
 
