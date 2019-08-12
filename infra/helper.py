@@ -261,7 +261,7 @@ def _get_work_dir(project_name=''):
   return os.path.join(BUILD_DIR, 'work', project_name)
 
 
-def _add_architecture_args(parser, choices=('x86_64', 'i386')):
+def _add_architecture_args(parser, choices=('x86_64', 'x86')):
   """Add common architecture args."""
   parser.add_argument('--architecture', default='x86_64', choices=choices)
 

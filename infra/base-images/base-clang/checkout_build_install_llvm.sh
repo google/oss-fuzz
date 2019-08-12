@@ -99,8 +99,8 @@ ninja
 ninja install
 rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
-mkdir -p $WORK/i386
-cd $WORK/i386
+mkdir -p $WORK/x86
+cd $WORK/x86
 cmake -G "Ninja" \
       -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
       -DCMAKE_INSTALL_PREFIX=/usr/i386/ -DLIBCXX_ENABLE_SHARED=OFF \
@@ -111,7 +111,7 @@ cmake -G "Ninja" \
 
 ninja cxx
 ninja install-cxx
-rm -rf $WORK/i386
+rm -rf $WORK/x86
 
 mkdir -p $WORK/msan
 cd $WORK/msan
