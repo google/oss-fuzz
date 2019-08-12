@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ FUZZ_TARGETS=(
   SdpParser
   StunParser
   ContentParentIPC
-# Targets which are available but disabled.
-  # Qcms
-  # ContentSecurityPolicyParser
+  CompositorManagerParentIPC
+  ContentSecurityPolicyParser
+  ImageGIF
+  ImageICO
+  ImageBMP
 )
 
 # Firefox object (build) directory and configuration file.
@@ -40,7 +42,7 @@ source $HOME/.cargo/env
 # Update internal libFuzzer.
 (cd tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh HEAD)
 
-# Build! Takes about 15 minutes on a 32 vCPU instance.
+# Build!
 ./mach build
 ./mach gtest buildbutdontrun
 
@@ -83,3 +85,13 @@ cp $SRC/fuzzdata/dicts/stun.dict $OUT/StunParser.dict
 
 # ContentParentIPC
 cp $SRC/fuzzdata/settings/ipc/libfuzzer.content.blacklist.txt $OUT/firefox
+
+# ImageGIF
+zip -rj $OUT/ImageGIF_seed_corpus.zip $SRC/fuzzdata/samples/gif
+cp $SRC/fuzzdata/dicts/gif.dict $OUT/ImageGIF.dict
+
+# ImageICO
+zip -rj $OUT/ImageICO_seed_corpus.zip $SRC/fuzzdata/samples/ico
+
+# ImageBMP
+zip -rj $OUT/ImageBMP_seed_corpus.zip $SRC/fuzzdata/samples/bmp

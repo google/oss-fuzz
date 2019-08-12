@@ -2,8 +2,11 @@
 
 [Fuzz testing](https://en.wikipedia.org/wiki/Fuzz_testing) is a well-known
 technique for uncovering programming errors in software.
-Many of these detectable errors, like [buffer overflow](https://en.wikipedia.org/wiki/Buffer_overflow), can have serious security implications. Google has found [hundreds](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=label%3AStability-LibFuzzer+-status%3ADuplicate%2CWontFix) of security vulnerabilities and stability bugs by deploying [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html),
+
+Many of these detectable errors, like [buffer overflow](https://en.wikipedia.org/wiki/Buffer_overflow), can have serious security implications. Google has found [thousands] of security vulnerabilities and stability bugs by deploying [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html),
 and we now want to share that service with the open source community. 
+
+[thousands]: https://bugs.chromium.org/p/chromium/issues/list?q=label%3AStability-LibFuzzer%2CStability-AFL%20-status%3ADuplicate%2CWontFix&can=1
 
 In cooperation with the [Core Infrastructure Initiative](https://www.coreinfrastructure.org/), 
 OSS-Fuzz aims to make common open source software more secure and stable by
@@ -20,7 +23,7 @@ Currently, OSS-Fuzz supports C and C++ code, though other languages supported by
 ## Overview
 ![OSS-Fuzz process diagram](docs/images/process.png)
 
-##Documentation
+## Documentation
 Read our [detailed documentation](https://google.github.io/oss-fuzz) to learn how to use OSS-Fuzz.
 
 ## Trophies
@@ -32,12 +35,12 @@ projects.
 
 ## Blog posts
 
-* 2016-12-01 ([1](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
-[2](https://testing.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
-[3](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
-* 2017-05-08 ([1](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
-[2](https://testing.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
-[3](https://security.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html))
-* 2018-11-06 ([1](https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html))
+* 2016-12-01 ([Open Source](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
+[Testing](https://testing.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
+[Security](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
+* 2017-05-08 ([Open Source](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
+[Testing](https://testing.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
+[Security](https://security.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html))
+* 2018-11-06 ([Security](https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html))
 
 

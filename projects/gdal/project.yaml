@@ -7,3 +7,6 @@ auto_ccs:
   - "juergen.fischer@gmail.com"
   - "athomas@thinkspatial.com.au"
   - "ari.jolma@gmail.com"
+architectures:
+  - x86_64
+  - i386

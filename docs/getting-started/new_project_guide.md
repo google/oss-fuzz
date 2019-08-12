@@ -294,30 +294,7 @@ your files and experience failures, review your [dependencies]({{ site.baseurl }
 If you run into problems, our [Debugging page]({{ site.baseurl }}/advanced-topics/debugging/) lists ways to debug your build scripts and
 [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target).
 
-## Custom libFuzzer options for ClusterFuzz
-
-By default, ClusterFuzz will run your fuzzer without any options. You can specify
-custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` executable in `$OUT`:
-
-```
-[libfuzzer]
-close_fd_mask = 3
-only_ascii = 1
-```
-
-[List of available options](http://llvm.org/docs/LibFuzzer.html#options). Use of `max_len` is not recommended as other fuzzing engines may not support that option. Instead, if
-you need to strictly enforce the input length limit, add a sanity check to the
-beginning of your fuzz target:
-
-```cpp
-if (size < kMinInputLength || size > kMaxInputLength)
-  return 0;
-```
-
-For out of tree [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target), you will likely add options file using docker's
-`COPY` directive and will copy it into output in build script.
-(example: [woff2](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options)).
-
+## Efficient fuzzing
 
 ### Seed Corpus
 
@@ -356,6 +333,30 @@ dict = dictionary_name.dict
 It is common for several [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
 to reuse the same dictionary if they are fuzzing very similar inputs.
 (example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
+
+### Custom libFuzzer options for ClusterFuzz
+
+By default, ClusterFuzz will run your fuzzer without any options. You can specify
+custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` executable in `$OUT`:
+
+```
+[libfuzzer]
+close_fd_mask = 3
+only_ascii = 1
+```
+
+[List of available options](http://llvm.org/docs/LibFuzzer.html#options). Use of `max_len` is not recommended as other fuzzing engines may not support that option. Instead, if
+you need to strictly enforce the input length limit, add a sanity check to the
+beginning of your fuzz target:
+
+```cpp
+if (size < kMinInputLength || size > kMaxInputLength)
+  return 0;
+```
+
+For out of tree [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target), you will likely add options file using docker's
+`COPY` directive and will copy it into output in build script.
+(example: [woff2](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options)).
 
 ## Checking in to the OSS-Fuzz repository
 

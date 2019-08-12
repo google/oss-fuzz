@@ -16,16 +16,17 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER even.rouault@spatialys.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool g++ zlib1g-dev libsqlite3-dev libexpat-dev liblzma-dev libxerces-c-dev libpng12-dev libgif-dev libwebp-dev libicu-dev libnetcdf-dev curl cmake libssl-dev sqlite3
-#   libgeos-dev libjpeg-dev libcurl4-gnutls-dev libxml2-dev netcdf-bin libpoppler-dev libspatialite-dev libhdf4-alt-dev libhdf5-serial-dev  poppler-utils libfreexl-dev unixodbc-dev libepsilon-dev libpcre3-dev
-# libpodofo-dev  libcrypto++-dev
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
+    apt-get install -y make autoconf automake libtool g++ curl cmake sqlite3 pkg-config
+
 RUN git clone --depth 1 https://github.com/OSGeo/gdal gdal
 
 RUN git clone --depth 1 https://github.com/OSGeo/proj.4 gdal/proj
 
 RUN git clone --depth 1 https://github.com/curl/curl.git gdal/curl
 
-COPY build.sh NC4_put_propattr_leak_fix.patch libnetcdf_fix_undefined_left_shift_in_ncx_get_size_t.patch $SRC/
+COPY NC4_put_propattr_leak_fix.patch libnetcdf_fix_undefined_left_shift_in_ncx_get_size_t.patch $SRC/
 
 RUN curl ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz > gdal/netcdf-4.4.1.1.tar.gz && \
     cd gdal && \
@@ -35,6 +36,10 @@ RUN curl ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz > gdal/netc
     patch -p0 < $SRC/NC4_put_propattr_leak_fix.patch && \
     patch -p0 < $SRC/libnetcdf_fix_undefined_left_shift_in_ncx_get_size_t.patch && \
     cd ../..
+
+RUN git clone --depth 1 https://anongit.freedesktop.org/git/poppler/poppler.git gdal/poppler
+
+COPY build.sh $SRC/
 
 WORKDIR gdal
 

@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER secalert_us@oracle.com
-RUN apt-get update
-RUN apt-get install -y build-essential libssl-dev libncurses5-dev libncursesw5-dev make cmake perl bison pkg-config
-RUN git clone --depth 1 https://github.com/mysql/mysql-server
-WORKDIR $SRC
-COPY build.sh $SRC/
-COPY fix.diff $SRC/
-COPY targets $SRC/mysql-server/fuzz
+MAINTAINER cdiehl@mozilla.com
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    autoconf2.13 \
+    python
+RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
+WORKDIR mozilla-central/js/src/
+COPY build.sh target.c $SRC/
