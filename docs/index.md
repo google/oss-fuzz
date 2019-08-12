@@ -11,7 +11,6 @@ has_toc: false
 
 [Fuzz testing](https://en.wikipedia.org/wiki/Fuzz_testing) is a well-known
 technique for uncovering programming errors in software.
-
 Many of these detectable errors, like [buffer overflow](https://en.wikipedia.org/wiki/Buffer_overflow), can have serious security implications. Google has found [thousands] of security vulnerabilities and stability bugs by deploying [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html),
 and we now want to share that service with the open source community. 
 
