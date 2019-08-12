@@ -27,7 +27,7 @@ if [ -z "${SANITIZER_FLAGS-}" ]; then
   export SANITIZER_FLAGS=${!FLAGS_VAR-}
 fi
 
-if [[ $ARCHITECTURE == "x86" ]]; then
+if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
     cp -R /usr/i386/lib/* /usr/lib
 fi

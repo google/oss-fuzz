@@ -37,11 +37,11 @@ matrix:
         - TRAVIS_ENGINE=none
         - TRAVIS_SANITIZER=address
         - TRAVIS_ARCHITECTURE=x86_64
-    - name: "libfuzzer address x86"
+    - name: "libfuzzer address i386"
       env:
         - TRAVIS_ENGINE=libfuzzer
         - TRAVIS_SANITIZER=address
-        - TRAVIS_ARCHITECTURE=x86
+        - TRAVIS_ARCHITECTURE=i386
     - name: "dataflow dataflow x86_64"
       env:
         - TRAVIS_ENGINE=dataflow
