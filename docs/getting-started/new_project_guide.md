@@ -3,7 +3,7 @@ layout: default
 title: Setting up a new project
 parent: Getting started
 nav_order: 2
-permalink: /getting-started/setting-up-a-new-project/
+permalink: /getting-started/new-project-guide/
 ---
 
 # Setting up a new project
