@@ -38,8 +38,8 @@ MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD=0
 # Usually, a non UBSan build (e.g. ASan) has 165 calls to UBSan runtime. The
 # majority of targets built with UBSan have 200+ UBSan calls, but there are
 # some very small targets that may have < 200 UBSan calls even in a UBSan build.
-# Use the threshold value of 170 (slightly > 165) for UBSan build.
-UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD=170
+# Use the threshold value of 169 (slightly > 165) for UBSan build.
+UBSAN_CALLS_THRESHOLD_FOR_UBSAN_BUILD=169
 
 # It would be risky to use the threshold value close to 165 for non UBSan build,
 # as UBSan runtime may change any time and thus we could have different number
