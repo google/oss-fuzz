@@ -31,3 +31,4 @@ RUN cd go/packages/src/github.com/dvyukov && git clone https://github.com/dvyuko
 RUN cd go/packages/src/github.com/dvyukov && git clone https://github.com/dvyukov/go-fuzz-corpus
 
 COPY build.sh $SRC/
+
