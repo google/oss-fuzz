@@ -1,0 +1,6 @@
+homepage: "http://eigen.tuxfamily.org/index.php?title=Main_Page"
+primary_contact: "eigen-core-team@lists.tuxfamily.org"
+sanitizers:
+  - address
+  - memory
+  - undefined
