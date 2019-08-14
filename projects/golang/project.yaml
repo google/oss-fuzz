@@ -1,0 +1,4 @@
+homepage: "https://golang.org/"
+primary_contact: "guidovranken@gmail.com"
+sanitizers:
+ - undefined
