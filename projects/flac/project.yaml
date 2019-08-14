@@ -1,5 +1,7 @@
 homepage: "https://xiph.org/flac/"
 primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+ - "erik.de.castro.lopo@gmail.com"
 sanitizers:
  - address
  - undefined
