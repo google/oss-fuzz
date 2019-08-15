@@ -15,41 +15,6 @@
 #
 ################################################################################
 
-# Build boost statically, linking it against libc++
-cd $SRC/boost
-./bootstrap.sh --with-toolset=clang
-./b2 clean
-./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" headers
-./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" \
-     link=static variant=release runtime-link=static \
-     system regex filesystem unit_test_framework program_options \
-     install -j $(($(nproc)/2))
-
-# Newer cmake version required for evmone
-CMAKE_NEW=${SRC}/cmake-3.14.5/bin/cmake
-
-# Instrument evmone and dependencies
-cd $SRC/ethash
-mkdir -p build
-cd build
-$CMAKE_NEW .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DETHASH_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX="/usr"
-ninja
-ninja install
-
-cd $SRC/intx
-mkdir -p build
-cd build
-$CMAKE_NEW .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DINTX_TESTING=OFF -DINTX_BENCHMARKING=OFF -DCMAKE_INSTALL_PREFIX="/usr"
-ninja
-ninja install
-
-cd $SRC/evmone
-mkdir -p build
-cd build
-$CMAKE_NEW .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="/usr"
-ninja
-ninja install
-
 # Compile proto C++ bindings
 protoc \
     --proto_path=$SRC/solidity/test/tools/ossfuzz yulProto.proto \
@@ -60,8 +25,7 @@ protoc \
 
 # Build solidity
 cd $SRC/solidity
-BASE_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$BASE_CXXFLAGS -I/usr/local/include/c++/v1 -L/usr/local/lib"
+CXXFLAGS="${CXXFLAGS} -I/usr/local/include/c++/v1"
 mkdir -p build
 cd build
 rm -rf *
@@ -72,17 +36,6 @@ cmake -DUSE_Z3=OFF -DUSE_CVC4=OFF -DOSSFUZZ=ON \
   -DBoost_FOUND=1 \
   -DBoost_USE_STATIC_LIBS=1 \
   -DBoost_USE_STATIC_RUNTIME=1 \
-  -DBoost_INCLUDE_DIR=/usr/local/include/ \
-  -DBoost_FILESYSTEM_LIBRARY=/usr/local/lib/libboost_filesystem.a \
-  -DBoost_FILESYSTEM_LIBRARIES=/usr/local/lib/libboost_filesystem.a \
-  -DBoost_PROGRAM_OPTIONS_LIBRARY=/usr/local/lib/libboost_program_options.a \
-  -DBoost_PROGRAM_OPTIONS_LIBRARIES=/usr/local/lib/libboost_program_options.a \
-  -DBoost_REGEX_LIBRARY=/usr/local/lib/libboost_regex.a \
-  -DBoost_REGEX_LIBRARIES=/usr/local/lib/libboost_regex.a \
-  -DBoost_SYSTEM_LIBRARY=/usr/local/lib/libboost_system.a \
-  -DBoost_SYSTEM_LIBRARIES=/usr/local/lib/libboost_system.a \
-  -DBoost_UNIT_TEST_FRAMEWORK_LIBRARY=/usr/local/lib/libboost_unit_test_framework.a \
-  -DBoost_UNIT_TEST_FRAMEWORK_LIBRARIES=/usr/local/lib/libboost_unit_test_framework.a \
   $SRC/solidity
 make ossfuzz ossfuzz_proto ossfuzz_abiv2 -j $(nproc)
 
