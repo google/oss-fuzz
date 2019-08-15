@@ -18,9 +18,10 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 MAINTAINER randy408@protonmail.com
 
-RUN apt-get update && \
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
     apt-get install -y -t xenial-backports ninja-build && \
-    apt-get install -y pkg-config zlib1g-dev python3-pip && \
+    apt-get install -y pkg-config zlib1g-dev zlib1g-dev:i386 python3-pip && \
     pip3 install meson
 
 RUN git clone --depth 1 https://gitlab.com/randy408/libspng.git
