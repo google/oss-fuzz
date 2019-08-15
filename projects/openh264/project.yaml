@@ -4,6 +4,7 @@ auto_ccs:
   - "guangwwa@cisco.com"
   - "sijchen@cisco.com"
   - "twsmith@mozilla.com"
+  - "cdiehl@mozilla.com"
   - "yanqian@cisco.com"
 sanitizers:
   - address

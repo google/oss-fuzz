@@ -4,6 +4,7 @@ auto_ccs:
  - "rhodri@kynesim.co.uk"
  - "hanno@hboeck.de"
  - "webmaster@hartwork.org"
+ - "cdiehl@mozilla.com"
 sanitizers:
   - address
   - memory

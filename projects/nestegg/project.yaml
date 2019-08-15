@@ -6,3 +6,4 @@ sanitizers:
 - undefined
 auto_ccs:
 - "twsmith@mozilla.com"
+- "cdiehl@mozilla.com"

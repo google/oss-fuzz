@@ -4,4 +4,5 @@ auto_ccs:
  - "michaelni@gmx.at"
  - "jrummell@google.com"
  - "tfoucu@google.com"
+ - "cdiehl@mozilla.com"
 selective_unpack: true

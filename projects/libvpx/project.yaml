@@ -7,3 +7,4 @@ sanitizers:
 auto_ccs:
 - jzern@google.com
 - johannkoenig@google.com
+- cdiehl@mozilla.com

@@ -12,6 +12,7 @@ auto_ccs:
   - "cchapman@adobe.com"
   - "ariza@typekit.com"
   - "qxliu@google.com"
+  - "cdiehl@mozilla.com"
 sanitizers:
  - address
  - undefined

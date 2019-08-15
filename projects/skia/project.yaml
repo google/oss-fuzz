@@ -5,6 +5,7 @@ auto_ccs:
   - "mtklein@chromium.org"
   - "reed@google.com"
   - "bsalomon@google.com"
+  - "cdiehl@mozilla.com"
 sanitizers:
  - address
  - undefined

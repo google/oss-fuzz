@@ -5,6 +5,7 @@ auto_ccs:
   - "kempfjb@gmail.com"
   - "b@rr-dav.id.au"
   - "twsmith@mozilla.com"
+  - "cdiehl@mozilla.com"
   - "dav1d-fuzz@videolan.org"
 sanitizers:
   - address
