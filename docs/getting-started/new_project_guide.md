@@ -78,7 +78,7 @@ This configuration file stores project metadata. The following attributes are su
 - [auto_ccs](#primary)
 - [sanitizers](#sanitizers) (optional)
 - [architectures](#architectures) (optional)
-- [help_url](#help_url)
+- [help_url](#help_url) (optional)
 - [experimental](#experimental)
 
 ### homepage
@@ -128,7 +128,7 @@ By fuzzing on i386 you might find bugs that:
 * Exist in architecture-independent source code and which only affect i386 users.
 * Exist in architecture-independent source code and which affects users on other 32-bit platforms such as AArch32 (aka 32-bit ARM).
 
-### help_url
+### help_url (optional) {#help_url}
 A link to a custom help URL that appears in bug reports instead of the default
 [OSS-Fuzz guide to reproducing crashes]({{ site.baseurl }}/advanced-topics/reproducing/). This can be useful if you assign
 bugs to members of your project unfamiliar with OSS-Fuzz, or if they should follow a different workflow for
