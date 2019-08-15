@@ -52,12 +52,14 @@ And then run the following command to copy the corpus to a directory on your
 machine.
 
 ```bash
-gsutil -m rsync gs://<bucket_path> <local_directory>
+$ gsutil -m rsync gs://<bucket_path> <local_directory>
 ```
 Following the expat example above, this would be:
 
 ```bash
-gsutil -m rsync gs://expat-corpus.clusterfuzz-external.appspot.com/libFuzzer/expat_parse_fuzzer <local_directory>
+$ gsutil -m rsync \
+    gs://expat-corpus.clusterfuzz-external.appspot.com/libFuzzer/expat_parse_fuzzer \
+    <local_directory>
 ```
 
 ## Corpus backups

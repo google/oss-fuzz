@@ -24,7 +24,7 @@ Download it. If the issue is not public, you will need to login using your
 [Google account](https://support.google.com/accounts/answer/176347?hl=en)
 ([why?]({{ site.baseurl }}/faq/#why-do-you-require-a-google-account-for-authentication))
 that the bug report CCs.
-This file contains the bytes that were fed to the [Fuzz Target](http://libfuzzer.info/#fuzz-target).
+This file contains the bytes that were fed to the [fuzz target](http://libfuzzer.info/#fuzz-target).
 
 If you have already
 [integrated]({{ site.baseurl }}/advanced-topics/ideal-integration/)
@@ -94,7 +94,8 @@ $ python infra/helper.py reproduce libxml2 libxml2_xml_read_memory_fuzzer ~/Down
 ## Reproduce using local source checkout
 
 ```bash
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME <source_path>
+$ python infra/helper.py build_fuzzers \
+    --sanitizer <address/memory/undefined> $PROJECT_NAME <source_path>
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
 
@@ -118,8 +119,10 @@ correctly configured, even if it succeeded. To reproduce these locally, run:
 
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> --engine <libfuzzer/afl/honggfuzz> $PROJECT_NAME
-$ python infra/helper.py check_build  --sanitizer <address/memory/undefined> --engine <libfuzzer/afl/honggfuzz> $PROJECT_NAME <fuzz_target_name>
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
+    --engine <libfuzzer/afl/honggfuzz> $PROJECT_NAME
+$ python infra/helper.py check_build  --sanitizer <address/memory/undefined> \
+    --engine <libfuzzer/afl/honggfuzz> $PROJECT_NAME <fuzz_target_name>
 ```
 
 For reproducing a `coverage` build failure, follow
