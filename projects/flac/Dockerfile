@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER your@email.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool libtool-bin pkg-config gettext sudo
 RUN git clone --depth 1 https://github.com/xiph/flac.git
 RUN git clone --depth 1 https://github.com/xiph/ogg.git
