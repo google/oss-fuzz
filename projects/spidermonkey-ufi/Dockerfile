@@ -18,7 +18,9 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER cdiehl@mozilla.com
 RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf2.13 \
-    python
+    python \
+    libc++1 \
+    libc++abi1
 RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
 WORKDIR mozilla-central/js/src/
 COPY build.sh target.c $SRC/

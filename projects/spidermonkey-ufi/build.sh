@@ -57,3 +57,8 @@ do
     $SRC/target.c -o $OUT/$FUZZ_TARGET
 done
 
+# Copy libraries.
+mkdir -p $OUT/lib
+cp -L /usr/lib/x86_64-linux-gnu/libc++.so.1 $OUT/lib
+cp -L /usr/lib/x86_64-linux-gnu/libc++abi.so.1 $OUT/lib
+
