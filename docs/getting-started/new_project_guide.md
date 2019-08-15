@@ -77,6 +77,7 @@ This configuration file stores project metadata. The following attributes are su
 - [primary_contact](#primary)
 - [auto_ccs](#primary)
 - [sanitizers](#sanitizers) (optional)
+- [architectures](#architectures) (optional)
 - [help_url](#help_url)
 - [experimental](#experimental)
 
@@ -116,6 +117,16 @@ Crashes can be accessed on the [ClusterFuzz
 homepage]({{ site.baseurl }}/furthur-reading/clusterfuzz#web-interface).
 
 `sanitizers` example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
+
+### architectures (optional) {#architectures}
+The list of architectures to fuzz on.
+ClusterFuzz supports fuzzing on x86_64 (aka x64) by default. However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifying "x86_64" and "i386" in "architectures".
+This is not enabled by default because many projects won't build for i386 without some modification to their OSS-Fuzz build process.
+
+By fuzzing on i386 you might find bugs that:
+* Only occur in architecture-specific source code (e.g. code that contains i386 assembly).
+* Exist in architecture-independent source code and which only affect i386 users.
+* Exist in architecture-independent source code and which affects users on other 32-bit platforms such as AArch32 (aka 32-bit ARM).
 
 ### help_url
 A link to a custom help URL that appears in bug reports instead of the default
