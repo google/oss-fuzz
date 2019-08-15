@@ -41,8 +41,8 @@ arise as source code changes over time.
 
 Make sure to fuzz the target locally for a small period of time to ensure that 
 it does not crash, hang, or run out of memory instantly.
-You can read more about it [here]
-(https://github.com/google/fuzzer-test-suite/blob/master/tutorial/libFuzzerTutorial.md#problems)
+You can read more about what makes a good fuzz target [here]
+(https://github.com/google/fuzzing/blob/master/docs/good-fuzz-target.md)
 
 The interface between the [fuzz target]((http://libfuzzer.info/#fuzz-target))
 and the fuzzing engines is C, so you may use C or C++ to implement the fuzz target.
