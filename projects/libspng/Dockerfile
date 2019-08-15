@@ -21,7 +21,7 @@ MAINTAINER randy408@protonmail.com
 RUN apt-get update && \
     apt-get install -y -t xenial-backports ninja-build && \
     apt-get install -y pkg-config zlib1g-dev python3-pip && \
-    pip install meson
+    pip install --yes meson
 
 RUN git clone --depth 1 https://gitlab.com/randy408/libspng.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
