@@ -1,0 +1,7 @@
+homepage: 'https://searchfox.org/mozilla-central/source/js/src/fuzz-tests/README'
+primary_contact: 'choller@mozilla.com'
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+
