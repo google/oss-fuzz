@@ -43,7 +43,7 @@ cd build_OPT.OBJ
     --disable-jemalloc \
     --enable-tests \
     --enable-fuzzing \
-    --enable-address-sanitizer
+    --enable-$SANITIZER-sanitizer
 
 make "-j$(nproc)"
 

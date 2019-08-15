@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,32 @@
 static const char* magic __attribute__((used)) = "LLVMFuzzerTestOneInput";
 
 int main(int argc, char* argv[]) {
+  char path[PATH_MAX] = {0};
+
+  // Handle (currently not used) relative binary path.
+  if (**argv != '/') {
+    if (!getcwd(path, PATH_MAX - 1)) {
+      perror("getcwd");
+      exit(1);
+    }
+    strcat(path, "/");
+  }
+
+  if (strlen(path) + strlen(*argv) + 40 >= PATH_MAX) {
+    fprintf(stderr, "Path length would exceed PATH_MAX\n");
+    exit(1);
+  }
+
+  strcat(path, *argv);
+  char* solidus = strrchr(path, '/');
+  *solidus = 0; // terminate path before last /
+
+  char ld_path[PATH_MAX] = {0};
+  strcpy(ld_path, path);
+  strcat(ld_path, "/lib");
+
+  // Expects LD_LIBRARY_PATH to also be set by oss-fuzz.
+  setenv("LD_LIBRARY_PATH", ld_path, 0);
   setenv("HOME", "/tmp", 0);
   setenv("LIBFUZZER", "1", 1);
   setenv("FUZZER", STRINGIFY(FUZZ_TARGET), 1);
@@ -31,7 +58,12 @@ int main(int argc, char* argv[]) {
     free(new_options);
   }
 
-  int ret = execv("./fuzz-tests", argv);
+
+  char js_path[PATH_MAX] = {0};
+  strcpy(js_path, path);
+  strcat(js_path, "/fuzz-tests");
+
+  int ret = execv(js_path, argv);
   if (ret)
     perror("execv");
   return ret;
