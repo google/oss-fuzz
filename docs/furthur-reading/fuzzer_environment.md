@@ -27,12 +27,12 @@ are not available on the bot runtime environment (where the fuzz targets run).
 
 If you need these dependencies in the runtime environment, you can either
 - Install the packages via Dockerfile
-([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/Dockerfile#L19))
+([example](https://github.com/google/oss-fuzz/blob/2d5e2ef84f281e6ab789055aa735606d3122fda9/projects/tor/Dockerfile#L19))
 and then link statically against them
-([example](https://github.com/google/oss-fuzz/blob/master/projects/tor/build.sh#L40))
+([example](https://github.com/google/oss-fuzz/blob/2d5e2ef84f281e6ab789055aa735606d3122fda9/projects/tor/build.sh#L40))
 - Or build the dependencies statically in
 [build.sh]({{ site.baseurl }}/getting-started/new-project-guide/#buildsh)
-([example](https://github.com/google/oss-fuzz/blob/master/projects/ffmpeg/build.sh#L26)).
+([example](https://github.com/google/oss-fuzz/blob/64f8b6593da141b97c98c7bc6f07df92c42ee010/projects/ffmpeg/build.sh#L26)).
 
 All build artifacts needed during fuzz target execution should be inside the
 `$OUT` directory. Only those artifacts are archived and used on the bots.

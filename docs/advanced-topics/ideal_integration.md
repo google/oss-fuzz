@@ -25,10 +25,10 @@ Every [fuzz target](http://libfuzzer.info/#fuzz-target):
 * Is [maintained by code owners](#fuzz-target) in their RCS (Git, SVN, etc).
 * Is [built with the rest of the tests](#build-support) - no bit rot! 
 * Has a [seed corpus](#seed-corpus) with good [code coverage](#coverage).
+* Has a [dictionary](#dictionary), if applicable.
 * Is [continuously tested on the seed corpus](#regression-testing) with
   [ASan/UBSan/MSan](https://github.com/google/sanitizers).
 * Is [fast and has no OOMs](#performance).
-* Has a [fuzzing dictionary](#fuzzing-dictionary), if applicable
 
 ## Fuzz Target
 The code of the [fuzz target(s)](http://libfuzzer.info/#fuzz-target) should be
@@ -41,7 +41,8 @@ arise as source code changes over time.
 
 Make sure to fuzz the target locally for a small period of time to ensure that 
 it does not crash, hang, or run out of memory instantly.
-See details at http://libfuzzer.info and http://tutorial.libfuzzer.info.
+You can read more about what makes a good fuzz target [here]
+(https://github.com/google/fuzzing/blob/master/docs/good-fuzz-target.md)
 
 The interface between the [fuzz target]((http://libfuzzer.info/#fuzz-target))
 and the fuzzing engines is C, so you may use C or C++ to implement the fuzz target.
@@ -102,19 +103,7 @@ Examples:
 [openssl](https://github.com/openssl/openssl/tree/master/fuzz),
 [nss](https://github.com/mozilla/nss-fuzzing-corpus) (corpus in a separate repo).
 
-## Regression Testing
-The fuzz targets should be regularly tested (not necessarily fuzzed!) as a part
-of the project's regression testing process.
-One way to do so is to link the fuzz target with a simple standalone driver
-(e.g. [this one](https://github.com/llvm-mirror/compiler-rt/tree/master/lib/fuzzer/standalone))
-that runs the provided inputs and use this driver with the seed corpus created
-in previous step. It is recommended to use
-[sanitizers](https://github.com/google/sanitizers) during regression testing.
-
-Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45),
-[openssl](https://github.com/openssl/openssl/blob/master/fuzz/test-corpus.c)
-
-## Fuzzing dictionary
+## Dictionary
 For some input types, a simple dictionary of tokens used by the input language
 can have a dramatic positive effect on fuzzing efficiency. 
 For example, when fuzzing an XML parser, a dictionary of XML tokens will help.
@@ -137,11 +126,23 @@ documentation page.
 Coverage can often be improved by adding dictionaries, more inputs for seed
 corpora, and fixing timeouts/out-of-memory bugs in your targets.
 
+## Regression Testing
+The fuzz targets should be regularly tested (not necessarily fuzzed!) as a part
+of the project's regression testing process.
+One way to do so is to link the fuzz target with a simple standalone driver
+(e.g. [this one](https://github.com/llvm-mirror/compiler-rt/tree/master/lib/fuzzer/standalone))
+that runs the provided inputs and use this driver with the seed corpus created
+in previous step. It is recommended to use
+[sanitizers](https://github.com/google/sanitizers) during regression testing.
+
+Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45),
+[openssl](https://github.com/openssl/openssl/blob/master/fuzz/test-corpus.c)
+
 ## Performance
 Fuzz targets should also be performant, as high memory usage and/or slow
 execution speed can slow the down the growth of coverage and finding of new
 bugs. ClusterFuzz provides a
-[performance analyzer]({{ site.baseurl }}/furthur-reading/clusterfuzz)
+[performance analyzer]({{ site.baseurl }}/furthur-reading/clusterfuzz/#performance-analyzer)
 for each fuzz target that shows problems that are impacting the performance of
 the fuzz target.
 

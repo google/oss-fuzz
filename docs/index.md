@@ -11,8 +11,11 @@ has_toc: false
 
 [Fuzz testing](https://en.wikipedia.org/wiki/Fuzz_testing) is a well-known
 technique for uncovering programming errors in software.
-Many of these detectable errors, like [buffer overflow](https://en.wikipedia.org/wiki/Buffer_overflow), can have serious security implications. Google has found [thousands] of security vulnerabilities and stability bugs by deploying [guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html),
-and we now want to share that service with the open source community. 
+Many of these detectable errors, like [buffer overflow](https://en.wikipedia.org/wiki/Buffer_overflow),
+can have serious security implications. Google has found [thousands] of security vulnerabilities and
+stability bugs by deploying
+[guided in-process fuzzing of Chrome components](https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html),
+and we now want to share that service with the open source community.
 
 [thousands]: https://bugs.chromium.org/p/chromium/issues/list?q=label%3AStability-LibFuzzer%2CStability-AFL%20-status%3ADuplicate%2CWontFix&can=1
 
@@ -29,8 +32,8 @@ a distributed fuzzer execution environment and reporting tool.
 Currently, OSS-Fuzz supports C and C++ code, though other languages supported by [LLVM](http://llvm.org) may work too.
 
 ## Trophies
-As of August 2019, OSS-Fuzz has found [~14,000] bugs in over [200] open source
+As of August 2019, OSS-Fuzz has found over [14,000] bugs in over [200] open source
 projects.
 
-[~14,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=-status%3AWontFix%2CDuplicate+-Infra
+[14,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=-status%3AWontFix%2CDuplicate+-Infra
 [200]: https://github.com/google/oss-fuzz/tree/master/projects

@@ -26,20 +26,16 @@ Currently, OSS-Fuzz supports C and C++ code, though other languages supported by
 Read our [detailed documentation](https://google.github.io/oss-fuzz) to learn how to use OSS-Fuzz.
 
 ## Trophies
-As of August 2019, OSS-Fuzz has found [~14,000] bugs in over [200] open source
+As of August 2019, OSS-Fuzz has found over [14,000] bugs in over [200] open source
 projects.
 
-[~14,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=-status%3AWontFix%2CDuplicate+-Infra
+[14,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=-status%3AWontFix%2CDuplicate+-Infra
 [200]: https://github.com/google/oss-fuzz/tree/master/projects
 
 ## Blog posts
 
-* 2016-12-01 ([Open Source](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
-[Testing](https://testing.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html),
-[Security](https://security.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html))
-* 2017-05-08 ([Open Source](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
-[Testing](https://testing.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html),
-[Security](https://security.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html))
-* 2018-11-06 ([Security](https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html))
+* 2016-12-01 - [Announcing OSS-Fuzz: Continuous fuzzing for open source software](https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html).
+* 2017-05-08 - [OSS-Fuzz: Five months later, and rewarding projects](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html)
+* 2018-11-06 - [A New Chapter for OSS-Fuzz](https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html)
 
 
