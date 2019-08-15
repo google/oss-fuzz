@@ -323,11 +323,10 @@ to reuse the same dictionary if they are fuzzing very similar inputs.
 ### Input Size
 
 By default, the fuzzing engine will generate input of any arbitrary length.
-This is often useful to try unexpected use cases that lead to security
-vulnerabilities. However, if your API does not expect large inputs and will
-fail on parsing early-on, it is important to add those limits in your fuzz target
-to avoid those errors altogether. This can also lead to significant performance
-improvements.
+This might be useful to try corner cases that could lead to a
+security vulnerability. However, if large inputs are not necessary to
+increase the coverage of your target API, it is important to add a limit
+here to significantly improve performance.
 
 ```cpp
 if (size < kMinInputLength || size > kMaxInputLength)
