@@ -125,7 +125,7 @@ This is not enabled by default because many projects won't build for i386 withou
 
 By fuzzing on i386 you might find bugs that:
 * Only occur in architecture-specific source code (e.g. code that contains i386 assembly).
-* Exist in architecture-independent source code and which only affect i386 users.
+* Exist in architecture-independent source code and which only affects i386 users.
 * Exist in architecture-independent source code and which affects users on other 32-bit platforms such as AArch32 (aka 32-bit ARM).
 
 ### help_url (optional) {#help_url}
