@@ -16,16 +16,15 @@
 ################################################################################
 
 mkdir build
-meson --buildtype=plain --default-library static build
-cd build
 
 if [[ $CFLAGS = *-m32* ]]
 then
-    meson configure -Dc_link_args="-m32"
+    meson --buildtype=plain --default-library static --cross-file=tests/cross_oss_fuzz.txt build
+else
+    meson --buildtype=plain --default-library static build
 fi
 
-ninja
-cd ..
+ninja -C build
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/libspng/tests/spng_read_fuzzer.cc \
