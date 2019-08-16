@@ -17,7 +17,15 @@
 
 mkdir build
 meson --buildtype=plain --default-library static build
-ninja -C build
+cd build
+
+if [[ $CFLAGS = *-m32* ]]
+then
+    meson configure -Dc_link_args="-m32"
+fi
+
+ninja
+cd ..
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/libspng/tests/spng_read_fuzzer.cc \
