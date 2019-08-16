@@ -48,7 +48,7 @@ function compile_fuzzer {
    # Instrument all Go files relevant to this fuzzer
   go-fuzz-build -libfuzzer -func $function -o $fuzzer.a $path 
 
-   # Instrumented, compiled Go ($fuzzer.a) + libFuzzer = fuzzer binary
+   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
 }
 
