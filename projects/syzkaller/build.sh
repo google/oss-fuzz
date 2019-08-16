@@ -15,24 +15,6 @@
 #
 ################################################################################
 
-# Bootstrap the latest go.
-pushd $SRC
-rm -rf go
-git clone --depth 1 https://github.com/golang/go go
-pushd go/src/
-./make.bash
-popd
-popd
-
-# Remove golang used to bootstrap the latest version.
-apt-get remove golang-1.10-go -y
-rm /usr/bin/go
-
-# Set up Golang env variables.
-export GOROOT="$SRC/go"
-export GOPATH="$GOROOT/packages"
-export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"
-
 # Dependency of go-fuzz
 go get golang.org/x/tools/go/packages
 
@@ -55,5 +37,9 @@ function compile_fuzzer {
 compile_fuzzer ./pkg/compiler Fuzz compiler_fuzzer
 compile_fuzzer ./prog/test FuzzDeserialize prog_deserialize_fuzzer
 compile_fuzzer ./prog/test FuzzParseLog prog_parselog_fuzzer
-compile_fuzzer ./pkg/report Fuzz report_fuzzer
-compile_fuzzer ./tools/syz-trace2syz/proggen Fuzz trace2syz_fuzzer
+
+# This target fails to build.
+# compile_fuzzer ./pkg/report Fuzz report_fuzzer
+
+# This target is way too spammy and OOMs very quickly.
+# compile_fuzzer ./tools/syz-trace2syz/proggen Fuzz trace2syz_fuzzer
