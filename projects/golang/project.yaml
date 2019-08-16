@@ -3,5 +3,5 @@ primary_contact: "guidovranken@gmail.com"
 auto_ccs:
  - "golang-fuzz@googlegroups.com"
 sanitizers:
- - undefined
+ - address
 view_restrictions: none
