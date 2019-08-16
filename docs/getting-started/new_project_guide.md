@@ -65,7 +65,7 @@ $ export PROJECT_NAME=<project_name>
 $ python infra/helper.py generate $PROJECT_NAME
 ```
 
-Once the template configuration files are available, you can modify them to fit your project.
+Once the template configuration files are created, you can modify them to fit your project.
 
 **Note:** We prefer that you keep and maintain [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your own source code repository. If this isn't possible, you can store them inside the OSS-Fuzz project directory you created.
 
@@ -79,7 +79,6 @@ This configuration file stores project metadata. The following attributes are su
 - [sanitizers](#sanitizers) (optional)
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
-- [experimental](#experimental)
 
 ### homepage
 You project's homepage.
@@ -93,8 +92,10 @@ The list of sanitizers to use. If you don't specify a list, `sanitizers` uses a 
 sanitizers (currently ["address"](https://clang.llvm.org/docs/AddressSanitizer.html) and
 ["undefined"](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)).
 
-[MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) ("memory") is also supported, but is not enabled by default due to the likelihood of false positives.
-If you want to use "memory," first make sure your project's runtime dependencies are listed in the OSS-Fuzz
+[MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html) ("memory") is also supported
+and recommended, but is not enabled by default due to the likelihood of false positives from
+un-instrumented system dependencies. If you want to use "memory," first make sure your project's
+runtime dependencies are listed in the OSS-Fuzz
 [msan-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
 Then, you can opt in by adding "memory" to your list of sanitizers.
 
@@ -145,26 +146,6 @@ reproducing and fixing bugs than the standard one outlined in the reproducing gu
 
 `help_url` example: [skia](https://github.com/google/oss-fuzz/blob/master/projects/skia/project.yaml).
 
-### experimental
-A boolean (either True or False) that indicates whether this project is in evaluation mode. `experimental` allows you to fuzz your project and generate crash findings, but prevents bugs from being filed in the issue tracker. The crashes can be accessed on the [ClusterFuzz homepage]({{ site.baseurl }}/furthur-reading/clusterfuzz#web-interface). Here's an example:
-
-```
-homepage: "{project_homepage}"
-primary_contact: "{primary_contact}"
-auto_ccs:
-  - "{auto_cc_1}"
-  - "{auto_cc_2}"
-sanitizers:
-  - address
-  - memory
-  - undefined
-help_url: "{help_url}"  
-experimental: True
-```
-
-**Note:** You should be only use `experimental` if you are not a maintainer of the project and have
-low confidence in the efficacy of your fuzz targets. 
-
 ## Dockerfile
 
 This configuration file defines the Docker image for your project. Your [build.sh](#build.sh) script will be executed in inside the container you define.
@@ -194,7 +175,7 @@ In general, this script should do the following:
    
 Resulting binaries should be placed in `$OUT`.
 
-Here's an example from Expat ([source]((https://github.com/google/oss-fuzz/blob/master/projects/expat/build.sh)):
+Here's an example from Expat ([source](https://github.com/google/oss-fuzz/blob/master/projects/expat/build.sh)):
 
 ```bash
 #!/bin/bash -eu
@@ -223,11 +204,11 @@ alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on 
 
 When your build.sh script is executed, the following locations are available within the image:
 
-| Location|Env| Description |
-|---------| -------- | ----------  |
+| Location| Env Variable | Description |
+|---------| ------------ | ----------  |
 | `/out/` | `$OUT`         | Directory to store build artifacts (fuzz targets, dictionaries, options files, seed corpus archives). |
 | `/src/` | `$SRC`         | Directory to checkout source files. |
-| `/work/`| `$WORK`        | Directory for storing intermediate files. |
+| `/work/`| `$WORK`        | Directory to store intermediate files. |
 
 Although the files layout is fixed within a container, environment variables are
 provided so you can write retargetable scripts.
@@ -303,7 +284,10 @@ fuzz targets get to the code you expect:
     ```
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined) 
-configurations. MemorySanitizer is in development mode and not recommended for use. <b>Make sure to test each
+configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
+that all system dependencies are
+[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
+<b>Make sure to test each
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
 If everything works locally, it should also work on our automated builders and ClusterFuzz. If you check in
@@ -315,6 +299,9 @@ If you run into problems, our [Debugging page]({{ site.baseurl }}/advanced-topic
 [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target).
 
 ## Efficient fuzzing
+
+To improve your fuzz target ability to find bugs faster, you should consider the
+following ways:
 
 ### Seed Corpus
 
@@ -333,7 +320,6 @@ in bug reports or be used for further security research. It is important that co
 has an appropriate and consistent license.
 
 See also [Accessing Corpora]({{ site.baseurl }}/advanced-topics/corpora/) for information about getting access to the corpus we are currently using for your fuzz targets.
-
 
 ### Dictionaries
 
@@ -354,35 +340,25 @@ It is common for several [fuzz targets]({{ site.baseurl }}/reference/glossary/#f
 to reuse the same dictionary if they are fuzzing very similar inputs.
 (example: [expat](https://github.com/google/oss-fuzz/blob/master/projects/expat/parse_fuzzer.options)).
 
-### Custom libFuzzer options for ClusterFuzz
+### Input Size
 
-By default, ClusterFuzz will run your fuzzer without any options. You can specify
-custom options by creating a `my_fuzzer.options` file next to a `my_fuzzer` executable in `$OUT`:
-
-```
-[libfuzzer]
-close_fd_mask = 3
-only_ascii = 1
-```
-
-[List of available options](http://llvm.org/docs/LibFuzzer.html#options). Use of `max_len` is not recommended as other fuzzing engines may not support that option. Instead, if
-you need to strictly enforce the input length limit, add a sanity check to the
-beginning of your fuzz target:
+By default, the fuzzing engine will generate input of any arbitrary length.
+This might be useful to try corner cases that could lead to a
+security vulnerability. However, if large inputs are not necessary to
+increase the coverage of your target API, it is important to add a limit
+here to significantly improve performance.
 
 ```cpp
 if (size < kMinInputLength || size > kMaxInputLength)
   return 0;
 ```
 
-For out of tree [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target), you will likely add options file using docker's
-`COPY` directive and will copy it into output in build script.
-(example: [woff2](https://github.com/google/oss-fuzz/blob/master/projects/woff2/convert_woff2ttf_fuzzer.options)).
-
 ## Checking in to the OSS-Fuzz repository
 
-Once you've tested your fuzzing files locally, fork OSS-Fuzz, commit, and push to the fork. Then create a pull request with
-your change! Follow the [Forking Project](https://guides.github.com/activities/forking/) guide
-if you're new to contributing via GitHub.
+Once you've tested your fuzzing files locally, fork OSS-Fuzz, commit, and push to the fork. Then
+create a pull request with your change. Follow the
+[Forking Project](https://guides.github.com/activities/forking/) guide if you're new to contributing
+via GitHub.
 
 ### Copyright headers
 
