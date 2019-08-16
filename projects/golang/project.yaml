@@ -1,0 +1,7 @@
+homepage: "https://golang.org/"
+primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+ - "golang-fuzz@googlegroups.com"
+sanitizers:
+ - undefined
+view_restrictions: none
