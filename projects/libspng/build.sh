@@ -16,27 +16,21 @@
 ################################################################################
 
 mkdir build
-
-if [[ $CFLAGS = *-m32* ]]
-then
-    meson --buildtype=plain --default-library static --cross-file=tests/cross_oss_fuzz.txt build
-else
-    meson --buildtype=plain --default-library static build
-fi
-
-ninja -C build
+cd build
+cmake ..
+make -j$(nproc)
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/libspng/tests/spng_read_fuzzer.cc \
     -o $OUT/spng_read_fuzzer \
-    $LIB_FUZZING_ENGINE $SRC/libspng/build/libspng.a -lz
+    $LIB_FUZZING_ENGINE $SRC/libspng/build/libspng_static.a -lz
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/libspng/tests/spng_read_fuzzer.cc \
     -o $OUT/spng_read_fuzzer_structure_aware \
     -include ../fuzzer-test-suite/libpng-1.2.56/png_mutator.h \
     -D PNG_MUTATOR_DEFINE_LIBFUZZER_CUSTOM_MUTATOR \
-    $LIB_FUZZING_ENGINE $SRC/libspng/build/libspng.a -lz
+    $LIB_FUZZING_ENGINE $SRC/libspng/build/libspng_static.a -lz
 
 find $SRC/libspng/tests/images -name "*.png" | \
      xargs zip $OUT/spng_read_fuzzer_seed_corpus.zip
