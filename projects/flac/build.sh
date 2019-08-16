@@ -17,6 +17,16 @@
 
 export ASAN_OPTIONS="detect_leaks=0"
 
+if [[ $CFLAGS = *sanitize=address* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DASAN"
+fi
+
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DMSAN"
+fi
+
 export CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG"
 
 # Build libogg
@@ -44,3 +54,5 @@ cd $SRC/fuzzing-headers
 # Build fuzzers
 cd $SRC/flac-fuzzers/
 $CXX $CXXFLAGS -I $SRC/flac/include/ fuzzer_decoder.cpp $SRC/flac/src/libFLAC++/.libs/libFLAC++.a $SRC/flac/src/libFLAC/.libs/libFLAC.a $SRC/libogg-install/lib/libogg.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer_decoder
+$CXX $CXXFLAGS -I $SRC/flac/include/ fuzzer_encoder.cpp $SRC/flac/src/libFLAC++/.libs/libFLAC++.a $SRC/flac/src/libFLAC/.libs/libFLAC.a $SRC/libogg-install/lib/libogg.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer_encoder
+cp fuzzer_encoder.dict $OUT/
