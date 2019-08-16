@@ -233,19 +233,16 @@ void ProtoConverter::writeByte(uint8_t x)
 
 void ProtoConverter::writeWord(uint16_t x)
 {
-	x = __builtin_bswap16(x);
 	m_output.write((char *)&x, sizeof(x));
 }
 
 void ProtoConverter::writeInt(uint32_t x)
 {
-	x = __builtin_bswap32(x);
 	m_output.write((char *)&x, sizeof(x));
 }
 
 void ProtoConverter::writeLong(uint64_t x)
 {
-	x = __builtin_bswap64(x);
 	m_output.write((char *)&x, sizeof(x));
 }
 
