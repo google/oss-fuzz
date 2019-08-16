@@ -19,6 +19,7 @@ mkdir build
 cd build
 cmake ..
 make -j$(nproc)
+cd ..
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/libspng/tests/spng_read_fuzzer.cc \
