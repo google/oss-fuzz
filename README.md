@@ -26,8 +26,7 @@ Currently, OSS-Fuzz supports C and C++ code, though other languages supported by
 Read our [detailed documentation](https://google.github.io/oss-fuzz) to learn how to use OSS-Fuzz.
 
 ## Trophies
-As of August 2019, OSS-Fuzz has found over [14,000] bugs in over [200] open source
-projects.
+As of August 2019, OSS-Fuzz has found over [14,000] bugs in [200] open source projects.
 
 [14,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=-status%3AWontFix%2CDuplicate+-Infra
 [200]: https://github.com/google/oss-fuzz/tree/master/projects
