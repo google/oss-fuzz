@@ -42,9 +42,9 @@ cd $SRC/flac/
 ./autogen.sh
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
-    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-asm-optimizations --disable-sse
+    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-oggtest --disable-examples --disable-xmms-plugin --disable-asm-optimizations --disable-sse
 else
-    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static
+    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --enable-static --disable-oggtest --disable-examples --disable-xmms-plugin
 fi
 make -j$(nproc)
 
