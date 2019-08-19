@@ -17,7 +17,8 @@ in combination with [Sanitizers](https://github.com/google/sanitizers), as well 
 [ClusterFuzz](https://github.com/google/clusterfuzz),
 a distributed fuzzer execution environment and reporting tool. 
 
-Currently, OSS-Fuzz supports C and C++ code, though other languages supported by [LLVM](http://llvm.org) may work too.
+Currently, OSS-Fuzz supports C/C++, Rust, and Go code. Other languages supported by [LLVM](http://llvm.org) may work too.
+OSS-Fuzz supports fuzzing x86_64 and i386 builds.
 
 ## Overview
 ![OSS-Fuzz process diagram](docs/images/process.png)
