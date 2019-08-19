@@ -15,12 +15,6 @@
 #
 ################################################################################
 
-# Dependency of go-fuzz
-go get golang.org/x/tools/go/packages
-
-# go-fuzz-build is the tool that instruments Go files.
-go get github.com/dvyukov/go-fuzz/go-fuzz-build
-
 # Based on the function from oss-fuzz/projects/golang/build.sh script.
 function compile_fuzzer {
   path=$1
@@ -37,9 +31,7 @@ function compile_fuzzer {
 compile_fuzzer ./pkg/compiler Fuzz compiler_fuzzer
 compile_fuzzer ./prog/test FuzzDeserialize prog_deserialize_fuzzer
 compile_fuzzer ./prog/test FuzzParseLog prog_parselog_fuzzer
-
-# This target fails to build.
-# compile_fuzzer ./pkg/report Fuzz report_fuzzer
+compile_fuzzer ./pkg/report Fuzz report_fuzzer
 
 # This target is way too spammy and OOMs very quickly.
 # compile_fuzzer ./tools/syz-trace2syz/proggen Fuzz trace2syz_fuzzer
