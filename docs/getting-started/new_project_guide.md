@@ -121,7 +121,8 @@ homepage]({{ site.baseurl }}/furthur-reading/clusterfuzz#web-interface).
 
 ### architectures (optional) {#architectures}
 The list of architectures to fuzz on.
-ClusterFuzz supports fuzzing on x86_64 (aka x64) by default. However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifying "x86_64" and "i386" in "architectures" like this:
+ClusterFuzz supports fuzzing on x86_64 (aka x64) by default.
+However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifying "x86_64" and "i386" in "architectures" like this:
 
 ```yaml
 architectures:
@@ -134,9 +135,11 @@ By fuzzing on i386 you might find bugs that:
 * Exist in architecture-independent source code and which only affects i386 users.
 * Exist in architecture-independent source code and which affects users on other 32-bit platforms such as AArch32 (aka 32-bit ARM).
 
-Note that some bugs which affect x86_64 may be discovered on i386 and filed as such. On the testcase page of each oss-fuzz issue is a list of other jobs where the crash reproduces, this can let you know if the crash exists on x86_64 as well.
+Note that some bugs which affect x86_64 may be discovered on i386 and filed as such.
+On the testcase page of each oss-fuzz issue is a list of other jobs where the crash reproduces, this can let you know if the crash exists on x86_64 as well.
 
-Fuzzing on i386 is not enabled by default because many projects won't build for i386 without some modification to their OSS-Fuzz build process. For example, you will need to link against `LIB_FUZZING_ENGINE` and possibly install i386 dependancies within the x86_64 docker image to get things working. 
+Fuzzing on i386 is not enabled by default because many projects won't build for i386 without some modification to their OSS-Fuzz build process.
+For example, you will need to link against `$LIB_FUZZING_ENGINE` and possibly install i386 dependencies within the x86_64 docker image ([for example](https://github.com/google/oss-fuzz/blob/5b8dcb5d942b3b8bc173b823fb9ddbdca7ec6c99/projects/gdal/build.sh#L18)) to get things working.
 
 ### help_url (optional) {#help_url}
 A link to a custom help URL that appears in bug reports instead of the default

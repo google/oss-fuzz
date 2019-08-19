@@ -42,7 +42,7 @@ Depending on the nature of the bug, the fuzz target binary needs to be built
 with the appropriate [sanitizer](https://github.com/google/sanitizers)
 (e.g. if this is a buffer overflow, with
 [AddressSanitizer](http://clang.llvm.org/docs/AddressSanitizer.html)).
-Similarly, if you're project has opted-in to i386 fuzzing, you may need to specify it for i386 bugs.
+Similarly, if you're project has opted-in to i386 fuzzing, you may need to specify `--architecture i386` to reproduce i386 bugs.
 
 If you are not sure how to build the fuzzer using the project's build system,
 you may also use Docker
