@@ -66,10 +66,11 @@ $ python infra/helper.py pull_images
 
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> --architecture <x86_64/i386> $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
+    --architecture <x86_64/i386> $PROJECT_NAME
 ```
 
-The `architecture` argument is only necessary if you want to specify `i386`.
+The `architecture` argument is only necessary if you want to specify `i386` configuration.
 
 ## Reproducing bugs
 ```bash
@@ -124,12 +125,12 @@ $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
     --engine <libfuzzer/afl/honggfuzz> --architecture <x86_64/i386> $PROJECT_NAME
 $ python infra/helper.py check_build  --sanitizer <address/memory/undefined> \
-    --engine <libfuzzer/afl/honggfuzz> --architecture <x86_64/i386> $PROJECT_NAME <fuzz_target_name>
+    --engine <libfuzzer/afl/honggfuzz> --architecture <x86_64/i386> $PROJECT_NAME \
+    <fuzz_target_name>
 ```
 
-
-Note that unless you have a reason to think the build is an i386 build, the build
-is probably an x86_64 build and the `architecture` argument can be omitted.
+Note that unless you have a reason to think the build is an `i386` build, the build
+is probably an `x86_64` build and the `architecture` argument can be omitted.
 
 For reproducing a `coverage` build failure, follow
 [Code Coverage page]({{ site.baseurl }}/advanced-topics/code-coverage) to build
