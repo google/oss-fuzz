@@ -37,4 +37,4 @@ $CXX $CXXFLAGS -std=c++11 \
     ${build_dir}/libavcdec.a \
     -Wl,--end-group
 
-cp $SRC/avc_dec_fuzzer.dict $OUT/avcdec_fuzzer.dict
+cp $SRC/libavc/fuzzer/avc_dec_fuzzer.dict $OUT/avcdec_fuzzer.dict

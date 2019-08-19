@@ -18,5 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER harish.mahendrakar@ittiam.com
 RUN apt-get update && apt-get install -y wget cmake
 RUN git clone https://android.googlesource.com/platform/external/libavc
-COPY build.sh avc_dec_fuzzer.dict $SRC/
+COPY build.sh $SRC/
 WORKDIR libavc
