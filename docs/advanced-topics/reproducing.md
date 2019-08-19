@@ -42,7 +42,6 @@ Depending on the nature of the bug, the fuzz target binary needs to be built
 with the appropriate [sanitizer](https://github.com/google/sanitizers)
 (e.g. if this is a buffer overflow, with
 [AddressSanitizer](http://clang.llvm.org/docs/AddressSanitizer.html)).
-Similarly, if your project has opted-in to i386 fuzzing, you may need to specify `--architecture i386` to reproduce i386 bugs.
 
 If you are not sure how to build the fuzzer using the project's build system,
 you may also use Docker
@@ -67,7 +66,7 @@ $ python infra/helper.py pull_images
 
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
-$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> $PROJECT_NAME
+$ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> --architecture <x86_64/i386> $PROJECT_NAME
 ```
 
 ## Reproducing bugs
@@ -121,9 +120,9 @@ correctly configured, even if it succeeded. To reproduce these locally, run:
 ```bash
 $ python infra/helper.py build_image $PROJECT_NAME
 $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
-    --engine <libfuzzer/afl/honggfuzz> $PROJECT_NAME
+    --engine <libfuzzer/afl/honggfuzz> --architecture <x86_64/i386> $PROJECT_NAME
 $ python infra/helper.py check_build  --sanitizer <address/memory/undefined> \
-    --engine <libfuzzer/afl/honggfuzz> $PROJECT_NAME <fuzz_target_name>
+    --engine <libfuzzer/afl/honggfuzz> --architecture <x86_64/i386> $PROJECT_NAME <fuzz_target_name>
 ```
 
 For reproducing a `coverage` build failure, follow
