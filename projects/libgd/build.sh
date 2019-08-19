@@ -34,7 +34,7 @@ done
 
 mkdir afl_testcases
 (cd afl_testcases; tar xvf "$SRC/afl_testcases.tgz")
-for format in bmp gif jpeg png tiff webp; do
+for format in bmp gif png webp; do
     mkdir $format
     find afl_testcases -type f -name '*.'$format -exec mv -n {} $format/ \;
     zip -rj $format.zip $format/
