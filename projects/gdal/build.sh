@@ -36,9 +36,20 @@ fi
 cd poppler
 mkdir -p build
 cd build
+POPPLER_CXXFLAGS="$CXXFLAGS"
+# we do not really want to deal with Poppler undefined behaviour bugs, such
+# as integer overflows
+if [ "$SANITIZER" = "undefined" ]; then
+    if [ "$ARCHITECTURE" = "i386" ]; then
+        POPPLER_CXXFLAGS="-m32 -g -O1"
+    else
+        POPPLER_CXXFLAGS="-g -O1"
+    fi
+fi
 cmake .. \
   -DCMAKE_INSTALL_PREFIX=$SRC/install \
   -DCMAKE_BUILD_TYPE=debug \
+  -DCMAKE_CXX_FLAGS="$POPPLER_CXXFLAGS" \
   -DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
   -DBUILD_SHARED_LIBS=OFF \
   -DFONT_CONFIGURATION=generic \
