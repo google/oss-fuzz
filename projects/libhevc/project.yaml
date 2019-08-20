@@ -1,0 +1,11 @@
+homepage: "https://android.googlesource.com/platform/external/libhevc/"
+primary_contact: "harish.mahendrakar@ittiam.com"
+sanitizers:
+- address
+auto_ccs:
+- harish.mahendrakar@ittiam.com
+- essick@google.com
+- lajos@google.com
+architectures:
+ - x86_64
+ - i386
