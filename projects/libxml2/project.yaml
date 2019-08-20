@@ -1,10 +1,9 @@
 homepage: "http://www.xmlsoft.org/"
-auto_ccs:
-  - "dominicc@chromium.org"
+primary_contact: "wellnhofer@aevum.de"
+vendor_ccs:
+  - "akilsrin@apple.com"
   - "ddkilzer@apple.com"
   - "benl@google.com"
-  - "wellnhofer@aevum.de"
-  - "akilsrin@apple.com"
 sanitizers:
   - address
   - memory
