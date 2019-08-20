@@ -1,6 +1,6 @@
 homepage: "http://www.xmlsoft.org/libxslt/"
 primary_contact: "wellnhofer@aevum.de"
-auto_ccs:
+vendor_ccs:
   - "schenney@chromium.org"
   - "ddkilzer@apple.com"
 sanitizers:
