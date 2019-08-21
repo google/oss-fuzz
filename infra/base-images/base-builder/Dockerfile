@@ -27,6 +27,27 @@ RUN apt-get install -y git \
     libblocksruntime-dev \
     libc6-dev-i386
 
+# Download and install the latest stable Go.
+ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
+
+# $SHELL is needed for the installer.
+ENV SHELL "bash"
+RUN chmod +x $SRC/installer_linux && \
+    $SRC/installer_linux && \
+    rm $SRC/installer_linux
+ENV SHELL ""
+
+# Set up Golang environment variables (copied from /root/.bash_profile).
+ENV PATH $PATH:/root/.go/bin
+ENV GOPATH /root/go
+ENV PATH $PATH:$GOPATH/bin
+
+# Dependency of go-fuzz
+RUN go get golang.org/x/tools/go/packages
+
+# go-fuzz-build is the tool that instruments Go files.
+RUN go get github.com/dvyukov/go-fuzz/go-fuzz-build
+
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
 
