@@ -28,7 +28,7 @@ with a new `projects/<project_name>/project.yaml` file
         ([why?]({{ site.baseurl }}/faq/#why-do-you-require-a-google-account-for-authentication)).
         If you use an alternate email address
         [linked to a Google Account](https://support.google.com/accounts/answer/176347?hl=en),
-        you'll only get access to [filed bugs in the issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list), not to the [ClusterFuzz]({{ site.baseurl }}/furthur-reading/clusterfuzz)
+        you'll only get access to [filed bugs in the issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list), not to the [ClusterFuzz]({{ site.baseurl }}/further-reading/clusterfuzz)
         dashboard. This is due to appengine API limitations.
 3. Once your project is accepted, configure it by following the
   [New Project Guide]({{ site.baseurl }}/getting-started/new-project-guide/).

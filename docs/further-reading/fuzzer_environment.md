@@ -1,9 +1,9 @@
 ---
 layout: default
 title: Fuzzer environment
-parent: Furthur reading
+parent: Further reading
 nav_order: 2
-permalink: /furthur-reading/fuzzer-environment/
+permalink: /further-reading/fuzzer-environment/
 ---
 
 # Fuzzer environment on ClusterFuzz
