@@ -1,6 +1,6 @@
 homepage: "https://github.com/google/brotli"
 primary_contact: "eustas@chromium.org"
-auto_ccs:
+vendor_ccs:
   - cdiehl@mozilla.com
 fuzzing_engines:
   - libfuzzer

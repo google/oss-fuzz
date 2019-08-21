@@ -1,5 +1,5 @@
 homepage: "https://github.com/libjpeg-turbo/libjpeg-turbo"
-auto_ccs:
+vendor_ccs:
   - "cdiehl@mozilla.com"
 sanitizers:
   - address
