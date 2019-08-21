@@ -16,7 +16,8 @@
 ################################################################################
 
 ./bootstrap
-./configure --disable-shared --disable-pcsc --enable-ctapi --enable-fuzzing FUZZING_LIBS="$LIB_FUZZING_ENGINE"
+# FIXME FUZZING_LIBS="$LIB_FUZZING_ENGINE" fails with some missing C++ library, I don't know how to fix this
+./configure --disable-shared --disable-pcsc --enable-ctapi --enable-fuzzing FUZZING_LIBS="-fsanitize=fuzzer"
 make -j4
 
 cp src/tests/fuzzing/fuzz_asn1_print $OUT
