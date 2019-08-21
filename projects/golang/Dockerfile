@@ -17,18 +17,10 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
 
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties build-essential wget
-
-# Golang 1.9 binaries are downloaded only to bootstrap the latest Golang from the development repository
-RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
-RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
-
-# Get latest Golang
-RUN git clone --depth 1 https://github.com/golang/go
-
-RUN mkdir -p go/packages/src/github.com/dvyukov
-RUN cd go/packages/src/github.com/dvyukov && git clone https://github.com/dvyukov/go-fuzz
-RUN cd go/packages/src/github.com/dvyukov && git clone https://github.com/dvyukov/go-fuzz-corpus
+RUN mkdir -p $GOPATH/src/github.com/dvyukov/ && \
+    cd $GOPATH/src/github.com/dvyukov/ && \
+    git clone https://github.com/dvyukov/go-fuzz-corpus
 
 COPY build.sh $SRC/
 
+WORKDIR $SRC/golang
