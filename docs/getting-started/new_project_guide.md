@@ -76,6 +76,7 @@ This configuration file stores project metadata. The following attributes are su
 - [homepage](#homepage)
 - [primary_contact](#primary)
 - [auto_ccs](#primary)
+- [vendor_ccs](#vendor) (optional)
 - [sanitizers](#sanitizers) (optional)
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
@@ -86,6 +87,14 @@ You project's homepage.
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
 tracker. If you're a primary or a CC, you'll need to use a [Google account](https://support.google.com/accounts/answer/176347?hl=en) to get full access. ([why?]({{ site.baseurl }}/faq/#why-do-you-require-a-google-account-for-authentication)).
+
+### vendor_ccs (optional) {#vendor}
+The list of vendor email addresses that are downstream consumers of the project and want access to
+the bug reports as they are filed.
+
+Any changes to this list must follow these rules:
+- Approved by the project maintainer (e.g. comment on pull request, reply on project mailing list).
+- An organization email address is used.
 
 ### sanitizers (optional) {#sanitizers}
 The list of sanitizers to use. If you don't specify a list, `sanitizers` uses a default list of supported
