@@ -191,7 +191,7 @@
       onTap(e) {
         // Change the route, this should auto-magically update the url in the
         // browser and invoke the _routeChanged method.
-        this.set('routeData.project_name', e.model.project.name);
+        this.set('route.path', e.model.project.name);
       }
 
       onChanged(e) {
