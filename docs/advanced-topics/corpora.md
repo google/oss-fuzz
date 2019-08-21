@@ -34,7 +34,7 @@ listed in your project's `project.yaml` file.
 ## Viewing the corpus for a fuzz target
 
 The fuzzer statistics page for your project on
-[ClusterFuzz]({{ site.baseurl }}/furthur-reading/clusterfuzz)
+[ClusterFuzz]({{ site.baseurl }}/further-reading/clusterfuzz)
 will contain a link to the Google Cloud console for your corpus under the
 "corpus_size" column. You can browse and download individual test inputs in the
 corpus here.

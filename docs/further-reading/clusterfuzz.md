@@ -1,9 +1,9 @@
 ---
 layout: default
 title: ClusterFuzz
-parent: Furthur reading
+parent: Further reading
 nav_order: 1
-permalink: /furthur-reading/clusterfuzz/
+permalink: /further-reading/clusterfuzz/
 ---
 
 # ClusterFuzz

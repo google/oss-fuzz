@@ -19,6 +19,7 @@ Before you can start setting up your new project for fuzzing, you must do the fo
 
 - [Integrate]({{ site.baseurl }}/advanced-topics/ideal-integration/) one or more [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
   with the project you want to fuzz.
+
   For examples, see
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
 [SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338),
@@ -124,7 +125,7 @@ sanitizers:
  ```
 
 Crashes can be accessed on the [ClusterFuzz
-homepage]({{ site.baseurl }}/furthur-reading/clusterfuzz#web-interface).
+homepage]({{ site.baseurl }}/further-reading/clusterfuzz#web-interface).
 
 `sanitizers` example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
 
@@ -255,7 +256,7 @@ In addition, please keep the size of the build (everything copied to `$OUT`) sma
 ## Fuzzer execution environment
 
 For more on the environment that
-your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) run in, and the assumptions you can make, see the [fuzzer environment]({{ site.baseurl }}/furthur-reading/fuzzer-environment/) page.
+your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) run in, and the assumptions you can make, see the [fuzzer environment]({{ site.baseurl }}/further-reading/fuzzer-environment/) page.
 
 ## Testing locally
 
@@ -303,7 +304,7 @@ that all system dependencies are
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
 If everything works locally, it should also work on our automated builders and ClusterFuzz. If you check in
-your files and experience failures, review your [dependencies]({{ site.baseurl }}/furthur-reading/fuzzer-environment/#dependencies).
+your files and experience failures, review your [dependencies]({{ site.baseurl }}/further-reading/fuzzer-environment/#dependencies).
 
 ## Debugging Problems
 

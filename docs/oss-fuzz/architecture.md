@@ -18,7 +18,7 @@ with the project's build and test system.
 1. The project is [accepted to OSS-Fuzz]({{ site.baseurl }}/getting-started/accepting-new-projects/) and the developer commits their build configurations.
 1. The OSS-Fuzz [builder](jenkins.io) builds the project from the committed configs.
 1. The builder uploads the fuzz targets to the OSS-Fuzz GCS bucket.
-1. [ClusterFuzz]({{ site.baseurl }}/furthur-reading/clusterfuzz) downloads the fuzz targets and begins to fuzz the projects.
+1. [ClusterFuzz]({{ site.baseurl }}/further-reading/clusterfuzz) downloads the fuzz targets and begins to fuzz the projects.
 1. When Clusterfuzz finds a
   bug, it reports the issue automatically to the OSS-Fuzz
   [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list) 
@@ -28,6 +28,6 @@ with the project's build and test system.
 1. The project developer fixes the bug upstream and credits OSS-Fuzz for the
   discovery (the commit message should contain the string **'Credit to OSS-Fuzz'**).
 
-Once the developer fixes the bug, [ClusterFuzz]({{ site.baseurl }}/furthur-reading/clusterfuzz) automatically
+Once the developer fixes the bug, [ClusterFuzz]({{ site.baseurl }}/further-reading/clusterfuzz) automatically
 verifies the fix, adds a comment, and closes the issue ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53#c3)). 30 days after the fix is verified or 90 days after reporting (whichever is earlier), the issue becomes [public]({{ site.baseurl }}/getting-started/bug-disclosure-guidelines/).
 

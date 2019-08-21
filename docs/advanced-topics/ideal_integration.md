@@ -115,9 +115,9 @@ The syntax is described [here](http://libfuzzer.info/#dictionaries).
 ## Coverage
 For a fuzz target to be useful, it must have good coverage in the code that it
 is testing. You can view the coverage for your fuzz targets by looking at the
-[fuzzer stats]({{ site.baseurl }}/furthur-reading/clusterfuzz#fuzzer-stats)
+[fuzzer stats]({{ site.baseurl }}/further-reading/clusterfuzz#fuzzer-stats)
 dashboard on ClusterFuzz, as well as
-[coverage reports]({{ site.baseurl }}/furthur-reading/clusterfuzz#coverage-reports).
+[coverage reports]({{ site.baseurl }}/further-reading/clusterfuzz#coverage-reports).
 
 To generate an aggregated code coverage report for your project, please see
 [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage)
@@ -142,7 +142,7 @@ Examples: [SQLite](https://www.sqlite.org/src/artifact/d9f1a6f43e7bab45),
 Fuzz targets should also be performant, as high memory usage and/or slow
 execution speed can slow the down the growth of coverage and finding of new
 bugs. ClusterFuzz provides a
-[performance analyzer]({{ site.baseurl }}/furthur-reading/clusterfuzz/#performance-analyzer)
+[performance analyzer]({{ site.baseurl }}/further-reading/clusterfuzz/#performance-analyzer)
 for each fuzz target that shows problems that are impacting the performance of
 the fuzz target.
 
