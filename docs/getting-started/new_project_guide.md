@@ -93,8 +93,8 @@ The list of vendor email addresses that are downstream consumers of the project 
 the bug reports as they are filed.
 
 Any changes to this list must follow these rules:
-- Should be approved by the project maintainer (GitHub PR, project mailing list, etc).
-- Should be an organization email address.
+- Approved by the project maintainer (e.g. comment on pull request, reply on project mailing list).
+- An organization email address is used.
 
 ### sanitizers (optional) {#sanitizers}
 The list of sanitizers to use. If you don't specify a list, `sanitizers` uses a default list of supported
