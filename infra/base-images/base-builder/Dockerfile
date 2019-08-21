@@ -29,20 +29,18 @@ RUN apt-get install -y git \
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
-
-# $SHELL is needed for the installer.
-ENV SHELL "bash"
 RUN chmod +x $SRC/installer_linux && \
-    $SRC/installer_linux && \
+    SHELL="bash" $SRC/installer_linux && \
     rm $SRC/installer_linux
-ENV SHELL ""
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
-ENV PATH $PATH:/root/.go/bin
 ENV GOPATH /root/go
-ENV PATH $PATH:$GOPATH/bin
 
-# Dependency of go-fuzz
+# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
+# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
+ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
+
+# Dependency of go-fuzz.
 RUN go get golang.org/x/tools/go/packages
 
 # go-fuzz-build is the tool that instruments Go files.
