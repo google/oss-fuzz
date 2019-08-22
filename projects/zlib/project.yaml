@@ -12,3 +12,6 @@ sanitizers:
   - dataflow
   - memory
   - undefined
+architectures:
+  - x86_64
+  - i386
