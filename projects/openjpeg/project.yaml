@@ -10,3 +10,6 @@ sanitizers:
   - address
   - dataflow
   - undefined
+architectures:
+  - x86_64
+  - i386
