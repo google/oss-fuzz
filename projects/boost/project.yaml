@@ -6,3 +6,6 @@ auto_ccs:
    - "jz.maddock@googlemail.com"
    - "mclow@boost.org"
 #   - "someone-else@boost.org"
+architectures:
+  - x86_64
+  - i386
