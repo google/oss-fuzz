@@ -1,2 +1,5 @@
 homepage: "https://github.com/google/bloaty"
 primary_contact: "jhaberman@gmail.com"
+architectures:
+  - x86_64
+  - i386
