@@ -3,7 +3,7 @@ layout: default
 title: Debugging
 parent: Advanced topics
 nav_order: 4
-permalink: /advanced-topics/debugging
+permalink: /advanced-topics/debugging/
 ---
 
 # Debugging issues

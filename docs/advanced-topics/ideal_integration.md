@@ -3,7 +3,7 @@ layout: default
 title: Ideal integration
 parent: Advanced topics
 nav_order: 1
-permalink: /advanced-topics/ideal-integration
+permalink: /advanced-topics/ideal-integration/
 ---
 
 # Ideal integration with OSS-Fuzz 
