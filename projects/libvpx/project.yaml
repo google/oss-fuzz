@@ -7,3 +7,6 @@ sanitizers:
 auto_ccs:
 - jzern@google.com
 - johannkoenig@google.com
+architectures:
+  - x86_64
+  - i386

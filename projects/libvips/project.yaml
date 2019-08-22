@@ -4,6 +4,4 @@ auto_ccs:
   - "oscar.mira@adevinta.com"
   - "kleisauke@gmail.com"
   - "lovell.fuller@gmail.com"
-architectures:
-  - x86_64
-  - i386
+
