@@ -11,3 +11,6 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+architectures:
+  - x86_64
+  - i386
