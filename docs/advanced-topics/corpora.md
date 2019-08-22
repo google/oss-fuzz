@@ -3,7 +3,7 @@ layout: default
 title: Corpora
 parent: Advanced topics
 nav_order: 3
-permalink: /advanced-topics/corpora
+permalink: /advanced-topics/corpora/
 ---
 
 # Accessing Corpora
