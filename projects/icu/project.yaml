@@ -7,8 +7,6 @@ auto_ccs:
  - shane@unicode.org
  - srl295@gmail.com
  - nrunge@google.com
-vendor_ccs:
- - cdiehl@mozilla.com
 sanitizers:
  - address
  - memory
