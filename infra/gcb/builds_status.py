@@ -29,8 +29,8 @@ _client = None
 
 def _get_storage_client():
   """Return storage client."""
+  global _client
   if not _client:
-    global _client
     _client = storage.Client()
 
   return _client
