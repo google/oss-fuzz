@@ -1,2 +1,5 @@
 homepage: "https://github.com/google/wuffs"
 primary_contact: "nigeltao@golang.org"
+architectures:
+  - x86_64
+  - i386
