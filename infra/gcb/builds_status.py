@@ -3,16 +3,13 @@
 import datetime
 import os
 import sys
-import jinja2
 import json
 import tempfile
 import time
 
 import dateutil.parser
 from oauth2client.client import GoogleCredentials
-import googleapiclient
 from googleapiclient.discovery import build as gcb_build
-from google.cloud import logging
 from google.cloud import storage
 
 import build_and_run_coverage
@@ -25,6 +22,18 @@ RETRY_COUNT = 3
 RETRY_WAIT = 5
 MAX_BUILD_RESULTS = 2000
 BUILDS_PAGE_SIZE = 256
+BADGE_IMAGE_TYPES = {'svg': 'image/svg+xml', 'png': 'image/png'}
+
+_client = None
+
+
+def _get_storage_client():
+  """Return storage client."""
+  if not _client:
+    global _client
+    _client = storage.Client()
+
+  return _client
 
 
 def usage():
@@ -50,8 +59,7 @@ def upload_status(successes, failures, status_filename):
       'last_updated': datetime.datetime.utcnow().ctime()
   }
 
-  storage_client = storage.Client()
-  bucket = storage_client.get_bucket(STATUS_BUCKET)
+  bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
   blob = bucket.blob(status_filename)
   blob.cache_control = 'no-cache'
   blob.upload_from_string(json.dumps(data), content_type='application/json')
@@ -67,7 +75,7 @@ def find_last_build(builds, project, build_tag_suffix):
 
   builds = builds.get(tag)
   if not builds:
-    print >>sys.stderr, 'Failed to find builds with tag', tag
+    print >> sys.stderr, 'Failed to find builds with tag', tag
     return None
 
   for build in builds:
@@ -83,10 +91,9 @@ def find_last_build(builds, project, build_tag_suffix):
     finish_time = dateutil.parser.parse(build['finishTime'], ignoretz=True)
     if (datetime.datetime.utcnow() - finish_time >=
         datetime.timedelta(minutes=DELAY_MINUTES)):
-      storage_client = storage.Client()
-
-      status_bucket = storage_client.get_bucket(STATUS_BUCKET)
-      gcb_bucket = storage_client.get_bucket(build_project.GCB_LOGS_BUCKET)
+      status_bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
+      gcb_bucket = _get_storage_client().get_bucket(
+          build_project.GCB_LOGS_BUCKET)
       log_name = 'log-{0}.txt'.format(build['id'])
       log = gcb_bucket.blob(log_name)
       dest_log = status_bucket.blob(log_name)
@@ -142,8 +149,7 @@ def get_builds(cloudbuild):
   return builds
 
 
-def update_build_status(
-    builds, projects, build_tag_suffix, status_filename):
+def update_build_status(builds, projects, build_tag_suffix, status_filename):
   successes = []
   failures = []
 
@@ -189,26 +195,17 @@ def update_build_badges(builds, projects, build_tag, coverage_tag):
 
     print("[badge] {}: {}".format(project, badge))
 
-    storage_client = storage.Client()
-    status_bucket = storage_client.get_bucket(STATUS_BUCKET)
-
-    # Supported image types for badges
-    image_types = {
-        'svg': 'image/svg+xml',
-        'png': 'image/png'
-    }
-    for extension, mime_type in image_types.items():
+    for extension, mime_type in BADGE_IMAGE_TYPES.items():
       badge_name = '{badge}.{extension}'.format(
           badge=badge, extension=extension)
       # Retrieve the image relative to this script's location
-      badge_file = os.path.join(
-          SCRIPT_DIR, 'badge_images', badge_name)
+      badge_file = os.path.join(SCRIPT_DIR, 'badge_images', badge_name)
 
       # The uploaded blob name should look like `badges/project.png`
       blob_name = '{badge_dir}/{project_name}.{extension}'.format(
-          badge_dir=BADGE_DIR, project_name=project,
-          extension=extension)
+          badge_dir=BADGE_DIR, project_name=project, extension=extension)
 
+      status_bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
       badge_blob = status_bucket.blob(blob_name)
       badge_blob.upload_from_filename(badge_file, content_type=mime_type)
 
@@ -224,15 +221,22 @@ def main():
   cloudbuild = gcb_build('cloudbuild', 'v1', credentials=credentials)
 
   builds = get_builds(cloudbuild)
-  update_build_status(builds, projects, build_project.FUZZING_BUILD_TAG,
-                      status_filename='status.json')
-  update_build_status(builds, projects,
-                      build_and_run_coverage.COVERAGE_BUILD_TAG,
-                      status_filename='status-coverage.json')
+  update_build_status(
+      builds,
+      projects,
+      build_project.FUZZING_BUILD_TAG,
+      status_filename='status.json')
+  update_build_status(
+      builds,
+      projects,
+      build_and_run_coverage.COVERAGE_BUILD_TAG,
+      status_filename='status-coverage.json')
 
-  update_build_badges(builds, projects,
-                      build_tag=build_project.FUZZING_BUILD_TAG,
-                      coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
+  update_build_badges(
+      builds,
+      projects,
+      build_tag=build_project.FUZZING_BUILD_TAG,
+      coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
 
 
 if __name__ == '__main__':
