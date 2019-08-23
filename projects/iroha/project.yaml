@@ -1,0 +1,4 @@
+homepage: "https://github.com/hyperledger/iroha"
+primary_contact: "konstantin@soramitsu.co.jp"
+sanitizers:
+  - address
