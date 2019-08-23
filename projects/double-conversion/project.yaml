@@ -9,3 +9,6 @@ sanitizers:
 labels:
   string_to_double_fuzzer:
     - sundew
+architectures:
+  - x86_64
+  - i386
