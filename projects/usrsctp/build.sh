@@ -15,11 +15,11 @@
 #
 ################################################################################
 
-cmake -Dsctp_build_programs=0 -Dsctp_debug=0 .
+cmake -Dsctp_build_programs=0 -Dsctp_debug=0 -Dsctp_build_programs=0 -DCMAKE_BUILD_TYPE=RelWithDebInfo .
 make -j$(nproc)
 cd fuzzer
 
-TARGETS="fuzzer_connected_upcall fuzzer_unconnected"
+TARGETS="fuzzer_connected fuzzer_unconnected"
 
 for target in $TARGETS; do
         $CC $CFLAGS -I . -I ../usrsctplib/ -c ${target}.c -o $OUT/${target}.o
@@ -27,3 +27,5 @@ for target in $TARGETS; do
         rm -f $OUT/${target}.o
 done
 
+zip -jr fuzzer_connected_seed_corpus.zip CORPUS_CONNECTED/
+cp fuzzer_connected_seed_corpus.zip $OUT/
