@@ -16,15 +16,15 @@
 ################################################################################
 
 # build project
-git submodule update --init # for datasets used in unit tests
 ./autogen.sh
 ./configure
-make
-make check
+make -j$(nproc)
 make install
 
 # build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     $LIB_FUZZING_ENGINE /path/to/library.a
+for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
+  base=$(basename -s .cc $fuzzers)
+  $CXX $CXXFLAGS -std=c++11 -Iinclude \
+  $fuzzers ./getopt/.libs/libgetopt.a \
+  ./src/.libs/libmatio.a -o $OUT/$base $LIB_FUZZING_ENGINE
+done
