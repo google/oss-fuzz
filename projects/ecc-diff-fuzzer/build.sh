@@ -81,7 +81,7 @@ cp fuzz_ec_seed_corpus.zip $OUT/
 cp fuzz_ec.dict $OUT/
 
 $CC $CFLAGS -I. -c fuzz_ec.c -o fuzz_ec.o
-$CC $CFLAGS -I. -I../mbedtls/include -c modules/mbedtls.c -o mbedtls.o
+$CC $CFLAGS -I. -I../mbedtls/include -I../mbedtls/crypto/include -c modules/mbedtls.c -o mbedtls.o
 $CC $CFLAGS -I. -I../openssl/include -c modules/openssl.c -o openssl.o
 $CC $CFLAGS -DWITH_STDLIB -I. -I../libecc/src -c modules/libecc.c -o libecc.o
 $CC $CFLAGS -I. -I../gcrypt/src -c modules/gcrypt.c -o gcrypt.o
