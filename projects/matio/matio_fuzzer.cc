@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "fuzzer_temp_file.h"
-#include "src/matio.h"
+#include "matio.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* fuzzer_input_data,
                                       size_t fuzzer_input_size) {
