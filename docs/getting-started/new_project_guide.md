@@ -231,7 +231,6 @@ included via `#include <fuzzer/FuzzedDataProvider.h>` directive.
 
 [FuzzedDataProvider]: https://github.com/google/fuzzing/blob/master/docs/split-inputs.md#fuzzed-data-provider
 
-
 ### build.sh requirements {#Requirements}
 
 Only binaries without an extension are accepted as targets. Extensions are reserved for other artifacts, like .dict.
