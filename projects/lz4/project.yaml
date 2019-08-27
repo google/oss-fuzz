@@ -1,0 +1,14 @@
+homepage: "https://github.com/lz4/lz4"
+primary_contact: "Yann.collet.73@gmail.com"
+auto_ccs:
+  - "NickRTerrell@gmail.com"
+  - "cyan@fb.com"
+  - "terrelln@fb.com"
+  - "felixh@fb.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386

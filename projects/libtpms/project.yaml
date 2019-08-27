@@ -1,0 +1,4 @@
+homepage: "https://github.com/stefanberger/libtpms"
+primary_contact: "stefanb@us.ibm.com"
+auto_ccs:
+  - "mlureau@redhat.com"

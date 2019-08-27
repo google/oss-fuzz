@@ -8,13 +8,15 @@ auto_ccs:
   - "llvm-bugs@lists.llvm.org"
   - "igmyrj@gmail.com"
   - "mitchphillips@outlook.com"
+  - "mitchp@google.com"
   - "xpl0re@gmail.com"
   - "jfb@chromium.org"
   - "eneyman@google.com"
+  - "bigcheesegs@gmail.com"
 
-# TODO(kcc): enable msan.
 sanitizers:
   - address
+  - memory
 
 # The LLVM build currently supports only libFuzzer
 fuzzing_engines:

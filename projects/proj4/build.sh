@@ -16,9 +16,9 @@
 ################################################################################
 
 ./autogen.sh
-./configure
+./configure --disable-shared
 make clean -s
-(cd src && make -j$(nproc) -s)
+make -j$(nproc) -s
 
 ./test/fuzzers/build_google_oss_fuzzers.sh
 ./test/fuzzers/build_seed_corpus.sh

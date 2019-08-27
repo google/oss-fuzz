@@ -18,20 +18,17 @@
 
 cd tests/fuzz
 
+# Download the seed corpora
+make -j seedcorpora
+# Build all of the fuzzers
 ./fuzz.py build all
 
 for target in $(./fuzz.py list); do
     cp "$target" "$OUT"
 
-    options=default.options
-    if [ -f "$target.options" ]; then
-        options="$target.options"
-    fi
-    cp "$options" "$OUT/$target.options"
-
     if [ -f "$target.dict" ]; then
         cp "$target.dict" "$OUT"
     fi
 
-    cp "$SRC/${target}_seed_corpus.zip" "$OUT"
+    cp "corpora/${target}_seed_corpus.zip" "$OUT"
 done

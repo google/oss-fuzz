@@ -18,7 +18,6 @@ message IDAT {
 }
 
 message iCCP  {
-  required string name = 1;
   required bytes data = 2;
 }
 

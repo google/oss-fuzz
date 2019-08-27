@@ -1,7 +1,12 @@
 homepage: "https://opencv.org/"
-primary_contact: "kusano@google.com"
+primary_contact: "garybradski@gmail.com"
 
-experimental: true
+auto_ccs:
+  - "alexander.a.alekhin@gmail.com"
+  - "garybradski@gmail.com"
+  - "vrabaud@google.com"
+  - "kusano@google.com"
+  - "maksim.shabunin@gmail.com"
 
 sanitizers:
   - address

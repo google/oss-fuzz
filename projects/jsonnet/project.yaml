@@ -2,8 +2,7 @@ homepage: "https://github.com/google/jsonnet"
 primary_contact: "dcunnin@google.com"
 auto_ccs:
   - "wwweiwang@google.com"
-
-experimental: True
+  - "sparkprime@gmail.com"
 
 sanitizers:
   - address
@@ -13,3 +12,7 @@ sanitizers:
 labels:
   convert_jsonnet_fuzzer:
     - sundew
+
+architectures:
+  - x86_64
+  - i386

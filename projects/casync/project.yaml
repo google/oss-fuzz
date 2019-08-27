@@ -1,0 +1,10 @@
+homepage: "https://github.com/casync/casync"
+primary_contact: "lennart@poettering.net"
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - zbyszek@in.waw.pl
+  - poettering@gmail.com
+  - fsumsal@redhat.com

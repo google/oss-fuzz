@@ -17,11 +17,20 @@
 
 echo "---------------------------------------------------------------"
 
+if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
+  echo "ERROR: 'dataflow' sanitizer can be used with 'dataflow' engine only."
+  exit 1
+fi
+
 if [ -z "${SANITIZER_FLAGS-}" ]; then
   FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
   export SANITIZER_FLAGS=${!FLAGS_VAR-}
 fi
 
+if [[ $ARCHITECTURE == "i386" ]]; then
+    export CFLAGS="-m32 $CFLAGS"
+    cp -R /usr/i386/lib/* /usr/lib
+fi
 if [[ $FUZZING_ENGINE != "none" ]]; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
@@ -50,7 +59,7 @@ then
 fi
 
  # Don't need coverage instrumentation for engine-less builds.
-if [[ $FUZZING_ENGINE = "none" ]]; then
+if [ $FUZZING_ENGINE = "none" ]; then
   export COVERAGE_FLAGS=
 fi
 
@@ -84,4 +93,9 @@ else
     # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
     $COPY_SOURCES_CMD 2>/dev/null || true
   fi
+fi
+
+if [[ "$FUZZING_ENGINE" = "dataflow" ]]; then
+  # Remove seed corpus as it can be huge but is not needed for a dataflow build.
+  rm -f $OUT/*.zip
 fi

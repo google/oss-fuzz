@@ -1,11 +1,13 @@
 homepage: "https://www.envoyproxy.io/"
 primary_contact: "htuch@google.com"
 auto_ccs:
-  - "mklein@lyft.com"
+  - "mattklein123@gmail.com"
   - "alyssar@google.com"
   - "dio@tetrate.io"
   - "jbuckland@google.com"
   - "jmarantz@google.com"
   - "lizan@tetrate.io"
   - "envoy-security@googlegroups.com"
-coverage_extra_args: -ignore-filename-regex=.*\.cache.*
+  - "yavlasov@google.com"
+  - "asraa@google.com"
+coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*

@@ -1,7 +1,5 @@
 homepage: "http://libsass.org/"
-primary_contact: "kusano@google.com"
-
-experimental: true
+primary_contact: "xzyfer@gmail.com"
 
 sanitizers:
   - address

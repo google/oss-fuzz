@@ -1,8 +1,9 @@
 homepage: "https://hg.mozilla.org/mozilla-central/file/tip/gfx/qcms/"
-primary_contact: "agaynor@mozilla.com"
+primary_contact: "twsmith@mozilla.com"
 sanitizers:
 - address
 - undefined
 - memory
 auto_ccs:
-- "twsmith@mozilla.com"
+- "aosmond@mozilla.com"
+- "jmuizelaar@mozilla.com"

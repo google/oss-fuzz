@@ -68,5 +68,5 @@ ls fuzz_*.c | cut -d_ -f2 | cut -d. -f1 | while read target
 do
     $CC $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../common -I../../g10 -c fuzz_$target.c -o fuzz_$target.o
 
-    $CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_$target.o -o $OUT/fuzz_$target ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a -lFuzzingEngine -lgcrypt -lgpg-error -lassuan
+    $CXX $CXXFLAGS -std=c++11 -DHAVE_CONFIG_H fuzz_$target.o -o $OUT/fuzz_$target ../../g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a $LIB_FUZZING_ENGINE -lgcrypt -lgpg-error -lassuan
 done

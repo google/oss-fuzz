@@ -1,0 +1,10 @@
+homepage: "https://sourceforge.net/projects/lame/"
+primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+    - "bouvigne@gmail.com"
+sanitizers:
+ - address
+ - memory
+architectures:
+ - x86_64
+ - i386

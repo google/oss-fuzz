@@ -1,0 +1,11 @@
+homepage: "https://github.com/google/syzkaller.git"
+primary_contact: "dvyukov@google.com"
+auto_ccs:
+  - "andreyknvl@google.com"
+  - "mmoroz@chromium.org"
+  - "syzkaller@googlegroups.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+view_restrictions: none

@@ -4,9 +4,9 @@ fuzzing_engines:
 sanitizers:
   - address
 auto_ccs:
-  - "fpizlo@apple.com"
   - "mark.lam@apple.com"
   - "akilsrin@apple.com"
   - "ddkilzer@apple.com"
   - "jfb@chromium.org"
   - "sbarati@apple.com"
+  - "ysuzuki@apple.com"

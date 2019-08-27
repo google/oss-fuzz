@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2.7"
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git subversion python2.7 g++-multilib"
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
@@ -47,9 +47,9 @@ cd $SRC/chromium_tools
 git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 
-OUR_LLVM_REVISION=342582  # For manual bumping.
+OUR_LLVM_REVISION=359254  # For manual bumping.
 FORCE_OUR_REVISION=0  # To allow for manual downgrades.
-LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K\d+(?=')" scripts/update.py)
+LLVM_REVISION=$(grep -Po "CLANG_SVN_REVISION = '\K\d+(?=')" scripts/update.py)
 
 if [ $OUR_LLVM_REVISION -gt $LLVM_REVISION ] || [ $FORCE_OUR_REVISION -ne 0 ]; then
   LLVM_REVISION=$OUR_LLVM_REVISION
@@ -63,16 +63,55 @@ cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxx/trunk@$LLVM_REVISION libcxx
 cd $SRC/llvm/projects && checkout_with_retries https://llvm.org/svn/llvm-project/libcxxabi/trunk@$LLVM_REVISION libcxxabi
 
-# Build & install
-mkdir -p $WORK/llvm
-cd $WORK/llvm
+# Build & install. We build clang in two stages because gcc can't build a
+# static version of libcxxabi
+# (see https://github.com/google/oss-fuzz/issues/2164).
+mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
+cd $WORK/llvm-stage1
+
+TARGET_TO_BUILD=
+case $(uname -m) in
+    x86_64)
+        TARGET_TO_BUILD=X86
+        ;;
+    aarch64)
+        TARGET_TO_BUILD=AArch64
+        ;;
+    *)
+        echo "Error: unsupported target $(uname -m)"
+        exit 1
+        ;;
+esac
 cmake -G "Ninja" \
-      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
-      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
+      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      $SRC/llvm
+ninja
+
+cd $WORK/llvm-stage2
+export CC=$WORK/llvm-stage1/bin/clang
+export CXX=$WORK/llvm-stage1/bin/clang++
+cmake -G "Ninja" \
+      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
+      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       $SRC/llvm
 ninja
 ninja install
-rm -rf $WORK/llvm
+rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
+
+mkdir -p $WORK/i386
+cd $WORK/i386
+cmake -G "Ninja" \
+      -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+      -DCMAKE_INSTALL_PREFIX=/usr/i386/ -DLIBCXX_ENABLE_SHARED=OFF \
+      -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" \
+      -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      $SRC/llvm
+
+ninja cxx
+ninja install-cxx
+rm -rf $WORK/i386
 
 mkdir -p $WORK/msan
 cd $WORK/msan
@@ -86,7 +125,7 @@ cmake -G "Ninja" \
       -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
       -DLLVM_USE_SANITIZER=Memory -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
-      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="X86" \
+      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt" \
       $SRC/llvm
 ninja cxx

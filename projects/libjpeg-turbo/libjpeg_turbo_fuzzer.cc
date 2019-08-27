@@ -39,9 +39,27 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         return 0;
     }
 
-    std::unique_ptr<unsigned char[]> buf(new unsigned char[width * height * 3]);
+    const int buffer_size = width * height * 3;
+    std::unique_ptr<unsigned char[]> buf(new unsigned char[buffer_size]);
     tjDecompress2(
         jpegDecompressor, data, size, buf.get(), width, 0, height, TJPF_RGB, 0);
+
+    // For memory sanitizer, test each output byte
+    const unsigned char* raw_buf = buf.get();
+    int count = 0;
+    for( int i = 0; i < buffer_size; i++ )
+    {
+        if (raw_buf[i])
+        {
+            count ++;
+        }
+    }
+    if (count == buffer_size)
+    {
+        // Do something with side effect, so that all the above tests don't
+        // get removed by the optimizer.
+        free(malloc(1));
+    }
 
     tjDestroy(jpegDecompressor);
 

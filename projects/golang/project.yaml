@@ -1,0 +1,10 @@
+homepage: "https://golang.org/"
+primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+ - "golang-fuzz@googlegroups.com"
+ - "mmoroz@chromium.org"
+sanitizers:
+ - address
+fuzzing_engines:
+ - libfuzzer
+view_restrictions: none

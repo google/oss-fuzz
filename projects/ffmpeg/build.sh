@@ -23,15 +23,6 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 export FFMPEG_DEPS_PATH=$SRC/ffmpeg_deps
 mkdir -p $FFMPEG_DEPS_PATH
 
-# Build latest nasm without memory instrumentation.
-cd $SRC
-tar xzf nasm-*
-cd nasm-*
-CFLAGS="" CXXFLAGS="" ./configure --prefix="$FFMPEG_DEPS_PATH"
-make clean
-make -j$(nproc)
-make install
-
 export PATH="$FFMPEG_DEPS_PATH/bin:$PATH"
 export LD_LIBRARY_PATH="$FFMPEG_DEPS_PATH/lib"
 
@@ -168,7 +159,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --prefix="$FFMPEG_DEPS_PATH" \
     --pkg-config-flags="--static" \
     --enable-ossfuzz \
-    --libfuzzer=-lFuzzingEngine \
+    --libfuzzer=$LIB_FUZZING_ENGINE \
     --optflags=-O1 \
     --enable-gpl \
     --enable-libass \
@@ -182,6 +173,9 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --enable-libx264 \
     --enable-libx265 \
     --enable-nonfree \
+    --disable-muxers \
+    --disable-protocols \
+    --disable-devices \
     --disable-shared
 make clean
 make -j$(nproc) install
@@ -211,6 +205,12 @@ for c in $CONDITIONALS ; do
   make tools/target_dec_${symbol}_fuzzer
   mv tools/target_dec_${symbol}_fuzzer $OUT/${fuzzer_name}
 done
+
+# Build fuzzer for demuxer
+fuzzer_name=ffmpeg_DEMUXER_fuzzer
+echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
+make tools/target_dem_fuzzer
+mv tools/target_dem_fuzzer $OUT/${fuzzer_name}
 
 # Find relevant corpus in test samples and archive them for every fuzzer.
 #cd $SRC

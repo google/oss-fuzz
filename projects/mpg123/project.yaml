@@ -1,7 +1,5 @@
 homepage: "https://www.mpg123.de"
-primary_contact: "kusano@google.com"
-
-experimental: true
+primary_contact: "maintainer@mpg123.org"
 
 sanitizers:
   - address

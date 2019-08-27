@@ -26,5 +26,5 @@ for f in $SRC/*_fuzzer.cc; do
     fuzzer=$(basename "$f" _fuzzer.cc)
     $CXX $CXXFLAGS -std=c++11 -I$SRC/json-c \
          $SRC/${fuzzer}_fuzzer.cc -o $OUT/${fuzzer}_fuzzer \
-         -lFuzzingEngine $SRC/json-c/json_c.a
+         $LIB_FUZZING_ENGINE $SRC/json-c/json_c.a
 done

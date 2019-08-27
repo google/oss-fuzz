@@ -8,7 +8,7 @@ index 78a03c420..57a0949fc 100644
  
 +# TODO choose when to build fuzzing with option ?
 +AC_CHECK_LIB(FuzzingEngine, main,
-+              [ LIB_FUZZING_ENGINE="-lFuzzingEngine"
++              [ LIB_FUZZING_ENGINE="$LIB_FUZZING_ENGINE"
 +                have_fuzz=yes
 +             ])
 +AC_SUBST(LIB_FUZZING_ENGINE)
@@ -175,42 +175,6 @@ index 0ec384347..70d302d86 100644
                hash_public_key(md,pk);
  	      /* Note: check_signature only checks that the signature
  		 is good.  It does not fail if the key is revoked.  */
-diff --git a/m4/iconv.m4 b/m4/iconv.m4
-index 66bc76f48..2d6d6e423 100644
---- a/m4/iconv.m4
-+++ b/m4/iconv.m4
-@@ -83,6 +83,7 @@ int main ()
-         size_t res = iconv (cd_utf8_to_88591,
-                             (char **) &inptr, &inbytesleft,
-                             &outptr, &outbytesleft);
-+        iconv_close(cd_utf8_to_88591);
-         if (res == 0)
-           return 1;
-       }
-@@ -107,17 +108,19 @@ int main ()
-       }
-   }
- #endif
-+  iconv_t ic;
-   /* Test against HP-UX 11.11 bug: No converter from EUC-JP to UTF-8 is
-      provided.  */
-   if (/* Try standardized names.  */
--      iconv_open ("UTF-8", "EUC-JP") == (iconv_t)(-1)
-+      (ic = iconv_open ("UTF-8", "EUC-JP")) == (iconv_t)(-1)
-       /* Try IRIX, OSF/1 names.  */
--      && iconv_open ("UTF-8", "eucJP") == (iconv_t)(-1)
-+      && (ic = iconv_open ("UTF-8", "eucJP")) == (iconv_t)(-1)
-       /* Try AIX names.  */
--      && iconv_open ("UTF-8", "IBM-eucJP") == (iconv_t)(-1)
-+      && (ic = iconv_open ("UTF-8", "IBM-eucJP")) == (iconv_t)(-1)
-       /* Try HP-UX names.  */
--      && iconv_open ("utf8", "eucJP") == (iconv_t)(-1))
-+      && (ic = iconv_open ("utf8", "eucJP")) == (iconv_t)(-1))
-     return 1;
-+  iconv_close(ic);
-   return 0;
- }], [am_cv_func_iconv_works=yes], [am_cv_func_iconv_works=no],
-         [case "$host_os" in
 diff --git a/tests/Makefile.am b/tests/Makefile.am
 index b9be6aaa6..d6659eaf1 100644
 --- a/tests/Makefile.am

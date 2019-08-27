@@ -15,9 +15,8 @@
 #
 ################################################################################
 
-# Disable UBSan vptr since target built with -fno-rtti.
-export CFLAGS="$CFLAGS -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+export CFLAGS="$CFLAGS"
+export CXXFLAGS="$CXXFLAGS"
 
 declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzz_test.cc)
 declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}"; done)"
@@ -25,16 +24,13 @@ declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}";
 FUZZER_DICTIONARIES="\
 "
 
-# Skip gperftools, ASAN runs don't use tcmalloc.
-export DISABLE_GPERFTOOLS_BUILD=1
-sed -i 's#envoy_dependencies()#envoy_dependencies(skip_targets=["tcmalloc_and_profiler"])#' WORKSPACE
-
 # Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
 # compilation and linking.
 #
 # Some flags, such as `-stdlib=libc++`, generate warnings if used on a C source
 # file. Since the build runs with `-Werror` this will cause it to break, so we
 # use `--conlyopt` and `--cxxopt` instead of `--copt`.
+#
 declare -r EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"
@@ -42,6 +38,13 @@ done
 for f in ${CXXFLAGS}; do
   echo "--cxxopt=${f}" "--linkopt=${f}"
 done
+
+if [ "$SANITIZER" = "undefined" ]
+then
+  # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
+  # See issue: https://github.com/bazelbuild/bazel/issues/8777
+  echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
+fi
 )"
 
 declare BAZEL_BUILD_TARGETS=""
@@ -62,13 +65,11 @@ done
 # Build driverless libraries.
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --genrule_strategy=standalone --strip=never \
-  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --linkopt=-lc++fs \
+  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
-  --define force_libcpp=enabled \
-  --build_tag_filters=-no_asan \
-  ${EXTRA_BAZEL_FLAGS} \
-  --linkopt="-lFuzzingEngine" \
+  --define force_libcpp=enabled --build_tag_filters=-no_asan \
+  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
@@ -83,25 +84,19 @@ then
   # For .cc, we only really care about source/ today.
   rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
   rsync -av "${SRC}"/envoy/test "${REMAP_PATH}"
+  # Remove filesystem loop manually.
+  rm -rf "${SRC}"/envoy/bazel-envoy/external/envoy
   # Clean up symlinks with a missing referrant.
   find "${SRC}"/envoy/bazel-envoy/external -follow -type l -ls -delete || echo "Symlink cleanup soft fail"
   rsync -avLk "${SRC}"/envoy/bazel-envoy/external "${REMAP_PATH}"
   # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
   # filter out the build objects from bazel-out/. Also need to resolve symlinks,
   # since they don't make sense outside the build container.
-  rsync -avLk --include '*.h' --include '*.cc' --include '*.hpp' \
-    --include '*/' --exclude '*' \
-    "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
-  # As above, but for /root/.cache.
-  # TODO(htuch): disabled for now, this would mostly be useful for .build
-  # artifact, e.g.
-  # /builder/home/.cache/bazel/_bazel_root/4e9824db8e7d11820cfa25090ed4ed10/external/envoy_deps_cache_b22e04bff96538ea37e715942da6315c/yaml-cpp.dep.build/yaml-cpp-0f9a586ca1dc29c2ecb8dd715a315b93e3f40f79/src/parse.cpp
-  # but, we don't know how to recover them today, as they are gone by this
-  # phase.
-  #
-  # rsync -avLk --relative --include '*.h' --include '*.cc' --include '*.c' \
-  #   --include '*/' --exclude '*' \
-  #   /root/.cache "${OUT}"
+  declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
+    "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
+  rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/envoy/bazel-out "${REMAP_PATH}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
 fi
 
 # Copy out test driverless binaries from bazel-bin/.

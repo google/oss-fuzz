@@ -1,0 +1,8 @@
+homepage: "http://www.minizinc.org/"
+primary_contact: "jip.dekker@monash.edu"
+auto_ccs:
+  - "jip.dekker@monash.edu"
+  - "guido.tack@monash.edu"
+sanitizers:
+  - address
+  - memory

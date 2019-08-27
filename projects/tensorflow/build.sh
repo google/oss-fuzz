@@ -15,6 +15,31 @@
 #
 ################################################################################
 
+# First, determine the latest Bazel we can support
+BAZEL_VERSION=$(
+  grep '_TF_MAX_BAZEL_VERSION =' configure.py | \
+  cut -d\' -f2 | tr -d '[:space:]'
+)
+if [ -z ${BAZEL_VERSION} ]; then
+  echo "Couldn't find a valid bazel version in configure.py script"
+  exit 1
+fi
+
+# Then, install it
+curl -fSsL -O https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
+chmod +x ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
+./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
+
+# Finally, check instalation before proceeding to compile
+INSTALLED_VERSION=$(
+  bazel version | grep 'Build label' | cut -d: -f2 | tr -d '[:space:]'
+)
+if [ ${INSTALLED_VERSION} != ${BAZEL_VERSION} ]; then
+  echo "Couldn't install required Bazel. "
+  echo "Want ${BAZEL_VERSION}. Got ${INSTALLED_VERSION}."
+  exit 1
+fi
+
 # Generate the list of fuzzers we have (only the base/op name).
 FUZZING_BUILD_FILE="tensorflow/core/kernels/fuzzing/BUILD"
 declare -r FUZZERS=$(
@@ -26,6 +51,9 @@ declare -r FUZZERS=$(
 # to build libFuzzingEngine.
 CFLAGS="${CFLAGS} -fno-sanitize=vptr"
 CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
+
+# Make sure we run ./configure to detect when we are using a Bazel out of range
+yes "" | ./configure
 
 # See https://github.com/bazelbuild/bazel/issues/6697
 sed '/::kM..SeedBytes/d' -i tensorflow/stream_executor/rng.cc
@@ -102,7 +130,7 @@ for fuzzer in ${FUZZERS}; do
   lfile=`ls -1 bazel-bin/tensorflow/core/kernels/fuzzing/${fz}*.params | head -n1`
 
   # Manually link everything.
-  ${CXX} ${CXXFLAGS} -lFuzzingEngine -o ${OUT}/${fz} ${LINK_ARGS} -Wl,@${lfile}
+  ${CXX} ${CXXFLAGS} $LIB_FUZZING_ENGINE -o ${OUT}/${fz} ${LINK_ARGS} -Wl,@${lfile}
 done
 
 # For coverage, we need one extra step, see the envoy and grpc projects.
@@ -112,6 +140,15 @@ then
   mkdir -p ${REMAP_PATH}
   rsync -ak ${SRC}/tensorflow/tensorflow ${REMAP_PATH}
   rsync -ak ${SRC}/tensorflow/third_party ${REMAP_PATH}
+
+  # Also copy bazel generated files (via genrules)
+  declare -r BAZEL_PREFIX=bazel-out/k8-opt
+  declare -r REMAP_BAZEL_PATH=${REMAP_PATH}/${BAZEL_PREFIX}
+  mkdir -p ${REMAP_BAZEL_PATH}
+  rsync -ak ${SRC}/tensorflow/${BAZEL_PREFIX}/genfiles ${REMAP_BAZEL_PATH}
+
+  # Finally copy the external archives source files
+  rsync -ak ${SRC}/tensorflow/bazel-tensorflow/external ${REMAP_PATH}
 fi
 
 # Now that all is done, we just have to copy the existing corpora and

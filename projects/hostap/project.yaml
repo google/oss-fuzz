@@ -1,0 +1,11 @@
+homepage: "https://w1.fi/cvs.html"
+primary_contact: "j@w1.fi"
+auto_ccs:
+   - "elver@google.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+architectures:
+  - x86_64
+  - i386

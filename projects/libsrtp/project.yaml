@@ -1,0 +1,10 @@
+homepage: "https://github.com/cisco/libsrtp"
+primary_contact: "richbarn@cisco.com"
+auto_ccs:
+    - "guidovranken@gmail.com"
+sanitizers:
+ - address
+ - memory
+architectures:
+ - x86_64
+ - i386

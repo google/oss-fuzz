@@ -1,0 +1,9 @@
+homepage: "https://github.com/tpm2-software/tpm2-tss"
+primary_contact: "tadeusz.struk@intel.com"
+auto_ccs:
+  - "andreas.fuchs@sit.fraunhofer.de"
+  - "john.s.andersen@intel.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

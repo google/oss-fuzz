@@ -21,15 +21,15 @@ $CC $CFLAGS -c \
   chain.c \
   iccread.c \
   matrix.c \
-  transform.c \
-  transform-sse1.c \
-  transform-sse2.c \
+  transform.cpp \
+  transform-sse1.cpp \
+  transform-sse2.cpp \
   transform_util.c
 
 $CXX $CXXFLAGS -std=c++11 \
   -I. *.o \
   -DBUILD_FOR_OSSFUZZ \
-  -lFuzzingEngine \
+  $LIB_FUZZING_ENGINE \
   fuzztest/qcms_fuzzer.cpp -o $OUT/fuzz
 
 find fuzztest -iname "*.icc" \

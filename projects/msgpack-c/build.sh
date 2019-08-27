@@ -27,7 +27,7 @@ for f in $SRC/msgpack-c/fuzz/*_fuzzer.cpp; do
     fuzzer=$(basename "$f" .cpp)
     $CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
          "$f" -o "$OUT/${fuzzer}" \
-         -lFuzzingEngine "$SRC/msgpack-c/libmsgpackc.a"
+         $LIB_FUZZING_ENGINE "$SRC/msgpack-c/libmsgpackc.a"
 
     if [ -d "$SRC/msgpack-c/fuzz/${fuzzer}_seed_corpus" ]; then
         zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "$SRC/msgpack-c/fuzz/${fuzzer}_seed_corpus/"

@@ -78,6 +78,7 @@ def main():
 
   build_fuzzers_parser = subparsers.add_parser(
       'build_fuzzers', help='Build fuzzers for a project.')
+  _add_architecture_args(build_fuzzers_parser)
   _add_engine_args(build_fuzzers_parser)
   _add_sanitizer_args(build_fuzzers_parser)
   _add_environment_args(build_fuzzers_parser)
@@ -95,12 +96,14 @@ def main():
 
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
-  _add_engine_args(check_build_parser)
-  _add_sanitizer_args(check_build_parser)
+  _add_architecture_args(check_build_parser)
+  _add_engine_args(check_build_parser, choices=['libfuzzer', 'afl', 'dataflow'])
+  _add_sanitizer_args(
+      check_build_parser, choices=['address', 'memory', 'undefined', 'dataflow'])
   _add_environment_args(check_build_parser)
   check_build_parser.add_argument('project_name', help='name of the project')
-  check_build_parser.add_argument('fuzzer_name', help='name of the fuzzer',
-                                  nargs='?')
+  check_build_parser.add_argument(
+      'fuzzer_name', help='name of the fuzzer', nargs='?')
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzer', help='Run a fuzzer in the emulated fuzzing environment.')
@@ -148,6 +151,7 @@ def main():
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
   shell_parser.add_argument('project_name', help='name of the project')
+  _add_architecture_args(shell_parser)
   _add_engine_args(shell_parser)
   _add_sanitizer_args(shell_parser)
   _add_environment_args(shell_parser)
@@ -156,6 +160,15 @@ def main():
                                              help='Pull base images.')
 
   args = parser.parse_args()
+
+  # We have different default values for `sanitizer` depending on the `engine`.
+  # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
+  if hasattr(args, 'sanitizer') and not args.sanitizer:
+    if args.engine == 'dataflow':
+      args.sanitizer = 'dataflow'
+    else:
+      args.sanitizer = 'address'
+
   if args.command == 'generate':
     return generate(args)
   elif args.command == 'build_image':
@@ -248,16 +261,27 @@ def _get_work_dir(project_name=''):
   return os.path.join(BUILD_DIR, 'work', project_name)
 
 
-def _add_engine_args(parser):
+def _add_architecture_args(parser, choices=('x86_64', 'i386')):
+  """Add common architecture args."""
+  parser.add_argument('--architecture', default='x86_64', choices=choices)
+
+
+def _add_engine_args(
+        parser,
+        choices=('libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none')):
   """Add common engine args."""
-  parser.add_argument('--engine', default='libfuzzer',
-                      choices=['libfuzzer', 'afl', 'honggfuzz', 'none'])
+  parser.add_argument('--engine', default='libfuzzer', choices=choices)
 
 
-def _add_sanitizer_args(parser):
+def _add_sanitizer_args(
+        parser,
+        choices=('address', 'memory', 'undefined', 'coverage', 'dataflow')):
   """Add common sanitizer args."""
-  parser.add_argument('--sanitizer', default='address',
-                      choices=['address', 'memory', 'undefined', 'coverage'])
+  parser.add_argument(
+      '--sanitizer',
+      default=None,
+      choices=choices,
+      help='the default is "address"; "dataflow" for "dataflow" engine')
 
 
 def _add_environment_args(parser):
@@ -413,7 +437,8 @@ def build_fuzzers(args):
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer
+      'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture,
   ]
   if args.e:
     env += args.e
@@ -479,7 +504,8 @@ def check_build(args):
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer
+      'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture,
   ]
   if args.e:
     env += args.e
@@ -510,6 +536,9 @@ def _get_fuzz_targets(project_name):
   """Return names of fuzz targest build in the project's /out directory."""
   fuzz_targets = []
   for name in os.listdir(_get_output_dir(project_name)):
+    if name.startswith('afl-'):
+      continue
+
     path = os.path.join(_get_output_dir(project_name), name)
     if os.path.isfile(path) and os.access(path, os.X_OK):
       fuzz_targets.append(name)
@@ -782,7 +811,8 @@ def shell(args):
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer
+      'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture,
   ]
 
   if args.e:

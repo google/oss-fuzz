@@ -1,0 +1,11 @@
+homepage: "https://www.libressl.org/"
+primary_contact: "busterb@gmail.com"
+auto_ccs:
+ - "beck@obtuse.com"
+ - "joel.sing@gmail.com"
+ - "kinichiro.inoguchi@gmail.com"
+ - "ted.unangst@gmail.com"
+ - "miwaxe@gmail.com"
+sanitizers:
+ - address
+ - undefined

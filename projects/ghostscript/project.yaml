@@ -1,0 +1,7 @@
+homepage: "https://ghostscript.com"
+primary_contact: "skau@google.com"
+auto_ccs:
+  - "henry.stiles@artifex.com"
+  - "skau@google.com"
+sanitizers:
+  - address

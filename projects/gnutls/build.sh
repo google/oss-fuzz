@@ -48,9 +48,9 @@ make -j$(nproc)
 make install
 
 cd $SRC/libtasn1
-CFGFLAGS="--disable-gcc-warnings --disable-gtk-doc --disable-gtk-doc-pdf --disable-doc \
-  --disable-shared --enable-static --prefix=$DEPS_PATH" \
-  make bootstrap
+bash bootstrap
+./configure --disable-gcc-warnings --disable-gtk-doc --disable-gtk-doc-pdf --disable-doc \
+  --disable-shared --enable-static --prefix=$DEPS_PATH
 make -j$(nproc)
 make install
 

@@ -179,7 +179,7 @@ def get_build_steps(project_dir):
       {
           'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
-              '-m', 'rsync', '-r', '-d',
+              '-m', 'cp', '-r',
               os.path.join(out, 'report'),
               upload_report_url,
           ],
@@ -193,7 +193,7 @@ def get_build_steps(project_dir):
       {
           'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
-              '-m', 'rsync', '-r', '-d',
+              '-m', 'cp', '-r',
               os.path.join(out, 'fuzzer_stats'),
               upload_fuzzer_stats_url,
           ],
@@ -205,7 +205,7 @@ def get_build_steps(project_dir):
       {
           'name': 'gcr.io/cloud-builders/gsutil',
           'args': [
-              '-m', 'rsync', '-r', '-d',
+              '-m', 'cp', '-r',
               os.path.join(out, 'logs'),
               UPLOAD_URL_FORMAT.format(
                   project=project_name, type='logs', date=report_date),
@@ -255,7 +255,7 @@ def get_build_steps(project_dir):
           ],
       }
   )
-  return build_steps, image
+  return build_steps
 
 
 def get_targets_list(project_name):
@@ -280,8 +280,9 @@ def main():
     usage()
 
   project_dir = sys.argv[1].rstrip(os.path.sep)
-  steps, image = get_build_steps(project_dir)
-  build_project.run_build(steps, image, COVERAGE_BUILD_TAG)
+  project_name = os.path.basename(project_dir)
+  steps = get_build_steps(project_dir)
+  build_project.run_build(steps, project_name, COVERAGE_BUILD_TAG)
 
 
 if __name__ == "__main__":

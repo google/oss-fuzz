@@ -1,0 +1,6 @@
+homepage: "https://github.com/google/zopfli"
+primary_contact: "lode@google.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

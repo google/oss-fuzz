@@ -1,0 +1,6 @@
+homepage: "https://github.com/google/piex"
+primary_contact: "nchusid@google.com"
+sanitizers:
+ - address
+ - undefined
+ - memory

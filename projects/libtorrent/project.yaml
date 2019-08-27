@@ -1,0 +1,6 @@
+homepage: "https://github.com/arvidn/libtorrent.git"
+primary_contact: "pauldreikossfuzz@gmail.com"
+auto_ccs:
+ - "oss-fuzz-libtorrent@pauldreik.se"
+ - "arvid.norberg@gmail.com"
+

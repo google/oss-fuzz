@@ -1,0 +1,11 @@
+homepage: "https://github.com/akheron/jansson"
+primary_contact: "git@cfware.com"
+auto_ccs:
+  - "cmeister2@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386

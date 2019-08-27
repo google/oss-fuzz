@@ -15,9 +15,16 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../../bower_components/polymer/lib/elements/dom-if.html">
 <link rel="import" href="../../bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
 
 <dom-module id="build-status">
   <template>
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <app-route route="{{route}}"
+      pattern=":project_name"
+      data="{{routeData}}">
+    </app-route>
     <style is="custom-style" include="iron-flex iron-flex-alignment">
     <style>
       .paper-item-link {
@@ -137,12 +144,38 @@
           }
         };
       }
+      static get observers() {
+        return [
+          '_routeChanged(route.*)'
+        ];
+      }
+
+      _routeChanged() {
+        if (!this.status || !this.routeData.project_name) {
+          // If our status json is loaded and there is a project_name specified
+          // in the URL, we can proceed to load that project's log.
+          return;
+        }
+        var project = this.getProjectByName(this.routeData.project_name);
+
+        this.$.logxhr.url = "/log-" + project.build_id + ".txt";
+        this.build_id = project.build_id;
+        this.log = '';
+        this.loading_log = true;
+      }
+
+      getProjectByName(project_name) {
+        return this.status.projects.find(p => p.name === project_name);
+      }
 
       onResponseForFuzzing(e) {
         this.status_fuzzing = e.detail.response;
         if (!this.status) {
           // Show status of the fuzzing builds by default.
           this.status = this.status_fuzzing;
+          // Manually invoke a _routeChanged call, in order to load the log for
+          // someone going directly to a project's URL.
+          this._routeChanged();
         }
       }
 
@@ -156,10 +189,9 @@
       }
 
       onTap(e) {
-        this.$.logxhr.url = "/log-" + e.model.project.build_id + ".txt";
-        this.build_id = e.model.project.build_id;
-        this.log = '';
-        this.loading_log = true;
+        // Change the route, this should auto-magically update the url in the
+        // browser and invoke the _routeChanged method.
+        this.set('route.path', e.model.project.name);
       }
 
       onChanged(e) {

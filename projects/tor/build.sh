@@ -75,7 +75,7 @@ TORLIBS="$TORLIBS -Wl,-Bdynamic"
 for fuzzer in src/test/fuzz/*.a; do
     output="${fuzzer%.a}"
     output="${output##*lib}"
-    ${CXX} ${CXXFLAGS} -std=c++11 -lFuzzingEngine ${fuzzer} ${TORLIBS} -o ${OUT}/${output}
+    ${CXX} ${CXXFLAGS} -std=c++11 $LIB_FUZZING_ENGINE ${fuzzer} ${TORLIBS} -o ${OUT}/${output}
 
     corpus_dir="${SRC}/tor-fuzz-corpora/${output#oss-fuzz-}"
     if [ -d "${corpus_dir}" ]; then

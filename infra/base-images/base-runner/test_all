@@ -16,7 +16,7 @@
 ################################################################################
 
 # Percentage threshold that needs to be reached for marking a build as failed.
-ALLOWED_BROKEN_TARGETS_PERCENTAGE=10
+ALLOWED_BROKEN_TARGETS_PERCENTAGE=${ALLOWED_BROKEN_TARGETS_PERCENTAGE:-10}
 
 # Test all fuzz targets in the $OUT/ dir.
 TOTAL_TARGETS_COUNT=0
@@ -55,8 +55,9 @@ for FUZZER_BINARY in $(find $OUT/ -maxdepth 1 -executable -type f); do
 
   LOG_PATH_FOR_BROKEN_TARGET="${BROKEN_TARGETS_DIR}/${FUZZER}"
 
-  # Launch bad build check process in the background.
-  bad_build_check $FUZZER_BINARY > $LOG_PATH_FOR_BROKEN_TARGET &
+  # Launch bad build check process in the background. Ignore the exit codes, as
+  # we check the percentage of broken fuzz targets after running all the checks.
+  bad_build_check $FUZZER_BINARY &> $LOG_PATH_FOR_BROKEN_TARGET &
 
   # Count total number of fuzz targets being tested.
   TOTAL_TARGETS_COUNT=$[$TOTAL_TARGETS_COUNT+1]
@@ -118,7 +119,7 @@ if [ "$BROKEN_TARGETS_PERCENTAGE" -gt "$ALLOWED_BROKEN_TARGETS_PERCENTAGE" ]; th
 
   # TODO: figure out how to not fail the "special" cases handled below. Those
   # are from "example" and "c-ares" projects and are too small targets to pass.
-  if [ "$(ls $OUT/do_stuff_fuzzer $OUT/ares_*_fuzzer $OUT/checksum_fuzzer $OUT/xmltest 2>/dev/null | wc -l)" -gt "0" ]; then
+  if [ "$(ls $OUT/do_stuff_fuzzer $OUT/ares_*_fuzzer $OUT/checksum_fuzzer $OUT/xmltest $OUT/fuzz_compression_sas_rle 2>/dev/null | wc -l)" -gt "0" ]; then
     exit 0
   fi
 

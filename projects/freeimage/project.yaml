@@ -1,7 +1,5 @@
 homepage: "http://freeimage.sourceforge.net/"
-primary_contact: "kusano@google.com"
-
-experimental: true
+primary_contact: "drolon@infonie.fr"
 
 sanitizers:
   - address

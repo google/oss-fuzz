@@ -28,10 +28,10 @@ RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone --depth 1 https://git.savannah.nongnu.org/r/freetype/freetype2
 RUN git clone --depth 1 https://github.com/xz-mirror/xz
 RUN git clone --depth 1 https://github.com/libraw/libraw
-RUN git clone --depth 1 https://github.com/glennrp/libpng
+RUN git clone --depth 1 https://github.com/pnggroup/libpng
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS
 RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/heic heic_corpus
-ADD http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz bzip2-1.0.6.tar.gz
+RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
 ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
 WORKDIR imagemagick
 COPY build.sh $SRC/

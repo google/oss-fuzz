@@ -32,10 +32,13 @@ fi
 
 LDFLAGS="$CXXFLAGS" LD=$CXX $SRC/libvpx/configure \
     --disable-unit-tests \
+    --disable-examples \
     --size-limit=12288x12288 \
     --extra-cflags="${extra_c_flags}" \
     --disable-webm-io \
-    --enable-debug
+    --enable-debug \
+    --disable-vp8-encoder \
+    --disable-vp9-encoder
 make -j$(nproc) all
 popd
 
@@ -50,9 +53,9 @@ for decoder in "${fuzzer_decoders[@]}"; do
     -I$SRC/libvpx \
     -I${build_dir} \
     -Wl,--start-group \
-    -lFuzzingEngine \
+    $LIB_FUZZING_ENGINE \
     $SRC/libvpx/examples/${fuzzer_src_name}.cc -o $OUT/${fuzzer_name} \
-    ${build_dir}/libvpx.a ${build_dir}/tools_common.c.o \
+    ${build_dir}/libvpx.a \
     -Wl,--end-group
   cp $SRC/vpx_fuzzer_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
   cp $SRC/vpx_dec_fuzzer.dict $OUT/${fuzzer_name}.dict

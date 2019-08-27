@@ -1,0 +1,6 @@
+homepage: "https://github.com/google/zopfli"
+primary_contact: "gmelman1@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

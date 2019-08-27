@@ -1,0 +1,9 @@
+homepage: https://github.com/libical/libical
+primary_contact: tsdgeos@gmail.com
+auto_ccs:
+  - allen.d.winter@gmail.com
+  - kent.sutherland@gmail.com
+sanitizers:
+  - address
+  - memory
+  - undefined
