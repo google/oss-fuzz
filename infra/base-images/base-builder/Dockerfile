@@ -93,11 +93,7 @@ ENV FUZZER_LDFLAGS ""
 
 WORKDIR $SRC
 
-ADD http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz $SRC/
-RUN mkdir afl && \
-    cd afl && \
-    tar -xzv --strip-components=1 -f $SRC/afl-latest.tgz && \
-    rm -rf $SRC/afl-latest.tgz
+RUN git clone -b stable https://github.com/google/AFL.git afl
 
 ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
 RUN mkdir honggfuzz && \
