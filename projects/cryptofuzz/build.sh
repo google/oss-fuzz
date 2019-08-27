@@ -92,6 +92,23 @@ fi
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
+    # Compile Botan (with assembly)
+    cd $SRC/botan
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
+    make -j$(nproc) >/dev/null 2>&1
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN"
+    export LIBBOTAN_A_PATH="$SRC/botan/libbotan-2.a"
+    export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
+
+    # Compile Cryptofuzz Botan (with assembly) module
+    cd $SRC/cryptofuzz/modules/botan
+    make -B
+fi
+
+##############################################################################
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
     # Compile libgpg-error (dependency of libgcrypt)
     cd $SRC/
     tar jxvf libgpg-error-1.36.tar.bz2
