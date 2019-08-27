@@ -66,6 +66,11 @@ test/core/security:ssl_server_fuzzer \
 NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
 CPP_BAZEL_FLAGS="--linkopt=-stdlib=libc++ --cxxopt=-stdlib=libc++ --linkopt=-lc++"
 EXTRA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
+
+if [ "$SANITIZER" == "undefined" ]; then
+  CPP_BAZEL_FLAGS+=" --linkopt=-lubsan"
+fi
+
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
   $CPP_BAZEL_FLAGS \
   $EXTRA_BAZEL_FLAGS \
