@@ -43,8 +43,10 @@ RUN pip install futures==2.2.0 enum34==1.0.4 protobuf==3.5.2.post1 six==1.10.0 t
 #========================
 # Bazel installation
 
+ENV DISABLE_BAZEL_WRAPPER 1
+
 RUN apt-get update && apt-get install -y wget && apt-get clean
-RUN wget -q https://github.com/bazelbuild/bazel/releases/download/0.17.1/bazel-0.17.1-linux-x86_64 -O /usr/local/bin/bazel
+RUN wget -q https://github.com/bazelbuild/bazel/releases/download/0.26.0/bazel-0.26.0-linux-x86_64 -O /usr/local/bin/bazel
 RUN chmod 755 /usr/local/bin/bazel
 
 RUN git clone --recursive https://github.com/grpc/grpc grpc

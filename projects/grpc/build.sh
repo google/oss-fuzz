@@ -15,72 +15,91 @@
 #
 ################################################################################
 
-FUZZER_FILES="\
-test/core/json/fuzzer.cc \
-test/core/client_channel/uri_fuzzer_test.cc \
-test/core/http/request_fuzzer.cc \
-test/core/http/response_fuzzer.cc \
-test/core/nanopb/fuzzer_response.cc \
-test/core/nanopb/fuzzer_serverlist.cc \
-test/core/slice/percent_decode_fuzzer.cc \
-test/core/slice/percent_encode_fuzzer.cc \
-test/core/transport/chttp2/hpack_parser_fuzzer_test.cc \
-test/core/end2end/fuzzers/api_fuzzer.cc \
-test/core/end2end/fuzzers/client_fuzzer.cc \
-test/core/end2end/fuzzers/server_fuzzer.cc \
-test/core/security/ssl_server_fuzzer.cc \
-"
+cp /usr/lib/libFuzzingEngine.a fuzzer_lib.a
+
+cat >> BUILD << END
+
+cc_import(
+  name = "fuzzer_lib",
+  static_library = "//:fuzzer_lib.a",
+  alwayslink = 1,
+)
+END
+
+cat > test/core/util/grpc_fuzzer.bzl << END
+
+load("//bazel:grpc_build_system.bzl", "grpc_cc_binary")
+
+def grpc_fuzzer(name, corpus=[], srcs = [], deps = [], size = "large", timeout = "long", language="", **kwargs):
+  grpc_cc_binary(
+    name = name,
+    srcs = srcs,
+    language = language,
+    deps = deps + ["//:fuzzer_lib"],
+    **kwargs
+  )
+END
 
 FUZZER_DICTIONARIES="\
 test/core/end2end/fuzzers/api_fuzzer.dictionary \
 test/core/end2end/fuzzers/hpack.dictionary \
 "
 
-FUZZER_LIBRARIES="\
-bazel-bin/*.a \
-bazel-bin/test/core/util/*.a \
-bazel-bin/test/core/end2end/*.a \
-bazel-bin/external/boringssl/libssl.a \
-bazel-bin/external/boringssl/libcrypto.a \
-bazel-bin/external/com_github_cares_cares/*.a \
-bazel-bin/external/com_github_madler_zlib/*.a \
-bazel-bin/third_party/address_sorting/*.a \
-bazel-bin/third_party/nanopb/*.a \
-bazel-bin/*.a \
+FUZZER_TARGETS="\
+test/core/json:json_fuzzer \
+test/core/client_channel:uri_fuzzer_test \
+test/core/http:request_fuzzer \
+test/core/http:response_fuzzer \
+test/core/nanopb:fuzzer_response \
+test/core/nanopb:fuzzer_serverlist \
+test/core/slice:percent_decode_fuzzer \
+test/core/slice:percent_encode_fuzzer \
+test/core/transport/chttp2:hpack_parser_fuzzer \
+test/core/end2end/fuzzers:api_fuzzer \
+test/core/end2end/fuzzers:client_fuzzer \
+test/core/end2end/fuzzers:server_fuzzer \
+test/core/security:ssl_server_fuzzer \
 "
 
 # build grpc
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
 NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
-EXTRA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
-bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
-  $EXTRA_BAZEL_FLAGS \
-  $NO_VPTR \
-  :all test/core/util/... test/core/end2end/... third_party/address_sorting/... \
-  third_party/nanopb/... @boringssl//:all @com_github_madler_zlib//:all @com_github_cares_cares//:all
 
-# Copied from projects/envoy/build.sh which also uses Bazel.
-# Profiling with coverage requires that we resolve+copy all Bazel symlinks and
-# also remap everything under proc/self/cwd to correspond to Bazel build paths.
-if [ "$SANITIZER" = "coverage" ]
+# Copied from envoy's build.sh
+# Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
+# compilation and linking.
+#
+# Some flags, such as `-stdlib=libc++`, generate warnings if used on a C source
+# file. Since the build runs with `-Werror` this will cause it to break, so we
+# use `--conlyopt` and `--cxxopt` instead of `--copt`.
+#
+declare -r EXTRA_BAZEL_FLAGS="$(
+for f in ${CFLAGS}; do
+  echo "--conlyopt=${f}" "--linkopt=${f}"
+done
+for f in ${CXXFLAGS}; do
+  echo "--cxxopt=${f}" "--linkopt=${f}"
+done
+if [ "$SANITIZER" = "undefined" ]
 then
-  # The build invoker looks for sources in $SRC, but it turns out that we need
-  # to not be buried under src/, paths are expected at out/proc/self/cwd by
-  # the profiler.
-  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
-  mkdir -p "${REMAP_PATH}"
-  rsync -av "${SRC}"/grpc "${REMAP_PATH}"
+  # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
+  # See issue: https://github.com/bazelbuild/bazel/issues/8777
+  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
 fi
+)"
 
-CFLAGS="${CFLAGS} -Iinclude -Ithird_party/nanopb -I."
-CXXFLAGS="${CXXFLAGS} -Iinclude -Ithird_party/nanopb -I. -stdlib=libc++"
+bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
+  $NO_VPTR \
+  --strip=never \
+  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
+  $FUZZER_TARGETS --verbose_failures
 
-for file in $FUZZER_FILES; do
-  fuzzer_name=$(basename $file .cc)
-  echo "Building fuzzer $fuzzer_name"
-  $CXX $CXXFLAGS \
-    $file -o $OUT/$fuzzer_name \
-    $LIB_FUZZING_ENGINE ${FUZZER_LIBRARIES}
+
+for target in $FUZZER_TARGETS; do
+  # replace : with /
+  fuzzer_name=${target/:/\/}
+  echo "Copying fuzzer $fuzzer_name"
+  cp bazel-bin/$fuzzer_name $OUT/
 done
 
 # Copy dictionaries and options files to $OUT/
@@ -92,7 +111,7 @@ cp $SRC/grpc/tools/fuzzer/options/*.options $OUT/
 
 # We don't have a consistent naming convention between fuzzer files and corpus
 # directories so we resort to hard coding zipping corpuses
-zip $OUT/fuzzer_seed_corpus.zip test/core/json/corpus/*
+zip $OUT/json_fuzzer_seed_corpus.zip test/core/json/corpus/*
 zip $OUT/uri_fuzzer_test_seed_corpus.zip test/core/client_channel/uri_corpus/*
 zip $OUT/request_fuzzer_seed_corpus.zip test/core/http/request_corpus/*
 zip $OUT/response_fuzzer_seed_corpus.zip test/core/http/response_corpus/*
@@ -100,7 +119,7 @@ zip $OUT/fuzzer_response_seed_corpus.zip test/core/nanopb/corpus_response/*
 zip $OUT/fuzzer_serverlist_seed_corpus.zip test/core/nanopb/corpus_serverlist/*
 zip $OUT/percent_decode_fuzzer_seed_corpus.zip test/core/slice/percent_decode_corpus/*
 zip $OUT/percent_encode_fuzzer_seed_corpus.zip test/core/slice/percent_encode_corpus/*
-zip $OUT/hpack_parser_fuzzer_test_seed_corpus.zip test/core/transport/chttp2/hpack_parser_corpus/*
+zip $OUT/hpack_parser_fuzzer_seed_corpus.zip test/core/transport/chttp2/hpack_parser_corpus/*
 zip $OUT/api_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/api_fuzzer_corpus/*
 zip $OUT/client_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/client_fuzzer_corpus/*
 zip $OUT/server_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/server_fuzzer_corpus/*
