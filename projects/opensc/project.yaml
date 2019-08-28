@@ -4,5 +4,8 @@ auto_ccs:
   - "martin@martinpaljak.net"
   - "viktor.tarasov@gmail.com"
   - "ludovic.rousseau@gmail.com"
+  - "andreas.schwier@cardcontact.de"
+  - "deengert@gmail.com"
+  - "jakuje@gmail.com"
 fuzzing_engines:
   - libfuzzer
