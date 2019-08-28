@@ -31,7 +31,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (matfd == nullptr) {
     return 0;
   }
-
+  // TODO(https://github.com/google/oss-fuzz/pull/2761): use more complicated APIs
+  // such as Mat_VarReadDataAll, Mat_VarReadDataLinear, Mat_VarReadNext, etc. 
   Mat_Close(matfd);
 
   return 0;
