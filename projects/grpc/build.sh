@@ -64,18 +64,36 @@ test/core/security:ssl_server_fuzzer \
 # build grpc
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
 NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
-CPP_BAZEL_FLAGS="--linkopt=-stdlib=libc++ --cxxopt=-stdlib=libc++ --linkopt=-lc++"
-EXTRA_BAZEL_FLAGS="--strip=never  $(for f in $CXXFLAGS; do if [ $f != "-stdlib=libc++" ] ; then echo --copt=$f --linkopt=$f; fi; done)"
 
-if [ "$SANITIZER" == "undefined" ]; then
-  CPP_BAZEL_FLAGS+=" --linkopt=-lubsan"
+# Copied from envoy's build.sh
+# Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
+# compilation and linking.
+#
+# Some flags, such as `-stdlib=libc++`, generate warnings if used on a C source
+# file. Since the build runs with `-Werror` this will cause it to break, so we
+# use `--conlyopt` and `--cxxopt` instead of `--copt`.
+#
+declare -r EXTRA_BAZEL_FLAGS="$(
+for f in ${CFLAGS}; do
+  echo "--conlyopt=${f}" "--linkopt=${f}"
+done
+for f in ${CXXFLAGS}; do
+  echo "--cxxopt=${f}" "--linkopt=${f}"
+done
+if [ "$SANITIZER" = "undefined" ]
+then
+  # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
+  # See issue: https://github.com/bazelbuild/bazel/issues/8777
+  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
 fi
+)"
 
 bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
-  $CPP_BAZEL_FLAGS \
-  $EXTRA_BAZEL_FLAGS \
   $NO_VPTR \
+  --strip=never \
+  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   $FUZZER_TARGETS --verbose_failures
+
 
 for target in $FUZZER_TARGETS; do
   # replace : with /
