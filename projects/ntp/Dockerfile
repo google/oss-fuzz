@@ -16,8 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER security@ntp.org
-RUN apt-get update && apt-get install -y make autoconf automake libtool bison flex
+RUN apt-get update && apt-get install -y make autoconf automake libtool bison flex rsync lynx
 #TODO use bitkeeper repo from http://bk.ntp.org
+#or wait for update of RUN rsync -a archive.ntp.org::ntp-dev-src ntp-dev-src
 ADD http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-dev/ntp-dev-4.3.99.tar.gz ntp-dev.tar.gz
 WORKDIR $SRC
 COPY build.sh $SRC/
