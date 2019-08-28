@@ -24,9 +24,8 @@
 #include "fuzzer_temp_file.h"
 #include "matio.h"
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* fuzzer_input_data,
-                                      size_t fuzzer_input_size) {
-  FuzzerTemporaryFile temp_file(fuzzer_input_data, fuzzer_input_size);
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  FuzzerTemporaryFile temp_file(data, size);
 
   mat_t* matfd = Mat_Open(temp_file.filename(), MAT_ACC_RDONLY);
   if (matfd == nullptr) {
