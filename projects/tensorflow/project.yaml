@@ -1,3 +1,4 @@
+disabled: True
 homepage: "https://www.tensorflow.org"
 primary_contact: "mihaimaruseac@google.com"
 auto_ccs:
