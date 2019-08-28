@@ -20,5 +20,13 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
+if [[ $CFLAGS = *sanitize=address* ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DASAN"
+fi
+
 $CXX $CXXFLAGS -D_GLIBCXX_DEBUG -I $SRC/rapidjson/include fuzzer.cpp $LIB_FUZZING_ENGINE -o $OUT/fuzzer
 cp fuzzer_seed_corpus.zip $OUT
+
+cd $SRC/fuzzing-headers/tests
+$CXX $CXXFLAGS -std=c++2a -D_GLIBCXX_DEBUG -I $SRC/rapidjson/include -I ../include rapidjson.cpp $LIB_FUZZING_ENGINE -o $OUT/fuzzer-extended

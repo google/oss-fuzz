@@ -17,10 +17,14 @@
 #include <cstdlib>
 #include <string>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "zopfli.h"
-#include "FuzzedDataProvider.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  if (size > 8192)
+    return 0;
+
   FuzzedDataProvider stream(data, size);
 
   ZopfliOptions options;

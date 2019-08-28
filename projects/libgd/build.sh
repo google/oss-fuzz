@@ -24,7 +24,7 @@ sed -i'' -e 's/INT_MAX/100000/' "$SRC/libgd/src/gd_security.c"
 ./configure --prefix="$WORK" --disable-shared
 make -j$(nproc) install
 
-for target in Bmp Gif Tga Gd Gd2 WBMP; do
+for target in Bmp Gd Gd2 Gif Jpeg Png Tga Tiff WBMP Webp; do
     lowercase=$(echo $target | tr "[:upper:]" "[:lower:]")
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
       -DFUZZ_GD_FORMAT=$target \
@@ -34,7 +34,7 @@ done
 
 mkdir afl_testcases
 (cd afl_testcases; tar xvf "$SRC/afl_testcases.tgz")
-for format in bmp gif; do
+for format in bmp gif png webp; do
     mkdir $format
     find afl_testcases -type f -name '*.'$format -exec mv -n {} $format/ \;
     zip -rj $format.zip $format/

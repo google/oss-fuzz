@@ -16,18 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
-ADD https://dl.google.com/go/go1.12.9.linux-amd64.tar.gz go.tar.gz
-RUN tar xzf go.tar.gz -C $SRC/
-ENV GOPATH $SRC
-ENV PATH $SRC/go/bin:$GOPATH/bin:$PATH
 
 RUN go get -u -d github.com/google/syzkaller/...
-
-# Dependency of go-fuzz
-RUN go get golang.org/x/tools/go/packages
-
-# go-fuzz-build is the tool that instruments Go files.
-RUN go get github.com/dvyukov/go-fuzz/go-fuzz-build
 
 # Dependency for one of the fuzz targets.
 RUN go get github.com/ianlancetaylor/demangle

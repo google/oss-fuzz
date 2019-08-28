@@ -3,7 +3,7 @@ layout: default
 title: Reproducing
 parent: Advanced topics
 nav_order: 5
-permalink: /advanced-topics/reproducing
+permalink: /advanced-topics/reproducing/
 ---
 
 # Reproducing OSS-Fuzz issues

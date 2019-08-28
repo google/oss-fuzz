@@ -2,7 +2,7 @@
 layout: default
 title: Useful links
 nav_order: 2
-permalink: /reference/useful-links
+permalink: /reference/useful-links/
 parent: Reference
 ---
 

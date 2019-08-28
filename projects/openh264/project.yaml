@@ -3,8 +3,10 @@ primary_contact: "huili2@cisco.com"
 auto_ccs:
   - "guangwwa@cisco.com"
   - "sijchen@cisco.com"
-  - "twsmith@mozilla.com"
   - "yanqian@cisco.com"
+vendor_ccs:
+  - "twsmith@mozilla.com"
+  - "cdiehl@mozilla.com"
 sanitizers:
   - address
   - memory

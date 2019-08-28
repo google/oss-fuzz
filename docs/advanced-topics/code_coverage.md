@@ -3,7 +3,7 @@ layout: default
 title: Code coverage
 parent: Advanced topics
 nav_order: 2
-permalink: /advanced-topics/code-coverage
+permalink: /advanced-topics/code-coverage/
 ---
 
 # Code Coverage

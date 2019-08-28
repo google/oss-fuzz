@@ -4,6 +4,8 @@ auto_ccs:
   - "andreyknvl@google.com"
   - "mmoroz@chromium.org"
   - "syzkaller@googlegroups.com"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
   - address
 view_restrictions: none

@@ -56,7 +56,7 @@ We will reconsider the GitHub issue tracker once the
 
 ## Why do you require a Google account for authentication?
 
-Our [ClusterFuzz]({{ site.baseurl }}/furthur-reading/clusterfuzz) fuzzing
+Our [ClusterFuzz]({{ site.baseurl }}/further-reading/clusterfuzz) fuzzing
 infrastructure and [issue tracker](https://bugs.chromium.org/p/oss-fuzz/issues/list)
 require a Google account for authentication. Note that an alternate email
 address associated with a Google account does not work due to appengine api
@@ -134,7 +134,7 @@ coverage, it may mean several things:
   (you may check the speed of your targets at https://oss-fuzz.com/)
 
 In either case, look at the
-[coverage reports]({{ site.baseurl }}/furthur-reading/clusterfuzz#coverage-reports)
+[coverage reports]({{ site.baseurl }}/further-reading/clusterfuzz#coverage-reports)
 for your target(s) and figure out why some parts of the code are not covered. 
 
 ## Why are code coverage reports public?

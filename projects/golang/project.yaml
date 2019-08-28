@@ -5,4 +5,6 @@ auto_ccs:
  - "mmoroz@chromium.org"
 sanitizers:
  - address
+fuzzing_engines:
+ - libfuzzer
 view_restrictions: none

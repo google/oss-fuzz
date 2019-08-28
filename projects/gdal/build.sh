@@ -36,19 +36,22 @@ fi
 cd poppler
 mkdir -p build
 cd build
+POPPLER_CFLAGS="$CFLAGS"
 POPPLER_CXXFLAGS="$CXXFLAGS"
 # we do not really want to deal with Poppler undefined behaviour bugs, such
 # as integer overflows
 if [ "$SANITIZER" = "undefined" ]; then
     if [ "$ARCHITECTURE" = "i386" ]; then
-        POPPLER_CXXFLAGS="-m32 -g -O1"
+        POPPLER_CFLAGS="-m32 -O1 -fno-omit-frame-pointer -gline-tables-only -stdlib=libc++"
     else
-        POPPLER_CXXFLAGS="-g -O1"
+        POPPLER_CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -stdlib=libc++"
     fi
+    POPPLER_CXXFLAGS="$POPPLER_CFLAGS"
 fi
 cmake .. \
   -DCMAKE_INSTALL_PREFIX=$SRC/install \
   -DCMAKE_BUILD_TYPE=debug \
+  -DCMAKE_C_FLAGS="$POPPLER_CFLAGS" \
   -DCMAKE_CXX_FLAGS="$POPPLER_CXXFLAGS" \
   -DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
   -DBUILD_SHARED_LIBS=OFF \
@@ -99,6 +102,12 @@ make install
 cd ../..
 
 # build gdal
+
+if [ "$SANITIZER" = "undefined" ]; then
+  CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+  CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+fi
+
 cd gdal
 export LDFLAGS=${CXXFLAGS}
 PKG_CONFIG_PATH=$SRC/install/lib/pkgconfig ./configure --without-libtool --with-liblzma --with-expat --with-sqlite3 --with-xerces --with-webp --with-netcdf=$SRC/install --with-curl=$SRC/install/bin/curl-config --without-hdf5 --with-jpeg=internal --with-proj=$SRC/install --with-poppler

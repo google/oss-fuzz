@@ -25,7 +25,7 @@ A scalable fuzzing infrastructure that is used for OSS-Fuzz backend.
 [ClusterFuzz] is also used to fuzz Chrome and many other projects. A quick
 overview of ClusterFuzz user interface is available on this [page].
 
-[page]: {{ site.baseurl }}/furthur-reading/clusterfuzz
+[page]: {{ site.baseurl }}/further-reading/clusterfuzz
 [ClusterFuzz]: https://github.com/google/clusterfuzz
 
 ### Fuzz Target

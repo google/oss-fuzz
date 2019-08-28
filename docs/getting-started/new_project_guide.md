@@ -19,6 +19,7 @@ Before you can start setting up your new project for fuzzing, you must do the fo
 
 - [Integrate]({{ site.baseurl }}/advanced-topics/ideal-integration/) one or more [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target)
   with the project you want to fuzz.
+
   For examples, see
 [boringssl](https://github.com/google/boringssl/tree/master/fuzz),
 [SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338),
@@ -76,6 +77,7 @@ This configuration file stores project metadata. The following attributes are su
 - [homepage](#homepage)
 - [primary_contact](#primary)
 - [auto_ccs](#primary)
+- [vendor_ccs](#vendor) (optional)
 - [sanitizers](#sanitizers) (optional)
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
@@ -86,6 +88,14 @@ You project's homepage.
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
 tracker. If you're a primary or a CC, you'll need to use a [Google account](https://support.google.com/accounts/answer/176347?hl=en) to get full access. ([why?]({{ site.baseurl }}/faq/#why-do-you-require-a-google-account-for-authentication)).
+
+### vendor_ccs (optional) {#vendor}
+The list of vendor email addresses that are downstream consumers of the project and want access to
+the bug reports as they are filed.
+
+Any changes to this list must follow these rules:
+- Approved by the project maintainer (e.g. comment on pull request, reply on project mailing list).
+- An organization email address is used.
 
 ### sanitizers (optional) {#sanitizers}
 The list of sanitizers to use. If you don't specify a list, `sanitizers` uses a default list of supported
@@ -115,7 +125,7 @@ sanitizers:
  ```
 
 Crashes can be accessed on the [ClusterFuzz
-homepage]({{ site.baseurl }}/furthur-reading/clusterfuzz#web-interface).
+homepage]({{ site.baseurl }}/further-reading/clusterfuzz#web-interface).
 
 `sanitizers` example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/project.yaml).
 
@@ -216,6 +226,11 @@ When your build.sh script is executed, the following locations are available wit
 Although the files layout is fixed within a container, environment variables are
 provided so you can write retargetable scripts.
 
+In case your fuzz target uses the [FuzzedDataProvider] class, make sure it is
+included via `#include <fuzzer/FuzzedDataProvider.h>` directive.
+
+[FuzzedDataProvider]: https://github.com/google/fuzzing/blob/master/docs/split-inputs.md#fuzzed-data-provider
+
 ### build.sh requirements {#Requirements}
 
 Only binaries without an extension are accepted as targets. Extensions are reserved for other artifacts, like .dict.
@@ -246,7 +261,7 @@ In addition, please keep the size of the build (everything copied to `$OUT`) sma
 ## Fuzzer execution environment
 
 For more on the environment that
-your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) run in, and the assumptions you can make, see the [fuzzer environment]({{ site.baseurl }}/furthur-reading/fuzzer-environment/) page.
+your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) run in, and the assumptions you can make, see the [fuzzer environment]({{ site.baseurl }}/further-reading/fuzzer-environment/) page.
 
 ## Testing locally
 
@@ -294,7 +309,7 @@ that all system dependencies are
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
 If everything works locally, it should also work on our automated builders and ClusterFuzz. If you check in
-your files and experience failures, review your [dependencies]({{ site.baseurl }}/furthur-reading/fuzzer-environment/#dependencies).
+your files and experience failures, review your [dependencies]({{ site.baseurl }}/further-reading/fuzzer-environment/#dependencies).
 
 ## Debugging Problems
 

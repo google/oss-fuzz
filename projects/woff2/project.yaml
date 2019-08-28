@@ -5,6 +5,8 @@ auto_ccs:
   - "nyshadhr@google.com"
   - "ewa@google.com"
   - "williamsnathan@google.com"
+vendor_ccs:
+  - "cdiehl@mozilla.com"
 sanitizers:
   - address
   - memory

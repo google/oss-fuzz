@@ -21,5 +21,4 @@ RUN apt-get update && apt-get install --yes cmake
 
 RUN git clone --depth 1 https://github.com/gabime/spdlog.git
 WORKDIR spdlog
-COPY FuzzedDataProvider.h $SRC/
 COPY build.sh log_fuzzer.cc $SRC/
