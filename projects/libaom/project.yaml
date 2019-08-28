@@ -9,3 +9,5 @@ auto_ccs:
 - jaikk@google.com
 - jzern@google.com
 - wtc@google.com
+vendor_ccs:
+- cdiehl@mozilla.com
