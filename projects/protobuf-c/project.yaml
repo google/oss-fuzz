@@ -2,7 +2,6 @@ homepage: "https://github.com/protobuf-c/protobuf-c"
 primary_contact: "guidovranken@gmail.com"
 sanitizers:
  - address
- - undefined
  - memory
 architectures:
  - x86_64
