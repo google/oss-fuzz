@@ -51,14 +51,6 @@ make clean
 make -j$(nproc) all
 make install
 
-cd $SRC
-tar xzf lame.tar.gz
-cd lame-*
-./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
-make clean
-make -j$(nproc)
-make install
-
 cd $SRC/libXext
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
@@ -129,23 +121,6 @@ make clean
 make -j$(nproc)
 make install
 
-cd $SRC/x264
-LDFLAGS="$CXXFLAGS" ./configure --prefix="$FFMPEG_DEPS_PATH" \
-    --enable-static
-make clean
-make -j$(nproc)
-make install
-
-cd $SRC/x265/build/linux
-cmake -G "Unix Makefiles" \
-    -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
-    -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-    -DCMAKE_INSTALL_PREFIX="$FFMPEG_DEPS_PATH" -DENABLE_SHARED:bool=off \
-    ../../source
-make clean
-make -j$(nproc) x265-static
-make install
-
 # Remove shared libraries to avoid accidental linking against them.
 rm $FFMPEG_DEPS_PATH/lib/*.so
 rm $FFMPEG_DEPS_PATH/lib/*.so.*
@@ -165,13 +140,10 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --enable-libass \
     --enable-libfdk-aac \
     --enable-libfreetype \
-    --enable-libmp3lame \
     --enable-libopus \
     --enable-libtheora \
     --enable-libvorbis \
     --enable-libvpx \
-    --enable-libx264 \
-    --enable-libx265 \
     --enable-nonfree \
     --disable-muxers \
     --disable-protocols \
