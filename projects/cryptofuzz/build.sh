@@ -144,22 +144,22 @@ then
 fi
 
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* ]]
-then
-    # Compile libsodium (with assembly)
-    cd $SRC/libsodium
-    autoreconf -ivf
-    ./configure
-    make -j$(nproc) >/dev/null 2>&1
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
-    export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
-    export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
-
-    # Compile Cryptofuzz libsodium (with assembly) module
-    cd $SRC/cryptofuzz/modules/libsodium
-    make -B
-fi
+#if [[ $CFLAGS != *sanitize=memory* ]]
+#then
+#    # Compile libsodium (with assembly)
+#    cd $SRC/libsodium
+#    autoreconf -ivf
+#    ./configure
+#    make -j$(nproc) >/dev/null 2>&1
+#
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
+#    export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
+#    export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
+#
+#    # Compile Cryptofuzz libsodium (with assembly) module
+#    cd $SRC/cryptofuzz/modules/libsodium
+#    make -B
+#fi
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then

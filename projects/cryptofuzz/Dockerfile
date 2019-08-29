@@ -30,7 +30,6 @@ RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 RUN git clone --depth 1 https://github.com/libressl-portable/portable libressl
 RUN cd $SRC/libressl && ./update.sh
-RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp/
 RUN git clone --depth 1 https://dev.gnupg.org/source/libgcrypt.git
 RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2
