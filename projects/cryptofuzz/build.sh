@@ -94,7 +94,12 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile Botan (with assembly)
     cd $SRC/botan
-    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
+    else
+        ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
+    fi
     make -j$(nproc) >/dev/null 2>&1
 
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN"
