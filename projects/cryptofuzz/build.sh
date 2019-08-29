@@ -90,26 +90,23 @@ then
 fi
 
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* ]]
+# Compile Botan
+cd $SRC/botan
+if [[ $CFLAGS != *-m32* ]]
 then
-    # Compile Botan (with assembly)
-    cd $SRC/botan
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
-    else
-        ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
-    fi
-    make -j$(nproc) >/dev/null 2>&1
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN"
-    export LIBBOTAN_A_PATH="$SRC/botan/libbotan-2.a"
-    export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
-
-    # Compile Cryptofuzz Botan (with assembly) module
-    cd $SRC/cryptofuzz/modules/botan
-    make -B
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
+else
+    ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
 fi
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN"
+export LIBBOTAN_A_PATH="$SRC/botan/libbotan-2.a"
+export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
+
+# Compile Cryptofuzz Botan module
+cd $SRC/cryptofuzz/modules/botan
+make -B
 
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
