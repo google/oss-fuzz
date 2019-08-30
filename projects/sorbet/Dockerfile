@@ -17,7 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER sorbet@stripe.com
 
-RUN apt-get install -y curl python ruby libstdc++-5-dev
+RUN apt-cache search libstdc++
+RUN apt-get install -y curl python ruby libstdc++5 afl
 RUN curl -L -O https://github.com/bazelbuild/bazel/releases/download/0.27.0/bazel-0.27.0-installer-linux-x86_64.sh
 RUN chmod a+x bazel-0.27.0-installer-linux-x86_64.sh
 RUN bash ./bazel-0.27.0-installer-linux-x86_64.sh
@@ -25,4 +26,7 @@ RUN bash ./bazel-0.27.0-installer-linux-x86_64.sh
 RUN git clone --depth 1 https://github.com/sorbet/sorbet.git /src/sorbet
 
 WORKDIR /src/sorbet
+
+RUN git clone https://github.com/abseil/abseil-cpp.git /src/abseil
+
 COPY build.sh /src/build.sh

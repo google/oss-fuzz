@@ -15,5 +15,9 @@
 #
 ################################################################################
 
-bazel build //test/fuzz:fuzz_dash_e --config=fuzz -c opt
-cp ./bazel-bin/test/fuzz/fuzz_dash_e $OUT/.
+FUZZERS=("fuzz_dash_e")
+PIPELINE_LIB=./bazel-bin/main/pipeline/libpipeline.a
+
+# export CC=/bin/false
+sed -i -e '/build --crosstool.*/d' .bazelrc
+CXX="$CXX" CFLAGS="--std=c++17 --stdlib=libstdc++" CXXFLAGS="--std=c++17 --stdlib=libstdc++" bazel build --config=fuzz //test/fuzz:fuzz_dash_e
