@@ -98,7 +98,7 @@ then
 else
     ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
 fi
-make -j$(nproc) >/dev/null 2>&1
+make -j$(nproc)
 
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN"
 export LIBBOTAN_A_PATH="$SRC/botan/libbotan-2.a"
