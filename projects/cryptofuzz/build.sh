@@ -146,6 +146,11 @@ then
 fi
 
 ##############################################################################
+# libsodium is currently disabled due to crashes whose cause
+# is not entirely clear.
+# It will be enabled again once the problem has been resolved.
+# See also: https://github.com/jedisct1/libsodium/issues/859
+#
 #if [[ $CFLAGS != *sanitize=memory* ]]
 #then
 #    # Compile libsodium (with assembly)
