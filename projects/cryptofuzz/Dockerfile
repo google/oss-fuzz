@@ -30,7 +30,6 @@ RUN git clone --depth 1 https://github.com/openssl/openssl
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 RUN git clone --depth 1 https://github.com/libressl-portable/portable libressl
 RUN cd $SRC/libressl && ./update.sh
-RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp/
 RUN git clone --depth 1 https://dev.gnupg.org/source/libgcrypt.git
 RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2
@@ -39,6 +38,7 @@ RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0-stable.zip
 RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_0_2-stable.zip
 RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/golang/go
+RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN apt-get remove -y libunwind8
 
 COPY build.sh $SRC/

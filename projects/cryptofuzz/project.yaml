@@ -17,6 +17,7 @@ auto_ccs:
     - "jonathan.protzenko@gmail.com"
     - "richard@levitte.org"
     - "ppzgs1@gmail.com"
+    - "jack.lloyd@gmail.com"
 sanitizers:
  - address
  - undefined
