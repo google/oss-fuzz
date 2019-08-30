@@ -521,3 +521,4 @@ cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-102-noasm
 cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-102-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-102-noasm_seed_corpus.zip
+
