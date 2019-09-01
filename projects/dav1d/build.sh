@@ -23,15 +23,8 @@ rm -rf ${build}
 mkdir -p ${build}
 
 # build library
-BUILD_ASM="true"
 
-# MemorySanitizer may report false positives if used with asm code.
-if [[ $CFLAGS = *sanitize=memory* ]]
-then
-  BUILD_ASM="false"
-fi
-
-meson -Dbuild_asm=$BUILD_ASM -Dbuild_tools=false -Dfuzzing_engine=oss-fuzz \
+meson -Denable_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
       -Dlogging=false -Dfuzzer_ldflags=$LIB_FUZZING_ENGINE \
       ${build}
