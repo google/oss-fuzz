@@ -19,7 +19,7 @@ if [[ $CFLAGS = *-m32* ]]
 then
     sed -i "s|/usr/bin/clang|$CC|g" tests/cross_oss_fuzz.txt
     sed -i "s|/usr/bin/clang++|$CXX|g" tests/cross_oss_fuzz.txt
-    LDFLAGS=-m32 meson --wrap-mode=forcefallback --default-library=static --buildtype=plain --cross-file=tests/cross_oss_fuzz.txt build
+    meson --wrap-mode=forcefallback --default-library=static --buildtype=plain --cross-file=tests/cross_oss_fuzz.txt build
 else
     meson --wrap-mode=forcefallback --default-library=static --buildtype=plain build
 fi
