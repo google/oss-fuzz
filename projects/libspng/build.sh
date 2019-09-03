@@ -24,6 +24,7 @@ else
     meson --wrap-mode=forcefallback --default-library=static --buildtype=plain build
 fi
 
+
 ninja -C build
 
 $CXX $CXXFLAGS -std=c++11 -I. \
