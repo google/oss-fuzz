@@ -24,6 +24,7 @@ else
     meson --wrap-mode=forcefallback --default-library=static --buildtype=plain build
 fi
 
+cat $SRC/libspng/tests/cross_oss_fuzz.txt
 
 ninja -C build
 
