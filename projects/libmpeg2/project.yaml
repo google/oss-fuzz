@@ -1,11 +1,14 @@
 homepage: "https://android.googlesource.com/platform/external/libmpeg2/"
 primary_contact: "harish.mahendrakar@ittiam.com"
 sanitizers:
-- address
+  - address
 auto_ccs:
-- harish.mahendrakar@ittiam.com
-- essick@google.com
-- lajos@google.com
+  - harish.mahendrakar@ittiam.com
+  - essick@google.com
+  - lajos@google.com
+vendor_ccs:
+  - bcreasey@google.com
+  - hamzeh@google.com
 architectures:
- - x86_64
- - i386
+  - x86_64
+  - i386
