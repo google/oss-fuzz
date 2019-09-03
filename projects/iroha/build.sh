@@ -15,22 +15,12 @@
 #
 ################################################################################
 
-#!/bin/bash -eu
-
 cd $SRC/iroha
 ./clean.sh
 mkdir build
 cd build
  
 cmake -DCMAKE_TOOLCHAIN_FILE=/opt/dependencies/scripts/buildsystems/vcpkg.cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DFUZZING=ON ..
-make -j$(nproc) find_fuzz
-make -j$(nproc) torii_fuzz
-make -j$(nproc) status_fuzz
-make -j$(nproc) send_batches_fuzz
-make -j$(nproc) request_proposal_fuzz
-make -j$(nproc) retrieve_block_fuzz
-make -j$(nproc) retrieve_blocks_fuzz
-make -j$(nproc) consensus_fuzz
-make -j$(nproc) mst_fuzz
+make -j$(nproc) fuzzing
   
 cp test_bin/* $OUT/

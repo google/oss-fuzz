@@ -45,7 +45,7 @@ RUN set -e; \
     /tmp/vcpkg/vcpkg install boost-locale; \
     (cd /tmp/vcpkg ; git apply /tmp/vcpkg-vars/patches/oss/0003-vcpkg-dependencies-sanitizer.patch); \
     /tmp/vcpkg/vcpkg install $(sed 's/grpc://' /tmp/vcpkg-vars/VCPKG_DEPS_LIST | cut -d':' -f1 | tr '\n' ' '); \
-    ASAN_OPTIONS=detect_leaks=0 /tmp/vcpkg/vcpkg install grpc; \
+    bash -c 'function bumper { while sleep 1; do echo bump; done; }; function run_with_bumper { bumper & p=$!; $@; kill $p; }; ASAN_OPTIONS=detect_leaks=0 run_with_bumper /tmp/vcpkg/vcpkg install grpc'; \ 
     /tmp/vcpkg/vcpkg install --head $(cat /tmp/vcpkg-vars/VCPKG_HEAD_DEPS_LIST | cut -d':' -f1 | tr '\n' ' '); \
     /tmp/vcpkg/vcpkg export $(/tmp/vcpkg/vcpkg list | cut -d':' -f1 | tr '\n' ' ') --raw --output=dependencies; \
     mv /tmp/vcpkg/dependencies /opt/dependencies; \
