@@ -6,6 +6,7 @@ auto_ccs:
   - "cyan@fb.com"
   - "felixh@fb.com"
   - "dpc@fb.com"
+  - "bimbashrestha@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
