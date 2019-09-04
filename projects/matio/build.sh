@@ -15,9 +15,16 @@
 #
 ################################################################################
 
+# build szip
+tar -xvf szip.tar.gz
+cd szip-2.1.1
+./configure --disable-shared CFLAGS="-w"
+make -C src
+cd ..
+
 # build project
 ./autogen.sh
-./configure
+./configure --with-hdf5=$HDF5_DIR
 make -j$(nproc)
 make install
 
@@ -26,5 +33,5 @@ for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
   base=$(basename -s .cc $fuzzers)
   $CXX $CXXFLAGS -std=c++11 -Iinclude \
   $fuzzers ./getopt/.libs/libgetopt.a \
-  ./src/.libs/libmatio.a -o $OUT/$base $LIB_FUZZING_ENGINE
+  ./src/.libs/libmatio.a -o $OUT/$base $LIB_FUZZING_ENGINE $HDF5_DIR/libhdf5.a ./szip-2.1.1/src/.libs/libsz.a -lz
 done
