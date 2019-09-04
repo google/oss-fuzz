@@ -414,5 +414,5 @@ README for an example.
 
 Adding it is super easy, just follow this template:
 ```markdown
-[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/<project>.svg)](https://oss-fuzz-build-logs.storage.googleapis.com/index.html#<project>)
+[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/<project>.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:<project>)
 ```
