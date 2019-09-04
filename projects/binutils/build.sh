@@ -17,6 +17,7 @@
 
 # build project
 cd binutils-gdb
+git apply ../patch.diff
 ./configure --disable-gdb --enable-targets=all
 make MAKEINFO=true && true
 mkdir fuzz

@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#define MAX_TEXT_SIZE 80
+#define MAX_TEXT_SIZE 256
 
 typedef struct
 {
@@ -24,6 +24,7 @@ static int objdump_sprintf (SFILE *f, const char *format, ...)
         return 0;
     }
     n = vsnprintf (f->buffer + f->pos, MAX_TEXT_SIZE - f->pos, format, args);
+    //vfprintf(stdout, format, args);
     va_end (args);
     f->pos += n;
 
@@ -68,6 +69,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         if (disasfunc != NULL) {
             disassemble_init_for_target(&disasm_info);
             disasfunc(0x1000, &disasm_info);
+            disassemble_release(&disasm_info);
         }
     }
 
