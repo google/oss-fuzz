@@ -414,3 +414,19 @@ Use the [ClusterFuzz web interface](https://oss-fuzz.com/) to review the followi
 * Fuzzer performance analyzer (linked from fuzzer statistics)
 
 **Note:** Your Google Account must be listed in [project.yaml](#projectyaml) for you to have access to the ClusterFuzz web interface.
+
+### Status Badge
+
+![Example
+Badge](https://oss-fuzz-build-logs.storage.googleapis.com/badges/curl.svg)
+
+Once your project has started [building](https://oss-fuzz-build-logs.storage.googleapis.com/index.html), we'd love it if you added our badge in
+your project's README. This allows you to see bugs found by your OSS-Fuzz
+integration at a glance. See
+[brotli](https://github.com/google/brotli#introduction)'s
+README for an example.
+
+Adding it is super easy, just follow this template:
+```markdown
+[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/<project>.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:<project>)
+```
