@@ -21,6 +21,6 @@ mkdir build
 cd build
  
 cmake -DCMAKE_TOOLCHAIN_FILE=/opt/dependencies/scripts/buildsystems/vcpkg.cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DFUZZING=ON ..
-make -j$(nproc) fuzzing
+make fuzzing
   
 cp test_bin/* $OUT/
