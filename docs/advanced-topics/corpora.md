@@ -7,9 +7,10 @@ permalink: /advanced-topics/corpora/
 ---
 
 # Accessing Corpora
+{: .no_toc}
 
-If you would like to access the corpora that we are using for your fuzz targets
-(synthesized by the fuzzing engines), please follow these steps.
+If you want to access the corpora that we are using for your fuzz targets
+(synthesized by the fuzzing engines), follow these steps.
 
 - TOC
 {:toc}
@@ -17,44 +18,44 @@ If you would like to access the corpora that we are using for your fuzz targets
 
 ## Obtain access
 
-In order to get access to a project's corpora, you must first be listed as the
-primary contact or an auto cc in the project's `project.yaml` file as described
+To get access to a project's corpora, you must be listed as the
+primary contact or as an auto cc in the project's `project.yaml` file, as described
 in the [New Project Guide]({{ site.baseurl }}/getting-started/new-project-guide/#projectyaml).
 If you don't do this, most of the links below won't work.
 
 ## Install Google Cloud SDK
 
-The corpora for fuzz targets are stored on
-[Google Cloud Storage](https://cloud.google.com/storage/). To access them, you
-will need to [install](https://cloud.google.com/storage/docs/gsutil_install) the
-gsutil tool, which is part of the Google Cloud SDK.
-Follow the instructions on the installation page to login with a Google account
-listed in your project's `project.yaml` file.
+The corpora for fuzz targets are stored on [Google Cloud
+Storage](https://cloud.google.com/storage/). To access them, you need to
+[install the gsutil
+tool](https://cloud.google.com/storage/docs/gsutil_install), which is part of
+the Google Cloud SDK. Follow the instructions on the installation page to
+login with the Google account listed in your project's `project.yaml` file.
 
 ## Viewing the corpus for a fuzz target
 
 The fuzzer statistics page for your project on
 [ClusterFuzz]({{ site.baseurl }}/further-reading/clusterfuzz)
-will contain a link to the Google Cloud console for your corpus under the
-"corpus_size" column. You can browse and download individual test inputs in the
-corpus here.
+contains a link to the Google Cloud console for your corpus under the
+**corpus_size** column. Click the link to browse and download individual test inputs in the
+corpus.
 
 ![viewing_corpus](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/viewing_corpus.png)
 
 ## Downloading the corpus 
 
-If you would like to download the entire corpus, from the cloud console link,
-copy the bucket path highlighted here:
+If you want to download the entire corpus, click the link in the **corpus_size** column, then
+copy the **Buckets** path at the top of the page:
 
 ![corpus_path](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/corpus_path.png)
 
-And then run the following command to copy the corpus to a directory on your
-machine.
+Copy the corpus to a directory on your
+machine by running the following command:
 
 ```bash
 $ gsutil -m rsync gs://<bucket_path> <local_directory>
 ```
-Following the expat example above, this would be:
+Using the expat example above, this would be:
 
 ```bash
 $ gsutil -m rsync \
@@ -64,6 +65,6 @@ $ gsutil -m rsync \
 
 ## Corpus backups
 
-We also keep daily zipped backups of your corpora. These can be accessed from
-the `corpus_backup` column of the fuzzer statistics page. Downloading these can
-also be significantly faster than `gsutil -m rsync` on the corpus bucket.
+We keep daily zipped backups of your corpora. These can be accessed from the
+**corpus_backup** column of the fuzzer statistics page. Downloading these can
+be significantly faster than running `gsutil -m rsync` on the corpus bucket.
