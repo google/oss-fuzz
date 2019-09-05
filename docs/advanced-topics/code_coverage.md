@@ -9,8 +9,9 @@ permalink: /advanced-topics/code-coverage/
 # Code Coverage
 {: .no_toc}
 
-You can generate code coverage report for your project using [Clang Source-based
-Code Coverage]. This page walks you through common issues in generating reports.
+You can generate code coverage reports for your project using Clang source-based
+code coverage. This page walks you through the basic steps. For more details,
+see [Clang's documentation].
 
 - TOC
 {:toc}
@@ -121,6 +122,6 @@ follows:
 coverage_extra_args: -ignore-filename-regex=.*crc.* -ignore-filename-regex=.*adler.* <other_extra_args>
 ```
 
-[Clang Source-based Code Coverage]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
+[Clang's documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [gsutil tool]: https://cloud.google.com/storage/docs/gsutil_install
 [llvm-cov tool]: https://llvm.org/docs/CommandGuide/llvm-cov.html
