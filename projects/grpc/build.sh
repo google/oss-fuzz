@@ -59,6 +59,7 @@ test/core/end2end/fuzzers:api_fuzzer \
 test/core/end2end/fuzzers:client_fuzzer \
 test/core/end2end/fuzzers:server_fuzzer \
 test/core/security:ssl_server_fuzzer \
+test/core/security:alts_credentials_fuzzer \
 "
 
 # build grpc
@@ -88,12 +89,37 @@ then
 fi
 )"
 
-bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
+tools/bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
   $NO_VPTR \
   --strip=never \
   --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   $FUZZER_TARGETS --verbose_failures
 
+# Profiling with coverage requires that we resolve+copy all Bazel symlinks and
+# also remap everything under proc/self/cwd to correspond to Bazel build paths.
+if [ "$SANITIZER" = "coverage" ]
+then
+  # The build invoker looks for sources in $SRC, but it turns out that we need
+  # to not be buried under src/, paths are expected at out/proc/self/cwd by
+  # the profiler.
+  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
+  mkdir -p "${REMAP_PATH}"
+  rsync -av "${SRC}"/grpc/src "${REMAP_PATH}"
+  rsync -av "${SRC}"/grpc/test "${REMAP_PATH}"
+  # Remove filesystem loop manually.
+  rm -rf "${SRC}"/grpc/bazel-grpc/external/grpc
+  # Clean up symlinks with a missing referrant.
+  find "${SRC}"/grpc/bazel-grpc/external -follow -type l -ls -delete || echo "Symlink cleanup soft fail"
+  rsync -avLk "${SRC}"/grpc/bazel-grpc/external "${REMAP_PATH}"
+  # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
+  # filter out the build objects from bazel-out/. Also need to resolve symlinks,
+  # since they don't make sense outside the build container.
+  declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
+    "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
+  rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/grpc/bazel-out "${REMAP_PATH}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
+fi
 
 for target in $FUZZER_TARGETS; do
   # replace : with /
@@ -124,3 +150,4 @@ zip $OUT/api_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/api_fuzzer_corpus/
 zip $OUT/client_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/client_fuzzer_corpus/*
 zip $OUT/server_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/server_fuzzer_corpus/*
 zip $OUT/ssl_server_fuzzer_seed_corpus.zip test/core/security/corpus/ssl_server_corpus/*
+zip $OUT/alts_credentials_fuzzer_seed_corpus.zip test/core/security/corpus/alts_credentials_corpus/*
