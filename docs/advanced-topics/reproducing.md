@@ -87,7 +87,8 @@ The `sanitizer` used in the report is the value in the
 
 ## Reproducing bugs
 
-After you build the image and the fuzzers, you can reproduce a bug by running the following command:
+After you build an image and a fuzzer, you can reproduce a bug by running the following command:
+
 ```bash
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
