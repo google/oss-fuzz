@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
 
-#include "byte_stream.h"
 #include "fuzzer_temp_file.h"
 
 #include "libxml/xmlreader.h"
@@ -28,14 +29,14 @@ void ignore (void* ctx, const char* msg, ...) {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   xmlSetGenericErrorFunc(NULL, &ignore);
 
-  ByteStream stream(data, size);
-  const int options = stream.GetNextInt();
-  const std::string encoding = stream.GetNextString();
-  size_t file_contents_size = 0;
-  const uint8_t* file_contents = stream.GetNextChunk(&file_contents_size);
+  FuzzedDataProvider provider(data, size);
+  const int options = provider.ConsumeIntegral<int>();
 
-  // Intentionally pass raw data as the API does not require trailing \0.
-  FuzzerTemporaryFile file(file_contents, file_contents_size);
+  // libxml does not expect more than 100 characters, let's go beyond that.
+  const std::string encoding = provider.ConsumeRandomLengthString(128);
+  auto file_contents = provider.ConsumeRemainingBytes<uint8_t>();
+
+  FuzzerTemporaryFile file(file_contents.data(), file_contents.size());
 
   xmlTextReaderPtr xmlReader =
       xmlReaderForFile(file.filename(), encoding.c_str(), options);
