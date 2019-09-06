@@ -4,7 +4,7 @@ auto_ccs:
   - "paulthomson@google.com"
   - "metzman@google.com"
 
-engines:
+fuzzing_engines:
   - none
 
 sanitizers:
