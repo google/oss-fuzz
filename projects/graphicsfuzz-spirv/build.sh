@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
+
+# TODO(metzman): Use some kind of bash loop here.
 mkdir glslang/build
 pushd glslang/build
 # Removed this as it leads to a leaksan error: -DCMAKE_CXX_FLAGS="-fsanitize=address"

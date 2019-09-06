@@ -15,22 +15,20 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER your@email.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get install -y ninja-build
 
-# Get various useful tools
-RUN apt-get install -y cmake ninja-build
-# RUN apt-get install -y libx11-dev
-# RUN apt-get install -y libxext-dev
+RUN mkdir -p graphicsfuzz-spirv
 
-RUN mkdir -p graphicsfuzz-targets
-RUN git clone https://github.com/KhronosGroup/glslang.git graphicsfuzz-targets/glslang
-RUN git clone https://github.com/KhronosGroup/SPIRV-Cross.git graphicsfuzz-targets/SPIRV-Cross
-RUN git clone https://github.com/KhronosGroup/SPIRV-Tools.git graphicsfuzz-targets/SPIRV-Tools
-RUN git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Headers graphicsfuzz-targets/SPIRV-Tools/external/spirv-headers
-RUN git clone --depth=1 https://github.com/google/effcee              graphicsfuzz-targets/SPIRV-Tools/external/effcee
-RUN git clone --depth=1 https://github.com/google/re2                 graphicsfuzz-targets/SPIRV-Tools/external/re2
+RUN git clone --depth=1 https://github.com/KhronosGroup/glslang.git graphicsfuzz-spirv/glslang
+RUN git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Cross.git graphicsfuzz-spirv/SPIRV-Cross
+
+RUN git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Tools.git graphicsfuzz-spirv/SPIRV-Tools
+RUN git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Headers graphicsfuzz-spirv/SPIRV-Tools/external/spirv-headers
+RUN git clone --depth=1 https://github.com/google/effcee graphicsfuzz-spirv/SPIRV-Tools/external/effcee
+RUN git clone --depth=1 https://github.com/google/re2 graphicsfuzz-spirv/SPIRV-Tools/external/re2
+
+# TODO(metzman): Build GraphicsFuzz and bundle it so that the blackbox fuzzer is always using the latest version.
 
 COPY build.sh $SRC/
 
-WORKDIR graphicsfuzz-targets
+WORKDIR graphicsfuzz-spirv
