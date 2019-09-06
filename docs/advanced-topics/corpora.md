@@ -53,12 +53,12 @@ Copy the corpus to a directory on your
 machine by running the following command:
 
 ```bash
-$ gsutil -m rsync gs://<bucket_path> <local_directory>
+$ gsutil -m cp -r gs://<bucket_path> <local_directory>
 ```
 Using the expat example above, this would be:
 
 ```bash
-$ gsutil -m rsync \
+$ gsutil -m cp -r \
     gs://expat-corpus.clusterfuzz-external.appspot.com/libFuzzer/expat_parse_fuzzer \
     <local_directory>
 ```
@@ -67,4 +67,4 @@ $ gsutil -m rsync \
 
 We keep daily zipped backups of your corpora. These can be accessed from the
 **corpus_backup** column of the fuzzer statistics page. Downloading these can
-be significantly faster than running `gsutil -m rsync` on the corpus bucket.
+be significantly faster than running `gsutil -m cp -r` on the corpus bucket.
