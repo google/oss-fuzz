@@ -1,0 +1,16 @@
+homepage: "https://www.graphicsfuzz.com"
+primary_contact: "afdx@google.com"
+auto_ccs:
+  - "paulthomson@google.com"
+
+engines:
+  - none
+
+sanitizers:
+  - address
+  - memory
+  - undefined
+
+architectures:
+  - x86_64
+  - i386
