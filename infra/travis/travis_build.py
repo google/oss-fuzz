@@ -124,7 +124,7 @@ def build_project(project):
 
   print('Building project', project)
   build_fuzzers(project, engine, sanitizer, architecture)
-  if engine != None:
+  if engine != 'none':
     check_build(project, engine, sanitizer, architecture)
 
 
