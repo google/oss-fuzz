@@ -18,7 +18,7 @@
 # TODO(metzman): Use some kind of bash loop here.
 mkdir glslang/build
 pushd glslang/build
-# Removed this as it leads to a leaksan error: -DCMAKE_CXX_FLAGS="-fsanitize=address"
+
 cmake -G "Ninja" -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" ..
 ninja
 cp StandAlone/glslangValidator $OUT
@@ -26,6 +26,9 @@ popd
 
 mkdir SPIRV-Tools/build
 pushd SPIRV-Tools/build
+
+# TODO: If cmake respects LDFLAGS, do we need to specify the compilers and their flags?
+# Link failure without LDFLAGS="-lpthread"
 LDFLAGS="-lpthread" cmake -G "Ninja" -DSPIRV_SKIP_TESTS=ON  -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" ..
 ninja
 cp tools/spirv-as tools/spirv-dis tools/spirv-val tools/spirv-opt $OUT/

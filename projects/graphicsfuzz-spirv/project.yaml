@@ -2,6 +2,7 @@ homepage: "https://www.graphicsfuzz.com"
 primary_contact: "afdx@google.com"
 auto_ccs:
   - "paulthomson@google.com"
+  - "metzman@google.com"
 
 engines:
   - none
