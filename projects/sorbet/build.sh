@@ -23,3 +23,4 @@ sed -i -e '/build --copt=-Werror --copt=-Wimplicit-fallthrough/d' .bazelrc
 sed -i -e '5i#include <vector>' common/Subprocess.h
 sed -i -e '7i#include <cassert>' third_party/parser/include/ruby_parser/pool.hh
 CXX="$CXX" CFLAGS="--std=c++17 --stdlib=libc++" CXXFLAGS="--std=c++17 --stdlib=libc++" bazel build --config=fuzz //test/fuzz:fuzz_dash_e
+cp bazel-bin/test/fuzz/fuzz_dash_e /out/.
