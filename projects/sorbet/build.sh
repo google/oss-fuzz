@@ -18,6 +18,8 @@
 FUZZERS=("fuzz_dash_e")
 PIPELINE_LIB=./bazel-bin/main/pipeline/libpipeline.a
 
-# export CC=/bin/false
 sed -i -e '/build --crosstool.*/d' .bazelrc
-CXX="$CXX" CFLAGS="--std=c++17 --stdlib=libstdc++" CXXFLAGS="--std=c++17 --stdlib=libstdc++" bazel build --config=fuzz //test/fuzz:fuzz_dash_e
+sed -i -e '/build --copt=-Werror --copt=-Wimplicit-fallthrough/d' .bazelrc
+sed -i -e '5i#include <vector>' common/Subprocess.h
+sed -i -e '7i#include <cassert>' third_party/parser/include/ruby_parser/pool.hh
+CXX="$CXX" CFLAGS="--std=c++17 --stdlib=libc++" CXXFLAGS="--std=c++17 --stdlib=libc++" bazel build --config=fuzz //test/fuzz:fuzz_dash_e
