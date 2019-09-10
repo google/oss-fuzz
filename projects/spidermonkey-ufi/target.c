@@ -38,7 +38,6 @@ int main(int argc, char* argv[]) {
   // Expects LD_LIBRARY_PATH to also be set by oss-fuzz.
   setenv("LD_LIBRARY_PATH", ld_path, 0);
   setenv("HOME", "/tmp", 0);
-  setenv("LIBFUZZER", "1", 1);
   setenv("FUZZER", STRINGIFY(FUZZ_TARGET), 1);
 
   char* options = getenv("ASAN_OPTIONS");
