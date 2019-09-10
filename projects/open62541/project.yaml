@@ -3,6 +3,7 @@ primary_contact: "Stefan.Profanter@gmail.com"
 auto_ccs:
  - "julius.pfrommer@gmail.com"
  - "chris_paul.iatrou@tu-dresden.de"
+ - "ari.breitkreuz@gmail.com"
 sanitizers:
 - address
 - undefined

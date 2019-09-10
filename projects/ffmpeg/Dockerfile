@@ -29,7 +29,6 @@ RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 RUN wget https://www.alsa-project.org/files/pub/lib/alsa-lib-1.1.0.tar.bz2
 RUN git clone --depth 1 git://anongit.freedesktop.org/mesa/drm
 RUN git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git
-ADD https://sourceforge.net/projects/lame/files/latest/download lame.tar.gz
 RUN git clone --depth 1 git://anongit.freedesktop.org/xorg/lib/libXext
 RUN git clone --depth 1 git://anongit.freedesktop.org/git/xorg/lib/libXfixes
 RUN git clone --depth 1 https://github.com/01org/libva
@@ -39,7 +38,5 @@ RUN git clone --depth 1 git://git.xiph.org/ogg.git
 RUN git clone --depth 1 git://git.xiph.org/opus.git
 RUN git clone --depth 1 git://git.xiph.org/theora.git
 RUN git clone --depth 1 git://git.xiph.org/vorbis.git
-RUN git clone --depth 1 git://git.videolan.org/git/x264.git
-RUN hg clone https://bitbucket.org/multicoreware/x265
 
 COPY build.sh group_seed_corpus.py $SRC/

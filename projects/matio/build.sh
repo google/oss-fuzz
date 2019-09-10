@@ -15,16 +15,4 @@
 #
 ################################################################################
 
-# build project
-./autogen.sh
-./configure
-make -j$(nproc)
-make install
-
-# build fuzzers
-for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
-  base=$(basename -s .cc $fuzzers)
-  $CXX $CXXFLAGS -std=c++11 -Iinclude \
-  $fuzzers ./getopt/.libs/libgetopt.a \
-  ./src/.libs/libmatio.a -o $OUT/$base $LIB_FUZZING_ENGINE
-done
+./ossfuzz/build.sh

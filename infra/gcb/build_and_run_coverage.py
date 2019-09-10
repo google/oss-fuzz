@@ -44,6 +44,9 @@ LATEST_REPORT_INFO_URL = (
 # Link where to upload code coverage report files to.
 UPLOAD_URL_FORMAT = 'gs://' + COVERAGE_BUCKET_NAME + '/{project}/{type}/{date}'
 
+# TODO(#2817): gofuzz projects to skip code coverage job for.
+GO_FUZZ_PROJECTS = ['golang', 'syzkaller']
+
 
 def skip_build(message):
   """Exit with 0 code not to mark code coverage job as failed."""
@@ -65,6 +68,10 @@ def get_build_steps(project_dir):
   project_yaml = build_project.load_project_yaml(project_dir)
   if project_yaml['disabled']:
     skip_build('Project "%s" is disabled.' % project_name)
+
+  if project_name in GO_FUZZ_PROJECTS:
+    skip_build('Project "%s" uses gofuzz, coverage is not supported yet.' %
+               project_name)
 
   fuzz_targets = get_targets_list(project_name)
   if not fuzz_targets:

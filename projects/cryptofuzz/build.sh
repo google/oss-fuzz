@@ -90,6 +90,25 @@ then
 fi
 
 ##############################################################################
+# Compile Botan
+cd $SRC/botan
+if [[ $CFLAGS != *-m32* ]]
+then
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
+else
+    ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
+fi
+make -j$(nproc)
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN"
+export LIBBOTAN_A_PATH="$SRC/botan/libbotan-2.a"
+export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
+
+# Compile Cryptofuzz Botan module
+cd $SRC/cryptofuzz/modules/botan
+make -B
+
+##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile libgpg-error (dependency of libgcrypt)
@@ -127,22 +146,27 @@ then
 fi
 
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* ]]
-then
-    # Compile libsodium (with assembly)
-    cd $SRC/libsodium
-    autoreconf -ivf
-    ./configure
-    make -j$(nproc) >/dev/null 2>&1
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
-    export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
-    export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
-
-    # Compile Cryptofuzz libsodium (with assembly) module
-    cd $SRC/cryptofuzz/modules/libsodium
-    make -B
-fi
+# libsodium is currently disabled due to crashes whose cause
+# is not entirely clear.
+# It will be enabled again once the problem has been resolved.
+# See also: https://github.com/jedisct1/libsodium/issues/859
+#
+#if [[ $CFLAGS != *sanitize=memory* ]]
+#then
+#    # Compile libsodium (with assembly)
+#    cd $SRC/libsodium
+#    autoreconf -ivf
+#    ./configure
+#    make -j$(nproc) >/dev/null 2>&1
+#
+#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
+#    export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
+#    export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
+#
+#    # Compile Cryptofuzz libsodium (with assembly) module
+#    cd $SRC/cryptofuzz/modules/libsodium
+#    make -B
+#fi
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
@@ -497,3 +521,4 @@ cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-102-noasm
 cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-102-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-102-noasm_seed_corpus.zip
+
