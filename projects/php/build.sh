@@ -22,7 +22,7 @@ cp /usr/lib/x86_64-linux-gnu/libonig.so.5 $OUT/lib/
 ./buildconf
 ./configure --enable-fuzzer --enable-option-checking=fatal --without-libxml --disable-dom \
 	--disable-simplexml --disable-xml --disable-xmlreader --disable-xmlwriter --without-pear \
-	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring
+	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring --with-pic
 make
 
 FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring"
