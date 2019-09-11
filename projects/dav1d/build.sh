@@ -23,8 +23,13 @@ rm -rf ${build}
 mkdir -p ${build}
 
 # build library
+if [ "$ARCHITECTURE" = "x86_64" ]; then
+	use_asm=true
+else
+	use_asm=false
+fi
 
-meson -Denable_tools=false -Dfuzzing_engine=oss-fuzz \
+meson -Denable_asm=${use_asm} -Denable_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
       -Dlogging=false -Dfuzzer_ldflags=$LIB_FUZZING_ENGINE \
       ${build}
