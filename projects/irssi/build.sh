@@ -31,6 +31,7 @@ mkdir -p "$BUILD"
 # Configure the project.
 meson "$BUILD" -Dstatic-dependency=yes -Dinstall-glib=force \
       -Dwith-fuzzer=yes -Dwith-fuzzer-lib=$LIB_FUZZING_ENGINE \
+      -Dfuzzer-link-language=cpp \
     || ( cat "$BUILD"/meson-logs/meson-log.txt && false )
 
 # now build all fuzz targets
