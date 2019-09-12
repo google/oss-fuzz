@@ -24,6 +24,11 @@ fuzz_targets=(
     src/fe-fuzz/fe-common/core/theme-load-fuzz
 )
 
+if [ "$FUZZING_ENGINE" = honggfuzz ]; then
+    export CC="$SRC"/"$FUZZING_ENGINE"/hfuzz_cc/hfuzz-clang
+    export CXX="$SRC"/"$FUZZING_ENGINE"/hfuzz_cc/hfuzz-clang++
+fi
+
 # cleanup
 rm -rf "$BUILD"
 mkdir -p "$BUILD"
