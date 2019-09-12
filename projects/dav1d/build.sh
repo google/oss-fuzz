@@ -22,11 +22,19 @@ build=${WORK}/build
 rm -rf ${build}
 mkdir -p ${build}
 
-# build library
+# prepare cross file for i386 compiliation
+if [ "$ARCHITECTURE" = "i386" ]; then
+	MESON_CFLAGS="'$(echo $CFLAGS | sed -e 's/ /;, ;/g' | tr \; \')'"
+	MESON_CXXFLAGS="'$(echo $CXXFLAGS | sed -e 's/ /;, ;/g' | tr \; \')'"
+	sed -e "s/CC$/'$CC'/; s/CXX$/'$CXX'/; s/CFLAGS$/[$MESON_CFLAGS]/; s/CXXFLAGS$/[$MESON_CXXFLAGS]/" < ${SRC}/linux32.meson > ${WORK}/linux32.meson
+	CROSS="--cross-file ${WORK}/linux32.meson"
+fi
 
+# build library
 meson -Denable_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
       -Dlogging=false -Dfuzzer_ldflags=$LIB_FUZZING_ENGINE \
+      ${CROSS:-} \
       ${build}
 ninja -j $(nproc) -C ${build}
 
