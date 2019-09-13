@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-find /src | grep -v '^/src/honggfuzz/' | grep -v '^/src/afl/' | grep -v '^/src/libfuzzer/'
-pwd
-
 cd ${SRC}/jbig2dec
 ./autogen.sh
 make distclean
