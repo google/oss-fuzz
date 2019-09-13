@@ -41,8 +41,8 @@ make
 #gcrypt
 (
 cd gcrypt
-tar -xvf ../libgpg-error-1.32.tar.bz2
-cd libgpg-error-1.32
+tar -xvf ../libgpg-error-1.36.tar.bz2
+cd libgpg-error-1.36
 ./configure --enable-static --disable-shared
 make
 make install
@@ -74,6 +74,16 @@ cd libecc
 (export CFLAGS="$CFLAGS -fPIC"; make)
 )
 
+#botan
+(
+cd botan
+#help it find libstdc++
+cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libstdc++.so
+export LDFLAGS=$CXXFLAGS
+./configure.py --disable-shared-library
+make
+)
+
 #build fuzz target
 cd ecfuzzer
 zip -r fuzz_ec_seed_corpus.zip corpus/
@@ -87,5 +97,6 @@ $CC $CFLAGS -DWITH_STDLIB -I. -I../libecc/src -c modules/libecc.c -o libecc.o
 $CC $CFLAGS -I. -I../gcrypt/src -c modules/gcrypt.c -o gcrypt.o
 $CXX $CXXFLAGS -I. -I../ -c modules/cryptopp.cpp -o cryptopp.o
 $CC $CFLAGS -I. -I../ -c modules/nettle.c -o nettle.o
+$CXX $CXXFLAGS -std=c++11 -I. -I../ -I../botan/build/include -c modules/botan.cpp -o botan.o
 
-$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o gcrypt.o cryptopp.o nettle.o -o $OUT/fuzz_ec ../mbedtls/crypto/library/libmbedcrypto.a ../libecc/build/libec.a ../libecc/src/external_deps/rand.o ../openssl/libcrypto.a ../nettle/libhogweed.a ../nettle/libnettle.a ../nettle/gmp-6.1.2/.libs/libgmp.a ../gcrypt/src/.libs/libgcrypt.a ../cryptopp/libcryptopp.a -lgpg-error $LIB_FUZZING_ENGINE
+$CXX $CXXFLAGS fuzz_ec.o mbedtls.o libecc.o openssl.o gcrypt.o cryptopp.o nettle.o botan.o -o $OUT/fuzz_ec ../mbedtls/crypto/library/libmbedcrypto.a ../libecc/build/libec.a ../libecc/src/external_deps/rand.o ../openssl/libcrypto.a ../nettle/libhogweed.a ../nettle/libnettle.a ../nettle/gmp-6.1.2/.libs/libgmp.a ../gcrypt/src/.libs/libgcrypt.a ../cryptopp/libcryptopp.a ../botan/libbotan-2.a -lgpg-error $LIB_FUZZING_ENGINE
