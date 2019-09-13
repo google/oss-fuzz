@@ -1,0 +1,12 @@
+homepage: "https://www.theora.org/"
+primary_contact: "guidovranken@gmail.com"
+vendor_ccs:
+ - "cdiehl@mozilla.com"
+sanitizers:
+ - address
+ - undefined
+ - memory
+ - dataflow
+architectures:
+ - x86_64
+ - i386
