@@ -497,7 +497,7 @@ cd $SRC/openssl-OpenSSL_1_0_2-stable/
 make clean || true
 if [[ $CFLAGS != *-m32* ]]
 then
-    ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
+    ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS -DPURIFY
 else
     setarch i386 ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
 fi
