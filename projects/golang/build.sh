@@ -1,3 +1,8 @@
+# Explicitly disable Go modules because (a) none of the packages at dvyukov/go-fuzz-corpus/... are modules,
+# (b) dvyukov/go-fuzz will likely start respecting the GO111MODULE setting, and (c) the go command's 
+# default value for GO111MODULE is planned to be changed during Go 1.14 development cycle.
+export GO111MODULE=off
+
 function compile_fuzzer {
     fuzzer=$(basename $1)
 
