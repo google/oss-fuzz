@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER your@email.com
+MAINTAINER guidovranken@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/xiph/ogg.git
 RUN git clone --depth 1 git://git.xiph.org/theora.git libtheora
