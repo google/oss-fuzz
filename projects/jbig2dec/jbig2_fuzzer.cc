@@ -24,7 +24,9 @@
 #include "jbig2.h"
 
 #define ALIGNMENT 16
-#define MAX_ALLOCATION (1024 * 1024 * 1024)
+#define MBYTE (1024 * 1024)
+#define GBYTE (1024 * MBYTE)
+#define MAX_ALLOCATION (3 * GBYTE)
 
 static uint64_t total = 0;
 
@@ -34,8 +36,13 @@ static void *jbig2_alloc(Jbig2Allocator *allocator, size_t size)
 
   if (size == 0)
     return NULL;
+  if (size > MAX_ALLOCATION - ALIGNMENT - total)
+    return NULL;
 
   ptr = malloc(size + ALIGNMENT);
+  if (ptr == NULL)
+    return NULL;
+
   memcpy(ptr, &size, sizeof(size));
   total += size + ALIGNMENT;
 
@@ -61,15 +68,16 @@ static void *jbig2_realloc(Jbig2Allocator *allocator, void *p, size_t size)
   if (size > SIZE_MAX - ALIGNMENT)
     return NULL;
 
-  if (size > MAX_ALLOCATION - ALIGNMENT - total)
-    return NULL;
-
   if (oldp == NULL)
   {
     if (size == 0)
       return NULL;
+    if (size > MAX_ALLOCATION - ALIGNMENT - total)
+      return NULL;
 
     p = malloc(size + ALIGNMENT);
+    if (p == NULL)
+      return NULL;
   }
   else
   {
@@ -82,6 +90,9 @@ static void *jbig2_realloc(Jbig2Allocator *allocator, void *p, size_t size)
       free(oldp);
       return NULL;
     }
+
+    if (size > MAX_ALLOCATION - total + oldsize)
+      return NULL;
 
     p = realloc(oldp, size + ALIGNMENT);
     if (p == NULL)
