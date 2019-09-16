@@ -36,7 +36,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   FuzzedDataProvider provider(data, size);
   while ((decode_ret != MPG123_ERR)) {
     if (decode_ret == MPG123_NEED_MORE) {
-      if (provider.remaining_bytes() == 0) {
+      if (provider.remaining_bytes() == 0
+          || mpg123_tellframe(handle) > 10000
+          || mpg123_tell_stream(handle) > 1<<20) {
         break;
       }
       const size_t next_size = provider.ConsumeIntegralInRange<size_t>(
