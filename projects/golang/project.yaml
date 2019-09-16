@@ -3,6 +3,7 @@ primary_contact: "guidovranken@gmail.com"
 auto_ccs:
  - "golang-fuzz@googlegroups.com"
  - "mmoroz@chromium.org"
+ - "josharian@gmail.com"
 sanitizers:
  - address
 fuzzing_engines:
