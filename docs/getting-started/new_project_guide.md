@@ -2,6 +2,7 @@
 layout: default
 title: Setting up a new project
 parent: Getting started
+has_children: true
 nav_order: 2
 permalink: /getting-started/new-project-guide/
 ---
@@ -21,15 +22,11 @@ Before you can start setting up your new project for fuzzing, you must do the fo
   with the project you want to fuzz.
 
   For examples, see
-[boringssl](https://github.com/google/boringssl/tree/master/fuzz),
-[SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338),
-[s2n](https://github.com/awslabs/s2n/tree/master/tests/fuzz),
-[openssl](https://github.com/openssl/openssl/tree/master/fuzz),
-[FreeType](http://git.savannah.gnu.org/cgit/freetype/freetype2.git/tree/src/tools/ftfuzzer),
-[re2](https://github.com/google/re2/tree/master/re2/fuzzing),
-[harfbuzz](https://github.com/behdad/harfbuzz/tree/master/test/fuzzing),
-[pcre2](http://vcs.pcre.org/pcre2/code/trunk/src/pcre2_fuzzsupport.c?view=markup), and
-[ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/tools/target_dec_fuzzer.c).
+[boringssl](https://github.com/google/boringssl/tree/master/fuzz) or
+[SQLite](https://www.sqlite.org/src/artifact/ad79e867fb504338) (C/C++),
+[go-fuzz](https://github.com/dvyukov/go-fuzz-corpus/tree/86a5af9d6842f80b205a082538ea28f61bbb8ccb) or
+[syzkaller](https://github.com/google/syzkaller/tree/7c7ded697e6322b0975f061b7e268fe44f585dab/prog/test)
+(Go).
 
 - [Install Docker](https://docs.docker.com/engine/installation)
   (Googlers can visit [go/installdocker](https://goto.google.com/installdocker)).
@@ -164,16 +161,20 @@ reproducing and fixing bugs than the standard one outlined in the reproducing gu
 This configuration file defines the Docker image for your project. Your [build.sh](#build.sh) script will be executed in inside the container you define.
 For most projects, the image is simple:
 ```docker
-FROM gcr.io/oss-fuzz-base/base-builder    # base image with clang toolchain
-MAINTAINER YOUR_EMAIL                     # maintainer for this file
+FROM gcr.io/oss-fuzz-base/base-builder       # base image with clang toolchain
+MAINTAINER YOUR_EMAIL                        # maintainer for this file
 RUN apt-get update && apt-get install -y ... # install required packages to build your project
-RUN git clone <git_url> <checkout_dir>    # checkout all sources needed to build your project
-WORKDIR <checkout_dir>                    # current directory for build script
-COPY build.sh fuzzer.cc $SRC/             # copy build script and other fuzzer files in src dir
+RUN go get ...                               # install dependencies to build your Go project
+RUN git clone <git_url> <checkout_dir>       # checkout all sources needed to build your project
+WORKDIR <checkout_dir>                       # current directory for the build script
+COPY build.sh fuzzer.cc $SRC/                # copy build script and other fuzzer files in src dir
 ```
 In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`.
 
-For an example in Expat, see [expat/Dockerfile](https://github.com/google/oss-fuzz/tree/master/projects/expat/Dockerfile) 
+For an example, see
+[expat/Dockerfile](https://github.com/google/oss-fuzz/tree/master/projects/expat/Dockerfile)
+or
+[syzkaller/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/syzkaller/Dockerfile).
 
 ## build.sh
 
@@ -206,6 +207,9 @@ $CXX $CXXFLAGS -std=c++11 -Ilib/ \
 
 cp $SRC/*.dict $SRC/*.options $OUT/
 ```
+
+If your project is written in Go, check out the [Integrating a Go project]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/) page.
+
 **Notes:**
 
 1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for both libFuzzer and AFL fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
