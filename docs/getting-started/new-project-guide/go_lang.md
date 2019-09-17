@@ -23,9 +23,9 @@ process. The key specifics of integrating a Go project are outlined below.
 
 OSS-Fuzz supports **go-fuzz** in the
 [libFuzzer compatible mode](https://github.com/dvyukov/go-fuzz#libfuzzer-support)
-only. In that mode, fuzz targets for Go code are using libFuzzer fuzzing engine
-with the native Go coverage instrumentation. The binaries compiled in that mode
-provide libFuzzer command line interface.
+only. In that mode, fuzz targets for Go use the libFuzzer engine with native Go
+coverage instrumentation. Binaries compiled in this mode provide the same
+libFuzzer command line interface as non-Go fuzz targets.
 
 ## Project files
 
