@@ -86,8 +86,8 @@ RUN cd $SRC/ethash; \
 RUN cd $SRC/z3; \
     mkdir -p build; \
     cd build; \
-    LDFLAGS="${CXXFLAGS} -static" cmake .. -DBUILD_LIBZ3_SHARED=OFF; \
+    LDFLAGS=$CXXFLAGS cmake -DBUILD_LIBZ3_SHARED=OFF -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..; \
     make libz3 -j; \
-    cp libz3.a /usr/lib;
+    make install;
 
 COPY build.sh $SRC/
