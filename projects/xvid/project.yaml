@@ -4,7 +4,6 @@ auto_ccs:
  - "mm@xvid.org"
 sanitizers:
  - address
- - undefined
  - memory
 architectures:
  - x86_64
