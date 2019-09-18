@@ -12,13 +12,13 @@ Date:   Tue Aug 6 08:41:53 2019 +0000
     Test Plan: Local MSAN failures caused by uninstrumented `getrandom`
     calls stop failing.
     
-    Patch by Andrew Krieger.
+    Patch by John Doe 3.
     
-    Reviewers: eugenis, vitalybuka
+    Reviewers: jonhdoe2, johndoe
     
-    Reviewed By: vitalybuka
+    Reviewed By: johndoe
     
-    Subscribers: srhines, kubamracek, dberris, #sanitizers, llvm-commits
+    Subscribers: johndoe4, johndoe5, dberris, #sanitizers, llvm-commits
     
     Tags: #sanitizers, #llvm
     
