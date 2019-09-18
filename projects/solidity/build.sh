@@ -31,7 +31,9 @@ cd build
 rm -rf *
 
 # Build solidity
-cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/ossfuzz.cmake $SRC/solidity
+cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/ossfuzz.cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      $SRC/solidity
 make ossfuzz ossfuzz_proto ossfuzz_abiv2 -j $(nproc)
 
 # Copy fuzzer binary, seed corpus, fuzzer options, and dictionary
