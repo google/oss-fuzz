@@ -1,0 +1,10 @@
+homepage: https://sourceforge.net/projects/ibmswtpm2/
+primary_contact: kgoldman@us.ibm.com
+auto_ccs:
+  - "john.s.andersen@intel.com"
+  - "william.c.roberts@intel.com"
+  - "david.wooten@ieee.org"
+sanitizers:
+  - address
+  - memory
+  - undefined
