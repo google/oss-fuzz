@@ -1,7 +1,8 @@
 homepage: "https://github.com/OISF/libhtp"
-primary_contact: "vjulien@oisf.net"
+primary_contact: "vjulien@openinfosecfoundation.org"
 auto_ccs :
 - "p.antoine@catenacyber.fr"
+- "jish@openinfosecfoundation.org "
 
 sanitizers:
 - address
