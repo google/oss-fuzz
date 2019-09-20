@@ -2,6 +2,7 @@ homepage: "https://www.xvid.com/"
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
  - "mm@xvid.org"
+ - "xvidsolutions@gmail.com"
 sanitizers:
  - address
  - memory
