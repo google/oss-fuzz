@@ -4,6 +4,8 @@ vendor_ccs:
   - "akilsrin@apple.com"
   - "ddkilzer@apple.com"
   - "benl@google.com"
+auto_ccs:
+  - "bshas3@gmail.com"
 sanitizers:
   - address
   - memory

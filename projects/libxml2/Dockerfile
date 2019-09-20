@@ -19,7 +19,8 @@ MAINTAINER ochang@chromium.org
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
 
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
+RUN git clone --depth 1 https://www.github.com/bshastry/libxml2_fuzzers.git
 WORKDIR libxml2
 
 COPY build.sh $SRC/
-COPY *.cc *.h *.options *.dict $SRC/
+COPY *.cc *.h *.dict $SRC/
