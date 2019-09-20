@@ -48,5 +48,4 @@ matrix:
         - TRAVIS_SANITIZER=dataflow
         - TRAVIS_ARCHITECTURE=x86_64
 
-# Use travis_wait to allow up to 30 minutes with no log output.
-script: travis_wait 30 ./infra/travis/travis_build.py
+script: ./infra/travis/travis_build.py
