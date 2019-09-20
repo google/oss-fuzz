@@ -23,7 +23,7 @@ cp /usr/lib/x86_64-linux-gnu/libonig.so.5 $OUT/lib/
 ./configure --enable-fuzzer --enable-option-checking=fatal --without-libxml --disable-dom \
 	--disable-simplexml --disable-xml --disable-xmlreader --disable-xmlwriter --without-pear \
 	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring --with-pic
-make
+make -j$(nproc)
 
 # Generate dictionary for unserialize fuzzer
 sapi/cli/php sapi/fuzzer/generate_unserialize_dict.php
