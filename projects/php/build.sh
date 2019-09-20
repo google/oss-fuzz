@@ -30,8 +30,6 @@ for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
 	# for loading missing libs like libonig
 	chrpath -r '$ORIGIN/lib' $OUT/$fuzzerName
-	# copy runtime options
-	cp $SRC/runtime.options $OUT/${fuzzerName}.options
 done
 # copy corpora from source
 for fuzzerName in `ls sapi/fuzzer/corpus`; do
