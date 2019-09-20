@@ -25,7 +25,11 @@ cp /usr/lib/x86_64-linux-gnu/libonig.so.5 $OUT/lib/
 	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring --with-pic
 make
 
-FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring"
+# Generate dictionary for unserialize fuzzer
+sapi/cli/php sapi/fuzzer/generate_unserialize_dict.php
+cp sapi/fuzzer/dict/unserialize $OUT/php-fuzz-unserialize.dict
+
+FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring php-fuzz-unserialize"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
 	# for loading missing libs like libonig
