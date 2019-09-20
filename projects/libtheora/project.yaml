@@ -2,6 +2,7 @@ homepage: "https://www.theora.org/"
 primary_contact: "guidovranken@gmail.com"
 vendor_ccs:
  - "cdiehl@mozilla.com"
+ - "twsmith@mozilla.com"
 sanitizers:
  - address
  - undefined
