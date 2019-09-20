@@ -17,14 +17,10 @@
 FROM gcr.io/oss-fuzz-base/base-image
 MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y \
-    binutils \
     file \
-    fonts-dejavu \
     git \
-    libblocksruntime0 \
     libc6-dev-i386 \
     libcap2 \
-    libunwind8 \
     python3 \
     python3-pip \
     wget \
