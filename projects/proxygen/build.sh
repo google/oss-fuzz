@@ -16,8 +16,19 @@
 ################################################################################
 
 cd proxygen
+
+# Link to, and copy over, libunwind
 # We need to link to libunwind to ensure exception handling works
 # See https://clang.llvm.org/docs/Toolchain.html#unwind-library
 export LDFLAGS="-lunwind"
+mkdir -p $OUT/lib
+cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 $OUT/lib/
+
+# Build everything
 ./build.sh -m --no-install-dependencies --build-for-fuzzing
+
+# Patch rpath so fuzzers can find libunwind
+find ./_build/proxygen/fuzzers -type f -executable -exec patchelf --set-rpath "$OUT/lib" {} \;
+
+# Copy fuzzers over to the destination
 find ./_build/proxygen/fuzzers -type f -executable -exec cp {} $OUT/ \;
