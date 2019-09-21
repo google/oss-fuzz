@@ -1,0 +1,13 @@
+homepage: "https://github.com/google/crc32c"
+primary_contact: "vadim.skipin@gmail.com"
+vendor_ccs:
+  - "Fangming.Fang@arm.com"
+auto_ccs:
+  - "bshas3@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
