@@ -8,6 +8,7 @@ vendor_ccs:
   - "oss-fuzz@fb.com"
 fuzzing_engines:
   - libfuzzer
+  - afl
 sanitizers:
   - address
   - undefined

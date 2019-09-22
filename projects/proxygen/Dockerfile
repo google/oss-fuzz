@@ -134,6 +134,9 @@ RUN apt-get install -y \
     libsodium-dev \
     libdouble-conversion-dev
 
+# Install patchelf so we can fix path to libunwind
+RUN apt-get install patchelf
+
 # Fetch source and copy over files
 RUN git clone --depth 1 https://github.com/facebook/proxygen.git proxygen
 WORKDIR proxygen
