@@ -18,6 +18,7 @@ auto_ccs:
     - "richard@levitte.org"
     - "ppzgs1@gmail.com"
     - "jack.lloyd@gmail.com"
+    - "shane.lontis@hotmail.com"
 sanitizers:
  - address
  - undefined
