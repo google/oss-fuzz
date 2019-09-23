@@ -45,7 +45,7 @@ to `'$ORIGIN'`, the path of the binary (see the discussion of `'$ORIGIN'` [here]
 A fuzzer can be instructed to load libraries relative to `'$ORIGIN'` during compilation (e.g. `-Wl,-rpath,'$ORIGIN/lib'` )
 or afterwards using `chrpath` (e.g. `chrpath -r '$ORIGIN/lib' $OUT/$fuzzerName`). Note that `'$ORIGIN'` should be surronded
 by single quotes because it is not an environment variable like `$OUT` that can be retreived during execution of `build.sh`.
-It's value is retrieved during execution of the binary.
+Its value is retrieved during execution of the binary.
 
 You should ensure that the fuzz target works correctly by using `run_fuzzer`
 command (see instructions
