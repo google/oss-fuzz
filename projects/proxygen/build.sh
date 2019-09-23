@@ -28,7 +28,7 @@ cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 $OUT/lib/
 ./build.sh -m --no-install-dependencies --build-for-fuzzing
 
 # Patch rpath so fuzzers can find libunwind
-find ./_build/proxygen/fuzzers -type f -executable -exec patchelf --set-rpath "$OUT/lib" {} \;
+find ./_build/proxygen/fuzzers -type f -executable -exec patchelf --set-rpath '$ORIGIN/lib' {} \;
 
 # Copy fuzzers over to the destination
 find ./_build/proxygen/fuzzers -type f -executable -exec cp {} $OUT/ \;
