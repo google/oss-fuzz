@@ -18,7 +18,7 @@ Date:   Tue Aug 6 08:41:53 2019 +0000
     
     Reviewed By: johndoe
     
-    Subscribers: johndoe4, johndoe5, dberris, #sanitizers, llvm-commits
+    Subscribers: johndoe4, johndoe5, #sanitizers, llvm-commits
     
     Tags: #sanitizers, #llvm
     

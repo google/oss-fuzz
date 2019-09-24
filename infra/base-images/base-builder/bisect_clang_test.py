@@ -5,7 +5,7 @@ import unittest
 
 import bisect_clang
 
-SRC_DIRECTORY = os.path.dirname(__file__)
+FILE_DIRECTORY = os.path.dirname(__file__)
 
 
 def patch_environ(testcase_obj):
@@ -47,7 +47,7 @@ class GetClangBuildEnvTest(BisectClangTestMixin, unittest.TestCase):
 
 
 def read_test_data(filename):
-  with open(os.path.join(SRC_DIRECTORY, filename)) as f:
+  with open(os.path.join(FILE_DIRECTORY, 'test_data', filename)) as f:
     return f.read()
 
 
