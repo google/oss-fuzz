@@ -29,7 +29,11 @@ make -j$(nproc)
 sapi/cli/php sapi/fuzzer/generate_unserialize_dict.php
 cp sapi/fuzzer/dict/unserialize $OUT/php-fuzz-unserialize.dict
 
-FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring php-fuzz-unserialize"
+# Generate initial corpus for parser fuzzer
+sapi/cli/php sapi/fuzzer/generate_parser_corpus.php
+cp sapi/fuzzer/dict/parser $OUT/php-fuzz-parser.dict
+
+FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring php-fuzz-unserialize php-fuzz-parser"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
 	# for loading missing libs like libonig
