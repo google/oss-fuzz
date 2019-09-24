@@ -44,16 +44,6 @@ function checkout_with_retries {
   return $CHECKOUT_RETURN_CODE
 }
 
-# Use chromium's clang revision
-if [ ! -d $SRC/chromium_tools ]; then
-  mkdir  $SRC/chromium_tools
-  cd $SRC/chromium_tools
-  git clone https://chromium.googlesource.com/chromium/src/tools/clang
-  cd clang
-else
-  cd $SRC/chromium_tools/clang
-fi
-
 cd $SRC && checkout_with_retries https://github.com/llvm/llvm-project.git llvm-project
 cd $SRC/llvm-project
 
