@@ -45,7 +45,7 @@ to `'$ORIGIN'`, the path of the binary (see the discussion of `'$ORIGIN'` [here]
 A fuzzer can be instructed to load libraries relative to `'$ORIGIN'` during compilation (i.e. `-Wl,-rpath,'$ORIGIN/lib'` )
 or afterwards using `chrpath -r '$ORIGIN/lib' $OUT/$fuzzerName` ([example](https://github.com/google/oss-fuzz/blob/09aa9ac556f97bd4e31928747eca0c8fed42509f/projects/php/build.sh#L40)). Note that `'$ORIGIN'` should be surronded
 by single quotes because it is not an environment variable like `$OUT` that can be retrieved during execution of `build.sh`.
-Its value is retrieved during execution of the binary. You can very that you did this correctly using `ldd <fuzz_target_name>` and the `check_build` command in helper.py.
+Its value is retrieved during execution of the binary. You can verify that you did this correctly using `ldd <fuzz_target_name>` and the `check_build` command in `infra/helper.py`.
 
 You should ensure that the fuzz target works correctly by using `run_fuzzer`
 command (see instructions
