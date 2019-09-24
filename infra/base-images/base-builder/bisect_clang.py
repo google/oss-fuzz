@@ -44,7 +44,7 @@ def execute(command, *args, **kwargs):
 def search_bisect_output(output):
   """Search |output| for a message indicating the culprit commit has been
   found."""
-  # TODO(metzman): Is "good" necessary to look for?
+  # TODO(metzman): Is it necessary to look for "good"?
   culprit_regex = re.compile('([a-z0-9]{40}) is the first (good|bad) commit')
   match = re.match(culprit_regex, output)
   return match.group(1) if match is not None else None
@@ -57,7 +57,7 @@ class GitRepo:
     self.repo_dir = repo_dir
 
   def do_command(self, git_subcommand):
-    """Execute a |git_subcommand| (list of strings)."""
+    """Execute a |git_subcommand| (a list of strings)."""
     initial_cwd = os.getcwd()
     try:
       os.chdir(self.repo_dir)
