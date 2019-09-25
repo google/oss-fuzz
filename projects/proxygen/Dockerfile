@@ -140,8 +140,11 @@ RUN apt-get install patchelf
 # Fetch source and copy over files
 RUN git clone --depth 1 https://github.com/facebook/proxygen.git proxygen
 WORKDIR proxygen
-COPY patch.txt .
-COPY folly_patch.txt ./proxygen/
-COPY fizz_patch.txt ./proxygen/
+COPY patch_encoded.txt .
+COPY folly_patch_encoded.txt ./proxygen/
+COPY fizz_patch_encoded.txt ./proxygen/
+RUN cat patch_encoded.txt | base64 -d > patch.txt
+RUN cat ./proxygen/folly_patch_encoded.txt | base64 -d > ./proxygen/folly_patch.txt
+RUN cat ./proxygen/fizz_patch_encoded.txt | base64 -d > ./proxygen/fizz_patch.txt
 RUN git apply ./patch.txt
 COPY build.sh $SRC/

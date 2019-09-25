@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 554ab682..5f827239 100644
+index 554ab682..5625cb49 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -127,6 +127,12 @@ else()
+@@ -127,6 +127,19 @@ else()
    list(APPEND CMAKE_REQUIRED_INCLUDES ${LIBGFLAGS_INCLUDE_DIR})
  endif()
 
@@ -11,6 +11,13 @@ index 554ab682..5f827239 100644
 +  list(APPEND PROXYGEN_EXTRA_LINK_LIBRARIES ${LIBLZMA_LIBRARIES})
 +  list(APPEND CMAKE_REQUIRED_LIBRARIES ${LIBLZMA_LIBRARIES})
 +endif()
++
++find_library(UNWIND_LIBRARIES NAMES unwind)
++if (UNWIND_LIBRARIES)
++  list(APPEND PROXYGEN_EXTRA_LINK_LIBRARIES ${UNWIND_LIBRARIES})
++  list(APPEND CMAKE_REQUIRED_LIBRARIES ${UNWIND_LIBRARIES})
++ endif()
++
 +
  include(ProxygenTest)
 
@@ -69,10 +76,10 @@ index 2f614833..a64eb12e 100644
      )
      target_include_directories(${PROXYGEN_FUZZ_TARGET} SYSTEM PRIVATE
 diff --git a/proxygen/httpclient/samples/curl/CMakeLists.txt b/proxygen/httpclient/samples/curl/CMakeLists.txt
-index b6e7dc1a..4d7e2cd1 100644
+index b6e7dc1a..ce8c1579 100644
 --- a/proxygen/httpclient/samples/curl/CMakeLists.txt
 +++ b/proxygen/httpclient/samples/curl/CMakeLists.txt
-@@ -8,7 +8,7 @@ target_compile_options(
+@@ -8,12 +8,13 @@ target_compile_options(
      ${_PROXYGEN_COMMON_COMPILE_OPTIONS}
  )
 
@@ -81,6 +88,12 @@ index b6e7dc1a..4d7e2cd1 100644
 
  add_executable(proxygen_curl CurlClientMain.cpp)
  target_link_libraries(
+     proxygen_curl PUBLIC
+     proxygencurl
++    ${PROXYGEN_EXTRA_LINK_LIBRARIES}
+ )
+ target_compile_options(
+     proxygen_curl PRIVATE
 diff --git a/proxygen/httpserver/CMakeLists.txt b/proxygen/httpserver/CMakeLists.txt
 index cc1bcad3..22bd6549 100644
 --- a/proxygen/httpserver/CMakeLists.txt
