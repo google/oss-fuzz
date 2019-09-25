@@ -128,8 +128,13 @@ def get_clang_build_env():
       del env[variable]
   return env
 
+
 def install_clang_build_deps():
-  execute(['apt-get', 'install', '-y', 'build-essential', 'make', 'cmake', 'ninja-build', 'git', 'subversion', 'g++-multilib'])
+  """Instal dependencies necessary to build clang."""
+  execute([
+      'apt-get', 'install', '-y', 'build-essential', 'make', 'cmake',
+      'ninja-build', 'git', 'subversion', 'g++-multilib'
+  ])
 
 
 def checkout_with_retries(repo, local_path, num_retries=10):
@@ -140,14 +145,15 @@ def checkout_with_retries(repo, local_path, num_retries=10):
   for _ in range(num_retries):
     if os.path.isdir(local_path):
       shutil.rmtree(local_path)
-    retcode, _, _ = execute(['git', 'clone', repo, local_path],
-                            expect_zero=False)
+    retcode, _, _ = execute(
+        ['git', 'clone', repo, local_path], expect_zero=False)
     if retcode == 0:
       return
   raise Exception('Could not checkout %s.' % repo)
 
 
 def get_target_to_build():
+  """Get target architecture to build clang for."""
   _, arch, _ = execute(['uname', '-m'])
   if 'x86_64' in arch:
     return 'X86'
@@ -157,18 +163,23 @@ def get_target_to_build():
 
 
 def prepare_build(llvm_project_path):
+  """Prepare to build clang."""
   llvm_build_dir = os.path.join(os.getenv('WORK'), 'llvm-build')
   if not os.path.exists(llvm_build_dir):
     os.mkdir(llvm_build_dir)
   previous_dir = os.getcwd()
   os.chdir(llvm_build_dir)
   try:
-    execute(['cmake', '-G', 'Ninja', '-DLIBCXX_ENABLE_SHARED=OFF',
-             '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON',
-             '-DLIBCXXABI_ENABLE_SHARED=OFF', '-DCMAKE_BUILD_TYPE=Release',
-             '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;clang',
-             '-DLLVM_TARGETS_TO_BUILD=' + get_target_to_build(),
-             os.path.join(llvm_project_path, 'llvm')], env=get_clang_build_env())
+    execute(
+        [
+            'cmake', '-G', 'Ninja', '-DLIBCXX_ENABLE_SHARED=OFF',
+            '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON',
+            '-DLIBCXXABI_ENABLE_SHARED=OFF', '-DCMAKE_BUILD_TYPE=Release',
+            '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;clang',
+            '-DLLVM_TARGETS_TO_BUILD=' + get_target_to_build(),
+            os.path.join(llvm_project_path, 'llvm')
+        ],
+        env=get_clang_build_env())
   finally:
     os.chdir(previous_dir)
 
@@ -182,7 +193,8 @@ def build_clang():
   install_clang_build_deps()
   # llvm_checkout_script = os.path.join(os.getenv('SRC'), 'checkout_llvm.sh')
   llvm_project_path = os.path.join(os.getenv('SRC'), 'llvm-project')
-  checkout_with_retries('https://github.com/llvm/llvm-project.git', llvm_project_path)
+  checkout_with_retries('https://github.com/llvm/llvm-project.git',
+                        llvm_project_path)
   # TODO(metzman): Look into speeding this process using ccache.
   # TODO(metzman): Make this program capable of handling MSAN and i386 Clang
   # regressions.

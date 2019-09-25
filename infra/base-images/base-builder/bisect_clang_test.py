@@ -16,8 +16,8 @@
 ################################################################################
 """Tests for bisect_clang.py"""
 import os
-from unittest import mock
 import unittest
+from unittest import mock
 
 import bisect_clang
 
@@ -120,16 +120,33 @@ def create_mock_popen(
   return MockPopen
 
 
+def mock_prepare_build(llvm_project_path):  # pylint: disable=unused-argument
+  return '/work/llvm-build'
+
+
 class BuildClangTest(BisectClangTestMixin, unittest.TestCase):
   """Tests for build_clang."""
 
   def test_build_clang_test(self):
     """Tests that build_clang works as intended."""
     with mock.patch('subprocess.Popen', create_mock_popen()) as mock_popen:
-      bisect_clang.build_clang()
-      self.assertEqual([['bash', '/src/checkout_llvm.sh'],
-                        ['ninja', '-C', '/work/llvm-stage2', 'install']],
-                       mock_popen.commands)
+      with mock.patch('bisect_clang.prepare_build', mock_prepare_build):
+        bisect_clang.build_clang()
+        self.assertEqual(
+            [
+                [
+                    'apt-get', 'install', '-y', 'build-essential', 'make',
+                    'cmake', 'ninja-build', 'git', 'subversion', 'g++-multilib'
+                ],
+                # TODO: Add cmake command once prepare build can be tested when
+                # fakefilesystem support is added.
+                [
+                    'git', 'clone', 'https://github.com/llvm/llvm-project.git',
+                    '/src/llvm-project'
+                ],
+                ['ninja', '-C', '/work/llvm-build', 'install']
+            ],
+            mock_popen.commands)
 
 
 class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
@@ -162,8 +179,9 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
       return 0, '', ''
 
     with mock.patch('bisect_clang.execute', mock_execute):
-      with self.assertRaises(bisect_clang.BisectException):
-        self.git.test_start_commit(commit, label, self.test_command)
+      with mock.patch('bisect_clang.prepare_build', mock_prepare_build):
+        with self.assertRaises(bisect_clang.BisectException):
+          self.git.test_start_commit(commit, label, self.test_command)
 
   def test_test_start_commit_bad_zero(self):
     """Tests test_start_commit works as intended when the test on the first bad
