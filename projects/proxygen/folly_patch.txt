@@ -1,0 +1,49 @@
+diff --git a/CMake/FollyCompilerUnix.cmake b/CMake/FollyCompilerUnix.cmake
+index 9c76fdc6..186f3f30 100644
+--- a/CMake/FollyCompilerUnix.cmake
++++ b/CMake/FollyCompilerUnix.cmake
+@@ -19,7 +19,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS_COMMON}")
+ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS_COMMON} -O3")
+
+ # Note that CMAKE_REQUIRED_FLAGS must be a string, not a list
+-set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=${CXX_STD}")
++#set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=${CXX_STD}")
+ list(APPEND CMAKE_REQUIRED_DEFINITIONS "-D_GNU_SOURCE")
+ function(apply_folly_compile_options_to_target THETARGET)
+   target_compile_definitions(${THETARGET}
+diff --git a/CMake/folly-deps.cmake b/CMake/folly-deps.cmake
+index 0fb8a90a..9c4599b2 100644
+--- a/CMake/folly-deps.cmake
++++ b/CMake/folly-deps.cmake
+@@ -117,7 +117,7 @@ CHECK_INCLUDE_FILE_CXX(elf.h FOLLY_HAVE_ELF_H)
+ find_library(UNWIND_LIBRARIES NAMES unwind)
+ if (UNWIND_LIBRARIES)
+   list(APPEND FOLLY_LINK_LIBRARIES ${UNWIND_LIBRARIES})
+-  list(APPEND CMAKE_REQUIRED_LIBRARIES ${UNWIND_LIBRARIES})
++  list(APPEND CMAKE_REQUIRED_LIBRARIES ${UNWIND_LIBRARIES} ${LIBLZMA_LIBRARIES})
+ endif()
+ check_function_exists(backtrace FOLLY_HAVE_BACKTRACE)
+ if (FOLLY_HAVE_ELF_H AND FOLLY_HAVE_BACKTRACE AND LIBDWARF_FOUND)
+@@ -155,6 +155,7 @@ if(NOT FOLLY_CPP_ATOMIC_BUILTIN)
+   endif()
+ endif()
+
++
+ option(
+   FOLLY_LIBRARY_SANITIZE_ADDRESS
+   "Build folly with Address Sanitizer enabled."
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6d785431..38228903 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -13,6 +13,10 @@ if(POLICY CMP0075)
+   cmake_policy(SET CMP0075 NEW)
+ endif()
+
++if(POLICY CMP0067)
++  cmake_policy(SET CMP0067 NEW)
++endif()
++
+ # includes
+ set(CMAKE_MODULE_PATH
+   "${CMAKE_CURRENT_SOURCE_DIR}/CMake"

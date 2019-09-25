@@ -1,0 +1,127 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 554ab682..5f827239 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -127,6 +127,12 @@ else()
+   list(APPEND CMAKE_REQUIRED_INCLUDES ${LIBGFLAGS_INCLUDE_DIR})
+ endif()
+
++find_package(LibLZMA MODULE)
++if (LIBLZMA_FOUND)
++  list(APPEND PROXYGEN_EXTRA_LINK_LIBRARIES ${LIBLZMA_LIBRARIES})
++  list(APPEND CMAKE_REQUIRED_LIBRARIES ${LIBLZMA_LIBRARIES})
++endif()
++
+ include(ProxygenTest)
+
+ add_subdirectory(proxygen)
+diff --git a/cmake/ProxygenTest.cmake b/cmake/ProxygenTest.cmake
+index a5d0f524..e2412761 100644
+--- a/cmake/ProxygenTest.cmake
++++ b/cmake/ProxygenTest.cmake
+@@ -82,6 +82,7 @@ function(proxygen_add_test)
+
+     target_link_libraries(${PROXYGEN_TEST_TARGET} PRIVATE
+       ${LIBGMOCK_LIBRARIES}
++      ${PROXYGEN_EXTRA_LINK_LIBRARIES}
+     )
+     target_include_directories(${PROXYGEN_TEST_TARGET} SYSTEM PRIVATE
+       ${LIBGMOCK_INCLUDE_DIR}
+diff --git a/proxygen/build.sh b/proxygen/build.sh
+index 42cfeaee..a6a6fc4a 100755
+--- a/proxygen/build.sh
++++ b/proxygen/build.sh
+@@ -119,6 +119,7 @@ function setup_folly() {
+         export OPENSSL_ROOT_DIR=$dir
+     fi
+   fi
++  git apply $START_DIR/folly_patch.txt
+   echo -e "${COLOR_GREEN}Building Folly ${COLOR_OFF}"
+   mkdir -p "$FOLLY_BUILD_DIR"
+   cd "$FOLLY_BUILD_DIR" || exit
+@@ -159,6 +160,7 @@ function setup_fizz() {
+   git fetch
+   FIZZ_REV=$(sed 's/Subproject commit //' "$START_DIR"/../build/deps/github_hashes/facebookincubator/fizz-rev.txt)
+   git checkout "$FIZZ_REV"
++  git apply $START_DIR/fizz_patch.txt
+   echo -e "${COLOR_GREEN}Building Fizz ${COLOR_OFF}"
+   mkdir -p "$FIZZ_BUILD_DIR"
+   cd "$FIZZ_BUILD_DIR" || exit
+@@ -173,7 +175,7 @@ function setup_fizz() {
+   cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo       \
+     -DCMAKE_PREFIX_PATH="$DEPS_DIR"             \
+     -DCMAKE_INSTALL_PREFIX="$DEPS_DIR"          \
+-    -DBUILD_TESTS=ON                            \
++    -DBUILD_TESTS=OFF                           \
+     "$MAYBE_USE_STATIC_DEPS"                    \
+     "$MAYBE_USE_SODIUM_STATIC_LIBS"             \
+     "$FIZZ_DIR/fizz"
+diff --git a/proxygen/fuzzers/CMakeLists.txt b/proxygen/fuzzers/CMakeLists.txt
+index 2f614833..a64eb12e 100644
+--- a/proxygen/fuzzers/CMakeLists.txt
++++ b/proxygen/fuzzers/CMakeLists.txt
+@@ -49,6 +49,7 @@ function(proxygen_add_fuzzer)
+     )
+     target_link_libraries(${PROXYGEN_FUZZ_TARGET} PRIVATE
+       ${LIBGMOCK_LIBRARIES_NO_MAIN}
++      ${PROXYGEN_EXTRA_LINK_LIBRARIES}
+       ${LIB_FUZZING_ENGINE}
+     )
+     target_include_directories(${PROXYGEN_FUZZ_TARGET} SYSTEM PRIVATE
+diff --git a/proxygen/httpclient/samples/curl/CMakeLists.txt b/proxygen/httpclient/samples/curl/CMakeLists.txt
+index b6e7dc1a..4d7e2cd1 100644
+--- a/proxygen/httpclient/samples/curl/CMakeLists.txt
++++ b/proxygen/httpclient/samples/curl/CMakeLists.txt
+@@ -8,7 +8,7 @@ target_compile_options(
+     ${_PROXYGEN_COMMON_COMPILE_OPTIONS}
+ )
+
+-target_link_libraries(proxygencurl PUBLIC proxygen)
++target_link_libraries(proxygencurl PUBLIC proxygen ${PROXYGEN_EXTRA_LINK_LIBRARIES})
+
+ add_executable(proxygen_curl CurlClientMain.cpp)
+ target_link_libraries(
+diff --git a/proxygen/httpserver/CMakeLists.txt b/proxygen/httpserver/CMakeLists.txt
+index cc1bcad3..22bd6549 100644
+--- a/proxygen/httpserver/CMakeLists.txt
++++ b/proxygen/httpserver/CMakeLists.txt
+@@ -14,6 +14,7 @@ target_link_libraries(
+     proxygenhttpserver
+     PUBLIC
+         proxygen
++	${PROXYGEN_EXTRA_LINK_LIBRARIES}
+ )
+ install(
+     TARGETS proxygenhttpserver
+@@ -35,6 +36,7 @@ target_link_libraries(
+     PUBLIC
+         proxygen
+         proxygenhttpserver
++	${PROXYGEN_EXTRA_LINK_LIBRARIES}
+ )
+ install(
+     TARGETS proxygen_push
+@@ -56,6 +58,7 @@ target_link_libraries(
+     PUBLIC
+         proxygen
+         proxygenhttpserver
++	${PROXYGEN_EXTRA_LINK_LIBRARIES}
+ )
+ install(
+     TARGETS proxygen_proxy
+@@ -77,6 +80,7 @@ target_link_libraries(
+     PUBLIC
+         proxygen
+         proxygenhttpserver
++	${PROXYGEN_EXTRA_LINK_LIBRARIES}
+ )
+ install(
+     TARGETS proxygen_static
+@@ -98,6 +102,7 @@ target_link_libraries(
+     PUBLIC
+         proxygen
+         proxygenhttpserver
++	${PROXYGEN_EXTRA_LINK_LIBRARIES}
+ )
+ install(
+     TARGETS proxygen_echo
