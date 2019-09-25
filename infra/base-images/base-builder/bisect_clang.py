@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -127,19 +128,66 @@ def get_clang_build_env():
       del env[variable]
   return env
 
+def install_clang_build_deps():
+  execute(['apt-get', 'install', '-y', 'build-essential', 'make', 'cmake', 'ninja-build', 'git', 'subversion', 'g++-multilib'])
+
+
+def checkout_with_retries(repo, local_path, num_retries=10):
+  """Checkout |repo| to |local_path| if it doesn't exist already. Try up to
+  |num_retries| times. Return False if unable to checkout."""
+  if os.path.isdir(local_path):
+    return
+  for _ in range(num_retries):
+    if os.path.isdir(local_path):
+      shutil.rmtree(local_path)
+    retcode, _, _ = execute(['git', 'clone', repo, local_path],
+                            expect_zero=False)
+    if retcode == 0:
+      return
+  raise Exception('Could not checkout %s.' % repo)
+
+
+def get_target_to_build():
+  _, arch, _ = execute(['uname', '-m'])
+  if 'x86_64' in arch:
+    return 'X86'
+  if 'aarch64' in arch:
+    return 'AArch64'
+  raise Exception('Unsupported target: %s.' % arch)
+
+
+def prepare_build(llvm_build_dir, llvm_project_path):
+  previous_dir = os.getcwd()
+  os.chdir(llvm_build_dir)
+  try:
+    execute(['cmake', '-G', '"Ninja"', '-DLIBCXX_ENABLE_SHARED=OFF',
+             '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON',
+             '-DLIBCXXABI_ENABLE_SHARED=OFF', '-DCMAKE_BUILD_TYPE=Release',
+             '-DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi;compiler-rt;clang"',
+             '-DLLVM_TARGETS_TO_BUILD=' + get_target_to_build(),
+             os.path.join(llvm_project_path, 'llvm')], env=get_clang_build_env())
+  finally:
+    os.chdir(previous_dir)
+
 
 def build_clang():
   """Checkout, build and install Clang."""
-  # TODO(metzman): Do the Clang checkout in Python and maybe merge it with
+  # TODO(metzman): Merge Python checkout and build code with
   # checkout_build_install_llvm.sh.
+  install_clang_build_deps()
+  # llvm_checkout_script = os.path.join(os.getenv('SRC'), 'checkout_llvm.sh')
+  llvm_project_path = os.path.join(os.getenv('SRC'), 'llvm-project')
+  checkout_with_retries('https://github.com/llvm/llvm-project.git', llvm_project_path)
+
+  llvm_build_dir = os.path.join(os.getenv('WORK'), 'llvm-build')
+  if not os.path.exists(llvm_build_dir):
+    os.mkdir(llvm_build_dir)
+
+  # TODO(metzman): Look into speeding this process using ccache.
   # TODO(metzman): Make this program capable of handling MSAN and i386 Clang
   # regressions.
-  # TODO(metzman): Look into speeding this process using ccache.
-  llvm_checkout_script = os.path.join(os.getenv('SRC'), 'checkout_llvm.sh')
-  env = get_clang_build_env()
-  execute(['bash', llvm_checkout_script], env=env)
-  llvm_build_dir = os.path.join(os.getenv('WORK'), 'llvm-stage2')
-  execute(['ninja', '-C', llvm_build_dir, 'install'], env=env)
+  prepare_build(llvm_build_dir, llvm_project_path)
+  execute(['ninja', '-C', llvm_build_dir, 'install'], env=get_clang_build_env())
 
 
 def find_culprit_commit(test_command, good_commit, bad_commit):
