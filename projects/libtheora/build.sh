@@ -28,7 +28,7 @@ fi
 mkdir $SRC/libogg-install/
 cd $SRC/ogg
 ./autogen.sh
-./configure --prefix="$SRC/libogg-install"
+./configure --prefix="$SRC/libogg-install" --enable-static --disable-shared --disable-crc
 make -j$(nproc)
 make install
 
@@ -40,9 +40,9 @@ cd $SRC/libtheora/
 
 if [[ $CFLAGS = *sanitize=memory* || $CFLAGS = *-m32* ]]
 then
-    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --disable-encode --disable-examples --disable-asm
+    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --disable-encode --disable-examples --disable-asm --enable-static --disable-shared
 else
-    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --disable-encode --disable-examples
+    LD_LIBRARY_PATH="$SRC/libogg-install/lib" ./configure --with-ogg="$SRC/libogg-install" --disable-encode --disable-examples --enable-static --disable-shared
 fi
 
 make -j$(nproc)
