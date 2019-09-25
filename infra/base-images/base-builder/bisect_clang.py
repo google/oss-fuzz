@@ -92,7 +92,7 @@ class GitRepo:
   def bisect_start(self, good_commit, bad_commit, test_command):
     """Start doing git bisect."""
     self.do_bisect_command('start')
-    # Do bad commit first since it is more likely to be more recent.
+    # Do bad commit first since it is more likely to be recent.
     self.test_start_commit(bad_commit, 'bad', test_command)
     self.test_start_commit(good_commit, 'good', test_command)
 
@@ -137,8 +137,8 @@ def install_clang_build_deps():
   ])
 
 
-def checkout_with_retries(repo, local_path, num_retries=10):
-  """Checkout |repo| to |local_path| if it doesn't exist already. Try up to
+def clone_with_retries(repo, local_path, num_retries=10):
+  """Clone |repo| to |local_path| if it doesn't exist already. Try up to
   |num_retries| times. Return False if unable to checkout."""
   if os.path.isdir(local_path):
     return
@@ -153,7 +153,7 @@ def checkout_with_retries(repo, local_path, num_retries=10):
 
 
 def get_target_to_build():
-  """Get target architecture to build clang for."""
+  """Get target architecture we want clang to target when we build it."""
   _, arch, _ = execute(['uname', '-m'])
   if 'x86_64' in arch:
     return 'X86'
@@ -193,8 +193,8 @@ def build_clang():
   install_clang_build_deps()
   # llvm_checkout_script = os.path.join(os.getenv('SRC'), 'checkout_llvm.sh')
   llvm_project_path = os.path.join(os.getenv('SRC'), 'llvm-project')
-  checkout_with_retries('https://github.com/llvm/llvm-project.git',
-                        llvm_project_path)
+  clone_with_retries('https://github.com/llvm/llvm-project.git',
+                     llvm_project_path)
   # TODO(metzman): Look into speeding this process using ccache.
   # TODO(metzman): Make this program capable of handling MSAN and i386 Clang
   # regressions.
