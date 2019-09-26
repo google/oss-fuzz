@@ -39,6 +39,14 @@ All build artifacts needed during fuzz target execution should be inside the
 Everything else is ignored (e.g. artifacts in `$WORK`, `$SRC`, etc) and hence
 is not available in the execution environment.
 
+We strongly recommend static linking because it just works. 
+However dynamic linking can work if shared objects are included in the `$OUT` directory and are loaded relative
+to `'$ORIGIN'`, the path of the binary (see the discussion of `'$ORIGIN'` [here](http://man7.org/linux/man-pages/man8/ld.so.8.html)).
+A fuzzer can be instructed to load libraries relative to `'$ORIGIN'` during compilation (i.e. `-Wl,-rpath,'$ORIGIN/lib'` )
+or afterwards using `chrpath -r '$ORIGIN/lib' $OUT/$fuzzerName` ([example](https://github.com/google/oss-fuzz/blob/09aa9ac556f97bd4e31928747eca0c8fed42509f/projects/php/build.sh#L40)). Note that `'$ORIGIN'` should be surronded
+by single quotes because it is not an environment variable like `$OUT` that can be retrieved during execution of `build.sh`.
+Its value is retrieved during execution of the binary. You can verify that you did this correctly using `ldd <fuzz_target_name>` and the `check_build` command in `infra/helper.py`.
+
 You should ensure that the fuzz target works correctly by using `run_fuzzer`
 command (see instructions
 [here]({{ site.baseurl }}/getting-started/new-project-guide/#testing-locally)).

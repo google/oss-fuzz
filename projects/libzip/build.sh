@@ -20,7 +20,7 @@ cd build
 cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_GNUTLS=OFF -DENABLE_MBEDTLS=OFF -DENABLE_OPENSSL=OFF -DBUILD_TOOLS=OFF ..
 make -j$(nproc)
 
-$CXX $CXXFLAGS -std=c++11 -I. \
+$CXX $CXXFLAGS -std=c++11 -I. -I../lib \
     $SRC/libzip/regress/zip_read_fuzzer.cc \
     -o $OUT/zip_read_fuzzer \
     $LIB_FUZZING_ENGINE $SRC/libzip/build/lib/libzip.a -lz

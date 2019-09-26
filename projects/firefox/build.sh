@@ -17,14 +17,24 @@
 
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
+  # WebRTC
   SdpParser
   StunParser
+  # IPC
   ContentParentIPC
   CompositorManagerParentIPC
   ContentSecurityPolicyParser
+  # Image
   ImageGIF
   ImageICO
   ImageBMP
+  # Demuxing
+  MediaADTS
+  MediaFlac
+  MediaMP3
+  MediaOgg
+  MediaWebM
+  # MediaWAV disabled due to frequent OOMs
 )
 
 # Firefox object (build) directory and configuration file.
@@ -95,3 +105,21 @@ zip -rj $OUT/ImageICO_seed_corpus.zip $SRC/fuzzdata/samples/ico
 
 # ImageBMP
 zip -rj $OUT/ImageBMP_seed_corpus.zip $SRC/fuzzdata/samples/bmp
+
+# MediaADTS
+zip -rj $OUT/MediaADTS_seed_corpus.zip $SRC/fuzzdata/samples/aac
+
+# MediaFlac
+zip -rj $OUT/MediaFlac_seed_corpus.zip $SRC/fuzzdata/samples/flac
+
+# MediaMP3
+zip -rj $OUT/MediaMP3_seed_corpus.zip $SRC/fuzzdata/samples/mp3
+
+# MediaOgg
+zip -rj $OUT/MediaOgg_seed_corpus.zip $SRC/fuzzdata/samples/ogg
+
+# MediaWebM
+zip -rj $OUT/MediaWebM_seed_corpus.zip $SRC/fuzzdata/samples/webm
+
+# MediaWAV
+# zip -rj $OUT/MediaWAV_seed_corpus.zip $SRC/fuzzdata/samples/wav

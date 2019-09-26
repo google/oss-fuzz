@@ -7,6 +7,8 @@ auto_ccs:
   - "ewaldhew@gmail.com"
   - "apodtele@gmail.com"
   - "prince.cherusker@gmail.com"
+vendor_ccs:
+  - "cdiehl@mozilla.com"
 sanitizers:
   - address
   - undefined

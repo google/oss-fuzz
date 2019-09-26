@@ -5,7 +5,7 @@ function compile_fuzzer {
     go-fuzz-build -libfuzzer -o $fuzzer.a github.com/dvyukov/go-fuzz-corpus/$fuzzer
 
     # Instrumented, compiled Go ($fuzzer.a) + libFuzzer = fuzzer binary
-    $CXX $CXXFLAGS -lFuzzingEngine $fuzzer.a -lpthread -o fuzzer-$fuzzer
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o fuzzer-$fuzzer
 
     # Copy the fuzzer binary
     cp fuzzer-$fuzzer $OUT

@@ -22,16 +22,22 @@ cp /usr/lib/x86_64-linux-gnu/libonig.so.5 $OUT/lib/
 ./buildconf
 ./configure --enable-fuzzer --enable-option-checking=fatal --without-libxml --disable-dom \
 	--disable-simplexml --disable-xml --disable-xmlreader --disable-xmlwriter --without-pear \
-	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring
-make
+	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring --with-pic
+make -j$(nproc)
 
-FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring"
+# Generate dictionary for unserialize fuzzer
+sapi/cli/php sapi/fuzzer/generate_unserialize_dict.php
+cp sapi/fuzzer/dict/unserialize $OUT/php-fuzz-unserialize.dict
+
+# Generate initial corpus for parser fuzzer
+sapi/cli/php sapi/fuzzer/generate_parser_corpus.php
+cp sapi/fuzzer/dict/parser $OUT/php-fuzz-parser.dict
+
+FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring php-fuzz-unserialize php-fuzz-parser"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
 	# for loading missing libs like libonig
 	chrpath -r '$ORIGIN/lib' $OUT/$fuzzerName
-	# copy runtime options
-	cp $SRC/runtime.options $OUT/${fuzzerName}.options
 done
 # copy corpora from source
 for fuzzerName in `ls sapi/fuzzer/corpus`; do

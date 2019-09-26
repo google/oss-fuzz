@@ -26,6 +26,9 @@ cd "$WORK"
 mkdir build
 cd build
 
+# Temporarily use gold for linking because of BFD breakage (see
+# https://github.com/google/oss-fuzz/pull/2781).
+ln -f -s /usr/bin/gold /usr/bin/ld
 cmake \
   -G"Unix Makefiles" -DBINARY_PACKAGE_BUILD=ON -DWITH_OPENMP=OFF \
   -DWITH_PUGIXML=OFF -DUSE_XMLLINT=OFF -DWITH_JPEG=OFF -DWITH_ZLIB=OFF \

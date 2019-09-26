@@ -48,6 +48,22 @@ index 7975d31..528861c 100644
  AC_CONFIG_FILES([util/Makefile])
  
  perllibdir="${datadir}/ntp/lib"
+diff --git a/ntpd/ntp_io.c b/ntpd/ntp_io.c
+index 7c3fdd4..190a373 100644
+--- a/ntpd/ntp_io.c
++++ b/ntpd/ntp_io.c
+@@ -503,7 +503,11 @@ io_open_sockets(void)
+ 	 * Create the sockets
+ 	 */
+ 	BLOCKIO();
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++	create_sockets(4123);
++#else
+ 	create_sockets(NTP_PORT);
++#endif
+ 	UNBLOCKIO();
+ 
+ 	init_async_notifications();
 diff --git a/tests/Makefile.am b/tests/Makefile.am
 index af502b9..60a2379 100644
 --- a/tests/Makefile.am

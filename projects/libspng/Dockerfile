@@ -19,8 +19,9 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER randy408@protonmail.com
 
 RUN apt-get update && \
-    apt-get install -y -t xenial-backports meson ninja-build && \
-    apt-get install -y pkg-config zlib1g-dev
+    apt-get install -y -t xenial-backports ninja-build && \
+    apt-get install -y pkg-config zlib1g-dev python3-pip && \
+    pip3 install meson
 
 RUN git clone --depth 1 https://gitlab.com/randy408/libspng.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite

@@ -22,6 +22,6 @@ RUN git clone --depth 1 https://github.com/madler/zlib
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit
 ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
-ADD https://raw.githubusercontent.com/mcarpenter/afl/master/dictionaries/tiff.dict tiff.dict
+ADD https://raw.githubusercontent.com/google/AFL/debe27037b9444bbf090a0ffbd5d24889bb887ae/dictionaries/tiff.dict tiff.dict
 WORKDIR libtiff
 COPY build.sh $SRC/

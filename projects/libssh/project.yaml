@@ -2,6 +2,8 @@ homepage: "https://libssh.org/"
 primary_contact: "asn@cryptomilk.org"
 auto_ccs:
  - "cryptomilk@gmail.com"
+ - "jakuje@gmail.com"
 sanitizers:
   - address
+  - memory
   - undefined

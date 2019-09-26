@@ -22,8 +22,5 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool bison re
 ADD cosmic.list /etc/apt/sources.list.d/cosmic.list
 RUN apt-get update && apt-get install -y libonig5 libonig-dev
 RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src
-RUN git clone --depth 1 https://github.com/php/php-fuzzing-sapi.git php-src/sapi/fuzzer
 WORKDIR php-src
 COPY build.sh *.options $SRC/
-# This ideally will be gone eventually, right now used for more flexibility in tweaking Makefile options
-# COPY Makefile.frag $SRC/php-src/sapi/fuzzer

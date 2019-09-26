@@ -15,10 +15,11 @@
 #
 ################################################################################
 
-tar -xvf ntp-dev.tar.gz
-cd ntp-dev-4.3.99
+cd ntp-dev
 git apply ../patch.diff
-autoreconf -i
+#avoids https://bugs.llvm.org/show_bug.cgi?id=34636
+cp /usr/bin/ld.gold /usr/bin/ld
+./bootstrap
 ./configure --enable-fuzztargets
 make
 cp tests/fuzz/fuzz_ntpd_receive $OUT/

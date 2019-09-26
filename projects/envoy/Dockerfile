@@ -25,7 +25,6 @@ RUN apt-get update && apt-get -y install  \
     curl            \
     autoconf        \
     libtool         \
-    cmake           \
     wget            \
     golang          \
     python
@@ -34,6 +33,11 @@ RUN apt-get update && apt-get -y install  \
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN apt-get update && apt-get install -y bazel
+
+# Install cmake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5-Linux-x86_64.sh; \
+    chmod +x cmake-3.14.5-Linux-x86_64.sh; \
+    ./cmake-3.14.5-Linux-x86_64.sh --skip-license --prefix="/usr/local"
 
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/

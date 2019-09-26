@@ -4,8 +4,12 @@ auto_ccs:
  - "rhodri@kynesim.co.uk"
  - "hanno@hboeck.de"
  - "webmaster@hartwork.org"
+vendor_ccs:
+ - "cdiehl@mozilla.com"
 sanitizers:
   - address
   - memory
   - undefined
-
+architectures:
+  - x86_64
+  - i386

@@ -126,7 +126,7 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libwebpdemux.a \
     $WORK/lib/libwebp.a \
     $WORK/lib/libtiff.a \
-    -lFuzzingEngine \
+    $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
     -lfftw3 -lgmodule-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
     -Wl,-Bdynamic -pthread

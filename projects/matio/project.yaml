@@ -1,0 +1,8 @@
+homepage: "https://github.com/tbeu/matio"
+primary_contact: "t-beu@users.sourceforge.net"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64

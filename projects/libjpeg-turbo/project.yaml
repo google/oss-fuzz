@@ -1,4 +1,6 @@
 homepage: "https://github.com/libjpeg-turbo/libjpeg-turbo"
+vendor_ccs:
+  - "cdiehl@mozilla.com"
 sanitizers:
   - address
   - memory
