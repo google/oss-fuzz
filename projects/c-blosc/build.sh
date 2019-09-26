@@ -20,10 +20,7 @@ mkdir -p build_dir
 pushd build_dir
 cmake ..
 make -j$(nproc)
-make install
 popd
-
-find . -name "*.a"
 
 # build fuzzers
 for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
