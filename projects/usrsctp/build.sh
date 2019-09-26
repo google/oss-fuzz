@@ -15,17 +15,17 @@
 #
 ################################################################################
 
-cmake -Dsctp_build_programs=0 -Dsctp_debug=0 -Dsctp_build_programs=0 -DCMAKE_BUILD_TYPE=RelWithDebInfo .
+cmake -Dsctp_build_programs=0 -Dsctp_debug=0 -Dsctp_invariants=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo .
 make -j$(nproc)
 cd fuzzer
 
-TARGETS="fuzzer_connected fuzzer_unconnected"
+TARGETS="fuzzer_connect fuzzer_listen"
 
 for target in $TARGETS; do
-        $CC $CFLAGS -I . -I ../usrsctplib/ -c ${target}.c -o $OUT/${target}.o
+        $CC $CFLAGS -DFUZZING_STAGE=0 -I . -I ../usrsctplib/ -c ${target}.c -o $OUT/${target}.o
         $CXX $CXXFLAGS -o $OUT/${target} $OUT/${target}.o $LIB_FUZZING_ENGINE ../usrsctplib/libusrsctp.a
         rm -f $OUT/${target}.o
 done
 
-zip -jr fuzzer_connected_seed_corpus.zip CORPUS_CONNECTED/
-cp fuzzer_connected_seed_corpus.zip $OUT/
+zip -jr fuzzer_connect_seed_corpus.zip CORPUS_CONNECT/
+cp fuzzer_connect_seed_corpus.zip $OUT/
