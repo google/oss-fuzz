@@ -41,6 +41,7 @@ static int gs_to_raster_fuzz(const unsigned char *buf, size_t size)
 
 	/* Mostly stolen from cups-filters gstoraster. */
 	char *args[] = {
+		"-K1048576",
 		"-r200x200",
 		"-dMediaPosition=1",
 		"-dcupsColorSpace=1", /* RGB */
