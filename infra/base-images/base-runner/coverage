@@ -19,7 +19,7 @@ cd $OUT
 if (( $# > 0 )); then
   FUZZ_TARGETS="$@"
 else
-  FUZZ_TARGETS="$(find . -maxdepth 1 -type f -executable)"
+  FUZZ_TARGETS="$(find . -maxdepth 1 -type f -executable -printf '%P\n')"
 fi
 
 DUMPS_DIR="$OUT/dumps"
