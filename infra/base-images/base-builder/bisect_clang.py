@@ -24,12 +24,11 @@ import subprocess
 import sys
 
 
-def execute(command, *args, **kwargs):
+def execute(command, *args, expect_zero=True, **kwargs):
   """Execute |command| and return the returncode, stdout and stderr."""
   kwargs['stdout'] = subprocess.PIPE
   kwargs['stderr'] = subprocess.PIPE
-  expect_zero = kwargs.pop('expect_zero', True)
-  logging.info('Running command: "%s"', str(command))
+  logging.debug('Running command: "%s"', str(command))
   process = subprocess.Popen(command, *args, **kwargs)
   stdout, stderr = process.communicate()
   stdout = stdout.decode('utf-8')
@@ -59,20 +58,15 @@ class GitRepo:
 
   def do_command(self, git_subcommand):
     """Execute a |git_subcommand| (a list of strings)."""
-    initial_cwd = os.getcwd()
-    try:
-      os.chdir(self.repo_dir)
-      command = ['git'] + git_subcommand
-      return execute(command)
-    finally:
-      os.chdir(initial_cwd)
+    command = ['git', '-C', self.repo_dir] + git_subcommand
+    return execute(command)
 
   def test_commit(self, test_command):
     """Build LLVM at the currently checkedout commit, then run |test_command|.
     If returncode is 0 run 'git bisect good' otherwise return 'git bisect bad'.
     Return None if bisect didn't terminate yet. Return the culprit commit if it
     does."""
-    build_clang()
+    build_clang(self.repo_dir)
     retcode, _, _ = execute(test_command, shell=True, expect_zero=False)
     if retcode == 0:
       retcode, stdout, _ = self.do_bisect_command('good')
@@ -105,18 +99,19 @@ class GitRepo:
     |label|)."""
     assert label in ('good', 'bad'), label
     self.do_command(['checkout', commit])
-    build_clang()
+    build_clang(self.repo_dir)
     retcode, _, _ = execute(test_command, shell=True, expect_zero=False)
     if label == 'good' and retcode != 0:
-      raise BisectException(retcode, commit)
+      raise BisectError('Test command "%s" returns %d on first good commit %s' %
+                        (test_command, retcode, commit))
     if label == 'bad' and retcode == 0:
-      raise BisectException(
-          'Test Command returns %d on first bad commit %s' % (retcode, commit))
+      raise BisectError('Test command "%s" returns %d on first bad commit %s' %
+                        (test_command, retcode, commit))
 
     self.do_bisect_command(label)
 
 
-class BisectException(Exception):
+class BisectError(Exception):
   pass
 
 
@@ -152,7 +147,7 @@ def clone_with_retries(repo, local_path, num_retries=10):
   raise Exception('Could not checkout %s.' % repo)
 
 
-def get_target_to_build():
+def get_clang_target_arch():
   """Get target architecture we want clang to target when we build it."""
   _, arch, _ = execute(['uname', '-m'])
   if 'x86_64' in arch:
@@ -167,34 +162,24 @@ def prepare_build(llvm_project_path):
   llvm_build_dir = os.path.join(os.getenv('WORK'), 'llvm-build')
   if not os.path.exists(llvm_build_dir):
     os.mkdir(llvm_build_dir)
-  previous_dir = os.getcwd()
-  os.chdir(llvm_build_dir)
-  try:
-    execute(
-        [
-            'cmake', '-G', 'Ninja', '-DLIBCXX_ENABLE_SHARED=OFF',
-            '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON',
-            '-DLIBCXXABI_ENABLE_SHARED=OFF', '-DCMAKE_BUILD_TYPE=Release',
-            '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;clang',
-            '-DLLVM_TARGETS_TO_BUILD=' + get_target_to_build(),
-            os.path.join(llvm_project_path, 'llvm')
-        ],
-        env=get_clang_build_env())
-  finally:
-    os.chdir(previous_dir)
-
+  execute(
+      [
+          'cmake', '-G', 'Ninja', '-DLIBCXX_ENABLE_SHARED=OFF',
+          '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON',
+          '-DLIBCXXABI_ENABLE_SHARED=OFF', '-DCMAKE_BUILD_TYPE=Release',
+          '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;clang',
+          '-DLLVM_TARGETS_TO_BUILD=' + get_clang_target_arch(),
+          os.path.join(llvm_project_path, 'llvm')
+      ],
+      env=get_clang_build_env(),
+      cwd=llvm_build_dir)
   return llvm_build_dir
 
 
-def build_clang():
+def build_clang(llvm_project_path):
   """Checkout, build and install Clang."""
   # TODO(metzman): Merge Python checkout and build code with
   # checkout_build_install_llvm.sh.
-  install_clang_build_deps()
-  # llvm_checkout_script = os.path.join(os.getenv('SRC'), 'checkout_llvm.sh')
-  llvm_project_path = os.path.join(os.getenv('SRC'), 'llvm-project')
-  clone_with_retries('https://github.com/llvm/llvm-project.git',
-                     llvm_project_path)
   # TODO(metzman): Look into speeding this process using ccache.
   # TODO(metzman): Make this program capable of handling MSAN and i386 Clang
   # regressions.
@@ -206,8 +191,10 @@ def find_culprit_commit(test_command, good_commit, bad_commit):
   """Returns the culprit LLVM commit that introduced a bug revealed by running
   |test_command|. Uses git bisect and treats |good_commit| as the first latest
    known good commit and |bad_commit| as the first known bad commit."""
-  llvm_src_dir = os.path.join(os.getenv('SRC'), 'llvm-project')
-  git_repo = GitRepo(llvm_src_dir)
+  llvm_project_path = os.path.join(os.getenv('SRC'), 'llvm-project')
+  clone_with_retries(
+      'https://github.com/llvm/llvm-project.git', llvm_project_path)
+  git_repo = GitRepo(llvm_project_path)
   result = git_repo.bisect(good_commit, bad_commit, test_command)
   print('Culprit commit', result)
   return result
@@ -226,6 +213,7 @@ def main():
   bad_commit = sys.argv[3]
   # TODO(metzman): Make verbosity configurable.
   logging.getLogger().setLevel(logging.DEBUG)
+  install_clang_build_deps()
   find_culprit_commit(test_command, good_commit, bad_commit)
   return 0
 

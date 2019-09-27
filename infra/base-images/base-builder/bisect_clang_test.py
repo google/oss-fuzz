@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +15,18 @@
 ################################################################################
 """Tests for bisect_clang.py"""
 import os
-import unittest
 from unittest import mock
+import unittest
 
 import bisect_clang
 
 FILE_DIRECTORY = os.path.dirname(__file__)
+LLVM_REPO_PATH = '/llvm-project'
+
+
+def get_git_command(*args):
+  """Returns a git command for the LLVM repo with |args| as arguments."""
+  return ['git', '-C', LLVM_REPO_PATH] + list(args)
 
 
 def patch_environ(testcase_obj):
@@ -131,32 +136,20 @@ class BuildClangTest(BisectClangTestMixin, unittest.TestCase):
     """Tests that build_clang works as intended."""
     with mock.patch('subprocess.Popen', create_mock_popen()) as mock_popen:
       with mock.patch('bisect_clang.prepare_build', mock_prepare_build):
-        bisect_clang.build_clang()
-        self.assertEqual(
-            [
-                [
-                    'apt-get', 'install', '-y', 'build-essential', 'make',
-                    'cmake', 'ninja-build', 'git', 'subversion', 'g++-multilib'
-                ],
-                # TODO: Add cmake command once prepare build can be tested when
-                # fakefilesystem support is added.
-                [
-                    'git', 'clone', 'https://github.com/llvm/llvm-project.git',
-                    '/src/llvm-project'
-                ],
-                ['ninja', '-C', '/work/llvm-build', 'install']
-            ],
-            mock_popen.commands)
+        llvm_src_dir = '/src/llvm-project'
+        bisect_clang.build_clang(llvm_src_dir)
+        self.assertEqual([['ninja', '-C', '/work/llvm-build', 'install']],
+                         mock_popen.commands)
 
 
 class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
   """Tests for GitRepo."""
+
   # TODO(metzman): Mock filesystem. Until then, use a real directory.
-  REPO_DIR = '/tmp'
 
   def setUp(self):
     super().setUp()
-    self.git = bisect_clang.GitRepo(self.REPO_DIR)
+    self.git = bisect_clang.GitRepo(LLVM_REPO_PATH)
     self.good_commit = 'good_commit'
     self.bad_commit = 'bad_commit'
     self.test_command = 'testcommand'
@@ -167,7 +160,8 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     command = ['subcommand', '--option']
     with mock.patch('subprocess.Popen', create_mock_popen()) as mock_popen:
       self.git.do_command(command)
-      self.assertEqual([['git', 'subcommand', '--option']], mock_popen.commands)
+      self.assertEqual([get_git_command('subcommand', '--option')],
+                       mock_popen.commands)
 
   def _test_test_start_commit_unexpected(self, label, commit, returncode):
     """Tests test_start_commit works as intended when the test returns an
@@ -180,7 +174,7 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
 
     with mock.patch('bisect_clang.execute', mock_execute):
       with mock.patch('bisect_clang.prepare_build', mock_prepare_build):
-        with self.assertRaises(bisect_clang.BisectException):
+        with self.assertRaises(bisect_clang.BisectError):
           self.git.test_start_commit(commit, label, self.test_command)
 
   def test_test_start_commit_bad_zero(self):
@@ -200,7 +194,7 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
 
   @mock.patch('bisect_clang.build_clang')
   def _test_test_start_commit_expected(self, label, commit, returncode,
-                                       mocked_build_clang):
+                                       mock_build_clang):
     """Tests test_start_commit works as intended when the test returns an
     expected value."""
     command_args = []
@@ -213,9 +207,11 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
 
     with mock.patch('bisect_clang.execute', mock_execute):
       self.git.test_start_commit(commit, label, self.test_command)
-      self.assertEqual([['git', 'checkout', commit], self.test_command,
-                        ['git', 'bisect', label]], command_args)
-      mocked_build_clang.assert_called_once_with()
+      self.assertEqual([
+          get_git_command('checkout', commit), self.test_command,
+          get_git_command('bisect', label)
+      ], command_args)
+      mock_build_clang.assert_called_once_with(LLVM_REPO_PATH)
 
   def test_test_start_commit_bad_nonzero(self):
     """Tests test_start_commit works as intended when the test on the first bad
@@ -228,7 +224,8 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     with mock.patch('subprocess.Popen', create_mock_popen()) as mock_popen:
       self.git.bisect_start(self.good_commit, self.bad_commit,
                             self.test_command)
-      self.assertEqual(['git', 'bisect', 'start'], mock_popen.commands[0])
+      self.assertEqual(
+          get_git_command('bisect', 'start'), mock_popen.commands[0])
       mock_test_start_commit.assert_has_calls([
           mock.call('bad_commit', 'bad', 'testcommand'),
           mock.call('good_commit', 'good', 'testcommand')
@@ -239,10 +236,11 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     subcommand = 'subcommand'
     with mock.patch('subprocess.Popen', create_mock_popen()) as mock_popen:
       self.git.do_bisect_command(subcommand)
-      self.assertEqual([['git', 'bisect', subcommand]], mock_popen.commands)
+      self.assertEqual([get_git_command('bisect', subcommand)],
+                       mock_popen.commands)
 
   @mock.patch('bisect_clang.build_clang')
-  def _test_test_commit(self, label, output, returncode, mocked_build_clang):
+  def _test_test_commit(self, label, output, returncode, mock_build_clang):
     """Test test_commit works as intended."""
     command_args = []
 
@@ -254,9 +252,9 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
 
     with mock.patch('bisect_clang.execute', mock_execute):
       result = self.git.test_commit(self.test_command)
-      self.assertEqual([self.test_command, ['git', 'bisect', label]],
-                       command_args)
-    mocked_build_clang.assert_called_once_with()
+      self.assertEqual([self.test_command,
+                        get_git_command('bisect', label)], command_args)
+    mock_build_clang.assert_called_once_with(LLVM_REPO_PATH)
     return result
 
   def test_test_commit_good(self):
@@ -272,3 +270,20 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     test_data = read_test_data('culprit-commit.txt')
     self.assertEqual('ac9ee01fcbfac745aaedca0393a8e1c8a33acd8d',
                      self._test_test_commit('good', test_data, 0))  # pylint: disable=no-value-for-parameter
+
+class GetTargetArchToBuildTest(unittest.TestCase):
+  """Tests for get_target_arch_to_build."""
+  def test_unrecognized(self):
+    """Test that an unrecognized architecture raises an exception."""
+    with mock.patch('bisect_clang.execute') as mock_execute:
+      mock_execute.return_value = (None, 'mips', None)
+      with self.assertRaises(Exception):
+        bisect_clang.get_clang_target_arch()
+
+  def test_recognized(self):
+    """Test that a recognized architecture returns the expected value."""
+    arch_pairs = {'x86_64': 'X86', 'aarch64': 'AArch64'}
+    for uname_result, clang_target in arch_pairs.items():
+      with mock.patch('bisect_clang.execute') as mock_execute:
+        mock_execute.return_value = (None, uname_result, None)
+        self.assertEqual(clang_target, bisect_clang.get_clang_target_arch())
