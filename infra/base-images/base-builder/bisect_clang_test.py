@@ -271,8 +271,10 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     self.assertEqual('ac9ee01fcbfac745aaedca0393a8e1c8a33acd8d',
                      self._test_test_commit('good', test_data, 0))  # pylint: disable=no-value-for-parameter
 
+
 class GetTargetArchToBuildTest(unittest.TestCase):
   """Tests for get_target_arch_to_build."""
+
   def test_unrecognized(self):
     """Test that an unrecognized architecture raises an exception."""
     with mock.patch('bisect_clang.execute') as mock_execute:

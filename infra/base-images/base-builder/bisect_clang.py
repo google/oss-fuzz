@@ -192,8 +192,8 @@ def find_culprit_commit(test_command, good_commit, bad_commit):
   |test_command|. Uses git bisect and treats |good_commit| as the first latest
    known good commit and |bad_commit| as the first known bad commit."""
   llvm_project_path = os.path.join(os.getenv('SRC'), 'llvm-project')
-  clone_with_retries(
-      'https://github.com/llvm/llvm-project.git', llvm_project_path)
+  clone_with_retries('https://github.com/llvm/llvm-project.git',
+                     llvm_project_path)
   git_repo = GitRepo(llvm_project_path)
   result = git_repo.bisect(good_commit, bad_commit, test_command)
   print('Culprit commit', result)
