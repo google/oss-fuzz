@@ -15,14 +15,27 @@
 #
 ################################################################################
 
-mkdir -p $OUT/lib/
-cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
-cp /usr/lib/x86_64-linux-gnu/libonig.so.5 $OUT/lib/
+# build oniguruma and link statically
+pushd oniguruma
+autoreconf -vfi
+./configure
+make -j$(nproc)
+popd
+export ONIG_CFLAGS="-I$PWD/oniguruma/src"
+export ONIG_LIBS="-L$PWD/oniguruma/src/.libs -l:libonig.a"
+
 # build project
 ./buildconf
-./configure --enable-fuzzer --enable-option-checking=fatal --without-libxml --disable-dom \
-	--disable-simplexml --disable-xml --disable-xmlreader --disable-xmlwriter --without-pear \
-	--enable-exif --disable-phpdbg --disable-cgi --enable-mbstring --with-pic
+./configure \
+    --disable-all \
+    --enable-option-checking=fatal \
+    --enable-fuzzer \
+    --enable-json \
+    --enable-exif \
+    --enable-mbstring \
+    --disable-phpdbg \
+    --disable-cgi \
+    --with-pic
 make -j$(nproc)
 
 # Generate dictionary for unserialize fuzzer
@@ -33,11 +46,11 @@ cp sapi/fuzzer/dict/unserialize $OUT/php-fuzz-unserialize.dict
 sapi/cli/php sapi/fuzzer/generate_parser_corpus.php
 cp sapi/fuzzer/dict/parser $OUT/php-fuzz-parser.dict
 
+cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
+
 FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring php-fuzz-unserialize php-fuzz-parser"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
-	# for loading missing libs like libonig
-	chrpath -r '$ORIGIN/lib' $OUT/$fuzzerName
 done
 # copy corpora from source
 for fuzzerName in `ls sapi/fuzzer/corpus`; do
