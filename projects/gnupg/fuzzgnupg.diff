@@ -237,7 +237,7 @@ index 000000000..3bf039a54
 +
 +fuzz_verify_LDADD = $(top_srcdir)/g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a  $(LIB_FUZZING_ENGINE) \
 +         $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
-+             $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
++             $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
 +	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 +
 +fuzz_verify_DEPENDENCIES = fuzz_verify_seed_corpus.zip
@@ -249,7 +249,7 @@ index 000000000..3bf039a54
 +
 +fuzz_import_LDADD =  $(top_srcdir)/g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a  $(LIB_FUZZING_ENGINE)\
 +         $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
-+             $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
++             $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
 +	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 +
 +fuzz_import_DEPENDENCIES = fuzz_import_seed_corpus.zip
@@ -261,7 +261,7 @@ index 000000000..3bf039a54
 +
 +fuzz_decrypt_LDADD =  $(top_srcdir)/g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a  $(LIB_FUZZING_ENGINE)\
 +         $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
-+             $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
++             $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
 +	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 +
 +fuzz_decrypt_DEPENDENCIES = fuzz_decrypt_seed_corpus.zip
@@ -273,7 +273,7 @@ index 000000000..3bf039a54
 +
 +fuzz_list_LDADD =  $(top_srcdir)/g10/libgpg.a ../../kbx/libkeybox.a ../../common/libcommon.a ../../common/libgpgrl.a  $(LIB_FUZZING_ENGINE)\
 +$(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
-+$(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
++$(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
 +$(LIBICONV) $(resource_objs) $(extra_sys_libs)
 +
 +fuzz_list_DEPENDENCIES = fuzz_list_seed_corpus.zip
