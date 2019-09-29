@@ -48,7 +48,7 @@ make
 make install
 cd ..
 ./autogen.sh
-./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode
+./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
 make
 )
 
