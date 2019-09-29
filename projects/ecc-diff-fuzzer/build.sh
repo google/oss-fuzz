@@ -63,7 +63,11 @@ make -j$(nproc) all
 (
 cd openssl
 #option to not have the same exported function poly1305_blocks as in gcrypt
-setarch i386 ./config no-poly1305 no-shared no-threads -m32
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    setarch i386 ./config no-poly1305 no-shared no-threads -m32
+else
+    ./config no-poly1305 no-shared no-threads
+fi
 make build_generated libcrypto.a
 )
 
