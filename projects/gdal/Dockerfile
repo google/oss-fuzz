@@ -39,7 +39,7 @@ RUN curl ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz > gdal/netc
 
 RUN git clone --depth 1 https://anongit.freedesktop.org/git/poppler/poppler.git gdal/poppler
 
-COPY build.sh $SRC/
+RUN cp gdal/gdal/fuzzers/build.sh $SRC/
 
 WORKDIR gdal
 
