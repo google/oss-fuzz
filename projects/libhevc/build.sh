@@ -37,4 +37,5 @@ $SRC/libhevc/fuzzer/hevc_dec_fuzzer.cpp -o $OUT/hevc_dec_fuzzer \
 ${build_dir}/libhevcdec.a \
 -Wl,--end-group
 
+cp $SRC/hevc_dec_fuzzer_seed_corpus.zip $OUT/hevc_dec_fuzzer_seed_corpus.zip
 cp $SRC/libhevc/fuzzer/hevc_dec_fuzzer.dict $OUT/hevc_dec_fuzzer.dict
