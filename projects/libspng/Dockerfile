@@ -26,5 +26,5 @@ RUN apt-get update && \
 RUN git clone --depth 1 https://gitlab.com/randy408/libspng.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
 
+RUN cp libspng/tests/build.sh $SRC
 WORKDIR libspng
-COPY build.sh $SRC/
