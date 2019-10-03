@@ -23,4 +23,6 @@ RUN mkdir -p $GOPATH/src/github.com/dvyukov/ && \
 
 COPY build.sh $SRC/
 
+ENV GO111MODULE="off"
+
 WORKDIR $SRC/golang
