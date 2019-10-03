@@ -22,7 +22,7 @@ RUN git clone --recursive --depth 1 https://github.com/ARMmbed/mbedtls.git mbedt
 RUN git clone --depth 1 https://github.com/ANSSI-FR/libecc.git libecc
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 ADD https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2 libgpg-error-1.36.tar.bz2
-RUN git clone --depth 1 https://github.com/gpg/libgcrypt gcrypt
+RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git gcrypt
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp cryptopp
 ADD https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2 gmp-6.1.2.tar.bz2
 RUN git clone --depth 1 https://github.com/gnutls/nettle.git nettle
