@@ -23,5 +23,6 @@ RUN apt-get update && apt-get install -y cmake pkg-config zlib1g-dev
 
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git
 
+RUN cp libzip/regress/build.sh $SRC
 WORKDIR libzip
-COPY build.sh $SRC/
+
