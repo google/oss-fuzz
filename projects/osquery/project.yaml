@@ -1,0 +1,6 @@
+homepage: "https://osquery.io"
+primary_contact: "theopolis@osquery.io"
+sanitizers:
+ - address
+fuzzing_engines:
+ - libfuzzer
