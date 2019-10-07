@@ -14,6 +14,7 @@ auto_ccs:
   - "qxliu@google.com"
 vendor_ccs:
   - "cdiehl@mozilla.com"
+  - "twsmith@mozilla.com"
 sanitizers:
  - address
  - undefined
