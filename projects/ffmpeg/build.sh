@@ -45,7 +45,7 @@ make install
 
 cd $SRC/fdk-aac
 autoreconf -fiv
-CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base" \
+CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base,signed-integer-overflow" \
 ./configure --prefix="$FFMPEG_DEPS_PATH" --disable-shared
 make clean
 make -j$(nproc) all
