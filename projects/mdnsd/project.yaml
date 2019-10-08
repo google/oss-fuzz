@@ -1,0 +1,6 @@
+homepage: "https://github.com/Pro/mdnsd"
+primary_contact: "Stefan.Profanter@gmail.com"
+sanitizers:
+- address
+- undefined
+- memory
