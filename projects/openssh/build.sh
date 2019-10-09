@@ -31,6 +31,9 @@ $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/pubkey_fuzz.cc -o $OUT/pubkey_fuzz \
 	-lssh -lopenbsd-compat $STATIC_CRYPTO $LIB_FUZZING_ENGINE
 $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
+	regress/misc/fuzz-harness/privkey_fuzz.cc -o $OUT/privkey_fuzz \
+	-lssh -lopenbsd-compat $STATIC_CRYPTO $LIB_FUZZING_ENGINE
+$CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/sig_fuzz.cc -o $OUT/sig_fuzz \
 	-lssh -lopenbsd-compat $STATIC_CRYPTO $LIB_FUZZING_ENGINE
 $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
@@ -46,6 +49,7 @@ $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 # Prepare seed corpora
 CASES="$SRC/openssh-fuzz-cases"
 (set -e ; cd ${CASES}/key ; zip -r $OUT/pubkey_fuzz_seed_corpus.zip .)
+(set -e ; cd ${CASES}/privkey ; zip -r $OUT/privkey_fuzz_seed_corpus.zip .)
 (set -e ; cd ${CASES}/sig ; zip -r $OUT/sig_fuzz_seed_corpus.zip .)
 (set -e ; cd ${CASES}/authopt ; zip -r $OUT/authopt_fuzz_seed_corpus.zip .)
 (set -e ; cd ${CASES}/sshsig ; zip -r $OUT/sshsig_fuzz_seed_corpus.zip .)
