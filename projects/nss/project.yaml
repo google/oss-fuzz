@@ -3,6 +3,7 @@ primary_contact: "fkiefer@mozilla.com"
 auto_ccs:
   - "jjones@mozilla.com"
   - "cdiehl@mozilla.com"
+  - "sledru@mozilla.com"
 fuzzing_engines:
   - libfuzzer
   - afl
