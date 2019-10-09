@@ -24,6 +24,9 @@
 #include <cstring>
 #include "leptonica/allheaders.h"
 
+// Set to true only for debugging; always false for production
+static const bool DebugOutput = false;
+
 namespace {
 
 // Reads the front bytes of a data buffer containing `size` bytes as an int16_t,
@@ -46,10 +49,24 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const int16_t x_center = ReadInt16(&data, &size);
   const int16_t y_center = ReadInt16(&data, &size);
 
+  // Check for pnm format; this can cause timeouts.
+  // The format checker requires at least 12 bytes.
+  if (size < 12) return EXIT_SUCCESS;
+  int format;
+  findFileFormatBuffer(data, &format);
+  if (format == IFF_PNM) return EXIT_SUCCESS;
+
   Pix* pix = pixReadMem(reinterpret_cast<const unsigned char*>(data), size);
   if (pix == nullptr) {
     return EXIT_SUCCESS;
   }
+
+  // Never in production
+  if (DebugOutput) {
+    L_INFO("w = %d, h = %d, d = %d\n", "fuzzer",
+           pixGetWidth(pix), pixGetHeight(pix), pixGetDepth(pix));
+  }
+
   constexpr float deg2rad = M_PI / 180.;
   Pix* pix_rotated = pixRotateShear(pix, x_center, y_center, deg2rad * angle,
                                     L_BRING_IN_WHITE);
