@@ -20,5 +20,4 @@ RUN apt-get update && apt-get -y install \
     cmake
 RUN git clone https://github.com/google/myanmar-tools.git
 WORKDIR $SRC/myanmar-tools/clients/cpp/
-RUN mkdir build && cd build && cmake ..
 COPY build.sh $SRC/

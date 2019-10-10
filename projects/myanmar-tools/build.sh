@@ -12,6 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cd $SRC/myanmar-tools/clients/cpp/build
-make myanmartools_fuzz
-cp myanmartools_fuzz $OUT/
+cd $SRC/myanmar-tools/clients/cpp
+mkdir build
+cd build
+cmake ..
+make all
+
+# Note: don't use the myanmartools_fuzz CMake target directly because we want
+# to link with LIB_FUZZING_ENGINE instead of the default fuzzer.
+# Copy the .so file to $OUT as well as the executable.
+rm -r $OUT/*
+mkdir $OUT/lib
+cp libmyanmartools.so $OUT/lib
+$CXX $CXXFLAGS -std=c++11 -I../public -L$OUT/lib \
+    -Wl,-rpath $OUT/lib -lmyanmartools \
+    -o $OUT/zawgyi_detector_fuzz_target \
+    ../zawgyi_detector_fuzz_target.cpp \
+    $LIB_FUZZING_ENGINE
