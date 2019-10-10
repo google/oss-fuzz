@@ -109,10 +109,10 @@ index aef2fd86..4999e34c 100644
  
  char *
 diff --git a/opcodes/mmix-dis.c b/opcodes/mmix-dis.c
-index 80a58ed6..14876e5a 100644
+index 93688d3c..9c8f1251 100644
 --- a/opcodes/mmix-dis.c
 +++ b/opcodes/mmix-dis.c
-@@ -131,6 +131,7 @@ initialize_mmix_dis_info (struct disassemble_info *info)
+@@ -133,6 +133,7 @@ initialize_mmix_dis_info (struct disassemble_info *info)
      minfop->spec_reg_name[mmix_spec_regs[i].number] = mmix_spec_regs[i].name;
  
    info->private_data = (void *) minfop;
@@ -157,16 +157,3 @@ index 40893c3d..e544feee 100644
        pd->gp = -1;
        pd->print_addr = -1;
        for (i = 0; i < (int)ARRAY_SIZE (pd->hi_addr); i++)
-diff --git a/opcodes/tic30-dis.c b/opcodes/tic30-dis.c
-index c64aceb2..29ca775c 100644
---- a/opcodes/tic30-dis.c
-+++ b/opcodes/tic30-dis.c
-@@ -253,7 +253,7 @@ get_indirect_operand (unsigned short fragment,
- 		for (i = 0, bufcnt = 0; i < len; i++, bufcnt++)
- 		  {
- 		    buffer[bufcnt] = current_ind->syntax[i];
--		    if (buffer[bufcnt - 1] == 'a' && buffer[bufcnt] == 'r')
-+		    if (bufcnt > 0 && buffer[bufcnt - 1] == 'a' && buffer[bufcnt] == 'r')
- 		      buffer[++bufcnt] = arnum + '0';
- 		    if (buffer[bufcnt] == '('
- 			&& current_ind->displacement == DISP_REQUIRED)
