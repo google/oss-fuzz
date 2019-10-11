@@ -22,4 +22,4 @@ autoheader
 make -j$(nproc) libhts.a test/fuzz/hts_open_fuzzer.o
 
 # build fuzzers
-$CXX $CXXFLAGS -o "$OUT/hts_open_fuzzer" test/fuzz/hts_open_fuzzer.o -lFuzzingEngine libhts.a -lz -lbz2 -llzma -lcurl -lcrypto -lpthread
+$CXX $CXXFLAGS -o "$OUT/hts_open_fuzzer" test/fuzz/hts_open_fuzzer.o $LIB_FUZZING_ENGINE libhts.a -lz -lbz2 -llzma -lcurl -lcrypto -lpthread
