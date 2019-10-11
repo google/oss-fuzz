@@ -16,3 +16,6 @@ homepage: "https://github.com/googlei18n/myanmar-tools/"
 primary_contact: "sffc@google.com"
 auto_ccs:
   - "ccornelius@google.com"
+sanitizers:
+  - address
+  - memory
