@@ -21,6 +21,10 @@ cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
       -DBUILD_SHARED_LIBS=OFF -G "Unix Makefiles" ..
 make
 
+# Compile fuzzer.
 $CXX $CXXFLAGS -I../include $LIB_FUZZING_ENGINE \
     ../src/test_lib_json/fuzz.cpp -o $OUT/jsoncpp_fuzzer \
     src/lib_json/libjsoncpp.a
+
+# Add dictionary.
+cp $SRC/jsoncpp/src/test_lib_json/fuzz.dict $OUT/jsoncpp_fuzzer.dict
