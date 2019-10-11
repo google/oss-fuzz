@@ -16,7 +16,8 @@ cd $SRC/myanmar-tools/clients/cpp
 mkdir build
 cd build
 cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
-    -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" ..
+    -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
 make all
 
 # Note: don't use the myanmartools_fuzz CMake target directly because we want
