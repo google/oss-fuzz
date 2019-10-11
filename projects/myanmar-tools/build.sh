@@ -21,8 +21,7 @@ make all
 # Note: don't use the myanmartools_fuzz CMake target directly because we want
 # to link with LIB_FUZZING_ENGINE instead of the default fuzzer.
 # Copy the .so file to $OUT as well as the executable.
-rm -r $OUT/*
-mkdir $OUT/lib
+mkdir -p $OUT/lib
 cp libmyanmartools.so $OUT/lib
 $CXX $CXXFLAGS -std=c++11 -I../public -L$OUT/lib \
     -Wl,-rpath $OUT/lib -lmyanmartools \
