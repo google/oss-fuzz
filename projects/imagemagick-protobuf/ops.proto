@@ -1,0 +1,88 @@
+syntax = "proto2";
+
+package image_api_fuzzer;
+
+message FuzzSession {
+    enum ImageFormat {
+        RLA = 0;
+    }
+    required ImageFormat format = 1;
+    required bytes image_data = 2;
+
+    repeated FuzzOperation fuzz_operations = 3;
+}
+
+message FuzzOperation {
+    oneof operation {
+        AlphaChannel alpha_channel = 1;
+        Blur blur = 2;
+        Contrast contrast = 3;
+        Despeckle despeckle = 4;
+        Enhance enhance = 5;
+        Equalize equalize = 6;
+        Erase erase = 7;
+        Flip flip = 8;
+        Flop flop = 9;
+        Implode implode = 10;
+        Magnify magnify = 11;
+        Minify minify = 12;
+        Monochrome monochrome = 13;
+        Normalize normalize = 14;
+        Trim trim = 15;
+    }
+}
+
+message AlphaChannel {
+    enum AlphaType {
+        Activate = 0;
+        Assosciate = 1;
+        Deactivate = 2;
+        Disassociate = 3;
+        Set = 4;
+        Opaque = 5;
+        Transparent = 6;
+        Extract = 7;
+        Copy = 8;
+        Shape = 9;
+        Remove = 10;
+        Background = 11;
+    }
+    required AlphaType alpha = 1;
+}
+
+message Blur {
+    required double radius = 1;
+    required double sigma = 2;
+}
+
+message Contrast {
+    required uint64 sharpen = 1;
+}
+
+message Despeckle {}
+
+message Enhance {}
+
+message Equalize {}
+
+message Erase {}
+
+message Flip {}
+
+message Flop {}
+
+message Implode {
+    required double factor = 1;
+}
+
+message Magnify {}
+
+message Minify {}
+
+message Monochrome {
+    required bool monochrome = 1;
+}
+
+message Normalize {}
+
+message Trim {}
