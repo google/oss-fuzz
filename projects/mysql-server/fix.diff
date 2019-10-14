@@ -1,16 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 0b0cc0904b8..7a745fbb130 100644
+index 17939f7c6f4..e05deb5911e 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -500,6 +500,7 @@ ENDIF()
- 
- OPTION(DISABLE_SHARED 
-  "Don't build shared libraries, compile code as position-dependent" OFF)
-+OPTION(FUZZING "Fuzzing" OFF)
- IF(DISABLE_SHARED)
-   MESSAGE("Dynamic plugins are disabled.")
+@@ -517,6 +517,7 @@ IF(WITH_JEMALLOC)
+   STRING_APPEND(CMAKE_CXX_FLAGS " -fno-builtin-realloc -fno-builtin-free")
  ENDIF()
-@@ -1258,6 +1259,10 @@ IF(NOT WITHOUT_SERVER)
+ 
++OPTION(FUZZING "Fuzzing" OFF)
+ OPTION(ENABLED_PROFILING "Enable profiling" ON)
+ OPTION(WITHOUT_SERVER OFF)
+ IF(UNIX)
+@@ -1324,6 +1325,10 @@ IF(NOT WITHOUT_SERVER)
    ADD_SUBDIRECTORY(sql)
  ENDIF()
  
@@ -22,10 +22,10 @@ index 0b0cc0904b8..7a745fbb130 100644
  # It is referenced by some of the directories below, so we insert it here.
  ADD_SUBDIRECTORY(scripts)
 diff --git a/include/mysql.h b/include/mysql.h
-index 561960cd925..a11ccb42299 100644
+index 1f499e9d9e5..a85c181ae78 100644
 --- a/include/mysql.h
 +++ b/include/mysql.h
-@@ -260,7 +260,8 @@ enum mysql_protocol_type {
+@@ -261,7 +261,8 @@ enum mysql_protocol_type {
    MYSQL_PROTOCOL_TCP,
    MYSQL_PROTOCOL_SOCKET,
    MYSQL_PROTOCOL_PIPE,
@@ -36,7 +36,7 @@ index 561960cd925..a11ccb42299 100644
  
  enum mysql_ssl_mode {
 diff --git a/include/violite.h b/include/violite.h
-index b0c5c6958ba..7ef140dc163 100644
+index 9f9d6e62e2e..32bed2eeb30 100644
 --- a/include/violite.h
 +++ b/include/violite.h
 @@ -106,12 +106,14 @@ enum enum_vio_type : int {
@@ -55,7 +55,7 @@ index b0c5c6958ba..7ef140dc163 100644
  };
  
  /**
-@@ -457,4 +459,20 @@ struct Vio {
+@@ -449,4 +451,20 @@ struct Vio {
  #define SSL_handle void *
  #endif
  
@@ -77,23 +77,23 @@ index b0c5c6958ba..7ef140dc163 100644
 +
  #endif /* vio_violite_h_ */
 diff --git a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
-index eef8a1a5fae..3d7a3e26c19 100644
+index 52b9b61271f..e452fc202a5 100644
 --- a/libmysql/CMakeLists.txt
 +++ b/libmysql/CMakeLists.txt
-@@ -318,7 +318,7 @@ IF(NOT DISABLE_SHARED)
-     ENDIF()
+@@ -320,7 +320,7 @@ IF(UNIX)
+   ENDIF()
  
-     GET_TARGET_PROPERTY(libmysql_link_flags libmysql LINK_FLAGS)
--    IF(LINK_FLAG_NO_UNDEFINED)
-+    IF(LINK_FLAG_NO_UNDEFINED AND NOT FUZZING)
-       SET(libmysql_link_flags
-         "${libmysql_link_flags} ${LINK_FLAG_NO_UNDEFINED}")
-       SET(libmysql_link_flags
+   GET_TARGET_PROPERTY(libmysql_link_flags libmysql LINK_FLAGS)
+-  IF(LINK_FLAG_NO_UNDEFINED)
++  IF(LINK_FLAG_NO_UNDEFINED AND NOT FUZZING)
+     STRING_APPEND(libmysql_link_flags
+       " ${LINK_FLAG_NO_UNDEFINED}")
+     STRING_APPEND(libmysql_link_flags
 diff --git a/mysys/my_rnd.cc b/mysys/my_rnd.cc
-index 123c7ebd518..dd7e2ab116a 100644
+index fa96e35eb02..e03ee47c220 100644
 --- a/mysys/my_rnd.cc
 +++ b/mysys/my_rnd.cc
-@@ -50,6 +50,9 @@
+@@ -51,6 +51,9 @@
  */
  
  double my_rnd(struct rand_struct *rand_st) {
@@ -103,7 +103,7 @@ index 123c7ebd518..dd7e2ab116a 100644
    rand_st->seed1 = (rand_st->seed1 * 3 + rand_st->seed2) % rand_st->max_value;
    rand_st->seed2 = (rand_st->seed1 + rand_st->seed2 + 33) % rand_st->max_value;
    return (((double)rand_st->seed1) / rand_st->max_value_dbl);
-@@ -66,6 +69,12 @@ Fill a buffer with random bytes using the SSL library routines
+@@ -67,6 +70,12 @@ Fill a buffer with random bytes using the SSL library routines
  */
  int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
    int rc;
@@ -116,22 +116,21 @@ index 123c7ebd518..dd7e2ab116a 100644
    rc = RAND_bytes(buffer, (int)buffer_size);
  
    if (!rc) {
-@@ -89,6 +98,10 @@ int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
- double my_rnd_ssl(struct rand_struct *rand_st) {
+@@ -88,6 +97,9 @@ int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
+ double my_rnd_ssl(bool *failed) {
    unsigned int res;
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 +    return 34.56;
 +#endif
-+
-   if (my_rand_buffer((unsigned char *)&res, sizeof(res)))
-     return my_rnd(rand_st);
- 
+   if (my_rand_buffer((unsigned char *)&res, sizeof(res))) {
+     *failed = true;
+     return 0;
 diff --git a/sql-common/client.cc b/sql-common/client.cc
-index e4c916f8e1b..bf0a4226e3e 100644
+index f5e760cc37d..09037a9e236 100644
 --- a/sql-common/client.cc
 +++ b/sql-common/client.cc
-@@ -5772,6 +5772,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
+@@ -5850,6 +5850,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
      }
    }
  #endif /* _WIN32 */
@@ -145,10 +144,10 @@ index e4c916f8e1b..bf0a4226e3e 100644
    if (!net->vio &&
        (!mysql->options.protocol ||
 diff --git a/sql/mysqld.cc b/sql/mysqld.cc
-index b0c0de212d1..c20e4196539 100644
+index 178a572a5aa..03b9d6346f9 100644
 --- a/sql/mysqld.cc
 +++ b/sql/mysqld.cc
-@@ -6300,7 +6300,9 @@ int mysqld_main(int argc, char **argv)
+@@ -6353,7 +6353,9 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);  // Will do exit
    }
  
@@ -158,7 +157,7 @@ index b0c0de212d1..c20e4196539 100644
  
    size_t guardize = 0;
  #ifndef _WIN32
-@@ -6781,8 +6783,10 @@ int mysqld_main(int argc, char **argv)
+@@ -6837,8 +6839,10 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);
  
  #ifndef _WIN32
@@ -169,7 +168,7 @@ index b0c0de212d1..c20e4196539 100644
  #endif
  
    /* set all persistent options */
-@@ -6908,8 +6912,9 @@ int mysqld_main(int argc, char **argv)
+@@ -6980,8 +6984,9 @@ int mysqld_main(int argc, char **argv)
    }
  
    start_handle_manager();
@@ -180,7 +179,7 @@ index b0c0de212d1..c20e4196539 100644
  
    LogEvent()
        .type(LOG_TYPE_ERROR)
-@@ -6956,6 +6961,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7028,6 +7033,10 @@ int mysqld_main(int argc, char **argv)
  
    (void)RUN_HOOK(server_state, before_handle_connection, (NULL));
  
@@ -191,7 +190,7 @@ index b0c0de212d1..c20e4196539 100644
  #if defined(_WIN32)
    setup_conn_event_handler_threads();
  #else
-@@ -9688,6 +9697,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
+@@ -9850,6 +9859,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
  
    if (opt_short_log_format) opt_specialflag |= SPECIAL_SHORT_LOG_FORMAT;
  
@@ -202,7 +201,7 @@ index b0c0de212d1..c20e4196539 100644
      LogErr(ERROR_LEVEL, ER_CONNECTION_HANDLING_OOM);
      return 1;
 diff --git a/storage/innobase/buf/buf0buf.cc b/storage/innobase/buf/buf0buf.cc
-index e74e1d2854d..1c0677070ab 100644
+index 983603eb58c..d577c6fcc05 100644
 --- a/storage/innobase/buf/buf0buf.cc
 +++ b/storage/innobase/buf/buf0buf.cc
 @@ -1484,18 +1484,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
@@ -239,7 +238,7 @@ index 497ab98396c..a6cf2a647a6 100644
  
  IF(WIN32)
 diff --git a/vio/vio.cc b/vio/vio.cc
-index de46703eb82..01e8695f574 100644
+index 85cc77df645..03ed154dcee 100644
 --- a/vio/vio.cc
 +++ b/vio/vio.cc
 @@ -300,6 +300,27 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
@@ -270,7 +269,7 @@ index de46703eb82..01e8695f574 100644
    vio->viodelete = vio_delete;
    vio->vioerrno = vio_errno;
    vio->read = vio->read_buffer ? vio_read_buff : vio_read;
-@@ -577,7 +598,8 @@ static const vio_string vio_type_names[] = {{"", 0},
+@@ -575,7 +596,8 @@ static const vio_string vio_type_names[] = {{"", 0},
                                              {STRING_WITH_LEN("SSL/TLS")},
                                              {STRING_WITH_LEN("Shared Memory")},
                                              {STRING_WITH_LEN("Internal")},
