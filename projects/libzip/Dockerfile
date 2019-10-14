@@ -25,4 +25,3 @@ RUN git clone --depth 1 https://github.com/nih-at/libzip.git
 
 WORKDIR libzip
 COPY build.sh $SRC/
-
