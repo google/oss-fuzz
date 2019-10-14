@@ -14,18 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-mkdir build
-cd build
-cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_CJSON_TEST=OFF ..
-make -j$(nproc)
-
-$CXX $CXXFLAGS -std=c++11 -I. \
-    $SRC/cjson/fuzzing/cjson_read_fuzzer.cc \
-    -o $OUT/cjson_read_fuzzer \
-    $LIB_FUZZING_ENGINE $SRC/cjson/build/libcjson.a
-
-find $SRC/cjson/fuzzing/inputs -name "*" | \
-     xargs zip $OUT/cjson_read_fuzzer_seed_corpus.zip
-
-cp $SRC/cjson/fuzzing/json.dict $OUT/cjson_read_fuzzer.dict
+# Run the OSS-Fuzz script in the project
+$SRC/cjson/fuzzing/ossfuzz.sh
