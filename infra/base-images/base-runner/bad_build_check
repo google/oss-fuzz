@@ -66,7 +66,7 @@ function check_engine {
 
   if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
     # Store fuzz target's output into a temp file to be used for further checks.
-    $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    $FUZZER -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
     CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
     if (( $CHECK_FAILED > 0 )); then
       echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
@@ -112,7 +112,7 @@ function check_startup_crash {
   local CHECK_PASSED=0
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    $FUZZER -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "Done $MIN_NUMBER_OF_RUNS runs" -c $FUZZER_OUTPUT)
   elif [[ "$FUZZING_ENGINE" = afl ]]; then
     # TODO(https://github.com/google/oss-fuzz/issues/2470): Dont use
