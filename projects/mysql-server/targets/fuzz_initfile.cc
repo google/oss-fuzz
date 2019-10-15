@@ -109,7 +109,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
           mysql_file_fopen(key_file_init, "/tmp/initfuzz.sql", O_RDONLY, MYF(MY_WME)))) {
         abort();
     }
-    (void)bootstrap::run_bootstrap_thread(file, NULL, SYSTEM_THREAD_INIT_FILE);
+    (void)bootstrap::run_bootstrap_thread("/tmp/initfuzz.sql", file, NULL, SYSTEM_THREAD_INIT_FILE);
     mysql_file_fclose(file, MYF(MY_WME));
 
     return 0;
