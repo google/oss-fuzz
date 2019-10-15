@@ -7,6 +7,7 @@
 //#include <mysql/client_plugin.h>
 //#include <mysqld_error.h>
 #include "sql/sql_class.h"
+#include "sql/protocol_classic.h"
 #include "sql/conn_handler/channel_info.h"
 #include "sql/conn_handler/connection_handler.h"
 #include "sql/conn_handler/connection_handler_manager.h"
