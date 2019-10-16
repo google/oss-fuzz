@@ -1,16 +1,3 @@
-diff --git a/bfd/elf64-ppc.c b/bfd/elf64-ppc.c
-index 32ed81d9..056d2eea 100644
---- a/bfd/elf64-ppc.c
-+++ b/bfd/elf64-ppc.c
-@@ -5828,7 +5828,7 @@ sfpr_define (struct bfd_link_info *info,
- 	      if (s == NULL)
- 		return FALSE;
- 	      if (s->root.type == bfd_link_hash_new
--		  || (s->root.type = bfd_link_hash_defined
-+		  || (s->root.type == bfd_link_hash_defined
- 		      && s->root.u.def.section == stub_sec))
- 		{
- 		  s->root.type = bfd_link_hash_defined;
 diff --git a/include/cgen/bitset.h b/include/cgen/bitset.h
 index 07ef003c..bb4fe12e 100644
 --- a/include/cgen/bitset.h
