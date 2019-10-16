@@ -18,31 +18,6 @@
 set -o errexit
 set -o nounset
 
-cp /usr/lib/libFuzzingEngine.a fuzzer_lib.a
-
-cat >> BUILD << END
-
-cc_import(
-  name = "fuzzer_lib",
-  static_library = "//:fuzzer_lib.a",
-  alwayslink = 1,
-)
-END
-
-cat > test/core/util/grpc_fuzzer.bzl << END
-
-load("//bazel:grpc_build_system.bzl", "grpc_cc_binary")
-
-def grpc_fuzzer(name, corpus=[], srcs = [], deps = [], size = "large", timeout = "long", language="", **kwargs):
-  grpc_cc_binary(
-    name = name,
-    srcs = srcs,
-    language = language,
-    deps = deps + ["//:fuzzer_lib"],
-    **kwargs
-  )
-END
-
 readonly FUZZER_DICTIONARIES=(
   test/core/end2end/fuzzers/api_fuzzer.dictionary
   test/core/end2end/fuzzers/hpack.dictionary
@@ -92,11 +67,19 @@ then
 fi
 )"
 
-tools/bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
+tools/bazel build \
+  --dynamic_mode=off \
+  --spawn_strategy=standalone \
+  --genrule_strategy=standalone \
   ${NO_VPTR} \
   --strip=never \
-  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
-  ${FUZZER_TARGETS[@]} --verbose_failures
+  --linkopt=-lc++ \
+  --linkopt=-pthread \
+  --copt=${LIB_FUZZING_ENGINE} \
+  --linkopt=${LIB_FUZZING_ENGINE} \
+  ${EXTRA_BAZEL_FLAGS} \
+  ${FUZZER_TARGETS[@]} \
+  --verbose_failures
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
