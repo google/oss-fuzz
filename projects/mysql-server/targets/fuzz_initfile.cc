@@ -93,10 +93,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
             const_cast<char *>("--thread_stack=1048576"),
             const_cast<char *>("--datadir=/tmp/mysql/"),
             const_cast<char *>("--port=3302"),
+            const_cast<char *>("--socket=/tmp/initfile.sock"),
             const_cast<char *>(argbase),
             const_cast<char *>(arginitfile),
             0};
-        int fakeargc = 14;
+        int fakeargc = 15;
         mysqld_main(fakeargc, fakeargv);
         //terminate_compress_gtid_table_thread();
 
