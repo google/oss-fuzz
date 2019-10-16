@@ -26,7 +26,7 @@ make all
 mkdir -p $OUT/lib
 cp libmyanmartools.so $OUT/lib
 $CXX $CXXFLAGS -std=c++11 -I../public -L$OUT/lib \
-    -Wl,-rpath $OUT/lib -lmyanmartools \
+    -Wl,-rpath,'$ORIGIN/lib' -lmyanmartools \
     -o $OUT/zawgyi_detector_fuzz_target \
     ../zawgyi_detector_fuzz_target.cpp \
     $LIB_FUZZING_ENGINE
