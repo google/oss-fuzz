@@ -203,7 +203,7 @@ def find_culprit_commit(test_command, good_commit, bad_commit):
 def main():
   """Finds the culprit LLVM commit that introduced a clang regression.
   Can be tested using this command in a libsodium shell:
-  python3 bisect_clang.py "cd /src/libsodium; make clean && cd - && compile; /out/secret_key_auth_fuzzer -runs=100" \
+  python3 bisect_clang.py "cd /src/libsodium; make clean; cd -; compile && /out/secret_key_auth_fuzzer -runs=100" \
                           f7e52fbdb5a7af8ea0808e98458b497125a5eca1 \
                           8288453f6aac05080b751b680455349e09d49825
   """
