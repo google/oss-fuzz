@@ -1,4 +1,9 @@
 homepage: "https://github.com/hyperledger/iroha"
-primary_contact: "konstantin@soramitsu.co.jp"
+primary_contact: "boldrev@soramitsu.co.jp"
+auto_ccs:
+  - "andrei@soramitsu.co.jp"
+  - "kovalev@soramitsu.co.jp"
+  - "igor@soramitsu.co.jp"
+  - "gorbachev@soramitsu.co.jp"
 sanitizers:
   - address
