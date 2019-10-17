@@ -38,5 +38,14 @@ cmake \
 cmake \
   -DCMAKE_EXE_LINKER_FLAGS=${LIB_FUZZING_ENGINE} \
   ..
+
+# Build harnesses
 cmake --build . -j$(nproc) --target osqueryfuzz-config
+
+# Cleanup
+find . -type f -name '*.o' -delete
+rm -rf "${SRC}/${PROJECT}/libraries/cmake/source/libudev/src/test"
+rm -rf libs/src/patched-source/libudev/src/test
+
+# Move harnesses to output path
 cp osquery/main/osqueryfuzz-config "${OUT}/osqueryfuzz-config"
