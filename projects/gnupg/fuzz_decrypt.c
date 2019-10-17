@@ -71,6 +71,9 @@ static void rmrfdir(char *path)
     }
 }
 
+// 65kb should be enough ;-)
+#define MAX_LEN 0x10000
+
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
     if (! initialized) {
@@ -124,6 +127,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
     memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));
     ctrlGlobal->magic = SERVER_CONTROL_MAGIC;
+    if (Size > MAX_LEN) {
+        // limit maximum size to avoid long computing times
+        Size = MAX_LEN;
+    }
 
     if (ftruncate(fd, Size) == -1) {
         return 0;
