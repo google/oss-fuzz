@@ -1,5 +1,7 @@
 homepage: "https://osquery.io"
 primary_contact: "theopolis@osquery.io"
+auto_ccs:
+  - "tom@ritter.vg"
 sanitizers:
  - address
 fuzzing_engines:
