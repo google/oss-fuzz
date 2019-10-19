@@ -35,3 +35,5 @@ function compile_fuzzer {
 
 compile_fuzzer "yaml" "FuzzSigYaml"
 compile_fuzzer "yaml" "FuzzYamlV2"
+compile_fuzzer "json" "FuzzStrictDecode"
+compile_fuzzer "json" "FuzzNonStrictDecode"
