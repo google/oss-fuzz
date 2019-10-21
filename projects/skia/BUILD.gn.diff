@@ -429,7 +429,19 @@ test_app("api_skdescriptor") {
     "fuzz/Fuzz.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/FuzzSkDescriptor.cpp",
-    "fuzz/oss_fuzz/FuzzSkDescriptor.cpp",
+    "fuzz/oss_fuzz/FuzzAPISkDescriptor.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
+
+test_app("skdescriptor_deserialize") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSkDescriptorDeserialize.cpp",
   ]
   deps = [
     ":flags",

@@ -230,3 +230,8 @@ cp ./sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
 cp out/Fuzz/api_skdescriptor $OUT/api_skdescriptor
 cp ./api_skdescriptor.options $OUT/api_skdescriptor.options
 cp ./api_skdescriptor_seed_corpus.zip $OUT/api_skdescriptor_seed_corpus.zip
+
+# Don't have any examples of an SkDescriptor atm, so some random bytes is all we have.
+cp out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
+cp ./skdescriptor_deserialize.options $OUT/skdescriptor_deserialize.options
+cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
