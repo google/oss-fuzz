@@ -423,3 +423,16 @@ test_app("sksl2pipeline") {
     ":skia",
   ]
 }
+
+test_app("api_skdescriptor") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/FuzzSkDescriptor.cpp",
+    "fuzz/oss_fuzz/FuzzSkDescriptor.cpp",
+  ]
+  deps = [
+    ":flags",
+    ":skia",
+  ]
+}
