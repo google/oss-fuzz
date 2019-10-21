@@ -86,6 +86,7 @@ COPY image_filter_deserialize_width.options $SRC/skia/image_filter_deserialize_w
 COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
 COPY path_deserialize.options $SRC/skia/path_deserialize.options
 COPY encoder.options $SRC/skia/encoder.options
+COPY skdescriptor_deserialize.options $SRC/skia/skdescriptor_deserialize.options
 
 # Codec fuzzers can share options
 COPY image_codec.options $SRC/skia/android_codec.options
