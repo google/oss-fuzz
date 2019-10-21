@@ -5,5 +5,5 @@ auto_ccs:
   - "jaguar5pow4@gmail.com"
 sanitizers:
   - address
-  - memory:
+  - memory
   - undefined
