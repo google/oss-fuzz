@@ -13,6 +13,7 @@ auto_ccs:
   - "jfb@chromium.org"
   - "eneyman@google.com"
   - "bigcheesegs@gmail.com"
+  - "davg@google.com"
 
 sanitizers:
   - address

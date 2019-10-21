@@ -19,6 +19,7 @@
 readonly FUZZERS=( \
   clang-fuzzer \
   clang-format-fuzzer \
+  clang-objc-fuzzer \
   clangd-fuzzer \
   llvm-itanium-demangle-fuzzer \
   llvm-microsoft-demangle-fuzzer \
@@ -128,4 +129,5 @@ build_corpus "llvm/test/Transforms/LoopStrengthReduce/" "llvm-opt-fuzzer--x86_64
 
 build_corpus "llvm/test/Transforms/IRCE/" "llvm-opt-fuzzer--x86_64-llvm-opt-fuzzer--x86_64-irce"
 
+zip -j "${OUT}/clang-objc-fuzzer_seed_corpus.zip"  llvm/tools/clang/tools/clang-fuzzer/corpus_examples/objc/*
 zip -j "${OUT}/clangd-fuzzer_seed_corpus.zip"  llvm/tools/clang/tools/extra/clangd/test/*
