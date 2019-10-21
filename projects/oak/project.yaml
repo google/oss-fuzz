@@ -2,5 +2,8 @@ homepage: "https://github.com/project-oak/oak"
 primary_contact: "tzn@google.com"
 auto_ccs:
   - "project-oak-team@google.com"
+  - "iovi@google.com"
+  - "drysdale@google.com"
+  - "mks@google.com"
 fuzzing_engines:
   - libfuzzer
