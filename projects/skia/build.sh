@@ -103,7 +103,7 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_null_canvas api_image_filter api_pathop \
                                    api_polyutils android_codec image_decode_incremental \
                                    sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
-                                   api_skdescriptor
+                                   api_skdescriptor skdescriptor_deserialize
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
