@@ -31,8 +31,8 @@ export CFLAGS="${CFLAGS} -Wl,-lunwind"
 
 cmake \
   -DOSQUERY_VERSION:string=0.0.0-fuzz \
-  -DOSQUERY_FUZZ:BOOL=ON \
-  -DOSQUERY_BUILD_TESTS:BOOL=ON \
+  -DOSQUERY_ENABLE_ADDRESS_SANITIZER:BOOL=ON \
+  -DOSQUERY_ENABLE_FUZZER_SANITIZERS:BOOL=ON \
   -DOSQUERY_TOOLCHAIN_SYSROOT=/usr/local/osquery-toolchain \
   ..
 cmake \
@@ -48,4 +48,4 @@ rm -rf "${SRC}/${PROJECT}/libraries/cmake/source/libudev/src/test"
 rm -rf libs/src/patched-source/libudev/src/test
 
 # Move harnesses to output path
-cp osquery/main/osqueryfuzz-config "${OUT}/osqueryfuzz-config"
+cp osquery/main/harnesses/osqueryfuzz-config "${OUT}/osqueryfuzz-config"
