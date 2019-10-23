@@ -19,3 +19,4 @@ auto_ccs:
 sanitizers:
   - address
   - memory
+coverage_extra_args: -ignore-filename-regex=.*/\.hunter/.*
