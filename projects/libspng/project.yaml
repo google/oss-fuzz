@@ -3,5 +3,5 @@ primary_contact: "randy408@protonmail.com"
 auto_ccs:
   - "randy440088@gmail.com"
 architectures:
-  - amd64
+  - x86_64
   - i386
