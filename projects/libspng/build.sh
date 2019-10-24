@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-FROM gcr.io/oss-fuzz-base/base-builder
-
-MAINTAINER randy408@protonmail.com
-
-RUN apt-get update && \
-    apt-get install -y wget tar cmake
-
-RUN git clone --depth 1 https://gitlab.com/randy408/libspng.git
-RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
-
-WORKDIR libspng
-COPY build.sh $SRC/
+# Run the OSS-Fuzz script in the project
+$SRC/libspng/tests/ossfuzz.sh
