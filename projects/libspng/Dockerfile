@@ -19,14 +19,11 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER randy408@protonmail.com
 
 RUN apt-get update && \
-    apt-get install -y -t xenial-backports ninja-build && \
-    apt-get install -y pkg-config wget python3-pip && \
-    pip3 install meson
-
-RUN dpkg --add-architecture i386
+    apt-get install -y wget tar cmake
 
 RUN git clone --depth 1 https://gitlab.com/randy408/libspng.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
 
-RUN cp libspng/tests/build.sh $SRC
+#RUN cp libspng/tests/build.sh $SRC
 WORKDIR libspng
+COPY build.sh $SRC/
