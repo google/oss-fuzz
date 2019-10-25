@@ -1,0 +1,7 @@
+homepage: "https://github.com/google/gopacket"
+primary_contact: "p.antoine@catenacyber.fr"
+
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
