@@ -35,14 +35,6 @@ make clean
 make -j$(nproc) all
 make install
 
-cd $SRC/drm
-# Requires xutils-dev libpciaccess-dev
-./autogen.sh
-./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
-make clean
-make -j$(nproc)
-make install
-
 cd $SRC/fdk-aac
 autoreconf -fiv
 CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base,signed-integer-overflow" \
