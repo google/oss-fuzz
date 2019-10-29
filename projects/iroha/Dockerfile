@@ -31,7 +31,7 @@ RUN git clone --depth 1 https://github.com/hyperledger/iroha.git
 
 WORKDIR iroha
 
-RUN cp -R $SRC/iroha/vcpkg /tmp/vcpkg-vars
+RUN cp -R $SRC/iroha/vcpkg_old /tmp/vcpkg-vars
 
 RUN set -e; \
     git clone https://github.com/microsoft/vcpkg /tmp/vcpkg; \
