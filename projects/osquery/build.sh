@@ -41,6 +41,7 @@ cmake \
 
 # Build harnesses
 cmake --build . -j$(nproc) --target osqueryfuzz-config
+cmake --build . -j$(nproc) --target osqueryfuzz-sqlquery
 
 # Cleanup
 find . -type f -name '*.o' -delete
@@ -49,3 +50,11 @@ rm -rf libs/src/patched-source/libudev/src/test
 
 # Move harnesses to output path
 cp osquery/main/harnesses/osqueryfuzz-config "${OUT}/osqueryfuzz-config"
+cp osquery/main/harnesses/osqueryfuzz-sqlquery "${OUT}/osqueryfuzz-sqlquery"
+
+# Build supporting files
+popd
+tools/harnesses/osqueryfuzz_config_corpus.sh "${OUT}/osqueryfuzz-config_seed_corpus.zip"
+tools/harnesses/osqueryfuzz_config_dict.sh "${OUT}/osqueryfuzz-config.dict"
+tools/harnesses/osqueryfuzz_sqlquery_corpus.sh "${OUT}/osqueryfuzz-sqlquery_seed_corpus.zip"
+cp tools/harnesses/osqueryfuzz_sqlquery.dict "${OUT}/osqueryfuzz-sqlquery.dict"
