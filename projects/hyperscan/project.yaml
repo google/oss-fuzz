@@ -1,0 +1,4 @@
+homepage: "https://www.hyperscan.io"
+primary_contact: "hyperscan@intel.com"
+auto_ccs :
+  - "p.antoine@catenacyber.fr"
