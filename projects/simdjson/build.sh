@@ -29,5 +29,5 @@ cmake .. \
 
 cmake --build .
 
-cp bin/fuzz_* $OUT
+cp fuzz/fuzz_* $OUT
 
