@@ -19,7 +19,7 @@
 cd hyperscan
 mkdir build
 cd build
-    
+cmake -DCMAKE_BUILD_TYPE=Debug -DOPTIMISE=OFF ..
 make
 
 for target in `ls ../../fuzz*.c | cut -d/ -f3 | sed 's/.c//'`; do
