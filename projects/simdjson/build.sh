@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# build the corpus (all inputs are json, the same corpus can be used for everyone)
+fuzz/build_corpus.sh
+
 mkdir build
 cd build
 
@@ -30,4 +33,9 @@ cmake .. \
 cmake --build .
 
 cp fuzz/fuzz_* $OUT
+
+# all corpora are equal, they all take json as input
+for f in $OUT/fuzz* ; do
+   cp ../corpus.zip $(basename $f).zip
+done
 
