@@ -7,6 +7,8 @@ auto_ccs:
   - "felixh@fb.com"
   - "dpc@fb.com"
   - "bimbashrestha@fb.com"
+  - "mhl@fb.com"
+  - "reed@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
