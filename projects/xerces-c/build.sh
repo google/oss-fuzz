@@ -1,12 +1,13 @@
 #!/bin/bash
+#https://github.com/linux-on-ibm-z/docs/wiki/Building-Xerces
 set -e
 cd $SRC/xerces-c
-mkdir build
-cd build
+./reconf
+./configure
+make -j
 #CC=clang CFLAGS=-fsanitize=address,fuzzer-no-link CXX=clang++ CXXFLAGS=-fsanitize=address,fuzzer-no-link
 #CC;CFLAGS;CXX;CXXFLAGS should already be set
-cmake -DBUILD_SHARED_LIBS:BOOL=OFF ..
-make -j
+#cmake -DBUILD_SHARED_LIBS:BOOL=OFF ..
 
 cd $SRC
 rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc xml.proto --cpp_out=genfiles
@@ -15,16 +16,16 @@ cd libprotobuf-mutator
 cd $SRC
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 \
-        -I../src -I../build/src \
-        xerces_fuzz_common.cpp parse_target.cpp -o parse_target \
-        ../build/src/libxerces.a
+        -Ixerces-c/src -Ixerces-c/src \
+        xerces_fuzz_common.cpp parse_target.cpp -o $OUT/parse_target \
+        xerces-c/src/.libs/libxerces-c.a
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 \
-        -I xerces-c/src -Ixerces-c/build/src genfiles/xml.pb.cc xml_writer.cc xerces_fuzz_common.cpp parse_target_proto.cpp \
+        -I xerces-c/src -Ixerces-c/build/src genfiles/xml.pb.cc xmlProtoConverter.cpp xerces_fuzz_common.cpp parse_target_proto.cpp \
         -I libprotobuf-mutator/ \
         -I genfiles \
         -I LPM/external.protobuf/include \
-        -o parse_target_proto ../build/src/libxerces.a \
+        -o $OUT/parse_target_proto xerces-c/src/.libs/libxerces-c.a \
         LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
         LPM/src/libprotobuf-mutator.a \
-        LPM/external.protobuf/lib64/libprotobuf.a
+        LPM/external.protobuf/lib/libprotobuf.a

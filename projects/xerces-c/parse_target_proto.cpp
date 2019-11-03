@@ -3,7 +3,7 @@
 #include "xercesc/util/OutOfMemoryException.hpp"
 #include "xerces_fuzz_common.cpp"
 #include "genfiles/xml.pb.h"
-#include "xml_writer.h"
+#include "xmlProtoConverter.h"
 #include "src/libfuzzer/libfuzzer_macro.h"
 #include <iostream>
 
@@ -20,9 +20,9 @@ namespace {
 //https://github.com/google/libprotobuf-mutator/tree/master/examples/libxml2
 using namespace xercesc_3_2;
 
-DEFINE_PROTO_FUZZER(const protobuf_mutator::xml::Input& message) {
-    std::string xml = MessageToXml(message.document());
-    parseInMemory((const uint8_t *)xml.c_str(), xml.size());
+DEFINE_PROTO_FUZZER(const xmlProtoFuzzer::XmlDocument& xmlDocument) {
+    std::string xmlData = xmlProtoFuzzer::ProtoConverter().protoToString(xmlDocument);
+    parseInMemory((const uint8_t *)xmlData.c_str(), xmlData.size());
 }
 
 
