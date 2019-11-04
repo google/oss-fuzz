@@ -1,10 +1,14 @@
-#include "xercesc/parsers/SAXParser.hpp"
-#include "xercesc/framework/MemBufInputSource.hpp"
-#include "xercesc/util/OutOfMemoryException.hpp"
-#include "xerces_fuzz_common.cpp"
-#include "genfiles/xml.pb.h"
+#include "xerces_fuzz_common.h"
 #include "xmlProtoConverter.h"
+
+#include "xercesc/framework/MemBufInputSource.hpp"
+#include "xercesc/parsers/SAXParser.hpp"
+#include "xercesc/util/OutOfMemoryException.hpp"
+
+#include "genfiles/xml.pb.h"
+
 #include "src/libfuzzer/libfuzzer_macro.h"
+
 #include <iostream>
 
 namespace {
@@ -17,7 +21,6 @@ namespace {
     }
 }
 
-//https://github.com/google/libprotobuf-mutator/tree/master/examples/libxml2
 using namespace xercesc_3_2;
 
 DEFINE_PROTO_FUZZER(const xmlProtoFuzzer::XmlDocument& xmlDocument) {

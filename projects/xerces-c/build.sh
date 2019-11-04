@@ -12,7 +12,7 @@ make -j
 cd $SRC
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 \
-        -Ixerces-c/src -Ixerces-c/src \
+        -I. -Ixerces-c/src \
         xerces_fuzz_common.cpp parse_target.cpp -o $OUT/parse_target \
         xerces-c/src/.libs/libxerces-c.a
 
@@ -20,7 +20,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
 	rm -rf genfiles && mkdir genfiles && LPM/external.protobuf/bin/protoc xml.proto --cpp_out=genfiles
 
 	$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 \
-	        -I xerces-c/src -Ixerces-c/build/src genfiles/xml.pb.cc xmlProtoConverter.cpp xerces_fuzz_common.cpp parse_target_proto.cpp \
+	        -I. -I xerces-c/src -Ixerces-c/build/src genfiles/xml.pb.cc xmlProtoConverter.cpp xerces_fuzz_common.cpp parse_target_proto.cpp \
 	        -I libprotobuf-mutator/ \
 	        -I genfiles \
 	        -I LPM/external.protobuf/include \

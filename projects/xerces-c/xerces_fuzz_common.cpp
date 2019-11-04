@@ -1,12 +1,9 @@
-#include "xercesc/parsers/SAXParser.hpp"
-#include "xercesc/framework/MemBufInputSource.hpp"
-#include "xercesc/util/OutOfMemoryException.hpp"
-//https://github.com/google/libprotobuf-mutator/tree/master/examples/libxml2
+#include "xerces_fuzz_common.h"
 
 using namespace xercesc_3_2;
 static bool initialized = false;
 
-int parseInMemory(const uint8_t *Data, size_t Size)
+void parseInMemory(const uint8_t *Data, size_t Size)
 {
     if (!initialized)
     {
@@ -31,5 +28,4 @@ int parseInMemory(const uint8_t *Data, size_t Size)
     delete parser;
     delete memBufIS;
     //XMLPlatformUtils::Terminate();
-    return 0;
 }
