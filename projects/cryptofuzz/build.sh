@@ -91,26 +91,31 @@ fi
 
 ##############################################################################
 # Compile wolfCrypt
-if [[ $CFLAGS != *-m32* ]]
+cd $SRC/wolfssl
+autoreconf -ivf
+
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden"
+
+if [[ $CFLAGS = *sanitize=memory* ]]
 then
-    cd $SRC/wolfssl
-    autoreconf -ivf
-    if [[ $CFLAGS != *sanitize=memory* ]]
-    then
-        ./configure --enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden
-    else
-        ./configure --enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --disable-asm
-    fi
-    make -j$(nproc) >/dev/null 2>&1
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_WOLFCRYPT"
-    export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl/src/.libs/libwolfssl.a"
-    export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
-
-    # Compile Cryptofuzz wolfcrypt (without assembly) module
-    cd $SRC/cryptofuzz/modules/wolfcrypt
-    make -B
+    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-asm"
 fi
+
+if [[ $CFLAGS = *-m32* ]]
+then
+    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-fastmath"
+fi
+
+./configure $WOLFCRYPT_CONFIGURE_PARAMS
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_WOLFCRYPT"
+export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl/src/.libs/libwolfssl.a"
+export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
+
+# Compile Cryptofuzz wolfcrypt (without assembly) module
+cd $SRC/cryptofuzz/modules/wolfcrypt
+make -B
 
 ##############################################################################
 # Compile Botan
