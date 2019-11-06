@@ -15,26 +15,4 @@
 #
 ################################################################################
 
-# build the corpus (all inputs are json, the same corpus can be used for everyone)
-fuzz/build_corpus.sh
-
-mkdir build
-cd build
-
-cmake .. \
--GNinja \
--DCMAKE_BUILD_TYPE=Debug \
--DSIMDJSON_BUILD_STATIC=On \
--DENABLE_FUZZING=On \
--DSIMDJSON_FUZZ_LINKMAIN=Off \
--DSIMDJSON_FUZZ_LDFLAGS=$LIB_FUZZING_ENGINE
-
-cmake --build .
-
-cp fuzz/fuzz_* $OUT
-
-# all corpora are equal, they all take json as input
-for f in $OUT/fuzz* ; do
-   cp ../corpus.zip $(basename $f).zip
-done
-
+fuzz/ossfuzz.sh
