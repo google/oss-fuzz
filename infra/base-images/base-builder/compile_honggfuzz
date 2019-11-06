@@ -22,7 +22,7 @@ make clean
 CC=clang CFLAGS= make
 # libhfuzz.a will be added by CC/CXX linker directly during linking,
 # but it's defined here to satisfy the build infrastructure
-cp libhfuzz/libhfuzz.a $LIB_FUZZING_ENGINE
+ar rcs $LIB_FUZZING_ENGINE libhfuzz/*.o libhfcommon/*.o
 cp honggfuzz $OUT/
 popd > /dev/null
 
