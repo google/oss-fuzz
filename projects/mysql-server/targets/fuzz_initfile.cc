@@ -75,7 +75,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         char arginitfile[MAX_SIZE];
         snprintf(command, MAX_SIZE-1, "cp -r %s/mysql/data /tmp/mysql_initfile", filepath);
         //unsafe
-        system(command);
+        if (system(command) < 0) {
+            printf("failed command %s\n", command);
+        }
+        snprintf(arginitfile, MAX_SIZE-1, "%s/initnopw.sql", filepath);
+        FILE *ftest = fopen(arginitfile, "r");
+        if (ftest) {
+            fclose(ftest);
+        } else {
+            printf("missing file %s\n", arginitfile);
+        }
 
         snprintf(argbase, MAX_SIZE-1, "--basedir=%s/mysql/", filepath);
         snprintf(arginitfile, MAX_SIZE-1, "--init-file=%s/initnopw.sql", filepath);
