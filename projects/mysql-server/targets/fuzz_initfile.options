@@ -1,2 +1,1 @@
 [libfuzzer]
-close_fd_mask = 2
