@@ -137,7 +137,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
     if (Size > MAX_LEN) {
         // limit maximum size to avoid long computing times
-        Size = MAX_LEN;
+        return 0;
     }
 
     memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));
