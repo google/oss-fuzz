@@ -1,0 +1,9 @@
+homepage: "http://www.wavpack.com" 
+primary_contact: "david@wavpack.com" 
+auto_ccs:
+- dvbryant@gmail.com
+- thuanpv.nus@gmail.com
+sanitizers: 
+- address 
+- memory 
+- undefined
