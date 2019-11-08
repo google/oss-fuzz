@@ -76,7 +76,7 @@ CFLAGS="" CXXFLAGS="" make install
 
 # Compile instrumented CPython
 cd $SRC/cpython-3.8.0b2/
-cp $SRC/pillow-fuzzers/python_coverage.h Python/
+cp $SRC/oss-fuzz-fuzzers/pillow/python_coverage.h Python/
 
 # Patch the interpreter to record code coverage
 sed -i '1 s/^.*$/#include "python_coverage.h"/g' Python/ceval.c
@@ -87,11 +87,11 @@ make -j$(nproc)
 make install
 
 # Compile Pillow fuzzers
-cd $SRC/pillow-fuzzers
+cd $SRC/oss-fuzz-fuzzers/pillow
 rm $CPYTHON_INSTALL_PATH/lib/python3.8/lib-dynload/_tkinter*.so
 make
-cp $SRC/pillow-fuzzers/fuzzer-loadimg $OUT/
-cp $SRC/pillow-fuzzers/loadimg.py $OUT/
+cp $SRC/oss-fuzz-fuzzers/pillow/fuzzer-loadimg $OUT/
+cp $SRC/oss-fuzz-fuzzers/pillow/loadimg.py $OUT/
 
 # Create venv for Pillow compilation
 $CPYTHON_UNINSTRUMENTED_INSTALL_PATH/bin/python3 -m venv $SRC/venv
@@ -99,7 +99,8 @@ source $SRC/venv/bin/activate
 
 # Compile Pillow
 cd $SRC/pillow
-cp $SRC/pillow-fuzzers/Storage.c $SRC/pillow/src/libImaging/
+CFLAGS="" CXXFLAGS="" ./setup.py build_ext --inplace >build.sh
 grep "^\(gcc\|x86_64-linux-gnu-gcc\|clang\) " build.sh | sed 's/^\(gcc\|x86_64-linux-gnu-gcc\|clang\) /$CC $CFLAGS /g' | sed 's/-DPILLOW_VERSION="\([^"]\+\)"/-DPILLOW_VERSION="\\"\1\\""/g' >build2.sh
 bash build2.sh
+find
 cp -R $SRC/pillow $OUT/
