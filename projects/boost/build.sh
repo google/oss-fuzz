@@ -15,9 +15,10 @@
 #
 ################################################################################
 
+# Build boost
+./bootstrap.sh && ./b2 headers
 
 # Very simple build rule, but sufficient here.
-
 #boost regexp
 $CXX $CXXFLAGS -I . ../boost_regex_fuzzer.cc libs/regex/src/*.cpp $LIB_FUZZING_ENGINE -o boost_regex_fuzzer
 
