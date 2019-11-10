@@ -25,8 +25,7 @@ RUN wget --quiet https://github.com/Kitware/CMake/releases/download/v${CMAKEVER}
     chmod +x cmake-${CMAKEVER}-Linux-x86_64.sh ; \
     ./cmake-${CMAKEVER}-Linux-x86_64.sh --skip-license --prefix="/usr/local"
 
-# point to https://github.com/lemire/simdjson.git once integrated
-RUN git clone --depth 1 --single-branch --branch paul/ossfuzz_step2 https://github.com/pauldreik/simdjson.git simdjson
+RUN git clone --depth 1 https://github.com/lemire/simdjson.git simdjson
 WORKDIR simdjson
 COPY build.sh $SRC/
 
