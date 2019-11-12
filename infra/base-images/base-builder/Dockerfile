@@ -25,7 +25,11 @@ RUN apt-get install -y git \
     libunwind8-dev \
     binutils-dev \
     libblocksruntime-dev \
-    libc6-dev-i386
+    libc6-dev-i386 \
+    liblzma-dev \
+    libiberty-dev \
+    zlib1g-dev \
+    pkg-config
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
