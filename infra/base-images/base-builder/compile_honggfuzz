@@ -16,6 +16,7 @@
 ################################################################################
 
 echo -n "Compiling honggfuzz to $LIB_FUZZING_ENGINE ..."
+export BUILD_OSSFUZZ_STATIC=true
 
 pushd $SRC/honggfuzz > /dev/null
 make clean
