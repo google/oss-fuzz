@@ -40,13 +40,12 @@ make
 
 #gcrypt
 (
-cd gcrypt
-tar -xvf ../libgpg-error-1.36.tar.bz2
-cd libgpg-error-1.36
-./configure --enable-static --disable-shared
+cd libgpg-error
+./autogen.sh
+./configure --disable-doc --enable-static --disable-shared
 make
 make install
-cd ..
+cd ../gcrypt
 ./autogen.sh
 ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
 make
