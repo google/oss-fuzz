@@ -20,7 +20,10 @@ export BUILD_OSSFUZZ_STATIC=true
 
 pushd $SRC/honggfuzz > /dev/null
 make clean
-CC=clang CFLAGS= make
+# These CFLAGs match honggfuzz's default, with the exception of -mtune to
+# improve portability.
+CC=clang CFLAGS="-O3 -funroll-loops" make
+
 # libhfuzz.a will be added by CC/CXX linker directly during linking,
 # but it's defined here to satisfy the build infrastructure
 ar rcs $LIB_FUZZING_ENGINE libhfuzz/*.o libhfcommon/*.o
