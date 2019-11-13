@@ -21,8 +21,7 @@ auto_ccs:
     - "shane.lontis@hotmail.com"
     - "david@wolfssl.com"
     - "kaleb@wolfssl.com"
-    - "levi@wolfssl.com"
-    - "testing@wolfssl.com"
+    - "jacob@wolfssl.com"
 sanitizers:
  - address
  - undefined
