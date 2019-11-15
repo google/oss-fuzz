@@ -16,12 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER p.antoine@catenacyber.fr
-RUN apt-get update && apt-get install -y make cmake bzip2 autoconf automake libtool python
+RUN apt-get update && apt-get install -y make cmake bzip2 autoconf automake gettext libtool python
 RUN git clone --depth 1 https://github.com/catenacyber/elliptic-curve-differential-fuzzer.git ecfuzzer
 RUN git clone --recursive --depth 1 https://github.com/ARMmbed/mbedtls.git mbedtls
 RUN git clone --depth 1 https://github.com/ANSSI-FR/libecc.git libecc
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
-ADD https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2 libgpg-error-1.36.tar.bz2
+RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error
 RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git gcrypt
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp cryptopp
 ADD https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2 gmp-6.1.2.tar.bz2
