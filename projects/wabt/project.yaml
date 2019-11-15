@@ -1,0 +1,9 @@
+homepage: "https://github.com/WebAssembly/wabt"
+primary_contact: "wasm-waterfall@grotations.appspotmail.com"
+sanitizers:
+ - address
+ - memory
+ - undefined
+architectures:
+ - x86_64
+ - i386
