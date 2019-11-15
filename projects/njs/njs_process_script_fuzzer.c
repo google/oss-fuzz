@@ -18,8 +18,6 @@
 #include <njs_main.h>
 #include <njs_value.h>
 
-#include <njs_builtin.h>
-
 // The vast majority of the code was copied from njs/njs_shell.c.
 
 typedef struct {
@@ -82,8 +80,6 @@ static njs_int_t njs_ext_console_log(njs_vm_t *vm, njs_value_t *args,
     njs_uint_t nargs, njs_index_t unused);
 static njs_int_t njs_ext_console_dump(njs_vm_t *vm, njs_value_t *args,
     njs_uint_t nargs, njs_index_t unused);
-static njs_int_t njs_ext_console_help(njs_vm_t *vm, njs_value_t *args,
-    njs_uint_t nargs, njs_index_t unused);
 static njs_int_t njs_ext_console_time(njs_vm_t *vm, njs_value_t *args,
     njs_uint_t nargs, njs_index_t unused);
 static njs_int_t njs_ext_console_time_end(njs_vm_t *vm, njs_value_t *args,
@@ -123,18 +119,6 @@ static njs_external_t  njs_ext_console[] = {
       NULL,
       NULL,
       njs_ext_console_dump,
-      0 },
-
-    { njs_str("help"),
-      NJS_EXTERN_METHOD,
-      NULL,
-      0,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      njs_ext_console_help,
       0 },
 
     { njs_str("time"),
@@ -464,37 +448,6 @@ njs_ext_console_dump(njs_vm_t *vm, njs_value_t *args, njs_uint_t nargs,
     if (nargs > 1) {
         njs_printf("\n");
     }
-
-    vm->retval = njs_value_undefined;
-
-    return NJS_OK;
-}
-
-
-static njs_int_t
-njs_ext_console_help(njs_vm_t *vm, njs_value_t *args, njs_uint_t nargs,
-    njs_index_t unused)
-{
-    const njs_object_init_t  *obj, **objpp;
-
-    njs_printf("VM built-in objects:\n");
-
-    for (objpp = njs_constructor_init; *objpp != NULL; objpp++) {
-        obj = *objpp;
-
-        njs_printf("  %V\n", &obj->name);
-    }
-
-    for (objpp = njs_object_init; *objpp != NULL; objpp++) {
-        obj = *objpp;
-
-        njs_printf("  %V\n", &obj->name);
-    }
-
-    njs_printf("\nEmbedded objects:\n");
-    njs_printf("  console\n");
-
-    njs_printf("\n");
 
     vm->retval = njs_value_undefined;
 
