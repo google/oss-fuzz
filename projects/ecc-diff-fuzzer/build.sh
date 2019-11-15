@@ -42,12 +42,20 @@ make
 (
 cd libgpg-error
 ./autogen.sh
-./configure --disable-doc --enable-static --disable-shared
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    ./configure -host=i386 --disable-doc --enable-static --disable-shared
+else
+    ./configure --disable-doc --enable-static --disable-shared
+fi
 make
 make install
 cd ../gcrypt
 ./autogen.sh
-./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    ./configure -host=i386 --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+else
+    ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+fi
 make
 )
 
