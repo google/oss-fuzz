@@ -28,5 +28,3 @@ for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
   $fuzzers $LIB_FUZZING_ENGINE ./build/libwabt.a \
   -o $OUT/$fuzz_basename
 done
-
-
