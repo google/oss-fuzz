@@ -60,6 +60,31 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
+# Compile NSS
+if [[ $CFLAGS != *-m32* ]]
+then
+    mkdir $SRC/nss-nspr
+    mv $SRC/nss $SRC/nss-nspr/
+    mv $SRC/nspr $SRC/nss-nspr/
+    cd $SRC/nss-nspr/
+    if [[ $CFLAGS = *sanitize=address* ]]
+    then
+        CFLAGS="" CXXFLAGS="" nss/build.sh --asan --static
+    elif [[ $CFLAGS = *sanitize=memory* ]]
+    then
+        CFLAGS="" CXXFLAGS="" nss/build.sh --msan --static
+    else
+        CFLAGS="" CXXFLAGS="" nss/build.sh --ubsan --static
+    fi
+    export NSS_NSPR_PATH=$(realpath $SRC/nss-nspr/)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NSS"
+    export LINK_FLAGS="$LINK_FLAGS -lsqlite3"
+
+    # Compile Cryptofuzz NSS module
+    cd $SRC/cryptofuzz/modules/nss
+    make -B
+fi
+
 # Compile Cityhash
 cd $SRC/cityhash
 if [[ $CFLAGS != *-m32* ]]
@@ -108,34 +133,6 @@ export MBEDTLS_INCLUDE_PATH="$SRC/mbed-crypto/include"
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS"
 # Compile Cryptofuzz mbed crypto module
 cd $SRC/cryptofuzz/modules/mbedtls
-make -B
-
-##############################################################################
-# Compile wolfCrypt
-cd $SRC/wolfssl
-autoreconf -ivf
-
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden"
-
-if [[ $CFLAGS = *sanitize=memory* ]]
-then
-    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-asm"
-fi
-
-if [[ $CFLAGS = *-m32* ]]
-then
-    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-fastmath"
-fi
-
-./configure $WOLFCRYPT_CONFIGURE_PARAMS
-make -j$(nproc) >/dev/null 2>&1
-
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_WOLFCRYPT"
-export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl/src/.libs/libwolfssl.a"
-export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
-
-# Compile Cryptofuzz wolfcrypt (without assembly) module
-cd $SRC/cryptofuzz/modules/wolfcrypt
 make -B
 
 ##############################################################################
@@ -262,6 +259,57 @@ then
     cd $SRC/cryptofuzz/modules/golang
     make -B
 fi
+
+if [[ $CFLAGS != *-m32* ]]
+then
+    # Compile Cryptofuzz (NSS-based)
+    cd $SRC/cryptofuzz
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
+
+    # Generate dictionary
+    ./generate_dict
+
+    # Copy fuzzer
+    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
+    # Copy dictionary
+    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-nss.dict
+    # Copy seed corpus
+    cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-nss_seed_corpus.zip
+
+    rm $SRC/cryptofuzz/modules/nss/module.a
+
+    CXXFLAGS=${CXXFLAGS//"-DCRYPTOFUZZ_NSS"/}
+    LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
+fi
+
+##############################################################################
+# Compile wolfCrypt
+cd $SRC/wolfssl
+autoreconf -ivf
+
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden"
+
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-asm"
+fi
+
+if [[ $CFLAGS = *-m32* ]]
+then
+    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-fastmath"
+fi
+
+./configure $WOLFCRYPT_CONFIGURE_PARAMS
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_WOLFCRYPT"
+export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl/src/.libs/libwolfssl.a"
+export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
+
+# Compile Cryptofuzz wolfcrypt (without assembly) module
+cd $SRC/cryptofuzz/modules/wolfcrypt
+make -B
+
 
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
