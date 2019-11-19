@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-echo "Using precompiled honggfuzz"
+echo "Skipping compilation; using precompiled honggfuzz"
 
 cp $PRECOMPILED_DIR/honggfuzz.a $LIB_FUZZING_ENGINE
 cp $PRECOMPILED_DIR/honggfuzz $OUT/

@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-echo -n "Compiling honggfuzz to $LIB_FUZZING_ENGINE ..."
+echo -n "Precompiling honggfuzz to $PRECOMPILED_DIR..."
 export BUILD_OSSFUZZ_STATIC=true
 
 PACKAGES=(
