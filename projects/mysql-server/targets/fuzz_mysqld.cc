@@ -23,6 +23,7 @@
 #include "sql/mysqld_thd_manager.h"
 #include "mysql/psi/mysql_socket.h"
 #include "violite.h"
+#include "util_fuzz.h"
 #include <stdlib.h>
 #include <libgen.h>
 
@@ -121,13 +122,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         /* first init was run with
          * mysqld --user=root --initialize-insecure --log-error-verbosity=5 --datadir=/out/mysql/data/ --basedir=/out/mysql/
          */
-        system("rm -Rf /tmp/mysqld");
+        utilfuzz_rmrf("/tmp/mysqld");
         char command[MAX_SIZE];
         char argbase[MAX_SIZE];
         char arginitfile[MAX_SIZE];
-        snprintf(command, MAX_SIZE-1, "cp -r %s/mysql/data /tmp/mysqld", filepath);
-        //unsafe
-        system(command);
+        snprintf(command, MAX_SIZE-1, "%s/mysql/data", filepath);
+        utilfuzz_cpr(command, "/tmp/mysqld");
 
         snprintf(argbase, MAX_SIZE-1, "--basedir=%s/mysql/", filepath);
         snprintf(arginitfile, MAX_SIZE-1, "--init-file=%s/init.sql", filepath);
