@@ -27,7 +27,7 @@ size_t globallen = 0;
 #define CP_BUF_SIZE 4096
 static int cp_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf) {
     char newname[CP_NAME_MAX_SIZE];
-    char buf[BUF_SIZE];
+    char buf[CP_BUF_SIZE];
     int rv = 2;
     snprintf(newname, CP_NAME_MAX_SIZE-1, "%s%s", globalto, fpath+globallen);
     if (FTW_D == typeflag) {
