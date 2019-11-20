@@ -26,7 +26,7 @@ popd
 # build project
 rm -rf build
 
-./configure --debug=YES
+./configure
 make njs_fuzzer
 
 cp ./build/njs_process_script_fuzzer $OUT/
