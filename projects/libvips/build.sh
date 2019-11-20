@@ -78,10 +78,12 @@ make -j$(nproc)
 make install
 popd
 
-# libtiff
+# libtiff ... a bug in libtiff master as of 20 Nov 2019 means we have to 
+# explicitly disable lzma
 pushd $SRC/libtiff
 autoreconf -fi
 ./configure \
+  --disable-lzma \
   --disable-shared \
   --disable-dependency-tracking \
   --prefix=$WORK
