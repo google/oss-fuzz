@@ -88,11 +88,6 @@ ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 
 # TODO: remove after tpm2 catchup.
 ENV FUZZER_LDFLAGS ""
-
-# An enviroment variable set as the commit ID to be checked out in the image
-ARG COMMIT="HEAD"
-ENV COMMIT=${COMMIT}
-
 ENV PRECOMPILED_DIR="/usr/lib/precompiled"
 RUN mkdir $PRECOMPILED_DIR
 
@@ -110,5 +105,13 @@ COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
 
 RUN precompile_honggfuzz
+
+ARG COMMIT
+ENV COMMIT=$COMMIT
+
+# Set up global post checkout git hook
+RUN git config --global init.templatedir /root/.git_template
+COPY post-checkout-git-hook.py /root/.git_template/hooks/post-checkout
+
 
 CMD ["compile"]

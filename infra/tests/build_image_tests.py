@@ -30,7 +30,7 @@ class TestBuildImageCommit(unittest.TestCase):
             # needs to switch dirs for build_image to work
             cur_dir = os.getcwd()
             os.chdir("../..")
-            _build_image(project_name, commit=commit_id)
+            _build_image(project_name,no_cache=True ,commit=commit_id)
             os.chdir(cur_dir)
 
             # Get correct docker image name
