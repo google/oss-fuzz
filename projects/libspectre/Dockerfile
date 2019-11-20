@@ -21,7 +21,7 @@ MAINTAINER randy408@protonmail.com
 RUN apt-get update && \
     apt-get install -y pkg-config make automake libtool wget
 
-RUN git clone --depth 1 --branch fuzz https://gitlab.freedesktop.org/randy408/libspectre.git
+RUN git clone --depth 1 https://gitlab.freedesktop.org/libspectre/libspectre.git
 
 WORKDIR libspectre
 COPY build.sh $SRC/
