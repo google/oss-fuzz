@@ -41,10 +41,11 @@ class TestBuildImageCommit(unittest.TestCase):
       # get the git version from the docker image
       image_location = "gcr.io/%s/%s" % (image_project, project_name)
       bash_command = "cd /src/%s ; git rev-parse HEAD" % project_name
-      command =  ['docker', 'run', '-i', 'privileged', image_location , 'bash', '-c', bash_command]
+      command =  ['docker', 'run', '-i', '--privileged', image_location , 'bash', '-c', bash_command]
       process  = subprocess.Popen(command, stdout=subprocess.PIPE)
       out, err = process.communicate()
-      print(out)
+      image_commit = out.decode('ascii').strip('\n')
+      self.assertEqual(image_commit, commit_id)
 
 
 def load_test_data():

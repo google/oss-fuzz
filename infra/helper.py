@@ -75,6 +75,9 @@ def main():
                                   help='Pull latest base image.')
   build_image_parser.add_argument('--no-pull', action='store_true',
                                   help='Do not pull latest base image.')
+  build_image_parser.add_argument('--commit', action='store_true',
+                                  help='The commit ID the project is built from')
+
 
   build_fuzzers_parser = subparsers.add_parser(
       'build_fuzzers', help='Build fuzzers for a project.')
@@ -290,7 +293,7 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def _build_image(image_name, no_cache=False, pull=False):
+def _build_image(image_name, no_cache=False, pull=False, commit=None):
   """Build image."""
 
   is_base_image = _is_base_image(image_name)
@@ -307,10 +310,14 @@ def _build_image(image_name, no_cache=False, pull=False):
   build_args = []
   if no_cache:
     build_args.append('--no-cache')
-
-  build_args += ['-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir]
-
-  return docker_build(build_args, pull=pull)
+  
+  image_name = 'gcr.io/%s/%s' % (image_project, image_name)
+  build_args += ['-t', image_name, dockerfile_dir] 
+  result_code = docker_build(build_args, pull=pull)
+  if commit:
+    #Update dockers copy to current commit ID
+    pass
+  return result_code
 
 
 def _env_to_docker_args(env_list):
@@ -410,7 +417,7 @@ def build_image(args):
     print('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
-  if _build_image(args.project_name, no_cache=True, pull=pull):
+  if _build_image(args.project_name, no_cache=True, pull=pull, commit=args.commit):
     return 0
 
   return 1
