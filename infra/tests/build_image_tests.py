@@ -7,7 +7,7 @@ import os
 import sys
 import subprocess
 sys.path.append("..")
-from helper import _build_image
+from helper import _build_image_from_commit
 from helper import _is_base_image
 
 # List of test cases to use for the
@@ -30,7 +30,7 @@ class TestBuildImageCommit(unittest.TestCase):
             # needs to switch dirs for build_image to work
             cur_dir = os.getcwd()
             os.chdir("../..")
-            _build_image(project_name,no_cache=True ,commit=commit_id)
+            _build_image_from_commit(project_name, commit_id)
             os.chdir(cur_dir)
 
             # Get correct docker image name

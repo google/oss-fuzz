@@ -292,6 +292,11 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
+def _build_image_from_commit(image_name, commit, no_cache=False, pull=False):
+  _build_image('base-builder', commit=commit)
+  _build_image(image_name, no_cache, pull)
+
+
 def _build_image(image_name, no_cache=False, pull=False, commit=None):
   """Build image."""
 
@@ -309,6 +314,7 @@ def _build_image(image_name, no_cache=False, pull=False, commit=None):
   build_args = []
   if commit:
     build_args += ['--build-arg', "COMMIT="+commit]
+
   if no_cache:
     build_args.append('--no-cache')
 
