@@ -75,8 +75,7 @@ def main():
                                   help='Pull latest base image.')
   build_image_parser.add_argument('--no-pull', action='store_true',
                                   help='Do not pull latest base image.')
-  build_image_parser.add_argument('--commit', action='store_true',
-                                  help='The commit ID the project is built from')
+  build_image_parser.add_argument('--commit',help='The commit ID the project is to be built from')
 
 
   build_fuzzers_parser = subparsers.add_parser(
@@ -308,16 +307,14 @@ def _build_image(image_name, no_cache=False, pull=False, commit=None):
     dockerfile_dir = os.path.join('projects', image_name)
 
   build_args = []
+  if commit:
+    build_args += ['--build-arg', "COMMIT="+commit]
   if no_cache:
     build_args.append('--no-cache')
-  
+
   image_name = 'gcr.io/%s/%s' % (image_project, image_name)
-  build_args += ['-t', image_name, dockerfile_dir] 
-  result_code = docker_build(build_args, pull=pull)
-  if commit:
-    #Update dockers copy to current commit ID
-    pass
-  return result_code
+  build_args += ['-t', image_name, dockerfile_dir]
+  return docker_build(build_args, pull=pull)
 
 
 def _env_to_docker_args(env_list):

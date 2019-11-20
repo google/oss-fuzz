@@ -89,6 +89,10 @@ ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 # TODO: remove after tpm2 catchup.
 ENV FUZZER_LDFLAGS ""
 
+# An enviroment variable set as the commit ID to be checked out in the image
+ARG COMMIT="HEAD"
+ENV COMMIT=${COMMIT}
+
 ENV PRECOMPILED_DIR="/usr/lib/precompiled"
 RUN mkdir $PRECOMPILED_DIR
 
