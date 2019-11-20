@@ -128,7 +128,7 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libtiff.a \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
-    -lfftw3 -lgmodule-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat -llzma \
+    -lfftw3 -lgmodule-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
     -Wl,-Bdynamic -pthread
   ln -sf "seed_corpus.zip" "$OUT/${target}_seed_corpus.zip"
 done

@@ -36,6 +36,11 @@ RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
 RUN git clone --depth 1 https://git.code.sf.net/p/giflib/code libgif
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp
-RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
+# as of 20 Nov 2019, git master libtiff will not work on systems without lzma
+# dur to a bug introduced by their switch to cmake ... for now, pin to 4.1.0,
+# the current stable version
+RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff \
+	&& cd libtiff \
+	&& git checkout v4.1.0
 WORKDIR libvips
 COPY build.sh $SRC/
