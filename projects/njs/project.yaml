@@ -1,6 +1,8 @@
 homepage: "https://nginx.org/en/docs/njs/"
 primary_contact: "xeioex@nginx.com"
 auto_ccs:
+ - "alexander.borisov@nginx.com"
+ - "devrep@nginx.com"
  - "mmoroz@google.com"
 sanitizers:
   - address
