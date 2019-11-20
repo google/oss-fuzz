@@ -9,6 +9,8 @@
 cd ${SRC}/adhd/cras
 ./git_prepare.sh
 ./configure --disable-dbus --disable-webrtc-apm
+cargo build --release --manifest-path $SRC/adhd/cras/src/server/rust/Cargo.toml && \
+  cp $SRC/adhd/cras/src/server/rust/target/release/libcras_rust.a /usr/local/lib
 make -j$(nproc)
 
 $CXX $CXXFLAGS $FUZZER_LDFLAGS \
@@ -16,7 +18,7 @@ $CXX $CXXFLAGS $FUZZER_LDFLAGS \
   -I ${SRC}/adhd/cras/src/server \
   -I ${SRC}/adhd/cras/src/common \
   ${SRC}/adhd/cras/src/.libs/libcrasserver.a \
-  -lpthread -lrt -ludev -ldl -lm \
+  -lcras_rust -lpthread -lrt -ludev -ldl -lm \
   $LIB_FUZZING_ENGINE \
   -Wl,-Bstatic -liniparser -lasound -lspeexdsp -Wl,-Bdynamic
 zip -j ${OUT}/rclient_message_corpus.zip ${SRC}/adhd/cras/src/fuzz/corpus/*
