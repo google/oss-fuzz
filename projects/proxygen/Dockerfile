@@ -113,7 +113,7 @@ RUN wget https://github.com/facebook/zstd/releases/download/v1.4.2/zstd-1.4.2.ta
 
 # Build and install `fmt` needed by folly
 RUN wget https://github.com/fmtlib/fmt/archive/6.0.0.tar.gz && \
-    tar xzf fmt-6.0.0.tar.gz && \
+    tar xzf 6.0.0.tar.gz && \
     cd fmt-6.0.0 && \
     export CC=clang && \
     export CXX=clang++ && \
