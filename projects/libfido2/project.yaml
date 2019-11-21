@@ -1,0 +1,8 @@
+homepage: https://github.com/Yubico/libfido2
+primary_contact: "g.kihlman@yubico.com"
+auto_ccs:
+        - "pedro@ambientworks.net"
+        - "marissa.nishimoto@yubico.com"
+sanitizers:
+        - address
+        - undefined
