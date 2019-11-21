@@ -1,12 +1,23 @@
-""" Unit tests for helper.py  build_image function.
-    Testing the functionality of building the image of
-    a specific commit rather than just the most recent one"""
+"""Unit tests for helper.py  build_image function using a specific commit.
+
+This unit test calls the build_image --commit command which attempts
+to create a docker image using a specific commit SHA. It then creates
+a container of the created image and checks to see what commit the container is at.
+If the commit set and the container commit match up, then the test passes.
+
+  Typical usage example:
+
+  python build_image_test.py
+"""
+
+# Add helper.py to the python path
+import sys
+sys.path.append("..")
 
 import unittest
 import os
-import sys
 import subprocess
-sys.path.append("..")
+
 from helper import _build_image_from_commit
 from helper import _is_base_image
 
@@ -18,29 +29,25 @@ test_data = dict()
 
 
 class TestBuildImageCommit(unittest.TestCase):
-    """ Tests the functionality of building a docker image to a
-      commit rather than head
-  """
+    """Tests that a docker image can be build with a specific commit."""
+
 
     def test_project_build_to_commit(self):
-        """ Tests if a project's image is build to a specific commit"""
 
         for project_name, commit_id in test_data.items():
 
-            # needs to switch dirs for build_image to work
+            # switch dirs for build_image call to run properly
             cur_dir = os.getcwd()
             os.chdir("../..")
             _build_image_from_commit(project_name, commit_id)
             os.chdir(cur_dir)
-
-            # Get correct docker image name
             is_base_image = _is_base_image(project_name)
             if is_base_image:
                 image_project = 'oss-fuzz-base'
             else:
                 image_project = 'oss-fuzz'
 
-            # get the git version from the docker image
+            # Extracting git version from the built docker image
             image_location = "gcr.io/%s/%s" % (image_project, project_name)
             bash_command = "cd /src/%s ; git rev-parse HEAD" % project_name
             command = [

@@ -111,7 +111,7 @@ ENV COMMIT=$COMMIT
 
 # Set up global post checkout git hook
 RUN git config --global init.templatedir /root/.git_template
-COPY post-checkout-git-hook.py /root/.git_template/hooks/post-checkout
+COPY post-checkout-git-hook /root/.git_template/hooks/post-checkout
 
 
 CMD ["compile"]
