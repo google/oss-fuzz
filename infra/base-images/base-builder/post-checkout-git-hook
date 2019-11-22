@@ -41,6 +41,7 @@ def checkout_commit(commit):
   except subprocess.CalledProcessError:
     print("git SHA is not in git directory")
 
+
 def checkout_pull_request(pull_request_id):
   """Takes a specific pull request ID and checks it out
 
@@ -49,7 +50,9 @@ def checkout_pull_request(pull_request_id):
   """
 
   branch = 'oss-fuzz-pr/%d' % pull_request_id
-  subprocess.check_call(['git', 'fetch', 'origin', 'pull/%d/head:%s' % (pull_request_id, branch)])
+  subprocess.check_call(
+      ['git', 'fetch', 'origin',
+       'pull/%d/head:%s' % (pull_request_id, branch)])
   subprocess.check_call(['git', 'checkout', branch])
 
 
@@ -64,4 +67,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+  sys.exit(main())
