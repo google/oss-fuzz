@@ -1,0 +1,67 @@
+#!/usr/bin/python3
+"""Post-Checkout git hook to pull specific repos.
+
+This is a git hook to be ran when a repo is checked out.
+It is configured to effect global repos so it is applied to every
+checkout in a docker container.
+
+  Command to init global git hooks:
+    git config --global init.templatedir ~/.git_template
+
+  Script location for post-checkout hook:
+      ~/.git_template/hooks/post-checkout
+"""
+
+import os
+import subprocess
+import sys
+
+# Enviroment variable to stop recusion with the checkout commit function
+SKIP_ENV_VAR = "SKIP_POST_CHECKOUT_HOOK"
+
+
+def checkout_commit(commit):
+  """Takes a specific commit SHA and check it out
+
+  Args:
+    commit: the commit SHA you want to checkout
+  """
+
+  os.environ[SKIP_ENV_VAR] = "1"
+
+  # Check if git history needs to be fetched to id commits
+  if os.path.exists('.git/shallow'):
+    subprocess.check_call(['git', 'fetch', '--unshallow'])
+
+  # Checks to see if the repo is a git repo and the has ins in the logs
+  try:
+
+    # WILL ENDLESSLY RECURSE WITH OUT ENV VAR SET!
+    subprocess.check_call(['git', 'checkout', '-f', commit])
+  except subprocess.CalledProcessError:
+    print("git SHA is not in git directory")
+
+def checkout_pull_request(pull_request_id):
+  """Takes a specific pull request ID and checks it out
+
+  Args:
+    pull_request_id: the git id of the PR you want to checkout
+  """
+
+  branch = 'oss-fuzz-pr/%d' % pull_request_id
+  subprocess.check_call(['git', 'fetch', 'origin', 'pull/%d/head:%s' % (pull_request_id, branch)])
+  subprocess.check_call(['git', 'checkout', branch])
+
+
+def main():
+
+  # Check to assure that the hook is not recursive
+  if os.getenv(SKIP_ENV_VAR) is None:
+    commit = os.getenv('COMMIT')
+    if commit:
+      checkout_commit(commit)
+  return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

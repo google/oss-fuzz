@@ -293,6 +293,7 @@ def _add_environment_args(parser):
 
 
 def _build_image_from_commit(image_name, commit, no_cache=False, pull=False):
+  """Builds a docker image from a specific commit SHA"""
   _build_image('base-builder', commit=commit)
   _build_image(image_name, no_cache, pull)
 
@@ -419,6 +420,9 @@ def build_image(args):
   else:
     print('Using cached base images...')
 
+  if args.commit:
+    _build_image_from_commit(args.project_name, no_cache=True, pull=pull, commit=args.commit)
+    return 0
   # If build_image is called explicitly, don't use cache.
   if _build_image(args.project_name, no_cache=True, pull=pull, commit=args.commit):
     return 0
