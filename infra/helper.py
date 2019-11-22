@@ -439,7 +439,6 @@ def build_fuzzers(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'PROJECT=' + args.project_name,
   ]
   if args.e:
     env += args.e
@@ -507,7 +506,6 @@ def check_build(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'PROJECT=' + args.project_name,
   ]
   if args.e:
     env += args.e
@@ -826,7 +824,6 @@ def shell(args):
   else:
     image_project = 'oss-fuzz'
     out_dir = _get_output_dir(args.project_name)
-    env.append('PROJECT=' + args.project_name)
 
   run_args = _env_to_docker_args(env) + [
       '-v', '%s:/out' % out_dir,
