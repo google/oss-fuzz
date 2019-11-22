@@ -66,7 +66,6 @@ fi
 
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
-exit 0
 
 # Build & install. We build clang in two stages because gcc can't build a
 # static version of libcxxabi
