@@ -48,20 +48,25 @@ git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 
 LLVM_SRC=$SRC/llvm-project
-
 OUR_LLVM_REVISION=e84b7a5fe230e42b8e6fe451369874a773bf1867  # For manual bumping.
 FORCE_OUR_REVISION=0  # To allow for manual downgrades.
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K[a-f0-9]+(?=')" scripts/update.py)
 
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
+set +e
 IS_OUR_REVISION_ANCESTOR=$(git -C $LLVM_SRC merge-base --is-ancestor $OUR_LLVM_REVISION $LLVM_REVISION)
-if [ $FORCE_OUR_REVISION  ] || [ $IS_OUR_REVISION_ANCESTOR ] ; then
+set -e
+
+# Use our revision if specified or if our revision is a later revision than
+# Chrome's.
+if [ ! $IS_OUR_REVISION_ANCESTOR  ] || [ $FORCE_OUR_REVISION ] ; then
   LLVM_REVISION=$OUR_LLVM_REVISION
 fi
 
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
+exit 0
 
 # Build & install. We build clang in two stages because gcc can't build a
 # static version of libcxxabi
