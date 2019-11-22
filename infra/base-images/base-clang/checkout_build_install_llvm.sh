@@ -86,10 +86,12 @@ case $(uname -m) in
         exit 1
         ;;
 esac
+
+PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang"
 cmake -G "Ninja" \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
-      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi;compiler-rt;clang" \
+      -DLLVM_ENABLE_PROJECTS=$PROJECTS_TO_BUILD \
       $LLVM_SRC/llvm
 ninja
 
@@ -99,7 +101,7 @@ export CXX=$WORK/llvm-stage1/bin/clang++
 cmake -G "Ninja" \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
-      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi;compiler-rt;clang" \
+      -DLLVM_ENABLE_PROJECTS=$PROJECTS_TO_BUILD \
       $LLVM_SRC/llvm
 ninja
 ninja install
@@ -113,7 +115,7 @@ cmake -G "Ninja" \
       -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32" \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
-      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi;compiler-rt;clang" \
+      -DLLVM_ENABLE_PROJECTS=$PROJECTS_TO_BUILD \
       $LLVM_SRC/llvm
 
 ninja cxx
@@ -134,7 +136,7 @@ cmake -G "Ninja" \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt" \
-      -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi;compiler-rt;clang" \
+      -DLLVM_ENABLE_PROJECTS=$PROJECTS_TO_BUILD \
       $LLVM_SRC/llvm
 ninja cxx
 ninja install-cxx
