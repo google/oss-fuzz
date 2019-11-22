@@ -17,11 +17,11 @@ import subprocess
 import sys
 
 # Enviroment variable to stop recusion with the checkout commit function
-SKIP_ENV_VAR = "SKIP_POST_CHECKOUT_HOOK"
+SKIP_ENV_VAR = 'SKIP_POST_CHECKOUT_HOOK'
 
 
 def checkout_commit(commit):
-  """Takes a specific commit SHA and check it out
+  """Takes a specific commit SHA and checks it out
 
   Args:
     commit: the commit SHA you want to checkout
@@ -33,13 +33,13 @@ def checkout_commit(commit):
   if os.path.exists('.git/shallow'):
     subprocess.check_call(['git', 'fetch', '--unshallow'])
 
-  # Checks to see if the repo is a git repo and the has ins in the logs
+  # Checks to see if the repo is a git repo and the commit SHA in the log
   try:
 
     # WILL ENDLESSLY RECURSE WITH OUT ENV VAR SET!
     subprocess.check_call(['git', 'checkout', '-f', commit])
   except subprocess.CalledProcessError:
-    print("git SHA is not in git directory")
+    print('%s is not found  in %s.' % (commit, os.getcwd()))
 
 
 def checkout_pull_request(pull_request_id):
@@ -59,10 +59,13 @@ def checkout_pull_request(pull_request_id):
 def main():
 
   # Check to assure that the hook is not recursive
-  if os.getenv(SKIP_ENV_VAR) is None:
-    commit = os.getenv('COMMIT')
-    if commit:
-      checkout_commit(commit)
+  if os.getenv(SKIP_ENV_VAR) == '1':
+    return 0
+  commit = os.getenv('COMMIT')
+  if commit:
+    checkout_commit(commit)
+  else:
+    print("Commit ENV variable is not specified")
   return 0
 
 

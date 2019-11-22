@@ -75,7 +75,7 @@ def main():
                                   help='Pull latest base image.')
   build_image_parser.add_argument('--no-pull', action='store_true',
                                   help='Do not pull latest base image.')
-  build_image_parser.add_argument('--commit',help='The commit ID the project is to be built from')
+  build_image_parser.add_argument('--commit', help='The commit ID the project is to be built from')
 
 
   build_fuzzers_parser = subparsers.add_parser(
