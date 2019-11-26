@@ -4,6 +4,7 @@ auto_ccs:
   - "jjones@mozilla.com"
   - "cdiehl@mozilla.com"
   - "sledru@mozilla.com"
+  - "kjacobs@mozilla.com"
 fuzzing_engines:
   - libfuzzer
   - afl
