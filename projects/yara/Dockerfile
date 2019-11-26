@@ -21,7 +21,8 @@ RUN \
   automake \
   autoconf \
   make \
-  libtool
+  libtool \
+  pkg-config
 
 RUN git clone --depth 1 https://github.com/VirusTotal/yara.git
 COPY build.sh $SRC/
