@@ -4,9 +4,10 @@ auto_ccs:
   - "guangwwa@cisco.com"
   - "sijchen@cisco.com"
   - "yanqian@cisco.com"
+  - "xiaotianshimail@gmail.com"
 vendor_ccs:
+  - "dminor@mozilla.com"
   - "twsmith@mozilla.com"
-  - "cdiehl@mozilla.com"
 sanitizers:
   - address
   - memory
