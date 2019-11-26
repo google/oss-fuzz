@@ -19,6 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-clang AS base-clang
 
 FROM gcr.io/oss-fuzz-base/base-image
 
+# Copy the binaries needed for code coverage and crash symbolization.
 COPY --from=base-clang /usr/local/bin/llvm-cov /usr/local/bin/
 COPY --from=base-clang /usr/local/bin/llvm-profdata /usr/local/bin/
 COPY --from=base-clang /usr/local/bin/llvm-symbolizer /usr/local/bin/

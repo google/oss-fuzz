@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-clang
-MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get install -y git \
     subversion \
     jq \
