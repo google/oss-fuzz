@@ -4,10 +4,9 @@
 #ifdef DEBUG
 #include <iostream>
 #endif
-#include <vector>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
+#include <fuzzer/FuzzedDataProvider.h>
 
 namespace {
   void assertPostConditions(boost::match_results<std::string::const_iterator> const& match, boost::regex const& e)
@@ -21,26 +20,21 @@ namespace {
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  try {
-    std::string str((char *)Data, Size);
-    std::vector<std::string> strVector;
-    // Split fuzz input string by space
-    boost::split(strVector, str, [](char c){return c == ' ';});
-    // Bail if vector contains fewer than two items
-    if (strVector.size() < 2)
-      return 0;
+  FuzzedDataProvider fuzzed_data(Data, Size);
+  // First value is length of the regex string
+  size_t regex_length = fuzzed_data.ConsumeIntegral<uint8_t>();
+  // Second value is regexp string whose length is `regex_length`
+  std::string regex_string = fuzzed_data.ConsumeBytesAsString(regex_length);
+  boost::regex e(regex_string);
+  // Last value is the text to be matched
+  std::string text = fuzzed_data.ConsumeRemainingBytesAsString();
 
-    // First item is regexp pattern
-    boost::regex e(strVector[0]);
-    // Second (until last item concatenated) is string to be checked
-    std::string text;
-    for(std::vector<std::string>::const_iterator it = strVector.begin() + 1; it != strVector.end(); ++it)
-      text += *it;
 #ifdef DEBUG
-    std::cout << "Regexp: " << strVector[0] << "Size: " << strVector[0].size() << std::endl;
+    std::cout << "Regexp string: " << regex_string << "Size: " << regex_string.size() << std::endl;
     std::cout << "Text: " << text << "Size: " << text.size() << std::endl;
 #endif
 
+  try {
     boost::match_results<std::string::const_iterator> what;
     bool match = boost::regex_match(text, what, e,
                        boost::match_default | boost::match_partial);
