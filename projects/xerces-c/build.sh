@@ -5,9 +5,6 @@ cd $SRC/xerces-c
 ./reconf
 ./configure
 make -j
-#CC=clang CFLAGS=-fsanitize=address,fuzzer-no-link CXX=clang++ CXXFLAGS=-fsanitize=address,fuzzer-no-link
-#CC;CFLAGS;CXX;CXXFLAGS should already be set
-#cmake -DBUILD_SHARED_LIBS:BOOL=OFF ..
 
 cd $SRC
 
