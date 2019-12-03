@@ -18,35 +18,56 @@ The will consist of the following functional tests
 """
 
 import unittest
+from RepoManager import RepoManagerException
 from RepoManager import RepoManager
 import os
 
 class TestRepoManager(unittest.TestCase):
   """Class to test the functionality of the RepoManager class."""
 
-  rm = None
-  test_repo = 'https://github.com/curl/curl'
+  curl_repo = 'https://github.com/curl/curl'
 
-  def setUp(self):
-    """Sets up the test enviroment by creating a sample RM instance."""
-    self.rm = RepoManager(self.test_repo, local_dir='tmp')
-
-  def tearDown(self):
-    """Removes and cleans up the RM instance."""
-    self.rm.remove_repo()
 
   def test_clone_correctly(self):
     """Tests the correct location of the git repo."""
-    git_path = os.path.join(self.rm.local_dir, self.rm.repo_name, '.git')
+    rm = RepoManager(self.curl_repo, local_dir='tmp')
+    git_path = os.path.join(rm.local_dir, rm.repo_name, '.git')
     self.assertTrue(os.path.isdir(git_path))
+    rm.remove_repo()
+    with self.assertRaises(RepoManagerException) as cxt:
+      rm = RepoManager(" ")
+
 
   def test_checkout_commit(self):
     """Tests that the git checkout command works."""
+    rm = RepoManager(self.curl_repo, local_dir='tmp')
     commit_to_test = '036ebac0134de3b72052a46f734e4ca81bb96055'
-    self.rm.checkout_commit(commit_to_test)
-    self.assertEqual(commit_to_test, self.rm.get_current_SHA())
-    self.assertEqual(self.rm.checkout_commit('sdfasdf'), 1)
+    rm.checkout_commit(commit_to_test)
+    self.assertEqual(commit_to_test, rm.get_current_commit())
+    with self.assertRaises(RepoManagerException) as cxt:
+      rm.checkout_commit(' ')
+    with self.assertRaises(RepoManagerException) as cxt:
+      rm.checkout_commit('036ebac0134de3b72052a46f734e4ca81bb96056')
+    rm.remove_repo()
 
+
+  def test_get_commit_list(self):
+    """Tests an accurate commit list can be retrived from the repo manager."""
+    rm = RepoManager(self.curl_repo, local_dir='tmp')
+    old_commit = '7cf18b05e04bbb0f08c74d2567b0648f6c31a952'
+    new_commit = '113db127ee2b2f874dfcce406103ffe666e11953'
+    commit_list = ['113db127ee2b2f874dfcce406103ffe666e11953',
+                    '793e37767581aec7102d2ecafa34fc1316b1b31f',
+                    '9a2cbf30b81a2b57149bb20e78e2e4cb5c2ff389',
+                    '7cf18b05e04bbb0f08c74d2567b0648f6c31a952']
+    result_list = rm.get_commit_list(old_commit, new_commit)
+    self.assertListEqual(commit_list, result_list)
+    with self.assertRaises(RepoManagerException) as cxt:
+      rm.get_commit_list('asafd', new_commit)
+    with self.assertRaises(RepoManagerException) as cxt:
+      rm.get_commit_list(new_commit, 'asdfasdf')
+    with self.assertRaises(RepoManagerException) as cxt:
+      result_list = rm.get_commit_list(new_commit, old_commit)
 
 if __name__ == '__main__':
   unittest.main()

@@ -28,6 +28,18 @@ import shutil
 import subprocess
 
 
+class RepoManagerException(Exception):
+  """Class to describe the exceptions in RepoManager."""
+
+  def __init__(self, message):
+    """ Init the exception class.
+
+    Args:
+      message: the message to propigate to user
+    """
+    super().__init__(message)
+
+
 class RepoManager(object):
   """Class to manage git repos from python.
 
@@ -38,14 +50,13 @@ class RepoManager(object):
     repo_dir: The location of the main repo
 
   """
-
   repo_url = ''
   repo_name  = ''
   repo_dir = ''
   local_dir = ''
 
 
-  def __init__(self, repo_url, branch=None, commit=None, local_dir=''):
+  def __init__(self, repo_url, branch=None, commit=None, local_dir='tmp'):
     """Constructs a repo manager class.
 
     Args:
@@ -68,15 +79,19 @@ class RepoManager(object):
 
 
   def _clone(self):
-    """Creates a clone of the repo in the specified directory."""
+    """Creates a clone of the repo in the specified directory.
+
+      Raises:
+        RepoManagerException if the repo was not able to be cloned
+    """
     if not os.path.exists(self.local_dir):
       os.makedirs(self.local_dir)
-  
     self.remove_repo()
     _, err = self._run_command(['git', 'clone', self.repo_url], self.local_dir)
     if err is not None:
-      return 1
-    return 0
+      raise RepoManagerException("Error cloning repo %s, with error %s)" % (self.repo_url, err))
+    if not self._is_git_repo():
+      raise RepoManagerException("Error cloning git repo %s" % self.repo_url)
 
 
   def _run_command(self, command, location):
@@ -101,13 +116,23 @@ class RepoManager(object):
     return out, err
 
 
+  def _is_git_repo(self):
+    """Test if the current repo dir is a git repo or not.
+
+    Returns:
+      True if the current repo_dir is a valid git repo
+    """
+    git_path = os.path.join(self.repo_dir, '.git')
+    return os.path.isdir(git_path)
+
+
   def _commit_exists(self, commit):
     """ Checks to see if a commit exists in the project repo.
- 
+
     Args:
       commit: The commit SHA you are checking for
       project_name: The name of the project you are checking
-  
+
     Returns:
       True if the commit exits in the project
     """
@@ -123,7 +148,26 @@ class RepoManager(object):
       return True
 
 
-  def get_current_SHA(self):
+  def _branch_exists(self, branch):
+    """ Checks to see if a commit exists in the project repo.
+
+    Args:
+      commit: The commit SHA you are checking for
+      project_name: The name of the project you are checking
+
+    Returns:
+      True if the commit exits in the project
+    """
+
+    _, err = self._run_command(['git', 'fetch', '--all'], self.repo_dir)
+    out, err = self._run_command(['git', 'branch', '--', commit], self.repo_dir)
+    if ('error: no such commit' in out) or ('error: malformed object name' in out) or (out is ''):
+      return False
+    else:
+      return True
+
+
+  def get_current_commit(self):
     """Gets the current commit SHA of the repo.
 
     Returns:
@@ -136,27 +180,73 @@ class RepoManager(object):
       return out.strip('\n')
 
 
+  def get_commit_list(self, old_commit, new_commit):
+    """Gets the list of commits(inclusive) between the old and new commits.
+
+    Args:
+      old_commit: The oldest commit to be in the list
+      new_commit: The newest commit to be in the list
+
+    Returns:
+      The list of commit SHAs from newest to oldest
+
+    Raises:
+      RepoManagerException when commits dont exist
+    """
+    if not self._commit_exists(old_commit):
+      raise RepoManagerException("The old commit %s does not exist" % old_commit)
+    if not self._commit_exists(new_commit):
+      raise RepoManagerException("The new commit %s does not exist" % new_commit)
+
+    out, err = self._run_command(['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
+    result = out.split('\n')
+    result = [ i for i in result if i]
+    if err is not None or result == []:
+      raise RepoManagerException('Error gettign commit list between %s and %s ' % (old_commit, new_commit))
+
+    # Make sure result is inclusive
+    result = result + [old_commit]
+    return result
+
+
   def checkout_commit(self, commit):
     """Checks out a specific commit from the repo.
 
     Args:
       commit: The commit SHA to be checked out
 
-    Returns:
-      0 on success or 1 on failure
+    Raises:
+      RepoManagerException when checkout is not successful
     """
     if not self._commit_exists(commit):
       print("Commit %s does not exist in current branch" % commit)
-      return 1
+      raise RepoManagerException("Commit %s does not exist in current branch" % commit)
 
     git_path = os.path.join(self.repo_dir, '.git','shallow')
     if os.path.exists(git_path):
       _, err = self._run_command(['git', 'fetch', '--unshallow'], self.repo_dir)
       if err is not None:
-        return 1
+        raise RepoManagerException("Git fetch failed with error %s" % err)
 
     out, err = self._run_command(['git', 'checkout', '-f', commit], self.repo_dir)
-    return 0
+    if self.get_current_commit() != commit:
+      raise RepoManagerException("Error checking out commit %s" % commit)
+
+
+  def checkout_branch(self, branch):
+    """Checks out a specific branch from repo
+
+    Args:
+      branch: The branch to be checked out
+
+    Returns:
+      0 on success or 1 on failure
+    """
+    _, err = self._run_command(['git', 'fetch'], self.repo_dir)
+    if err is not None:
+      return 1
+    return 1
+
 
 
   def remove_repo(self):
