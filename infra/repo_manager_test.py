@@ -15,6 +15,7 @@
 The will consist of the following functional tests
   1. Cloning of directory in desired location
   2. Checking out a specific commit
+  3. Can get a list of commits between two SHAs
 """
 
 import unittest

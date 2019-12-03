@@ -27,7 +27,6 @@ import os
 import shutil
 import subprocess
 
-
 class RepoManagerException(Exception):
   """Class to describe the exceptions in RepoManager."""
 
@@ -48,7 +47,7 @@ class RepoManager(object):
     local_dir: The location of where the repo clone is stored locally
     repo_name: The name of the github project
     repo_dir: The location of the main repo
-
+    full_path: The full filepath location of the main repo
   """
   repo_url = ''
   repo_name  = ''
@@ -70,6 +69,7 @@ class RepoManager(object):
     self.local_dir = local_dir
     self.repo_name =  self.repo_url.split('/')[-1].strip('.git')
     self.repo_dir = os.path.join(self.local_dir, self.repo_name)
+    self.full_path = os.path.join(os.getcwd(), self.repo_dir)
     self._clone()
     if branch is not None:
       self.checkout(branch)
@@ -94,7 +94,7 @@ class RepoManager(object):
       raise RepoManagerException("Error cloning git repo %s" % self.repo_url)
 
 
-  def _run_command(self, command, location):
+  def _run_command(self, command, location='.'):
     """ Runs a shell command in the specified directory location.
 
     Args:
@@ -246,7 +246,6 @@ class RepoManager(object):
     if err is not None:
       return 1
     return 1
-
 
 
   def remove_repo(self):
