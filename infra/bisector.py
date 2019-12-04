@@ -24,7 +24,7 @@ This is done with the following steps:
     1. (Host) Clone the main project repo on the host
     2. (Host) Run git fetch --unshallow
     3. (Host) Use git bisect to identify the next commit to check
-    4. (Host) Build the image at the specific commit 
+    4. (Host) Build the image at the specific commit
     5. (Host) Mount the repo with the correct commit over the build image repo
     5. (Host) Build the fuzzers from new image with updated repo
     6. (Host) Test for bug’s existence
@@ -32,48 +32,48 @@ This is done with the following steps:
     python bisect.py --project_name curl
       --commit_new dda418266c99ceab368d723facb52069cbb9c8d5
       s
-      --fuzzer_name curl_fuzzer_ftp 
-      --test_case /usr/local/google/home/lneat/Downloads/clusterfuzz-testcase-minimized-curl_fuzzer_ftp-5657400807260160
+      --fuzzer_name curl_fuzzer_ftp
+      --test_case /usr/local/google/home/lneat/Downloads/clusterfuzz-test\
+          case-minimized-curl_fuzzer_ftp-5657400807260160
 """
 
 import argparse
-import os
-import sys
-import subprocess
-import shutil
 
 from DockerRepoManager import DockerRepoManager
-from helper import _check_project_exists
-from helper import _get_dockerfile_path
 from helper import build_fuzzers
 from helper import reproduce
-from helper import _build_image
-from helper import _is_base_image
 
 
 def main():
-  parser = argparse.ArgumentParser('bisector.py',
+  parser = argparse.ArgumentParser(
+      'bisector.py',
       description='git bisection for finding introduction of bugs')
 
-  parser.add_argument('--project_name',
-                      help='The name of the project where the bug occured',
-                      required=True)
-  parser.add_argument('--commit_new',
-                      help='The newest commit SHA to be bisected',
-                      required=True)
-  parser.add_argument('--commit_old',
-                      help='The oldest commit SHA to be bisected',
-                      required=True)
-  parser.add_argument('--fuzzer_name', help='the name of the fuzzer to be built',
-                      required=True)
-  parser.add_argument('--test_case', help='the test_case to be reproduced',
-                      required=True)
+  parser.add_argument(
+      '--project_name',
+      help='The name of the project where the bug occured',
+      required=True)
+  parser.add_argument(
+      '--commit_new',
+      help='The newest commit SHA to be bisected',
+      required=True)
+  parser.add_argument(
+      '--commit_old',
+      help='The oldest commit SHA to be bisected',
+      required=True)
+  parser.add_argument(
+      '--fuzzer_name', help='the name of the fuzzer to be built', required=True)
+  parser.add_argument(
+      '--test_case', help='the test_case to be reproduced', required=True)
   args = parser.parse_args()
 
   rm = DockerRepoManager(args.project_name)
   commit_list = rm.get_commit_list(args.commit_old, args.commit_new)
   commit_list.reverse()
-  result_commit_idx = bisection(0, len(commit_list) - 1, commit_list, rm, len(commit_list), args.test_case, args.fuzzer_name)
+  result_commit_idx = bisection(0,
+                                len(commit_list) - 1, commit_list, rm,
+                                len(commit_list), args.test_case,
+                                args.fuzzer_name)
   if result_commit_idx == -1:
     print('Error was found at oldest commit %s' % args.commit_old)
   elif result_commit_idx == len(commit_list):
@@ -82,13 +82,20 @@ def main():
     print('Error was introduced at commit %s' % commit_list[result_commit_idx])
 
 
-def bisectionUI(commit_list, last_error, current_index):
+def bisection_display(commit_list, last_error, current_index):
+  """Displays the current state of the binary search.
+
+  Args:
+    commit_list: The total list of commits
+    last_error: The index of the last error that occured
+    current_index: The current index being checked
+  """
   print()
   print('Current Bisection Status')
   print('oldest commit')
   for i in range(0, len(commit_list)):
     if i == current_index:
-      print('%s %s' %  (commit_list[i], 'current_index'))
+      print('%s %s' % (commit_list[i], 'current_index'))
     elif i == last_error:
       print('%s %s' % (commit_list[i], 'Most recent error found'))
     else:
@@ -96,7 +103,8 @@ def bisectionUI(commit_list, last_error, current_index):
   print('newest commit')
 
 
-def bisection(commit_old_idx, commit_new_idx, commit_list, repo_manager, last_error, test_case, fuzzer_name):
+def bisection(commit_old_idx, commit_new_idx, commit_list, repo_manager,
+              last_error, test_case, fuzzer_name):
   """Returns the commit ID where a bug was introduced.
 
   Args:
@@ -111,10 +119,11 @@ def bisection(commit_old_idx, commit_new_idx, commit_list, repo_manager, last_er
   Returns:
     The index of the SHA string where the bug was introduced
   """
-  cur_idx = (commit_new_idx + commit_old_idx)//2
-  error_exists = test_error_exists(commit_list[cur_idx], repo_manager, test_case, fuzzer_name)
+  cur_idx = (commit_new_idx + commit_old_idx) // 2
+  error_exists = test_error_exists(commit_list[cur_idx], repo_manager,
+                                   test_case, fuzzer_name)
 
-  bisectionUI(commit_list, last_error, cur_idx)
+  bisection_display(commit_list, last_error, cur_idx)
   if commit_new_idx == commit_old_idx:
     if error_exists:
       return cur_idx
@@ -123,23 +132,13 @@ def bisection(commit_old_idx, commit_new_idx, commit_list, repo_manager, last_er
 
   if error_exists:
     if cur_idx != 0:
-      return bisection(commit_old_idx,
-                     cur_idx - 1,
-                     commit_list,
-                     repo_manager,
-                     cur_idx,
-                     test_case,
-                     fuzzer_name)
+      return bisection(commit_old_idx, cur_idx - 1, commit_list, repo_manager,
+                       cur_idx, test_case, fuzzer_name)
     else:
       return -1
   else:
-    return bisection(cur_idx + 1,
-                     commit_new_idx,
-                     commit_list,
-                     repo_manager,
-                     last_error,
-                     test_case,
-                     fuzzer_name)
+    return bisection(cur_idx + 1, commit_new_idx, commit_list, repo_manager,
+                     last_error, test_case, fuzzer_name)
 
 
 def build_fuzzers_from_helper(project_name):
@@ -188,10 +187,12 @@ def reproduce_error(project_name, test_case, fuzzer_name):
   parser.add_argument('project_name', help='name of the project')
   parser.add_argument('fuzzer_name', help='name of the fuzzer')
   parser.add_argument('testcase_path', help='path of local testcase')
-  parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
-                                nargs=argparse.REMAINDER)
-  parser.add_argument('--valgrind', action='store_true',
-                                help='run with valgrind')
+  parser.add_argument(
+      'fuzzer_args',
+      help='arguments to pass to the fuzzer',
+      nargs=argparse.REMAINDER)
+  parser.add_argument(
+      '--valgrind', action='store_true', help='run with valgrind')
   parser.add_argument(
       '-e', action='append', help='set environment variable e.g. VAR=value')
   args = parser.parse_args([project_name, fuzzer_name, test_case])

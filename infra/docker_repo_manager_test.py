@@ -18,15 +18,14 @@ The will consist of the following functional tests
   3. Can get a list of commits between two SHAs
 """
 
-import unittest
 from DockerRepoManager import DockerRepoManager as drm
-import os
+import unittest
+
 
 class TestRepoManager(unittest.TestCase):
   """Class to test the functionality of the RepoManager class."""
 
   project_name = 'curl'
-
 
   def test_constructor(self):
     """Tests docker repo manager initilization."""
@@ -35,13 +34,11 @@ class TestRepoManager(unittest.TestCase):
     self.assertEqual(curl_drm.repo_url, 'https://github.com/curl/curl.git')
     self.assertEqual(curl_drm.src_on_image, '/src/curl')
 
-
   def test_get_image_commit(self):
     """Test that a specific commit can be transfered into a docker image."""
     curl_drm = drm(self.project_name)
     commit_to_test = 'bc5d22c3dede2f04870c37aec9a50474c4b888ad'
     curl_drm.set_image_commit(commit_to_test)
-    current_image_commit = curl_drm.get_image_commit()
     self.assertEqual(curl_drm.get_image_commit(), commit_to_test)
 
 
