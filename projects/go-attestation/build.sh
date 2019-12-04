@@ -29,3 +29,6 @@ function compile_fuzzer {
 }
 
 compile_fuzzer github.com/google/go-attestation/attest FuzzParseEventLog parse_event_log_fuzzer
+compile_fuzzer github.com/google/go-attestation/attest FuzzParseAKPublic12 parse_ak_public12_fuzzer
+compile_fuzzer github.com/google/go-attestation/attest FuzzParseAKPublic20 parse_ak_public20_fuzzer
+compile_fuzzer github.com/google/go-attestation/attest FuzzParseEKCertificate parse_ek_certificate_fuzzer
