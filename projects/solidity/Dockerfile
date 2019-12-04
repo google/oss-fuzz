@@ -29,7 +29,7 @@ RUN git clone --recursive -b boost-1.69.0 https://github.com/boostorg/boost.git 
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN git clone --branch="v0.3.0" --recurse-submodules \
     https://github.com/ethereum/evmone.git
-RUN git clone --branch="Z3-4.8.5" https://github.com/Z3Prover/z3.git
+RUN git clone --branch="z3-4.8.7" https://github.com/Z3Prover/z3.git
 
 # Install statically built dependencies in "/usr" directory
 # Install boost
@@ -66,7 +66,7 @@ RUN cd $SRC/evmone; \
 RUN cd $SRC/z3; \
     mkdir -p build; \
     cd build; \
-    LDFLAGS=$CXXFLAGS cmake -DBUILD_LIBZ3_SHARED=OFF -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..; \
+    LDFLAGS=$CXXFLAGS cmake -DZ3_BUILD_LIBZ3_SHARED=OFF -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..; \
     make libz3 -j; \
     make install;
 
