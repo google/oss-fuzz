@@ -5,6 +5,10 @@ auto_ccs:
   - "mtklein@google.com"
   - "reed@google.com"
   - "bsalomon@google.com"
+vendor_ccs:
+  - "jmuizelaar@mozilla.com"
+  - "lsalzman@mozilla.com"
+  - "twsmith@mozilla.com"
 sanitizers:
  - address
  - undefined
