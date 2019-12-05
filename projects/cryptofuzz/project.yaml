@@ -22,6 +22,9 @@ auto_ccs:
     - "david@wolfssl.com"
     - "kaleb@wolfssl.com"
     - "jacob@wolfssl.com"
+    - "jjones@mozilla.com"
+    - "sledru@mozilla.com"
+    - "kjacobs@mozilla.com"
 sanitizers:
  - address
  - undefined
