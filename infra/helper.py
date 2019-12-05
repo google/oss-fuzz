@@ -416,11 +416,14 @@ def build_image(args):
   return 1
 
 
-def build_fuzzers(args):
+def build_fuzzers(args, skip_build_image=False):
   """Build fuzzers."""
   project_name = args.project_name
-  if not _build_image(args.project_name):
-    return 1
+  if not skip_build_image:
+    if not _build_image(args.project_name):
+      return 1
+  else:
+    print("Using previously built image")
 
   project_out_dir = _get_output_dir(project_name)
   if args.clean:
@@ -453,6 +456,13 @@ def build_fuzzers(args):
         'bash', '-c', 'cp -r /msan /work'])
     env.append('MSAN_LIBS_PATH=' + '/work/msan')
 
+  # DEBUGGING:
+  print("THE COMMIT VALUE IS:")
+  commit_check = ['gcr.io/oss-fuzz/%s' % project_name, 'git',
+                  '--git-dir', '/src/%s/.git'% project_name, 'rev-parse', 'HEAD']
+  docker_run(commit_check)
+
+
   command = (
       ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
       _env_to_docker_args(env))
@@ -473,6 +483,7 @@ def build_fuzzers(args):
   ]
 
   print('Running:', _get_command_string(command))
+
 
   try:
     subprocess.check_call(command)

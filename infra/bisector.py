@@ -65,19 +65,24 @@ def main():
       '--fuzzer_name', help='the name of the fuzzer to be built', required=True)
   parser.add_argument(
       '--test_case', help='the test_case to be reproduced', required=True)
+  parser.add_argument('--engine', default='libfuzzer')
+  parser.add_argument(
+      '--sanitizer',
+      default='address',
+      help='the default is "address"; "dataflow" for "dataflow" engine')
+  parser.add_argument('--architecture', default='x86_64')
+
   args = parser.parse_args()
 
   rm = DockerRepoManager(args.project_name)
   commit_list = rm.get_commit_list(args.commit_old, args.commit_new)
-  commit_list.reverse()
   result_commit_idx = bisection(0,
                                 len(commit_list) - 1, commit_list, rm,
-                                len(commit_list), args.test_case,
-                                args.fuzzer_name)
+                                len(commit_list), args)
   if result_commit_idx == -1:
-    print('Error was found at oldest commit %s' % args.commit_old)
+    print('No error was found in commit range %s:%s' % (args.commit_old, args.commit_new))
   elif result_commit_idx == len(commit_list):
-    print('Error was not found in commit range')
+    print('Error was found through full commit range %s:%s' % (args.commit_old, args.commit_new))
   else:
     print('Error was introduced at commit %s' % commit_list[result_commit_idx])
 
@@ -92,7 +97,7 @@ def bisection_display(commit_list, last_error, current_index):
   """
   print()
   print('Current Bisection Status')
-  print('oldest commit')
+  print('newest commit')
   for i in range(0, len(commit_list)):
     if i == current_index:
       print('%s %s' % (commit_list[i], 'current_index'))
@@ -100,11 +105,11 @@ def bisection_display(commit_list, last_error, current_index):
       print('%s %s' % (commit_list[i], 'Most recent error found'))
     else:
       print('%s' % (commit_list[i]))
-  print('newest commit')
+  print('oldest commit')
 
 
-def bisection(commit_old_idx, commit_new_idx, commit_list, repo_manager,
-              last_error, test_case, fuzzer_name):
+def bisection(commit_new_idx, commit_old_idx, commit_list, repo_manager,
+              last_error, args):
   """Returns the commit ID where a bug was introduced.
 
   Args:
@@ -113,15 +118,13 @@ def bisection(commit_old_idx, commit_new_idx, commit_list, repo_manager,
     commit_list: The list of all commit SHAs
     repo_manager: The class handling all of the git repo calls
     last_error: The index where the last error was found
-    test_case: The testcase where the error was introduced
-    fuzzer_name: The name of the fuzz target you want tested
+    args: Struct containing info about how the fuzzers should be built
 
   Returns:
     The index of the SHA string where the bug was introduced
   """
   cur_idx = (commit_new_idx + commit_old_idx) // 2
-  error_exists = test_error_exists(commit_list[cur_idx], repo_manager,
-                                   test_case, fuzzer_name)
+  error_exists = test_error_exists(commit_list[cur_idx], repo_manager, args)
 
   bisection_display(commit_list, last_error, cur_idx)
   if commit_new_idx == commit_old_idx:
@@ -131,17 +134,16 @@ def bisection(commit_old_idx, commit_new_idx, commit_list, repo_manager,
       return last_error
 
   if error_exists:
-    if cur_idx != 0:
-      return bisection(commit_old_idx, cur_idx - 1, commit_list, repo_manager,
-                       cur_idx, test_case, fuzzer_name)
-    else:
-      return -1
+    return bisection(cur_idx +1, commit_old_idx, commit_list, repo_manager,
+                       cur_idx, args)
   else:
-    return bisection(cur_idx + 1, commit_new_idx, commit_list, repo_manager,
-                     last_error, test_case, fuzzer_name)
+    if cur_idx == 0:
+      return -1
+    return bisection(commit_new_idx, cur_idx - 1, commit_list, repo_manager,
+                     last_error, args)
 
 
-def build_fuzzers_from_helper(project_name):
+def build_fuzzers_from_helper(project_name, args):
   """Builds fuzzers using helper.py api.
   Args:
     project_name: the name of the project whos fuzzers you want build
@@ -170,8 +172,12 @@ def build_fuzzers_from_helper(project_name):
       help='do not clean existing artifacts '
       '(default).')
   parser.set_defaults(clean=False)
-  args = parser.parse_args([project_name])
-  build_fuzzers(args)
+  args = parser.parse_args([project_name, args.fuzzer_name,
+                            '--clean',
+                            '--engine', args.engine,
+                            '--sanitizer', args.sanitizer,
+                            '--architecture', args.architecture])
+  build_fuzzers(args, True)
 
 
 def reproduce_error(project_name, test_case, fuzzer_name):
@@ -199,21 +205,20 @@ def reproduce_error(project_name, test_case, fuzzer_name):
   return reproduce(args)
 
 
-def test_error_exists(commit, repo_manager, test_case, fuzzer_name):
+def test_error_exists(commit, repo_manager, args):
   """Tests if the error is reproduceable at the specified commit
 
   Args:
     commit: The commit you want to check for the error
     repo_manager: The object that handles git interaction
-    test_case: The test case we are trying to reproduce
-    fuzzer_name: The name of the fuzz target you want tested
+    args: Struct containing info about how fuzzers should be built
 
   Returns:
     True if the error exists at the specified commit
   """
-  repo_manager.checkout_commit(commit)
-  build_fuzzers_from_helper(repo_manager.repo_name)
-  err_code = reproduce_error(repo_manager.repo_name, test_case, fuzzer_name)
+  repo_manager.set_image_commit(commit)
+  build_fuzzers_from_helper(repo_manager.repo_name, args)
+  err_code = reproduce_error(repo_manager.repo_name, args.test_case, args.fuzzer_name)
   if err_code == 0:
     print('Error does not exist at commit %s' % commit)
     return False

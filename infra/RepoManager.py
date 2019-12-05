@@ -176,7 +176,8 @@ class RepoManager(object):
     if not self._commit_exists(new_commit):
       raise RepoManagerException(
           'The new commit %s does not exist' % new_commit)
-
+    if old_commit == new_commit:
+      return [old_commit]
     out, err = self._run_command(
         ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
     result = out.split('\n')
