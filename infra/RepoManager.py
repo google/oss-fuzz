@@ -65,9 +65,11 @@ class RepoManager(object):
       local_dir: The local location the repo will live in
     """
 
-    self.repo_url = repo_url
+    self.repo_url = repo_url.rstrip()
     self.local_dir = local_dir
-    self.repo_name = self.repo_url.split('/')[-1].strip('.git')
+    self.repo_name = self.repo_url.split('/')[-1]
+    if '.git' in self.repo_name:
+      self.repo_name = self.repo_name.replace('.git', '')
     self.repo_dir = os.path.join(self.local_dir, self.repo_name)
     self.full_path = os.path.join(os.getcwd(), self.repo_dir)
     self._clone()
@@ -119,9 +121,10 @@ class RepoManager(object):
       True if the current repo_dir is a valid git repo
     """
     git_path = os.path.join(self.repo_dir, '.git')
+    print(git_path)
     return os.path.isdir(git_path)
 
-  def _commit_exists(self, commit):
+  def commit_exists(self, commit):
     """ Checks to see if a commit exists in the project repo.
 
     Args:
@@ -168,10 +171,10 @@ class RepoManager(object):
       RepoManagerException when commits dont exist
     """
 
-    if not self._commit_exists(old_commit):
+    if not self.commit_exists(old_commit):
       raise RepoManagerException(
           'The old commit %s does not exist' % old_commit)
-    if not self._commit_exists(new_commit):
+    if not self.commit_exists(new_commit):
       raise RepoManagerException(
           'The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
@@ -197,7 +200,7 @@ class RepoManager(object):
     Raises:
       RepoManagerException when checkout is not successful
     """
-    if not self._commit_exists(commit):
+    if not self.commit_exists(commit):
       print('Commit %s does not exist in current branch' % commit)
       raise RepoManagerException(
           'Commit %s does not exist in current branch' % commit)

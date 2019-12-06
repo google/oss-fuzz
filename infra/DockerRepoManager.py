@@ -29,6 +29,7 @@ from helper import _check_project_exists
 from helper import _get_dockerfile_path
 from helper import _is_base_image
 from RepoManager import RepoManager
+from RepoManager import RepoManagerException
 import os
 
 
@@ -55,7 +56,7 @@ class DockerRepoManager(RepoManager):
   src_on_image = ''
   TEMP_IMAGE_NAME = 'temp_container'
 
-  def __init__(self, project_name):
+  def __init__(self, project_name, example_commit=None):
     """Inits the DockerRepoManager class.
 
       Args:
@@ -63,7 +64,7 @@ class DockerRepoManager(RepoManager):
     """
     self.project_name = project_name
     self.docker_image = self._get_docker_image_name()
-    repo_url = self._infer_main_repo()
+    repo_url = self._infer_main_repo(example_commit)
     self.src_on_image = os.path.join('/src', project_name)
     super().__init__(repo_url)
     if self.repo_name != project_name:
@@ -111,7 +112,7 @@ class DockerRepoManager(RepoManager):
         'docker', 'exec', self.TEMP_IMAGE_NAME, 'rm', '-rf', self.src_on_image
     ]
     self._run_command(remove_command)
- 
+
     # Copy updated source repo to container
     copy_command = [
         'docker', 'cp',
@@ -162,9 +163,12 @@ class DockerRepoManager(RepoManager):
       image_project = 'oss-fuzz'
     return 'gcr.io/%s/%s' % (image_project, self.project_name)
 
-  def _infer_main_repo(self):
+  def _infer_main_repo(self, example_commit=None):
     """ Trys to guess the main repo of the project based on the Dockerfile.
-  
+
+    Args:
+      example_commit: A commit that is in the main repos tree
+
     Returns:
       The guessed repo url path
 
@@ -176,13 +180,30 @@ class DockerRepoManager(RepoManager):
           'No project could be found with name %s' % self.project_name)
     docker_path = _get_dockerfile_path(self.project_name)
     with open(docker_path, 'r') as fp:
-      for r in fp.readlines():
-        r.lower()
-        for part_command in r.split(' '):
-          if '/' + str(self.project_name) + '.git' in part_command:
-            return part_command.rstrip()
-          if 'git:' in part_command and '/' + str(self.project_name) in part_command:
-            return part_command.rstrip()
+
+      # Use generic git format and project name to guess main repo
+      if example_commit is None:
+        for line in fp.readlines():
+          line.lower()
+          for part_command in line.split(' '):
+            if '/' + str(self.project_name) + '.git' in part_command:
+              return part_command.rstrip()
+            if 'git:' in part_command and '/' + str(self.project_name) in part_command:
+              return part_command.rstrip()
+
+      # Use example commit SHA to guess main repo
+      else:
+        for line in fp.readlines():
+          if 'clone' in line:
+            for git_repo_url in line.split(' '):
+              if 'http' in git_repo_url:
+                try:
+                  rm = RepoManager(git_repo_url.rstrip())
+                  if rm.commit_exists(example_commit):
+                    return git_repo_url
+                except RepoManagerException as e:
+                  print('%s is not the main git repo: %s' % (git_repo_url, str(e)))
+
 
     raise NoRepoFoundException(
         'No repos were found with name %s in docker file %s' %

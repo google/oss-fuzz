@@ -19,6 +19,7 @@ The will consist of the following functional tests
 """
 
 from DockerRepoManager import DockerRepoManager as drm
+from RepoManager import RepoManagerException
 import unittest
 
 
@@ -41,6 +42,12 @@ class TestRepoManager(unittest.TestCase):
     curl_drm.set_image_commit(commit_to_test)
     self.assertEqual(curl_drm.get_image_commit(), commit_to_test)
 
+  def test_infer_main_repo(self):
+    """Tests that the main repo can be infered based on an example commit."""
+    im_drm = drm('imagemagick', '564f2a35e523e2b6cce9485018157f03ec05a947')
+    self.assertEqual('https://github.com/imagemagick/imagemagick', im_drm.repo_url)
+    curl_drm = drm('curl', 'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
+    self.assertEqual(curl_drm.repo_url, 'https://github.com/curl/curl.git') 
 
 if __name__ == '__main__':
   unittest.main()
