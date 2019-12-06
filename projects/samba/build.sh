@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN git clone https://gitlab.com/samba-team/samba samba
-RUN samba/lib/fuzzing/oss-fuzz/build_image.sh
-
-WORKDIR samba
-COPY build.sh $SRC/
+# The real script is maintained in the Samba repo
+exec lib/fuzzing/oss-fuzz/build_samba.sh
