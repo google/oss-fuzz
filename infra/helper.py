@@ -419,12 +419,11 @@ def build_image(args):
 def build_fuzzers(args, skip_build_image=False):
   """Build fuzzers."""
   project_name = args.project_name
-  if not skip_build_image:
+  if skip_build_image:
+    print("Using previously built project image")
+  else:
     if not _build_image(args.project_name):
       return 1
-  else:
-    print("Using previously built project image")
-
   project_out_dir = _get_output_dir(project_name)
   if args.clean:
     print('Cleaning existing build artifacts.')

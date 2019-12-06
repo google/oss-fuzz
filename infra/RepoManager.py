@@ -20,7 +20,6 @@ a python API and manage the current state of the git repo.
 
     r_man =  RepoManager('https://github.com/google/oss-fuzz.git')
     r_man.checkout('5668cc422c2c92d38a370545d3591039fb5bb8d4')
-    r_man.getBranch('bisector')
     r_man.close()
 """
 import os
@@ -28,7 +27,7 @@ import shutil
 import subprocess
 
 
-class RepoManagerException(Exception):
+class RepoManagerError(Exception):
   """Class to describe the exceptions in RepoManager."""
 
   def __init__(self, message):
@@ -50,11 +49,6 @@ class RepoManager(object):
     repo_dir: The location of the main repo
     full_path: The full filepath location of the main repo
   """
-  repo_url = ''
-  repo_name = ''
-  repo_dir = ''
-  base_dir = ''
-  full_path = ''
 
   def __init__(self, repo_url, commit=None, base_dir='tmp'):
     """Constructs a repo manager class.
@@ -79,17 +73,17 @@ class RepoManager(object):
     """Creates a clone of the repo in the specified directory.
 
       Raises:
-        RepoManagerException if the repo was not able to be cloned
+        RepoManagerError if the repo was not able to be cloned
     """
     if not os.path.exists(self.base_dir):
       os.makedirs(self.base_dir)
     self.remove_repo()
     _, err = self._run_command(['git', 'clone', self.repo_url], self.base_dir)
     if err is not None:
-      raise RepoManagerException(
+      raise RepoManagerError(
           'Failed cloning repo %s, with error %s)' % (self.repo_url, err))
     if not self._is_git_repo():
-      raise RepoManagerException('%s is not a git repo' % self.repo_url)
+      raise RepoManagerError('%s is not a git repo' % self.repo_url)
 
   def _run_command(self, command, location='.'):
     """ Runs a shell command in the specified directory location.
@@ -162,14 +156,14 @@ class RepoManager(object):
       The list of commit SHAs from newest to oldest
 
     Raises:
-      RepoManagerException when commits dont exist
+      RepoManagerError when commits dont exist
     """
 
     if not self._commit_exists(old_commit):
-      raise RepoManagerException(
+      raise RepoManagerError(
           'The old commit %s does not exist' % old_commit)
     if not self._commit_exists(new_commit):
-      raise RepoManagerException(
+      raise RepoManagerError(
           'The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
       return [old_commit]
@@ -178,7 +172,7 @@ class RepoManager(object):
     result = out.split('\n')
     result = [i for i in result if i]
     if err is not None or result == []:
-      raise RepoManagerException('Error gettign commit list between %s and %s '
+      raise RepoManagerError('Error gettign commit list between %s and %s '
                                  % (old_commit, new_commit))
 
     # Make sure result is inclusive
@@ -192,22 +186,22 @@ class RepoManager(object):
       commit: The commit SHA to be checked out
 
     Raises:
-      RepoManagerException when checkout is not successful
+      RepoManagerError when checkout is not successful
     """
     if not self._commit_exists(commit):
       print('Commit %s does not exist in current branch' % commit)
-      raise RepoManagerException(
+      raise RepoManagerError(
           'Commit %s does not exist in current branch' % commit)
 
     git_path = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(git_path):
       _, err = self._run_command(['git', 'fetch', '--unshallow'], self.repo_dir)
       if err is not None:
-        raise RepoManagerException('Git fetch failed with error %s' % err)
+        raise RepoManagerError('Git fetch failed with error %s' % err)
 
     _, err = self._run_command(['git', 'checkout', '-f', commit], self.repo_dir)
     if self.get_current_commit() != commit:
-      raise RepoManagerException('Error checking out commit %s' % commit)
+      raise RepoManagerError('Error checking out commit %s' % commit)
 
   def remove_repo(self):
     """Attempts to remove the git repo. """

@@ -19,7 +19,7 @@ The will consist of the following functional tests
 """
 
 from RepoManager import RepoManager
-from RepoManager import RepoManagerException
+from RepoManager import RepoManagerError
 import os
 import unittest
 
@@ -35,7 +35,7 @@ class TestRepoManager(unittest.TestCase):
     git_path = os.path.join(rm.base_dir, rm.repo_name, '.git')
     self.assertTrue(os.path.isdir(git_path))
     rm.remove_repo()
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(RepoManagerError):
       rm = RepoManager(' ')
 
   def test_checkout_commit(self):
@@ -44,9 +44,9 @@ class TestRepoManager(unittest.TestCase):
     commit_to_test = '036ebac0134de3b72052a46f734e4ca81bb96055'
     rm.checkout_commit(commit_to_test)
     self.assertEqual(commit_to_test, rm.get_current_commit())
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(RepoManagerError):
       rm.checkout_commit(' ')
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(RepoManagerError):
       rm.checkout_commit('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     rm.remove_repo()
 
@@ -63,11 +63,11 @@ class TestRepoManager(unittest.TestCase):
     ]
     result_list = rm.get_commit_list(old_commit, new_commit)
     self.assertListEqual(commit_list, result_list)
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(RepoManagerError):
       rm.get_commit_list('asafd', new_commit)
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(RepoManagerError):
       rm.get_commit_list(new_commit, 'asdfasdf')
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(RepoManagerError):
       result_list = rm.get_commit_list(new_commit, old_commit)
 
 

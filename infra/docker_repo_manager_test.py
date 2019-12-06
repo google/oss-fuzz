@@ -17,7 +17,7 @@ The will consist of the following functional tests
   2. Test that the class can create a docker image with a specific commit
 """
 
-from DockerRepoManager import DockerRepoManager as drm
+from DockerRepoManager import DockerRepoManager 
 import unittest
 
 
@@ -28,27 +28,27 @@ class TestDockerRepoManager(unittest.TestCase):
 
   def test_constructor(self):
     """Tests docker repo manager initilization."""
-    curl_drm = drm(self.project_name)
+    curl_drm = DockerRepoManager(self.project_name)
     self.assertEqual(curl_drm.docker_image, 'gcr.io/oss-fuzz/curl')
     self.assertEqual(curl_drm.repo_url, 'https://github.com/curl/curl.git')
     self.assertEqual(curl_drm.src_on_image, '/src/curl')
 
   def test_get_image_commit(self):
     """Test that a specific commit can be transfered into a docker image."""
-    curl_drm = drm(self.project_name)
+    curl_drm = DockerRepoManager(self.project_name)
     commit_to_test = 'bc5d22c3dede2f04870c37aec9a50474c4b888ad'
     curl_drm.set_image_commit(commit_to_test)
     self.assertEqual(curl_drm.get_image_commit(), commit_to_test)
 
   def test_infer_main_repo(self):
     """Test that infer_main_repo works for different docker files."""
-    yara_drm = drm('yara')
+    yara_drm = DockerRepoManager('yara')
     self.assertEqual(yara_drm.repo_url, 'https://github.com/VirusTotal/yara.git')
-    libs_drm = drm('libspectre')
+    libs_drm = DockerRepoManager('libspectre')
     self.assertEqual(libs_drm.repo_url, 'https://gitlab.freedesktop.org/libspectre/libspectre.git')
-    liba_drm = drm('libass')
+    liba_drm = DockerRepoManager('libass')
     self.assertEqual(liba_drm.repo_url, 'https://github.com/libass/libass.git')
-  
+
 
 if __name__ == '__main__':
   unittest.main()

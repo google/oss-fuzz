@@ -33,12 +33,12 @@ from helper import _is_base_image
 from RepoManager import RepoManager
 
 
-class NoRepoFoundException(Exception):
+class NoRepoFoundError(Exception):
   """Occurs when the bisector cant infer the main repo."""
   pass
 
 
-class DockerRepoManagerException(Exception):
+class DockerRepoManagerError(Exception):
   """When there is a docker error of execution"""
   pass
 
@@ -49,11 +49,11 @@ class DockerRepoManager(RepoManager):
   Attributes:
     docker_image: The name of the docker image that is being modified
     project_name: The name of the project associated with the docker image
+    src_on_image: The file path where the main repo is located on the image
+    TEMP_CONTAINER: The name of the temp container to overwrite the with
+      the new commit
   """
 
-  docker_image = ''
-  project_name = ''
-  src_on_image = ''
   TEMP_CONTAINER = 'temp_container'
 
   def __init__(self, project_name):
@@ -68,18 +68,14 @@ class DockerRepoManager(RepoManager):
     self.src_on_image = os.path.join('/src', project_name)
     super().__init__(repo_url)
     if self.repo_name != project_name:
-      raise DockerRepoManagerException(
+      raise DockerRepoManagerError(
           'Error, the project name must be the same as the ' +
           'git repo name but are %s and %s' % (project_name, super().repo_name))
 
   def cleanup(self):
     """Removes old  TEMP_CONTAINER."""
-    stop_command = ['docker', 'stop', self.TEMP_CONTAINER]
-    self._run_command(stop_command)
-    remove_command = ['docker', 'container', 'rm', self.TEMP_CONTAINER]
-    self._run_command(remove_command)
-
-
+    self._run_command(['docker', 'stop', self.TEMP_CONTAINER])
+    self._run_command(['docker', 'container', 'rm', self.TEMP_CONTAINER])
 
   def set_image_commit(self, commit):
     """Creates a docker image with a specified commit as its source.
@@ -88,13 +84,12 @@ class DockerRepoManager(RepoManager):
       commit: The SHA the source is to be checked out at
 
     Raises:
-      DockerRepoManagerException: when the commit is not successfully
+      DockerRepoManagerError: when the commit is not successfully
       mounted to the image
     """
     self.cleanup()
     # Remove all previous images
-    rmi_command = ['docker', 'rmi', self.docker_image]
-    self._run_command(rmi_command)
+    self._run_command(['docker', 'rmi', self.docker_image])
 
     # Build builder image
     _build_image(self.project_name)
@@ -105,10 +100,7 @@ class DockerRepoManager(RepoManager):
     self._run_command(mount_command)
 
     # Start the container to be modified
-    start_container = [
-      'docker', 'start', self.TEMP_CONTAINER
-    ]
-    self._run_command(start_container)
+    self._run_command(['docker', 'start', self.TEMP_CONTAINER])
 
     # Remove outdated source repo from container
     remove_command = [
@@ -133,7 +125,7 @@ class DockerRepoManager(RepoManager):
     # Check the command executed correctly
     image_commit = self.get_image_commit()
     if not image_commit == commit:
-      raise DockerRepoManagerException(
+      raise DockerRepoManagerError(
           'Docker commit checkout current: %s desired: %s' % (image_commit,
                                                               commit))
 
@@ -173,21 +165,20 @@ class DockerRepoManager(RepoManager):
       The guessed repo url path
 
     Raises:
-      NoRepoFoundException: if the repo can't be inferred
+      NoRepoFoundError: if the repo can't be inferred
     """
     if not _check_project_exists(self.project_name):
-      raise NoRepoFoundException(
+      raise NoRepoFoundError(
           'No project could be found with name %s' % self.project_name)
     docker_path = _get_dockerfile_path(self.project_name)
     with open(docker_path, 'r') as fp:
-      for r in fp.readlines():
-        r.lower()
-        for part_command in r.split(' '):
+      for line in fp.readlines():
+        for part_command in line.split(' '):
           if '/' + str(self.project_name) + '.git' in part_command:
             return part_command.rstrip()
           if 'git:' in part_command and '/' + str(self.project_name) in part_command:
             return part_command.rstrip()
 
-    raise NoRepoFoundException(
+    raise NoRepoFoundError(
         'No repos were found with name %s in docker file %s' %
         (self.project_name, docker_path))
