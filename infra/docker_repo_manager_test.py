@@ -11,19 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test the functionality of the RepoManager class
+"""Test the functionality of the DockerRepoManager class
 The will consist of the following functional tests
-  1. Cloning of directory in desired location
-  2. Checking out a specific commit
-  3. Can get a list of commits between two SHAs
+  1. Test the construction and paring of a Docker image and a git repo
+  2. Test that the class can create a docker image with a specific commit
 """
 
 from DockerRepoManager import DockerRepoManager as drm
 import unittest
 
 
-class TestRepoManager(unittest.TestCase):
-  """Class to test the functionality of the RepoManager class."""
+class TestDockerRepoManager(unittest.TestCase):
+  """Class to test the functionality of the DockerRepoManager class."""
 
   project_name = 'curl'
 
@@ -41,6 +40,9 @@ class TestRepoManager(unittest.TestCase):
     curl_drm.set_image_commit(commit_to_test)
     self.assertEqual(curl_drm.get_image_commit(), commit_to_test)
 
+  def test_infer_main_repo(self):
+    """Test that infer_main_repo works for different docker files."""
+  
 
 if __name__ == '__main__':
   unittest.main()

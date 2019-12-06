@@ -35,7 +35,7 @@ class RepoManagerException(Exception):
     """ Init the exception class.
 
     Args:
-      message: the message to propigate to user
+      message: the message to propagate to user
     """
     super().__init__(message)
 
@@ -45,7 +45,7 @@ class RepoManager(object):
 
   Attributes:
     repo_url: The location of the git repo
-    local_dir: The location of where the repo clone is stored locally
+    base_dir: The location of where the repo clone is stored locally
     repo_name: The name of the github project
     repo_dir: The location of the main repo
     full_path: The full filepath location of the main repo
@@ -53,26 +53,26 @@ class RepoManager(object):
   repo_url = ''
   repo_name = ''
   repo_dir = ''
-  local_dir = ''
+  base_dir = ''
   full_path = ''
 
-  def __init__(self, repo_url, commit=None, local_dir='tmp'):
+  def __init__(self, repo_url, commit=None, base_dir='tmp'):
     """Constructs a repo manager class.
 
     Args:
       repo_url: The github url needed to clone
       commit: The specified commit to be checked out
-      local_dir: The local location the repo will live in
+      base_dir: The local location the repo will live in
     """
 
     self.repo_url = repo_url
-    self.local_dir = local_dir
+    self.base_dir = base_dir
     self.repo_name = self.repo_url.split('/')[-1].strip('.git')
-    self.repo_dir = os.path.join(self.local_dir, self.repo_name)
+    self.repo_dir = os.path.join(self.base_dir, self.repo_name)
     self.full_path = os.path.join(os.getcwd(), self.repo_dir)
     self._clone()
 
-    if commit is not None:
+    if commit:
       self.checkout_commit(commit)
 
   def _clone(self):
@@ -81,10 +81,10 @@ class RepoManager(object):
       Raises:
         RepoManagerException if the repo was not able to be cloned
     """
-    if not os.path.exists(self.local_dir):
-      os.makedirs(self.local_dir)
+    if not os.path.exists(self.base_dir):
+      os.makedirs(self.base_dir)
     self.remove_repo()
-    _, err = self._run_command(['git', 'clone', self.repo_url], self.local_dir)
+    _, err = self._run_command(['git', 'clone', self.repo_url], self.base_dir)
     if err is not None:
       raise RepoManagerException(
           'Failed cloning repo %s, with error %s)' % (self.repo_url, err))
@@ -100,11 +100,8 @@ class RepoManager(object):
     Returns:
       The stdout of the command, the stderr of the command
     """
-    cur_dir = os.getcwd()
-    os.chdir(location)
-    process = subprocess.Popen(command, stdout=subprocess.PIPE)
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
     out, err = process.communicate()
-    os.chdir(cur_dir)
     if err is not None:
       err = err.decode('ascii')
       print('Error %s running command %s' % (err, command))
@@ -133,7 +130,7 @@ class RepoManager(object):
     """
 
     # Handle the default case
-    if commit.strip(' ') == '':
+    if commit.rstrip() == '':
       return False
 
     out, _ = self._run_command(['git', 'branch', '--contains', commit],
@@ -185,7 +182,7 @@ class RepoManager(object):
                                  % (old_commit, new_commit))
 
     # Make sure result is inclusive
-    result = result + [old_commit]
+    result.append(old_commit)
     return result
 
   def checkout_commit(self, commit):

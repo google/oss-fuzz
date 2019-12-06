@@ -24,12 +24,13 @@ than just the current head of the repo.
     drm.set_image_commit('df26f5f9c36e19cd503c0e462e9f72ad37b84c82')
 
 """
+import os
+
 from helper import _build_image
 from helper import _check_project_exists
 from helper import _get_dockerfile_path
 from helper import _is_base_image
 from RepoManager import RepoManager
-import os
 
 
 class NoRepoFoundException(Exception):
@@ -53,7 +54,7 @@ class DockerRepoManager(RepoManager):
   docker_image = ''
   project_name = ''
   src_on_image = ''
-  TEMP_IMAGE_NAME = 'temp_container'
+  TEMP_CONTAINER = 'temp_container'
 
   def __init__(self, project_name):
     """Inits the DockerRepoManager class.
@@ -71,6 +72,15 @@ class DockerRepoManager(RepoManager):
           'Error, the project name must be the same as the ' +
           'git repo name but are %s and %s' % (project_name, super().repo_name))
 
+  def cleanup(self):
+    """Removes old  TEMP_CONTAINER."""
+    stop_command = ['docker', 'stop', self.TEMP_CONTAINER]
+    self._run_command(stop_command)
+    remove_command = ['docker', 'container', 'rm', self.TEMP_CONTAINER]
+    self._run_command(remove_command)
+
+
+
   def set_image_commit(self, commit):
     """Creates a docker image with a specified commit as its source.
 
@@ -81,13 +91,7 @@ class DockerRepoManager(RepoManager):
       DockerRepoManagerException: when the commit is not successfully
       mounted to the image
     """
-
-    #Remove old temp container
-    stop_command = ['docker', 'stop', self.TEMP_IMAGE_NAME]
-    self._run_command(stop_command)
-    remove_command = ['docker', 'container', 'rm', self.TEMP_IMAGE_NAME]
-    self._run_command(remove_command)
-
+    self.cleanup()
     # Remove all previous images
     rmi_command = ['docker', 'rmi', self.docker_image]
     self._run_command(rmi_command)
@@ -96,33 +100,33 @@ class DockerRepoManager(RepoManager):
     _build_image(self.project_name)
     self.checkout_commit(commit)
     mount_command = [
-        'docker', 'create', '--name', self.TEMP_IMAGE_NAME, self.docker_image
+        'docker', 'create', '--name', self.TEMP_CONTAINER, self.docker_image
     ]
     self._run_command(mount_command)
 
     # Start the container to be modified
     start_container = [
-      'docker', 'start', self.TEMP_IMAGE_NAME
+      'docker', 'start', self.TEMP_CONTAINER
     ]
     self._run_command(start_container)
 
     # Remove outdated source repo from container
     remove_command = [
-        'docker', 'exec', self.TEMP_IMAGE_NAME, 'rm', '-rf', self.src_on_image
+        'docker', 'exec', self.TEMP_CONTAINER, 'rm', '-rf', self.src_on_image
     ]
     self._run_command(remove_command)
- 
+
     # Copy updated source repo to container
     copy_command = [
         'docker', 'cp',
         os.path.join(self.full_path, '.'),
-        self.TEMP_IMAGE_NAME + ':' + self.src_on_image
+        self.TEMP_CONTAINER + ':' + self.src_on_image
     ]
     self._run_command(copy_command)
 
     # Overwrite current image with new container mount
     commit_command = [
-        'docker', 'commit', self.TEMP_IMAGE_NAME, self.docker_image
+        'docker', 'commit', self.TEMP_CONTAINER, self.docker_image
     ]
     self._run_command(commit_command)
 
