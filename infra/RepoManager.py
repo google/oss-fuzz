@@ -71,8 +71,6 @@ class RepoManager(object):
     self.repo_dir = os.path.join(self.local_dir, self.repo_name)
     self.full_path = os.path.join(os.getcwd(), self.repo_dir)
     self._clone()
-    if branch is not None:
-      self.checkout(branch)
 
     if commit is not None:
       self.checkout_commit(commit)
