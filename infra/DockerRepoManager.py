@@ -11,9 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Class to manage a git repositorys interaction with a docker image.
+"""Class to manage a git repos interaction with a docker image.
 
-This class is to be used to allow for control over a git repo in a docker image
+This class is to be used to manage Oss-Fuzz projects docker build images.
+It allows for a build image to be build with a specific commit rather
+than just the current head of the repo.
+
+  Typical usage example:
+
+    drm = DockerRepoManager('curl')
+    current_commit = drm.get_image_commit()
+    drm.set_image_commit('df26f5f9c36e19cd503c0e462e9f72ad37b84c82')
 
 """
 from helper import _build_image
@@ -64,11 +72,8 @@ class DockerRepoManager(RepoManager):
           'git repo name but are %s and %s' % (project_name, super().repo_name))
 
   def set_image_commit(self, commit):
-    """Creates a docker image with a specified commit as its source
-      1. builds the projects build image
-      2. checks out a commit locally
-      3. Mounts the current commit locally to a container
-      4. Overwrites the image with the new containers image
+    """Creates a docker image with a specified commit as its source.
+
     Args:
       commit: The SHA the source is to be checked out at
 
@@ -78,11 +83,8 @@ class DockerRepoManager(RepoManager):
     """
 
     #Remove old temp container
-
     stop_command = ['docker', 'stop', self.TEMP_IMAGE_NAME]
     self._run_command(stop_command)
-
-
     remove_command = ['docker', 'container', 'rm', self.TEMP_IMAGE_NAME]
     self._run_command(remove_command)
 
@@ -118,7 +120,7 @@ class DockerRepoManager(RepoManager):
     ]
     self._run_command(copy_command)
 
-      # Overwrite current image with new container mount
+    # Overwrite current image with new container mount
     commit_command = [
         'docker', 'commit', self.TEMP_IMAGE_NAME, self.docker_image
     ]

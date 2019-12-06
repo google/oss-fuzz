@@ -54,13 +54,13 @@ class RepoManager(object):
   repo_name = ''
   repo_dir = ''
   local_dir = ''
+  full_path = ''
 
-  def __init__(self, repo_url, branch=None, commit=None, local_dir='tmp'):
+  def __init__(self, repo_url, commit=None, local_dir='tmp'):
     """Constructs a repo manager class.
 
     Args:
       repo_url: The github url needed to clone
-      branch: The specified branch to be checked out
       commit: The specified commit to be checked out
       local_dir: The local location the repo will live in
     """
@@ -89,9 +89,9 @@ class RepoManager(object):
     _, err = self._run_command(['git', 'clone', self.repo_url], self.local_dir)
     if err is not None:
       raise RepoManagerException(
-          'Error cloning repo %s, with error %s)' % (self.repo_url, err))
+          'Failed cloning repo %s, with error %s)' % (self.repo_url, err))
     if not self._is_git_repo():
-      raise RepoManagerException('Error cloning git repo %s' % self.repo_url)
+      raise RepoManagerException('%s is not a git repo' % self.repo_url)
 
   def _run_command(self, command, location='.'):
     """ Runs a shell command in the specified directory location.
