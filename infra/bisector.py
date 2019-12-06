@@ -74,7 +74,7 @@ def main():
 
   args = parser.parse_args()
 
-  rm = DockerRepoManager(args.project_name)
+  rm = DockerRepoManager(args.project_name, args.commit_new)
   commit_list = rm.get_commit_list(args.commit_old, args.commit_new)
   result_commit_idx = bisection(0,
                                 len(commit_list) - 1, commit_list, rm,
