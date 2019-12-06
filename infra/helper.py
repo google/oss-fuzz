@@ -456,13 +456,6 @@ def build_fuzzers(args, skip_build_image=False):
         'bash', '-c', 'cp -r /msan /work'])
     env.append('MSAN_LIBS_PATH=' + '/work/msan')
 
-  # DEBUGGING:
-  print("THE COMMIT VALUE IS:")
-  commit_check = ['gcr.io/oss-fuzz/%s' % project_name, 'git',
-                  '--git-dir', '/src/%s/.git'% project_name, 'rev-parse', 'HEAD']
-  docker_run(commit_check)
-
-
   command = (
       ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
       _env_to_docker_args(env))
@@ -483,7 +476,6 @@ def build_fuzzers(args, skip_build_image=False):
   ]
 
   print('Running:', _get_command_string(command))
-
 
   try:
     subprocess.check_call(command)
