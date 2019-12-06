@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,12 @@
 #
 ################################################################################
 
-# Base image for all other images.
-
-FROM ubuntu:16.04
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-5-dev && \
-    apt-get autoremove -y
-
-ENV OUT=/out
-ENV SRC=/src
-ENV WORK=/work
-ENV PATH="$PATH:/out"
-
-RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER g.kihlman@yubico.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN apt-get install -y cmake libudev-dev pkg-config chrpath
+RUN git clone --branch v0.5.0 https://github.com/PJK/libcbor
+RUN git clone --branch OpenSSL_1_1_1-stable https://github.com/openssl/openssl
+RUN git clone https://github.com/Yubico/libfido2
+WORKDIR libfido2
+COPY build.sh $SRC/

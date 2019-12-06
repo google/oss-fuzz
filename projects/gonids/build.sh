@@ -28,9 +28,9 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
 }
 
-compile_fuzzer . Fuzz fuzz_parserule
+compile_fuzzer /root/go/src/github.com/google/gonids/ FuzzParseRule fuzz
 
-unzip ../emerging.rules.zip
+unzip emerging.rules.zip
 cd rules
 i=0
 mkdir corpus

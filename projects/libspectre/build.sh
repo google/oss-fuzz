@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-# Base image for all other images.
-
-FROM ubuntu:16.04
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-5-dev && \
-    apt-get autoremove -y
-
-ENV OUT=/out
-ENV SRC=/src
-ENV WORK=/work
-ENV PATH="$PATH:/out"
-
-RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK
+# Run the OSS-Fuzz script in the project
+$SRC/libspectre/test/ossfuzz.sh

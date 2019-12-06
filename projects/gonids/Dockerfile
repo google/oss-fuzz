@@ -20,7 +20,5 @@ RUN go get github.com/google/gonids
 
 ADD https://rules.emergingthreats.net/open/suricata/emerging.rules.zip emerging.rules.zip
 
-RUN mkdir fuzz
-COPY fuzz_*.go fuzz/
 COPY build.sh $SRC/
-WORKDIR fuzz
+WORKDIR $SRC/

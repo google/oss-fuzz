@@ -13,6 +13,7 @@ fuzzing_engines:
   - libfuzzer
   - afl
   - dataflow
+  - honggfuzz
 sanitizers:
   - address
   - dataflow

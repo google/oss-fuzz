@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
 #
 ################################################################################
 
-# Base image for all other images.
+FROM gcr.io/oss-fuzz-base/base-builder
 
-FROM ubuntu:16.04
-ENV DEBIAN_FRONTEND noninteractive
+MAINTAINER randy408@protonmail.com
+
 RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-5-dev && \
-    apt-get autoremove -y
+    apt-get install -y pkg-config make automake libtool wget
 
-ENV OUT=/out
-ENV SRC=/src
-ENV WORK=/work
-ENV PATH="$PATH:/out"
+RUN git clone --depth 1 https://gitlab.freedesktop.org/libspectre/libspectre.git
 
-RUN mkdir -p $OUT $SRC $WORK && chmod a+rwx $OUT $SRC $WORK
+WORKDIR libspectre
+COPY build.sh $SRC/

@@ -1,0 +1,12 @@
+homepage: https://github.com/Yubico/libfido2
+primary_contact: "g.kihlman@yubico.com"
+auto_ccs:
+    - "pedro@ambientworks.net"
+    - "marissa.nishimoto@yubico.com"
+    - "pedro.ossfuzz@gmail.com"
+sanitizers:
+    - address
+    - undefined
+    - memory
+fuzzing_engines:
+    - libfuzzer
