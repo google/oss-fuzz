@@ -42,6 +42,12 @@ class TestDockerRepoManager(unittest.TestCase):
 
   def test_infer_main_repo(self):
     """Test that infer_main_repo works for different docker files."""
+    yara_drm = drm('yara')
+    self.assertEqual(yara_drm.repo_url, 'https://github.com/VirusTotal/yara.git')
+    libs_drm = drm('libspectre')
+    self.assertEqual(libs_drm.repo_url, 'https://gitlab.freedesktop.org/libspectre/libspectre.git')
+    liba_drm = drm('libass')
+    self.assertEqual(liba_drm.repo_url, 'https://github.com/libass/libass.git')
   
 
 if __name__ == '__main__':
