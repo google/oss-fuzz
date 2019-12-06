@@ -19,4 +19,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone https://gitlab.com/samba-team/samba samba
 RUN samba/lib/fuzzing/oss-fuzz/build_image.sh
 
-WORKDIR /home/samba
+WORKDIR samba
