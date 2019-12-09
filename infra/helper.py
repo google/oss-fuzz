@@ -420,7 +420,7 @@ def build_fuzzers(args, skipbuild_image_impl=False):
   """Build fuzzers."""
   project_name = args.project_name
   if skipbuild_image_impl:
-    print("Using previously built project image")
+    print('Using previously built project image')
   else:
     if not build_image_impl(args.project_name):
       return 1

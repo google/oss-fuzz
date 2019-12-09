@@ -81,7 +81,6 @@ class DockerRepoManager(RepoManager):
     super().checkout_commit(commit)
     self._set_image_commit(commit)
 
-
   def _set_image_commit(self, commit):
     """Creates a docker image with a specified commit as its source.
 
