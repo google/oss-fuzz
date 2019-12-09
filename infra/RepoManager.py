@@ -23,6 +23,7 @@ a python API and manage the current state of the git repo.
     r_man.close()
 """
 import os
+import logging
 import shutil
 import subprocess
 
@@ -92,7 +93,7 @@ class RepoManager(object):
     out, err = process.communicate()
     if err is not None:
       err = err.decode('ascii')
-      print('Error %s running command %s' % (err, command))
+      logging.error('Error %s running command %s' % (err, command))
     if out is not None:
       out = out.decode('ascii')
     return out, err
@@ -183,7 +184,7 @@ class RepoManager(object):
       RepoManagerError when checkout is not successful
     """
     if not self._commit_exists(commit):
-      print('Commit %s does not exist in current branch' % commit)
+      logging.error('Commit %s does not exist in current branch' % commit)
       raise RepoManagerError(
           'Commit %s does not exist in current branch' % commit)
 
