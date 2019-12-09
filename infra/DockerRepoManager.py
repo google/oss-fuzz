@@ -26,10 +26,10 @@ than just the current head of the repo.
 """
 import os
 
-from helper import _build_image
-from helper import _check_project_exists
-from helper import _get_dockerfile_path
-from helper import _is_base_image
+from helper import build_image_impl
+from helper import check_project_exists
+from helper import get_dockerfile_path
+from helper import is_base_image
 from RepoManager import RepoManager
 
 
@@ -92,7 +92,7 @@ class DockerRepoManager(RepoManager):
     self._run_command(['docker', 'rmi', self.docker_image])
 
     # Build builder image
-    _build_image(self.project_name)
+    build_image_impl(self.project_name)
     self.checkout_commit(commit)
     mount_command = [
         'docker', 'create', '--name', self.TEMP_CONTAINER, self.docker_image
@@ -151,8 +151,8 @@ class DockerRepoManager(RepoManager):
     Returns:
       The name of the docker build image
     """
-    is_base_image = _is_base_image(self.project_name)
-    if is_base_image:
+    proj_is_base_image = is_base_image(self.project_name)
+    if proj_is_base_image:
       image_project = 'oss-fuzz-base'
     else:
       image_project = 'oss-fuzz'
@@ -160,17 +160,17 @@ class DockerRepoManager(RepoManager):
 
   def _infer_main_repo(self):
     """ Trys to guess the main repo of the project based on the Dockerfile.
-  
+
     Returns:
       The guessed repo url path
 
     Raises:
       NoRepoFoundError: if the repo can't be inferred
     """
-    if not _check_project_exists(self.project_name):
+    if not check_project_exists(self.project_name):
       raise NoRepoFoundError(
           'No project could be found with name %s' % self.project_name)
-    docker_path = _get_dockerfile_path(self.project_name)
+    docker_path = get_dockerfile_path(self.project_name)
     with open(docker_path, 'r') as fp:
       for line in fp.readlines():
         for part_command in line.split(' '):
