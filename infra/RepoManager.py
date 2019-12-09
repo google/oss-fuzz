@@ -50,7 +50,7 @@ class RepoManager(object):
     repo_dir: The location of the main repo
   """
 
-  def __init__(self, repo_url, base_dir='tmp'):
+  def __init__(self, repo_url, base_dir):
     """Constructs a repo manager class.
 
     Args:
@@ -107,7 +107,7 @@ class RepoManager(object):
     git_path = os.path.join(self.repo_dir, '.git')
     return os.path.isdir(git_path)
 
-  def _commit_exists(self, commit):
+  def commit_exists(self, commit):
     """ Checks to see if a commit exists in the project repo.
 
     Args:
@@ -154,10 +154,10 @@ class RepoManager(object):
       RepoManagerError when commits dont exist
     """
 
-    if not self._commit_exists(old_commit):
+    if not self.commit_exists(old_commit):
       raise RepoManagerError(
           'The old commit %s does not exist' % old_commit)
-    if not self._commit_exists(new_commit):
+    if not self.commit_exists(new_commit):
       raise RepoManagerError(
           'The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
@@ -183,7 +183,7 @@ class RepoManager(object):
     Raises:
       RepoManagerError when checkout is not successful
     """
-    if not self._commit_exists(commit):
+    if not self.commit_exists(commit):
       logging.error('Commit %s does not exist in current branch' % commit)
       raise RepoManagerError(
           'Commit %s does not exist in current branch' % commit)
