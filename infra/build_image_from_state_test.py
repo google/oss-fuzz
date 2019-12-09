@@ -15,9 +15,10 @@
 The will consist of the following functional tests
   1. The inferance of the main repo for a specific project
 """
-
+import argparse
 from build_image_from_state import infer_main_repo
 from build_image_from_state import build_fuzzer_from_commit
+from helper import reproduce
 from RepoManager import RepoManager
 import unittest
 
@@ -33,9 +34,51 @@ class TestBuildFromState(unittest.TestCase):
     self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
 
   def test_build_fuzzers_from_commit(self):
-    build_fuzzer_from_commit('yara','4546fb2b588b385231495a123552b755ae4eba96',
-                             'rules_fuzzer',
-                             '/usr/local/google/home/lneat/Documents/oss-fuzz/infra/tmp')
+    """Tests if the fuzzers can build at a proper commit.
+
+    This is done by using a known regression range for a specific test case.
+    The old commit should show the error when its fuzzers run and the new one
+    should not.
+    """
+    project_name = 'yara'
+    old_commit = 'f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f'
+    new_commit = 'f50a39051ea8c7f10d6d8db9656658b49601caef'
+    fuzzer = 'rules_fuzzer'
+    test_data = 'infra/yara_test_data'
+    build_fuzzer_from_commit(project_name, new_commit, fuzzer,
+                             '/usr/local/google/home/lneat/Documents/oss-fuzz/infra/tmp',
+                             sanitizer='address')
+    old_error_code = self.reproduce_error(project_name, test_data, fuzzer)
+    build_fuzzer_from_commit(project_name, new_commit, fuzzer,
+                             '/usr/local/google/home/lneat/Documents/oss-fuzz/infra/tmp',
+                             sanitizer='address')
+    new_error_code = self.reproduce_error(project_name, test_data, fuzzer)
+    self.assertNotEqual(new_error_code, old_error_code)
+
+  def reproduce_error(self, project_name, test_case, fuzzer_name):
+    """Checks to see if the error is repoduceable at a specific commit.
+    Args:
+      project_name: The name of the project you are testing
+      test_case: The path to the test_case you are passing in
+      fuzzer_name: The name of the fuzz target to be tested
+    Returns:
+      True if the error still exists
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('project_name', help='name of the project')
+    parser.add_argument('fuzzer_name', help='name of the fuzzer')
+    parser.add_argument('testcase_path', help='path of local testcase')
+    parser.add_argument(
+        'fuzzer_args',
+        help='arguments to pass to the fuzzer',
+        nargs=argparse.REMAINDER)
+    parser.add_argument(
+        '--valgrind', action='store_true', help='run with valgrind')
+    parser.add_argument(
+        '-e', action='append', help='set environment variable e.g. VAR=value')
+    args = parser.parse_args([project_name, fuzzer_name, test_case])
+    return reproduce(args)
+
 
 if __name__ == '__main__':
   unittest.main()

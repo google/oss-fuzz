@@ -25,10 +25,10 @@ from helper import build_image_impl
 from helper import check_project_exists
 from helper import docker_run
 from helper import env_to_docker_args
-from helper import get_command_string
-from helper import get_output_dir
-from helper import get_dockerfile_path
 from helper import get_absolute_path
+from helper import get_command_string
+from helper import get_dockerfile_path
+from helper import get_output_dir
 from helper import get_work_dir
 from helper import workdir_from_dockerfile
 from RepoManager import RepoManager
@@ -38,6 +38,20 @@ def build_fuzzer_from_commit(project_name, commit, fuzzer_name, local_store_path
                               engine='libfuzzer',
                               sanitizer='address',
                               architecture='x86_64'):
+  """Builds a ossfuzz fuzzer at a  specific commit SHA.
+
+  Args:
+    project_name: The oss fuzz project name
+    commit: The commit SHA to build the fuzzers at
+    fuzzer_name: The name of the fuzzer that needs to be built
+    local_store_path: The full file path of a place where a temp git repo is stored
+    engine: The fuzzing engine to be used
+    sanitizer: The fuzzing sanitizer to be used
+    architecture: The system architiecture to be used for fuzzing
+
+  Returns:
+    0 on successful build 1 on failure
+  """
   guessed_url = infer_main_repo(project_name, local_store_path, commit)
   repo_man = RepoManager(guessed_url, local_store_path)
   repo_man.checkout_commit(commit)
@@ -94,10 +108,7 @@ def build_fuzzer_from_commit(project_name, commit, fuzzer_name, local_store_path
         'gcr.io/oss-fuzz-base/base-msan-builder',
         'patch_build.py', '/out'
     ])
-
   return 0
-
-
 
 
 def infer_main_repo(project_name, local_store_path, example_commit=None):
