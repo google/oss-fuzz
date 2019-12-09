@@ -47,27 +47,21 @@ class RepoManager(object):
     base_dir: The location of where the repo clone is stored locally
     repo_name: The name of the github project
     repo_dir: The location of the main repo
-    full_path: The full filepath location of the main repo
   """
 
-  def __init__(self, repo_url, commit=None, base_dir='tmp'):
+  def __init__(self, repo_url, base_dir='tmp'):
     """Constructs a repo manager class.
 
     Args:
       repo_url: The github url needed to clone
-      commit: The specified commit to be checked out
-      base_dir: The local location the repo will live in
+      base_dir: The full filepath where the git repo is located
     """
 
     self.repo_url = repo_url
     self.base_dir = base_dir
     self.repo_name = self.repo_url.split('/')[-1].strip('.git')
     self.repo_dir = os.path.join(self.base_dir, self.repo_name)
-    self.full_path = os.path.join(os.getcwd(), self.repo_dir)
     self._clone()
-
-    if commit:
-      self.checkout_commit(commit)
 
   def _clone(self):
     """Creates a clone of the repo in the specified directory.

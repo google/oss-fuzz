@@ -37,7 +37,7 @@ class TestDockerRepoManager(unittest.TestCase):
     """Test that a specific commit can be transfered into a docker image."""
     curl_drm = DockerRepoManager(self.project_name)
     commit_to_test = 'bc5d22c3dede2f04870c37aec9a50474c4b888ad'
-    curl_drm.set_image_commit(commit_to_test)
+    curl_drm.checkout_commit(commit_to_test)
     self.assertEqual(curl_drm.get_image_commit(), commit_to_test)
 
   def test_infer_main_repo(self):

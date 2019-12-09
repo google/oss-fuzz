@@ -21,7 +21,7 @@ than just the current head of the repo.
 
     drm = DockerRepoManager('curl')
     current_commit = drm.get_image_commit()
-    drm.set_image_commit('df26f5f9c36e19cd503c0e462e9f72ad37b84c82')
+    drm.checkout_commit('df26f5f9c36e19cd503c0e462e9f72ad37b84c82')
 
 """
 import os
@@ -77,7 +77,12 @@ class DockerRepoManager(RepoManager):
     self._run_command(['docker', 'stop', self.TEMP_CONTAINER])
     self._run_command(['docker', 'container', 'rm', self.TEMP_CONTAINER])
 
-  def set_image_commit(self, commit):
+  def checkout_commit(self, commit):
+    super().checkout_commit(commit)
+    self._set_image_commit(commit)
+
+
+  def _set_image_commit(self, commit):
     """Creates a docker image with a specified commit as its source.
 
     Args:
@@ -93,7 +98,6 @@ class DockerRepoManager(RepoManager):
 
     # Build builder image
     build_image_impl(self.project_name)
-    self.checkout_commit(commit)
     mount_command = [
         'docker', 'create', '--name', self.TEMP_CONTAINER, self.docker_image
     ]
@@ -111,7 +115,7 @@ class DockerRepoManager(RepoManager):
     # Copy updated source repo to container
     copy_command = [
         'docker', 'cp',
-        os.path.join(self.full_path, '.'),
+        os.path.join(self.repo_dir, '.'),
         self.TEMP_CONTAINER + ':' + self.src_on_image
     ]
     self._run_command(copy_command)
