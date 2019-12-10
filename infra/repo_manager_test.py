@@ -18,10 +18,11 @@ The will consist of the following functional tests
   3. Can get a list of commits between two SHAs
 """
 
-from RepoManager import RepoManager
-from RepoManager import RepoManagerException
 import os
 import unittest
+
+from RepoManager import RepoManager
+from RepoManager import RepoManagerError
 
 
 class TestRepoManager(unittest.TestCase):
@@ -31,28 +32,28 @@ class TestRepoManager(unittest.TestCase):
 
   def test_clone_correctly(self):
     """Tests the correct location of the git repo."""
-    rm = RepoManager(self.curl_repo, local_dir='tmp')
-    git_path = os.path.join(rm.local_dir, rm.repo_name, '.git')
+    rm = RepoManager(self.curl_repo, 'tmp')
+    git_path = os.path.join(rm.base_dir, rm.repo_name, '.git')
     self.assertTrue(os.path.isdir(git_path))
     rm.remove_repo()
-    with self.assertRaises(RepoManagerException):
-      rm = RepoManager(" ")
+    with self.assertRaises(RepoManagerError):
+      rm = RepoManager(' ', 'tmp')
 
   def test_checkout_commit(self):
     """Tests that the git checkout command works."""
-    rm = RepoManager(self.curl_repo, local_dir='tmp')
+    rm = RepoManager(self.curl_repo, 'tmp')
     commit_to_test = '036ebac0134de3b72052a46f734e4ca81bb96055'
     rm.checkout_commit(commit_to_test)
     self.assertEqual(commit_to_test, rm.get_current_commit())
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(ValueError):
       rm.checkout_commit(' ')
-    with self.assertRaises(RepoManagerException):
-      rm.checkout_commit('036ebac0134de3b72052a46f734e4ca81bb96056')
+    with self.assertRaises(RepoManagerError):
+      rm.checkout_commit('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     rm.remove_repo()
 
   def test_get_commit_list(self):
     """Tests an accurate commit list can be retrived from the repo manager."""
-    rm = RepoManager(self.curl_repo, local_dir='tmp')
+    rm = RepoManager(self.curl_repo, 'tmp')
     old_commit = '7cf18b05e04bbb0f08c74d2567b0648f6c31a952'
     new_commit = '113db127ee2b2f874dfcce406103ffe666e11953'
     commit_list = [
@@ -63,11 +64,11 @@ class TestRepoManager(unittest.TestCase):
     ]
     result_list = rm.get_commit_list(old_commit, new_commit)
     self.assertListEqual(commit_list, result_list)
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(RepoManagerError):
       rm.get_commit_list('asafd', new_commit)
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(RepoManagerError):
       rm.get_commit_list(new_commit, 'asdfasdf')
-    with self.assertRaises(RepoManagerException):
+    with self.assertRaises(RepoManagerError):
       result_list = rm.get_commit_list(new_commit, old_commit)
 
 
