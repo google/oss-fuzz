@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test the functionality of the build image from state module.
+NOTE: THIS TEST NEEDS TO BE RUN FROM THE OSS-FUZZ BASE DIR
 The will consist of the following functional tests
   1. The inferance of the main repo for a specific project
 """
 import argparse
 import unittest
 
-from build_image_from_state import infer_main_repo
-from build_image_from_state import build_fuzzer_from_commit
+from build_specified_commit import infer_main_repo
+from build_specified_commit import build_fuzzer_from_commit
 from helper import reproduce
 from RepoManager import RepoManager
 
@@ -29,9 +30,10 @@ class BuildImageUnitTests(unittest.TestCase):
 
   def test_infer_main_repo(self):
     """Tests that the main repo can be infered based on an example commit."""
-    infered_repo = infer_main_repo('curl','tmp', 'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
+    infered_repo = infer_main_repo('curl', 'tmp',
+                                   'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
     self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
-    infered_repo = infer_main_repo('curl','tmp')
+    infered_repo = infer_main_repo('curl', 'tmp')
     self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
 
 
@@ -50,13 +52,17 @@ class BuildImageIntegrationTests(unittest.TestCase):
     new_commit = 'f50a39051ea8c7f10d6d8db9656658b49601caef'
     fuzzer = 'rules_fuzzer'
     test_data = 'infra/yara_test_data'
-    build_fuzzer_from_commit(project_name, old_commit, fuzzer,
-                             '/usr/local/google/home/lneat/Documents/oss-fuzz/infra/tmp',
-                             sanitizer='address')
+    build_fuzzer_from_commit(
+        project_name,
+        old_commit,
+        '/usr/local/google/home/lneat/Documents/oss-fuzz/infra/tmp',
+        sanitizer='address')
     old_error_code = self.reproduce_error(project_name, test_data, fuzzer)
-    build_fuzzer_from_commit(project_name, new_commit, fuzzer,
-                             '/usr/local/google/home/lneat/Documents/oss-fuzz/infra/tmp',
-                             sanitizer='address')
+    build_fuzzer_from_commit(
+        project_name,
+        new_commit,
+        '/usr/local/google/home/lneat/Documents/oss-fuzz/infra/tmp',
+        sanitizer='address')
     new_error_code = self.reproduce_error(project_name, test_data, fuzzer)
     self.assertNotEqual(new_error_code, old_error_code)
 

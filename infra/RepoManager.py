@@ -29,14 +29,7 @@ import subprocess
 
 class RepoManagerError(Exception):
   """Class to describe the exceptions in RepoManager."""
-
-  def __init__(self, message):
-    """ Init the exception class.
-
-    Args:
-      message: the message to propagate to user
-    """
-    super().__init__(message)
+  pass
 
 
 class RepoManager(object):
@@ -72,9 +65,9 @@ class RepoManager(object):
     if not os.path.exists(self.base_dir):
       os.makedirs(self.base_dir)
     self.remove_repo()
-    _, err = self._run_command(['git', 'clone', self.repo_url],
-                               self.base_dir,
-                               check_result=True)
+    self._run_command(['git', 'clone', self.repo_url],
+                      self.base_dir,
+                      check_result=True)
     if not self._is_git_repo():
       raise RepoManagerError('%s is not a git repo' % self.repo_url)
 
@@ -90,12 +83,13 @@ class RepoManager(object):
       The stdout of the command, the stderr of the command
 
     Raises:
-      RepoManagerError when running a command resulted in an error
+      RepoManagerError: running a command resulted in an error
     """
     process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
     out, err = process.communicate()
     if err is not None and check_result:
-      raise RepoManagerError('Error: %s running command: %s' % (err, command))
+      raise RepoManagerError('Error: %s running command: %s with return code:' %
+                             (err, command, process.returncode))
     if out is not None:
       out = out.decode('ascii')
     return out, err
@@ -113,16 +107,19 @@ class RepoManager(object):
     """Checks to see if a commit exists in the project repo.
 
     Args:
-      commit: The commit SHA you are checking 
+      commit: The commit SHA you are checking
 
     Returns:
       True if the commit exits in the project
+
+    Raises:
+      ValueException: an empty string was passed in as a commit 
     """
 
     # Handle the exception case, if empty string is passed _run_command will
-    # return true
+    # raise a ValueError
     if commit.rstrip() == '':
-      return False
+      raise ValueError('An empty string is not a valid commit SHA')
 
     out, _ = self._run_command(['git', 'branch', '--contains', commit],
                                self.repo_dir)
@@ -137,7 +134,9 @@ class RepoManager(object):
     Returns:
       The current active commit SHA
     """
-    out, err = self._run_command(['git', 'rev-parse', 'HEAD'], self.repo_dir, check_result=True)
+    out, _ = self._run_command(['git', 'rev-parse', 'HEAD'],
+                               self.repo_dir,
+                               check_result=True)
     return out.strip('\n')
 
   def get_commit_list(self, old_commit, new_commit):
@@ -155,20 +154,18 @@ class RepoManager(object):
     """
 
     if not self.commit_exists(old_commit):
-      raise RepoManagerError(
-          'The old commit %s does not exist' % old_commit)
+      raise RepoManagerError('The old commit %s does not exist' % old_commit)
     if not self.commit_exists(new_commit):
-      raise RepoManagerError(
-          'The new commit %s does not exist' % new_commit)
+      raise RepoManagerError('The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
       return [old_commit]
     out, err = self._run_command(
         ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
     commits = out.split('\n')
     commits = [commit for commit in commits if commit]
-    if err is not None or commits == []:
-      raise RepoManagerError('Error gettign commit list between %s and %s '
-                                 % (old_commit, new_commit))
+    if err is not None or not commits:
+      raise RepoManagerError('Error getting commit list between %s and %s ' %
+                             (old_commit, new_commit))
 
     # Make sure result is inclusive
     commits.append(old_commit)
@@ -185,14 +182,15 @@ class RepoManager(object):
     """
     if not self.commit_exists(commit):
       logging.error('Commit %s does not exist in current branch' % commit)
-      raise RepoManagerError(
-          'Commit %s does not exist in current branch' % commit)
+      raise RepoManagerError('Commit %s does not exist in current branch' %
+                             commit)
 
     git_path = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(git_path):
-      _, err = self._run_command(['git', 'fetch', '--unshallow'], self.repo_dir, check_result=True)
-
-    _, err = self._run_command(['git', 'checkout', '-f', commit], self.repo_dir)
+      self._run_command(['git', 'fetch', '--unshallow'],
+                        self.repo_dir,
+                        check_result=True)
+    self._run_command(['git', 'checkout', '-f', commit], self.repo_dir)
     if self.get_current_commit() != commit:
       raise RepoManagerError('Error checking out commit %s' % commit)
 

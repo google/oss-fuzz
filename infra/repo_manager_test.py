@@ -24,6 +24,7 @@ import unittest
 from RepoManager import RepoManager
 from RepoManager import RepoManagerError
 
+
 class TestRepoManager(unittest.TestCase):
   """Class to test the functionality of the RepoManager class."""
 
@@ -44,7 +45,7 @@ class TestRepoManager(unittest.TestCase):
     commit_to_test = '036ebac0134de3b72052a46f734e4ca81bb96055'
     rm.checkout_commit(commit_to_test)
     self.assertEqual(commit_to_test, rm.get_current_commit())
-    with self.assertRaises(RepoManagerError):
+    with self.assertRaises(ValueError):
       rm.checkout_commit(' ')
     with self.assertRaises(RepoManagerError):
       rm.checkout_commit('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
