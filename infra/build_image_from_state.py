@@ -18,6 +18,7 @@ from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
 import os
+import re
 import sys
 import subprocess
 
@@ -112,7 +113,9 @@ def build_fuzzer_from_commit(project_name, commit, fuzzer_name, local_store_path
 
 
 def infer_main_repo(project_name, local_store_path, example_commit=None):
-  """ Trys to guess the main repo a project based on the Dockerfile.
+  """Tries to guess the main repo a project based on the Dockerfile.
+
+  NOTE: This is a fragile implementation and only works for git
   Args:
     project_name: The oss fuzz project that you are checking the repo of
     example_commit: A commit that is in the main repos tree
@@ -123,24 +126,24 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
     return 1
   docker_path = get_dockerfile_path(project_name)
   with open(docker_path, 'r') as fp:
-
+    lines = ''.join(fp.readlines())
     # Use generic git format and project name to guess main repo
     if example_commit is None:
-      for line in fp.readlines():
-        line.lower()
-        for part_command in line.split(' '):
-          if '/' + str(project_name) + '.git' in part_command:
-            return part_command.rstrip()
-          if 'git:' in part_command and '/' + str(project_name) in part_command:
-            return part_command.rstrip()
+      repo_url = re.search(r'\bhttp[^ ]*' + re.escape(project_name) + r'.git', lines)
+      if repo_url:
+        return repo_url.group(0)
+      repo_url = re.search(r'\bgit:[^ ]*/' + re.escape(project_name), lines)
+      if repo_url:
+        return repo_url.group(0)
 
-    # Use example commit SHA to guess main repo
+  # Use example commit SHA to guess main repo
     else:
-      for line in fp.readlines():
-        if 'clone' in line:
-          for git_repo_url in line.split(' '):
-            if 'http' in git_repo_url:
-                rm = RepoManager(git_repo_url.rstrip(), local_store_path)
-                if rm.commit_exists(example_commit):
-                  return git_repo_url.rstrip()
+      for clone_command in re.findall('.*clone.*', lines):
+        print(clone_command)
+        for git_repo_url in re.findall('http[s]?://[^ ]*',
+                                       clone_command):
+          print(git_repo_url)
+          rm = RepoManager(git_repo_url.rstrip(), local_store_path)
+          if rm.commit_exists(example_commit):
+            return git_repo_url
   return 1

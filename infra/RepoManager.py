@@ -20,10 +20,9 @@ a python API and manage the current state of the git repo.
 
     r_man =  RepoManager('https://github.com/google/oss-fuzz.git')
     r_man.checkout('5668cc422c2c92d38a370545d3591039fb5bb8d4')
-    r_man.close()
 """
-import os
 import logging
+import os
 import shutil
 import subprocess
 
@@ -73,27 +72,30 @@ class RepoManager(object):
     if not os.path.exists(self.base_dir):
       os.makedirs(self.base_dir)
     self.remove_repo()
-    _, err = self._run_command(['git', 'clone', self.repo_url], self.base_dir)
-    if err is not None:
-      raise RepoManagerError(
-          'Failed cloning repo %s, with error %s)' % (self.repo_url, err))
+    _, err = self._run_command(['git', 'clone', self.repo_url],
+                               self.base_dir,
+                               check_result=True)
     if not self._is_git_repo():
       raise RepoManagerError('%s is not a git repo' % self.repo_url)
 
-  def _run_command(self, command, location='.'):
+  def _run_command(self, command, location='.', check_result=False):
     """ Runs a shell command in the specified directory location.
 
     Args:
       command: The command as a list to be run
+      location: The directory the command is run in
+      check_result: Should an exception be thrown on failed command
 
     Returns:
       The stdout of the command, the stderr of the command
+
+    Raises:
+      RepoManagerError when running a command resulted in an error
     """
     process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
     out, err = process.communicate()
-    if err is not None:
-      err = err.decode('ascii')
-      logging.error('Error %s running command %s' % (err, command))
+    if err is not None and check_result:
+      raise RepoManagerError('Error: %s running command: %s' % (err, command))
     if out is not None:
       out = out.decode('ascii')
     return out, err
@@ -108,17 +110,17 @@ class RepoManager(object):
     return os.path.isdir(git_path)
 
   def commit_exists(self, commit):
-    """ Checks to see if a commit exists in the project repo.
+    """Checks to see if a commit exists in the project repo.
 
     Args:
-      commit: The commit SHA you are checking for
-      project_name: The name of the project you are checking
+      commit: The commit SHA you are checking 
 
     Returns:
       True if the commit exits in the project
     """
 
-    # Handle the default case
+    # Handle the exception case, if empty string is passed _run_command will
+    # return true
     if commit.rstrip() == '':
       return False
 
@@ -135,9 +137,7 @@ class RepoManager(object):
     Returns:
       The current active commit SHA
     """
-    out, err = self._run_command(['git', 'rev-parse', 'HEAD'], self.repo_dir)
-    if err is not None:
-      return 1
+    out, err = self._run_command(['git', 'rev-parse', 'HEAD'], self.repo_dir, check_result=True)
     return out.strip('\n')
 
   def get_commit_list(self, old_commit, new_commit):
@@ -164,15 +164,15 @@ class RepoManager(object):
       return [old_commit]
     out, err = self._run_command(
         ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
-    result = out.split('\n')
-    result = [i for i in result if i]
-    if err is not None or result == []:
+    commits = out.split('\n')
+    commits = [commit for commit in commits if commit]
+    if err is not None or commits == []:
       raise RepoManagerError('Error gettign commit list between %s and %s '
                                  % (old_commit, new_commit))
 
     # Make sure result is inclusive
-    result.append(old_commit)
-    return result
+    commits.append(old_commit)
+    return commits
 
   def checkout_commit(self, commit):
     """Checks out a specific commit from the repo.
@@ -190,9 +190,7 @@ class RepoManager(object):
 
     git_path = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(git_path):
-      _, err = self._run_command(['git', 'fetch', '--unshallow'], self.repo_dir)
-      if err is not None:
-        raise RepoManagerError('Git fetch failed with error %s' % err)
+      _, err = self._run_command(['git', 'fetch', '--unshallow'], self.repo_dir, check_result=True)
 
     _, err = self._run_command(['git', 'checkout', '-f', commit], self.repo_dir)
     if self.get_current_commit() != commit:

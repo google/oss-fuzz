@@ -18,11 +18,11 @@ The will consist of the following functional tests
   3. Can get a list of commits between two SHAs
 """
 
-from RepoManager import RepoManager
-from RepoManager import RepoManagerError
 import os
 import unittest
 
+from RepoManager import RepoManager
+from RepoManager import RepoManagerError
 
 class TestRepoManager(unittest.TestCase):
   """Class to test the functionality of the RepoManager class."""
