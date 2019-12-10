@@ -27,6 +27,3 @@ DEFINE_PROTO_FUZZER(const xmlProtoFuzzer::XmlDocument& xmlDocument) {
     std::string xmlData = xmlProtoFuzzer::ProtoConverter().protoToString(xmlDocument);
     parseInMemory((const uint8_t *)xmlData.c_str(), xmlData.size());
 }
-
-
-
