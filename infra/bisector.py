@@ -39,9 +39,11 @@ This is done with the following steps:
 
 import argparse
 
-from DockerRepoManager import DockerRepoManager
 from helper import build_fuzzers
 from helper import reproduce
+from build_specified_commit import build_fuzzer_from_commit
+from build_specified_commit import infer_main_repo
+from RepoManager import RepoManager
 
 
 def main():
@@ -71,45 +73,47 @@ def main():
       default='address',
       help='the default is "address"; "dataflow" for "dataflow" engine')
   parser.add_argument('--architecture', default='x86_64')
-
   args = parser.parse_args()
 
-  rm = DockerRepoManager(args.project_name, args.commit_new)
-  commit_list = rm.get_commit_list(args.commit_old, args.commit_new)
-  result_commit_idx = bisection(0,
-                                len(commit_list) - 1, commit_list, rm,
-                                len(commit_list), args)
-  if result_commit_idx == -1:
-    print('No error was found in commit range %s:%s' % (args.commit_old, args.commit_new))
-  elif result_commit_idx == len(commit_list):
-    print('Error was found through full commit range %s:%s' % (args.commit_old, args.commit_new))
+  error_sha = init_bisection(args.project_name, args.commit_old,
+                             args.commit_new, args.engine, args.sanitizer,
+                             args.architecture, args.test_case,
+                             args.fuzzer_name)
+  if not error_sha:
+    print('No error was found in commit range %s:%s' %
+          (args.commit_old, args.commit_new))
   else:
-    print('Error was introduced at commit %s' % commit_list[result_commit_idx])
+    print('Error was introduced at commit %s' % error_sha)
 
 
-def bisection_display(commit_list, last_error, current_index):
-  """Displays the current state of the binary search.
+def init_bisection(project_name, commit_old, commit_new, engine, sanitizer,
+                   architecture, test_case, fuzzer_name):
 
-  Args:
-    commit_list: The total list of commits
-    last_error: The index of the last error that occured
-    current_index: The current index being checked
-  """
-  print()
-  print('Current Bisection Status')
-  print('newest commit')
-  for i in range(0, len(commit_list)):
-    if i == current_index:
-      print('%s %s' % (commit_list[i], 'current_index'))
-    elif i == last_error:
-      print('%s %s' % (commit_list[i], 'Most recent error found'))
-    else:
-      print('%s' % (commit_list[i]))
-  print('oldest commit')
+  LOCAL_STORE_PATH = 'tmp'
+  repo_url = infer_main_repo(project_name, LOCAL_STORE_PATH, commit_old)
+  rm = RepoManager(repo_url, LOCAL_STORE_PATH)
+  commit_list = rm.get_commit_list(commit_old, commit_new)
+
+  # Handle the case where there is only one SHA passed in
+  if len(commit_list) != 1:
+    build_fuzzer_from_commit(project_name, commit_list[0], rm.repo_dir, engine,
+                           sanitizer, architecture, rm)
+    error_code = reproduce_error(project_name, test_case, fuzzer_name)
+  else:
+    error_code = None
+  index = bisection(project_name, 0,
+                    len(commit_list) - 1, commit_list, rm, len(commit_list),
+                    error_code, engine, sanitizer, architecture, test_case,
+                    fuzzer_name)
+  if index is not None:
+    return commit_list[index]
+  else:
+    return -1
 
 
-def bisection(commit_new_idx, commit_old_idx, commit_list, repo_manager,
-              last_error, args):
+def bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
+              repo_manager, last_error, error_code, engine, sanitizer,
+              architecture, test_case, fuzzer_name):
   """Returns the commit ID where a bug was introduced.
 
   Args:
@@ -118,15 +122,23 @@ def bisection(commit_new_idx, commit_old_idx, commit_list, repo_manager,
     commit_list: The list of all commit SHAs
     repo_manager: The class handling all of the git repo calls
     last_error: The index where the last error was found
-    args: Struct containing info about how the fuzzers should be built
 
   Returns:
     The index of the SHA string where the bug was introduced
   """
   cur_idx = (commit_new_idx + commit_old_idx) // 2
-  error_exists = test_error_exists(commit_list[cur_idx], repo_manager, args)
+  print("Commit list: \n %s" % commit_list)
+  print("Current index: %s" % str(cur_idx))
+  print("High index: %s low index %s" % (str(commit_new_idx), str(commit_old_idx)))
+  build_fuzzer_from_commit(project_name, commit_list[cur_idx],
+                           repo_manager.repo_dir, engine, sanitizer,
+                           architecture,repo_manager)
+  new_error_code = reproduce_error(project_name, test_case, fuzzer_name)
+  if new_error_code == error_code:
+    error_exists = True
+  else:
+    error_exists = False
 
-  bisection_display(commit_list, last_error, cur_idx)
   if commit_new_idx == commit_old_idx:
     if error_exists:
       return cur_idx
@@ -134,50 +146,15 @@ def bisection(commit_new_idx, commit_old_idx, commit_list, repo_manager,
       return last_error
 
   if error_exists:
-    return bisection(cur_idx +1, commit_old_idx, commit_list, repo_manager,
-                       cur_idx, args)
+    return bisection(project_name, cur_idx + 1, commit_old_idx, commit_list,
+                     repo_manager, cur_idx, error_code, engine, sanitizer,
+                     architecture, test_case, fuzzer_name)
   else:
     if cur_idx == 0:
-      return -1
-    return bisection(commit_new_idx, cur_idx - 1, commit_list, repo_manager,
-                     last_error, args)
-
-
-def build_fuzzers_from_helper(project_name, args):
-  """Builds fuzzers using helper.py api.
-  Args:
-    project_name: the name of the project whos fuzzers you want build
-  """
-  parser = argparse.ArgumentParser()
-  parser.add_argument('project_name')
-  parser.add_argument('fuzzer_name', nargs='?')
-  parser.add_argument('--engine', default='libfuzzer')
-  parser.add_argument(
-      '--sanitizer',
-      default='address',
-      help='the default is "address"; "dataflow" for "dataflow" engine')
-  parser.add_argument('--architecture', default='x86_64')
-  parser.add_argument(
-      '-e', action='append', help='set environment variable e.g. VAR=value')
-  parser.add_argument('source_path', help='path of local source', nargs='?')
-  parser.add_argument(
-      '--clean',
-      dest='clean',
-      action='store_true',
-      help='clean existing artifacts.')
-  parser.add_argument(
-      '--no-clean',
-      dest='clean',
-      action='store_false',
-      help='do not clean existing artifacts '
-      '(default).')
-  parser.set_defaults(clean=False)
-  args = parser.parse_args([project_name, args.fuzzer_name,
-                            '--clean',
-                            '--engine', args.engine,
-                            '--sanitizer', args.sanitizer,
-                            '--architecture', args.architecture])
-  build_fuzzers(args, True)
+      return None
+    return bisection(project_name, commit_new_idx, cur_idx - 1, commit_list,
+                     repo_manager, last_error, error_code, engine, sanitizer,
+                     architecture, test_case, fuzzer_name)
 
 
 def reproduce_error(project_name, test_case, fuzzer_name):
@@ -203,28 +180,6 @@ def reproduce_error(project_name, test_case, fuzzer_name):
       '-e', action='append', help='set environment variable e.g. VAR=value')
   args = parser.parse_args([project_name, fuzzer_name, test_case])
   return reproduce(args)
-
-
-def test_error_exists(commit, repo_manager, args):
-  """Tests if the error is reproduceable at the specified commit
-
-  Args:
-    commit: The commit you want to check for the error
-    repo_manager: The object that handles git interaction
-    args: Struct containing info about how fuzzers should be built
-
-  Returns:
-    True if the error exists at the specified commit
-  """
-  repo_manager.set_image_commit(commit)
-  build_fuzzers_from_helper(repo_manager.repo_name, args)
-  err_code = reproduce_error(repo_manager.repo_name, args.test_case, args.fuzzer_name)
-  if err_code == 0:
-    print('Error does not exist at commit %s' % commit)
-    return False
-  else:
-    print('Error exists at commit %s' % commit)
-    return True
 
 
 if __name__ == '__main__':
