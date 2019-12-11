@@ -21,32 +21,25 @@ This is done with the following steps:
   NOTE: NEEDS TO BE RUN FROM THE oss-fuzz HOME directory
 
   Typical usage example:
-    1. (Host) Clone the main project repo on the host
-    2. (Host) Run git fetch --unshallow
-    3. (Host) Use git bisect to identify the next commit to check
-    4. (Host) Build the image at the specific commit
-    5. (Host) Mount the repo with the correct commit over the build image repo
-    5. (Host) Build the fuzzers from new image with updated repo
-    6. (Host) Test for bug’s existence
-    7. Go to step 3
-    python bisect.py --project_name curl
-      --commit_new dda418266c99ceab368d723facb52069cbb9c8d5
-      s
-      --fuzzer_name curl_fuzzer_ftp
-      --test_case /usr/local/google/home/lneat/Downloads/clusterfuzz-test\
-          case-minimized-curl_fuzzer_ftp-5657400807260160
+        sudo python3 infra/bisector.py
+          --commit_old  1e403e9259a1abedf108ab86f711ba52c907226d
+          --commit_new f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f
+          --fuzzer_name rules_fuzzer
+          --project_name yara
+          --test_case infra/yara_test_case
+          --sanitizer address
 """
 
 import argparse
 
-from helper import build_fuzzers
-from helper import reproduce
+from helper import reproduce_impl
 from build_specified_commit import build_fuzzer_from_commit
 from build_specified_commit import infer_main_repo
 from RepoManager import RepoManager
 
 
 def main():
+  """Gets the commit SHA where an error was initally introduced."""
   parser = argparse.ArgumentParser(
       'bisector.py',
       description='git bisection for finding introduction of bugs')
@@ -88,27 +81,44 @@ def main():
 
 def init_bisection(project_name, commit_old, commit_new, engine, sanitizer,
                    architecture, test_case, fuzzer_name):
+  """Creates an bisection call that kicks off the error detection.
 
-  LOCAL_STORE_PATH = 'tmp'
-  repo_url = infer_main_repo(project_name, LOCAL_STORE_PATH, commit_old)
-  rm = RepoManager(repo_url, LOCAL_STORE_PATH)
-  commit_list = rm.get_commit_list(commit_old, commit_new)
+  This function is necessary in order to get the error code of the newest commit. This
+  sets a standard for what the error actually is.
+
+  Args:
+    project_name: The name of the oss fuzz project that is being checked
+    commit_old: The oldest commit in the error regression range
+    commit_new: The newest commit in the error regression range
+    engine: The fuzzing engine to be used
+    sanitizer: The fuzzing sanitizer to be used
+    architecture: The system architecture being fuzzed
+    test_case: The file path of the test case that triggers the error
+    fuzzer_name: The name of the fuzzer to be tested
+
+  Returns:
+    The commit SHA that introduced the error or None
+  """
+  local_store_path = 'tmp'
+  repo_url = infer_main_repo(project_name, local_store_path, commit_old)
+  repo_manager = RepoManager(repo_url, local_store_path)
+  commit_list = repo_manager.get_commit_list(commit_old, commit_new)
 
   # Handle the case where there is only one SHA passed in
   if len(commit_list) != 1:
-    build_fuzzer_from_commit(project_name, commit_list[0], rm.repo_dir, engine,
-                           sanitizer, architecture, rm)
+    build_fuzzer_from_commit(project_name, commit_list[0],
+                             repo_manager.repo_dir, engine, sanitizer,
+                             architecture, repo_manager)
     error_code = reproduce_error(project_name, test_case, fuzzer_name)
   else:
     error_code = None
   index = bisection(project_name, 0,
-                    len(commit_list) - 1, commit_list, rm, len(commit_list),
-                    error_code, engine, sanitizer, architecture, test_case,
-                    fuzzer_name)
+                    len(commit_list) - 1, commit_list, repo_manager,
+                    len(commit_list), error_code, engine, sanitizer,
+                    architecture, test_case, fuzzer_name)
   if index is not None:
     return commit_list[index]
-  else:
-    return -1
+  return None
 
 
 def bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
@@ -117,44 +127,47 @@ def bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
   """Returns the commit ID where a bug was introduced.
 
   Args:
+    project_name: The name of the oss fuzz project being tested
     commit_old_idx: The oldest commit SHA index in the search space
     commit_new_idx: The newest commit SHA index in the search space
     commit_list: The list of all commit SHAs
     repo_manager: The class handling all of the git repo calls
     last_error: The index where the last error was found
+    error_code: The error code of the newest commit(what we are searching for)
+    engine: The fuzzing engine used to fuzz the project
+    sanitizer: THe sanitizer being used for fuzzing
+    architecture: The system architecture being fuzzed
+    test_case: The file path to the test case that caused the error
+    fuzzer_name: The fuzzer that caused the error
 
   Returns:
-    The index of the SHA string where the bug was introduced
+    The index of the commit SHA where the error was introduced
   """
   cur_idx = (commit_new_idx + commit_old_idx) // 2
   print("Commit list: \n %s" % commit_list)
   print("Current index: %s" % str(cur_idx))
-  print("High index: %s low index %s" % (str(commit_new_idx), str(commit_old_idx)))
+  print("High index: %s low index %s" %
+        (str(commit_new_idx), str(commit_old_idx)))
   build_fuzzer_from_commit(project_name, commit_list[cur_idx],
                            repo_manager.repo_dir, engine, sanitizer,
-                           architecture,repo_manager)
-  new_error_code = reproduce_error(project_name, test_case, fuzzer_name)
-  if new_error_code == error_code:
-    error_exists = True
-  else:
-    error_exists = False
+                           architecture, repo_manager)
+  error_exists = (
+      reproduce_error(project_name, test_case, fuzzer_name) == error_code)
 
   if commit_new_idx == commit_old_idx:
     if error_exists:
       return cur_idx
-    else:
-      return last_error
+    return last_error
 
   if error_exists:
     return bisection(project_name, cur_idx + 1, commit_old_idx, commit_list,
                      repo_manager, cur_idx, error_code, engine, sanitizer,
                      architecture, test_case, fuzzer_name)
-  else:
-    if cur_idx == 0:
-      return None
-    return bisection(project_name, commit_new_idx, cur_idx - 1, commit_list,
-                     repo_manager, last_error, error_code, engine, sanitizer,
-                     architecture, test_case, fuzzer_name)
+  if cur_idx == 0:
+    return None
+  return bisection(project_name, commit_new_idx, cur_idx - 1, commit_list,
+                   repo_manager, last_error, error_code, engine, sanitizer,
+                   architecture, test_case, fuzzer_name)
 
 
 def reproduce_error(project_name, test_case, fuzzer_name):
