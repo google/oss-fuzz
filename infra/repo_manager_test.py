@@ -9,7 +9,7 @@
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
+# See the License for the specific language governing perepo_managerissions and
 # limitations under the License.
 """Test the functionality of the RepoManager class
 The will consist of the following functional tests
@@ -32,28 +32,29 @@ class TestRepoManager(unittest.TestCase):
 
   def test_clone_correctly(self):
     """Tests the correct location of the git repo."""
-    rm = RepoManager(self.curl_repo, 'tmp')
-    git_path = os.path.join(rm.base_dir, rm.repo_name, '.git')
+    repo_manager = RepoManager(self.curl_repo, 'tmp')
+    git_path = os.path.join(repo_manager.base_dir, repo_manager.repo_name,
+                            '.git')
     self.assertTrue(os.path.isdir(git_path))
-    rm.remove_repo()
+    repo_manager.remove_repo()
     with self.assertRaises(RepoManagerError):
-      rm = RepoManager(' ', 'tmp')
+      repo_manager = RepoManager(' ', 'tmp')
 
   def test_checkout_commit(self):
     """Tests that the git checkout command works."""
-    rm = RepoManager(self.curl_repo, 'tmp')
+    repo_manager = RepoManager(self.curl_repo, 'tmp')
     commit_to_test = '036ebac0134de3b72052a46f734e4ca81bb96055'
-    rm.checkout_commit(commit_to_test)
-    self.assertEqual(commit_to_test, rm.get_current_commit())
+    repo_manager.checkout_commit(commit_to_test)
+    self.assertEqual(commit_to_test, repo_manager.get_current_commit())
     with self.assertRaises(ValueError):
-      rm.checkout_commit(' ')
+      repo_manager.checkout_commit(' ')
     with self.assertRaises(RepoManagerError):
-      rm.checkout_commit('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    rm.remove_repo()
+      repo_manager.checkout_commit('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    repo_manager.remove_repo()
 
   def test_get_commit_list(self):
     """Tests an accurate commit list can be retrived from the repo manager."""
-    rm = RepoManager(self.curl_repo, 'tmp')
+    repo_manager = RepoManager(self.curl_repo, 'tmp')
     old_commit = '7cf18b05e04bbb0f08c74d2567b0648f6c31a952'
     new_commit = '113db127ee2b2f874dfcce406103ffe666e11953'
     commit_list = [
@@ -62,14 +63,15 @@ class TestRepoManager(unittest.TestCase):
         '9a2cbf30b81a2b57149bb20e78e2e4cb5c2ff389',
         '7cf18b05e04bbb0f08c74d2567b0648f6c31a952'
     ]
-    result_list = rm.get_commit_list(old_commit, new_commit)
+    result_list = repo_manager.get_commit_list(old_commit, new_commit)
     self.assertListEqual(commit_list, result_list)
     with self.assertRaises(RepoManagerError):
-      rm.get_commit_list('asafd', new_commit)
+      repo_manager.get_commit_list('asafd', new_commit)
     with self.assertRaises(RepoManagerError):
-      rm.get_commit_list(new_commit, 'asdfasdf')
+      repo_manager.get_commit_list(new_commit, 'asdfasdf')
     with self.assertRaises(RepoManagerError):
-      result_list = rm.get_commit_list(new_commit, old_commit)
+      # Testing commits out of order
+      result_list = repo_manager.get_commit_list(new_commit, old_commit)
 
 
 if __name__ == '__main__':

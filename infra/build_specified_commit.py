@@ -17,13 +17,9 @@ This module is allows each of the OSS Fuzz projects fuzzers to be built
 from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
-import os
 import re
-import sys
-import subprocess
 
 from helper import build_fuzzers_impl
-from helper import build_image_impl
 from helper import check_project_exists
 from helper import get_dockerfile_path
 from RepoManager import RepoManager
@@ -68,8 +64,8 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
   if not check_project_exists(project_name):
     return None
   docker_path = get_dockerfile_path(project_name)
-  with open(docker_path, 'r') as fp:
-    lines = ''.join(fp.readlines())
+  with open(docker_path, 'r') as file_path:
+    lines = ''.join(file_path.readlines())
     # Use generic git format and project name to guess main repo
     if example_commit is None:
       repo_url = re.search(r'\bhttp[^ ]*' + re.escape(project_name) + r'.git',
@@ -84,7 +80,7 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
       # Use example commit SHA to guess main repo
       for clone_command in re.findall('.*clone.*', lines):
         for git_repo_url in re.findall('http[s]?://[^ ]*', clone_command):
-          rm = RepoManager(git_repo_url.rstrip(), local_store_path)
-          if rm.commit_exists(example_commit):
+          repo_manager = RepoManager(git_repo_url.rstrip(), local_store_path)
+          if repo_manager.commit_exists(example_commit):
             return git_repo_url
   return None

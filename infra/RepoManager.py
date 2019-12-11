@@ -21,7 +21,6 @@ a python API and manage the current state of the git repo.
     r_man =  RepoManager('https://github.com/google/oss-fuzz.git')
     r_man.checkout('5668cc422c2c92d38a370545d3591039fb5bb8d4')
 """
-import logging
 import os
 import shutil
 import subprocess
@@ -29,7 +28,6 @@ import subprocess
 
 class RepoManagerError(Exception):
   """Class to describe the exceptions in RepoManager."""
-  pass
 
 
 class RepoManager(object):
@@ -114,7 +112,7 @@ class RepoManager(object):
       True if the commit exits in the project
 
     Raises:
-      ValueException: an empty string was passed in as a commit 
+      ValueException: an empty string was passed in as a commit
     """
 
     # Handle the exception case, if empty string is passed _run_command will

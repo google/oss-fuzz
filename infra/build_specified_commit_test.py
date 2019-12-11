@@ -22,7 +22,6 @@ import unittest
 from build_specified_commit import infer_main_repo
 from build_specified_commit import build_fuzzer_from_commit
 from helper import reproduce
-from RepoManager import RepoManager
 
 
 class BuildImageUnitTests(unittest.TestCase):
