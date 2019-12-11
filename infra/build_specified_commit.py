@@ -34,7 +34,7 @@ def build_fuzzer_from_commit(project_name,
                              local_store_path,
                              engine='libfuzzer',
                              sanitizer='address',
-                             architecture='x86_64', repo_manager=None):
+                             architecture='x86_64'):
   """Builds a ossfuzz fuzzer at a  specific commit SHA.
 
   Args:
@@ -48,12 +48,11 @@ def build_fuzzer_from_commit(project_name,
   Returns:
     0 on successful build 1 on failure
   """
-  if repo_manager is None:
-    guessed_url = infer_main_repo(project_name, local_store_path, commit)
-    repo_manager = RepoManager(guessed_url, local_store_path)
-  repo_manager.checkout_commit(commit)
+  guessed_url = infer_main_repo(project_name, local_store_path, commit)
+  repo_man = RepoManager(guessed_url, local_store_path)
+  repo_man.checkout_commit(commit)
   return build_fuzzers_impl(project_name, True, engine, sanitizer, architecture,
-                            None, repo_manager.repo_dir)
+                            None, repo_man.repo_dir)
 
 
 def infer_main_repo(project_name, local_store_path, example_commit=None):
@@ -64,13 +63,13 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
     project_name: The oss fuzz project that you are checking the repo of
     example_commit: A commit that is in the main repos tree
   Returns:
-    The guessed repo url path or 1 on failue
+    The guessed repo url path or None on failue
   """
   if not check_project_exists(project_name):
-    return 1
+    return None
   docker_path = get_dockerfile_path(project_name)
-  with open(docker_path, 'r') as fp:
-    lines = ''.join(fp.readlines())
+  with open(docker_path, 'r') as file_path:
+    lines = ''.join(file_path.readlines())
     # Use generic git format and project name to guess main repo
     if example_commit is None:
       repo_url = re.search(r'\bhttp[^ ]*' + re.escape(project_name) + r'.git',
@@ -80,12 +79,13 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
       repo_url = re.search(r'\bgit:[^ ]*/' + re.escape(project_name), lines)
       if repo_url:
         return repo_url.group(0)
-
-  # Use example commit SHA to guess main repo
     else:
+
+      # Use example commit SHA to guess main repo
       for clone_command in re.findall('.*clone.*', lines):
+        print(clone_command)
         for git_repo_url in re.findall('http[s]?://[^ ]*', clone_command):
-          rm = RepoManager(git_repo_url.rstrip(), local_store_path)
-          if rm.commit_exists(example_commit):
+          repo_manager = RepoManager(git_repo_url.rstrip(), local_store_path)
+          if repo_manager.commit_exists(example_commit):
             return git_repo_url
-  return 1
+  return None

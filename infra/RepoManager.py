@@ -21,7 +21,6 @@ a python API and manage the current state of the git repo.
     r_man =  RepoManager('https://github.com/google/oss-fuzz.git')
     r_man.checkout('5668cc422c2c92d38a370545d3591039fb5bb8d4')
 """
-import logging
 import os
 import shutil
 import subprocess
@@ -29,7 +28,6 @@ import subprocess
 
 class RepoManagerError(Exception):
   """Class to describe the exceptions in RepoManager."""
-  pass
 
 
 class RepoManager(object):
@@ -87,9 +85,10 @@ class RepoManager(object):
     """
     process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
     out, err = process.communicate()
-    if err is not None and check_result:
-      raise RepoManagerError('Error: %s running command: %s with return code:' %
-                             (err, command, process.returncode))
+    if (process.returncode or err) and check_result:
+      raise RepoManagerError(
+          'Error: %s running command: %s with return code: %s' %
+          (err, command, process.returncode))
     if out is not None:
       out = out.decode('ascii')
     return out, err
@@ -113,20 +112,18 @@ class RepoManager(object):
       True if the commit exits in the project
 
     Raises:
-      ValueException: an empty string was passed in as a commit 
+      ValueException: an empty string was passed in as a commit
     """
 
     # Handle the exception case, if empty string is passed _run_command will
     # raise a ValueError
-    if commit.rstrip() == '':
+    if not commit.rstrip():
       raise ValueError('An empty string is not a valid commit SHA')
 
     out, _ = self._run_command(['git', 'branch', '--contains', commit],
                                self.repo_dir)
-    if ('error: no such commit' in out) or (
-        'error: malformed object name' in out) or (out == ''):
-      return False
-    return True
+    return (out and 'error: no such commit' not in out and
+            'error: malformed object name' not in out)
 
   def get_current_commit(self):
     """Gets the current commit SHA of the repo.
@@ -181,7 +178,6 @@ class RepoManager(object):
       RepoManagerError when checkout is not successful
     """
     if not self.commit_exists(commit):
-      logging.error('Commit %s does not exist in current branch' % commit)
       raise RepoManagerError('Commit %s does not exist in current branch' %
                              commit)
 
