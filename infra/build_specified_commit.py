@@ -63,10 +63,10 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
     project_name: The oss fuzz project that you are checking the repo of
     example_commit: A commit that is in the main repos tree
   Returns:
-    The guessed repo url path or 1 on failue
+    The guessed repo url path or None on failue
   """
   if not check_project_exists(project_name):
-    return 1
+    return None
   docker_path = get_dockerfile_path(project_name)
   with open(docker_path, 'r') as fp:
     lines = ''.join(fp.readlines())
@@ -79,14 +79,12 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
       repo_url = re.search(r'\bgit:[^ ]*/' + re.escape(project_name), lines)
       if repo_url:
         return repo_url.group(0)
-
-  # Use example commit SHA to guess main repo
     else:
+
+      # Use example commit SHA to guess main repo
       for clone_command in re.findall('.*clone.*', lines):
-        print(clone_command)
         for git_repo_url in re.findall('http[s]?://[^ ]*', clone_command):
-          print(git_repo_url)
           rm = RepoManager(git_repo_url.rstrip(), local_store_path)
           if rm.commit_exists(example_commit):
             return git_repo_url
-  return 1
+  return None

@@ -417,7 +417,7 @@ def build_image(args):
 
 
 def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
-                       e, source_path):
+                       env_to_add, source_path):
   """Build fuzzers."""
   if not build_image_impl(project_name):
     return 1
@@ -440,8 +440,8 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
       'SANITIZER=' + sanitizer,
       'ARCHITECTURE=' + architecture,
   ]
-  if e:
-    env += e
+  if env_to_add:
+    env += env_to_add 
 
   project_work_dir = _get_work_dir(project_name)
 
