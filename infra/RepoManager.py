@@ -78,20 +78,20 @@ class RepoManager(object):
       check_result: Should an exception be thrown on failed command
 
     Returns:
-      The stdout of the command, the stderr of the command
+      The stdout of the command, the error code
 
     Raises:
       RepoManagerError: running a command resulted in an error
     """
     process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
     out, err = process.communicate()
-    if (process.returncode or err) and check_result:
+    if check_result and (process.returncode or err):
       raise RepoManagerError(
           'Error: %s running command: %s with return code: %s' %
           (err, command, process.returncode))
     if out is not None:
       out = out.decode('ascii')
-    return out, err
+    return out, process.returncode
 
   def _is_git_repo(self):
     """Test if the current repo dir is a git repo or not.
@@ -120,11 +120,9 @@ class RepoManager(object):
     if not commit.rstrip():
       raise ValueError('An empty string is not a valid commit SHA')
 
-    out, _ = self._run_command(['git', 'branch', '--contains', commit],
-                               self.repo_dir)
-    print("Out %s" % out)
-    return (out and 'error: no such commit' not in out and
-            'error: malformed object name' not in out)
+    _, err_code = self._run_command(['git', 'cat-file', '-e', commit],
+                                    self.repo_dir)
+    return not err_code
 
   def get_current_commit(self):
     """Gets the current commit SHA of the repo.
@@ -157,11 +155,11 @@ class RepoManager(object):
       raise RepoManagerError('The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
       return [old_commit]
-    out, err = self._run_command(
+    out, err_code = self._run_command(
         ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
     commits = out.split('\n')
     commits = [commit for commit in commits if commit]
-    if err is not None or not commits:
+    if err_code or not commits:
       raise RepoManagerError('Error getting commit list between %s and %s ' %
                              (old_commit, new_commit))
 

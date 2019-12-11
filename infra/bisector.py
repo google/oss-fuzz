@@ -32,6 +32,7 @@ This is done with the following steps:
 
 import argparse
 
+from helper import reproduce
 from build_specified_commit import build_fuzzer_from_commit
 from build_specified_commit import infer_main_repo
 from RepoManager import RepoManager

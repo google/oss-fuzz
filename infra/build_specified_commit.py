@@ -34,7 +34,8 @@ def build_fuzzer_from_commit(project_name,
                              local_store_path,
                              engine='libfuzzer',
                              sanitizer='address',
-                             architecture='x86_64'):
+                             architecture='x86_64',
+                             repo_manager=None):
   """Builds a ossfuzz fuzzer at a  specific commit SHA.
 
   Args:
@@ -48,11 +49,12 @@ def build_fuzzer_from_commit(project_name,
   Returns:
     0 on successful build 1 on failure
   """
-  guessed_url = infer_main_repo(project_name, local_store_path, commit)
-  repo_man = RepoManager(guessed_url, local_store_path)
-  repo_man.checkout_commit(commit)
+  if not repo_manager:
+    guessed_url = infer_main_repo(project_name, local_store_path, commit)
+    repo_manager = RepoManager(guessed_url, local_store_path)
+  repo_manager.checkout_commit(commit)
   return build_fuzzers_impl(project_name, True, engine, sanitizer, architecture,
-                            None, repo_man.repo_dir)
+                            None, repo_manager.repo_dir)
 
 
 def infer_main_repo(project_name, local_store_path, example_commit=None):
@@ -66,7 +68,6 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
     The guessed repo url path or None on failue
   """
   if not check_project_exists(project_name):
-    print("here")
     return None
   docker_path = get_dockerfile_path(project_name)
   with open(docker_path, 'r') as file_path:
@@ -86,8 +87,6 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
       for clone_command in re.findall('.*clone.*', lines):
         for git_repo_url in re.findall('http[s]?://[^ ]*', clone_command):
           repo_manager = RepoManager(git_repo_url.rstrip(), local_store_path)
-          print("Git repo checking: %s" % git_repo_url)
-          print("Commit exits: %s" % repo_manager.commit_exists(example_commit))
           if repo_manager.commit_exists(example_commit):
             return git_repo_url
   return None
