@@ -66,6 +66,7 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
     The guessed repo url path or None on failue
   """
   if not check_project_exists(project_name):
+    print("here")
     return None
   docker_path = get_dockerfile_path(project_name)
   with open(docker_path, 'r') as file_path:
@@ -83,9 +84,10 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
 
       # Use example commit SHA to guess main repo
       for clone_command in re.findall('.*clone.*', lines):
-        print(clone_command)
         for git_repo_url in re.findall('http[s]?://[^ ]*', clone_command):
           repo_manager = RepoManager(git_repo_url.rstrip(), local_store_path)
+          print("Git repo checking: %s" % git_repo_url)
+          print("Commit exits: %s" % repo_manager.commit_exists(example_commit))
           if repo_manager.commit_exists(example_commit):
             return git_repo_url
   return None

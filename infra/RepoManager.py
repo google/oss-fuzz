@@ -122,6 +122,7 @@ class RepoManager(object):
 
     out, _ = self._run_command(['git', 'branch', '--contains', commit],
                                self.repo_dir)
+    print("Out %s" % out)
     return (out and 'error: no such commit' not in out and
             'error: malformed object name' not in out)
 

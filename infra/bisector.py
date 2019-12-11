@@ -32,7 +32,6 @@ This is done with the following steps:
 
 import argparse
 
-from helper import reproduce_impl
 from build_specified_commit import build_fuzzer_from_commit
 from build_specified_commit import infer_main_repo
 from RepoManager import RepoManager
@@ -101,6 +100,7 @@ def init_bisection(project_name, commit_old, commit_new, engine, sanitizer,
   """
   local_store_path = 'tmp'
   repo_url = infer_main_repo(project_name, local_store_path, commit_old)
+  print(repo_url)
   repo_manager = RepoManager(repo_url, local_store_path)
   commit_list = repo_manager.get_commit_list(commit_old, commit_new)
 
