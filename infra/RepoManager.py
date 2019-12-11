@@ -120,7 +120,7 @@ class RepoManager(object):
     if not commit.rstrip():
       raise ValueError('An empty string is not a valid commit SHA')
 
-    _, err_code = self._run_command(['git', 'branch', '--contains', commit],
+    _, err_code = self._run_command(['git', 'cat-file', '-e', commit],
                                     self.repo_dir)
     return not err_code
 
