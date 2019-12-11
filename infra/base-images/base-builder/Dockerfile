@@ -47,7 +47,7 @@ RUN go get github.com/dvyukov/go-fuzz/go-fuzz-build
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
 
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
-ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,float-divide-by-zero,function,integer-divide-by-zero,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,float-divide-by-zero,function,integer-divide-by-zero,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
+ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
 
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
