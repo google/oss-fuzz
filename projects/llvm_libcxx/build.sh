@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+cd llvm-project
+
 if [[ $SANITIZER = *undefined* ]]; then
   CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fsanitize-trap=unsigned-integer-overflow"
 fi
