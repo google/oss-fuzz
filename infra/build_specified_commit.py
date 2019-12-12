@@ -17,13 +17,9 @@ This module is allows each of the OSS Fuzz projects fuzzers to be built
 from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
-import os
 import re
-import sys
-import subprocess
 
 from helper import build_fuzzers_impl
-from helper import build_image_impl
 from helper import check_project_exists
 from helper import get_dockerfile_path
 from RepoManager import RepoManager
@@ -53,8 +49,15 @@ def build_fuzzer_from_commit(project_name,
     guessed_url = infer_main_repo(project_name, local_store_path, commit)
     repo_manager = RepoManager(guessed_url, local_store_path)
   repo_manager.checkout_commit(commit)
-  return build_fuzzers_impl(project_name, True, engine, sanitizer, architecture,
-                            None, repo_manager.repo_dir)
+  return build_fuzzers_impl(
+      project_name,
+      True,
+      engine,
+      sanitizer,
+      architecture,
+      None,
+      repo_manager.repo_dir,
+      no_image_cache=True)
 
 
 def infer_main_repo(project_name, local_store_path, example_commit=None):
@@ -71,22 +74,24 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
     return None
   docker_path = get_dockerfile_path(project_name)
   with open(docker_path, 'r') as file_path:
-    lines = ''.join(file_path.readlines())
+    lines = file_path.read()
     # Use generic git format and project name to guess main repo
     if example_commit is None:
-      repo_url = re.search(r'\bhttp[^ ]*' + re.escape(project_name) + r'.git',
-                           lines)
-      if repo_url:
-        return repo_url.group(0)
-      repo_url = re.search(r'\bgit:[^ ]*/' + re.escape(project_name), lines)
+      repo_url = re.search(
+          r'\b(?:http|https|git)://[^ ]*' + re.escape(project_name) +
+          r'(.git)?', lines)
       if repo_url:
         return repo_url.group(0)
     else:
-
       # Use example commit SHA to guess main repo
       for clone_command in re.findall('.*clone.*', lines):
-        for git_repo_url in re.findall('http[s]?://[^ ]*', clone_command):
-          repo_manager = RepoManager(git_repo_url.rstrip(), local_store_path)
+        repo_url = re.search(r'\b(?:https|http|git)://[^ ]*',
+                             clone_command).group(0)
+        print(repo_url)
+        try:
+          repo_manager = RepoManager(repo_url.rstrip(), local_store_path)
           if repo_manager.commit_exists(example_commit):
-            return git_repo_url
-  return None
+            return repo_url
+        except:
+          pass
+    return None

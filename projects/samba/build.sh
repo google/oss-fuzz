@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +15,5 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-#TODO change
-MAINTAINER bug-binutils@gnu.org
-RUN apt-get update && apt-get install -y make
-RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git binutils-gdb
-WORKDIR $SRC
-COPY build.sh $SRC/
-COPY fuzz_disassemble.c $SRC/
+# The real script is maintained in the Samba repo
+exec lib/fuzzing/oss-fuzz/build_samba.sh

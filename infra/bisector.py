@@ -32,9 +32,9 @@ This is done with the following steps:
 
 import argparse
 
-from helper import reproduce
 from build_specified_commit import build_fuzzer_from_commit
 from build_specified_commit import infer_main_repo
+from helper import reproduce_impl
 from RepoManager import RepoManager
 
 
@@ -104,15 +104,15 @@ def init_bisection(project_name, commit_old, commit_new, engine, sanitizer,
   print(repo_url)
   repo_manager = RepoManager(repo_url, local_store_path)
   commit_list = repo_manager.get_commit_list(commit_old, commit_new)
-
+  build_fuzzer_from_commit(project_name, commit_list[0], repo_manager.repo_dir,
+                           engine, sanitizer, architecture, repo_manager)
+  error_code = reproduce_impl(project_name, fuzzer_name, False, [], [],
+                              test_case)
   # Handle the case where there is only one SHA passed in
-  if len(commit_list) != 1:
-    build_fuzzer_from_commit(project_name, commit_list[0],
-                             repo_manager.repo_dir, engine, sanitizer,
-                             architecture, repo_manager)
-    error_code = reproduce_error(project_name, test_case, fuzzer_name)
-  else:
-    error_code = None
+  if len(commit_list) == 1:
+    if not error_code:
+      return None
+    return commit_list[0]
   index = bisection(project_name, 0,
                     len(commit_list) - 1, commit_list, repo_manager,
                     len(commit_list), error_code, engine, sanitizer,
@@ -145,15 +145,16 @@ def bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
     The index of the commit SHA where the error was introduced
   """
   cur_idx = (commit_new_idx + commit_old_idx) // 2
-  print("Commit list: \n %s" % commit_list)
-  print("Current index: %s" % str(cur_idx))
-  print("High index: %s low index %s" %
-        (str(commit_new_idx), str(commit_old_idx)))
   build_fuzzer_from_commit(project_name, commit_list[cur_idx],
                            repo_manager.repo_dir, engine, sanitizer,
                            architecture, repo_manager)
   error_exists = (
-      reproduce_error(project_name, test_case, fuzzer_name) == error_code)
+      reproduce_impl(project_name, fuzzer_name, False, [], [],
+                     test_case) == error_code)
+  print("Commit list: \n %s" % commit_list)
+  print("Current index: %s" % str(cur_idx))
+  print("High index: %s low index %s" %
+        (str(commit_new_idx), str(commit_old_idx)))
 
   if commit_new_idx == commit_old_idx:
     if error_exists:
@@ -169,31 +170,6 @@ def bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
   return bisection(project_name, commit_new_idx, cur_idx - 1, commit_list,
                    repo_manager, last_error, error_code, engine, sanitizer,
                    architecture, test_case, fuzzer_name)
-
-
-def reproduce_error(project_name, test_case, fuzzer_name):
-  """Checks to see if the error is repoduceable at a specific commit.
-  Args:
-    project_name: The name of the project you are testing
-    test_case: The path to the test_case you are passing in
-    fuzzer_name: The name of the fuzz target to be tested
-  Returns:
-    True if the error still exists
-  """
-  parser = argparse.ArgumentParser()
-  parser.add_argument('project_name', help='name of the project')
-  parser.add_argument('fuzzer_name', help='name of the fuzzer')
-  parser.add_argument('testcase_path', help='path of local testcase')
-  parser.add_argument(
-      'fuzzer_args',
-      help='arguments to pass to the fuzzer',
-      nargs=argparse.REMAINDER)
-  parser.add_argument(
-      '--valgrind', action='store_true', help='run with valgrind')
-  parser.add_argument(
-      '-e', action='append', help='set environment variable e.g. VAR=value')
-  args = parser.parse_args([project_name, fuzzer_name, test_case])
-  return reproduce(args)
 
 
 if __name__ == '__main__':

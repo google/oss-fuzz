@@ -27,7 +27,7 @@ RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
 RUN git clone --recursive -b boost-1.69.0 https://github.com/boostorg/boost.git \
     boost
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-RUN git clone --branch="v0.3.0" --recurse-submodules \
+RUN git clone --branch="v0.4.0" --recurse-submodules \
     https://github.com/ethereum/evmone.git
 RUN git clone --branch="z3-4.8.7" https://github.com/Z3Prover/z3.git
 

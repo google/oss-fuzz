@@ -1,0 +1,12 @@
+homepage: "https://avahi.org/"
+primary_contact: trent@lloyd.id.au
+auto_ccs:
+  - alex.gaynor@gmail.com
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
+

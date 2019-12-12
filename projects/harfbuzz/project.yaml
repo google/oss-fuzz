@@ -13,7 +13,8 @@ auto_ccs:
   - "ariza@typekit.com"
   - "qxliu@google.com"
 vendor_ccs:
-  - "cdiehl@mozilla.com"
+  - "jmuizelaar@mozilla.com"
+  - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"
 sanitizers:
  - address
