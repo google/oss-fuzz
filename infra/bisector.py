@@ -101,7 +101,6 @@ def init_bisection(project_name, commit_old, commit_new, engine, sanitizer,
   """
   local_store_path = 'tmp'
   repo_url = infer_main_repo(project_name, local_store_path, commit_old)
-  print(repo_url)
   repo_manager = RepoManager(repo_url, local_store_path)
   commit_list = repo_manager.get_commit_list(commit_old, commit_new)
   build_fuzzer_from_commit(project_name, commit_list[0], repo_manager.repo_dir,
@@ -151,11 +150,6 @@ def bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
   error_exists = (
       reproduce_impl(project_name, fuzzer_name, False, [], [],
                      test_case) == error_code)
-  print("Commit list: \n %s" % commit_list)
-  print("Current index: %s" % str(cur_idx))
-  print("High index: %s low index %s" %
-        (str(commit_new_idx), str(commit_old_idx)))
-
   if commit_new_idx == commit_old_idx:
     if error_exists:
       return cur_idx

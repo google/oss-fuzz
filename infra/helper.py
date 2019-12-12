@@ -419,7 +419,7 @@ def build_image(args):
 def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
                        env_to_add, source_path, no_image_cache=True):
   """Build fuzzers."""
-  if not build_image_impl(project_name,no_cache=no_image_cache):
+  if not build_image_impl(project_name, no_cache=no_image_cache):
     return 1
 
   project_out_dir = _get_output_dir(project_name)
