@@ -35,6 +35,16 @@ class BuildImageUnitTests(unittest.TestCase):
     infered_repo = infer_main_repo('curl', 'tmp')
     self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
 
+    infered_repo = infer_main_repo('usrsctp', 'tmp')
+    self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp')
+    infered_repo = infer_main_repo('usrsctp', 'tmp',
+                                   '4886aaa49fb90e479226fcfc3241d74208908232')
+    self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp',
+                     '4886aaa49fb90e479226fcfc3241d74208908232')
+
+    infered_repo = infer_main_repo('not_a_project', 'tmp')
+    self.assertEqual(infered_repo, None)
+
 
 class BuildImageIntegrationTests(unittest.TestCase):
   """Testing if an image can be built from different states e.g. a commit"""
