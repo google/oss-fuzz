@@ -193,12 +193,12 @@ def main():
   return 0
 
 
-def _is_base_image(image_name):
+def is_base_image(image_name):
   """Checks if the image name is a base image."""
   return os.path.exists(os.path.join('infra', 'base-images', image_name))
 
 
-def _check_project_exists(project_name):
+def check_project_exists(project_name):
   """Checks if a project exists."""
   if not os.path.exists(_get_project_dir(project_name)):
     print(project_name, 'does not exist', file=sys.stderr)
@@ -241,7 +241,7 @@ def _get_project_dir(project_name):
   return os.path.join(OSSFUZZ_DIR, 'projects', project_name)
 
 
-def _get_dockerfile_path(project_name):
+def get_dockerfile_path(project_name):
   """Returns path to the project Dockerfile."""
   return os.path.join(_get_project_dir(project_name), 'Dockerfile')
 
@@ -290,16 +290,16 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def _build_image(image_name, no_cache=False, pull=False):
+def build_image_impl(image_name, no_cache=False, pull=False):
   """Build image."""
 
-  is_base_image = _is_base_image(image_name)
-  if is_base_image:
+  proj_is_base_image = is_base_image(image_name)
+  if proj_is_base_image:
     image_project = 'oss-fuzz-base'
     dockerfile_dir = os.path.join('infra', 'base-images', image_name)
   else:
     image_project = 'oss-fuzz'
-    if not _check_project_exists(image_name):
+    if not check_project_exists(image_name):
       return False
 
     dockerfile_dir = os.path.join('projects', image_name)
@@ -321,7 +321,7 @@ def _env_to_docker_args(env_list):
 def _workdir_from_dockerfile(project_name):
   """Parse WORKDIR from the Dockerfile for the given project."""
   WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
-  dockerfile_path = _get_dockerfile_path(project_name)
+  dockerfile_path = get_dockerfile_path(project_name)
 
   with open(dockerfile_path) as f:
     lines = f.readlines()
@@ -410,20 +410,20 @@ def build_image(args):
     print('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
-  if _build_image(args.project_name, no_cache=True, pull=pull):
+  if build_image_impl(args.project_name, no_cache=True, pull=pull):
     return 0
 
   return 1
 
 
-def build_fuzzers(args):
+def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
+                       env_to_add, source_path):
   """Build fuzzers."""
-  project_name = args.project_name
-  if not _build_image(args.project_name):
+  if not build_image_impl(project_name):
     return 1
 
   project_out_dir = _get_output_dir(project_name)
-  if args.clean:
+  if clean:
     print('Cleaning existing build artifacts.')
 
     # Clean old and possibly conflicting artifacts in project's out directory.
@@ -436,17 +436,17 @@ def build_fuzzers(args):
     print('Keeping existing build artifacts as-is (if any).')
 
   env = [
-      'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer,
-      'ARCHITECTURE=' + args.architecture,
+      'FUZZING_ENGINE=' + engine,
+      'SANITIZER=' + sanitizer,
+      'ARCHITECTURE=' + architecture,
   ]
-  if args.e:
-    env += args.e
+  if env_to_add:
+    env += env_to_add 
 
   project_work_dir = _get_work_dir(project_name)
 
   # Copy instrumented libraries.
-  if args.sanitizer == 'memory':
+  if sanitizer == 'memory':
     docker_run([
         '-v', '%s:/work' % project_work_dir,
         'gcr.io/oss-fuzz-base/msan-builder',
@@ -456,15 +456,15 @@ def build_fuzzers(args):
   command = (
       ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
       _env_to_docker_args(env))
-  if args.source_path:
-    workdir = _workdir_from_dockerfile(args.project_name)
+  if source_path:
+    workdir = _workdir_from_dockerfile(project_name)
     if workdir == '/src':
       print('Cannot use local checkout with "WORKDIR /src".', file=sys.stderr)
       return 1
 
     command += [
         '-v',
-        '%s:%s' % (_get_absolute_path(args.source_path), workdir),
+        '%s:%s' % (_get_absolute_path(source_path), workdir),
     ]
   command += [
       '-v', '%s:/out' % project_out_dir,
@@ -481,7 +481,7 @@ def build_fuzzers(args):
     return 1
 
   # Patch MSan builds to use instrumented shared libraries.
-  if args.sanitizer == 'memory':
+  if sanitizer == 'memory':
     docker_run([
         '-v', '%s:/out' % project_out_dir,
         '-v', '%s:/work' % project_work_dir
@@ -493,9 +493,16 @@ def build_fuzzers(args):
   return 0
 
 
+def build_fuzzers(args):
+  """Build fuzzers."""
+  return build_fuzzers_impl(args.project_name, args.clean, args.engine,
+                            args.sanitizer, args.architecture,
+                            args.e, args.source_path)
+
+
 def check_build(args):
   """Checks that fuzzers in the container execute without errors."""
-  if not _check_project_exists(args.project_name):
+  if not check_project_exists(args.project_name):
     return 1
 
   if (args.fuzzer_name and
@@ -613,7 +620,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
 
 def download_corpora(args):
   """Download most recent corpora from GCS for the given project."""
-  if not _check_project_exists(args.project_name):
+  if not check_project_exists(args.project_name):
     return 1
 
   try:
@@ -656,7 +663,7 @@ def coverage(args):
           file=sys.stderr)
     return 1
 
-  if not _check_project_exists(args.project_name):
+  if not check_project_exists(args.project_name):
     return 1
 
   if not args.no_corpus_download and not args.corpus_dir:
@@ -704,7 +711,7 @@ def coverage(args):
 
 def run_fuzzer(args):
   """Runs a fuzzer in the container."""
-  if not _check_project_exists(args.project_name):
+  if not check_project_exists(args.project_name):
     return 1
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
@@ -731,7 +738,7 @@ def run_fuzzer(args):
 
 def reproduce(args):
   """Reproduces a testcase in the container."""
-  if not _check_project_exists(args.project_name):
+  if not check_project_exists(args.project_name):
     return 1
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
@@ -806,7 +813,7 @@ def generate(args):
 
 def shell(args):
   """Runs a shell within a docker image."""
-  if not _build_image(args.project_name):
+  if not build_image_impl(args.project_name):
     return 1
 
   env = [
@@ -818,7 +825,7 @@ def shell(args):
   if args.e:
     env += args.e
 
-  if _is_base_image(args.project_name):
+  if is_base_image(args.project_name):
     image_project = 'oss-fuzz-base'
     out_dir = _get_output_dir()
   else:
