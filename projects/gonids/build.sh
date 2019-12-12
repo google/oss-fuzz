@@ -28,7 +28,7 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
 }
 
-compile_fuzzer /root/go/src/github.com/google/gonids/ FuzzParseRule fuzz
+compile_fuzzer /root/go/src/github.com/google/gonids/ FuzzParseRule fuzz_parserule
 
 unzip emerging.rules.zip
 cd rules
