@@ -69,7 +69,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         if (disasfunc != NULL) {
             disassemble_init_for_target(&disasm_info);
             disasfunc(0x1000, &disasm_info);
-            disassemble_release(&disasm_info);
+            disassemble_free_target(&disasm_info);
         }
     }
 
