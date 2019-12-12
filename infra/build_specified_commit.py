@@ -68,13 +68,16 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
     lines = file_path.read()
     # Use generic git format and project name to guess main repo
     if example_commit is None:
-      repo_url = re.search(r'\b(?:http|https|git)://[^ ]*' + re.escape(project_name) + r'(?:.git)', lines)
+      repo_url = re.search(
+          r'\b(?:http|https|git)://[^ ]*' + re.escape(project_name) +
+          r'(.git)?', lines)
       if repo_url:
         return repo_url.group(0)
     else:
       # Use example commit SHA to guess main repo
       for clone_command in re.findall('.*clone.*', lines):
-        repo_url =  re.search(r'\b(?:https|http|git)://[^ ]*', clone_command).group(0)
+        repo_url = re.search(r'\b(?:https|http|git)://[^ ]*',
+                             clone_command).group(0)
         print(repo_url)
         try:
           repo_manager = RepoManager(repo_url.rstrip(), local_store_path)
