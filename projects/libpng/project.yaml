@@ -1,5 +1,9 @@
 homepage: "http://www.libpng.org/pub/png/libpng.html"
 primary_contact: "glennrp@gmail.com"
+vendor_ccs:
+  - "aosmond@mozilla.com"
+  - "tnikkel@mozilla.com"
+  - "twsmith@mozilla.com"
 sanitizers:
   - address
   - memory
