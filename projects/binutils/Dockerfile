@@ -21,5 +21,4 @@ RUN apt-get update && apt-get install -y make
 RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git binutils-gdb
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY patch.diff $SRC/
 COPY fuzz_disassemble.c $SRC/
