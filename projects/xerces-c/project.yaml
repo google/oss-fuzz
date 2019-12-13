@@ -1,0 +1,9 @@
+homepage: "https://xerces.apache.org/"
+primary_contact: "vincent.ulitzsch@live.de"
+auto_ccs:
+  - "vincent.ulitzsch@live.de"
+  - "bshas3@gmail.com"
+sanitizers:
+ - address
+ - memory
+ - undefined
