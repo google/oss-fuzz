@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# build project
-# make -j$(nproc) all
-
 # build fuzzers
 for f in $(find $SRC -name '*_fuzzer.cpp'); do
     b=$(basename -s .cpp $f)
