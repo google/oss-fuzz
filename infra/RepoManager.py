@@ -139,8 +139,8 @@ class RepoManager(object):
     if not branch_name.rstrip():
       raise ValueError('An empty string is not a valid branch name')
 
-    self._run_command(['git', 'fetch', 'origin'], check_result=True)
-    out, err_code = self._run_command(['git', 'ls-remote', '--heads', self.repo_url, branch_name], self.repo_dir)
+    self._run_command(['git', 'fetch'], self.repo_dir, check_result=True)
+    out, err_code = self._run_command(['git', 'ls-remote', '--heads', self.repo_url, branch_name], self.repo_dir, check_result=True)
     if branch_name + '\n' in out:
       return True
     return False
@@ -230,8 +230,8 @@ class RepoManager(object):
     """
     if not self.branch_exists(branch_name):
       raise RepoManagerError('Branch %s does not exist for repository %s.' % branch_name, self.repo_name)
-    self._run_command(['git', 'fetch', 'origin'], check_result=True)
-    self._run_command(['git', 'checkout', '-b', branch_name, 'origin/' + branch_name])
+    self._run_command(['git', 'fetch', 'origin'], self.repo_dir)
+    self._run_command(['git', 'checkout', '-b', branch_name, 'origin/' + branch_name], self.repo_dir, check_result=True)
     if self.get_current_branch() != branch_name:
       raise RepoManagerError('Error checking out branch %s' % branch_name)
 
