@@ -73,6 +73,27 @@ class TestRepoManager(unittest.TestCase):
       # Testing commits out of order
       result_list = repo_manager.get_commit_list(new_commit, old_commit)
 
+  def test_branch_exists(self):
+    """Tests that repo manager can check if a branch exists remotely."""
+    repo_manager = RepoManager(self.curl_repo, 'tmp')
+    self.assertTrue(repo_manager.branch_exists('master'))
+    with self.assertRaises(ValueError):
+      repo_manager.branch_exists(' ')
+    self.assertFalse(repo_manager.branch_exists('aaaaaaaaaaaaaaaa'))
+
+    # Note: looking at stale branch of curl repo, test could fail in future
+    self.assertTrue(repo_manager.branch_exists('wolfssl-crl'))
+
+  def test_get_current_branch(self):
+    repo_manager = RepoManager(self.curl_repo, 'tmp')
+    self.assertEqual('master', repo_manager.get_current_branch())
+
+  def test_checkout_branch(self):
+    repo_manager = RepoManager(self.curl_repo, 'tmp')
+    repo_manager.checkout_branch('wolfssl-crl')
+    self.assertEqual(repo_manager.get_current_branch(), 'wolfssl-crl')
+    with self.assertRaises(RepoManagerException):
+      repo_manager.checkout_branch('aaaaaaaaa')
 
 if __name__ == '__main__':
   unittest.main()
