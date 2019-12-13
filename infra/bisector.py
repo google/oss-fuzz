@@ -11,26 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Uses bisection to determine which commit a bug was introduced and fixed.
+"""Uses _bisection to determine which commit a bug was introduced and fixed.
 This module takes a high and a low commit SHA, a repo name, and a bug.
 The module bisects the high and low commit SHA searching for the location
-where the bug was introduced. It also looks for where the bug was solved.
+where the bug was introduced. It also looks for where the bug was fixed.
 This is done with the following steps:
 
 
   NOTE: NEEDS TO BE RUN FROM THE oss-fuzz HOME directory
 
   Typical usage example:
-        sudo python3 infra/bisector.py
-          --commit_old  1e403e9259a1abedf108ab86f711ba52c907226d
+        python3 infra/bisector.py
+          --commit_old 1e403e9259a1abedf108ab86f711ba52c907226d
           --commit_new f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f
-          --fuzzer_name rules_fuzzer
+          --fuzz_target rules_fuzzer
           --project_name yara
           --test_case infra/yara_test_case
           --sanitizer address
 """
 
 import argparse
+import os
 
 from build_specified_commit import build_fuzzer_from_commit
 from build_specified_commit import infer_main_repo
@@ -39,7 +40,7 @@ from RepoManager import RepoManager
 
 
 def main():
-  """Gets the commit SHA where an error was initally introduced."""
+  """Finds the commit SHA where an error was initally introduced."""
   parser = argparse.ArgumentParser(
       'bisector.py',
       description='git bisection for finding introduction of bugs')
@@ -57,21 +58,25 @@ def main():
       help='The oldest commit SHA to be bisected',
       required=True)
   parser.add_argument(
-      '--fuzzer_name', help='the name of the fuzzer to be built', required=True)
+      '--fuzz_target', help='the name of the fuzzer to be built', required=True)
   parser.add_argument(
       '--test_case', help='the test_case to be reproduced', required=True)
   parser.add_argument('--engine', default='libfuzzer')
   parser.add_argument(
       '--sanitizer',
       default='address',
-      help='the default is "address"; "dataflow" for "dataflow" engine')
+      help='the default is "address"')
   parser.add_argument('--architecture', default='x86_64')
   args = parser.parse_args()
 
-  error_sha = init_bisection(args.project_name, args.commit_old,
+  if not os.getcwd().endswith('oss-fuzz'):
+    print("Error: bisector.py needs to be run from the oss-fuzz home directory")
+    return 1
+
+  error_sha = bisect(args.project_name, args.commit_old,
                              args.commit_new, args.engine, args.sanitizer,
                              args.architecture, args.test_case,
-                             args.fuzzer_name)
+                             args.fuzz_target)
   if not error_sha:
     print('No error was found in commit range %s:%s' %
           (args.commit_old, args.commit_new))
@@ -79,8 +84,8 @@ def main():
     print('Error was introduced at commit %s' % error_sha)
 
 
-def init_bisection(project_name, commit_old, commit_new, engine, sanitizer,
-                   architecture, test_case, fuzzer_name):
+def bisect(project_name, commit_old, commit_new, engine, sanitizer,
+                   architecture, test_case, fuzz_target):
   """Creates an bisection call that kicks off the error detection.
 
   This function is necessary in order to get the error code of the newest commit. This
@@ -94,7 +99,7 @@ def init_bisection(project_name, commit_old, commit_new, engine, sanitizer,
     sanitizer: The fuzzing sanitizer to be used
     architecture: The system architecture being fuzzed
     test_case: The file path of the test case that triggers the error
-    fuzzer_name: The name of the fuzzer to be tested
+    fuzz_target: The name of the fuzzer to be tested
 
   Returns:
     The commit SHA that introduced the error or None
@@ -105,25 +110,25 @@ def init_bisection(project_name, commit_old, commit_new, engine, sanitizer,
   commit_list = repo_manager.get_commit_list(commit_old, commit_new)
   build_fuzzer_from_commit(project_name, commit_list[0], repo_manager.repo_dir,
                            engine, sanitizer, architecture, repo_manager)
-  error_code = reproduce_impl(project_name, fuzzer_name, False, [], [],
+  error_code = reproduce_impl(project_name, fuzz_target, False, [], [],
                               test_case)
   # Handle the case where there is only one SHA passed in
   if len(commit_list) == 1:
     if not error_code:
       return None
     return commit_list[0]
-  index = bisection(project_name, 0,
+  index = _bisection(project_name, 0,
                     len(commit_list) - 1, commit_list, repo_manager,
                     len(commit_list), error_code, engine, sanitizer,
-                    architecture, test_case, fuzzer_name)
+                    architecture, test_case, fuzz_target)
   if index is not None:
     return commit_list[index]
   return None
 
 
-def bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
-              repo_manager, last_error, error_code, engine, sanitizer,
-              architecture, test_case, fuzzer_name):
+def _bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
+              repo_manager, last_error_idx, error_code, engine, sanitizer,
+              architecture, test_case, fuzz_target):
   """Returns the commit ID where a bug was introduced.
 
   Args:
@@ -132,13 +137,13 @@ def bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
     commit_new_idx: The newest commit SHA index in the search space
     commit_list: The list of all commit SHAs
     repo_manager: The class handling all of the git repo calls
-    last_error: The index where the last error was found
+    last_error_idx: The index where the last error was found
     error_code: The error code of the newest commit(what we are searching for)
     engine: The fuzzing engine used to fuzz the project
     sanitizer: THe sanitizer being used for fuzzing
     architecture: The system architecture being fuzzed
     test_case: The file path to the test case that caused the error
-    fuzzer_name: The fuzzer that caused the error
+    fuzz_target: The fuzzer that caused the error
 
   Returns:
     The index of the commit SHA where the error was introduced
@@ -148,22 +153,22 @@ def bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
                            repo_manager.repo_dir, engine, sanitizer,
                            architecture, repo_manager)
   error_exists = (
-      reproduce_impl(project_name, fuzzer_name, False, [], [],
+      reproduce_impl(project_name, fuzz_target, False, [], [],
                      test_case) == error_code)
   if commit_new_idx == commit_old_idx:
     if error_exists:
       return cur_idx
-    return last_error
+    return last_error_idx
 
   if error_exists:
-    return bisection(project_name, cur_idx + 1, commit_old_idx, commit_list,
+    return _bisection(project_name, cur_idx + 1, commit_old_idx, commit_list,
                      repo_manager, cur_idx, error_code, engine, sanitizer,
-                     architecture, test_case, fuzzer_name)
+                     architecture, test_case, fuzz_target)
   if cur_idx == 0:
     return None
-  return bisection(project_name, commit_new_idx, cur_idx - 1, commit_list,
-                   repo_manager, last_error, error_code, engine, sanitizer,
-                   architecture, test_case, fuzzer_name)
+  return _bisection(project_name, commit_new_idx, cur_idx - 1, commit_list,
+                   repo_manager, last_error_idx, error_code, engine, sanitizer,
+                   architecture, test_case, fuzz_target)
 
 
 if __name__ == '__main__':
