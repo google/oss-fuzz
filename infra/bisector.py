@@ -112,63 +112,26 @@ def bisect(project_name, commit_old, commit_new, engine, sanitizer,
                            engine, sanitizer, architecture, repo_manager)
   error_code = reproduce_impl(project_name, fuzz_target, False, [], [],
                               test_case)
-  # Handle the case where there is only one SHA passed in
+  old_idx = len(commit_list) - 1
+  new_idx = 0
   if len(commit_list) == 1:
     if not error_code:
       return None
     return commit_list[0]
-  index = _bisection(project_name, 0,
-                    len(commit_list) - 1, commit_list, repo_manager,
-                    len(commit_list), error_code, engine, sanitizer,
-                    architecture, test_case, fuzz_target)
-  if index is not None:
-    return commit_list[index]
-  return None
 
-
-def _bisection(project_name, commit_new_idx, commit_old_idx, commit_list,
-              repo_manager, last_error_idx, error_code, engine, sanitizer,
-              architecture, test_case, fuzz_target):
-  """Returns the commit ID where a bug was introduced.
-
-  Args:
-    project_name: The name of the oss fuzz project being tested
-    commit_old_idx: The oldest commit SHA index in the search space
-    commit_new_idx: The newest commit SHA index in the search space
-    commit_list: The list of all commit SHAs
-    repo_manager: The class handling all of the git repo calls
-    last_error_idx: The index where the last error was found
-    error_code: The error code of the newest commit(what we are searching for)
-    engine: The fuzzing engine used to fuzz the project
-    sanitizer: THe sanitizer being used for fuzzing
-    architecture: The system architecture being fuzzed
-    test_case: The file path to the test case that caused the error
-    fuzz_target: The fuzzer that caused the error
-
-  Returns:
-    The index of the commit SHA where the error was introduced
-  """
-  cur_idx = (commit_new_idx + commit_old_idx) // 2
-  build_fuzzer_from_commit(project_name, commit_list[cur_idx],
+  while old_idx - new_idx != 1:
+    cur_idx = (old_idx + new_idx) //2
+    build_fuzzer_from_commit(project_name, commit_list[cur_idx],
                            repo_manager.repo_dir, engine, sanitizer,
                            architecture, repo_manager)
-  error_exists = (
-      reproduce_impl(project_name, fuzz_target, False, [], [],
-                     test_case) == error_code)
-  if commit_new_idx == commit_old_idx:
-    if error_exists:
-      return cur_idx
-    return last_error_idx
-
-  if error_exists:
-    return _bisection(project_name, cur_idx + 1, commit_old_idx, commit_list,
-                     repo_manager, cur_idx, error_code, engine, sanitizer,
-                     architecture, test_case, fuzz_target)
-  if cur_idx == 0:
-    return None
-  return _bisection(project_name, commit_new_idx, cur_idx - 1, commit_list,
-                   repo_manager, last_error_idx, error_code, engine, sanitizer,
-                   architecture, test_case, fuzz_target)
+    error_exists = (
+        reproduce_impl(project_name, fuzz_target, False, [], [],
+                      test_case) == error_code)
+    if error_exists == error_code:
+      new_idx = cur_idx
+    else:
+      old_idx  = cur_idx
+  return commit_list[new_idx]
 
 
 if __name__ == '__main__':
