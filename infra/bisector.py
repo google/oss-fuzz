@@ -33,6 +33,7 @@ This is done with the following steps:
 import argparse
 from dataclasses import dataclass
 import os
+import tempfile
 
 import build_specified_commit
 import helper
@@ -119,7 +120,7 @@ def bisect(bisection_data):
   Returns:
     The commit SHA that introduced the error or None
   """
-  local_store_path = 'tmp'
+  local_store_path = tempfile.mkdtemp()
   repo_url = build_specified_commit.infer_main_repo(bisection_data.project_name,
                                                     local_store_path,
                                                     bisection_data.commit_old)
