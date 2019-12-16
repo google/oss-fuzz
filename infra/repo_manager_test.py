@@ -99,6 +99,8 @@ class TestRepoManager(unittest.TestCase):
 
   def test_checkout_pull_request(self):
     repo_manager = RepoManager(self.curl_repo, tmp_dir)
+
+    # Note: This test may fail because the curl pull request might have closed
     repo_manager.checkout_pull_request(2682)
     self.assertEqual(repo_manager.get_current_branch(), '2682-branch')
     with self.assertRaises(RepoManagerError):

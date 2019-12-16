@@ -165,7 +165,7 @@ class RepoManager(object):
     _, err_code = self._run_command(['git', 'rev-parse', '--verify', branch_name], self.repo_dir, check_result=True)
     if not err_code:
       return branch_name
-    return None 
+    return None
 
   def get_current_commit(self):
     """Gets the current commit SHA of the repo.
@@ -269,7 +269,6 @@ class RepoManager(object):
     else:
       self._run_command(['git', 'checkout', local_branch_path], self.repo_dir, check_result=True)
 
-
   def checkout_pull_request(self, pull_request_id):
     """A function to check out the state of an existing pull request.
 
@@ -280,7 +279,6 @@ class RepoManager(object):
     pr_branch_name = str(pull_request_id) + '-branch'
     self._run_command(['git', 'fetch', self.get_remote(), 'pull/' + str(pull_request_id) + '/head:' + pr_branch_name], self.repo_dir, check_result=True)
     self.checkout_branch(pr_branch_name)
-
 
   def remove_repo(self):
     """Attempts to remove the git repo. """

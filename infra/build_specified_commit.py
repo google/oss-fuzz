@@ -24,6 +24,31 @@ from helper import check_project_exists
 from helper import get_dockerfile_path
 from RepoManager import RepoManager
 
+def build_fuzzer_from_pull_request(project_name,
+                             pr_id,
+                             local_store_path,
+                             engine='libfuzzer',
+                             sanitizer='address',
+                             architecture='x86_64'):
+  """Builds a ossfuzz fuzzer at a  specific commit SHA.
+
+  Args:
+    project_name: The oss fuzz project name
+    pr_id: The pull request id to build the fuzzers from
+    local_store_path: The full file path of a place where a temp git repo is stored
+    engine: The fuzzing engine to be used
+    sanitizer: The fuzzing sanitizer to be used
+    architecture: The system architiecture to be used for fuzzing
+
+  Returns:
+    0 on successful build 1 on failure
+  """
+  inferred_url = infer_main_repo(project_name, local_store_path)
+  repo_man = RepoManager(inferred_url, local_store_path)
+  repo_man.checkout_pull_request(pr_id)
+  return build_fuzzers_impl(project_name, True, engine, sanitizer, architecture,
+                            None, repo_man.repo_dir)
+
 
 def build_fuzzer_from_commit(project_name,
                              commit,
