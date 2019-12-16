@@ -245,6 +245,18 @@ class RepoManager(object):
     self._run_command(['git', 'fetch'], self.repo_dir)
     self._run_command(['git', 'checkout', '-t', remote_branch_path], self.repo_dir, check_result=True)
 
+  def checkout_pull_request(self, pull_request_id):
+    """A function to check out the state of an existing pull request.
+
+    Args:
+      pull_request_id: The id of the pull request to be checked out
+
+    """
+    pr_branch_name = str(pull_request_id) + 'branch'
+    self._run_command(['git', 'fetch', self.get_remote(), 'pull/' + str(pull_request_id) + '/head:' + pr_branch_name
+    self.checkout_branch(pr_branch_name)
+
+
   def remove_repo(self):
     """Attempts to remove the git repo. """
     if os.path.isdir(self.repo_dir):
