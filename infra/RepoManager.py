@@ -22,6 +22,7 @@ a python API and manage the current state of the git repo.
     r_man.checkout('5668cc422c2c92d38a370545d3591039fb5bb8d4')
 """
 import os
+import re
 import shutil
 import subprocess
 
@@ -124,14 +125,14 @@ class RepoManager(object):
                                     self.repo_dir)
     return not err_code
 
-  def branch_exists(self, branch_name):
-    """Checks if a git branch exists remotely.
+  def branch_path(self, branch_name):
+    """Gets the path to a git branch
 
     Args:
       branch_name: The name of the branch to be checked out
 
     Returns:
-      True if the branch exists remotely
+      None if no branch with that name exists, a string with the path if it does
 
     Raises:
       ValueException: if an empty string was passed in
@@ -141,6 +142,8 @@ class RepoManager(object):
 
     self._run_command(['git', 'fetch'], self.repo_dir, check_result=True)
     out, err_code = self._run_command(['git', 'ls-remote', '--heads', self.repo_url, branch_name], self.repo_dir, check_result=True)
+    branch_path = re.match('\bheads/(.*)\n', out).group(1)
+    print(branch_path)
     if branch_name + '\n' in out:
       return True
     return False
@@ -228,10 +231,11 @@ class RepoManager(object):
     Raises:
       RepoManagerError: when trying to checkout a branch that does not exist
     """
-    if not self.branch_exists(branch_name):
+    remote_branch_path = self.branch_path(branch_name)
+    if not remote_branch_path:
       raise RepoManagerError('Branch %s does not exist for repository %s.' % branch_name, self.repo_name)
-    self._run_command(['git', 'fetch', 'origin'], self.repo_dir)
-    self._run_command(['git', 'checkout', '-b', branch_name, 'origin/' + branch_name], self.repo_dir, check_result=True)
+    self._run_command(['git', 'fetch'], self.repo_dir)
+    self._run_command(['git', 'checkout', remote_branch_path], self.repo_dir, check_result=True)
     if self.get_current_branch() != branch_name:
       raise RepoManagerError('Error checking out branch %s' % branch_name)
 
