@@ -47,9 +47,14 @@ def build_fuzzer_from_commit(project_name,
     inferred_url = infer_main_repo(project_name, local_store_path, commit)
     old_repo_manager = repo_manager.RepoManager(inferred_url, local_store_path)
   old_repo_manager.checkout_commit(commit)
-  return helper.build_fuzzers_impl(project_name, True, engine, sanitizer,
-                                   architecture, None,
-                                   old_repo_manager.repo_dir)
+  return helper.build_fuzzers_impl(
+      project_name=project_name,
+      clean=True,
+      engine=engine,
+      sanitizer=sanitizer,
+      architecture=architecture,
+      env_to_add=None,
+      source_path=old_repo_manager.repo_dir)
 
 
 def infer_main_repo(project_name, local_store_path, example_commit=None):

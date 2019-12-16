@@ -101,10 +101,8 @@ def main():
 
 
 def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
-  """Creates an bisection call that kicks off the error detection.
-
-  This function is necessary in order to get the error code of the newest commit. This
-  sets a standard for what the error actually is.
+  """From a commit range, this function caluclates which introduced a
+  specific error from a fuzz testcase.
 
   Args:
     commit_old: The oldest commit in the error regression range
