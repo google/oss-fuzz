@@ -19,11 +19,8 @@ like continuious integration fuzzing and bisection to find errors
 """
 import re
 
-from helper import build_fuzzers_impl
-from helper import check_project_exists
-from helper import get_dockerfile_path
-from repo_manager import RepoManager
-
+import helper
+import repo_manager
 
 def build_fuzzer_from_commit(project_name,
                              commit,
@@ -31,7 +28,7 @@ def build_fuzzer_from_commit(project_name,
                              engine='libfuzzer',
                              sanitizer='address',
                              architecture='x86_64',
-                             repo_manager=None):
+                             old_repo_manager=None):
   """Builds a ossfuzz fuzzer at a  specific commit SHA.
 
   Args:
@@ -45,18 +42,18 @@ def build_fuzzer_from_commit(project_name,
   Returns:
     0 on successful build 1 on failure
   """
-  if not repo_manager:
+  if not old_repo_manager:
     guessed_url = infer_main_repo(project_name, local_store_path, commit)
-    repo_manager = RepoManager(guessed_url, local_store_path)
-  repo_manager.checkout_commit(commit)
-  return build_fuzzers_impl(
+    old_repo_manager = repo_manager.RepoManager(guessed_url, local_store_path)
+  old_repo_manager.checkout_commit(commit)
+  return helper.build_fuzzers_impl(
       project_name,
       True,
       engine,
       sanitizer,
       architecture,
       None,
-      repo_manager.repo_dir,
+      old_repo_manager.repo_dir,
       no_image_cache=True)
 
 
@@ -70,9 +67,9 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
   Returns:
     The guessed repo url path or None on failue
   """
-  if not check_project_exists(project_name):
+  if not helper.check_project_exists(project_name):
     return None
-  docker_path = get_dockerfile_path(project_name)
+  docker_path = helper.get_dockerfile_path(project_name)
   with open(docker_path, 'r') as file_path:
     lines = file_path.read()
     # Use generic git format and project name to guess main repo
@@ -89,8 +86,8 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
                              clone_command).group(0)
         print(repo_url)
         try:
-          repo_manager = RepoManager(repo_url.rstrip(), local_store_path)
-          if repo_manager.commit_exists(example_commit):
+          test_repo_manager = repo_manager.RepoManager(repo_url.rstrip(), local_store_path)
+          if test_repo_manager.commit_exists(example_commit):
             return repo_url
         except:
           pass

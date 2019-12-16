@@ -33,11 +33,9 @@ This is done with the following steps:
 import argparse
 import os
 
-from build_specified_commit import build_fuzzer_from_commit
-from build_specified_commit import infer_main_repo
-from helper import reproduce_impl
-from repo_manager import RepoManager
-
+import build_specified_commit
+import helper
+import repo_manager
 
 def main():
   """Finds the commit SHA where an error was initally introduced."""
@@ -105,12 +103,12 @@ def bisect(project_name, commit_old, commit_new, engine, sanitizer,
     The commit SHA that introduced the error or None
   """
   local_store_path = 'tmp'
-  repo_url = infer_main_repo(project_name, local_store_path, commit_old)
-  repo_manager = RepoManager(repo_url, local_store_path)
+  repo_url = build_specified_commit.infer_main_repo(project_name, local_store_path, commit_old)
+  repo_manager = repo_manager.RepoManager(repo_url, local_store_path)
   commit_list = repo_manager.get_commit_list(commit_old, commit_new)
-  build_fuzzer_from_commit(project_name, commit_list[0], repo_manager.repo_dir,
+  build_specified_commit.build_fuzzer_from_commit(project_name, commit_list[0], repo_manager.repo_dir,
                            engine, sanitizer, architecture, repo_manager)
-  error_code = reproduce_impl(project_name, fuzz_target, False, [], [],
+  error_code = helper.reproduce_impl(project_name, fuzz_target, False, [], [],
                               test_case)
   old_idx = len(commit_list) - 1
   new_idx = 0
@@ -121,11 +119,11 @@ def bisect(project_name, commit_old, commit_new, engine, sanitizer,
 
   while old_idx - new_idx != 1:
     cur_idx = (old_idx + new_idx) //2
-    build_fuzzer_from_commit(project_name, commit_list[cur_idx],
+    build_specified_commit.build_fuzzer_from_commit(project_name, commit_list[cur_idx],
                            repo_manager.repo_dir, engine, sanitizer,
                            architecture, repo_manager)
     error_exists = (
-        reproduce_impl(project_name, fuzz_target, False, [], [],
+        helper.reproduce_impl(project_name, fuzz_target, False, [], [],
                       test_case) == error_code)
     if error_exists == error_code:
       new_idx = cur_idx
