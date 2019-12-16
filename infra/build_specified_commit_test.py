@@ -27,20 +27,21 @@ class BuildImageUnitTests(unittest.TestCase):
 
   def test_infer_main_repo(self):
     """Tests that the main repo can be infered based on an example commit."""
-    infered_repo = build_specified_commit.infer_main_repo('curl', 'tmp',
-                                   'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
+    infered_repo = build_specified_commit.infer_main_repo(
+        'curl', 'tmp', 'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
     self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
     infered_repo = build_specified_commit.infer_main_repo('curl', 'tmp')
     self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
 
     infered_repo = build_specified_commit.infer_main_repo('usrsctp', 'tmp')
     self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp')
-    infered_repo = build_specified_commit.infer_main_repo('usrsctp', 'tmp',
-                                   '4886aaa49fb90e479226fcfc3241d74208908232')
+    infered_repo = build_specified_commit.infer_main_repo(
+        'usrsctp', 'tmp', '4886aaa49fb90e479226fcfc3241d74208908232')
     self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp',
                      '4886aaa49fb90e479226fcfc3241d74208908232')
 
-    infered_repo = build_specified_commit.infer_main_repo('not_a_project', 'tmp')
+    infered_repo = build_specified_commit.infer_main_repo(
+        'not_a_project', 'tmp')
     self.assertEqual(infered_repo, None)
 
 
@@ -60,19 +61,13 @@ class BuildImageIntegrationTests(unittest.TestCase):
     fuzzer = 'rules_fuzzer'
     test_data = 'infra/yara_test_data'
     build_specified_commit.build_fuzzer_from_commit(
-        project_name,
-        old_commit,
-        '/usr/local/google/home/lneat/Documents/oss-fuzz/infra/tmp',
-        sanitizer='address')
+        project_name, old_commit, 'tmp', sanitizer='address')
     old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [], [],
-                                    test_data)
+                                           test_data)
     build_specified_commit.build_fuzzer_from_commit(
-        project_name,
-        new_commit,
-        '/usr/local/google/home/lneat/Documents/oss-fuzz/infra/tmp',
-        sanitizer='address')
+        project_name, new_commit, 'tmp', sanitizer='address')
     new_error_code = helper.reproduce_impl(project_name, fuzzer, False, [], [],
-                                    test_data)
+                                           test_data)
     self.assertNotEqual(new_error_code, old_error_code)
 
 

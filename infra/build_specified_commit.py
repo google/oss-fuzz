@@ -22,6 +22,7 @@ import re
 import helper
 import repo_manager
 
+
 def build_fuzzer_from_commit(project_name,
                              commit,
                              local_store_path,
@@ -29,10 +30,10 @@ def build_fuzzer_from_commit(project_name,
                              sanitizer='address',
                              architecture='x86_64',
                              old_repo_manager=None):
-  """Builds a ossfuzz fuzzer at a  specific commit SHA.
+  """Builds a OSS-Fuzz fuzzer at a  specific commit SHA.
 
   Args:
-    project_name: The oss fuzz project name
+    project_name: The OSS-Fuzz project name
     commit: The commit SHA to build the fuzzers at
     local_store_path: The full file path of a place where a temp git repo is stored
     engine: The fuzzing engine to be used
@@ -43,18 +44,12 @@ def build_fuzzer_from_commit(project_name,
     0 on successful build 1 on failure
   """
   if not old_repo_manager:
-    guessed_url = infer_main_repo(project_name, local_store_path, commit)
-    old_repo_manager = repo_manager.RepoManager(guessed_url, local_store_path)
+    inferred_url = infer_main_repo(project_name, local_store_path, commit)
+    old_repo_manager = repo_manager.RepoManager(inferred_url, local_store_path)
   old_repo_manager.checkout_commit(commit)
-  return helper.build_fuzzers_impl(
-      project_name,
-      True,
-      engine,
-      sanitizer,
-      architecture,
-      None,
-      old_repo_manager.repo_dir,
-      no_image_cache=True)
+  return helper.build_fuzzers_impl(project_name, True, engine, sanitizer,
+                                   architecture, None,
+                                   old_repo_manager.repo_dir)
 
 
 def infer_main_repo(project_name, local_store_path, example_commit=None):
@@ -62,7 +57,7 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
 
   NOTE: This is a fragile implementation and only works for git
   Args:
-    project_name: The oss fuzz project that you are checking the repo of
+    project_name: The OSS-Fuzz project that you are checking the repo of
     example_commit: A commit that is in the main repos tree
   Returns:
     The guessed repo url path or None on failue
@@ -86,7 +81,8 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
                              clone_command).group(0)
         print(repo_url)
         try:
-          test_repo_manager = repo_manager.RepoManager(repo_url.rstrip(), local_store_path)
+          test_repo_manager = repo_manager.RepoManager(repo_url.rstrip(),
+                                                       local_store_path)
           if test_repo_manager.commit_exists(example_commit):
             return repo_url
         except:

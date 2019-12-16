@@ -23,6 +23,7 @@ import unittest
 
 import repo_manager
 
+
 class TestRepoManager(unittest.TestCase):
   """Class to test the functionality of the RepoManager class."""
 
@@ -31,8 +32,8 @@ class TestRepoManager(unittest.TestCase):
   def test_clone_correctly(self):
     """Tests the correct location of the git repo."""
     test_repo_manager = repo_manager.RepoManager(self.curl_repo, 'tmp')
-    git_path = os.path.join(test_repo_manager.base_dir, test_repo_manager.repo_name,
-                            '.git')
+    git_path = os.path.join(test_repo_manager.base_dir,
+                            test_repo_manager.repo_name, '.git')
     self.assertTrue(os.path.isdir(git_path))
     test_repo_manager.remove_repo()
     with self.assertRaises(repo_manager.RepoManagerError):
@@ -45,9 +46,10 @@ class TestRepoManager(unittest.TestCase):
     test_repo_manager.checkout_commit(commit_to_test)
     self.assertEqual(commit_to_test, test_repo_manager.get_current_commit())
     with self.assertRaises(ValueError):
-     test_repo_manager.checkout_commit(' ')
+      test_repo_manager.checkout_commit(' ')
     with self.assertRaises(repo_manager.RepoManagerError):
-      test_repo_manager.checkout_commit('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+      test_repo_manager.checkout_commit(
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     test_repo_manager.remove_repo()
 
   def test_get_commit_list(self):
