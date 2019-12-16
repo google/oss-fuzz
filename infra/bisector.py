@@ -36,7 +36,7 @@ import os
 from build_specified_commit import build_fuzzer_from_commit
 from build_specified_commit import infer_main_repo
 from helper import reproduce_impl
-from RepoManager import RepoManager
+from repo_manager import RepoManager
 
 
 def main():

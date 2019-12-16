@@ -22,7 +22,7 @@ import re
 from helper import build_fuzzers_impl
 from helper import check_project_exists
 from helper import get_dockerfile_path
-from RepoManager import RepoManager
+from repo_manager import RepoManager
 
 
 def build_fuzzer_from_commit(project_name,

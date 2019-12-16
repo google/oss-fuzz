@@ -432,9 +432,9 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
         '-t', 'gcr.io/oss-fuzz/%s' % project_name,
         '/bin/bash', '-c', 'rm -rf /out/*'
     ])
+     
   else:
     print('Keeping existing build artifacts as-is (if any).')
-
   env = [
       'FUZZING_ENGINE=' + engine,
       'SANITIZER=' + sanitizer,

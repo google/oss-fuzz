@@ -21,8 +21,8 @@ The will consist of the following functional tests
 import os
 import unittest
 
-from RepoManager import RepoManager
-from RepoManager import RepoManagerError
+from repo_manager import RepoManager
+from repo_manager import RepoManagerError
 
 
 class TestRepoManager(unittest.TestCase):
