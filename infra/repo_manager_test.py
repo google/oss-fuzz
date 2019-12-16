@@ -75,13 +75,13 @@ class TestRepoManager(unittest.TestCase):
       # Testing commits out of order
       result_list = repo_manager.get_commit_list(new_commit, old_commit)
 
-  def test_branch_path(self):
+  def test_get_remote_branch_path(self):
     """Tests that repo manager can check if a branch exists remotely."""
     repo_manager = RepoManager(self.curl_repo, tmp_dir)
-    self.assertEqual(repo_manager.branch_path('wolfssl-crl'), 'origin/bagder/wolfssl-crl')
+    self.assertEqual(repo_manager.get_remote_branch_path('wolfssl-crl'), 'origin/bagder/wolfssl-crl')
     with self.assertRaises(ValueError):
       repo_manager.branch_path(' ')
-    self.assertIsNone(repo_manager.branch_path('aaaaaaaaaaaaaaaa'))
+    self.assertIsNone(repo_manager.get_remote_branch_path('aaaaaaaaaaaaaaaa'))
 
     # Note: looking at stale branch of curl repo, test could fail in future
     self.assertEqual(repo_manager.branch_path('ci'),'origin/dfandrich/ci')
@@ -96,6 +96,16 @@ class TestRepoManager(unittest.TestCase):
     self.assertEqual(repo_manager.get_current_branch(), 'bagder/wolfssl-crl')
     with self.assertRaises(RepoManagerError):
       repo_manager.checkout_branch('aaaaaaaaa')
+
+  def test_checkout_pull_request(self):
+    repo_manager = RepoManager(self.curl_repo, tmp_dir)
+    repo_manager.checkout_pull_request(2682)
+    self.assertEqual(repo_manager.get_current_branch(), '2682-branch')
+    with self.assertRaises(RepoManagerError):
+      repo_manager.checkout_pull_request(10000000)
+
+
+
 
 if __name__ == '__main__':
   tmp_dir = tempfile.mkdtemp()
