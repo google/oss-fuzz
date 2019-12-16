@@ -417,7 +417,7 @@ def build_image(args):
 
 
 def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
-                       env_to_add, source_path, no_cache=True):
+                       env_to_add, source_path, no_cache=False):
   """Build fuzzers."""
   if not build_image_impl(project_name, no_cache=no_cache):
     return 1

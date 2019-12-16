@@ -41,27 +41,19 @@ import repo_manager
 
 
 @dataclass
-class BisectionData():
+class BuildData():
   """List of data requried for bisection of errors in OSS-Fuzz projects.
 
   Attributes:
     project_name: The name of the OSS-Fuzz project that is being checked
-    commit_old: The oldest commit in the error regression range
-    commit_new: The newest commit in the error regression range
     engine: The fuzzing engine to be used
     sanitizer: The fuzzing sanitizer to be used
     architecture: The system architecture being fuzzed
-    testcase: The file path of the test case that triggers the error
-    fuzz_target: The name of the fuzzer to be tested
   """
   project_name: str
-  commit_old: str
-  commit_new: str
   engine: str
   sanitizer: str
   architecture: str
-  testcase: str
-  fuzz_target: str
 
 
 def main():
@@ -92,14 +84,14 @@ def main():
       help='the default is "address"; "dataflow" for "dataflow" engine')
   parser.add_argument('--architecture', default='x86_64')
   args = parser.parse_args()
-  bisect_data = BisectionData(args.project_name, args.commit_old,
-                              args.commit_new, args.engine, args.sanitizer,
-                              args.architecture, args.testcase,
-                              args.fuzz_target)
-  if not os.getcwd().endswith('oss-fuzz'):
+  build_data = BuildData(args.project_name, args.engine, args.sanitizer,
+                         args.architecture)
+  if os.getcwd() != os.path.dirname(
+      os.path.dirname(os.path.realpath(__file__))):
     print("Error: bisector.py needs to be run from the OSS-Fuzz home directory")
     return 1
-  error_sha = bisect(bisect_data)
+  error_sha = bisect(args.commit_old, args.commit_new, args.testcase,
+                     args.fuzz_target, build_data)
   if not error_sha:
     print('No error was found in commit range %s:%s' %
           (args.commit_old, args.commit_new))
@@ -108,32 +100,34 @@ def main():
   return 0
 
 
-def bisect(bisection_data):
+def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
   """Creates an bisection call that kicks off the error detection.
 
   This function is necessary in order to get the error code of the newest commit. This
   sets a standard for what the error actually is.
 
   Args:
-    bisection_data: a class holding all of the input parameters for bisection
+    commit_old: The oldest commit in the error regression range
+    commit_new: The newest commit in the error regression range
+    testcase: The file path of the test case that triggers the error
+    fuzz_target: The name of the fuzzer to be tested
+    build_data: a class holding all of the input parameters for bisection
 
   Returns:
     The commit SHA that introduced the error or None
   """
   local_store_path = tempfile.mkdtemp()
-  repo_url = build_specified_commit.infer_main_repo(bisection_data.project_name,
+  repo_url = build_specified_commit.infer_main_repo(build_data.project_name,
                                                     local_store_path,
-                                                    bisection_data.commit_old)
+                                                    commit_old)
   bisect_repo_manager = repo_manager.RepoManager(repo_url, local_store_path)
-  commit_list = bisect_repo_manager.get_commit_list(bisection_data.commit_old,
-                                                    bisection_data.commit_new)
+  commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
   build_specified_commit.build_fuzzer_from_commit(
-      bisection_data.project_name, commit_list[0], bisect_repo_manager.repo_dir,
-      bisection_data.engine, bisection_data.sanitizer,
-      bisection_data.architecture, bisect_repo_manager)
-  error_code = helper.reproduce_impl(bisection_data.project_name,
-                                     bisection_data.fuzz_target, False, [], [],
-                                     bisection_data.testcase)
+      build_data.project_name, commit_list[0], bisect_repo_manager.repo_dir,
+      build_data.engine, build_data.sanitizer, build_data.architecture,
+      bisect_repo_manager)
+  error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
+                                     False, [], [], testcase)
   old_idx = len(commit_list) - 1
   new_idx = 0
   if len(commit_list) == 1:
@@ -144,14 +138,12 @@ def bisect(bisection_data):
   while old_idx - new_idx != 1:
     curr_idx = (old_idx + new_idx) // 2
     build_specified_commit.build_fuzzer_from_commit(
-        bisection_data.project_name, commit_list[curr_idx],
-        bisect_repo_manager.repo_dir, bisection_data.engine,
-        bisection_data.sanitizer, bisection_data.architecture,
-        bisect_repo_manager)
+        build_data.project_name, commit_list[curr_idx],
+        bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
+        build_data.architecture, bisect_repo_manager)
     error_exists = (
-        helper.reproduce_impl(bisection_data.project_name,
-                              bisection_data.fuzz_target, False, [], [],
-                              bisection_data.testcase) == error_code)
+        helper.reproduce_impl(build_data.project_name, fuzz_target, False, [],
+                              [], testcase) == error_code)
     if error_exists == error_code:
       new_idx = curr_idx
     else:
