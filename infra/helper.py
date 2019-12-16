@@ -441,7 +441,7 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
       'ARCHITECTURE=' + architecture,
   ]
   if env_to_add:
-    env += env_to_add 
+    env += env_to_add
 
   project_work_dir = _get_work_dir(project_name)
 
