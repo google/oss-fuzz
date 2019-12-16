@@ -142,11 +142,10 @@ class RepoManager(object):
 
     self._run_command(['git', 'fetch'], self.repo_dir, check_result=True)
     out, err_code = self._run_command(['git', 'ls-remote', '--heads', self.repo_url, branch_name], self.repo_dir, check_result=True)
-    branch_path = re.match('\bheads/(.*)\n', out).group(1)
-    print(branch_path)
-    if branch_name + '\n' in out:
-      return True
-    return False
+    branch_path = re.search(r'\brefs/heads/(.*)\n', out)
+    if branch_path:
+      return self.get_remote() + '/' + branch_path.group(1).rstrip()
+    return None
 
   def get_current_commit(self):
     """Gets the current commit SHA of the repo.
@@ -166,6 +165,15 @@ class RepoManager(object):
       The name of the branch you are in
     """
     out, _ = self._run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], self.repo_dir)
+    return out.strip('\n')
+
+  def get_remote(self):
+    """Gets the name of the default remote repository.
+
+    Returns:
+      The name of the remote repo you are using
+    """
+    out, _ = self._run_command(['git', 'remote'], self.repo_dir)
     return out.strip('\n')
 
   def get_commit_list(self, old_commit, new_commit):
@@ -233,11 +241,9 @@ class RepoManager(object):
     """
     remote_branch_path = self.branch_path(branch_name)
     if not remote_branch_path:
-      raise RepoManagerError('Branch %s does not exist for repository %s.' % branch_name, self.repo_name)
+      raise RepoManagerError('Branch %s does not exist for repository %s.' % (branch_name, self.repo_name))
     self._run_command(['git', 'fetch'], self.repo_dir)
-    self._run_command(['git', 'checkout', remote_branch_path], self.repo_dir, check_result=True)
-    if self.get_current_branch() != branch_name:
-      raise RepoManagerError('Error checking out branch %s' % branch_name)
+    self._run_command(['git', 'checkout', '-t', remote_branch_path], self.repo_dir, check_result=True)
 
   def remove_repo(self):
     """Attempts to remove the git repo. """
