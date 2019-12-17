@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,17 @@
 #
 ################################################################################
 
-pushd $SRC/wxwidgets
-./tests/fuzz/ossfuzz.sh
+pushd $SRC/ogg
+./autogen.sh
+./configure --prefix="$WORK" --enable-static --disable-shared --disable-crc
+make clean
+make -j$(nproc)
+make install
 popd
+
+./autogen.sh --prefix="$WORK" --enable-static --disable-shared
+make clean
+make -j$(nproc)
+make install
+
+$CXX $CXXFLAGS decode_fuzzer.cc -o $OUT/decode_fuzzer -L"$WORK/lib" -I"$WORK/include" $LIB_FUZZING_ENGINE -lvorbisidec -logg

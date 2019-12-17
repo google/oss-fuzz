@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.
+/*
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
+*/
+#pragma once
 
-pushd $SRC/wxwidgets
-./tests/fuzz/ossfuzz.sh
-popd
+#include "xercesc/parsers/SAXParser.hpp"
+#include "xercesc/framework/MemBufInputSource.hpp"
+#include "xercesc/util/OutOfMemoryException.hpp"
+
+void parseInMemory(const uint8_t *Data, size_t Size);

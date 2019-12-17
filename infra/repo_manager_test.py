@@ -23,8 +23,7 @@ import tempfile
 import unittest
 import shutil
 
-from RepoManager import RepoManager
-from RepoManager import RepoManagerError
+import repo_manager
 
 
 class TestRepoManager(unittest.TestCase):
@@ -34,29 +33,30 @@ class TestRepoManager(unittest.TestCase):
 
   def test_clone_correctly(self):
     """Tests the correct location of the git repo."""
-    repo_manager = RepoManager(self.curl_repo, tmp_dir)
-    git_path = os.path.join(repo_manager.base_dir, repo_manager.repo_name,
-                            '.git')
+    test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
+    git_path = os.path.join(test_repo_manager.base_dir,
+                            test_repo_manager.repo_name, '.git')
     self.assertTrue(os.path.isdir(git_path))
-    repo_manager.remove_repo()
-    with self.assertRaises(RepoManagerError):
-      repo_manager = RepoManager(' ', tmp_dir)
+    test_repo_manager.remove_repo()
+    with self.assertRaises(repo_manager.RepoManagerError):
+      test_repo_manager = repo_manager.RepoManager(' ', tmp_dir)
 
   def test_checkout_commit(self):
     """Tests that the git checkout command works."""
-    repo_manager = RepoManager(self.curl_repo, tmp_dir)
+    test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
     commit_to_test = '036ebac0134de3b72052a46f734e4ca81bb96055'
-    repo_manager.checkout_commit(commit_to_test)
-    self.assertEqual(commit_to_test, repo_manager.get_current_commit())
+    test_repo_manager.checkout_commit(commit_to_test)
+    self.assertEqual(commit_to_test, test_repo_manager.get_current_commit())
     with self.assertRaises(ValueError):
-      repo_manager.checkout_commit(' ')
-    with self.assertRaises(RepoManagerError):
-      repo_manager.checkout_commit('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-    repo_manager.remove_repo()
+      test_repo_manager.checkout_commit(' ')
+    with self.assertRaises(repo_manager.RepoManagerError):
+      test_repo_manager.checkout_commit(
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    test_repo_manager.remove_repo()
 
   def test_get_commit_list(self):
     """Tests an accurate commit list can be retrived from the repo manager."""
-    repo_manager = RepoManager(self.curl_repo, tmp_dir)
+    test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
     old_commit = '7cf18b05e04bbb0f08c74d2567b0648f6c31a952'
     new_commit = '113db127ee2b2f874dfcce406103ffe666e11953'
     commit_list = [
@@ -65,48 +65,15 @@ class TestRepoManager(unittest.TestCase):
         '9a2cbf30b81a2b57149bb20e78e2e4cb5c2ff389',
         '7cf18b05e04bbb0f08c74d2567b0648f6c31a952'
     ]
-    result_list = repo_manager.get_commit_list(old_commit, new_commit)
+    result_list = test_repo_manager.get_commit_list(old_commit, new_commit)
     self.assertListEqual(commit_list, result_list)
-    with self.assertRaises(RepoManagerError):
-      repo_manager.get_commit_list('asafd', new_commit)
-    with self.assertRaises(RepoManagerError):
-      repo_manager.get_commit_list(new_commit, 'asdfasdf')
-    with self.assertRaises(RepoManagerError):
+    with self.assertRaises(repo_manager.RepoManagerError):
+      test_repo_manager.get_commit_list('asafd', new_commit)
+    with self.assertRaises(repo_manager.RepoManagerError):
+      test_repo_manager.get_commit_list(new_commit, 'asdfasdf')
+    with self.assertRaises(repo_manager.RepoManagerError):
       # Testing commits out of order
-      result_list = repo_manager.get_commit_list(new_commit, old_commit)
-
-  def test_get_remote_branch_path(self):
-    """Tests that repo manager can check if a branch exists remotely."""
-    repo_manager = RepoManager(self.curl_repo, tmp_dir)
-    self.assertEqual(repo_manager.get_remote_branch_path('wolfssl-crl'), 'origin/bagder/wolfssl-crl')
-    with self.assertRaises(ValueError):
-      repo_manager.branch_path(' ')
-    self.assertIsNone(repo_manager.get_remote_branch_path('aaaaaaaaaaaaaaaa'))
-
-    # Note: looking at stale branch of curl repo, test could fail in future
-    self.assertEqual(repo_manager.branch_path('ci'),'origin/dfandrich/ci')
-
-  def test_get_current_branch(self):
-    repo_manager = RepoManager(self.curl_repo, tmp_dir)
-    self.assertEqual('master', repo_manager.get_current_branch())
-
-  def test_checkout_branch(self):
-    repo_manager = RepoManager(self.curl_repo, tmp_dir)
-    repo_manager.checkout_branch('wolfssl-crl')
-    self.assertEqual(repo_manager.get_current_branch(), 'bagder/wolfssl-crl')
-    with self.assertRaises(RepoManagerError):
-      repo_manager.checkout_branch('aaaaaaaaa')
-
-  def test_checkout_pull_request(self):
-    repo_manager = RepoManager(self.curl_repo, tmp_dir)
-
-    # Note: This test may fail because the curl pull request might have closed
-    repo_manager.checkout_pull_request(2682)
-    self.assertEqual(repo_manager.get_current_branch(), '2682-branch')
-    with self.assertRaises(RepoManagerError):
-      repo_manager.checkout_pull_request(10000000)
-
-
+      test_repo_manager.get_commit_list(new_commit, old_commit)
 
 
 if __name__ == '__main__':

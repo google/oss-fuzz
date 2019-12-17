@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +14,9 @@
 #
 ################################################################################
 
-pushd $SRC/wxwidgets
-./tests/fuzz/ossfuzz.sh
-popd
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER dhbaird@gmail.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN git clone --depth 1 https://github.com/dhbaird/easywsclient easywsclient
+WORKDIR easywsclient
+COPY build.sh *.cpp $SRC/

@@ -1,0 +1,10 @@
+homepage: "https://xiph.org/vorbis/"
+primary_contact: "daede003@umn.edu"
+auto_ccs:
+  - "paul.l.kehrer@gmail.com"
+vendor_ccs:
+  - "twsmith@mozilla.com"
+sanitizers:
+  - address
+  - memory
+  - undefined

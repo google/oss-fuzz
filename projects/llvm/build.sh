@@ -41,7 +41,9 @@ esac
 
 mkdir build
 cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm \
+
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm-project/llvm \
+    -DLLVM_ENABLE_PROJECTS="clang;libcxx;libcxxabi;compiler-rt;lld;clang-tools-extra" \
     -DLLVM_ENABLE_ASSERTIONS=ON \
     -DCMAKE_C_COMPILER="${CC}" \
     -DCMAKE_CXX_COMPILER="${CXX}" \

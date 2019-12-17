@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +14,12 @@
 #
 ################################################################################
 
-pushd $SRC/wxwidgets
-./tests/fuzz/ossfuzz.sh
-popd
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER twsmith@mozilla.com
+RUN apt-get update && apt-get install -y make autoconf automake libogg-dev libtool pkg-config wget
+RUN git clone https://git.xiph.org/ogg.git
+RUN git clone https://git.xiph.org/tremor.git
+RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/vorbis decode_corpus
+WORKDIR tremor
+COPY decode_fuzzer.cc $SRC/tremor/
+COPY build.sh $SRC/

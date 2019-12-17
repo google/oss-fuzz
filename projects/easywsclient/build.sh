@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 #
 ################################################################################
 
-pushd $SRC/wxwidgets
-./tests/fuzz/ossfuzz.sh
-popd
+for f in $(find $SRC -name '*_fuzzer.cpp'); do
+    b=$(basename -s .cpp $f)
+    $CXX $CXXFLAGS -std=c++11 -g easywsclient.cpp -I. \
+        $f -o $OUT/$b $LIB_FUZZING_ENGINE
+done
