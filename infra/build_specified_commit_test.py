@@ -17,6 +17,9 @@ The will consist of the following functional tests
   1. The inferance of the main repo for a specific project
 """
 import unittest
+import os
+import tempfile
+import shutil
 
 import build_specified_commit
 import helper
@@ -28,20 +31,20 @@ class BuildImageUnitTests(unittest.TestCase):
   def test_infer_main_repo(self):
     """Tests that the main repo can be infered based on an example commit."""
     infered_repo = build_specified_commit.infer_main_repo(
-        'curl', 'tmp', 'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
+        'curl', TMP_DIR, 'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
     self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
-    infered_repo = build_specified_commit.infer_main_repo('curl', 'tmp')
+    infered_repo = build_specified_commit.infer_main_repo('curl', TMP_DIR)
     self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
 
-    infered_repo = build_specified_commit.infer_main_repo('usrsctp', 'tmp')
+    infered_repo = build_specified_commit.infer_main_repo('usrsctp', TMP_DIR)
     self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp')
     infered_repo = build_specified_commit.infer_main_repo(
-        'usrsctp', 'tmp', '4886aaa49fb90e479226fcfc3241d74208908232')
+        'usrsctp', TMP_DIR, '4886aaa49fb90e479226fcfc3241d74208908232')
     self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp',
                      '4886aaa49fb90e479226fcfc3241d74208908232')
 
     infered_repo = build_specified_commit.infer_main_repo(
-        'not_a_project', 'tmp')
+        'not_a_project', TMP_DIR)
     self.assertEqual(infered_repo, None)
 
 
@@ -59,17 +62,22 @@ class BuildImageIntegrationTests(unittest.TestCase):
     old_commit = 'f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f'
     new_commit = 'f50a39051ea8c7f10d6d8db9656658b49601caef'
     fuzzer = 'rules_fuzzer'
-    test_data = 'infra/yara_test_data'
+    test_data = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'testcases', 'yara_test_data')
     build_specified_commit.build_fuzzer_from_commit(
-        project_name, old_commit, 'tmp', sanitizer='address')
+        project_name, old_commit, TMP_DIR, sanitizer='address')
     old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [], [],
                                            test_data)
     build_specified_commit.build_fuzzer_from_commit(
-        project_name, new_commit, 'tmp', sanitizer='address')
+        project_name, new_commit, TMP_DIR, sanitizer='address')
     new_error_code = helper.reproduce_impl(project_name, fuzzer, False, [], [],
                                            test_data)
     self.assertNotEqual(new_error_code, old_error_code)
 
 
 if __name__ == '__main__':
-  unittest.main()
+  if os.getcwd() != os.path.dirname(os.path.dirname(os.path.realpath(__file__))):
+    print("Error: this script needs to be run from the OSS-Fuzz home directory")
+  else:
+    TMP_DIR = tempfile.mkdtemp()
+    unittest.main()
+    shutil.rmtree(TMP_DIR)

@@ -417,7 +417,7 @@ def build_image(args):
 
 
 def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
-                       env_to_add, source_path, no_cache=False):
+                       env_to_add, source_path, no_cache=False, mount_location=None):
   """Build fuzzers."""
   if not build_image_impl(project_name, no_cache=no_cache):
     return 1
@@ -457,15 +457,22 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
       ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
       _env_to_docker_args(env))
   if source_path:
-    workdir = _workdir_from_dockerfile(project_name)
-    if workdir == '/src':
-      print('Cannot use local checkout with "WORKDIR /src".', file=sys.stderr)
-      return 1
+    if not mount_location:
+      workdir = _workdir_from_dockerfile(project_name)
+      if workdir == '/src':
+        print('Cannot use local checkout with "WORKDIR /src".', file=sys.stderr)
+        return 1
 
-    command += [
-        '-v',
-        '%s:%s' % (_get_absolute_path(source_path), workdir),
-    ]
+      command += [
+          '-v',
+          '%s:%s' % (_get_absolute_path(source_path), workdir),
+      ]
+    else:
+      command += [
+          '-v',
+          '%s:%s' % (_get_absolute_path(source_path), mount_location),
+      ]
+
   command += [
       '-v', '%s:/out' % project_out_dir,
       '-v', '%s:/work' % project_work_dir,

@@ -17,6 +17,7 @@ This module is allows each of the OSS Fuzz projects fuzzers to be built
 from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
+import os
 import re
 
 import helper
@@ -54,7 +55,8 @@ def build_fuzzer_from_commit(project_name,
       sanitizer=sanitizer,
       architecture=architecture,
       env_to_add=None,
-      source_path=old_repo_manager.repo_dir)
+      source_path=old_repo_manager.repo_dir,
+      mount_location=os.path.join('/src',old_repo_manager.repo_name))
 
 
 def infer_main_repo(project_name, local_store_path, example_commit=None):
