@@ -6,6 +6,7 @@ auto_ccs:
   - "lockyergw@gmail.com"
   - "jra@google.com"
   - "sloowfranklin@gmail.com"
+  - "gdeschner@gmail.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
