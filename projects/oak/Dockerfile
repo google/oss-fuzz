@@ -16,13 +16,22 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER tzn@google.com
-RUN apt-get update && apt-get install -y \
-  curl
+
+# Use a fixed Bazel version.
+# https://github.com/google/asylo/blob/088ea3490dd4579655bd5b65b0e31fe18de7f6dd/asylo/distrib/toolchain/Dockerfile#L48-L71
+ARG bazel_version=1.1.0
+ARG bazel_sha=138b47ffd54924e3c0264c65d31d3927803fb9025db4d5b18107df79ee3bda95
+ARG bazel_url=https://storage.googleapis.com/bazel-apt/pool/jdk1.8/b/bazel/bazel_${bazel_version}_amd64.deb
 
 # Install Bazel.
-RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN apt-get update && apt-get install -y bazel
+RUN apt-get update && \
+    apt-get install -y wget && \
+    wget "${bazel_url}" -nv -o- -O bazel.deb && \
+    echo "${bazel_sha}  bazel.deb" > bazel.sha256 && \
+    sha256sum --check bazel.sha256 && \
+    apt-get install -y ./bazel.deb && \
+    rm bazel.deb bazel.sha256 && \
+    apt-get clean
 
 RUN git clone --depth 1 https://github.com/project-oak/oak oak
 WORKDIR oak
