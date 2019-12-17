@@ -37,6 +37,7 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=object-size"
     --enable-json \
     --enable-exif \
     --enable-mbstring \
+    --without-pcre-jit \
     --disable-phpdbg \
     --disable-cgi \
     --with-pic
