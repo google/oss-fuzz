@@ -20,8 +20,7 @@
 #include <fuzzer/FuzzedDataProvider.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  FuzzedDataProvider stream(data, size);
-  const std::string str = stream.ConsumeRandomLengthString(size);
+  std::string str(reinterpret_cast<const char*>(data), size);
   easywsclient::WebSocket::from_url(str);
   return 0;
 }
