@@ -185,7 +185,12 @@ class RepoManager(object):
       self._run_command(['git', 'fetch', '--unshallow'],
                         self.repo_dir,
                         check_result=True)
-    self._run_command(['git', 'checkout', '-f', commit], self.repo_dir)
+    self._run_command(['git', 'checkout', '-f', commit],
+                      self.repo_dir,
+                      check_result=True)
+    self._run_command(['git', 'clean', '-fxd'],
+                      self.repo_dir,
+                      check_result=True)
     if self.get_current_commit() != commit:
       raise RepoManagerError('Error checking out commit %s' % commit)
 

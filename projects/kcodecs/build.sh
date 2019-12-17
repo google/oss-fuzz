@@ -30,7 +30,7 @@ sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
 ./configure --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v
 cd src
 ../bin/qmake -o Makefile src.pro
-make sub-corelib -j$(nproc)
+make sub-corelib sub-rcc -j$(nproc)
 
 cd $SRC
 cd kcodecs

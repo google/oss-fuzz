@@ -39,4 +39,12 @@ pushd SPIRV-Cross/build
 cmake -G "Ninja" -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" ..
 ninja
 cp spirv-cross $OUT/
+popd
 
+pushd graphicsfuzz
+mvn package -Dmaven.test.skip=True
+cp -r graphicsfuzz/target/graphicsfuzz $OUT/
+popd
+
+wget https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u232-b09/OpenJDK8U-jdk_x64_linux_hotspot_8u232b09.tar.gz
+tar xzf OpenJDK8U-jdk_x64_linux_hotspot_8u232b09.tar.gz -C $OUT

@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kcc@google.com
-RUN apt-get update && apt-get install -y subversion
-
-RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
-WORKDIR llvm-project/libcxxabi
+MAINTAINER twsmith@mozilla.com
+RUN apt-get update && apt-get install -y make autoconf automake libogg-dev libtool pkg-config wget
+RUN git clone https://git.xiph.org/ogg.git
+RUN git clone https://git.xiph.org/tremor.git
+RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/vorbis decode_corpus
+WORKDIR tremor
+COPY decode_fuzzer.cc $SRC/tremor/
 COPY build.sh $SRC/

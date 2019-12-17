@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+#!/bin/bash -eu
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,17 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kcc@google.com
-RUN apt-get update && apt-get install -y subversion
+pushd $SRC/ogg
+./autogen.sh
+./configure --prefix="$WORK" --enable-static --disable-shared --disable-crc
+make clean
+make -j$(nproc)
+make install
+popd
 
-RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
-WORKDIR llvm-project/libcxxabi
-COPY build.sh $SRC/
+./autogen.sh --prefix="$WORK" --enable-static --disable-shared
+make clean
+make -j$(nproc)
+make install
+
+$CXX $CXXFLAGS decode_fuzzer.cc -o $OUT/decode_fuzzer -L"$WORK/lib" -I"$WORK/include" $LIB_FUZZING_ENGINE -lvorbisidec -logg
