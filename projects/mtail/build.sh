@@ -23,4 +23,4 @@ export GOPATH=$GOPATH:/
 make GO111MODULE=off --debug install_deps
 go mod vendor
 
-make GO111MODULE=off --debug $OUT/vm-fuzzer.dict $OUT/vm-fuzzer
+make GO111MODULE=off --debug $OUT/vm-fuzzer.dict $OUT/vm-fuzzer_seed_corpus.zip $OUT/vm-fuzzer
