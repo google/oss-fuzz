@@ -146,6 +146,7 @@ COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/
+COPY ossfuzz_coverage_runner.go $GOPATH
 
 RUN precompile_honggfuzz
 

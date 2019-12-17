@@ -111,21 +111,35 @@ function run_fuzz_target {
   fi
 }
 
+export GOPATH=$OUT/$GOPATH
 # Run each fuzz target, generate raw coverage dumps.
 for fuzz_target in $FUZZ_TARGETS; do
-  # Continue if not a fuzz target.
-  if [[ $FUZZING_ENGINE != "none" ]]; then
-    grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
-  fi
-
-  echo "Running $fuzz_target"
-  run_fuzz_target $fuzz_target &
-
-  if [[ -z $objects ]]; then
-    # The first object needs to be passed without -object= flag.
-    objects="$fuzz_target"
+  # Test if fuzz target is a golang one.
+  if [[ $FUZZING_LANGUAGE == "go" ]]; then
+    # Continue if not a fuzz target.
+    if [[ $FUZZING_ENGINE != "none" ]]; then
+      grep "go test -run" $fuzz_target > /dev/null 2>&1 || continue
+    fi
+    cd $GOPATH/src
+    echo "Running go target $fuzz_target"
+    export FUZZ_CORPUS_DIR="/corpus/${fuzz_target}/"
+    bash $OUT/$fuzz_target $DUMPS_DIR/$fuzz_target.profdata &
+    cd $OUT
   else
-    objects="$objects -object=$fuzz_target"
+    # Continue if not a fuzz target.
+    if [[ $FUZZING_ENGINE != "none" ]]; then
+      grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
+    fi
+
+    echo "Running $fuzz_target"
+    run_fuzz_target $fuzz_target &
+
+    if [[ -z $objects ]]; then
+      # The first object needs to be passed without -object= flag.
+      objects="$fuzz_target"
+    else
+      objects="$objects -object=$fuzz_target"
+    fi
   fi
 
   # Do not spawn more processes than the number of CPUs available.
@@ -139,32 +153,41 @@ done
 # Wait for background processes to finish.
 wait
 
-# From this point on the script does not tolerate any errors.
-set -e
+if [[ $FUZZING_LANGUAGE == "go" ]]; then
+  /root/go/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
+  go tool cover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
+  cp $REPORT_ROOT_DIR/index.html $REPORT_PLATFORM_DIR/index.html
+  echo "Finished generating code coverage report for Go fuzz targets."
+else
 
-# Merge all dumps from the individual targets.
-rm -f $PROFILE_FILE
-llvm-profdata merge -sparse $DUMPS_DIR/*.profdata -o $PROFILE_FILE
+  # From this point on the script does not tolerate any errors.
+  set -e
 
-# TODO(mmoroz): add script from Chromium for rendering directory view reports.
-# The first path in $objects does not have -object= prefix (llvm-cov format).
-shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$objects)
-objects="$objects $shared_libraries"
+  # Merge all dumps from the individual targets.
+  rm -f $PROFILE_FILE
+  llvm-profdata merge -sparse $DUMPS_DIR/*.profdata -o $PROFILE_FILE
 
-# It's important to use $LLVM_COV_COMMON_ARGS as the last argument due to
-# positional arguments (SOURCES) that can be passed via $COVERAGE_EXTRA_ARGS.
-LLVM_COV_ARGS="-instr-profile=$PROFILE_FILE $objects $LLVM_COV_COMMON_ARGS"
+  # TODO(mmoroz): add script from Chromium for rendering directory view reports.
+  # The first path in $objects does not have -object= prefix (llvm-cov format).
+  shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$objects)
+  objects="$objects $shared_libraries"
 
-# Generate HTML report.
-llvm-cov show -format=html -output-dir=$REPORT_ROOT_DIR \
-    -Xdemangler c++filt -Xdemangler -n $LLVM_COV_ARGS
+  # It's important to use $LLVM_COV_COMMON_ARGS as the last argument due to
+  # positional arguments (SOURCES) that can be passed via $COVERAGE_EXTRA_ARGS.
+  LLVM_COV_ARGS="-instr-profile=$PROFILE_FILE $objects $LLVM_COV_COMMON_ARGS"
 
-# Export coverage summary in JSON format.
-llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
+  # Generate HTML report.
+  llvm-cov show -format=html -output-dir=$REPORT_ROOT_DIR \
+      -Xdemangler c++filt -Xdemangler -n $LLVM_COV_ARGS
 
-# Post process HTML report.
-coverage_helper -v post_process -src-root-dir=/ -summary-file=$SUMMARY_FILE \
-    -output-dir=$REPORT_ROOT_DIR $PATH_EQUIVALENCE_ARGS
+  # Export coverage summary in JSON format.
+  llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
+
+  # Post process HTML report.
+  coverage_helper -v post_process -src-root-dir=/ -summary-file=$SUMMARY_FILE \
+      -output-dir=$REPORT_ROOT_DIR $PATH_EQUIVALENCE_ARGS
+
+fi
 
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
