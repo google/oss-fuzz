@@ -19,10 +19,8 @@ like continuious integration fuzzing and bisection to find errors
 """
 import re
 
-from helper import build_fuzzers_impl
-from helper import check_project_exists
-from helper import get_dockerfile_path
-from RepoManager import RepoManager
+import helper
+import repo_manager
 
 
 def build_fuzzer_from_commit(project_name,
@@ -30,11 +28,12 @@ def build_fuzzer_from_commit(project_name,
                              local_store_path,
                              engine='libfuzzer',
                              sanitizer='address',
-                             architecture='x86_64'):
-  """Builds a ossfuzz fuzzer at a  specific commit SHA.
+                             architecture='x86_64',
+                             old_repo_manager=None):
+  """Builds a OSS-Fuzz fuzzer at a  specific commit SHA.
 
   Args:
-    project_name: The oss fuzz project name
+    project_name: The OSS-Fuzz project name
     commit: The commit SHA to build the fuzzers at
     local_store_path: The full file path of a place where a temp git repo is stored
     engine: The fuzzing engine to be used
@@ -44,11 +43,18 @@ def build_fuzzer_from_commit(project_name,
   Returns:
     0 on successful build 1 on failure
   """
-  guessed_url = infer_main_repo(project_name, local_store_path, commit)
-  repo_man = RepoManager(guessed_url, local_store_path)
-  repo_man.checkout_commit(commit)
-  return build_fuzzers_impl(project_name, True, engine, sanitizer, architecture,
-                            None, repo_man.repo_dir)
+  if not old_repo_manager:
+    inferred_url = infer_main_repo(project_name, local_store_path, commit)
+    old_repo_manager = repo_manager.RepoManager(inferred_url, local_store_path)
+  old_repo_manager.checkout_commit(commit)
+  return helper.build_fuzzers_impl(
+      project_name=project_name,
+      clean=True,
+      engine=engine,
+      sanitizer=sanitizer,
+      architecture=architecture,
+      env_to_add=None,
+      source_path=old_repo_manager.repo_dir)
 
 
 def infer_main_repo(project_name, local_store_path, example_commit=None):
@@ -56,14 +62,14 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
 
   NOTE: This is a fragile implementation and only works for git
   Args:
-    project_name: The oss fuzz project that you are checking the repo of
+    project_name: The OSS-Fuzz project that you are checking the repo of
     example_commit: A commit that is in the main repos tree
   Returns:
     The guessed repo url path or None on failue
   """
-  if not check_project_exists(project_name):
+  if not helper.check_project_exists(project_name):
     return None
-  docker_path = get_dockerfile_path(project_name)
+  docker_path = helper.get_dockerfile_path(project_name)
   with open(docker_path, 'r') as file_path:
     lines = file_path.read()
     # Use generic git format and project name to guess main repo
@@ -80,8 +86,9 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
                              clone_command).group(0)
         print(repo_url)
         try:
-          repo_manager = RepoManager(repo_url.rstrip(), local_store_path)
-          if repo_manager.commit_exists(example_commit):
+          test_repo_manager = repo_manager.RepoManager(repo_url.rstrip(),
+                                                       local_store_path)
+          if test_repo_manager.commit_exists(example_commit):
             return repo_url
         except:
           pass

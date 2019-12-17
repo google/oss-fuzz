@@ -417,9 +417,9 @@ def build_image(args):
 
 
 def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
-                       env_to_add, source_path):
+                       env_to_add, source_path, no_cache=False):
   """Build fuzzers."""
-  if not build_image_impl(project_name):
+  if not build_image_impl(project_name, no_cache=no_cache):
     return 1
 
   project_out_dir = _get_output_dir(project_name)
@@ -432,9 +432,9 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
         '-t', 'gcr.io/oss-fuzz/%s' % project_name,
         '/bin/bash', '-c', 'rm -rf /out/*'
     ])
+     
   else:
     print('Keeping existing build artifacts as-is (if any).')
-
   env = [
       'FUZZING_ENGINE=' + engine,
       'SANITIZER=' + sanitizer,
@@ -737,35 +737,41 @@ def run_fuzzer(args):
 
 
 def reproduce(args):
+  """Reproduce a specific test case from a specific project."""
+  return reproduce_impl(args.project_name, args.fuzzer_name, args.valgrind, args.env_to_add,
+                        fuzzer_args, args.testcase_path)
+
+
+def reproduce_impl(project_name, fuzzer_name, valgrind, env_to_add, fuzzer_args, testcase_path):
   """Reproduces a testcase in the container."""
-  if not check_project_exists(args.project_name):
+  if not check_project_exists(project_name):
     return 1
 
-  if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
+  if not _check_fuzzer_exists(project_name, fuzzer_name):
     return 1
 
   debugger = ''
   env = []
   image_name = 'base-runner'
 
-  if args.valgrind:
+  if valgrind:
     debugger = 'valgrind --tool=memcheck --track-origins=yes --leak-check=full'
 
   if debugger:
     image_name = 'base-runner-debug'
     env += ['DEBUGGER=' + debugger]
 
-  if args.e:
-    env += args.e
+  if env_to_add:
+    env += env_to_add
 
   run_args = _env_to_docker_args(env) + [
-      '-v', '%s:/out' % _get_output_dir(args.project_name),
-      '-v', '%s:/testcase' % _get_absolute_path(args.testcase_path),
+      '-v', '%s:/out' % _get_output_dir(project_name),
+      '-v', '%s:/testcase' % _get_absolute_path(testcase_path),
       '-t', 'gcr.io/oss-fuzz-base/%s' % image_name,
       'reproduce',
-      args.fuzzer_name,
+      fuzzer_name,
       '-runs=100',
-  ] + args.fuzzer_args
+  ] + fuzzer_args
 
   return docker_run(run_args)
 
