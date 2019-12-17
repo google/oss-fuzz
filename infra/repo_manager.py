@@ -141,7 +141,10 @@ class RepoManager(object):
       raise ValueError('An empty string is not a valid branch name')
 
     self._run_command(['git', 'fetch'], self.repo_dir, check_result=True)
-    out, err_code = self._run_command(['git', 'ls-remote', '--heads', self.repo_url, branch_name], self.repo_dir, check_result=True)
+    out, err_code = self._run_command(
+        ['git', 'ls-remote', '--heads', self.repo_url, branch_name],
+        self.repo_dir,
+        check_result=True)
     branch_path = re.search(r'\brefs/heads/(.*)\n', out)
     if branch_path:
       return self.get_remote() + '/' + branch_path.group(1).rstrip()
@@ -162,7 +165,10 @@ class RepoManager(object):
     if not branch_name.rstrip():
       raise ValueError('An empty string is not a valid branch name')
 
-    _, err_code = self._run_command(['git', 'rev-parse', '--verify', branch_name], self.repo_dir, check_result=True)
+    _, err_code = self._run_command(
+        ['git', 'rev-parse', '--verify', branch_name],
+        self.repo_dir,
+        check_result=True)
     if not err_code:
       return branch_name
     return None
@@ -184,7 +190,8 @@ class RepoManager(object):
     Returns:
       The name of the branch you are in
     """
-    out, _ = self._run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], self.repo_dir)
+    out, _ = self._run_command(['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                               self.repo_dir)
     return out.strip('\n')
 
   def get_remote(self):
@@ -267,12 +274,17 @@ class RepoManager(object):
     remote_branch_path = self.get_remote_branch_path(branch_name)
     local_branch_path = self.get_local_branch_path(branch_name)
     if not remote_branch_path and not local_branch_path:
-      raise RepoManagerError('Branch %s does not exist for repository %s.' % (branch_name, self.repo_name))
+      raise RepoManagerError('Branch %s does not exist for repository %s.' %
+                             (branch_name, self.repo_name))
     elif remote_branch_path:
       self._run_command(['git', 'fetch'], self.repo_dir)
-      self._run_command(['git', 'checkout', '-t', remote_branch_path], self.repo_dir, check_result=True)
+      self._run_command(['git', 'checkout', '-t', remote_branch_path],
+                        self.repo_dir,
+                        check_result=True)
     else:
-      self._run_command(['git', 'checkout', local_branch_path], self.repo_dir, check_result=True)
+      self._run_command(['git', 'checkout', local_branch_path],
+                        self.repo_dir,
+                        check_result=True)
 
   def checkout_pull_request(self, pull_request_id):
     """A function to check out the state of an existing pull request.
@@ -282,7 +294,13 @@ class RepoManager(object):
 
     """
     pr_branch_name = str(pull_request_id) + '-branch'
-    self._run_command(['git', 'fetch', self.get_remote(), 'pull/' + str(pull_request_id) + '/head:' + pr_branch_name], self.repo_dir, check_result=True)
+    self._run_command([
+        'git', 'fetch',
+        self.get_remote(),
+        'pull/' + str(pull_request_id) + '/head:' + pr_branch_name
+    ],
+                      self.repo_dir,
+                      check_result=True)
     self.checkout_branch(pr_branch_name)
 
   def remove_repo(self):

@@ -33,17 +33,17 @@ class TestRepoManager(unittest.TestCase):
 
   def test_clone_correctly(self):
     """Tests the correct location of the git repo."""
-    test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
+    test_repo_manager = repo_manager.RepoManager(self.curl_repo, TMP_DIR)
     git_path = os.path.join(test_repo_manager.base_dir,
                             test_repo_manager.repo_name, '.git')
     self.assertTrue(os.path.isdir(git_path))
     test_repo_manager.remove_repo()
     with self.assertRaises(repo_manager.RepoManagerError):
-      test_repo_manager = repo_manager.RepoManager(' ', tmp_dir)
+      test_repo_manager = repo_manager.RepoManager(' ', TMP_DIR)
 
   def test_checkout_commit(self):
     """Tests that the git checkout command works."""
-    test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
+    test_repo_manager = repo_manager.RepoManager(self.curl_repo, TMP_DIR)
     commit_to_test = '036ebac0134de3b72052a46f734e4ca81bb96055'
     test_repo_manager.checkout_commit(commit_to_test)
     self.assertEqual(commit_to_test, test_repo_manager.get_current_commit())
@@ -56,7 +56,7 @@ class TestRepoManager(unittest.TestCase):
 
   def test_get_commit_list(self):
     """Tests an accurate commit list can be retrived from the repo manager."""
-    test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
+    test_repo_manager = repo_manager.RepoManager(self.curl_repo, TMP_DIR)
     old_commit = '7cf18b05e04bbb0f08c74d2567b0648f6c31a952'
     new_commit = '113db127ee2b2f874dfcce406103ffe666e11953'
     commit_list = [
@@ -77,6 +77,6 @@ class TestRepoManager(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  tmp_dir = tempfile.mkdtemp()
+  TMP_DIR = tempfile.mkdtemp()
   unittest.main()
-  shutil.rmtree(tmp_dir)
+  shutil.rmtree(TMP_DIR)

@@ -22,13 +22,14 @@ import re
 import helper
 import repo_manager
 
+
 def build_fuzzer_from_pull_request(project_name,
-                             pr_id,
-                             local_store_path,
-                             engine='libfuzzer',
-                             sanitizer='address',
-                             architecture='x86_64',
-                             old_repo_manager=None):
+                                   pr_id,
+                                   local_store_path,
+                                   engine='libfuzzer',
+                                   sanitizer='address',
+                                   architecture='x86_64',
+                                   old_repo_manager=None):
   """Builds a ossfuzz fuzzer at a  specific commit SHA.
 
   Args:
@@ -47,8 +48,8 @@ def build_fuzzer_from_pull_request(project_name,
     inferred_url = infer_main_repo(project_name, local_store_path)
     old_repo_man = repo_manager.RepoManager(inferred_url, local_store_path)
   old_repo_man.checkout_pull_request(pr_id)
-  return helper.build_fuzzers_impl(project_name, True, engine, sanitizer, architecture,
-                            None, old_repo_man.repo_dir)
+  return helper.build_fuzzers_impl(project_name, True, engine, sanitizer,
+                                   architecture, None, old_repo_man.repo_dir)
 
 
 def build_fuzzer_from_commit(project_name,
