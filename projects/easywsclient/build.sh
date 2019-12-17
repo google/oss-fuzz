@@ -15,9 +15,8 @@
 #
 ################################################################################
 
-# build fuzzers
 for f in $(find $SRC -name '*_fuzzer.cpp'); do
     b=$(basename -s .cpp $f)
     $CXX $CXXFLAGS -std=c++11 -g easywsclient.cpp -I. \
-    $f -o $OUT/$b $LIB_FUZZING_ENGINE
+        $f -o $OUT/$b $LIB_FUZZING_ENGINE
 done
