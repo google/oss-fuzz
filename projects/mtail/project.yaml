@@ -1,0 +1,6 @@
+homepage: https://github.com/google/mtail
+primary_contact: jaq@spacepants.org
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
