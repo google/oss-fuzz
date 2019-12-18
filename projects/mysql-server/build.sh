@@ -20,7 +20,11 @@ cd mysql-server
 git apply ../fix.diff
 mkdir build
 cd build
-cmake .. -Dprotobuf_BUILD_SHARED_LIBS=OFF -DDOWNLOAD_BOOST=1 -DWITH_BOOST=. -DWITH_SSL=system -DFUZZING=1 -DCMAKE_INSTALL_PREFIX=$OUT/mysql
+if [[ $SANITIZER = *undefined* ]]; then
+    cmake .. -Dprotobuf_BUILD_SHARED_LIBS=OFF -DDOWNLOAD_BOOST=1 -DWITH_BOOST=. -DWITH_SSL=system -DFUZZING=1 -DCMAKE_INSTALL_PREFIX=$OUT/mysql -DWITH_UBSAN=1
+else
+    cmake .. -Dprotobuf_BUILD_SHARED_LIBS=OFF -DDOWNLOAD_BOOST=1 -DWITH_BOOST=. -DWITH_SSL=system -DFUZZING=1 -DCMAKE_INSTALL_PREFIX=$OUT/mysql
+fi
 make install
 cp $OUT/mysql/bin/fuzz* $OUT/
 cp ../fuzz/fuzz*.options $OUT/
