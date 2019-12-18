@@ -74,7 +74,7 @@ def run_command_in_image(image_name, command):
     the output of the command
 
   Raises:
-    RuntimeError: on commands execution failing
+    DockerExecutionError: on commands execution failing
   """
   command_to_run = [
       'docker', 'run', '--rm', '-i', '--privileged', '-t', image_name
