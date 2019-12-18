@@ -117,12 +117,13 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     Value Error: when a repo url can't be determine from the project
   """
   local_store_path = tempfile.mkdtemp()
-  repo_url, repo_name = build_specified_commit.infer_main_repo(build_data.project_name,
-                                                    commit_old)
+  repo_url, repo_name = build_specified_commit.infer_main_repo(
+      build_data.project_name, commit_old)
   if not repo_url or not repo_name:
     raise ValueError('Main git repo url can not be determined.')
 
-  bisect_repo_manager = repo_manager.RepoManager(repo_url, local_store_path, repo_name=repo_name)
+  bisect_repo_manager = repo_manager.RepoManager(
+      repo_url, local_store_path, repo_name=repo_name)
   commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
   build_specified_commit.build_fuzzer_from_commit(
       build_data.project_name, commit_list[0], bisect_repo_manager.repo_dir,
@@ -133,25 +134,18 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
 
   old_idx = len(commit_list) - 1
   new_idx = 0
-  ui = ['not tested'] * len(commit_list)
   while old_idx - new_idx > 1:
     curr_idx = (old_idx + new_idx) // 2
-    ui[curr_idx] = 'currently testing'
     build_specified_commit.build_fuzzer_from_commit(
         build_data.project_name, commit_list[curr_idx],
         bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
         build_data.architecture, bisect_repo_manager)
     error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                        False, [], [], testcase)
-    ui[old_idx] = 'tested'
-    ui[new_idx] = 'tested'
     if orig_error_code == error_code:
-      ui[curr_idx] = 'Error exists here'
       new_idx = curr_idx
     else:
-      ui[curr_idx] = 'No error here'
       old_idx = curr_idx
-    print(ui)
   if old_idx - new_idx == 1:
     build_specified_commit.build_fuzzer_from_commit(
         build_data.project_name, commit_list[old_idx],
@@ -159,13 +153,9 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
         build_data.architecture, bisect_repo_manager)
     error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                        False, [], [], testcase)
-    shutil.rmtree(local_store_path)/
+    shutil.rmtree(local_store_path)
     if orig_error_code == error_code:
-      ui[old_idx] = 'Error introduced here'
-      print(ui)
       return commit_list[old_idx]
-    ui[new_idx] = 'Error introduced here'
-    print(ui)
     return commit_list[new_idx]
   shutil.rmtree(local_store_path)
   return commit_list[new_idx]
