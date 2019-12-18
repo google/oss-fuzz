@@ -33,18 +33,13 @@ class BuildImageUnitTests(unittest.TestCase):
     infered_repo = build_specified_commit.infer_main_repo(
         'curl', TMP_DIR, 'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
     self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
-    infered_repo = build_specified_commit.infer_main_repo('curl', TMP_DIR)
-    self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
 
-    infered_repo = build_specified_commit.infer_main_repo('usrsctp', TMP_DIR)
-    self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp')
     infered_repo = build_specified_commit.infer_main_repo(
         'usrsctp', TMP_DIR, '4886aaa49fb90e479226fcfc3241d74208908232')
-    self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp',
-                     '4886aaa49fb90e479226fcfc3241d74208908232')
+    self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp')
 
     infered_repo = build_specified_commit.infer_main_repo(
-        'not_a_project', TMP_DIR)
+        'not_a_project', TMP_DIR, '1111111111111111111111111111111111111111111')
     self.assertEqual(infered_repo, None)
 
 

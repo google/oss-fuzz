@@ -25,6 +25,9 @@ import helper
 import repo_manager
 
 
+class DockerExecutionError(Exception):
+  """An error that occurs when running a docker command."""
+
 def build_fuzzer_from_commit(project_name,
                              commit,
                              local_store_path,
@@ -71,20 +74,20 @@ def run_command_in_image(image_name, command):
     the output of the command
 
   Raises:
-    ValueError: on commands execution failing
+    RuntimeError: on commands execution failing
   """
-  command_to_run =['docker', 'run', '--rm', '-i', '--privileged']
+  command_to_run =['docker', 'run', '--rm', '-i', '--privileged', '-t', image_name]
   command_to_run.extend(command)
   print('Running command: %s' % command_to_run)
-  process = subprocess.Popen(command, stdout=subprocess.PIPE)
+  process = subprocess.Popen(command_to_run, stdout=subprocess.PIPE)
   out, err = process.communicate()
   if err:
-    raise ValueError('Error running command: %s with error: %s' % (command, err.decode('ascii')))
-  if process.returncode:
-    raise ValueError('Command %s returned with error code: %s' % (command, process.returncode))
+    raise DockerExecutionError('Error running command: %s with error: %s' % (command_to_run, err.decode('ascii')))
   if out:
-    return out.decode('ascii')
-  return None
+    return out.decode('ascii'), process.returncode
+  else:
+    return None, process.returncode
+
 
 def check_docker_for_commit(docker_image_name, dir_name, example_commit):
   """ Checks a docker image directory for a specific commit.
@@ -97,9 +100,44 @@ def check_docker_for_commit(docker_image_name, dir_name, example_commit):
   Returns:
     True if docker image directory contains that commit
   """
-  
+  dir_to_check =  '/src/' + dir_name
 
-def infer_main_repo(project_name, local_store_path, example_commit=None):
+  #Check if valid git repo
+  out, returncode = run_command_in_image(docker_image_name, ['/bin/bash', '-c', 'ls -a ' + dir_to_check])
+  if '.git' not in out:
+    return False
+
+  #Check if history fetch is needed
+  check_shallow_command = "[ -f " + dir_to_check + "/.git/shallow ]"
+  out, returncode = run_command_in_image(docker_image_name, ['/bin/bash', '-c', check_shallow_command])
+
+  if returncode == 0:
+    #Check if commit exists
+    _, returncode = run_command_in_image(docker_image_name, ['/bin/bash', '-c', 'cd ' + dir_to_check + '; git fetch --unshallow; git cat-file -e ' + example_commit])
+  else:
+    _, returncode = run_command_in_image(docker_image_name, ['/bin/bash', '-c', 'cd ' + dir_to_check + '; git cat-file -e ' + example_commit])
+  if returncode == 0:
+    return True
+  return False
+
+
+def get_repo_url(docker_image_name, dir_name):
+  """Gets a git repo URL from a specific directory in a docker image.
+
+  Args:
+    docker_image_name: The name of the image where the git repo is located
+    dir_name: The directory on the image where the git repo exists
+
+  Returns:
+    The repo URL string
+  """
+  command_to_run = 'cd /src/' + dir_name + '; git config --get remote.origin.url'
+  out, returncode = run_command_in_image(docker_image_name, ['/bin/bash', '-c', command_to_run])
+  if not returncode and out:
+    return out.rstrip()
+  return None 
+
+def infer_main_repo(project_name, local_store_path, example_commit):
   """Tries to guess the main repo a project based on the Dockerfile.
 
   NOTE: This is a fragile implementation and only works for git
@@ -107,15 +145,17 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
     project_name: The OSS-Fuzz project that you are checking the repo of
     example_commit: A commit that is in the main repos tree
   Returns:
-    The guessed repo url path or None on failue
+    The guessed repo url path, the repo name
   """
   if not helper.check_project_exists(project_name):
     return None
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/%s' % (project_name)
 
-  out = run_command_in_image(docker_image_name, ['-t' docker_image_name, 'bash', '-c', 'ls /src'])
+  out, errcode = run_command_in_image(docker_image_name, ['/bin/bash', '-c', 'ls /src'])
   for dirs in out.split(' '):
-    if check_docker_for_commit(docker_image_name, dirs, example_commit):
-      return dirs
+    dirs = dirs.rstrip()
+    if dirs:
+      if check_docker_for_commit(docker_image_name, dirs, example_commit):
+        return get_repo_url(docker_image_name, dirs)
   return None
