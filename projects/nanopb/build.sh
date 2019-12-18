@@ -34,11 +34,11 @@ zip -r "$OUT/fuzztest_seed_corpus.zip" fuzztest_seed_corpus
 
 # Build the fuzz testing stub with instrumentation
 rm -rf build
-scons CC="$CC" CXX="$CXX" \
+scons CC="$CC" CXX="$CXX" LINK="$CXX" \
       CCFLAGS="-Wall -Wextra -g -DLLVMFUZZER $CFLAGS" \
       CXXFLAGS="-Wall -Wextra -g -DLLVMFUZZER $CXXFLAGS" \
       NODEFARGS="1" \
-      LINKFLAGS="$CFLAGS" \
+      LINKFLAGS="-std=c++11 $CXXFLAGS" \
       LINKLIBS="$LIB_FUZZING_ENGINE" build/fuzztest/fuzztest
 
 cp build/fuzztest/fuzztest "$OUT/fuzztest"
