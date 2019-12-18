@@ -160,7 +160,7 @@ def infer_main_repo(project_name, example_commit):
     The guessed repo url path, the repo name
   """
   if not helper.check_project_exists(project_name):
-    return None
+    return None, None
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/%s' % (project_name)
 
