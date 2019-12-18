@@ -20,9 +20,12 @@ cd binutils-gdb
 ./configure --disable-gdb --enable-targets=all
 make MAKEINFO=true && true
 mkdir fuzz
-cp ../fuzz_disassemble.c fuzz/
+cp ../fuzz_*.c fuzz/
 
-$CC $CFLAGS -I include -I bfd -I opcodes -c fuzz/fuzz_disassemble.c -o fuzz/fuzz_disassemble.o
-$CXX $CXXFLAGS fuzz/fuzz_disassemble.o -o $OUT/fuzz_disassemble -lFuzzingEngine opcodes/libopcodes.a bfd/libbfd.a libiberty/libiberty.a zlib/libz.a
+cd fuzz
+ls fuzz_*.c | cut -d. -f1 | while read i; do
+    $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c $i.c -o $i.o
+    $CXX $CXXFLAGS $i.o -o $OUT/$i $LIB_FUZZING_ENGINE ../opcodes/libopcodes.a ../bfd/libbfd.a ../libiberty/libiberty.a ../zlib/libz.a
+done
 
 # TODO build corpuses
