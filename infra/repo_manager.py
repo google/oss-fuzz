@@ -40,17 +40,21 @@ class RepoManager(object):
     repo_dir: The location of the main repo
   """
 
-  def __init__(self, repo_url, base_dir):
+  def __init__(self, repo_url, base_dir, repo_name=None):
     """Constructs a repo manager class.
 
     Args:
       repo_url: The github url needed to clone
       base_dir: The full filepath where the git repo is located
+      repo_name: The name of the directory the repo is cloned to
     """
 
     self.repo_url = repo_url
     self.base_dir = base_dir
-    self.repo_name = self.repo_url.split('/')[-1].strip('.git')
+    if not repo_name:
+      self.repo_name = self.repo_url.split('/')[-1].strip('.git')
+    else:
+      self.repo_name = repo_name
     self.repo_dir = os.path.join(self.base_dir, self.repo_name)
     self._clone()
 

@@ -59,8 +59,9 @@ class BuildData():
 
 def main():
   """Finds the commit SHA where an error was initally introduced."""
-  if os.getcwd() != os.path.dirname(os.path.dirname(os.path.realpath(__file__))):
-    print("Error: this script needs to be run from the OSS-Fuzz home directory")
+  if os.getcwd() != os.path.dirname(
+      os.path.dirname(os.path.realpath(__file__))):
+    print('Error: this script needs to be run from the OSS-Fuzz home directory')
     return 1
   parser = argparse.ArgumentParser(
       description='git bisection for finding introduction of bugs')
@@ -79,13 +80,11 @@ def main():
       required=True)
   parser.add_argument(
       '--fuzz_target', help='the name of the fuzzer to be built', required=True)
+  parser.add_argument('--testcase', help='path to test case', required=True)
   parser.add_argument(
-      '--testcase', help='path to test case', required=True)
-  parser.add_argument('--engine', help='the default is "libfuzzer"', default='libfuzzer')
+      '--engine', help='the default is "libfuzzer"', default='libfuzzer')
   parser.add_argument(
-      '--sanitizer',
-      default='address',
-      help='the default is "address"')
+      '--sanitizer', default='address', help='the default is "address"')
   parser.add_argument('--architecture', default='x86_64')
   args = parser.parse_args()
   build_data = BuildData(args.project_name, args.engine, args.sanitizer,
@@ -118,20 +117,19 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     Value Error: when a repo url can't be determine from the project
   """
   local_store_path = tempfile.mkdtemp()
-  repo_url = build_specified_commit.infer_main_repo(build_data.project_name,
-                                                    local_store_path,
+  repo_url, repo_name = build_specified_commit.infer_main_repo(build_data.project_name,
                                                     commit_old)
-  if not repo_url:
-    raise ValueError("git repo url can not be determined.")
+  if not repo_url or not repo_name:
+    raise ValueError('Main git repo url can not be determined.')
 
-  bisect_repo_manager = repo_manager.RepoManager(repo_url, local_store_path)
+  bisect_repo_manager = repo_manager.RepoManager(repo_url, local_store_path, repo_name=repo_name)
   commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
   build_specified_commit.build_fuzzer_from_commit(
       build_data.project_name, commit_list[0], bisect_repo_manager.repo_dir,
       build_data.engine, build_data.sanitizer, build_data.architecture,
       bisect_repo_manager)
   orig_error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
-                                     False, [], [], testcase)
+                                          False, [], [], testcase)
 
   old_idx = len(commit_list) - 1
   new_idx = 0
@@ -141,8 +139,8 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
         build_data.project_name, commit_list[curr_idx],
         bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
         build_data.architecture, bisect_repo_manager)
-    error_code = helper.reproduce_impl(build_data.project_name, fuzz_target, False, [],
-                              [], testcase)
+    error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
+                                       False, [], [], testcase)
     if orig_error_code == error_code:
       new_idx = curr_idx
     else:
@@ -152,8 +150,8 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
         build_data.project_name, commit_list[old_idx],
         bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
         build_data.architecture, bisect_repo_manager)
-    error_code = helper.reproduce_impl(build_data.project_name, fuzz_target, False, [],
-                              [], testcase)
+    error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
+                                       False, [], [], testcase)
     shutil.rmtree(local_store_path)
     if orig_error_code == error_code:
       return commit_list[old_idx]
