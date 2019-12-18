@@ -49,7 +49,7 @@ def build_fuzzer_from_commit(project_name,
     0 on successful build 1 on failure
   """
   if not old_repo_manager:
-    inferred_url, repo_name = infer_main_repo(project_name, local_store_path, commit)
+    inferred_url, repo_name = infer_main_repo(project_name, commit)
     old_repo_manager = repo_manager.RepoManager(inferred_url, local_store_path, repo_name=repo_name)
   old_repo_manager.checkout_commit(commit)
   return helper.build_fuzzers_impl(

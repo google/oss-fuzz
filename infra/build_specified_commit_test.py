@@ -29,31 +29,31 @@ class BuildImageUnitTests(unittest.TestCase):
   """Class to test the functionality of the build image from state module."""
 
   def test_infer_main_repo(self):
-    """Tests that the main repo can be infered based on an example commit."""
-    infered_repo, repo_name = build_specified_commit.infer_main_repo(
+    """Tests that the main repo can be inferred based on an example commit."""
+    inferred_repo, repo_name = build_specified_commit.infer_main_repo(
         'curl', 'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
-    self.assertEqual(infered_repo, 'https://github.com/curl/curl.git')
+    self.assertEqual(inferred_repo, 'https://github.com/curl/curl.git')
     self.assertEqual(repo_name, 'curl')
 
-    infered_repo, repo_name = build_specified_commit.infer_main_repo(
+    inferred_repo, repo_name = build_specified_commit.infer_main_repo(
         'usrsctp', '4886aaa49fb90e479226fcfc3241d74208908232')
-    self.assertEqual(infered_repo, 'https://github.com/weinrank/usrsctp')
+    self.assertEqual(inferred_repo, 'https://github.com/weinrank/usrsctp')
     self.assertEqual(repo_name, 'usrsctp')
 
-    infered_repo, repo_name = build_specified_commit.infer_main_repo(
+    inferred_repo, repo_name = build_specified_commit.infer_main_repo(
         'not_a_project', '1111111111111111111111111111111111111111111')
-    self.assertEqual(infered_repo, None)
+    self.assertEqual(inferred_repo, None)
     self.assertEqual(repo_name, None)
 
 
-    infered_repo, repo_name = build_specified_commit.infer_main_repo(
+    inferred_repo, repo_name = build_specified_commit.infer_main_repo(
         'ndpi', 'c4d476cc583a2ef1e9814134efa4fbf484564ed7')
-    self.assertEqual(infered_repo, 'https://github.com/ntop/nDPI.git')
+    self.assertEqual(inferred_repo, 'https://github.com/ntop/nDPI.git')
     self.assertEqual(repo_name, 'ndpi')
 
-    infered_repo, repo_name = build_specified_commit.infer_main_repo(
+    inferred_repo, repo_name = build_specified_commit.infer_main_repo(
         'libarchive', '458e49358f17ec58d65ab1c45cf299baaf3c98d1')
-    self.assertEqual(infered_repo, 'https://github.com/libarchive/libarchive.git')
+    self.assertEqual(inferred_repo, 'https://github.com/libarchive/libarchive.git')
     self.assertEqual(repo_name, 'libarchive')
 
 
