@@ -19,6 +19,7 @@ like continuious integration fuzzing and bisection to find errors
 """
 import os
 import re
+import subprocess
 
 import helper
 import repo_manager
@@ -59,6 +60,45 @@ def build_fuzzer_from_commit(project_name,
       mount_location=os.path.join('/src',old_repo_manager.repo_name))
 
 
+def run_command_in_image(image_name, command):
+  """Runs a specific command inside a docker image and returns the results.
+
+  Args:
+    image_name: The docker image for the command to be run in
+    command: The command to be run in the image
+
+  Returns:
+    the output of the command
+
+  Raises:
+    ValueError: on commands execution failing
+  """
+  command_to_run =['docker', 'run', '--rm', '-i', '--privileged']
+  command_to_run.extend(command)
+  print('Running command: %s' % command_to_run)
+  process = subprocess.Popen(command, stdout=subprocess.PIPE)
+  out, err = process.communicate()
+  if err:
+    raise ValueError('Error running command: %s with error: %s' % (command, err.decode('ascii')))
+  if process.returncode:
+    raise ValueError('Command %s returned with error code: %s' % (command, process.returncode))
+  if out:
+    return out.decode('ascii')
+  return None
+
+def check_docker_for_commit(docker_image_name, dir_name, example_commit):
+  """ Checks a docker image directory for a specific commit.
+
+  Args:
+    docker_image_name: The name of the projects docker image
+    dir_name: The name of the directory to test for the commit
+    example_commit: The commit SHA to check for
+
+  Returns:
+    True if docker image directory contains that commit
+  """
+  
+
 def infer_main_repo(project_name, local_store_path, example_commit=None):
   """Tries to guess the main repo a project based on the Dockerfile.
 
@@ -71,27 +111,11 @@ def infer_main_repo(project_name, local_store_path, example_commit=None):
   """
   if not helper.check_project_exists(project_name):
     return None
-  docker_path = helper.get_dockerfile_path(project_name)
-  with open(docker_path, 'r') as file_path:
-    lines = file_path.read()
-    # Use generic git format and project name to guess main repo
-    if example_commit is None:
-      repo_url = re.search(
-          r'\b(?:http|https|git)://[^ ]*' + re.escape(project_name) +
-          r'(.git)?', lines)
-      if repo_url:
-        return repo_url.group(0)
-    else:
-      # Use example commit SHA to guess main repo
-      for clone_command in re.findall('.*clone.*', lines):
-        repo_url = re.search(r'\b(?:https|http|git)://[^ ]*',
-                             clone_command).group(0)
-        print(repo_url)
-        try:
-          test_repo_manager = repo_manager.RepoManager(repo_url.rstrip(),
-                                                       local_store_path)
-          if test_repo_manager.commit_exists(example_commit):
-            return repo_url
-        except:
-          pass
-    return None
+  helper.build_image_impl(project_name)
+  docker_image_name = 'gcr.io/oss-fuzz/%s' % (project_name)
+
+  out = run_command_in_image(docker_image_name, ['-t' docker_image_name, 'bash', '-c', 'ls /src'])
+  for dirs in out.split(' '):
+    if check_docker_for_commit(docker_image_name, dirs, example_commit):
+      return dirs
+  return None
