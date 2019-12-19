@@ -16,11 +16,10 @@
 set -e
 cd $SRC/xerces-c
 ./reconf
-./configure
+./configure --disable-shared
 make -j
 
 cd $SRC
-
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -std=c++11 \
         -I. -Ixerces-c/src \
         xerces_fuzz_common.cpp parse_target.cpp -o $OUT/parse_target \
