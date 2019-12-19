@@ -33,7 +33,10 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE "${fuzzer}.a" -lpthread -o "${OUT}/${fuzzer}"
 }
 
+compile_fuzzer "yaml" "FuzzDurationStrict"
+compile_fuzzer "yaml" "FuzzMicroTimeStrict"
 compile_fuzzer "yaml" "FuzzSigYaml"
+compile_fuzzer "yaml" "FuzzTimeStrict"
 compile_fuzzer "yaml" "FuzzYamlV2"
 compile_fuzzer "json" "FuzzStrictDecode"
 compile_fuzzer "json" "FuzzNonStrictDecode"
