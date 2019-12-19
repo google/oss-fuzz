@@ -80,7 +80,7 @@ def run_command_in_image(image_name, command):
       'docker', 'run', '--rm', '-i', '--privileged', '-t', image_name
   ]
   command_to_run.extend(command)
-  print('Running command: %s' % command_to_run)
+  print('Running command: %s' +  str(command_to_run))
   process = subprocess.Popen(command_to_run, stdout=subprocess.PIPE)
   out, err = process.communicate()
   if err:
@@ -104,19 +104,19 @@ def check_docker_for_commit(docker_image_name, dir_name, example_commit):
   """
   dir_to_check = '/src/' + dir_name
 
-  #Check if valid git repo
+  # Check if valid git repo
   out, returncode = run_command_in_image(
       docker_image_name, ['/bin/bash', '-c', 'ls -a ' + dir_to_check])
   if '.git' not in out:
     return False
 
-  #Check if history fetch is needed
+  # Check if history fetch is needed
   check_shallow_command = '[ -f ' + dir_to_check + '/.git/shallow ]'
   out, returncode = run_command_in_image(
       docker_image_name, ['/bin/bash', '-c', check_shallow_command])
 
   if returncode == 0:
-    #Check if commit exists
+    # Check if commit exists
     _, returncode = run_command_in_image(docker_image_name, [
         '/bin/bash', '-c', 'cd ' + dir_to_check +
         '; git fetch --unshallow; git cat-file -e ' + example_commit
@@ -162,7 +162,7 @@ def infer_main_repo(project_name, example_commit):
   if not helper.check_project_exists(project_name):
     return None, None
   helper.build_image_impl(project_name)
-  docker_image_name = 'gcr.io/oss-fuzz/%s' % (project_name)
+  docker_image_name = 'gcr.io/oss-fuzz/%s' + str(project_name)
 
   out, _ = run_command_in_image(docker_image_name,
                                 ['/bin/bash', '-c', 'ls /src'])

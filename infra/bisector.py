@@ -34,7 +34,6 @@ import argparse
 from dataclasses import dataclass
 import os
 import tempfile
-import shutil
 
 import build_specified_commit
 import helper
@@ -49,7 +48,7 @@ class BuildData():
     project_name: The name of the OSS-Fuzz project that is being checked
     engine: The fuzzing engine to be used
     sanitizer: The sanitizer to be used
-    architecture: The system architecture being fuzzed
+    architecture: CPU architecture to build the fuzzer for
   """
   project_name: str
   engine: str
@@ -59,10 +58,10 @@ class BuildData():
 
 def main():
   """Finds the commit SHA where an error was initally introduced."""
-  if os.getcwd() != os.path.dirname(
-      os.path.dirname(os.path.realpath(__file__))):
-    print('Error: this script needs to be run from the OSS-Fuzz home directory')
-    return 1
+  oss_fuzz_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+  if os.getcwd() != oss_fuzz_dir:
+    print('Changing directory to OSS-Fuzz home directory')
+    os.chdir(oss_fuzz_dir)
   parser = argparse.ArgumentParser(
       description='git bisection for finding introduction of bugs')
 
@@ -114,9 +113,9 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     The commit SHA that introduced the error or None
 
   Raises:
-    Value Error: when a repo url can't be determine from the project
+    ValueError: when a repo url can't be determine from the project
   """
-  local_store_path = tempfile.mkdtemp()
+  local_store_path = tempfile.TemporaryDirectory()
   repo_url, repo_name = build_specified_commit.infer_main_repo(
       build_data.project_name, commit_old)
   if not repo_url or not repo_name:
@@ -153,11 +152,9 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
         build_data.architecture, bisect_repo_manager)
     error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                        False, [], [], testcase)
-    shutil.rmtree(local_store_path)
     if orig_error_code == error_code:
       return commit_list[old_idx]
     return commit_list[new_idx]
-  shutil.rmtree(local_store_path)
   return commit_list[new_idx]
 
 
