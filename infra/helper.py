@@ -26,7 +26,6 @@ import pipes
 import re
 import subprocess
 import sys
-import tempfile
 import templates
 
 OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -432,7 +431,7 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
         '-t', 'gcr.io/oss-fuzz/%s' % project_name,
         '/bin/bash', '-c', 'rm -rf /out/*'
     ])
-     
+
   else:
     print('Keeping existing build artifacts as-is (if any).')
   env = [
@@ -739,7 +738,7 @@ def run_fuzzer(args):
 def reproduce(args):
   """Reproduce a specific test case from a specific project."""
   return reproduce_impl(args.project_name, args.fuzzer_name, args.valgrind, args.env_to_add,
-                        fuzzer_args, args.testcase_path)
+                        args.fuzzer_args, args.testcase_path)
 
 
 def reproduce_impl(project_name, fuzzer_name, valgrind, env_to_add, fuzzer_args, testcase_path):

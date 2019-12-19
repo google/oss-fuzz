@@ -81,7 +81,8 @@ def main():
       '--fuzz_target', help='the name of the fuzzer to be built', required=True)
   parser.add_argument(
       '--testcase', help='path to testcase', required=True)
-  parser.add_argument('--engine', help='the default is "libfuzzer"',default='libfuzzer')
+  parser.add_argument('--engine', help='the default is "libfuzzer"',
+                      default='libfuzzer')
   parser.add_argument(
       '--sanitizer',
       default='address',
@@ -124,10 +125,10 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
       build_data.project_name, commit_list[0], bisect_repo_manager.repo_dir,
       build_data.engine, build_data.sanitizer, build_data.architecture,
       bisect_repo_manager)
-  orig_error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
-                                     False, [], [], testcase)
+  orig_error_code = helper.reproduce_impl(build_data.project_name,
+                                          fuzz_target, False, [], [], testcase)
   if len(commit_list) == 1:
-    if not error_code:
+    if not orig_error_code:
       return None
     return commit_list[0]
 
@@ -139,9 +140,8 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
         build_data.project_name, commit_list[curr_idx],
         bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
         build_data.architecture, bisect_repo_manager)
-    error_code =
-        helper.reproduce_impl(build_data.project_name, fuzz_target, False, [],
-                              [], testcase)
+    error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
+                                       False, [], [], testcase)
     if error_code == orig_error_code:
       new_idx = curr_idx
     else:
