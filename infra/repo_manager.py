@@ -25,6 +25,7 @@ import os
 import shutil
 import subprocess
 
+import detect_repo
 
 class RepoManagerError(Exception):
   """Class to describe the exceptions in RepoManager."""
@@ -67,36 +68,10 @@ class RepoManager(object):
     if not os.path.exists(self.base_dir):
       os.makedirs(self.base_dir)
     self.remove_repo()
-    self.run_command(['git', 'clone', self.repo_url],
-                      self.base_dir,
-                      check_result=True)
+    detect_repo.run_command(['git', 'clone', self.repo_url],
+                      location=self.base_dir)
     if not self._is_git_repo():
       raise RepoManagerError('%s is not a git repo' % self.repo_url)
-
-  @staticmethod
-  def run_command(command, location='.', check_result=False):
-    """ Runs a shell command in the specified directory location.
-
-    Args:
-      command: The command as a list to be run
-      location: The directory the command is run in
-      check_result: Should an exception be thrown on failed command
-
-    Returns:
-      The stdout of the command, the error code
-
-    Raises:
-      RepoManagerError: running a command resulted in an error
-    """
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
-    out, err = process.communicate()
-    if check_result and (process.returncode or err):
-      raise RepoManagerError(
-          'Error: %s running command: %s with return code: %s' %
-          (err, command, process.returncode))
-    if out is not None:
-      out = out.decode('ascii')
-    return out, process.returncode
 
   def _is_git_repo(self):
     """Test if the current repo dir is a git repo or not.
@@ -125,7 +100,7 @@ class RepoManager(object):
     if not commit.rstrip():
       raise ValueError('An empty string is not a valid commit SHA')
 
-    _, err_code = self.run_command(['git', 'cat-file', '-e', commit],
+    _, err_code = detect_repo.run_command(['git', 'cat-file', '-e', commit],
                                     self.repo_dir)
     return not err_code
 
@@ -135,7 +110,7 @@ class RepoManager(object):
     Returns:
       The current active commit SHA
     """
-    out, _ = self.run_command(['git', 'rev-parse', 'HEAD'],
+    out, _ = detect_repo.run_command(['git', 'rev-parse', 'HEAD'],
                                self.repo_dir,
                                check_result=True)
     return out.strip('\n')
@@ -160,7 +135,7 @@ class RepoManager(object):
       raise RepoManagerError('The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
       return [old_commit]
-    out, err_code = self.run_command(
+    out, err_code = detect_repo.run_command(
         ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
     commits = out.split('\n')
     commits = [commit for commit in commits if commit]
@@ -187,13 +162,13 @@ class RepoManager(object):
 
     git_path = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(git_path):
-      self.run_command(['git', 'fetch', '--unshallow'],
+      detect_repo.run_command(['git', 'fetch', '--unshallow'],
                         self.repo_dir,
                         check_result=True)
-    self.run_command(['git', 'checkout', '-f', commit],
+    detect_repo.run_command(['git', 'checkout', '-f', commit],
                       self.repo_dir,
                       check_result=True)
-    self.run_command(['git', 'clean', '-fxd'],
+    detect_repo.run_command(['git', 'clean', '-fxd'],
                       self.repo_dir,
                       check_result=True)
     if self.get_current_commit() != commit:

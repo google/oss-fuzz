@@ -20,7 +20,6 @@ The will consist of the following functional tests
 
 import os
 import unittest
-import shutil
 import tempfile
 
 import repo_manager
@@ -31,10 +30,8 @@ class TestRepoManager(unittest.TestCase):
 
   curl_repo = 'https://github.com/curl/curl'
 
-
   def test_clone_correctly(self):
     """Tests the correct location of the git repo."""
-    
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
       git_path = os.path.join(test_repo_manager.base_dir,
@@ -46,8 +43,6 @@ class TestRepoManager(unittest.TestCase):
 
   def test_checkout_commit(self):
     """Tests that the git checkout command works."""
-    
-
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
       commit_to_test = '036ebac0134de3b72052a46f734e4ca81bb96055'
@@ -62,7 +57,6 @@ class TestRepoManager(unittest.TestCase):
 
   def test_get_commit_list(self):
     """Tests an accurate commit list can be retrived from the repo manager."""
-    
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
       old_commit = '7cf18b05e04bbb0f08c74d2567b0648f6c31a952'
