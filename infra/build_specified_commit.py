@@ -18,6 +18,7 @@ from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
 import os
+import re
 import subprocess
 
 import helper
@@ -75,23 +76,22 @@ def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
   Returns:
     The repo's origin, the repo's name
   """
-  helper.build_image_impl(project_name, no_cache=True)
+  helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
       'docker', 'run', '--rm', '-i', '-t', docker_image_name, 'python3',
       os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
       '--example_commit', example_commit
   ]
-  out, _ = run_command(command_to_run, check_result=True)
-  repo_info = out.split('\n')[-2]
-  pair = repo_info.split(' ')
-  # Commit did not exist in directory
-  if len(pair) != 2:
-    return None, None
-  return pair[0].rstrip(), pair[1].rstrip()
+  out, _ = run_command(command_to_run)
+
+  match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
+  if match and match.group(1) and match.group(2):
+    return match.group(1), match.group(2).rstrip()
+  return None, None
 
 
-def run_command(command, location='.', check_result=False):
+def run_command(command, location=None, check_result=False):
   """ Runs a shell command in the specified directory location.
 
   Args:
@@ -105,6 +105,9 @@ def run_command(command, location='.', check_result=False):
   Raises:
     RuntimeError: running a command resulted in an error
   """
+
+  if not location:
+    location = '.'
   process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
   out, err = process.communicate()
   if check_result and (process.returncode or err):

@@ -17,6 +17,7 @@ The will consist of the following functional test
   from example commits.
 """
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -52,7 +53,7 @@ class DetectRepoTest(unittest.TestCase):
                                   'usrsctp',
                                   '4886aaa49fb90e479226fcfc3241d74208908232',
                                   tmp_dir)
-      self.check_commit_with_repo('https://github.com/ntop/nDPI.git', 'ndpi',
+      self.check_commit_with_repo('https://github.com/ntop/nDPI.git', 'nDPI',
                                   'c4d476cc583a2ef1e9814134efa4fbf484564ed7',
                                   tmp_dir)
       self.check_commit_with_repo(
@@ -74,10 +75,10 @@ class DetectRepoTest(unittest.TestCase):
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--example_commit',
         commit
     ])
-    pair = out.rstrip().split(' ')
-    if len(pair) != 2:
-      self.assertEqual(repo_origin, repo_origin)
-      self.assertEqual(repo_name, repo_name)
+    match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
+    if match and match.group(1) and match.group(2):
+      self.assertEqual(match.group(1), repo_origin)
+      self.assertEqual(match.group(2), repo_name)
 
 
 if __name__ == '__main__':

@@ -35,21 +35,21 @@ def main():
   )
   parser.add_argument(
       '--src_dir',
-      help='The location of th oss-fuzz projects source directory',
+      help='The location of the oss-fuzz projects source directory',
       required=True)
   parser.add_argument(
       '--example_commit',
       help='A commit SHA refrencing the projects main repo',
       required=True)
   args = parser.parse_args()
-  out, _ = run_command(['ls'], location=args.src_dir, check_result=True)
-  out = out.replace('\n', ' ')
-  for single_dir in out.split(' '):
-    full_path = os.path.join(args.src_dir, single_dir.rstrip())
+  dir_content = os.listdir(args.src_dir)
+  for single_dir in dir_content:
+    full_path = os.path.join(args.src_dir, single_dir)
     if single_dir and os.path.isdir(full_path):
       if check_for_commit(
           os.path.join(args.src_dir, full_path), args.example_commit):
-        print('%s %s' % (get_repo(full_path), single_dir.rstrip()))
+        print('Detected repo: %s %s' %
+              (get_repo(full_path), single_dir.rstrip()))
         return
   print('No git repos with specific commit: %s found in %s' %
         (args.example_commit, args.src_dir))
@@ -84,18 +84,11 @@ def check_for_commit(dir_path, example_commit):
   """
 
   # Check if valid git repo
-  out, returncode = run_command(['ls', '-a'],
-                                location=dir_path,
-                                check_result=True)
-  out = out.rstrip()
-  if '.git' not in out:
+  if not os.path.exists(os.path.join(dir_path, '.git')):
     return False
 
   # Check if history fetch is needed
-  _, returncode = run_command(
-      ['[', '-f', os.path.join(dir_path, '.git', 'shallow'), ']'],
-      location=dir_path)
-  if returncode == 0:
+  if os.path.exists(os.path.join(dir_path, '.git', 'shallow')):
     run_command(['git', 'fetch', '--unshallow'], location=dir_path)
 
   # Check if commit is in history
@@ -105,7 +98,7 @@ def check_for_commit(dir_path, example_commit):
 
 
 def run_command(command, location='.', check_result=False):
-  """ Runs a shell command in the specified directory location.
+  """Runs a shell command in the specified directory location.
 
   Args:
     command: The command as a list to be run

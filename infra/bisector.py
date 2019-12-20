@@ -36,7 +36,6 @@ import os
 import tempfile
 
 import build_specified_commit
-import detect_repo
 import helper
 import repo_manager
 
@@ -116,47 +115,48 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
   Raises:
     ValueError: when a repo url can't be determine from the project
   """
-  local_store_path = tempfile.TemporaryDirectory()
-  repo_url, repo_name = build_specific_commit.detect_main_repo_from_docker(
-      build_data.project_name, commit_old)
-  if not repo_url or not repo_name:
-    raise ValueError('Main git repo can not be determined.')
+  with tempfile.TemporaryDirectory() as tmp_dir:
+    repo_url, repo_name = build_specified_commit.detect_main_repo_from_docker(
+        build_data.project_name, commit_old)
+    if not repo_url or not repo_name:
+      raise ValueError('Main git repo can not be determined.')
 
-  bisect_repo_manager = repo_manager.RepoManager(
-      repo_url, local_store_path, repo_name=repo_name)
-  commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
-  build_specified_commit.build_fuzzer_from_commit(
-      build_data.project_name, commit_list[0], bisect_repo_manager.repo_dir,
-      build_data.engine, build_data.sanitizer, build_data.architecture,
-      bisect_repo_manager)
-  initial_error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
-                                          False, [], [], testcase)
+    bisect_repo_manager = repo_manager.RepoManager(
+        repo_url, tmp_dir, repo_name=repo_name)
+    commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
+    build_specified_commit.build_fuzzer_from_commit(
+        build_data.project_name, commit_list[0], bisect_repo_manager.repo_dir,
+        build_data.engine, build_data.sanitizer, build_data.architecture,
+        bisect_repo_manager)
+    initial_error_code = helper.reproduce_impl(build_data.project_name,
+                                               fuzz_target, False, [], [],
+                                               testcase)
 
-  old_idx = len(commit_list) - 1
-  new_idx = 0
-  while old_idx - new_idx > 1:
-    curr_idx = (old_idx + new_idx) // 2
-    build_specified_commit.build_fuzzer_from_commit(
-        build_data.project_name, commit_list[curr_idx],
-        bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
-        build_data.architecture, bisect_repo_manager)
-    error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
-                                       False, [], [], testcase)
-    if initial_error_code == error_code:
-      new_idx = curr_idx
-    else:
-      old_idx = curr_idx
-  if old_idx - new_idx == 1:
-    build_specified_commit.build_fuzzer_from_commit(
-        build_data.project_name, commit_list[old_idx],
-        bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
-        build_data.architecture, bisect_repo_manager)
-    error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
-                                       False, [], [], testcase)
-    if initial_error_code == error_code:
-      return commit_list[old_idx]
+    old_idx = len(commit_list) - 1
+    new_idx = 0
+    while old_idx - new_idx > 1:
+      curr_idx = (old_idx + new_idx) // 2
+      build_specified_commit.build_fuzzer_from_commit(
+          build_data.project_name, commit_list[curr_idx],
+          bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
+          build_data.architecture, bisect_repo_manager)
+      error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
+                                         False, [], [], testcase)
+      if initial_error_code == error_code:
+        new_idx = curr_idx
+      else:
+        old_idx = curr_idx
+    if old_idx - new_idx == 1:
+      build_specified_commit.build_fuzzer_from_commit(
+          build_data.project_name, commit_list[old_idx],
+          bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
+          build_data.architecture, bisect_repo_manager)
+      error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
+                                         False, [], [], testcase)
+      if initial_error_code == error_code:
+        return commit_list[old_idx]
+      return commit_list[new_idx]
     return commit_list[new_idx]
-  return commit_list[new_idx]
 
 
 if __name__ == '__main__':
