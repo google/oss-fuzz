@@ -119,7 +119,7 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
   repo_url, repo_name = build_specified_commit.infer_main_repo(
       build_data.project_name, commit_old)
   if not repo_url or not repo_name:
-    raise ValueError('Main git repo url can not be determined.')
+    raise ValueError('Main git repo can not be determined.')
 
   bisect_repo_manager = repo_manager.RepoManager(
       repo_url, local_store_path, repo_name=repo_name)
@@ -128,7 +128,7 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
       build_data.project_name, commit_list[0], bisect_repo_manager.repo_dir,
       build_data.engine, build_data.sanitizer, build_data.architecture,
       bisect_repo_manager)
-  orig_error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
+  initial_error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                           False, [], [], testcase)
 
   old_idx = len(commit_list) - 1
@@ -141,7 +141,7 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
         build_data.architecture, bisect_repo_manager)
     error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                        False, [], [], testcase)
-    if orig_error_code == error_code:
+    if initial_error_code == error_code:
       new_idx = curr_idx
     else:
       old_idx = curr_idx
@@ -152,7 +152,7 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
         build_data.architecture, bisect_repo_manager)
     error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                        False, [], [], testcase)
-    if orig_error_code == error_code:
+    if initial_error_code == error_code:
       return commit_list[old_idx]
     return commit_list[new_idx]
   return commit_list[new_idx]

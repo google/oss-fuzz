@@ -460,7 +460,7 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
     if not mount_location:
       workdir = _workdir_from_dockerfile(project_name)
       if workdir == '/src':
-        print('Cannot use local checkout with "WORKDIR /src".', file=sys.stderr)
+        print('Cannot use local checkout with "WORKDIR: /src".', file=sys.stderr)
         return 1
 
       command += [

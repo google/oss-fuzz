@@ -67,13 +67,14 @@ class RepoManager(object):
     if not os.path.exists(self.base_dir):
       os.makedirs(self.base_dir)
     self.remove_repo()
-    self._run_command(['git', 'clone', self.repo_url],
+    self.run_command(['git', 'clone', self.repo_url],
                       self.base_dir,
                       check_result=True)
     if not self._is_git_repo():
       raise RepoManagerError('%s is not a git repo' % self.repo_url)
 
-  def _run_command(self, command, location='.', check_result=False):
+  @staticmethod
+  def run_command(command, location='.', check_result=False):
     """ Runs a shell command in the specified directory location.
 
     Args:
@@ -119,12 +120,12 @@ class RepoManager(object):
       ValueException: an empty string was passed in as a commit
     """
 
-    # Handle the exception case, if empty string is passed _run_command will
+    # Handle the exception case, if empty string is passed run_command will
     # raise a ValueError
     if not commit.rstrip():
       raise ValueError('An empty string is not a valid commit SHA')
 
-    _, err_code = self._run_command(['git', 'cat-file', '-e', commit],
+    _, err_code = self.run_command(['git', 'cat-file', '-e', commit],
                                     self.repo_dir)
     return not err_code
 
@@ -134,7 +135,7 @@ class RepoManager(object):
     Returns:
       The current active commit SHA
     """
-    out, _ = self._run_command(['git', 'rev-parse', 'HEAD'],
+    out, _ = self.run_command(['git', 'rev-parse', 'HEAD'],
                                self.repo_dir,
                                check_result=True)
     return out.strip('\n')
@@ -159,7 +160,7 @@ class RepoManager(object):
       raise RepoManagerError('The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
       return [old_commit]
-    out, err_code = self._run_command(
+    out, err_code = self.run_command(
         ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
     commits = out.split('\n')
     commits = [commit for commit in commits if commit]
@@ -186,13 +187,13 @@ class RepoManager(object):
 
     git_path = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(git_path):
-      self._run_command(['git', 'fetch', '--unshallow'],
+      self.run_command(['git', 'fetch', '--unshallow'],
                         self.repo_dir,
                         check_result=True)
-    self._run_command(['git', 'checkout', '-f', commit],
+    self.run_command(['git', 'checkout', '-f', commit],
                       self.repo_dir,
                       check_result=True)
-    self._run_command(['git', 'clean', '-fxd'],
+    self.run_command(['git', 'clean', '-fxd'],
                       self.repo_dir,
                       check_result=True)
     if self.get_current_commit() != commit:
