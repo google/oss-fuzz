@@ -44,17 +44,17 @@ class BuildImageIntegrationTests(unittest.TestCase):
           'yara_test_data')
       build_specified_commit.build_fuzzer_from_commit(
           project_name, old_commit, tmp_dir, sanitizer='address')
-      old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [], [],
-                                             test_data)
+      old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
+                                             [], test_data)
       build_specified_commit.build_fuzzer_from_commit(
           project_name, new_commit, tmp_dir, sanitizer='address')
-      new_error_code = helper.reproduce_impl(project_name, fuzzer, False, [], [],
-                                             test_data)
+      new_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
+                                             [], test_data)
       self.assertNotEqual(new_error_code, old_error_code)
 
 
 if __name__ == '__main__':
   if os.getcwd() != os.path.dirname(
-    os.path.dirname(os.path.realpath(__file__))):
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+      os.path.dirname(os.path.realpath(__file__))):
+    os.chdir(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
   unittest.main()

@@ -36,6 +36,7 @@ import os
 import tempfile
 
 import build_specified_commit
+import detect_repo
 import helper
 import repo_manager
 
@@ -116,7 +117,7 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     ValueError: when a repo url can't be determine from the project
   """
   local_store_path = tempfile.TemporaryDirectory()
-  repo_url, repo_name = build_specified_commit.infer_main_repo(
+  repo_url, repo_name = build_specific_commit.detect_main_repo_from_docker(
       build_data.project_name, commit_old)
   if not repo_url or not repo_name:
     raise ValueError('Main git repo can not be determined.')

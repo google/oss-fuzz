@@ -1,0 +1,87 @@
+# Copyright 2019 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Test the functionality of the detect_repo module.
+The will consist of the following functional test
+  1. Determine if a OSS-Fuzz projects main repo can be accuratly deduce
+  from example commits.
+"""
+import os
+import sys
+import tempfile
+import unittest
+
+import detect_repo
+# Appending to path for access to repo_manager module
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+import repo_manager
+
+
+class DetectRepoTest(unittest.TestCase):
+  """Class to test the functionality of the detect_repo module."""
+
+  def test_infer_main_repo(self):
+    """Tests that the main repo can be inferred based on an example commit."""
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+
+      # Construct example repo's to check for commits
+      repo_manager.RepoManager('https://github.com/curl/curl.git', tmp_dir)
+      repo_manager.RepoManager('https://github.com/weinrank/usrsctp', tmp_dir)
+      repo_manager.RepoManager('https://github.com/ntop/nDPI.git', tmp_dir)
+      repo_manager.RepoManager('https://github.com/libarchive/libarchive.git',
+                               tmp_dir)
+
+      self.check_commit_with_repo('https://github.com/curl/curl.git', 'curl',
+                                  'bc5d22c3dede2f04870c37aec9a50474c4b888ad',
+                                  tmp_dir)
+
+      self.check_commit_with_repo('https://github.com/weinrank/usrsctp',
+                                  'usrsctp',
+                                  '4886aaa49fb90e479226fcfc3241d74208908232',
+                                  tmp_dir)
+      self.check_commit_with_repo('https://github.com/ntop/nDPI.git', 'ndpi',
+                                  'c4d476cc583a2ef1e9814134efa4fbf484564ed7',
+                                  tmp_dir)
+      self.check_commit_with_repo(
+          'https://github.com/libarchive/libarchive.git', 'libarchive',
+          '458e49358f17ec58d65ab1c45cf299baaf3c98d1', tmp_dir)
+      self.check_commit_with_repo(None, None,
+                                  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', tmp_dir)
+
+  def check_commit_with_repo(self, repo_origin, repo_name, commit, tmp_dir):
+    """Checks the detect repo's main method for a specific set of inputs.
+
+    Args:
+      repo_origin: The location of where the git repo is stored
+      repo_name: The name of the directory it is cloned to
+      commit: The commit that should be used to look up the repo
+      tmp_dir: The location of the directory of git repos to be searched
+    """
+    out, _ = detect_repo.run_command([
+        'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--example_commit',
+        commit
+    ])
+    pair = out.rstrip().split(' ')
+    if len(pair) != 2:
+      self.assertEqual(repo_origin, repo_origin)
+      self.assertEqual(repo_name, repo_name)
+
+
+if __name__ == '__main__':
+  if os.getcwd() != os.path.dirname(
+      os.path.dirname(os.path.realpath(__file__))):
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+  unittest.main()

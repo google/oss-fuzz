@@ -49,8 +49,9 @@ def build_fuzzer_from_commit(project_name,
     0 on successful build 1 on failure
   """
   if not old_repo_manager:
-    inferred_url, repo_name = infer_main_repo(project_name, commit)
-    old_repo_manager = repo_manager.RepoManager(inferred_url, local_store_path, repo_name=repo_name)
+    inferred_url, repo_name = detect_main_repo_from_docker(project_name, commit)
+    old_repo_manager = repo_manager.RepoManager(
+        inferred_url, local_store_path, repo_name=repo_name)
   old_repo_manager.checkout_commit(commit)
   return helper.build_fuzzers_impl(
       project_name=project_name,
@@ -61,3 +62,54 @@ def build_fuzzer_from_commit(project_name,
       env_to_add=None,
       source_path=old_repo_manager.repo_dir,
       mount_location=os.path.join('/src', old_repo_manager.repo_name))
+
+
+def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
+  """Checks a docker image for the main repo of an OSS-Fuzz project.
+
+  Args:
+    project_name: The name of the OSS-Fuzz project
+    example_commit: An associated commit SHA
+    src_dir: The location of the projects source on the docker image
+
+  Returns:
+    The repo's origin, the repo's name
+  """
+  helper.build_image_impl(project_name, no_cache=True)
+  docker_image_name = 'gcr.io/oss-fuzz/' + project_name
+  command_to_run = [
+      'docker', 'run', '--rm', '-i', '-t', docker_image_name, 'python3',
+      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
+      '--example_commit', example_commit
+  ]
+  out, _ = run_command(command_to_run, check_result=True)
+  repo_info = out.split('\n')[-2]
+  pair = repo_info.split(' ')
+  # Commit did not exist in directory
+  if len(pair) != 2:
+    return None, None
+  return pair[0].rstrip(), pair[1].rstrip()
+
+
+def run_command(command, location='.', check_result=False):
+  """ Runs a shell command in the specified directory location.
+
+  Args:
+    command: The command as a list to be run
+    location: The directory the command is run in
+    check_result: Should an exception be thrown on failed command
+
+  Returns:
+    The stdout of the command, the error code
+
+  Raises:
+    RuntimeError: running a command resulted in an error
+  """
+  process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
+  out, err = process.communicate()
+  if check_result and (process.returncode or err):
+    raise RuntimeError('Error: %s\n Command: %s\n Return code: %s\n Out: %s' %
+                       (err, command, process.returncode, out))
+  if out is not None:
+    out = out.decode('ascii')
+  return out, process.returncode
