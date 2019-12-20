@@ -69,8 +69,7 @@ class RepoManager(object):
     self.remove_repo()
     out, err = build_specified_commit.run_command(
         ['git', 'clone', self.repo_url],
-        location=self.base_dir,
-        check_result=True)
+        location=self.base_dir)
     if not self._is_git_repo():
       raise RepoManagerError('%s is not a git repo' % self.repo_url)
 
