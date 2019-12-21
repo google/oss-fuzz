@@ -11,7 +11,9 @@ function compile_fuzzer {
 }
 
 for x in internal/fuzz/*; do
-  if [ -d $x ]; then
-    compile_fuzzer ./$x Fuzz $(basename $x)_fuzzer
+  if [ -d $x/corpus ]; then
+    name=$(basename $x)
+    compile_fuzzer ./$x Fuzz $name
+    zip -jr $OUT/${name}_seed_corpus.zip $x/corpus
   fi
 done
