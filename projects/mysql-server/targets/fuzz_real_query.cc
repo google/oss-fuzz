@@ -24,7 +24,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     if (logfile == NULL) {
         logfile = fopen("/dev/null", "w");
     }
-    flags = * ((unsigned long *) (Data + Size - sizeof(unsigned long)));
+    memcpy(&flags, Data + Size - sizeof(unsigned long), sizeof(unsigned long));
     mysql_init(&mysql);
     mysql_options(&mysql, MYSQL_ENABLE_CLEARTEXT_PLUGIN, &opt_cleartext);
     mysql_options(&mysql, MYSQL_OPT_SSL_MODE, &opt_ssl);
