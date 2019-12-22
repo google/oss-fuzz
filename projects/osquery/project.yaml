@@ -9,6 +9,7 @@ auto_ccs:
   - "mhl@fb.com"
   - "sharvil@sharvilshah.com"
   - "gellerbedoya@gmail.com"
+  - "stefano.bonicatti@gmail.com"
 sanitizers:
  - address
 fuzzing_engines:
