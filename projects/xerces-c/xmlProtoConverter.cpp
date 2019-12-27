@@ -56,6 +56,9 @@ void ProtoConverter::visit(Prolog const& _x)
 
 void ProtoConverter::visit(KeyValue const& _x)
 {
+	if (!KeyValue::XmlNamespace_IsValid(_x.type()))
+		return;
+
 	switch (_x.type())
 	{
 	case KeyValue::ATTRIBUTES:
@@ -127,6 +130,9 @@ void ProtoConverter::visit(Content const& _x)
 
 void ProtoConverter::visit(ElementDecl const& _x)
 {
+	if (!ElementDecl::ContentSpec_IsValid(_x.spec()))
+		return;
+
 	m_output << "<!ELEMENT " << _x.name() << " ";
 	switch (_x.spec())
 	{
@@ -167,6 +173,9 @@ void ProtoConverter::visit(ElementDecl const& _x)
 
 void ProtoConverter::visit(AttValue const& _x)
 {
+	if (!isValid(_x))
+		return;
+
 	m_output << "\"";
 	string prefix;
 	switch (_x.type())
@@ -196,6 +205,9 @@ void ProtoConverter::visit(AttValue const& _x)
 
 void ProtoConverter::visit(DefaultDecl const& _x)
 {
+	if (!isValid(_x))
+		return;
+
 	switch (_x.type())
 	{
 	case DefaultDecl::REQUIRED:
@@ -219,6 +231,9 @@ void ProtoConverter::visit(DefaultDecl const& _x)
 
 void ProtoConverter::visit(AttDef const& _x)
 {
+	if (!isValid(_x))
+		return;
+
 	m_output << " " << removeNonAscii(_x.name()) << " ";
 	switch (_x.type())
 	{
@@ -323,6 +338,9 @@ void ProtoConverter::visit(PEDef const& _x)
 
 void ProtoConverter::visit(EntityValue const& _x)
 {
+	if (!isValid(_x))
+		return;
+
 	m_output << "\"";
 	string prefix;
 	switch (_x.type())
@@ -353,6 +371,9 @@ void ProtoConverter::visit(EntityValue const& _x)
 
 void ProtoConverter::visit(EntityDecl const& _x)
 {
+	if (!isValid(_x))
+		return;
+
 	m_output << "<!ENTITY ";
 	switch (_x.type())
 	{
@@ -373,6 +394,9 @@ void ProtoConverter::visit(EntityDecl const& _x)
 
 void ProtoConverter::visit(ConditionalSect const& _x)
 {
+	if (!isValid(_x))
+		return;
+
 	switch (_x.type())
 	{
 	case ConditionalSect::INCLUDE:
@@ -486,6 +510,9 @@ string ProtoConverter::getPredefined(Element_Id _x, string const& _prop)
 /// Returns uri string for a given Element_Id type
 string ProtoConverter::getUri(Element_Id _x)
 {
+	if (!Element::Id_IsValid(_x))
+		return s_XInclude;
+
 	switch (_x)
 	{
 	case Element::XIINCLUDE:
@@ -504,6 +531,9 @@ string ProtoConverter::getUri(Element_Id _x)
 
 void ProtoConverter::visit(Element const& _x)
 {
+	if (!isValid(_x))
+		return;
+
 	// Predefined child node
 	string child = {};
 	// Predefined uri for child node
@@ -550,6 +580,9 @@ void ProtoConverter::visit(Element const& _x)
 
 void ProtoConverter::visit(ExternalId const& _x)
 {
+	if (!isValid(_x))
+		return;
+
 	switch (_x.type())
 	{
 	case ExternalId::SYSTEM:
@@ -581,6 +614,9 @@ void ProtoConverter::visit(DocTypeDecl const& _x)
 
 void ProtoConverter::visit(VersionNum const& _x)
 {
+	if (!isValid(_x))
+		return;
+
 	switch (_x.type())
 	{
 	case VersionNum::STANDARD:
@@ -596,6 +632,9 @@ void ProtoConverter::visit(VersionNum const& _x)
 
 void ProtoConverter::visit(Encodings const& _x)
 {
+	if (!Encodings::Enc_IsValid(_x.name()))
+		return;
+
 	m_output << " encoding=\"";
 	switch (_x.name())
 	{
@@ -699,6 +738,7 @@ void ProtoConverter::visit(XmlDeclaration const& _x)
 		break;
 	case XmlDeclaration_Standalone_XmlDeclaration_Standalone_INT_MIN_SENTINEL_DO_NOT_USE_:
 	case XmlDeclaration_Standalone_XmlDeclaration_Standalone_INT_MAX_SENTINEL_DO_NOT_USE_:
+	default:
 		break;
 	}
 	m_output << "?>\n";

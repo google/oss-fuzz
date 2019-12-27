@@ -89,6 +89,11 @@ private:
 
 	void visit(XmlDocument const&);
 
+	template <typename T>
+	bool isValid(T const& messageType) {
+		return T::Type_IsValid(messageType.type());
+	}
+
 	std::string removeNonAscii(std::string const&);
 	std::string getUri(Element_Id _x);
 	std::string getPredefined(Element_Id _x, std::string const&);
