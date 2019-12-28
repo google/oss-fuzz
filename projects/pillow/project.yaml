@@ -1,5 +1,7 @@
 homepage: "https://python-pillow.org/"
 primary_contact: "guidovranken@gmail.com"
+auto_ccs:
+ - "security@python-pillow.org"
 sanitizers:
  - address
  - undefined

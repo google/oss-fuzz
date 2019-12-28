@@ -104,3 +104,6 @@ grep "^\(gcc\|x86_64-linux-gnu-gcc\|clang\) " build.sh | sed 's/^\(gcc\|x86_64-l
 bash build2.sh
 find
 cp -R $SRC/pillow $OUT/
+cp /usr/lib/x86_64-linux-gnu/libjpeg.so.8 $OUT/
+cp /usr/lib/x86_64-linux-gnu/libtiff.so.5 $OUT/
+cp /usr/lib/x86_64-linux-gnu/libjbig.so.0 $OUT/
