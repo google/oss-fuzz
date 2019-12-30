@@ -21,10 +21,6 @@ RUN git clone --depth 1 git://code.qt.io/qt/qt5.git qt
 WORKDIR qt
 RUN perl init-repository --module-subset=qtbase
 
-#temporary workaround
-WORKDIR qtbase
-RUN git checkout origin/dev
-
 WORKDIR $SRC
 RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git
 COPY build.sh $SRC/
