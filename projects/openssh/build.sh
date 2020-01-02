@@ -27,24 +27,32 @@ make -j$(nproc) all
 # Build fuzzers
 STATIC_CRYPTO="-Wl,-Bstatic -lcrypto -Wl,-Bdynamic"
 
+COMMON=ssh-sk-null.o
+
+$CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
+	regress/misc/fuzz-harness/ssh-sk-null.cc -c -o ssh-sk-null.o
+
 $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/pubkey_fuzz.cc -o $OUT/pubkey_fuzz \
-	-lssh -lopenbsd-compat $STATIC_CRYPTO $LIB_FUZZING_ENGINE
+	-lssh -lopenbsd-compat $COMMON $STATIC_CRYPTO $LIB_FUZZING_ENGINE
 $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/privkey_fuzz.cc -o $OUT/privkey_fuzz \
-	-lssh -lopenbsd-compat $STATIC_CRYPTO $LIB_FUZZING_ENGINE
+	-lssh -lopenbsd-compat $COMMON $STATIC_CRYPTO $LIB_FUZZING_ENGINE
 $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/sig_fuzz.cc -o $OUT/sig_fuzz \
-	-lssh -lopenbsd-compat $STATIC_CRYPTO $LIB_FUZZING_ENGINE
+	-lssh -lopenbsd-compat $COMMON $STATIC_CRYPTO $LIB_FUZZING_ENGINE
 $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/authopt_fuzz.cc -o $OUT/authopt_fuzz \
-	auth-options.o -lssh -lopenbsd-compat $STATIC_CRYPTO $LIB_FUZZING_ENGINE
+	auth-options.o -lssh -lopenbsd-compat $COMMON $STATIC_CRYPTO \
+	$LIB_FUZZING_ENGINE
 $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/sshsig_fuzz.cc -o $OUT/sshsig_fuzz \
-	sshsig.o -lssh -lopenbsd-compat $STATIC_CRYPTO $LIB_FUZZING_ENGINE
+	sshsig.o -lssh -lopenbsd-compat $COMMON $STATIC_CRYPTO \
+	$LIB_FUZZING_ENGINE
 $CXX $CXXFLAGS -std=c++11 -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/sshsigopt_fuzz.cc -o $OUT/sshsigopt_fuzz \
-	sshsig.o -lssh -lopenbsd-compat $STATIC_CRYPTO $LIB_FUZZING_ENGINE
+	sshsig.o -lssh -lopenbsd-compat $COMMON $STATIC_CRYPTO \
+	$LIB_FUZZING_ENGINE
 
 # Prepare seed corpora
 CASES="$SRC/openssh-fuzz-cases"
