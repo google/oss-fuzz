@@ -41,4 +41,5 @@ cp honggfuzz $PRECOMPILED_DIR/
 popd > /dev/null
 
 apt-get remove -y --purge ${PACKAGES[@]}
+apt-get autoremove -y
 echo " done."
