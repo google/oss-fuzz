@@ -27,8 +27,8 @@
 # Because the virtualenv will inherit CC and CFLAGS of the instrumented CPython, and that will fail.
 
 cd $SRC/
-tar zxf v3.8.0b2.tar.gz
-cd cpython-3.8.0b2/
+tar zxf v3.8.1.tar.gz
+cd cpython-3.8.1/
 
 # Ignore memory leaks from python scripts invoked in the build
 export ASAN_OPTIONS="detect_leaks=0"
@@ -65,17 +65,17 @@ rm -rf $CPYTHON_UNINSTRUMENTED_INSTALL_PATH
 mkdir $CPYTHON_UNINSTRUMENTED_INSTALL_PATH
 
 cd $SRC/
-tar zxf v3.8.0b2.tar.gz
+tar zxf v3.8.1.tar.gz
 
 # Compile uninstrumented CPython
-cp -R $SRC/cpython-3.8.0b2/ $SRC/cpython-3.8.0b2-uninstrumented
-cd $SRC/cpython-3.8.0b2-uninstrumented
+cp -R $SRC/cpython-3.8.1/ $SRC/cpython-3.8.1-uninstrumented
+cd $SRC/cpython-3.8.1-uninstrumented
 CFLAGS="" CXXFLAGS="" ./configure --prefix=$CPYTHON_UNINSTRUMENTED_INSTALL_PATH
 CFLAGS="" CXXFLAGS="" make -j$(nproc)
 CFLAGS="" CXXFLAGS="" make install
 
 # Compile instrumented CPython
-cd $SRC/cpython-3.8.0b2/
+cd $SRC/cpython-3.8.1/
 cp $SRC/oss-fuzz-fuzzers/pillow/python_coverage.h Python/
 
 # Patch the interpreter to record code coverage
@@ -102,8 +102,8 @@ cd $SRC/pillow
 CFLAGS="" CXXFLAGS="" ./setup.py build_ext --inplace >build.sh
 grep "^\(gcc\|x86_64-linux-gnu-gcc\|clang\) " build.sh | sed 's/^\(gcc\|x86_64-linux-gnu-gcc\|clang\) /$CC $CFLAGS /g' | sed 's/-DPILLOW_VERSION="\([^"]\+\)"/-DPILLOW_VERSION="\\"\1\\""/g' >build2.sh
 bash build2.sh
-find
 cp -R $SRC/pillow $OUT/
 cp /usr/lib/x86_64-linux-gnu/libjpeg.so.8 $OUT/
 cp /usr/lib/x86_64-linux-gnu/libtiff.so.5 $OUT/
 cp /usr/lib/x86_64-linux-gnu/libjbig.so.0 $OUT/
+cp $SRC/oss-fuzz-fuzzers/pillow/corpus.zip $OUT/fuzzer-loadimg_seed_corpus.zip
