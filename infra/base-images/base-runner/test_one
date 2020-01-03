@@ -1,5 +1,5 @@
 #!/bin/bash -u
-# Copyright 2016 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,10 +35,16 @@ function main {
   mv $INITIAL_FUZZER_DIR/* $TMP_FUZZER_DIR
   FUZZER="$TMP_FUZZER_DIR/$(basename $FUZZER)"
 
-  bad_build_check $1
+  bad_build_check $FUZZER
   returncode=$?
 
-  mv $INITIAL_FUZZER_DIR/* $TMP_FUZZER_DIR
+  mv $TMP_FUZZER_DIR/* $INITIAL_FUZZER_DIR
   exit returncode
 }
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <fuzz_target_binary>"
+  exit 1
+fi
+
 main $1
