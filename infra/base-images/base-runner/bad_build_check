@@ -371,22 +371,6 @@ function check_architecture {
 
 function main {
   local FUZZER=$1
-
-  # Move the directory the fuzzer is located in to somewhere that doesn't exist
-  # on the builder to make it more likely that hardcoding /out fails here (since
-  # it will fail on ClusterFuzz).
-  FUZZER=$(realpath $FUZZER)
-  local INITIAL_FUZZER_DIR=$(dirname $FUZZER)
-
-  local FUZZER_DIR=/mnt/scratch0/clusterfuzz/bot/builds/build/revisions
-  rm -rf $FUZZER_DIR
-  # Make FUZZER_DIR's parents.
-  mkdir -p $FUZZER_DIR
-  # Move contents of INITIAL_FUZZER_DIR rather than the directory itself since
-  # usually (when it is /out) it is mounted and cannot be moved.
-  mv $INITIAL_FUZZER_DIR/* $FUZZER_DIR
-  FUZZER="$FUZZER_DIR/$(basename $FUZZER)"
-
   local checks_failed=0
   local result=0
 

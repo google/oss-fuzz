@@ -1,0 +1,44 @@
+#!/bin/bash -u
+# Copyright 2016 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+# Wrapper around bad_build_check that moves the /out directory to /not-out. This
+# is useful when bad_build_check isn't called from test_all which does the same
+# thing.
+
+function main {
+  # Move the directory the fuzzer is located in to somewhere that doesn't exist
+  # on the builder to make it more likely that hardcoding /out fails here (since
+  # it will fail on ClusterFuzz).
+  FUZZER=$1
+  FUZZER=$(realpath $FUZZER)
+  local INITIAL_FUZZER_DIR=$(dirname $FUZZER)
+
+  local TMP_FUZZER_DIR=/tmp/not-out
+  rm -rf $TMP_FUZZER_DIR
+  mkdir $TMP_FUZZER_DIR
+  # Move the contents of $INITIAL_FUZZER_DIR rather than the directory itself in
+  # case it is a mount.
+  mv $INITIAL_FUZZER_DIR/* $TMP_FUZZER_DIR
+  FUZZER="$TMP_FUZZER_DIR/$(basename $FUZZER)"
+
+  bad_build_check $1
+  returncode=$?
+
+  mv $INITIAL_FUZZER_DIR/* $TMP_FUZZER_DIR
+  exit returncode
+}
+main $1
