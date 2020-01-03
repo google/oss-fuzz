@@ -42,15 +42,14 @@ def main():
       help='A commit SHA refrencing the projects main repo',
       required=True)
   args = parser.parse_args()
-  dir_content = os.listdir(args.src_dir)
-  for single_dir in dir_content:
+  for single_dir in os.listdir(args.src_dir):
     full_path = os.path.join(args.src_dir, single_dir)
-    if single_dir and os.path.isdir(full_path):
-      if check_for_commit(
-          os.path.join(args.src_dir, full_path), args.example_commit):
-        print('Detected repo: %s %s' %
-              (get_repo(full_path), single_dir.rstrip()))
-        return
+    if not os.path.isdir(full_path):
+      continue
+    if check_for_commit(
+        os.path.join(args.src_dir, full_path), args.example_commit):
+      print('Detected repo: %s %s' % (get_repo(full_path), single_dir.rstrip()))
+      return
   print('No git repos with specific commit: %s found in %s' %
         (args.example_commit, args.src_dir))
 
@@ -64,11 +63,11 @@ def get_repo(dir_path):
   Returns:
     The repo location or None
   """
-  output, returncode = run_command(
+  output, return_code = run_command(
       ['git', 'config', '--get', 'remote.origin.url'],
       location=dir_path,
       check_result=True)
-  if returncode == 0 and output:
+  if return_code == 0 and output:
     return output.rstrip()
   return None
 
@@ -93,12 +92,12 @@ def check_for_commit(dir_path, example_commit):
     run_command(['git', 'fetch', '--unshallow'], location=dir_path)
 
   # Check if commit is in history
-  _, returncode = run_command(['git', 'cat-file', '-e', example_commit],
-                              location=dir_path)
-  return returncode == 0
+  _, return_code = run_command(['git', 'cat-file', '-e', example_commit],
+                               location=dir_path)
+  return return_code == 0
 
 
-def run_command(command, location=None, check_result=False):
+def run_command(command, location, check_result=False):
   """Runs a shell command in the specified directory location.
 
   Args:
@@ -112,8 +111,6 @@ def run_command(command, location=None, check_result=False):
   Raises:
     RuntimeError: running a command resulted in an error
   """
-  if not location:
-    location = os.getcwd()
   process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
   output, err = process.communicate()
   if check_result and (process.returncode or err):

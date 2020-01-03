@@ -51,10 +51,10 @@ class RepoManager(object):
     """
     self.repo_url = repo_url
     self.base_dir = base_dir
-    if not repo_name:
-      self.repo_name = self.repo_url.split('/')[-1].strip('.git')
-    else:
+    if repo_name:
       self.repo_name = repo_name
+    else:
+      self.repo_name = self.repo_url.split('/')[-1].strip('.git')
     self.repo_dir = os.path.join(self.base_dir, self.repo_name)
     self._clone()
 
