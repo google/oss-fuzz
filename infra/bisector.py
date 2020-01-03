@@ -95,7 +95,7 @@ def main():
           (args.commit_old, args.commit_new))
     return 1
   if error_sha == args.commit_old:
-    print('Bisection Error: Both the first and the last commits in the given ',
+    print('Bisection Error: Both the first and the last commits in the given ' +
           'range have the same behavior, bisection is not possible. ')
     return 1
   print('Error was introduced at commit %s' % error_sha)
