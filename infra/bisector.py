@@ -94,6 +94,10 @@ def main():
     print('No error was found in commit range %s:%s' %
           (args.commit_old, args.commit_new))
     return 1
+  if error_sha == args.commit_old:
+    print('Bisection Error: Both the first and the last commits in the given ',
+          'range have the same behavior, bisection is not possible. ')
+    return 1
   print('Error was introduced at commit %s' % error_sha)
   return 0
 
@@ -141,6 +145,7 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     oldest_error_code = helper.reproduce_impl(build_data.project_name,
                                               fuzz_target, False, [], [],
                                               testcase)
+
     if expected_error_code == oldest_error_code:
       return commit_list[old_idx]
 

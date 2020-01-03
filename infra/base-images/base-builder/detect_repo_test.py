@@ -71,12 +71,12 @@ class DetectRepoTest(unittest.TestCase):
       commit: The commit that should be used to look up the repo
       tmp_dir: The location of the directory of git repos to be searched
     """
-    out, _ = detect_repo.run_command([
+    command = [
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--example_commit',
         commit
-    ],
-                                     location=os.path.dirname(
-                                         os.path.realpath(__file__)))
+    ]
+    out, _ = detect_repo.run_command(
+        command, location=os.path.dirname(os.path.realpath(__file__)))
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)
