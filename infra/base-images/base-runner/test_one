@@ -15,30 +15,30 @@
 #
 ################################################################################
 
-# Wrapper around bad_build_check that moves the /out directory to /not-out. This
-# is useful when bad_build_check isn't called from test_all which does the same
-# thing.
+# Wrapper around bad_build_check that moves the /out directory to /tmp/not-out.
+# This is useful when bad_build_check isn't called from test_all which does the
+# same thing.
 
 function main {
   # Move the directory the fuzzer is located in to somewhere that doesn't exist
   # on the builder to make it more likely that hardcoding /out fails here (since
   # it will fail on ClusterFuzz).
-  FUZZER=$1
-  FUZZER=$(realpath $FUZZER)
-  local INITIAL_FUZZER_DIR=$(dirname $FUZZER)
+  local fuzzer=$1
+  fuzzer=$(realpath $fuzzer)
+  local initial_fuzzer_dir=$(dirname $fuzzer)
 
-  local TMP_FUZZER_DIR=/tmp/not-out
-  rm -rf $TMP_FUZZER_DIR
-  mkdir $TMP_FUZZER_DIR
-  # Move the contents of $INITIAL_FUZZER_DIR rather than the directory itself in
+  local tmp_fuzzer_dir=/tmp/not-out
+  rm -rf $tmp_fuzzer_dir
+  mkdir $tmp_fuzzer_dir
+  # Move the contents of $initial_fuzzer_dir rather than the directory itself in
   # case it is a mount.
-  mv $INITIAL_FUZZER_DIR/* $TMP_FUZZER_DIR
-  FUZZER="$TMP_FUZZER_DIR/$(basename $FUZZER)"
+  mv $initial_fuzzer_dir/* $tmp_fuzzer_dir
+  fuzzer="$tmp_fuzzer_dir/$(basename $fuzzer)"
 
-  bad_build_check $FUZZER
+  bad_build_check $fuzzer
   returncode=$?
 
-  mv $TMP_FUZZER_DIR/* $INITIAL_FUZZER_DIR
+  mv $tmp_fuzzer_dir/* $initial_fuzzer_dir
   exit returncode
 }
 
