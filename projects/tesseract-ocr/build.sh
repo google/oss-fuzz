@@ -44,9 +44,9 @@ $CXX $CXXFLAGS \
 
 $CXX $CXXFLAGS \
     -DTESSERACT_FUZZER_WIDTH=512 \
-    -DTESSERACT_FUZZER_HEIGHT=512 \
+    -DTESSERACT_FUZZER_HEIGHT=256 \
     -I $SRC/tesseract/include \
-     $SRC/tesseract/unittest/fuzzers/fuzzer-api.cpp -o $OUT/fuzzer-api-512x512 \
+     $SRC/tesseract/unittest/fuzzers/fuzzer-api.cpp -o $OUT/fuzzer-api-512x256 \
      $SRC/tesseract/.libs/libtesseract.a \
      /usr/local/lib/liblept.a \
      /usr/lib/x86_64-linux-gnu/libtiff.a \
