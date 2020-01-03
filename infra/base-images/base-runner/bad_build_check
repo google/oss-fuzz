@@ -381,8 +381,10 @@ function main {
   local FUZZER_DIR=/tmp/mnt/scratch0/clusterfuzz/bot/builds/build/revisions
   rm -rf $FUZZER_DIR
   # Make FUZZER_DIR's parents.
-  mkdir -p $(dirname $FUZZER_DIR)
-  mv $INITIAL_FUZZER_DIR $FUZZER_DIR
+  mkdir -p $FUZZER_DIR
+  # Move contents of INITIAL_FUZZER_DIR rather than the directory itself since
+  # usually (when it is /out) it is mounted and cannot be moved.
+  mv $INITIAL_FUZZER_DIR/* $FUZZER_DIR
   FUZZER="$FUZZER_DIR/$(basename $FUZZER)"
 
   local checks_failed=0
