@@ -64,11 +64,12 @@ def get_repo(dir_path):
   Returns:
     The repo location or None
   """
-  out, returncode = run_command(['git', 'config', '--get', 'remote.origin.url'],
-                                location=dir_path,
-                                check_result=True)
-  if not returncode and out:
-    return out.rstrip()
+  output, returncode = run_command(
+      ['git', 'config', '--get', 'remote.origin.url'],
+      location=dir_path,
+      check_result=True)
+  if returncode == 0 and output:
+    return output.rstrip()
   return None
 
 
@@ -94,10 +95,10 @@ def check_for_commit(dir_path, example_commit):
   # Check if commit is in history
   _, returncode = run_command(['git', 'cat-file', '-e', example_commit],
                               location=dir_path)
-  return not returncode
+  return returncode == 0
 
 
-def run_command(command, location='.', check_result=False):
+def run_command(command, location=None, check_result=False):
   """Runs a shell command in the specified directory location.
 
   Args:
@@ -111,15 +112,17 @@ def run_command(command, location='.', check_result=False):
   Raises:
     RuntimeError: running a command resulted in an error
   """
+  if not location:
+    location = os.getcwd()
   process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
-  out, err = process.communicate()
+  output, err = process.communicate()
   if check_result and (process.returncode or err):
     raise RuntimeError(
         'Error: %s\n running command: %s\n return code: %s\n out %s\n' %
-        (err, command, process.returncode, out))
-  if out is not None:
-    out = out.decode('ascii')
-  return out, process.returncode
+        (err, command, process.returncode, output))
+  if output is not None:
+    output = output.decode('ascii')
+  return output, process.returncode
 
 
 if __name__ == '__main__':

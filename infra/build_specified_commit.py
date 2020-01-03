@@ -107,7 +107,7 @@ def run_command(command, location=None, check_result=False):
   """
 
   if not location:
-    location = '.'
+    location = os.getcwd()
   process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
   out, err = process.communicate()
   if check_result and (process.returncode or err):

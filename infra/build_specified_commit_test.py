@@ -22,6 +22,9 @@ import unittest
 import build_specified_commit
 import helper
 
+# Necessary because __file__ changes with os.chdir
+TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+
 
 class BuildImageIntegrationTests(unittest.TestCase):
   """Testing if an image can be built from different states e.g. a commit"""
@@ -33,15 +36,13 @@ class BuildImageIntegrationTests(unittest.TestCase):
     The old commit should show the error when its fuzzers run and the new one
     should not.
     """
+    test_data = os.path.join(TEST_DIR_PATH, 'testcases', 'yara_test_data')
 
     with tempfile.TemporaryDirectory() as tmp_dir:
       project_name = 'yara'
       old_commit = 'f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f'
       new_commit = 'f50a39051ea8c7f10d6d8db9656658b49601caef'
       fuzzer = 'rules_fuzzer'
-      test_data = os.path.join(
-          os.path.dirname(os.path.realpath(__file__)), 'testcases',
-          'yara_test_data')
       build_specified_commit.build_fuzzer_from_commit(
           project_name, old_commit, tmp_dir, sanitizer='address')
       old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
@@ -76,7 +77,8 @@ class BuildImageIntegrationTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  if os.getcwd() != os.path.dirname(
-      os.path.dirname(os.path.realpath(__file__))):
-    os.chdir(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+  # Change to oss-fuzz main directory so helper.py runs correctly
+  if os.getcwd() != os.path.dirname(TEST_DIR_PATH):
+    os.chdir(os.path.dirname(TEST_DIR_PATH))
   unittest.main()

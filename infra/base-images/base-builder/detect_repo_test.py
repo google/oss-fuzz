@@ -13,7 +13,7 @@
 # limitations under the License.
 """Test the functionality of the detect_repo module.
 The will consist of the following functional test
-  1. Determine if a OSS-Fuzz projects main repo can be accuratly deduce
+  1. Determine if a OSS-Fuzz projects main repo can be accurately deduce
   from example commits.
 """
 import os
@@ -74,7 +74,9 @@ class DetectRepoTest(unittest.TestCase):
     out, _ = detect_repo.run_command([
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--example_commit',
         commit
-    ])
+    ],
+                                     location=os.path.dirname(
+                                         os.path.realpath(__file__)))
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)
@@ -82,7 +84,4 @@ class DetectRepoTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  if os.getcwd() != os.path.dirname(
-      os.path.dirname(os.path.realpath(__file__))):
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
   unittest.main()
