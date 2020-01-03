@@ -20,5 +20,4 @@ RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config li
 RUN git clone --depth 1 https://github.com/danbloomberg/leptonica
 RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract
 RUN git clone --depth 1 https://github.com/tesseract-ocr/tessdata
-RUN git clone https://github.com/guidovranken/tesseract-ocr-fuzzers
 COPY build.sh $SRC/
