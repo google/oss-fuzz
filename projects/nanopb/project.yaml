@@ -1,7 +1,0 @@
-homepage: "https://jpa.kapsi.fi/nanopb/"
-primary_contact: "jpa@npb.mail.kapsi.fi"
-sanitizers:
-  - address
-  - memory
-  - undefined
-

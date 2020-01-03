@@ -47,8 +47,8 @@ class BuildData():
   Attributes:
     project_name: The name of the OSS-Fuzz project that is being checked
     engine: The fuzzing engine to be used
-    sanitizer: The fuzzing sanitizer to be used
-    architecture: The system architecture being fuzzed
+    sanitizer: The sanitizer to be used
+    architecture: CPU architecture to build the fuzzer for
   """
   project_name: str
   engine: str
@@ -58,6 +58,10 @@ class BuildData():
 
 def main():
   """Finds the commit SHA where an error was initally introduced."""
+  oss_fuzz_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+  if os.getcwd() != oss_fuzz_dir:
+    print('Changing directory to OSS-Fuzz home directory')
+    os.chdir(oss_fuzz_dir)
   parser = argparse.ArgumentParser(
       description='git bisection for finding introduction of bugs')
 
@@ -75,26 +79,24 @@ def main():
       required=True)
   parser.add_argument(
       '--fuzz_target', help='the name of the fuzzer to be built', required=True)
+  parser.add_argument('--testcase', help='path to test case', required=True)
   parser.add_argument(
-      '--testcase', help='the testcase to be reproduced', required=True)
-  parser.add_argument('--engine', default='libfuzzer')
+      '--engine', help='the default is "libfuzzer"', default='libfuzzer')
   parser.add_argument(
-      '--sanitizer',
-      default='address',
-      help='the default is "address"; "dataflow" for "dataflow" engine')
+      '--sanitizer', default='address', help='the default is "address"')
   parser.add_argument('--architecture', default='x86_64')
   args = parser.parse_args()
   build_data = BuildData(args.project_name, args.engine, args.sanitizer,
                          args.architecture)
-  if os.getcwd() != os.path.dirname(
-      os.path.dirname(os.path.realpath(__file__))):
-    print("Error: bisector.py needs to be run from the OSS-Fuzz home directory")
-    return 1
   error_sha = bisect(args.commit_old, args.commit_new, args.testcase,
                      args.fuzz_target, build_data)
   if not error_sha:
     print('No error was found in commit range %s:%s' %
           (args.commit_old, args.commit_new))
+    return 1
+  if error_sha == args.commit_old:
+    print('Bisection Error: Both the first and the last commits in the given ' +
+          'range have the same behavior, bisection is not possible. ')
     return 1
   print('Error was introduced at commit %s' % error_sha)
   return 0
@@ -113,40 +115,53 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
 
   Returns:
     The commit SHA that introduced the error or None
-  """
-  local_store_path = tempfile.mkdtemp()
-  repo_url = build_specified_commit.infer_main_repo(build_data.project_name,
-                                                    local_store_path,
-                                                    commit_old)
-  bisect_repo_manager = repo_manager.RepoManager(repo_url, local_store_path)
-  commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
-  build_specified_commit.build_fuzzer_from_commit(
-      build_data.project_name, commit_list[0], bisect_repo_manager.repo_dir,
-      build_data.engine, build_data.sanitizer, build_data.architecture,
-      bisect_repo_manager)
-  error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
-                                     False, [], [], testcase)
-  old_idx = len(commit_list) - 1
-  new_idx = 0
-  if len(commit_list) == 1:
-    if not error_code:
-      return None
-    return commit_list[0]
 
-  while old_idx - new_idx != 1:
-    curr_idx = (old_idx + new_idx) // 2
+  Raises:
+    ValueError: when a repo url can't be determine from the project
+  """
+  with tempfile.TemporaryDirectory() as tmp_dir:
+    repo_url, repo_name = build_specified_commit.detect_main_repo_from_docker(
+        build_data.project_name, commit_old)
+    if not repo_url or not repo_name:
+      raise ValueError('Main git repo can not be determined.')
+    bisect_repo_manager = repo_manager.RepoManager(
+        repo_url, tmp_dir, repo_name=repo_name)
+    commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
+    old_idx = len(commit_list) - 1
+    new_idx = 0
     build_specified_commit.build_fuzzer_from_commit(
-        build_data.project_name, commit_list[curr_idx],
+        build_data.project_name, commit_list[new_idx],
         bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
         build_data.architecture, bisect_repo_manager)
-    error_exists = (
-        helper.reproduce_impl(build_data.project_name, fuzz_target, False, [],
-                              [], testcase) == error_code)
-    if error_exists == error_code:
-      new_idx = curr_idx
-    else:
-      old_idx = curr_idx
-  return commit_list[new_idx]
+    expected_error_code = helper.reproduce_impl(build_data.project_name,
+                                                fuzz_target, False, [], [],
+                                                testcase)
+
+    # Check if the error is persistent through the commit range
+    build_specified_commit.build_fuzzer_from_commit(
+        build_data.project_name, commit_list[old_idx],
+        bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
+        build_data.architecture, bisect_repo_manager)
+    oldest_error_code = helper.reproduce_impl(build_data.project_name,
+                                              fuzz_target, False, [], [],
+                                              testcase)
+
+    if expected_error_code == oldest_error_code:
+      return commit_list[old_idx]
+
+    while old_idx - new_idx > 1:
+      curr_idx = (old_idx + new_idx) // 2
+      build_specified_commit.build_fuzzer_from_commit(
+          build_data.project_name, commit_list[curr_idx],
+          bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
+          build_data.architecture, bisect_repo_manager)
+      error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
+                                         False, [], [], testcase)
+      if expected_error_code == error_code:
+        new_idx = curr_idx
+      else:
+        old_idx = curr_idx
+    return commit_list[new_idx]
 
 
 if __name__ == '__main__':
