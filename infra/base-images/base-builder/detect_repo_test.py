@@ -23,7 +23,7 @@ import tempfile
 import unittest
 
 import detect_repo
-# Appending to path for access to repo_manager module
+# Appending to path for access to repo_manager module.
 sys.path.append(
     os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
@@ -38,7 +38,7 @@ class DetectRepoTest(unittest.TestCase):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
 
-      # Construct example repo's to check for commits
+      # Construct example repo's to check for commits.
       repo_manager.RepoManager('https://github.com/curl/curl.git', tmp_dir)
       repo_manager.RepoManager('https://github.com/weinrank/usrsctp', tmp_dir)
       repo_manager.RepoManager('https://github.com/ntop/nDPI.git', tmp_dir)
@@ -75,7 +75,7 @@ class DetectRepoTest(unittest.TestCase):
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--example_commit',
         commit
     ]
-    out, _ = detect_repo.run_command(
+    out, _ = detect_repo.execute(
         command, location=os.path.dirname(os.path.realpath(__file__)))
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):

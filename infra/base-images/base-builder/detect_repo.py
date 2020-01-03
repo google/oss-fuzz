@@ -16,7 +16,7 @@ inside of an OSS-Fuzz project.
 
 Example Usage:
 
-  detect_repo.py --src_dir /src --example_commit b534f03eecd8a109db2b085ab24d419b6486de97
+  python detect_repo.py --src_dir /src --example_commit b534f03eecd8a109db2b085ab24d419b6486de97
 
 Prints the location of the git remote repo as well as the repos name seperated by a space.
 
@@ -54,50 +54,50 @@ def main():
         (args.example_commit, args.src_dir))
 
 
-def get_repo(dir_path):
+def get_repo(repo_path):
   """Gets a git repo link from a specific directory in a docker image.
 
   Args:
-    dir_path: The directory on the image where the git repo exists.
+    repo_path: The directory on the image where the git repo exists.
 
   Returns:
     The repo location or None
   """
-  output, return_code = run_command(
+  output, return_code = execute(
       ['git', 'config', '--get', 'remote.origin.url'],
-      location=dir_path,
+      location=repo_path,
       check_result=True)
   if return_code == 0 and output:
     return output.rstrip()
   return None
 
 
-def check_for_commit(dir_path, example_commit):
+def check_for_commit(repo_path, commit):
   """Checks a directory for a specific commit.
 
   Args:
-    dir_path: The name of the directory to test for the commit
-    example_commit: The commit SHA to check for
+    repo_path: The name of the directory to test for the commit
+    commit: The commit SHA to check for
 
   Returns:
     True if directory contains that commit
   """
 
-  # Check if valid git repo
-  if not os.path.exists(os.path.join(dir_path, '.git')):
+  # Check if valid git repo.
+  if not os.path.exists(os.path.join(repo_path, '.git')):
     return False
 
-  # Check if history fetch is needed
-  if os.path.exists(os.path.join(dir_path, '.git', 'shallow')):
-    run_command(['git', 'fetch', '--unshallow'], location=dir_path)
+  # Check if history fetch is needed.
+  if os.path.exists(os.path.join(repo_path, '.git', 'shallow')):
+    execute(['git', 'fetch', '--unshallow'], location=repo_path)
 
-  # Check if commit is in history
-  _, return_code = run_command(['git', 'cat-file', '-e', example_commit],
-                               location=dir_path)
+  # Check if commit is in history.
+  _, return_code = execute(['git', 'cat-file', '-e', commit],
+                               location=repo_path)
   return return_code == 0
 
 
-def run_command(command, location, check_result=False):
+def execute(command, location, check_result=False):
   """Runs a shell command in the specified directory location.
 
   Args:

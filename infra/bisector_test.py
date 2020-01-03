@@ -97,7 +97,7 @@ class TestBisect(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  # Change to oss-fuzz main directory so helper.py runs correctly
+  # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != os.path.dirname(TEST_DIR_PATH):
     os.chdir(os.path.dirname(TEST_DIR_PATH))
   unittest.main()

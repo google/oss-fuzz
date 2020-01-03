@@ -83,7 +83,7 @@ def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
       os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
       '--example_commit', example_commit
   ]
-  out, _ = run_command(command_to_run)
+  out, _ = execute(command_to_run)
 
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
@@ -91,7 +91,7 @@ def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
   return None, None
 
 
-def run_command(command, location=None, check_result=False):
+def execute(command, location=None, check_result=False):
   """ Runs a shell command in the specified directory location.
 
   Args:
