@@ -378,7 +378,7 @@ function main {
   FUZZER=$(realpath $FUZZER)
   local INITIAL_FUZZER_DIR=$(dirname $FUZZER)
 
-  local FUZZER_DIR=/tmp/mnt/scratch0/clusterfuzz/bot/builds/build/revisions
+  local FUZZER_DIR=/mnt/scratch0/clusterfuzz/bot/builds/build/revisions
   rm -rf $FUZZER_DIR
   # Make FUZZER_DIR's parents.
   mkdir -p $FUZZER_DIR
