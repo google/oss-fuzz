@@ -49,3 +49,7 @@ matrix:
         - TRAVIS_ARCHITECTURE=x86_64
 
 script: ./infra/travis/travis_build.py
+
+notifications:
+  webhooks: https://www.travisbuddy.com/
+  on_success: never
