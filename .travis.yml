@@ -51,4 +51,5 @@ matrix:
 script: ./infra/travis/travis_build.py
 
 notifications:
-    webhooks: https://www.travisbuddy.com/
+  webhooks: https://www.travisbuddy.com/
+  on_success: never
