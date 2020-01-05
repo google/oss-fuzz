@@ -24,19 +24,20 @@ PROJECT=osquery
   mv "${SRC}/${PROJECT}-dev" "${SRC}/${PROJECT}" )
 
 pushd "${SRC}/${PROJECT}"
-mkdir build && pushd build
 
-export CXXFLAGS="${CXXFLAGS} -Wl,-lunwind -Wl,-lc++abi"
-export CFLAGS="${CFLAGS} -Wl,-lunwind"
+# Prefer shared libs
+sed -i 's/CMAKE_LINK_SEARCH_START_STATIC ON/CMAKE_LINK_SEARCH_START_STATIC OFF/g' cmake/flags.cmake
+sed -i 's/CMAKE_LINK_SEARCH_END_STATIC ON/CMAKE_LINK_SEARCH_END_STATIC OFF/g' cmake/flags.cmake
+
+mkdir build && pushd build
 
 cmake \
   -DOSQUERY_VERSION:string=0.0.0-fuzz \
   -DOSQUERY_ENABLE_ADDRESS_SANITIZER:BOOL=ON \
   -DOSQUERY_ENABLE_FUZZER_SANITIZERS:BOOL=ON \
-  -DOSQUERY_TOOLCHAIN_SYSROOT=/usr/local/osquery-toolchain \
   ..
 cmake \
-  -DCMAKE_EXE_LINKER_FLAGS=${LIB_FUZZING_ENGINE} \
+  "-DCMAKE_EXE_LINKER_FLAGS=${LIB_FUZZING_ENGINE} -Wl,-rpath,'\$ORIGIN/lib'" \
   ..
 
 # Build harnesses
@@ -47,6 +48,10 @@ cmake --build . -j$(nproc) --target osqueryfuzz-sqlquery
 find . -type f -name '*.o' -delete
 rm -rf "${SRC}/${PROJECT}/libraries/cmake/source/libudev/src/test"
 rm -rf libs/src/patched-source/libudev/src/test
+
+# Move libunwind to output path
+mkdir -p "${OUT}/lib"
+cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 "${OUT}/lib"
 
 # Move harnesses to output path
 cp osquery/main/harnesses/osqueryfuzz-config "${OUT}/osqueryfuzz-config"
