@@ -51,6 +51,9 @@ def build_fuzzer_from_commit(project_name,
   """
   if not old_repo_manager:
     inferred_url, repo_name = detect_main_repo_from_docker(project_name, commit)
+    if not inferred_url or not repo_name:
+      print("Error: repo from project %s could not be inferred with commit %s." % (project_name, commit))
+      return 1
     old_repo_manager = repo_manager.RepoManager(
         inferred_url, local_store_path, repo_name=repo_name)
   old_repo_manager.checkout_commit(commit)
