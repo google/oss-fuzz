@@ -125,7 +125,7 @@ class RepoManager(object):
                                     self.repo_dir)
     return not err_code
 
-  def get_remote_branch_path(self, branch_name):
+  def get_branch_path(self, branch_name):
     """Gets the path to a remote git branch
 
     Args:
@@ -140,7 +140,7 @@ class RepoManager(object):
     if not branch_name.rstrip():
       raise ValueError('An empty string is not a valid branch name')
 
-    self._run_command(['git', 'fetch'], self.repo_dir, check_result=True)
+    self._run_command(['git', 'fetch', "--all"], self.repo_dir, check_result=True)
     out, err_code = self._run_command(
         ['git', 'ls-remote', '--heads', self.repo_url, branch_name],
         self.repo_dir,
@@ -148,29 +148,6 @@ class RepoManager(object):
     branch_path = re.search(r'\brefs/heads/(.*)\n', out)
     if branch_path:
       return self.get_remote() + '/' + branch_path.group(1).rstrip()
-    return None
-
-  def get_local_branch_path(self, branch_name):
-    """Gets the path to a local git branch
-
-    Args:
-      branch_name: The name of the branch to be checked out
-
-    Returns:
-      None if no branch with that name exists, a string with the path if it does
-
-    Raises:
-      ValueException: if an empty string was passed in
-    """
-    if not branch_name.rstrip():
-      raise ValueError('An empty string is not a valid branch name')
-
-    _, err_code = self._run_command(
-        ['git', 'rev-parse', '--verify', branch_name],
-        self.repo_dir,
-        check_result=True)
-    if not err_code:
-      return branch_name
     return None
 
   def get_current_commit(self):
@@ -262,7 +239,7 @@ class RepoManager(object):
     if self.get_current_commit() != commit:
       raise RepoManagerError('Error checking out commit %s' % commit)
 
-  def checkout_branch(self, branch_name):
+  def checkout_branch(self, branch_name, commit=None):
     """Checks out a specific branch from remote.
 
     Args:
@@ -271,37 +248,17 @@ class RepoManager(object):
     Raises:
       RepoManagerError: when trying to checkout a branch that does not exist
     """
-    remote_branch_path = self.get_remote_branch_path(branch_name)
-    local_branch_path = self.get_local_branch_path(branch_name)
-    if not remote_branch_path and not local_branch_path:
+    branch_path = self.get_branch_path(branch_name)
+    if not branch_path:
       raise RepoManagerError('Branch %s does not exist for repository %s.' %
                              (branch_name, self.repo_name))
-    elif remote_branch_path:
-      self._run_command(['git', 'fetch'], self.repo_dir)
-      self._run_command(['git', 'checkout', '-t', remote_branch_path],
-                        self.repo_dir,
-                        check_result=True)
-    else:
-      self._run_command(['git', 'checkout', local_branch_path],
-                        self.repo_dir,
-                        check_result=True)
-
-  def checkout_pull_request(self, pull_request_id):
-    """A function to check out the state of an existing pull request.
-
-    Args:
-      pull_request_id: The id of the pull request to be checked out
-
-    """
-    pr_branch_name = str(pull_request_id) + '-branch'
-    self._run_command([
-        'git', 'fetch',
-        self.get_remote(),
-        'pull/' + str(pull_request_id) + '/head:' + pr_branch_name
-    ],
+    self._run_command(['git', 'fetch', 'all'], self.repo_dir)
+    self._run_command(['git', 'checkout', '-t', branch_path],
                       self.repo_dir,
                       check_result=True)
-    self.checkout_branch(pr_branch_name)
+    if commit:
+      self.checkout_commit(commit)
+
 
   def remove_repo(self):
     """Attempts to remove the git repo. """

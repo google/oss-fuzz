@@ -48,11 +48,10 @@ class BuildImageUnitTests(unittest.TestCase):
 class BuildImageIntegrationTests(unittest.TestCase):
   """Testing if an image can be built from different states e.g. a commit"""
 
-  def test_build_fuzzers_from_pull_request(self):
+  def test_build_fuzzers_from_branch(self):
     """Tests if fuzzers can be build from a specific PR."""
     project_name = 'curl'
-    build_specified_commit.build_fuzzer_from_pull_request(project_name, 2682,'tmp')
-    build_specified_commit.build_fuzzer_from_pull_request(project_name, 4579,'tmp')
+    build_specified_commit.build_fuzzer_from_commit('curl', 'tmp', '05fb807a946f230684ad1ab1e627f9bade1a381e','wolfssh')
 
   def test_build_fuzzers_from_commit(self):
     """Tests if the fuzzers can build at a proper commit.

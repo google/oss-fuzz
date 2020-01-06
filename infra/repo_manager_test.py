@@ -75,6 +75,28 @@ class TestRepoManager(unittest.TestCase):
       # Testing commits out of order
       test_repo_manager.get_commit_list(new_commit, old_commit)
 
+  def test_get_branch_path(self):
+    """Tests that repo manager can get a path to a remote branch."""
+    test_repo_manager = repo_manager.RepoManager(self.curl_repo, TMP_DIR)
+    self.assertEqual('origin/bagder/wolfssh', test_repo_manager.get_branch_path('wolfssh'))
+    self.assertEqual('origin/bagder/runtests-seed-monthly', test_repo_manager.get_branch_path('runtests-seed-monthly'))
+    self.assertIsNone(test_repo_manager.get_branch_path('not_a_branch'))
+
+  def test_checkout_branch(self):
+    """Tests that the repo manager class can checkout a branch."""
+    test_repo_manager = repo_manager.RepoManager(self.curl_repo, TMP_DIR)
+    self.assertEqual('master', test_repo_manager.get_current_branch())
+    with self.assertRaises(repo_manager.RepoManagerError):
+      test_repo_manager.checkout_branch('not_a_branch')
+    test_repo_manager.checkout_branch('wolfssh')
+    self.assertEqual(test_repo_manager.get_current_branch(), 'bagder/wolfssh')
+
+  def test_checkout_branch_with_commit(self):
+    """Tests that the repo manager class can checkout a branch."""
+    test_repo_manager = repo_manager.RepoManager(self.curl_repo, TMP_DIR)
+    test_repo_manager.checkout_branch('wolfssh', '05fb807a946f230684ad1ab1e627f9bade1a381e')
+    self.assertEqual(test_repo_manager.get_current_commit(), '05fb807a946f230684ad1ab1e627f9bade1a381e')
+
 
 if __name__ == '__main__':
   TMP_DIR = tempfile.mkdtemp()
