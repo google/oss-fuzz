@@ -67,7 +67,7 @@ class RepoManager(object):
     if not os.path.exists(self.base_dir):
       os.makedirs(self.base_dir)
     self.remove_repo()
-    out, err = build_specified_commit.run_command(
+    out, err = build_specified_commit.execute(
         ['git', 'clone', self.repo_url],
         location=self.base_dir)
     if not self._is_git_repo():
@@ -95,12 +95,12 @@ class RepoManager(object):
       ValueException: an empty string was passed in as a commit
     """
 
-    # Handle the exception case, if empty string is passed run_command will
+    # Handle the exception case, if empty string is passed execute will
     # raise a ValueError
     if not commit.rstrip():
       raise ValueError('An empty string is not a valid commit SHA')
 
-    _, err_code = build_specified_commit.run_command(
+    _, err_code = build_specified_commit.execute(
         ['git', 'cat-file', '-e', commit], self.repo_dir)
     return not err_code
 
@@ -110,7 +110,7 @@ class RepoManager(object):
     Returns:
       The current active commit SHA
     """
-    out, _ = build_specified_commit.run_command(['git', 'rev-parse', 'HEAD'],
+    out, _ = build_specified_commit.execute(['git', 'rev-parse', 'HEAD'],
                                                 self.repo_dir,
                                                 check_result=True)
     return out.strip('\n')
@@ -135,7 +135,7 @@ class RepoManager(object):
       raise RepoManagerError('The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
       return [old_commit]
-    out, err_code = build_specified_commit.run_command(
+    out, err_code = build_specified_commit.execute(
         ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
     commits = out.split('\n')
     commits = [commit for commit in commits if commit]
@@ -162,13 +162,13 @@ class RepoManager(object):
 
     git_path = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(git_path):
-      build_specified_commit.run_command(['git', 'fetch', '--unshallow'],
+      build_specified_commit.execute(['git', 'fetch', '--unshallow'],
                                          self.repo_dir,
                                          check_result=True)
-    build_specified_commit.run_command(['git', 'checkout', '-f', commit],
+    build_specified_commit.execute(['git', 'checkout', '-f', commit],
                                        self.repo_dir,
                                        check_result=True)
-    build_specified_commit.run_command(['git', 'clean', '-fxd'],
+    build_specified_commit.execute(['git', 'clean', '-fxd'],
                                        self.repo_dir,
                                        check_result=True)
     if self.get_current_commit() != commit:

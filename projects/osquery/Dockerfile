@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER theopolis@osquery.io
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils
+RUN apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev
 
 # Install specific git version.
 RUN export GIT_VER=2.21.0 \
@@ -35,11 +35,6 @@ RUN export GIT_VER=2.21.0 \
 RUN wget -q https://github.com/Kitware/CMake/releases/download/v3.14.6/cmake-3.14.6-Linux-x86_64.tar.gz \
  && tar xf cmake-3.14.6-Linux-x86_64.tar.gz -C /usr/local --strip 1 \
  && rm cmake-3.14.6-Linux-x86_64.tar.gz
-
-# Install build toolchain
-RUN wget https://github.com/osquery/osquery-toolchain/releases/download/1.0.0/osquery-toolchain-1.0.0.tar.xz \
- && tar xf osquery-toolchain-1.0.0.tar.xz -C /usr/local \
- && rm osquery-toolchain-1.0.0.tar.xz
 
 RUN git clone --depth 1 https://github.com/osquery/osquery osquery
 

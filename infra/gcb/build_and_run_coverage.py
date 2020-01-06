@@ -70,10 +70,11 @@ def get_build_steps(project_dir):
     skip_build('Project "%s" is disabled.' % project_name)
 
   build_script_path = os.path.join(project_dir, 'build.sh')
-  with open(build_script_path) as fh:
-    if GO_FUZZ_BUILD in fh.read():
-      skip_build('Project "%s" uses go-fuzz, coverage is not supported yet.' %
-                 project_name)
+  if os.path.exists(build_script_path):
+    with open(build_script_path) as fh:
+      if GO_FUZZ_BUILD in fh.read():
+        skip_build('Project "%s" uses go-fuzz, coverage is not supported yet.' %
+                   project_name)
 
   fuzz_targets = get_targets_list(project_name)
   if not fuzz_targets:

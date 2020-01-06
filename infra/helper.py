@@ -461,12 +461,11 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
     command.append('-i')
   command = (command + ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env))
   if source_path:
+    workdir = _workdir_from_dockerfile(project_name)
+    if workdir == '/src':
+      print('Cannot use local checkout with "WORKDIR: /src".', file=sys.stderr)
+      return 1
     if not mount_location:
-      workdir = _workdir_from_dockerfile(project_name)
-      if workdir == '/src':
-        print('Cannot use local checkout with "WORKDIR: /src".', file=sys.stderr)
-        return 1
-
       command += [
           '-v',
           '%s:%s' % (_get_absolute_path(source_path), workdir),
@@ -535,7 +534,7 @@ def check_build(args):
 
   if args.fuzzer_name:
     run_args += [
-        'bad_build_check',
+        'test_one',
         os.path.join('/out', args.fuzzer_name)
     ]
   else:
