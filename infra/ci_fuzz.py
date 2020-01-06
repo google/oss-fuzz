@@ -19,6 +19,8 @@ Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 
 import argparse
+import build_specific_commit
+import tempfile
 
 def main():
   """Connects Fuzzers with CI tools."""
@@ -28,6 +30,7 @@ def main():
   parser.add_subparsers(dest='command')
   build_fuzzer_parser = subparsers.add_parser('build_fuzzers', help='Build fuzzers')
   build_fuzzer_parser.add_argument('project_name')
+  build_fuzzer_parser.add_argument('commit_sha')
 
   run_fuzzer_parser = subparsers.add_parser('run_fuzzer', help='Run a specific projects fuzzers')
   run_fuzzer_parser.add_argument('project_name')
@@ -44,7 +47,12 @@ def main():
 
 def build_fuzzers(args):
   """Builds all of the fuzzers for a specific OSS-Fuzz project."""
-  return 0
+  with tempfile.TemporaryDirectory() as tmp_dir:
+    return build_specific_commit.build_fuzzer_from_commit(args.project_name, 
+                                                   args.commit_sha,
+                                                   tmp_dir)
+
+
 
 
 def run_fuzzers(args):
