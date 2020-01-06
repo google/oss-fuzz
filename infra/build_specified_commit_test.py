@@ -53,6 +53,13 @@ class BuildImageIntegrationTests(unittest.TestCase):
                                              [], test_data)
       self.assertNotEqual(new_error_code, old_error_code)
 
+  def test_build_fuzzers_from_pr(self):
+    project_name = 'curl'
+    commit = '05fb807a946f230684ad1ab1e627f9bade1a381e'
+    branch = 'bagder/wolfssh'
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      build_specified_commit.build_fuzzer_from_pr(project_name,commit, branch, 'https://github.com/curl/curl.git', tmp_dir)
+
   def test_detect_main_repo(self):
     """Test the detect main repo functionality of the build specific commit module."""
     repo_origin, repo_name = build_specified_commit.detect_main_repo_from_docker(

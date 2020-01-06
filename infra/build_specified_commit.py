@@ -28,7 +28,6 @@ import repo_manager
 class DockerExecutionError(Exception):
   """An error that occurs when running a docker command."""
 
-
 def build_fuzzer_from_commit(project_name,
                              commit,
                              local_store_path,
@@ -67,6 +66,26 @@ def build_fuzzer_from_commit(project_name,
       source_path=old_repo_manager.repo_dir,
       mount_location=os.path.join('/src', old_repo_manager.repo_name))
 
+def build_fuzzer_from_pr(project_name,
+                         commit,
+                         branch_name,
+                         main_repo,
+                         local_store_path,
+                         engine='libfuzzer',
+                         sanitizer='address',
+                         architecture='x86_64'):
+ pr_repo_manager = repo_manager.RepoManager(main_repo, local_store_path)
+ pr_repo_manager.checkout_branch(branch_name)
+ pr_repo_manager.checkout_commit(commit)
+ return helper.build_fuzzers_impl(
+     project_name=project_name,
+     clean=True,
+     engine=engine,
+     sanitizer=sanitizer,
+     architecture=architecture,
+     env_to_add=None,
+     source_path=pr_repo_manager.repo_dir,
+     mount_location=os.path.join('/src', pr_repo_manager.repo_name))
 
 def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
   """Checks a docker image for the main repo of an OSS-Fuzz project.

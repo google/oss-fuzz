@@ -33,6 +33,7 @@ def main():
   subparsers = parser.add_subparsers(dest='command')
   build_fuzzer_parser = subparsers.add_parser('build_fuzzers', help='Build fuzzers')
   build_fuzzer_parser.add_argument('project_name')
+  build_fuzzer_parser.add_argument('branch_name')
   build_fuzzer_parser.add_argument('commit_sha')
 
   run_fuzzer_parser = subparsers.add_parser('run_fuzzer', help='Run a specific projects fuzzers')
@@ -57,9 +58,8 @@ def build_fuzzers(args):
   with tempfile.TemporaryDirectory() as tmp_dir:
     return build_specified_commit.build_fuzzer_from_commit(args.project_name,
                                                    args.commit_sha,
-                                                   tmp_dir)
-
-
+                                                   tmp_dir,
+                                                   branch_name=args.branch_name)
 
 
 def run_fuzzers(args):
