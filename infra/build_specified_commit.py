@@ -17,10 +17,16 @@ This module is allows each of the OSS Fuzz projects fuzzers to be built
 from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
+import os
 import re
+import subprocess
 
 import helper
 import repo_manager
+
+
+class DockerExecutionError(Exception):
+  """An error that occurs when running a docker command."""
 
 
 def build_fuzzer_from_commit(project_name,
@@ -44,8 +50,9 @@ def build_fuzzer_from_commit(project_name,
     0 on successful build 1 on failure
   """
   if not old_repo_manager:
-    inferred_url = infer_main_repo(project_name, local_store_path, commit)
-    old_repo_manager = repo_manager.RepoManager(inferred_url, local_store_path)
+    inferred_url, repo_name = detect_main_repo_from_docker(project_name, commit)
+    old_repo_manager = repo_manager.RepoManager(
+        inferred_url, local_store_path, repo_name=repo_name)
   old_repo_manager.checkout_commit(commit)
   return helper.build_fuzzers_impl(
       project_name=project_name,
@@ -54,42 +61,58 @@ def build_fuzzer_from_commit(project_name,
       sanitizer=sanitizer,
       architecture=architecture,
       env_to_add=None,
-      source_path=old_repo_manager.repo_dir)
+      source_path=old_repo_manager.repo_dir,
+      mount_location=os.path.join('/src', old_repo_manager.repo_name))
 
 
-def infer_main_repo(project_name, local_store_path, example_commit=None):
-  """Tries to guess the main repo a project based on the Dockerfile.
+def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
+  """Checks a docker image for the main repo of an OSS-Fuzz project.
 
-  NOTE: This is a fragile implementation and only works for git
   Args:
-    project_name: The OSS-Fuzz project that you are checking the repo of
-    example_commit: A commit that is in the main repos tree
+    project_name: The name of the OSS-Fuzz project
+    example_commit: An associated commit SHA
+    src_dir: The location of the projects source on the docker image
+
   Returns:
-    The guessed repo url path or None on failue
+    The repo's origin, the repo's name
   """
-  if not helper.check_project_exists(project_name):
-    return None
-  docker_path = helper.get_dockerfile_path(project_name)
-  with open(docker_path, 'r') as file_path:
-    lines = file_path.read()
-    # Use generic git format and project name to guess main repo
-    if example_commit is None:
-      repo_url = re.search(
-          r'\b(?:http|https|git)://[^ ]*' + re.escape(project_name) +
-          r'(.git)?', lines)
-      if repo_url:
-        return repo_url.group(0)
-    else:
-      # Use example commit SHA to guess main repo
-      for clone_command in re.findall('.*clone.*', lines):
-        repo_url = re.search(r'\b(?:https|http|git)://[^ ]*',
-                             clone_command).group(0)
-        print(repo_url)
-        try:
-          test_repo_manager = repo_manager.RepoManager(repo_url.rstrip(),
-                                                       local_store_path)
-          if test_repo_manager.commit_exists(example_commit):
-            return repo_url
-        except:
-          pass
-    return None
+  helper.build_image_impl(project_name)
+  docker_image_name = 'gcr.io/oss-fuzz/' + project_name
+  command_to_run = [
+      'docker', 'run', '--rm', '-i', '-t', docker_image_name, 'python3',
+      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
+      '--example_commit', example_commit
+  ]
+  out, _ = execute(command_to_run)
+
+  match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
+  if match and match.group(1) and match.group(2):
+    return match.group(1), match.group(2).rstrip()
+  return None, None
+
+
+def execute(command, location=None, check_result=False):
+  """ Runs a shell command in the specified directory location.
+
+  Args:
+    command: The command as a list to be run
+    location: The directory the command is run in
+    check_result: Should an exception be thrown on failed command
+
+  Returns:
+    The stdout of the command, the error code
+
+  Raises:
+    RuntimeError: running a command resulted in an error
+  """
+
+  if not location:
+    location = os.getcwd()
+  process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
+  out, err = process.communicate()
+  if check_result and (process.returncode or err):
+    raise RuntimeError('Error: %s\n Command: %s\n Return code: %s\n Out: %s' %
+                       (err, command, process.returncode, out))
+  if out is not None:
+    out = out.decode('ascii')
+  return out, process.returncode
