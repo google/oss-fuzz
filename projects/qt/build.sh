@@ -39,3 +39,4 @@ $OUT/bin/qmake LIBS+=$LIB_FUZZING_ENGINE $SRC/qt/qtbase/tests/libfuzzer/corelib/
 make -j$(nproc)
 mv readnext $OUT
 cp $WORK/xml.zip $OUT/readnext_seed_corpus.zip
+cp /usr/share/afl/testcases/_extras/xml.dict $OUT/readnext.dict
