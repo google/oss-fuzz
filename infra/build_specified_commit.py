@@ -76,6 +76,8 @@ def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
   Returns:
     The repo's origin, the repo's name
   """
+  if not helper.check_project_exists(project_name):
+    return None, None
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
