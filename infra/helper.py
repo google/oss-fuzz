@@ -458,7 +458,7 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
 
   command = ['docker', 'run', '--rm']
   if sys.stdin.isatty():
-    command.append(['-i'])
+    command.append('-i')
   command = (command + ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env))
   if source_path:
     if not mount_location:
@@ -482,7 +482,7 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
       '-v', '%s:/work' % project_work_dir,
       '-t', 'gcr.io/oss-fuzz/%s' % project_name
   ]
-
+  print("Command: " +  str(command))
   print('Running:', _get_command_string(command))
 
   try:
