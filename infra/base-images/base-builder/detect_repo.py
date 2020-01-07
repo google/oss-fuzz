@@ -45,6 +45,7 @@ def main():
       '--example_commit', help='A commit SHA refrencing the projects main repo')
   parser.add_argument('--repo_name', help='the name of the github repo')
   args = parser.parse_args()
+  print("HERE")
   if not args.repo_name and not args.example_commit:
     raise ValueError(
         'Requires either a example commit or a git ref to detect repo.')

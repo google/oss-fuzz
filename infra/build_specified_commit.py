@@ -118,7 +118,7 @@ def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
       '--repo_name', repo_name
   ]
   out, _ = execute(command_to_run)
-  print(out)
+  print("Output from reponame command" + out)
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2).rstrip()
