@@ -29,7 +29,11 @@ import subprocess
 
 
 def main():
-  """Function to get a git repos information based on its commit."""
+  """Function to get a git repos information based on its commit.
+
+  Raises:
+    ValueError when a commit or a ref is not provided
+  """
   parser = argparse.ArgumentParser(
       description='Finds a specific git repo in an oss-fuzz projects docker file.'
   )
@@ -39,15 +43,21 @@ def main():
       required=True)
   parser.add_argument(
       '--example_commit',
-      help='A commit SHA refrencing the projects main repo',
-      required=True)
+      help='A commit SHA refrencing the projects main repo')
+  parser.add_argument(
+      '--ref',
+      help='A github refrence')
   args = parser.parse_args()
+  if not args.ref and not args.example_commit:
+    raise ValueError('Requires either a example commit or a git ref to detect repo.')
   for single_dir in os.listdir(args.src_dir):
     full_path = os.path.join(args.src_dir, single_dir)
     if not os.path.isdir(full_path):
       continue
-    if check_for_commit(
-        os.path.join(args.src_dir, full_path), args.example_commit):
+    if args.example_commit and check_for_commit(full_path, args.example_commit):
+      print('Detected repo: %s %s' % (get_repo(full_path), single_dir.rstrip()))
+      return
+    if args.ref and check_for_ref(full_path, args.ref):
       print('Detected repo: %s %s' % (get_repo(full_path), single_dir.rstrip()))
       return
   print('No git repos with specific commit: %s found in %s' %
@@ -71,6 +81,23 @@ def get_repo(repo_path):
     return output.rstrip()
   return None
 
+def check_for_ref(repo_path, ref):
+  """Check to see if a github ref exists in a remote repository.
+
+  Args:
+    repo_path: The directory where the selected git repo exists
+    ref: The git ref that is being checked for
+
+  """
+  # Check if valid git repo.
+  if not os.path.exists(os.path.join(repo_path, '.git')):
+    return False
+
+  execute(['git', 'fetch', '--all'], location=repo_path)
+  _, return_code = execute (['git', 'rev-parse',  ref], location=repo_path)
+  if return_code != 0:
+    return False
+  return True
 
 def check_for_commit(repo_path, commit):
   """Checks a directory for a specific commit.
