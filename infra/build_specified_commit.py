@@ -31,6 +31,7 @@ class DockerExecutionError(Exception):
 def build_fuzzer_from_commit(project_name,
                              commit,
                              local_store_path,
+                             repo_name=None,
                              engine='libfuzzer',
                              sanitizer='address',
                              architecture='x86_64',
@@ -49,7 +50,10 @@ def build_fuzzer_from_commit(project_name,
     0 on successful build 1 on failure
   """
   if not old_repo_manager:
-    inferred_url, repo_name = detect_main_repo_from_commit(project_name, commit)
+    if repo_name:
+      inferred_url, repo_name = detect_main_repo_from_repo_name(project_name, repo_name)
+    else:
+      inferred_url, repo_name = detect_main_repo_from_commit(project_name, commit)
     if not inferred_url or not repo_name:
       print("Error: repo from project %s could not be inferred with commit %s." % (project_name, commit))
       return 1
@@ -103,6 +107,9 @@ def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
   Returns:
     The repo's origin, the repo's name
   """
+  if not helper.check_project_exists(project_name):
+    return None, None
+
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [

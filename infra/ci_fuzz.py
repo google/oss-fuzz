@@ -56,9 +56,9 @@ def build_fuzzers(args):
   if os.getcwd() != os.path.dirname(os.path.dirname(os.path.realpath(__file__))):
     os.chdir(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
   with tempfile.TemporaryDirectory() as tmp_dir:
-    return build_specified_commit.build_fuzzer_from_repo_name(args.project_name,
-                                                              args.repo_name,
-                                                              tmp_dir)
+    return build_specified_commit.build_fuzzer_from_commit(args.project_name,
+                                                           args.repo_name,
+                                                           tmp_dir)
 
 
 def run_fuzzers(args):
