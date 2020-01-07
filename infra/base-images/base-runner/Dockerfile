@@ -49,7 +49,6 @@ COPY bad_build_check \
     run_minijail \
     targets_list \
     test_all \
-    test_one \
     /usr/local/bin/
 
 # Default environment options for various sanitizers.

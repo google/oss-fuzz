@@ -530,7 +530,7 @@ def check_build(args):
 
   if args.fuzzer_name:
     run_args += [
-        'test_one',
+        'bad_build_check',
         os.path.join('/out', args.fuzzer_name)
     ]
   else:
