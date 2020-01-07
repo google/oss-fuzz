@@ -43,9 +43,9 @@ def main():
       required=True)
   parser.add_argument(
       '--example_commit', help='A commit SHA refrencing the projects main repo')
-  parser.add_argument('--ref', help='A github refrence')
+  parser.add_argument('--repo_name', help='the name of the github repo')
   args = parser.parse_args()
-  if not args.ref and not args.example_commit:
+  if not args.repo_name and not args.example_commit:
     raise ValueError(
         'Requires either a example commit or a git ref to detect repo.')
   for single_dir in os.listdir(args.src_dir):
@@ -55,7 +55,7 @@ def main():
     if args.example_commit and check_for_commit(full_path, args.example_commit):
       print('Detected repo: %s %s' % (get_repo(full_path), single_dir.rstrip()))
       return
-    if args.ref and check_for_ref(full_path, args.ref):
+    if args.repo_name and check_for_repo_name(full_path, args.repo_name):
       print('Detected repo: %s %s' % (get_repo(full_path), single_dir.rstrip()))
       return
   print('No git repos with specific commit: %s found in %s' %
@@ -79,25 +79,22 @@ def get_repo(repo_path):
   return None
 
 
-def check_for_ref(repo_path, ref):
+def check_for_repo_name(repo_path, repo_name):
   """Check to see if a github ref exists in a remote repository.
 
   Args:
     repo_path: The directory where the selected git repo exists
-    ref: The git ref that is being checked for
+    repo_name: The name of the target git repo
 
   """
   # Check if valid git repo.
   if not os.path.exists(os.path.join(repo_path, '.git')):
     return False
 
-  execute(['git', 'fetch', '--all'], location=repo_path)
-  out, _ = execute(['git','show-ref'], location=repo_path)
-  print(out)
-  _, return_code = execute(['git', 'rev-parse', ref], location=repo_path)
-  if return_code != 0:
-    return False
-  return True
+
+  out, _ = execute(['git','config', '--get', 'remote.origin.url'], location=repo_path)
+  out = out.split('/')[-1].replace('.git', '').rstrip()
+  return out == repo_name
 
 
 def check_for_commit(repo_path, commit):
