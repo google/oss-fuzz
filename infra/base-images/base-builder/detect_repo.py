@@ -94,6 +94,7 @@ def check_for_repo_name(repo_path, repo_name):
 
   out, _ = execute(['git','config', '--get', 'remote.origin.url'], location=repo_path)
   out = out.split('/')[-1].replace('.git', '').rstrip()
+  print("Repo possability: " + out)
   return out == repo_name
 
 
