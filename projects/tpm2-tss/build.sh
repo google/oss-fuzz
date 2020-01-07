@@ -31,7 +31,8 @@ export GEN_FUZZ=1
   --enable-tcti-device=no \
   --enable-tcti-mssim=no \
   --disable-doxygen-doc \
-  --disable-shared
+  --disable-shared \
+  --disable-fapi
 
 sed -i 's/@DX_RULES@/# @DX_RULES@/g' Makefile
 make -j $(nproc) fuzz-targets
