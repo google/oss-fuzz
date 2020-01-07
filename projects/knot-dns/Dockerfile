@@ -28,7 +28,9 @@ RUN apt-get update && apt-get install -y \
  make \
  pkg-config \
  texinfo \
- wget
+ wget \
+ libev4 \
+ libev-dev
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
 RUN git clone git://git.savannah.gnu.org/gnulib.git
