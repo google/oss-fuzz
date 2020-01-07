@@ -52,6 +52,7 @@ def main():
     full_path = os.path.join(args.src_dir, single_dir)
     if not os.path.isdir(full_path):
       continue
+    print("HHHHHEEEEEEEEEEEEEEERRRRRRRRRRRREEEEEE")
     if args.example_commit and check_for_commit(full_path, args.example_commit):
       print('Detected repo: %s %s' % (get_repo(full_path), single_dir.rstrip()))
       return
