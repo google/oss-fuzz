@@ -62,7 +62,32 @@ class DetectRepoTest(unittest.TestCase):
       self.check_commit_with_repo(None, None,
                                   'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', tmp_dir)
 
-  def check_commit_with_repo(self, repo_origin, repo_name, commit, tmp_dir):
+  def test_infer_main_repo_ref(self):
+    """Tests that the main repo can be inferred based on an example commit."""
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+
+      # Construct example repo's to check for commits.
+      repo_manager.RepoManager('https://github.com/curl/curl.git', tmp_dir)
+      self.check_commit_with_repo(
+          'https://github.com/curl/curl.git',
+          'curl',
+          'ee5f192c325e9063e2b4d32eff1d393b75a42f0b',
+          tmp_dir,
+          ref='refs/remotes/origin/gvanem-curlx')
+      self.check_commit_with_repo(
+          'https://github.com/curl/curl.git',
+          'curl',
+          'ee5f192c325e9063e2b4d32eff1d393b75a42f0b',
+          tmp_dir,
+          ref='refs/tags/curl-7_9_8')
+
+  def check_commit_with_repo(self,
+                             repo_origin,
+                             repo_name,
+                             commit,
+                             tmp_dir,
+                             ref=None):
     """Checks the detect repo's main method for a specific set of inputs.
 
     Args:
@@ -75,12 +100,17 @@ class DetectRepoTest(unittest.TestCase):
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--example_commit',
         commit
     ]
+    if ref:
+      command.extend(['--ref', ref])
     out, _ = detect_repo.execute(
         command, location=os.path.dirname(os.path.realpath(__file__)))
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)
       self.assertEqual(match.group(2), repo_name)
+    else:
+      self.assertIsNone(repo_origin)
+      self.assertIsNone(repo_name)
 
 
 if __name__ == '__main__':
