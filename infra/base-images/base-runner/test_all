@@ -42,7 +42,7 @@ mkdir $TMP_FUZZER_DIR
 # itself because it is a mount.
 mv $OUT/* $TMP_FUZZER_DIR
 INITIAL_OUT=$OUT
-OUT=$TMP_FUZZER_DIR
+export OUT=$TMP_FUZZER_DIR
 
 
 # Main loop that iterates through all fuzz targets and runs the check.
@@ -87,7 +87,7 @@ done
 wait
 
 # Restore OUT
-OUT=$INITIAL_OUT
+export OUT=$INITIAL_OUT
 mv $TMP_FUZZER_DIR/* $OUT
 
 # Sanity check in case there are no fuzz targets in the $OUT/ dir.

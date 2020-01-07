@@ -106,12 +106,7 @@ fi
 echo $CMD_LINE
 
 # Unset OUT so the fuzz target can't rely on it.
-INITIAL_OUT=$OUT
 unset OUT
+
 bash -c "$CMD_LINE"
-RETURNCODE=$?
 
-# Restore OUT
-OUT=$INITIAL_OUT
-
-exit $RETURNCODE

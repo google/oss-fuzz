@@ -37,13 +37,13 @@ function main {
 
   # Change OUT to the temporary fuzzer dir.
   local initial_out=$OUT
-  OUT=$tmp_fuzzer_dir
+  export OUT=$tmp_fuzzer_dir
 
   bad_build_check $fuzzer
   returncode=$?
 
   # Restore OUT and $initial_fuzzer_dir
-  OUT=$initial_out
+  export OUT=$initial_out
   mv $tmp_fuzzer_dir/* $initial_fuzzer_dir
 
   return $returncode
