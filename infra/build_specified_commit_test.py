@@ -84,6 +84,11 @@ class BuildImageIntegrationTests(unittest.TestCase):
     self.assertEqual(repo_name, 'curl')
 
     repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
+        'yara', 'yara')
+    self.assertEqual(repo_origin, 'https://github.com/VirusTotal/yara.git')
+    self.assertEqual(repo_name, 'yara')
+
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
         'usrsctp', 'usrsctp')
     self.assertEqual(repo_origin, 'https://github.com/weinrank/usrsctp')
     self.assertEqual(repo_name, 'usrsctp')

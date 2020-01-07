@@ -107,9 +107,10 @@ def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
   Returns:
     The repo's origin, the repo's name
   """
+  print('Project name: ' + project_name)
+  print('Repo name: ' + repo_name) 
   if not helper.check_project_exists(project_name):
     return None, None
-  print("Detecting main repo")
 
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
@@ -119,7 +120,6 @@ def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
       '--repo_name', repo_name
   ]
   out, _ = execute(command_to_run)
-  print("Out: " + out)
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2).rstrip()
