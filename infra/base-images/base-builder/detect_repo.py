@@ -88,6 +88,7 @@ def check_for_repo_name(repo_path, repo_name):
 
   """
   # Check if valid git repo.
+  print("Repo path: " + repo_path)
   if not os.path.exists(os.path.join(repo_path, '.git')):
     return False
 
