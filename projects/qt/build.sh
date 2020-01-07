@@ -26,7 +26,7 @@ sed -i -e "s/QMAKE_CFLAGS_OPTIMIZE_FULL = -O3/QMAKE_CFLAGS_OPTIMIZE_FULL = -O1/g
 
 # build project
 cd $WORK
-MAKEFLAGS=-j$(nproc) $SRC/qt/configure -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -no-widgets -nomake tests -nomake examples -prefix $OUT
+MAKEFLAGS=-j$(nproc) $SRC/qt/configure -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -nomake tests -nomake examples -prefix $OUT
 make -j$(nproc)
 make install
 
@@ -45,3 +45,7 @@ $OUT/bin/qmake $SRC/qt/qtbase/tests/libfuzzer/gui/text/qtextdocument/setMarkdown
 make -j$(nproc)
 mv setMarkdown $OUT
 cp $WORK/markdown.zip $OUT/setMarkdown_seed_corpus.zip
+
+$OUT/bin/qmake $SRC/qt/qtbase/tests/libfuzzer/gui/text/qtextlayout/beginLayout/beginLayout.pro
+make -j$(nproc)
+mv beginLayout $OUT
