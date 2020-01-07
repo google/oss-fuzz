@@ -92,6 +92,8 @@ def check_for_ref(repo_path, ref):
     return False
 
   execute(['git', 'fetch', '--all'], location=repo_path)
+  out, _ = execute(['git','show-ref'], location=repo_path)
+  print(out)
   _, return_code = execute(['git', 'rev-parse', ref], location=repo_path)
   if return_code != 0:
     return False

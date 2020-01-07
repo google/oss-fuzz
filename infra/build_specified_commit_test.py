@@ -53,31 +53,47 @@ class BuildImageIntegrationTests(unittest.TestCase):
                                              [], test_data)
       self.assertNotEqual(new_error_code, old_error_code)
 
-  def test_build_fuzzers_from_pr(self):
-    project_name = 'curl'
-    commit = '05fb807a946f230684ad1ab1e627f9bade1a381e'
-    branch = 'bagder/wolfssh'
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      build_specified_commit.build_fuzzer_from_pr(project_name,commit, branch, 'https://github.com/curl/curl.git', tmp_dir)
 
-  def test_detect_main_repo(self):
+  def test_detect_main_repo_from_commit(self):
     """Test the detect main repo functionality of the build specific commit module."""
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_docker(
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_commit(
         'curl', 'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
     self.assertEqual(repo_origin, 'https://github.com/curl/curl.git')
     self.assertEqual(repo_name, 'curl')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_docker(
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_commit(
         'usrsctp', '4886aaa49fb90e479226fcfc3241d74208908232')
     self.assertEqual(repo_origin, 'https://github.com/weinrank/usrsctp')
     self.assertEqual(repo_name, 'usrsctp')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_docker(
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_commit(
         'ndpi', 'c4d476cc583a2ef1e9814134efa4fbf484564ed7')
     self.assertEqual(repo_origin, 'https://github.com/ntop/nDPI.git')
     self.assertEqual(repo_name, 'ndpi')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_docker(
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_commit(
+        'notproj', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    self.assertIsNone(repo_origin)
+    self.assertIsNone(repo_name)
+
+  def test_detect_main_repo_from_ref(self):
+    """Test the detect main repo functionality of the build specific commit module."""
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_ref(
+        'curl', 'refs/remotes/origin/3.0-stable')
+    self.assertEqual(repo_origin, 'https://github.com/curl/curl.git')
+    self.assertEqual(repo_name, 'curl')
+
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_ref(
+        'usrsctp', 'refs/remotes/origin/skunkworks')
+    self.assertEqual(repo_origin, 'https://github.com/weinrank/usrsctp')
+    self.assertEqual(repo_name, 'usrsctp')
+
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_ref(
+        'ndpi', 'refs/remotes/origin/2.8-stable')
+    self.assertEqual(repo_origin, 'https://github.com/ntop/nDPI.git')
+    self.assertEqual(repo_name, 'ndpi')
+
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_ref(
         'notproj', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     self.assertIsNone(repo_origin)
     self.assertIsNone(repo_name)

@@ -33,7 +33,7 @@ def main():
   subparsers = parser.add_subparsers(dest='command')
   build_fuzzer_parser = subparsers.add_parser('build_fuzzers', help='Build fuzzers')
   build_fuzzer_parser.add_argument('project_name')
-  build_fuzzer_parser.add_argument('branch_name')
+  build_fuzzer_parser.add_argument('repo_name')
   build_fuzzer_parser.add_argument('commit_sha')
 
   run_fuzzer_parser = subparsers.add_parser('run_fuzzer', help='Run a specific projects fuzzers')
@@ -46,7 +46,7 @@ def main():
   elif args.command == 'run_fuzzer':
     return run_fuzzer(args)
   else:
-    print('Invalid argument option, use  "build_fuzzers" or "run_fuzzer"')
+    print('Invalid argument option, use  build_fuzzers or run_fuzzer')
     return 1
 
 
@@ -56,10 +56,9 @@ def build_fuzzers(args):
   if os.getcwd() != os.path.dirname(os.path.dirname(os.path.realpath(__file__))):
     os.chdir(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
   with tempfile.TemporaryDirectory() as tmp_dir:
-    return build_specified_commit.build_fuzzer_from_commit(args.project_name,
-                                                   args.commit_sha,
-                                                   tmp_dir,
-                                                   branch_name=args.branch_name)
+    return build_specified_commit.build_fuzzer_from_repo_name(args.project_name,
+                                                              args.repo_name,
+                                                              tmp_dir)
 
 
 def run_fuzzers(args):

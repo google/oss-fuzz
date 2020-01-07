@@ -49,7 +49,7 @@ def build_fuzzer_from_commit(project_name,
     0 on successful build 1 on failure
   """
   if not old_repo_manager:
-    inferred_url, repo_name = detect_main_repo_from_docker(project_name, commit)
+    inferred_url, repo_name = detect_main_repo_from_commit(project_name, commit)
     if not inferred_url or not repo_name:
       print("Error: repo from project %s could not be inferred with commit %s." % (project_name, commit))
       return 1
@@ -66,28 +66,7 @@ def build_fuzzer_from_commit(project_name,
       source_path=old_repo_manager.repo_dir,
       mount_location=os.path.join('/src', old_repo_manager.repo_name))
 
-def build_fuzzer_from_pr(project_name,
-                         commit,
-                         branch_name,
-                         main_repo,
-                         local_store_path,
-                         engine='libfuzzer',
-                         sanitizer='address',
-                         architecture='x86_64'):
- pr_repo_manager = repo_manager.RepoManager(main_repo, local_store_path)
- pr_repo_manager.checkout_branch(branch_name)
- pr_repo_manager.checkout_commit(commit)
- return helper.build_fuzzers_impl(
-     project_name=project_name,
-     clean=True,
-     engine=engine,
-     sanitizer=sanitizer,
-     architecture=architecture,
-     env_to_add=None,
-     source_path=pr_repo_manager.repo_dir,
-     mount_location=os.path.join('/src', pr_repo_manager.repo_name))
-
-def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
+def detect_main_repo_from_commit(project_name, example_commit, src_dir='/src'):
   """Checks a docker image for the main repo of an OSS-Fuzz project.
 
   Args:
@@ -108,7 +87,31 @@ def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
       '--example_commit', example_commit
   ]
   out, _ = execute(command_to_run)
+  match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
+  if match and match.group(1) and match.group(2):
+    return match.group(1), match.group(2).rstrip()
+  return None, None
 
+def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
+  """Checks a docker image for the main repo of an OSS-Fuzz project.
+
+  Args:
+    project_name: The name of the oss-fuzz project
+    repo_name: The name of the main repo in an OSS-Fuzz project
+    src_dir: The location of the projects source on the docker image
+
+  Returns:
+    The repo's origin, the repo's name
+  """
+  helper.build_image_impl(project_name)
+  docker_image_name = 'gcr.io/oss-fuzz/' + project_name
+  command_to_run = [
+      'docker', 'run', '--rm', '-i', '-t', docker_image_name, 'python3',
+      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
+      '--repo_name', repo_name
+  ]
+  out, _ = execute(command_to_run)
+  print(out)
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2).rstrip()
