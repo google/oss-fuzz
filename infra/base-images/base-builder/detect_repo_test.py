@@ -69,12 +69,25 @@ class DetectRepoTest(unittest.TestCase):
 
       # Construct example repo's to check for commits.
       repo_manager.RepoManager('https://github.com/curl/curl.git', tmp_dir)
-      self.check_commit_with_repo('https://github.com/curl/curl.git', 'curl',
-                                  'ee5f192c325e9063e2b4d32eff1d393b75a42f0b', tmp_dir, ref='refs/remotes/origin/gvanem-curlx')
-      self.check_commit_with_repo('https://github.com/curl/curl.git', 'curl',
-                                  'ee5f192c325e9063e2b4d32eff1d393b75a42f0b', tmp_dir, ref='refs/tags/curl-7_9_8')
+      self.check_commit_with_repo(
+          'https://github.com/curl/curl.git',
+          'curl',
+          'ee5f192c325e9063e2b4d32eff1d393b75a42f0b',
+          tmp_dir,
+          ref='refs/remotes/origin/gvanem-curlx')
+      self.check_commit_with_repo(
+          'https://github.com/curl/curl.git',
+          'curl',
+          'ee5f192c325e9063e2b4d32eff1d393b75a42f0b',
+          tmp_dir,
+          ref='refs/tags/curl-7_9_8')
 
-  def check_commit_with_repo(self, repo_origin, repo_name, commit, tmp_dir, ref=None):
+  def check_commit_with_repo(self,
+                             repo_origin,
+                             repo_name,
+                             commit,
+                             tmp_dir,
+                             ref=None):
     """Checks the detect repo's main method for a specific set of inputs.
 
     Args:

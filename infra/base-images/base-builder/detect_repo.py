@@ -42,14 +42,12 @@ def main():
       help='The location of the oss-fuzz projects source directory',
       required=True)
   parser.add_argument(
-      '--example_commit',
-      help='A commit SHA refrencing the projects main repo')
-  parser.add_argument(
-      '--ref',
-      help='A github refrence')
+      '--example_commit', help='A commit SHA refrencing the projects main repo')
+  parser.add_argument('--ref', help='A github refrence')
   args = parser.parse_args()
   if not args.ref and not args.example_commit:
-    raise ValueError('Requires either a example commit or a git ref to detect repo.')
+    raise ValueError(
+        'Requires either a example commit or a git ref to detect repo.')
   for single_dir in os.listdir(args.src_dir):
     full_path = os.path.join(args.src_dir, single_dir)
     if not os.path.isdir(full_path):
@@ -73,13 +71,13 @@ def get_repo(repo_path):
   Returns:
     The repo location or None
   """
-  output, return_code = execute(
-      ['git', 'config', '--get', 'remote.origin.url'],
-      location=repo_path,
-      check_result=True)
+  output, return_code = execute(['git', 'config', '--get', 'remote.origin.url'],
+                                location=repo_path,
+                                check_result=True)
   if return_code == 0 and output:
     return output.rstrip()
   return None
+
 
 def check_for_ref(repo_path, ref):
   """Check to see if a github ref exists in a remote repository.
@@ -94,10 +92,11 @@ def check_for_ref(repo_path, ref):
     return False
 
   execute(['git', 'fetch', '--all'], location=repo_path)
-  _, return_code = execute (['git', 'rev-parse',  ref], location=repo_path)
+  _, return_code = execute(['git', 'rev-parse', ref], location=repo_path)
   if return_code != 0:
     return False
   return True
+
 
 def check_for_commit(repo_path, commit):
   """Checks a directory for a specific commit.
@@ -120,7 +119,7 @@ def check_for_commit(repo_path, commit):
 
   # Check if commit is in history.
   _, return_code = execute(['git', 'cat-file', '-e', commit],
-                               location=repo_path)
+                           location=repo_path)
   return return_code == 0
 
 
