@@ -76,24 +76,24 @@ class BuildImageIntegrationTests(unittest.TestCase):
     self.assertIsNone(repo_origin)
     self.assertIsNone(repo_name)
 
-  def test_detect_main_repo_from_ref(self):
+  def test_detect_main_repo_from_name(self):
     """Test the detect main repo functionality of the build specific commit module."""
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_ref(
-        'curl', 'refs/remotes/origin/3.0-stable')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
+        'curl', 'curl')
     self.assertEqual(repo_origin, 'https://github.com/curl/curl.git')
     self.assertEqual(repo_name, 'curl')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_ref(
-        'usrsctp', 'refs/remotes/origin/skunkworks')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
+        'usrsctp', 'usrsctp')
     self.assertEqual(repo_origin, 'https://github.com/weinrank/usrsctp')
     self.assertEqual(repo_name, 'usrsctp')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_ref(
-        'ndpi', 'refs/remotes/origin/2.8-stable')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
+        'ndpi', 'nDPI')
     self.assertEqual(repo_origin, 'https://github.com/ntop/nDPI.git')
     self.assertEqual(repo_name, 'ndpi')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_ref(
+    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
         'notproj', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     self.assertIsNone(repo_origin)
     self.assertIsNone(repo_name)
