@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+cp /llvm/lib/clang/10.0.0/lib/linux/*fuzzer* /usr/local/lib/clang/10.0.0/lib/linux/
 
 autoreconf -fiv
 ./configure --disable-docs --enable-shared=no --prefix="$WORK"
@@ -27,4 +28,6 @@ cp libexif/test/testdata/*.jpg exif_corpus
 zip -r "$OUT/exif_loader_fuzzer_seed_corpus.zip" exif_corpus/
 popd
 
-$CXX $CXXFLAGS -std=c++11 -I"$WORK/include" "$SRC/exif_loader_fuzzer.cc" -o $OUT/exif_loader_fuzzer $LIB_FUZZING_ENGINE "$WORK/lib/libexif.a"
+$CXX -v $CXXFLAGS -std=c++11 -I"$WORK/include" "$SRC/exif_loader_fuzzer.cc" -o $OUT/exif_loader_fuzzer $LIB_FUZZING_ENGINE "$WORK/lib/libexif.a"
+
+echo `which clang++`

@@ -475,6 +475,7 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
   command += [
       '-v', '%s:/out' % project_out_dir,
       '-v', '%s:/work' % project_work_dir,
+      '-v', '/usr/local/google/home/mmoroz/projects/llvm-install:/llvm',
       '-t', 'gcr.io/oss-fuzz/%s' % project_name
   ]
 
@@ -494,6 +495,12 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
     ] + _env_to_docker_args(env) + [
         'gcr.io/oss-fuzz-base/base-msan-builder',
         'patch_build.py', '/out'
+    ])
+
+  docker_run([
+        '-v', '%s:/out' % project_out_dir,
+        '-t', 'gcr.io/oss-fuzz/%s' % project_name,
+        '/bin/bash', '-c', 'chmod -R 777 /out/*'
     ])
 
   return 0
