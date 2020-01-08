@@ -109,6 +109,8 @@ def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
   """
   if not helper.check_project_exists(project_name):
     return None, None
+    
+  # TODO: Figure out why this is necessary
   helper.build_image_impl('base-builder')
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
