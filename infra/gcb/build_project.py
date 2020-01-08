@@ -236,6 +236,8 @@ def get_build_steps(project_dir):
         if not workdir:
           workdir = '/src'
 
+        failure_msg = ('FAILED IN THE FOLLOWING CONFIG: --sanitizer {0} '
+                       '--engine {1}').format(sanitizer, fuzzing_engine)
         build_steps.append(
             # compile
             {
@@ -251,8 +253,9 @@ def get_build_steps(project_dir):
                     # `cd /src && cd {workdir}` (where {workdir} is parsed from
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
-                    'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile'
-                    .format(out, workdir),
+                    ('rm -r /out && cd /src && cd {1} && mkdir -p {0} && '
+                     'compile || echo "build_fuzzers {2}"')
+                    .format(out, workdir, failure_msg),
                 ],
             })
 
@@ -276,7 +279,10 @@ def get_build_steps(project_dir):
               {
                   'name': 'gcr.io/oss-fuzz-base/base-runner',
                   'env': env,
-                  'args': ['bash', '-c', 'test_all'],
+                  'args': [
+                      'bash',
+                      '-c',
+                      'test_all || echo "check_build %s"' % failure_msg],
               })
 
         if project_yaml['labels']:
