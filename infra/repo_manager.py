@@ -22,7 +22,6 @@ a python API and manage the current state of the git repo.
     r_man.checkout('5668cc422c2c92d38a370545d3591039fb5bb8d4')
 """
 import os
-import re
 import shutil
 
 import build_specified_commit
@@ -105,45 +104,6 @@ class RepoManager(object):
         ['git', 'cat-file', '-e', commit], self.repo_dir)
     return not err_code
 
-  def get_branch_path(self, branch_name):
-    """Gets the path to a remote git branch
-    Args:
-      branch_name: The name of the branch to be checked out
-    Returns:
-      None if no branch with that name exists, a string with the path if it does
-    Raises:
-      ValueException: if an empty string was passed in
-    """
-    if not branch_name.rstrip():
-      raise ValueError('An empty string is not a valid branch name')
-
-    build_specified_commit.execute(['git', 'fetch', "--all"], self.repo_dir, check_result=True)
-    out, err_code = build_specified_commit.execute(
-        ['git', 'ls-remote', '--heads', self.repo_url, branch_name],
-        self.repo_dir,
-        check_result=True)
-    branch_path = re.search(r'\brefs/heads/(.*)\n', out)
-    if branch_path:
-      return os.path.join(self.get_remote(), branch_path.group(1).rstrip())
-    return None
-
-  def get_current_branch(self):
-    """Gets the name of the current branch you are in.
-    Returns:
-      The name of the branch you are in
-    """
-    out, _ = build_specified_commit.execute(['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
-                               self.repo_dir)
-    return out.strip('\n')
-
-  def get_remote(self):
-    """Gets the name of the default remote repository.
-    Returns:
-      The name of the remote repo you are using
-    """
-    out, _ = build_specified_commit.execute(['git', 'remote'], self.repo_dir)
-    return out.strip('\n')
-
   def get_current_commit(self):
     """Gets the current commit SHA of the repo.
 
@@ -186,26 +146,6 @@ class RepoManager(object):
     # Make sure result is inclusive
     commits.append(old_commit)
     return commits
-
-  def checkout_branch(self, branch_name):
-    """Checks out a specific branch from remote.
-    Args:
-      branch_name: The name of the remote branch to be checked out
-    Raises:
-      RepoManagerError: when trying to checkout a branch that does not exist
-    """
-
-    # Checking if branch is allready checked out.
-    if branch_name == self.get_current_branch().split('/')[-1]:
-      return
-    branch_path = self.get_branch_path(branch_name)
-    if not branch_path:
-      raise RepoManagerError('Branch %s does not exist for repository %s.' %
-                             (branch_name, self.repo_name))
-    build_specified_commit.execute(['git', 'fetch', 'all'], self.repo_dir)
-    build_specified_commit.execute(['git', 'checkout', '-t', branch_path],
-                      self.repo_dir,
-                      check_result=True)
 
   def checkout_commit(self, commit):
     """Checks out a specific commit from the repo.

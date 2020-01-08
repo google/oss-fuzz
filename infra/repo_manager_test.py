@@ -77,24 +77,6 @@ class TestRepoManager(unittest.TestCase):
         # Testing commits out of order
         test_repo_manager.get_commit_list(new_commit, old_commit)
 
-  def test_checkout_branch(self):
-    """Tests that the repo manager class can checkout a branch."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
-      self.assertEqual('master', test_repo_manager.get_current_branch())
-      with self.assertRaises(repo_manager.RepoManagerError):
-        test_repo_manager.checkout_branch('not_a_branch')
-      test_repo_manager.checkout_branch('wolfssh')
-      self.assertEqual(test_repo_manager.get_current_branch(), 'bagder/wolfssh')
-
-  def test_checkout_branch_with_commit(self):
-    """Tests that the repo manager class can checkout a branch."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      test_repo_manager = repo_manager.RepoManager(self.curl_repo, tmp_dir)
-      test_repo_manager.checkout_branch('bagder/wolfssh')
-      test_repo_manager.checkout_commit('05fb807a946f230684ad1ab1e627f9bade1a381e')
-      self.assertEqual(test_repo_manager.get_current_commit(), '05fb807a946f230684ad1ab1e627f9bade1a381e')
-
 
 if __name__ == '__main__':
   unittest.main()
