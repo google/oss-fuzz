@@ -24,6 +24,7 @@ import os
 import tempfile
 
 import build_specified_commit
+import helper
 
 def main():
   """Connects Fuzzers with CI tools."""
@@ -36,15 +37,14 @@ def main():
   build_fuzzer_parser.add_argument('repo_name')
   build_fuzzer_parser.add_argument('commit_sha')
 
-  run_fuzzer_parser = subparsers.add_parser('run_fuzzer', help='Run a specific projects fuzzers')
+  run_fuzzer_parser = subparsers.add_parser('run_fuzzers', help='Run a specific projects fuzzers')
   run_fuzzer_parser.add_argument('project_name')
-  run_fuzzer_parser.add_argument('fuzzer_name')
   args = parser.parse_args()
 
   if args.command == 'build_fuzzers':
     return build_fuzzers(args)
   elif args.command == 'run_fuzzer':
-    return run_fuzzer(args)
+    return run_fuzzers(args)
   else:
     print('Invalid argument option, use  build_fuzzers or run_fuzzer')
     return 1
