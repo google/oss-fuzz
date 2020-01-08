@@ -41,6 +41,9 @@ def main():
       '--src_dir',
       help='The location of the oss-fuzz projects source directory',
       required=True)
+  parser.add_argument('--repo_name', help='the name of the github repo', required=False)
+  parser.add_argument(
+      '--example_commit', help='A commit SHA refrencing the projects main repo', required=False)
 
   args = parser.parse_args()
   if not args.repo_name and not args.example_commit:
