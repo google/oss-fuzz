@@ -39,7 +39,7 @@ $ ./fuzz_target_binary <testcase_path>
 ```
 
 For timeout bugs, add the `-timeout=25` argument. For OOM bugs, add the
-`-rss_limit_mb=2048` argument. Read more on [how timeouts and OOMs are
+`-rss_limit_mb=2560` argument. Read more on [how timeouts and OOMs are
 handled]({{ site.baseurl }}/faq/#how-do-you-handle-timeouts-and-ooms).
 
 Depending on the nature of the bug, the fuzz target binary needs to be built
