@@ -86,7 +86,7 @@ def detect_main_repo_from_commit(project_name, example_commit, src_dir='/src'):
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
-      'docker', 'run', '--rm', '-i', '-t', docker_image_name, 'python3',
+      'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
       os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
       '--example_commit', example_commit
   ]
