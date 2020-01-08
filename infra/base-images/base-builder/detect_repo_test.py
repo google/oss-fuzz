@@ -67,7 +67,7 @@ class DetectRepoTest(unittest.TestCase):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
 
-      # Construct example repo's to check for commits.
+      # Construct example repo's to check for names
       repo_manager.RepoManager('https://github.com/curl/curl.git', tmp_dir)
       repo_manager.RepoManager('https://github.com/ntop/nDPI.git', tmp_dir)
       repo_manager.RepoManager('https://github.com/libarchive/libarchive.git',
@@ -83,7 +83,7 @@ class DetectRepoTest(unittest.TestCase):
     """Checks the detect repo's main method for a specific set of inputs.
 
       Args:
-        repo_origin: The location of where the git repo is stored
+        repo_origin: The location of where the git repo url
         repo_name: The name of the directory it is cloned to
         tmp_dir: The location of the directory of git repos to be searched
       """
@@ -93,7 +93,6 @@ class DetectRepoTest(unittest.TestCase):
     ]
     out, _ = detect_repo.execute(
         command, location=os.path.dirname(os.path.realpath(__file__)))
-    print(out)
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)
