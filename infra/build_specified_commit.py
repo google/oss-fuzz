@@ -42,6 +42,7 @@ def build_fuzzer_from_commit(project_name,
     project_name: The OSS-Fuzz project name
     commit: The commit SHA to build the fuzzers at
     local_store_path: The full file path of a place where a temp git repo is stored
+    repo_name: The name of the OSS-Fuzz projects git repo, used for detection
     engine: The fuzzing engine to be used
     sanitizer: The fuzzing sanitizer to be used
     architecture: The system architiecture to be used for fuzzing
@@ -109,8 +110,8 @@ def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
   """
   if not helper.check_project_exists(project_name):
     return None, None
-    
-  # TODO: Figure out why this is necessary
+
+  # Requried to avoid github actions caching of base builder image.
   helper.build_image_impl('base-builder')
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
@@ -118,10 +119,8 @@ def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
       'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
       os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
       '--repo_name', repo_name
-  ]
-  print("Running command: %s " % command_to_run)
+  ])
   out, _ = execute(command_to_run)
-  print("Output from reponame command: %s " % out)
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2).rstrip()
