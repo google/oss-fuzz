@@ -18,13 +18,12 @@ This module helps CI tools do the following
 Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 
-
 import argparse
 import os
 import tempfile
 
 import build_specified_commit
-import helper
+
 
 def main():
   """Connects Fuzzers with CI tools."""
@@ -32,12 +31,14 @@ def main():
       description='Help CI tools manage specific fuzzers')
 
   subparsers = parser.add_subparsers(dest='command')
-  build_fuzzer_parser = subparsers.add_parser('build_fuzzers', help='Build fuzzers')
+  build_fuzzer_parser = subparsers.add_parser(
+      'build_fuzzers', help='Build fuzzers')
   build_fuzzer_parser.add_argument('project_name')
   build_fuzzer_parser.add_argument('repo_name')
   build_fuzzer_parser.add_argument('commit_sha')
 
-  run_fuzzer_parser = subparsers.add_parser('run_fuzzers', help='Run a specific projects fuzzers')
+  run_fuzzer_parser = subparsers.add_parser(
+      'run_fuzzers', help='Run a specific projects fuzzers')
   run_fuzzer_parser.add_argument('project_name')
   args = parser.parse_args()
 
@@ -45,22 +46,20 @@ def main():
     return build_fuzzers(args)
   elif args.command == 'run_fuzzer':
     return run_fuzzers(args)
-  else:
-    print('Invalid argument option, use  build_fuzzers or run_fuzzer')
-    return 1
+  print('Invalid argument option, use  build_fuzzers or run_fuzzer')
+  return 1
 
 
 def build_fuzzers(args):
   """Builds all of the fuzzers for a specific OSS-Fuzz project."""
   # Change to oss-fuzz main directory so helper.py runs correctly
-  if os.getcwd() != os.path.dirname(os.path.dirname(os.path.realpath(__file__))):
+  if os.getcwd() != os.path.dirname(
+      os.path.dirname(os.path.realpath(__file__))):
     os.chdir(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
   with tempfile.TemporaryDirectory() as tmp_dir:
     print("Detecting repo with name: " + args.repo_name)
-    return build_specified_commit.build_fuzzer_from_commit(args.project_name,
-                                                           args.commit_sha,
-                                                           tmp_dir,
-                                                           args.repo_name)
+    return build_specified_commit.build_fuzzer_from_commit(
+        args.project_name, args.commit_sha, tmp_dir, args.repo_name)
 
 
 def run_fuzzers(args):

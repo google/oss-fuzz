@@ -72,46 +72,35 @@ class DetectRepoTest(unittest.TestCase):
       repo_manager.RepoManager('https://github.com/ntop/nDPI.git', tmp_dir)
       repo_manager.RepoManager('https://github.com/libarchive/libarchive.git',
                                tmp_dir)
-      self.check_ref_with_repo(
-          'https://github.com/curl/curl.git',
-          'curl',
-          tmp_dir)
-      self.check_ref_with_repo(
-          'https://github.com/ntop/nDPI.git',
-          'nDPI',
-          tmp_dir)
-      self.check_ref_with_repo(
-          'https://github.com/libarchive/libarchive.git',
-          'libarchive',
-          tmp_dir)
-
+      self.check_ref_with_repo('https://github.com/curl/curl.git', 'curl',
+                               tmp_dir)
+      self.check_ref_with_repo('https://github.com/ntop/nDPI.git', 'nDPI',
+                               tmp_dir)
+      self.check_ref_with_repo('https://github.com/libarchive/libarchive.git',
+                               'libarchive', tmp_dir)
 
   def check_ref_with_repo(self, repo_origin, repo_name, tmp_dir):
-      """Checks the detect repo's main method for a specific set of inputs.
+    """Checks the detect repo's main method for a specific set of inputs.
 
       Args:
         repo_origin: The location of where the git repo is stored
         repo_name: The name of the directory it is cloned to
         tmp_dir: The location of the directory of git repos to be searched
       """
-      command = [
-          'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--repo_name',
-          repo_name
-      ]
-      out, _ = detect_repo.execute(
-          command, location=os.path.dirname(os.path.realpath(__file__)))
-      print(out)
-      match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
-      if match and match.group(1) and match.group(2):
-        self.assertEqual(match.group(1), repo_origin)
-      else:
-        self.assertIsNone(repo_origin)
+    command = [
+        'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--repo_name',
+        repo_name
+    ]
+    out, _ = detect_repo.execute(
+        command, location=os.path.dirname(os.path.realpath(__file__)))
+    print(out)
+    match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
+    if match and match.group(1) and match.group(2):
+      self.assertEqual(match.group(1), repo_origin)
+    else:
+      self.assertIsNone(repo_origin)
 
-  def check_commit_with_repo(self,
-                             repo_origin,
-                             repo_name,
-                             commit,
-                             tmp_dir):
+  def check_commit_with_repo(self, repo_origin, repo_name, commit, tmp_dir):
     """Checks the detect repo's main method for a specific set of inputs.
 
     Args:
