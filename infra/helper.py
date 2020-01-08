@@ -456,9 +456,10 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
     env.append('MSAN_LIBS_PATH=' + '/work/msan')
 
   command = ['docker', 'run', '--rm']
+  # This is requried for github actions script which is not TTY.
   if sys.stdin.isatty():
     command.append('-i')
-  command = (command + ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env))
+  command = command + ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env)
   if source_path:
     workdir = _workdir_from_dockerfile(project_name)
     if workdir == '/src':
@@ -480,6 +481,7 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
       '-v', '%s:/work' % project_work_dir,
       '-t', 'gcr.io/oss-fuzz/%s' % project_name
   ]
+
   print('Running:', _get_command_string(command))
 
   try:

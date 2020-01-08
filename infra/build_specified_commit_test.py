@@ -43,16 +43,15 @@ class BuildImageIntegrationTests(unittest.TestCase):
       old_commit = 'f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f'
       new_commit = 'f50a39051ea8c7f10d6d8db9656658b49601caef'
       fuzzer = 'rules_fuzzer'
-      build_specified_commit.build_fuzzer_from_commit(
+      build_specified_commit.build_fuzzers_from_commit(
           project_name, old_commit, tmp_dir, sanitizer='address')
       old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
                                              [], test_data)
-      build_specified_commit.build_fuzzer_from_commit(
+      build_specified_commit.build_fuzzers_from_commit(
           project_name, new_commit, tmp_dir, sanitizer='address')
       new_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
                                              [], test_data)
       self.assertNotEqual(new_error_code, old_error_code)
-
 
   def test_detect_main_repo_from_commit(self):
     """Test the detect main repo functionality of the build specific commit module."""

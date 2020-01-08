@@ -28,7 +28,7 @@ import repo_manager
 class DockerExecutionError(Exception):
   """An error that occurs when running a docker command."""
 
-def build_fuzzer_from_commit(project_name,
+def build_fuzzers_from_commit(project_name,
                              commit,
                              local_store_path,
                              repo_name=None,
@@ -119,7 +119,7 @@ def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
       'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
       os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
       '--repo_name', repo_name
-  ])
+  ]
   out, _ = execute(command_to_run)
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):

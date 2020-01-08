@@ -39,13 +39,13 @@ def main():
   )
   parser.add_argument(
       '--src_dir',
-      help='The location of the oss-fuzz projects source directory',
+      help='The location of the oss-fuzz projects source directory.',
       required=True)
   parser.add_argument(
-      '--repo_name', help='the name of the github repo')
+      '--repo_name', help='The name of the git repo.')
   parser.add_argument(
       '--example_commit',
-      help='A commit SHA refrencing the projects main repo')
+      help='A commit SHA refrencing the projects main repo.')
 
   args = parser.parse_args()
   if not args.repo_name and not args.example_commit:
@@ -56,10 +56,10 @@ def main():
     if not os.path.isdir(full_path):
       continue
     if args.example_commit and check_for_commit(full_path, args.example_commit):
-      print('Detected repo: %s %s' % (get_repo(full_path), single_dir.rstrip()))
+      print('Detected repo: %s %s' % get_repo(full_path), single_dir)
       return
     if args.repo_name and check_for_repo_name(full_path, args.repo_name):
-      print('Detected repo: %s %s' % (get_repo(full_path), single_dir.rstrip()))
+      print('Detected repo: %s %s' % (get_repo(full_path), single_dir)
       return
   print('No git repos with specific commit: %s found in %s' %
         (args.example_commit, args.src_dir))
@@ -120,7 +120,7 @@ def check_for_commit(repo_path, commit):
 
   # Check if commit is in history.
   _, return_code = execute(['git', 'cat-file', '-e', commit],
-                           location=repo_path)
+                               location=repo_path)
   return return_code == 0
 
 
