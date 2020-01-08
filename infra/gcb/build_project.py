@@ -254,7 +254,7 @@ def get_build_steps(project_dir):
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
                     ('rm -r /out && cd /src && cd {1} && mkdir -p {0} && '
-                     'compile || echo "build_fuzzers {2}"')
+                     'compile || echo "build_fuzzers {2}" && false')
                     .format(out, workdir, failure_msg),
                 ],
             })
@@ -282,7 +282,8 @@ def get_build_steps(project_dir):
                   'args': [
                       'bash',
                       '-c',
-                      'test_all || echo "check_build %s"' % failure_msg],
+                      'test_all || echo "check_build %s" && false' % failure_msg
+                  ],
               })
 
         if project_yaml['labels']:
