@@ -35,11 +35,18 @@ function main {
   mv $initial_fuzzer_dir/* $tmp_fuzzer_dir
   fuzzer="$tmp_fuzzer_dir/$(basename $fuzzer)"
 
+  # Change OUT to the temporary fuzzer dir.
+  local initial_out=$OUT
+  export OUT=$tmp_fuzzer_dir
+
   bad_build_check $fuzzer
   returncode=$?
 
+  # Restore OUT and $initial_fuzzer_dir
+  export OUT=$initial_out
   mv $tmp_fuzzer_dir/* $initial_fuzzer_dir
-  exit returncode
+
+  return $returncode
 }
 
 if [ $# -ne 1 ]; then
@@ -48,3 +55,4 @@ if [ $# -ne 1 ]; then
 fi
 
 main $1
+exit $?
