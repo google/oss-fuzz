@@ -5,3 +5,4 @@ auto_ccs:
 - thuanpv.nus@gmail.com
 sanitizers: 
 - address 
+- memory
