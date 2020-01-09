@@ -106,4 +106,7 @@ cp -R $SRC/pillow $OUT/
 cp /usr/lib/x86_64-linux-gnu/libjpeg.so.8 $OUT/
 cp /usr/lib/x86_64-linux-gnu/libtiff.so.5 $OUT/
 cp /usr/lib/x86_64-linux-gnu/libjbig.so.0 $OUT/
+cp /usr/lib/x86_64-linux-gnu/libwebp.so.5 $OUT/
+cp /usr/lib/x86_64-linux-gnu/libwebpmux.so.1 $OUT/
+cp /usr/lib/x86_64-linux-gnu/libwebpdemux.so.1 $OUT/
 cp $SRC/oss-fuzz-fuzzers/pillow/corpus.zip $OUT/fuzzer-loadimg_seed_corpus.zip
