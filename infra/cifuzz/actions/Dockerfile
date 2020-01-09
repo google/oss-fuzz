@@ -20,8 +20,8 @@ RUN apt-get install docker-ce docker-ce-cli containerd.io -y
 
 RUN git clone -b ci-fuzz https://github.com/google/oss-fuzz.git /src/oss-fuzz
 
-# Copies your code file from your action repository to the filesystem path `/` of the container
+# Copies your code file from  action repository to the container
 COPY entrypoint.py /src/entrypoint.py
 
-# Code file to execute when the docker container starts up (`entrypoint.sh`)
+# Python file to execute when the docker container starts up
 ENTRYPOINT ["python3", "/src/entrypoint.py"]

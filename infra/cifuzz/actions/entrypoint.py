@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Builds a specific OSS-Fuzz project's fuzzers at a specific commit."""
+"""Builds and runs specific OSS-Fuzz project's fuzzers for CI tools."""
 
 import os
 import subprocess
 
 
 def main():
-  """Finds the commit SHA where an error was initally introduced."""
+  """Runs OSS-Fuzz project's fuzzers for CI tools."""
   project_name = os.environ['OSS_FUZZ_PROJECT_NAME']
   repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/', 1)[-1]
   commit_sha = os.environ['GITHUB_SHA']
