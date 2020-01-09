@@ -43,9 +43,9 @@ def main():
       'run_fuzzers', help='Run an OSS-Fuzz projects fuzzers.')
   run_fuzzer_parser.add_argument('project_name')
   args = parser.parse_args()
-  
+
   # Change to oss-fuzz main directory so helper.py runs correctly.
-  if os.getcwd() != os.path.dirname(utils.OSS_FUZZ_HOME):
+  if os.getcwd() != utils.OSS_FUZZ_HOME:
     os.chdir(utils.OSS_FUZZ_HOME)
   if args.command == 'build_fuzzers':
     return build_fuzzers(args)
