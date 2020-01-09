@@ -23,6 +23,7 @@ import os
 import tempfile
 
 import build_specified_commit
+import repo_manager
 import utils
 
 
@@ -35,14 +36,14 @@ def main():
   build_fuzzer_parser = subparsers.add_parser(
       'build_fuzzers', help='Build an OSS-Fuzz projects fuzzers.')
   build_fuzzer_parser.add_argument('project_name')
-  build_fuzzer_parser.add_argument('repo_url')
+  build_fuzzer_parser.add_argument('repo_name')
   build_fuzzer_parser.add_argument('commit_sha')
 
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzers', help='Run an OSS-Fuzz projects fuzzers.')
   run_fuzzer_parser.add_argument('project_name')
-
   args = parser.parse_args()
+  
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != os.path.dirname(utils.OSS_FUZZ_HOME):
     os.chdir(utils.OSS_FUZZ_HOME)
@@ -59,9 +60,12 @@ def build_fuzzers(args):
 
   # TODO: Fix return value bubble to actually handle errors.
   with tempfile.TemporaryDirectory() as tmp_dir:
-    print("Detecting repo with url: " + args.repo_url)
+    inferred_url, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
+        args.project_name, args.repo_name)
+    build_repo_manager = repo_manager.RepoManager(
+        inferred_url, tmp_dir, repo_name=repo_name)
     return build_specified_commit.build_fuzzers_from_commit(
-        args.project_name, args.commit_sha, tmp_dir, args.repo_url)
+        args.project_name, args.commit_sha, build_repo_manager)
 
 
 def run_fuzzers(args):

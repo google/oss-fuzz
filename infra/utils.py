@@ -15,5 +15,5 @@
 
 import os
 
-# Refrence to OSS-Fuzz home repo
+# Reference to OSS-Fuzz home repo
 OSS_FUZZ_HOME = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))

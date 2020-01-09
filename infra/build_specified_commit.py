@@ -22,27 +22,24 @@ import re
 import subprocess
 
 import helper
-import repo_manager
 
 
 class DockerExecutionError(Exception):
   """An error that occurs when running a docker command."""
 
+
 def build_fuzzers_from_commit(project_name,
-                             commit,
-                             local_store_path,
-                             repo_name=None,
-                             engine='libfuzzer',
-                             sanitizer='address',
-                             architecture='x86_64',
-                             old_repo_manager=None):
+                              commit,
+                              build_repo_manager,
+                              engine='libfuzzer',
+                              sanitizer='address',
+                              architecture='x86_64'):
   """Builds a OSS-Fuzz fuzzer at a  specific commit SHA.
 
   Args:
     project_name: The OSS-Fuzz project name
     commit: The commit SHA to build the fuzzers at
-    local_store_path: The full file path of a place where a temp git repo is stored
-    repo_name: The name of the OSS-Fuzz projects git repo, used for detection
+    build_repo_manager: The OSS-Fuzz project's repo manager to be built at
     engine: The fuzzing engine to be used
     sanitizer: The fuzzing sanitizer to be used
     architecture: The system architiecture to be used for fuzzing
@@ -50,17 +47,7 @@ def build_fuzzers_from_commit(project_name,
   Returns:
     0 on successful build 1 on failure
   """
-  if not old_repo_manager:
-    if repo_name:
-      inferred_url, repo_name = detect_main_repo_from_repo_name(project_name, repo_name)
-    else:
-      inferred_url, repo_name = detect_main_repo_from_commit(project_name, commit)
-    if not inferred_url or not repo_name:
-      print("Error: repo from project %s could not be inferred with commit %s." % (project_name, commit))
-      return 1
-    old_repo_manager = repo_manager.RepoManager(
-        inferred_url, local_store_path, repo_name=repo_name)
-  old_repo_manager.checkout_commit(commit)
+  build_repo_manager.checkout_commit(commit)
   return helper.build_fuzzers_impl(
       project_name=project_name,
       clean=True,
@@ -68,8 +55,9 @@ def build_fuzzers_from_commit(project_name,
       sanitizer=sanitizer,
       architecture=architecture,
       env_to_add=None,
-      source_path=old_repo_manager.repo_dir,
-      mount_location=os.path.join('/src', old_repo_manager.repo_name))
+      source_path=build_repo_manager.repo_dir,
+      mount_location=os.path.join('/src', build_repo_manager.repo_name))
+
 
 def detect_main_repo_from_commit(project_name, example_commit, src_dir='/src'):
   """Checks a docker image for the main repo of an OSS-Fuzz project.
@@ -97,6 +85,7 @@ def detect_main_repo_from_commit(project_name, example_commit, src_dir='/src'):
     return match.group(1), match.group(2).rstrip()
   return None, None
 
+
 def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
   """Checks a docker image for the main repo of an OSS-Fuzz project.
 
@@ -111,7 +100,7 @@ def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
   if not helper.check_project_exists(project_name):
     return None, None
 
-  # Requried to avoid github actions caching of base builder image.
+  # Requried to avoid caching of base builder image.
   helper.build_image_impl('base-builder')
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name

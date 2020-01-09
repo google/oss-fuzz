@@ -21,6 +21,7 @@ import unittest
 
 import build_specified_commit
 import helper
+import repo_manager
 
 # Necessary because __file__ changes with os.chdir
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -43,12 +44,14 @@ class BuildImageIntegrationTests(unittest.TestCase):
       old_commit = 'f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f'
       new_commit = 'f50a39051ea8c7f10d6d8db9656658b49601caef'
       fuzzer = 'rules_fuzzer'
+
+      yara_repo_manager = repo_manager.RepoManager('yara', tmp_dir, repo_name='yara')
       build_specified_commit.build_fuzzers_from_commit(
-          project_name, old_commit, tmp_dir, sanitizer='address')
+          project_name, old_commit, yara_repo_manager, sanitizer='address')
       old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
                                              [], test_data)
       build_specified_commit.build_fuzzers_from_commit(
-          project_name, new_commit, tmp_dir, sanitizer='address')
+          project_name, new_commit, yara_repo_manager, sanitizer='address')
       new_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
                                              [], test_data)
       self.assertNotEqual(new_error_code, old_error_code)

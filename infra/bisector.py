@@ -129,19 +129,26 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
     old_idx = len(commit_list) - 1
     new_idx = 0
+
     build_specified_commit.build_fuzzers_from_commit(
-        build_data.project_name, commit_list[new_idx],
-        bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
-        build_data.architecture, bisect_repo_manager)
+        build_data.project_name,
+        commit_list[new_idx],
+        bisect_repo_manager,
+        build_data.engine,
+        build_data.sanitizer,
+        build_data.architecture)
     expected_error_code = helper.reproduce_impl(build_data.project_name,
                                                 fuzz_target, False, [], [],
                                                 testcase)
 
     # Check if the error is persistent through the commit range
     build_specified_commit.build_fuzzers_from_commit(
-        build_data.project_name, commit_list[old_idx],
-        bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
-        build_data.architecture, bisect_repo_manager)
+        build_data.project_name,
+        commit_list[old_idx],
+        bisect_repo_manager,
+        build_data.engine,
+        build_data.sanitizer,
+        build_data.architecture)
     oldest_error_code = helper.reproduce_impl(build_data.project_name,
                                               fuzz_target, False, [], [],
                                               testcase)
@@ -152,9 +159,12 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
       build_specified_commit.build_fuzzers_from_commit(
-          build_data.project_name, commit_list[curr_idx],
-          bisect_repo_manager.repo_dir, build_data.engine, build_data.sanitizer,
-          build_data.architecture, bisect_repo_manager)
+          build_data.project_name,
+          commit_list[curr_idx],
+          bisect_repo_manager,
+          build_data.engine,
+          build_data.sanitizer,
+          build_data.architecture)
       error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                          False, [], [], testcase)
       if expected_error_code == error_code:
