@@ -25,7 +25,7 @@ def main():
   print('Building fuzzers\nproject: %s\nrepo name: %s\nbranch: %s\ncommit: %s' %
         (project_name, repo_name, commit_sha))
   command = [
-      'python3', '/src/oss-fuzz/infra/ci_fuzz.py', 'build_fuzzers',
+      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'build_fuzzers',
       project_name, repo_name, commit_sha
   ]
   print('Running command: %s' % command)
