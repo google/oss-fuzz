@@ -45,7 +45,8 @@ class BuildImageIntegrationTests(unittest.TestCase):
       new_commit = 'f50a39051ea8c7f10d6d8db9656658b49601caef'
       fuzzer = 'rules_fuzzer'
 
-      yara_repo_manager = repo_manager.RepoManager('yara', tmp_dir, repo_name='yara')
+      yara_repo_manager = repo_manager.RepoManager(
+          'https://github.com/VirusTotal/yara.git', tmp_dir, repo_name='yara')
       build_specified_commit.build_fuzzers_from_commit(
           project_name, old_commit, yara_repo_manager, sanitizer='address')
       old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
