@@ -16,7 +16,8 @@
 ################################################################################
 
 # build project
-export UBSAN_OPTIONS=silence_unsigned_overflow=1
+export CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+export CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
 cd binutils-gdb
 ./configure --disable-gdb --enable-targets=all
 make MAKEINFO=true && true
