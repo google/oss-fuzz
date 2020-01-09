@@ -1,5 +1,5 @@
 homepage: "https://github.com/WebAssembly/wabt"
-primary_contact: "dschuff@chromium.org"
+primary_contact: "binji@chromium.org"
 sanitizers:
  - address
  - memory
