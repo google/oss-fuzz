@@ -282,7 +282,8 @@ def get_build_steps(project_dir):
                   'args': [
                       'bash',
                       '-c',
-                      'test_all || echo "check_build %s" && false' % failure_msg
+                      'test_all || echo "check_build {0}" && false'.format(
+                          failure_msg)
                   ],
               })
 
