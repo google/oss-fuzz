@@ -182,7 +182,7 @@ def get_build_steps(project_dir):
                'target does not exist. If a fuzz target was added in the last '
                '24 hours, please wait one more day. Otherwise, something is '
                'wrong with the fuzz target or the infrastructure, and corpus '
-               'pruning task does not finish successfully. && exit"; '
+               'pruning task does not finish successfully. && exit 1"; '
                'done && coverage')
           ],
           'volumes': [{'name': 'corpus', 'path': '/corpus'}],
