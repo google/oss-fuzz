@@ -59,50 +59,50 @@ class BuildImageIntegrationTests(unittest.TestCase):
 
   def test_detect_main_repo_from_commit(self):
     """Test the detect main repo functionality of the build specific commit module."""
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_commit(
-        'curl', 'bc5d22c3dede2f04870c37aec9a50474c4b888ad')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        'curl', commit='bc5d22c3dede2f04870c37aec9a50474c4b888ad')
     self.assertEqual(repo_origin, 'https://github.com/curl/curl.git')
     self.assertEqual(repo_name, 'curl')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_commit(
-        'usrsctp', '4886aaa49fb90e479226fcfc3241d74208908232')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        'usrsctp', commit='4886aaa49fb90e479226fcfc3241d74208908232')
     self.assertEqual(repo_origin, 'https://github.com/weinrank/usrsctp')
     self.assertEqual(repo_name, 'usrsctp')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_commit(
-        'ndpi', 'c4d476cc583a2ef1e9814134efa4fbf484564ed7')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        'ndpi', commit='c4d476cc583a2ef1e9814134efa4fbf484564ed7')
     self.assertEqual(repo_origin, 'https://github.com/ntop/nDPI.git')
     self.assertEqual(repo_name, 'ndpi')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_commit(
-        'notproj', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        'notproj', commit='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     self.assertIsNone(repo_origin)
     self.assertIsNone(repo_name)
 
   def test_detect_main_repo_from_name(self):
     """Test the detect main repo functionality of the build specific commit module."""
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
-        'curl', 'curl')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        'curl', repo_name='curl')
     self.assertEqual(repo_origin, 'https://github.com/curl/curl.git')
     self.assertEqual(repo_name, 'curl')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
-        'yara', 'yara')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        'yara', repo_name='yara')
     self.assertEqual(repo_origin, 'https://github.com/VirusTotal/yara.git')
     self.assertEqual(repo_name, 'yara')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
-        'usrsctp', 'usrsctp')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        'usrsctp', repo_name='usrsctp')
     self.assertEqual(repo_origin, 'https://github.com/weinrank/usrsctp')
     self.assertEqual(repo_name, 'usrsctp')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
-        'ndpi', 'nDPI')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        'ndpi', repo_name='nDPI')
     self.assertEqual(repo_origin, 'https://github.com/ntop/nDPI.git')
     self.assertEqual(repo_name, 'ndpi')
 
-    repo_origin, repo_name = build_specified_commit.detect_main_repo_from_repo_name(
-        'notproj', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        'notproj', repo_name='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     self.assertIsNone(repo_origin)
     self.assertIsNone(repo_name)
 

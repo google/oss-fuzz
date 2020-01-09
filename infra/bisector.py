@@ -120,8 +120,8 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     ValueError: when a repo url can't be determine from the project
   """
   with tempfile.TemporaryDirectory() as tmp_dir:
-    repo_url, repo_name = build_specified_commit.detect_main_repo_from_commit(
-        build_data.project_name, commit_old)
+    repo_url, repo_name = build_specified_commit.detect_main_repo(
+        build_data.project_name, commit=commit_old)
     if not repo_url or not repo_name:
       raise ValueError('Main git repo can not be determined.')
     bisect_repo_manager = repo_manager.RepoManager(

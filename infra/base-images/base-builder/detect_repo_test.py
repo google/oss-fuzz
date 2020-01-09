@@ -63,10 +63,9 @@ class DetectRepoTest(unittest.TestCase):
                                   'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', tmp_dir)
 
   def test_infer_main_repo_from_name(self):
-    """Tests that the main repo can be inferred based on an example commit."""
+    """Tests that the main repo can be inferred based on a given repos name."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-
       # Construct example repo's to check for names
       repo_manager.RepoManager('https://github.com/curl/curl.git', tmp_dir)
       repo_manager.RepoManager('https://github.com/ntop/nDPI.git', tmp_dir)

@@ -59,61 +59,42 @@ def build_fuzzers_from_commit(project_name,
       mount_location=os.path.join('/src', build_repo_manager.repo_name))
 
 
-def detect_main_repo_from_commit(project_name, example_commit, src_dir='/src'):
+def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
   """Checks a docker image for the main repo of an OSS-Fuzz project.
 
-  Args:
-    project_name: The name of the OSS-Fuzz project
-    example_commit: An associated commit SHA
-    src_dir: The location of the projects source on the docker image
-
-  Returns:
-    The repo's origin, the repo's name
-  """
-  if not helper.check_project_exists(project_name):
-    return None, None
-  helper.build_image_impl(project_name)
-  docker_image_name = 'gcr.io/oss-fuzz/' + project_name
-  command_to_run = [
-      'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
-      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
-      '--example_commit', example_commit
-  ]
-  out, _ = execute(command_to_run)
-  match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
-  if match and match.group(1) and match.group(2):
-    return match.group(1), match.group(2).rstrip()
-  return None, None
-
-
-def detect_main_repo_from_repo_name(project_name, repo_name, src_dir='/src'):
-  """Checks a docker image for the main repo of an OSS-Fuzz project.
+  Note: The default is to use the repo name to detect the main repo
 
   Args:
     project_name: The name of the oss-fuzz project
     repo_name: The name of the main repo in an OSS-Fuzz project
+    commit: A commit SHA that is associated with the main repo
     src_dir: The location of the projects source on the docker image
 
   Returns:
     The repo's origin, the repo's name
   """
-  if not helper.check_project_exists(project_name):
+  if not repo_name and not commit:
+    print('Error can not detect main repo without a repo_name or a commit')
     return None, None
 
-  # Requried to avoid caching of base builder image.
-  helper.build_image_impl('base-builder')
+  if repo_name:
+    helper.build_image_impl('base-builder')
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
       'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
-      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
-      '--repo_name', repo_name
-  ]
+      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir]
+  if repo_name:
+    command_to_run.extend(['--repo_name', repo_name])
+  else:
+    command_to_run.extend(['--example_commit', commit])
   out, _ = execute(command_to_run)
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
-    return match.group(1), match.group(2).rstrip()
+    return match.group(1), match.group(2)
   return None, None
+
+
 
 
 def execute(command, location=None, check_result=False):
