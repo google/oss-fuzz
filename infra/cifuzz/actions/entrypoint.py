@@ -20,14 +20,20 @@ import subprocess
 def main():
   """Finds the commit SHA where an error was initally introduced."""
   project_name = os.environ['OSS_FUZZ_PROJECT_NAME']
-  repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/',1)[-1]
+  repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/', 1)[-1]
   commit_sha = os.environ['GITHUB_SHA']
-  print('Building fuzzers\nproject: %s\nrepo name: %s\nbranch: %s\ncommit: %s' % (project_name, repo_name, commit_sha))
-  command = ['python3', '/src/oss-fuzz/infra/ci_fuzz.py', 'build_fuzzers', project_name, repo_name , commit_sha]
+  print('Building fuzzers\nproject: %s\nrepo name: %s\nbranch: %s\ncommit: %s' %
+        (project_name, repo_name, commit_sha))
+  command = [
+      'python3', '/src/oss-fuzz/infra/ci_fuzz.py', 'build_fuzzers',
+      project_name, repo_name, commit_sha
+  ]
   print('Running command: %s' % command)
   if subprocess.check_call(command):
     return 1
-  command = ['python3', '/src/oss-fuzz/infra/cifuzz.py', 'run_fuzzers', project_name]
+  command = [
+      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'run_fuzzers', project_name
+  ]
   if subprocess.check_call(command):
     return 1
   return 0
