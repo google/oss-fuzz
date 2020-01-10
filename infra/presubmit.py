@@ -75,56 +75,56 @@ class ProjectYamlChecker:
   # Note: this list must be updated when we allow new sections.
   VALID_SECTION_NAMES = [
       'homepage', 'primary_contact', 'auto_ccs', 'sanitizers', 'architectures',
-      'disabled'
+      'disabled', 'view_restrictions', 'coverage_extra_args', 'vendor_ccs'
   ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
   # primary contact is probably a mistake.
   REQUIRED_SECTIONS = ['primary_contact']
 
-  def __init__(self, project_yaml_filename):
-    self.project_yaml_filename = project_yaml_filename
-    with open(project_yaml_filename) as file_handle:
-      self.project_yaml = yaml.safe_load(file_handle)
+  def __init__(self, filename):
+    self.filename = filename
+    with open(filename) as file_handle:
+      self.data = yaml.safe_load(file_handle)
 
     self.success = True
-
-    self.checks = [
-        self.check_project_yaml_constants, self.check_required_sections,
-        self.check_valid_section_names, self.check_valid_emails
-    ]
 
   def do_checks(self):
     """Do all project.yaml checks. Return True if they pass."""
     if self.is_disabled():
       return True
-    for check_function in self.checks:
+
+    checks = [
+        self.check_project_yaml_constants, self.check_required_sections,
+        self.check_valid_section_names, self.check_valid_emails
+    ]
+    for check_function in checks:
       check_function()
     return self.success
 
   def is_disabled(self):
     """Is this project disabled."""
-    return self.project_yaml.get('disabled', False)
+    return self.data.get('disabled', False)
 
   def print_error_message(self, message, *args):
     """Print an error message and set self.success to False."""
     self.success = False
     message = message % args
-    print('Error in %s: %s' % (self.project_yaml_filename, message))
+    print('Error in %s: %s' % (self.filename, message))
 
   def check_project_yaml_constants(self):
     """Check that certain sections only have certain constant values."""
     for section, constants in self.SECTIONS_AND_CONSTANTS.items():
-      if section not in self.project_yaml:
+      if section not in self.data:
         continue
-      section_contents = self.project_yaml[section]
+      section_contents = self.data[section]
       for constant in section_contents:
         if constant not in section_contents:
           self.print_error_message('%s not one of %s', constant, constants)
 
   def check_valid_section_names(self):
     """Check that only valid sections are included."""
-    for name in self.project_yaml:
+    for name in self.data:
       if name not in self.VALID_SECTION_NAMES:
         self.print_error_message('%s not a valid section name (%s)', name,
                                  self.VALID_SECTION_NAMES)
@@ -132,19 +132,19 @@ class ProjectYamlChecker:
   def check_required_sections(self):
     """Check that all required sections are present."""
     for section in self.REQUIRED_SECTIONS:
-      if section not in self.project_yaml:
+      if section not in self.data:
         self.print_error_message('No %s section.', section)
 
   def check_valid_emails(self):
     """Check that emails are valid looking."""
     # Get email addresses.
     email_addresses = []
-    for section in ['auto_ccs', 'primay_contact']:
-      email_addresses.extend(self.project_yaml.get(section, []))
+    for section in ['auto_ccs', 'primary_contact']:
+      email_addresses.extend(self.data.get(section, []))
 
     # Sanity check them.
     for email_address in email_addresses:
-      if not ('@' in email_address and '.' in email_address):
+      if '@' not in email_address or '.' not in email_address:
         self.print_error_message('%s is an invalid email address.',
                                  email_address)
 
@@ -245,7 +245,7 @@ def lint(paths):
   return returncode == 0
 
 
-def yapf(paths, validate):
+def yapf(paths, validate=True):
   """Do yapf on |path| if it is Python file. Only validates format if
   |validate| otherwise, formats the file. Returns False if validation
   or formatting fails."""
@@ -282,7 +282,6 @@ def main():
   args = parser.parse_args()
 
   changed_files = get_changed_files()
-  print(changed_files)
 
   # Do one specific check if the user asked for it.
   if args.command == 'format':
