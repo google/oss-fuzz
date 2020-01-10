@@ -24,7 +24,7 @@ def main():
   commit_sha = os.environ['GITHUB_SHA']
 
   # Build the specified project's fuzzers from the current repo state
-  print('Building fuzzers\nproject: {0}\nrepo name: {1}\ncommit: {2}' %
+  print('Building fuzzers\nproject: {0}\nrepo name: {1}\ncommit: {2}'.format(
         (project_name, repo_name, commit_sha))
   command = [
       'python3', '/src/oss-fuzz/infra/cifuzz/cifuzz.py', 'build_fuzzers',
