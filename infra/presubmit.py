@@ -25,8 +25,8 @@ _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _is_project_file(actual_path, expected_filename):
-  """Returns True if |expected_filename| a file that exists in |actual_path| a
-  path in projects/."""
+  """Returns True if actual_path's name is |expected_filename| and is a file
+  that exists and is in in projects/."""
   if os.path.basename(actual_path) != expected_filename:
     return False
 
@@ -58,7 +58,7 @@ Please use $LIB_FUZZING_ENGINE.'''.format(line_num))
 def check_lib_fuzzing_engine(paths):
   """Call _check_one_lib_fuzzing_engine on each path in |paths|. Return True if
   the result of every call is True."""
-  return all(_check_one_lib_fuzzing_engine(path) for path in paths)
+  return all([_check_one_lib_fuzzing_engine(path) for path in paths])
 
 
 class ProjectYamlChecker:
@@ -67,9 +67,9 @@ class ProjectYamlChecker:
   # Sections in a project.yaml and the constant values that they are allowed
   # to have.
   SECTIONS_AND_CONSTANTS = {
-      'sanitizers': ['address', 'none', 'memory', 'address'],
-      'architectures': ['i386', 'x86_64'],
-      'engines': ['afl', 'libfuzzer', 'honggfuzz']
+      'sanitizers': {'address', 'none', 'memory', 'address'},
+      'architectures': {'i386', 'x86_64'},
+      'engines': {'afl', 'libfuzzer', 'honggfuzz'}
   }
 
   # Note: this list must be updated when we allow new sections.
@@ -114,13 +114,14 @@ class ProjectYamlChecker:
 
   def check_project_yaml_constants(self):
     """Check that certain sections only have certain constant values."""
-    for section, constants in self.SECTIONS_AND_CONSTANTS.items():
+    for section, allowed_constants in self.SECTIONS_AND_CONSTANTS.items():
       if section not in self.data:
         continue
-      section_contents = self.data[section]
-      for constant in section_contents:
-        if constant not in section_contents:
-          self.print_error_message('%s not one of %s', constant, constants)
+      actual_constants = self.data[section]
+      for constant in actual_contents:
+        if constant not in allowed_constants:
+          self.print_error_message('%s (in %s section) is not one of %s',
+                                   constant, section, allowed_constants)
 
   def check_valid_section_names(self):
     """Check that only valid sections are included."""
@@ -161,20 +162,19 @@ def _check_one_project_yaml(project_yaml_filename):
 def check_project_yaml(paths):
   """Call _check_one_project_yaml on each path in |paths|. Return True if
   the result of every call is True."""
-  return all(_check_one_project_yaml(path) for path in paths)
+  return all([_check_one_project_yaml(path) for path in paths])
 
 
 def do_checks(changed_files):
-  """Return False if any presubmit check fails."""
-  success = True
-
+  """Run all presubmit checks return False if any fails."""
   checks = [
       check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine
   ]
-  if not all(check(changed_files) for check in checks):
-    success = False
-
-  return success
+  # Use a list comprehension here and in other cases where we use all() so that
+  # we don't quit early on failure. This is more user-friendly since the more
+  # errors we spit out at once, the less frequently the less check-fix-check
+  # cycles they need to do.
+  return all([check(changed_files) for check in checks])
 
 
 _CHECK_LICENSE_FILENAMES = ['Dockerfile']
@@ -241,6 +241,7 @@ def lint(paths):
 
   command = ['python3', '-m', 'pylint', '-j', '0']
   command.extend(paths)
+
   returncode = subprocess.run(command, check=False).returncode
   return returncode == 0
 
@@ -256,6 +257,7 @@ def yapf(paths, validate=True):
   validate_argument = '-d' if validate else '-i'
   command = ['yapf', validate_argument, '-p']
   command.extend(paths)
+
   returncode = subprocess.run(command, check=False).returncode
   return returncode == 0
 
