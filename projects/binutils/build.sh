@@ -17,8 +17,8 @@
 
 # build project
 if [ "$SANITIZER" = undefined ]; then
-    export CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
-    export CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
+    export CFLAGS="$CFLAGS -fno-sanitize=unsigned-integer-overflow"
+    export CXXFLAGS="$CXXFLAGS -fno-sanitize=unsigned-integer-overflow"
 fi
 cd binutils-gdb
 ./configure --disable-gdb --enable-targets=all
