@@ -63,10 +63,10 @@ class DetectRepoTest(unittest.TestCase):
                                   'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', tmp_dir)
 
   def test_infer_main_repo_from_name(self):
-    """Tests that the main repo can be inferred based on a given repos name."""
+    """Tests that the main project repo can be inferred from a repo name."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-      # Construct example repo's to check for names
+      # Construct example repos to check for names
       repo_manager.RepoManager('https://github.com/curl/curl.git', tmp_dir)
       repo_manager.RepoManager('https://github.com/ntop/nDPI.git', tmp_dir)
       repo_manager.RepoManager('https://github.com/libarchive/libarchive.git',
@@ -82,9 +82,9 @@ class DetectRepoTest(unittest.TestCase):
     """Checks the detect repo's main method for a specific set of inputs.
 
       Args:
-        repo_origin: The location of where the git repo url
-        repo_name: The name of the directory it is cloned to
-        tmp_dir: The location of the directory of git repos to be searched
+        repo_origin: The location of where the git repo url.
+        repo_name: The name of the directory it is cloned to.
+        tmp_dir: The location of the directory of git repos to be searched.
       """
     command = [
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--repo_name',
@@ -99,13 +99,13 @@ class DetectRepoTest(unittest.TestCase):
       self.assertIsNone(repo_origin)
 
   def check_commit_with_repo(self, repo_origin, repo_name, commit, tmp_dir):
-    """Checks the detect repo's main method for a specific set of inputs.
+    """Checks the detect repos main method for a specific set of inputs.
 
     Args:
-      repo_origin: The location of where the git repo is stored
-      repo_name: The name of the directory it is cloned to
-      commit: The commit that should be used to look up the repo
-      tmp_dir: The location of the directory of git repos to be searched
+      repo_origin: The location of where the git repo is stored.
+      repo_name: The name of the directory it is cloned to.
+      commit: The commit that should be used to look up the repo.
+      tmp_dir: The location of the directory of git repos to be searched.
     """
     command = [
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--example_commit',

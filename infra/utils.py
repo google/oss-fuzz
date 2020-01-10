@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing perepo_managerissions and
 # limitations under the License.
-"""Utilitys for OSS-Fuzz infrastrcture."""
+"""Utility's for OSS-Fuzz infrastructure ."""
 
 import os
 
-# Reference to OSS-Fuzz home repo
-OSS_FUZZ_HOME = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+# Reference to OSS-Fuzz home repo.
+OSS_FUZZ_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

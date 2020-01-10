@@ -29,37 +29,37 @@ import subprocess
 
 
 def main():
-  """Function to get a git repos information based on its commit.
+  """Function to get a git repo's url and name refenced by OSS-Fuzz Dockerfile.
 
   Raises:
-    ValueError when a commit or a ref is not provided
+    ValueError when a commit or a ref is not provided.
   """
   parser = argparse.ArgumentParser(
-      description='Finds a specific git repo in an oss-fuzz projects docker file.'
+      description="Finds a specific git repo in an oss-fuzz project's docker file."
   )
   parser.add_argument(
       '--src_dir',
-      help='The location of the oss-fuzz projects source directory.',
+      help="The location of the oss-fuzz project's source directory."",
       required=True)
   parser.add_argument(
       '--repo_name', help='The name of the git repo.')
   parser.add_argument(
       '--example_commit',
-      help='A commit SHA refrencing the projects main repo.')
+      help='A commit SHA referencing the projects main repo.')
 
   args = parser.parse_args()
   if not args.repo_name and not args.example_commit:
     raise ValueError(
-        'Requires either a example commit or a repo name to detect repo.')
+        'Requires either an example commit or a repo name to detect repo.')
   for single_dir in os.listdir(args.src_dir):
     full_path = os.path.join(args.src_dir, single_dir)
     if not os.path.isdir(full_path):
       continue
     if args.example_commit and check_for_commit(full_path, args.example_commit):
-      print('Detected repo: %s %s' % (get_repo(full_path), single_dir))
+      print('Detected repo: ' + get_repo(full_path) + ' ' + single_dir)
       return
     if args.repo_name and check_for_repo_name(full_path, args.repo_name):
-      print('Detected repo: %s %s' % (get_repo(full_path), single_dir))
+      print('Detected repo: ' + get_repo(full_path) + ' ' + single_dir)
       return
   print('No git repos with specific commit: %s found in %s' %
         (args.example_commit, args.src_dir))
@@ -72,7 +72,7 @@ def get_repo(repo_path):
     repo_path: The directory on the image where the git repo exists.
 
   Returns:
-    The repo location or None
+    The repo location or None.
   """
   output, return_code = execute(['git', 'config', '--get', 'remote.origin.url'],
                                 location=repo_path,
@@ -83,12 +83,11 @@ def get_repo(repo_path):
 
 
 def check_for_repo_name(repo_path, repo_name):
-  """Check to see if a github ref exists in a remote repository.
+  """Check to see if the repo_name matches the remote repository repo name.
 
   Args:
-    repo_path: The directory where the selected git repo exists
-    repo_name: The name of the target git repo
-
+    repo_path: The directory of the git repo.
+    repo_name: The name of the target git repo.
   """
   if not os.path.exists(os.path.join(repo_path, '.git')):
     return False
@@ -103,11 +102,11 @@ def check_for_commit(repo_path, commit):
   """Checks a directory for a specific commit.
 
   Args:
-    repo_path: The name of the directory to test for the commit
-    commit: The commit SHA to check for
+    repo_path: The name of the directory to test for the commit.
+    commit: The commit SHA to check for.
 
   Returns:
-    True if directory contains that commit
+    True if directory contains that commit.
   """
 
   # Check if valid git repo.
@@ -128,15 +127,15 @@ def execute(command, location, check_result=False):
   """Runs a shell command in the specified directory location.
 
   Args:
-    command: The command as a list to be run
-    location: The directory the command is run in
-    check_result: Should an exception be thrown on failed command
+    command: The command as a list to be run.
+    location: The directory the command is run in.
+    check_result: Should an exception be thrown on failed command.
 
   Returns:
-    The stdout of the command, the error code
+    The stdout of the command, the error code.
 
   Raises:
-    RuntimeError: running a command resulted in an error
+    RuntimeError: running a command resulted in an error.
   """
   process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
   output, err = process.communicate()
