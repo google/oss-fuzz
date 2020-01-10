@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Check project for common issues before submitting."""
+"""Check code for common issues before submitting."""
 
 import itertools
 import os
