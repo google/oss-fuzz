@@ -22,6 +22,8 @@ def main():
   project_name = os.environ['OSS_FUZZ_PROJECT_NAME']
   repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/', 1)[-1]
   commit_sha = os.environ['GITHUB_SHA']
+
+  # Build the specified project's fuzzers from the current repo state
   print('Building fuzzers\nproject: %s\nrepo name: %s\nbranch: %s\ncommit: %s' %
         (project_name, repo_name, commit_sha))
   command = [
@@ -29,14 +31,25 @@ def main():
       project_name, repo_name, commit_sha
   ]
   print('Running command: %s' % command)
-  if subprocess.check_call(command):
-    return 1
+  try:
+    subprocess.check_call(command, stdout=stdout, stderr=subprocess.STDOUT)
+  except subprocess.CalledProcessError as e:
+    print('Error building fuzzers.')
+    return e.returncode
+
+  # Run the specified project's fuzzers from the build
   command = [
       'python3', '/src/oss-fuzz/infra/cifuzz/cifuzz.py', 'run_fuzzers', project_name
   ]
-  if subprocess.check_call(command):
-    return 1
+  print('Running command: %s' % command)
+  try:
+    subprocess.check_call(command, stdout=stdout, stderr=subprocess.STDOUT)
+  except subprocess.CalledProcessError as e:
+    print('Error running fuzzers.')
+    return e.returncode
+  print('Fuzzers ran Successfully.')
   return 0
+
 
 
 if __name__ == '__main__':

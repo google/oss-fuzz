@@ -1,7 +1,6 @@
-# This uses three docker images. Bad! We only want one (or two if really needed)
-# at some point.
+# Docker image to run CIFuzz in.
 FROM debian:9.5-slim
-# TODO: don't run docker in docker :-)
+
 RUN apt-get update && apt-get install -y git \
     apt-transport-https \
     ca-certificates \
@@ -15,8 +14,7 @@ RUN add-apt-repository \
    $(lsb_release -cs) \
    stable"
 
-RUN apt-get update
-RUN apt-get install docker-ce docker-ce-cli containerd.io -y
+RUN apt-get update && apt-get install docker-ce docker-ce-cli containerd.io -y
 
 RUN git clone -b ci-fuzz https://github.com/google/oss-fuzz.git /src/oss-fuzz
 

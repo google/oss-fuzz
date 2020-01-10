@@ -1,6 +1,6 @@
 # action.yml
 name: 'build-fuzzers'
-description: 'Builds an OSS-Fuzz projects fuzzers.'
+description: "Builds an OSS-Fuzz project's fuzzers."
 inputs:
   oss-fuzz-project-name:
     description: 'Name of the corresponding OSS-Fuzz project.'
