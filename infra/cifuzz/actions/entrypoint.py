@@ -26,7 +26,7 @@ def main():
 
   # Build the specified project's fuzzers from the current repo state
   print('Building fuzzers\nproject: {0}\nrepo name: {1}\ncommit: {2}'.format(
-    project_name, repo_name, commit_sha))
+      project_name, repo_name, commit_sha))
   command = [
       'python3', '/src/oss-fuzz/infra/cifuzz.py', 'build_fuzzers', project_name,
       repo_name, commit_sha
@@ -34,8 +34,8 @@ def main():
   print('Running command: "{0}"'.format(' '.join(command)))
   try:
     subprocess.check_call(command)
-  except subprocess.CalledProcessError as e:
-    sys.stderr.write('Error running fuzzers: "{0}"'.format(str(e)))
+  except subprocess.CalledProcessError as err:
+    sys.stderr.write('Error running fuzzers: "{0}"'.format(str(err)))
     return e.returncode
 
   # Run the specified project's fuzzers from the build
