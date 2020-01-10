@@ -174,3 +174,13 @@ OSS-Fuzz builders have 32CPU/28.8GB RAM.
 
 Fuzzing machines only have a single core and fuzz targets should not use more
 than 2.5GB of RAM.
+
+## Where can I learn more about fuzzing?
+
+We recommend reading [libFuzzer tutorial] and the other docs in [google/fuzzing]
+repository. These and some other resources are listed on the
+[useful links]({{ site.baseurl }}/reference/useful-links/#tutorials) page.
+
+[google/fuzzing]: https://github.com/google/fuzzing/tree/master/docs
+[libFuzzer tutorial]: https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md
+

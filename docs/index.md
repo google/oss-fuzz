@@ -35,11 +35,12 @@ OSS-Fuzz supports fuzzing x86_64 and i386 builds.
 ## Learn more about fuzzing
 
 This documentation describes how to use OSS-Fuzz service for your open source project.
-If you want to learn more about fuzzing in general, we recommend taking a look at
-[libFuzzer tutorial] and the other docs in [google/fuzzing] repository.
+To learn more about fuzzing in general, we recommend reading [libFuzzer tutorial]
+and the other docs in [google/fuzzing] repository. These and some other resources
+are listed on the [useful links]({{ site.baseurl }}/reference/useful-links/#tutorials) page.
 
-[libFuzzer tuorial]: https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md
 [google/fuzzing]: https://github.com/google/fuzzing/tree/master/docs
+[libFuzzer tutorial]: https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md
 
 ## Trophies
 As of January 2020, OSS-Fuzz has found over [16,000] bugs in [250] open source projects.
