@@ -25,14 +25,14 @@ def main():
   print('Building fuzzers\nproject: %s\nrepo name: %s\nbranch: %s\ncommit: %s' %
         (project_name, repo_name, commit_sha))
   command = [
-      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'build_fuzzers',
+      'python3', '/src/oss-fuzz/infra/cifuzz/cifuzz.py', 'build_fuzzers',
       project_name, repo_name, commit_sha
   ]
   print('Running command: %s' % command)
   if subprocess.check_call(command):
     return 1
   command = [
-      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'run_fuzzers', project_name
+      'python3', '/src/oss-fuzz/infra/cifuzz/cifuzz.py', 'run_fuzzers', project_name
   ]
   if subprocess.check_call(command):
     return 1
