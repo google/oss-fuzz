@@ -110,6 +110,8 @@ def main():
   _add_engine_args(run_fuzzer_parser)
   _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
+  run_fuzzer_parser.add_argument('--corpus-dir', help='specify location of corpus'
+                               ' to be used')
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args', help='arguments to pass to the fuzzer',
@@ -734,10 +736,21 @@ def run_fuzzer(args):
 
   run_args = _env_to_docker_args(env) + [
       '-v', '%s:/out' % _get_output_dir(args.project_name),
+  ]
+
+  if args.corpus_dir:
+    if not os.path.exists(args.corpus_dir):
+      print('ERROR: the path provided in --corpus-dir argument does not exist',
+          file=sys.stderr)
+      return 1
+    corpus_dir = os.path.realpath(args.corpus_dir)
+    run_args.extend(['-v', '%s:/tmp' % corpus_dir])
+
+  run_args.extend([
       '-t', 'gcr.io/oss-fuzz-base/base-runner',
       'run_fuzzer',
       args.fuzzer_name,
-  ] + args.fuzzer_args
+  ] + args.fuzzer_args)
 
   return docker_run(run_args)
 
