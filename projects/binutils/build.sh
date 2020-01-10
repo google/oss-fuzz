@@ -16,6 +16,10 @@
 ################################################################################
 
 # build project
+if [ "$SANITIZER" = undefined ]; then
+    export CFLAGS="$CFLAGS -fno-sanitize=unsigned-integer-overflow"
+    export CXXFLAGS="$CXXFLAGS -fno-sanitize=unsigned-integer-overflow"
+fi
 cd binutils-gdb
 ./configure --disable-gdb --enable-targets=all
 make MAKEINFO=true && true

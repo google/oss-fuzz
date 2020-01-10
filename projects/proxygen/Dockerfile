@@ -147,7 +147,8 @@ RUN apt-get install -y \
     zlib1g-dev \
     binutils-dev \
     libsodium-dev \
-    libdouble-conversion-dev
+    libdouble-conversion-dev \
+    libunwind8-dev
 
 # Install patchelf so we can fix path to libunwind
 RUN apt-get install patchelf
