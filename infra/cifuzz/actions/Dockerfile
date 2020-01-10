@@ -15,13 +15,11 @@
 ################################################################################
 # Docker image to run CIFuzz in.
 
-FROM debian:9.5-slim
+FROM ubuntu:16.04
 
 RUN apt-get update && apt-get install -y git \
-    apt-transport-https \
     ca-certificates \
     curl \
-    gnupg2 \
     software-properties-common \
     python3
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && apt-key fingerprint 0EBFCD88
