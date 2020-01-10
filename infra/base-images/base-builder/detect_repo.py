@@ -39,7 +39,7 @@ def main():
   )
   parser.add_argument(
       '--src_dir',
-      help="The location of the oss-fuzz project's source directory."",
+      help="The location of the oss-fuzz project's source directory.",
       required=True)
   parser.add_argument(
       '--repo_name', help='The name of the git repo.')

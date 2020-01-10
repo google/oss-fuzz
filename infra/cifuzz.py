@@ -58,7 +58,6 @@ def main():
 
 def build_fuzzers(args):
   """Builds all of the fuzzers for a specific OSS-Fuzz project."""
-
   # TODO: Fix return value bubble to actually handle errors.
   with tempfile.TemporaryDirectory() as tmp_dir:
     inferred_url, repo_name = build_specified_commit.detect_main_repo(
@@ -71,7 +70,7 @@ def build_fuzzers(args):
 
 def run_fuzzers(args):
   """Runs a all fuzzer for a specific OSS-Fuzz project."""
-  ## TODO: Implement this function
+  # TODO: Implement this function
   return 0
 
 

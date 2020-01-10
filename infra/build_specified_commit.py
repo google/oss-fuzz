@@ -73,6 +73,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
   Returns:
     The repo's origin, the repo's name.
   """
+  # TODO: Add infra for non hardcoded '/src'
   if not repo_name and not commit:
     print('Error: can not detect main repo without a repo_name or a commit.')
     return None, None
