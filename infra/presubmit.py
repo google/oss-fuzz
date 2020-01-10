@@ -17,12 +17,9 @@
 """Check code for common issues before submitting."""
 
 import argparse
-import itertools
 import os
 import subprocess
-import sys
 import yaml
-
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -34,7 +31,7 @@ def _is_project_file(actual_path, expected_filename):
     return False
 
   if os.path.basename(os.path.dirname(
-    os.path.dirname(actual_path))) != 'projects':
+      os.path.dirname(actual_path))) != 'projects':
     return False
 
   return os.path.exists(actual_path)
@@ -70,15 +67,15 @@ class ProjectYamlChecker:
   # Sections in a project.yaml and the constant values that they are allowed
   # to have.
   SECTIONS_AND_CONSTANTS = {
-    'sanitizers': ['address', 'none', 'memory', 'address'],
-    'architectures': ['i386', 'x86_64'],
-    'engines': ['afl', 'libfuzzer', 'honggfuzz']
+      'sanitizers': ['address', 'none', 'memory', 'address'],
+      'architectures': ['i386', 'x86_64'],
+      'engines': ['afl', 'libfuzzer', 'honggfuzz']
   }
 
   # Note: this list must be updated when we allow new sections.
   VALID_SECTION_NAMES = [
-    'homepage', 'primary_contact', 'auto_ccs', 'sanitizers',
-    'architectures', 'disabled'
+      'homepage', 'primary_contact', 'auto_ccs', 'sanitizers', 'architectures',
+      'disabled'
   ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
@@ -93,8 +90,8 @@ class ProjectYamlChecker:
     self.success = True
 
     self.checks = [
-      self.check_project_yaml_constants, self.check_required_sections,
-      self.check_valid_section_names, self.check_valid_emails
+        self.check_project_yaml_constants, self.check_required_sections,
+        self.check_valid_section_names, self.check_valid_emails
     ]
 
   def do_checks(self):
@@ -123,15 +120,14 @@ class ProjectYamlChecker:
       section_contents = self.project_yaml[section]
       for constant in section_contents:
         if constant not in section_contents:
-          self.print_error_message('%s not one of %s', constant,
-                       constants)
+          self.print_error_message('%s not one of %s', constant, constants)
 
   def check_valid_section_names(self):
     """Check that only valid sections are included."""
     for name in self.project_yaml:
       if name not in self.VALID_SECTION_NAMES:
-        self.print_error_message('%s not a valid section name (%s)',
-                     name, self.VALID_SECTION_NAMES)
+        self.print_error_message('%s not a valid section name (%s)', name,
+                                 self.VALID_SECTION_NAMES)
 
   def check_required_sections(self):
     """Check that all required sections are present."""
@@ -149,8 +145,8 @@ class ProjectYamlChecker:
     # Sanity check them.
     for email_address in email_addresses:
       if not ('@' in email_address and '.' in email_address):
-        self.print_error_message(
-          '%s is an invalid email address.', email_address)
+        self.print_error_message('%s is an invalid email address.',
+                                 email_address)
 
 
 def _check_one_project_yaml(project_yaml_filename):
@@ -172,8 +168,9 @@ def do_checks(changed_files):
   """Return False if any presubmit check fails."""
   success = True
 
-  checks = [check_license, yapf, lint,
-            check_project_yaml, check_lib_fuzzing_engine]
+  checks = [
+      check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine
+  ]
   if not all(check(changed_files) for check in checks):
     success = False
 
@@ -229,16 +226,16 @@ def bool_to_returncode(success):
   print('Failed.')
   return 1
 
+
 def is_python(path):
   """Returns True if |path| ends in .py."""
-  return path.suffix == '.py'
+  return os.path.splitext(path)[1] == '.py'
 
 
 def lint(paths):
   """Run python's linter on |paths| if it is a python file. Return False if it
   fails linting."""
   paths = [path for path in paths if is_python(path)]
-  paths = filter_migrations(paths)
   if not paths:
     return True
 
@@ -297,7 +294,7 @@ def main():
     return bool_to_returncode(success)
 
   if args.command == 'license':
-    success = check_license(changed_files, False)
+    success = check_license(changed_files)
     return bool_to_returncode(success)
 
   # Otherwise, do all of them.
