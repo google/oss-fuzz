@@ -118,7 +118,7 @@ class ProjectYamlChecker:
       if section not in self.data:
         continue
       actual_constants = self.data[section]
-      for constant in actual_contents:
+      for constant in actual_constants:
         if constant not in allowed_constants:
           self.print_error_message('%s (in %s section) is not one of %s',
                                    constant, section, allowed_constants)
