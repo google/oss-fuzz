@@ -19,6 +19,7 @@
 import argparse
 import os
 import subprocess
+import sys
 import yaml
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -304,4 +305,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
