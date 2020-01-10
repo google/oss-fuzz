@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#        http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,9 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Statically check project for common issues."""
-
-from __future__ import print_function
+"""Check project for common issues before submitting."""
 
 import itertools
 import os
@@ -25,25 +23,24 @@ import sys
 import yaml
 
 
-def get_oss_fuzz_root():
-  """Get the absolute path of the root of the oss-fuzz checkout."""
-  script_path = os.path.realpath(__file__)
-  return os.path.abspath(os.path.join(os.path.dirname(script_path), '..'))
-
-
-def is_project_file(actual_path, expected_filename):
+def _is_project_file(actual_path, expected_filename):
+  """Returns True if |expected_filename| a file that exists in |actual_path| a
+  path in projects/."""
   if os.path.basename(actual_path) != expected_filename:
     return False
 
-  if os.path.basename(
-      os.path.dirname(os.path.dirname(actual_path))) != 'projects':
+  if os.path.basename(os.path.dirname(
+    os.path.dirname(actual_path))) != 'projects':
     return False
 
   return os.path.exists(actual_path)
 
 
 def check_lib_fuzzing_engine(build_sh_file):
-  if not is_project_file(build_sh_file, 'build.sh'):
+  """Returns False if |build_sh_file| contains -lFuzzingEngine.
+  This is deprecated behavior. $LIB_FUZZING_ENGINE should be used instead
+  so that -fsanitize=fuzzer is used."""
+  if not _is_project_file(build_sh_file, 'build.sh'):
     return True
 
   with open(build_sh_file) as build_sh:
@@ -58,6 +55,26 @@ Please use $LIB_FUZZING_ENGINE.'''.format(line_num))
 
 
 class ProjectYamlChecker:
+  """Checks for a project.yaml file."""
+
+  # Sections in a project.yaml and the constant values that they are allowed
+  # to have.
+  SECTIONS_AND_CONSTANTS = {
+    'sanitizers': ['address', 'none', 'memory', 'address'],
+    'architectures': ['i386', 'x86_64'],
+    'engines': ['afl', 'libfuzzer', 'honggfuzz']
+  }
+
+  # Note: this list must be updated when we allow new sections.
+  VALID_SECTION_NAMES = [
+    'homepage', 'primary_contact', 'auto_ccs', 'sanitizers',
+    'architectures', 'disabled'
+  ]
+
+  # Note that some projects like boost only have auto-ccs. However, forgetting
+  # primary contact is probably a mistake.
+  REQUIRED_SECTIONS = ['primary_contact']
+
   def __init__(self, project_yaml_filename):
     self.project_yaml_filename = project_yaml_filename
     with open(project_yaml_filename) as file_handle:
@@ -65,10 +82,10 @@ class ProjectYamlChecker:
 
     self.success = True
 
-    self.checks = [self.check_project_yaml_constants,
-                   self.check_required_sections,
-                   self.check_valid_section_names,
-                   self.check_valid_emails]
+    self.checks = [
+      self.check_project_yaml_constants, self.check_required_sections,
+      self.check_valid_section_names, self.check_valid_emails
+    ]
 
   def do_checks(self):
     """Do all project.yaml checks. Return True if they pass."""
@@ -90,52 +107,45 @@ class ProjectYamlChecker:
 
   def check_project_yaml_constants(self):
     """Check that certain sections only have certain constant values."""
-    sections_and_constants = {
-        'sanitizers': ['address', 'none', 'memory', 'address'],
-        'architectures': ['i386', 'x86_64'],
-        'engines': ['afl', 'libfuzzer', 'honggfuzz']
-    }
-    success = True
-    for section, constants in sections_and_constants.items():
+    for section, constants in self.SECTIONS_AND_CONSTANTS.items():
       if section not in self.project_yaml:
         continue
       section_contents = self.project_yaml[section]
       for constant in section_contents:
         if constant not in section_contents:
-          self.print_error_message('%s not one of %s', constant, constants)
+          self.print_error_message('%s not one of %s', constant,
+                       constants)
 
   def check_valid_section_names(self):
     """Check that only valid sections are included."""
-    # Note, this list must be updated when we allow new sections.
-    valid_section_names = [
-        'homepage', 'primary_contact', 'auto_ccs', 'sanitizers',
-        'architectures', 'disabled'
-    ]
     for name in self.project_yaml:
-      if name not in valid_section_names:
-        self.print_error_message(
-            '%s not a valid section name (%s)', name, valid_section_names)
+      if name not in self.VALID_SECTION_NAMES:
+        self.print_error_message('%s not a valid section name (%s)',
+                     name, self.VALID_SECTION_NAMES)
 
   def check_required_sections(self):
     """Check that all required sections are present."""
-    required_sections = ['primary_contact']
-    for section in required_sections:
+    for section in self.REQUIRED_SECTIONS:
       if section not in self.project_yaml:
-        self.print_error_message(
-            'No %s section.', section)
-
+        self.print_error_message('No %s section.', section)
 
   def check_valid_emails(self):
     """Check that emails are valid looking."""
+    # Get email addresses.
+    email_addresses = []
     for section in ['auto_ccs', 'primay_contact']:
-      for email_address in self.project_yaml.get(section, []):
-        if not ('@' in email_address and '.' in email_address):
-          self.print_error_message('%s is an invalid email address.',
-                                   email_address)
+      email_addresses.extend(self.project_yaml.get(section, []))
+
+    # Sanity check them.
+    for email_address in email_addresses:
+      if not ('@' in email_address and '.' in email_address):
+        self.print_error_message(
+          '%s is an invalid email address.', email_address)
+
 
 def check_project_yaml(project_yaml_filename):
   """Do checks on the project.yaml file."""
-  if not is_project_file(project_yaml_filename, 'project.yaml'):
+  if not _is_project_file(project_yaml_filename, 'project.yaml'):
     return True
 
   checker = ProjectYamlChecker(project_yaml_filename)
@@ -146,28 +156,29 @@ def do_check(check_func, argument):
   """Run call check_func(argument) and return the result."""
   try:
     return check_func(argument)
-  except Exception:
-    print(
-        'Error doing check: %s() on %s:'
-        '\n%s: %s' % (check_func.__name__, argument, e.__class__.__name__, e)
-    )
+  except Exception as error:  # pylint: disable=broad-except
+    print('Error doing check: %s() on %s:'
+        '\n%s: %s' %
+        (check_func.__name__, argument, error.__class__.__name__, error))
     return False
 
 
 def do_checks(filenames):
   """Do all checks on |filenames|. Return False if any fail."""
-  oss_fuzz_root = get_oss_fuzz_root()
-  success = True
   checks = [check_project_yaml, check_lib_fuzzing_engine]
   pool = ThreadPool()
-  return all(itertools.starmap(do_check, itertools.product(checks, filenames)))
+  return all(pool.starmap(do_check, itertools.product(checks, filenames)))
 
 
 def main():
+  """Check changes on a branch for common issues before submitting."""
+  # TODO(metzman): Change this script to use git to automatically find changed
+  # files.
   if len(sys.argv) < 2:
     print('Usage: {0} file1 [file2, file3, ...]'.format(sys.argv[0]))
   if not do_checks(sys.argv[1:]):
-    exit(1)
+    sys.exit(1)
+
 
 if __name__ == '__main__':
   main()
