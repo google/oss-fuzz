@@ -24,7 +24,7 @@ def main():
   repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/', 1)[-1]
   commit_sha = os.environ['GITHUB_SHA']
 
-  # Build the specified project's fuzzers from the current repo state
+  # Build the specified project's fuzzers from the current repo state.
   print('Building fuzzers\nproject: {0}\nrepo name: {1}\ncommit: {2}'.format(
       project_name, repo_name, commit_sha))
   command = [
@@ -38,7 +38,7 @@ def main():
     sys.stderr.write('Error running fuzzers: "{0}"'.format(str(err)))
     return err.returncode
 
-  # Run the specified project's fuzzers from the build
+  # Run the specified project's fuzzers from the build.
   command = [
       'python3', '/src/oss-fuzz/infra/cifuzz.py', 'run_fuzzers', project_name
   ]
