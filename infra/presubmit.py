@@ -265,6 +265,7 @@ def yapf(paths, validate):
 
 def get_changed_files():
   """Return a list of absolute paths of files changed in this git branch."""
+  # FIXME: This doesn't work if branch is behind master.
   diff_command = ['git', 'diff', '--name-only', 'FETCH_HEAD']
   return [
       os.path.abspath(path)
