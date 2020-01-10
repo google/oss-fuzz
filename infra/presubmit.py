@@ -38,6 +38,9 @@ def _is_project_file(actual_path, expected_filename):
   return os.path.exists(actual_path)
 
 
+# TODO: Check for -fsanitize=fuzzer in files as well.
+
+
 def _check_one_lib_fuzzing_engine(build_sh_file):
   """Returns False if |build_sh_file| contains -lFuzzingEngine.
   This is deprecated behavior. $LIB_FUZZING_ENGINE should be used instead
@@ -50,8 +53,9 @@ def _check_one_lib_fuzzing_engine(build_sh_file):
   for line_num, line in enumerate(build_sh_lines):
     uncommented_code = line.split('#')[0]
     if '-lFuzzingEngine' in uncommented_code:
-      print('''Error: build.sh contains -lFuzzingEngine on line: {0}.
-Please use $LIB_FUZZING_ENGINE.'''.format(line_num))
+      print(
+          'Error: build.sh contains deprecated "-lFuzzingEngine" on line: {0}. '
+          'Please use "$LIB_FUZZING_ENGINE" instead.'.format(line_num))
       return False
   return True
 
@@ -68,9 +72,9 @@ class ProjectYamlChecker:
   # Sections in a project.yaml and the constant values that they are allowed
   # to have.
   SECTIONS_AND_CONSTANTS = {
-      'sanitizers': {'address', 'none', 'memory', 'address'},
+      'sanitizers': {'address', 'none', 'memory', 'undefined', 'dataflow'},
       'architectures': {'i386', 'x86_64'},
-      'engines': {'afl', 'libfuzzer', 'honggfuzz'}
+      'engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow'}
   }
 
   # Note: this list must be updated when we allow new sections.
@@ -107,7 +111,7 @@ class ProjectYamlChecker:
     """Is this project disabled."""
     return self.data.get('disabled', False)
 
-  def print_error_message(self, message, *args):
+  def print_error(self, message, *args):
     """Print an error message and set self.success to False."""
     self.success = False
     message = message % args
@@ -121,21 +125,21 @@ class ProjectYamlChecker:
       actual_constants = self.data[section]
       for constant in actual_constants:
         if constant not in allowed_constants:
-          self.print_error_message('%s (in %s section) is not one of %s',
-                                   constant, section, allowed_constants)
+          self.print_error('%s (in %s section) is not one of %s', constant,
+                           section, allowed_constants)
 
   def check_valid_section_names(self):
     """Check that only valid sections are included."""
     for name in self.data:
       if name not in self.VALID_SECTION_NAMES:
-        self.print_error_message('%s not a valid section name (%s)', name,
-                                 self.VALID_SECTION_NAMES)
+        self.print_error('%s not a valid section name (%s)', name,
+                         self.VALID_SECTION_NAMES)
 
   def check_required_sections(self):
     """Check that all required sections are present."""
     for section in self.REQUIRED_SECTIONS:
       if section not in self.data:
-        self.print_error_message('No %s section.', section)
+        self.print_error('No %s section.', section)
 
   def check_valid_emails(self):
     """Check that emails are valid looking."""
@@ -147,8 +151,7 @@ class ProjectYamlChecker:
     # Sanity check them.
     for email_address in email_addresses:
       if '@' not in email_address or '.' not in email_address:
-        self.print_error_message('%s is an invalid email address.',
-                                 email_address)
+        self.print_error('%s is an invalid email address.', email_address)
 
 
 def _check_one_project_yaml(project_yaml_filename):
@@ -277,14 +280,15 @@ def get_changed_files():
 def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
-  parser = argparse.ArgumentParser(
-      description='Presubmit script for fuzzer-benchmarks.')
+  parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
   parser.add_argument('command',
                       choices=['format', 'lint', 'license'],
                       nargs='?')
   args = parser.parse_args()
 
   changed_files = get_changed_files()
+
+  os.chdir(_SRC_ROOT)
 
   # Do one specific check if the user asked for it.
   if args.command == 'format':
