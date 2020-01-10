@@ -35,7 +35,7 @@ def main():
   try:
     subprocess.check_call(command)
   except subprocess.CalledProcessError as err:
-    sys.stderr.write('Error running fuzzers: "{0}"'.format(str(err)))
+    sys.stderr.write('Error building fuzzers: "{0}"'.format(str(err)))
     return err.returncode
 
   # Run the specified project's fuzzers from the build.
@@ -48,7 +48,7 @@ def main():
   except subprocess.CalledProcessError as err:
     sys.stderr.write('Error running fuzzers: "{0}"'.format(str(err)))
     return err.returncode
-  print('Fuzzers ran Successfully.')
+  print('Fuzzers ran successfully.')
   return 0
 
 
