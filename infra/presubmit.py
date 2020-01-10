@@ -16,11 +16,15 @@
 ################################################################################
 """Check code for common issues before submitting."""
 
+import argparse
 import itertools
 import os
-from multiprocessing.pool import ThreadPool
+import subprocess
 import sys
 import yaml
+
+
+_SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _is_project_file(actual_path, expected_filename):
@@ -36,7 +40,7 @@ def _is_project_file(actual_path, expected_filename):
   return os.path.exists(actual_path)
 
 
-def check_lib_fuzzing_engine(build_sh_file):
+def _check_one_lib_fuzzing_engine(build_sh_file):
   """Returns False if |build_sh_file| contains -lFuzzingEngine.
   This is deprecated behavior. $LIB_FUZZING_ENGINE should be used instead
   so that -fsanitize=fuzzer is used."""
@@ -52,6 +56,12 @@ def check_lib_fuzzing_engine(build_sh_file):
 Please use $LIB_FUZZING_ENGINE.'''.format(line_num))
       return False
   return True
+
+
+def check_lib_fuzzing_engine(paths):
+  """Call _check_one_lib_fuzzing_engine on each path in |paths|. Return True if
+  the result of every call is True."""
+  return all(_check_one_lib_fuzzing_engine(path) for path in paths)
 
 
 class ProjectYamlChecker:
@@ -143,7 +153,7 @@ class ProjectYamlChecker:
           '%s is an invalid email address.', email_address)
 
 
-def check_project_yaml(project_yaml_filename):
+def _check_one_project_yaml(project_yaml_filename):
   """Do checks on the project.yaml file."""
   if not _is_project_file(project_yaml_filename, 'project.yaml'):
     return True
@@ -152,32 +162,146 @@ def check_project_yaml(project_yaml_filename):
   return checker.do_checks()
 
 
-def do_check(check_func, argument):
-  """Run call check_func(argument) and return the result."""
-  try:
-    return check_func(argument)
-  except Exception as error:  # pylint: disable=broad-except
-    print('Error doing check: %s() on %s:'
-        '\n%s: %s' %
-        (check_func.__name__, argument, error.__class__.__name__, error))
-    return False
+def check_project_yaml(paths):
+  """Call _check_one_project_yaml on each path in |paths|. Return True if
+  the result of every call is True."""
+  return all(_check_one_project_yaml(path) for path in paths)
 
 
-def do_checks(filenames):
-  """Do all checks on |filenames|. Return False if any fail."""
-  checks = [check_project_yaml, check_lib_fuzzing_engine]
-  pool = ThreadPool()
-  return all(pool.starmap(do_check, itertools.product(checks, filenames)))
+def do_checks(changed_files):
+  """Return False if any presubmit check fails."""
+  success = True
+
+  checks = [check_license, yapf, lint,
+            check_project_yaml, check_lib_fuzzing_engine]
+  if not all(check(changed_files) for check in checks):
+    success = False
+
+  return success
+
+
+_CHECK_LICENSE_FILENAMES = ['Dockerfile']
+_CHECK_LICENSE_EXTENSIONS = [
+    '.bash',
+    '.c',
+    '.cc',
+    '.cpp',
+    '.css',
+    '.h',
+    '.htm',
+    '.html',
+    '.js',
+    '.proto',
+    '.py',
+    '.sh',
+    '.yaml',
+]
+_LICENSE_STRING = 'http://www.apache.org/licenses/LICENSE-2.0'
+
+
+def check_license(paths):
+  """Validate license header."""
+  if not paths:
+    return True
+
+  success = True
+  for path in paths:
+    filename = os.path.basename(path)
+    extension = os.path.splitext(path)[1]
+    if (filename not in _CHECK_LICENSE_FILENAMES and
+        extension not in _CHECK_LICENSE_EXTENSIONS):
+      continue
+
+    with open(path) as file_handle:
+      if _LICENSE_STRING not in file_handle.read():
+        print('Missing license header in file %s.' % str(path))
+        success = False
+
+  return success
+
+
+def bool_to_returncode(success):
+  """Return 0 if |success|. Otherwise return 1."""
+  if success:
+    print('Success.')
+    return 0
+
+  print('Failed.')
+  return 1
+
+def is_python(path):
+  """Returns True if |path| ends in .py."""
+  return path.suffix == '.py'
+
+
+def lint(paths):
+  """Run python's linter on |paths| if it is a python file. Return False if it
+  fails linting."""
+  paths = [path for path in paths if is_python(path)]
+  paths = filter_migrations(paths)
+  if not paths:
+    return True
+
+  command = ['python3', '-m', 'pylint', '-j', '0']
+  command.extend(paths)
+  returncode = subprocess.run(command, check=False).returncode
+  return returncode == 0
+
+
+def yapf(paths, validate):
+  """Do yapf on |path| if it is Python file. Only validates format if
+  |validate| otherwise, formats the file. Returns False if validation
+  or formatting fails."""
+  paths = [path for path in paths if is_python(path)]
+  if not paths:
+    return True
+
+  validate_argument = '-d' if validate else '-i'
+  command = ['yapf', validate_argument, '-p']
+  command.extend(paths)
+  returncode = subprocess.run(command, check=False).returncode
+  return returncode == 0
+
+
+def get_changed_files():
+  """Return a list of absolute paths of files changed in this git branch."""
+  diff_command = ['git', 'diff', '--name-only', 'FETCH_HEAD']
+  return [
+      os.path.abspath(path)
+      for path in subprocess.check_output(diff_command).decode().splitlines()
+      if os.path.isfile(path)
+  ]
 
 
 def main():
   """Check changes on a branch for common issues before submitting."""
-  # TODO(metzman): Change this script to use git to automatically find changed
-  # files.
-  if len(sys.argv) < 2:
-    print('Usage: {0} file1 [file2, file3, ...]'.format(sys.argv[0]))
-  if not do_checks(sys.argv[1:]):
-    sys.exit(1)
+  # Get program arguments.
+  parser = argparse.ArgumentParser(
+      description='Presubmit script for fuzzer-benchmarks.')
+  parser.add_argument('command',
+                      choices=['format', 'lint', 'license'],
+                      nargs='?')
+  args = parser.parse_args()
+
+  changed_files = get_changed_files()
+  print(changed_files)
+
+  # Do one specific check if the user asked for it.
+  if args.command == 'format':
+    success = yapf(changed_files, False)
+    return bool_to_returncode(success)
+
+  if args.command == 'lint':
+    success = lint(changed_files)
+    return bool_to_returncode(success)
+
+  if args.command == 'license':
+    success = check_license(changed_files, False)
+    return bool_to_returncode(success)
+
+  # Otherwise, do all of them.
+  success = do_checks(changed_files)
+  return bool_to_returncode(success)
 
 
 if __name__ == '__main__':
