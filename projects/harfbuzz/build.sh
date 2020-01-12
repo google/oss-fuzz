@@ -43,6 +43,7 @@ for d in \
 	test/shaping/data/text-rendering-tests/fonts \
 	test/api/fonts \
 	test/fuzzing/fonts \
+	perf/fonts \
 	; do
 	cp $d/* all-fonts/
 done
