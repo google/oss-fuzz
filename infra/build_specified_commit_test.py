@@ -62,7 +62,7 @@ class BuildImageIntegrationTests(unittest.TestCase):
       self.assertNotEqual(new_error_code, old_error_code)
 
   def test_detect_main_repo_from_commit(self):
-    """Test the detect main repo functionality of the build specific commit module."""
+    """Test the detect main repo function from build specific commit module."""
     repo_origin, repo_name = build_specified_commit.detect_main_repo(
         'curl', commit='bc5d22c3dede2f04870c37aec9a50474c4b888ad')
     self.assertEqual(repo_origin, 'https://github.com/curl/curl.git')
@@ -84,7 +84,7 @@ class BuildImageIntegrationTests(unittest.TestCase):
     self.assertIsNone(repo_name)
 
   def test_detect_main_repo_from_name(self):
-    """Test the detect main repo functionality of the build specific commit module."""
+    """Test the detect main repo function from build specific commit module."""
     repo_origin, repo_name = build_specified_commit.detect_main_repo(
         'curl', repo_name='curl')
     self.assertEqual(repo_origin, 'https://github.com/curl/curl.git')

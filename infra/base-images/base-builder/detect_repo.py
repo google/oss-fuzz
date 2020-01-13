@@ -16,9 +16,11 @@ inside of an OSS-Fuzz project.
 
 Example Usage:
 
-  python detect_repo.py --src_dir /src --example_commit b534f03eecd8a109db2b085ab24d419b6486de97
+  python detect_repo.py --src_dir /src --example_commit
+    b534f03eecd8a109db2b085ab24d419b6486de97
 
-Prints the location of the git remote repo as well as the repos name seperated by a space.
+Prints the location of the git remote repo as well as the repos name
+seperated by a space.
 
   https://github.com/VirusTotal/yara.git yara
 

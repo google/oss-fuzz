@@ -79,7 +79,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
     return None, None
   if repo_name and commit:
     print(
-        'Both repo name and commit specific. Using repo_name to detect main repo.'
+        'Both repo name and commit specific. Using repo name for detection.'
     )
 
   # Base builder needs to be built when repo_name is specific for caching
