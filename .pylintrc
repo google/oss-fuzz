@@ -322,7 +322,7 @@ indent-after-paren=4
 
 # String used as indentation unit. This is usually "    " (4 spaces) or "\t" (1
 # tab).
-indent-string='    '
+indent-string='  '
 
 # Maximum number of characters on a single line.
 max-line-length=100
@@ -580,9 +580,6 @@ min-public-methods=2
 # "BaseException, Exception".
 overgeneral-exceptions=BaseException,
                        Exception
-
-# String used as indentation unit. We differ from PEP8's normal 4 spaces.
-indent-string='  '
 
 # Maximum number of characters on a single line.
 max-line-length=80

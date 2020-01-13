@@ -32,8 +32,18 @@ a distributed fuzzer execution environment and reporting tool.
 Currently, OSS-Fuzz supports C/C++, Rust, and Go code. Other languages supported by [LLVM](http://llvm.org) may work too.
 OSS-Fuzz supports fuzzing x86_64 and i386 builds.
 
-## Trophies
-As of August 2019, OSS-Fuzz has found over [14,000] bugs in [200] open source projects.
+## Learn more about fuzzing
 
-[14,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=-status%3AWontFix%2CDuplicate+-Infra
-[200]: https://github.com/google/oss-fuzz/tree/master/projects
+This documentation describes how to use OSS-Fuzz service for your open source project.
+To learn more about fuzzing in general, we recommend reading [libFuzzer tutorial]
+and the other docs in [google/fuzzing] repository. These and some other resources
+are listed on the [useful links]({{ site.baseurl }}/reference/useful-links/#tutorials) page.
+
+[google/fuzzing]: https://github.com/google/fuzzing/tree/master/docs
+[libFuzzer tutorial]: https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md
+
+## Trophies
+As of January 2020, OSS-Fuzz has found over [16,000] bugs in [250] open source projects.
+
+[16,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
+[250]: https://github.com/google/oss-fuzz/tree/master/projects

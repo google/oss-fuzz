@@ -27,10 +27,10 @@ OSS-Fuzz supports fuzzing x86_64 and i386 builds.
 Read our [detailed documentation](https://google.github.io/oss-fuzz) to learn how to use OSS-Fuzz.
 
 ## Trophies
-As of August 2019, OSS-Fuzz has found over [14,000] bugs in [200] open source projects.
+As of January 2020, OSS-Fuzz has found over [16,000] bugs in [250] open source projects.
 
-[14,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=-status%3AWontFix%2CDuplicate+-Infra
-[200]: https://github.com/google/oss-fuzz/tree/master/projects
+[16,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
+[250]: https://github.com/google/oss-fuzz/tree/master/projects
 
 ## Blog posts
 
