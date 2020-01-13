@@ -243,7 +243,10 @@ def lint(paths):
   if not paths:
     return True
 
-  command = ['python3', '-m', 'pylint', '-j', '0']
+  command = [
+      'python3', '-m', 'pylint', '-j', '0',
+      '--rcfile=' + os.path.join(_SRC_ROOT, 'infra', '.pylintrc')
+  ]
   command.extend(paths)
 
   returncode = subprocess.run(command, check=False).returncode
@@ -286,9 +289,9 @@ def main():
                       nargs='?')
   args = parser.parse_args()
 
-  changed_files = get_changed_files()
-
   os.chdir(_SRC_ROOT)
+
+  changed_files = get_changed_files()
 
   # Do one specific check if the user asked for it.
   if args.command == 'format':
