@@ -28,7 +28,11 @@ import utils
 
 
 def main():
-  """Connects Fuzzers with CI tools."""
+  """Connects Fuzzers with CI tools.
+
+  Returns:
+    True on success False on failure.
+  """
   parser = argparse.ArgumentParser(
       description='Help CI tools manage specific fuzzers.')
 
@@ -49,30 +53,40 @@ def main():
     os.chdir(utils.OSS_FUZZ_HOME)
 
   if args.command == 'build_fuzzers':
-    return build_fuzzers(args)
-  elif args.command == 'run_fuzzer':
-    return run_fuzzers(args)
+    return build_fuzzers(args) == 0
+  if args.command == 'run_fuzzer':
+    return run_fuzzers(args) == 0
   print('Invalid argument option, use build_fuzzers or run_fuzzer.')
-  return 1
+  return False
 
 
 def build_fuzzers(args):
-  """Builds all of the fuzzers for a specific OSS-Fuzz project."""
+  """Builds all of the fuzzers for a specific OSS-Fuzz project.
+
+  Returns:
+    True on success False on failure.
+  """
+
   # TODO: Fix return value bubble to actually handle errors.
   with tempfile.TemporaryDirectory() as tmp_dir:
     inferred_url, repo_name = build_specified_commit.detect_main_repo(
         args.project_name, repo_name=args.repo_name)
-    build_repo_manager = repo_manager.RepoManager(
-        inferred_url, tmp_dir, repo_name=repo_name)
+    build_repo_manager = repo_manager.RepoManager(inferred_url,
+                                                  tmp_dir,
+                                                  repo_name=repo_name)
     return build_specified_commit.build_fuzzers_from_commit(
-        args.project_name, args.commit_sha, build_repo_manager)
+        args.project_name, args.commit_sha, build_repo_manager) == 0
 
 
 def run_fuzzers(args):
-  """Runs a all fuzzer for a specific OSS-Fuzz project."""
+  """Runs a all fuzzer for a specific OSS-Fuzz project.
+
+  Returns:
+    True on success False on failure.
+  """
 
   # TODO: Implement this function
-  return 0
+  return True
 
 
 if __name__ == '__main__':

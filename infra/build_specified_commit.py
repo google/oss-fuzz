@@ -48,15 +48,15 @@ def build_fuzzers_from_commit(project_name,
     0 on successful build 1 on failure
   """
   build_repo_manager.checkout_commit(commit)
-  return helper.build_fuzzers_impl(
-      project_name=project_name,
-      clean=True,
-      engine=engine,
-      sanitizer=sanitizer,
-      architecture=architecture,
-      env_to_add=None,
-      source_path=build_repo_manager.repo_dir,
-      mount_location=os.path.join('/src', build_repo_manager.repo_name))
+  return helper.build_fuzzers_impl(project_name=project_name,
+                                   clean=True,
+                                   engine=engine,
+                                   sanitizer=sanitizer,
+                                   architecture=architecture,
+                                   env_to_add=None,
+                                   source_path=build_repo_manager.repo_dir,
+                                   mount_location=os.path.join(
+                                       '/src', build_repo_manager.repo_name))
 
 
 def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
@@ -77,14 +77,21 @@ def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
   if not repo_name and not commit:
     print('Error: can not detect main repo without a repo_name or a commit.')
     return None, None
+  if repo_name and commit:
+    print(
+        'Both repo name and commit specific. Using repo_name to detect main repo.'
+    )
 
+  # Base builder needs to be built when repo_name is specific for caching
+  # problems on github actions
   if repo_name:
     helper.build_image_impl('base-builder')
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
       'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
-      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir]
+      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir
+  ]
   if repo_name:
     command_to_run.extend(['--repo_name', repo_name])
   else:

@@ -50,10 +50,10 @@ class BuildData():
     sanitizer: The sanitizer to be used
     architecture: CPU architecture to build the fuzzer for
   """
-  project_name: str
-  engine: str
-  sanitizer: str
-  architecture: str
+  project_name = ''
+  engine = ''
+  sanitizer = ''
+  architecture = ''
 
 
 def main():
@@ -65,25 +65,25 @@ def main():
   parser = argparse.ArgumentParser(
       description='git bisection for finding introduction of bugs')
 
-  parser.add_argument(
-      '--project_name',
-      help='The name of the project where the bug occured',
-      required=True)
-  parser.add_argument(
-      '--commit_new',
-      help='The newest commit SHA to be bisected',
-      required=True)
-  parser.add_argument(
-      '--commit_old',
-      help='The oldest commit SHA to be bisected',
-      required=True)
-  parser.add_argument(
-      '--fuzz_target', help='the name of the fuzzer to be built', required=True)
+  parser.add_argument('--project_name',
+                      help='The name of the project where the bug occured',
+                      required=True)
+  parser.add_argument('--commit_new',
+                      help='The newest commit SHA to be bisected',
+                      required=True)
+  parser.add_argument('--commit_old',
+                      help='The oldest commit SHA to be bisected',
+                      required=True)
+  parser.add_argument('--fuzz_target',
+                      help='the name of the fuzzer to be built',
+                      required=True)
   parser.add_argument('--testcase', help='path to test case', required=True)
-  parser.add_argument(
-      '--engine', help='the default is "libfuzzer"', default='libfuzzer')
-  parser.add_argument(
-      '--sanitizer', default='address', help='the default is "address"')
+  parser.add_argument('--engine',
+                      help='the default is "libfuzzer"',
+                      default='libfuzzer')
+  parser.add_argument('--sanitizer',
+                      default='address',
+                      help='the default is "address"')
   parser.add_argument('--architecture', default='x86_64')
   args = parser.parse_args()
   build_data = BuildData(args.project_name, args.engine, args.sanitizer,
@@ -124,31 +124,24 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
         build_data.project_name, commit=commit_old)
     if not repo_url or not repo_name:
       raise ValueError('Main git repo can not be determined.')
-    bisect_repo_manager = repo_manager.RepoManager(
-        repo_url, tmp_dir, repo_name=repo_name)
+    bisect_repo_manager = repo_manager.RepoManager(repo_url,
+                                                   tmp_dir,
+                                                   repo_name=repo_name)
     commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
     old_idx = len(commit_list) - 1
     new_idx = 0
 
     build_specified_commit.build_fuzzers_from_commit(
-        build_data.project_name,
-        commit_list[new_idx],
-        bisect_repo_manager,
-        build_data.engine,
-        build_data.sanitizer,
-        build_data.architecture)
+        build_data.project_name, commit_list[new_idx], bisect_repo_manager,
+        build_data.engine, build_data.sanitizer, build_data.architecture)
     expected_error_code = helper.reproduce_impl(build_data.project_name,
                                                 fuzz_target, False, [], [],
                                                 testcase)
 
     # Check if the error is persistent through the commit range
     build_specified_commit.build_fuzzers_from_commit(
-        build_data.project_name,
-        commit_list[old_idx],
-        bisect_repo_manager,
-        build_data.engine,
-        build_data.sanitizer,
-        build_data.architecture)
+        build_data.project_name, commit_list[old_idx], bisect_repo_manager,
+        build_data.engine, build_data.sanitizer, build_data.architecture)
     oldest_error_code = helper.reproduce_impl(build_data.project_name,
                                               fuzz_target, False, [], [],
                                               testcase)
@@ -159,12 +152,8 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
       build_specified_commit.build_fuzzers_from_commit(
-          build_data.project_name,
-          commit_list[curr_idx],
-          bisect_repo_manager,
-          build_data.engine,
-          build_data.sanitizer,
-          build_data.architecture)
+          build_data.project_name, commit_list[curr_idx], bisect_repo_manager,
+          build_data.engine, build_data.sanitizer, build_data.architecture)
       error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                          False, [], [], testcase)
       if expected_error_code == error_code:

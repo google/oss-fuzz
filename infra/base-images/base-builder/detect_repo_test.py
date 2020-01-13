@@ -25,8 +25,8 @@ import unittest
 import detect_repo
 # Appending to path for access to repo_manager module.
 sys.path.append(
-    os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+    os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.realpath(__file__)))))
 import repo_manager
 
 
@@ -90,8 +90,9 @@ class DetectRepoTest(unittest.TestCase):
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--repo_name',
         repo_name
     ]
-    out, _ = detect_repo.execute(
-        command, location=os.path.dirname(os.path.realpath(__file__)))
+    out, _ = detect_repo.execute(command,
+                                 location=os.path.dirname(
+                                     os.path.realpath(__file__)))
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)
@@ -111,8 +112,9 @@ class DetectRepoTest(unittest.TestCase):
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--example_commit',
         commit
     ]
-    out, _ = detect_repo.execute(
-        command, location=os.path.dirname(os.path.realpath(__file__)))
+    out, _ = detect_repo.execute(command,
+                                 location=os.path.dirname(
+                                     os.path.realpath(__file__)))
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)

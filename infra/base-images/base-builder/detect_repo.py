@@ -35,17 +35,15 @@ def main():
     ValueError when a commit or a ref is not provided.
   """
   parser = argparse.ArgumentParser(
-      description="Finds a specific git repo in an oss-fuzz project's docker file."
-  )
+      description=
+      "Finds a specific git repo in an oss-fuzz project's docker file.")
   parser.add_argument(
       '--src_dir',
       help="The location of the oss-fuzz project's source directory.",
       required=True)
-  parser.add_argument(
-      '--repo_name', help='The name of the git repo.')
-  parser.add_argument(
-      '--example_commit',
-      help='A commit SHA referencing the projects main repo.')
+  parser.add_argument('--repo_name', help='The name of the git repo.')
+  parser.add_argument('--example_commit',
+                      help='A commit SHA referencing the projects main repo.')
 
   args = parser.parse_args()
   if not args.repo_name and not args.example_commit:
@@ -119,7 +117,7 @@ def check_for_commit(repo_path, commit):
 
   # Check if commit is in history.
   _, return_code = execute(['git', 'cat-file', '-e', commit],
-                               location=repo_path)
+                           location=repo_path)
   return return_code == 0
 
 
