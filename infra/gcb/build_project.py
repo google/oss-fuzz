@@ -70,7 +70,7 @@ ENGINE_INFO = {
 }
 
 DEFAULT_ARCHITECTURES = ['x86_64']
-DEFAULT_ENGINES = ['libfuzzer', 'afl']
+DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 TARGETS_LIST_BASENAME = 'targets.list'
