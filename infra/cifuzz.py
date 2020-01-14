@@ -55,7 +55,7 @@ def main():
   if args.command == 'build_fuzzers':
     return build_fuzzers(args) == 0
   if args.command == 'run_fuzzer':
-    return run_fuzzers(args) == 0
+    print('Not implemented')
   print('Invalid argument option, use build_fuzzers or run_fuzzer.')
   return False
 
@@ -74,19 +74,13 @@ def build_fuzzers(args):
     build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                   tmp_dir,
                                                   repo_name=repo_name)
+    build_data = build_specified_commit.BuildData()
+    build_data.project_name = args.project_name
+    build_data.sanitizer = 'address'
+    build_data.engine = 'libfuzzer'
+    build_data.architecture = 'x86_64'
     return build_specified_commit.build_fuzzers_from_commit(
-        args.project_name, args.commit_sha, build_repo_manager) == 0
-
-
-def run_fuzzers(args):
-  """Runs a all fuzzer for a specific OSS-Fuzz project.
-
-  Returns:
-    True on success False on failure.
-  """
-
-  # TODO: Implement this function
-  return True
+        args.commit_sha, build_repo_manager, build_data) == 0
 
 
 if __name__ == '__main__':

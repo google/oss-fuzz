@@ -18,41 +18,46 @@ from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
 import os
+from dataclasses import dataclass
 import re
 import subprocess
 
 import helper
 
 
-class DockerExecutionError(Exception):
-  """An error that occurs when running a docker command."""
+@dataclass
+class BuildData():
+  """List of data requried for bisection of errors in OSS-Fuzz projects.
+
+  Attributes:
+    project_name: The name of the OSS-Fuzz project that is being checked
+    engine: The fuzzing engine to be used
+    sanitizer: The sanitizer to be used
+    architecture: CPU architecture to build the fuzzer for
+  """
+  project_name = ''
+  engine = ''
+  sanitizer = ''
+  architecture = ''
 
 
-def build_fuzzers_from_commit(project_name,
-                              commit,
-                              build_repo_manager,
-                              engine='libfuzzer',
-                              sanitizer='address',
-                              architecture='x86_64'):
+def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
   """Builds a OSS-Fuzz fuzzer at a  specific commit SHA.
 
   Args:
-    project_name: The OSS-Fuzz project name.
     commit: The commit SHA to build the fuzzers at.
     build_repo_manager: The OSS-Fuzz project's repo manager to be built at.
-    engine: The fuzzing engine to be used.
-    sanitizer: The fuzzing sanitizer to be used.
-    architecture: The system architiecture to be used for fuzzing.
-
+    build_data: A struct containing project build information
   Returns:
     0 on successful build 1 on failure
   """
   build_repo_manager.checkout_commit(commit)
-  return helper.build_fuzzers_impl(project_name=project_name,
+  print(build_data.project_name)
+  return helper.build_fuzzers_impl(project_name=build_data.project_name,
                                    clean=True,
-                                   engine=engine,
-                                   sanitizer=sanitizer,
-                                   architecture=architecture,
+                                   engine=build_data.engine,
+                                   sanitizer=build_data.sanitizer,
+                                   architecture=build_data.architecture,
                                    env_to_add=None,
                                    source_path=build_repo_manager.repo_dir,
                                    mount_location=os.path.join(
@@ -78,9 +83,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
     print('Error: can not detect main repo without a repo_name or a commit.')
     return None, None
   if repo_name and commit:
-    print(
-        'Both repo name and commit specific. Using repo name for detection.'
-    )
+    print('Both repo name and commit specific. Using repo name for detection.')
 
   # Base builder needs to be built when repo_name is specific for caching
   # problems on github actions

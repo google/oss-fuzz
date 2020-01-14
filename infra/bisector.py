@@ -31,29 +31,12 @@ This is done with the following steps:
 """
 
 import argparse
-from dataclasses import dataclass
 import os
 import tempfile
 
 import build_specified_commit
 import helper
 import repo_manager
-
-
-@dataclass
-class BuildData():
-  """List of data requried for bisection of errors in OSS-Fuzz projects.
-
-  Attributes:
-    project_name: The name of the OSS-Fuzz project that is being checked
-    engine: The fuzzing engine to be used
-    sanitizer: The sanitizer to be used
-    architecture: CPU architecture to build the fuzzer for
-  """
-  project_name = ''
-  engine = ''
-  sanitizer = ''
-  architecture = ''
 
 
 def main():
@@ -86,8 +69,9 @@ def main():
                       help='the default is "address"')
   parser.add_argument('--architecture', default='x86_64')
   args = parser.parse_args()
-  build_data = BuildData(args.project_name, args.engine, args.sanitizer,
-                         args.architecture)
+  build_data = build_specified_commit.BuildData(args.project_name, args.engine,
+                                                args.sanitizer,
+                                                args.architecture)
   error_sha = bisect(args.commit_old, args.commit_new, args.testcase,
                      args.fuzz_target, build_data)
   if not error_sha:
@@ -131,29 +115,28 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     old_idx = len(commit_list) - 1
     new_idx = 0
 
-    build_specified_commit.build_fuzzers_from_commit(
-        build_data.project_name, commit_list[new_idx], bisect_repo_manager,
-        build_data.engine, build_data.sanitizer, build_data.architecture)
+    build_specified_commit.build_fuzzers_from_commit(build_data,
+                                                     commit_list[new_idx],
+                                                     bisect_repo_manager)
     expected_error_code = helper.reproduce_impl(build_data.project_name,
                                                 fuzz_target, False, [], [],
                                                 testcase)
 
     # Check if the error is persistent through the commit range
-    build_specified_commit.build_fuzzers_from_commit(
-        build_data.project_name, commit_list[old_idx], bisect_repo_manager,
-        build_data.engine, build_data.sanitizer, build_data.architecture)
-    oldest_error_code = helper.reproduce_impl(build_data.project_name,
-                                              fuzz_target, False, [], [],
-                                              testcase)
+    build_specified_commit.build_fuzzers_from_commit(build_data,
+                                                     commit_list[old_idx],
+                                                     bisect_repo_manager)
 
-    if expected_error_code == oldest_error_code:
+    if expected_error_code == helper.reproduce_impl(build_data.project_name,
+                                                    fuzz_target, False, [], [],
+                                                    testcase):
       return commit_list[old_idx]
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
-      build_specified_commit.build_fuzzers_from_commit(
-          build_data.project_name, commit_list[curr_idx], bisect_repo_manager,
-          build_data.engine, build_data.sanitizer, build_data.architecture)
+      build_specified_commit.build_fuzzers_from_commit(build_data,
+                                                       commit_list[curr_idx],
+                                                       bisect_repo_manager)
       error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                          False, [], [], testcase)
       if expected_error_code == error_code:

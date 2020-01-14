@@ -47,16 +47,19 @@ class BuildImageIntegrationTests(unittest.TestCase):
 
       yara_repo_manager = repo_manager.RepoManager(
           'https://github.com/VirusTotal/yara.git', tmp_dir, repo_name='yara')
-      build_specified_commit.build_fuzzers_from_commit(project_name,
-                                                       old_commit,
+      build_data = build_specified_commit.BuildData()
+      build_data.sanitizer = 'address'
+      build_data.architecture = 'x86_64'
+      build_data.engine = 'libfuzzer'
+      build_data.project_name = 'yara'
+      build_specified_commit.build_fuzzers_from_commit(old_commit,
                                                        yara_repo_manager,
-                                                       sanitizer='address')
+                                                       build_data)
       old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
                                              [], test_data)
-      build_specified_commit.build_fuzzers_from_commit(project_name,
-                                                       new_commit,
+      build_specified_commit.build_fuzzers_from_commit(new_commit,
                                                        yara_repo_manager,
-                                                       sanitizer='address')
+                                                       build_data)
       new_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
                                              [], test_data)
       self.assertNotEqual(new_error_code, old_error_code)
