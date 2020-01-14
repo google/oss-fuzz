@@ -20,4 +20,8 @@ RUN apt-get install -y make libtool libssl-dev libexpat-dev wget
 RUN git clone --depth=1 https://github.com/NLnetLabs/unbound unbound
 WORKDIR unbound
 COPY parse_packet_fuzzer.c .
+COPY fuzz_1.c .
+COPY fuzz_2.c .
+COPY fuzz_3.c .
+COPY fuzz_4.c .
 COPY build.sh $SRC/
