@@ -4,6 +4,8 @@
 Usage: build_project.py <project_dir>
 """
 
+from __future__ import print_function
+
 import base64
 import collections
 import datetime
@@ -43,34 +45,29 @@ EngineInfo = collections.namedtuple(
 
 ENGINE_INFO = {
     'libfuzzer':
-        EngineInfo(
-            upload_bucket='clusterfuzz-builds',
-            supported_sanitizers=['address', 'memory', 'undefined'],
-            supported_architectures=['x86_64', 'i386']),
+        EngineInfo(upload_bucket='clusterfuzz-builds',
+                   supported_sanitizers=['address', 'memory', 'undefined'],
+                   supported_architectures=['x86_64', 'i386']),
     'afl':
-        EngineInfo(
-            upload_bucket='clusterfuzz-builds-afl',
-            supported_sanitizers=['address'],
-            supported_architectures=['x86_64']),
+        EngineInfo(upload_bucket='clusterfuzz-builds-afl',
+                   supported_sanitizers=['address'],
+                   supported_architectures=['x86_64']),
     'honggfuzz':
-        EngineInfo(
-            upload_bucket='clusterfuzz-builds-honggfuzz',
-            supported_sanitizers=['address', 'memory', 'undefined'],
-            supported_architectures=['x86_64']),
+        EngineInfo(upload_bucket='clusterfuzz-builds-honggfuzz',
+                   supported_sanitizers=['address', 'memory', 'undefined'],
+                   supported_architectures=['x86_64']),
     'dataflow':
-        EngineInfo(
-            upload_bucket='clusterfuzz-builds-dataflow',
-            supported_sanitizers=['dataflow'],
-            supported_architectures=['x86_64']),
+        EngineInfo(upload_bucket='clusterfuzz-builds-dataflow',
+                   supported_sanitizers=['dataflow'],
+                   supported_architectures=['x86_64']),
     'none':
-        EngineInfo(
-            upload_bucket='clusterfuzz-builds-no-engine',
-            supported_sanitizers=['address'],
-            supported_architectures=['x86_64']),
+        EngineInfo(upload_bucket='clusterfuzz-builds-no-engine',
+                   supported_sanitizers=['address'],
+                   supported_architectures=['x86_64']),
 }
 
 DEFAULT_ARCHITECTURES = ['x86_64']
-DEFAULT_ENGINES = ['libfuzzer', 'afl']
+DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 TARGETS_LIST_BASENAME = 'targets.list'
@@ -254,8 +251,8 @@ def get_build_steps(project_dir):
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
                     ('rm -r /out && cd /src && cd {1} && mkdir -p {0} && '
-                     'compile || (echo "build_fuzzers {2}" && false)')
-                    .format(out, workdir, failure_msg),
+                     'compile || (echo "build_fuzzers {2}" && false)'
+                    ).format(out, workdir, failure_msg),
                 ],
             })
 
@@ -277,11 +274,12 @@ def get_build_steps(project_dir):
           build_steps.append(
               # test binaries
               {
-                  'name': 'gcr.io/oss-fuzz-base/base-runner',
-                  'env': env,
+                  'name':
+                      'gcr.io/oss-fuzz-base/base-runner',
+                  'env':
+                      env,
                   'args': [
-                      'bash',
-                      '-c',
+                      'bash', '-c',
                       'test_all || (echo "check_build {0}" && false)'.format(
                           failure_msg)
                   ],
@@ -394,12 +392,12 @@ def run_build(build_steps, project_name, tag):
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
-  build_info = cloudbuild.projects().builds().create(
-      projectId='oss-fuzz', body=build_body).execute()
+  build_info = cloudbuild.projects().builds().create(projectId='oss-fuzz',
+                                                     body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
 
-  print >> sys.stderr, 'Logs:', get_logs_url(build_id)
-  print build_id
+  print('Logs:', get_logs_url(build_id), file=sys.stderr)
+  print(build_id)
 
 
 def main():
