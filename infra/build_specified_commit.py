@@ -18,14 +18,12 @@ from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
 import os
-from dataclasses import dataclass
 import re
 import subprocess
 
 import helper
 
 
-@dataclass
 class BuildData():
   """List of data requried for bisection of errors in OSS-Fuzz projects.
 
@@ -35,6 +33,7 @@ class BuildData():
     sanitizer: The sanitizer to be used
     architecture: CPU architecture to build the fuzzer for
   """
+  # pylint: disable=too-few-public-methods
   project_name = ''
   engine = ''
   sanitizer = ''
