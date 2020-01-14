@@ -744,7 +744,7 @@ def run_fuzzer(args):
 
 def reproduce(args):
   """Reproduce a specific test case from a specific project."""
-  return reproduce_impl(args.project_name, args.fuzzer_name, args.valgrind, args.env_to_add,
+  return reproduce_impl(args.project_name, args.fuzzer_name, args.valgrind, args.e,
                         args.fuzzer_args, args.testcase_path)
 
 
