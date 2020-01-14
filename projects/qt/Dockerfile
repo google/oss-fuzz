@@ -17,9 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER rlohningqt@gmail.com
 RUN apt-get update && apt-get install -y build-essential python libxcb-xinerama0-dev && apt-get install --no-install-recommends afl-doc
-RUN git clone --depth 1 git://code.qt.io/qt/qt5.git qt
+RUN git clone --branch 5.15 --depth 1 git://code.qt.io/qt/qt5.git qt
 WORKDIR qt
-RUN perl init-repository --module-subset=qtbase
+RUN perl init-repository --module-subset=qtbase --no-update && git submodule update --depth 1 --recursive
 
 WORKDIR $SRC
 RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git

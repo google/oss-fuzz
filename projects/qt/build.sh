@@ -34,8 +34,7 @@ make install
 zip -j $WORK/xml $SRC/qtqa/fuzzing/testcases/xml/* /usr/share/afl/testcases/others/xml/*
 
 # build fuzzers
-sed -i -e "/LIBS/d" $SRC/qt/qtbase/tests/libfuzzer/corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro
-$OUT/bin/qmake LIBS+=$LIB_FUZZING_ENGINE $SRC/qt/qtbase/tests/libfuzzer/corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro
+$OUT/bin/qmake $SRC/qt/qtbase/tests/libfuzzer/corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro
 make -j$(nproc)
 mv readnext $OUT
 cp $WORK/xml.zip $OUT/readnext_seed_corpus.zip
