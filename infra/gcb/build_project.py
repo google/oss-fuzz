@@ -45,30 +45,25 @@ EngineInfo = collections.namedtuple(
 
 ENGINE_INFO = {
     'libfuzzer':
-    EngineInfo(
-        upload_bucket='clusterfuzz-builds',
-        supported_sanitizers=['address', 'memory', 'undefined'],
-        supported_architectures=['x86_64', 'i386']),
+        EngineInfo(upload_bucket='clusterfuzz-builds',
+                   supported_sanitizers=['address', 'memory', 'undefined'],
+                   supported_architectures=['x86_64', 'i386']),
     'afl':
-    EngineInfo(
-        upload_bucket='clusterfuzz-builds-afl',
-        supported_sanitizers=['address'],
-        supported_architectures=['x86_64']),
+        EngineInfo(upload_bucket='clusterfuzz-builds-afl',
+                   supported_sanitizers=['address'],
+                   supported_architectures=['x86_64']),
     'honggfuzz':
-    EngineInfo(
-        upload_bucket='clusterfuzz-builds-honggfuzz',
-        supported_sanitizers=['address', 'memory', 'undefined'],
-        supported_architectures=['x86_64']),
+        EngineInfo(upload_bucket='clusterfuzz-builds-honggfuzz',
+                   supported_sanitizers=['address', 'memory', 'undefined'],
+                   supported_architectures=['x86_64']),
     'dataflow':
-    EngineInfo(
-        upload_bucket='clusterfuzz-builds-dataflow',
-        supported_sanitizers=['dataflow'],
-        supported_architectures=['x86_64']),
+        EngineInfo(upload_bucket='clusterfuzz-builds-dataflow',
+                   supported_sanitizers=['dataflow'],
+                   supported_architectures=['x86_64']),
     'none':
-    EngineInfo(
-        upload_bucket='clusterfuzz-builds-no-engine',
-        supported_sanitizers=['address'],
-        supported_architectures=['x86_64']),
+        EngineInfo(upload_bucket='clusterfuzz-builds-no-engine',
+                   supported_sanitizers=['address'],
+                   supported_architectures=['x86_64']),
 }
 
 DEFAULT_ARCHITECTURES = ['x86_64']
@@ -188,8 +183,7 @@ def get_build_steps(project_dir):
           'dir': 'oss-fuzz/projects/' + name,
       },
       {
-          'name':
-          image,
+          'name': image,
           'args': [
               'bash', '-c',
               'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
@@ -245,9 +239,9 @@ def get_build_steps(project_dir):
             # compile
             {
                 'name':
-                image,
+                    image,
                 'env':
-                env,
+                    env,
                 'args': [
                     'bash',
                     '-c',
@@ -257,8 +251,8 @@ def get_build_steps(project_dir):
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
                     ('rm -r /out && cd /src && cd {1} && mkdir -p {0} && '
-                     'compile || (echo "build_fuzzers {2}" && false)').format(
-                         out, workdir, failure_msg),
+                     'compile || (echo "build_fuzzers {2}" && false)'
+                    ).format(out, workdir, failure_msg),
                 ],
             })
 
@@ -266,7 +260,7 @@ def get_build_steps(project_dir):
           # Patch dynamic libraries to use instrumented ones.
           build_steps.append({
               'name':
-              'gcr.io/oss-fuzz-base/msan-builder',
+                  'gcr.io/oss-fuzz-base/msan-builder',
               'args': [
                   'bash',
                   '-c',
@@ -281,9 +275,9 @@ def get_build_steps(project_dir):
               # test binaries
               {
                   'name':
-                  'gcr.io/oss-fuzz-base/base-runner',
+                      'gcr.io/oss-fuzz-base/base-runner',
                   'env':
-                  env,
+                      env,
                   'args': [
                       'bash', '-c',
                       'test_all || (echo "check_build {0}" && false)'.format(
@@ -295,9 +289,9 @@ def get_build_steps(project_dir):
           # write target labels
           build_steps.append({
               'name':
-              image,
+                  image,
               'env':
-              env,
+                  env,
               'args': [
                   '/usr/local/bin/write_labels.py',
                   json.dumps(project_yaml['labels']),
@@ -309,9 +303,9 @@ def get_build_steps(project_dir):
             # generate targets list
             {
                 'name':
-                'gcr.io/oss-fuzz-base/base-runner',
+                    'gcr.io/oss-fuzz-base/base-runner',
                 'env':
-                env,
+                    env,
                 'args': [
                     'bash',
                     '-c',
@@ -322,9 +316,11 @@ def get_build_steps(project_dir):
             # zip binaries
             {
                 'name':
-                image,
-                'args':
-                ['bash', '-c', 'cd {0} && zip -r {1} *'.format(out, zip_file)],
+                    image,
+                'args': [
+                    'bash', '-c',
+                    'cd {0} && zip -r {1} *'.format(out, zip_file)
+                ],
             },
             # upload srcmap
             {
@@ -345,7 +341,7 @@ def get_build_steps(project_dir):
             # upload targets list
             {
                 'name':
-                'gcr.io/oss-fuzz-base/uploader',
+                    'gcr.io/oss-fuzz-base/uploader',
                 'args': [
                     '/workspace/{0}'.format(targets_list_filename),
                     targets_list_url,
@@ -391,15 +387,13 @@ def run_build(build_steps, project_name, tag):
       'timeout': str(BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
-      'tags': [
-          project_name + '-' + tag,
-      ],
+      'tags': [project_name + '-' + tag,],
   }
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
-  build_info = cloudbuild.projects().builds().create(
-      projectId='oss-fuzz', body=build_body).execute()
+  build_info = cloudbuild.projects().builds().create(projectId='oss-fuzz',
+                                                     body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
 
   print('Logs:', get_logs_url(build_id), file=sys.stderr)
