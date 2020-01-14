@@ -23,11 +23,14 @@ import tempfile
 import unittest
 
 import detect_repo
+
 # Appending to path for access to repo_manager module.
+#pylint: disable=wrong-import-position
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(
         os.path.realpath(__file__)))))
 import repo_manager
+#pylint: enable=wrong-import-position
 
 
 class DetectRepoTest(unittest.TestCase):
