@@ -320,6 +320,14 @@ def get_build_steps(project_dir):
               ],
           })
 
+        if sanitizer == 'dataflow' and fuzzing_engine == 'dataflow':
+          dataflow_steps = dataflow_post_build_steps()
+          if dataflow_steps:
+            build_steps.extend(dataflow_steps)
+          else:
+            sys.stderr.write('Skipping dataflow post build steps.\n')
+
+
         build_steps.extend([
             # generate targets list
             {
@@ -381,6 +389,29 @@ def get_build_steps(project_dir):
         ])
 
   return build_steps
+
+
+def dataflow_post_build_steps(project_name):
+  steps = []
+  download_corpora_step = build_helper.download_corpora_step(project_name)
+  if not download_corpora_step:
+    return None
+
+  steps.append(download_corpora_step)
+  steps,append({
+      'name':
+          'gcr.io/oss-fuzz-base/base-runner',
+      'args': [
+          'bash', '-c',
+          ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && '
+            'collect_dft || (echo "DFT collection failed." && false)')
+      ],
+      'volumes': [{
+          'name': 'corpus',
+          'path': '/corpus'
+      }],
+  })
+  return steps
 
 
 def get_logs_url(build_id):
