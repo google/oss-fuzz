@@ -1,0 +1,8 @@
+homepage: "https://arrow.apache.org/"
+primary_contact: "antoine@python.org"
+auto_ccs:
+  - "wesmckinn@gmail.com"
+  - "private@arrow.apache.org"
+sanitizers:
+  - address
+  - undefined
