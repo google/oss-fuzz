@@ -483,7 +483,7 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
 
   result_code = docker_run(command)
   if result_code:
-    print('Building fuzzers failed.')
+    print('Building fuzzers failed.', file=sys.stderr)
     return result_code
 
   # Patch MSan builds to use instrumented shared libraries.

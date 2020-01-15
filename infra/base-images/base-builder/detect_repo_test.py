@@ -69,7 +69,7 @@ class DetectRepoTest(unittest.TestCase):
     """Tests that the main project repo can be inferred from a repo name."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-      # Construct example repos to check for names
+      # Construct example repos to check for name.
       repo_manager.RepoManager('https://github.com/curl/curl.git', tmp_dir)
       repo_manager.RepoManager('https://github.com/ntop/nDPI.git', tmp_dir)
       repo_manager.RepoManager('https://github.com/libarchive/libarchive.git',
@@ -85,7 +85,7 @@ class DetectRepoTest(unittest.TestCase):
     """Checks the detect repo's main method for a specific set of inputs.
 
       Args:
-        repo_origin: The location of where the git repo url.
+        repo_origin: URL of the git repo.
         repo_name: The name of the directory it is cloned to.
         tmp_dir: The location of the directory of git repos to be searched.
       """
@@ -106,7 +106,7 @@ class DetectRepoTest(unittest.TestCase):
     """Checks the detect repos main method for a specific set of inputs.
 
     Args:
-      repo_origin: The location of where the git repo is stored.
+      repo_origin: URL of the git repo.
       repo_name: The name of the directory it is cloned to.
       commit: The commit that should be used to look up the repo.
       tmp_dir: The location of the directory of git repos to be searched.
@@ -117,7 +117,7 @@ class DetectRepoTest(unittest.TestCase):
     ]
     out, _ = detect_repo.execute(command,
                                  location=os.path.dirname(
-                                     os.path.realpath(__file__)))
+                                     os.path.abspath(__file__)))
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)

@@ -48,7 +48,7 @@ def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
     build_repo_manager: The OSS-Fuzz project's repo manager to be built at.
     build_data: A struct containing project build information
   Returns:
-    0 on successful build 1 on failure
+    0 on successful build or error code on failure
   """
   build_repo_manager.checkout_commit(commit)
   print(build_data.project_name)
@@ -77,17 +77,13 @@ def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
   Returns:
     The repo's origin, the repo's name.
   """
-  # TODO: Add infra for non hardcoded '/src'
+  # TODO: Add infra for non hardcoded '/src'.
   if not repo_name and not commit:
     print('Error: can not detect main repo without a repo_name or a commit.')
     return None, None
   if repo_name and commit:
     print('Both repo name and commit specific. Using repo name for detection.')
 
-  # Base builder needs to be built when repo_name is specific for caching
-  # problems on github actions
-  if repo_name:
-    helper.build_image_impl('base-builder')
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [

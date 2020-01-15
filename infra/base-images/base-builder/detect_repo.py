@@ -50,16 +50,16 @@ def main():
   args = parser.parse_args()
   if not args.repo_name and not args.example_commit:
     raise ValueError(
-        'Requires either an example commit or a repo name to detect repo.')
+        'Requires either an example commit or a repo name to detect repo location.')
   for single_dir in os.listdir(args.src_dir):
     full_path = os.path.join(args.src_dir, single_dir)
     if not os.path.isdir(full_path):
       continue
     if args.example_commit and check_for_commit(full_path, args.example_commit):
-      print('Detected repo: ' + get_repo(full_path) + ' ' + single_dir)
+      print('Detected repo:', get_repo(full_path), single_dir)
       return
     if args.repo_name and check_for_repo_name(full_path, args.repo_name):
-      print('Detected repo: ' + get_repo(full_path) + ' ' + single_dir)
+      print('Detected repo:', get_repo(full_path), single_dir)
       return
   print('No git repos with specific commit: %s found in %s' %
         (args.example_commit, args.src_dir))

@@ -24,7 +24,7 @@ import tempfile
 
 import build_specified_commit
 import repo_manager
-import utils
+import helper
 
 
 def main():
@@ -49,13 +49,14 @@ def main():
   args = parser.parse_args()
 
   # Change to oss-fuzz main directory so helper.py runs correctly.
-  if os.getcwd() != utils.OSS_FUZZ_HOME:
-    os.chdir(utils.OSS_FUZZ_HOME)
+  if os.getcwd() != helper.OSSFUZZ_DIR:
+    os.chdir(helper.OSSFUZZ_DIR)
 
   if args.command == 'build_fuzzers':
     return build_fuzzers(args) == 0
   if args.command == 'run_fuzzer':
     print('Not implemented')
+    return False
   print('Invalid argument option, use build_fuzzers or run_fuzzer.')
   return False
 
