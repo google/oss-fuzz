@@ -24,7 +24,7 @@ import subprocess
 import helper
 
 
-class BuildData():
+class BuildData:
   """Data required for bisection of errors in OSS-Fuzz projects.
 
   Attributes:
@@ -34,10 +34,6 @@ class BuildData():
     architecture: CPU architecture to build the fuzzer for.
   """
   # pylint: disable=too-few-public-methods
-  project_name = ''
-  engine = ''
-  sanitizer = ''
-  architecture = ''
 
   def __init__(self):
     self.project_name = ''
