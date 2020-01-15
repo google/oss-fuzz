@@ -139,7 +139,7 @@ def get_build_steps(project_dir):
           # to add this step to set it back.
           ('rm -r /out && cd /src && cd {workdir} && mkdir -p {out} && '
            'compile || (echo "{failure_msg}" && false)'
-           ).format(workdir=workdir, out=out, failure_msg=failure_msg),
+          ).format(workdir=workdir, out=out, failure_msg=failure_msg),
       ],
   })
 

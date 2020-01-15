@@ -237,9 +237,11 @@ def get_build_steps(project_dir):
                        'python infra/helper.py build_image {name}\n'
                        'python infra/helper.py build_fuzzers --sanitizer '
                        '{sanitizer} --engine {engine} --architecture '
-                       '{architecture} {name}\n' + '*' * 80
-                       ).format(name=name, sanitizer=sanitizer,
-                                engine=fuzzing_engine, architecture=architecture)
+                       '{architecture} {name}\n' + '*' * 80).format(
+                           name=name,
+                           sanitizer=sanitizer,
+                           engine=fuzzing_engine,
+                           architecture=architecture)
 
         build_steps.append(
             # compile
@@ -285,9 +287,11 @@ def get_build_steps(project_dir):
                          '{architecture} {name}\n'
                          'python infra/helper.py check_build --sanitizer '
                          '{sanitizer} --engine {engine} --architecture '
-                         '{architecture} {name}\n' + '*' * 80
-                         ).format(name=name, sanitizer=sanitizer,
-                                  engine=fuzzing_engine, architecture=architecture)
+                         '{architecture} {name}\n' + '*' * 80).format(
+                             name=name,
+                             sanitizer=sanitizer,
+                             engine=fuzzing_engine,
+                             architecture=architecture)
 
           build_steps.append(
               # test binaries
