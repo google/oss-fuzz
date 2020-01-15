@@ -120,9 +120,9 @@ def get_build_steps(project_dir):
     workdir = '/src'
 
   failure_msg = ('*' * 80 + '\nCoverage build failed.\nTo reproduce, run:\n'
-                 'python infra/helper.py build_image {0}\n'
-                 'python infra/helper.py build_fuzzers --sanitizer coverage {0}'
-                 '\n' + '*' * 80).format(name)
+                 'python infra/helper.py build_image {name}\n'
+                 'python infra/helper.py build_fuzzers --sanitizer coverage '
+                 '{name}\n' + '*' * 80).format(name=name)
 
   # Compilation step.
   build_steps.append({
@@ -137,8 +137,9 @@ def get_build_steps(project_dir):
           # `cd /src && cd {workdir}` (where {workdir} is parsed from the
           # Dockerfile). Container Builder overrides our workdir so we need
           # to add this step to set it back.
-          'rm -r /out && cd /src && cd {1} && mkdir -p {0} && compile || (echo "{2}" && false)'
-          .format(out, workdir, failure_msg),
+          ('rm -r /out && cd /src && cd {workdir} && mkdir -p {out} && '
+           'compile || (echo "{failure_msg}" && false)'
+           ).format(workdir=workdir, out=out, failure_msg=failure_msg),
       ],
   })
 
@@ -171,10 +172,11 @@ def get_build_steps(project_dir):
 
   failure_msg = ('*' * 80 + '\nCode coverage report generation failed.\n'
                  'To reproduce, run:\n'
-                 'python infra/helper.py build_image {0}\n'
-                 'python infra/helper.py build_fuzzers --sanitizer coverage {0}'
-                 '\npython infra/helper.py coverage {0}\n' +
-                 '*' * 80).format(name)
+                 'python infra/helper.py build_image {name}\n'
+                 'python infra/helper.py build_fuzzers --sanitizer coverage '
+                 '{name}\n'
+                 'python infra/helper.py coverage {name}\n' +
+                 '*' * 80).format(name=name)
 
   # Unpack the corpus and run coverage script.
   build_steps.append({
