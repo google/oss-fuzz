@@ -173,7 +173,7 @@ def get_build_steps(project_dir):
                  'To reproduce, run:\n'
                  'python infra/helper.py build_project {0} &&\n'
                  'python infra/helper.py build_fuzzers --sanitizer coverage {0}'
-                 '\npython infra/helper.py coverage {0}\n'
+                 '\npython infra/helper.py coverage {0}\n' +
                  '*' * 80).format(name)
 
   # Unpack the corpus and run coverage script.
@@ -195,7 +195,7 @@ def get_build_steps(project_dir):
            '24 hours, please wait one more day. Otherwise, something is '
            'wrong with the fuzz target or the infrastructure, and corpus '
            'pruning task does not finish successfully." && exit 1'
-           '); done && coverage || (echo "{0}" && false)').format(failure_msg)
+           '); done && coverage || (echo "' + failure_msg + '" && false)')
       ],
       'volumes': [{
           'name': 'corpus',
