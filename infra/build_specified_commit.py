@@ -33,7 +33,7 @@ class BuildData:
     sanitizer: The sanitizer to be used.
     architecture: CPU architecture to build the fuzzer for.
   """
-  
+
   # pylint: disable=too-few-public-methods
 
   def __init__(self):

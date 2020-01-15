@@ -33,7 +33,7 @@ import subprocess
 def main():
   """Function to get a git repo's url and name referenced by OSS-Fuzz
   Dockerfile.
-  
+
   Raises:
     ValueError when a commit or a ref is not provided.
   """
