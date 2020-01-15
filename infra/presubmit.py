@@ -145,8 +145,12 @@ class ProjectYamlChecker:
     """Check that emails are valid looking."""
     # Get email addresses.
     email_addresses = []
-    for section in ['auto_ccs', 'primary_contact']:
-      email_addresses.extend(self.data.get(section, []))
+    primary_contact = self.data.get('primary_contact')
+    if primary_contact:
+      email_addresses.append(primary_contact)
+    auto_ccs = self.data.get('auto_ccs')
+    if auto_ccs:
+      email_addresses.extend(auto_ccs)
 
     # Sanity check them.
     for email_address in email_addresses:
@@ -197,6 +201,7 @@ _CHECK_LICENSE_EXTENSIONS = [
     '.sh',
     '.yaml',
 ]
+_CHECK_LICENSE_EXCLUSIONS = ['project.yaml']
 _LICENSE_STRING = 'http://www.apache.org/licenses/LICENSE-2.0'
 
 
@@ -208,6 +213,9 @@ def check_license(paths):
   success = True
   for path in paths:
     filename = os.path.basename(path)
+    if filename in _CHECK_LICENSE_EXCLUSIONS:
+      continue
+
     extension = os.path.splitext(path)[1]
     if (filename not in _CHECK_LICENSE_FILENAMES and
         extension not in _CHECK_LICENSE_EXTENSIONS):
