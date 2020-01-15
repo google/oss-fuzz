@@ -41,7 +41,7 @@ def main():
       "Finds a specific git repo in an oss-fuzz project's docker file.")
   parser.add_argument(
       '--src_dir',
-      help="The location of the oss-fuzz project's source directory.",
+      help="The location of an oss-fuzz project's source directory.",
       required=True)
   parser.add_argument('--repo_name', help='The name of the git repo.')
   parser.add_argument('--example_commit',
@@ -50,7 +50,7 @@ def main():
   args = parser.parse_args()
   if not args.repo_name and not args.example_commit:
     raise ValueError(
-        'Requires either an example commit or a repo name to detect repo location.')
+        'Requires an example commit or a repo name to find repo location.')
   for single_dir in os.listdir(args.src_dir):
     full_path = os.path.join(args.src_dir, single_dir)
     if not os.path.isdir(full_path):
