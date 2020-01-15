@@ -234,7 +234,7 @@ def get_build_steps(project_dir):
           workdir = '/src'
 
         failure_msg = ('*' * 80 + '\nFailed to build.\nTo reproduce, run:\n'
-                       'python infra/helper.py build_project {0}\n'
+                       'python infra/helper.py build_image {0}\n'
                        'python infra/helper.py build_fuzzers --sanitizer {1} '
                        '--engine {2} --architecture {3} {0}\n' +
                        '*' * 80).format(name, sanitizer, fuzzing_engine,
@@ -278,7 +278,7 @@ def get_build_steps(project_dir):
         if run_tests:
           failure_msg = ('*' * 80 + '\nBuild checks failed.\n'
                          'To reproduce, run:\n'
-                         'python infra/helper.py build_project {0}\n'
+                         'python infra/helper.py build_image {0}\n'
                          'python infra/helper.py build_fuzzers --sanitizer {1} '
                          '--engine {2} --architecture {3} {0}\n'
                          'python infra/helper.py check_build --sanitizer {1} '

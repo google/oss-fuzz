@@ -120,7 +120,7 @@ def get_build_steps(project_dir):
     workdir = '/src'
 
   failure_msg = ('*' * 80 + '\nCoverage build failed.\nTo reproduce, run:\n'
-                 'python infra/helper.py build_project {0}\n'
+                 'python infra/helper.py build_image {0}\n'
                  'python infra/helper.py build_fuzzers --sanitizer coverage {0}'
                  '\n' + '*' * 80).format(name)
 
@@ -171,7 +171,7 @@ def get_build_steps(project_dir):
 
   failure_msg = ('*' * 80 + '\nCode coverage report generation failed.\n'
                  'To reproduce, run:\n'
-                 'python infra/helper.py build_project {0}\n'
+                 'python infra/helper.py build_image {0}\n'
                  'python infra/helper.py build_fuzzers --sanitizer coverage {0}'
                  '\npython infra/helper.py coverage {0}\n' +
                  '*' * 80).format(name)
