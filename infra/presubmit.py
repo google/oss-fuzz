@@ -199,9 +199,8 @@ _CHECK_LICENSE_EXTENSIONS = [
     '.proto',
     '.py',
     '.sh',
-    '.yaml',
 ]
-_CHECK_LICENSE_EXCLUSIONS = ['project.yaml']
+
 _LICENSE_STRING = 'http://www.apache.org/licenses/LICENSE-2.0'
 
 
@@ -213,9 +212,6 @@ def check_license(paths):
   success = True
   for path in paths:
     filename = os.path.basename(path)
-    if filename in _CHECK_LICENSE_EXCLUSIONS:
-      continue
-
     extension = os.path.splitext(path)[1]
     if (filename not in _CHECK_LICENSE_FILENAMES and
         extension not in _CHECK_LICENSE_EXTENSIONS):
