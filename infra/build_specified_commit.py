@@ -25,7 +25,7 @@ import helper
 
 
 class BuildData():
-  """List of data requried for bisection of errors in OSS-Fuzz projects.
+  """Data required for bisection of errors in OSS-Fuzz projects.
 
   Attributes:
     project_name: The name of the OSS-Fuzz project that is being checked.
@@ -39,6 +39,12 @@ class BuildData():
   sanitizer = ''
   architecture = ''
 
+  def __init__(self):
+    self.project_name = ''
+    self.engine = 'libfuzzer'
+    self.sanitizer = 'address'
+    self.architecture = 'x86_64'
+
 
 def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
   """Builds a OSS-Fuzz fuzzer at a  specific commit SHA.
@@ -51,7 +57,6 @@ def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
     0 on successful build or error code on failure.
   """
   build_repo_manager.checkout_commit(commit)
-  print(build_data.project_name)
   return helper.build_fuzzers_impl(project_name=build_data.project_name,
                                    clean=True,
                                    engine=build_data.engine,

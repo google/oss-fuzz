@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test the functionality of the detect_repo module.
-The will consist of the following functional test:
+This will consist of the following functional test:
   1. Determine if a OSS-Fuzz projects main repo can be accurately deduce
   from example commits.
 """
@@ -25,12 +25,12 @@ import unittest
 import detect_repo
 
 # Appending to path for access to repo_manager module.
-#pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(
         os.path.realpath(__file__)))))
 import repo_manager
-#pylint: enable=wrong-import-position
+# pylint: enable=wrong-import-position
 
 
 class DetectRepoTest(unittest.TestCase):

@@ -75,7 +75,7 @@ class TestBisect(unittest.TestCase):
 
   def test_bisect_usrsctp(self):
     """Test the bisect method on the usrsctp."""
-    build_data = build_specified_commit.BuildData('usrsctp')
+    build_data = build_specified_commit.BuildData()
     build_data.project_name = 'usrsctp'
     build_data.engine = 'libfuzzer'
     build_data.sanitizer = 'address'

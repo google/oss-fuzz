@@ -19,7 +19,7 @@ Example Usage:
   python detect_repo.py --src_dir /src --example_commit
     b534f03eecd8a109db2b085ab24d419b6486de97
 
-Prints the location of the git remote repo as well as the repos name
+Prints the location of the git remote repo as well as the repo's name
 seperated by a space.
 
   https://github.com/VirusTotal/yara.git yara
@@ -31,21 +31,21 @@ import subprocess
 
 
 def main():
-  """Function to get a git repo's url and name refenced by OSS-Fuzz Dockerfile.
+  """Function to get a git repo's url and name referenced by OSS-Fuzz Dockerfile.
 
   Raises:
     ValueError when a commit or a ref is not provided.
   """
   parser = argparse.ArgumentParser(
       description=
-      "Finds a specific git repo in an oss-fuzz project's docker file.")
+      'Finds a specific git repo in an oss-fuzz project\'s docker file.')
   parser.add_argument(
       '--src_dir',
-      help="The location of an oss-fuzz project's source directory.",
+      help='The location of an oss-fuzz project\'s source directory.',
       required=True)
   parser.add_argument('--repo_name', help='The name of the git repo.')
   parser.add_argument('--example_commit',
-                      help='A commit SHA referencing the projects main repo.')
+                      help='A commit SHA referencing the project\'s main repo.')
 
   args = parser.parse_args()
   if not args.repo_name and not args.example_commit:

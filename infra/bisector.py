@@ -18,7 +18,7 @@ where the bug was introduced. It also looks for where the bug was fixed.
 This is done with the following steps:
 
 
-  NOTE: NEEDS TO BE RUN FROM THE OSS-Fuzz HOME directory.
+  NOTE: Needs to be run from root of the OSS-Fuzz source checkout.
 
   Typical usage example:
         python3 infra/bisector.py
@@ -49,29 +49,33 @@ def main():
       description='git bisection for finding introduction of bugs')
 
   parser.add_argument('--project_name',
-                      help='The name of the project where the bug occured',
+                      help='The name of the project where the bug occurred.',
                       required=True)
   parser.add_argument('--commit_new',
-                      help='The newest commit SHA to be bisected',
+                      help='The newest commit SHA to be bisected.',
                       required=True)
   parser.add_argument('--commit_old',
-                      help='The oldest commit SHA to be bisected',
+                      help='The oldest commit SHA to be bisected.',
                       required=True)
   parser.add_argument('--fuzz_target',
-                      help='the name of the fuzzer to be built',
+                      help='The name of the fuzzer to be built.',
                       required=True)
-  parser.add_argument('--testcase', help='path to test case', required=True)
+  parser.add_argument('--testcase',
+                      help='The path to test case.',
+                      required=True)
   parser.add_argument('--engine',
-                      help='the default is "libfuzzer"',
+                      help='The default is "libfuzzer".',
                       default='libfuzzer')
   parser.add_argument('--sanitizer',
                       default='address',
-                      help='the default is "address"')
+                      help='The default is "address".')
   parser.add_argument('--architecture', default='x86_64')
   args = parser.parse_args()
-  build_data = build_specified_commit.BuildData(args.project_name, args.engine,
-                                                args.sanitizer,
-                                                args.architecture)
+  build_data = build_specified_commit.BuildData()
+  build_data.project_name = args.project_name
+  build_data.engine = args.engine
+  build_data.sanitizer = args.sanitizer
+  build_data.architecture = args.architecture
   error_sha = bisect(args.commit_old, args.commit_new, args.testcase,
                      args.fuzz_target, build_data)
   if not error_sha:
