@@ -13,4 +13,5 @@ auto_ccs:
   - "jiangtao@google.com"
 fuzzing_engines:
   - libfuzzer
+  - afl
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*
