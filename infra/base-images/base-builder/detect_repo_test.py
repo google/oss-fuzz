@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test the functionality of the detect_repo module.
-The will consist of the following functional test
+This will consist of the following functional test:
   1. Determine if a OSS-Fuzz projects main repo can be accurately deduce
   from example commits.
 """
@@ -23,11 +23,14 @@ import tempfile
 import unittest
 
 import detect_repo
+
 # Appending to path for access to repo_manager module.
+# pylint: disable=wrong-import-position
 sys.path.append(
-    os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+    os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__)))))
 import repo_manager
+# pylint: enable=wrong-import-position
 
 
 class DetectRepoTest(unittest.TestCase):
@@ -62,25 +65,66 @@ class DetectRepoTest(unittest.TestCase):
       self.check_commit_with_repo(None, None,
                                   'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', tmp_dir)
 
-  def check_commit_with_repo(self, repo_origin, repo_name, commit, tmp_dir):
+  def test_infer_main_repo_from_name(self):
+    """Tests that the main project repo can be inferred from a repo name."""
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      # Construct example repos to check for name.
+      repo_manager.RepoManager('https://github.com/curl/curl.git', tmp_dir)
+      repo_manager.RepoManager('https://github.com/ntop/nDPI.git', tmp_dir)
+      repo_manager.RepoManager('https://github.com/libarchive/libarchive.git',
+                               tmp_dir)
+      self.check_ref_with_repo('https://github.com/curl/curl.git', 'curl',
+                               tmp_dir)
+      self.check_ref_with_repo('https://github.com/ntop/nDPI.git', 'nDPI',
+                               tmp_dir)
+      self.check_ref_with_repo('https://github.com/libarchive/libarchive.git',
+                               'libarchive', tmp_dir)
+
+  def check_ref_with_repo(self, repo_origin, repo_name, tmp_dir):
     """Checks the detect repo's main method for a specific set of inputs.
 
+      Args:
+        repo_origin: URL of the git repo.
+        repo_name: The name of the directory it is cloned to.
+        tmp_dir: The location of the directory of git repos to be searched.
+      """
+    command = [
+        'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--repo_name',
+        repo_name
+    ]
+    out, _ = detect_repo.execute(command,
+                                 location=os.path.dirname(
+                                     os.path.realpath(__file__)))
+    match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
+    if match and match.group(1) and match.group(2):
+      self.assertEqual(match.group(1), repo_origin)
+    else:
+      self.assertIsNone(repo_origin)
+
+  def check_commit_with_repo(self, repo_origin, repo_name, commit, tmp_dir):
+    """Checks the detect repos main method for a specific set of inputs.
+
     Args:
-      repo_origin: The location of where the git repo is stored
-      repo_name: The name of the directory it is cloned to
-      commit: The commit that should be used to look up the repo
-      tmp_dir: The location of the directory of git repos to be searched
+      repo_origin: URL of the git repo.
+      repo_name: The name of the directory it is cloned to.
+      commit: The commit that should be used to look up the repo.
+      tmp_dir: The location of the directory of git repos to be searched.
     """
     command = [
         'python3', 'detect_repo.py', '--src_dir', tmp_dir, '--example_commit',
         commit
     ]
-    out, _ = detect_repo.execute(
-        command, location=os.path.dirname(os.path.realpath(__file__)))
+    out, _ = detect_repo.execute(command,
+                                 location=os.path.dirname(
+                                     os.path.abspath(__file__)))
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)
       self.assertEqual(match.group(2), repo_name)
+    else:
+      self.assertIsNone(repo_origin)
+      self.assertIsNone(repo_name)
 
 
 if __name__ == '__main__':

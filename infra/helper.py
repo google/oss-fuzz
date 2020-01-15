@@ -342,7 +342,12 @@ def _workdir_from_dockerfile(project_name):
 
 def docker_run(run_args, print_output=True):
   """Call `docker run`."""
-  command = ['docker', 'run', '--rm', '-i', '--privileged']
+  command = ['docker', 'run', '--rm', '--privileged']
+
+  # Support environments with a TTY.
+  if sys.stdin.isatty():
+    command.append('-i')
+
   command.extend(run_args)
 
   print('Running:', _get_command_string(command))
@@ -453,9 +458,7 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
         'bash', '-c', 'cp -r /msan /work'])
     env.append('MSAN_LIBS_PATH=' + '/work/msan')
 
-  command = (
-      ['docker', 'run', '--rm', '-i', '--cap-add', 'SYS_PTRACE'] +
-      _env_to_docker_args(env))
+  command = ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env)
   if source_path:
     workdir = _workdir_from_dockerfile(project_name)
     if workdir == '/src':
@@ -478,13 +481,10 @@ def build_fuzzers_impl(project_name, clean, engine, sanitizer, architecture,
       '-t', 'gcr.io/oss-fuzz/%s' % project_name
   ]
 
-  print('Running:', _get_command_string(command))
-
-  try:
-    subprocess.check_call(command)
-  except subprocess.CalledProcessError:
-    print('Fuzzers build failed.', file=sys.stderr)
-    return 1
+  result_code = docker_run(command)
+  if result_code:
+    print('Building fuzzers failed.', file=sys.stderr)
+    return result_code
 
   # Patch MSan builds to use instrumented shared libraries.
   if sanitizer == 'memory':

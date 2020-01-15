@@ -22,72 +22,84 @@ import re
 import subprocess
 
 import helper
-import repo_manager
 
 
-class DockerExecutionError(Exception):
-  """An error that occurs when running a docker command."""
+class BuildData:
+  """Data required for bisection of errors in OSS-Fuzz projects.
+
+  Attributes:
+    project_name: The name of the OSS-Fuzz project that is being checked.
+    engine: The fuzzing engine to be used.
+    sanitizer: The sanitizer to be used.
+    architecture: CPU architecture to build the fuzzer for.
+  """
+
+  # pylint: disable=too-few-public-methods
+
+  def __init__(self):
+    self.project_name = ''
+    self.engine = 'libfuzzer'
+    self.sanitizer = 'address'
+    self.architecture = 'x86_64'
 
 
-def build_fuzzer_from_commit(project_name,
-                             commit,
-                             local_store_path,
-                             engine='libfuzzer',
-                             sanitizer='address',
-                             architecture='x86_64',
-                             old_repo_manager=None):
+def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
   """Builds a OSS-Fuzz fuzzer at a  specific commit SHA.
 
   Args:
-    project_name: The OSS-Fuzz project name
-    commit: The commit SHA to build the fuzzers at
-    local_store_path: The full file path of a place where a temp git repo is stored
-    engine: The fuzzing engine to be used
-    sanitizer: The fuzzing sanitizer to be used
-    architecture: The system architiecture to be used for fuzzing
-
+    commit: The commit SHA to build the fuzzers at.
+    build_repo_manager: The OSS-Fuzz project's repo manager to be built at.
+    build_data: A struct containing project build information.
   Returns:
-    0 on successful build 1 on failure
+    0 on successful build or error code on failure.
   """
-  if not old_repo_manager:
-    inferred_url, repo_name = detect_main_repo_from_docker(project_name, commit)
-    old_repo_manager = repo_manager.RepoManager(
-        inferred_url, local_store_path, repo_name=repo_name)
-  old_repo_manager.checkout_commit(commit)
-  return helper.build_fuzzers_impl(
-      project_name=project_name,
-      clean=True,
-      engine=engine,
-      sanitizer=sanitizer,
-      architecture=architecture,
-      env_to_add=None,
-      source_path=old_repo_manager.repo_dir,
-      mount_location=os.path.join('/src', old_repo_manager.repo_name))
+  build_repo_manager.checkout_commit(commit)
+  return helper.build_fuzzers_impl(project_name=build_data.project_name,
+                                   clean=True,
+                                   engine=build_data.engine,
+                                   sanitizer=build_data.sanitizer,
+                                   architecture=build_data.architecture,
+                                   env_to_add=None,
+                                   source_path=build_repo_manager.repo_dir,
+                                   mount_location=os.path.join(
+                                       '/src', build_repo_manager.repo_name))
 
 
-def detect_main_repo_from_docker(project_name, example_commit, src_dir='/src'):
+def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
   """Checks a docker image for the main repo of an OSS-Fuzz project.
 
+  Note: The default is to use the repo name to detect the main repo.
+
   Args:
-    project_name: The name of the OSS-Fuzz project
-    example_commit: An associated commit SHA
-    src_dir: The location of the projects source on the docker image
+    project_name: The name of the oss-fuzz project.
+    repo_name: The name of the main repo in an OSS-Fuzz project.
+    commit: A commit SHA that is associated with the main repo.
+    src_dir: The location of the projects source on the docker image.
 
   Returns:
-    The repo's origin, the repo's name
+    The repo's origin, the repo's name.
   """
+  # TODO: Add infra for non hardcoded '/src'.
+  if not repo_name and not commit:
+    print('Error: can not detect main repo without a repo_name or a commit.')
+    return None, None
+  if repo_name and commit:
+    print('Both repo name and commit specific. Using repo name for detection.')
+
   helper.build_image_impl(project_name)
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
-      'docker', 'run', '--rm', '-i', '-t', docker_image_name, 'python3',
-      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir,
-      '--example_commit', example_commit
+      'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
+      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir
   ]
+  if repo_name:
+    command_to_run.extend(['--repo_name', repo_name])
+  else:
+    command_to_run.extend(['--example_commit', commit])
   out, _ = execute(command_to_run)
-
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
-    return match.group(1), match.group(2).rstrip()
+    return match.group(1), match.group(2)
   return None, None
 
 
@@ -95,15 +107,15 @@ def execute(command, location=None, check_result=False):
   """ Runs a shell command in the specified directory location.
 
   Args:
-    command: The command as a list to be run
-    location: The directory the command is run in
-    check_result: Should an exception be thrown on failed command
+    command: The command as a list to be run.
+    location: The directory the command is run in.
+    check_result: Should an exception be thrown on failed command.
 
   Returns:
-    The stdout of the command, the error code
+    The stdout of the command, the error code.
 
   Raises:
-    RuntimeError: running a command resulted in an error
+    RuntimeError: running a command resulted in an error.
   """
 
   if not location:
