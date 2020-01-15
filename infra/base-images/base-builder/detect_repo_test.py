@@ -28,7 +28,7 @@ import detect_repo
 # pylint: disable=wrong-import-position
 sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(
-        os.path.realpath(__file__)))))
+        os.path.abspath(__file__)))))
 import repo_manager
 # pylint: enable=wrong-import-position
 
