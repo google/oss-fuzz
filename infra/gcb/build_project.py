@@ -233,8 +233,13 @@ def get_build_steps(project_dir):
         if not workdir:
           workdir = '/src'
 
-        failure_msg = ('FAILED IN THE FOLLOWING CONFIG: --sanitizer {0} '
-                       '--engine {1}').format(sanitizer, fuzzing_engine)
+        failure_msg = ('*' * 80 + '\nFailed to build.\nTo reproduce, run:\n'
+                       'python infra/helper.py build_project {0} &&\n'
+                       'python infra/helper.py build_fuzzers --sanitizer {1} '
+                       '--engine {2} --architecture {3} {0}\n' +
+                       '*' * 80).format(name, sanitizer, fuzzing_engine,
+                                        architecture)
+
         build_steps.append(
             # compile
             {
@@ -251,7 +256,7 @@ def get_build_steps(project_dir):
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
                     ('rm -r /out && cd /src && cd {1} && mkdir -p {0} && '
-                     'compile || (echo "build_fuzzers {2}" && false)'
+                     'compile || (echo "{2}" && false)'
                     ).format(out, workdir, failure_msg),
                 ],
             })
@@ -271,6 +276,16 @@ def get_build_steps(project_dir):
           })
 
         if run_tests:
+          failure_msg = ('*' * 80 + '\nBuild checks failed.\n'
+                         'To reproduce, run:\n'
+                         'python infra/helper.py build_project {0} &&\n'
+                         'python infra/helper.py build_fuzzers --sanitizer {1} '
+                         '--engine {2} --architecture {3} {0} &&\n'
+                         'python infra/helper.py check_build --sanitizer {1} '
+                         '--engine {2} --architecture {3} {0} &&\n' +
+                         '*' * 80).format(name, sanitizer, fuzzing_engine,
+                                          architecture)
+
           build_steps.append(
               # test binaries
               {
@@ -280,8 +295,7 @@ def get_build_steps(project_dir):
                       env,
                   'args': [
                       'bash', '-c',
-                      'test_all || (echo "check_build {0}" && false)'.format(
-                          failure_msg)
+                      'test_all || (echo "{0}" && false)'.format(failure_msg)
                   ],
               })
 
