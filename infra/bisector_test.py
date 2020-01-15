@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing perepo_managerissions and
 # limitations under the License.
-"""Test the functionality of bisection module.
-1) Test a known case where an error appears in a regression range
-2) Bisect can handle incorrect inputs
+"""Test the functionality of bisection module:
+1) Test a known case where an error appears in a regression range.
+2) Bisect can handle incorrect inputs.
 """
 
 import os
@@ -27,10 +27,10 @@ TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestBisect(unittest.TestCase):
-  """Class to test the functionality of bisection method"""
+  """Class to test the functionality of bisection method."""
 
   def test_bisect_invalid_repo(self):
-    """Test the bisection method on a project that does not exist"""
+    """Test the bisection method on a project that does not exist."""
     build_data = build_specified_commit.BuildData()
     build_data.project_name = 'not-a-real-repo'
     build_data.engine = 'libfuzzer'

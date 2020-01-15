@@ -18,7 +18,7 @@ where the bug was introduced. It also looks for where the bug was fixed.
 This is done with the following steps:
 
 
-  NOTE: NEEDS TO BE RUN FROM THE OSS-Fuzz HOME directory
+  NOTE: NEEDS TO BE RUN FROM THE OSS-Fuzz HOME directory.
 
   Typical usage example:
         python3 infra/bisector.py
@@ -91,17 +91,17 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
   specific error from a fuzz testcase.
 
   Args:
-    commit_old: The oldest commit in the error regression range
-    commit_new: The newest commit in the error regression range
+    commit_old: The oldest commit in the error regression range.
+    commit_new: The newest commit in the error regression range.
     testcase: The file path of the test case that triggers the error
-    fuzz_target: The name of the fuzzer to be tested
-    build_data: a class holding all of the input parameters for bisection
+    fuzz_target: The name of the fuzzer to be tested.
+    build_data: a class holding all of the input parameters for bisection.
 
   Returns:
-    The commit SHA that introduced the error or None
+    The commit SHA that introduced the error or None.
 
   Raises:
-    ValueError: when a repo url can't be determine from the project
+    ValueError: when a repo url can't be determine from the project.
   """
   with tempfile.TemporaryDirectory() as tmp_dir:
     repo_url, repo_name = build_specified_commit.detect_main_repo(

@@ -28,10 +28,10 @@ class BuildData():
   """List of data requried for bisection of errors in OSS-Fuzz projects.
 
   Attributes:
-    project_name: The name of the OSS-Fuzz project that is being checked
-    engine: The fuzzing engine to be used
-    sanitizer: The sanitizer to be used
-    architecture: CPU architecture to build the fuzzer for
+    project_name: The name of the OSS-Fuzz project that is being checked.
+    engine: The fuzzing engine to be used.
+    sanitizer: The sanitizer to be used.
+    architecture: CPU architecture to build the fuzzer for.
   """
   # pylint: disable=too-few-public-methods
   project_name = ''
@@ -46,9 +46,9 @@ def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
   Args:
     commit: The commit SHA to build the fuzzers at.
     build_repo_manager: The OSS-Fuzz project's repo manager to be built at.
-    build_data: A struct containing project build information
+    build_data: A struct containing project build information.
   Returns:
-    0 on successful build or error code on failure
+    0 on successful build or error code on failure.
   """
   build_repo_manager.checkout_commit(commit)
   print(build_data.project_name)

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test the functionality of the build image from commit module.
-The will consist of the following functional tests
-  1. The inferance of the main repo for a specific project
+The will consist of the following functional tests:
+  1. The inferance of the main repo for a specific project.
 """
 import os
 import tempfile
@@ -28,7 +28,7 @@ TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class BuildImageIntegrationTests(unittest.TestCase):
-  """Testing if an image can be built from different states e.g. a commit"""
+  """Testing if an image can be built from different states e.g. a commit."""
 
   def test_build_fuzzers_from_commit(self):
     """Tests if the fuzzers can build at a proper commit.
@@ -116,7 +116,7 @@ class BuildImageIntegrationTests(unittest.TestCase):
 
 if __name__ == '__main__':
 
-  # Change to oss-fuzz main directory so helper.py runs correctly
+  # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != os.path.dirname(TEST_DIR_PATH):
     os.chdir(os.path.dirname(TEST_DIR_PATH))
   unittest.main()

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test the functionality of the detect_repo module.
-The will consist of the following functional test
+The will consist of the following functional test:
   1. Determine if a OSS-Fuzz projects main repo can be accurately deduce
   from example commits.
 """
