@@ -1,10 +1,30 @@
 """Utility module for Google Cloud Build scripts."""
-import datetime
-import json
+import base64
+import collections
 import os
 import requests
 import sys
+import time
+import urllib
 import urlparse
+
+from oauth2client.service_account import ServiceAccountCredentials
+
+BUILD_TIMEOUT = 12 * 60 * 60
+
+# Needed for reading public target.list.* files.
+GCS_URL_BASENAME = 'https://storage.googleapis.com/'
+
+GCS_UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
+
+# Where corpus backups can be downloaded from.
+CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
+                     'corpus/libFuzzer/{fuzzer}/latest.zip')
+
+# Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
+CORPUS_DOWNLOAD_BATCH_SIZE = 100
+
+TARGETS_LIST_BASENAME = 'targets.list'
 
 EngineInfo = collections.namedtuple(
     'EngineInfo',
@@ -33,32 +53,49 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64']),
 }
 
-# Needed for reading public target.list.* files.
-GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 
-# Where corpus backups can be downloaded from.
-CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
-                     'corpus/libFuzzer/{fuzzer}/latest.zip')
+def get_targets_list_filename(sanitizer):
+  return TARGETS_LIST_BASENAME + '.' + sanitizer
 
-# Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
-CORPUS_DOWNLOAD_BATCH_SIZE = 100
+
+def get_targets_list_url(bucket, project, sanitizer):
+  filename = get_targets_list_filename(sanitizer)
+  url = GCS_UPLOAD_URL_FORMAT.format(bucket, project, filename)
+  return url
 
 
 def _get_targets_list(project_name):
   # libFuzzer ASan is the default configuration, get list of targets from it.
-  url = build_project.get_targets_list_url(
-      build_project.ENGINE_INFO['libfuzzer'].upload_bucket, project_name,
-      'address')
+  url = get_targets_list_url(ENGINE_INFO['libfuzzer'].upload_bucket,
+                             project_name, 'address')
 
   url = urlparse.urljoin(GCS_URL_BASENAME, url)
-  r = requests.get(url)
-  if not r.status_code == 200:
+  response = requests.get(url)
+  if not response.status_code == 200:
     sys.stderr.write('Failed to get list of targets from "%s".\n' % url)
     sys.stderr.write('Status code: %d \t\tText:\n%s\n' %
-                     (r.status_code, r.text))
+                     (response.status_code, response.text))
     return None
 
-  return r.text.split()
+  return response.text.split()
+
+
+def get_signed_url(path, method='PUT', content_type=''):
+  timestamp = int(time.time() + BUILD_TIMEOUT)
+  blob = '{0}\n\n{1}\n{2}\n{3}'.format(method, content_type, timestamp, path)
+
+  creds = ServiceAccountCredentials.from_json_keyfile_name(
+      os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+  client_id = creds.service_account_email
+  signature = base64.b64encode(creds.sign_blob(blob)[1])
+  values = {
+      'GoogleAccessId': client_id,
+      'Expires': timestamp,
+      'Signature': signature,
+  }
+
+  return ('https://storage.googleapis.com{0}?'.format(path) +
+          urllib.urlencode(values))
 
 
 def download_corpora_step(project_name):
@@ -78,9 +115,9 @@ def download_corpora_step(project_name):
       if not binary_name.startswith(qualified_name_prefix):
         qualified_name = qualified_name_prefix + binary_name
 
-      url = build_project.get_signed_url(CORPUS_BACKUP_URL.format(
-          project=project_name, fuzzer=qualified_name),
-                                         method='GET')
+      url = get_signed_url(CORPUS_BACKUP_URL.format(project=project_name,
+                                                    fuzzer=qualified_name),
+                           method='GET')
 
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))

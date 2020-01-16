@@ -25,9 +25,9 @@ import sys
 
 # These can be controlled by the runner in order to change the values without
 # rebuiding OSS-Fuzz base images.
-FILE_SIZE_LIMIT = int(os.getenv('DFT_FILE_SIZE_LIMIT', 32 * 1024))
-MIN_TIMEOUT = float(os.getenv('DFT_MIN_TIMEOUT', 1))
-TIMEOUT_RANGE = float(os.getenv('DFT_TIMEOUT_RANGE', 3))
+FILE_SIZE_LIMIT = int(os.getenv('DFT_FILE_SIZE_LIMIT', '32 * 1024'))
+MIN_TIMEOUT = float(os.getenv('DFT_MIN_TIMEOUT', '1.0'))
+TIMEOUT_RANGE = float(os.getenv('DFT_TIMEOUT_RANGE', '3.0'))
 
 DFSAN_OPTIONS = 'fast16labels=1:warn_unimplemented=0'
 

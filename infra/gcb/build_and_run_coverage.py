@@ -233,7 +233,7 @@ def get_build_steps(project_dir):
   })
 
   # Update the latest report information file for ClusterFuzz.
-  latest_report_info_url = build_project.get_signed_url(
+  latest_report_info_url = build_helper.get_signed_url(
       LATEST_REPORT_INFO_URL.format(project=project_name),
       method='PUT',
       content_type='application/json')

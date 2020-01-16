@@ -6,24 +6,18 @@ Usage: build_project.py <project_dir>
 
 from __future__ import print_function
 
-import base64
-import collections
+
 import datetime
 import json
 import os
 import re
 import sys
-import time
-import urllib
 import yaml
 
 from oauth2client.client import GoogleCredentials
-from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
 import build_helper
-
-BUILD_TIMEOUT = 12 * 60 * 60
 
 FUZZING_BUILD_TAG = 'fuzzing'
 
@@ -44,10 +38,6 @@ CONFIGURATIONS = {
 DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
-
-TARGETS_LIST_BASENAME = 'targets.list'
-
-UPLOAD_URL_FORMAT = '/{0}/{1}/{2}'
 
 
 def usage():
@@ -70,24 +60,6 @@ def load_project_yaml(project_dir):
     project_yaml.setdefault('coverage_extra_args', '')
     project_yaml.setdefault('labels', {})
     return project_yaml
-
-
-def get_signed_url(path, method='PUT', content_type=''):
-  timestamp = int(time.time() + BUILD_TIMEOUT)
-  blob = '{0}\n\n{1}\n{2}\n{3}'.format(method, content_type, timestamp, path)
-
-  creds = ServiceAccountCredentials.from_json_keyfile_name(
-      os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
-  client_id = creds.service_account_email
-  signature = base64.b64encode(creds.sign_blob(blob)[1])
-  values = {
-      'GoogleAccessId': client_id,
-      'Expires': timestamp,
-      'Signature': signature,
-  }
-
-  return ('https://storage.googleapis.com{0}?'.format(path) +
-          urllib.urlencode(values))
 
 
 def is_supported_configuration(fuzzing_engine, sanitizer, architecture):
@@ -191,14 +163,16 @@ def get_build_steps(project_dir):
         bucket = build_helper.ENGINE_INFO[fuzzing_engine].upload_bucket
         if architecture != 'x86_64':
           bucket += '-' + architecture
-        upload_url = get_signed_url(
-            UPLOAD_URL_FORMAT.format(bucket, name, zip_file))
-        srcmap_url = get_signed_url(
-            UPLOAD_URL_FORMAT.format(bucket, name, stamped_srcmap_file))
+        upload_url = build_helper.get_signed_url(
+            build_helper.GCS_UPLOAD_URL_FORMAT.format(bucket, name, zip_file))
+        srcmap_url = build_helper.get_signed_url(
+            build_helper.GCS_UPLOAD_URL_FORMAT.format(bucket, name,
+                                                      stamped_srcmap_file))
 
-        targets_list_filename = get_targets_list_filename(sanitizer)
-        targets_list_url = get_signed_url(
-            get_targets_list_url(bucket, name, sanitizer))
+        targets_list_filename = build_helper.get_targets_list_filename(
+            sanitizer)
+        targets_list_url = build_helper.get_signed_url(
+            build_helper.get_targets_list_url(bucket, name, sanitizer))
 
         env.append('OUT=' + out)
         env.append('MSAN_LIBS_PATH=/workspace/msan')
@@ -393,16 +367,6 @@ def get_logs_url(build_id):
   return URL_FORMAT.format(build_id)
 
 
-def get_targets_list_filename(sanitizer):
-  return TARGETS_LIST_BASENAME + '.' + sanitizer
-
-
-def get_targets_list_url(bucket, project, sanitizer):
-  filename = get_targets_list_filename(sanitizer)
-  url = UPLOAD_URL_FORMAT.format(bucket, project, filename)
-  return url
-
-
 def run_build(build_steps, project_name, tag):
   options = {}
   if 'GCB_OPTIONS' in os.environ:
@@ -410,7 +374,7 @@ def run_build(build_steps, project_name, tag):
 
   build_body = {
       'steps': build_steps,
-      'timeout': str(BUILD_TIMEOUT) + 's',
+      'timeout': str(build_helper.BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
       'tags': [project_name + '-' + tag,],

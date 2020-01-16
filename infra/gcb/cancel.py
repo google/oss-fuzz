@@ -15,7 +15,6 @@ import urllib
 import yaml
 
 from oauth2client.client import GoogleCredentials
-from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
 
