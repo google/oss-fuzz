@@ -31,6 +31,7 @@ make -j$(nproc)
 make install
 
 # prepare corpus files
+zip -j $WORK/html $SRC/qtqa/fuzzing/testcases/html/*
 zip -j $WORK/markdown $SRC/qtqa/fuzzing/testcases/markdown/*
 zip -j $WORK/xml $SRC/qtqa/fuzzing/testcases/xml/* /usr/share/afl/testcases/others/xml/*
 
@@ -40,6 +41,12 @@ make -j$(nproc)
 mv readnext $OUT
 cp $WORK/xml.zip $OUT/readnext_seed_corpus.zip
 cp /usr/share/afl/testcases/_extras/xml.dict $OUT/readnext.dict
+
+$OUT/bin/qmake $SRC/qt/qtbase/tests/libfuzzer/gui/text/qtextdocument/setHtml/setHtml.pro
+make -j$(nproc)
+mv setHtml $OUT
+cp $WORK/html.zip $OUT/setHtml_seed_corpus.zip
+cp /usr/share/afl/testcases/_extras/html_tags.dict $OUT/setHtml.dict
 
 $OUT/bin/qmake $SRC/qt/qtbase/tests/libfuzzer/gui/text/qtextdocument/setMarkdown/setMarkdown.pro
 make -j$(nproc)
