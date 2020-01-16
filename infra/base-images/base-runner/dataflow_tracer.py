@@ -13,9 +13,125 @@
 # limitations under the License.
 #
 ################################################################################
-# TODO
-# os.walk in the corpus dir
-# filter out very long inputs
-# set up dynamic timeout for every single input
-# for input, timeout in zip(inputs, timeouts):
-#   run process with given timeout: '/target input output')
+"""Script for collecting dataflow traces using DFSan compiled binary. The script
+imitates `CollectDataFlow` function from libFuzzer but provides some flexibility
+for skipping long and/or slow corpus elements.
+
+Follow https://github.com/google/oss-fuzz/issues/1632 for more details."""
+import hashlib
+import os
+import subprocess
+import sys
+
+# These can be controlled by the runner in order to change the values without
+# rebuiding OSS-Fuzz base images.
+FILE_SIZE_LIMIT = int(os.getenv('DFT_FILE_SIZE_LIMIT', 32 * 1024))
+MIN_TIMEOUT = float(os.getenv('DFT_MIN_TIMEOUT', 1))
+TIMEOUT_RANGE = float(os.getenv('DFT_TIMEOUT_RANGE', 3))
+
+DFSAN_OPTIONS = 'fast16labels=1:warn_unimplemented=0'
+
+
+def _error(msg):
+  sys.stderr.write(msg + '\n')
+
+
+def _list_dir(dirpath):
+  for root, _, files in os.walk(dirpath):
+    for f in files:
+      yield os.path.join(root, f)
+
+
+def _sha1(filepath):
+  h = hashlib.sha1()
+  with open(filepath, 'rb') as f:
+    h.update(f.read())
+  return h.hexdigest()
+
+
+def _run(cmd, timeout=None):
+  result = None
+  try:
+    result = subprocess.run(cmd, timeout=timeout, capture_output=True)
+    if result.returncode:
+      _error('{command} finished with non-zero code: {code}'.format(
+          command=str(cmd), code=result.returncode))
+
+  except Exception as e:
+    _error('Exception: ' + str(e))
+
+  return result
+
+
+def _timeout(size):
+  # Dynamic timeout value (proportional to file size) to discard slow units.
+  timeout = MIN_TIMEOUT
+  timeout += size * TIMEOUT_RANGE / FILE_SIZE_LIMIT
+  return timeout
+
+
+def collect_traces(binary, corpus_dir, dft_dir):
+  stats = {
+    'total': 0,
+    'traced': 0,
+    'long': 0,
+    'slow': 0,
+    'failed': 0,
+  }
+
+  for f in _list_dir(corpus_dir):
+    stats['total'] += 1
+    size = os.path.getsize(f)
+    if size > FILE_SIZE_LIMIT:
+      stats['long'] += 1
+      print('Skipping large file ({size}b): {path}'.format(size=size, path=f))
+      continue
+
+    output_path = os.path.join(dft_dir, _sha1(f))
+    cmd = [binary, f, output_path]
+    result = _run(cmd, timeout=_timeout(size))
+    if not result:
+      stats['slow'] += 1
+    elif result.returncode:
+      stats['failed'] += 1
+    else:
+      stats['traced'] += 1
+
+  return stats
+
+
+def dump_functions(binary, dft_dir):
+  result = _run([binary])
+  if not result or result.returncode:
+    return False
+
+  with open(os.path.join(dft_dir, 'functions.txt'), 'wb') as f:
+    f.write(result.stdout)
+    f.write(result.stderr)
+
+  return True
+
+def main():
+  if len(sys.argv) < 4:
+    _error('Usage: {0} <binary> <corpus_dir> <dft_dir>'.format(sys.argv[0]))
+    sys.exit(1)
+
+  binary = sys.argv[1]
+  corpus_dir = sys.argv[2]
+  dft_dir = sys.argv[3]
+
+  os.environ['DFSAN_OPTIONS'] = DFSAN_OPTIONS
+
+  if not dump_functions(binary, dft_dir):
+    _error('Failed to dump functions. Something is wrong.')
+    sys.exit(1)
+
+  stats = collect_traces(binary, corpus_dir, dft_dir)
+  for k in stats:
+    print('{0}: {1}'.format(k, stats[k]))
+
+  # Checksum that we didn't lose track of any of the inputs.
+  assert stats['total'] * 2 == sum(stats[k] for k in stats)
+
+if __name__ == "__main__":
+  main()
