@@ -56,7 +56,7 @@ def _run(cmd, timeout=None):
     result = subprocess.run(cmd,
                             timeout=timeout,
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
+                            stderr=subprocess.PIPE)
     if result.returncode:
       _error('{command} finished with non-zero code: {code}'.format(
           command=str(cmd), code=result.returncode))
