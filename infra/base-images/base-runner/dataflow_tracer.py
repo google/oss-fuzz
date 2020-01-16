@@ -136,6 +136,7 @@ def main():
 
   # Checksum that we didn't lose track of any of the inputs.
   assert stats['total'] * 2 == sum(stats[k] for k in stats)
+  sys.exit(0)
 
 
 if __name__ == "__main__":
