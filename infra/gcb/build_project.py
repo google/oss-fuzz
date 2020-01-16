@@ -372,8 +372,8 @@ def dataflow_post_build_steps(project_name):
   if not download_corpora_step:
     return None
 
-  steps.append(download_corpora_step)
-  steps,append({
+  steps = [download_corpora_step]
+  steps.append({
       'name':
           'gcr.io/oss-fuzz-base/base-runner',
       'args': [
