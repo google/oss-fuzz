@@ -72,11 +72,11 @@ def _timeout(size):
 
 def collect_traces(binary, corpus_dir, dft_dir):
   stats = {
-    'total': 0,
-    'traced': 0,
-    'long': 0,
-    'slow': 0,
-    'failed': 0,
+      'total': 0,
+      'traced': 0,
+      'long': 0,
+      'slow': 0,
+      'failed': 0,
   }
 
   for f in _list_dir(corpus_dir):
@@ -111,6 +111,7 @@ def dump_functions(binary, dft_dir):
 
   return True
 
+
 def main():
   if len(sys.argv) < 4:
     _error('Usage: {0} <binary> <corpus_dir> <dft_dir>'.format(sys.argv[0]))
@@ -132,6 +133,7 @@ def main():
 
   # Checksum that we didn't lose track of any of the inputs.
   assert stats['total'] * 2 == sum(stats[k] for k in stats)
+
 
 if __name__ == "__main__":
   main()

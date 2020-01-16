@@ -43,6 +43,7 @@ CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
 # Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
 CORPUS_DOWNLOAD_BATCH_SIZE = 100
 
+
 def _get_targets_list(project_name):
   # libFuzzer ASan is the default configuration, get list of targets from it.
   url = build_project.get_targets_list_url(

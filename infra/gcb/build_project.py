@@ -302,7 +302,6 @@ def get_build_steps(project_dir):
           else:
             sys.stderr.write('Skipping dataflow post build steps.\n')
 
-
         build_steps.extend([
             # generate targets list
             {
@@ -374,12 +373,11 @@ def dataflow_post_build_steps(project_name):
 
   steps = [download_corpora_step]
   steps.append({
-      'name':
-          'gcr.io/oss-fuzz-base/base-runner',
+      'name': 'gcr.io/oss-fuzz-base/base-runner',
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && '
-            'collect_dft || (echo "DFT collection failed." && false)')
+           'collect_dft || (echo "DFT collection failed." && false)')
       ],
       'volumes': [{
           'name': 'corpus',
