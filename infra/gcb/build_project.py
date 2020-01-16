@@ -166,10 +166,9 @@ def get_build_steps(project_dir):
             build_lib.GCS_UPLOAD_URL_FORMAT.format(bucket, name, zip_file))
         srcmap_url = build_lib.get_signed_url(
             build_lib.GCS_UPLOAD_URL_FORMAT.format(bucket, name,
-                                                      stamped_srcmap_file))
+                                                   stamped_srcmap_file))
 
-        targets_list_filename = build_lib.get_targets_list_filename(
-            sanitizer)
+        targets_list_filename = build_lib.get_targets_list_filename(sanitizer)
         targets_list_url = build_lib.get_signed_url(
             build_lib.get_targets_list_url(bucket, name, sanitizer))
 
