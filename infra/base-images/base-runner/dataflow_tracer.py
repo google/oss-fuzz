@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,9 +26,9 @@ import sys
 
 # These can be controlled by the runner in order to change the values without
 # rebuiding OSS-Fuzz base images.
-FILE_SIZE_LIMIT = int(os.getenv('DFT_FILE_SIZE_LIMIT', '32 * 1024'))
-MIN_TIMEOUT = float(os.getenv('DFT_MIN_TIMEOUT', '1.0'))
-TIMEOUT_RANGE = float(os.getenv('DFT_TIMEOUT_RANGE', '3.0'))
+FILE_SIZE_LIMIT = int(os.getenv('DFT_FILE_SIZE_LIMIT', 32 * 1024))
+MIN_TIMEOUT = float(os.getenv('DFT_MIN_TIMEOUT', 1.0))
+TIMEOUT_RANGE = float(os.getenv('DFT_TIMEOUT_RANGE', 3.0))
 
 DFSAN_OPTIONS = 'fast16labels=1:warn_unimplemented=0'
 
@@ -52,7 +53,7 @@ def _sha1(filepath):
 def _run(cmd, timeout=None):
   result = None
   try:
-    result = subprocess.run(cmd, timeout=timeout, capture_output=True)
+    result = subprocess.run(cmd, timeout=timeout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if result.returncode:
       _error('{command} finished with non-zero code: {code}'.format(
           command=str(cmd), code=result.returncode))
@@ -107,7 +108,6 @@ def dump_functions(binary, dft_dir):
 
   with open(os.path.join(dft_dir, 'functions.txt'), 'wb') as f:
     f.write(result.stdout)
-    f.write(result.stderr)
 
   return True
 

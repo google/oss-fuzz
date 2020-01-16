@@ -34,12 +34,12 @@ function run_one_target {
   local traces="$OUT/${target}_dft"
   local log="$OUT/${target}_dft.log"
 
-  rm -rf traces && mkdir -p traces
+  rm -rf $traces && mkdir -p $traces
 
-  timeout $TIMEOUT python3 dataflow_tracer.py $OUT/$target $corpus $traces &> $log
+  timeout $TIMEOUT dataflow_tracer.py $OUT/$target $corpus $traces &> $log
   if (( $? != 0 )); then
     echo "Error occured while collecting data flow traces for $target:"
-    cat $LOGS_DIR/$target.log
+    cat $log
   fi
 }
 

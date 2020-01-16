@@ -40,8 +40,10 @@ RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage
 RUN pip3 install -r /opt/code_coverage/requirements.txt
 
 COPY bad_build_check \
+    collect_dft \
     coverage \
     coverage_helper \
+    dataflow_tracer.py \
     download_corpus \
     minijail0 \
     reproduce \

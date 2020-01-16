@@ -268,7 +268,7 @@ def get_build_steps(project_dir):
           })
 
         if sanitizer == 'dataflow' and fuzzing_engine == 'dataflow':
-          dataflow_steps = dataflow_post_build_steps()
+          dataflow_steps = dataflow_post_build_steps(name)
           if dataflow_steps:
             build_steps.extend(dataflow_steps)
           else:
