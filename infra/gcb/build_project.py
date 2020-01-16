@@ -21,6 +21,8 @@ from oauth2client.client import GoogleCredentials
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
+import build_helper
+
 BUILD_TIMEOUT = 12 * 60 * 60
 
 FUZZING_BUILD_TAG = 'fuzzing'
@@ -37,33 +39,6 @@ CONFIGURATIONS = {
     'engine-honggfuzz': ['FUZZING_ENGINE=honggfuzz'],
     'engine-dataflow': ['FUZZING_ENGINE=dataflow'],
     'engine-none': ['FUZZING_ENGINE=none'],
-}
-
-EngineInfo = collections.namedtuple(
-    'EngineInfo',
-    ['upload_bucket', 'supported_sanitizers', 'supported_architectures'])
-
-ENGINE_INFO = {
-    'libfuzzer':
-        EngineInfo(upload_bucket='clusterfuzz-builds',
-                   supported_sanitizers=['address', 'memory', 'undefined'],
-                   supported_architectures=['x86_64', 'i386']),
-    'afl':
-        EngineInfo(upload_bucket='clusterfuzz-builds-afl',
-                   supported_sanitizers=['address'],
-                   supported_architectures=['x86_64']),
-    'honggfuzz':
-        EngineInfo(upload_bucket='clusterfuzz-builds-honggfuzz',
-                   supported_sanitizers=['address', 'memory', 'undefined'],
-                   supported_architectures=['x86_64']),
-    'dataflow':
-        EngineInfo(upload_bucket='clusterfuzz-builds-dataflow',
-                   supported_sanitizers=['dataflow'],
-                   supported_architectures=['x86_64']),
-    'none':
-        EngineInfo(upload_bucket='clusterfuzz-builds-no-engine',
-                   supported_sanitizers=['address'],
-                   supported_architectures=['x86_64']),
 }
 
 DEFAULT_ARCHITECTURES = ['x86_64']
@@ -116,7 +91,7 @@ def get_signed_url(path, method='PUT', content_type=''):
 
 
 def is_supported_configuration(fuzzing_engine, sanitizer, architecture):
-  fuzzing_engine_info = ENGINE_INFO[fuzzing_engine]
+  fuzzing_engine_info = build_helper.ENGINE_INFO[fuzzing_engine]
   if architecture == 'i386' and sanitizer != 'address':
     return False
   return (sanitizer in fuzzing_engine_info.supported_sanitizers and
@@ -213,7 +188,7 @@ def get_build_steps(project_dir):
         stamped_name = '-'.join([name, sanitizer, ts])
         zip_file = stamped_name + '.zip'
         stamped_srcmap_file = stamped_name + '.srcmap.json'
-        bucket = ENGINE_INFO[fuzzing_engine].upload_bucket
+        bucket = build_helper.ENGINE_INFO[fuzzing_engine].upload_bucket
         if architecture != 'x86_64':
           bucket += '-' + architecture
         upload_url = get_signed_url(

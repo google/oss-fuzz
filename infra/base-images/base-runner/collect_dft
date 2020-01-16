@@ -28,7 +28,7 @@ TIMEOUT=1h
 # Number of CPUs available, this is needed for running targets in parallel.
 NPROC=$(nproc)
 
-function run_fuzz_target {
+function run_one_target {
   local target=$1
   local corpus="/corpus/${target}"
   local traces="$OUT/${target}_dft"
@@ -49,7 +49,7 @@ for fuzz_target in $FUZZ_TARGETS; do
   grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
   
   echo "Running $fuzz_target"
-  run_fuzz_target $fuzz_target &
+  run_one_target $fuzz_target &
 
   # Do not spawn more processes than the number of CPUs available.
   n_child_proc=$(jobs -rp | wc -l)

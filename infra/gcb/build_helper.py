@@ -6,7 +6,32 @@ import requests
 import sys
 import urlparse
 
-ENGINE_INFO ?
+EngineInfo = collections.namedtuple(
+    'EngineInfo',
+    ['upload_bucket', 'supported_sanitizers', 'supported_architectures'])
+
+ENGINE_INFO = {
+    'libfuzzer':
+        EngineInfo(upload_bucket='clusterfuzz-builds',
+                   supported_sanitizers=['address', 'memory', 'undefined'],
+                   supported_architectures=['x86_64', 'i386']),
+    'afl':
+        EngineInfo(upload_bucket='clusterfuzz-builds-afl',
+                   supported_sanitizers=['address'],
+                   supported_architectures=['x86_64']),
+    'honggfuzz':
+        EngineInfo(upload_bucket='clusterfuzz-builds-honggfuzz',
+                   supported_sanitizers=['address', 'memory', 'undefined'],
+                   supported_architectures=['x86_64']),
+    'dataflow':
+        EngineInfo(upload_bucket='clusterfuzz-builds-dataflow',
+                   supported_sanitizers=['dataflow'],
+                   supported_architectures=['x86_64']),
+    'none':
+        EngineInfo(upload_bucket='clusterfuzz-builds-no-engine',
+                   supported_sanitizers=['address'],
+                   supported_architectures=['x86_64']),
+}
 
 # Needed for reading public target.list.* files.
 GCS_URL_BASENAME = 'https://storage.googleapis.com/'

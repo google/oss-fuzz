@@ -11,6 +11,7 @@ import requests
 import sys
 import urlparse
 
+import build_helper
 import build_project
 
 SANITIZER = 'coverage'
