@@ -53,7 +53,10 @@ def _sha1(filepath):
 def _run(cmd, timeout=None):
   result = None
   try:
-    result = subprocess.run(cmd, timeout=timeout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    result = subprocess.run(cmd,
+                            timeout=timeout,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
     if result.returncode:
       _error('{command} finished with non-zero code: {code}'.format(
           command=str(cmd), code=result.returncode))
