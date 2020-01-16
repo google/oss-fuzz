@@ -107,7 +107,7 @@ def download_corpora_step(project_name):
     return None
 
   # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
-  for i in xrange(0, len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
+  for i in range(0, len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
     download_corpus_args = []
     for binary_name in fuzz_targets[i:i + CORPUS_DOWNLOAD_BATCH_SIZE]:
       qualified_name = binary_name

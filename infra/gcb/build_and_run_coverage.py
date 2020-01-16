@@ -11,7 +11,7 @@ import requests
 import sys
 import urlparse
 
-import build_helper
+import build_lib
 import build_project
 
 SANITIZER = 'coverage'
@@ -24,7 +24,7 @@ COVERAGE_BUILD_TAG = 'coverage'
 COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
 
 # Link to the code coverage report in HTML format.
-HTML_REPORT_URL_FORMAT = (build_helper.GCS_URL_BASENAME + COVERAGE_BUCKET_NAME +
+HTML_REPORT_URL_FORMAT = (build_lib.GCS_URL_BASENAME + COVERAGE_BUCKET_NAME +
                           '/{project}/reports/{date}/{platform}/index.html')
 
 # This is needed for ClusterFuzz to pick up the most recent reports data.
@@ -130,7 +130,7 @@ def get_build_steps(project_dir):
       ],
   })
 
-  download_corpora_step = build_helper.download_corpora_step(project_name)
+  download_corpora_step = build_lib.download_corpora_step(project_name)
   if not download_corpora_step:
     skip_build("Skipping code coverage build for %s.\n" % project_name)
 
@@ -233,7 +233,7 @@ def get_build_steps(project_dir):
   })
 
   # Update the latest report information file for ClusterFuzz.
-  latest_report_info_url = build_helper.get_signed_url(
+  latest_report_info_url = build_lib.get_signed_url(
       LATEST_REPORT_INFO_URL.format(project=project_name),
       method='PUT',
       content_type='application/json')

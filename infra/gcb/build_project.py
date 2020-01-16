@@ -16,7 +16,7 @@ import yaml
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build
 
-import build_helper
+import build_lib
 
 FUZZING_BUILD_TAG = 'fuzzing'
 
@@ -62,7 +62,7 @@ def load_project_yaml(project_dir):
 
 
 def is_supported_configuration(fuzzing_engine, sanitizer, architecture):
-  fuzzing_engine_info = build_helper.ENGINE_INFO[fuzzing_engine]
+  fuzzing_engine_info = build_lib.ENGINE_INFO[fuzzing_engine]
   if architecture == 'i386' and sanitizer != 'address':
     return False
   return (sanitizer in fuzzing_engine_info.supported_sanitizers and
@@ -159,19 +159,19 @@ def get_build_steps(project_dir):
         stamped_name = '-'.join([name, sanitizer, ts])
         zip_file = stamped_name + '.zip'
         stamped_srcmap_file = stamped_name + '.srcmap.json'
-        bucket = build_helper.ENGINE_INFO[fuzzing_engine].upload_bucket
+        bucket = build_lib.ENGINE_INFO[fuzzing_engine].upload_bucket
         if architecture != 'x86_64':
           bucket += '-' + architecture
-        upload_url = build_helper.get_signed_url(
-            build_helper.GCS_UPLOAD_URL_FORMAT.format(bucket, name, zip_file))
-        srcmap_url = build_helper.get_signed_url(
-            build_helper.GCS_UPLOAD_URL_FORMAT.format(bucket, name,
+        upload_url = build_lib.get_signed_url(
+            build_lib.GCS_UPLOAD_URL_FORMAT.format(bucket, name, zip_file))
+        srcmap_url = build_lib.get_signed_url(
+            build_lib.GCS_UPLOAD_URL_FORMAT.format(bucket, name,
                                                       stamped_srcmap_file))
 
-        targets_list_filename = build_helper.get_targets_list_filename(
+        targets_list_filename = build_lib.get_targets_list_filename(
             sanitizer)
-        targets_list_url = build_helper.get_signed_url(
-            build_helper.get_targets_list_url(bucket, name, sanitizer))
+        targets_list_url = build_lib.get_signed_url(
+            build_lib.get_targets_list_url(bucket, name, sanitizer))
 
         env.append('OUT=' + out)
         env.append('MSAN_LIBS_PATH=/workspace/msan')
@@ -340,7 +340,7 @@ def get_build_steps(project_dir):
 
 def dataflow_post_build_steps(project_name):
   steps = []
-  download_corpora_step = build_helper.download_corpora_step(project_name)
+  download_corpora_step = build_lib.download_corpora_step(project_name)
   if not download_corpora_step:
     return None
 
@@ -373,7 +373,7 @@ def run_build(build_steps, project_name, tag):
 
   build_body = {
       'steps': build_steps,
-      'timeout': str(build_helper.BUILD_TIMEOUT) + 's',
+      'timeout': str(build_lib.BUILD_TIMEOUT) + 's',
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
       'tags': [project_name + '-' + tag,],
