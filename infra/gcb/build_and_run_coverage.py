@@ -11,29 +11,20 @@ import requests
 import sys
 import urlparse
 
+import build_lib
 import build_project
 
 SANITIZER = 'coverage'
 CONFIGURATION = ['FUZZING_ENGINE=libfuzzer', 'SANITIZER=%s' % SANITIZER]
 PLATFORM = 'linux'
 
-# Where corpus backups can be downloaded from.
-CORPUS_BACKUP_URL = ('/{project}-backup.clusterfuzz-external.appspot.com/'
-                     'corpus/libFuzzer/{fuzzer}/latest.zip')
-
-# Cloud Builder has a limit of 100 build steps and 100 arguments for each step.
-CORPUS_DOWNLOAD_BATCH_SIZE = 100
-
 COVERAGE_BUILD_TAG = 'coverage'
-
-# Needed for reading public target.list.* files.
-GCS_URL_BASENAME = 'https://storage.googleapis.com/'
 
 # Where code coverage reports need to be uploaded to.
 COVERAGE_BUCKET_NAME = 'oss-fuzz-coverage'
 
 # Link to the code coverage report in HTML format.
-HTML_REPORT_URL_FORMAT = (GCS_URL_BASENAME + COVERAGE_BUCKET_NAME +
+HTML_REPORT_URL_FORMAT = (build_lib.GCS_URL_BASENAME + COVERAGE_BUCKET_NAME +
                           '/{project}/reports/{date}/{platform}/index.html')
 
 # This is needed for ClusterFuzz to pick up the most recent reports data.
@@ -73,10 +64,6 @@ def get_build_steps(project_dir):
       if GO_FUZZ_BUILD in fh.read():
         skip_build('Project "%s" uses go-fuzz, coverage is not supported yet.' %
                    project_name)
-
-  fuzz_targets = get_targets_list(project_name)
-  if not fuzz_targets:
-    skip_build('No fuzz targets found for project "%s".' % project_name)
 
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
@@ -143,32 +130,11 @@ def get_build_steps(project_dir):
       ],
   })
 
-  # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
-  for i in xrange(0, len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
-    download_corpus_args = []
-    for binary_name in fuzz_targets[i:i + CORPUS_DOWNLOAD_BATCH_SIZE]:
-      qualified_name = binary_name
-      qualified_name_prefix = '%s_' % project_name
-      if not binary_name.startswith(qualified_name_prefix):
-        qualified_name = qualified_name_prefix + binary_name
+  download_corpora_step = build_lib.download_corpora_step(project_name)
+  if not download_corpora_step:
+    skip_build("Skipping code coverage build for %s.\n" % project_name)
 
-      url = build_project.get_signed_url(CORPUS_BACKUP_URL.format(
-          project=project_name, fuzzer=qualified_name),
-                                         method='GET')
-
-      corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
-      download_corpus_args.append('%s %s' % (corpus_archive_path, url))
-
-    # Download corpus.
-    build_steps.append({
-        'name': 'gcr.io/oss-fuzz-base/base-runner',
-        'entrypoint': 'download_corpus',
-        'args': download_corpus_args,
-        'volumes': [{
-            'name': 'corpus',
-            'path': '/corpus'
-        }],
-    })
+  build_steps.append(download_corpora_step)
 
   failure_msg = ('*' * 80 + '\nCode coverage report generation failed.\n'
                  'To reproduce, run:\n'
@@ -267,7 +233,7 @@ def get_build_steps(project_dir):
   })
 
   # Update the latest report information file for ClusterFuzz.
-  latest_report_info_url = build_project.get_signed_url(
+  latest_report_info_url = build_lib.get_signed_url(
       LATEST_REPORT_INFO_URL.format(project=project_name),
       method='PUT',
       content_type='application/json')
@@ -298,23 +264,6 @@ def get_build_steps(project_dir):
       ],
   })
   return build_steps
-
-
-def get_targets_list(project_name):
-  # libFuzzer ASan is the default configuration, get list of targets from it.
-  url = build_project.get_targets_list_url(
-      build_project.ENGINE_INFO['libfuzzer'].upload_bucket, project_name,
-      'address')
-
-  url = urlparse.urljoin(GCS_URL_BASENAME, url)
-  r = requests.get(url)
-  if not r.status_code == 200:
-    sys.stderr.write('Failed to get list of targets from "%s".\n' % url)
-    sys.stderr.write('Status code: %d \t\tText:\n%s\n' %
-                     (r.status_code, r.text))
-    return None
-
-  return r.text.split()
 
 
 def main():
