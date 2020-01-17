@@ -16,3 +16,6 @@ vendor_ccs:
 sanitizers:
   - address
   - undefined
+architectures:
+  - x86_64
+  - i386
