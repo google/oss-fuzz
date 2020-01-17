@@ -17,7 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER prince.cherusker@gmail.com
 
-RUN apt-get update &&  \
+RUN dpkg --add-architecture i386 && \
+    apt-get update &&  \
     apt-get install -y \
       autoconf         \
       cmake            \
