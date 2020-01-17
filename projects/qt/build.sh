@@ -47,7 +47,7 @@ build_fuzzer() {
     make -j$(nproc)
     mv $exeName $OUT
     if [ -n "$format" ]; then
-        cp $WORK/$format.zip $OUT/$exeName_seed_corpus.zip
+        cp $WORK/$format.zip $OUT/"$exeName"_seed_corpus.zip
     fi
     if [ -n "$dictionary" ]; then
         cp $dictionary $OUT/$exeName.dict
