@@ -25,7 +25,7 @@ import subprocess
 import sys
 
 # These can be controlled by the runner in order to change the values without
-# rebuiding OSS-Fuzz base images.
+# rebuilding OSS-Fuzz base images.
 FILE_SIZE_LIMIT = int(os.getenv('DFT_FILE_SIZE_LIMIT', 32 * 1024))
 MIN_TIMEOUT = float(os.getenv('DFT_MIN_TIMEOUT', 1.0))
 TIMEOUT_RANGE = float(os.getenv('DFT_TIMEOUT_RANGE', 3.0))
@@ -61,6 +61,8 @@ def _run(cmd, timeout=None):
       _error('{command} finished with non-zero code: {code}'.format(
           command=str(cmd), code=result.returncode))
 
+  except subprocess.TimeoutExpired:
+    raise
   except Exception as e:
     _error('Exception: ' + str(e))
 
@@ -92,14 +94,16 @@ def collect_traces(binary, corpus_dir, dft_dir):
       continue
 
     output_path = os.path.join(dft_dir, _sha1(f))
-    cmd = [binary, f, output_path]
-    result = _run(cmd, timeout=_timeout(size))
-    if not result:
+    try:
+      result = _run([binary, f, output_path], timeout=_timeout(size))
+      if result.returncode:
+        stats['failed'] += 1
+      else:
+        stats['traced'] += 1
+
+    except subprocess.TimeoutExpired as e:
+      _error('Slow input: ' + str(e))
       stats['slow'] += 1
-    elif result.returncode:
-      stats['failed'] += 1
-    else:
-      stats['traced'] += 1
 
   return stats
 
@@ -131,11 +135,11 @@ def main():
     sys.exit(1)
 
   stats = collect_traces(binary, corpus_dir, dft_dir)
-  for k in stats:
-    print('{0}: {1}'.format(k, stats[k]))
+  for k, v in stats.items():
+    print('{0}: {1}'.format(k, v))
 
   # Checksum that we didn't lose track of any of the inputs.
-  assert stats['total'] * 2 == sum(stats[k] for k in stats)
+  assert stats['total'] * 2 == sum(v for v in stats.values())
   sys.exit(0)
 
 
