@@ -268,7 +268,7 @@ def get_build_steps(project_dir):
           })
 
         if sanitizer == 'dataflow' and fuzzing_engine == 'dataflow':
-          dataflow_steps = dataflow_post_build_steps(name)
+          dataflow_steps = dataflow_post_build_steps(name, env)
           if dataflow_steps:
             build_steps.extend(dataflow_steps)
           else:
@@ -337,7 +337,7 @@ def get_build_steps(project_dir):
   return build_steps
 
 
-def dataflow_post_build_steps(project_name):
+def dataflow_post_build_steps(project_name, env):
   steps = []
   download_corpora_step = build_lib.download_corpora_step(project_name)
   if not download_corpora_step:
@@ -346,6 +346,7 @@ def dataflow_post_build_steps(project_name):
   steps = [download_corpora_step]
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
+      'env': env,
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && '
