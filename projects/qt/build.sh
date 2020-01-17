@@ -38,11 +38,11 @@ zip -j $WORK/xml $SRC/qtqa/fuzzing/testcases/xml/* /usr/share/afl/testcases/othe
 # build fuzzers
 
 build_fuzzer() {
-    local proFilePath = $1
-    local format = $2
-    local dictionary = $3
-    local proFileName = ${proFilePath##*/}
-    local exeName = ${proFileName%%.*}
+    local proFilePath=$1
+    local format=$2
+    local dictionary=$3
+    local proFileName=${proFilePath##*/}
+    local exeName=${proFileName%%.*}
     $OUT/bin/qmake $SRC/qt/$1
     make -j$(nproc)
     mv $exeName $OUT
