@@ -18,6 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER p.antoine@catenacyber.fr
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext bzip2 gnupg bison flex libsqlite3-dev pkg-config
 
+ADD https://www.sqlite.org/2019/sqlite-autoconf-3300100.tar.gz sqlite-autoconf-3300100.tar.gz
 RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error
 RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git libgcrypt
 RUN git clone --depth 1 git://git.gnupg.org/libassuan.git libassuan
