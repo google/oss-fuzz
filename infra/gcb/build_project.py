@@ -346,8 +346,7 @@ def dataflow_post_build_steps(project_name, env):
   steps = [download_corpora_step]
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
-      'env':
-          env,
+      'env': env,
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && '
