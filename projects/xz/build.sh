@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+sed -i 's/-lFuzzingEngine/$(LIB_FUZZING_ENGINE)/g' tests/ossfuzz/Makefile
+
 ./autogen.sh
 ./configure \
   --enable-static \
