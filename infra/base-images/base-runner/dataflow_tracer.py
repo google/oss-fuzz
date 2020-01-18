@@ -96,7 +96,6 @@ def collect_traces(binary, corpus_dir, dft_dir):
     files_to_trace[f] = size
 
   for f in sorted(files_to_trace, key=files_to_trace.get):
-    print(f, files_to_trace[f])
     output_path = os.path.join(dft_dir, _sha1(f))
     try:
       result = _run([binary, f, output_path], timeout=_timeout(size))
