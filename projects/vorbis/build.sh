@@ -15,6 +15,4 @@
 #
 ################################################################################
 
-sed -i 's/-lFuzzingEngine/$LIB_FUZZING_ENGINE/g' contrib/oss-fuzz/build.sh
-
 . contrib/oss-fuzz/build.sh
