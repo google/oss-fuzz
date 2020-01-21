@@ -52,9 +52,9 @@ class FuzzTarget():
     Returns:
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
-    command = ['docker', 'run', '--rm', '--privileged']
+    command = ['docker', 'run', '--rm', '--privileged', '-e', ]
 
-    env = [
+    command += [
         'FUZZING_ENGINE=libfuzzer',
         'SANITIZER=address',
         'RUN_FUZZER_MODE=interactive',

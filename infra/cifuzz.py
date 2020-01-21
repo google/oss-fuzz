@@ -126,7 +126,7 @@ def build_fuzzers(args, git_workspace, out_dir):
     print('Error: Building fuzzers failed.', file=sys.stderr)
     return False
 
-  helper.docker_run([image_name, '/bin/bash', '-c','ls /src/oss-fuzz/build/out/'])
+  helper.docker_run([image_name, '/bin/bash', '-c','ls /src/oss-fuzz'])
   if not utils.copy_in_docker(
       image_name, helper.get_output_dir(args.project_name), out_dir):
     print('Error: coping output artifacts failed.', file=sys.stderr)
@@ -147,9 +147,6 @@ def run_fuzzers(args, out_dir):
   """
   print(utils.get_fuzz_targets(out_dir))
   #runner_image_name = 'gcr.io/oss-fuzz-base/base-runner'
-  #if not helper.build_image_impl('base-runner', no_cache=False):
-  #  print('Error: Building runner image failed.', file=sys.stderr)
-  #  return False
 
 
 
