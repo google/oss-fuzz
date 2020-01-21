@@ -130,7 +130,7 @@ def build_fuzzers(args, git_workspace, out_dir):
       image_name, '/out', out_dir):
     print('Error: coping output artifacts failed.', file=sys.stderr)
     return False
-  print(os.listdir('/out')
+  print(os.listdir('/out'))
   print(os.listdir(out_dir))
   return True
 
@@ -145,8 +145,8 @@ def run_fuzzers(args, out_dir):
     True on success False on failure.
   """
   print('/out')
-  #runner_image_name = 'gcr.io/oss-fuzz-base/base-runner'
-
+  runner_image_name = 'gcr.io/oss-fuzz-base/base-runner'
+  print(utils.get_fuzz_targets(out_dir))
 
 
 
@@ -174,7 +174,6 @@ def run_fuzzers(args, out_dir):
       shutil.move(test_case, '/tmp/testcase')
       break
   """
-  return True
 
 
 if __name__ == '__main__':
