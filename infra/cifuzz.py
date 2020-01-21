@@ -19,12 +19,18 @@ Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 
 import argparse
+import logging
 import os
+import shutil
+import sys
 import tempfile
 
 import build_specified_commit
-import repo_manager
+import fuzz_target
 import helper
+import repo_manager
+import datetime
+import utils
 
 
 def main():
@@ -33,6 +39,7 @@ def main():
   Returns:
     True on success False on failure.
   """
+  logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', stream=sys.stdout, level=logging.DEBUG)
   parser = argparse.ArgumentParser(
       description='Help CI tools manage specific fuzzers.')
 
@@ -54,10 +61,9 @@ def main():
 
   if args.command == 'build_fuzzers':
     return build_fuzzers(args) == 0
-  if args.command == 'run_fuzzer':
-    print('Not implemented')
-    return False
-  print('Invalid argument option, use build_fuzzers or run_fuzzer.')
+  if args.command == 'run_fuzzers':
+    return run_fuzzers(args) == 0
+  print('Invalid argument option, use build_fuzzers or run_fuzzer.', file=sys.stderr)
   return False
 
 
@@ -67,21 +73,79 @@ def build_fuzzers(args):
   Returns:
     True on success False on failure.
   """
-
-  # TODO: Fix return value bubble to actually handle errors.
-  with tempfile.TemporaryDirectory() as tmp_dir:
-    inferred_url, repo_name = build_specified_commit.detect_main_repo(
+  inferred_url, repo_name = build_specified_commit.detect_main_repo(
         args.project_name, repo_name=args.repo_name)
-    build_repo_manager = repo_manager.RepoManager(inferred_url,
-                                                  tmp_dir,
-                                                  repo_name=repo_name)
-    build_data = build_specified_commit.BuildData(
-        project_name=args.project_name,
-        sanitizer='address',
-        engine='libfuzzer',
-        architecture='x86_64')
-    return build_specified_commit.build_fuzzers_from_commit(
-        args.commit_sha, build_repo_manager, build_data) == 0
+
+  if not inferred_url or not repo_name:
+    print('Error: Repo URL or name could not be determined.', file=sys.stderr)
+
+
+  if os.environ['GITHUB_WORKSPACE']:
+    workspace = os.path.join(os.environ['GITHUB_WORKSPACE'], 'storage')
+    if not os.path.exists(workspace):
+      os.mkdir(workspace)
+  else:
+    print('Error: needs the GITHUB_WORKSPACE env variable set.', file=sys.stderr)
+    return 1
+
+  with open('/proc/self/cgroup') as file_handle:
+    if 'docker' in file_handle.read():
+      with open('/etc/hostname') as file_handle:
+        primary_container = file_handle.read().strip()
+    else:
+      primary_container = None
+  if not primary_container:
+    print('Error primary container could not be determined.', file=sys.stderr)
+    return 1
+
+  build_repo_manager = repo_manager.RepoManager(inferred_url,
+                                                workspace,
+                                                repo_name=repo_name)
+  build_repo_manager.checkout(args.commit_sha)
+
+  if not helper.build_image_impl(args.project_name, no_cache=False)
+    print('Error: Building the projects image has failed.', file=sys.stderr)
+    return 1
+
+
+  command = ['--cap-add', 'SYS_PTRACE','-e','FUZZING_ENGINE=libfuzzer','-e' ,'SANITIZER=address', '-e','ARCHITECTURE=x86_64']
+  command += [
+      '--volumes-from', primary_container, 'gcr.io/oss-fuzz/%s' % project_name]
+  command += ['/bin/bash', '-c', 'cp {0}:{1} && compile'.format(os.path.join(workspace, '.'), '/src')]
+  result_code = docker_run(command)
+  if result_code:
+    print('Building fuzzers failed.', file=sys.stderr)
+    return result_code
+  return 0
+
+
+def run_fuzzers(args):
+  """Runs a all fuzzer for a specific OSS-Fuzz project.
+
+  Returns:
+    True on success False on failure.
+  """
+  print('Starting to run fuzzers.')
+  fuzzer_paths = utils.get_project_fuzz_targets(args.project_name)
+  print('Fuzzer paths', str(fuzzer_paths))
+  fuzz_targets = []
+  for fuzzer in fuzzer_paths:
+    fuzz_targets.append(fuzz_target.FuzzTarget(args.project_name, fuzzer, 20))
+  print(fuzzer_paths)
+  error_detected = False
+
+  for target in fuzz_targets:
+    print('Fuzzer {} started running.'.format(target.target_name))
+    test_case, stack_trace = target.start()
+    if not test_case or not stack_trace:
+      logging.debug('Fuzzer {} finished running.'.format(target.target_name))
+      print('Fuzzer {} finished running.'.format(target.target_name))
+    else:
+      error_detected = True
+      print("Fuzzer {} Detected Error: {}".format(target.target_name, stack_trace), file=sys.stderr)
+      shutil.move(test_case, '/tmp/testcase')
+      break
+  return not error_detected
 
 
 if __name__ == '__main__':
