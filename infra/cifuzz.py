@@ -90,17 +90,6 @@ def build_fuzzers(args):
           file=sys.stderr)
     return 1
 
-  # Get the container name that are currently inside.
-  with open('/proc/self/cgroup') as file_handle:
-    if 'docker' in file_handle.read():
-      with open('/etc/hostname') as file_handle:
-        primary_container = file_handle.read().strip()
-    else:
-      primary_container = None
-  if not primary_container:
-    print('Error primary container could not be determined.', file=sys.stderr)
-    return 1
-
   # Checkout projects repo in the shared volume.
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 workspace,
@@ -111,19 +100,15 @@ def build_fuzzers(args):
     print('Error: Building the projects image has failed.', file=sys.stderr)
     return 1
 
-  # Copy the repo from the shared volume to the required location in OSS-Fuzz.
+  utils.copy_to_docker('gcr.io/oss-fuzz/%s' % args.project_name,
+                       os.path.join(workspace, '.'), '/src')
+
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
   ]
-  command += [
-      '--volumes-from', primary_container,
-      'gcr.io/oss-fuzz/%s' % args.project_name
-  ]
-  command += [
-      '/bin/bash', '-c',
-      'cp {0} {1} && compile'.format(os.path.join(workspace, '.'), '/src')
-  ]
+  command += ['gcr.io/oss-fuzz/%s' % args.project_name, 'bash', '-c', 'ls /src']
+
   result_code = helper.docker_run(command)
   if result_code:
     print('Building fuzzers failed.', file=sys.stderr)
@@ -137,8 +122,6 @@ def run_fuzzers(args):
   Returns:
     True on success False on failure.
   """
-  print('Starting to run fuzzers.')
-
   fuzzer_paths = utils.get_project_fuzz_targets(args.project_name)
   print('Fuzzer paths', str(fuzzer_paths))
   fuzz_targets = []
