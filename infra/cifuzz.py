@@ -149,9 +149,10 @@ def run_fuzzers(args, out_dir):
     return False
 
   if not utils.copy_in_docker(
-      runner_image_name, out_dir, '/out':
+      runner_image_name, out_dir, '/out')
     print('Error: coping output artifacts failed.', file=sys.stderr)
     return False
+  return True
 
   """
   fuzzer_paths = utils.get_project_fuzz_targets(args.project_name)
