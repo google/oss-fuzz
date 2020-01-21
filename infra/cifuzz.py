@@ -122,7 +122,7 @@ def build_fuzzers(args):
   ]
   command += [
       '/bin/bash', '-c',
-      'cp {0}:{1} && compile'.format(os.path.join(workspace, '.'), '/src')
+      'cp {0} {1} && compile'.format(os.path.join(workspace, '.'), '/src')
   ]
   result_code = helper.docker_run(command)
   if result_code:
@@ -138,6 +138,7 @@ def run_fuzzers(args):
     True on success False on failure.
   """
   print('Starting to run fuzzers.')
+
   fuzzer_paths = utils.get_project_fuzz_targets(args.project_name)
   print('Fuzzer paths', str(fuzzer_paths))
   fuzz_targets = []
