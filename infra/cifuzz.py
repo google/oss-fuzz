@@ -27,6 +27,8 @@ import sys
 import build_specified_commit
 import helper
 import repo_manager
+import utils
+
 
 def main():
   """Connects Fuzzers with CI tools.
@@ -34,7 +36,10 @@ def main():
   Returns:
     True on success False on failure.
   """
-  logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', stream=sys.stdout, level=logging.DEBUG)
+  logging.basicConfig(
+      format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+      stream=sys.stdout,
+      level=logging.DEBUG)
   parser = argparse.ArgumentParser(
       description='Help CI tools manage specific fuzzers.')
 
@@ -58,7 +63,8 @@ def main():
     return build_fuzzers(args) == 0
   if args.command == 'run_fuzzers':
     return run_fuzzers(args) == 0
-  print('Invalid argument option, use build_fuzzers or run_fuzzer.', file=sys.stderr)
+  print('Invalid argument option, use build_fuzzers or run_fuzzer.',
+        file=sys.stderr)
   return False
 
 
@@ -69,7 +75,7 @@ def build_fuzzers(args):
     True on success False on failure.
   """
   inferred_url, repo_name = build_specified_commit.detect_main_repo(
-        args.project_name, repo_name=args.repo_name)
+      args.project_name, repo_name=args.repo_name)
 
   if not inferred_url or not repo_name:
     print('Error: Repo URL or name could not be determined.', file=sys.stderr)
@@ -80,7 +86,8 @@ def build_fuzzers(args):
     if not os.path.exists(workspace):
       os.mkdir(workspace)
   else:
-    print('Error: needs the GITHUB_WORKSPACE env variable set.', file=sys.stderr)
+    print('Error: needs the GITHUB_WORKSPACE env variable set.',
+          file=sys.stderr)
     return 1
 
   # Get the container name that are currently inside.
@@ -105,11 +112,18 @@ def build_fuzzers(args):
     return 1
 
   # Copy the repo from the shared volume to the required location in OSS-Fuzz.
-  command = ['--cap-add', 'SYS_PTRACE','-e','FUZZING_ENGINE=libfuzzer','-e' ,'SANITIZER=address', '-e','ARCHITECTURE=x86_64']
+  command = [
+      '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
+      'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
+  ]
   command += [
-      '--volumes-from', primary_container, 'gcr.io/oss-fuzz/%s' % args.project_name]
-  command += ['/bin/bash', '-c', 'cp {0}:{1} && compile'.format(os.path.join(workspace, '.'), '/src')]
-  comand +=
+      '--volumes-from', primary_container,
+      'gcr.io/oss-fuzz/%s' % args.project_name
+  ]
+  command += [
+      '/bin/bash', '-c',
+      'cp {0}:{1} && compile'.format(os.path.join(workspace, '.'), '/src')
+  ]
   result_code = helper.docker_run(command)
   if result_code:
     print('Building fuzzers failed.', file=sys.stderr)
@@ -140,7 +154,9 @@ def run_fuzzers(args):
       print('Fuzzer {} finished running.'.format(target.target_name))
     else:
       error_detected = True
-      print("Fuzzer {} Detected Error: {}".format(target.target_name, stack_trace), file=sys.stderr)
+      print("Fuzzer {} Detected Error: {}".format(target.target_name,
+                                                  stack_trace),
+            file=sys.stderr)
       shutil.move(test_case, '/tmp/testcase')
       break
   return not error_detected
