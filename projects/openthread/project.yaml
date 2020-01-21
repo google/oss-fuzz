@@ -1,2 +1,11 @@
 homepage: "https://github.com/openthread/openthread"
 primary_contact: "jonhui@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - dataflow
