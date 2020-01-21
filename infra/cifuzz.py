@@ -75,7 +75,7 @@ def main():
   if args.command == 'build_fuzzers':
     return build_fuzzers(args, git_workspace, out_dir)
   if args.command == 'run_fuzzers':
-    return run_fuzzers(args) == 0
+    return run_fuzzers(args, out_dir) 
   print('Invalid argument option, use build_fuzzers or run_fuzzer.',
         file=sys.stderr)
   return False
