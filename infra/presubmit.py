@@ -88,7 +88,7 @@ class ProjectYamlChecker:
       'primary_contact',
       'sanitizers',
       'vendor_ccs',
-      'view_restrictions',      
+      'view_restrictions',
   ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
