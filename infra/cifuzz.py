@@ -116,7 +116,7 @@ def build_fuzzers(args, git_workspace, out_dir):
       utils.get_container(), '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64', image_name, '/bin/bash',
       '-c',
-      'rm -rf /src/yara && cp -r {0} {1} && compile && cp -r {2} {3}'.format(
+      'rm -rf /src/yara/* && cp -r {0} {1} && compile && cp -r {2} {3}'.format(
           os.path.join(git_workspace, '.'), src, '/out', out_dir)
   ]
 

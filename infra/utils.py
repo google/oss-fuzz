@@ -87,33 +87,3 @@ def get_container():
     else:
       primary_container = None
   return primary_container
-
-
-def copy_in_docker(docker_image, src, dest):
-  """Copys a file or directory local in a docker image.
-
-  Args:
-    docker_image: The name of the docker image you want to copy in.
-    src: The location of the file/directory you want to copy.
-    dest: The location of where you want the file/directory copied to.
-
-  Return:
-    True on success and False on failure.
-  """
-
-  primary_container = get_container()
-
-  command = [
-      '--cap-add',
-      'SYS_PTRACE',
-  ]
-  if primary_container:
-    command += ['--volumes-from', primary_container]
-
-  command += [docker_image]
-  command += ['/bin/bash', '-c', 'cp -r {0} {1}'.format(src, dest)]
-  result_code = helper.docker_run(command)
-  if result_code:
-    print('Copying to docker image failed.', file=sys.stderr)
-    return False
-  return True
