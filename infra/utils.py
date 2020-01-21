@@ -47,8 +47,6 @@ def is_fuzz_target_local(file_path):
     return True
 
   if os.path.exists(file_path) and not stat.S_ISREG(os.stat(file_path).st_mode):
-    # Don't read special files (eg: /dev/urandom).
-    logs.log_warn('Tried to read from non-regular file: %s.' % file_path)
     return False
 
   with open(file_path, 'rb') as file_handle:
