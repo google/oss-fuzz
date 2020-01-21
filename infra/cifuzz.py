@@ -109,7 +109,8 @@ def build_fuzzers(args):
   command += [
       '--volumes-from', primary_container, 'gcr.io/oss-fuzz/%s' % args.project_name]
   command += ['/bin/bash', '-c', 'cp {0}:{1} && compile'.format(os.path.join(workspace, '.'), '/src')]
-  result_code = docker_run(command)
+  comand +=
+  result_code = helper.docker_run(command)
   if result_code:
     print('Building fuzzers failed.', file=sys.stderr)
     return result_code
