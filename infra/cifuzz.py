@@ -130,7 +130,6 @@ def build_fuzzers(args, git_workspace, out_dir):
       image_name, '/out', out_dir):
     print('Error: coping output artifacts failed.', file=sys.stderr)
     return False
-  print(os.listdir('/out'))
   print(os.listdir(out_dir))
   return True
 

@@ -23,6 +23,7 @@ import sys
 import time
 
 import helper
+import utils
 
 class FuzzTarget():
   """A class to manage a single fuzz target.
@@ -45,6 +46,7 @@ class FuzzTarget():
     self.target_name = target_path.split('/')[-1]
     self.duration = duration
     self.project_name = project_name
+    self.target_path = target_path
 
   def start(self):
     """Starts the fuzz target run for the length of time specifed by duration.
@@ -52,21 +54,21 @@ class FuzzTarget():
     Returns:
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
-    command = ['docker', 'run', '--rm', '--privileged', '-e', ]
 
+    utils.copy_in_docker('gcr.io/oss-fuzz-base/base-runner', self.target_path, '/out')
+
+    command = ['docker', 'run', '--rm', '--privileged']
     command += [
-        'FUZZING_ENGINE=libfuzzer',
-        'SANITIZER=address',
-        'RUN_FUZZER_MODE=interactive',
+        '-e', 'FUZZING_ENGINE=libfuzzer',
+        '-e', 'SANITIZER=address',
+        '-e', 'RUN_FUZZER_MODE=interactive',
     ]
-    run_args = helper._env_to_docker_args(env) + [
-        '-v', '%s:/out' % helper._get_output_dir(self.project_name),
-        '-t', 'gcr.io/oss-fuzz-base/base-runner',
+    command += [
+        'gcr.io/oss-fuzz-base/base-runner',
         'run_fuzzer',
         self.target_name,
     ]
 
-    command.extend(run_args)
     logging.debug('Running command: {}'.format(' '.join(command)))
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
