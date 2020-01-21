@@ -107,7 +107,7 @@ def build_fuzzers(args):
   # Copy the repo from the shared volume to the required location in OSS-Fuzz.
   command = ['--cap-add', 'SYS_PTRACE','-e','FUZZING_ENGINE=libfuzzer','-e' ,'SANITIZER=address', '-e','ARCHITECTURE=x86_64']
   command += [
-      '--volumes-from', primary_container, 'gcr.io/oss-fuzz/%s' % project_name]
+      '--volumes-from', primary_container, 'gcr.io/oss-fuzz/%s' % args.project_name]
   command += ['/bin/bash', '-c', 'cp {0}:{1} && compile'.format(os.path.join(workspace, '.'), '/src')]
   result_code = docker_run(command)
   if result_code:
