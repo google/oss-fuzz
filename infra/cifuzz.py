@@ -107,10 +107,6 @@ def build_fuzzers(args, git_workspace, out_dir):
                                                 repo_name=repo_name)
   build_repo_manager.checkout_commit(args.commit_sha)
 
-  if not helper.build_image_impl(args.project_name, no_cache=False):
-    print('Error: Building the projects image has failed.', file=sys.stderr)
-    return False
-
   # Remove outdated version of repo in image.
   helper.docker_run([
       image_name, '/bin/bash', '-c',
@@ -134,6 +130,7 @@ def build_fuzzers(args, git_workspace, out_dir):
       image_name, helper.get_output_dir(args.project_name), out_dir):
     print('Error: coping output artifacts failed.', file=sys.stderr)
     return False
+  print(os.listdir(helper.get_output_dir(args.project_name)))
   print(os.listdir(out_dir))
   return True
 
@@ -147,12 +144,13 @@ def run_fuzzers(args, out_dir):
   Returns:
     True on success False on failure.
   """
-  runner_image_name = 'gcr.io/oss-fuzz-base/base-runner'
-  if not helper.build_image_impl('base-runner', no_cache=False):
-    print('Error: Building runner image failed.', file=sys.stderr)
-    return False
-
   print(utils.get_fuzz_targets(out_dir))
+  #runner_image_name = 'gcr.io/oss-fuzz-base/base-runner'
+  #if not helper.build_image_impl('base-runner', no_cache=False):
+  #  print('Error: Building runner image failed.', file=sys.stderr)
+  #  return False
+
+
 
 
   return True
