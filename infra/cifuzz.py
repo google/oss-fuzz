@@ -66,19 +66,23 @@ def main():
   else:
     print('Error: The GITHUB_WORKSPACE env variable needs to be set.',
           file=sys.stderr)
-    return False
+    return 1
 
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != helper.OSSFUZZ_DIR:
     os.chdir(helper.OSSFUZZ_DIR)
 
   if args.command == 'build_fuzzers':
-    return build_fuzzers(args, git_workspace, out_dir)
+    if build_fuzzers(args, git_workspace, out_dir):
+      return 0
+    return 1
   if args.command == 'run_fuzzers':
-    return run_fuzzers(args, out_dir)
+    if run_fuzzers(args, out_dir):
+      return 0
+    return 1
   print('Invalid argument option, use build_fuzzers or run_fuzzer.',
         file=sys.stderr)
-  return False
+  return 1
 
 
 def build_fuzzers(args, git_workspace, out_dir):
@@ -129,7 +133,7 @@ def build_fuzzers(args, git_workspace, out_dir):
   if not utils.copy_in_docker(image_name, '/out/.', out_dir):
     print('Error: coping output artifacts failed.', file=sys.stderr)
     return False
-  print(os.listdir(out_dir))
+  helper.docker_run([image_name, 'bash', '-c', 'ls /out'])
   return True
 
 
