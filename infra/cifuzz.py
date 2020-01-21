@@ -111,34 +111,17 @@ def build_fuzzers(args, git_workspace, out_dir):
                                                 repo_name=repo_name)
   build_repo_manager.checkout_commit(args.commit_sha)
 
-  # Remove outdated version of repo in image.
-  helper.docker_run([
-      image_name, '/bin/bash', '-c',
-      'rm' + ' -rf ' + os.path.join(src, repo_name)
-  ])
-
-  helper.docker_run([
-      image_name, '/bin/bash', '-c',
-      'ls /src/yara'
-  ])
-
-  if not utils.copy_in_docker(image_name, os.path.join(git_workspace, '.'),
-                              src):
-    print('Error: Copying git workspace to image failed.', file=sys.stderr)
-    return False
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64', image_name, '/bin/bash',
-      '-c', 'compile && cp -r /out/. ' + out_dir
+      '-c',
+      'rm -rf /src/yara && cp -r {0} {1} && compile && cp -r {2} {3}'.format(
+          os.path.join(git_workspace, '.'), src, '/out', out_dir)
   ]
 
   if helper.docker_run(command):
     print('Error: Building fuzzers failed.', file=sys.stderr)
     return False
-  if not utils.copy_in_docker(image_name, '/out/.', out_dir):
-    print('Error: coping output artifacts failed.', file=sys.stderr)
-    return False
-
   return True
 
 

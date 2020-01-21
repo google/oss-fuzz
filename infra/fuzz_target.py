@@ -93,6 +93,13 @@ class FuzzTarget():
       return None, None
     return test_case, output
 
+  def get_container():
+    """Gets the name of the current docker container you are in.
+
+    Returns:
+      Container name or None if not in a container.
+    """
+
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.
 

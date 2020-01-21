@@ -74,6 +74,21 @@ def get_fuzz_targets(path):
   return fuzz_target_paths
 
 
+def get_container():
+  """Gets the name of the current docker container you are in.
+
+  Returns:
+    Container name or None if not in a container.
+  """
+  with open('/proc/self/cgroup') as file_handle:
+    if 'docker' in file_handle.read():
+      with open('/etc/hostname') as file_handle:
+        primary_container = file_handle.read().strip()
+    else:
+      primary_container = None
+  return primary_container
+
+
 def copy_in_docker(docker_image, src, dest):
   """Copys a file or directory local in a docker image.
 
@@ -86,13 +101,7 @@ def copy_in_docker(docker_image, src, dest):
     True on success and False on failure.
   """
 
-  # Get the container name that are currently inside.
-  with open('/proc/self/cgroup') as file_handle:
-    if 'docker' in file_handle.read():
-      with open('/etc/hostname') as file_handle:
-        primary_container = file_handle.read().strip()
-    else:
-      primary_container = None
+  primary_container = get_container()
 
   command = [
       '--cap-add',
