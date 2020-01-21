@@ -74,6 +74,8 @@ def build_fuzzers(args):
   Returns:
     True on success False on failure.
   """
+  image_name = 'gcr.io/oss-fuzz/%s' % args.project_name
+  src = '/src'
   inferred_url, repo_name = build_specified_commit.detect_main_repo(
       args.project_name, repo_name=args.repo_name)
 
@@ -100,14 +102,16 @@ def build_fuzzers(args):
     print('Error: Building the projects image has failed.', file=sys.stderr)
     return 1
 
-  utils.copy_in_docker('gcr.io/oss-fuzz/%s' % args.project_name,
-                       os.path.join(workspace, '.'), '/src')
 
+  # Remove outdated version of repo in image.
+  helper.docker_run([ image_name, 'rm', '-rf', os.path.join(src, repo_name)])
+
+  utils.copy_in_docker(image_name,
+                       os.path.join(workspace, '.'), src)
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
-      'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
+      'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64', image_name
   ]
-  command += ['gcr.io/oss-fuzz/%s' % args.project_name, 'git', 'rev-parse', 'HEAD']
 
   result_code = helper.docker_run(command)
   if result_code:
