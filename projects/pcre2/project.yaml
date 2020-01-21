@@ -1,5 +1,10 @@
 homepage: "http://www.pcre.org/"
 primary_contact: "philip.hazel@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
   - memory
