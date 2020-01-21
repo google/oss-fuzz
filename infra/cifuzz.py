@@ -126,8 +126,7 @@ def build_fuzzers(args, git_workspace, out_dir):
     print('Error: Building fuzzers failed.', file=sys.stderr)
     return False
 
-  if not utils.copy_in_docker(
-      image_name, '/out/*', out_dir):
+  if not utils.copy_in_docker(image_name, '/out/.', out_dir):
     print('Error: coping output artifacts failed.', file=sys.stderr)
     return False
   print(os.listdir(out_dir))
@@ -144,9 +143,27 @@ def run_fuzzers(args, out_dir):
     True on success False on failure.
   """
   runner_image_name = 'gcr.io/oss-fuzz-base/base-runner'
-  print(utils.get_fuzz_targets(out_dir))
+  fuzzer_paths = utils.get_fuzz_targets(out_dir)
+  print('Fuzzer paths', str(fuzzer_paths))
+  fuzz_targets = []
+  error_detected = False
+  for fuzzer_path in fuzzer_paths:
+    fuzz_targets.append(
+        fuzz_target.FuzzTarget(args.project_name, fuzzer_path, 40))
 
-
+  for target in fuzz_targets:
+    print('Fuzzer {} started running.'.format(target.target_name))
+    test_case, stack_trace = target.start()
+    if not test_case or not stack_trace:
+      logging.debug('Fuzzer {} finished running.'.format(target.target_name))
+      print('Fuzzer {} finished running.'.format(target.target_name))
+    else:
+      error_detected = True
+      print("Fuzzer {} Detected Error: {}".format(target.target_name,
+                                                  stack_trace),
+            file=sys.stderr)
+      shutil.move(test_case, '/tmp/testcase')
+      break
 
   return True
   """

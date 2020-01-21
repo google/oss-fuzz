@@ -25,6 +25,7 @@ import time
 import helper
 import utils
 
+
 class FuzzTarget():
   """A class to manage a single fuzz target.
 
@@ -42,7 +43,10 @@ class FuzzTarget():
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
     """
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', stream=sys.stdout, level=logging.DEBUG)
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        stream=sys.stdout,
+        level=logging.DEBUG)
     self.target_name = target_path.split('/')[-1]
     self.duration = duration
     self.project_name = project_name
@@ -55,13 +59,17 @@ class FuzzTarget():
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
 
-    utils.copy_in_docker('gcr.io/oss-fuzz-base/base-runner', self.target_path, '/out')
+    utils.copy_in_docker('gcr.io/oss-fuzz-base/base-runner', self.target_path,
+                         '/out')
 
     command = ['docker', 'run', '--rm', '--privileged']
     command += [
-        '-e', 'FUZZING_ENGINE=libfuzzer',
-        '-e', 'SANITIZER=address',
-        '-e', 'RUN_FUZZER_MODE=interactive',
+        '-e',
+        'FUZZING_ENGINE=libfuzzer',
+        '-e',
+        'SANITIZER=address',
+        '-e',
+        'RUN_FUZZER_MODE=interactive',
     ]
     command += [
         'gcr.io/oss-fuzz-base/base-runner',
@@ -70,7 +78,9 @@ class FuzzTarget():
     ]
 
     logging.debug('Running command: {}'.format(' '.join(command)))
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(command,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
     try:
       out, err = process.communicate(timeout=self.duration)
     except subprocess.TimeoutExpired:
@@ -92,7 +102,9 @@ class FuzzTarget():
     Returns:
       The error testcase or None if not found
     """
-    match = re.search(r'\bTest unit written to \.([^ ]+)', error_string.rstrip())
+    match = re.search(r'\bTest unit written to \.([^ ]+)',
+                      error_string.rstrip())
     if match:
-      return os.path.join(helper.BUILD_DIR,'out', self.project_name, match.group(1))
+      return os.path.join(helper.BUILD_DIR, 'out', self.project_name,
+                          match.group(1))
     return None
