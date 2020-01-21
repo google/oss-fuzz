@@ -93,28 +93,28 @@ def copy_to_docker(docker_image, src, dest):
 
   Return:
     True on success and False on failure.
-"""
+  """
 
 
-# Get the container name that are currently inside.
-with open('/proc/self/cgroup') as file_handle:
-  if 'docker' in file_handle.read():
-    with open('/etc/hostname') as file_handle:
-      primary_container = file_handle.read().strip()
-  else:
-    primary_container = None
+  # Get the container name that are currently inside.
+  with open('/proc/self/cgroup') as file_handle:
+    if 'docker' in file_handle.read():
+      with open('/etc/hostname') as file_handle:
+        primary_container = file_handle.read().strip()
+    else:
+      primary_container = None
 
-command = [
-    '--cap-add',
-    'SYS_PTRACE',
-]
-if primary_container:
-  command += ['--volumes-from', primary_container]
+  command = [
+      '--cap-add',
+      'SYS_PTRACE',
+  ]
+  if primary_container:
+    command += ['--volumes-from', primary_container]
 
-command += ['gcr.io/oss-fuzz/%s' % args.project_name]
-command += ['/bin/bash', '-c', 'cp {0} {1}'.format(src, dest)]
-result_code = helper.docker_run(command)
-if result_code:
-  print('Copying to docker image failed.', file=sys.stderr)
-  return result_code
-return 0
+  command += ['gcr.io/oss-fuzz/%s' % args.project_name]
+  command += ['/bin/bash', '-c', 'cp {0} {1}'.format(src, dest)]
+  result_code = helper.docker_run(command)
+  if result_code:
+    print('Copying to docker image failed.', file=sys.stderr)
+    return result_code
+  return 0
