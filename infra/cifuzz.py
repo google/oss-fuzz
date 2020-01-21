@@ -129,8 +129,7 @@ def build_fuzzers(args, git_workspace, out_dir):
   if helper.docker_run(command):
     print('Error: Building fuzzers failed.', file=sys.stderr)
     return False
-  helper.docker_run([image_name, 'bash', '-c', 'ls /'])
-  helper.docker_run([image_name, 'bash', '-c', 'ls /out'])
+  helper.docker_run([image_name, 'bash', '-c', 'cd / && find -name *fuzzer'])
   if not utils.copy_in_docker(image_name, '/out/.', out_dir):
     print('Error: coping output artifacts failed.', file=sys.stderr)
     return False
