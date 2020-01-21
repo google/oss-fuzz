@@ -142,8 +142,11 @@ def run_fuzzers(args, out_dir):
   Returns:
     True on success False on failure.
   """
-  runner_image_name = 'gcr.io/oss-fuzz-base/base-runner'
+
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
+  if not fuzzer_paths:
+    print('Error: No fuzzers were found in out directory.', file=sys.stderr)
+    return False
   print('Fuzzer paths', str(fuzzer_paths))
   fuzz_targets = []
   error_detected = False
@@ -166,29 +169,6 @@ def run_fuzzers(args, out_dir):
       break
 
   return True
-  """
-  fuzzer_paths = utils.get_project_fuzz_targets(args.project_name)
-  print('Fuzzer paths', str(fuzzer_paths))
-  fuzz_targets = []
-  for fuzzer in fuzzer_paths:
-    fuzz_targets.append(fuzz_target.FuzzTarget(args.project_name, fuzzer, 20))
-  print(fuzzer_paths)
-  error_detected = False
-
-  for target in fuzz_targets:
-    print('Fuzzer {} started running.'.format(target.target_name))
-    test_case, stack_trace = target.start()
-    if not test_case or not stack_trace:
-      logging.debug('Fuzzer {} finished running.'.format(target.target_name))
-      print('Fuzzer {} finished running.'.format(target.target_name))
-    else:
-      error_detected = True
-      print("Fuzzer {} Detected Error: {}".format(target.target_name,
-                                                  stack_trace),
-            file=sys.stderr)
-      shutil.move(test_case, '/tmp/testcase')
-      break
-  """
 
 
 if __name__ == '__main__':
