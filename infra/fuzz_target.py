@@ -23,7 +23,6 @@ import sys
 import time
 
 import helper
-import utils
 
 
 class FuzzTarget():
@@ -58,9 +57,6 @@ class FuzzTarget():
     Returns:
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
-
-    utils.copy_in_docker('gcr.io/oss-fuzz-base/base-runner', self.target_path,
-                         '/out')
 
     command = ['docker', 'run', '--rm', '--privileged']
     command += [
