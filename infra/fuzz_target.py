@@ -23,6 +23,7 @@ import sys
 import time
 
 import helper
+import utils
 
 
 class FuzzTarget():
@@ -58,7 +59,7 @@ class FuzzTarget():
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
 
-    command = ['docker', 'run', '--rm', '--privileged']
+    command = ['docker', 'run', '--rm', '--privileged', '--volumes-from', utils.get_container()]
     command += [
         '-e',
         'FUZZING_ENGINE=libfuzzer',
@@ -69,7 +70,7 @@ class FuzzTarget():
     ]
     command += [
         'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c',
-        'cp -rf {0} {1} && run_fuzzer {2}'.format(self.target_path, '/out',
+        'cp -rf {0} {1} && ls /out && run_fuzzer {2}'.format(self.target_path, '/out',
                                                   self.target_name)
     ]
 
