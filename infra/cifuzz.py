@@ -107,7 +107,7 @@ def build_fuzzers(args):
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
   ]
-  command += ['gcr.io/oss-fuzz/%s' % args.project_name, 'bash', '-c', 'ls /src']
+  command += ['gcr.io/oss-fuzz/%s' % args.project_name]
 
   result_code = helper.docker_run(command)
   if result_code:

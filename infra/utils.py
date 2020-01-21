@@ -112,7 +112,7 @@ def copy_in_docker(docker_image, src, dest):
     command += ['--volumes-from', primary_container]
 
   command += [docker_image]
-  command += ['/bin/bash', '-c', 'cp {0} {1}'.format(src, dest)]
+  command += ['/bin/bash', '-c', 'cp -r {0} {1}'.format(src, dest)]
   result_code = helper.docker_run(command)
   if result_code:
     print('Copying to docker image failed.', file=sys.stderr)
