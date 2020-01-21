@@ -55,23 +55,17 @@ def is_fuzz_target_local(file_path):
     return file_handle.read().find(FUZZ_TARGET_SEARCH_STRING.encode())
 
 
-def get_project_fuzz_targets(project_name):
-  """Get list of fuzz targets for a specific OSS-Fuzz project.
+def get_fuzz_targets(path):
+  """Get list of fuzz targets in a directory.
 
   Args:
-    project_name: The name of the OSS-Fuzz in question.
+    path: A path to search for fuzz targets in.
 
   Returns:
     A list of paths to fuzzers or an empty list if None.
   """
 
-  if not helper.check_project_exists(project_name):
-    print('Error: Project {0} does not exist in OSS-Fuzz.'.format(project_name),
-          file=sys.stderr)
-    return []
   fuzz_target_paths = []
-  path = os.path.join(helper.BUILD_DIR, 'out', project_name)
-  print('Path', path)
   for root, _, files in os.walk(path):
     for filename in os.listdir(path):
       print('Possable fuzzer:', filename)

@@ -75,7 +75,7 @@ def main():
   if args.command == 'build_fuzzers':
     return build_fuzzers(args, git_workspace, out_dir)
   if args.command == 'run_fuzzers':
-    return run_fuzzers(args, out_dir) 
+    return run_fuzzers(args, out_dir)
   print('Invalid argument option, use build_fuzzers or run_fuzzer.',
         file=sys.stderr)
   return False
@@ -151,9 +151,9 @@ def run_fuzzers(args, out_dir):
     print('Error: Building runner image failed.', file=sys.stderr)
     return False
 
-  if not utils.copy_in_docker(runner_image_name, out_dir, '/out'):
-    print('Error: coping output artifacts failed.', file=sys.stderr)
-    return False
+  print(utils.get_fuzz_targets(out_dir))
+
+
   return True
   """
   fuzzer_paths = utils.get_project_fuzz_targets(args.project_name)
