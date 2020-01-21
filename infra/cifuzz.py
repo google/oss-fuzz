@@ -26,12 +26,8 @@ import sys
 import tempfile
 
 import build_specified_commit
-import fuzz_target
 import helper
 import repo_manager
-import datetime
-import utils
-
 
 def main():
   """Connects Fuzzers with CI tools.
@@ -79,7 +75,7 @@ def build_fuzzers(args):
   if not inferred_url or not repo_name:
     print('Error: Repo URL or name could not be determined.', file=sys.stderr)
 
-
+  # Get the shared volume directory.
   if os.environ['GITHUB_WORKSPACE']:
     workspace = os.path.join(os.environ['GITHUB_WORKSPACE'], 'storage')
     if not os.path.exists(workspace):
@@ -88,6 +84,7 @@ def build_fuzzers(args):
     print('Error: needs the GITHUB_WORKSPACE env variable set.', file=sys.stderr)
     return 1
 
+  # Get the container name that are currently inside.
   with open('/proc/self/cgroup') as file_handle:
     if 'docker' in file_handle.read():
       with open('/etc/hostname') as file_handle:
@@ -98,6 +95,7 @@ def build_fuzzers(args):
     print('Error primary container could not be determined.', file=sys.stderr)
     return 1
 
+  # Checkout projects repo in the shared volume.
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 workspace,
                                                 repo_name=repo_name)
@@ -107,7 +105,7 @@ def build_fuzzers(args):
     print('Error: Building the projects image has failed.', file=sys.stderr)
     return 1
 
-  # Copy specific repo
+  # Copy the repo from the shared volume to the required location in OSS-Fuzz.
   command = ['--cap-add', 'SYS_PTRACE','-e','FUZZING_ENGINE=libfuzzer','-e' ,'SANITIZER=address', '-e','ARCHITECTURE=x86_64']
   command += [
       '--volumes-from', primary_container, 'gcr.io/oss-fuzz/%s' % project_name]
