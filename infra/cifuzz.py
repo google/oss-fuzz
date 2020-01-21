@@ -112,7 +112,8 @@ def build_fuzzers(args, git_workspace, out_dir):
   build_repo_manager.checkout_commit(args.commit_sha)
 
   command = [
-      '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
+      '--cap-add', 'SYS_PTRACE', '--volumes-from',
+      utils.get_container(), '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64', image_name, '/bin/bash',
       '-c',
       'rm -rf /src/yara && cp -r {0} {1} && compile && cp -r {2} {3}'.format(
