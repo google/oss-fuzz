@@ -68,7 +68,6 @@ def get_fuzz_targets(path):
   fuzz_target_paths = []
   for root, _, files in os.walk(path):
     for filename in os.listdir(path):
-      print('Possable fuzzer:', filename)
       file_path = os.path.join(root, filename)
       print(file_path)
       if is_fuzz_target_local(file_path):
