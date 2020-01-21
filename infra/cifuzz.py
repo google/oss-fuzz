@@ -86,7 +86,7 @@ def build_fuzzers(args, git_workspace, out_dir):
 
   Args:
     git_workspace: The location in the shared volume to store git repos.
-    out_dir: THe location in the shared volume to store output artifacts.
+    out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
     True on success False on failure.
@@ -112,7 +112,7 @@ def build_fuzzers(args, git_workspace, out_dir):
     return False
 
   # Remove outdated version of repo in image.
-  helper.docker_run([image_name, 'rm', '-rf', os.path.join(src, repo_name)])
+  helper.docker_run([image_name, '/bin/bash', '-c','rm' + ' -rf ' +  os.path.join(src, repo_name)])
 
   if not utils.copy_in_docker(image_name, os.path.join(git_workspace, '.'),
                               src):
@@ -134,13 +134,24 @@ def build_fuzzers(args, git_workspace, out_dir):
   return True
 
 
-def run_fuzzers(args):
+def run_fuzzers(args, out_dir):
   """Runs a all fuzzer for a specific OSS-Fuzz project.
+
+  Args:
+    out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
     True on success False on failure.
   """
+  runner_image_name = 'gcr.io/oss-fuzz-base/base-runner'
+  if not helper.build_image_impl('base-runner', no_cache=False):
+    print('Error: Building runner image failed.', file=sys.stderr)
+    return False
 
+  if not utils.copy_in_docker(
+      runner_image_name, out_dir, '/out':
+    print('Error: coping output artifacts failed.', file=sys.stderr)
+    return False
 
   """
   fuzzer_paths = utils.get_project_fuzz_targets(args.project_name)

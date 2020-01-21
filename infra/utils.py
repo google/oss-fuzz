@@ -115,5 +115,5 @@ def copy_in_docker(docker_image, src, dest):
   result_code = helper.docker_run(command)
   if result_code:
     print('Copying to docker image failed.', file=sys.stderr)
-    return result_code
-  return 0
+    return False
+  return True
