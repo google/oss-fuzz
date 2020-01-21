@@ -100,7 +100,7 @@ def build_fuzzers(args):
     print('Error: Building the projects image has failed.', file=sys.stderr)
     return 1
 
-  utils.copy_to_docker('gcr.io/oss-fuzz/%s' % args.project_name,
+  utils.copy_in_docker('gcr.io/oss-fuzz/%s' % args.project_name,
                        os.path.join(workspace, '.'), '/src')
 
   command = [

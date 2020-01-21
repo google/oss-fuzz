@@ -83,11 +83,11 @@ def get_project_fuzz_targets(project_name):
   return fuzz_target_paths
 
 
-def copy_to_docker(docker_image, src, dest):
-  """Copys a file or directory local to a docker image.
+def copy_in_docker(docker_image, src, dest):
+  """Copys a file or directory local in a docker image.
 
   Args:
-    docker_image: The name of the docker image you want to copy to.
+    docker_image: The name of the docker image you want to copy in.
     src: The location of the file/directory you want to copy.
     dest: The location of where you want the file/directory copied to.
 
@@ -111,7 +111,7 @@ def copy_to_docker(docker_image, src, dest):
   if primary_container:
     command += ['--volumes-from', primary_container]
 
-  command += ['gcr.io/oss-fuzz/%s' % args.project_name]
+  command += [docker_image]
   command += ['/bin/bash', '-c', 'cp {0} {1}'.format(src, dest)]
   result_code = helper.docker_run(command)
   if result_code:
