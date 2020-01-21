@@ -72,9 +72,9 @@ class FuzzTarget():
         'RUN_FUZZER_MODE=interactive',
     ]
     command += [
-        'gcr.io/oss-fuzz-base/base-runner',
-        'run_fuzzer',
-        self.target_name,
+        'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c',
+        'cp -rf {0} {1} && run_fuzzer {2}'.format(self.fuzzer_path, '/out',
+                                                  self.fuzzer_name)
     ]
 
     logging.debug('Running command: {}'.format(' '.join(command)))
@@ -92,13 +92,6 @@ class FuzzTarget():
       print('Error no test case found in stack trace.', file=sys.stderr)
       return None, None
     return test_case, output
-
-  def get_container():
-    """Gets the name of the current docker container you are in.
-
-    Returns:
-      Container name or None if not in a container.
-    """
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.
