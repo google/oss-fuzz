@@ -24,6 +24,6 @@ RUN \
   libtool \
   pkg-config
 
-RUN git clone --depth 1 https://github.com/VirusTotal/yara.git
+RUN git clone --depth 1 https://github.com/Leo-Neat/yara.git
 COPY build.sh $SRC/
 WORKDIR yara
