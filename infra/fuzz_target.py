@@ -84,6 +84,7 @@ class FuzzTarget():
       logging.debug('Fuzzer {} finished with timeout.'.format(self.target_name))
       return None, None
     output = out.decode('ascii')
+    print(output)
     test_case = self.get_test_case(output)
     if not test_case:
       print('Error no test case found in stack trace.', file=sys.stderr)
