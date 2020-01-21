@@ -112,7 +112,10 @@ def build_fuzzers(args, git_workspace, out_dir):
     return False
 
   # Remove outdated version of repo in image.
-  helper.docker_run([image_name, '/bin/bash', '-c','rm' + ' -rf ' +  os.path.join(src, repo_name)])
+  helper.docker_run([
+      image_name, '/bin/bash', '-c',
+      'rm' + ' -rf ' + os.path.join(src, repo_name)
+  ])
 
   if not utils.copy_in_docker(image_name, os.path.join(git_workspace, '.'),
                               src):
@@ -148,12 +151,10 @@ def run_fuzzers(args, out_dir):
     print('Error: Building runner image failed.', file=sys.stderr)
     return False
 
-  if not utils.copy_in_docker(
-      runner_image_name, out_dir, '/out')
+  if not utils.copy_in_docker(runner_image_name, out_dir, '/out'):
     print('Error: coping output artifacts failed.', file=sys.stderr)
     return False
   return True
-
   """
   fuzzer_paths = utils.get_project_fuzz_targets(args.project_name)
   print('Fuzzer paths', str(fuzzer_paths))
