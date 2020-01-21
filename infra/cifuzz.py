@@ -25,6 +25,7 @@ import shutil
 import sys
 
 import build_specified_commit
+import fuzz_target
 import helper
 import repo_manager
 import utils
