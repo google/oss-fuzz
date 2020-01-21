@@ -20,7 +20,7 @@ import sys
 
 def main():
   """Runs OSS-Fuzz project's fuzzers for CI tools."""
-  project_name = os.environ['OSS_FUZZ_PROJECT_NAME']
+  project_name = os.environ['PROJECT_NAME']
   repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/', 1)[-1]
   commit_sha = os.environ['GITHUB_SHA']
 
