@@ -74,13 +74,21 @@ class ProjectYamlChecker:
   SECTIONS_AND_CONSTANTS = {
       'sanitizers': {'address', 'none', 'memory', 'undefined', 'dataflow'},
       'architectures': {'i386', 'x86_64'},
-      'engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow'}
+      'fuzzing_engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow'}
   }
 
   # Note: this list must be updated when we allow new sections.
   VALID_SECTION_NAMES = [
-      'homepage', 'primary_contact', 'auto_ccs', 'sanitizers', 'architectures',
-      'disabled', 'view_restrictions', 'coverage_extra_args', 'vendor_ccs'
+      'architectures',
+      'auto_ccs',
+      'coverage_extra_args',
+      'disabled',
+      'fuzzing_engines',
+      'homepage',
+      'primary_contact',
+      'sanitizers',
+      'vendor_ccs',
+      'view_restrictions',
   ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
