@@ -95,7 +95,6 @@ def copy_in_docker(docker_image, src, dest):
     True on success and False on failure.
   """
 
-
   # Get the container name that are currently inside.
   with open('/proc/self/cgroup') as file_handle:
     if 'docker' in file_handle.read():

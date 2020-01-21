@@ -55,12 +55,25 @@ def main():
   run_fuzzer_parser.add_argument('project_name')
   args = parser.parse_args()
 
+  # Get the shared volume directory.
+  if os.environ['GITHUB_WORKSPACE']:
+    git_workspace = os.path.join(os.environ['GITHUB_WORKSPACE'], 'storage')
+    if not os.path.exists(git_workspace):
+      os.mkdir(git_workspace)
+    out_dir = os.path.join(os.environ['GITHUB_WORKSPACE'], 'out')
+    if not os.path.exists(out_dir):
+      os.mkdir(out_dir)
+  else:
+    print('Error: The GITHUB_WORKSPACE env variable needs to be set.',
+          file=sys.stderr)
+    return False
+
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != helper.OSSFUZZ_DIR:
     os.chdir(helper.OSSFUZZ_DIR)
 
   if args.command == 'build_fuzzers':
-    return build_fuzzers(args) == 0
+    return build_fuzzers(args, git_workspace, out_dir)
   if args.command == 'run_fuzzers':
     return run_fuzzers(args) == 0
   print('Invalid argument option, use build_fuzzers or run_fuzzer.',
@@ -68,56 +81,57 @@ def main():
   return False
 
 
-def build_fuzzers(args):
+def build_fuzzers(args, git_workspace, out_dir):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
+
+  Args:
+    git_workspace: The location in the shared volume to store git repos.
+    out_dir: THe location in the shared volume to store output artifacts.
 
   Returns:
     True on success False on failure.
   """
   image_name = 'gcr.io/oss-fuzz/%s' % args.project_name
   src = '/src'
+
+  # TODO: Modify build_specified_commit function to return src dir.
   inferred_url, repo_name = build_specified_commit.detect_main_repo(
       args.project_name, repo_name=args.repo_name)
 
   if not inferred_url or not repo_name:
     print('Error: Repo URL or name could not be determined.', file=sys.stderr)
 
-  # Get the shared volume directory.
-  if os.environ['GITHUB_WORKSPACE']:
-    workspace = os.path.join(os.environ['GITHUB_WORKSPACE'], 'storage')
-    if not os.path.exists(workspace):
-      os.mkdir(workspace)
-  else:
-    print('Error: needs the GITHUB_WORKSPACE env variable set.',
-          file=sys.stderr)
-    return 1
-
   # Checkout projects repo in the shared volume.
   build_repo_manager = repo_manager.RepoManager(inferred_url,
-                                                workspace,
+                                                git_workspace,
                                                 repo_name=repo_name)
   build_repo_manager.checkout_commit(args.commit_sha)
 
   if not helper.build_image_impl(args.project_name, no_cache=False):
     print('Error: Building the projects image has failed.', file=sys.stderr)
-    return 1
-
+    return False
 
   # Remove outdated version of repo in image.
-  helper.docker_run([ image_name, 'rm', '-rf', os.path.join(src, repo_name)])
+  helper.docker_run([image_name, 'rm', '-rf', os.path.join(src, repo_name)])
 
-  utils.copy_in_docker(image_name,
-                       os.path.join(workspace, '.'), src)
+  if not utils.copy_in_docker(image_name, os.path.join(git_workspace, '.'),
+                              src):
+    print('Error: Copying git workspace to image failed.', file=sys.stderr)
+    return False
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64', image_name
   ]
 
-  result_code = helper.docker_run(command)
-  if result_code:
-    print('Building fuzzers failed.', file=sys.stderr)
-    return result_code
-  return 0
+  if helper.docker_run(command):
+    print('Error: Building fuzzers failed.', file=sys.stderr)
+    return False
+
+  if not utils.copy_in_docker(
+      image_name, helper.get_output_dir(args.project_name), out_dir):
+    print('Error: coping output artifacts failed.', file=sys.stderr)
+    return False
+  return True
 
 
 def run_fuzzers(args):
@@ -125,6 +139,7 @@ def run_fuzzers(args):
 
   Returns:
     True on success False on failure.
+  """
   """
   fuzzer_paths = utils.get_project_fuzz_targets(args.project_name)
   print('Fuzzer paths', str(fuzzer_paths))
@@ -147,6 +162,7 @@ def run_fuzzers(args):
             file=sys.stderr)
       shutil.move(test_case, '/tmp/testcase')
       break
+  """
   return not error_detected
 
 
