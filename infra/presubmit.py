@@ -80,7 +80,8 @@ class ProjectYamlChecker:
   # Note: this list must be updated when we allow new sections.
   VALID_SECTION_NAMES = [
       'homepage', 'primary_contact', 'auto_ccs', 'sanitizers', 'architectures',
-      'disabled', 'view_restrictions', 'coverage_extra_args', 'vendor_ccs'
+      'disabled', 'view_restrictions', 'coverage_extra_args', 'vendor_ccs',
+      'fuzzing_engines',
   ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
