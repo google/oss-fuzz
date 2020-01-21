@@ -36,23 +36,26 @@ zip -j $WORK/markdown $SRC/qtqa/fuzzing/testcases/markdown/*
 zip -j $WORK/xml $SRC/qtqa/fuzzing/testcases/xml/* /usr/share/afl/testcases/others/xml/*
 
 # build fuzzers
-$OUT/bin/qmake $SRC/qt/qtbase/tests/libfuzzer/corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro
-make -j$(nproc)
-mv readnext $OUT
-cp $WORK/xml.zip $OUT/readnext_seed_corpus.zip
-cp /usr/share/afl/testcases/_extras/xml.dict $OUT/readnext.dict
 
-$OUT/bin/qmake $SRC/qt/qtbase/tests/libfuzzer/gui/text/qtextdocument/setHtml/setHtml.pro
-make -j$(nproc)
-mv setHtml $OUT
-cp $WORK/html.zip $OUT/setHtml_seed_corpus.zip
-cp /usr/share/afl/testcases/_extras/html_tags.dict $OUT/setHtml.dict
+build_fuzzer() {
+    local module=$1
+    local proFilePath=$2
+    local format=${3-""}
+    local dictionary=${4-""}
+    local proFileName=${proFilePath##*/}
+    local exeName=${proFileName%%.*}
+    $OUT/bin/qmake $SRC/qt/$module/tests/libfuzzer/$proFilePath
+    make -j$(nproc)
+    mv $exeName $OUT
+    if [ -n "$format" ]; then
+        cp $WORK/$format.zip $OUT/"$exeName"_seed_corpus.zip
+    fi
+    if [ -n "$dictionary" ]; then
+        cp $dictionary $OUT/$exeName.dict
+    fi
+}
 
-$OUT/bin/qmake $SRC/qt/qtbase/tests/libfuzzer/gui/text/qtextdocument/setMarkdown/setMarkdown.pro
-make -j$(nproc)
-mv setMarkdown $OUT
-cp $WORK/markdown.zip $OUT/setMarkdown_seed_corpus.zip
-
-$OUT/bin/qmake $SRC/qt/qtbase/tests/libfuzzer/gui/text/qtextlayout/beginLayout/beginLayout.pro
-make -j$(nproc)
-mv beginLayout $OUT
+build_fuzzer "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "/usr/share/afl/testcases/_extras/xml.dict"
+build_fuzzer "qtbase" "gui/text/qtextdocument/setHtml/setHtml.pro" "html" "/usr/share/afl/testcases/_extras/html_tags.dict"
+build_fuzzer "qtbase" "gui/text/qtextdocument/setMarkdown/setMarkdown.pro" "markdown"
+build_fuzzer "qtbase" "gui/text/qtextlayout/beginLayout/beginLayout.pro"
