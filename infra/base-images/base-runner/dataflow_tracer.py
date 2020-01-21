@@ -85,6 +85,7 @@ def collect_traces(binary, corpus_dir, dft_dir):
       'failed': 0,
   }
 
+  files_and_sizes = {}
   for f in _list_dir(corpus_dir):
     stats['total'] += 1
     size = os.path.getsize(f)
@@ -92,7 +93,9 @@ def collect_traces(binary, corpus_dir, dft_dir):
       stats['long'] += 1
       print('Skipping large file ({size}b): {path}'.format(size=size, path=f))
       continue
+    files_and_sizes[f] = size
 
+  for f in sorted(files_and_sizes, key=files_and_sizes.get):
     output_path = os.path.join(dft_dir, _sha1(f))
     try:
       result = _run([binary, f, output_path], timeout=_timeout(size))
