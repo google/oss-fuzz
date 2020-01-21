@@ -6,10 +6,10 @@ auto_ccs:
  - "levi@wolfssl.com"
  - "testing@wolfssl.com"
 fuzzing_engines:
-- libfuzzer
-- afl
-- honggfuzz
-- dataflow
+ - libfuzzer
+ - afl
+ - honggfuzz
+ - dataflow
 sanitizers:
  - address
  - memory:
