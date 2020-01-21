@@ -103,11 +103,11 @@ def build_fuzzers(args):
                                                 repo_name=repo_name)
   build_repo_manager.checkout(args.commit_sha)
 
-  if not helper.build_image_impl(args.project_name, no_cache=False)
+  if not helper.build_image_impl(args.project_name, no_cache=False):
     print('Error: Building the projects image has failed.', file=sys.stderr)
     return 1
 
-
+  # Copy specific repo
   command = ['--cap-add', 'SYS_PTRACE','-e','FUZZING_ENGINE=libfuzzer','-e' ,'SANITIZER=address', '-e','ARCHITECTURE=x86_64']
   command += [
       '--volumes-from', primary_container, 'gcr.io/oss-fuzz/%s' % project_name]
