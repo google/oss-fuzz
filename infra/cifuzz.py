@@ -32,9 +32,11 @@ import utils
 
 
 class Status(enum.Enum):
-  BUG_NOT_FOUND=0
-  ERROR=1
-  BUG_FOUND=2
+  """An Enum to store the possible return codes of the cifuzz module."""
+  BUG_NOT_FOUND = 0
+  ERROR = 1
+  BUG_FOUND = 2
+
 
 def main():
   """Connects fuzzers with CI tools.
@@ -75,11 +77,10 @@ def main():
 
   if args.command == 'build_fuzzers':
     if build_fuzzers(args, git_workspace, out_dir):
-      return Status.BUG_NOT_FOUND
+      return 0
     return Status.ERROR
   if args.command == 'run_fuzzers':
     return run_fuzzers(args, out_dir)
-  return Status.ERROR
 
 
 def build_fuzzers(args, git_workspace, out_dir):
@@ -133,7 +134,7 @@ def run_fuzzers(args, out_dir):
     out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
-    A status enum representing the state of the run.
+    A Status enum representing the state of the run.
   """
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
