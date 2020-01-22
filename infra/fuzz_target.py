@@ -85,6 +85,7 @@ class FuzzTarget():
       return None, None
     output = out.decode('ascii')
     print(output)
+    print(err.decode('ascii'))
     test_case = self.get_test_case(output)
     if not test_case:
       print('Error no test case found in stack trace.', file=sys.stderr)
