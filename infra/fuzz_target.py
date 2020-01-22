@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A module to handle running fuzz targets for a specified amount of time."""
+"""A module to handle running a fuzz target for a specified amount of time."""
 import logging
 import subprocess
 import os
@@ -26,9 +26,10 @@ class FuzzTarget():
   """A class to manage a single fuzz target.
 
   Attributes:
-    project_name: The name of the OSS-Fuzz project this target is associated with.
+    project_name: The name of the OSS-Fuzz project the target is associated.
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
+    target_path: The location of the fuzz target binary.
   """
 
   def __init__(self, project_name, target_path, duration):
@@ -49,7 +50,7 @@ class FuzzTarget():
     self.target_path = target_path
 
   def start(self):
-    """Starts the fuzz target run for the length of time specifed by duration.
+    """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
       (test_case, stack trace) if found or (None, None) on timeout or error.
@@ -69,7 +70,7 @@ class FuzzTarget():
     ]
     command += [
         'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c',
-        'cp -rf {0} {1} && ls /out && run_fuzzer {2} && cp {1} {0}'.format(
+        'cp -rf {0} {1} && run_fuzzer {2} && cp {1} {0}'.format(
             self.target_path, '/out', self.target_name)
     ]
 
@@ -98,7 +99,7 @@ class FuzzTarget():
       error_string: The stack trace string containing the error.
 
     Returns:
-      The error testcase or None if not found
+      The error test case or None if not found.
     """
     match = re.search(r'\bTest unit written to \.([^ ]+)',
                       error_string.rstrip())
