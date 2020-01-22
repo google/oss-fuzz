@@ -150,14 +150,14 @@ class ProjectYamlChecker:
     """Check that only valid sections are included."""
     for name in self.data:
       if name not in self.VALID_SECTION_NAMES:
-        self.error('{name} not a valid section name ({valid_names})'.format(
+        self.error('{name} is not a valid section name ({valid_names})'.format(
             name=name, valid_names=self.VALID_SECTION_NAMES))
 
   def check_required_sections(self):
     """Check that all required sections are present."""
     for section in self.REQUIRED_SECTIONS:
       if section not in self.data:
-        self.error(section + ' is missing.')
+        self.error(section + ' section is missing.')
 
   def check_valid_emails(self):
     """Check that emails are valid looking."""
