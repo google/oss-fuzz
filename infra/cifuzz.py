@@ -29,6 +29,11 @@ import helper
 import repo_manager
 import utils
 
+class CIFuzzError(Exception):
+  """Class to describe the exceptions in RepoManager."""
+
+class CIFuzzBugFound(Exception):
+  """Class to describe the exceptions in RepoManager."""
 
 def main():
   """Connects fuzzers with CI tools.
@@ -61,21 +66,23 @@ def main():
     if not os.path.exists(out_dir):
       os.mkdir(out_dir)
   else:
-    print('Error: The GITHUB_WORKSPACE env variable needs to be set.',
-          file=sys.stderr)
-    return 1
+    raise CIFuzzError('Error: The GITHUB_WORKSPACE env variable needs to be set.')
 
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != helper.OSSFUZZ_DIR:
     os.chdir(helper.OSSFUZZ_DIR)
 
   if args.command == 'build_fuzzers':
-    return not int(build_fuzzers(args, git_workspace, out_dir))
+    if not build_fuzzers(args, git_workspace, out_dir):
+      raise CIFuzzError('Encountered an error while building fuzzers.')
   if args.command == 'run_fuzzers':
-    return not int(run_fuzzers(args, out_dir))
-  print('Invalid argument option, use build_fuzzers or run_fuzzer.',
-        file=sys.stderr)
-  return 1
+    err_code = run_fuzzers(args, out_dir)
+    if err_code == 1:
+      raise CIFuzzBugFound('Bug found. Uploading testcase.')
+    elif err_code == 2:
+      raise CIFuzzError('Encountered an error while running fuzzers.')
+    return 0
+  raise CIFuzzError('Invalid argument option, use build_fuzzers or run_fuzzer.')
 
 
 def build_fuzzers(args, git_workspace, out_dir):
@@ -129,12 +136,12 @@ def run_fuzzers(args, out_dir):
     out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
-    True on success False on failure.
+    0 on no bugs found, 1 on bug found, 2 on build error
   """
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
     print('Error: No fuzzers were found in out directory.', file=sys.stderr)
-    return False
+    return 2
 
   fuzzer_timeout = int(int(args.fuzz_time) / len(fuzzer_paths))
   fuzz_targets = []
@@ -151,8 +158,8 @@ def run_fuzzers(args, out_dir):
                                                   stack_trace),
             file=sys.stderr)
       shutil.move(os.path.join(os.path.dirname(target.target_path),test_case), '/tmp/testcase')
-      return False
-  return True
+      return 1
+  return 0
 
 
 if __name__ == '__main__':
