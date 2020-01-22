@@ -229,7 +229,7 @@ def check_project_exists(project_name):
 def _check_fuzzer_exists(project_name, fuzzer_name):
   """Checks if a fuzzer exists."""
   command = ['docker', 'run', '--rm']
-  command.extend(['-v', '%s:/out' % get_output_dir(project_name)])
+  command.extend(['-v', '%s:/out' % _get_output_dir(project_name)])
   command.append('ubuntu:16.04')
 
   command.extend(['/bin/bash', '-c', 'test -f /out/%s' % fuzzer_name])
@@ -270,7 +270,7 @@ def _get_corpus_dir(project_name=''):
   return os.path.join(BUILD_DIR, 'corpus', project_name)
 
 
-def get_output_dir(project_name=''):
+def _get_output_dir(project_name=''):
   """Returns path to /out directory for the given project (if specified)."""
   return os.path.join(BUILD_DIR, 'out', project_name)
 
@@ -459,7 +459,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments
   if not build_image_impl(project_name, no_cache=no_cache):
     return 1
 
-  project_out_dir = get_output_dir(project_name)
+  project_out_dir = _get_output_dir(project_name)
   if clean:
     print('Cleaning existing build artifacts.')
 
@@ -559,7 +559,7 @@ def check_build(args):
 
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % get_output_dir(args.project_name), '-t',
+      '%s:/out' % _get_output_dir(args.project_name), '-t',
       'gcr.io/oss-fuzz-base/base-runner'
   ]
 
@@ -580,11 +580,11 @@ def check_build(args):
 def _get_fuzz_targets(project_name):
   """Return names of fuzz targest build in the project's /out directory."""
   fuzz_targets = []
-  for name in os.listdir(get_output_dir(project_name)):
+  for name in os.listdir(_get_output_dir(project_name)):
     if name.startswith('afl-'):
       continue
 
-    path = os.path.join(get_output_dir(project_name), name)
+    path = os.path.join(_get_output_dir(project_name), name)
     if os.path.isfile(path) and os.access(path, os.X_OK):
       fuzz_targets.append(name)
 
@@ -708,7 +708,7 @@ def coverage(args):
 
   run_args.extend([
       '-v',
-      '%s:/out' % get_output_dir(args.project_name),
+      '%s:/out' % _get_output_dir(args.project_name),
       '-p',
       '%s:%s' % (args.port, args.port),
       '-t',
@@ -747,7 +747,7 @@ def run_fuzzer(args):
 
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % get_output_dir(args.project_name),
+      '%s:/out' % _get_output_dir(args.project_name),
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
       'run_fuzzer',
@@ -789,7 +789,7 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
 
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % get_output_dir(project_name),
+      '%s:/out' % _get_output_dir(project_name),
       '-v',
       '%s:/testcase' % _get_absolute_path(testcase_path),
       '-t',
@@ -860,10 +860,10 @@ def shell(args):
 
   if is_base_image(args.project_name):
     image_project = 'oss-fuzz-base'
-    out_dir = get_output_dir()
+    out_dir = _get_output_dir()
   else:
     image_project = 'oss-fuzz'
-    out_dir = get_output_dir(args.project_name)
+    out_dir = _get_output_dir(args.project_name)
 
   run_args = _env_to_docker_args(env) + [
       '-v',
