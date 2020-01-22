@@ -6,7 +6,7 @@ inputs:
     description: 'Name of the corresponding OSS-Fuzz project.'
     required: true
   fuzzer-timeout:
-    description: 'The time allotted for each fuzzer to run. '
+    description: 'The time allotted for each fuzzer to run in seconds.'
     requried: true
 runs:
   using: 'docker'
