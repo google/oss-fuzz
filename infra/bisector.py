@@ -72,11 +72,10 @@ def main():
   parser.add_argument('--architecture', default='x86_64')
   args = parser.parse_args()
 
-  build_data = build_specified_commit.BuildData(
-      project_name=args.project_name,
-      engine=args.engine,
-      sanitizer=args.sanitizer,
-      build_data.architecture=args.architecture)
+  build_data = build_specified_commit.BuildData(project_name=args.project_name,
+                                                engine=args.engine,
+                                                sanitizer=args.sanitizer,
+                                                architecture=args.architecture)
 
   error_sha = bisect(args.commit_old, args.commit_new, args.testcase,
                      args.fuzz_target, build_data)

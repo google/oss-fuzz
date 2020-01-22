@@ -24,14 +24,8 @@ import subprocess
 
 import helper
 
-
 BuildData = collections.namedtuple(
     'BuildData', ['project_name', 'engine', 'sanitizer', 'architecture'])
-
-    self.project_name = ''
-    self.engine = 'libfuzzer'
-    self.sanitizer = 'address'
-    self.architecture = 'x86_64'
 
 
 def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
