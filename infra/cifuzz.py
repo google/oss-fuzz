@@ -54,7 +54,7 @@ def main():
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzers', help='Run an OSS-Fuzz projects fuzzers.')
   run_fuzzer_parser.add_argument('project_name')
-  run_fuzzer_parser.add_argument('fuzzer_timeout')
+  run_fuzzer_parser.add_argument('fuzz_time')
   args = parser.parse_args()
 
   # Get the shared volume directory.
@@ -142,12 +142,12 @@ def run_fuzzers(args, out_dir):
   if not fuzzer_paths:
     print('Error: No fuzzers were found in out directory.', file=sys.stderr)
     return False
-  print('Fuzzer paths', str(fuzzer_paths))
   fuzz_targets = []
   error_detected = False
+  fuzzer_timeout = int(int(args.fuzz_time)/len(fuzzer_paths))
   for fuzzer_path in fuzzer_paths:
     fuzz_targets.append(
-        fuzz_target.FuzzTarget(args.project_name, fuzzer_path, int(args.fuzzer_timeout)))
+        fuzz_target.FuzzTarget(args.project_name, fuzzer_path, int(fuzzer_timeout)))
 
   for target in fuzz_targets:
     test_case, stack_trace = target.start()
