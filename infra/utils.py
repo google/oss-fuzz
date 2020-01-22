@@ -16,10 +16,6 @@
 import os
 import re
 import stat
-import sys
-
-import helper
-import utils
 
 ALLOWED_FUZZ_TARGET_EXTENSIONS = ['', '.exe']
 FUZZ_TARGET_SEARCH_STRING = 'LLVMFuzzerTestOneInput'
@@ -37,10 +33,7 @@ def is_fuzz_target_local(file_path):
     # Ignore files with disallowed extensions (to prevent opening e.g. .zips).
     return False
 
-  if not os.path.exists(file_path):
-    return False
-
-  if not os.access(file_path, os.X_OK):
+  if not os.path.exists(file_path) or not os.access(file_path, os.X_OK):
     return False
 
   if filename.endswith('_fuzzer'):
@@ -64,7 +57,7 @@ def get_fuzz_targets(path):
   """
 
   fuzz_target_paths = []
-  for root, _, files in os.walk(path):
+  for root, _, _ in os.walk(path):
     for filename in os.listdir(path):
       file_path = os.path.join(root, filename)
       print(file_path)

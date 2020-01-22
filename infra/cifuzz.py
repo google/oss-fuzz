@@ -19,7 +19,6 @@ Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 
 import argparse
-import logging
 import os
 import shutil
 import sys
@@ -32,15 +31,11 @@ import utils
 
 
 def main():
-  """Connects Fuzzers with CI tools.
+  """Connects fuzzers with CI tools.
 
   Returns:
-    True on success False on failure.
+    0 on success and 1 on failure.
   """
-  logging.basicConfig(
-      format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-      stream=sys.stdout,
-      level=logging.DEBUG)
   parser = argparse.ArgumentParser(
       description='Help CI tools manage specific fuzzers.')
 
@@ -48,7 +43,7 @@ def main():
   build_fuzzer_parser = subparsers.add_parser(
       'build_fuzzers', help='Build an OSS-Fuzz projects fuzzers.')
   build_fuzzer_parser.add_argument('project_name')
-  build_fuzzer_parser.add_argument('repo_name')
+  build_fuzzer_parser.add_argument('github_repo_name')
   build_fuzzer_parser.add_argument('commit_sha')
 
   run_fuzzer_parser = subparsers.add_parser(
@@ -57,7 +52,7 @@ def main():
   run_fuzzer_parser.add_argument('fuzz_time')
   args = parser.parse_args()
 
-  # Get the shared volume directory.
+  # Get the shared volume directory and creates required directory.
   if os.environ['GITHUB_WORKSPACE']:
     git_workspace = os.path.join(os.environ['GITHUB_WORKSPACE'], 'storage')
     if not os.path.exists(git_workspace):
@@ -75,13 +70,9 @@ def main():
     os.chdir(helper.OSSFUZZ_DIR)
 
   if args.command == 'build_fuzzers':
-    if build_fuzzers(args, git_workspace, out_dir):
-      return 0
-    return 1
+    return not int(build_fuzzers(args, git_workspace, out_dir))
   if args.command == 'run_fuzzers':
-    if run_fuzzers(args, out_dir):
-      return 0
-    return 1
+    return not int(run_fuzzers(args, out_dir))
   print('Invalid argument option, use build_fuzzers or run_fuzzer.',
         file=sys.stderr)
   return 1
@@ -91,37 +82,39 @@ def build_fuzzers(args, git_workspace, out_dir):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
+    args: List of args passed in to cifuzz.py build_fuzzers parser.
     git_workspace: The location in the shared volume to store git repos.
     out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
     True on success False on failure.
   """
-  image_name = 'gcr.io/oss-fuzz/%s' % args.project_name
+  # TODO: Modify build_specified_commit function to return src dir.
   src = '/src'
 
-  # TODO: Modify build_specified_commit function to return src dir.
-  inferred_url, repo_name = build_specified_commit.detect_main_repo(
-      args.project_name, repo_name=args.repo_name)
-
-  if not inferred_url or not repo_name:
+  inferred_url, oss_fuzz_repo_name = build_specified_commit.detect_main_repo(
+      args.project_name, repo_name=args.github_repo_name)
+  if not inferred_url or not oss_fuzz_repo_name:
     print('Error: Repo URL or name could not be determined.', file=sys.stderr)
 
   # Checkout projects repo in the shared volume.
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
-                                                repo_name=repo_name)
-  build_repo_manager.checkout_commit(args.commit_sha)
+                                                repo_name=oss_fuzz_repo_name)
+  try:
+    build_repo_manager.checkout_commit(args.commit_sha)
+  except repo_manager.RepoManagerError:
+    print('Error: Specified commit does not exist.', file=sys.stderr)
+    return False
 
   command = [
       '--cap-add', 'SYS_PTRACE', '--volumes-from',
       utils.get_container(), '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
-      'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64', image_name, '/bin/bash',
-      '-c',
+      'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64',
+      'gcr.io/oss-fuzz/%s' % args.project_name, '/bin/bash', '-c',
       'rm -rf /src/yara/* && cp -r {0} {1} && compile && cp -r {2} {3}'.format(
           os.path.join(git_workspace, '.'), src, '/out/.', out_dir)
   ]
-
   if helper.docker_run(command):
     print('Error: Building fuzzers failed.', file=sys.stderr)
     return False
@@ -129,38 +122,36 @@ def build_fuzzers(args, git_workspace, out_dir):
 
 
 def run_fuzzers(args, out_dir):
-  """Runs a all fuzzer for a specific OSS-Fuzz project.
+  """Runs a all fuzzers for a specific OSS-Fuzz project.
 
   Args:
+    args: List of args passed in to cifuzz.py run_fuzzers parser.
     out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
     True on success False on failure.
   """
-
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
     print('Error: No fuzzers were found in out directory.', file=sys.stderr)
     return False
+
+  fuzzer_timeout = int(int(args.fuzz_time) / len(fuzzer_paths))
   fuzz_targets = []
-  error_detected = False
-  fuzzer_timeout = int(int(args.fuzz_time)/len(fuzzer_paths))
   for fuzzer_path in fuzzer_paths:
     fuzz_targets.append(
-        fuzz_target.FuzzTarget(args.project_name, fuzzer_path, int(fuzzer_timeout)))
+        fuzz_target.FuzzTarget(args.project_name, fuzzer_path, fuzzer_timeout))
 
   for target in fuzz_targets:
     test_case, stack_trace = target.start()
     if not test_case or not stack_trace:
-      logging.debug('Fuzzer {} finished running.'.format(target.target_name))
+      print('Fuzzer {} finished running.'.format(target.target_name))
     else:
-      error_detected = True
       print("Fuzzer {} Detected Error: {}".format(target.target_name,
                                                   stack_trace),
             file=sys.stderr)
       shutil.move(test_case, '/tmp/testcase')
-      break
-
+      return True
   return True
 
 

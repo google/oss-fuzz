@@ -12,47 +12,55 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Builds and runs specific OSS-Fuzz project's fuzzers for CI tools."""
-
 import os
 import subprocess
 import sys
 
 
 def main():
-  """Runs OSS-Fuzz project's fuzzers for CI tools."""
-  project_name = os.environ['PROJECT_NAME']
+  """Runs OSS-Fuzz project's fuzzers for CI tools.
+
+  Required environment variables:
+    PROJECT_NAME: The name of OSS-Fuzz project.
+    FUZZ_TIME: The length of time in seconds that fuzzers are to be run.
+    GITHUB_REPOSITORY: The name of the Github repo that called this script.
+    GITHUB_SHA: The commit SHA that triggered this script.
+
+  Returns:
+    0 on success or 1 on Failure.
+  """
+  oss_fuzz_project_name = os.environ['PROJECT_NAME']
   fuzz_time = os.environ['FUZZ_TIME']
-  repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/', 1)[-1]
+  github_repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/', 1)[-1]
   commit_sha = os.environ['GITHUB_SHA']
 
   # Build the specified project's fuzzers from the current repo state.
   print('Building fuzzers\nproject: {0}\nrepo name: {1}\ncommit: {2}'.format(
-      project_name, repo_name, commit_sha))
+      oss_fuzz_project_name, github_repo_name, commit_sha))
   command = [
-      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'build_fuzzers', project_name,
-      repo_name, commit_sha
+      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'build_fuzzers',
+      oss_fuzz_project_name, github_repo_name, commit_sha
   ]
   print('Running command: "{0}"'.format(' '.join(command)))
   try:
     subprocess.check_call(command)
   except subprocess.CalledProcessError as err:
-    sys.stderr.write('Error building fuzzers: "{0}"'.format(str(err)))
+    sys.stderr.write('Error building fuzzers: {0}'.format(str(err)))
     return err.returncode
 
   # Run the specified project's fuzzers from the build.
   command = [
-      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'run_fuzzers', project_name, fuzz_time
+      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'run_fuzzers',
+      oss_fuzz_project_name, fuzz_time
   ]
   print('Running command: "{0}"'.format(' '.join(command)))
   try:
     subprocess.check_call(command)
   except subprocess.CalledProcessError as err:
-    sys.stderr.write('Error running fuzzers: "{0}"'.format(str(err)))
+    sys.stderr.write('Error running fuzzers: {0}'.format(str(err)))
     return err.returncode
-  print('Fuzzers ran successfully.')
   return 0
 
 
 if __name__ == '__main__':
-
   sys.exit(main())

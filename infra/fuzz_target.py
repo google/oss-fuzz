@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A module to handle running fuzz targets for a specified amount of time."""
-import datetime
-import enum
 import logging
 import subprocess
 import os
 import re
-import signal
 import sys
-import time
 
 import helper
 import utils
@@ -59,7 +55,10 @@ class FuzzTarget():
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
 
-    command = ['docker', 'run', '--rm', '--privileged', '--volumes-from', utils.get_container()]
+    command = [
+        'docker', 'run', '--rm', '--privileged', '--volumes-from',
+        utils.get_container()
+    ]
     command += [
         '-e',
         'FUZZING_ENGINE=libfuzzer',
@@ -70,18 +69,18 @@ class FuzzTarget():
     ]
     command += [
         'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c',
-        'cp -rf {0} {1} && ls /out && run_fuzzer {2} && cp {1} {0}'.format(self.target_path, '/out',
-                                                  self.target_name)
+        'cp -rf {0} {1} && ls /out && run_fuzzer {2} && cp {1} {0}'.format(
+            self.target_path, '/out', self.target_name)
     ]
 
-    logging.debug('Running command: {}'.format(' '.join(command)))
+    logging.debug('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     try:
       out, err = process.communicate(timeout=self.duration)
     except subprocess.TimeoutExpired:
-      logging.debug('Fuzzer {} finished with timeout.'.format(self.target_name))
+      logging.debug('Fuzzer %s finished with timeout.', self.target_name)
       return None, None
     output = out.decode('ascii')
     print(output)
