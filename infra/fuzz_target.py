@@ -83,10 +83,7 @@ class FuzzTarget():
     except subprocess.TimeoutExpired:
       logging.debug('Fuzzer %s finished with timeout.', self.target_name)
       return None, None
-    output = out.decode('ascii')
-    print(output)
-    print(err.decode('ascii'))
-    test_case = self.get_test_case(output)
+    test_case = self.get_test_case(err.decode('ascii'))
     if not test_case:
       print('Error no test case found in stack trace.', file=sys.stderr)
       return None, None
