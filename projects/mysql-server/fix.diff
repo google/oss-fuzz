@@ -281,10 +281,10 @@ index f2007bbc928..3b2ca196ec5 100644
                         int *len) {
 diff --git a/vio/viofuzz.cc b/vio/viofuzz.cc
 new file mode 100644
-index 00000000000..73f29662b96
+index 00000000000..83f22a5dbb9
 --- /dev/null
 +++ b/vio/viofuzz.cc
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,124 @@
 +
 +#include "my_config.h"
 +
