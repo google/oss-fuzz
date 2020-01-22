@@ -151,7 +151,7 @@ def run_fuzzers(args, out_dir):
                                                   stack_trace),
             file=sys.stderr)
       shutil.move(os.path.join(os.path.dirname(target.target_path),test_case), '/tmp/testcase')
-      return True
+      return False
   return True
 
 
