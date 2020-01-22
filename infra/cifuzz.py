@@ -29,11 +29,6 @@ import helper
 import repo_manager
 import utils
 
-class CIFuzzError(Exception):
-  """Class to describe the exceptions in RepoManager."""
-
-class CIFuzzBugFound(Exception):
-  """Class to describe the exceptions in RepoManager."""
 
 def main():
   """Connects fuzzers with CI tools.
@@ -66,23 +61,19 @@ def main():
     if not os.path.exists(out_dir):
       os.mkdir(out_dir)
   else:
-    raise CIFuzzError('Error: The GITHUB_WORKSPACE env variable needs to be set.')
+    return 1
 
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != helper.OSSFUZZ_DIR:
     os.chdir(helper.OSSFUZZ_DIR)
 
   if args.command == 'build_fuzzers':
-    if not build_fuzzers(args, git_workspace, out_dir):
-      raise CIFuzzError('Encountered an error while building fuzzers.')
+    if build_fuzzers(args, git_workspace, out_dir):
+      return 0
+    return 1
   if args.command == 'run_fuzzers':
-    err_code = run_fuzzers(args, out_dir)
-    if err_code == 1:
-      raise CIFuzzBugFound('Bug found. Uploading testcase.')
-    elif err_code == 2:
-      raise CIFuzzError('Encountered an error while running fuzzers.')
-    return 0
-  raise CIFuzzError('Invalid argument option, use build_fuzzers or run_fuzzer.')
+    return run_fuzzers(args, out_dir)
+  return 1
 
 
 def build_fuzzers(args, git_workspace, out_dir):
@@ -163,4 +154,4 @@ def run_fuzzers(args, out_dir):
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

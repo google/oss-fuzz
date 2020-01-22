@@ -18,7 +18,6 @@ import os
 import re
 import sys
 
-import helper
 import utils
 
 
@@ -79,7 +78,7 @@ class FuzzTarget():
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     try:
-      out, err = process.communicate(timeout=self.duration)
+      _, err = process.communicate(timeout=self.duration)
     except subprocess.TimeoutExpired:
       logging.debug('Fuzzer %s finished with timeout.', self.target_name)
       return None, None
@@ -87,7 +86,7 @@ class FuzzTarget():
     if not test_case:
       print('Error no test case found in stack trace.', file=sys.stderr)
       return None, None
-    return test_case, output
+    return test_case, err.decode('ascii')
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.
