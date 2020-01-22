@@ -21,6 +21,7 @@ import sys
 def main():
   """Runs OSS-Fuzz project's fuzzers for CI tools."""
   project_name = os.environ['PROJECT_NAME']
+  fuzzer_timeout = os.environ['FUZZER_TIMEOUT']
   repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/', 1)[-1]
   commit_sha = os.environ['GITHUB_SHA']
 
@@ -40,7 +41,7 @@ def main():
 
   # Run the specified project's fuzzers from the build.
   command = [
-      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'run_fuzzers', project_name
+      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'run_fuzzers', project_name, fuzzer_timeout
   ]
   print('Running command: "{0}"'.format(' '.join(command)))
   try:

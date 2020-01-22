@@ -5,8 +5,12 @@ inputs:
   project-name:
     description: 'Name of the corresponding OSS-Fuzz project.'
     required: true
+  fuzzer-timeout:
+    description: 'The time allotted for each fuzzer to run. '
+    requried: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
   env:
     PROJECT_NAME: ${{ inputs.project-name }}
+    FUZZER_TIMEOUT: ${{ inputs.fuzzer-timeout }}

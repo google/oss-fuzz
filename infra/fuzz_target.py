@@ -70,7 +70,7 @@ class FuzzTarget():
     ]
     command += [
         'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c',
-        'cp -rf {0} {1} && ls /out && run_fuzzer {2}'.format(self.target_path, '/out',
+        'cp -rf {0} {1} && ls /out && run_fuzzer {2} && cp {1} {0}'.format(self.target_path, '/out',
                                                   self.target_name)
     ]
 

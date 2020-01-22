@@ -54,6 +54,7 @@ def main():
   run_fuzzer_parser = subparsers.add_parser(
       'run_fuzzers', help='Run an OSS-Fuzz projects fuzzers.')
   run_fuzzer_parser.add_argument('project_name')
+  run_fuzzer_parser.add_argument('fuzzer_timeout')
   args = parser.parse_args()
 
   # Get the shared volume directory.
@@ -146,7 +147,7 @@ def run_fuzzers(args, out_dir):
   error_detected = False
   for fuzzer_path in fuzzer_paths:
     fuzz_targets.append(
-        fuzz_target.FuzzTarget(args.project_name, fuzzer_path, 40))
+        fuzz_target.FuzzTarget(args.project_name, fuzzer_path, args.fuzzer_timeout))
 
   for target in fuzz_targets:
     test_case, stack_trace = target.start()
