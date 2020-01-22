@@ -54,7 +54,7 @@ class FuzzTarget():
     Returns:
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
-
+    logging.debug('Fuzzer %s started.', self.target_name)
     command = [
         'docker', 'run', '--rm', '--privileged', '--volumes-from',
         utils.get_container()
@@ -83,11 +83,13 @@ class FuzzTarget():
     except subprocess.TimeoutExpired:
       logging.debug('Fuzzer %s finished with timeout.', self.target_name)
       return None, None
-    test_case = self.get_test_case(err.decode('ascii'))
+    logging.debug('Fuzzer %s ended before timeout. ', self.target_name)
+    err_str = err.decode('ascii')
+    test_case = self.get_test_case(err_str)
     if not test_case:
       print('Error no test case found in stack trace.', file=sys.stderr)
       return None, None
-    return test_case, err.decode('ascii')
+    return test_case, err_str
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.

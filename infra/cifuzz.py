@@ -76,9 +76,7 @@ def main():
     os.chdir(helper.OSSFUZZ_DIR)
 
   if args.command == 'build_fuzzers':
-    if build_fuzzers(args, git_workspace, out_dir):
-      return Status.SUCCESS.value
-    return Status.ERROR.value
+    return build_fuzzers(args, git_workspace, out_dir).value
   if args.command == 'run_fuzzers':
     return run_fuzzers(args, out_dir).value
   return Status.SUCCESS.value
@@ -93,7 +91,7 @@ def build_fuzzers(args, git_workspace, out_dir):
     out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
-    True on success False on failure.
+    A Status enum representing the state of the build.
   """
   # TODO: Modify build_specified_commit function to return src dir.
   src = '/src'
@@ -111,7 +109,7 @@ def build_fuzzers(args, git_workspace, out_dir):
     build_repo_manager.checkout_commit(args.commit_sha)
   except repo_manager.RepoManagerError:
     print('Error: Specified commit does not exist.', file=sys.stderr)
-    return False
+    return Status.ERROR
 
   command = [
       '--cap-add', 'SYS_PTRACE', '--volumes-from',
@@ -123,8 +121,8 @@ def build_fuzzers(args, git_workspace, out_dir):
   ]
   if helper.docker_run(command):
     print('Error: Building fuzzers failed.', file=sys.stderr)
-    return False
-  return True
+    return Status.ERROR
+  return Status.SUCCESS
 
 
 def run_fuzzers(args, out_dir):
