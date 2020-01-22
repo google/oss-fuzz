@@ -70,8 +70,8 @@ class FuzzTarget():
     ]
     command += [
         'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c',
-        'cp -rf {0} {1} && run_fuzzer {2} && cp {1} {0}'.format(
-            self.target_path, '/out', self.target_name)
+        'cp -rf {0} {1} && run_fuzzer {2} && cp {1} {3}'.format(
+            self.target_path, '/out', self.target_name, os.path.dirname(self.target_path))
     ]
 
     logging.debug('Running command: %s', ' '.join(command))
@@ -101,6 +101,5 @@ class FuzzTarget():
     match = re.search(r'\bTest unit written to \.([^ ]+)',
                       error_string.rstrip())
     if match:
-      return os.path.join(helper.BUILD_DIR, 'out', self.project_name,
-                          match.group(1))
+      return match.split('/')[-1]
     return None
