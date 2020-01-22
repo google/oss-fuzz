@@ -89,17 +89,17 @@ class FuzzTarget():
       return None, None
     return test_case, err.decode('ascii')
 
+  def get_test_case(self, error_string):
+    """Gets the file from a fuzzer run stack trace.
 
-def get_test_case(self, error_string):
-  """Gets the file from a fuzzer run stack trace.
+    Args:
+      error_string: The stack trace string containing the error.
 
-  Args:
-    error_string: The stack trace string containing the error.
-
-  Returns:
-    The error test case or None if not found.
-  """
-  match = re.search(r'\bTest unit written to \.([^ ]+)', error_string.rstrip())
-  if match:
-    return match.split('/')[-1]
-  return None
+    Returns:
+      The error test case or None if not found.
+    """
+    match = re.search(r'\bTest unit written to \.([^ ]+)',
+                      error_string.rstrip())
+    if match:
+      return match.split('/')[-1]
+    return None

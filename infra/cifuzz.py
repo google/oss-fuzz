@@ -33,7 +33,7 @@ import utils
 
 class Status(enum.Enum):
   """An Enum to store the possible return codes of the cifuzz module."""
-  BUG_NOT_FOUND = 0
+  SUCCESS = 0
   ERROR = 1
   BUG_FOUND = 2
 
@@ -69,7 +69,7 @@ def main():
     if not os.path.exists(out_dir):
       os.mkdir(out_dir)
   else:
-    return Status.ERROR
+    return Status.ERROR.value
 
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != helper.OSSFUZZ_DIR:
@@ -77,10 +77,11 @@ def main():
 
   if args.command == 'build_fuzzers':
     if build_fuzzers(args, git_workspace, out_dir):
-      return 0
-    return Status.ERROR
+      return Status.SUCCESS.value
+    return Status.ERROR.value
   if args.command == 'run_fuzzers':
-    return run_fuzzers(args, out_dir)
+    return run_fuzzers(args, out_dir).value
+  return Status.SUCCESS.value
 
 
 def build_fuzzers(args, git_workspace, out_dir):
@@ -158,7 +159,7 @@ def run_fuzzers(args, out_dir):
       shutil.move(os.path.join(os.path.dirname(target.target_path), test_case),
                   '/tmp/testcase')
       return Status.BUG_FOUND
-  return Status.BUG_NOT_FOUND
+  return Status.SUCCESS
 
 
 if __name__ == '__main__':
