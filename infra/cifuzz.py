@@ -146,7 +146,7 @@ def run_fuzzers(args, out_dir):
   error_detected = False
   for fuzzer_path in fuzzer_paths:
     fuzz_targets.append(
-        fuzz_target.FuzzTarget(args.project_name, fuzzer_path, 130))
+        fuzz_target.FuzzTarget(args.project_name, fuzzer_path, 2000))
 
   for target in fuzz_targets:
     test_case, stack_trace = target.start()
