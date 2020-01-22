@@ -36,14 +36,16 @@ rm -rf libpng || die
 rm -rf tiff || die
 rm -rf zlib || die
 
-export CUPSCONFIG="$WORK/cups-config"
+mv ../freetype freetype
+
+CUPSCONFIG="$WORK/cups-config"
 CUPS_CFLAGS=$($CUPSCONFIG --cflags)
 CUPS_LDFLAGS=$($CUPSCONFIG --ldflags)
 CUPS_LIBS=$($CUPSCONFIG --image --libs)
 export CXXFLAGS="$CXXFLAGS $CUPS_CFLAGS"
 
-./autogen.sh
-CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS" ./configure \
+CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS" ./autogen.sh \
+  CUPSCONFIG=$CUPSCONFIG \
   --enable-freetype --enable-fontconfig \
   --enable-cups --with-ijs --with-jbig2dec \
   --with-drivers=cups,ljet4,laserjet,pxlmono,pxlcolor,pcl3,uniprint
