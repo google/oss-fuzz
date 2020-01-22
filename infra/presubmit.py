@@ -135,12 +135,12 @@ class ProjectYamlChecker:
         if isinstance(constant, str):
           if constant not in allowed_constants:
             self.error(
-                '{constant} (in {section} section) is not one of {allowed_constants}'
-                .format(constant=constant,
-                        section=section,
-                        allowed_constants=allowed_constants))
+                '{constant} (in {section} section) is not one of {allowed}.'.
+                format(constant=constant,
+                       section=section,
+                       allowed=allowed_constants))
         else:
-          # The only alternative allowed value is an experimental flag, i.e.
+          # The only alternative value allowed is the experimental flag, i.e.
           # `constant == {'memory': None, 'experimental': True}`.
           if not isinstance(constant, dict) or not constant['experimental']:
             self.error('Not allowed value in the project.yaml: ' +
