@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
 
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake libboost-all-dev wget
+RUN apt-get update && apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake libboost-all-dev wget mercurial gyp ninja-build zlib1g-dev libsqlite3-dev
 
 # BoringSSL needs Go to build
 RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
@@ -34,11 +34,13 @@ RUN git clone --depth 1 https://github.com/weidai11/cryptopp/
 RUN git clone --depth 1 https://dev.gnupg.org/source/libgcrypt.git
 RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2
 RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star evercrypt
-RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0-stable.zip
-RUN wget https://github.com/openssl/openssl/archive/OpenSSL_1_0_2-stable.zip
 RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/golang/go
 RUN git clone --depth 1 https://github.com/randombit/botan.git
+RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
+RUN git clone --depth 1 https://github.com/ARMmbed/mbed-crypto.git
+RUN hg clone https://hg.mozilla.org/projects/nspr
+RUN hg clone https://hg.mozilla.org/projects/nss
 RUN apt-get remove -y libunwind8
 
 COPY build.sh $SRC/

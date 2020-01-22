@@ -1,0 +1,14 @@
+homepage: "https://www.mysql.com"
+primary_contact: "secalert_us@oracle.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+- "christopher.alves@telecomnancy.net"
+- "zouhair.janati-idrissi@telecomnancy.net"
+- "julien.zhan@telecomnancy.net"
+
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+  # - memory
+- undefined

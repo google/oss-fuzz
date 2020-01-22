@@ -1,0 +1,4 @@
+homepage: "https://www.ntop.org/products/deep-packet-inspection/ndpi/"
+primary_contact: "luca.deri@gmail.com"
+auto_ccs :
+  - "p.antoine@catenacyber.fr"

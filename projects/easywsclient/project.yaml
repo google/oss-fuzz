@@ -1,0 +1,9 @@
+homepage: "https://github.com/dhbaird/easywsclient"
+primary_contact: "dhbaird@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386

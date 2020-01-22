@@ -1,2 +1,4 @@
 homepage: "https://github.com/tesseract-ocr/tesseract"
 primary_contact: "stjoweil@googlemail.com"
+fuzzing_engines:
+  - libfuzzer

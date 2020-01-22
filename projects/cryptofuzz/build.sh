@@ -60,6 +60,31 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
+# Compile NSS
+if [[ $CFLAGS != *-m32* ]]
+then
+    mkdir $SRC/nss-nspr
+    mv $SRC/nss $SRC/nss-nspr/
+    mv $SRC/nspr $SRC/nss-nspr/
+    cd $SRC/nss-nspr/
+    if [[ $CFLAGS = *sanitize=address* ]]
+    then
+        CFLAGS="" CXXFLAGS="" nss/build.sh --asan --static
+    elif [[ $CFLAGS = *sanitize=memory* ]]
+    then
+        CFLAGS="" CXXFLAGS="" nss/build.sh --msan --static
+    else
+        CFLAGS="" CXXFLAGS="" nss/build.sh --ubsan --static
+    fi
+    export NSS_NSPR_PATH=$(realpath $SRC/nss-nspr/)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NSS"
+    export LINK_FLAGS="$LINK_FLAGS -lsqlite3"
+
+    # Compile Cryptofuzz NSS module
+    cd $SRC/cryptofuzz/modules/nss
+    make -B
+fi
+
 # Compile Cityhash
 cd $SRC/cityhash
 if [[ $CFLAGS != *-m32* ]]
@@ -88,6 +113,27 @@ then
     cd $SRC/cryptofuzz/modules/cryptopp
     make -B
 fi
+
+##############################################################################
+# Compile mbed crypto
+cd $SRC/mbed-crypto/
+scripts/config.pl set MBEDTLS_PLATFORM_MEMORY
+if [[ $CFLAGS == *sanitize=memory* ]]
+then
+    scripts/config.pl unset MBEDTLS_HAVE_ASM
+    scripts/config.pl unset MBEDTLS_PADLOCK_C
+    scripts/config.pl unset MBEDTLS_AESNI_C
+fi
+mkdir build/
+cd build/
+cmake .. -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
+make -j$(nproc) >/dev/null 2>&1
+export MBEDTLS_LIBMBEDCRYPTO_A_PATH="$SRC/mbed-crypto/build/library/libmbedcrypto.a"
+export MBEDTLS_INCLUDE_PATH="$SRC/mbed-crypto/include"
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS"
+# Compile Cryptofuzz mbed crypto module
+cd $SRC/cryptofuzz/modules/mbedtls
+make -B
 
 ##############################################################################
 # Compile Botan
@@ -214,6 +260,57 @@ then
     make -B
 fi
 
+if [[ $CFLAGS != *-m32* ]]
+then
+    # Compile Cryptofuzz (NSS-based)
+    cd $SRC/cryptofuzz
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
+
+    # Generate dictionary
+    ./generate_dict
+
+    # Copy fuzzer
+    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
+    # Copy dictionary
+    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-nss.dict
+    # Copy seed corpus
+    cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-nss_seed_corpus.zip
+
+    rm $SRC/cryptofuzz/modules/nss/module.a
+
+    CXXFLAGS=${CXXFLAGS//"-DCRYPTOFUZZ_NSS"/}
+    LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
+fi
+
+##############################################################################
+# Compile wolfCrypt
+cd $SRC/wolfssl
+autoreconf -ivf
+
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden"
+
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-asm"
+fi
+
+if [[ $CFLAGS = *-m32* ]]
+then
+    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-fastmath"
+fi
+
+./configure $WOLFCRYPT_CONFIGURE_PARAMS
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_WOLFCRYPT"
+export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl/src/.libs/libwolfssl.a"
+export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
+
+# Compile Cryptofuzz wolfcrypt (without assembly) module
+cd $SRC/cryptofuzz/modules/wolfcrypt
+make -B
+
+
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
@@ -270,6 +367,10 @@ then
     # Copy seed corpus
     cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-libressl-noasm_seed_corpus.zip
 fi
+
+# OpenSSL can currently not be used together with wolfCrypt due to symbol collisions
+export SAVE_CXXFLAGS="$CXXFLAGS"
+export CXXFLAGS=${CXXFLAGS/-DCRYPTOFUZZ_WOLFCRYPT/}
 
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
@@ -333,6 +434,8 @@ cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-noasm_seed_corpus.zip
 
+export CXXFLAGS="$SAVE_CXXFLAGS"
+
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
@@ -387,138 +490,3 @@ cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl-noasm
 cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-boringssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/boringssl_latest.zip $OUT/cryptofuzz-boringssl-noasm_seed_corpus.zip
-
-
-##############################################################################
-cd $SRC;
-unzip OpenSSL_1_1_0-stable.zip
-
-if [[ $CFLAGS != *sanitize=memory* ]]
-then
-    # Compile Openssl 1.1.0 (with assembly)
-    cd $SRC/openssl-OpenSSL_1_1_0-stable/
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./config --debug enable-md2 enable-rc5 $CFLAGS
-    else
-        setarch i386 ./config --debug enable-md2 enable-rc5 $CFLAGS
-    fi
-    make depend
-    make -j$(nproc) >/dev/null 2>&1
-
-    # Compile Cryptofuzz OpenSSL 1.1.0 (with assembly) module
-    cd $SRC/cryptofuzz/modules/openssl
-    OPENSSL_INCLUDE_PATH="$SRC/openssl-OpenSSL_1_1_0-stable/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl-OpenSSL_1_1_0-stable/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_OPENSSL_110" make -B
-
-    # Compile Cryptofuzz
-    cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl-OpenSSL_1_1_0-stable/include $INCLUDE_PATH_FLAGS -DCRYPTOFUZZ_OPENSSL_110" make -B -j$(nproc) >/dev/null 2>&1
-
-    # Generate dictionary
-    ./generate_dict
-
-    # Copy fuzzer
-    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-110
-    # Copy dictionary
-    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-110.dict
-    # Copy seed corpus
-    cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl_seed_corpus.zip
-fi
-
-##############################################################################
-# Compile Openssl 1.1.0 (without assembly)
-cd $SRC/openssl-OpenSSL_1_1_0-stable/
-make clean || true
-if [[ $CFLAGS != *-m32* ]]
-then
-    ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
-else
-    setarch i386 ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
-fi
-make depend
-make -j$(nproc) >/dev/null 2>&1
-
-# Compile Cryptofuzz OpenSSL 1.1.0 (without assembly) module
-cd $SRC/cryptofuzz/modules/openssl
-OPENSSL_INCLUDE_PATH="$SRC/openssl-OpenSSL_1_1_0-stable/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl-OpenSSL_1_1_0-stable/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_OPENSSL_110" make -B
-
-# Compile Cryptofuzz
-cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl-OpenSSL_1_1_0-stable/include $INCLUDE_PATH_FLAGS -DCRYPTOFUZZ_OPENSSL_110" make -B -j$(nproc) >/dev/null 2>&1
-
-# Generate dictionary
-./generate_dict
-
-# Copy fuzzer
-cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-110-noasm
-# Copy dictionary
-cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-110-noasm.dict
-# Copy seed corpus
-cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-110-noasm_seed_corpus.zip
-##############################################################################
-cd $SRC;
-unzip OpenSSL_1_0_2-stable.zip
-
-if [[ $CFLAGS != *sanitize=memory* ]]
-then
-    # Compile Openssl 1.0.2 (with assembly)
-    cd $SRC/openssl-OpenSSL_1_0_2-stable/
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./config --debug enable-md2 enable-rc5 $CFLAGS
-    else
-        setarch i386 ./config --debug enable-md2 enable-rc5 $CFLAGS
-    fi
-    make depend
-    make -j$(nproc) >/dev/null 2>&1
-
-    # Compile Cryptofuzz OpenSSL 1.0.2 (with assembly) module
-    cd $SRC/cryptofuzz/modules/openssl
-    OPENSSL_INCLUDE_PATH="$SRC/openssl-OpenSSL_1_0_2-stable/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl-OpenSSL_1_0_2-stable/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_OPENSSL_102" make -B
-
-    # Compile Cryptofuzz
-    cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl-OpenSSL_1_0_2-stable/include $INCLUDE_PATH_FLAGS -DCRYPTOFUZZ_OPENSSL_102" make -B -j$(nproc) >/dev/null 2>&1
-
-    # Generate dictionary
-    ./generate_dict
-
-    # Copy fuzzer
-    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-102
-    # Copy dictionary
-    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-102.dict
-    # Copy seed corpus
-    cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl_seed_corpus.zip
-fi
-
-##############################################################################
-# Compile Openssl 1.0.2 (without assembly)
-cd $SRC/openssl-OpenSSL_1_0_2-stable/
-make clean || true
-if [[ $CFLAGS != *-m32* ]]
-then
-    ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
-else
-    setarch i386 ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
-fi
-make depend
-make -j$(nproc) >/dev/null 2>&1
-
-# Compile Cryptofuzz OpenSSL 1.0.2 (without assembly) module
-cd $SRC/cryptofuzz/modules/openssl
-OPENSSL_INCLUDE_PATH="$SRC/openssl-OpenSSL_1_0_2-stable/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl-OpenSSL_1_0_2-stable/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_OPENSSL_102" make -B
-
-# Compile Cryptofuzz
-cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl-OpenSSL_1_0_2-stable/include $INCLUDE_PATH_FLAGS -DCRYPTOFUZZ_OPENSSL_102" make -B -j$(nproc) >/dev/null 2>&1
-
-# Generate dictionary
-./generate_dict
-
-# Copy fuzzer
-cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-102-noasm
-# Copy dictionary
-cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-102-noasm.dict
-# Copy seed corpus
-cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-102-noasm_seed_corpus.zip
-

@@ -23,6 +23,10 @@ MIN_NUMBER_OF_RUNS=4
 # Mercurial's bdiff_fuzzer has 116 PCs when built with ASan.
 THRESHOLD_FOR_NUMBER_OF_EDGES=100
 
+# A fuzz target is supposed to have at least two functions, such as
+# LLVMFuzzerTestOneInput and an API that is being called from there.
+THRESHOLD_FOR_NUMBER_OF_FUNCTIONS=2
+
 # Threshold values for different sanitizers used by instrumentation checks.
 ASAN_CALLS_THRESHOLD_FOR_ASAN_BUILD=1000
 ASAN_CALLS_THRESHOLD_FOR_NON_ASAN_BUILD=0
@@ -66,7 +70,7 @@ function check_engine {
 
   if [[ "$FUZZING_ENGINE" == libfuzzer ]]; then
     # Store fuzz target's output into a temp file to be used for further checks.
-    $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    $FUZZER -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
     CHECK_FAILED=$(egrep "ERROR: no interesting inputs were found. Is the code instrumented" -c $FUZZER_OUTPUT)
     if (( $CHECK_FAILED > 0 )); then
       echo "BAD BUILD: $FUZZER does not seem to have coverage instrumentation."
@@ -95,8 +99,14 @@ function check_engine {
       return 1
     fi
   elif [[ "$FUZZING_ENGINE" == dataflow ]]; then
-    # TODO(https://github.com/google/oss-fuzz/issues/1632): add check for
-    # binaries compiled with dataflow engine when the interface becomes stable.
+    $FUZZER &> $FUZZER_OUTPUT
+    local NUMBER_OF_FUNCTIONS=$(grep -Po "INFO:\s+\K[[:digit:]]+(?=\s+instrumented function.*)" $FUZZER_OUTPUT)
+    [[ -z "$NUMBER_OF_FUNCTIONS" ]] && NUMBER_OF_FUNCTIONS=0
+    if (( $NUMBER_OF_FUNCTIONS < $THRESHOLD_FOR_NUMBER_OF_FUNCTIONS )); then
+      echo "BAD BUILD: $FUZZER does not seem to be properly built in 'dataflow' config."
+      cat $FUZZER_OUTPUT
+      return 1
+    fi
     return 0
   fi
 
@@ -112,7 +122,7 @@ function check_startup_crash {
   local CHECK_PASSED=0
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    $FUZZER -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    $FUZZER -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "Done $MIN_NUMBER_OF_RUNS runs" -c $FUZZER_OUTPUT)
   elif [[ "$FUZZING_ENGINE" = afl ]]; then
     # TODO(https://github.com/google/oss-fuzz/issues/2470): Dont use
@@ -330,7 +340,7 @@ function check_seed_corpus {
 
   # Set up common fuzzing arguments, otherwise "run_fuzzer" errors out.
   if [ -z "$FUZZER_ARGS" ]; then
-    export FUZZER_ARGS="-rss_limit_mb=2048 -timeout=25"
+    export FUZZER_ARGS="-rss_limit_mb=2560 -timeout=25"
   fi
 
   bash -c "run_fuzzer $FUZZER_NAME -runs=0" &> $FUZZER_OUTPUT

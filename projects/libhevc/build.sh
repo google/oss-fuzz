@@ -14,27 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-# Build libhevc
-build_dir=$WORK/build
-rm -rf ${build_dir}
-mkdir -p ${build_dir}
-pushd ${build_dir}
-
-cmake $SRC/libhevc
-make -j$(nproc)
-popd
-
-# build fuzzers
-$CXX $CXXFLAGS -std=c++11 \
--I$SRC/libhevc \
--I$SRC/libhevc/common \
--I$SRC/libhevc/decoder \
--I${build_dir} \
--Wl,--start-group \
-$LIB_FUZZING_ENGINE \
-$SRC/libhevc/fuzzer/hevc_dec_fuzzer.cpp -o $OUT/hevc_dec_fuzzer \
-${build_dir}/libhevcdec.a \
--Wl,--end-group
-
-cp $SRC/libhevc/fuzzer/hevc_dec_fuzzer.dict $OUT/hevc_dec_fuzzer.dict
+# Run the OSS-Fuzz script in the project.
+$SRC/libhevc/fuzzer/ossfuzz.sh

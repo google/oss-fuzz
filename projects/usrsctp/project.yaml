@@ -1,7 +1,8 @@
 homepage: "https://github.com/sctplab/usrsctp"
 primary_contact: "weinrank@fh-muenster.de"
 auto_ccs:
-  - "tuexen@fh-muenster.de"
+  - "t00fcxen@googlemail.com"
+  - "markwo@google.com"
 sanitizers:
   - address
   - memory

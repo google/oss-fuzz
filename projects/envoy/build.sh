@@ -119,6 +119,8 @@ do
   mkdir -p "${CORPUS_UNTAR_PATH}"
   tar -C "${CORPUS_UNTAR_PATH}" -xvf bazel-bin/"${t}"_corpus_tar.tar
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
+  # There may be *.dict files in this folder that need to be moved into the OUT dir.
+  find "${CORPUS_UNTAR_PATH}" -type f -name *.dict -exec mv -n {} "${OUT}"/ \;
   zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
     "${CORPUS_UNTAR_PATH}"/*
 done

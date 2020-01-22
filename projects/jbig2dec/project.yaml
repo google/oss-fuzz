@@ -1,0 +1,5 @@
+homepage: "https://www.jbig2dec.com"
+primary_contact: sebastian.rasmussen@artifex.com
+sanitizers:
+  - address
+  - memory

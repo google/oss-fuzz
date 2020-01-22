@@ -2,9 +2,12 @@ homepage: "https://github.com/google/skia"
 primary_contact: "kjlubick@chromium.org"
 auto_ccs:
   - "hcm@chromium.org"
-  - "mtklein@chromium.org"
+  - "mtklein@google.com"
   - "reed@google.com"
   - "bsalomon@google.com"
+vendor_ccs:
+  - "lsalzman@mozilla.com"
+  - "twsmith@mozilla.com"
 sanitizers:
  - address
  - undefined

@@ -10,6 +10,7 @@ auto_ccs:
   - "sheenaqotj@google.com"
   - "vpai@google.com"
   - "yashkt@google.com"
+  - "jiangtao@google.com"
 fuzzing_engines:
   - libfuzzer
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*

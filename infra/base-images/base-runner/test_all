@@ -32,8 +32,21 @@ rm -rf $BROKEN_TARGETS_DIR
 mkdir $VALID_TARGETS_DIR
 mkdir $BROKEN_TARGETS_DIR
 
+# Move the directory the fuzzer is located in to somewhere that doesn't exist
+# on the builder to make it more likely that hardcoding /out fails here (since
+# it will fail on ClusterFuzz).
+TMP_FUZZER_DIR=/tmp/not-out
+rm -rf $TMP_FUZZER_DIR
+mkdir $TMP_FUZZER_DIR
+# Move contents of $OUT/ into $TMP_FUZZER_DIR. We can't move the directory
+# itself because it is a mount.
+mv $OUT/* $TMP_FUZZER_DIR
+INITIAL_OUT=$OUT
+export OUT=$TMP_FUZZER_DIR
+
+
 # Main loop that iterates through all fuzz targets and runs the check.
-for FUZZER_BINARY in $(find $OUT/ -maxdepth 1 -executable -type f); do
+for FUZZER_BINARY in $(find $TMP_FUZZER_DIR -maxdepth 1 -executable -type f); do
   if file "$FUZZER_BINARY" | grep -v ELF > /dev/null 2>&1; then
     continue
   fi
@@ -72,6 +85,10 @@ done
 
 # Wait for background processes to finish.
 wait
+
+# Restore OUT
+export OUT=$INITIAL_OUT
+mv $TMP_FUZZER_DIR/* $OUT
 
 # Sanity check in case there are no fuzz targets in the $OUT/ dir.
 if [ "$TOTAL_TARGETS_COUNT" -eq "0" ]; then

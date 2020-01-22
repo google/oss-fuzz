@@ -14,27 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-# Build libmpeg2
-build_dir=$WORK/build
-rm -rf ${build_dir}
-mkdir -p ${build_dir}
-pushd ${build_dir}
-
-cmake $SRC/libmpeg2
-make -j$(nproc)
-popd
-
-# build fuzzers
-$CXX $CXXFLAGS -std=c++11 \
--I$SRC/libmpeg2 \
--I$SRC/libmpeg2/common \
--I$SRC/libmpeg2/decoder \
--I${build_dir} \
--Wl,--start-group \
-$LIB_FUZZING_ENGINE \
-$SRC/libmpeg2/fuzzer/mpeg2_dec_fuzzer.cpp -o $OUT/mpeg2_dec_fuzzer \
-${build_dir}/libmpeg2dec.a \
--Wl,--end-group
-
-cp $SRC/libmpeg2/fuzzer/mpeg2_dec_fuzzer.dict $OUT/mpeg2_dec_fuzzer.dict
+# Run the OSS-Fuzz script in the project.
+$SRC/libmpeg2/fuzzer/ossfuzz.sh

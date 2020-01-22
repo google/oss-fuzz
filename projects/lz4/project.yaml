@@ -6,6 +6,8 @@ auto_ccs:
   - "terrelln@fb.com"
   - "felixh@fb.com"
   - "bimbashrestha@fb.com"
+  - "mhl@fb.com"
+  - "reed@fb.com"
 sanitizers:
   - address
   - memory

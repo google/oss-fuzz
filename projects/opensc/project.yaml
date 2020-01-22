@@ -9,3 +9,4 @@ auto_ccs:
   - "jakuje@gmail.com"
 fuzzing_engines:
   - libfuzzer
+  - honggfuzz

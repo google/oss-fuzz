@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER tsdgeos@gmail.com
 RUN apt-get install --yes cmake gperf
-RUN git clone --depth 1  git://code.qt.io/qt/qtbase.git
+RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 git://anongit.kde.org/kcodecs
 RUN git clone --depth 1 git://anongit.kde.org/extra-cmake-modules
 RUN git clone --depth 1 https://gitlab.freedesktop.org/uchardet/uchardet.git

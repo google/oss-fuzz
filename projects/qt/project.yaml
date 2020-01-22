@@ -1,2 +1,4 @@
 homepage: "http://qt-project.org"
 primary_contact: "rlohningqt@gmail.com"
+sanitizers:
+ - address

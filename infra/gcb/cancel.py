@@ -15,7 +15,6 @@ import urllib
 import yaml
 
 from oauth2client.client import GoogleCredentials
-from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 
 
@@ -32,8 +31,9 @@ def main():
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
-  print cloudbuild.projects().builds().cancel(
-      projectId='oss-fuzz', id=build_id, body={}).execute()
+  print cloudbuild.projects().builds().cancel(projectId='oss-fuzz',
+                                              id=build_id,
+                                              body={}).execute()
 
 
 if __name__ == '__main__':

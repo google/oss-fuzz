@@ -71,6 +71,9 @@ static void rmrfdir(char *path)
     }
 }
 
+// 65kb should be enough ;-)
+#define MAX_LEN 0x10000
+
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     IOBUF a;
     armor_filter_context_t *afx = NULL;
@@ -130,6 +133,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         opt.list_packets=1;
         set_packet_list_mode(1);
         initialized = true;
+    }
+
+    if (Size > MAX_LEN) {
+        // limit maximum size to avoid long computing times
+        return 0;
     }
 
     memset(ctrlGlobal, 0, sizeof(*ctrlGlobal));

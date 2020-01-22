@@ -104,4 +104,9 @@ else
 fi
 
 echo $CMD_LINE
+
+# Unset OUT so the fuzz target can't rely on it.
+unset OUT
+
 bash -c "$CMD_LINE"
+

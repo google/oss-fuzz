@@ -15,35 +15,25 @@
 #
 ################################################################################
 
-cd expat
+mkdir -p build
+cd build
+cmake ../expat -DEXPAT_BUILD_FUZZERS=ON -DEXPAT_OSSFUZZ_BUILD=ON -DEXPAT_SHARED_LIBS=OFF
+make -j$(nproc)
 
-./buildconf.sh
-./configure
-make clean
-make -j$(nproc) all
-
-ENCODING_TYPES="UTF_16 \
-  UTF_8 \
-  ISO_8859_1 \
-  US_ASCII \
-  UTF_16BE \
-  UTF_16LE"
-
-for encoding in $ENCODING_TYPES; do
-  fuzz_target_name=parse_${encoding}_fuzzer
-
-  $CXX $CXXFLAGS -std=c++11 -Ilib/ -DENCODING_${encoding} \
-      $SRC/parse_fuzzer.cc -o $OUT/${fuzz_target_name} \
-      $LIB_FUZZING_ENGINE lib/.libs/libexpat.a
-
-  # Use dictionaries in proper encoding for 16-bit encoding types.
-  if [[ $encoding == *"UTF_16"* ]]; then
-    cp $SRC/xml_${encoding}.dict  $OUT/${fuzz_target_name}.dict
+for fuzzer in fuzz/*;
+do
+  cp $fuzzer $OUT
+  fuzzer_name=$(basename $fuzzer)
+  if [[ ${fuzzer_name} =~ ^.*UTF-16$ ]];
+  then
+    cp $SRC/xml_UTF_16.dict $OUT/${fuzzer_name}.dict
+  elif [[ ${fuzzer_name} =~ ^.*UTF-16LE$ ]];
+  then
+    cp $SRC/xml_UTF_16LE.dict $OUT/${fuzzer_name}.dict
+  elif [[ ${fuzzer_name} =~ ^.*UTF-16BE$ ]];
+  then
+    cp $SRC/xml_UTF_16BE.dict $OUT/${fuzzer_name}.dict
   else
-    cp $SRC/xml.dict  $OUT/${fuzz_target_name}.dict
+    cp $SRC/xml.dict $OUT/${fuzzer_name}.dict
   fi
-
-  # Generate .option files for each fuzzer.
-  echo -en "[libfuzzer]\ndict = ${fuzz_target_name}.dict\nmax_len = 1024\n" \
-      > $OUT/${fuzz_target_name}.options
 done

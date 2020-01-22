@@ -102,7 +102,8 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    textblob_deserialize skjson \
                                    api_null_canvas api_image_filter api_pathop \
                                    api_polyutils android_codec image_decode_incremental \
-                                   sksl2glsl sksl2spirv sksl2metal sksl2pipeline
+                                   sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
+                                   api_skdescriptor skdescriptor_deserialize
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -225,3 +226,12 @@ cp ./sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
 cp out/Fuzz/sksl2pipeline $OUT/sksl2pipeline
 cp ./sksl2pipeline.options $OUT/sksl2pipeline.options
 cp ./sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
+
+cp out/Fuzz/api_skdescriptor $OUT/api_skdescriptor
+cp ./api_skdescriptor.options $OUT/api_skdescriptor.options
+cp ./api_skdescriptor_seed_corpus.zip $OUT/api_skdescriptor_seed_corpus.zip
+
+# Don't have any examples of an SkDescriptor atm, so some random bytes is all we have.
+cp out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
+cp ./skdescriptor_deserialize.options $OUT/skdescriptor_deserialize.options
+cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip

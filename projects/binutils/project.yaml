@@ -1,0 +1,6 @@
+homepage: "https://www.gnu.org/software/binutils/"
+primary_contact: "bug-binutils@gnu.org"
+auto_ccs :
+  - "p.antoine@catenacyber.fr"
+  - "nickc@redhat.com"
+  - "amodra@gmail.com"

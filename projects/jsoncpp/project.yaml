@@ -1,2 +1,8 @@
 homepage: "https://github.com/open-source-parsers/jsoncpp/"
 primary_contact: "cdunn2001@gmail.com"
+auto_ccs:
+ - "jophba@chromium.org"
+sanitizers:
+  - address
+  - undefined
+  - memory

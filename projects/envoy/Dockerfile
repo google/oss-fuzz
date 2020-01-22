@@ -14,7 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# TODO(https://github.com/google/oss-fuzz/issues/3093): Stop specifying the
+# image SHA once the bug is fixed.
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:276813aef0ce5972db43c0230f96162003994fa742fb1b2f4e66c67498575c65
 MAINTAINER htuch@google.com
 
 RUN apt-get update && apt-get -y install  \
@@ -25,15 +27,18 @@ RUN apt-get update && apt-get -y install  \
     curl            \
     autoconf        \
     libtool         \
-    cmake           \
     wget            \
     golang          \
     python
 
-# Install Bazel
-RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN apt-get update && apt-get install -y bazel
+# Install Bazelisk
+RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64
+RUN chmod +x /usr/local/bin/bazel
+
+# Install cmake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5-Linux-x86_64.sh; \
+    chmod +x cmake-3.14.5-Linux-x86_64.sh; \
+    ./cmake-3.14.5-Linux-x86_64.sh --skip-license --prefix="/usr/local"
 
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/

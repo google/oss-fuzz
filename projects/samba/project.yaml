@@ -1,0 +1,15 @@
+homepage: "https://samba.org"
+primary_contact: "douglas.bagnall@catalyst.net.nz"
+auto_ccs:
+  - "abartlet+google@catalyst.net.nz"
+  - "cryptomilk@gmail.com"
+  - "lockyergw@gmail.com"
+  - "jra@google.com"
+  - "sloowfranklin@gmail.com"
+  - "gdeschner@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+help_url: "https://wiki.samba.org/index.php/Fuzzing"

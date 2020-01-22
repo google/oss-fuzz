@@ -12,6 +12,15 @@ permalink: /faq/
 {:toc}
 ---
 
+## Where can I learn more about fuzzing?
+
+We recommend reading [libFuzzer tutorial] and the other docs in [google/fuzzing]
+repository. These and some other resources are listed on the
+[useful links]({{ site.baseurl }}/reference/useful-links/#tutorials) page.
+
+[google/fuzzing]: https://github.com/google/fuzzing/tree/master/docs
+[libFuzzer tutorial]: https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md
+
 ## What kind of projects are you accepting?
 
 We accept established projects that have a critical impact on infrastructure and
@@ -73,7 +82,7 @@ building and execution.
 ## How do you handle timeouts and OOMs?
 
 If a single input to a [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)
-requires more than **~25 seconds** or more than **2GB RAM** to process, we
+requires more than **~25 seconds** or more than **2.5GB RAM** to process, we
 report this as a timeout or an OOM (out-of-memory) bug
 (examples: [timeouts](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q=%22Crash+Type%3A+Timeout%22),
 [OOMs](https://bugs.chromium.org/p/oss-fuzz/issues/list?can=1&q="Crash+Type%3A+Out-of-memory")).
@@ -173,4 +182,4 @@ Currently OSS-Fuzz builders do builds for libFuzzer, AFL, and honggfuzz.
 OSS-Fuzz builders have 32CPU/28.8GB RAM.
 
 Fuzzing machines only have a single core and fuzz targets should not use more
-than 2GB of RAM.
+than 2.5GB of RAM.

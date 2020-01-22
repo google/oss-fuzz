@@ -12,6 +12,10 @@ install:
 
 matrix:
   include:
+    - name: "presubmit"
+      install:
+        - pip install -r infra/dev-requirements.txt
+      script: ./infra/presubmit.py
     - name: "libfuzzer address x86_64"
       env:
         - TRAVIS_ENGINE=libfuzzer
@@ -49,3 +53,6 @@ matrix:
         - TRAVIS_ARCHITECTURE=x86_64
 
 script: ./infra/travis/travis_build.py
+
+notifications:
+  webhooks: https://www.travisbuddy.com/

@@ -1,0 +1,10 @@
+homepage: "https://arrow.apache.org/"
+primary_contact: "antoine@python.org"
+auto_ccs:
+  - "bengilgit@gmail.com"
+  - "emkornfield@gmail.com"
+  - "fsaintjacques@gmail.com"
+  - "micahk@google.com"
+  - "neal@rstudio.com"
+  - "szucs.krisztian@gmail.com"
+  - "wesmckinn@gmail.com"

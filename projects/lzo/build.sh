@@ -30,6 +30,10 @@ do
         -o $OUT/${name} $LIB_FUZZING_ENGINE src/.libs/liblzo2.a
 done
 
+$CXX $CXXFLAGS -std=c++11 -I include -I minilzo -I include/lzo \
+    $SRC/all_lzo_compress.cc \
+    -o $OUT/all_lzo_compress $LIB_FUZZING_ENGINE src/.libs/liblzo2.a
+
 # copy fuzzer options
 cp $SRC/*.options $OUT/
 zip -j $OUT/lzo_decompress_target_seed_corpus.zip $SRC/lzo_decompress_target_seeds/*

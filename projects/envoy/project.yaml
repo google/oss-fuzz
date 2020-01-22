@@ -10,4 +10,5 @@ auto_ccs:
   - "envoy-security@googlegroups.com"
   - "yavlasov@google.com"
   - "asraa@google.com"
+  - "avd@google.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*

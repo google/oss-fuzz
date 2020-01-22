@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    build-essential libbz2-dev ninja-build zlib1g-dev wget
+    build-essential libbz2-dev ninja-build zlib1g-dev wget python python-dev
 # Install cmake 3.14 (minimum requirement is cmake 3.10)
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5-Linux-x86_64.sh; \
     chmod +x cmake-3.14.5-Linux-x86_64.sh; \
@@ -27,10 +27,9 @@ RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
 RUN git clone --recursive -b boost-1.69.0 https://github.com/boostorg/boost.git \
     boost
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-RUN git clone --branch="v0.1.0" --recurse-submodules \
+RUN git clone --branch="v0.4.0" --recurse-submodules \
     https://github.com/ethereum/evmone.git
-RUN git clone --branch="v0.2.0" https://github.com/chfast/intx.git
-RUN git clone --branch="v0.4.4" https://github.com/chfast/ethash.git
+RUN git clone --branch="z3-4.8.7" https://github.com/Z3Prover/z3.git
 
 # Install statically built dependencies in "/usr" directory
 # Install boost
@@ -63,22 +62,12 @@ RUN cd $SRC/evmone; \
     ninja; \
     ninja install;
 
-# Install intx
-RUN cd $SRC/intx; \
+# Install Z3
+RUN cd $SRC/z3; \
     mkdir -p build; \
     cd build; \
-    cmake .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DINTX_TESTING=OFF \
-    -DINTX_BENCHMARKING=OFF -DCMAKE_INSTALL_PREFIX="/usr"; \
-    ninja; \
-    ninja install;
-
-# Install ethash
-RUN cd $SRC/ethash; \
-    mkdir -p build; \
-    cd build; \
-    cmake .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DETHASH_BUILD_TESTS=OFF \
-    -DCMAKE_INSTALL_PREFIX="/usr"; \
-    ninja; \
-    ninja install;
+    LDFLAGS=$CXXFLAGS cmake -DZ3_BUILD_LIBZ3_SHARED=OFF -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..; \
+    make libz3 -j; \
+    make install;
 
 COPY build.sh $SRC/

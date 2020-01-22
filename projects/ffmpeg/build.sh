@@ -35,17 +35,9 @@ make clean
 make -j$(nproc) all
 make install
 
-cd $SRC/drm
-# Requires xutils-dev libpciaccess-dev
-./autogen.sh
-./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
-make clean
-make -j$(nproc)
-make install
-
 cd $SRC/fdk-aac
 autoreconf -fiv
-CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base" \
+CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base,signed-integer-overflow" \
 ./configure --prefix="$FFMPEG_DEPS_PATH" --disable-shared
 make clean
 make -j$(nproc) all
@@ -167,6 +159,15 @@ FUZZ_TARGET_SOURCE=$SRC/ffmpeg/tools/target_dec_fuzzer.c
 
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
+
+CONDITIONALS=`grep 'BSF 1$' config.h | sed 's/#define CONFIG_\(.*\)_BSF 1/\1/'`
+for c in $CONDITIONALS ; do
+  fuzzer_name=ffmpeg_BSF_${c}_fuzzer
+  symbol=`echo $c | sed "s/.*/\L\0/"`
+  echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
+  make tools/target_bsf_${symbol}_fuzzer
+  mv tools/target_bsf_${symbol}_fuzzer $OUT/${fuzzer_name}
+done
 
 # Build fuzzers for decoders.
 CONDITIONALS=`grep 'DECODER 1$' config.h | sed 's/#define CONFIG_\(.*\)_DECODER 1/\1/'`

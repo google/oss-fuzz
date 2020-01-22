@@ -5,5 +5,8 @@ auto_ccs:
 vendor_ccs:
   - bcreasey@google.com
   - hamzeh@google.com
+  - geuteneier@google.com
+  - hollyhall@google.com
+  - mikelogan@google.com
 sanitizers:
   - address

@@ -1,0 +1,9 @@
+homepage: "https://gitlab.freedesktop.org/spice/libcacard"
+primary_contact: "jjelen@redhat.com"
+auto_ccs:
+ - "jakuje@gmail.com"
+sanitizers:
+ - address
+ - memory:
+    experimental: True
+ - undefined

@@ -1,0 +1,22 @@
+homepage: "https://github.com/facebook/proxygen"
+primary_contact: "mhl@fb.com"
+auto_ccs:
+  - "gulshan@fb.com"
+  - "reed@fb.com"
+  - "lniccolini@fb.com"
+  - "afrind@fb.com"
+  - "subodh@fb.com"
+  - "yangchi@fb.com"
+  - "mjoras@fb.com"
+  - "amsharma@fb.com"
+  - "bshlinker@fb.com"
+  - "ranjeeth@fb.com"
+  - "udippant@fb.com"
+vendor_ccs:
+  - "oss-fuzz@fb.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+sanitizers:
+  - address
+  - undefined

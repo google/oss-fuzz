@@ -72,6 +72,8 @@ RUN wget -O $SRC/skia/api_polyutils_seed_corpus.zip https://storage.googleapis.c
 
 RUN wget -O $SRC/skia/sksl_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_seed_corpus.zip
 
+RUN wget -O $SRC/skia/api_skdescriptor_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_skdescriptor_seed_corpus.zip
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
@@ -84,6 +86,7 @@ COPY image_filter_deserialize_width.options $SRC/skia/image_filter_deserialize_w
 COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
 COPY path_deserialize.options $SRC/skia/path_deserialize.options
 COPY encoder.options $SRC/skia/encoder.options
+COPY skdescriptor_deserialize.options $SRC/skia/skdescriptor_deserialize.options
 
 # Codec fuzzers can share options
 COPY image_codec.options $SRC/skia/android_codec.options
@@ -101,6 +104,7 @@ COPY api_fuzzers.options $SRC/skia/api_path_measure.options
 COPY api_fuzzers.options $SRC/skia/api_pathop.options
 COPY api_fuzzers.options $SRC/skia/api_polyutils.options
 COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
+COPY api_fuzzers.options $SRC/skia/api_skdescriptor.options
 
 # SKSL fuzzers can share options
 COPY sksl.options $SRC/skia/sksl2glsl.options

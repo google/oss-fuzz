@@ -7,9 +7,10 @@ make -j$(nproc) all
 # Do not make check as there are tests that fail when compiled with MSAN.
 # make -j$(nproc) check
 
-$CXX $CXXFLAGS -std=c++11 -I. \
-    $SRC/zlib_uncompress_fuzzer.cc -o $OUT/zlib_uncompress_fuzzer \
-    $LIB_FUZZING_ENGINE ./libz.a
+for f in $(find $SRC -name '*_fuzzer.cc'); do
+    b=$(basename -s .cc $f)
+    $CXX $CXXFLAGS -std=c++11 -I. $f -o $OUT/$b $LIB_FUZZING_ENGINE ./libz.a
+done
 
 zip $OUT/seed_corpus.zip *.*
 
