@@ -38,7 +38,7 @@ def main():
   print('Building fuzzers\nproject: {0}\nrepo name: {1}\ncommit: {2}'.format(
       oss_fuzz_project_name, github_repo_name, commit_sha))
   command = [
-      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'build_fuzzers',
+      'python3', '/src/oss-fuzz/infra/cifuzz/cifuzz.py', 'build_fuzzers',
       oss_fuzz_project_name, github_repo_name, commit_sha
   ]
   print('Running command: "{0}"'.format(' '.join(command)))
@@ -50,7 +50,7 @@ def main():
 
   # Run the specified project's fuzzers from the build.
   command = [
-      'python3', '/src/oss-fuzz/infra/cifuzz.py', 'run_fuzzers',
+      'python3', '/src/oss-fuzz/infra/cifuzz/cifuzz.py', 'run_fuzzers',
       oss_fuzz_project_name, fuzz_time
   ]
   print('Running command: "{0}"'.format(' '.join(command)))

@@ -24,8 +24,11 @@ import os
 import shutil
 import sys
 
-import build_specified_commit
 import fuzz_target
+
+# pylint: disable=wrong-import-position
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import build_specified_commit
 import helper
 import repo_manager
 import utils
