@@ -6,3 +6,4 @@ auto_ccs:
 sanitizers: 
 - address 
 - memory
+- undefined
