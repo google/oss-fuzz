@@ -148,7 +148,8 @@ def run_fuzzers(args, out_dir):
       print("Fuzzer {} Detected Error: {}".format(target.target_name,
                                                   stack_trace),
             file=sys.stderr)
-      shutil.move(os.path.join(os.path.dirname(target.target_path),test_case), '/tmp/testcase')
+      shutil.move(os.path.join(os.path.dirname(target.target_path), test_case),
+                  '/tmp/testcase')
       return 1
   return 0
 
