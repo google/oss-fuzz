@@ -85,13 +85,14 @@ class FuzzTarget():
       return None, None
     logging.debug('Fuzzer %s ended before timeout. ', self.target_name)
     err_str = err.decode('ascii')
-    test_case = self.get_test_case(err_str)
+    test_case = FuzzTarget.get_test_case(err_str)
     if not test_case:
       print('Error no test case found in stack trace.', file=sys.stderr)
       return None, None
     return test_case, err_str
 
-  def get_test_case(self, error_string):
+  @staticmethod
+  def get_test_case(error_string):
     """Gets the file from a fuzzer run stack trace.
 
     Args:
