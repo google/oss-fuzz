@@ -19,6 +19,7 @@ Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 
 import argparse
+import enum
 import os
 import shutil
 import sys
@@ -29,6 +30,11 @@ import helper
 import repo_manager
 import utils
 
+
+class Status(enum.Enum):
+  BUG_NOT_FOUND=0
+  ERROR=1
+  BUG_FOUND=2
 
 def main():
   """Connects fuzzers with CI tools.
@@ -61,7 +67,7 @@ def main():
     if not os.path.exists(out_dir):
       os.mkdir(out_dir)
   else:
-    return 1
+    return Status.ERROR
 
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != helper.OSSFUZZ_DIR:
@@ -69,11 +75,11 @@ def main():
 
   if args.command == 'build_fuzzers':
     if build_fuzzers(args, git_workspace, out_dir):
-      return 0
-    return 1
+      return Status.BUG_NOT_FOUND
+    return Status.ERROR
   if args.command == 'run_fuzzers':
     return run_fuzzers(args, out_dir)
-  return 1
+  return Status.ERROR
 
 
 def build_fuzzers(args, git_workspace, out_dir):
@@ -127,12 +133,12 @@ def run_fuzzers(args, out_dir):
     out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
-    0 on no bugs found, 1 on bug found, 2 on build error
+    A status enum representing the state of the run.
   """
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
     print('Error: No fuzzers were found in out directory.', file=sys.stderr)
-    return 2
+    return Status.ERROR
 
   fuzzer_timeout = int(int(args.fuzz_time) / len(fuzzer_paths))
   fuzz_targets = []
@@ -150,8 +156,8 @@ def run_fuzzers(args, out_dir):
             file=sys.stderr)
       shutil.move(os.path.join(os.path.dirname(target.target_path), test_case),
                   '/tmp/testcase')
-      return 1
-  return 0
+      return Status.BUG_FOUND
+  return Status.BUG_NOT_FOUND
 
 
 if __name__ == '__main__':

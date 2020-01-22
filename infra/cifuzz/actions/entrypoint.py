@@ -58,6 +58,8 @@ def main():
     subprocess.check_call(command)
   except subprocess.CalledProcessError as err:
     print('{0}'.format(str(err)), file=sys.stderr)
+    if err.returncode == 2:
+      print('Bug found. Uploading testcase.')
     return err.returncode
   return 0
 
