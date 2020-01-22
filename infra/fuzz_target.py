@@ -103,5 +103,5 @@ class FuzzTarget():
     match = re.search(r'\bTest unit written to \.([^ ]+)',
                       error_string.rstrip())
     if match:
-      return match.split('/')[-1]
+      return match.group(0).split('/')[-1]
     return None
