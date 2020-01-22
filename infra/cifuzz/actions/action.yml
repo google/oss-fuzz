@@ -5,12 +5,13 @@ inputs:
   project-name:
     description: 'Name of the corresponding OSS-Fuzz project.'
     required: true
-  fuzz-time:
-    description: 'The time total allotted time for fuzzing in seconds.'
+  fuzz-seconds:
+    description: 'The total time allotted time for fuzzing in seconds.'
     requried: true
+    default: 360
 runs:
   using: 'docker'
   image: 'Dockerfile'
   env:
     PROJECT_NAME: ${{ inputs.project-name }}
-    FUZZ_TIME: ${{ inputs.fuzz-time }}
+    FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}

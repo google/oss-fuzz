@@ -30,7 +30,7 @@ def main():
     0 on success or 1 on Failure.
   """
   oss_fuzz_project_name = os.environ['PROJECT_NAME']
-  fuzz_time = os.environ['FUZZ_TIME']
+  fuzz_seconds = os.environ['FUZZ_SECONDS']
   github_repo_name = os.environ['GITHUB_REPOSITORY'].rsplit('/', 1)[-1]
   commit_sha = os.environ['GITHUB_SHA']
 
@@ -51,7 +51,7 @@ def main():
   # Run the specified project's fuzzers from the build.
   command = [
       'python3', '/src/oss-fuzz/infra/cifuzz/cifuzz.py', 'run_fuzzers',
-      oss_fuzz_project_name, fuzz_time
+      oss_fuzz_project_name, fuzz_seconds
   ]
   print('Running command: "{0}"'.format(' '.join(command)))
   try:
