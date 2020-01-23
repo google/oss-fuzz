@@ -3,8 +3,8 @@ primary_contact: "guidovranken@gmail.com"
 sanitizers:
  - address
  - undefined
- - memory
-experimental: True
+ - memory:
+    experimental: True
 architectures:
  - x86_64
  - i386
