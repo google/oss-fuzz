@@ -119,11 +119,11 @@ class ProjectYamlChecker:
     """Is this project disabled."""
     return self.data.get('disabled', False)
 
-  def print_error(self, message, *args):
+  def error(self, message):
     """Print an error message and set self.success to False."""
     self.success = False
-    message = message % args
-    print('Error in %s: %s' % (self.filename, message))
+    print('Error in {filename}: {message}'.format(filename=self.filename,
+                                                  message=message))
 
   def check_project_yaml_constants(self):
     """Check that certain sections only have certain constant values."""
@@ -132,22 +132,36 @@ class ProjectYamlChecker:
         continue
       actual_constants = self.data[section]
       for constant in actual_constants:
-        if constant not in allowed_constants:
-          self.print_error('%s (in %s section) is not one of %s', constant,
-                           section, allowed_constants)
+        if isinstance(constant, str):
+          if constant not in allowed_constants:
+            self.error(('{constant} (in {section} section) is not a valid '
+                        'constant ({allowed_constants}).').format(
+                            constant=constant,
+                            section=section,
+                            allowed_constants=', '.join(allowed_constants)))
+        elif isinstance(constant, dict):
+          # The only alternative value allowed is the experimental flag, i.e.
+          # `constant == {'memory': {'experimental': True}}`. Do not check the
+          # experimental flag, but assert that the sanitizer is a valid one.
+          if (len(constant.keys()) > 1 or
+              list(constant.keys())[0] not in allowed_constants):
+            self.error('Not allowed value in the project.yaml: ' +
+                       str(constant))
+        else:
+          self.error('Not allowed value in the project.yaml: ' + str(constant))
 
   def check_valid_section_names(self):
     """Check that only valid sections are included."""
     for name in self.data:
       if name not in self.VALID_SECTION_NAMES:
-        self.print_error('%s not a valid section name (%s)', name,
-                         self.VALID_SECTION_NAMES)
+        self.error('{name} is not a valid section name ({valid_names})'.format(
+            name=name, valid_names=self.VALID_SECTION_NAMES))
 
   def check_required_sections(self):
     """Check that all required sections are present."""
     for section in self.REQUIRED_SECTIONS:
       if section not in self.data:
-        self.print_error('No %s section.', section)
+        self.error(section + ' section is missing.')
 
   def check_valid_emails(self):
     """Check that emails are valid looking."""
@@ -163,7 +177,7 @@ class ProjectYamlChecker:
     # Sanity check them.
     for email_address in email_addresses:
       if '@' not in email_address or '.' not in email_address:
-        self.print_error('%s is an invalid email address.', email_address)
+        self.error(email_address + ' is an invalid email address.')
 
 
 def _check_one_project_yaml(project_yaml_filename):
