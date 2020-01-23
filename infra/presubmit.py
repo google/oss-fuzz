@@ -134,11 +134,11 @@ class ProjectYamlChecker:
       for constant in actual_constants:
         if isinstance(constant, str):
           if constant not in allowed_constants:
-            self.error(
-                '{constant} (in {section} section) is not one of {allowed}.'.
-                format(constant=constant,
-                       section=section,
-                       allowed=allowed_constants))
+            self.error(('{constant} (in {section} section) is not a valid '
+                        'constant ({allowed_constants}).').format(
+                            constant=constant,
+                            section=section,
+                            allowed_constants=allowed_constants))
         else:
           # The only alternative value allowed is the experimental flag, i.e.
           # `constant == {'memory': None, 'experimental': True}`.
