@@ -47,11 +47,11 @@ class BuildImageIntegrationTests(unittest.TestCase):
 
       yara_repo_manager = repo_manager.RepoManager(
           'https://github.com/VirusTotal/yara.git', tmp_dir, repo_name='yara')
-      build_data = build_specified_commit.BuildData()
-      build_data.sanitizer = 'address'
-      build_data.architecture = 'x86_64'
-      build_data.engine = 'libfuzzer'
-      build_data.project_name = 'yara'
+      build_data = build_specified_commit.BuildData(sanitizer='address',
+                                                    architecture='x86_64',
+                                                    engine='libfuzzer',
+                                                    project_name='yara')
+
       build_specified_commit.build_fuzzers_from_commit(old_commit,
                                                        yara_repo_manager,
                                                        build_data)

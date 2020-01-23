@@ -75,11 +75,11 @@ def build_fuzzers(args):
     build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                   tmp_dir,
                                                   repo_name=repo_name)
-    build_data = build_specified_commit.BuildData()
-    build_data.project_name = args.project_name
-    build_data.sanitizer = 'address'
-    build_data.engine = 'libfuzzer'
-    build_data.architecture = 'x86_64'
+    build_data = build_specified_commit.BuildData(
+        project_name=args.project_name,
+        sanitizer='address',
+        engine='libfuzzer',
+        architecture='x86_64')
     return build_specified_commit.build_fuzzers_from_commit(
         args.commit_sha, build_repo_manager, build_data) == 0
 
