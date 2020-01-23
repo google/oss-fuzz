@@ -22,7 +22,7 @@ mkdir -p $TOR_DEPS
 # Build libevent with proper instrumentation.
 cd ${SRC}/libevent
 sh autogen.sh
-./configure --prefix=${TOR_DEPS}
+./configure --prefix=${TOR_DEPS} --disable-openssl
 make -j$(nproc) clean
 make -j$(nproc) all
 make install
