@@ -138,13 +138,17 @@ class ProjectYamlChecker:
                         'constant ({allowed_constants}).').format(
                             constant=constant,
                             section=section,
-                            allowed_constants=allowed_constants))
-        else:
+                            allowed_constants=', '.join(allowed_constants)))
+        elif isinstance(constant, dict):
           # The only alternative value allowed is the experimental flag, i.e.
-          # `constant == {'memory': None, 'experimental': True}`.
-          if not isinstance(constant, dict) or not constant['experimental']:
+          # `constant == {'memory': {'experimental': True}}`. Do not check the
+          # experimental flag, but assert that the sanitizer is a valid one.
+          if (len(constant.keys()) > 1 or
+              list(constant.keys())[0] not in allowed_constants):
             self.error('Not allowed value in the project.yaml: ' +
                        str(constant))
+        else:
+          self.error('Not allowed value in the project.yaml: ' + str(constant))
 
   def check_valid_section_names(self):
     """Check that only valid sections are included."""
