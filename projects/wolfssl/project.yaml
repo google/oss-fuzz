@@ -1,12 +1,18 @@
 homepage: "https://www.wolfssl.com/"
 primary_contact: "jacob@wolfssl.com"
 auto_ccs:
- - "david@wolfssl.com"
- - "kaleb@wolfssl.com"
- - "levi@wolfssl.com"
- - "testing@wolfssl.com"
+  - "david@wolfssl.com"
+  - "kaleb@wolfssl.com"
+  - "levi@wolfssl.com"
+  - "testing@wolfssl.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
- - address
- - memory:
-    experimental: True
- - undefined
+  - address
+  - memory:
+     experimental: True
+  - undefined
+  - dataflow

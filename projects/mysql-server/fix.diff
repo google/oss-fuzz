@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 17939f7c6f4..e05deb5911e 100644
+index ce1d1bb05b5..d1d0b04f202 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -517,6 +517,7 @@ IF(WITH_JEMALLOC)
+@@ -528,6 +528,7 @@ IF(WITH_JEMALLOC)
    STRING_APPEND(CMAKE_CXX_FLAGS " -fno-builtin-realloc -fno-builtin-free")
  ENDIF()
  
@@ -10,8 +10,8 @@ index 17939f7c6f4..e05deb5911e 100644
  OPTION(ENABLED_PROFILING "Enable profiling" ON)
  OPTION(WITHOUT_SERVER OFF)
  IF(UNIX)
-@@ -1324,6 +1325,10 @@ IF(NOT WITHOUT_SERVER)
-   ADD_SUBDIRECTORY(sql)
+@@ -1348,6 +1349,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
+   TARGET_LINK_LIBRARIES(server_unittest_library ${ICU_LIBRARIES})
  ENDIF()
  
 +IF (FUZZING)
@@ -36,10 +36,10 @@ index 1f499e9d9e5..a85c181ae78 100644
  
  enum mysql_ssl_mode {
 diff --git a/include/violite.h b/include/violite.h
-index 9f9d6e62e2e..32bed2eeb30 100644
+index 76f2ed2017a..56900e11349 100644
 --- a/include/violite.h
 +++ b/include/violite.h
-@@ -106,12 +106,14 @@ enum enum_vio_type : int {
+@@ -108,12 +108,14 @@ enum enum_vio_type : int {
    */
    VIO_TYPE_PLUGIN = 7,
  
@@ -55,7 +55,7 @@ index 9f9d6e62e2e..32bed2eeb30 100644
  };
  
  /**
-@@ -449,4 +451,20 @@ struct Vio {
+@@ -450,4 +452,20 @@ struct Vio {
  #define SSL_handle void *
  #endif
  
@@ -77,11 +77,11 @@ index 9f9d6e62e2e..32bed2eeb30 100644
 +
  #endif /* vio_violite_h_ */
 diff --git a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
-index 52b9b61271f..e452fc202a5 100644
+index 0979a2b7b8c..0c896297a9f 100644
 --- a/libmysql/CMakeLists.txt
 +++ b/libmysql/CMakeLists.txt
-@@ -320,7 +320,7 @@ IF(UNIX)
-   ENDIF()
+@@ -324,7 +324,7 @@ IF(UNIX)
+   ADD_INSTALL_RPATH_FOR_OPENSSL(libmysql)
  
    GET_TARGET_PROPERTY(libmysql_link_flags libmysql LINK_FLAGS)
 -  IF(LINK_FLAG_NO_UNDEFINED)
@@ -127,10 +127,10 @@ index fa96e35eb02..e03ee47c220 100644
      *failed = true;
      return 0;
 diff --git a/sql-common/client.cc b/sql-common/client.cc
-index f5e760cc37d..09037a9e236 100644
+index fd36e9950cf..c8cae8c3cbf 100644
 --- a/sql-common/client.cc
 +++ b/sql-common/client.cc
-@@ -5850,6 +5850,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
+@@ -5852,6 +5852,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
      }
    }
  #endif /* _WIN32 */
@@ -144,10 +144,10 @@ index f5e760cc37d..09037a9e236 100644
    if (!net->vio &&
        (!mysql->options.protocol ||
 diff --git a/sql/mysqld.cc b/sql/mysqld.cc
-index 178a572a5aa..03b9d6346f9 100644
+index c30315d4702..4413d95915d 100644
 --- a/sql/mysqld.cc
 +++ b/sql/mysqld.cc
-@@ -6353,7 +6353,9 @@ int mysqld_main(int argc, char **argv)
+@@ -6395,7 +6395,9 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);  // Will do exit
    }
  
@@ -157,7 +157,7 @@ index 178a572a5aa..03b9d6346f9 100644
  
    size_t guardize = 0;
  #ifndef _WIN32
-@@ -6837,8 +6839,10 @@ int mysqld_main(int argc, char **argv)
+@@ -6879,8 +6881,10 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);
  
  #ifndef _WIN32
@@ -168,7 +168,7 @@ index 178a572a5aa..03b9d6346f9 100644
  #endif
  
    /* set all persistent options */
-@@ -6980,8 +6984,9 @@ int mysqld_main(int argc, char **argv)
+@@ -7022,8 +7026,9 @@ int mysqld_main(int argc, char **argv)
    }
  
    start_handle_manager();
@@ -179,7 +179,7 @@ index 178a572a5aa..03b9d6346f9 100644
  
    LogEvent()
        .type(LOG_TYPE_ERROR)
-@@ -7028,6 +7033,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7070,6 +7075,10 @@ int mysqld_main(int argc, char **argv)
  
    (void)RUN_HOOK(server_state, before_handle_connection, (NULL));
  
@@ -190,7 +190,7 @@ index 178a572a5aa..03b9d6346f9 100644
  #if defined(_WIN32)
    setup_conn_event_handler_threads();
  #else
-@@ -9850,6 +9859,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
+@@ -9895,6 +9904,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
  
    if (opt_short_log_format) opt_specialflag |= SPECIAL_SHORT_LOG_FORMAT;
  
@@ -226,10 +226,10 @@ index 983603eb58c..d577c6fcc05 100644
          err = errs[id];
        }
 diff --git a/vio/CMakeLists.txt b/vio/CMakeLists.txt
-index 497ab98396c..a6cf2a647a6 100644
+index d44eebce63a..975bc878e17 100644
 --- a/vio/CMakeLists.txt
 +++ b/vio/CMakeLists.txt
-@@ -25,6 +25,7 @@ SET(VIO_SOURCES
+@@ -27,6 +27,7 @@ SET(VIO_SOURCES
    viosocket.cc
    viossl.cc
    viosslfactories.cc
@@ -238,10 +238,10 @@ index 497ab98396c..a6cf2a647a6 100644
  
  IF(WIN32)
 diff --git a/vio/vio.cc b/vio/vio.cc
-index 85cc77df645..03ed154dcee 100644
+index f2007bbc928..3b2ca196ec5 100644
 --- a/vio/vio.cc
 +++ b/vio/vio.cc
-@@ -300,6 +300,27 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
+@@ -301,6 +301,27 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
      return false;
    }
  #endif /* HAVE_OPENSSL */
@@ -269,7 +269,7 @@ index 85cc77df645..03ed154dcee 100644
    vio->viodelete = vio_delete;
    vio->vioerrno = vio_errno;
    vio->read = vio->read_buffer ? vio_read_buff : vio_read;
-@@ -575,7 +596,8 @@ static const vio_string vio_type_names[] = {{"", 0},
+@@ -576,7 +597,8 @@ static const vio_string vio_type_names[] = {{"", 0},
                                              {STRING_WITH_LEN("SSL/TLS")},
                                              {STRING_WITH_LEN("Shared Memory")},
                                              {STRING_WITH_LEN("Internal")},
@@ -281,10 +281,10 @@ index 85cc77df645..03ed154dcee 100644
                         int *len) {
 diff --git a/vio/viofuzz.cc b/vio/viofuzz.cc
 new file mode 100644
-index 00000000000..73f29662b96
+index 00000000000..83f22a5dbb9
 --- /dev/null
 +++ b/vio/viofuzz.cc
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,124 @@
 +
 +#include "my_config.h"
 +
@@ -331,16 +331,13 @@ index 00000000000..73f29662b96
 +
 +bool vio_connect_fuzz(Vio *vio, struct sockaddr *addr, socklen_t len,
 +                        int timeout) {
-+  int ret;
 +  DBUG_ENTER("vio_socket_connect");
 +
 +  /* Only for socket-based transport types. */
 +  DBUG_ASSERT(vio->type == VIO_TYPE_SOCKET || vio->type == VIO_TYPE_TCPIP);
 +
 +  /* Initiate the connection. */
-+  ret=0;
-+
-+  DBUG_RETURN(MY_TEST(ret));
++  return 0;
 +}
 +
 +

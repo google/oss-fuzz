@@ -18,29 +18,14 @@ from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
 import os
+import collections
 import re
 import subprocess
 
 import helper
 
-
-class BuildData:
-  """Data required for bisection of errors in OSS-Fuzz projects.
-
-  Attributes:
-    project_name: The name of the OSS-Fuzz project that is being checked.
-    engine: The fuzzing engine to be used.
-    sanitizer: The sanitizer to be used.
-    architecture: CPU architecture to build the fuzzer for.
-  """
-
-  # pylint: disable=too-few-public-methods
-
-  def __init__(self):
-    self.project_name = ''
-    self.engine = 'libfuzzer'
-    self.sanitizer = 'address'
-    self.architecture = 'x86_64'
+BuildData = collections.namedtuple(
+    'BuildData', ['project_name', 'engine', 'sanitizer', 'architecture'])
 
 
 def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
