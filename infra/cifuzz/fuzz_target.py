@@ -13,17 +13,22 @@
 # limitations under the License.
 """A module to handle running a fuzz target for a specified amount of time."""
 import logging
-import subprocess
 import os
 import re
+import subprocess
 import sys
 
 # pylint: disable=wrong-import-position
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout,
+    level=logging.DEBUG)
 
-class FuzzTarget():
+
+class FuzzTarget:
   """A class to manage a single fuzz target.
 
   Attributes:
@@ -41,60 +46,47 @@ class FuzzTarget():
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
     """
-    logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        stream=sys.stdout,
-        level=logging.DEBUG)
-    self.target_name = target_path.split('/')[-1]
+    self.target_name = os.path.basename(target_path)
     self.duration = duration
     self.project_name = project_name
     self.target_path = target_path
+    self.out_dir = os.path.dirname(self.target_path)
 
-  def start(self):
+  def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
-    logging.debug('Fuzzer %s started.', self.target_name)
+    logging.debug('Fuzzer %s, started.', self.target_name)
+    bash_command = 'run_fuzzer {0}'.format(self.target_name)
     command = [
         'docker', 'run', '--rm', '--privileged', '--volumes-from',
-        utils.get_container()
+        utils.get_container(), '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
+        'SANITIZER=address', '-e', 'RUN_FUZZER_MODE=interactive', '-e',
+        'OUT=' + self.out_dir, 'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c',
+        bash_command
     ]
-    command += [
-        '-e',
-        'FUZZING_ENGINE=libfuzzer',
-        '-e',
-        'SANITIZER=address',
-        '-e',
-        'RUN_FUZZER_MODE=interactive',
-    ]
-    command += [
-        'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c',
-        'cp -rf {0} {1} && run_fuzzer {2} && cp {1} {3}'.format(
-            self.target_path, '/out', self.target_name,
-            os.path.dirname(self.target_path))
-    ]
-
     logging.debug('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
+
     try:
       _, err = process.communicate(timeout=self.duration)
     except subprocess.TimeoutExpired:
-      logging.debug('Fuzzer %s finished with timeout.', self.target_name)
+      logging.debug('Fuzzer %s, finished with timeout.', self.target_name)
       return None, None
-    logging.debug('Fuzzer %s ended before timeout. ', self.target_name)
+
+    logging.debug('Fuzzer %s, ended before timeout.', self.target_name)
     err_str = err.decode('ascii')
-    test_case = FuzzTarget.get_test_case(err_str)
+    test_case = self.get_test_case(err_str)
     if not test_case:
       print('Error no test case found in stack trace.', file=sys.stderr)
       return None, None
     return test_case, err_str
 
-  @staticmethod
-  def get_test_case(error_string):
+  def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.
 
     Args:
@@ -103,8 +95,8 @@ class FuzzTarget():
     Returns:
       The error test case or None if not found.
     """
-    match = re.search(r'\bTest unit written to \.([^ ]+)',
-                      error_string.rstrip())
+    match = re.search(r'\bTest unit written to \.\/([^\s]+)', error_string)
+    print('Matches: ' + match.group(1))
     if match:
-      return match.group(0).split('/')[-1]
+      return os.path.join(self.out_dir, match.group(1))
     return None

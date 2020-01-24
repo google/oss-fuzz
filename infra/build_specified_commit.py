@@ -21,6 +21,7 @@ import os
 import collections
 import re
 import subprocess
+import sys
 
 import helper
 
@@ -64,14 +65,20 @@ def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
   Returns:
     The repo's origin, the repo's name.
   """
-  # TODO: Add infra for non hardcoded '/src'.
+
   if not repo_name and not commit:
     print('Error: can not detect main repo without a repo_name or a commit.')
     return None, None
   if repo_name and commit:
     print('Both repo name and commit specific. Using repo name for detection.')
 
-  helper.build_image_impl(project_name)
+  # Change to oss-fuzz main directory so helper.py runs correctly.
+  if os.getcwd() != helper.OSSFUZZ_DIR:
+    os.chdir(helper.OSSFUZZ_DIR)
+  if not helper.build_image_impl(project_name):
+    print('Error: building {} image failed.'.format(project_name),
+          file=sys.stderr)
+    return None, None
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
       'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
@@ -111,5 +118,5 @@ def execute(command, location=None, check_result=False):
     raise RuntimeError('Error: %s\n Command: %s\n Return code: %s\n Out: %s' %
                        (err, command, process.returncode, out))
   if out is not None:
-    out = out.decode('ascii')
+    out = out.decode('ascii').rstrip()
   return out, process.returncode
