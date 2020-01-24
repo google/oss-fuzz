@@ -68,7 +68,8 @@ def get_fuzz_targets(path):
   Returns:
     A list of paths to fuzzers or an empty list if None.
   """
-
+  if not os.path.exists(path):
+    return []
   fuzz_target_paths = []
   for root, _, _ in os.walk(path):
     for filename in os.listdir(path):
@@ -89,6 +90,9 @@ def get_env_var(project_name, env_var_name):
   Returns:
     None on error or the enviroment variable value.
   """
+  if ' ' in env_var_name or '-' in env_var_name or not env_var_name.rstrip():
+    return None
+
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != helper.OSSFUZZ_DIR:
     os.chdir(helper.OSSFUZZ_DIR)
@@ -103,7 +107,9 @@ def get_env_var(project_name, env_var_name):
   out, err_code = build_specified_commit.execute(command)
   if err_code:
     return None
-  return out.replace('\'', '')
+  if out.replace('\'', ''):
+    return out
+  return None
 
 
 def get_container():
