@@ -39,61 +39,67 @@ class IsFuzzTargetLocalUnitTest(unittest.TestCase):
     self.assertFalse(is_local)
 
   def test_valid_filepath(self):
+    """Checks is_fuzz_target_local function with a valid filepath."""
     if os.getcwd() != helper.OSSFUZZ_DIR:
       os.chdir(helper.OSSFUZZ_DIR)
-    helper.build_fuzzers_impl(
-        EXAMPLE_PROJECT,
-        True,
-        'libfuzzer',
-        'address',
-        'x86_64',
-        [],
-        None,
-        no_cache=False,
-        mount_location=None)
-    is_local = utils.is_fuzz_target_local(os.path.join(helper.OSSFUZZ_DIR, 'build', 'out', EXAMPLE_PROJECT, 'do_stuff_fuzzer'))
+    helper.build_fuzzers_impl(EXAMPLE_PROJECT,
+                              True,
+                              'libfuzzer',
+                              'address',
+                              'x86_64', [],
+                              None,
+                              no_cache=False,
+                              mount_location=None)
+    is_local = utils.is_fuzz_target_local(
+        os.path.join(helper.OSSFUZZ_DIR, 'build', 'out', EXAMPLE_PROJECT,
+                     'do_stuff_fuzzer'))
     self.assertTrue(is_local)
-    is_local = utils.is_fuzz_target_local(os.path.join(helper.OSSFUZZ_DIR, 'build', 'out', EXAMPLE_PROJECT, 'do_stuff_fuzzer.dict'))
+    is_local = utils.is_fuzz_target_local(
+        os.path.join(helper.OSSFUZZ_DIR, 'build', 'out', EXAMPLE_PROJECT,
+                     'do_stuff_fuzzer.dict'))
     self.assertFalse(is_local)
+
 
 class GetFuzzTargetsUnitTest(unittest.TestCase):
   """Test get_fuzz_targets function in the utils module."""
 
-  def test_invalid_filepath(self):
+  def test_valid_filepath(self):
     """Tests that fuzz targets can be retrieved once the fuzzers are built."""
     if os.getcwd() != helper.OSSFUZZ_DIR:
       os.chdir(helper.OSSFUZZ_DIR)
-    helper.build_fuzzers_impl(
-        EXAMPLE_PROJECT,
-        True,
-        'libfuzzer',
-        'address',
-        'x86_64',
-        [],
-        None,
-        no_cache=False,
-        mount_location=None)
-    fuzz_targets = utils.get_fuzz_targets(os.path.join(helper.OSSFUZZ_DIR, 'build', 'out', EXAMPLE_PROJECT))
-    self.assertCountEqual(fuzz_targets, [os.path.join(helper.OSSFUZZ_DIR, 'build', 'out', EXAMPLE_PROJECT, 'do_stuff_fuzzer')])
-    fuzz_targets = utils.get_fuzz_targets(os.path.join(helper.OSSFUZZ_DIR,'infra'))
+    helper.build_fuzzers_impl(EXAMPLE_PROJECT,
+                              True,
+                              'libfuzzer',
+                              'address',
+                              'x86_64', [],
+                              None,
+                              no_cache=False,
+                              mount_location=None)
+    fuzz_targets = utils.get_fuzz_targets(
+        os.path.join(helper.OSSFUZZ_DIR, 'build', 'out', EXAMPLE_PROJECT))
+    self.assertCountEqual(fuzz_targets, [
+        os.path.join(helper.OSSFUZZ_DIR, 'build', 'out', EXAMPLE_PROJECT,
+                     'do_stuff_fuzzer')
+    ])
+    fuzz_targets = utils.get_fuzz_targets(
+        os.path.join(helper.OSSFUZZ_DIR, 'infra'))
     self.assertFalse(fuzz_targets)
 
   def test_invalid_filepath(self):
-    """Tests that fuzz targets return when invalid filepath is used."""
+    """Tests what get_fuzz_targets return when invalid filepath is used."""
     if os.getcwd() != helper.OSSFUZZ_DIR:
       os.chdir(helper.OSSFUZZ_DIR)
-    helper.build_fuzzers_impl(
-        EXAMPLE_PROJECT,
-        True,
-        'libfuzzer',
-        'address',
-        'x86_64',
-        [],
-        None,
-        no_cache=False,
-        mount_location=None)
+    helper.build_fuzzers_impl(EXAMPLE_PROJECT,
+                              True,
+                              'libfuzzer',
+                              'address',
+                              'x86_64', [],
+                              None,
+                              no_cache=False,
+                              mount_location=None)
     fuzz_targets = utils.get_fuzz_targets('not/a/valid/file/path')
     self.assertFalse(fuzz_targets)
+
 
 class GetEnvVarUnitTest(unittest.TestCase):
   """Test get_env_var function in the utils module."""
