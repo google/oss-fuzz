@@ -117,4 +117,3 @@ def get_container():
       return None
     with open('/etc/hostname') as file_handle:
       return file_handle.read().strip()
-  return None
