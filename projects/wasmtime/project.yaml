@@ -3,3 +3,5 @@ primary_contact: "jonathan.foote@gmail.com"
 auto_ccs:
   - "security@bytecodealliance.com"
   - "fitzgen@gmail.com"
+sanitizers:
+  - address
