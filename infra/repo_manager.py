@@ -97,7 +97,7 @@ class RepoManager:
     # Handle the exception case, if empty string is passed execute will
     # raise a ValueError
     if not commit.rstrip():
-      raise ValueError('An empty string is not a valid commit SHA')
+      raise RepoManagerError('An empty string is not a valid commit SHA')
 
     _, err_code = build_specified_commit.execute(
         ['git', 'cat-file', '-e', commit], self.repo_dir)
