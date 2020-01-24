@@ -52,6 +52,10 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
   Returns:
     True if build succeeded or False on failure.
   """
+  if not os.path.exists(git_workspace) or not os.path.exists(out_dir):
+    logging.error('Invalid workspace or out directory.')
+    return False
+
   src = utils.get_env_var(project_name, 'SRC')
   if not src:
     logging.error('Could not get $SRC from project docker image. ')
@@ -74,20 +78,33 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
     # NOTE: remove return statement for testing.
     return False
 
-  command = ['--cap-add', 'SYS_PTRACE', '--volumes-from', utils.get_container()]
-  command.extend([
-      '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=address', '-e',
-      'ARCHITECTURE=x86_64', '-e', 'OUT=' + out_dir
-  ])
+  print('Repo dir: ', os.listdir(git_workspace))
+  print('Path: ' + git_workspace)
+
+  command = [
+      '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
+      'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
+  ]
+  container = utils.get_container()
+  if container:
+    command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
+    bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
+        os.path.join(src, oss_fuzz_repo_name, '*'),
+        os.path.join(git_workspace, oss_fuzz_repo_name), src)
+  else:
+    command += [
+        '-e', 'OUT=' + '/out', '-v',
+        '%s:%s' % (os.path.join(git_workspace, oss_fuzz_repo_name),
+                   os.path.join(src, oss_fuzz_repo_name)), '-v',
+        '%s:%s' % (out_dir, '/out')
+    ]
+    bash_command = 'compile'
 
   command.extend([
       'gcr.io/oss-fuzz/%s' % project_name,
       '/bin/bash',
       '-c',
   ])
-  bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
-      os.path.join(src, oss_fuzz_repo_name, '*'),
-      os.path.join(git_workspace, '.'), src)
   command.append(bash_command)
 
   if helper.docker_run(command):
@@ -107,6 +124,14 @@ def run_fuzzers(project_name, fuzz_seconds, out_dir):
   Returns:
     (True if run was successful, True if error was found False if not).
   """
+  if not out_dir or not os.path.exists(out_dir):
+    logging.error('Error: Unreachable out_dir argument.')
+    return False, False
+
+  if not fuzz_seconds or fuzz_seconds < 1:
+    logging.error('Error: fuzz_seconds argument must be greater than 1.')
+    return False, False
+
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
     logging.error('Error: No fuzzers were found in out directory.')
