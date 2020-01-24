@@ -30,9 +30,9 @@ export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MO
 export CXXFLAGS_EXTRA="-stdlib=libc++"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
-cd $PROJECT_DIR/fuzz && cargo fuzz build --debug-assertions
+cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions
 
-FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/debug
+FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
 for f in $SRC/wasmtime/fuzz/fuzz_targets/*.rs
 do
     FUZZ_TARGET_NAME=$(basename ${f%.*})

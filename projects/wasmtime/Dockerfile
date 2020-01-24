@@ -21,9 +21,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool curl cma
 RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
 RUN /bin/bash -c "source $HOME/.cargo/env && cargo install cargo-fuzz" 
 
-# RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime wasmtime
-# TODO: change this v back to upstream ^ after PR is merged
-RUN git clone --depth 1 https://github.com/jfoote/wasmtime wasmtime
+RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime wasmtime
 WORKDIR wasmtime
 RUN git submodule update --init --recursive
 
