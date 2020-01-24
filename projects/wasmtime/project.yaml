@@ -5,3 +5,5 @@ auto_ccs:
   - "fitzgen@gmail.com"
 sanitizers:
   - address
+fuzzing_engines:
+  - libfuzzer
