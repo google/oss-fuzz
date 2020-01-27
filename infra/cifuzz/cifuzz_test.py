@@ -105,5 +105,50 @@ def test_invalid_out(self):
                              workspace_path, 'not/a/dir'))
 
 
+class RunFuzzersIntegrationTest(unittest.TestCase):
+  """Test build_fuzzers function in the utils module."""
+
+  def test_valid(self):
+    """Test run_fuzzers with a valid build."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      workspace_path = os.path.join(tmp_dir, 'workspace')
+      os.mkdir(out_path)
+      os.mkdir(workspace_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz',
+                               '0b95fe1039ed7c38fea1f97078316bfc1030c523',
+                               workspace_path, out_path))
+      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
+      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5, out_path)
+    self.assertTrue(run_success)
+    self.assertTrue(bug_found)
+
+  def test_invlid_build(self):
+    """Test run_fuzzers with an invalid build."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5, out_path)
+    self.assertFalse(run_success)
+    self.assertFalse(bug_found)
+
+  def test_invalid_fuzz_seconds(self):
+    """Tests run_fuzzers with an invalid fuzz seconds."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 0, out_path)
+    self.assertFalse(run_success)
+    self.assertFalse(bug_found)
+
+  def test_invalid_out_dir(self):
+    """Tests run_fuzzers with an invalid out directory."""
+    run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5,
+                                                'not/a/valid/path')
+    self.assertFalse(run_success)
+    self.assertFalse(bug_found)
+
+
 if __name__ == '__main__':
   unittest.main()
