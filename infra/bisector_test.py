@@ -20,7 +20,7 @@ import os
 import unittest
 
 import bisector
-import build_specified_commit
+import utils
 
 # Necessary because __file__ changes with os.chdir
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -31,7 +31,7 @@ class TestBisect(unittest.TestCase):
 
   def test_bisect_invalid_repo(self):
     """Test the bisection method on a project that does not exist."""
-    build_data = build_specified_commit.BuildData(
+    build_data = utils.BuildData(
         project_name='not-a-real-repo',
         engine='libfuzzer',
         sanitizer='address',
@@ -45,7 +45,7 @@ class TestBisect(unittest.TestCase):
 
   def test_bisect_curl(self):
     """Test the bisect method on the curl project."""
-    build_data = build_specified_commit.BuildData(project_name='curl',
+    build_data = utils.BuildData(project_name='curl',
                                                   engine='libfuzzer',
                                                   sanitizer='address',
                                                   architecture='x86_64')
@@ -59,7 +59,7 @@ class TestBisect(unittest.TestCase):
 
   def test_bisect_libarchive(self):
     """Test the bisect method on libarchive."""
-    build_data = build_specified_commit.BuildData(project_name='libarchive',
+    build_data = utils.BuildData(project_name='libarchive',
                                                   engine='libfuzzer',
                                                   sanitizer='address',
                                                   architecture='x86_64')
@@ -73,7 +73,7 @@ class TestBisect(unittest.TestCase):
 
   def test_bisect_usrsctp(self):
     """Test the bisect method on the usrsctp."""
-    build_data = build_specified_commit.BuildData(project_name='usrsctp',
+    build_data = utils.BuildData(project_name='usrsctp',
                                                   engine='libfuzzer',
                                                   sanitizer='address',
                                                   architecture='x86_64')
@@ -87,7 +87,7 @@ class TestBisect(unittest.TestCase):
 
   def test_bisect_usrsctp_single_error_exists(self):
     """Tests what happens with a single with an error."""
-    build_data = build_specified_commit.BuildData(project_name='usrsctp',
+    build_data = utils.BuildData(project_name='usrsctp',
                                                   engine='libfuzzer',
                                                   sanitizer='address',
                                                   architecture='x86_64')
@@ -102,7 +102,7 @@ class TestBisect(unittest.TestCase):
 
   def test_bisect_usrsctp_single_no_error_exists(self):
     """Tests what happens with a single with an error."""
-    build_data = build_specified_commit.BuildData(project_name='usrsctp',
+    build_data = utils.BuildData(project_name='usrsctp',
                                                   engine='libfuzzer',
                                                   sanitizer='address',
                                                   architecture='x86_64')
