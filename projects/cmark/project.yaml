@@ -2,6 +2,7 @@ homepage: "http://commonmark.org"
 primary_contact: "jgm@berkeley.edu"
 auto_ccs:
   - "kivikakk@github.com"
+  - "wellnhofer@aevum.de"
 fuzzing_engines:
   - libfuzzer
   - afl
