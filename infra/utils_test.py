@@ -108,9 +108,9 @@ class GetEnvVarUnitTest(unittest.TestCase):
 
   def test_invalid_project(self):
     """Tests function with invalid project."""
-    src_val = utils.get_env_var('not a real project', 'SRC')
+    src_val = utils.get_env_var('notarealproject', 'SRC')
     self.assertIsNone(src_val)
-    src_val = utils.get_env_var('not-a-real-project', 'SRC')
+    src_val = utils.get_env_var('not/a/real/project', 'SRC')
     self.assertIsNone(src_val)
     src_val = utils.get_env_var('', 'SRC')
     self.assertIsNone(src_val)

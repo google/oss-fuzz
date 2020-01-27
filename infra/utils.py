@@ -96,6 +96,9 @@ def get_env_var(project_name, env_var_name):
     None on error or the enviroment variable value.
   """
   chdir_to_base()
+  if not env_var_name.isalpha():
+    return None
+
   if not helper.build_image_impl(project_name):
     logging.error('Error: building %s image.', project_name)
     return None
