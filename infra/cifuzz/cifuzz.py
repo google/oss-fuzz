@@ -47,11 +47,11 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
   Returns:
     True if build succeeded or False on failure.
   """
-  if not os.path.exists(git_workspace)
-    logging.error('Invalid git workspace: {0}.'.format(git_workspace))
+  if not os.path.exists(git_workspace):
+    logging.error('Invalid git workspace: %s.', format(git_workspace))
     return False
   if not os.path.exists(out_dir):
-    logging.error('Invalid out directory {0}.'.format(out_dir))
+    logging.error('Invalid out directory %s.', format(out_dir))
     return False
 
   src = utils.get_env_var(project_name, 'SRC')
@@ -120,16 +120,18 @@ def run_fuzzers(project_name, fuzz_seconds, out_dir):
     (True if run was successful, True if bug was found).
   """
   if not out_dir or not os.path.exists(out_dir):
-    logging.error('Unreachable out_dir argument {0}.'.format(out_dir))
+    logging.error('Unreachable out_dir argument %s.', format(out_dir))
     return False, False
 
   if not fuzz_seconds or fuzz_seconds < 1:
-    logging.error('Fuzz_seconds argument must be greater than 1, but was: {0}.'.format(fuzz_seconds))
+    logging.error('Fuzz_seconds argument must be greater than 1, but was: %s.',
+                  format(fuzz_seconds))
     return False, False
 
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
-    logging.error('No fuzzers were found in out directory: {0}.'.format(out_dir))
+    logging.error('No fuzzers were found in out directory: %s.',
+                  format(out_dir))
     return False, False
 
   fuzzer_timeout = fuzz_seconds // len(fuzzer_paths)
@@ -141,7 +143,7 @@ def run_fuzzers(project_name, fuzz_seconds, out_dir):
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
       logging.info("Fuzzer %s, detected error: %s.", target.target_name,
-                    stack_trace)
+                   stack_trace)
       shutil.move(test_case, os.path.join(out_dir, 'testcase'))
       return True, True
   return True, False

@@ -31,7 +31,6 @@ This is done with the following steps:
 """
 
 import argparse
-import os
 import tempfile
 
 import build_specified_commit

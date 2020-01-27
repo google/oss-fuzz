@@ -31,11 +31,13 @@ logging.basicConfig(
     stream=sys.stdout,
     level=logging.DEBUG)
 
+
 def chdir_to_base():
   """Changes cwd to OSS-Fuzz home directory."""
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != helper.OSSFUZZ_DIR:
     os.chdir(helper.OSSFUZZ_DIR)
+
 
 def is_fuzz_target_local(file_path):
   """Returns whether |file_path| is a fuzz target binary (local path).
