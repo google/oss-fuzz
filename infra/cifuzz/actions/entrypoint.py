@@ -71,7 +71,8 @@ def main():
                   oss_fuzz_project_name)
     return 1
   if bug_found:
-    logging.debug('Bug found.')
+    logging.info('Bug found.')
+    # Return 2 when a bug was found by a fuzzer causing the CI to fail.
     return 2
   return 0
 

@@ -31,6 +31,11 @@ logging.basicConfig(
     stream=sys.stdout,
     level=logging.DEBUG)
 
+def chdir_to_base():
+  """Changes cwd to OSS-Fuzz home directory."""
+  # Change to oss-fuzz main directory so helper.py runs correctly.
+  if os.getcwd() != helper.OSSFUZZ_DIR:
+    os.chdir(helper.OSSFUZZ_DIR)
 
 def is_fuzz_target_local(file_path):
   """Returns whether |file_path| is a fuzz target binary (local path).
@@ -90,12 +95,7 @@ def get_env_var(project_name, env_var_name):
   Returns:
     None on error or the enviroment variable value.
   """
-  if ' ' in env_var_name or '-' in env_var_name or not env_var_name.rstrip():
-    return None
-
-  # Change to oss-fuzz main directory so helper.py runs correctly.
-  if os.getcwd() != helper.OSSFUZZ_DIR:
-    os.chdir(helper.OSSFUZZ_DIR)
+  chdir_to_base()
   if not helper.build_image_impl(project_name):
     logging.error('Error: building %s image.', project_name)
     return None
@@ -112,7 +112,7 @@ def get_env_var(project_name, env_var_name):
   return None
 
 
-def get_container():
+def get_container_name():
   """Gets the name of the current docker container you are in.
 
   Returns:
@@ -121,5 +121,5 @@ def get_container():
   with open('/proc/self/cgroup') as file_handle:
     if 'docker' not in file_handle.read():
       return None
-    with open('/etc/hostname') as file_handle:
-      return file_handle.read().strip()
+  with open('/etc/hostname') as file_handle:
+    return file_handle.read().strip()

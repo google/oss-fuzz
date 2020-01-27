@@ -32,11 +32,6 @@ import helper
 import repo_manager
 import utils
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=sys.stdout,
-    level=logging.DEBUG)
-
 
 def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
                   out_dir):
@@ -52,13 +47,16 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
   Returns:
     True if build succeeded or False on failure.
   """
-  if not os.path.exists(git_workspace) or not os.path.exists(out_dir):
-    logging.error('Invalid workspace or out directory.')
+  if not os.path.exists(git_workspace)
+    logging.error('Invalid git workspace: {0}.'.format(git_workspace))
+    return False
+  if not os.path.exists(out_dir):
+    logging.error('Invalid out directory {0}.'.format(out_dir))
     return False
 
   src = utils.get_env_var(project_name, 'SRC')
   if not src:
-    logging.error('Could not get $SRC from project docker image. ')
+    logging.error('Could not get $SRC from project docker image.')
     return False
 
   inferred_url, oss_fuzz_repo_name = build_specified_commit.detect_main_repo(
@@ -74,15 +72,15 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
   try:
     build_repo_manager.checkout_commit(commit_sha)
   except repo_manager.RepoManagerError:
-    logging.error('Error: Specified commit does not exist.')
-    # NOTE: remove return statement for testing.
+    logging.error('Specified commit does not exist.')
+    # NOTE: Remove return statement for testing.
     return False
 
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
   ]
-  container = utils.get_container()
+  container = utils.get_container_name()
   if container:
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
     bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
@@ -105,7 +103,7 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
   command.append(bash_command)
 
   if helper.docker_run(command):
-    logging.error('Error: Building fuzzers failed.')
+    logging.error('Building fuzzers failed.')
     return False
   return True
 
@@ -119,19 +117,19 @@ def run_fuzzers(project_name, fuzz_seconds, out_dir):
     out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
-    (True if run was successful, True if bug was found False if not).
+    (True if run was successful, True if bug was found).
   """
   if not out_dir or not os.path.exists(out_dir):
-    logging.error('Error: Unreachable out_dir argument.')
+    logging.error('Unreachable out_dir argument {0}.'.format(out_dir))
     return False, False
 
   if not fuzz_seconds or fuzz_seconds < 1:
-    logging.error('Error: fuzz_seconds argument must be greater than 1.')
+    logging.error('Fuzz_seconds argument must be greater than 1, but was: {0}.'.format(fuzz_seconds))
     return False, False
 
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
-    logging.error('Error: No fuzzers were found in out directory.')
+    logging.error('No fuzzers were found in out directory: {0}.'.format(out_dir))
     return False, False
 
   fuzzer_timeout = fuzz_seconds // len(fuzzer_paths)
@@ -140,9 +138,9 @@ def run_fuzzers(project_name, fuzz_seconds, out_dir):
     target = fuzz_target.FuzzTarget(project_name, fuzzer_path, fuzzer_timeout)
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
-      logging.debug('Fuzzer %s, finished running.', target.target_name)
+      logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
-      logging.debug("Fuzzer %s, Detected Error: %s", target.target_name,
+      logging.info("Fuzzer %s, detected error: %s.", target.target_name,
                     stack_trace)
       shutil.move(test_case, os.path.join(out_dir, 'testcase'))
       return True, True

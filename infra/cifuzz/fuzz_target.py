@@ -58,9 +58,9 @@ class FuzzTarget:
     Returns:
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
-    logging.debug('Fuzzer %s, started.', self.target_name)
+    logging.info('Fuzzer %s, started.', self.target_name)
     bash_command = 'run_fuzzer {0}'.format(self.target_name)
-    docker_container = utils.get_container()
+    docker_container = utils.get_container_name()
     command = ['docker', 'run', '--rm', '--privileged']
     if docker_container:
       command += [
@@ -75,7 +75,7 @@ class FuzzTarget:
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
         'bash', '-c', bash_command
     ]
-    logging.debug('Running command: %s', ' '.join(command))
+    logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -83,14 +83,14 @@ class FuzzTarget:
     try:
       _, err = process.communicate(timeout=self.duration)
     except subprocess.TimeoutExpired:
-      logging.debug('Fuzzer %s, finished with timeout.', self.target_name)
+      logging.info('Fuzzer %s, finished with timeout.', self.target_name)
       return None, None
 
-    logging.debug('Fuzzer %s, ended before timeout.', self.target_name)
+    logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)
     if not test_case:
-      print('Error no test case found in stack trace.', file=sys.stderr)
+      logging.error('No test case found in stack trace.', file=sys.stderr)
       return None, None
     return test_case, err_str
 
@@ -104,7 +104,6 @@ class FuzzTarget:
       The error test case or None if not found.
     """
     match = re.search(r'\bTest unit written to \.\/([^\s]+)', error_string)
-    print('Matches: ' + match.group(1))
     if match:
       return os.path.join(self.out_dir, match.group(1))
     return None
