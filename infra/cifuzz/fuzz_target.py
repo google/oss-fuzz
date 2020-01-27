@@ -60,12 +60,20 @@ class FuzzTarget:
     """
     logging.debug('Fuzzer %s, started.', self.target_name)
     bash_command = 'run_fuzzer {0}'.format(self.target_name)
-    command = [
-        'docker', 'run', '--rm', '--privileged', '--volumes-from',
-        utils.get_container(), '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
-        'SANITIZER=address', '-e', 'RUN_FUZZER_MODE=interactive', '-e',
-        'OUT=' + self.out_dir, 'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c',
-        bash_command
+    docker_container = utils.get_container()
+    command = ['docker', 'run', '--rm', '--privileged']
+    if docker_container:
+      command += [
+          '--volumes-from', docker_container, '-e', 'OUT=' + self.out_dir
+      ]
+
+    else:
+      command += ['-v', '%s:%s' % (self.out_dir, '/out')]
+
+    command += [
+        '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=address', '-e',
+        'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
+        'bash', '-c', bash_command
     ]
     logging.debug('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,

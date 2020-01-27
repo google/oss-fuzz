@@ -75,6 +75,7 @@ class TestRepoManager(unittest.TestCase):
         test_repo_manager.get_commit_list(new_commit, 'asdfasdf')
       with self.assertRaises(repo_manager.RepoManagerError):
         # Testing commits out of order
+        # pylint: disable=arguments-out-of-order
         test_repo_manager.get_commit_list(new_commit, old_commit)
 
 

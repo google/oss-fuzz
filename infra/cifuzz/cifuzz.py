@@ -78,9 +78,6 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
     # NOTE: remove return statement for testing.
     return False
 
-  print('Repo dir: ', os.listdir(git_workspace))
-  print('Path: ' + git_workspace)
-
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
@@ -122,7 +119,7 @@ def run_fuzzers(project_name, fuzz_seconds, out_dir):
     out_dir: The location in the shared volume to store output artifacts.
 
   Returns:
-    (True if run was successful, True if error was found False if not).
+    (True if run was successful, True if bug was found False if not).
   """
   if not out_dir or not os.path.exists(out_dir):
     logging.error('Error: Unreachable out_dir argument.')
