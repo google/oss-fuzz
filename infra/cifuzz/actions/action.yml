@@ -6,7 +6,7 @@ inputs:
     description: 'Name of the corresponding OSS-Fuzz project.'
     required: true
   fuzz-seconds:
-    description: 'The total time allotted time for fuzzing in seconds.'
+    description: 'The total time allotted for fuzzing in seconds.'
     requried: true
     default: 360
 runs:

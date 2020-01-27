@@ -22,6 +22,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
+# TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     stream=sys.stdout,
@@ -60,7 +61,6 @@ class FuzzTarget:
       (test_case, stack trace) if found or (None, None) on timeout or error.
     """
     logging.info('Fuzzer %s, started.', self.target_name)
-    bash_command = 'run_fuzzer {0}'.format(self.target_name)
     docker_container = utils.get_container_name()
     command = ['docker', 'run', '--rm', '--privileged']
     if docker_container:
@@ -74,7 +74,7 @@ class FuzzTarget:
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=address', '-e',
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
-        'bash', '-c', bash_command
+        'bash', '-c', 'run_fuzzer {0}'.format(self.target_name)
     ]
     logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,

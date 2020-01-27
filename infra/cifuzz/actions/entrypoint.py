@@ -20,6 +20,7 @@ import sys
 sys.path.append('/src/oss-fuzz/infra/cifuzz/')
 import cifuzz
 
+# TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     stream=sys.stdout,
