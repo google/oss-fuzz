@@ -42,7 +42,7 @@ def main():
     0 on success or 1 on Failure.
   """
   oss_fuzz_project_name = os.environ.get('PROJECT_NAME')
-  fuzz_seconds = int(os.environ.get('FUZZ_SECONDS'))
+  fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 360))
   github_repo_name = os.path.basename(os.environ.get('GITHUB_REPOSITORY'))
   commit_sha = os.environ.get('GITHUB_SHA')
 
