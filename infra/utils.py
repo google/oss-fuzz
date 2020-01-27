@@ -119,6 +119,8 @@ def get_env_var(project_name, env_var_name):
 
 def get_container_name():
   """Gets the name of the current docker container you are in.
+  /proc/self/cgroup can be used to check control groups e.g. Docker.
+  See: https://docs.docker.com/config/containers/runmetrics/ for more info.
 
   Returns:
     Container name or None if not in a container.
