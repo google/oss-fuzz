@@ -38,19 +38,20 @@ class FuzzTarget:
     target_path: The location of the fuzz target binary.
   """
 
-  def __init__(self, project_name, target_path, duration):
+  def __init__(self, project_name, target_path, duration, out_dir):
     """Represents a single fuzz target.
 
     Args:
       project_name: The OSS-Fuzz project of this target.
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
+      out_dir: The location of where the output from crashes should be stored.
     """
     self.target_name = os.path.basename(target_path)
     self.duration = duration
     self.project_name = project_name
     self.target_path = target_path
-    self.out_dir = os.path.dirname(self.target_path)
+    self.out_dir = out_dir
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.

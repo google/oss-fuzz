@@ -134,7 +134,8 @@ def run_fuzzers(project_name, fuzz_seconds, out_dir):
   fuzzer_timeout = fuzz_seconds // len(fuzzer_paths)
 
   for fuzzer_path in fuzzer_paths:
-    target = fuzz_target.FuzzTarget(project_name, fuzzer_path, fuzzer_timeout)
+    target = fuzz_target.FuzzTarget(project_name, fuzzer_path, fuzzer_timeout,
+                                    out_dir)
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
