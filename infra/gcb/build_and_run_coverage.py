@@ -61,9 +61,11 @@ def get_build_steps(project_dir):
   build_script_path = os.path.join(project_dir, 'build.sh')
   if os.path.exists(build_script_path):
     with open(build_script_path) as fh:
-      if project_yaml['language'] is not in LANGUAGES_WITH_COVERAGE_SUPPORT:
-        skip_build('Project "{project_name}" is written in "{language}", coverage is not supported yet.'.format(
-                   project_name=project_name, language=project_yaml['language']))
+      if project_yaml['language'] not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+        skip_build(('Project "{project_name}" is written in "{language}", '
+                    'coverage is not supported yet.').format(
+                        project_name=project_name,
+                        language=project_yaml['language']))
 
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
