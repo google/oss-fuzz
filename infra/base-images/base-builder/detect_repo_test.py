@@ -13,8 +13,10 @@
 # limitations under the License.
 """Test the functionality of the detect_repo module.
 This will consist of the following functional test:
-  1. Determine if a OSS-Fuzz projects main repo can be accurately deduce
-  from example commits.
+  1. Determine if an OSS-Fuzz projects main repo can be detected from example
+  commits.
+  2. Determine if an OSS-Fuzz project main repo can be detected from a
+  repo name.
 """
 import collections
 import os
@@ -31,41 +33,22 @@ sys.path.append(
     os.path.dirname(os.path.dirname(os.path.dirname(
         os.path.abspath(__file__)))))
 import repo_manager
+import test_repos
 # pylint: enable=wrong-import-position
-
-ExampleRepo = collections.namedtuple('ExampleRepo',
-                                     ['project_name', 'git_url', 'commit_sha'])
 
 
 class DetectRepoTest(unittest.TestCase):
   """Class to test the functionality of the detect_repo module."""
-
-  # WARNING: These tests  are dependent upon the following repos existing and
-  # the specified commits existing.
-  example_repos = [
-      ExampleRepo(project_name='curl',
-                  git_url='https://github.com/curl/curl.git',
-                  commit_sha='bc5d22c3dede2f04870c37aec9a50474c4b888ad'),
-      ExampleRepo(project_name='usrsctp',
-                  git_url='https://github.com/weinrank/usrsctp',
-                  commit_sha='4886aaa49fb90e479226fcfc3241d74208908232'),
-      ExampleRepo(project_name='nDPI',
-                  git_url='https://github.com/ntop/nDPI.git',
-                  commit_sha='c4d476cc583a2ef1e9814134efa4fbf484564ed7'),
-      ExampleRepo(project_name='libarchive',
-                  git_url='https://github.com/libarchive/libarchive.git',
-                  commit_sha='458e49358f17ec58d65ab1c45cf299baaf3c98d1')
-  ]
 
   def test_infer_main_repo_from_commit(self):
     """Tests that the main repo can be inferred based on an example commit."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
       # Construct example repo's to check for commits.
-      for example_repo in self.example_repos:
+      for example_repo in test_repos.TEST_REPOS:
         repo_manager.RepoManager(example_repo.git_url, tmp_dir)
         self.check_with_repo(example_repo.git_url,
-                             example_repo.project_name,
+                             example_repo.git_repo_name,
                              tmp_dir,
                              commit=example_repo.commit_sha)
 
@@ -73,9 +56,9 @@ class DetectRepoTest(unittest.TestCase):
     """Tests that the main project repo can be inferred from a repo name."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-      for example_repo in self.example_repos:
+      for example_repo in test_repos.TEST_REPOS:
         repo_manager.RepoManager(example_repo.git_url, tmp_dir)
-        self.check_with_repo(example_repo.git_url, example_repo.project_name,
+        self.check_with_repo(example_repo.git_url, example_repo.git_repo_name,
                              tmp_dir)
 
 <<<<<<< HEAD
