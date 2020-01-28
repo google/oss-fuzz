@@ -13,7 +13,10 @@
 # limitations under the License.
 """Test the functionality of the build image from commit module.
 The will consist of the following functional tests:
-  1. The inferance of the main repo for a specific project.
+  1. The inference of the main repo for a specific project.
+  2. The building of a projects fuzzers from a specific commit.
+
+IMPORTANT: This test needs to be run with root privileges.
 """
 import os
 import tempfile
@@ -53,14 +56,14 @@ class BuildImageIntegrationTests(unittest.TestCase):
                                                        test_repo_manager,
                                                        build_data)
       old_error_code = helper.reproduce_impl(test_case.project_name,
-                                             test_case.fuzzer, False, [], [],
-                                             test_case.test_case_path)
+                                             test_case.fuzz_target, False, [],
+                                             [], test_case.test_case_path)
       build_specified_commit.build_fuzzers_from_commit(test_case.new_commit,
                                                        test_repo_manager,
                                                        build_data)
       new_error_code = helper.reproduce_impl(test_case.project_name,
-                                             test_case.fuzzer, False, [], [],
-                                             test_case.test_case_path)
+                                             test_case.fuzz_target, False, [],
+                                             [], test_case.test_case_path)
       self.assertNotEqual(new_error_code, old_error_code)
 
   def test_detect_main_repo_from_commit(self):

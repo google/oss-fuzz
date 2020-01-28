@@ -78,7 +78,8 @@ class RepoManagerCheckoutUnitTests(unittest.TestCase):
 
 
 class RepoManagerGetCommitListUnitTests(unittest.TestCase):
-  """Class to test the functionality of get commit list in the RepoManager class."""
+  """Class to test the functionality of get commit list in the
+   RepoManager class."""
 
   def test_get_valid_commit_list(self):
     """Tests an accurate commit list can be retrieved from the repo manager."""
@@ -96,7 +97,8 @@ class RepoManagerGetCommitListUnitTests(unittest.TestCase):
       self.assertListEqual(commit_list, result_list)
 
   def test_invalid_commit_list(self):
-    """Tests that the propper Errors are thrown when invalid commits are passed."""
+    """Tests that the propper Errors are thrown when invalid commits are
+    passed."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       old_commit = '04ea24ee15bbe46a19e5da6c5f022a2ffdfbdb3b'
       new_commit = 'fa662173bfeb3ba08d2e84cefc363be11e6c8463'

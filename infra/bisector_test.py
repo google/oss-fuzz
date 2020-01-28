@@ -14,6 +14,8 @@
 """Test the functionality of bisection module:
 1) Test a known case where an error appears in a regression range.
 2) Bisect can handle incorrect inputs.
+
+IMPORTANT: This test needs to be run with root privileges.
 """
 
 import os
@@ -40,7 +42,8 @@ class BisectIntegrationTests(unittest.TestCase):
         architecture='x86_64')
     with self.assertRaises(ValueError):
       bisector.bisect(test_repo.old_commit, test_repo.new_commit,
-                      test_repo.test_case_path, test_repo.fuzzer, build_data)
+                      test_repo.test_case_path, test_repo.fuzz_target,
+                      build_data)
 
   def test_bisect(self):
     """Test the bisect method on example projects."""
@@ -51,8 +54,8 @@ class BisectIntegrationTests(unittest.TestCase):
           sanitizer='address',
           architecture='x86_64')
       error_sha = bisector.bisect(test_repo.old_commit, test_repo.new_commit,
-                                  test_repo.test_case_path, test_repo.fuzzer,
-                                  build_data)
+                                  test_repo.test_case_path,
+                                  test_repo.fuzz_target, build_data)
       self.assertEqual(error_sha, test_repo.intro_commit)
 
 
