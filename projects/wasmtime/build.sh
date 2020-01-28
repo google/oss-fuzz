@@ -17,13 +17,11 @@
 
 # Note: This project creates Rust fuzz targets exclusively
 
-source $HOME/.cargo/env
-
 export CUSTOM_LIBFUZZER_PATH="$LIB_FUZZING_ENGINE_DEPRECATED"
 export CUSTOM_LIBFUZZER_STD_CXX=c++
 PROJECT_DIR=$SRC/wasmtime
 
-# Because Rust does not support sanitizers via CFLAGS/CXXFLAGS, the environment 
+# Because Rust does not support sanitizers via CFLAGS/CXXFLAGS, the environment
 # variables are overridden with values from base-images/base-clang only
 
 export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
