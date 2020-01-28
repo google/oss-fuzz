@@ -4,3 +4,4 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+language: go
