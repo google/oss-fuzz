@@ -38,46 +38,44 @@ class BuildImageIntegrationTests(unittest.TestCase):
     The old commit should show the error when its fuzzers run and the new one
     should not.
     """
-    test_data = os.path.join(TEST_DIR_PATH, 'testcases', 'yara_test_data')
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-      project_name = 'yara'
-      old_commit = 'f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f'
-      new_commit = 'f50a39051ea8c7f10d6d8db9656658b49601caef'
-      fuzzer = 'rules_fuzzer'
+      test_case = test_repos.TEST_REPOS[0]
+      test_repo_manager = repo_manager.RepoManager(
+          test_case.git_url, tmp_dir, repo_name=test_case.oss_repo_name)
+      build_data = build_specified_commit.BuildData(
+          sanitizer='address',
+          architecture='x86_64',
+          engine='libfuzzer',
+          project_name=test_case.project_name)
 
-      yara_repo_manager = repo_manager.RepoManager(
-          'https://github.com/VirusTotal/yara.git', tmp_dir, repo_name='yara')
-      build_data = build_specified_commit.BuildData(sanitizer='address',
-                                                    architecture='x86_64',
-                                                    engine='libfuzzer',
-                                                    project_name='yara')
-
-      build_specified_commit.build_fuzzers_from_commit(old_commit,
-                                                       yara_repo_manager,
+      build_specified_commit.build_fuzzers_from_commit(test_case.old_commit,
+                                                       test_repo_manager,
                                                        build_data)
-      old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
-                                             [], test_data)
-      build_specified_commit.build_fuzzers_from_commit(new_commit,
-                                                       yara_repo_manager,
+      old_error_code = helper.reproduce_impl(test_case.project_name,
+                                             test_case.fuzzer, False, [], [],
+                                             test_case.test_case_path)
+      build_specified_commit.build_fuzzers_from_commit(test_case.new_commit,
+                                                       test_repo_manager,
                                                        build_data)
-      new_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
-                                             [], test_data)
+      new_error_code = helper.reproduce_impl(test_case.project_name,
+                                             test_case.fuzzer, False, [], [],
+                                             test_case.test_case_path)
       self.assertNotEqual(new_error_code, old_error_code)
 
   def test_detect_main_repo_from_commit(self):
     """Test the detect main repo function from build specific commit module."""
     for example_repo in test_repos.TEST_REPOS:
       repo_origin, repo_name = build_specified_commit.detect_main_repo(
-          example_repo.project_name, commit=example_repo.commit_sha)
+          example_repo.project_name, commit=example_repo.new_commit)
       self.assertEqual(repo_origin, example_repo.git_url)
       self.assertEqual(repo_name, example_repo.oss_repo_name)
 
     repo_origin, repo_name = build_specified_commit.detect_main_repo(
-        test_repos.INVALID_REPO.project_name, test_repos.INVALID_REPO.commit_sha)
+        test_repos.INVALID_REPO.project_name,
+        test_repos.INVALID_REPO.new_commit)
     self.assertIsNone(repo_origin)
     self.assertIsNone(repo_name)
-
 
   def test_detect_main_repo_from_name(self):
     """Test the detect main repo function from build specific commit module."""
@@ -88,7 +86,8 @@ class BuildImageIntegrationTests(unittest.TestCase):
       self.assertEqual(repo_name, example_repo.oss_repo_name)
 
     repo_origin, repo_name = build_specified_commit.detect_main_repo(
-        test_repos.INVALID_REPO.project_name, test_repos.INVALID_REPO.oss_repo_name)
+        test_repos.INVALID_REPO.project_name,
+        test_repos.INVALID_REPO.oss_repo_name)
     self.assertIsNone(repo_origin)
     self.assertIsNone(repo_name)
 

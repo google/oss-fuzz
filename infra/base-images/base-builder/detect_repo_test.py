@@ -50,7 +50,7 @@ class DetectRepoTest(unittest.TestCase):
         self.check_with_repo(example_repo.git_url,
                              example_repo.git_repo_name,
                              tmp_dir,
-                             commit=example_repo.commit_sha)
+                             commit=example_repo.old_commit)
 
   def test_infer_main_repo_from_name(self):
     """Tests that the main project repo can be inferred from a repo name."""
