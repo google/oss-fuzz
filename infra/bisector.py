@@ -70,9 +70,9 @@ def main():
   args = parser.parse_args()
 
   build_data = utils.BuildData(project_name=args.project_name,
-                                                engine=args.engine,
-                                                sanitizer=args.sanitizer,
-                                                architecture=args.architecture)
+                               engine=args.engine,
+                               sanitizer=args.sanitizer,
+                               architecture=args.architecture)
 
   error_sha = bisect(args.commit_old, args.commit_new, args.testcase,
                      args.fuzz_target, build_data)
@@ -107,8 +107,8 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     ValueError: when a repo url can't be determine from the project.
   """
   with tempfile.TemporaryDirectory() as tmp_dir:
-    repo_url, repo_name = utils.detect_main_repo(
-        build_data.project_name, commit=commit_old)
+    repo_url, repo_name = utils.detect_main_repo(build_data.project_name,
+                                                 commit=commit_old)
     if not repo_url or not repo_name:
       raise ValueError('Main git repo can not be determined.')
     bisect_repo_manager = repo_manager.RepoManager(repo_url,
@@ -118,17 +118,15 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
     old_idx = len(commit_list) - 1
     new_idx = 0
 
-    utils.build_fuzzers_from_commit(build_data,
-                                                     commit_list[new_idx],
-                                                     bisect_repo_manager)
+    utils.build_fuzzers_from_commit(build_data, commit_list[new_idx],
+                                    bisect_repo_manager)
     expected_error_code = helper.reproduce_impl(build_data.project_name,
                                                 fuzz_target, False, [], [],
                                                 testcase)
 
     # Check if the error is persistent through the commit range
-    utils.build_fuzzers_from_commit(build_data,
-                                                     commit_list[old_idx],
-                                                     bisect_repo_manager)
+    utils.build_fuzzers_from_commit(build_data, commit_list[old_idx],
+                                    bisect_repo_manager)
 
     if expected_error_code == helper.reproduce_impl(build_data.project_name,
                                                     fuzz_target, False, [], [],
@@ -137,9 +135,8 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
-      utils.build_fuzzers_from_commit(build_data,
-                                                       commit_list[curr_idx],
-                                                       bisect_repo_manager)
+      utils.build_fuzzers_from_commit(build_data, commit_list[curr_idx],
+                                      bisect_repo_manager)
       error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                          False, [], [], testcase)
       if expected_error_code == error_code:
