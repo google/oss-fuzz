@@ -25,6 +25,8 @@ import unittest
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import cifuzz
 
+# NOTE: This integration test relys on
+# https://github.com/google/oss-fuzz/tree/master/projects/example project
 EXAMPLE_PROJECT = 'example'
 
 

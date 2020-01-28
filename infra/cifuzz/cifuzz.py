@@ -32,6 +32,11 @@ import helper
 import repo_manager
 import utils
 
+# TODO: Turn default logging to WARNING when CIFuzz is stable
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG)
+
 
 def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
                   out_dir):
@@ -59,7 +64,7 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
   if not inferred_url or not oss_fuzz_repo_path:
     logging.error('Could not detect repo from project %s.', project_name)
     return False
-  src = os.path.dirname(oss_fuzz_repo_path)
+  src_in_docker = os.path.dirname(oss_fuzz_repo_path)
   oss_fuzz_repo_name = os.path.basename(oss_fuzz_repo_path)
 
   # Checkout projects repo in the shared volume.
@@ -81,13 +86,13 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
   if container:
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
     bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
-        os.path.join(src, oss_fuzz_repo_name, '*'),
-        os.path.join(git_workspace, oss_fuzz_repo_name), src)
+        os.path.join(src_in_docker, oss_fuzz_repo_name, '*'),
+        os.path.join(git_workspace, oss_fuzz_repo_name), src_in_docker)
   else:
     command += [
         '-e', 'OUT=' + '/out', '-v',
         '%s:%s' % (os.path.join(git_workspace, oss_fuzz_repo_name),
-                   os.path.join(src, oss_fuzz_repo_name)), '-v',
+                   os.path.join(src_in_docker, oss_fuzz_repo_name)), '-v',
         '%s:%s' % (out_dir, '/out')
     ]
     bash_command = 'compile'
@@ -106,7 +111,7 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
 
 
 def run_fuzzers(project_name, fuzz_seconds, out_dir):
-  """Runs a all fuzzers for a specific OSS-Fuzz project.
+  """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
     project_name: The name of the OSS-Fuzz project being built.

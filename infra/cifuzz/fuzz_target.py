@@ -66,7 +66,6 @@ class FuzzTarget:
       command += [
           '--volumes-from', docker_container, '-e', 'OUT=' + self.out_dir
       ]
-
     else:
       command += ['-v', '%s:%s' % (self.out_dir, '/out')]
 
