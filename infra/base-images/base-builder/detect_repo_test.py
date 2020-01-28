@@ -18,7 +18,6 @@ This will consist of the following functional test:
   2. Determine if an OSS-Fuzz project main repo can be detected from a
   repo name.
 """
-import collections
 import os
 import re
 import sys
