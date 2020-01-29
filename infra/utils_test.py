@@ -40,7 +40,7 @@ class IsFuzzTargetLocalUnitTest(unittest.TestCase):
 
   def test_valid_filepath(self):
     """Checks is_fuzz_target_local function with a valid filepath."""
-    utils.chdir_to_base()
+    utils.chdir_to_root()
     helper.build_fuzzers_impl(EXAMPLE_PROJECT,
                               True,
                               'libfuzzer',
@@ -64,7 +64,7 @@ class GetFuzzTargetsUnitTest(unittest.TestCase):
 
   def test_valid_filepath(self):
     """Tests that fuzz targets can be retrieved once the fuzzers are built."""
-    utils.chdir_to_base()
+    utils.chdir_to_root()
     helper.build_fuzzers_impl(EXAMPLE_PROJECT,
                               True,
                               'libfuzzer',
@@ -85,7 +85,7 @@ class GetFuzzTargetsUnitTest(unittest.TestCase):
 
   def test_invalid_filepath(self):
     """Tests what get_fuzz_targets return when invalid filepath is used."""
-    utils.chdir_to_base()
+    utils.chdir_to_root()
     helper.build_fuzzers_impl(EXAMPLE_PROJECT,
                               True,
                               'libfuzzer',
@@ -96,39 +96,6 @@ class GetFuzzTargetsUnitTest(unittest.TestCase):
                               mount_location=None)
     fuzz_targets = utils.get_fuzz_targets('not/a/valid/file/path')
     self.assertFalse(fuzz_targets)
-
-
-class GetEnvVarUnitTest(unittest.TestCase):
-  """Test get_env_var function in the utils module."""
-
-  def test_valid_project(self):
-    """Tests function with valid project and environment variable."""
-    src_val = utils.get_env_var(EXAMPLE_PROJECT, 'SRC')
-    self.assertEqual(src_val, '/src')
-
-  def test_invalid_project(self):
-    """Tests function with invalid project."""
-    src_val = utils.get_env_var('notarealproject', 'SRC')
-    self.assertIsNone(src_val)
-    src_val = utils.get_env_var('not/a/real/project', 'SRC')
-    self.assertIsNone(src_val)
-    src_val = utils.get_env_var('', 'SRC')
-    self.assertIsNone(src_val)
-    src_val = utils.get_env_var(' ', 'SRC')
-    self.assertIsNone(src_val)
-
-  def test_invalid_env_var(self):
-    """Tests function with invalid environment variable."""
-    src_val = utils.get_env_var(EXAMPLE_PROJECT, 'notanenvvar')
-    self.assertIsNone(src_val)
-    src_val = utils.get_env_var(EXAMPLE_PROJECT, 'not an env var')
-    self.assertIsNone(src_val)
-    src_val = utils.get_env_var(EXAMPLE_PROJECT, 'not-an-env-var')
-    self.assertIsNone(src_val)
-    src_val = utils.get_env_var(EXAMPLE_PROJECT, '')
-    self.assertIsNone(src_val)
-    src_val = utils.get_env_var(EXAMPLE_PROJECT, ' ')
-    self.assertIsNone(src_val)
 
 
 if __name__ == '__main__':

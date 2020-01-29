@@ -41,7 +41,7 @@ import utils
 
 def main():
   """Finds the commit SHA where an error was initally introduced."""
-  utils.chdir_to_base()
+  utils.chdir_to_root()
   parser = argparse.ArgumentParser(
       description='git bisection for finding introduction of bugs')
 

@@ -13,12 +13,10 @@
 # limitations under the License.
 """Utilities for OSS-Fuzz infrastructure."""
 
-import logging
 import os
 import re
 import stat
 
-import build_specified_commit
 import helper
 
 ALLOWED_FUZZ_TARGET_EXTENSIONS = ['', '.exe']
@@ -26,8 +24,8 @@ FUZZ_TARGET_SEARCH_STRING = 'LLVMFuzzerTestOneInput'
 VALID_TARGET_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 
 
-def chdir_to_base():
-  """Changes cwd to OSS-Fuzz home directory."""
+def chdir_to_root():
+  """Changes cwd to OSS-Fuzz root directory."""
   # Change to oss-fuzz main directory so helper.py runs correctly.
   if os.getcwd() != helper.OSSFUZZ_DIR:
     os.chdir(helper.OSSFUZZ_DIR)
@@ -79,36 +77,6 @@ def get_fuzz_targets(path):
         fuzz_target_paths.append(file_path)
 
   return fuzz_target_paths
-
-
-def get_env_var(project_name, env_var_name):
-  """Gets an environment variable from a docker image.
-
-  Args:
-    project_name: The oss-fuzz project to get the var from.
-    env_var_name: The name of the variable to be checked.
-
-  Returns:
-    None on error or the enviroment variable value.
-  """
-  chdir_to_base()
-  if not env_var_name.isalpha():
-    return None
-
-  if not helper.build_image_impl(project_name):
-    logging.error('Error: building %s image.', project_name)
-    return None
-  command = ['docker', 'run', '--rm', '--privileged']
-  command += [
-      'gcr.io/oss-fuzz/' + project_name, 'bash', '-c',
-      'echo ${0}'.format(env_var_name)
-  ]
-  out, err_code = build_specified_commit.execute(command)
-  if err_code:
-    return None
-  if out.replace('\'', ''):
-    return out
-  return None
 
 
 def get_container_name():

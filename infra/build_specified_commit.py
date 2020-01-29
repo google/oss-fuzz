@@ -74,7 +74,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
     print('Both repo name and commit specific. Using repo name for detection.')
 
   # Change to oss-fuzz main directory so helper.py runs correctly.
-  utils.chdir_to_base()
+  utils.chdir_to_root()
   if not helper.build_image_impl(project_name):
     print('Error: building {} image failed.'.format(project_name),
           file=sys.stderr)

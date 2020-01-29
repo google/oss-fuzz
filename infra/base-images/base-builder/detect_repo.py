@@ -41,7 +41,7 @@ def main():
       description=
       'Finds a specific git repo in an oss-fuzz project\'s docker file.')
   parser.add_argument('--repo_name', help='The name of the git repo.')
-  parser.add_argument('--src_dir', help='The location of the possible repos.')
+  parser.add_argument('--src_dir', help='The location of the possible repo.')
   parser.add_argument('--example_commit',
                       help='A commit SHA referencing the project\'s main repo.')
 
