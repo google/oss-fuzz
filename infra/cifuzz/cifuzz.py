@@ -98,7 +98,7 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
     bash_command = 'compile'
 
   command.extend([
-      'gcr.io/oss-fuzz/%s' % project_name,
+      'gcr.io/oss-fuzz/' + project_name,
       '/bin/bash',
       '-c',
   ])
@@ -145,7 +145,7 @@ def run_fuzzers(project_name, fuzz_seconds, out_dir):
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
-      logging.info("Fuzzer %s, detected error: %s.", target.target_name,
+      logging.info('Fuzzer %s, detected error: %s.', target.target_name,
                    stack_trace)
       shutil.move(test_case, os.path.join(out_dir, 'testcase'))
       return True, True

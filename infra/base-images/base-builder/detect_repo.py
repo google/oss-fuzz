@@ -49,10 +49,11 @@ def main():
   if not args.repo_name and not args.example_commit:
     raise ValueError(
         'Requires an example commit or a repo name to find repo location.')
-  if not args.src_dir:
-    src_dir = os.environ.get('SRC', '/src')
-  else:
+  if args.src_dir:
     src_dir = args.src_dir
+  else:
+    src_dir = os.environ.get('SRC', '/src')
+
   for single_dir in os.listdir(src_dir):
     full_path = os.path.join(src_dir, single_dir)
     if not os.path.isdir(full_path):

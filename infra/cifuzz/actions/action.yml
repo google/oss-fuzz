@@ -7,7 +7,7 @@ inputs:
     required: true
   fuzz-seconds:
     description: 'The total time allotted for fuzzing in seconds.'
-    requried: true
+    required: true
     default: 360
 runs:
   using: 'docker'
