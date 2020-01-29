@@ -26,6 +26,7 @@ seperated by a space.
 
 """
 import argparse
+import logging
 import os
 import subprocess
 
@@ -64,8 +65,8 @@ def main():
     if args.repo_name and check_for_repo_name(full_path, args.repo_name):
       print('Detected repo:', get_repo(full_path), full_path)
       return
-  print('No git repos with specific commit: %s found in %s' %
-        (args.example_commit, src_dir))
+  logging.error('No git repos with specific commit: %s found in %s',
+                args.example_commit, src_dir)
 
 
 def get_repo(repo_path):
