@@ -31,7 +31,7 @@ class RepoManagerError(Exception):
   """Class to describe the exceptions in RepoManager."""
 
 
-class RepoManager(object):
+class RepoManager:
   """Class to manage git repos from python.
 
   Attributes:
@@ -54,7 +54,7 @@ class RepoManager(object):
     if repo_name:
       self.repo_name = repo_name
     else:
-      self.repo_name = self.repo_url.split('/')[-1].strip('.git')
+      self.repo_name = os.path.basename(self.repo_url).strip('.git')
     self.repo_dir = os.path.join(self.base_dir, self.repo_name)
     self._clone()
 
@@ -68,8 +68,7 @@ class RepoManager(object):
       os.makedirs(self.base_dir)
     self.remove_repo()
     out, err = build_specified_commit.execute(
-        ['git', 'clone', self.repo_url],
-        location=self.base_dir)
+        ['git', 'clone', self.repo_url, self.repo_name], location=self.base_dir)
     if not self._is_git_repo():
       raise RepoManagerError('%s is not a git repo' % self.repo_url)
 
@@ -98,7 +97,7 @@ class RepoManager(object):
     # Handle the exception case, if empty string is passed execute will
     # raise a ValueError
     if not commit.rstrip():
-      raise ValueError('An empty string is not a valid commit SHA')
+      raise RepoManagerError('An empty string is not a valid commit SHA')
 
     _, err_code = build_specified_commit.execute(
         ['git', 'cat-file', '-e', commit], self.repo_dir)
@@ -111,8 +110,8 @@ class RepoManager(object):
       The current active commit SHA
     """
     out, _ = build_specified_commit.execute(['git', 'rev-parse', 'HEAD'],
-                                                self.repo_dir,
-                                                check_result=True)
+                                            self.repo_dir,
+                                            check_result=True)
     return out.strip('\n')
 
   def get_commit_list(self, old_commit, new_commit):
@@ -163,14 +162,14 @@ class RepoManager(object):
     git_path = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(git_path):
       build_specified_commit.execute(['git', 'fetch', '--unshallow'],
-                                         self.repo_dir,
-                                         check_result=True)
+                                     self.repo_dir,
+                                     check_result=True)
     build_specified_commit.execute(['git', 'checkout', '-f', commit],
-                                       self.repo_dir,
-                                       check_result=True)
+                                   self.repo_dir,
+                                   check_result=True)
     build_specified_commit.execute(['git', 'clean', '-fxd'],
-                                       self.repo_dir,
-                                       check_result=True)
+                                   self.repo_dir,
+                                   check_result=True)
     if self.get_current_commit() != commit:
       raise RepoManagerError('Error checking out commit %s' % commit)
 

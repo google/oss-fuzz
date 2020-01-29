@@ -99,8 +99,10 @@ class DetectRepoTest(unittest.TestCase):
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)
+      self.assertEqual(match.group(2), os.path.join(tmp_dir, repo_name))
     else:
       self.assertIsNone(repo_origin)
+      self.assertIsNone(repo_name)
 
   def check_commit_with_repo(self, repo_origin, repo_name, commit, tmp_dir):
     """Checks the detect repos main method for a specific set of inputs.
@@ -121,7 +123,7 @@ class DetectRepoTest(unittest.TestCase):
     match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
     if match and match.group(1) and match.group(2):
       self.assertEqual(match.group(1), repo_origin)
-      self.assertEqual(match.group(2), repo_name)
+      self.assertEqual(match.group(2), os.path.join(tmp_dir, repo_name))
     else:
       self.assertIsNone(repo_origin)
       self.assertIsNone(repo_name)

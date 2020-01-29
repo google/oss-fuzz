@@ -21,8 +21,10 @@ import os
 import collections
 import re
 import subprocess
+import sys
 
 import helper
+import utils
 
 BuildData = collections.namedtuple(
     'BuildData', ['project_name', 'engine', 'sanitizer', 'architecture'])
@@ -50,7 +52,7 @@ def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
                                        '/src', build_repo_manager.repo_name))
 
 
-def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
+def detect_main_repo(project_name, repo_name=None, commit=None):
   """Checks a docker image for the main repo of an OSS-Fuzz project.
 
   Note: The default is to use the repo name to detect the main repo.
@@ -62,20 +64,25 @@ def detect_main_repo(project_name, repo_name=None, commit=None, src_dir='/src'):
     src_dir: The location of the projects source on the docker image.
 
   Returns:
-    The repo's origin, the repo's name.
+    The repo's origin, the repo's path.
   """
-  # TODO: Add infra for non hardcoded '/src'.
+
   if not repo_name and not commit:
     print('Error: can not detect main repo without a repo_name or a commit.')
     return None, None
   if repo_name and commit:
     print('Both repo name and commit specific. Using repo name for detection.')
 
-  helper.build_image_impl(project_name)
+  # Change to oss-fuzz main directory so helper.py runs correctly.
+  utils.chdir_to_root()
+  if not helper.build_image_impl(project_name):
+    print('Error: building {} image failed.'.format(project_name),
+          file=sys.stderr)
+    return None, None
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
       'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
-      os.path.join(src_dir, 'detect_repo.py'), '--src_dir', src_dir
+      os.path.join('/src', 'detect_repo.py')
   ]
   if repo_name:
     command_to_run.extend(['--repo_name', repo_name])
@@ -111,5 +118,5 @@ def execute(command, location=None, check_result=False):
     raise RuntimeError('Error: %s\n Command: %s\n Return code: %s\n Out: %s' %
                        (err, command, process.returncode, out))
   if out is not None:
-    out = out.decode('ascii')
+    out = out.decode('ascii').rstrip()
   return out, process.returncode

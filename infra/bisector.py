@@ -31,20 +31,17 @@ This is done with the following steps:
 """
 
 import argparse
-import os
 import tempfile
 
 import build_specified_commit
 import helper
 import repo_manager
+import utils
 
 
 def main():
   """Finds the commit SHA where an error was initally introduced."""
-  oss_fuzz_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-  if os.getcwd() != oss_fuzz_dir:
-    print('Changing directory to OSS-Fuzz home directory')
-    os.chdir(oss_fuzz_dir)
+  utils.chdir_to_root()
   parser = argparse.ArgumentParser(
       description='git bisection for finding introduction of bugs')
 

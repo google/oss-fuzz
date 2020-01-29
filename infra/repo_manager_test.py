@@ -48,7 +48,7 @@ class TestRepoManager(unittest.TestCase):
       commit_to_test = '036ebac0134de3b72052a46f734e4ca81bb96055'
       test_repo_manager.checkout_commit(commit_to_test)
       self.assertEqual(commit_to_test, test_repo_manager.get_current_commit())
-      with self.assertRaises(ValueError):
+      with self.assertRaises(repo_manager.RepoManagerError):
         test_repo_manager.checkout_commit(' ')
       with self.assertRaises(repo_manager.RepoManagerError):
         test_repo_manager.checkout_commit(
@@ -75,6 +75,7 @@ class TestRepoManager(unittest.TestCase):
         test_repo_manager.get_commit_list(new_commit, 'asdfasdf')
       with self.assertRaises(repo_manager.RepoManagerError):
         # Testing commits out of order
+        # pylint: disable=arguments-out-of-order
         test_repo_manager.get_commit_list(new_commit, old_commit)
 
 

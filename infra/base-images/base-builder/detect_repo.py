@@ -40,11 +40,8 @@ def main():
   parser = argparse.ArgumentParser(
       description=
       'Finds a specific git repo in an oss-fuzz project\'s docker file.')
-  parser.add_argument(
-      '--src_dir',
-      help='The location of an oss-fuzz project\'s source directory.',
-      required=True)
   parser.add_argument('--repo_name', help='The name of the git repo.')
+  parser.add_argument('--src_dir', help='The location of the possible repo.')
   parser.add_argument('--example_commit',
                       help='A commit SHA referencing the project\'s main repo.')
 
@@ -52,18 +49,23 @@ def main():
   if not args.repo_name and not args.example_commit:
     raise ValueError(
         'Requires an example commit or a repo name to find repo location.')
-  for single_dir in os.listdir(args.src_dir):
-    full_path = os.path.join(args.src_dir, single_dir)
+  if args.src_dir:
+    src_dir = args.src_dir
+  else:
+    src_dir = os.environ.get('SRC', '/src')
+
+  for single_dir in os.listdir(src_dir):
+    full_path = os.path.join(src_dir, single_dir)
     if not os.path.isdir(full_path):
       continue
     if args.example_commit and check_for_commit(full_path, args.example_commit):
-      print('Detected repo:', get_repo(full_path), single_dir)
+      print('Detected repo:', get_repo(full_path), full_path)
       return
     if args.repo_name and check_for_repo_name(full_path, args.repo_name):
-      print('Detected repo:', get_repo(full_path), single_dir)
+      print('Detected repo:', get_repo(full_path), full_path)
       return
   print('No git repos with specific commit: %s found in %s' %
-        (args.example_commit, args.src_dir))
+        (args.example_commit, src_dir))
 
 
 def get_repo(repo_path):
