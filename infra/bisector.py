@@ -78,12 +78,13 @@ def main():
   error_sha = bisect(args.commit_old, args.commit_new, args.testcase,
                      args.fuzz_target, build_data)
   if not error_sha:
-    logging.error('No error was found in commit range %s:%s' %
-          (args.commit_old, args.commit_new))
+    logging.error('No error was found in commit range %s:%s', args.commit_old,
+                  args.commit_new)
     return 1
   if error_sha == args.commit_old:
-    logging.error('Bisection Error: Both the first and the last commits in the given ' +
-          'range have the same behavior, bisection is not possible. ')
+    logging.error(
+        'Bisection Error: Both the first and the last commits in'
+        'the given range have the same behavior, bisection is not possible. ')
     return 1
   print('Error was introduced at commit %s' % error_sha)
   return 0
