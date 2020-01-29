@@ -17,7 +17,7 @@ import os
 import sys
 
 # pylint: disable=wrong-import-position
-sys.path.append(os.path.join(os.environ['OSS_FUZZ_HOME']),'oss-fuzz', 'infra','cifuzz')
+sys.path.append(os.path.join(os.environ['OSS_FUZZ_HOME'], 'oss-fuzz', 'infra', 'cifuzz'))
 import cifuzz
 
 # TODO: Turn default logging to WARNING when CIFuzz is stable
