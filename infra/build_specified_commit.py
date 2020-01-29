@@ -19,6 +19,7 @@ like continuious integration fuzzing and bisection to find errors
 """
 import os
 import collections
+import logging
 import re
 import subprocess
 import sys
@@ -68,15 +69,15 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   """
 
   if not repo_name and not commit:
-    print('Error: can not detect main repo without a repo_name or a commit.')
+    logging.error('Error: can not detect main repo without a repo_name or a commit.')
     return None, None
   if repo_name and commit:
-    print('Both repo name and commit specific. Using repo name for detection.')
+    logging.info('Both repo name and commit specific. Using repo name for detection.')
 
   # Change to oss-fuzz main directory so helper.py runs correctly.
   utils.chdir_to_root()
   if not helper.build_image_impl(project_name):
-    print('Error: building {} image failed.'.format(project_name),
+    logging.error('Error: building {} image failed.'.format(project_name),
           file=sys.stderr)
     return None, None
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
