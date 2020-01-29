@@ -21,7 +21,7 @@
 rm -rf ${WORK}/build
 mkdir -p ${WORK}/build
 cd ${WORK}/build
-${SRC}/clamav-devel/configure --enable-fuzz=yes --with-libjson=no --with-pcre=no --enable-static=yes --enable-shared=no --disable-llvm --host=x86_64-unknown-linux-gnu
+ac_cv_c_mmap_anonymous=no ${SRC}/clamav-devel/configure --disable-mempool --enable-fuzz=yes --with-libjson=no --with-pcre=no --enable-static=yes --enable-shared=no --disable-llvm --host=x86_64-unknown-linux-gnu
 make clean
 make -j"$(nproc)"
 
