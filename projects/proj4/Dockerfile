@@ -24,6 +24,8 @@ RUN git clone --depth 1 https://github.com/OSGeo/proj proj
 
 RUN git clone --depth 1 https://github.com/curl/curl.git proj/curl
 
+RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff.git proj/libtiff
+
 WORKDIR proj
 
 RUN cp test/fuzzers/build.sh $SRC/
