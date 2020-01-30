@@ -1,0 +1,9 @@
+homepage: "https://github.com/mozilla/mp4parse-rust"
+primary_contact: "mgregan@mozilla.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+vendor_ccs:
+- "twsmith@mozilla.com"
+- "cdiehl@mozilla.com"
