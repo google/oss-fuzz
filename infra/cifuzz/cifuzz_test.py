@@ -33,7 +33,7 @@ EXAMPLE_PROJECT = 'example'
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the utils module."""
 
-  def test_valid(self):
+  def test_valid_commit(self):
     """Test building fuzzers with valid inputs."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
@@ -42,8 +42,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
       os.mkdir(workspace_path)
       self.assertTrue(
           cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz',
-                               '0b95fe1039ed7c38fea1f97078316bfc1030c523',
-                               workspace_path, out_path))
+                               workspace_path, out_path, commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
 
 
