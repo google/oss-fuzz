@@ -1,7 +1,7 @@
 homepage: "https://wasmtime.dev/"
 primary_contact: "jonathan.foote@gmail.com"
 auto_ccs:
-  - "security@bytecodealliance.com"
+  - "security@bytecodealliance.org"
   - "fitzgen@gmail.com"
 sanitizers:
   - address
