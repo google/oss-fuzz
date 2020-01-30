@@ -60,6 +60,6 @@ build_fuzzer() {
 }
 
 build_fuzzer "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "/usr/share/afl/testcases/_extras/xml.dict"
-build_fuzzer "qtbase" "gui/text/qtextdocument/setHtml/setHtml.pro" "html" "/usr/share/afl/testcases/_extras/html_tags.dict"
+# build_fuzzer "qtbase" "gui/text/qtextdocument/setHtml/setHtml.pro" "html" "/usr/share/afl/testcases/_extras/html_tags.dict"
 build_fuzzer "qtbase" "gui/text/qtextdocument/setMarkdown/setMarkdown.pro" "markdown"
 build_fuzzer "qtbase" "gui/text/qtextlayout/beginLayout/beginLayout.pro"
