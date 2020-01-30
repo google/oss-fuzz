@@ -123,7 +123,7 @@ class RepoManagerCheckoutBranchUnitTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
       test_repo_manager.checkout_branch('unit-testing-branch')
-      self.assertEqual(test_repo_manager.get_current_commit(), '3d675a1ffd7398312e0652ab999e60a5c4b80aeb ')
+      self.assertEqual(test_repo_manager.get_current_commit(), '3d675a1ffd7398312e0652ab999e60a5c4b80aeb')
 
   def test_checkout_invalid_branch():
     """Tests that the RepoManager class throws the correct error when
