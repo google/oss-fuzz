@@ -4,6 +4,7 @@ sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
+language: rust
 vendor_ccs:
 - "twsmith@mozilla.com"
 - "cdiehl@mozilla.com"
