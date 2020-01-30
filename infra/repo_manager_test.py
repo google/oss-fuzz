@@ -121,9 +121,11 @@ class RepoManagerCheckoutPullRequestUnitTest(unittest.TestCase):
   def test_checkout_pull_request(self):
     """Tests that the RepoManager class can checkout a specific pull request."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      test_repo_manager = repo_manager.RepoManager('https://github.com/Leo-Neat/oss-fuzz.git', tmp_dir)
+      test_repo_manager = repo_manager.RepoManager(
+          'https://github.com/Leo-Neat/oss-fuzz.git', tmp_dir)
       test_repo_manager.checkout_pr('refs/pull/1/merge')
-      self.assertEqual(test_repo_manager.get_current_commit(), 'bf1a71b1f8cbce25d1ccdcf6a5ed208988a4bc3f')
+      self.assertEqual(test_repo_manager.get_current_commit(),
+                       'bf1a71b1f8cbce25d1ccdcf6a5ed208988a4bc3f')
 
   def test_checkout_invalid_branch(self):
     """Tests that the RepoManager class throws the correct error when
@@ -132,7 +134,6 @@ class RepoManagerCheckoutPullRequestUnitTest(unittest.TestCase):
       test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
       with self.assertRaises(repo_manager.RepoManagerError):
         test_repo_manager.checkout_pr('/refs/pull/-1111/merge')
-
 
 
 if __name__ == '__main__':

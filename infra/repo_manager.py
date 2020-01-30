@@ -164,9 +164,16 @@ class RepoManager:
       RepoManagerError: when pull request checkout fails.
     """
     self._get_git_history()
-    build_specified_commit.execute(['git', 'fetch', 'origin', pr_ref], self.repo_dir, check_result=True)
-    build_specified_commit.execute(['git', 'checkout', '-f', 'FETCH_HEAD'], self.repo_dir, check_result=True)
 
+    _, return_code = build_specified_commit.execute(
+        ['git', 'fetch', 'origin', pr_ref], self.repo_dir)
+    if return_code:
+      raise RepoManagerError('Error checking out pull request %s.' % pr_ref)
+    _, return_code = build_specified_commit.execute(
+        ['git', 'checkout', '-f', 'FETCH_HEAD'], self.repo_dir)
+    if return_code:
+      raise RepoManagerError('Error fetching head from pull request %s.' %
+                             pr_ref)
 
   def checkout_commit(self, commit):
     """Checks out a specific commit from the repo.
