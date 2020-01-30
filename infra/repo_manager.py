@@ -165,7 +165,7 @@ class RepoManager:
     """
     self._get_git_history()
     build_specified_commit.execute(['git', 'fetch', 'origin', pr_ref], self.repo_dir, check_result=True)
-    build_specified_commit.execute(['git', 'checkout', '-f', 'FETCH_HEAD'], check_result=True)
+    build_specified_commit.execute(['git', 'checkout', '-f', 'FETCH_HEAD'], self.repo_dir, check_result=True)
 
 
   def checkout_commit(self, commit):

@@ -123,9 +123,9 @@ class RepoManagerCheckoutPullRequestUnitTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_repo_manager = repo_manager.RepoManager('https://github.com/Leo-Neat/oss-fuzz.git', tmp_dir)
       test_repo_manager.checkout_pr('refs/pull/1/merge')
-      self.assertEqual(test_repo_manager.get_current_commit(), 'cadb7abb4b8dd88e199c4f51a865d290bcf3c6ad')
+      self.assertEqual(test_repo_manager.get_current_commit(), 'bf1a71b1f8cbce25d1ccdcf6a5ed208988a4bc3f')
 
-  def test_checkout_invalid_branch():
+  def test_checkout_invalid_branch(self):
     """Tests that the RepoManager class throws the correct error when
     an invalid pull request is checked out."""
     with tempfile.TemporaryDirectory() as tmp_dir:
