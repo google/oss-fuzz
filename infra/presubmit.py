@@ -74,7 +74,7 @@ class ProjectYamlChecker:
   SECTIONS_AND_CONSTANTS = {
       'sanitizers': {'address', 'none', 'memory', 'undefined', 'dataflow'},
       'architectures': {'i386', 'x86_64'},
-      'fuzzing_engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow'}
+      'fuzzing_engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow'},
   }
 
   # Note: this list must be updated when we allow new sections.
@@ -89,7 +89,10 @@ class ProjectYamlChecker:
       'sanitizers',
       'vendor_ccs',
       'view_restrictions',
+      'language',
   ]
+
+  LANGUAGES_SUPPORTED = ['c', 'cpp', 'go', 'rust', 'python']
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
   # primary contact is probably a mistake.
@@ -108,8 +111,11 @@ class ProjectYamlChecker:
       return True
 
     checks = [
-        self.check_project_yaml_constants, self.check_required_sections,
-        self.check_valid_section_names, self.check_valid_emails
+        self.check_project_yaml_constants,
+        self.check_required_sections,
+        self.check_valid_section_names,
+        self.check_valid_emails,
+        self.check_valid_language,
     ]
     for check_function in checks:
       check_function()
@@ -178,6 +184,16 @@ class ProjectYamlChecker:
     for email_address in email_addresses:
       if '@' not in email_address or '.' not in email_address:
         self.error(email_address + ' is an invalid email address.')
+
+  def check_valid_language(self):
+    """Check that the language specified is valid."""
+    language = self.data.get('language')
+    if not language:
+      return
+
+    if language not in self.LANGUAGES_SUPPORTED:
+      self.error('{language} is not supported ({supported}).'.format(
+          language=language, supported=self.LANGUAGES_SUPPORTED))
 
 
 def _check_one_project_yaml(project_yaml_filename):

@@ -30,12 +30,19 @@ libFuzzer command line interface as non-Go fuzz targets.
 ## Project files
 
 The structure of the project directory in OSS-Fuzz repository doesn't differ for
-projects written in Go. The project files have the following Go specific aspects.
+projects written in Go. The project files have the following Go specific
+aspects.
 
 ### project.yaml
 
-For projects written in Go, we use only `libfuzzer` fuzzing engine and `address`
-sanitizer.
+The `language` attribute must be specified.
+
+```yaml
+language: go
+```
+
+The only supported fuzzing engine and sanitizer are `libfuzzer` and `address`,
+respectively.
 [Example](https://github.com/google/oss-fuzz/blob/356f2b947670b7eb33a1f535c71bc5c87a60b0d1/projects/syzkaller/project.yaml#L7):
 
 ```yaml

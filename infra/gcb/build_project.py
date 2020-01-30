@@ -58,6 +58,7 @@ def load_project_yaml(project_dir):
     project_yaml.setdefault('run_tests', True)
     project_yaml.setdefault('coverage_extra_args', '')
     project_yaml.setdefault('labels', {})
+    project_yaml.setdefault('language', 'cpp')
     return project_yaml
 
 

@@ -4,6 +4,7 @@ auto_ccs:
  - "golang-fuzz@googlegroups.com"
  - "mmoroz@chromium.org"
  - "josharian@gmail.com"
+language: go
 sanitizers:
  - address
 fuzzing_engines:
