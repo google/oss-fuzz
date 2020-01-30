@@ -26,8 +26,10 @@ import repo_manager
 
 OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz'
 
+
 class TestRepoManager(unittest.TestCase):
   """Class to test the functionality of the RepoManager class."""
+
 
 class RepoManagerCloneUnitTests(unittest.TestCase):
   """Class to test the functionality of clone of the RepoManager class."""
@@ -68,7 +70,7 @@ class RepoManagerCheckoutUnitTests(unittest.TestCase):
     """Tests that the git checkout invalid commit fails."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with self.assertRaises(ValueError):
+      with self.assertRaises(repo_manager.RepoManagerError):
         test_repo_manager.checkout_commit(' ')
       with self.assertRaises(repo_manager.RepoManagerError):
         test_repo_manager.checkout_commit(

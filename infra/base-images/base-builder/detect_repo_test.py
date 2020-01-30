@@ -36,7 +36,7 @@ import test_repos
 # pylint: enable=wrong-import-position
 
 
-class DetectRepoTest(unittest.TestCase):
+class DetectRepoIntegrationTest(unittest.TestCase):
   """Class to test the functionality of the detect_repo module."""
 
   def test_infer_main_repo_from_commit(self):

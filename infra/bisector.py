@@ -37,6 +37,7 @@ import tempfile
 import build_specified_commit
 import helper
 import repo_manager
+import utils
 
 
 def main():
