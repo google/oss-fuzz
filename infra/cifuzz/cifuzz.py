@@ -38,20 +38,25 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
-def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
-                  out_dir):
+def build_fuzzers(project_name, project_repo_name, pr_ref, git_workspace,
+                  out_dir, pr_ref=None,commit_sha=None ):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
     project_name: The name of the OSS-Fuzz project being built.
     project_repo_name: The name of the projects repo.
-    commit_sha: The commit SHA to be checked out and fuzzed.
+
     git_workspace: The location in the shared volume to store git repos.
     out_dir: The location in the shared volume to store output artifacts.
+    pr_ref: The pull request reference to be built.
+    commit_sha: The commit sha for the project to be built at.
 
   Returns:
     True if build succeeded or False on failure.
   """
+
+
+
   if not os.path.exists(git_workspace):
     logging.error('Invalid git workspace: %s.', format(git_workspace))
     return False
@@ -71,10 +76,16 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
                                                 repo_name=oss_fuzz_repo_name)
+  if not pr_ref and not commit_sha:
+    logging.error('A commit or pull request reference needs to be specified.')
+    return False
   try:
-    build_repo_manager.checkout_commit(commit_sha)
+    if pr_ref:
+      build_repo_manager.checkout_pr(pr_ref)
+    else:
+      build_repo_manager.checkout_commit(commit_sha)
   except repo_manager.RepoManagerError:
-    logging.error('Specified commit does not exist.')
+    logging.error('Error checking out pull request.')
     # NOTE: Remove return statement for testing.
     return False
 

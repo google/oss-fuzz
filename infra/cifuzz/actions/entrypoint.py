@@ -37,6 +37,7 @@ def main():
     FUZZ_TIME: The length of time in seconds that fuzzers are to be run.
     GITHUB_REPOSITORY: The name of the Github repo that called this script.
     GITHUB_SHA: The commit SHA that triggered this script.
+    GITHUB_REF: The git reference that triggered this script.
 
   Returns:
     0 on success or 1 on Failure.
@@ -44,7 +45,10 @@ def main():
   oss_fuzz_project_name = os.environ.get('PROJECT_NAME')
   fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 360))
   github_repo_name = os.path.basename(os.environ.get('GITHUB_REPOSITORY'))
+  pr_ref = os.environ.get('GITHUB_REF')
   commit_sha = os.environ.get('GITHUB_SHA')
+  event = os.environ.get('GITHUB_EVENT_NAME')
+  print('Event: ', event)
 
   # Get the shared volume directory and create required directorys.
   workspace = os.environ.get('GITHUB_WORKSPACE')
@@ -58,7 +62,7 @@ def main():
 
   # Build the specified project's fuzzers from the current repo state.
   if not cifuzz.build_fuzzers(oss_fuzz_project_name, github_repo_name,
-                              commit_sha, git_workspace, out_dir):
+                               git_workspace, out_dir, pr_ref=pr_ref):
     logging.error('Error building fuzzers for project %s.',
                   oss_fuzz_project_name)
     return 1
