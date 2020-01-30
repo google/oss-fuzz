@@ -13,7 +13,10 @@
 # limitations under the License.
 """Test the functionality of the build image from commit module.
 The will consist of the following functional tests:
-  1. The inferance of the main repo for a specific project.
+  1. The inference of the main repo for a specific project.
+  2. The building of a projects fuzzers from a specific commit.
+
+IMPORTANT: This test needs to be run with root privileges.
 """
 import os
 import tempfile
@@ -22,6 +25,7 @@ import unittest
 import build_specified_commit
 import helper
 import repo_manager
+import test_repos
 
 # Necessary because __file__ changes with os.chdir
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -37,81 +41,60 @@ class BuildImageIntegrationTests(unittest.TestCase):
     The old commit should show the error when its fuzzers run and the new one
     should not.
     """
-    test_data = os.path.join(TEST_DIR_PATH, 'testcases', 'yara_test_data')
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-      project_name = 'yara'
-      old_commit = 'f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f'
-      new_commit = 'f50a39051ea8c7f10d6d8db9656658b49601caef'
-      fuzzer = 'rules_fuzzer'
+      test_case = test_repos.TEST_REPOS[0]
+      test_repo_manager = repo_manager.RepoManager(
+          test_case.git_url, tmp_dir, repo_name=test_case.oss_repo_name)
+      build_data = build_specified_commit.BuildData(
+          sanitizer='address',
+          architecture='x86_64',
+          engine='libfuzzer',
+          project_name=test_case.project_name)
 
-      yara_repo_manager = repo_manager.RepoManager(
-          'https://github.com/VirusTotal/yara.git', tmp_dir, repo_name='yara')
-      build_data = build_specified_commit.BuildData(sanitizer='address',
-                                                    architecture='x86_64',
-                                                    engine='libfuzzer',
-                                                    project_name='yara')
-
-      build_specified_commit.build_fuzzers_from_commit(old_commit,
-                                                       yara_repo_manager,
+      build_specified_commit.build_fuzzers_from_commit(test_case.old_commit,
+                                                       test_repo_manager,
                                                        build_data)
-      old_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
-                                             [], test_data)
-      build_specified_commit.build_fuzzers_from_commit(new_commit,
-                                                       yara_repo_manager,
+      old_error_code = helper.reproduce_impl(test_case.project_name,
+                                             test_case.fuzz_target, False, [],
+                                             [], test_case.test_case_path)
+      build_specified_commit.build_fuzzers_from_commit(test_case.new_commit,
+                                                       test_repo_manager,
                                                        build_data)
-      new_error_code = helper.reproduce_impl(project_name, fuzzer, False, [],
-                                             [], test_data)
+      new_error_code = helper.reproduce_impl(test_case.project_name,
+                                             test_case.fuzz_target, False, [],
+                                             [], test_case.test_case_path)
       self.assertNotEqual(new_error_code, old_error_code)
 
   def test_detect_main_repo_from_commit(self):
     """Test the detect main repo function from build specific commit module."""
-    repo_origin, repo_path = build_specified_commit.detect_main_repo(
-        'curl', commit='bc5d22c3dede2f04870c37aec9a50474c4b888ad')
-    self.assertEqual(repo_origin, 'https://github.com/curl/curl.git')
-    self.assertEqual(repo_path, '/src/curl')
+    for example_repo in test_repos.TEST_REPOS:
+      repo_origin, repo_name = build_specified_commit.detect_main_repo(
+          example_repo.project_name, commit=example_repo.new_commit)
+      self.assertEqual(repo_origin, example_repo.git_url)
+      self.assertEqual(repo_name,
+                       os.path.join('/src', example_repo.oss_repo_name))
 
-    repo_origin, repo_path = build_specified_commit.detect_main_repo(
-        'usrsctp', commit='4886aaa49fb90e479226fcfc3241d74208908232')
-    self.assertEqual(repo_origin, 'https://github.com/weinrank/usrsctp')
-    self.assertEqual(repo_path, '/src/usrsctp')
-
-    repo_origin, repo_path = build_specified_commit.detect_main_repo(
-        'ndpi', commit='c4d476cc583a2ef1e9814134efa4fbf484564ed7')
-    self.assertEqual(repo_origin, 'https://github.com/ntop/nDPI.git')
-    self.assertEqual(repo_path, '/src/ndpi')
-
-    repo_origin, repo_path = build_specified_commit.detect_main_repo(
-        'notproj', commit='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        test_repos.INVALID_REPO.project_name,
+        test_repos.INVALID_REPO.new_commit)
     self.assertIsNone(repo_origin)
-    self.assertIsNone(repo_path)
+    self.assertIsNone(repo_name)
 
   def test_detect_main_repo_from_name(self):
     """Test the detect main repo function from build specific commit module."""
-    repo_origin, repo_path = build_specified_commit.detect_main_repo(
-        'curl', repo_name='curl')
-    self.assertEqual(repo_origin, 'https://github.com/curl/curl.git')
-    self.assertEqual(repo_path, '/src/curl')
+    for example_repo in test_repos.TEST_REPOS:
+      repo_origin, repo_name = build_specified_commit.detect_main_repo(
+          example_repo.project_name, repo_name=example_repo.git_repo_name)
+      self.assertEqual(repo_origin, example_repo.git_url)
+      self.assertEqual(repo_name,
+                       os.path.join('/src', example_repo.oss_repo_name))
 
-    repo_origin, repo_path = build_specified_commit.detect_main_repo(
-        'yara', repo_name='yara')
-    self.assertEqual(repo_origin, 'https://github.com/VirusTotal/yara.git')
-    self.assertEqual(repo_path, '/src/yara')
-
-    repo_origin, repo_path = build_specified_commit.detect_main_repo(
-        'usrsctp', repo_name='usrsctp')
-    self.assertEqual(repo_origin, 'https://github.com/weinrank/usrsctp')
-    self.assertEqual(repo_path, '/src/usrsctp')
-
-    repo_origin, repo_path = build_specified_commit.detect_main_repo(
-        'ndpi', repo_name='nDPI')
-    self.assertEqual(repo_origin, 'https://github.com/ntop/nDPI.git')
-    self.assertEqual(repo_path, '/src/ndpi')
-
-    repo_origin, repo_path = build_specified_commit.detect_main_repo(
-        'notproj', repo_name='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    repo_origin, repo_name = build_specified_commit.detect_main_repo(
+        test_repos.INVALID_REPO.project_name,
+        test_repos.INVALID_REPO.oss_repo_name)
     self.assertIsNone(repo_origin)
-    self.assertIsNone(repo_path)
+    self.assertIsNone(repo_name)
 
 
 if __name__ == '__main__':

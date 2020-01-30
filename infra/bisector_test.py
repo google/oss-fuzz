@@ -14,6 +14,8 @@
 """Test the functionality of bisection module:
 1) Test a known case where an error appears in a regression range.
 2) Bisect can handle incorrect inputs.
+
+IMPORTANT: This test needs to be run with root privileges.
 """
 
 import os
@@ -21,99 +23,40 @@ import unittest
 
 import bisector
 import build_specified_commit
+import test_repos
 
 # Necessary because __file__ changes with os.chdir
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-class TestBisect(unittest.TestCase):
+class BisectIntegrationTests(unittest.TestCase):
   """Class to test the functionality of bisection method."""
 
   def test_bisect_invalid_repo(self):
     """Test the bisection method on a project that does not exist."""
+    test_repo = test_repos.INVALID_REPO
     build_data = build_specified_commit.BuildData(
-        project_name='not-a-real-repo',
+        project_name=test_repo.project_name,
         engine='libfuzzer',
         sanitizer='address',
         architecture='x86_64')
-    commit_old = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-    commit_new = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-    testcase = os.path.join(TEST_DIR_PATH, 'testcases', 'usrsctp_test_data')
-    fuzz_target = 'fuzzer_connect'
     with self.assertRaises(ValueError):
-      bisector.bisect(commit_old, commit_new, testcase, fuzz_target, build_data)
+      bisector.bisect(test_repo.old_commit, test_repo.new_commit,
+                      test_repo.test_case_path, test_repo.fuzz_target,
+                      build_data)
 
-  def test_bisect_curl(self):
-    """Test the bisect method on the curl project."""
-    build_data = build_specified_commit.BuildData(project_name='curl',
-                                                  engine='libfuzzer',
-                                                  sanitizer='address',
-                                                  architecture='x86_64')
-    commit_new = 'dda418266c99ceab368d723facb52069cbb9c8d5'
-    commit_old = 'df26f5f9c36e19cd503c0e462e9f72ad37b84c82'
-    fuzz_target = 'curl_fuzzer_ftp'
-    testcase = os.path.join(TEST_DIR_PATH, 'testcases', 'curl_test_data')
-    error_sha = bisector.bisect(commit_old, commit_new, testcase, fuzz_target,
-                                build_data)
-    self.assertEqual(error_sha, 'df26f5f9c36e19cd503c0e462e9f72ad37b84c82')
-
-  def test_bisect_libarchive(self):
-    """Test the bisect method on libarchive."""
-    build_data = build_specified_commit.BuildData(project_name='libarchive',
-                                                  engine='libfuzzer',
-                                                  sanitizer='address',
-                                                  architecture='x86_64')
-    commit_new = '458e49358f17ec58d65ab1c45cf299baaf3c98d1'
-    commit_old = '5bd2a9b6658a3a6efa20bb9ad75bd39a44d71da6'
-    fuzz_target = 'libarchive_fuzzer'
-    testcase = os.path.join(TEST_DIR_PATH, 'testcases', 'libarchive_test_data')
-    error_sha = bisector.bisect(commit_old, commit_new, testcase, fuzz_target,
-                                build_data)
-    self.assertEqual(error_sha, '840266712006de5e737f8052db920dfea2be4260')
-
-  def test_bisect_usrsctp(self):
-    """Test the bisect method on the usrsctp."""
-    build_data = build_specified_commit.BuildData(project_name='usrsctp',
-                                                  engine='libfuzzer',
-                                                  sanitizer='address',
-                                                  architecture='x86_64')
-    commit_old = '4886aaa49fb90e479226fcfc3241d74208908232'
-    commit_new = 'c710749b1053978179a027973a3ea3bccf20ee5c'
-    testcase = os.path.join(TEST_DIR_PATH, 'testcases', 'usrsctp_test_data')
-    fuzz_target = 'fuzzer_connect'
-    error_sha = bisector.bisect(commit_old, commit_new, testcase, fuzz_target,
-                                build_data)
-    self.assertEqual(error_sha, '457d6ead58e82584d9dcb826f6739347f59ebd3a')
-
-  def test_bisect_usrsctp_single_error_exists(self):
-    """Tests what happens with a single with an error."""
-    build_data = build_specified_commit.BuildData(project_name='usrsctp',
-                                                  engine='libfuzzer',
-                                                  sanitizer='address',
-                                                  architecture='x86_64')
-
-    commit_old = 'c710749b1053978179a027973a3ea3bccf20ee5c'
-    commit_new = 'c710749b1053978179a027973a3ea3bccf20ee5c'
-    testcase = os.path.join(TEST_DIR_PATH, 'testcases', 'usrsctp_test_data')
-    fuzz_target = 'fuzzer_connect'
-    error_sha = bisector.bisect(commit_old, commit_new, testcase, fuzz_target,
-                                build_data)
-    self.assertEqual(error_sha, 'c710749b1053978179a027973a3ea3bccf20ee5c')
-
-  def test_bisect_usrsctp_single_no_error_exists(self):
-    """Tests what happens with a single with an error."""
-    build_data = build_specified_commit.BuildData(project_name='usrsctp',
-                                                  engine='libfuzzer',
-                                                  sanitizer='address',
-                                                  architecture='x86_64')
-
-    commit_old = '4886aaa49fb90e479226fcfc3241d74208908232'
-    commit_new = '4886aaa49fb90e479226fcfc3241d74208908232'
-    testcase = os.path.join(TEST_DIR_PATH, 'testcases', 'usrsctp_test_data')
-    fuzz_target = 'fuzzer_connect'
-    error_sha = bisector.bisect(commit_old, commit_new, testcase, fuzz_target,
-                                build_data)
-    self.assertEqual(error_sha, '4886aaa49fb90e479226fcfc3241d74208908232')
+  def test_bisect(self):
+    """Test the bisect method on example projects."""
+    for test_repo in test_repos.TEST_REPOS:
+      build_data = build_specified_commit.BuildData(
+          project_name=test_repo.project_name,
+          engine='libfuzzer',
+          sanitizer='address',
+          architecture='x86_64')
+      error_sha = bisector.bisect(test_repo.old_commit, test_repo.new_commit,
+                                  test_repo.test_case_path,
+                                  test_repo.fuzz_target, build_data)
+      self.assertEqual(error_sha, test_repo.intro_commit)
 
 
 if __name__ == '__main__':

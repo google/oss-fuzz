@@ -49,16 +49,16 @@ def main():
   parser.add_argument('--project_name',
                       help='The name of the project where the bug occurred.',
                       required=True)
-  parser.add_argument('--commit_new',
+  parser.add_argument('--new_commit',
                       help='The newest commit SHA to be bisected.',
                       required=True)
-  parser.add_argument('--commit_old',
+  parser.add_argument('--old_commit',
                       help='The oldest commit SHA to be bisected.',
                       required=True)
   parser.add_argument('--fuzz_target',
                       help='The name of the fuzzer to be built.',
                       required=True)
-  parser.add_argument('--testcase',
+  parser.add_argument('--test_case_path',
                       help='The path to test case.',
                       required=True)
   parser.add_argument('--engine',
@@ -75,7 +75,7 @@ def main():
                                                 sanitizer=args.sanitizer,
                                                 architecture=args.architecture)
 
-  error_sha = bisect(args.commit_old, args.commit_new, args.testcase,
+  error_sha = bisect(args.old_commit, args.new_commit, args.test_case_path,
                      args.fuzz_target, build_data)
   if not error_sha:
     logging.error('No error was found in commit range %s:%s', args.commit_old,
@@ -90,14 +90,14 @@ def main():
   return 0
 
 
-def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
+def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):
   """From a commit range, this function caluclates which introduced a
-  specific error from a fuzz testcase.
+  specific error from a fuzz test_case_path.
 
   Args:
-    commit_old: The oldest commit in the error regression range.
-    commit_new: The newest commit in the error regression range.
-    testcase: The file path of the test case that triggers the error
+    old_commit: The oldest commit in the error regression range.
+    new_commit: The newest commit in the error regression range.
+    test_case_path: The file path of the test case that triggers the error
     fuzz_target: The name of the fuzzer to be tested.
     build_data: a class holding all of the input parameters for bisection.
 
@@ -109,40 +109,41 @@ def bisect(commit_old, commit_new, testcase, fuzz_target, build_data):
   """
   with tempfile.TemporaryDirectory() as tmp_dir:
     repo_url, repo_name = build_specified_commit.detect_main_repo(
-        build_data.project_name, commit=commit_old)
+        build_data.project_name, commit=old_commit)
     if not repo_url or not repo_name:
       raise ValueError('Main git repo can not be determined.')
     bisect_repo_manager = repo_manager.RepoManager(repo_url,
                                                    tmp_dir,
                                                    repo_name=repo_name)
-    commit_list = bisect_repo_manager.get_commit_list(commit_old, commit_new)
+    commit_list = bisect_repo_manager.get_commit_list(old_commit, new_commit)
     old_idx = len(commit_list) - 1
     new_idx = 0
-
-    build_specified_commit.build_fuzzers_from_commit(build_data,
-                                                     commit_list[new_idx],
-                                                     bisect_repo_manager)
+    build_specified_commit.build_fuzzers_from_commit(commit_list[new_idx],
+                                                     bisect_repo_manager,
+                                                     build_data)
     expected_error_code = helper.reproduce_impl(build_data.project_name,
                                                 fuzz_target, False, [], [],
-                                                testcase)
+                                                test_case_path)
 
     # Check if the error is persistent through the commit range
-    build_specified_commit.build_fuzzers_from_commit(build_data,
-                                                     commit_list[old_idx],
-                                                     bisect_repo_manager)
+    build_specified_commit.build_fuzzers_from_commit(
+        commit_list[old_idx],
+        bisect_repo_manager,
+        build_data,
+    )
 
     if expected_error_code == helper.reproduce_impl(build_data.project_name,
                                                     fuzz_target, False, [], [],
-                                                    testcase):
+                                                    test_case_path):
       return commit_list[old_idx]
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
-      build_specified_commit.build_fuzzers_from_commit(build_data,
-                                                       commit_list[curr_idx],
-                                                       bisect_repo_manager)
+      build_specified_commit.build_fuzzers_from_commit(commit_list[curr_idx],
+                                                       bisect_repo_manager,
+                                                       build_data)
       error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
-                                         False, [], [], testcase)
+                                         False, [], [], test_case_path)
       if expected_error_code == error_code:
         new_idx = curr_idx
       else:
