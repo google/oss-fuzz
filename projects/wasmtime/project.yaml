@@ -7,3 +7,4 @@ sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
+language: rust
