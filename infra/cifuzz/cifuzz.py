@@ -38,6 +38,8 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
+# TODO(Leo-Neat) Create project class
+# pylint: disable=to-many-arguments
 def build_fuzzers(project_name,
                   project_repo_name,
                   git_workspace,
@@ -49,7 +51,6 @@ def build_fuzzers(project_name,
   Args:
     project_name: The name of the OSS-Fuzz project being built.
     project_repo_name: The name of the projects repo.
-
     git_workspace: The location in the shared volume to store git repos.
     out_dir: The location in the shared volume to store output artifacts.
     pr_ref: The pull request reference to be built.
@@ -87,9 +88,8 @@ def build_fuzzers(project_name,
     else:
       build_repo_manager.checkout_commit(commit_sha)
   except repo_manager.RepoManagerError:
-    logging.error('Error checking out pull request.')
-    # NOTE: Remove return statement for testing.
-    return False
+    logging.error(
+        'Error checking out pull request, building from current state.')
 
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
