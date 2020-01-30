@@ -71,10 +71,10 @@ class DetectRepoTest(unittest.TestCase):
     """
     command = ['python3', 'detect_repo.py', '--src_dir', tmp_dir]
 
-    if not commit:
-      command += ['--repo_name', repo_name]
-    else:
+    if commit:
       command += ['--example_commit', commit]
+    else:
+      command += ['--repo_name', repo_name]
 
     out, _ = detect_repo.execute(command,
                                  location=os.path.dirname(
