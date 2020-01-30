@@ -38,12 +38,9 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
-# TODO(Leo-Neat) Create project class
-# pylint: disable=to-many-arguments
 def build_fuzzers(project_name,
                   project_repo_name,
-                  git_workspace,
-                  out_dir,
+                  workspace,
                   pr_ref=None,
                   commit_sha=None):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
@@ -51,21 +48,21 @@ def build_fuzzers(project_name,
   Args:
     project_name: The name of the OSS-Fuzz project being built.
     project_repo_name: The name of the projects repo.
-    git_workspace: The location in the shared volume to store git repos.
-    out_dir: The location in the shared volume to store output artifacts.
+    workspace: The location in a shared volume to store a git repo and build
+      artifacts.
     pr_ref: The pull request reference to be built.
     commit_sha: The commit sha for the project to be built at.
 
   Returns:
     True if build succeeded or False on failure.
   """
-
-  if not os.path.exists(git_workspace):
-    logging.error('Invalid git workspace: %s.', format(git_workspace))
+  if not os.path.exists(workspace):
+    logging.error('Invalid workspace: %s.', format(workspace))
     return False
-  if not os.path.exists(out_dir):
-    logging.error('Invalid out directory %s.', format(out_dir))
-    return False
+  git_workspace = os.path.join(workspace, 'storage')
+  os.makedirs(git_workspace, exist_ok=True)
+  out_dir = os.path.join(workspace, 'out')
+  os.makedirs(out_dir, exist_ok=True)
 
   inferred_url, oss_fuzz_repo_path = build_specified_commit.detect_main_repo(
       project_name, repo_name=project_repo_name)
@@ -123,18 +120,21 @@ def build_fuzzers(project_name,
   return True
 
 
-def run_fuzzers(project_name, fuzz_seconds, out_dir):
+def run_fuzzers(project_name, fuzz_seconds, workspace):
   """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
     project_name: The name of the OSS-Fuzz project being built.
     fuzz_seconds: The total time allotted for fuzzing.
-    out_dir: The location in the shared volume to store output artifacts.
+    workspace: The location in a shared volume to store a git repo and build
+      artifacts.
 
   Returns:
     (True if run was successful, True if bug was found).
   """
-  if not out_dir or not os.path.exists(out_dir):
+  out_dir = os.path.join(workspace, 'out')
+  os.makedirs(out_dir, exist_ok=True)
+  if not workspace or not os.path.exists(workspace):
     logging.error('Unreachable out_dir argument %s.', format(out_dir))
     return False, False
 

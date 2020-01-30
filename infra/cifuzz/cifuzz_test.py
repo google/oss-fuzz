@@ -37,15 +37,12 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     """Test building fuzzers with valid inputs."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
-      workspace_path = os.path.join(tmp_dir, 'workspace')
       os.mkdir(out_path)
-      os.mkdir(workspace_path)
       self.assertTrue(
           cifuzz.build_fuzzers(
               EXAMPLE_PROJECT,
               'oss-fuzz',
-              workspace_path,
-              out_path,
+              tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
 
@@ -53,61 +50,31 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 def test_invalid_project_name(self):
   """Test building fuzzers with invalid project name."""
   with tempfile.TemporaryDirectory() as tmp_dir:
-    out_path = os.path.join(tmp_dir, 'out')
-    workspace_path = os.path.join(tmp_dir, 'workspace')
-    os.mkdir(out_path)
-    os.mkdir(workspace_path)
     self.assertFalse(
-        cifuzz.build_fuzzers('not_a_valid_project', 'oss-fuzz',
-                             '0b95fe1039ed7c38fea1f97078316bfc1030c523',
-                             workspace_path, out_path))
+        cifuzz.build_fuzzers('not_a_valid_project', 'oss-fuzz', tmp_dir, commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
 
 
 def test_invalid_repo_name(self):
   """Test building fuzzers with invalid repo name."""
   with tempfile.TemporaryDirectory() as tmp_dir:
-    out_path = os.path.join(tmp_dir, 'out')
-    workspace_path = os.path.join(tmp_dir, 'workspace')
-    os.mkdir(out_path)
-    os.mkdir(workspace_path)
     self.assertFalse(
-        cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'not-real-repo',
-                             '0b95fe1039ed7c38fea1f97078316bfc1030c523',
-                             workspace_path, out_path))
+        cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'not-real-repo', tmp_dir,
+                             commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
 
 
 def test_invalid_commit_sha(self):
   """Test building fuzzers with invalid commit SHA."""
   with tempfile.TemporaryDirectory() as tmp_dir:
-    out_path = os.path.join(tmp_dir, 'out')
-    workspace_path = os.path.join(tmp_dir, 'workspace')
-    os.mkdir(out_path)
-    os.mkdir(workspace_path)
     self.assertFalse(
-        cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz', '', workspace_path,
-                             out_path))
+        cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz', tmp_dir, commit_sha=''))
 
 
 def test_invalid_workspace(self):
   """Test building fuzzers with invalid workspace."""
   with tempfile.TemporaryDirectory() as tmp_dir:
-    out_path = os.path.join(tmp_dir, 'out')
-    os.mkdir(out_path)
     self.assertFalse(
         cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz',
-                             '0b95fe1039ed7c38fea1f97078316bfc1030c523',
-                             'not/a/dir', out_path))
-
-
-def test_invalid_out(self):
-  """Test building fuzzers with invalid out directory."""
-  with tempfile.TemporaryDirectory() as tmp_dir:
-    workspace_path = os.path.join(tmp_dir, 'workspace')
-    os.mkdir(workspace_path)
-    self.assertFalse(
-        cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz',
-                             '0b95fe1039ed7c38fea1f97078316bfc1030c523',
-                             workspace_path, 'not/a/dir'))
+                             'not/a/dir', commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',))
 
 
 class RunFuzzersIntegrationTest(unittest.TestCase):
@@ -117,15 +84,11 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     """Test run_fuzzers with a valid build."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
-      workspace_path = os.path.join(tmp_dir, 'workspace')
       os.mkdir(out_path)
-      os.mkdir(workspace_path)
       self.assertTrue(
-          cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz',
-                               '0b95fe1039ed7c38fea1f97078316bfc1030c523',
-                               workspace_path, out_path))
+          cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz', tmp_dir, commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
-      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5, out_path)
+      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5, tmp_dir)
     self.assertTrue(run_success)
     self.assertTrue(bug_found)
 
@@ -134,7 +97,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5, out_path)
+      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5, tmp_dir)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -143,7 +106,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 0, out_path)
+      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 0, tmp_dir)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
