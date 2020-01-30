@@ -61,17 +61,24 @@ def main():
 
   if event == 'push':
     # Build the specified project's fuzzers from the current repo state.
-    if not cifuzz.build_fuzzers(oss_fuzz_project_name, github_repo_name,
-                                 git_workspace, out_dir, commit_sha=commit_sha):
+    if not cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                github_repo_name,
+                                git_workspace,
+                                out_dir,
+                                commit_sha=commit_sha):
       logging.error('Error building fuzzers for project %s with commit %s.',
                     oss_fuzz_project_name, commit_sha)
       return 1
-  elif event == 'pull_request'
+  elif event == 'pull_request':
     # Build the specified project's fuzzers from the current repo state.
-    if not cifuzz.build_fuzzers(oss_fuzz_project_name, github_repo_name,
-                                 git_workspace, out_dir, pr_ref=pr_ref):
-      logging.error('Error building fuzzers for project %s with pull request %s.',
-                    oss_fuzz_project_name, pr_ref)
+    if not cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                github_repo_name,
+                                git_workspace,
+                                out_dir,
+                                pr_ref=pr_ref):
+      logging.error(
+          'Error building fuzzers for project %s with pull request %s.',
+          oss_fuzz_project_name, pr_ref)
       return 1
   else:
     logging.error('Not %s is not a valid github action for CIFuzz.', event)

@@ -41,8 +41,12 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
       os.mkdir(out_path)
       os.mkdir(workspace_path)
       self.assertTrue(
-          cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz',
-                               workspace_path, out_path, commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+          cifuzz.build_fuzzers(
+              EXAMPLE_PROJECT,
+              'oss-fuzz',
+              workspace_path,
+              out_path,
+              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
 
 
