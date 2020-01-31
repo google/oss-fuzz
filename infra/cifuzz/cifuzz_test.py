@@ -92,11 +92,11 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   def test_invalid_commit_sha(self):
     """Test building fuzzers with invalid commit SHA."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertFalse(
-          cifuzz.build_fuzzers(EXAMPLE_PROJECT,
+      with self.assertRaises(AssertionError):
+        cifuzz.build_fuzzers(EXAMPLE_PROJECT,
                                'oss-fuzz',
                                tmp_dir,
-                               commit_sha=''))
+                               commit_sha='')
 
   def test_invalid_workspace(self):
     """Test building fuzzers with invalid workspace."""

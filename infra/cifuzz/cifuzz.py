@@ -56,14 +56,11 @@ def build_fuzzers(project_name,
   Returns:
     True if build succeeded or False on failure.
   """
-  # pylint:disable=too-many-return-statements
   # Validate inputs.
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
     return False
-  if not pr_ref and not commit_sha:
-    logging.error('A commit or pull request reference needs to be specified.')
-    return False
+  assert pr_ref or commit_sha
   git_workspace = os.path.join(workspace, 'storage')
   os.makedirs(git_workspace, exist_ok=True)
   out_dir = os.path.join(workspace, 'out')
