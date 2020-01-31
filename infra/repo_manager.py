@@ -24,7 +24,7 @@ a python API and manage the current state of the git repo.
 import os
 import shutil
 
-import build_specified_commit
+import utils
 
 
 class RepoManagerError(Exception):
@@ -67,8 +67,8 @@ class RepoManager:
     if not os.path.exists(self.base_dir):
       os.makedirs(self.base_dir)
     self.remove_repo()
-    out, err = build_specified_commit.execute(
-        ['git', 'clone', self.repo_url, self.repo_name], location=self.base_dir)
+    out, err = utils.execute(['git', 'clone', self.repo_url, self.repo_name],
+                             location=self.base_dir)
     if not self._is_git_repo():
       raise RepoManagerError('%s is not a git repo' % self.repo_url)
 
@@ -99,8 +99,8 @@ class RepoManager:
     if not commit.rstrip():
       raise RepoManagerError('An empty string is not a valid commit SHA')
 
-    _, err_code = build_specified_commit.execute(
-        ['git', 'cat-file', '-e', commit], self.repo_dir)
+    _, err_code = utils.execute(['git', 'cat-file', '-e', commit],
+                                self.repo_dir)
     return not err_code
 
   def get_current_commit(self):
@@ -109,9 +109,9 @@ class RepoManager:
     Returns:
       The current active commit SHA
     """
-    out, _ = build_specified_commit.execute(['git', 'rev-parse', 'HEAD'],
-                                            self.repo_dir,
-                                            check_result=True)
+    out, _ = utils.execute(['git', 'rev-parse', 'HEAD'],
+                           self.repo_dir,
+                           check_result=True)
     return out.strip('\n')
 
   def get_commit_list(self, old_commit, new_commit):
@@ -134,7 +134,7 @@ class RepoManager:
       raise RepoManagerError('The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
       return [old_commit]
-    out, err_code = build_specified_commit.execute(
+    out, err_code = utils.execute(
         ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
     commits = out.split('\n')
     commits = [commit for commit in commits if commit]
@@ -150,9 +150,9 @@ class RepoManager:
     """Gets the current git repository history."""
     git_path = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(git_path):
-      build_specified_commit.execute(['git', 'fetch', '--unshallow'],
-                                     self.repo_dir,
-                                     check_result=True)
+      utils.execute(['git', 'fetch', '--unshallow'],
+                    self.repo_dir,
+                    check_result=True)
 
   def checkout_pr(self, pr_ref):
     """Checks out a remote pull request.
@@ -165,12 +165,12 @@ class RepoManager:
     """
     self._get_git_history()
 
-    _, return_code = build_specified_commit.execute(
-        ['git', 'fetch', 'origin', pr_ref], self.repo_dir)
+    _, return_code = utils.execute(['git', 'fetch', 'origin', pr_ref],
+                                   self.repo_dir)
     if return_code:
       raise RepoManagerError('Error checking out pull request %s.' % pr_ref)
-    _, return_code = build_specified_commit.execute(
-        ['git', 'checkout', '-f', 'FETCH_HEAD'], self.repo_dir)
+    _, return_code = utils.execute(['git', 'checkout', '-f', 'FETCH_HEAD'],
+                                   self.repo_dir)
     if return_code:
       raise RepoManagerError('Error fetching head from pull request %s.' %
                              pr_ref)
@@ -188,12 +188,10 @@ class RepoManager:
     if not self.commit_exists(commit):
       raise RepoManagerError('Commit %s does not exist in current branch' %
                              commit)
-    build_specified_commit.execute(['git', 'checkout', '-f', commit],
-                                   self.repo_dir,
-                                   check_result=True)
-    build_specified_commit.execute(['git', 'clean', '-fxd'],
-                                   self.repo_dir,
-                                   check_result=True)
+    utils.execute(['git', 'checkout', '-f', commit],
+                  self.repo_dir,
+                  check_result=True)
+    utils.execute(['git', 'clean', '-fxd'], self.repo_dir, check_result=True)
     if self.get_current_commit() != commit:
       raise RepoManagerError('Error checking out commit %s' % commit)
 
