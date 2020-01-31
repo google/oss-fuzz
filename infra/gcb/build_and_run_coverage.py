@@ -34,8 +34,8 @@ LATEST_REPORT_INFO_URL = ('/' + COVERAGE_BUCKET_NAME +
 # Link where to upload code coverage report files to.
 UPLOAD_URL_FORMAT = 'gs://' + COVERAGE_BUCKET_NAME + '/{project}/{type}/{date}'
 
-# TODO(#2817): Support code coverage for Go projects.
-GO_FUZZ_BUILD = 'go-fuzz-build -libfuzzer'
+# Languages from project.yaml that have code coverage support.
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'cpp']
 
 
 def skip_build(message):
@@ -61,9 +61,11 @@ def get_build_steps(project_dir):
   build_script_path = os.path.join(project_dir, 'build.sh')
   if os.path.exists(build_script_path):
     with open(build_script_path) as fh:
-      if GO_FUZZ_BUILD in fh.read():
-        skip_build('Project "%s" uses go-fuzz, coverage is not supported yet.' %
-                   project_name)
+      if project_yaml['language'] not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+        skip_build(('Project "{project_name}" is written in "{language}", '
+                    'coverage is not supported yet.').format(
+                        project_name=project_name,
+                        language=project_yaml['language']))
 
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']

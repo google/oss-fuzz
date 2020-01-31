@@ -21,7 +21,6 @@ import os
 import collections
 import logging
 import re
-import subprocess
 
 import helper
 import utils
@@ -89,35 +88,8 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
     command_to_run.extend(['--repo_name', repo_name])
   else:
     command_to_run.extend(['--example_commit', commit])
-  out, _ = execute(command_to_run)
+  out, _ = utils.execute(command_to_run)
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2)
   return None, None
-
-
-def execute(command, location=None, check_result=False):
-  """ Runs a shell command in the specified directory location.
-
-  Args:
-    command: The command as a list to be run.
-    location: The directory the command is run in.
-    check_result: Should an exception be thrown on failed command.
-
-  Returns:
-    The stdout of the command, the error code.
-
-  Raises:
-    RuntimeError: running a command resulted in an error.
-  """
-
-  if not location:
-    location = os.getcwd()
-  process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
-  out, err = process.communicate()
-  if check_result and (process.returncode or err):
-    raise RuntimeError('Error: %s\n Command: %s\n Return code: %s\n Out: %s' %
-                       (err, command, process.returncode, out))
-  if out is not None:
-    out = out.decode('ascii').rstrip()
-  return out, process.returncode

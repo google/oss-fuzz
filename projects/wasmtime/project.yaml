@@ -3,7 +3,9 @@ primary_contact: "jonathan.foote@gmail.com"
 auto_ccs:
   - "security@bytecodealliance.org"
   - "fitzgen@gmail.com"
+  - "alex@alexcrichton.com"
 sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
+language: rust

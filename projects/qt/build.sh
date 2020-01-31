@@ -44,6 +44,8 @@ build_fuzzer() {
     local dictionary=${4-""}
     local proFileName=${proFilePath##*/}
     local exeName=${proFileName%%.*}
+    mkdir build_fuzzer
+    cd build_fuzzer
     $OUT/bin/qmake $SRC/qt/$module/tests/libfuzzer/$proFilePath
     make -j$(nproc)
     mv $exeName $OUT
@@ -53,9 +55,11 @@ build_fuzzer() {
     if [ -n "$dictionary" ]; then
         cp $dictionary $OUT/$exeName.dict
     fi
+    cd ..
+    rm -r build_fuzzer
 }
 
 build_fuzzer "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "/usr/share/afl/testcases/_extras/xml.dict"
-build_fuzzer "qtbase" "gui/text/qtextdocument/setHtml/setHtml.pro" "html" "/usr/share/afl/testcases/_extras/html_tags.dict"
+# build_fuzzer "qtbase" "gui/text/qtextdocument/setHtml/setHtml.pro" "html" "/usr/share/afl/testcases/_extras/html_tags.dict"
 build_fuzzer "qtbase" "gui/text/qtextdocument/setMarkdown/setMarkdown.pro" "markdown"
 build_fuzzer "qtbase" "gui/text/qtextlayout/beginLayout/beginLayout.pro"

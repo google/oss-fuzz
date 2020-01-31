@@ -16,6 +16,7 @@
 import os
 import re
 import stat
+import subprocess
 
 import helper
 
@@ -31,31 +32,31 @@ def chdir_to_root():
     os.chdir(helper.OSSFUZZ_DIR)
 
 
-def is_fuzz_target_local(file_path):
-  """Returns whether |file_path| is a fuzz target binary (local path).
-  Copied from clusterfuzz src/python/bot/fuzzers/utils.py
-  with slight modifications.
+def execute(command, location=None, check_result=False):
+  """ Runs a shell command in the specified directory location.
+
+  Args:
+    command: The command as a list to be run.
+    location: The directory the command is run in.
+    check_result: Should an exception be thrown on failed command.
+
+  Returns:
+    The stdout of the command, the error code.
+
+  Raises:
+    RuntimeError: running a command resulted in an error.
   """
-  filename, file_extension = os.path.splitext(os.path.basename(file_path))
-  if not VALID_TARGET_NAME.match(filename):
-    # Check fuzz target has a valid name (without any special chars).
-    return False
 
-  if file_extension not in ALLOWED_FUZZ_TARGET_EXTENSIONS:
-    # Ignore files with disallowed extensions (to prevent opening e.g. .zips).
-    return False
-
-  if not os.path.exists(file_path) or not os.access(file_path, os.X_OK):
-    return False
-
-  if filename.endswith('_fuzzer'):
-    return True
-
-  if os.path.exists(file_path) and not stat.S_ISREG(os.stat(file_path).st_mode):
-    return False
-
-  with open(file_path, 'rb') as file_handle:
-    return file_handle.read().find(FUZZ_TARGET_SEARCH_STRING.encode()) != -1
+  if not location:
+    location = os.getcwd()
+  process = subprocess.Popen(command, stdout=subprocess.PIPE, cwd=location)
+  out, err = process.communicate()
+  if check_result and (process.returncode or err):
+    raise RuntimeError('Error: %s\n Command: %s\n Return code: %s\n Out: %s' %
+                       (err, command, process.returncode, out))
+  if out is not None:
+    out = out.decode('ascii').rstrip()
+  return out, process.returncode
 
 
 def get_fuzz_targets(path):
@@ -92,3 +93,30 @@ def get_container_name():
       return None
   with open('/etc/hostname') as file_handle:
     return file_handle.read().strip()
+
+
+def is_fuzz_target_local(file_path):
+  """Returns whether |file_path| is a fuzz target binary (local path).
+  Copied from clusterfuzz src/python/bot/fuzzers/utils.py
+  with slight modifications.
+  """
+  filename, file_extension = os.path.splitext(os.path.basename(file_path))
+  if not VALID_TARGET_NAME.match(filename):
+    # Check fuzz target has a valid name (without any special chars).
+    return False
+
+  if file_extension not in ALLOWED_FUZZ_TARGET_EXTENSIONS:
+    # Ignore files with disallowed extensions (to prevent opening e.g. .zips).
+    return False
+
+  if not os.path.exists(file_path) or not os.access(file_path, os.X_OK):
+    return False
+
+  if filename.endswith('_fuzzer'):
+    return True
+
+  if os.path.exists(file_path) and not stat.S_ISREG(os.stat(file_path).st_mode):
+    return False
+
+  with open(file_path, 'rb') as file_handle:
+    return file_handle.read().find(FUZZ_TARGET_SEARCH_STRING.encode()) != -1
