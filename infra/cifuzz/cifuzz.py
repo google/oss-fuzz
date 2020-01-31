@@ -56,14 +56,19 @@ def build_fuzzers(project_name,
   Returns:
     True if build succeeded or False on failure.
   """
+  # Validate inputs.
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
+    return False
+  if not pr_ref and not commit_sha:
+    logging.error('A commit or pull request reference needs to be specified.')
     return False
   git_workspace = os.path.join(workspace, 'storage')
   os.makedirs(git_workspace, exist_ok=True)
   out_dir = os.path.join(workspace, 'out')
   os.makedirs(out_dir, exist_ok=True)
 
+  # Detect repo information.
   inferred_url, oss_fuzz_repo_path = build_specified_commit.detect_main_repo(
       project_name, repo_name=project_repo_name)
   if not inferred_url or not oss_fuzz_repo_path:
@@ -76,17 +81,17 @@ def build_fuzzers(project_name,
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
                                                 repo_name=oss_fuzz_repo_name)
-  if not pr_ref and not commit_sha:
-    logging.error('A commit or pull request reference needs to be specified.')
-    return False
   try:
     if pr_ref:
       build_repo_manager.checkout_pr(pr_ref)
     else:
       build_repo_manager.checkout_commit(commit_sha)
-  except repo_manager.RepoManagerError:
+  except RuntimeError:
     logging.error('Can not check out requested state.')
+  except ValueError:
+    logging.error('Invalid commit SHA requested %s.', commit_sha)
 
+  # Build Fuzzers using docker run.
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
@@ -112,7 +117,6 @@ def build_fuzzers(project_name,
       '-c',
   ])
   command.append(bash_command)
-
   if helper.docker_run(command):
     logging.error('Building fuzzers failed.')
     return False
@@ -131,24 +135,25 @@ def run_fuzzers(project_name, fuzz_seconds, workspace):
   Returns:
     (True if run was successful, True if bug was found).
   """
+  # Validate inputs.
   if not os.path.exists(workspace):
     logging.error('Unreachable out directory %s.', workspace)
     return False, False
   out_dir = os.path.join(workspace, 'out')
-
   if not fuzz_seconds or fuzz_seconds < 1:
     logging.error('Fuzz_seconds argument must be greater than 1, but was: %s.',
                   format(fuzz_seconds))
     return False, False
 
+  # Get fuzzer information.
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
     logging.error('No fuzzers were found in out directory: %s.',
                   format(out_dir))
     return False, False
-
   fuzz_seconds_per_target = fuzz_seconds // len(fuzzer_paths)
 
+  # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
     target = fuzz_target.FuzzTarget(project_name, fuzzer_path,
                                     fuzz_seconds_per_target, out_dir)
