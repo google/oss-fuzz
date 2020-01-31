@@ -57,7 +57,7 @@ def build_fuzzers(project_name,
     True if build succeeded or False on failure.
   """
   if not os.path.exists(workspace):
-    logging.error('Invalid workspace: %s.', format(workspace))
+    logging.error('Invalid workspace: %s.', workspace)
     return False
   git_workspace = os.path.join(workspace, 'storage')
   os.makedirs(git_workspace, exist_ok=True)

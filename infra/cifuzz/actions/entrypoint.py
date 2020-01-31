@@ -38,6 +38,7 @@ def main():
     GITHUB_REPOSITORY: The name of the Github repo that called this script.
     GITHUB_SHA: The commit SHA that triggered this script.
     GITHUB_REF: The pull request reference that triggered this script.
+    GITHUB_EVENT_NAME: The name of the hook event that triggered this script.
 
   Returns:
     0 on success or 1 on Failure.
