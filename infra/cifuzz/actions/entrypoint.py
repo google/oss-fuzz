@@ -52,15 +52,15 @@ def main():
   workspace = os.environ.get('GITHUB_WORKSPACE')
 
   # Check if failures should be reported.
-  failure_ok = not os.environ.get('NO_FAILURE')
-  if not failure_ok:
+  failure_allowed =  (os.environ.get('FAILURE_ALLOWED').lower() == 'true')
+  if not failure_allowed:
     out_dir = os.path.join(workspace, 'out')
     os.makedirs(out_dir, exist_ok=True)
     f = open(os.path.join(out_dir, 'testcase'), "a")
-    f.write('There was no bug detected.')
+    f.write('No bugs detected.')
     f.close()
 
-  if not workspace and failure_ok:
+  if not workspace and failure_allowed:
     logging.error('This script needs to be run in the Github action context.')
     return 1
   git_workspace = os.path.join(workspace, 'storage')
@@ -87,7 +87,7 @@ def main():
     logging.error('Error occured while running fuzzers for project %s.',
                   oss_fuzz_project_name)
     return 1
-  if bug_found and failure_ok:
+  if bug_found and failure_allowed:
     logging.info('Bug found.')
     # Return 2 when a bug was found by a fuzzer causing the CI to fail.
     return 2
