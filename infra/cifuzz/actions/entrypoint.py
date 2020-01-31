@@ -49,12 +49,23 @@ def main():
   pr_ref = os.environ.get('GITHUB_REF')
   commit_sha = os.environ.get('GITHUB_SHA')
   event = os.environ.get('GITHUB_EVENT_NAME')
-
-  # Get the shared volume directory and create required directorys.
   workspace = os.environ.get('GITHUB_WORKSPACE')
-  if not workspace:
+
+  # Check if failures should be reported.
+  failure_ok = not os.environ.get('NO_FAILURE')
+  if not failure_ok:
+    out_dir = os.path.join(workspace, 'out')
+    os.makedirs(out_dir, exist_ok=True)
+    f = open(out_dir, 'testcase'), "a")
+    f.write('There was no bug detected.')
+
+  if not workspace and failure_ok:
     logging.error('This script needs to be run in the Github action context.')
     return 1
+  git_workspace = os.path.join(workspace, 'storage')
+  os.makedirs(git_workspace, exist_ok=True)
+  out_dir = os.path.join(workspace, 'out')
+  os.makedirs(out_dir, exist_ok=True)
 
   if event == 'push' and not cifuzz.build_fuzzers(
       oss_fuzz_project_name, github_repo_name, workspace,
@@ -71,11 +82,11 @@ def main():
   # Run the specified project's fuzzers from the build.
   run_status, bug_found = cifuzz.run_fuzzers(oss_fuzz_project_name,
                                              fuzz_seconds, workspace)
-  if not run_status:
+  if not run_status and failure_ok:
     logging.error('Error occured while running fuzzers for project %s.',
                   oss_fuzz_project_name)
     return 1
-  if bug_found:
+  if bug_found and failure_ok:
     logging.info('Bug found.')
     # Return 2 when a bug was found by a fuzzer causing the CI to fail.
     return 2
