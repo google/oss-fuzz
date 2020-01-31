@@ -85,7 +85,7 @@ def build_fuzzers(project_name,
     else:
       build_repo_manager.checkout_commit(commit_sha)
   except repo_manager.RepoManagerError:
-    logging.error('Error checking out requested state.')
+    logging.error('Can not check out requested state.')
 
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
@@ -131,11 +131,10 @@ def run_fuzzers(project_name, fuzz_seconds, workspace):
   Returns:
     (True if run was successful, True if bug was found).
   """
-  if not workspace or not os.path.exists(workspace):
-    logging.error('Unreachable out_dir argument %s.', format(workspace))
-    return False, False
   out_dir = os.path.join(workspace, 'out')
-  os.makedirs(out_dir, exist_ok=True)
+  if not os.path.exists(out_dir):
+    logging.error('Unreachable out directory %s.', format(workspace))
+    return False, False
 
   if not fuzz_seconds or fuzz_seconds < 1:
     logging.error('Fuzz_seconds argument must be greater than 1, but was: %s.',
