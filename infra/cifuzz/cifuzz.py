@@ -57,10 +57,11 @@ def build_fuzzers(project_name,
     True if build succeeded or False on failure.
   """
   # Validate inputs.
+  assert pr_ref or commit_sha
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
     return False
-  assert pr_ref or commit_sha
+
   git_workspace = os.path.join(workspace, 'storage')
   os.makedirs(git_workspace, exist_ok=True)
   out_dir = os.path.join(workspace, 'out')
@@ -137,7 +138,7 @@ def run_fuzzers(project_name, fuzz_seconds, workspace):
   """
   # Validate inputs.
   if not os.path.exists(workspace):
-    logging.error('Unreachable out directory %s.', workspace)
+    logging.error('Invalid workspace: %s.', workspace)
     return False, False
   out_dir = os.path.join(workspace, 'out')
   if not fuzz_seconds or fuzz_seconds < 1:
