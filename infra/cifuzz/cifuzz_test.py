@@ -94,9 +94,9 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       with self.assertRaises(AssertionError):
         cifuzz.build_fuzzers(EXAMPLE_PROJECT,
-                               'oss-fuzz',
-                               tmp_dir,
-                               commit_sha='')
+                             'oss-fuzz',
+                             tmp_dir,
+                             commit_sha='')
 
   def test_invalid_workspace(self):
     """Test building fuzzers with invalid workspace."""
