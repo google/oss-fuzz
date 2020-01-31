@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing perepo_managerissions and
 # limitations under the License.
-"""Test the functionality of the RepoManager class
-The will consist of the following functional tests
-  1. Cloning of directory in desired location
-  2. Checking out a specific commit
-  3. Can get a list of commits between two SHAs
+"""Test the functionality of the RepoManager class.
+The will consist of the following functional tests:
+  1. Cloning of directory in desired location.
+  2. Checking out a specific commit.
+  3. Can get a list of commits between two SHAs.
 """
 
 import os

@@ -33,7 +33,7 @@ class RepoManager:
   Attributes:
     repo_url: The location of the git repo.
     base_dir: The location of where the repo clone is stored locally.
-    repo_name: The name of the github project.
+    repo_name: The name of the GitHub project.
     repo_dir: The location of the main repo.
   """
 
@@ -42,7 +42,7 @@ class RepoManager:
 
     Args:
       repo_url: The github url needed to clone.
-      base_dir: The full filepath where the git repo is located.
+      base_dir: The full file-path where the git repo is located.
       repo_name: The name of the directory the repo is cloned to.
     """
     self.repo_url = repo_url

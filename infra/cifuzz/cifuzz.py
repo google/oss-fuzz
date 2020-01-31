@@ -56,6 +56,7 @@ def build_fuzzers(project_name,
   Returns:
     True if build succeeded or False on failure.
   """
+  # pylint:disable=too-many-return-statements
   # Validate inputs.
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
@@ -88,8 +89,10 @@ def build_fuzzers(project_name,
       build_repo_manager.checkout_commit(commit_sha)
   except RuntimeError:
     logging.error('Can not check out requested state.')
+    return False
   except ValueError:
     logging.error('Invalid commit SHA requested %s.', commit_sha)
+    return False
 
   # Build Fuzzers using docker run.
   command = [
