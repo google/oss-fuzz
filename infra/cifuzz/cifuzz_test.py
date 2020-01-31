@@ -55,7 +55,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           cifuzz.build_fuzzers(EXAMPLE_PROJECT,
                                'oss-fuzz',
                                tmp_dir,
-                               pr_ref='refs/pull/3310/merge'))
+                               pr_ref='refs/pull/1757/merge'))
       self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
 
   def test_invalid_pull_request(self):
