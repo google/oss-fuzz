@@ -56,8 +56,9 @@ def main():
   if not failure_ok:
     out_dir = os.path.join(workspace, 'out')
     os.makedirs(out_dir, exist_ok=True)
-    f = open(out_dir, 'testcase'), "a")
+    f = open(os.path.join(out_dir, 'testcase'), "a")
     f.write('There was no bug detected.')
+    f.close()
 
   if not workspace and failure_ok:
     logging.error('This script needs to be run in the Github action context.')
