@@ -146,7 +146,7 @@ class RepoManager:
     commits.append(old_commit)
     return commits
 
-  def _get_git_history(self):
+  def fetch_unshallow(self):
     """Gets the current git repository history."""
     git_path = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(git_path):
@@ -163,17 +163,12 @@ class RepoManager:
     Raises:
       RepoManagerError: when pull request checkout fails.
     """
-    self._get_git_history()
+    self.fetch_unshallow()
+    _, return_code = build_specified_commit.execute(
+        ['git', 'fetch', 'origin', pr_ref], self.repo_dir, check_result=True)
+    _, return_code = build_specified_commit.execute(
+        ['git', 'checkout', '-f', 'FETCH_HEAD'], self.repo_dir, check_result=True)
 
-    _, return_code = build_specified_commit.execute(
-        ['git', 'fetch', 'origin', pr_ref], self.repo_dir)
-    if return_code:
-      raise RepoManagerError('Error checking out pull request %s.' % pr_ref)
-    _, return_code = build_specified_commit.execute(
-        ['git', 'checkout', '-f', 'FETCH_HEAD'], self.repo_dir)
-    if return_code:
-      raise RepoManagerError('Error fetching head from pull request %s.' %
-                             pr_ref)
 
   def checkout_commit(self, commit):
     """Checks out a specific commit from the repo.
@@ -184,7 +179,7 @@ class RepoManager:
     Raises:
       RepoManagerError when checkout is not successful
     """
-    self._get_git_history()
+    self.fetch_unshallow()
     if not self.commit_exists(commit):
       raise RepoManagerError('Commit %s does not exist in current branch' %
                              commit)
