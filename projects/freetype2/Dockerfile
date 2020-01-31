@@ -22,7 +22,7 @@ RUN dpkg --add-architecture i386 && \
     apt-get install -y \
       autoconf         \
       cmake            \
-      libbz2           \
+      libbz2-dev       \
       libpng-dev       \
       libtool          \
       pkg-config       \
