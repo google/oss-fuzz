@@ -38,27 +38,36 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
-def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
-                  out_dir):
+def build_fuzzers(project_name,
+                  project_repo_name,
+                  workspace,
+                  pr_ref=None,
+                  commit_sha=None):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
     project_name: The name of the OSS-Fuzz project being built.
     project_repo_name: The name of the projects repo.
-    commit_sha: The commit SHA to be checked out and fuzzed.
-    git_workspace: The location in the shared volume to store git repos.
-    out_dir: The location in the shared volume to store output artifacts.
+    workspace: The location in a shared volume to store a git repo and build
+      artifacts.
+    pr_ref: The pull request reference to be built.
+    commit_sha: The commit sha for the project to be built at.
 
   Returns:
     True if build succeeded or False on failure.
   """
-  if not os.path.exists(git_workspace):
-    logging.error('Invalid git workspace: %s.', format(git_workspace))
-    return False
-  if not os.path.exists(out_dir):
-    logging.error('Invalid out directory %s.', format(out_dir))
+  # Validate inputs.
+  assert pr_ref or commit_sha
+  if not os.path.exists(workspace):
+    logging.error('Invalid workspace: %s.', workspace)
     return False
 
+  git_workspace = os.path.join(workspace, 'storage')
+  os.makedirs(git_workspace, exist_ok=True)
+  out_dir = os.path.join(workspace, 'out')
+  os.makedirs(out_dir, exist_ok=True)
+
+  # Detect repo information.
   inferred_url, oss_fuzz_repo_path = build_specified_commit.detect_main_repo(
       project_name, repo_name=project_repo_name)
   if not inferred_url or not oss_fuzz_repo_path:
@@ -72,12 +81,18 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
                                                 git_workspace,
                                                 repo_name=oss_fuzz_repo_name)
   try:
-    build_repo_manager.checkout_commit(commit_sha)
-  except repo_manager.RepoManagerError:
-    logging.error('Specified commit does not exist.')
-    # NOTE: Remove return statement for testing.
+    if pr_ref:
+      build_repo_manager.checkout_pr(pr_ref)
+    else:
+      build_repo_manager.checkout_commit(commit_sha)
+  except RuntimeError:
+    logging.error('Can not check out requested state.')
+    return False
+  except ValueError:
+    logging.error('Invalid commit SHA requested %s.', commit_sha)
     return False
 
+  # Build Fuzzers using docker run.
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
       'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
@@ -103,41 +118,43 @@ def build_fuzzers(project_name, project_repo_name, commit_sha, git_workspace,
       '-c',
   ])
   command.append(bash_command)
-
   if helper.docker_run(command):
     logging.error('Building fuzzers failed.')
     return False
   return True
 
 
-def run_fuzzers(project_name, fuzz_seconds, out_dir):
+def run_fuzzers(project_name, fuzz_seconds, workspace):
   """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
     project_name: The name of the OSS-Fuzz project being built.
     fuzz_seconds: The total time allotted for fuzzing.
-    out_dir: The location in the shared volume to store output artifacts.
+    workspace: The location in a shared volume to store a git repo and build
+      artifacts.
 
   Returns:
     (True if run was successful, True if bug was found).
   """
-  if not out_dir or not os.path.exists(out_dir):
-    logging.error('Unreachable out_dir argument %s.', format(out_dir))
+  # Validate inputs.
+  if not os.path.exists(workspace):
+    logging.error('Invalid workspace: %s.', workspace)
     return False, False
-
+  out_dir = os.path.join(workspace, 'out')
   if not fuzz_seconds or fuzz_seconds < 1:
     logging.error('Fuzz_seconds argument must be greater than 1, but was: %s.',
                   format(fuzz_seconds))
     return False, False
 
+  # Get fuzzer information.
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
     logging.error('No fuzzers were found in out directory: %s.',
                   format(out_dir))
     return False, False
-
   fuzz_seconds_per_target = fuzz_seconds // len(fuzzer_paths)
 
+  # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
     target = fuzz_target.FuzzTarget(project_name, fuzzer_path,
                                     fuzz_seconds_per_target, out_dir)

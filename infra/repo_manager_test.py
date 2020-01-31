@@ -11,12 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing perepo_managerissions and
 # limitations under the License.
-"""Test the functionality of the RepoManager class
-The will consist of the following functional tests
-  1. Cloning of directory in desired location
-  2. Checking out a specific commit
-  3. Can get a list of commits between two SHAs
-"""
+"""Test the functionality of the RepoManager class."""
 
 import os
 import unittest
@@ -46,11 +41,11 @@ class RepoManagerCloneUnitTests(unittest.TestCase):
   def test_clone_invalid_repo(self):
     """Test that constructing RepoManager with an invalid repo will fail."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      with self.assertRaises(repo_manager.RepoManagerError):
+      with self.assertRaises(ValueError):
         repo_manager.RepoManager(' ', tmp_dir)
-      with self.assertRaises(repo_manager.RepoManagerError):
+      with self.assertRaises(ValueError):
         repo_manager.RepoManager('not_a_valid_repo', tmp_dir)
-      with self.assertRaises(repo_manager.RepoManagerError):
+      with self.assertRaises(ValueError):
         repo_manager.RepoManager('https://github.com/oss-fuzz-not-real.git',
                                  tmp_dir)
 
@@ -70,12 +65,12 @@ class RepoManagerCheckoutUnitTests(unittest.TestCase):
     """Tests that the git checkout invalid commit fails."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with self.assertRaises(repo_manager.RepoManagerError):
+      with self.assertRaises(ValueError):
         test_repo_manager.checkout_commit(' ')
-      with self.assertRaises(repo_manager.RepoManagerError):
+      with self.assertRaises(ValueError):
         test_repo_manager.checkout_commit(
             'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-      with self.assertRaises(repo_manager.RepoManagerError):
+      with self.assertRaises(ValueError):
         test_repo_manager.checkout_commit('not-a-valid-commit')
 
 
@@ -105,13 +100,37 @@ class RepoManagerGetCommitListUnitTests(unittest.TestCase):
       old_commit = '04ea24ee15bbe46a19e5da6c5f022a2ffdfbdb3b'
       new_commit = 'fa662173bfeb3ba08d2e84cefc363be11e6c8463'
       test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with self.assertRaises(repo_manager.RepoManagerError):
+      with self.assertRaises(ValueError):
         test_repo_manager.get_commit_list('fakecommit', new_commit)
-      with self.assertRaises(repo_manager.RepoManagerError):
+      with self.assertRaises(ValueError):
         test_repo_manager.get_commit_list(new_commit, 'fakecommit')
-      with self.assertRaises(repo_manager.RepoManagerError):
+      with self.assertRaises(RuntimeError):
         # pylint: disable=arguments-out-of-order
         test_repo_manager.get_commit_list(new_commit, old_commit)
+
+
+class RepoManagerCheckoutPullRequestUnitTests(unittest.TestCase):
+  """Class to test the functionality of checkout_pr of the RepoManager class."""
+
+  def test_checkout_valid_pull_request(self):
+    """Tests that the git checkout pull request works."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      test_repo_manager.checkout_pr('refs/pull/3310/merge')
+      self.assertEqual(test_repo_manager.get_current_commit(),
+                       'ff00c1685ccf32f729cf6c834e641223ce6262e4')
+
+  def test_checkout_invalid_pull_request(self):
+    """Tests that the git checkout invalid pull request fails."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      with self.assertRaises(RuntimeError):
+        test_repo_manager.checkout_pr(' ')
+      with self.assertRaises(RuntimeError):
+        test_repo_manager.checkout_pr(
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+      with self.assertRaises(RuntimeError):
+        test_repo_manager.checkout_pr('not/a/valid/pr')
 
 
 if __name__ == '__main__':
