@@ -131,10 +131,10 @@ def run_fuzzers(project_name, fuzz_seconds, workspace):
   Returns:
     (True if run was successful, True if bug was found).
   """
-  out_dir = os.path.join(workspace, 'out')
-  if not os.path.exists(out_dir):
-    logging.error('Unreachable out directory %s.', format(workspace))
+  if not os.path.exists(workspace):
+    logging.error('Unreachable out directory %s.', workspace)
     return False, False
+  out_dir = os.path.join(workspace, 'out')
 
   if not fuzz_seconds or fuzz_seconds < 1:
     logging.error('Fuzz_seconds argument must be greater than 1, but was: %s.',
