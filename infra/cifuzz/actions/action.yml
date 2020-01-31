@@ -9,7 +9,7 @@ inputs:
     description: 'The total time allotted for fuzzing in seconds.'
     required: true
     default: 360
- failure-allowed:
+  failure-allowed:
     description: 'Set when action should be run in no fail mode.'
     default: 'true'
 runs:
