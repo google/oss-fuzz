@@ -52,7 +52,7 @@ def main():
   workspace = os.environ.get('GITHUB_WORKSPACE')
 
   # Check if failures should be reported.
-  failure_allowed =  (os.environ.get('FAILURE_ALLOWED').lower() == 'true')
+  failure_allowed = (os.environ.get('FAILURE_ALLOWED').lower() == 'true')
   if not failure_allowed:
     out_dir = os.path.join(workspace, 'out')
     os.makedirs(out_dir, exist_ok=True)
