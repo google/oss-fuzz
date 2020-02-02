@@ -1,3 +1,18 @@
+/* Copyright 2020 Google Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 #include "sysdep.h"
 #include "bfd.h"
 #include "dis-asm.h"
@@ -13,8 +28,9 @@ typedef struct
     size_t pos;
 } SFILE;
 
-static int objdump_sprintf (SFILE *f, const char *format, ...)
+static int objdump_sprintf (void *vf, const char *format, ...)
 {
+    SFILE *f = (SFILE *) vf;
     size_t n;
     va_list args;
 
@@ -31,16 +47,11 @@ static int objdump_sprintf (SFILE *f, const char *format, ...)
     return n;
 }
 
-static void objdump_print_address (bfd_vma vma, struct disassemble_info *inf)
-{
-    (*inf->fprintf_func) (inf->stream, "0x%x", vma);
-}
 
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     char AssemblyText[MAX_TEXT_SIZE];
     struct disassemble_info disasm_info;
     SFILE s;
-    bfd abfd;
 
     if (Size < 10) {
         // 10 bytes for options
@@ -49,9 +60,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
     init_disassemble_info (&disasm_info, stdout, (fprintf_ftype) fprintf);
     disasm_info.fprintf_func = objdump_sprintf;
-    disasm_info.print_address_func = objdump_print_address;
+    disasm_info.print_address_func = generic_print_address;
     disasm_info.display_endian = disasm_info.endian = BFD_ENDIAN_LITTLE;
-    disasm_info.buffer = Data;
+    disasm_info.buffer = (bfd_byte *) Data;
     disasm_info.buffer_vma = 0x1000;
     disasm_info.buffer_length = Size-10;
     disasm_info.insn_info_valid = 0;
@@ -61,7 +72,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     disasm_info.bytes_per_line = 0;
 
     disasm_info.arch = Data[Size-1];
-    disasm_info.mach = *((unsigned long *) (Data + Size - 9));
+    disasm_info.mach = bfd_getl64(&Data[Size-9]);
     disasm_info.flavour = Data[Size-10];
 
     if (bfd_lookup_arch (disasm_info.arch, disasm_info.mach) != NULL) {
