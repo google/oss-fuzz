@@ -105,19 +105,19 @@ class ExecuteUnitTest(unittest.TestCase):
                                          location=tmp_dir,
                                          check_result=False)
       self.assertEqual(err_code, 0)
-      self.assertFalse(err)
-      self.assertFalse(out)
+      self.assertEqual(err, '')
+      self.assertEqual(out, '')
       out, err, err_code = utils.execute(['mkdir', 'tmp'],
                                          location=tmp_dir,
                                          check_result=False)
       self.assertEqual(err_code, 0)
-      self.assertFalse(err)
-      self.assertFalse(out)
+      self.assertEqual(err, '')
+      self.assertEqual(out, '')
       out, err, err_code = utils.execute(['ls', '.'],
                                          location=tmp_dir,
                                          check_result=False)
       self.assertEqual(err_code, 0)
-      self.assertFalse(err)
+      self.assertEqual(err, '')
       self.assertEqual(out, 'tmp\n')
 
   def test_error_command(self):
@@ -127,8 +127,8 @@ class ExecuteUnitTest(unittest.TestCase):
                                          location=tmp_dir,
                                          check_result=False)
       self.assertEqual(err_code, 2)
-      self.assertTrue(err)
-      self.assertFalse(out)
+      self.assertIsNotNone(err)
+      self.assertEqual(out, '')
       with self.assertRaises(RuntimeError):
         out, err, err_code = utils.execute(['ls', 'notarealdir'],
                                            location=tmp_dir,
