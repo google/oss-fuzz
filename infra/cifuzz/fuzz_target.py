@@ -28,6 +28,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
 
+DEFAULT_OPTIONS = '-seed=1337 -len_control=0'
 
 class FuzzTarget:
   """A class to manage a single fuzz target.
@@ -75,8 +76,7 @@ class FuzzTarget:
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
         'bash', '-c', 'run_fuzzer {fuzz_target} {seed} {len_control}'.format(
             fuzz_target=self.target_name,
-            seed='-seed=1337',
-            len_control='-len_control=0')
+            options=DEFAULT_OPTIONS)
     ]
     logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
