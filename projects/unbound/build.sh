@@ -47,7 +47,7 @@ $CXX $CXXFLAGS -std=c++11 \
   val_secalgo.o val_sigcrypt.o val_utils.o dns64.o cachedb.o redis.o authzone.o \
   respip.o netevent.o listen_dnsport.o outside_network.o ub_event.o keyraw.o \
   sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o libunbound.o \
-  libworker.o context.o \
+  libworker.o context.o rpz.o \
   $LIBOBJS
 
 $CXX $CXXFLAGS -std=c++11 \
@@ -67,7 +67,7 @@ $CXX $CXXFLAGS -std=c++11 \
   val_secalgo.o val_sigcrypt.o val_utils.o dns64.o cachedb.o redis.o authzone.o \
   respip.o netevent.o listen_dnsport.o outside_network.o ub_event.o keyraw.o \
   sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o libunbound.o \
-  libworker.o context.o \
+  libworker.o context.o rpz.o \
   $LIBOBJS
 
 $CXX $CXXFLAGS -std=c++11 \
@@ -87,7 +87,7 @@ $CXX $CXXFLAGS -std=c++11 \
   val_secalgo.o val_sigcrypt.o val_utils.o dns64.o cachedb.o redis.o authzone.o \
   respip.o netevent.o listen_dnsport.o outside_network.o ub_event.o keyraw.o \
   sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o libunbound.o \
-  libworker.o context.o \
+  libworker.o context.o rpz.o \
   $LIBOBJS
 
 $CXX $CXXFLAGS -std=c++11 \
@@ -107,7 +107,7 @@ $CXX $CXXFLAGS -std=c++11 \
   val_secalgo.o val_sigcrypt.o val_utils.o dns64.o cachedb.o redis.o authzone.o \
   respip.o netevent.o listen_dnsport.o outside_network.o ub_event.o keyraw.o \
   sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o libunbound.o \
-  libworker.o context.o \
+  libworker.o context.o rpz.o \
   $LIBOBJS
 
 $CXX $CXXFLAGS -std=c++11 \
@@ -127,7 +127,7 @@ $CXX $CXXFLAGS -std=c++11 \
   val_secalgo.o val_sigcrypt.o val_utils.o dns64.o cachedb.o redis.o authzone.o \
   respip.o netevent.o listen_dnsport.o outside_network.o ub_event.o keyraw.o \
   sbuffer.o wire2str.o parse.o parseutil.o rrdef.o str2wire.o libunbound.o \
-  libworker.o context.o \
+  libworker.o context.o rpz.o \
   $LIBOBJS
 
 wget --directory-prefix $OUT https://github.com/jsha/unbound/raw/fuzzing-corpora/testdata/parse_packet_fuzzer_seed_corpus.zip
