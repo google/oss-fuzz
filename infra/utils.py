@@ -42,7 +42,7 @@ def execute(command, location=None, check_result=False):
     check_result: Should an exception be thrown on failed command.
 
   Returns:
-    stdout, error code.
+    stdout, stderr, error code.
 
   Raises:
     RuntimeError: running a command resulted in an error.
@@ -58,11 +58,12 @@ def execute(command, location=None, check_result=False):
   out = out.decode('ascii')
   err = err.decode('ascii')
   if err:
-    logging.error('stderr of command \'%s\' is %s.', ' '.join(command), err)
+    logging.debug('stderr of command \'%s\' is %s.', ' '.join(command), err)
   if check_result and process.returncode:
-    raise RuntimeError('Executing command {0} failed with error: {1}.'.format(
-        ' '.join(command), err))
-  return out, process.returncode
+    raise RuntimeError(
+        'Executing command \'{0}\' failed with error: {1}.'.format(
+            ' '.join(command), err))
+  return out, err, process.returncode
 
 
 def get_fuzz_targets(path):

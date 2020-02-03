@@ -101,34 +101,38 @@ class ExecuteUnitTest(unittest.TestCase):
   def test_valid_command(self):
     """Tests that execute can produce valid output."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out, err_code = utils.execute(['ls', '.'],
-                                    location=tmp_dir,
-                                    check_result=False)
+      out, err, err_code = utils.execute(['ls', '.'],
+                                         location=tmp_dir,
+                                         check_result=False)
       self.assertEqual(err_code, 0)
+      self.assertFalse(err)
       self.assertFalse(out)
-      out, err_code = utils.execute(['mkdir', 'tmp'],
-                                    location=tmp_dir,
-                                    check_result=False)
+      out, err, err_code = utils.execute(['mkdir', 'tmp'],
+                                         location=tmp_dir,
+                                         check_result=False)
       self.assertEqual(err_code, 0)
+      self.assertFalse(err)
       self.assertFalse(out)
-      out, err_code = utils.execute(['ls', '.'],
-                                    location=tmp_dir,
-                                    check_result=False)
+      out, err, err_code = utils.execute(['ls', '.'],
+                                         location=tmp_dir,
+                                         check_result=False)
       self.assertEqual(err_code, 0)
+      self.assertFalse(err)
       self.assertEqual(out, 'tmp\n')
 
   def test_error_command(self):
     """Tests that execute can correctly surface errors."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      out, err_code = utils.execute(['ls', 'notarealdir'],
-                                    location=tmp_dir,
-                                    check_result=False)
+      out, err, err_code = utils.execute(['ls', 'notarealdir'],
+                                         location=tmp_dir,
+                                         check_result=False)
       self.assertEqual(err_code, 2)
+      self.assertTrue(err)
       self.assertFalse(out)
       with self.assertRaises(RuntimeError):
-        out, err_code = utils.execute(['ls', 'notarealdir'],
-                                      location=tmp_dir,
-                                      check_result=True)
+        out, err, err_code = utils.execute(['ls', 'notarealdir'],
+                                           location=tmp_dir,
+                                           check_result=True)
 
 
 if __name__ == '__main__':

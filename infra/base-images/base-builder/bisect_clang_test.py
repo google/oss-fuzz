@@ -88,8 +88,9 @@ class SearchBisectOutputTest(BisectClangTestMixin, unittest.TestCase):
     self.assertIsNone(bisect_clang.search_bisect_output('hello'))
 
 
-def create_mock_popen(
-    output=bytes('', 'utf-8'), err=bytes('', 'utf-8'), returncode=0):
+def create_mock_popen(output=bytes('', 'utf-8'),
+                      err=bytes('', 'utf-8'),
+                      returncode=0):
   """Creates a mock subprocess.Popen."""
 
   class MockPopen:
@@ -224,8 +225,8 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     with mock.patch('subprocess.Popen', create_mock_popen()) as mock_popen:
       self.git.bisect_start(self.good_commit, self.bad_commit,
                             self.test_command)
-      self.assertEqual(
-          get_git_command('bisect', 'start'), mock_popen.commands[0])
+      self.assertEqual(get_git_command('bisect', 'start'),
+                       mock_popen.commands[0])
       mock_test_start_commit.assert_has_calls([
           mock.call('bad_commit', 'bad', 'testcommand'),
           mock.call('good_commit', 'good', 'testcommand')

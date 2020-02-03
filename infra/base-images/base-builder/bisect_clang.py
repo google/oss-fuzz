@@ -140,8 +140,8 @@ def clone_with_retries(repo, local_path, num_retries=10):
   for _ in range(num_retries):
     if os.path.isdir(local_path):
       shutil.rmtree(local_path)
-    retcode, _, _ = execute(
-        ['git', 'clone', repo, local_path], expect_zero=False)
+    retcode, _, _ = execute(['git', 'clone', repo, local_path],
+                            expect_zero=False)
     if retcode == 0:
       return
   raise Exception('Could not checkout %s.' % repo)
@@ -162,17 +162,16 @@ def prepare_build(llvm_project_path):
   llvm_build_dir = os.path.join(os.getenv('WORK'), 'llvm-build')
   if not os.path.exists(llvm_build_dir):
     os.mkdir(llvm_build_dir)
-  execute(
-      [
-          'cmake', '-G', 'Ninja', '-DLIBCXX_ENABLE_SHARED=OFF',
-          '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON',
-          '-DLIBCXXABI_ENABLE_SHARED=OFF', '-DCMAKE_BUILD_TYPE=Release',
-          '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;clang',
-          '-DLLVM_TARGETS_TO_BUILD=' + get_clang_target_arch(),
-          os.path.join(llvm_project_path, 'llvm')
-      ],
-      env=get_clang_build_env(),
-      cwd=llvm_build_dir)
+  execute([
+      'cmake', '-G', 'Ninja', '-DLIBCXX_ENABLE_SHARED=OFF',
+      '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON', '-DLIBCXXABI_ENABLE_SHARED=OFF',
+      '-DCMAKE_BUILD_TYPE=Release',
+      '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;clang',
+      '-DLLVM_TARGETS_TO_BUILD=' + get_clang_target_arch(),
+      os.path.join(llvm_project_path, 'llvm')
+  ],
+          env=get_clang_build_env(),
+          cwd=llvm_build_dir)
   return llvm_build_dir
 
 

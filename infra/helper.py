@@ -641,10 +641,9 @@ def download_corpora(args):
     with open(os.devnull, 'w') as stdout:
       subprocess.check_call(['gsutil', '--version'], stdout=stdout)
   except OSError:
-    print(
-        'ERROR: gsutil not found. Please install it from '
-        'https://cloud.google.com/storage/docs/gsutil_install',
-        file=sys.stderr)
+    print('ERROR: gsutil not found. Please install it from '
+          'https://cloud.google.com/storage/docs/gsutil_install',
+          file=sys.stderr)
     return False
 
   if args.fuzz_target:
@@ -675,10 +674,9 @@ def download_corpora(args):
 def coverage(args):
   """Generate code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
-    print(
-        'ERROR: --corpus-dir requires specifying a particular fuzz target '
-        'using --fuzz-target',
-        file=sys.stderr)
+    print('ERROR: --corpus-dir requires specifying a particular fuzz target '
+          'using --fuzz-target',
+          file=sys.stderr)
     return 1
 
   if not check_project_exists(args.project_name):
