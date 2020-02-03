@@ -53,7 +53,7 @@ def main():
   workspace = os.environ.get('GITHUB_WORKSPACE')
 
   # Check if failures should be reported.
-  report_errors = (os.environ.get('FAILURE_ALLOWED').lower() == 'true')
+  failure_allowed = (os.environ.get('FAILURE_ALLOWED').lower() == 'true')
 
   error_code = 1
   if not failure_allowed:
@@ -75,8 +75,7 @@ def main():
                   oss_fuzz_project_name, commit_sha)
     return error_code
   if event == 'pull_request' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace,
-      pr_ref=pr_ref):
+      oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
     logging.error('Error building fuzzers for project %s with pull request %s.',
                   oss_fuzz_project_name, pr_ref)
     return error_code
