@@ -73,7 +73,7 @@ class FuzzTarget:
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=address', '-e',
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
-        'bash', '-c', 'run_fuzzer {0} {1} {2}'.format(self.target_name,
+        'bash', '-c', 'run_fuzzer {fuzz target} {seed} {len control}'.format(self.target_name,
                                                       '-seed=1337',
                                                       '-len_control=0')
     ]
