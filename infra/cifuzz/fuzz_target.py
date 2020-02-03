@@ -73,9 +73,10 @@ class FuzzTarget:
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=address', '-e',
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
-        'bash', '-c', 'run_fuzzer {fuzz target} {seed} {len control}'.format(self.target_name,
-                                                      '-seed=1337',
-                                                      '-len_control=0')
+        'bash', '-c', 'run_fuzzer {fuzz_target} {seed} {len_control}'.format(
+            fuzz_target=self.target_name,
+            seed='-seed=1337',
+            len_control='-len_control=0')
     ]
     logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
