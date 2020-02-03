@@ -53,7 +53,7 @@ def main():
   workspace = os.environ.get('GITHUB_WORKSPACE')
 
   # Check if failures should be reported.
-  dry_run = bool(os.environ.get('DRY_RUN'))
+  dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
 
   # The default return code when an error occurs.
   error_code = 1
