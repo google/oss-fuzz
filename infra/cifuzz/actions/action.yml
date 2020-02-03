@@ -11,7 +11,7 @@ inputs:
     default: 360
   failure-allowed:
     description: 'Set when action should be run in no fail mode.'
-    default: 'true'
+    default: True
 runs:
   using: 'docker'
   image: 'Dockerfile'
