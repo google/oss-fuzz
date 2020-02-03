@@ -17,6 +17,7 @@ import os
 import sys
 
 # pylint: disable=wrong-import-position
+# pylint: disable=import-error
 sys.path.append(os.path.join(os.environ['OSS_FUZZ_ROOT'], 'infra', 'cifuzz'))
 import cifuzz
 
@@ -52,41 +53,41 @@ def main():
   workspace = os.environ.get('GITHUB_WORKSPACE')
 
   # Check if failures should be reported.
-  failure_allowed = (os.environ.get('FAILURE_ALLOWED').lower() == 'true')
+  report_errors = (os.environ.get('FAILURE_ALLOWED').lower() == 'true')
+
+  error_code = 1
   if not failure_allowed:
     out_dir = os.path.join(workspace, 'out')
     os.makedirs(out_dir, exist_ok=True)
-    f = open(os.path.join(out_dir, 'testcase'), "a")
-    f.write('No bugs detected.')
-    f.close()
+    file_handle = open(os.path.join(out_dir, 'testcase'), 'a')
+    file_handle.write('No bugs detected.')
+    file_handle.close()
+    error_code = 0
 
-  if not workspace and failure_allowed:
+  if not workspace:
     logging.error('This script needs to be run in the Github action context.')
-    return 1
-  git_workspace = os.path.join(workspace, 'storage')
-  os.makedirs(git_workspace, exist_ok=True)
-  out_dir = os.path.join(workspace, 'out')
-  os.makedirs(out_dir, exist_ok=True)
+    return error_code
 
   if event == 'push' and not cifuzz.build_fuzzers(
       oss_fuzz_project_name, github_repo_name, workspace,
       commit_sha=commit_sha):
     logging.error('Error building fuzzers for project %s with commit %s.',
                   oss_fuzz_project_name, commit_sha)
-    return 1
+    return error_code
   if event == 'pull_request' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
+      oss_fuzz_project_name, github_repo_name, workspace,
+      pr_ref=pr_ref):
     logging.error('Error building fuzzers for project %s with pull request %s.',
                   oss_fuzz_project_name, pr_ref)
-    return 1
+    return error_code
 
   # Run the specified project's fuzzers from the build.
   run_status, bug_found = cifuzz.run_fuzzers(oss_fuzz_project_name,
                                              fuzz_seconds, workspace)
-  if not run_status and failure_ok:
+  if not run_status:
     logging.error('Error occured while running fuzzers for project %s.',
                   oss_fuzz_project_name)
-    return 1
+    return error_code
   if bug_found and failure_allowed:
     logging.info('Bug found.')
     # Return 2 when a bug was found by a fuzzer causing the CI to fail.
