@@ -11,7 +11,7 @@ inputs:
     default: 360
   dry-run:
     description: 'If set, run the action without actually reporting a failure.'
-    default: False
+    default: false
 runs:
   using: 'docker'
   image: 'Dockerfile'

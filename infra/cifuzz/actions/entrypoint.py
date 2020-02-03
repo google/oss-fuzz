@@ -64,7 +64,7 @@ def main():
     # on successful runs and on failures.
     out_dir = os.path.join(workspace, 'out')
     os.makedirs(out_dir, exist_ok=True)
-    file_handle = open(os.path.join(out_dir, 'testcase'), 'a')
+    file_handle = open(os.path.join(out_dir, 'testcase'), 'w')
     file_handle.write('No bugs detected.')
     file_handle.close()
 
