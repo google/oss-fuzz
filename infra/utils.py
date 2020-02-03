@@ -42,7 +42,7 @@ def execute(command, location=None, check_result=False):
     check_result: Should an exception be thrown on failed command.
 
   Returns:
-    stdout, stderr, error code.
+    stdout, error code.
 
   Raises:
     RuntimeError: running a command resulted in an error.
