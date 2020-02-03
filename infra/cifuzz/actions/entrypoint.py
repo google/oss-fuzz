@@ -53,11 +53,11 @@ def main():
   workspace = os.environ.get('GITHUB_WORKSPACE')
 
   # Check if failures should be reported.
-  failure_allowed = (os.environ.get('FAILURE_ALLOWED').lower() == 'true')
+  dry_run = bool(os.environ.get('DRY_RUN'))
 
   # The default return code when an error occurs.
   error_code = 1
-  if not failure_allowed:
+  if dry_run:
     out_dir = os.path.join(workspace, 'out')
     os.makedirs(out_dir, exist_ok=True)
     file_handle = open(os.path.join(out_dir, 'testcase'), 'a')
@@ -92,7 +92,7 @@ def main():
     return error_code
   if bug_found:
     logging.info('Bug found.')
-    if failure_allowed:
+    if not dry_run:
       # Return 2 when a bug was found by a fuzzer causing the CI to fail.
       return 2
   return 0

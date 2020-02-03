@@ -9,13 +9,13 @@ inputs:
     description: 'The total time allotted for fuzzing in seconds.'
     required: true
     default: 360
-  failure-allowed:
-    description: 'Set when action should be run in no fail mode.'
-    default: True
+  dry-run:
+    description: 'If set, run the action without actually reporting a failure.'
+    default: False
 runs:
   using: 'docker'
   image: 'Dockerfile'
   env:
     PROJECT_NAME: ${{ inputs.project-name }}
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
-    FAILURE_ALLOWED: ${{ inputs.failure-allowed}}
+    DRY_RUN: ${{ inputs.dry-run}}
