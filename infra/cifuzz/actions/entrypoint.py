@@ -61,7 +61,7 @@ def main():
     # A testcase file is required in order for CIFuzz to surface bugs.
     # If the file does not exist, the action will crash attempting to upload it.
     # The dry run needs this file because it is set to upload a test case both
-    # on successful runs and on failures. 
+    # on successful runs and on failures.
     out_dir = os.path.join(workspace, 'out')
     os.makedirs(out_dir, exist_ok=True)
     file_handle = open(os.path.join(out_dir, 'testcase'), 'a')
