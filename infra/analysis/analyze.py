@@ -107,7 +107,7 @@ def _daily_stats(day):
 
 
 def _is_interesting(row):
-  if row['edges_without_strategy'] >= row['edges_with_strategy']:
+  if row['edges_without_strategy'] > row['edges_with_strategy']:
     return False
 
   if row['edges_without_strategy'] != 0:
@@ -209,6 +209,8 @@ def _get_coverage_diff(row, day):
                                         binary=binary)
   coverage_base = _read_gcs_file(_COVERAGE_BUCKET, path_base)
   coverage_advanced = _read_gcs_file(_COVERAGE_BUCKET, path_advanced)
+  if not coverage_base or not coverage_advanced:
+    return False
   diff = _calculate_coverage_diff(coverage_base, coverage_advanced)
   if any(delta.values() for delta in diff):
     print('There is a visible coverage difference. Explore the reports:')
@@ -221,6 +223,9 @@ def _get_coverage_diff(row, day):
 def _read_gcs_file(bucket_name, path):
   bucket = _GCS_CLIENT.bucket(bucket_name)
   blob = bucket.get_blob(path)
+  if not blob:
+    print('WARNING: failed to read gs://%s/%s' % (bucket_name, path))
+    return b''
   return blob.download_as_string()
 
 
@@ -269,7 +274,7 @@ WHERE
 
 
 def _find_runs(fuzz_target, day):
-  start_time = _date_str(day)
+  start_time = _date_str(day - _ONE_DAY)
   end_time = _date_str(day + _ONE_DAY)
   query = _QUERY_RUNS.format(start_time=start_time,
                              end_time=end_time,
