@@ -44,8 +44,8 @@ def get_modified_buildable_projects():
   # builds to fail.
   modified_buildable_projects = []
   for project in modified_projects:
-    if not os.path.exists(os.path.join(projects_dir, project, 'build.sh')):
-      print('Project {0} does not have a build.sh. skipping build.'.format(
+    if not os.path.exists(os.path.join(projects_dir, project, 'Dockerfile')):
+      print('Project {0} does not have Dockerfile. skipping build.'.format(
           project))
       continue
     modified_buildable_projects.append(project)
