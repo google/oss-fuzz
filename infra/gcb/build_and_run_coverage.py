@@ -147,15 +147,16 @@ def get_build_steps(project_dir):
                  '*' * 80).format(name=name)
 
   # Unpack the corpus and run coverage script.
+  coverage_env = env + [
+      'HTTP_PORT=',
+      'COVERAGE_EXTRA_ARGS=%s' % project_yaml['coverage_extra_args'].strip(),
+  ]
+  if 'dataflow' in project_yaml['fuzzing_engines']:
+    coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
+
   build_steps.append({
-      'name':
-          'gcr.io/oss-fuzz-base/base-runner',
-      'env':
-          env + [
-              'HTTP_PORT=',
-              'COVERAGE_EXTRA_ARGS=%s' %
-              project_yaml['coverage_extra_args'].strip()
-          ],
+      'name': 'gcr.io/oss-fuzz-base/base-runner',
+      'env': coverage_env,
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || ('

@@ -96,7 +96,16 @@ function run_fuzz_target {
   rm $profraw_file_mask
 
   shared_libraries=$(coverage_helper shared_libs -build-dir=$OUT -object=$target)
-  llvm-cov export -summary-only -instr-profile=$profdata_file -object=$target \
+
+  local summary_only_flag="-summary-only"
+  if [ -n "${FULL_SUMMARY_PER_TARGET-}" ]; then
+    # This is needed for dataflow strategy analysis, can be removed later. See
+    # - https://github.com/google/oss-fuzz/pull/3306
+    # - https://github.com/google/oss-fuzz/issues/1632
+    summary_only_flag=""
+  fi
+
+  llvm-cov export $summary_only_flag -instr-profile=$profdata_file -object=$target \
       $shared_libraries $LLVM_COV_COMMON_ARGS > $FUZZER_STATS_DIR/$target.json
 }
 
