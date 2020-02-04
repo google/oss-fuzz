@@ -58,7 +58,7 @@ def execute(command, location=None, check_result=False):
   out = out.decode('ascii')
   err = err.decode('ascii')
   if err:
-    logging.debug('stderr of command \'%s\' is %s.', ' '.join(command), err)
+    logging.debug('Stderr of command \'%s\' is %s.', ' '.join(command), err)
   if check_result and process.returncode:
     raise RuntimeError(
         'Executing command \'{0}\' failed with error: {1}.'.format(
