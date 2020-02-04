@@ -39,7 +39,7 @@ def get_modified_buildable_projects():
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
   modified_projects = set(re.findall(projects_regex, output))
   projects_dir = os.path.join(get_oss_fuzz_root(), 'projects')
-  # Filter out projects without build.sh files since new projects and reverted
+  # Filter out projects without Dockerfile files since new projects and reverted
   # projects frequently don't have them. In these cases we don't want Travis's
   # builds to fail.
   modified_buildable_projects = []
