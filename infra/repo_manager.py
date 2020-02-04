@@ -63,8 +63,8 @@ class RepoManager:
     if not os.path.exists(self.base_dir):
       os.makedirs(self.base_dir)
     self.remove_repo()
-    out, err = utils.execute(['git', 'clone', self.repo_url, self.repo_name],
-                             location=self.base_dir)
+    out, _, _ = utils.execute(['git', 'clone', self.repo_url, self.repo_name],
+                              location=self.base_dir)
     if not self._is_git_repo():
       raise ValueError('%s is not a git repo' % self.repo_url)
 
@@ -89,8 +89,8 @@ class RepoManager:
     if not commit.rstrip():
       return False
 
-    _, err_code = utils.execute(['git', 'cat-file', '-e', commit],
-                                self.repo_dir)
+    _, _, err_code = utils.execute(['git', 'cat-file', '-e', commit],
+                                   self.repo_dir)
     return not err_code
 
   def get_current_commit(self):
@@ -99,9 +99,9 @@ class RepoManager:
     Returns:
       The current active commit SHA.
     """
-    out, _ = utils.execute(['git', 'rev-parse', 'HEAD'],
-                           self.repo_dir,
-                           check_result=True)
+    out, _, _ = utils.execute(['git', 'rev-parse', 'HEAD'],
+                              self.repo_dir,
+                              check_result=True)
     return out.strip('\n')
 
   def get_commit_list(self, old_commit, new_commit):
@@ -125,7 +125,7 @@ class RepoManager:
       raise ValueError('The new commit %s does not exist' % new_commit)
     if old_commit == new_commit:
       return [old_commit]
-    out, err_code = utils.execute(
+    out, _, err_code = utils.execute(
         ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
     commits = out.split('\n')
     commits = [commit for commit in commits if commit]

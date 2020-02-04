@@ -11,13 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test the functionality of the utils module's functions:
-1. is_fuzz_target_local
-2. get_fuzz_targets
-3. get_env_var
-"""
+"""Test the functionality of the utils module's functions"""
 
 import os
+import tempfile
 import unittest
 
 import utils
@@ -96,6 +93,46 @@ class GetFuzzTargetsUnitTest(unittest.TestCase):
                               mount_location=None)
     fuzz_targets = utils.get_fuzz_targets('not/a/valid/file/path')
     self.assertFalse(fuzz_targets)
+
+
+class ExecuteUnitTest(unittest.TestCase):
+  """Test execute function in the utils module."""
+
+  def test_valid_command(self):
+    """Tests that execute can produce valid output."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out, err, err_code = utils.execute(['ls', '.'],
+                                         location=tmp_dir,
+                                         check_result=False)
+      self.assertEqual(err_code, 0)
+      self.assertEqual(err, '')
+      self.assertEqual(out, '')
+      out, err, err_code = utils.execute(['mkdir', 'tmp'],
+                                         location=tmp_dir,
+                                         check_result=False)
+      self.assertEqual(err_code, 0)
+      self.assertEqual(err, '')
+      self.assertEqual(out, '')
+      out, err, err_code = utils.execute(['ls', '.'],
+                                         location=tmp_dir,
+                                         check_result=False)
+      self.assertEqual(err_code, 0)
+      self.assertEqual(err, '')
+      self.assertEqual(out, 'tmp\n')
+
+  def test_error_command(self):
+    """Tests that execute can correctly surface errors."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out, err, err_code = utils.execute(['ls', 'notarealdir'],
+                                         location=tmp_dir,
+                                         check_result=False)
+      self.assertEqual(err_code, 2)
+      self.assertIsNotNone(err)
+      self.assertEqual(out, '')
+      with self.assertRaises(RuntimeError):
+        out, err, err_code = utils.execute(['ls', 'notarealdir'],
+                                           location=tmp_dir,
+                                           check_result=True)
 
 
 if __name__ == '__main__':
