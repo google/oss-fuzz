@@ -3,13 +3,7 @@ primary_contact: "david@wavpack.com"
 auto_ccs:
 - dvbryant@gmail.com
 - thuanpv.nus@gmail.com
-fuzzing_engines:
-- afl
-- libfuzzer
-- honggfuzz
-- dataflow
 sanitizers: 
 - address 
 - memory
 - undefined
-- dataflow
