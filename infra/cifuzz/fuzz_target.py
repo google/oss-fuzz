@@ -19,6 +19,7 @@ import subprocess
 import sys
 
 # pylint: disable=wrong-import-position
+# pylint: disable=import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
@@ -26,6 +27,8 @@ import utils
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
+
+LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 
 
 class FuzzTarget:
@@ -72,7 +75,8 @@ class FuzzTarget:
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=address', '-e',
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
-        'bash', '-c', 'run_fuzzer {0}'.format(self.target_name)
+        'bash', '-c', 'run_fuzzer {fuzz_target} {options}'.format(
+            fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
     ]
     logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
