@@ -21,6 +21,12 @@ RUN git clone --branch 5.15 --depth 1 git://code.qt.io/qt/qt5.git qt
 WORKDIR qt
 RUN perl init-repository --module-subset=qtbase
 
+# temporary compile fix
+WORKDIR qtbase
+RUN git config user.name qt-local
+RUN git config user.email qt-local@oss-fuzz
+RUN git fetch "https://codereview.qt-project.org/qt/qtbase" refs/changes/90/289190/2 && git cherry-pick FETCH_HEAD
+
 WORKDIR $SRC
 RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git
 COPY build.sh $SRC/
