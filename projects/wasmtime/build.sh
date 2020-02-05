@@ -37,4 +37,5 @@ do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
     zip -jr $OUT/${FUZZ_TARGET_NAME}_seed_corpus.zip $PROJECT_DIR/wasmtime-libfuzzer-corpus/$FUZZ_TARGET_NAME/
+    cp $SRC/default.options $OUT/$FUZZ_TARGET_NAME.options
 done

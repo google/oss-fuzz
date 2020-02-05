@@ -28,4 +28,4 @@ RUN git submodule update --init --recursive
 
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime-libfuzzer-corpus wasmtime-libfuzzer-corpus
 
-COPY build.sh $SRC/
+COPY build.sh default.options $SRC/
