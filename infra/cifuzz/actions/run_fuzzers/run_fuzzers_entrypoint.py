@@ -54,9 +54,6 @@ def main():
   oss_fuzz_project_name = os.environ.get('PROJECT_NAME')
   fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 360))
   workspace = os.environ.get('GITHUB_WORKSPACE')
-  if not workspace:
-    logging.error('This script needs to be run in the Github action context.')
-    return error_code
 
   # Check if failures should not be reported.
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
@@ -77,6 +74,9 @@ def main():
     # Sets the default return code on error to success.
     error_code = 0
 
+  if not workspace:
+    logging.error('This script needs to be run in the Github action context.')
+    return error_code
   # Run the specified project's fuzzers from the build.
   run_status, bug_found = cifuzz.run_fuzzers(oss_fuzz_project_name,
                                              fuzz_seconds, workspace)

@@ -66,6 +66,10 @@ def main():
     # Sets the default return code on error to success.
     error_code = 0
 
+  if not workspace:
+    logging.error('This script needs to be run in the Github action context.')
+    return error_code
+
   if event == 'push' and not cifuzz.build_fuzzers(
       oss_fuzz_project_name, github_repo_name, workspace,
       commit_sha=commit_sha):
