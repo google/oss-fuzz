@@ -3,7 +3,7 @@ primary_contact: "jonathan.foote@gmail.com"
 auto_ccs:
   - "fitzgen@gmail.com"
   - "alex@alexcrichton.com"
-  - "till_bytecodealliance@tillschneidereit.net"
+  - "till@tillschneidereit.net"
 sanitizers:
   - address
 fuzzing_engines:
