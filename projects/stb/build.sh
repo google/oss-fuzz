@@ -17,8 +17,7 @@
 
 $CXX $CXXFLAGS -std=c++11 -I. \
     $SRC/stb/tests/stb_png_read_fuzzer.cpp \
-    -o $OUT/stb_png_read_fuzzer \
-    -lFuzzingEngine
+    -o $OUT/stb_png_read_fuzzer $LIB_FUZZING_ENGINE
 
 find $SRC/stb/tests/pngsuite -name "*.png" | \
      xargs zip $OUT/stb_png_read_fuzzer_seed_corpus.zip
