@@ -181,7 +181,7 @@ class ParseOutputUnitTest(unittest.TestCase):
       with open(os.path.join(tmp_dir, 'bug_stack.txt'), 'r') as bug_stack:
         detected_stack = bug_stack.read()
       with open(os.path.join(test_stack_path), 'r') as bug_stack:
-        real_stack = bug_stack.read(detected_stack)
+        real_stack = bug_stack.read()
       self.assertEqual(detected_stack, real_stack)
 
   def parse_invalid_output(self):
