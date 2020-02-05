@@ -5,10 +5,6 @@ inputs:
   project-name:
     description: 'Name of the corresponding OSS-Fuzz project.'
     required: true
-  fuzz-seconds:
-    description: 'The total time allotted for fuzzing in seconds.'
-    required: true
-    default: 360
   dry-run:
     description: 'If set, run the action without actually reporting a failure.'
     default: false
@@ -17,5 +13,4 @@ runs:
   image: 'Dockerfile'
   env:
     PROJECT_NAME: ${{ inputs.project-name }}
-    FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
