@@ -173,11 +173,11 @@ def run_fuzzers(fuzz_seconds, workspace):
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):
-  """Parses the fuzzer output from a libfuzzer binary.
+  """Parses the fuzzer output from a fuzz target binary.
 
   Args:
-    fuzzer_output: A libfuzzer binary output string to be parsed.
-    out_dir: The location to store the parsed output files
+    fuzzer_output: A fuzz target binary output string to be parsed.
+    out_dir: The location to store the parsed output files.
   """
   # Get index of key file points.
   begin_summary = fuzzer_output.find('SUMMARY')
