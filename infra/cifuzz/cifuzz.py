@@ -179,16 +179,20 @@ def parse_fuzzer_output(fuzzer_output, out_dir):
     fuzzer_output: A libfuzzer binary output string to be parsed.
     out_dir: The location to store the parsed output files
   """
+  # Get index of key file points.
   begin_summary = fuzzer_output.find('SUMMARY')
   end_summary = fuzzer_output.find('==ABORTING')
   summary_str = fuzzer_output[begin_summary:end_summary]
-  summary_file_path = os.path.join(out_dir, 'bug_summary.txt')
-  with open(summary_file_path, 'a') as summary_handle:
-    summary_handle.write(summary_str)
-
   begin_stack = fuzzer_output.find('==ERROR')
   end_stack = fuzzer_output.find('SUMMARY')
   stack_str = fuzzer_output[begin_stack:end_stack]
+  if not summary_str or not stack_str:
+    return
+
+  # Write sections of fuzzer output to specific files.
+  summary_file_path = os.path.join(out_dir, 'bug_summary.txt')
+  with open(summary_file_path, 'a') as summary_handle:
+    summary_handle.write(summary_str)
   stack_file_path = os.path.join(out_dir, 'bug_stack.txt')
   with open(stack_file_path, 'a') as stack_handle:
     stack_handle.write(stack_str)
