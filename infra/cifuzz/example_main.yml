@@ -12,12 +12,12 @@ jobs:
       uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
       with:
         project-name: 'example'
-        dry-run: False
+        dry-run: 0
     - name: Run Fuzzers
       uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
       with:
-        fuzz-time: 360
-        dry-run: False
+        fuzz-time: 600
+        dry-run: 0
     - name: Upload Crash
       uses: actions/upload-artifact@v1
       if: failure()
