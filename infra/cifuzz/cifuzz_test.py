@@ -169,14 +169,14 @@ class ParseOutputUnitTest(unittest.TestCase):
         result_files = ['bug_summary.txt', 'bug_stack.txt']
         self.assertCountEqual(os.listdir(tmp_dir),result_files)
 
-        # Compare the summary.
+        # Compare the bug summaries.
         with open(os.path.join(tmp_dir, 'bug_summary.txt'), 'r') as bug_summary:
           detected_summary = bug_summary.read()
         with open(os.path.join(test_summary_path), 'r') as bug_summary:
           real_summary = bug_summary.read()
         self.assertEqual(detected_summary, real_summary)
 
-        # Compare the stacks.
+        # Compare the bug stacks.
         with open(os.path.join(tmp_dir, 'bug_stack.txt'), 'r') as bug_stack:
           detected_stack = bug_stack.read()
         with open(os.path.join(test_stack_path), 'r') as bug_stack:
