@@ -8,7 +8,6 @@ sanitizers:
  - address
  - undefined
  - memory
- - dataflow
 architectures:
  - x86_64
  - i386
