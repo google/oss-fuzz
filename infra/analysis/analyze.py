@@ -10,7 +10,7 @@ from google.cloud import bigquery
 from google.cloud import storage
 
 # Looking at the date over the past 14 days, as that's how long our logs exist.
-_DAYS_TO_ANALYZE = 14
+_DAYS_TO_ANALYZE = 3
 
 _BQ_CLIENT = bigquery.Client(project='clusterfuzz-external')
 _GCS_CLIENT = storage.Client(project='clusterfuzz-external')
@@ -247,6 +247,8 @@ def _get_log(project, row):
                           job=row['job'],
                           date_slash_time=date_slash_time)
   log_data = _read_gcs_file(bucket, path)
+
+  print('##### Parsing log: gs://%s/%s' % (bucket, path))
   for line in log_data.splitlines():
     if any(line.count(token) for token in _DFT_TOKENS):
       print(line)
