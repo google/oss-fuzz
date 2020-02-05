@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 import subprocess
 import yaml
 
@@ -104,8 +105,8 @@ def build_project(project):
   variables (TRAVIS_SANITIZER, TRAVIS_ENGINE, and TRAVIS_ARCHITECTURE)."""
   root = get_oss_fuzz_root()
   project_yaml_path = os.path.join(root, 'projects', project, 'project.yaml')
-  with open(project_yaml_path) as fp:
-    project_yaml = yaml.safe_load(fp)
+  with open(project_yaml_path) as file_handle:
+    project_yaml = yaml.safe_load(file_handle)
 
   if project_yaml.get('disabled', False):
     print('Project {0} is disabled, skipping build.'.format(project))
@@ -129,6 +130,7 @@ def build_project(project):
 
 
 def main():
+  """Build modified projects on travis."""
   projects = get_modified_buildable_projects()
   failed_projects = []
   for project in projects:
@@ -139,8 +141,10 @@ def main():
 
   if failed_projects:
     print('Failed projects:', ' '.join(failed_projects))
-    exit(1)
+    return 1
+
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
