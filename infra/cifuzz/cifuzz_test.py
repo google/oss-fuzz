@@ -119,11 +119,12 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
       os.mkdir(out_path)
       self.assertTrue(
           cifuzz.build_fuzzers(
+              EXAMPLE_PROJECT,
               'oss-fuzz',
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
-      run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
+      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5, tmp_dir)
     self.assertTrue(run_success)
     self.assertTrue(bug_found)
 
@@ -132,7 +133,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
+      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5, tmp_dir)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -141,13 +142,13 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = cifuzz.run_fuzzers(0, tmp_dir)
+      run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 0, tmp_dir)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
   def test_invalid_out_dir(self):
     """Tests run_fuzzers with an invalid out directory."""
-    run_success, bug_found = cifuzz.run_fuzzers(5,
+    run_success, bug_found = cifuzz.run_fuzzers(EXAMPLE_PROJECT, 5,
                                                 'not/a/valid/path')
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
@@ -179,7 +180,7 @@ class ParseOutputUnitTest(unittest.TestCase):
         with open(os.path.join(tmp_dir, 'bug_stack.txt'), 'r') as bug_stack:
           detected_stack = bug_stack.read()
         with open(os.path.join(test_stack_path), 'r') as bug_stack:
-          real_stack = bug_stack.read()
+          real_stack = bug_stack.read(detected_stack)
         self.assertEqual(detected_stack, real_stack)
 
   def parse_invalid_output(self):
