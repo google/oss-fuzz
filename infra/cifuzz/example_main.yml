@@ -9,18 +9,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Building Fuzzers
-      uses: Leo-Neat/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+    - name: Build Fuzzers
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
       with:
         project-name: 'example'
         dry-run: False
-    - name: Running Fuzzers
-      uses: Leo-Neat/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+    - name: Run Fuzzers
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
       with:
         project-name: 'example'
         fuzz-time: 360
         dry-run: False
-    - name: Uploading Crash
+    - name: Upload Crash
       uses: actions/upload-artifact@v1
       if: failure()
       with:

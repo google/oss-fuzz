@@ -53,9 +53,6 @@ def main():
   commit_sha = os.environ.get('GITHUB_SHA')
   event = os.environ.get('GITHUB_EVENT_NAME')
   workspace = os.environ.get('GITHUB_WORKSPACE')
-  if not workspace:
-    logging.error('This script needs to be run in the Github action context.')
-    return error_code
 
   # Check if failures should not be reported.
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
