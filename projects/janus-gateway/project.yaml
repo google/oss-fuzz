@@ -16,6 +16,8 @@
 
 homepage: "https://github.com/meetecho/janus-gateway"
 primary_contact: "toppi.ale@gmail.com"
+auto_ccs:
+  - "lminiero@gmail.com"
 sanitizers:
   - address
   - memory
