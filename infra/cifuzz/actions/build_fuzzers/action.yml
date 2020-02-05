@@ -7,7 +7,7 @@ inputs:
     required: true
   dry-run:
     description: 'If set, run the action without actually reporting a failure.'
-    default: false
+    default: 0
 runs:
   using: 'docker'
   image: 'Dockerfile'

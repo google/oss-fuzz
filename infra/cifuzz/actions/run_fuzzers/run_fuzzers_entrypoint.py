@@ -50,11 +50,11 @@ def main():
   Returns:
     0 on success or 1 on Failure.
   """
-  fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 360))
+  fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
   workspace = os.environ.get('GITHUB_WORKSPACE')
 
   # Check if failures should not be reported.
-  dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
+  dry_run = bool(int(os.environ.get('DRY_RUN')))
 
   # The default return code when an error occurs.
   error_code = 1
