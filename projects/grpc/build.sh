@@ -50,6 +50,7 @@ readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr'
 # file. Since the build runs with `-Werror` this will cause it to break, so we
 # use `--conlyopt` and `--cxxopt` instead of `--copt`.
 #
+CXXFLAGS="$CXXFLAGS -Wno-unused-command-line-argument"
 readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"
