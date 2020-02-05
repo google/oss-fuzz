@@ -104,7 +104,7 @@ RUN mkdir honggfuzz && \
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
 
-COPY detect_repo.py /src
+COPY detect_repo.py /opt/cifuzz/
 
 RUN precompile_honggfuzz
 
