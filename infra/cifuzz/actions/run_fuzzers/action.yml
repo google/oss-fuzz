@@ -1,6 +1,6 @@
 # action.yml
 name: 'run-fuzzers'
-description: 'Runs libfuzzer binaries for a specified length of time.'
+description: 'Runs fuzz target binaries for a specified length of time.'
 inputs:
   fuzz-seconds:
     description: 'The total time allotted for fuzzing in seconds.'

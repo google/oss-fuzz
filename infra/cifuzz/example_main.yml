@@ -1,4 +1,3 @@
-
 name: CIFuzz
 
 on: [push]
