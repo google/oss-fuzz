@@ -33,8 +33,8 @@ def main():
   entrypoint of the Dockerfile in this directory. This action can be added to
   any OSS-Fuzz project's workflow that uses Github.
 
-  Note: The resulting binaries of this build are placed in the directory:
-  ${GITHUB_WORKSPACE}/out
+  Note: The resulting clusterfuzz binaries of this build are placed in
+  the directory: ${GITHUB_WORKSPACE}/out
 
   Required environment variables:
     PROJECT_NAME: The name of OSS-Fuzz project.

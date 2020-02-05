@@ -26,6 +26,7 @@ import sys
 import fuzz_target
 
 # pylint: disable=wrong-import-position
+# pylint: disable=import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build_specified_commit
 import helper
@@ -124,11 +125,10 @@ def build_fuzzers(project_name,
   return True
 
 
-def run_fuzzers(project_name, fuzz_seconds, workspace):
+def run_fuzzers(fuzz_seconds, workspace):
   """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
-    project_name: The name of the OSS-Fuzz project being built.
     fuzz_seconds: The total time allotted for fuzzing.
     workspace: The location in a shared volume to store a git repo and build
       artifacts.
@@ -156,8 +156,8 @@ def run_fuzzers(project_name, fuzz_seconds, workspace):
 
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
-    target = fuzz_target.FuzzTarget(project_name, fuzzer_path,
-                                    fuzz_seconds_per_target, out_dir)
+    target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
+                                    out_dir)
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)

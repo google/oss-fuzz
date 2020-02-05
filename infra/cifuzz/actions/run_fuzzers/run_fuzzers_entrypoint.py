@@ -43,7 +43,6 @@ def main():
   logs.
 
   Required environment variables:
-    PROJECT_NAME: The name of OSS-Fuzz project.
     FUZZ_SECONDS: The length of time in seconds that fuzzers are to be run.
     GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
     DRY_RUN: If true, no failures will surface.
@@ -51,7 +50,6 @@ def main():
   Returns:
     0 on success or 1 on Failure.
   """
-  oss_fuzz_project_name = os.environ.get('PROJECT_NAME')
   fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 360))
   workspace = os.environ.get('GITHUB_WORKSPACE')
 
@@ -78,11 +76,9 @@ def main():
     logging.error('This script needs to be run in the Github action context.')
     return error_code
   # Run the specified project's fuzzers from the build.
-  run_status, bug_found = cifuzz.run_fuzzers(oss_fuzz_project_name,
-                                             fuzz_seconds, workspace)
+  run_status, bug_found = cifuzz.run_fuzzers(fuzz_seconds, workspace)
   if not run_status:
-    logging.error('Error occured while running fuzzers for project %s.',
-                  oss_fuzz_project_name)
+    logging.error('Error occured while running in workspace %s.', workspace)
     return error_code
   if bug_found:
     logging.info('Bug found.')
