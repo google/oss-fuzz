@@ -89,7 +89,6 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   else:
     command_to_run.extend(['--example_commit', commit])
   out, _, _ = utils.execute(command_to_run)
-  print('Out:', out)
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2)
