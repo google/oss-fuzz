@@ -82,13 +82,14 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
   command_to_run = [
       'docker', 'run', '--rm', '-t', docker_image_name, 'python3',
-      os.path.join('/opt', 'cifuzz', 'detect_repo.py')
+      os.path.join('/opt', 'cifuzz', 'detect_repo.py', '--go_support')
   ]
   if repo_name:
     command_to_run.extend(['--repo_name', repo_name])
   else:
     command_to_run.extend(['--example_commit', commit])
   out, _, _ = utils.execute(command_to_run)
+  print('Out:', out)
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2)

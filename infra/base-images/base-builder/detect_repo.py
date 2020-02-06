@@ -31,6 +31,8 @@ import os
 import subprocess
 
 
+GO_PATH = '/root/go/src/'
+
 def main():
   """Function to get a git repo's url and name referenced by OSS-Fuzz
   Dockerfile.
@@ -45,6 +47,8 @@ def main():
   parser.add_argument('--src_dir', help='The location of the possible repo.')
   parser.add_argument('--example_commit',
                       help='A commit SHA referencing the project\'s main repo.')
+  parser.add_argument('--go_support', action='store_true'
+                      help='A commit SHA referencing the project\'s main repo.')
 
   args = parser.parse_args()
   if not args.repo_name and not args.example_commit:
@@ -55,7 +59,14 @@ def main():
   else:
     src_dir = os.environ.get('SRC', '/src')
 
-  for single_dir in os.listdir(src_dir):
+  dirs_to_search = os.listdir(src_dir)
+  if args.go_support and os.path.exists(GO_PATH):
+    for root, dirs, files in os.walk(GO_PATH):
+      for dir in dirs:
+        if dir.contains(args.repo_name):
+          dirs_to_search.append(os.path.join(root,dir))
+
+  for single_dir in dirs_to_search:
     full_path = os.path.join(src_dir, single_dir)
     if not os.path.isdir(full_path):
       continue
