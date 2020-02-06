@@ -69,11 +69,12 @@ class BuildImageIntegrationTests(unittest.TestCase):
   def test_detect_main_repo_from_commit(self):
     """Test the detect main repo function from build specific commit module."""
     for example_repo in test_repos.TEST_REPOS:
-      repo_origin, repo_name = build_specified_commit.detect_main_repo(
-          example_repo.project_name, commit=example_repo.new_commit)
-      self.assertEqual(repo_origin, example_repo.git_url)
-      self.assertEqual(repo_name,
-                       os.path.join('/src', example_repo.oss_repo_name))
+      if example_repo.new_commit:
+        repo_origin, repo_name = build_specified_commit.detect_main_repo(
+            example_repo.project_name, commit=example_repo.new_commit)
+        self.assertEqual(repo_origin, example_repo.git_url)
+        self.assertEqual(repo_name,
+                         os.path.join('/src', example_repo.oss_repo_name))
 
     repo_origin, repo_name = build_specified_commit.detect_main_repo(
         test_repos.INVALID_REPO.project_name,

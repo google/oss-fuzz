@@ -63,7 +63,16 @@ TEST_REPOS = [
                 intro_commit='840266712006de5e737f8052db920dfea2be4260',
                 fuzz_target='libarchive_fuzzer',
                 test_case_path=os.path.join(TEST_DIR_PATH,
-                                            'libarchive_test_data'))
+                                            'libarchive_test_data')),
+    ExampleRepo(project_name='gonids',
+                oss_repo_name='gonids',
+                git_repo_name='gonids',
+                git_url='https://github.com/google/gonids',
+                old_commit='',
+                new_commit='',
+                intro_commit='',
+                fuzz_target='',
+                test_case_path='')
 ]
 
 INVALID_REPO = ExampleRepo(project_name='notaproj',
