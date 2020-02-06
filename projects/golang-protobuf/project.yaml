@@ -2,6 +2,7 @@ homepage: "https://github.com/protocolbuffers/protobuf-go"
 primary_contact: "dneil@google.com"
 auto_ccs:
  - "joetsai@google.com"
+ - "herbie@google.com"
 sanitizers:
  - address
 fuzzing_engines:
