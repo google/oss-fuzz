@@ -22,5 +22,4 @@ $CXX $CXXFLAGS -std=c++11 -I. \
 find $SRC/stb/tests/pngsuite -name "*.png" | \
      xargs zip $OUT/stb_png_read_fuzzer_seed_corpus.zip
 
-cp $SRC/stb/tests/stb_png.dict \
-   $SRC/stb/tests/stb_png_read_fuzzer.options $OUT/
+cp $SRC/stb/tests/stb_png.dict $OUT/stb_png_read_fuzzer.dict
