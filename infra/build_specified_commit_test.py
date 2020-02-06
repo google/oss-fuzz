@@ -88,8 +88,9 @@ class BuildImageIntegrationTests(unittest.TestCase):
       repo_origin, repo_name = build_specified_commit.detect_main_repo(
           example_repo.project_name, repo_name=example_repo.git_repo_name)
       self.assertEqual(repo_origin, example_repo.git_url)
-      self.assertEqual(repo_name,
-                       os.path.join('/src', example_repo.oss_repo_name))
+      self.assertEqual(
+          repo_name,
+          os.path.join(example_repo.image_location, example_repo.oss_repo_name))
 
     repo_origin, repo_name = build_specified_commit.detect_main_repo(
         test_repos.INVALID_REPO.project_name,
