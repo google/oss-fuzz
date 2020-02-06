@@ -1,0 +1,16 @@
+# action.yml
+name: 'build-fuzzers'
+description: "Builds an OSS-Fuzz project's fuzzers."
+inputs:
+  project-name:
+    description: 'Name of the corresponding OSS-Fuzz project.'
+    required: true
+  dry-run:
+    description: 'If set, run the action without actually reporting a failure.'
+    default: false
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    PROJECT_NAME: ${{ inputs.project-name }}
+    DRY_RUN: ${{ inputs.dry-run}}

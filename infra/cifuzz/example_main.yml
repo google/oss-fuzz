@@ -1,0 +1,26 @@
+name: CIFuzz
+
+on: [push]
+
+jobs:
+  Fuzzing:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Build Fuzzers
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+      with:
+        project-name: 'example'
+        dry-run: false
+    - name: Run Fuzzers
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+      with:
+        fuzz-time: 600
+        dry-run: false
+    - name: Upload Crash
+      uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: fuzzer_testcase
+        path: ./out/testcase

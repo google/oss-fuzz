@@ -28,24 +28,26 @@ logging.basicConfig(
 
 
 def main():
-  """Runs OSS-Fuzz project's fuzzers for CI tools.
+  """Build OSS-Fuzz project's fuzzers for CI tools.
   This script is used to kick off the Github Actions CI tool. It is the
-  entrypoint  of the Dockerfile in this directory. This action can be added to
+  entrypoint of the Dockerfile in this directory. This action can be added to
   any OSS-Fuzz project's workflow that uses Github.
+
+  Note: The resulting clusterfuzz binaries of this build are placed in
+  the directory: ${GITHUB_WORKSPACE}/out
 
   Required environment variables:
     PROJECT_NAME: The name of OSS-Fuzz project.
-    FUZZ_TIME: The length of time in seconds that fuzzers are to be run.
     GITHUB_REPOSITORY: The name of the Github repo that called this script.
     GITHUB_SHA: The commit SHA that triggered this script.
     GITHUB_REF: The pull request reference that triggered this script.
     GITHUB_EVENT_NAME: The name of the hook event that triggered this script.
+    GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
 
   Returns:
     0 on success or 1 on Failure.
   """
   oss_fuzz_project_name = os.environ.get('PROJECT_NAME')
-  fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 360))
   github_repo_name = os.path.basename(os.environ.get('GITHUB_REPOSITORY'))
   pr_ref = os.environ.get('GITHUB_REF')
   commit_sha = os.environ.get('GITHUB_SHA')
@@ -58,16 +60,6 @@ def main():
   # The default return code when an error occurs.
   error_code = 1
   if dry_run:
-    # A testcase file is required in order for CIFuzz to surface bugs.
-    # If the file does not exist, the action will crash attempting to upload it.
-    # The dry run needs this file because it is set to upload a test case both
-    # on successful runs and on failures.
-    out_dir = os.path.join(workspace, 'out')
-    os.makedirs(out_dir, exist_ok=True)
-    file_handle = open(os.path.join(out_dir, 'testcase'), 'w')
-    file_handle.write('No bugs detected.')
-    file_handle.close()
-
     # Sets the default return code on error to success.
     error_code = 0
 
@@ -86,19 +78,6 @@ def main():
     logging.error('Error building fuzzers for project %s with pull request %s.',
                   oss_fuzz_project_name, pr_ref)
     return error_code
-
-  # Run the specified project's fuzzers from the build.
-  run_status, bug_found = cifuzz.run_fuzzers(oss_fuzz_project_name,
-                                             fuzz_seconds, workspace)
-  if not run_status:
-    logging.error('Error occured while running fuzzers for project %s.',
-                  oss_fuzz_project_name)
-    return error_code
-  if bug_found:
-    logging.info('Bug found.')
-    if not dry_run:
-      # Return 2 when a bug was found by a fuzzer causing the CI to fail.
-      return 2
   return 0
 
 
