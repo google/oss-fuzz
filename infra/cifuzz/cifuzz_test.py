@@ -176,7 +176,6 @@ class ParseOutputUnitTest(unittest.TestCase):
         real_summary = bug_summary.read()
       self.assertEqual(detected_summary, real_summary)
 
-
   def parse_invalid_output(self):
     """Checks that no files are created when an invalid input was given."""
     with tempfile.TemporaryDirectory() as tmp_dir:
