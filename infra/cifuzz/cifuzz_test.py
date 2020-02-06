@@ -163,11 +163,10 @@ class ParseOutputUnitTest(unittest.TestCase):
                                   'test_files')
     test_output_path = os.path.join(test_case_path, 'example_fuzzer_output.txt')
     test_summary_path = os.path.join(test_case_path, 'bug_summary_example.txt')
-    test_stack_path = os.path.join(test_case_path, 'bug_stack_example.txt')
     with tempfile.TemporaryDirectory() as tmp_dir:
       with open(test_output_path, 'r') as test_fuzz_output:
         cifuzz.parse_fuzzer_output(test_fuzz_output.read(), tmp_dir)
-      result_files = ['bug_summary.txt', 'bug_stack.txt']
+      result_files = ['bug_summary.txt']
       self.assertCountEqual(os.listdir(tmp_dir), result_files)
 
       # Compare the bug summaries.
@@ -177,12 +176,6 @@ class ParseOutputUnitTest(unittest.TestCase):
         real_summary = bug_summary.read()
       self.assertEqual(detected_summary, real_summary)
 
-      # Compare the bug stacks.
-      with open(os.path.join(tmp_dir, 'bug_stack.txt'), 'r') as bug_stack:
-        detected_stack = bug_stack.read()
-      with open(os.path.join(test_stack_path), 'r') as bug_stack:
-        real_stack = bug_stack.read()
-      self.assertEqual(detected_stack, real_stack)
 
   def parse_invalid_output(self):
     """Checks that no files are created when an invalid input was given."""
