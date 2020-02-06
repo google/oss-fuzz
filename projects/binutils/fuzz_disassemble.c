@@ -53,8 +53,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     struct disassemble_info disasm_info;
     SFILE s;
 
-    if (Size < 10) {
+    if (Size < 10 || Size > 16394) {
         // 10 bytes for options
+        // 16394 limit code to prevent timeouts
         return 0;
     }
 
@@ -79,7 +80,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         disassembler_ftype disasfunc = disassembler(disasm_info.arch, 0, disasm_info.mach, NULL);
         if (disasfunc != NULL) {
             disassemble_init_for_target(&disasm_info);
-            disasfunc(0x1000, &disasm_info);
+            while (1) {
+                int octets = disasfunc(0x1000, &disasm_info);
+                if (octets < 0)
+                    break;
+                if (disasm_info.buffer_length <= (size_t) octets)
+                    break;
+                disasm_info.buffer += octets;
+                disasm_info.buffer_vma += octets / disasm_info.octets_per_byte;
+                disasm_info.buffer_length -= octets;
+            }
             disassemble_free_target(&disasm_info);
         }
     }
