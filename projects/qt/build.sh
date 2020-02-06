@@ -26,9 +26,8 @@ sed -i -e "s/QMAKE_CFLAGS_OPTIMIZE_FULL = -O3/QMAKE_CFLAGS_OPTIMIZE_FULL = -O1/g
 
 # build project
 cd $WORK
-MAKEFLAGS=-j$(nproc) $SRC/qt/configure -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -nomake tests -nomake examples -prefix $OUT
+MAKEFLAGS=-j$(nproc) $SRC/qt/configure -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -nomake tests -nomake examples -prefix $PWD/qtbase
 make -j$(nproc)
-make install
 
 # prepare corpus files
 zip -j $WORK/html $SRC/qtqa/fuzzing/testcases/html/*
@@ -46,7 +45,7 @@ build_fuzzer() {
     local exeName=${proFileName%%.*}
     mkdir build_fuzzer
     cd build_fuzzer
-    $OUT/bin/qmake $SRC/qt/$module/tests/libfuzzer/$proFilePath
+    $WORK/qtbase/bin/qmake $SRC/qt/$module/tests/libfuzzer/$proFilePath
     make -j$(nproc)
     mv $exeName $OUT
     if [ -n "$format" ]; then
