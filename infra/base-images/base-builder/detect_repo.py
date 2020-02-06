@@ -58,7 +58,7 @@ def main():
     src_dir = os.environ.get('SRC', '/src')
 
   dirs_to_search = os.listdir(src_dir)
-  if os.path.exists(GO_PATH):
+  if os.path.exists(GO_PATH) and args.repo_name:
     for root, dirs, _ in os.walk(GO_PATH):
       for test_dir in dirs:
         if args.repo_name in test_dir:
