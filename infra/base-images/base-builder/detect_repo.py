@@ -30,8 +30,8 @@ import logging
 import os
 import subprocess
 
-
 GO_PATH = '/root/go/src/'
+
 
 def main():
   """Function to get a git repo's url and name referenced by OSS-Fuzz
@@ -59,10 +59,10 @@ def main():
 
   dirs_to_search = os.listdir(src_dir)
   if os.path.exists(GO_PATH):
-    for root, dirs, files in os.walk(GO_PATH):
-      for dir in dirs:
-        if args.repo_name in dir:
-          dirs_to_search.append(os.path.join(root, dir))
+    for root, dirs, _ in os.walk(GO_PATH):
+      for test_dir in dirs:
+        if args.repo_name in test_dir:
+          dirs_to_search.append(os.path.join(root, test_dir))
 
   for single_dir in dirs_to_search:
     full_path = os.path.join(src_dir, single_dir)

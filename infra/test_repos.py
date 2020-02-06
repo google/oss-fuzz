@@ -25,8 +25,9 @@ import collections
 import os
 
 ExampleRepo = collections.namedtuple('ExampleRepo', [
-    'project_name', 'oss_repo_name', 'git_repo_name', 'image_location', 'git_url', 'new_commit',
-    'old_commit', 'intro_commit', 'fuzz_target', 'test_case_path'
+    'project_name', 'oss_repo_name', 'git_repo_name', 'image_location',
+    'git_url', 'new_commit', 'old_commit', 'intro_commit', 'fuzz_target',
+    'test_case_path'
 ])
 
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
