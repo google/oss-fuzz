@@ -30,12 +30,17 @@ cd ..
 autoreconf
 ./configure
 make
+make install
+# ./configure --disable-shared does not seem to work
+rm /usr/local/lib/libnettle.so*
+rm /usr/local/lib/libhogweed.so*
 )
 
 #cryptopp
 (
 cd cryptopp
 make
+make install
 )
 
 #gcrypt
@@ -57,6 +62,7 @@ else
     ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
 fi
 make
+make install
 )
 
 #mbedtls
@@ -64,6 +70,7 @@ make
 cd mbedtls
 cmake . -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc) all
+make install
 )
 
 #openssl
@@ -76,13 +83,14 @@ else
     ./config no-poly1305 no-shared no-threads
 fi
 make build_generated libcrypto.a
+make install
 )
 
 #libecc
 (
 cd libecc
 #required by libecc
-(export CFLAGS="$CFLAGS -fPIC"; make)
+(export CFLAGS="$CFLAGS -fPIC"; make; cp build/*.a /usr/local/lib; cp -r src/* /usr/local/include/)
 )
 
 #botan
@@ -97,6 +105,7 @@ else
     ./configure.py --disable-shared-library
 fi
 make
+make install
 )
 
 #build fuzz target
@@ -105,14 +114,8 @@ zip -r fuzz_ec_seed_corpus.zip corpus/
 cp fuzz_ec_seed_corpus.zip $OUT/
 cp fuzz_ec.dict $OUT/
 
-$CC $CFLAGS -I. -c fuzz_ec.c -o fuzz_ec.o
-$CC $CFLAGS -I. -c fail.c -o fail.o
-$CC $CFLAGS -I. -I../mbedtls/include -I../mbedtls/crypto/include -c modules/mbedtls.c -o mbedtls.o
-$CC $CFLAGS -I. -I../openssl/include -c modules/openssl.c -o openssl.o
-$CC $CFLAGS -DWITH_STDLIB -I. -I../libecc/src -c modules/libecc.c -o libecc.o
-$CC $CFLAGS -I. -I../gcrypt/src -c modules/gcrypt.c -o gcrypt.o
-$CXX $CXXFLAGS -I. -I../ -c modules/cryptopp.cpp -o cryptopp.o
-$CC $CFLAGS -I. -I../ -c modules/nettle.c -o nettle.o
-$CXX $CXXFLAGS -std=c++11 -I. -I../ -I../botan/build/include -c modules/botan.cpp -o botan.o
-
-$CXX $CXXFLAGS fuzz_ec.o fail.o mbedtls.o libecc.o openssl.o gcrypt.o cryptopp.o nettle.o botan.o -o $OUT/fuzz_ec ../mbedtls/crypto/library/libmbedcrypto.a ../libecc/build/libec.a ../libecc/src/external_deps/rand.o ../openssl/libcrypto.a ../nettle/libhogweed.a ../nettle/libnettle.a ../nettle/gmp-6.1.2/.libs/libgmp.a ../gcrypt/src/.libs/libgcrypt.a ../cryptopp/libcryptopp.a ../botan/libbotan-2.a -lgpg-error $LIB_FUZZING_ENGINE
+mkdir build
+cd build
+cmake ..
+make
+cp ecfuzzer $OUT/fuzz_ec
