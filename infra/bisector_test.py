@@ -48,17 +48,16 @@ class BisectIntegrationTests(unittest.TestCase):
   def test_bisect(self):
     """Test the bisect method on example projects."""
     for test_repo in test_repos.TEST_REPOS:
-      if not example_repo.new_commit:
-        pass
-      build_data = build_specified_commit.BuildData(
-          project_name=test_repo.project_name,
-          engine='libfuzzer',
-          sanitizer='address',
-          architecture='x86_64')
-      error_sha = bisector.bisect(test_repo.old_commit, test_repo.new_commit,
-                                  test_repo.test_case_path,
-                                  test_repo.fuzz_target, build_data)
-      self.assertEqual(error_sha, test_repo.intro_commit)
+      if example_repo.new_commit:
+        build_data = build_specified_commit.BuildData(
+            project_name=test_repo.project_name,
+            engine='libfuzzer',
+            sanitizer='address',
+            architecture='x86_64')
+        error_sha = bisector.bisect(test_repo.old_commit, test_repo.new_commit,
+                                    test_repo.test_case_path,
+                                    test_repo.fuzz_target, build_data)
+        self.assertEqual(error_sha, test_repo.intro_commit)
 
 
 if __name__ == '__main__':

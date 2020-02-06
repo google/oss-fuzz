@@ -50,7 +50,7 @@ class RepoManager:
     if repo_name:
       self.repo_name = repo_name
     else:
-      self.repo_name = os.path.basename(self.repo_url).strip('.git')
+      self.repo_name = os.path.basename(self.repo_url).replace('.git', '')
     self.repo_dir = os.path.join(self.base_dir, self.repo_name)
     self._clone()
 
