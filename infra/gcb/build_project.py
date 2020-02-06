@@ -339,12 +339,10 @@ def get_build_steps(project_dir):
 
 
 def dataflow_post_build_steps(project_name, env):
-  steps = []
-  download_corpora_step = build_lib.download_corpora_step(project_name)
-  if not download_corpora_step:
+  steps = build_lib.download_corpora_steps(project_name)
+  if not steps:
     return None
 
-  steps = [download_corpora_step]
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
       'env': env,
