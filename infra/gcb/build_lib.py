@@ -98,14 +98,15 @@ def get_signed_url(path, method='PUT', content_type=''):
           urllib.urlencode(values))
 
 
-def download_corpora_step(project_name):
-  """Returns a GCB step for downloading corpora backups for the given project.
+def download_corpora_steps(project_name):
+  """Returns GCB steps for downloading corpora backups for the given project.
   """
   fuzz_targets = _get_targets_list(project_name)
   if not fuzz_targets:
     sys.stderr.write('No fuzz targets found for project "%s".\n' % project_name)
     return None
 
+  steps = []
   # Split fuzz targets into batches of CORPUS_DOWNLOAD_BATCH_SIZE.
   for i in range(0, len(fuzz_targets), CORPUS_DOWNLOAD_BATCH_SIZE):
     download_corpus_args = []
@@ -122,7 +123,7 @@ def download_corpora_step(project_name):
       corpus_archive_path = os.path.join('/corpus', binary_name + '.zip')
       download_corpus_args.append('%s %s' % (corpus_archive_path, url))
 
-    step = {
+    steps.append({
         'name': 'gcr.io/oss-fuzz-base/base-runner',
         'entrypoint': 'download_corpus',
         'args': download_corpus_args,
@@ -130,5 +131,6 @@ def download_corpora_step(project_name):
             'name': 'corpus',
             'path': '/corpus'
         }],
-    }
-    return step
+    })
+
+  return steps
