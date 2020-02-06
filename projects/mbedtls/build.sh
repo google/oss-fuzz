@@ -29,7 +29,6 @@ cd ../programs
 cp -r ../../openssl/fuzz/corpora/crl fuzz/corpuses/
 cp -r ../../openssl/fuzz/corpora/x509 fuzz/corpuses/
 cp -r ../../boringssl/fuzz/privkey_corpus fuzz/corpuses/
-cp ../../boringssl/fuzz/cert_corpus/* fuzz/corpuses/x509/
 zip -r fuzz/fuzz_x509crl_seed_corpus.zip ../tests/data_files/crl* fuzz/corpuses/crl
 zip -r fuzz/fuzz_x509crt_seed_corpus.zip ../tests/data_files/*.crt ../tests/data_files/dir*/*.crt  fuzz/corpuses/x509/
 zip -r fuzz/fuzz_x509csr_seed_corpus.zip ../tests/data_files/*.csr ../tests/data_files/*.req.*
