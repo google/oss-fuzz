@@ -133,7 +133,7 @@ def get_build_steps(project_dir):
   })
 
   download_corpora_steps = build_lib.download_corpora_steps(project_name)
-  if not download_corpora_step:
+  if not download_corpora_steps:
     skip_build("Skipping code coverage build for %s.\n" % project_name)
 
   build_steps.extend(download_corpora_steps)
