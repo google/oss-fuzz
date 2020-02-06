@@ -73,7 +73,6 @@ TEST_REPOS = [
                 intro_commit='',
                 fuzz_target='',
                 test_case_path='')
-
 ]
 
 INVALID_REPO = ExampleRepo(project_name='notaproj',

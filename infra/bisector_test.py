@@ -48,7 +48,7 @@ class BisectIntegrationTests(unittest.TestCase):
   def test_bisect(self):
     """Test the bisect method on example projects."""
     for test_repo in test_repos.TEST_REPOS:
-      if example_repo.new_commit:
+      if test_repo.new_commit:
         build_data = build_specified_commit.BuildData(
             project_name=test_repo.project_name,
             engine='libfuzzer',
