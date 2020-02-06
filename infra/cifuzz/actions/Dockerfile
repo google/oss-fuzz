@@ -40,5 +40,5 @@ RUN git clone https://github.com/google/oss-fuzz.git ${OSS_FUZZ_ROOT}
 # Copies your code file from  action repository to the container
 COPY entrypoint.py /opt/entrypoint.py
 
-# Python file to execute when the docker container starts up
+# Command to execute when the docker container starts up
 ENTRYPOINT ["python3", "/opt/entrypoint.py"]
