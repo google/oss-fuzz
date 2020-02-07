@@ -30,10 +30,9 @@ cd ..
 autoreconf
 ./configure
 make
-make install
 # ./configure --disable-shared does not seem to work
-rm /usr/local/lib/libnettle.so*
-rm /usr/local/lib/libhogweed.so*
+find . -name "*.so*" | xargs rm
+make install
 )
 
 #cryptopp
