@@ -10,7 +10,7 @@ from google.cloud import bigquery
 from google.cloud import storage
 
 # Looking at the date over the past 14 days, as that's how long our logs exist.
-_DAYS_TO_ANALYZE = 3
+_DAYS_TO_ANALYZE = 2
 
 _BQ_CLIENT = bigquery.Client(project='clusterfuzz-external')
 _GCS_CLIENT = storage.Client(project='clusterfuzz-external')
@@ -202,10 +202,10 @@ def _get_coverage_diff(row, day):
   project = _project_name(row['fuzz_target'])
   binary = _binary_name(row['command'])
   path_base = _COVERAGE_PATH.format(project=project,
-                                    date=_coverage_date_str(day),
+                                    date=_coverage_date_str(day - _ONE_DAY),
                                     binary=binary)
   path_advanced = _COVERAGE_PATH.format(project=project,
-                                        date=_coverage_date_str(day + _ONE_DAY),
+                                        date=_coverage_date_str(day),
                                         binary=binary)
   coverage_base = _read_gcs_file(_COVERAGE_BUCKET, path_base)
   coverage_advanced = _read_gcs_file(_COVERAGE_BUCKET, path_advanced)
@@ -214,8 +214,8 @@ def _get_coverage_diff(row, day):
   diff = _calculate_coverage_diff(coverage_base, coverage_advanced)
   if any(delta.values() for delta in diff):
     print('There is a visible coverage difference. Explore the reports:')
-    print(' old: ' + _coverage_report(project, day))
-    print(' new: ' + _coverage_report(project, day + _ONE_DAY))
+    print(' old: ' + _coverage_report(project, day - _ONE_DAY))
+    print(' new: ' + _coverage_report(project, day))
     return True
   return False
 
@@ -287,7 +287,7 @@ def _find_runs(fuzz_target, day):
 
 
 def main():
-  today = datetime.date.today()
+  today = datetime.date.today() + _ONE_DAY
   for i in range(1, _DAYS_TO_ANALYZE):
     print('=' * 80)
     day = today - datetime.timedelta(days=i)
