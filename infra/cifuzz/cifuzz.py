@@ -33,6 +33,35 @@ import helper
 import repo_manager
 import utils
 
+# From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
+# Used to get the begnning of the stack trace.
+STACKTRACE_TOOL_MARKERS = [
+    'AddressSanitizer',
+    'ASAN:',
+    'CFI: Most likely a control flow integrity violation;',
+    'ERROR: libFuzzer',
+    'KASAN:',
+    'LeakSanitizer',
+    'MemorySanitizer',
+    'ThreadSanitizer',
+    'UndefinedBehaviorSanitizer',
+    'UndefinedSanitizer',
+]
+
+# From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
+# Used to get the end of the stack trace.
+STACKTRACE_END_MARKERS = [
+    'ABORTING',
+    'END MEMORY TOOL REPORT',
+    'End of process memory map.',
+    'END_KASAN_OUTPUT',
+    'SUMMARY:',
+    'Shadow byte and word',
+    '[end of stack trace]',
+    '\nExiting',
+    'minidump has been written',
+]
+
 # TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -180,8 +209,22 @@ def parse_fuzzer_output(fuzzer_output, out_dir):
     out_dir: The location to store the parsed output files.
   """
   # Get index of key file points.
-  begin_summary = fuzzer_output.find('==ERROR')
-  end_summary = fuzzer_output.find('==ABORTING')
+  for marker in STACKTRACE_TOOL_MARKERS:
+    marker_index = fuzzer_output.find(marker)
+    if marker_index:
+      begin_summary = marker_index
+      break
+
+  end_summary = -1
+  for marker in STACKTRACE_END_MARKERS:
+    marker_index = fuzzer_output.find(marker)
+    if marker_index:
+      end_summary = marker_index + len(marker)
+      break
+
+  if begin_summary is None or end_summary is None:
+    return
+
   summary_str = fuzzer_output[begin_summary:end_summary]
   if not summary_str:
     return

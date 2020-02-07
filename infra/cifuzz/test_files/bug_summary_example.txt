@@ -1,4 +1,4 @@
-==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x62500001b530 at pc 0x00000052138a bp 0x7ffe62db2c10 sp 0x7ffe62db23d8
+AddressSanitizer: heap-buffer-overflow on address 0x62500001b530 at pc 0x00000052138a bp 0x7ffe62db2c10 sp 0x7ffe62db23d8
 READ of size 52 at 0x62500001b530 thread T0
 SCARINESS: 26 (multi-byte-read-heap-buffer-overflow)
     #0 0x521389 in __asan_memcpy /src/llvm-project/compiler-rt/lib/asan/asan_interceptors_memintrinsics.cpp:22:3
@@ -65,4 +65,4 @@ Shadow byte legend (one shadow byte represents 8 application bytes):
   Left alloca redzone:     ca
   Right alloca redzone:    cb
   Shadow gap:              cc
-==12
+==12==ABORTING

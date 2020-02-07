@@ -92,5 +92,3 @@ Shadow byte legend (one shadow byte represents 8 application bytes):
 ==12==ABORTING
 MS: 1 InsertByte-; base unit: e91e5af87998bbf9aa64218be0652d64ba4ea89d
 artifact_prefix='./'; Test unit written to ./crash-ad6700613693ef977ff3a8c8f4dae239c3dde6f5
-.
-2020-02-05 17:50:20,471 - root - INFO - Bug found.
