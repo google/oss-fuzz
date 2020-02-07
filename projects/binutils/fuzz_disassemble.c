@@ -37,13 +37,17 @@ static int objdump_sprintf (void *vf, const char *format, ...)
     va_start (args, format);
     if (f->pos >= MAX_TEXT_SIZE){
         printf("buffer needs more space\n");
+        //reset
+        f->pos=0;
         return 0;
     }
     n = vsnprintf (f->buffer + f->pos, MAX_TEXT_SIZE - f->pos, format, args);
     //vfprintf(stdout, format, args);
     va_end (args);
     f->pos += n;
-
+    //reset to keep just one line
+    if (f->pos != 0 && f->buffer[f->pos - 1] == '\n')
+        f->pos = 0;
     return n;
 }
 
@@ -81,8 +85,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         if (disasfunc != NULL) {
             disassemble_init_for_target(&disasm_info);
             while (1) {
-                int octets = disasfunc(0x1000, &disasm_info);
-                if (octets < 0)
+                int octets = disasfunc(disasm_info.buffer_vma, &disasm_info);
+                if (octets < (int) disasm_info.octets_per_byte)
                     break;
                 if (disasm_info.buffer_length <= (size_t) octets)
                     break;
