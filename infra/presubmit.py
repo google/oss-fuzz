@@ -90,6 +90,7 @@ class ProjectYamlChecker:
       'vendor_ccs',
       'view_restrictions',
       'language',
+      'help_url',
   ]
 
   LANGUAGES_SUPPORTED = ['c', 'cpp', 'go', 'rust', 'python']
