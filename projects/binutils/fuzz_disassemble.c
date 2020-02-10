@@ -46,7 +46,7 @@ static int objdump_sprintf (void *vf, const char *format, ...)
     va_end (args);
     f->pos += n;
     //reset to keep just one line
-    if (f->pos != 0 && f->buffer[f->pos - 1] == '\n' && f->pos <= MAX_TEXT_SIZE)
+    if (f->pos != 0 && f->buffer[f->pos - 1] == '\n')
         f->pos = 0;
     return n;
 }
