@@ -34,7 +34,7 @@ import repo_manager
 import utils
 
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
-# Used to get the begnning of the stack trace.
+# Used to get the beginning of the stack trace.
 STACKTRACE_TOOL_MARKERS = [
     'AddressSanitizer',
     'ASAN:',
