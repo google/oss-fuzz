@@ -63,11 +63,8 @@ def main():
     # If the file does not exist, the action will crash attempting to upload it.
     # The dry run needs this file because it is set to upload a test case both
     # on successful runs and on failures.
-    out_dir = os.path.join(workspace, 'out')
+    out_dir = os.path.join(workspace, 'out', 'bug_report')
     os.makedirs(out_dir, exist_ok=True)
-    file_handle = open(os.path.join(out_dir, 'testcase'), 'w')
-    file_handle.write('No bugs detected.')
-    file_handle.close()
 
     # Sets the default return code on error to success.
     error_code = 0

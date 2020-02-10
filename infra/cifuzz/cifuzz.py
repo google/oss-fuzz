@@ -33,6 +33,35 @@ import helper
 import repo_manager
 import utils
 
+# From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
+# Used to get the beginning of the stack trace.
+STACKTRACE_TOOL_MARKERS = [
+    'AddressSanitizer',
+    'ASAN:',
+    'CFI: Most likely a control flow integrity violation;',
+    'ERROR: libFuzzer',
+    'KASAN:',
+    'LeakSanitizer',
+    'MemorySanitizer',
+    'ThreadSanitizer',
+    'UndefinedBehaviorSanitizer',
+    'UndefinedSanitizer',
+]
+
+# From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
+# Used to get the end of the stack trace.
+STACKTRACE_END_MARKERS = [
+    'ABORTING',
+    'END MEMORY TOOL REPORT',
+    'End of process memory map.',
+    'END_KASAN_OUTPUT',
+    'SUMMARY:',
+    'Shadow byte and word',
+    '[end of stack trace]',
+    '\nExiting',
+    'minidump has been written',
+]
+
 # TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -141,6 +170,8 @@ def run_fuzzers(fuzz_seconds, workspace):
     logging.error('Invalid workspace: %s.', workspace)
     return False, False
   out_dir = os.path.join(workspace, 'out')
+  bug_report_dir = os.path.join(out_dir, 'bug_report')
+  os.makedirs(bug_report_dir, exist_ok=True)
   if not fuzz_seconds or fuzz_seconds < 1:
     logging.error('Fuzz_seconds argument must be greater than 1, but was: %s.',
                   format(fuzz_seconds))
@@ -164,6 +195,41 @@ def run_fuzzers(fuzz_seconds, workspace):
     else:
       logging.info('Fuzzer %s, detected error: %s.', target.target_name,
                    stack_trace)
-      shutil.move(test_case, os.path.join(out_dir, 'testcase'))
+      shutil.move(test_case, os.path.join(bug_report_dir, 'test_case'))
+      parse_fuzzer_output(stack_trace, bug_report_dir)
       return True, True
   return True, False
+
+
+def parse_fuzzer_output(fuzzer_output, out_dir):
+  """Parses the fuzzer output from a fuzz target binary.
+
+  Args:
+    fuzzer_output: A fuzz target binary output string to be parsed.
+    out_dir: The location to store the parsed output files.
+  """
+  # Get index of key file points.
+  for marker in STACKTRACE_TOOL_MARKERS:
+    marker_index = fuzzer_output.find(marker)
+    if marker_index:
+      begin_summary = marker_index
+      break
+
+  end_summary = -1
+  for marker in STACKTRACE_END_MARKERS:
+    marker_index = fuzzer_output.find(marker)
+    if marker_index:
+      end_summary = marker_index + len(marker)
+      break
+
+  if begin_summary is None or end_summary is None:
+    return
+
+  summary_str = fuzzer_output[begin_summary:end_summary]
+  if not summary_str:
+    return
+
+  # Write sections of fuzzer output to specific files.
+  summary_file_path = os.path.join(out_dir, 'bug_summary.txt')
+  with open(summary_file_path, 'a') as summary_handle:
+    summary_handle.write(summary_str)

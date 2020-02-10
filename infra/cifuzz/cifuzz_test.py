@@ -110,7 +110,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
 
 class RunFuzzersIntegrationTest(unittest.TestCase):
-  """Test build_fuzzers function in the utils module."""
+  """Test build_fuzzers function in the cifuzz module."""
 
   def test_valid(self):
     """Test run_fuzzers with a valid build."""
@@ -151,6 +151,35 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     run_success, bug_found = cifuzz.run_fuzzers(5, 'not/a/valid/path')
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
+
+
+class ParseOutputUnitTest(unittest.TestCase):
+  """Test parse_fuzzer_output function in the cifuzz module."""
+
+  def parse_valid_output(self):
+    """Checks that the parse fuzzer output can correctly parse output."""
+    test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  'test_files')
+    test_output_path = os.path.join(test_case_path, 'example_fuzzer_output.txt')
+    test_summary_path = os.path.join(test_case_path, 'bug_summary_example.txt')
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      with open(test_output_path, 'r') as test_fuzz_output:
+        cifuzz.parse_fuzzer_output(test_fuzz_output.read(), tmp_dir)
+      result_files = ['bug_summary.txt']
+      self.assertCountEqual(os.listdir(tmp_dir), result_files)
+
+      # Compare the bug summaries.
+      with open(os.path.join(tmp_dir, 'bug_summary.txt'), 'r') as bug_summary:
+        detected_summary = bug_summary.read()
+      with open(os.path.join(test_summary_path), 'r') as bug_summary:
+        real_summary = bug_summary.read()
+      self.assertEqual(detected_summary, real_summary)
+
+  def parse_invalid_output(self):
+    """Checks that no files are created when an invalid input was given."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      cifuzz.parse_fuzzer_output('not a valid output_string', tmp_dir)
+      self.assertEqual(len(os.listdir(tmp_dir)), 0)
 
 
 if __name__ == '__main__':
