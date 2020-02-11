@@ -94,7 +94,7 @@ class FuzzTarget:
       return None, None
     if self.reproduces(test_case):
       return test_case, err_str
-    logging.error('A bug was found but was not reproducible.')
+    logging.error('A bug was found but it was not reproducible.')
     return None, None
 
   def reproduces(self, test_case):
@@ -106,17 +106,11 @@ class FuzzTarget:
       Returns:
         True if reproduces.
     """
-    command = ['docker', 'run', '--rm', '--privileged']
-    command += [
-        '-v',
-        '%s:/out' % os.path.dirname(self.target_path),
-        '-v',
-        '%s:/testcase' % test_case,
-        '-t',
-        'gcr.io/oss-fuzz-base/base-runner',
-        'reproduce',
-        self.target_name,
-        '-runs=100',
+    command = [
+        'docker', 'run', '--rm', '--privileged', '-v',
+        '%s:/out' % os.path.dirname(self.target_path), '-v',
+        '%s:/testcase' % test_case, '-t', 'gcr.io/oss-fuzz-base/base-runner',
+        'reproduce', self.target_name, '-runs=100'
     ]
     _, _, err_code = utils.execute(command)
     if err_code:

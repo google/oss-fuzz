@@ -185,10 +185,10 @@ class ParseOutputUnitTest(unittest.TestCase):
 
 
 class ReproduceIntegrationTest(unittest.TestCase):
-  """Test parse_fuzzer_output function in the cifuzz module."""
+  """Test that only reproducible bugs are reported by CIFuzz."""
 
   def test_reproduce_true(self):
-    """Checks that CIFuzz reports an error when a testcase reproduces."""
+    """Checks that CIFuzz reports an error when a test case reproduces."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
@@ -206,7 +206,7 @@ class ReproduceIntegrationTest(unittest.TestCase):
         self.assertTrue(bug_found)
 
   def test_reproduce_false(self):
-    """Checks CIFuzz doesn't report when a testcase  doesn't reproduce."""
+    """Checks CIFuzz doesn't report when a test case  doesn't reproduce."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
