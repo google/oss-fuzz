@@ -35,6 +35,10 @@ $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer \
     $LIB_FUZZING_ENGINE ./src/.libs/libharfbuzz-subset.a ./src/.libs/libharfbuzz.a
 
+$CXX $CXXFLAGS -std=c++11 -Isrc \
+    ./test/fuzzing/hb-set-fuzzer.cc -o $OUT/hb-set-fuzzer \
+    $LIB_FUZZING_ENGINE ./src/.libs/libharfbuzz.a
+
 # Archive and copy to $OUT seed corpus if the build succeeded.
 mkdir all-fonts
 for d in \
@@ -49,3 +53,4 @@ for d in \
 done
 zip $OUT/hb-shape-fuzzer_seed_corpus.zip all-fonts/*
 cp $OUT/hb-shape-fuzzer_seed_corpus.zip $OUT/hb-subset-fuzzer_seed_corpus.zip
+zip $OUT/hb-set-fuzzer_seed_corpus.zip ./test/fuzzing/sets/*
