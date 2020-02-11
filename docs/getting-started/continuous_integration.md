@@ -94,7 +94,8 @@ The results of CIFuzz can be found in two different places.
     1. Click the `Fuzzing` workflow.
     1. Select the `Run Fuzzer` drop down. It should show the timestamps and results
     from each of the fuzz targets.
-    ![Finding fuzzer output](../images/run_fuzzers.png)
+
+![Finding fuzzer output](../images/run_fuzzers.png)
 
 
 *  Uploaded artifact:
@@ -104,7 +105,8 @@ The results of CIFuzz can be found in two different places.
     1. `artifacts` contains two files:
         * `test_case` - a test case that can be used to reproduce the crash.
         * `bug_summary` - the stack trace and summary of the crash.
-    ![Finding uploaded artifacts](../images/artifacts.png)
+
+![Finding uploaded artifacts](../images/artifacts.png)
 
 
 ## Feedback/Questions/Issues
