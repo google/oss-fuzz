@@ -92,7 +92,20 @@ class FuzzTarget:
     if not test_case:
       logging.error('No test case found in stack trace.', file=sys.stderr)
       return None, None
-    return test_case, err_str
+    if self.is_crash_new(test_case):
+      return test_case, err_str
+    return None, None
+
+  def is_crash_new(self, test_case):
+    """Checks if a crash was introduced by the pull request.
+
+    Args:
+      test_case: The path to the test_case that triggered the crash.
+
+    Returns:
+      True if the crash was introduced by the current pull request.
+    """
+    return True
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.
