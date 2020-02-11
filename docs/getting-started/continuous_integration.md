@@ -8,7 +8,7 @@ permalink: /getting-started/continuous-integration/
 
 # Continuous Integration
 
-OSS-Fuzz offers CIFuzz, which will run your fuzz targets each time a pull request
+OSS-Fuzz offers **CIFuzz**, which will run your fuzz targets each time a pull request
 is submitted, for projects hosted on GitHub. This allows you to detect and
 fix bugs before they are submitted.
 
@@ -94,6 +94,7 @@ The results of CIFuzz can be found in two different places.
     1. Click the `Fuzzing` workflow.
     1. Select the `Run Fuzzer` drop down. It should show the timestamps and results
     from each of the fuzz targets.
+    ![Finding fuzzer output](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/run_fuzzers.jpeg)
 
 
 *  The bug_report artifact:
@@ -103,6 +104,8 @@ The results of CIFuzz can be found in two different places.
     1. `artifacts` contains two files:
         * `test_case` - a test case that can be used to reproduce the bug.
         * `bug_summary` - the stack trace and summary of the detected bug.
+    ![Finding uploaded artifacts](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/artifacts.jpeg)
+
 
 ## Feedback/Questions/Issues
 
