@@ -31,7 +31,7 @@ autoreconf
 ./configure
 make
 # ./configure --disable-shared does not seem to work
-find . -name "*.so*" | xargs rm
+#find . -name "*.so*" | xargs rm
 make install
 )
 
