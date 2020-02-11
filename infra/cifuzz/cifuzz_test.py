@@ -188,7 +188,7 @@ class ReproduceIntegrationTest(unittest.TestCase):
   """Test that only reproducible bugs are reported by CIFuzz."""
 
   def test_reproduce_true(self):
-    """Checks that CIFuzz reports an error when a test case reproduces."""
+    """Checks CIFuzz reports an error when a crash is reproducible."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
@@ -199,14 +199,14 @@ class ReproduceIntegrationTest(unittest.TestCase):
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'reproduces',
+                                      'is_reproducible',
                                       return_value=True):
         run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
         self.assertTrue(run_success)
         self.assertTrue(bug_found)
 
   def test_reproduce_false(self):
-    """Checks CIFuzz doesn't report when a test case  doesn't reproduce."""
+    """Checks CIFuzz doesn't report an error when a crash isn't reproducible."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
@@ -217,7 +217,7 @@ class ReproduceIntegrationTest(unittest.TestCase):
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'reproduces',
+                                      'is_reproducible',
                                       return_value=False):
         run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
         self.assertTrue(run_success)

@@ -92,19 +92,19 @@ class FuzzTarget:
     if not test_case:
       logging.error('No test case found in stack trace.', file=sys.stderr)
       return None, None
-    if self.reproduces(test_case):
+    if self.is_reproducible(test_case):
       return test_case, err_str
-    logging.error('A bug was found but it was not reproducible.')
+    logging.error('A crash was found but it was not reproducible.')
     return None, None
 
-  def reproduces(self, test_case):
+  def is_reproducible(self, test_case):
     """Checks if the test case reproduces.
 
       Args:
         test_case: The path to the test case to be tested.
 
       Returns:
-        True if reproduces.
+        True if crash is reproducible.
     """
     command = [
         'docker', 'run', '--rm', '--privileged', '-v',
