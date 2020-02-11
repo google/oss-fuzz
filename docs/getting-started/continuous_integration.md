@@ -99,11 +99,11 @@ The results of CIFuzz can be found in two different places.
 *  The bug_report artifact:
     1. When a crash is found by CIFuzz the Upload Artifact event is triggered.
     1. This will cause a pop up in the left hand corner, allowing
-    you to download a zipped folder called bug_report.
-    1. bug_report is a zipped folder with two files in it.
-        * `test_case` - Is a test case that can be used to reproduce the bug.
-        * `bug_summary` - Is the stack trace and summary of the detected bug.
+    you to download a zip file called `artifacts`.
+    1. `artifacts` contains two files:
+        * `test_case` - a test case that can be used to reproduce the bug.
+        * `bug_summary` - the stack trace and summary of the detected bug.
 
-## Feedback
+## Feedback/Questions/Issues
 
-Create an issue in [OSS-Fuzz](https://github.com/google/oss-fuzz/issues/new).
+Create an issue in [OSS-Fuzz](https://github.com/google/oss-fuzz/issues/new) if you have feedback questions or issues with CIFuzz.
