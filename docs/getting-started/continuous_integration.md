@@ -98,9 +98,9 @@ The results of CIFuzz can be found in two different places.
 ![Finding fuzzer output](../images/run_fuzzers.png)
 
 
-*  Uploaded artifact:
+*  Artifacts:
     1. When a crash is found by CIFuzz the Upload Artifact event is triggered.
-    1. This will cause a pop up in the left hand corner, allowing
+    1. This will cause a pop up in the right hand corner, allowing
     you to download a zip file called `artifacts`.
     1. `artifacts` contains two files:
         * `test_case` - a test case that can be used to reproduce the crash.
