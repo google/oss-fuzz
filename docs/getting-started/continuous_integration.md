@@ -18,7 +18,7 @@ CIFuzz works by checking out a repository at the head of a pull request. The
 project's fuzz targets are built and run for
 a definite amount of time (default is 10 minutes). If a bug is found, the
 stack trace as well as the test case are made abailable for download.
- If a bug is not found the test passes with a green check.
+ If a crash is not found the test passes with a green check.
 
 ## Requirements
 
@@ -46,7 +46,7 @@ project
 
 main.yml for an example project:
 
-```
+```yaml
 name: CIFuzz
 on: [pull_request]
 jobs:
@@ -87,26 +87,26 @@ make sure to set the dry-run parameters in both the `Build Fuzzers` and `Run Fuz
 
 The results of CIFuzz can be found in two different places.
 
-* The run fuzzers log:
+* Run fuzzers log:
     1. This log can be accessed in the `actions` tab of a CIFuzz integrated repo.
     1. Click on the `CIFuzz` button in the workflow selector on the left hand side.
     1. Click on the event triggered by your desired pull request.
     1. Click the `Fuzzing` workflow.
     1. Select the `Run Fuzzer` drop down. It should show the timestamps and results
     from each of the fuzz targets.
-    ![Finding fuzzer output](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/run_fuzzers.jpeg)
+    ![Finding fuzzer output](../images/run_fuzzers.png)
 
 
-*  The bug_report artifact:
+*  Uploaded artifact:
     1. When a crash is found by CIFuzz the Upload Artifact event is triggered.
     1. This will cause a pop up in the left hand corner, allowing
     you to download a zip file called `artifacts`.
     1. `artifacts` contains two files:
-        * `test_case` - a test case that can be used to reproduce the bug.
-        * `bug_summary` - the stack trace and summary of the detected bug.
-    ![Finding uploaded artifacts](https://raw.githubusercontent.com/google/oss-fuzz/master/docs/images/artifacts.jpeg)
+        * `test_case` - a test case that can be used to reproduce the crash.
+        * `bug_summary` - the stack trace and summary of the crash.
+    ![Finding uploaded artifacts](../images/artifacts.png)
 
 
 ## Feedback/Questions/Issues
 
-Create an issue in [OSS-Fuzz](https://github.com/google/oss-fuzz/issues/new) if you have feedback questions or issues with CIFuzz.
+Create an issue in [OSS-Fuzz](https://github.com/google/oss-fuzz/issues/new) if you have questions of any other feedback on CIFuzz.
