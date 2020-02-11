@@ -170,8 +170,8 @@ def run_fuzzers(fuzz_seconds, workspace):
     logging.error('Invalid workspace: %s.', workspace)
     return False, False
   out_dir = os.path.join(workspace, 'out')
-  bug_report_dir = os.path.join(out_dir, 'bug_report')
-  os.makedirs(bug_report_dir, exist_ok=True)
+  artifacts_dir = os.path.join(out_dir, 'artifacts')
+  os.makedirs(artifacts_dir, exist_ok=True)
   if not fuzz_seconds or fuzz_seconds < 1:
     logging.error('Fuzz_seconds argument must be greater than 1, but was: %s.',
                   format(fuzz_seconds))
@@ -195,8 +195,8 @@ def run_fuzzers(fuzz_seconds, workspace):
     else:
       logging.info('Fuzzer %s, detected error: %s.', target.target_name,
                    stack_trace)
-      shutil.move(test_case, os.path.join(bug_report_dir, 'test_case'))
-      parse_fuzzer_output(stack_trace, bug_report_dir)
+      shutil.move(test_case, os.path.join(artifacts_dir, 'test_case'))
+      parse_fuzzer_output(stack_trace, artifacts_dir)
       return True, True
   return True, False
 

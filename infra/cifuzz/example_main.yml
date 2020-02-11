@@ -1,12 +1,8 @@
 name: CIFuzz
-
-on: [push]
-
+on: [pull_request]
 jobs:
   Fuzzing:
-
     runs-on: ubuntu-latest
-
     steps:
     - name: Build Fuzzers
       uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
@@ -22,5 +18,5 @@ jobs:
       uses: actions/upload-artifact@v1
       if: failure()
       with:
-        name: fuzzer_testcase
-        path: ./out/testcase
+        name: artifacts
+        path: ./out/artifacts
