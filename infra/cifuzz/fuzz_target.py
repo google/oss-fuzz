@@ -113,9 +113,7 @@ class FuzzTarget:
         'reproduce', self.target_name, '-runs=100'
     ]
     _, _, err_code = utils.execute(command)
-    if err_code:
-      return True
-    return False
+    return bool(err_code)
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.
