@@ -10,7 +10,7 @@ permalink: /getting-started/continuous-integration/
 
 OSS-Fuzz offers **CIFuzz**, which will run your fuzz targets each time a pull request
 is submitted, for projects hosted on GitHub. This allows you to detect and
-fix bugs before they are submitted.
+fix bugs before they make it into your codebase
 
 ## How it works
 
@@ -33,7 +33,7 @@ You can integrate CIFuzz into your project using the following steps:
 1. Copy the example [`main.yml`](https://github.com/google/oss-fuzz/blob/master/infra/cifuzz/example_main.yml)
 file over from the OSS-Fuzz repository to the `workflows` directory.
 1. Change the `project-name` value in `main.yml` from `example` to the name of your OSS-Fuzz project. It is **very important** that you use your OSS-Fuzz project name which is case sensitive. This name
-is what your project is refered to in the [`projects`](https://github.com/google/oss-fuzz/tree/master/projects) directory of OSS-Fuzz.
+is the name of your project's subdirectory in the [`projects`](https://github.com/google/oss-fuzz/tree/master/projects) directory of OSS-Fuzz.
 
 Your directory structure should look like the following:
 ```
