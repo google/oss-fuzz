@@ -199,6 +199,8 @@ def run_fuzzers(fuzz_seconds, workspace, project_name=None):
                                           os.path.basename(fuzzer_path))
       if not corpus_dir:
         logging.warning('The backup corpus is not being used for fuzzing.')
+      else:
+        logging.info('Using corpus found at %s.', corpus_dir)
       target = fuzz_target.FuzzTarget(fuzzer_path,
                                       fuzz_seconds_per_target,
                                       out_dir,
