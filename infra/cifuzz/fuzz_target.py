@@ -41,20 +41,23 @@ class FuzzTarget:
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
     target_path: The location of the fuzz target binary.
+    corpus_dir: The location of the corpus files.
   """
 
-  def __init__(self, target_path, duration, out_dir):
+  def __init__(self, target_path, duration, out_dir, corpus_dir=None):
     """Represents a single fuzz target.
 
     Args:
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
       out_dir: The location of where the output from crashes should be stored.
+      corpus_dir: The location of the corpus files.
     """
     self.target_name = os.path.basename(target_path)
     self.duration = duration
     self.target_path = target_path
     self.out_dir = out_dir
+    self.corpus_dir = corpus_dir
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
@@ -75,9 +78,14 @@ class FuzzTarget:
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=address', '-e',
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
-        'bash', '-c', 'run_fuzzer {fuzz_target} {options}'.format(
-            fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
+        'bash', '-c'
     ]
+    run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
+        fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
+    if self.corpus_dir:
+      run_fuzzer_command = run_fuzzer_command + ' ' + self.corpus_dir
+    command.append(run_fuzzer_command)
+
     logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,

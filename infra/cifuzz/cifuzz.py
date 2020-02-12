@@ -22,10 +22,10 @@ import datetime
 import io
 import logging
 import os
-import requests
 import shutil
 import sys
 import zipfile
+import requests
 
 import fuzz_target
 
@@ -195,13 +195,17 @@ def run_fuzzers(fuzz_seconds, workspace, project_name=None):
 
     # OSS-Fuzz specific project setup.
     if project_name:
-      corpus_path = download_latest_corpus(project_name, out_dir,
-                                           os.path.basename(fuzzer_path))
-      if not corpus_path:
+      corpus_dir = download_latest_corpus(project_name, out_dir,
+                                          os.path.basename(fuzzer_path))
+      if not corpus_dir:
         logging.warning('The backup corpus is not being used for fuzzing.')
-
-    target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
-                                    out_dir)
+      target = fuzz_target.FuzzTarget(fuzzer_path,
+                                      fuzz_seconds_per_target,
+                                      out_dir,
+                                      corpus_dir=corpus_dir)
+    else:
+      target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
+                                      out_dir)
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
@@ -246,9 +250,9 @@ def download_latest_corpus(project_name, out_dir, target):
     if request.status_code != 200:
       continue
     logging.info('Downloading corpus from date %s.', date_str)
-    z = zipfile.ZipFile(io.BytesIO(request.content))
-    z.extractall(corpus_dir)
-    return out_dir
+    zipped_file = zipfile.ZipFile(io.BytesIO(request.content))
+    zipped_file.extractall(corpus_dir)
+    return corpus_dir
   return None
 
 

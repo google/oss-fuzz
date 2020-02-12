@@ -241,8 +241,6 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
                                         'example_target'))
       self.assertIsNone(
           cifuzz.download_latest_corpus('', tmp_dir, 'example_target'))
-      corpus_path = cifuzz.download_latest_corpus('example', tmp_dir,
-                                                  'do_stuff_fuzzer')
       self.assertIsNone(
           cifuzz.download_latest_corpus('example', tmp_dir, 'do_stuff_fuzzer'))
 
