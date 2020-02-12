@@ -112,8 +112,11 @@ class FuzzTarget:
         '%s:/testcase' % test_case, '-t', 'gcr.io/oss-fuzz-base/base-runner',
         'reproduce', self.target_name, '-runs=100'
     ]
-    _, _, err_code = utils.execute(command)
-    return bool(err_code)
+    for i in range(0, 10):
+      _, _, err_code = utils.execute(command)
+      if err_code:
+        return True
+    return False
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.
