@@ -185,10 +185,19 @@ def run_fuzzers(fuzz_seconds, workspace):
     return False, False
   fuzz_seconds_per_target = fuzz_seconds // len(fuzzer_paths)
 
+  old_build_target_dir = download_old_build_dir()
+  
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
-    target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
+    old_build_target = os.path.join(old_build_target_dir, os.path.basename(fuzzer_path))
+
+    if old_build_target_dir and os.path.exists(old_build_target):
+      target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
+                                    out_dir, old_build_target)
+    else:
+      target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
                                     out_dir)
+
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)

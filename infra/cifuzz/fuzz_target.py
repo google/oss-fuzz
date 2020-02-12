@@ -38,20 +38,23 @@ class FuzzTarget:
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
     target_path: The location of the fuzz target binary.
+    old_build_target: The fuzz target path from a previous build.
   """
 
-  def __init__(self, target_path, duration, out_dir):
+  def __init__(self, target_path, duration, out_dir, old_build_target=None):
     """Represents a single fuzz target.
 
     Args:
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
       out_dir: The location of where the output from crashes should be stored.
+      old_build_target: The fuzz target path from a previous build.
     """
     self.target_name = os.path.basename(target_path)
     self.duration = duration
     self.target_path = target_path
     self.out_dir = out_dir
+    self.old_build_target = old_build_target
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
@@ -94,10 +97,35 @@ class FuzzTarget:
       return None, None
     if self.is_crash_new(test_case):
       return test_case, err_str
+    logging.error('A crash was found but it was not reproducible.')
     return None, None
+
+  def is_reproducible(self, test_case, fuzz_target_path):
+    """Checks if the test case reproduces.
+
+      Args:
+        test_case: The path to the test case to be tested.
+        fuzz_target_path: The location of the fuzz target to be checked.
+
+      Returns:
+        True if crash is reproducible.
+    """
+    command = [
+        'docker', 'run', '--rm', '--privileged', '-v',
+        '%s:/out' % fuzz_target_path, '-v',
+        '%s:/testcase' % test_case, '-t', 'gcr.io/oss-fuzz-base/base-runner',
+        'reproduce', self.target_name, '-runs=100'
+    ]
+    _, _, err_code = utils.execute(command)
+    if err_code:
+      return True
+    return False
+
 
   def is_crash_new(self, test_case):
     """Checks if a crash was introduced by the pull request.
+
+    NOTE: IF no old_build_target is specified the crash is assumed new.
 
     Args:
       test_case: The path to the test_case that triggered the crash.
@@ -105,7 +133,13 @@ class FuzzTarget:
     Returns:
       True if the crash was introduced by the current pull request.
     """
-    return True
+    if not self.old_build_target:
+      return True
+    exists_in_pr = self.is_reproducible(test_case, os.path.dirname(self.target_path))
+    exists_in_master = self.is_reproducible(test_case, self.old_build_target)
+    if exists_in_pr and not exists_in_master:
+      return True
+    return False
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.
