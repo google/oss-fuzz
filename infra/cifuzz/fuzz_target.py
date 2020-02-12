@@ -30,6 +30,9 @@ logging.basicConfig(
 
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 
+# The number of reproduce attempts for a crash.
+REPRODUCE_ATTEMPTS = 10
+
 
 class FuzzTarget:
   """A class to manage a single fuzz target.
@@ -92,7 +95,31 @@ class FuzzTarget:
     if not test_case:
       logging.error('No test case found in stack trace.', file=sys.stderr)
       return None, None
-    return test_case, err_str
+    if self.is_reproducible(test_case):
+      return test_case, err_str
+    logging.error('A crash was found but it was not reproducible.')
+    return None, None
+
+  def is_reproducible(self, test_case):
+    """Checks if the test case reproduces.
+
+      Args:
+        test_case: The path to the test case to be tested.
+
+      Returns:
+        True if crash is reproducible.
+    """
+    command = [
+        'docker', 'run', '--rm', '--privileged', '-v',
+        '%s:/out' % os.path.dirname(self.target_path), '-v',
+        '%s:/testcase' % test_case, '-t', 'gcr.io/oss-fuzz-base/base-runner',
+        'reproduce', self.target_name, '-runs=100'
+    ]
+    for _ in range(REPRODUCE_ATTEMPTS):
+      _, _, err_code = utils.execute(command)
+      if err_code:
+        return True
+    return False
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.

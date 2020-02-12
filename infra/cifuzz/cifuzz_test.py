@@ -20,10 +20,12 @@ import os
 import sys
 import tempfile
 import unittest
+import unittest.mock
 
 # pylint: disable=wrong-import-position
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import cifuzz
+import fuzz_target
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project
@@ -156,7 +158,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
 class ParseOutputUnitTest(unittest.TestCase):
   """Test parse_fuzzer_output function in the cifuzz module."""
 
-  def parse_valid_output(self):
+  def test_parse_valid_output(self):
     """Checks that the parse fuzzer output can correctly parse output."""
     test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   'test_files')
@@ -175,11 +177,51 @@ class ParseOutputUnitTest(unittest.TestCase):
         real_summary = bug_summary.read()
       self.assertEqual(detected_summary, real_summary)
 
-  def parse_invalid_output(self):
+  def test_parse_invalid_output(self):
     """Checks that no files are created when an invalid input was given."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       cifuzz.parse_fuzzer_output('not a valid output_string', tmp_dir)
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
+
+
+class ReproduceIntegrationTest(unittest.TestCase):
+  """Test that only reproducible bugs are reported by CIFuzz."""
+
+  def test_reproduce_true(self):
+    """Checks CIFuzz reports an error when a crash is reproducible."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers(
+              EXAMPLE_PROJECT,
+              'oss-fuzz',
+              tmp_dir,
+              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                      'is_reproducible',
+                                      return_value=True):
+        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
+        self.assertTrue(run_success)
+        self.assertTrue(bug_found)
+
+  def test_reproduce_false(self):
+    """Checks CIFuzz doesn't report an error when a crash isn't reproducible."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers(
+              EXAMPLE_PROJECT,
+              'oss-fuzz',
+              tmp_dir,
+              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                      'is_reproducible',
+                                      return_value=False):
+        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
+        self.assertTrue(run_success)
+        self.assertFalse(bug_found)
 
 
 if __name__ == '__main__':
