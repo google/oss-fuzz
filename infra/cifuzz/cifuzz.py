@@ -24,8 +24,8 @@ import logging
 import os
 import shutil
 import sys
+import urllib.request
 import zipfile
-import requests
 
 import fuzz_target
 
@@ -237,7 +237,7 @@ def download_latest_corpus(project_name, out_dir, target):
   if not os.path.exists(out_dir):
     logging.error('Out directory %s does not exist.', out_dir)
     return None
-  corpus_dir = os.path.join(out_dir, 'corpus')
+  corpus_dir = os.path.join(out_dir, 'corpus', target)
   os.makedirs(corpus_dir, exist_ok=True)
 
   http_link = 'https://storage.googleapis.com/{0}-backup.clusterfuzz-external.' \
@@ -248,12 +248,14 @@ def download_latest_corpus(project_name, out_dir, target):
     date_str = date_to_check.strftime('%Y-%m-%d')
     corpus_link = http_link.format(project_name, target, date_str)
     logging.info("Trying corpus: %s", corpus_link)
-    request = requests.get(corpus_link)
-    if request.status_code != 200:
-      continue
+    try:
+      response = urllib.request.urlopen(corpus_link)
+      with zipfile.ZipFile(io.BytesIO(response.read())) as zf:
+          zf.extractall(corpus_dir)
+    except urllib.error.HTTPError:
+      logging.error('Unable to download corpus from: %s', corpus_link)
+      return None
     logging.info('Downloading corpus from date %s.', date_str)
-    zipped_file = zipfile.ZipFile(io.BytesIO(request.content))
-    zipped_file.extractall(corpus_dir)
     return corpus_dir
   return None
 
