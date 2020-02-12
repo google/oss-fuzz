@@ -112,7 +112,7 @@ class FuzzTarget:
         '%s:/testcase' % test_case, '-t', 'gcr.io/oss-fuzz-base/base-runner',
         'reproduce', self.target_name, '-runs=100'
     ]
-    for i in range(0, 10):
+    for _ in range(0, 10):
       _, _, err_code = utils.execute(command)
       if err_code:
         return True
