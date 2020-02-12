@@ -250,8 +250,8 @@ def download_latest_corpus(project_name, out_dir, target):
     logging.info("Trying corpus: %s", corpus_link)
     try:
       response = urllib.request.urlopen(corpus_link)
-      with zipfile.ZipFile(io.BytesIO(response.read())) as zf:
-          zf.extractall(corpus_dir)
+      with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
+        zip_file.extractall(corpus_dir)
     except urllib.error.HTTPError:
       logging.error('Unable to download corpus from: %s', corpus_link)
       return None
