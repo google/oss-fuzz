@@ -30,6 +30,8 @@ logging.basicConfig(
 
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 
+# The number of reproduce attempts for a crash.
+REPRODUCE_ATTEMPTS = 10
 
 class FuzzTarget:
   """A class to manage a single fuzz target.
@@ -112,7 +114,7 @@ class FuzzTarget:
         '%s:/testcase' % test_case, '-t', 'gcr.io/oss-fuzz-base/base-runner',
         'reproduce', self.target_name, '-runs=100'
     ]
-    for _ in range(0, 10):
+    for _ in range(REPRODUCE_ATTEMPTS):
       _, _, err_code = utils.execute(command)
       if err_code:
         return True

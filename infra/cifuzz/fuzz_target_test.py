@@ -45,12 +45,14 @@ class IsReproducibleUnitTest(unittest.TestCase):
     all_success_mock.side_effect = test_all_success
     utils.execute = all_success_mock
     self.assertTrue(self.test_target.is_reproducible('/fake/path/to/testcase'))
+    self.assertEqual(1, all_success_mock.call_count)
 
     test_one_success = [(0, 0, 0)] * 9 + [(0, 0, 1)]
     one_success_mock = unittest.mock.Mock()
     one_success_mock.side_effect = test_one_success
     utils.execute = one_success_mock
     self.assertTrue(self.test_target.is_reproducible('/fake/path/to/testcase'))
+    self.assertEqual(10, one_success_mock.call_count)
 
   def test_with_not_reproducible(self):
     """Tests that a is_reproducible will return False if crash not detected."""
