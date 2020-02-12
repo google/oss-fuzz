@@ -33,6 +33,7 @@ LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
+
 class FuzzTarget:
   """A class to manage a single fuzz target.
 
