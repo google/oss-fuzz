@@ -185,13 +185,13 @@ def run_fuzzers(fuzz_seconds, workspace):
     return False, False
   fuzz_seconds_per_target = fuzz_seconds // len(fuzzer_paths)
 
-  old_build_target_dir = download_old_build_dir()
-  
+  old_build_path = download_old_build_dir()
+
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
-    old_build_target = os.path.join(old_build_target_dir, os.path.basename(fuzzer_path))
+    old_build_target = get_old_build_target_path(old_build_path, os.path.basename(fuzzer_path))
 
-    if old_build_target_dir and os.path.exists(old_build_target):
+    if old_build_target and os.path.exists(old_build_target):
       target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
                                     out_dir, old_build_target)
     else:
@@ -208,6 +208,23 @@ def run_fuzzers(fuzz_seconds, workspace):
       parse_fuzzer_output(stack_trace, artifacts_dir)
       return True, True
   return True, False
+
+
+def get_old_build_target_path(old_build_path, fuzzer_name):
+  """Gets the directory of a fuzz target from an old build.
+
+  Args:
+    old_build_path: The path to where the old build is stored.
+    fuzzer_name: The name of the fuzz target to be found.
+
+  Returns:
+    The filepath to the old build fuzzer or None if not found.
+  """
+  for root, _, files in os.walk(path):
+    for file in files:
+      if fuzzer_name in file:
+        return os.path.join(root, file)
+  return None
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):
