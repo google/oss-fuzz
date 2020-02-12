@@ -158,6 +158,7 @@ def get_build_steps(project_dir):
         env.extend(CONFIGURATIONS['sanitizer-' + sanitizer])
         out = '/workspace/out/' + sanitizer
         stamped_name = '-'.join([name, sanitizer, ts])
+        latest_version_name = '-'.join([name, sanitizer, 'latest.version'])
         zip_file = stamped_name + '.zip'
         stamped_srcmap_file = stamped_name + '.srcmap.json'
         bucket = build_lib.ENGINE_INFO[fuzzing_engine].upload_bucket
@@ -168,6 +169,9 @@ def get_build_steps(project_dir):
         srcmap_url = build_lib.get_signed_url(
             build_lib.GCS_UPLOAD_URL_FORMAT.format(bucket, name,
                                                    stamped_srcmap_file))
+        latest_version_url = build_lib.get_signed_url(
+            build_lib.GCS_UPLOAD_URL_FORMAT.format(bucket, name,
+                                                   latest_version_name))
 
         targets_list_filename = build_lib.get_targets_list_filename(sanitizer)
         targets_list_url = build_lib.get_signed_url(
@@ -323,6 +327,20 @@ def get_build_steps(project_dir):
                     '/workspace/{0}'.format(targets_list_filename),
                     targets_list_url,
                 ],
+            },
+            # upload the latest.version file
+            {
+              'name':
+                  'gcr.io/cloud-builders/curl',
+              'args': [
+                  '-H',
+                  'Content-Type: text/plain',
+                  '-X',
+                  'PUT',
+                  '-d',
+                  zip_file,
+                  latest_version_url,
+              ],
             },
             # cleanup
             {
