@@ -223,6 +223,35 @@ class ReproduceIntegrationTest(unittest.TestCase):
         self.assertTrue(run_success)
         self.assertFalse(bug_found)
 
+class DownloadLatestCorpusUnitTest(unittest.TestCase):
+  """Test parse_fuzzer_output function in the cifuzz module."""
 
+  def test_download_valid_projects_corpus(self):
+    """Tests that an invaild projects corpus will return None."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      corpus_path = cifuzz.download_latest_corpus('arduinojson', tmp_dir,
+                                                  'msgpack_fuzzer')
+      self.assertNotEqual(0, len(os.listdir(corpus_path)))
+
+  def test_download_invalid_projects_corpus(self):
+    """Tests that an invaild projects corpus will return None."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      self.assertIsNone(
+          cifuzz.download_latest_corpus('not-a-proj', tmp_dir,
+                                        'example_target'))
+      self.assertIsNone(
+          cifuzz.download_latest_corpus('', tmp_dir, 'example_target'))
+      corpus_path = cifuzz.download_latest_corpus('example', tmp_dir,
+                                                  'do_stuff_fuzzer')
+      self.assertIsNone(
+          cifuzz.download_latest_corpus('example', tmp_dir, 'do_stuff_fuzzer'))
+
+  def test_download_invalid_out_dir(self):
+    """Tests that an invaild out_dir will return None."""
+    self.assertIsNone(
+        cifuzz.download_latest_corpus(EXAMPLE_PROJECT, '/not/a',
+                                      'example_target'))
+    self.assertIsNone(
+        cifuzz.download_latest_corpus(EXAMPLE_PROJECT, '', 'example_target'))
 if __name__ == '__main__':
   unittest.main()
