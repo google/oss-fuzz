@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test the functionality of the fuzz_target module"""
+"""Test the functionality of the fuzz_target module."""
 
 import os
 import sys
 import unittest
 import unittest.mock
 
+# Pylint has issue importing utils which is why error suppression is required.
 # pylint: disable=wrong-import-position
 # pylint: disable=import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -33,6 +34,7 @@ class IsReproducibleUnitTest(unittest.TestCase):
   """Test is_reproducible function in the fuzz_target module."""
 
   def setUp(self):
+    """Sets up dummy fuzz target to test is_reproducible method."""
     self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
                                               '/example/outdir')
 
@@ -63,6 +65,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
   """Test get_test_case function in the fuzz_target module."""
 
   def setUp(self):
+    """Sets up dummy fuzz target to test get_test_case method."""
     self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
                                               '/example/outdir')
 
@@ -77,7 +80,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
         '/example/outdir/crash-ad6700613693ef977ff3a8c8f4dae239c3dde6f5')
 
   def test_with_invalid_error_string(self):
-    """Tests that get_test_case will return none with a bad error string."""
+    """Tests that get_test_case will return None with a bad error string."""
     self.assertIsNone(self.test_target.get_test_case(''))
     self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
 
