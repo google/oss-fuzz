@@ -10,7 +10,7 @@ from google.cloud import bigquery
 from google.cloud import storage
 
 # Looking at the date over the past 14 days, as that's how long our logs exist.
-_DAYS_TO_ANALYZE = 2
+_DAYS_TO_ANALYZE = 3
 
 _BQ_CLIENT = bigquery.Client(project='clusterfuzz-external')
 _GCS_CLIENT = storage.Client(project='clusterfuzz-external')
@@ -85,7 +85,8 @@ ORDER BY
 """
 
 _COVERAGE_BUCKET = 'oss-fuzz-coverage'
-_COVERAGE_PATH = '{project}/fuzzer_stats/{date}/{binary}.json'
+#_COVERAGE_PATH = '{project}/fuzzer_stats/{date}/{binary}.json'
+_COVERAGE_PATH = '{project}/logs/{date}/{binary}.json'
 _COVERAGE_REPORT = ('https://storage.googleapis.com/oss-fuzz-coverage/'
                     '{project}/reports/{date}/linux/report.html')
 _BINARY_PATH_TOKEN = '/mnt/scratch0/clusterfuzz/bot/builds/clusterfuzz-builds'
@@ -147,6 +148,18 @@ def _compare_files(base, advanced, factor):
   return value_advanced - value_base
 
 
+
+def _diff_functions(base, advanced):
+  functions_base = base['data'][0]['functions']
+  functions_advanced = advanced['data'][0]['functions']
+  if len(functions_base) != len(functions_advanced):
+    print('!!!!!!!!!!!!!! DIFFERENT LENGTH!')
+  else:
+    print('?????????????? FUNCTION DIFF COULD BE HERE!')
+  
+  #for f1, f2 
+
+
 def _calculate_coverage_diff(coverage_base, coverage_advanced):
   base = json.loads(coverage_base)
   advanced = json.loads(coverage_advanced)
@@ -154,6 +167,7 @@ def _calculate_coverage_diff(coverage_base, coverage_advanced):
   files_advanced = advanced['data'][0]['files']
   idx1, idx2 = 0, 0
   result = []
+  diff_functions = False
 
   while idx1 < len(files_base) and idx2 < len(files_advanced):
     if files_base[idx1]['filename'] == files_advanced[idx2]['filename']:
@@ -173,6 +187,7 @@ def _calculate_coverage_diff(coverage_base, coverage_advanced):
       if any(delta.values()):
         print('diffs: func: %4d, line: %4d, region: %4d in %s' %
               (delta['functions'], delta['lines'], delta['regions'], filename))
+        diff_functions = True
 
       idx1 += 1
       idx2 += 1
@@ -190,6 +205,10 @@ def _calculate_coverage_diff(coverage_base, coverage_advanced):
   if idx2 < len(files_advanced):
     for f in files_advanced[idx2:]:
       print('Only in advanced: %s', f['filename'])
+
+
+  if diff_functions:
+    _diff_functions(base, advanced)
 
   return result
 
