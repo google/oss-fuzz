@@ -239,7 +239,7 @@ def get_build_steps(project_dir):
   # Update the latest report information file for ClusterFuzz.
   latest_report_info_url = build_lib.get_signed_url(
       LATEST_REPORT_INFO_URL.format(project=project_name),
-      content_type=LATEST_REPORT_INFO_CONTENT_TYPE )
+      content_type=LATEST_REPORT_INFO_CONTENT_TYPE)
   latest_report_info_body = json.dumps({
       'fuzzer_stats_dir':
           upload_fuzzer_stats_url,

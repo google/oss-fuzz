@@ -176,8 +176,7 @@ def get_build_steps(project_dir):
         latest_version_url = build_lib.GCS_UPLOAD_URL_FORMAT.format(
             bucket, name, latest_version_file)
         latest_version_url = build_lib.get_signed_url(
-            latest_version_url,
-            content_type=LATEST_VERSION_CONTENT_TYPE)
+            latest_version_url, content_type=LATEST_VERSION_CONTENT_TYPE)
 
         targets_list_filename = build_lib.get_targets_list_filename(sanitizer)
         targets_list_url = build_lib.get_signed_url(
