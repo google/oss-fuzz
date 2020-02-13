@@ -100,7 +100,6 @@ class FuzzTarget:
       return None, None
     if self.is_crash_valid(test_case):
       return test_case, err_str
-    logging.error('A crash was found but it was not reproducible.')
     return None, None
 
   def is_reproducible(self, test_case, target_path):
@@ -128,7 +127,8 @@ class FuzzTarget:
   def is_crash_valid(self, test_case):
     """Checks if a crash was introduced by the pull request.
 
-    NOTE: IF no old_build_target is specified the crash is assumed new.
+    NOTE: If no old_build_target is specified the crash is assumed introduced
+    by the pull request.
 
     Args:
       test_case: The path to the test_case that triggered the crash.
@@ -141,7 +141,7 @@ class FuzzTarget:
     exists_in_pr = self.is_reproducible(test_case,
                                         os.path.dirname(self.target_path))
     if not exists_in_pr:
-      logging.error('Crash was not reproducible.')
+      logging.info('Crash is not reproducible.')
       return False
     exists_in_master = self.is_reproducible(test_case, self.old_build_path)
     if exists_in_pr and not exists_in_master:

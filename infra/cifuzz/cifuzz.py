@@ -65,6 +65,9 @@ STACKTRACE_END_MARKERS = [
     'minidump has been written',
 ]
 
+# Location of google cloud storage for old builds.
+GC_STORAGE = 'https://storage.googleapis.com/clusterfuzz-builds/'
+
 # TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -217,8 +220,8 @@ def get_lastest_build_version(project_name):
   Returns:
     A string with the latest build version or None.
   """
-  http_get_string = 'https://storage.googleapis.com/clusterfuzz-builds/{0}/' \
-  '{0}-address-latest.version'.format(project_name)
+  http_get_string = GC_STORAGE + '{0}/{0}-address-latest.version'.format(
+      project_name)
   try:
     response = urllib.request.urlopen(http_get_string)
   except urllib.error.HTTPError:
@@ -229,7 +232,7 @@ def get_lastest_build_version(project_name):
 
 
 def download_old_build_dir(project_name, out_dir):
-  """Download an old OSS-Fuzz build to get an earlier version of a project.
+  """Download an old OSS-Fuzz build to get an old version of fuzzers.
 
   Args:
     project_name: The name of the relevant OSS-Fuzz project.
@@ -246,14 +249,14 @@ def download_old_build_dir(project_name, out_dir):
     return None
   build_dir = os.path.join(out_dir, 'build', project_name)
   os.makedirs(build_dir, exist_ok=True)
-  http_get_string = 'https://storage.googleapis.com/clusterfuzz-builds/{0}/{1}'.format(
-      project_name, latest_build_str)
+  http_get_string = GC_STORAGE + '{0}/{1}'.format(project_name,
+                                                  latest_build_str)
   try:
     response = urllib.request.urlopen(http_get_string)
     with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
       zip_file.extractall(build_dir)
   except urllib.error.HTTPError:
-    logging.error('Unable to download corpus from: %s.', corpus_link)
+    logging.error('Unable to download corpus from: %s.', http_get_string)
     return None
   return build_dir
 

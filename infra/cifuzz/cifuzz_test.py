@@ -126,7 +126,10 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
-      run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
+      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                      'is_reproducible',
+                                      side_effect=[True, False]):
+        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
     self.assertTrue(run_success)
     self.assertTrue(bug_found)
 
@@ -183,46 +186,6 @@ class ParseOutputUnitTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       cifuzz.parse_fuzzer_output('not a valid output_string', tmp_dir)
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
-
-
-class ReproduceIntegrationTest(unittest.TestCase):
-  """Test that only reproducible bugs are reported by CIFuzz."""
-
-  def test_reproduce_true(self):
-    """Checks CIFuzz reports an error when a crash is reproducible."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(
-              EXAMPLE_PROJECT,
-              'oss-fuzz',
-              tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
-      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'is_reproducible',
-                                      return_value=True):
-        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-        self.assertTrue(run_success)
-        self.assertTrue(bug_found)
-
-  def test_reproduce_false(self):
-    """Checks CIFuzz doesn't report an error when a crash isn't reproducible."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(
-              EXAMPLE_PROJECT,
-              'oss-fuzz',
-              tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
-      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'is_reproducible',
-                                      return_value=False):
-        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-        self.assertTrue(run_success)
-        self.assertFalse(bug_found)
 
 
 class GetLatestBuildVersionUnitTest(unittest.TestCase):

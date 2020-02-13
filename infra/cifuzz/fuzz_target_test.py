@@ -106,25 +106,29 @@ class IsCrashValidUnitTest(unittest.TestCase):
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[True, False]):
-      self.assertTrue(self.test_target.is_crash_valid('/example/crash/testcase'))
-
+      self.assertTrue(
+          self.test_target.is_crash_valid('/example/crash/testcase'))
 
   def test_with_invalid_crash(self):
     """Checks to make sure an invalid crash returns false."""
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[True, True]):
-      self.assertFalse(self.test_target.is_crash_valid('/example/crash/testcase'))
+      self.assertFalse(
+          self.test_target.is_crash_valid('/example/crash/testcase'))
 
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[False, True]):
-      self.assertFalse(self.test_target.is_crash_valid('/example/crash/testcase'))
+      self.assertFalse(
+          self.test_target.is_crash_valid('/example/crash/testcase'))
 
       with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                       'is_reproducible',
                                       side_effect=[False, False]):
-        self.assertFalse(self.test_target.is_crash_valid('/example/crash/testcase'))
+        self.assertFalse(
+            self.test_target.is_crash_valid('/example/crash/testcase'))
+
 
 if __name__ == '__main__':
   unittest.main()
