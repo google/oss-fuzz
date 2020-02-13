@@ -136,7 +136,6 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
         self.assertTrue(run_success)
         self.assertTrue(bug_found)
 
-
   def test_old_bug_found(self):
     """Test run_fuzzers with a bug found in OSS-Fuzz before."""
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -158,7 +157,6 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
         self.assertNotEqual(0, len(os.listdir(build_dir)))
         self.assertTrue(run_success)
         self.assertFalse(bug_found)
-
 
   def test_invlid_build(self):
     """Test run_fuzzers with an invalid build."""
