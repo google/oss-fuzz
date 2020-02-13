@@ -134,3 +134,21 @@ def download_corpora_steps(project_name):
     })
 
   return steps
+
+
+def http_upload_step(data, signed_url, content_type):
+  """Returns a GCB step to upload data to the given URL via GCS HTTP API."""
+  step = {
+      'name':
+          'gcr.io/cloud-builders/curl',
+      'args': [
+          '-H',
+          'Content-Type: ' + content_type,
+          '-X',
+          'PUT',
+          '-d',
+          data,
+          signed_url,
+      ],
+  }
+  return step

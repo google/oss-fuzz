@@ -253,19 +253,9 @@ def get_build_steps(project_dir):
           os.path.join(upload_report_url, PLATFORM, 'summary.json'),
   })
 
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/curl',
-      'args': [
-          '-H',
-          'Content-Type: application/json',
-          '-X',
-          'PUT',
-          '-d',
-          latest_report_info_body,
-          latest_report_info_url,
-      ],
-  })
+  build_steps.append(
+      build_lib.http_upload_step(latest_report_info_body,
+                                 latest_report_info_url, 'application/json'))
   return build_steps
 
 

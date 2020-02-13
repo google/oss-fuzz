@@ -210,8 +210,8 @@ def get_build_steps(project_dir):
                     # `cd /src && cd {workdir}` (where {workdir} is parsed from
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
-                    ('rm -r /out && cd /src && cd {workdir} && mkdir -p {out} && '
-                     'compile || (echo "{failure_msg}" && false)'
+                    ('rm -r /out && cd /src && cd {workdir} && mkdir -p {out} '
+                     '&& compile || (echo "{failure_msg}" && false)'
                     ).format(workdir=workdir, out=out, failure_msg=failure_msg),
                 ],
             })
@@ -329,19 +329,8 @@ def get_build_steps(project_dir):
                 ],
             },
             # upload the latest.version file
-            {
-              'name':
-                  'gcr.io/cloud-builders/curl',
-              'args': [
-                  '-H',
-                  'Content-Type: text/plain',
-                  '-X',
-                  'PUT',
-                  '-d',
-                  zip_file,
-                  latest_version_url,
-              ],
-            },
+            build_lib.http_upload_step(zip_file, latest_version_url,
+                                       'text/plain'),
             # cleanup
             {
                 'name': image,
