@@ -114,7 +114,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 class RunFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the cifuzz module."""
 
-  def test_valid(self):
+  def test_new_bug_found(self):
     """Test run_fuzzers with a valid build."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
@@ -132,6 +132,31 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
         run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
     self.assertTrue(run_success)
     self.assertTrue(bug_found)
+    build_dir = os.path.join(tmp_dir, 'out', 'build')
+    self.assertTrue(os.path.exists(build_dir))
+    self.assertNotEqual(0, len(os.listdir(build_dir)))
+
+  def test_old_bug_found(self):
+    """Test run_fuzzers with a bug found in OSS-Fuzz before."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers(
+              EXAMPLE_PROJECT,
+              'oss-fuzz',
+              tmp_dir,
+              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
+      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                      'is_reproducible',
+                                      side_effect=[True, True]):
+        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
+    self.assertTrue(run_success)
+    self.assertFalse(bug_found)
+    build_dir = os.path.join(tmp_dir, 'out', 'build')
+    self.assertTrue(os.path.exists(build_dir))
+    self.assertNotEqual(0, len(os.listdir(build_dir)))
 
   def test_invlid_build(self):
     """Test run_fuzzers with an invalid build."""
@@ -189,16 +214,11 @@ class ParseOutputUnitTest(unittest.TestCase):
 
 
 class GetLatestBuildVersionUnitTest(unittest.TestCase):
-  """Test the get_lastest_build_version function in the cifuzz module."""
+  """Test the get_latest_build_version function in the cifuzz module."""
 
   def test_get_valid_project(self):
     """Checks the latest build can be retrieved from gcs."""
-    latest_build = cifuzz.get_lastest_build_version('yara')
-    self.assertIsNotNone(latest_build)
-    self.assertTrue(latest_build.endswith('.zip'))
-    self.assertTrue('address' in latest_build)
-
-    latest_build = cifuzz.get_lastest_build_version('envoy')
+    latest_build = cifuzz.get_lastest_build_version('example')
     self.assertIsNotNone(latest_build)
     self.assertTrue(latest_build.endswith('.zip'))
     self.assertTrue('address' in latest_build)
@@ -207,54 +227,6 @@ class GetLatestBuildVersionUnitTest(unittest.TestCase):
     """Checks the latest build will return None when project doesn't exist."""
     self.assertIsNone(cifuzz.get_lastest_build_version('Not-a-project'))
     self.assertIsNone(cifuzz.get_lastest_build_version(''))
-
-
-class NewCrashIntegrationTests(unittest.TestCase):
-  """Test the new crash deteciton in the cifuzz module."""
-
-  def test_build_and_run_valid_old_bug(self):
-    """Tests that a project can be built and run using an old build."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(
-              EXAMPLE_PROJECT,
-              'oss-fuzz',
-              tmp_dir,
-              commit_sha='52e640af345a6484c37091cbadc6f1aff677d423'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
-      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'is_reproducible',
-                                      side_effect=[True, True]):
-        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, 'example')
-      build_dir = os.path.join(tmp_dir, 'out', 'build')
-      self.assertTrue(os.path.exists(build_dir))
-      self.assertNotEqual(0, len(os.listdir(build_dir)))
-      self.assertTrue(run_success)
-      self.assertFalse(bug_found)
-
-  def test_build_and_run_valid_new_bug(self):
-    """Tests that a project can."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(
-              EXAMPLE_PROJECT,
-              'oss-fuzz',
-              tmp_dir,
-              commit_sha='52e640af345a6484c37091cbadc6f1aff677d423'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
-      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'is_reproducible',
-                                      side_effect=[True, False]):
-        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, 'example')
-      build_dir = os.path.join(tmp_dir, 'out', 'build')
-      self.assertTrue(os.path.exists(build_dir))
-      self.assertNotEqual(0, len(os.listdir(build_dir)))
-      self.assertTrue(run_success)
-      self.assertTrue(bug_found)
 
 
 class DownloadOldBuildDirIntegrationTests(unittest.TestCase):
