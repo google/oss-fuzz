@@ -1,11 +1,11 @@
 diff --git a/fuzz/FuzzPathMeasure.cpp b/fuzz/FuzzPathMeasure.cpp
-index 8526ff8cc6..116302f5fe 100644
+index 310735611f..cfde48022d 100644
 --- a/fuzz/FuzzPathMeasure.cpp
 +++ b/fuzz/FuzzPathMeasure.cpp
 @@ -22,6 +22,9 @@ DEF_FUZZ(PathMeasure, fuzz) {
      FuzzEvilPath(fuzz, &path, SkPath::Verb::kDone_Verb);
      SkRect bounds = path.getBounds();
-     SkScalar maxDim = SkTMax(bounds.width(), bounds.height());
+     SkScalar maxDim = std::max(bounds.width(), bounds.height());
 +    if (maxDim > 10000000) {
 +        return;
 +    }
@@ -13,7 +13,7 @@ index 8526ff8cc6..116302f5fe 100644
      SkPathMeasure measure(path, bits & 1, resScale);
      SkPoint position;
 diff --git a/src/core/SkAAClip.cpp b/src/core/SkAAClip.cpp
-index c33ea9510d..a4d09c265d 100644
+index 22fd36ce1b..8a6025f641 100644
 --- a/src/core/SkAAClip.cpp
 +++ b/src/core/SkAAClip.cpp
 @@ -1547,6 +1547,12 @@ static void operateY(SkAAClip::Builder& builder, const SkAAClip& A,
@@ -30,7 +30,7 @@ index c33ea9510d..a4d09c265d 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 296329a52d..9b74d50146 100644
+index 609e40ccae..db9d67b966 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
 @@ -959,6 +959,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
@@ -47,7 +47,7 @@ index 296329a52d..9b74d50146 100644
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index 107566459b..bac5263e47 100644
+index 80f4d0b62d..c4aabb0540 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
 @@ -176,6 +176,12 @@ bool SkImageFilter_Base::Common::unflatten(SkReadBuffer& buffer, int expectedCou
@@ -80,7 +80,7 @@ index d998029a2b..8807c1fc4d 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index 573fe3cabb..cae96b00cc 100644
+index 705809de99..ef4e406816 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
 @@ -262,6 +262,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
@@ -114,10 +114,10 @@ index f294dbe4a0..12100e1624 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index 5679a9d182..104523a6af 100644
+index 5afe53ab70..41d28b0602 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
-@@ -3120,7 +3120,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+@@ -3142,7 +3142,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
                                     SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
      SkASSERT(!oval.isEmpty());
      SkASSERT(sweepAngle);
@@ -131,10 +131,10 @@ index 5679a9d182..104523a6af 100644
      path->setIsVolatile(true);
      path->setFillType(SkPathFillType::kWinding);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index ff78b74a34..ce846799a4 100644
+index 041f6f0469..0270f810c4 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
-@@ -277,7 +277,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
+@@ -276,7 +276,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
  uint32_t SkReadBuffer::getArrayCount() {
      const size_t inc = sizeof(uint32_t);
      fError = fError || !IsPtrAlign4(fReader.peek()) || !fReader.isAvailable(inc);
@@ -148,7 +148,7 @@ index ff78b74a34..ce846799a4 100644
  
  /*  Format:
 diff --git a/src/core/SkScan_Hairline.cpp b/src/core/SkScan_Hairline.cpp
-index f9365cecb2..7b77341e06 100644
+index 589bd1cccd..a4c661c69d 100644
 --- a/src/core/SkScan_Hairline.cpp
 +++ b/src/core/SkScan_Hairline.cpp
 @@ -121,7 +121,11 @@ void SkScan::HairLineRgn(const SkPoint array[], int arrayCount, const SkRegion*
@@ -210,7 +210,7 @@ index fa19bb96b8..005daff13b 100644
      const SkMatrix& mat = this->getMatrix();
      SkPoint src, dst;
 diff --git a/src/effects/SkDashPathEffect.cpp b/src/effects/SkDashPathEffect.cpp
-index 913d851c04..bd4ea876c0 100644
+index d392dc2317..d71515f1d4 100644
 --- a/src/effects/SkDashPathEffect.cpp
 +++ b/src/effects/SkDashPathEffect.cpp
 @@ -381,6 +381,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
@@ -227,7 +227,7 @@ index 913d851c04..bd4ea876c0 100644
      if (buffer.readScalarArray(intervals.get(), count)) {
          return SkDashPathEffect::Make(intervals.get(), SkToInt(count), phase);
 diff --git a/src/effects/SkDiscretePathEffect.cpp b/src/effects/SkDiscretePathEffect.cpp
-index 93ea43fa29..69527725a6 100644
+index 4ad1165b0f..a79526a909 100644
 --- a/src/effects/SkDiscretePathEffect.cpp
 +++ b/src/effects/SkDiscretePathEffect.cpp
 @@ -97,6 +97,11 @@ bool SkDiscretePathEffect::onFilterPath(SkPath* dst, const SkPath& src,

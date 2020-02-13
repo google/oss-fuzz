@@ -193,12 +193,8 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
 
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
-    if old_build_path:
-      target = fuzz_target.FuzzTarget(
-          fuzzer_path, fuzz_seconds_per_target, out_dir, old_build_path)
-    else:
-      target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
-                                      out_dir)
+    target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
+                                    out_dir, old_build_path)
 
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:

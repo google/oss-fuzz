@@ -150,7 +150,8 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_out_dir(self):
     """Tests run_fuzzers with an invalid out directory."""
-    run_success, bug_found = cifuzz.run_fuzzers(5, 'not/a/valid/path', EXAMPLE_PROJECT)
+    run_success, bug_found = cifuzz.run_fuzzers(5, 'not/a/valid/path',
+                                                EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -239,27 +240,67 @@ class GetLatestBuildVersionUnitTest(unittest.TestCase):
     self.assertTrue(latest_build.endswith('.zip'))
     self.assertTrue('address' in latest_build)
 
-
   def test_get_invalid_project(self):
     """Checks the latest build will return None when project doesn't exist."""
     self.assertIsNone(cifuzz.get_lastest_build_version('Not-a-project'))
     self.assertIsNone(cifuzz.get_lastest_build_version(''))
 
 
+class NewCrashIntegrationTests(unittest.TestCase):
+  """Test the new crash deteciton in the cifuzz module."""
+
+  def test_build_and_run_valid_old_bug(self):
+    """Tests that a project can be built and run using an old build."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers(
+              EXAMPLE_PROJECT,
+              'oss-fuzz',
+              tmp_dir,
+              commit_sha='52e640af345a6484c37091cbadc6f1aff677d423'))
+      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
+      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                      'is_reproducible',
+                                      side_effect=[True, True]):
+        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, 'example')
+      build_dir = os.path.join(tmp_dir, 'out', 'build')
+      self.assertTrue(os.path.exists(build_dir))
+      self.assertNotEqual(0, len(os.listdir(build_dir)))
+      self.assertTrue(run_success)
+      self.assertFalse(bug_found)
+
+  def test_build_and_run_valid_new_bug(self):
+    """Tests that a project can."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers(
+              EXAMPLE_PROJECT,
+              'oss-fuzz',
+              tmp_dir,
+              commit_sha='52e640af345a6484c37091cbadc6f1aff677d423'))
+      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
+      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                      'is_reproducible',
+                                      side_effect=[True, False]):
+        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, 'example')
+      build_dir = os.path.join(tmp_dir, 'out', 'build')
+      self.assertTrue(os.path.exists(build_dir))
+      self.assertNotEqual(0, len(os.listdir(build_dir)))
+      self.assertTrue(run_success)
+      self.assertTrue(bug_found)
+
+
 class DownloadOldBuildDirIntegrationTests(unittest.TestCase):
   """Test the download_old_build_dir in function in the cifuzz module."""
-
-  def test_build_and_run_valid(self):
-    """Tests that a project can be built and run using an old build."""
 
   def test_get_valid_project(self):
     """Checks the latest build can be retrieved from gcs."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      old_build_path = cifuzz.download_old_build_dir('yara', tmp_dir)
-      self.assertIsNotNone(old_build_path)
-      self.assertNotEqual(0, len(os.listdir(old_build_path)))
-
-      old_build_path = cifuzz.download_old_build_dir('gonids', tmp_dir)
+      old_build_path = cifuzz.download_old_build_dir(EXAMPLE_PROJECT, tmp_dir)
       self.assertIsNotNone(old_build_path)
       self.assertNotEqual(0, len(os.listdir(old_build_path)))
 
