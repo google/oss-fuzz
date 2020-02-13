@@ -30,6 +30,7 @@ HTML_REPORT_URL_FORMAT = (build_lib.GCS_URL_BASENAME + COVERAGE_BUCKET_NAME +
 # This is needed for ClusterFuzz to pick up the most recent reports data.
 LATEST_REPORT_INFO_URL = ('/' + COVERAGE_BUCKET_NAME +
                           '/latest_report_info/{project}.json')
+LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
 
 # Link where to upload code coverage report files to.
 UPLOAD_URL_FORMAT = 'gs://' + COVERAGE_BUCKET_NAME + '/{project}/{type}/{date}'
@@ -238,8 +239,7 @@ def get_build_steps(project_dir):
   # Update the latest report information file for ClusterFuzz.
   latest_report_info_url = build_lib.get_signed_url(
       LATEST_REPORT_INFO_URL.format(project=project_name),
-      method='PUT',
-      content_type='application/json')
+      content_type=LATEST_REPORT_INFO_CONTENT_TYPE)
   latest_report_info_body = json.dumps({
       'fuzzer_stats_dir':
           upload_fuzzer_stats_url,
@@ -253,19 +253,10 @@ def get_build_steps(project_dir):
           os.path.join(upload_report_url, PLATFORM, 'summary.json'),
   })
 
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/curl',
-      'args': [
-          '-H',
-          'Content-Type: application/json',
-          '-X',
-          'PUT',
-          '-d',
-          latest_report_info_body,
-          latest_report_info_url,
-      ],
-  })
+  build_steps.append(
+      build_lib.http_upload_step(latest_report_info_body,
+                                 latest_report_info_url,
+                                 LATEST_REPORT_INFO_CONTENT_TYPE))
   return build_steps
 
 
