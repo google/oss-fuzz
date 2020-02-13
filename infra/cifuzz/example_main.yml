@@ -12,6 +12,7 @@ jobs:
     - name: Run Fuzzers
       uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
       with:
+        project-name: 'example'
         fuzz-time: 600
         dry-run: false
     - name: Upload Crash
