@@ -38,6 +38,9 @@ DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
+LATEST_VERSION_FILENAME = 'latest.version'
+LATEST_VERSION_CONTENT_TYPE = 'text/plain'
+
 
 def usage():
   sys.stderr.write('Usage: ' + sys.argv[0] + ' <project_dir>\n')
@@ -158,7 +161,8 @@ def get_build_steps(project_dir):
         env.extend(CONFIGURATIONS['sanitizer-' + sanitizer])
         out = '/workspace/out/' + sanitizer
         stamped_name = '-'.join([name, sanitizer, ts])
-        latest_version_name = '-'.join([name, sanitizer, 'latest.version'])
+        latest_version_file = '-'.join(
+            [name, sanitizer, LATEST_VERSION_FILENAME])
         zip_file = stamped_name + '.zip'
         stamped_srcmap_file = stamped_name + '.srcmap.json'
         bucket = build_lib.ENGINE_INFO[fuzzing_engine].upload_bucket
@@ -169,9 +173,11 @@ def get_build_steps(project_dir):
         srcmap_url = build_lib.get_signed_url(
             build_lib.GCS_UPLOAD_URL_FORMAT.format(bucket, name,
                                                    stamped_srcmap_file))
+        latest_version_url = build_lib.GCS_UPLOAD_URL_FORMAT.format(
+            bucket, name, latest_version_file)
         latest_version_url = build_lib.get_signed_url(
-            build_lib.GCS_UPLOAD_URL_FORMAT.format(bucket, name,
-                                                   latest_version_name))
+            latest_version_url,
+            content_type=LATEST_VERSION_CONTENT_TYPE)
 
         targets_list_filename = build_lib.get_targets_list_filename(sanitizer)
         targets_list_url = build_lib.get_signed_url(
@@ -330,7 +336,7 @@ def get_build_steps(project_dir):
             },
             # upload the latest.version file
             build_lib.http_upload_step(zip_file, latest_version_url,
-                                       'text/plain'),
+                                       LATEST_VERSION_CONTENT_TYPE),
             # cleanup
             {
                 'name': image,
