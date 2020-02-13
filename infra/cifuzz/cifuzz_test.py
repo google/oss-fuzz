@@ -228,14 +228,14 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
   """Test parse_fuzzer_output function in the cifuzz module."""
 
   def test_download_valid_projects_corpus(self):
-    """Tests that an invaild projects corpus will return None."""
+    """Tests that a vaild projects corpus will return a corpus directory."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       corpus_path = cifuzz.download_latest_corpus('arduinojson', tmp_dir,
                                                   'msgpack_fuzzer')
       self.assertNotEqual(0, len(os.listdir(corpus_path)))
 
   def test_download_invalid_projects_corpus(self):
-    """Tests that an invaild projects corpus will return None."""
+    """Tests that an invalid projects corpus will return None."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.assertIsNone(
           cifuzz.download_latest_corpus('not-a-proj', tmp_dir,
@@ -246,7 +246,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
           cifuzz.download_latest_corpus('example', tmp_dir, 'do_stuff_fuzzer'))
 
   def test_download_invalid_out_dir(self):
-    """Tests that an invaild out_dir will return None."""
+    """Tests that an invalid out_dir will return None."""
     self.assertIsNone(
         cifuzz.download_latest_corpus(EXAMPLE_PROJECT, '/not/a',
                                       'example_target'))

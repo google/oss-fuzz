@@ -249,9 +249,9 @@ def download_latest_corpus(project_name, out_dir, target):
       with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
         zip_file.extractall(corpus_dir)
     except urllib.error.HTTPError:
-      logging.error('Unable to download corpus from: %s', corpus_link)
+      logging.error('Unable to download corpus from: %s.', corpus_link)
       return None
-    logging.info('Downloading corpus from date %s.', date_str)
+    logging.info('Downloaded corpus from: %s.', corpus_link)
     return corpus_dir
   return None
 
