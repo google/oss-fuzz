@@ -165,7 +165,7 @@ def run_fuzzers(fuzz_seconds, workspace, project_name=None):
     fuzz_seconds: The total time allotted for fuzzing.
     workspace: The location in a shared volume to store a git repo and build
       artifacts.
-    project_name: The name of the OSS-Fuzz project the run relates to.
+    project_name: The name of the relevant OSS-Fuzz project.
 
   Returns:
     (True if run was successful, True if bug was found).
@@ -197,10 +197,6 @@ def run_fuzzers(fuzz_seconds, workspace, project_name=None):
     if project_name:
       corpus_dir = download_latest_corpus(project_name, out_dir,
                                           os.path.basename(fuzzer_path))
-      if not corpus_dir:
-        logging.warning('The backup corpus is not being used for fuzzing.')
-      else:
-        logging.info('Using corpus found at %s.', corpus_dir)
       target = fuzz_target.FuzzTarget(fuzzer_path,
                                       fuzz_seconds_per_target,
                                       out_dir,

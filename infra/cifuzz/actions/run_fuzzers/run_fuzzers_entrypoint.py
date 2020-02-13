@@ -46,7 +46,7 @@ def main():
     FUZZ_SECONDS: The length of time in seconds that fuzzers are to be run.
     GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
     DRY_RUN: If true, no failures will surface.
-    PROJECT_NAME: The name of the OSS-Fuzz project that the fuzzers are related.
+    PROJECT_NAME: The name of the relevant OSS-Fuzz project.
 
   Returns:
     0 on success or 1 on Failure.

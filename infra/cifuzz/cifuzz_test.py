@@ -223,6 +223,7 @@ class ReproduceIntegrationTest(unittest.TestCase):
         self.assertTrue(run_success)
         self.assertFalse(bug_found)
 
+
 class DownloadLatestCorpusUnitTest(unittest.TestCase):
   """Test parse_fuzzer_output function in the cifuzz module."""
 
@@ -251,5 +252,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
                                       'example_target'))
     self.assertIsNone(
         cifuzz.download_latest_corpus(EXAMPLE_PROJECT, '', 'example_target'))
+
+
 if __name__ == '__main__':
   unittest.main()
