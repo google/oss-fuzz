@@ -55,7 +55,9 @@ build_fuzzer() {
     elif [ "$exeName" == "beginlayout" ]; then
         exeName=beginLayout
     fi
-    mv $lowercaseExeName $exeName
+    if [ "$lowercaseExeName" != "$exeName" ]; then
+        mv $lowercaseExeName $exeName
+    fi
 
     mv $exeName $OUT
     if [ -n "$format" ]; then
