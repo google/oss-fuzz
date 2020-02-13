@@ -130,11 +130,12 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
                                       'is_reproducible',
                                       side_effect=[True, False]):
         run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-    self.assertTrue(run_success)
-    self.assertTrue(bug_found)
-    build_dir = os.path.join(tmp_dir, 'out', 'build')
-    self.assertTrue(os.path.exists(build_dir))
-    self.assertNotEqual(0, len(os.listdir(build_dir)))
+        build_dir = os.path.join(tmp_dir, 'out', 'build')
+        self.assertTrue(os.path.exists(build_dir))
+        self.assertNotEqual(0, len(os.listdir(build_dir)))
+        self.assertTrue(run_success)
+        self.assertTrue(bug_found)
+
 
   def test_old_bug_found(self):
     """Test run_fuzzers with a bug found in OSS-Fuzz before."""
@@ -152,11 +153,12 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
                                       'is_reproducible',
                                       side_effect=[True, True]):
         run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-    self.assertTrue(run_success)
-    self.assertFalse(bug_found)
-    build_dir = os.path.join(tmp_dir, 'out', 'build')
-    self.assertTrue(os.path.exists(build_dir))
-    self.assertNotEqual(0, len(os.listdir(build_dir)))
+        build_dir = os.path.join(tmp_dir, 'out', 'build')
+        self.assertTrue(os.path.exists(build_dir))
+        self.assertNotEqual(0, len(os.listdir(build_dir)))
+        self.assertTrue(run_success)
+        self.assertFalse(bug_found)
+
 
   def test_invlid_build(self):
     """Test run_fuzzers with an invalid build."""
