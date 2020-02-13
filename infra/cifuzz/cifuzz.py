@@ -154,13 +154,14 @@ def build_fuzzers(project_name,
   return True
 
 
-def run_fuzzers(fuzz_seconds, workspace):
+def run_fuzzers(fuzz_seconds, workspace, project_name):
   """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
     fuzz_seconds: The total time allotted for fuzzing.
     workspace: The location in a shared volume to store a git repo and build
       artifacts.
+    project_name: The name of the relevant OSS-Fuzz project.
 
   Returns:
     (True if run was successful, True if bug was found).
@@ -185,7 +186,7 @@ def run_fuzzers(fuzz_seconds, workspace):
     return False, False
   fuzz_seconds_per_target = fuzz_seconds // len(fuzzer_paths)
 
-  old_build_path = download_old_build_dir()
+  old_build_path = download_old_build_dir(project_name, out_dir)
 
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
@@ -210,21 +211,17 @@ def run_fuzzers(fuzz_seconds, workspace):
   return True, False
 
 
-def get_old_build_target_path(old_build_path, fuzzer_name):
-  """Gets the directory of a fuzz target from an old build.
+def download_old_build_dir(project_name, out_dir):
+  """Download an old OSS-Fuzz build to get an earlier version of a project.
 
   Args:
-    old_build_path: The path to where the old build is stored.
-    fuzzer_name: The name of the fuzz target to be found.
+    project_name: The name of the relevant OSS-Fuzz project.
+    out_dir: The location where the build should be stored.
 
   Returns:
-    The filepath to the old build fuzzer or None if not found.
+    A path to where the old build is located.
   """
-  for root, _, files in os.walk(path):
-    for file in files:
-      if fuzzer_name in file:
-        return os.path.join(root, file)
-  return None
+
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):
