@@ -38,23 +38,23 @@ class FuzzTarget:
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
     target_path: The location of the fuzz target binary.
-    old_build_target: The fuzz target path from a previous build.
+    old_build_target: The location of a previous build.
   """
 
-  def __init__(self, target_path, duration, out_dir, old_build_target=None):
+  def __init__(self, target_path, duration, out_dir, old_build_path=None):
     """Represents a single fuzz target.
 
     Args:
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
       out_dir: The location of where the output from crashes should be stored.
-      old_build_target: The fuzz target path from a previous build.
+      old_build_path: The location of a previous build.
     """
     self.target_name = os.path.basename(target_path)
     self.duration = duration
     self.target_path = target_path
     self.out_dir = out_dir
-    self.old_build_target = old_build_target
+    self.old_build_path = old_build_path
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
@@ -121,7 +121,6 @@ class FuzzTarget:
       return True
     return False
 
-
   def is_crash_new(self, test_case):
     """Checks if a crash was introduced by the pull request.
 
@@ -135,7 +134,8 @@ class FuzzTarget:
     """
     if not self.old_build_target:
       return True
-    exists_in_pr = self.is_reproducible(test_case, os.path.dirname(self.target_path))
+    exists_in_pr = self.is_reproducible(test_case,
+                                        os.path.dirname(self.target_path))
     exists_in_master = self.is_reproducible(test_case, self.old_build_target)
     if exists_in_pr and not exists_in_master:
       return True

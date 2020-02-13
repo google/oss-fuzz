@@ -18,10 +18,13 @@ This module helps CI tools do the following:
 Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 
+import io
 import logging
 import os
 import shutil
 import sys
+import urllib.request
+import zipfile
 
 import fuzz_target
 
@@ -190,14 +193,12 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
 
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
-    old_build_target = get_old_build_target_path(old_build_path, os.path.basename(fuzzer_path))
-
-    if old_build_target and os.path.exists(old_build_target):
-      target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
-                                    out_dir, old_build_target)
+    if old_build_path:
+      target = fuzz_target.FuzzTarget(
+          fuzzer_path, fuzz_seconds_per_target, out_dir, old_build_path)
     else:
       target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
-                                    out_dir)
+                                      out_dir)
 
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
@@ -211,6 +212,26 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
   return True, False
 
 
+def get_lastest_build_version(project_name):
+  """Gets the latest OSS-Fuzz build version for a projects fuzzers.
+
+  Args:
+    project_name: The name of the project who's build is being retrieve.
+
+  Returns:
+    A string with the latest build version or None.
+  """
+  http_get_string = 'https://storage.googleapis.com/clusterfuzz-builds/{0}/' \
+  '{0}-address-latest.version'.format(project_name)
+  try:
+    response = urllib.request.urlopen(http_get_string)
+  except urllib.error.HTTPError:
+    logging.error('Error getting the lastest build version for %s.',
+                  project_name)
+    return None
+  return response.read().decode('UTF-8')
+
+
 def download_old_build_dir(project_name, out_dir):
   """Download an old OSS-Fuzz build to get an earlier version of a project.
 
@@ -219,9 +240,26 @@ def download_old_build_dir(project_name, out_dir):
     out_dir: The location where the build should be stored.
 
   Returns:
-    A path to where the old build is located.
+    A path to where the old build is located, or None.
   """
-
+  latest_build_str = get_lastest_build_version(project_name)
+  if not latest_build_str:
+    return None
+  if not os.path.exists(out_dir):
+    logging.error('Out directory %s does not exist.', out_dir)
+    return None
+  build_dir = os.path.join(out_dir, 'build', project_name)
+  os.makedirs(build_dir, exist_ok=True)
+  http_get_string = 'https://storage.googleapis.com/clusterfuzz-builds/{0}/{1}'.format(
+      project_name, latest_build_str)
+  try:
+    response = urllib.request.urlopen(http_get_string)
+    with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
+      zip_file.extractall(build_dir)
+  except urllib.error.HTTPError:
+    logging.error('Unable to download corpus from: %s.', corpus_link)
+    return None
+  return build_dir
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):

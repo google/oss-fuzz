@@ -126,7 +126,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
-      run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
+      run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
     self.assertTrue(run_success)
     self.assertTrue(bug_found)
 
@@ -135,7 +135,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
+      run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -144,13 +144,13 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = cifuzz.run_fuzzers(0, tmp_dir)
+      run_success, bug_found = cifuzz.run_fuzzers(0, tmp_dir, EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
   def test_invalid_out_dir(self):
     """Tests run_fuzzers with an invalid out directory."""
-    run_success, bug_found = cifuzz.run_fuzzers(5, 'not/a/valid/path')
+    run_success, bug_found = cifuzz.run_fuzzers(5, 'not/a/valid/path', EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -201,7 +201,7 @@ class ReproduceIntegrationTest(unittest.TestCase):
       with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                       'is_reproducible',
                                       return_value=True):
-        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
+        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
         self.assertTrue(run_success)
         self.assertTrue(bug_found)
 
@@ -219,9 +219,60 @@ class ReproduceIntegrationTest(unittest.TestCase):
       with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                       'is_reproducible',
                                       return_value=False):
-        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir)
+        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
         self.assertTrue(run_success)
         self.assertFalse(bug_found)
+
+
+class GetLatestBuildVersionUnitTest(unittest.TestCase):
+  """Test the get_lastest_build_version function in the cifuzz module."""
+
+  def test_get_valid_project(self):
+    """Checks the latest build can be retrieved from gcs."""
+    latest_build = cifuzz.get_lastest_build_version('yara')
+    self.assertIsNotNone(latest_build)
+    self.assertTrue(latest_build.endswith('.zip'))
+    self.assertTrue('address' in latest_build)
+
+    latest_build = cifuzz.get_lastest_build_version('envoy')
+    self.assertIsNotNone(latest_build)
+    self.assertTrue(latest_build.endswith('.zip'))
+    self.assertTrue('address' in latest_build)
+
+
+  def test_get_invalid_project(self):
+    """Checks the latest build will return None when project doesn't exist."""
+    self.assertIsNone(cifuzz.get_lastest_build_version('Not-a-project'))
+    self.assertIsNone(cifuzz.get_lastest_build_version(''))
+
+
+class DownloadOldBuildDirIntegrationTests(unittest.TestCase):
+  """Test the download_old_build_dir in function in the cifuzz module."""
+
+  def test_build_and_run_valid(self):
+    """Tests that a project can be built and run using an old build."""
+
+  def test_get_valid_project(self):
+    """Checks the latest build can be retrieved from gcs."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      old_build_path = cifuzz.download_old_build_dir('yara', tmp_dir)
+      self.assertIsNotNone(old_build_path)
+      self.assertNotEqual(0, len(os.listdir(old_build_path)))
+
+      old_build_path = cifuzz.download_old_build_dir('gonids', tmp_dir)
+      self.assertIsNotNone(old_build_path)
+      self.assertNotEqual(0, len(os.listdir(old_build_path)))
+
+  def test_get_invalid_project(self):
+    """Checks the latest build will return None when project doesn't exist."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      self.assertIsNone(cifuzz.download_old_build_dir('Not-a-project', tmp_dir))
+      self.assertIsNone(cifuzz.download_old_build_dir('', tmp_dir))
+
+  def test_invalid_build_dir(self):
+    """Checks the latest build will return None when project doesn't exist."""
+    self.assertIsNone(cifuzz.download_old_build_dir('yara', ''))
+    self.assertIsNone(cifuzz.download_old_build_dir('envoy', '/not/a/dir'))
 
 
 if __name__ == '__main__':
