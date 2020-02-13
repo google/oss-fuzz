@@ -43,15 +43,20 @@ build_fuzzer() {
     local dictionary=${4-""}
     local proFileName=${proFilePath##*/}
     local exeName=${proFileName%%.*}
-    # use old names of fuzzers, so open issues don't change state accidentally
-    if [ "$exeName" == "setmarkdown" ]
-        exeName=setMarkdown
-    if [ "$exeName" == "beginlayout" ]
-        exeName=beginLayout
     mkdir build_fuzzer
     cd build_fuzzer
     $WORK/qtbase/bin/qmake $SRC/qt/$module/tests/libfuzzer/$proFilePath
     make -j$(nproc)
+
+    # use old names of fuzzers, so open issues don't change state accidentally
+    local lowercaseExeName=$exeName
+    if [ "$exeName" == "setmarkdown" ]; then
+        exeName=setMarkdown
+    elif [ "$exeName" == "beginlayout" ]; then
+        exeName=beginLayout
+    fi
+    mv $lowercaseExeName $exeName
+
     mv $exeName $OUT
     if [ -n "$format" ]; then
         cp $WORK/$format.zip $OUT/"$exeName"_seed_corpus.zip
