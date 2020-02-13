@@ -236,8 +236,8 @@ def download_latest_corpus(project_name, out_dir, target):
   corpus_dir = os.path.join(out_dir, 'corpus', target)
   os.makedirs(corpus_dir, exist_ok=True)
 
-  http_link = 'https://storage.googleapis.com/{0}-backup.clusterfuzz-external.' \
-    'appspot.com/corpus/libFuzzer/{0}_{1}/{2}.zip'
+  http_link = 'https://storage.googleapis.com/{0}-backup.clusterfuzz-external' \
+    '.appspot.com/corpus/libFuzzer/{0}_{1}/{2}.zip'
   current_date = datetime.datetime.now()
   for day_diff in range(90, 100):
     date_to_check = current_date - datetime.timedelta(days=day_diff)
