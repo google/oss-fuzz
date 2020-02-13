@@ -20,6 +20,13 @@ RUN apt-get update && apt-get install -y build-essential python libxcb-xinerama0
 RUN git clone --branch 5.15 --depth 1 git://code.qt.io/qt/qt5.git qt
 WORKDIR qt
 RUN perl init-repository --module-subset=qtbase
+
+# bring forward renaming of source files, so I won't get suprised
+WORKDIR qtbase
+RUN git config user.name qt-local
+RUN git config user.email qt-local@oss-fuzz
+RUN git fetch "https://codereview.qt-project.org/qt/qtbase" refs/changes/21/288521/1 && git cherry-pick FETCH_HEAD
+
 WORKDIR $SRC
 RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git
 COPY build.sh $SRC/
