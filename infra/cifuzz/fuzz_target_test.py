@@ -99,7 +99,7 @@ class IsCrashValidUnitTest(unittest.TestCase):
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
     self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
-                                              '/example/outdir')
+                                              '/example/outdir', 'build/path')
 
   def test_with_valid_crash(self):
     """Checks to make sure a valid crash returns true."""
@@ -109,22 +109,22 @@ class IsCrashValidUnitTest(unittest.TestCase):
       self.assertTrue(self.test_target.is_crash_valid('/example/crash/testcase'))
 
 
-    def test_with_invalid_crash(self):
-      """Checks to make sure an invalid crash returns false."""
-      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'is_reproducible',
-                                      side_effect=[True, False]):
-        self.assertFalse(self.test_target.is_crash_valid('/example/crash/testcase'))
+  def test_with_invalid_crash(self):
+    """Checks to make sure an invalid crash returns false."""
+    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                    'is_reproducible',
+                                    side_effect=[True, True]):
+      self.assertFalse(self.test_target.is_crash_valid('/example/crash/testcase'))
+
+    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                    'is_reproducible',
+                                    side_effect=[False, True]):
+      self.assertFalse(self.test_target.is_crash_valid('/example/crash/testcase'))
 
       with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                       'is_reproducible',
-                                      side_effect=[False, True]):
+                                      side_effect=[False, False]):
         self.assertFalse(self.test_target.is_crash_valid('/example/crash/testcase'))
-
-        with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                        'is_reproducible',
-                                        side_effect=[False, False]):
-          self.assertFalse(self.test_target.is_crash_valid('/example/crash/testcase'))
 
 if __name__ == '__main__':
   unittest.main()
