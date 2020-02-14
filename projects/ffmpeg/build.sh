@@ -149,8 +149,8 @@ make -j$(nproc) install
 # TODO: implement a better way to maintain a minimized seed corpora
 # for all targets. As of 2017-05-04 now the combined size of corpora
 # is too big for ClusterFuzz (over 10Gb compressed data).
-# export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
-# make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
+export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
+make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
 
 # Build the fuzzers.
 cd $SRC/ffmpeg
@@ -184,6 +184,13 @@ fuzzer_name=ffmpeg_DEMUXER_fuzzer
 echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
 make tools/target_dem_fuzzer
 mv tools/target_dem_fuzzer $OUT/${fuzzer_name}
+
+# We do not need raw reference files for the muxer
+rm `find fate-suite -name '*.s16'`
+rm `find fate-suite -name '*.dec'`
+rm `find fate-suite -name '*.pcm'`
+
+zip -r $OUT/${fuzzer_name}_seed_corpus.zip fate-suite
 
 # Find relevant corpus in test samples and archive them for every fuzzer.
 #cd $SRC
