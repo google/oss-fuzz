@@ -192,18 +192,10 @@ def run_fuzzers(fuzz_seconds, workspace, project_name=None):
 
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
-
-    # OSS-Fuzz specific project setup.
-    if project_name:
-      corpus_dir = download_latest_corpus(project_name, out_dir,
-                                          os.path.basename(fuzzer_path))
-      target = fuzz_target.FuzzTarget(fuzzer_path,
-                                      fuzz_seconds_per_target,
-                                      out_dir,
-                                      corpus_dir=corpus_dir)
-    else:
-      target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
-                                      out_dir)
+    target = fuzz_target.FuzzTarget(fuzzer_path,
+                                    fuzz_seconds_per_target,
+                                    out_dir,
+                                    project_name=project_name)
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
@@ -214,46 +206,6 @@ def run_fuzzers(fuzz_seconds, workspace, project_name=None):
       parse_fuzzer_output(stack_trace, artifacts_dir)
       return True, True
   return True, False
-
-
-def download_latest_corpus(project_name, out_dir, target):
-  """Downloads the newest OSS-Fuzz backup corpus from google cloud.
-
-  Args:
-    project_name: The name of the projects backup to download.
-    out_dir: The location to place the download.
-    fuzz_target: The fuzz_target's corpus to be downloaded.
-
-  Returns:
-    The local path to to corpus or None if download failed.
-  """
-  if not helper.check_project_exists(project_name):
-    logging.error('Project %s is not a valid OSS-Fuzz project.', project_name)
-    return None
-  if not os.path.exists(out_dir):
-    logging.error('Out directory %s does not exist.', out_dir)
-    return None
-  corpus_dir = os.path.join(out_dir, 'corpus', target)
-  os.makedirs(corpus_dir, exist_ok=True)
-
-  http_link = 'https://storage.googleapis.com/{0}-backup.clusterfuzz-external' \
-    '.appspot.com/corpus/libFuzzer/{0}_{1}/{2}.zip'
-  current_date = datetime.datetime.now()
-  for day_diff in range(90, 100):
-    date_to_check = current_date - datetime.timedelta(days=day_diff)
-    date_str = date_to_check.strftime('%Y-%m-%d')
-    corpus_link = http_link.format(project_name, target, date_str)
-    logging.info("Trying corpus: %s", corpus_link)
-    try:
-      response = urllib.request.urlopen(corpus_link)
-      with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
-        zip_file.extractall(corpus_dir)
-    except urllib.error.HTTPError:
-      logging.error('Unable to download corpus from: %s.', corpus_link)
-      return None
-    logging.info('Downloaded corpus from: %s.', corpus_link)
-    return corpus_dir
-  return None
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):

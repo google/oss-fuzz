@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A module to handle running a fuzz target for a specified amount of time."""
+import io
 import logging
 import os
 import re
 import subprocess
 import sys
+import urllib.error
+import urllib.request
+import zipfile
 
 # pylint: disable=wrong-import-position
 # pylint: disable=import-error
@@ -41,23 +45,23 @@ class FuzzTarget:
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
     target_path: The location of the fuzz target binary.
-    corpus_dir: The location of the corpus files.
+    project_name: The name of the relevant OSS-Fuzz project.
   """
 
-  def __init__(self, target_path, duration, out_dir, corpus_dir=None):
+  def __init__(self, target_path, duration, out_dir, project_name=None):
     """Represents a single fuzz target.
 
     Args:
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
       out_dir: The location of where the output from crashes should be stored.
-      corpus_dir: The location of the corpus files.
+      project_name: The name of the relevant OSS-Fuzz project.
     """
     self.target_name = os.path.basename(target_path)
     self.duration = duration
     self.target_path = target_path
     self.out_dir = out_dir
-    self.corpus_dir = corpus_dir
+    self.project_name = project_name
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
@@ -128,6 +132,33 @@ class FuzzTarget:
       if err_code:
         return True
     return False
+
+  def download_latest_corpus(self):
+    """Downloads the newest OSS-Fuzz backup corpus from google cloud.
+
+    Returns:
+      The local path to to corpus or None if download failed.
+    """
+    if not self.project_name:
+      return None
+    if not os.path.exists(self.out_dir):
+      logging.error('Out directory %s does not exist.', self.out_dir)
+      return None
+    corpus_dir = os.path.join(self.out_dir, 'corpus', self.target_name)
+    os.makedirs(corpus_dir, exist_ok=True)
+    http_link = 'https://storage.googleapis.com/{0}-backup' \
+    '.clusterfuzz-external.appspot.com/corpus/libFuzzer/{0}_{1}/public.zip'
+    corpus_link = http_link.format(self.project_name, self.target_name)
+    logging.info("Trying corpus: %s", corpus_link)
+    try:
+      response = urllib.request.urlopen(corpus_link)
+      with zipfile.ZipFile(io.BytesIO(response.read())) as zf:
+        zf.extractall(corpus_dir)
+    except urllib.error.HTTPError:
+      logging.error('Unable to download corpus from: %s', corpus_link)
+      return None
+    logging.info('Using downloaded corpus.')
+    return corpus_dir
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.

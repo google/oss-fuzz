@@ -15,6 +15,7 @@
 
 import os
 import sys
+import tempfile
 import unittest
 import unittest.mock
 
@@ -85,6 +86,24 @@ class GetTestCaseUnitTest(unittest.TestCase):
     """Tests that get_test_case will return None with a bad error string."""
     self.assertIsNone(self.test_target.get_test_case(''))
     self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
+
+
+class DownloadLatestCorpusUnitTest(unittest.TestCase):
+  """Test parse_fuzzer_output function in the cifuzz module.
+    #NOTE this test relies on arduinojson having the msgpack_fuzzer.
+  """
+
+  def test_download_valid_projects_corpus(self):
+    """Tests that a vaild projects corpus will return a corpus directory."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_target = fuzz_target.FuzzTarget('testfuzzer',3,'test_out')
+      test_target.project_name = 'arduinojson'
+      test_target.target_name = 'msgpack_fuzzer'
+      test_target.out_dir = tmp_dir
+      corpus_path = test_target.download_latest_corpus()
+      self.assertIsNotNone(corpus_path)
+      self.assertNotEqual(0, len(os.listdir(corpus_path)))
+
 
 
 if __name__ == '__main__':
