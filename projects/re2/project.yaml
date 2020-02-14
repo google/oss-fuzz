@@ -1,9 +1,15 @@
 homepage: "https://code.googlesource.com/re2"
 primary_contact: "junyer@google.com"
+fuzzing_engines:
+  - afl
+  - libfuzzer
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
+  - dataflow
 architectures:
   - x86_64
   - i386
