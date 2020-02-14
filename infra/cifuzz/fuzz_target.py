@@ -86,8 +86,9 @@ class FuzzTarget:
     ]
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
         fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
-    if self.corpus_dir:
-      run_fuzzer_command = run_fuzzer_command + ' ' + self.corpus_dir
+    latest_corpus = self.download_latest_corpus()
+    if latest_corpus:
+      run_fuzzer_command = run_fuzzer_command + ' ' +latest_corpus
     command.append(run_fuzzer_command)
 
     logging.info('Running command: %s', ' '.join(command))
@@ -134,7 +135,7 @@ class FuzzTarget:
     return False
 
   def download_latest_corpus(self):
-    """Downloads the newest OSS-Fuzz backup corpus from google cloud.
+    """Downloads the latest OSS-Fuzz backup corpus from google cloud.
 
     Returns:
       The local path to to corpus or None if download failed.
@@ -144,18 +145,19 @@ class FuzzTarget:
     if not os.path.exists(self.out_dir):
       logging.error('Out directory %s does not exist.', self.out_dir)
       return None
-    corpus_dir = os.path.join(self.out_dir, 'corpus', self.target_name)
+    corpus_dir = os.path.join(self.out_dir, 'backup_corpus', self.target_name)
     os.makedirs(corpus_dir, exist_ok=True)
-    http_link = 'https://storage.googleapis.com/{0}-backup' \
-    '.clusterfuzz-external.appspot.com/corpus/libFuzzer/{0}_{1}/public.zip'
-    corpus_link = http_link.format(self.project_name, self.target_name)
-    logging.info("Trying corpus: %s", corpus_link)
+    http_link = os.path.join(
+        'https://storage.googleapis.com/', self.project_name +
+        '-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/',
+        self.project_name + '_' + self.target_name, 'public.zip')
+    logging.info("Trying to download corpus from: %s", http_link)
     try:
-      response = urllib.request.urlopen(corpus_link)
+      response = urllib.request.urlopen(http_link)
       with zipfile.ZipFile(io.BytesIO(response.read())) as zf:
         zf.extractall(corpus_dir)
     except urllib.error.HTTPError:
-      logging.error('Unable to download corpus from: %s', corpus_link)
+      logging.error('Unable to download corpus from: %s', http_link)
       return None
     logging.info('Using downloaded corpus.')
     return corpus_dir
