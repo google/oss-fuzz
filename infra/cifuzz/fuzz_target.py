@@ -154,8 +154,8 @@ class FuzzTarget:
     logging.info("Trying to download corpus from: %s", http_link)
     try:
       response = urllib.request.urlopen(http_link)
-      with zipfile.ZipFile(io.BytesIO(response.read())) as zf:
-        zf.extractall(corpus_dir)
+      with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
+        zip_file.extractall(corpus_dir)
     except urllib.error.HTTPError:
       logging.error('Unable to download corpus from: %s', http_link)
       return None
