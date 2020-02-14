@@ -24,19 +24,19 @@ cd gmp-6.1.2
 #do not use assembly instructions as we do not know if they will be available on the machine who will run the fuzzer
 #we could do instead --enable-fat
 ./configure --disable-shared --disable-assembly
-make
+make -j$(nproc)
 make install
 cd ..
 autoreconf
 ./configure --disable-shared
-make
+make -j$(nproc)
 make install
 )
 
 #cryptopp
 (
 cd cryptopp
-make
+make -j$(nproc)
 make install
 )
 
@@ -49,7 +49,7 @@ if [ "$ARCHITECTURE" = 'i386' ]; then
 else
     ./configure --disable-doc --enable-static --disable-shared
 fi
-make
+make -j$(nproc)
 make install
 cd ../gcrypt
 ./autogen.sh
@@ -58,7 +58,7 @@ if [ "$ARCHITECTURE" = 'i386' ]; then
 else
     ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
 fi
-make
+make -j$(nproc)
 make install
 )
 
@@ -101,7 +101,7 @@ if [ "$ARCHITECTURE" = 'i386' ]; then
 else
     ./configure.py --disable-shared-library
 fi
-make
+make -j$(nproc)
 make install
 )
 
@@ -114,5 +114,5 @@ cp fuzz_ec.dict $OUT/
 mkdir build
 cd build
 cmake ..
-make
+make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec
