@@ -130,7 +130,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
                                       'is_reproducible',
                                       side_effect=[True, False]):
         run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-        build_dir = os.path.join(tmp_dir, 'out', 'ossfuzz_latest')
+        build_dir = os.path.join(tmp_dir, 'out', 'oss_fuzz_latest')
         self.assertTrue(os.path.exists(build_dir))
         self.assertNotEqual(0, len(os.listdir(build_dir)))
         self.assertTrue(run_success)
@@ -152,7 +152,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
                                       'is_reproducible',
                                       side_effect=[True, True]):
         run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-        build_dir = os.path.join(tmp_dir, 'out', 'ossfuzz_latest')
+        build_dir = os.path.join(tmp_dir, 'out', 'oss_fuzz_latest')
         self.assertTrue(os.path.exists(build_dir))
         self.assertNotEqual(0, len(os.listdir(build_dir)))
         self.assertTrue(run_success)
@@ -212,44 +212,6 @@ class ParseOutputUnitTest(unittest.TestCase):
       cifuzz.parse_fuzzer_output('not a valid output_string', tmp_dir)
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
 
-
-class GetLatestBuildVersionUnitTest(unittest.TestCase):
-  """Test the get_latest_build_version function in the cifuzz module."""
-
-  def test_get_valid_project(self):
-    """Checks the latest build can be retrieved from gcs."""
-    latest_build = cifuzz.get_lastest_build_version('example')
-    self.assertIsNotNone(latest_build)
-    self.assertTrue(latest_build.endswith('.zip'))
-    self.assertTrue('address' in latest_build)
-
-  def test_get_invalid_project(self):
-    """Checks the latest build will return None when project doesn't exist."""
-    self.assertIsNone(cifuzz.get_lastest_build_version('Not-a-project'))
-    self.assertIsNone(cifuzz.get_lastest_build_version(''))
-
-
-class DownloadOldBuildDirIntegrationTests(unittest.TestCase):
-  """Test the download_ossfuzz_build in function in the cifuzz module."""
-
-  def test_get_valid_project(self):
-    """Checks the latest build can be retrieved from gcs."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      ossfuzz_build_path = cifuzz.download_ossfuzz_build(
-          EXAMPLE_PROJECT, tmp_dir)
-      self.assertIsNotNone(ossfuzz_build_path)
-      self.assertNotEqual(0, len(os.listdir(ossfuzz_build_path)))
-
-  def test_get_invalid_project(self):
-    """Checks the latest build will return None when project doesn't exist."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertIsNone(cifuzz.download_ossfuzz_build('Not-a-project', tmp_dir))
-      self.assertIsNone(cifuzz.download_ossfuzz_build('', tmp_dir))
-
-  def test_invalid_build_dir(self):
-    """Checks the latest build will return None when project doesn't exist."""
-    self.assertIsNone(cifuzz.download_ossfuzz_build('yara', ''))
-    self.assertIsNone(cifuzz.download_ossfuzz_build('envoy', '/not/a/dir'))
 
 
 if __name__ == '__main__':

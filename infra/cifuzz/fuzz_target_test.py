@@ -15,6 +15,7 @@
 
 import os
 import sys
+import tempfile
 import unittest
 import unittest.mock
 
@@ -94,20 +95,21 @@ class GetTestCaseUnitTest(unittest.TestCase):
 
 
 class IsCrashValidUnitTest(unittest.TestCase):
-  """Test is_crash_valid function in the fuzz_target module."""
+  """Test is_crash_a_failure function in the fuzz_target module."""
 
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
-    self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
-                                              '/example/outdir', 'build/path')
+    self.test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+                                              '/example/outdir', 'example')
 
   def test_with_valid_crash(self):
     """Checks to make sure a valid crash returns true."""
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
-                                    side_effect=[True, False]):
+                                    side_effect=[True, False]), tempfile.TemporaryDirectory() as tmp_dir:
+      self.test_target.out_dir = tmp_dir
       self.assertTrue(
-          self.test_target.is_crash_valid('/example/crash/testcase'))
+          self.test_target.is_crash_a_failure('/example/crash/testcase'))
 
   def test_with_invalid_crash(self):
     """Checks to make sure an invalid crash returns false."""
@@ -115,19 +117,81 @@ class IsCrashValidUnitTest(unittest.TestCase):
                                     'is_reproducible',
                                     side_effect=[True, True]):
       self.assertFalse(
-          self.test_target.is_crash_valid('/example/crash/testcase'))
+          self.test_target.is_crash_a_failure('/example/crash/testcase'))
 
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[False, True]):
       self.assertFalse(
-          self.test_target.is_crash_valid('/example/crash/testcase'))
+          self.test_target.is_crash_a_failure('/example/crash/testcase'))
 
       with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                       'is_reproducible',
                                       side_effect=[False, False]):
         self.assertFalse(
-            self.test_target.is_crash_valid('/example/crash/testcase'))
+            self.test_target.is_crash_a_failure('/example/crash/testcase'))
+
+class GetLatestBuildVersionUnitTest(unittest.TestCase):
+  """Test the get_latest_build_version function in the fuzz_target module."""
+
+  def test_get_valid_project(self):
+    """Checks the latest build can be retrieved from gcs."""
+    test_target = fuzz_target.FuzzTarget('/example/path', 10,
+                                              '/example/outdir', 'example')
+    latest_build = test_target.get_lastest_build_version()
+    self.assertIsNotNone(latest_build)
+    self.assertTrue(latest_build.endswith('.zip'))
+    self.assertTrue('address' in latest_build)
+
+  def test_get_invalid_project(self):
+    """Checks the latest build will return None when project doesn't exist."""
+    test_target = fuzz_target.FuzzTarget('/example/path', 10, '/example/outdir', 'not-a-proj')
+    self.assertIsNone(test_target.get_lastest_build_version())
+    test_target = fuzz_target.FuzzTarget('/example/path', 10, '/example/outdir')
+    self.assertIsNone(test_target.get_lastest_build_version())
+
+
+class DownloadOldBuildDirIntegrationTests(unittest.TestCase):
+  """Test the download_oss_fuzz_build in function in the fuzz_target module."""
+
+  def test_single_download(self):
+    """Checks that the build directory was only downloaded once."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+                                                tmp_dir, 'example')
+      latest_version = test_target.get_lastest_build_version()
+      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                      'get_lastest_build_version', return_value=latest_version) as mock_build_version:
+        for _ in range(5):
+          oss_fuzz_build_path = test_target.download_oss_fuzz_build()
+        self.assertEqual(1, mock_build_version.call_count)
+        self.assertIsNotNone(oss_fuzz_build_path)
+        self.assertNotEqual(0, len(os.listdir(oss_fuzz_build_path)))
+
+  def test_get_valid_project(self):
+    """Checks the latest build can be retrieved from gcs."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+                                                tmp_dir, 'example')
+      oss_fuzz_build_path = test_target.download_oss_fuzz_build()
+      self.assertIsNotNone(oss_fuzz_build_path)
+      self.assertNotEqual(0, len(os.listdir(oss_fuzz_build_path)))
+
+  def test_get_invalid_project(self):
+    """Checks the latest build will return None when project doesn't exist."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+                                                tmp_dir)
+      self.assertIsNone(test_target.download_oss_fuzz_build())
+      test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+                                                tmp_dir, 'not-a-proj')
+      self.assertIsNone(test_target.download_oss_fuzz_build())
+
+  def test_invalid_build_dir(self):
+    """Checks the latest build will return None when out_dir doesn't exist."""
+    test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+                                              'not/a/dir', 'example')
+    self.assertIsNone(test_target.download_oss_fuzz_build())
 
 
 if __name__ == '__main__':

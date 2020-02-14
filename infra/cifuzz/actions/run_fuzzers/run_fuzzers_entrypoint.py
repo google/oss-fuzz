@@ -53,7 +53,7 @@ def main():
   """
   fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
   workspace = os.environ.get('GITHUB_WORKSPACE')
-  project_name = os.environ.get('PROJECT_NAME', None)
+  project_name = os.environ.get('PROJECT_NAME')
   # Check if failures should not be reported.
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
 
