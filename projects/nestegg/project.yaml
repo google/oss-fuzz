@@ -1,9 +1,15 @@
 homepage: "https://github.com/kinetiknz/nestegg"
 primary_contact: "mgregan@mozilla.com"
+fuzzing_engines:
+  - afl
+  - libfuzzer
+  - honggfuzz
+  - dataflow
 sanitizers:
-- address
-- memory
-- undefined
+  - address
+  - memory
+  - undefined
+  - dataflow
 vendor_ccs:
-- "twsmith@mozilla.com"
-- "cdiehl@mozilla.com"
+  - "twsmith@mozilla.com"
+  - "cdiehl@mozilla.com"
