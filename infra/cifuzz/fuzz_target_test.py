@@ -94,7 +94,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
   """
 
   def test_download_valid_projects_corpus(self):
-    """Tests that a vaild projects corpus will return a corpus directory."""
+    """Tests that a vaild fuzz target will return a corpus directory."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
       test_target.project_name = 'arduinojson'
@@ -105,7 +105,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
       self.assertNotEqual(0, len(os.listdir(corpus_path)))
 
   def test_download_invalid_projects_corpus(self):
-    """Tests that a vaild projects corpus will return a corpus directory."""
+    """Tests that a invaild fuzz target will not return a corpus directory."""
     test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
     corpus_path = test_target.download_latest_corpus()
     self.assertIsNone(corpus_path)
