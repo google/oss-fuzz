@@ -1,6 +1,7 @@
 homepage: "http://www.ntp.org"
 primary_contact: "security@ntp.org"
-auto_ccs : "p.antoine@catenacyber.fr"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
 fuzzing_engines:
   - afl
   - libfuzzer
