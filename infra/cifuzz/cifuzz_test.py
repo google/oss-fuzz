@@ -213,6 +213,5 @@ class ParseOutputUnitTest(unittest.TestCase):
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
 
 
-
 if __name__ == '__main__':
   unittest.main()

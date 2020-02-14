@@ -145,7 +145,7 @@ class FuzzTarget:
       True if the crash was introduced by the current pull request.
     """
     reproducible_in_pr = self.is_reproducible(test_case,
-                                        os.path.dirname(self.target_path))
+                                              os.path.dirname(self.target_path))
     if not self.project_name:
       return reproducible_in_pr
 
@@ -157,7 +157,8 @@ class FuzzTarget:
     if not oss_fuzz_build_dir:
       return False
 
-    reproducible_in_oss_fuzz = self.is_reproducible(test_case, oss_fuzz_build_dir)
+    reproducible_in_oss_fuzz = self.is_reproducible(test_case,
+                                                    oss_fuzz_build_dir)
 
     if reproducible_in_pr and not reproducible_in_oss_fuzz:
       logging.info('Crash is new and reproducible.')
@@ -188,7 +189,8 @@ class FuzzTarget:
     if not self.project_name:
       return None
     sanitizer = 'address'
-    version = '{project_name}-{sanitizer}-latest.version'.format(project_name=self.project_name, sanitizer=sanitizer)
+    version = '{project_name}-{sanitizer}-latest.version'.format(
+        project_name=self.project_name, sanitizer=sanitizer)
     version_url = posixpath.join(GCS_BASE_URL, self.project_name, version)
     try:
       response = urllib.request.urlopen(version_url)
@@ -217,7 +219,8 @@ class FuzzTarget:
     if not latest_build_str:
       return None
 
-    oss_fuzz_build_url = posixpath.join(GCS_BASE_URL, self.project_name, latest_build_str)
+    oss_fuzz_build_url = posixpath.join(GCS_BASE_URL, self.project_name,
+                                        latest_build_str)
     try:
       response = urllib.request.urlopen(oss_fuzz_build_url)
     except urllib.error.HTTPError:
