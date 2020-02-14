@@ -25,14 +25,12 @@ cd gmp-6.1.2
 #we could do instead --enable-fat
 ./configure --disable-assembly
 make
-find . -name "*.so*" | xargs rm
 make install
 cd ..
 autoreconf
 ./configure
 make
 # ./configure --disable-shared does not seem to work
-find . -name "*.so*" | xargs rm
 make install
 )
 
