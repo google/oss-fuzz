@@ -41,23 +41,23 @@ class FuzzTarget:
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
     target_path: The location of the fuzz target binary.
-    old_build_path: The location of a previous build.
+    ossfuzz_build_path: The location of the latest OSS-FUzz build.
   """
 
-  def __init__(self, target_path, duration, out_dir, old_build_path=None):
+  def __init__(self, target_path, duration, out_dir, ossfuzz_build_path=None):
     """Represents a single fuzz target.
 
     Args:
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
       out_dir: The location of where the output from crashes should be stored.
-      old_build_path: The location of a previous build.
+      ossfuzz_build_path: The location of the latest OSS-FUzz build.
     """
     self.target_name = os.path.basename(target_path)
     self.duration = duration
     self.target_path = target_path
     self.out_dir = out_dir
-    self.old_build_path = old_build_path
+    self.ossfuzz_build_path = ossfuzz_build_path
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
@@ -125,10 +125,11 @@ class FuzzTarget:
     return False
 
   def is_crash_valid(self, test_case):
-    """Checks if a crash was introduced by the pull request.
+    """Checks if a crash is reproducible, and if it is, whether it's a new
+    regression that cannot be reproduced with the latest OSS-Fuzz build.
 
     NOTE: If no old_build_target is specified the crash is assumed introduced
-    by the pull request.
+    by the pull request if it is reproducible.
 
     Args:
       test_case: The path to the test_case that triggered the crash.
@@ -136,15 +137,16 @@ class FuzzTarget:
     Returns:
       True if the crash was introduced by the current pull request.
     """
-    if not self.old_build_path:
-      return True
     exists_in_pr = self.is_reproducible(test_case,
                                         os.path.dirname(self.target_path))
+    if not self.ossfuzz_build_path:
+      return exists_in_pr
+
     if not exists_in_pr:
       logging.info('Crash is not reproducible.')
       return False
-    exists_in_master = self.is_reproducible(test_case, self.old_build_path)
-    if exists_in_pr and not exists_in_master:
+    exists_in_ossfuzz = self.is_reproducible(test_case, self.ossfuzz_build_path)
+    if exists_in_pr and not exists_in_ossfuzz:
       logging.info('Crash is new and reproducible.')
       return True
     logging.info('Crash was found in old OSS-Fuzz build.')

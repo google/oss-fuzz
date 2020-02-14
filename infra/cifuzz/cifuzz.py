@@ -65,8 +65,8 @@ STACKTRACE_END_MARKERS = [
     'minidump has been written',
 ]
 
-# Location of google cloud storage for old builds.
-GC_STORAGE = 'https://storage.googleapis.com/clusterfuzz-builds/'
+# Location of google cloud storage for latest OSS-Fuzz builds.
+GCS_BASE_URL = 'https://storage.googleapis.com/clusterfuzz-builds'
 
 # TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
@@ -192,12 +192,12 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
     return False, False
   fuzz_seconds_per_target = fuzz_seconds // len(fuzzer_paths)
 
-  old_build_path = download_old_build_dir(project_name, out_dir)
+  ossfuzz_build_path = download_ossfuzz_build(project_name, out_dir)
 
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
     target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
-                                    out_dir, old_build_path)
+                                    out_dir, ossfuzz_build_path)
 
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
@@ -220,8 +220,8 @@ def get_lastest_build_version(project_name):
   Returns:
     A string with the latest build version or None.
   """
-  http_get_string = GC_STORAGE + '{0}/{0}-address-latest.version'.format(
-      project_name)
+  http_get_string = os.path.join(GCS_BASE_URL, project_name,
+                                 project_name + '-address-latest.version')
   try:
     response = urllib.request.urlopen(http_get_string)
   except urllib.error.HTTPError:
@@ -231,32 +231,31 @@ def get_lastest_build_version(project_name):
   return response.read().decode('UTF-8')
 
 
-def download_old_build_dir(project_name, out_dir):
-  """Download an old OSS-Fuzz build to get an old version of fuzzers.
+def download_ossfuzz_build(project_name, out_dir):
+  """Downloads the latest OSS-Fuzz build from GCS.
 
   Args:
     project_name: The name of the relevant OSS-Fuzz project.
     out_dir: The location where the build should be stored.
 
   Returns:
-    A path to where the old build is located, or None.
+    A path to where the OSS-Fuzz build is located, or None.
   """
-  latest_build_str = get_lastest_build_version(project_name)
-  if not latest_build_str:
-    return None
   if not os.path.exists(out_dir):
     logging.error('Out directory %s does not exist.', out_dir)
     return None
-  build_dir = os.path.join(out_dir, 'build', project_name)
+  latest_build_str = get_lastest_build_version(project_name)
+  if not latest_build_str:
+    return None
+  build_dir = os.path.join(out_dir, 'ossfuzz_latest', project_name)
   os.makedirs(build_dir, exist_ok=True)
-  http_get_string = GC_STORAGE + '{0}/{1}'.format(project_name,
-                                                  latest_build_str)
+  http_get_string = os.path.join(GCS_BASE_URL, project_name, latest_build_str)
   try:
     response = urllib.request.urlopen(http_get_string)
     with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
       zip_file.extractall(build_dir)
   except urllib.error.HTTPError:
-    logging.error('Unable to download corpus from: %s.', http_get_string)
+    logging.error('Unable to download build from: %s.', http_get_string)
     return None
   return build_dir
 

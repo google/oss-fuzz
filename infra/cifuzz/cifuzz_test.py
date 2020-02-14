@@ -130,7 +130,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
                                       'is_reproducible',
                                       side_effect=[True, False]):
         run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-        build_dir = os.path.join(tmp_dir, 'out', 'build')
+        build_dir = os.path.join(tmp_dir, 'out', 'ossfuzz_latest')
         self.assertTrue(os.path.exists(build_dir))
         self.assertNotEqual(0, len(os.listdir(build_dir)))
         self.assertTrue(run_success)
@@ -152,7 +152,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
                                       'is_reproducible',
                                       side_effect=[True, True]):
         run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-        build_dir = os.path.join(tmp_dir, 'out', 'build')
+        build_dir = os.path.join(tmp_dir, 'out', 'ossfuzz_latest')
         self.assertTrue(os.path.exists(build_dir))
         self.assertNotEqual(0, len(os.listdir(build_dir)))
         self.assertTrue(run_success)
@@ -230,25 +230,26 @@ class GetLatestBuildVersionUnitTest(unittest.TestCase):
 
 
 class DownloadOldBuildDirIntegrationTests(unittest.TestCase):
-  """Test the download_old_build_dir in function in the cifuzz module."""
+  """Test the download_ossfuzz_build in function in the cifuzz module."""
 
   def test_get_valid_project(self):
     """Checks the latest build can be retrieved from gcs."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      old_build_path = cifuzz.download_old_build_dir(EXAMPLE_PROJECT, tmp_dir)
-      self.assertIsNotNone(old_build_path)
-      self.assertNotEqual(0, len(os.listdir(old_build_path)))
+      ossfuzz_build_path = cifuzz.download_ossfuzz_build(
+          EXAMPLE_PROJECT, tmp_dir)
+      self.assertIsNotNone(ossfuzz_build_path)
+      self.assertNotEqual(0, len(os.listdir(ossfuzz_build_path)))
 
   def test_get_invalid_project(self):
     """Checks the latest build will return None when project doesn't exist."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertIsNone(cifuzz.download_old_build_dir('Not-a-project', tmp_dir))
-      self.assertIsNone(cifuzz.download_old_build_dir('', tmp_dir))
+      self.assertIsNone(cifuzz.download_ossfuzz_build('Not-a-project', tmp_dir))
+      self.assertIsNone(cifuzz.download_ossfuzz_build('', tmp_dir))
 
   def test_invalid_build_dir(self):
     """Checks the latest build will return None when project doesn't exist."""
-    self.assertIsNone(cifuzz.download_old_build_dir('yara', ''))
-    self.assertIsNone(cifuzz.download_old_build_dir('envoy', '/not/a/dir'))
+    self.assertIsNone(cifuzz.download_ossfuzz_build('yara', ''))
+    self.assertIsNone(cifuzz.download_ossfuzz_build('envoy', '/not/a/dir'))
 
 
 if __name__ == '__main__':
