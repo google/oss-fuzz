@@ -73,6 +73,7 @@ def main():
   if not workspace:
     logging.error('This script needs to be run in the Github action context.')
     return error_code
+
   # Run the specified project's fuzzers from the build.
   run_status, bug_found = cifuzz.run_fuzzers(fuzz_seconds, workspace,
                                              project_name)

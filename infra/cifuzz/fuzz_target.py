@@ -45,6 +45,7 @@ class FuzzTarget:
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
     target_path: The location of the fuzz target binary.
+    out_dir: The location of where the output from crashes should be stored.
     project_name: The name of the relevant OSS-Fuzz project.
   """
 
@@ -86,16 +87,15 @@ class FuzzTarget:
     ]
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
         fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
-    latest_corpus = self.download_latest_corpus()
-    if latest_corpus:
-      run_fuzzer_command = run_fuzzer_command + ' ' +latest_corpus
+    latest_corpus_path = self.download_latest_corpus()
+    if latest_corpus_path:
+      run_fuzzer_command = run_fuzzer_command + ' ' + latest_corpus_path
     command.append(run_fuzzer_command)
 
     logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-
     try:
       _, err = process.communicate(timeout=self.duration)
     except subprocess.TimeoutExpired:
@@ -135,7 +135,7 @@ class FuzzTarget:
     return False
 
   def download_latest_corpus(self):
-    """Downloads the latest OSS-Fuzz backup corpus from google cloud.
+    """Downloads the latest OSS-Fuzz corpus for the target from google cloud.
 
     Returns:
       The local path to to corpus or None if download failed.

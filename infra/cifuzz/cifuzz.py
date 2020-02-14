@@ -15,17 +15,12 @@
 This module helps CI tools do the following:
   1. Build fuzzers.
   2. Run fuzzers.
-Eventually it will be used to help CI tools determine which fuzzers to run.
-"""
+Eventually it will be used to help CI tools determine which fuzzers to run."""
 
-import datetime
-import io
 import logging
 import os
 import shutil
 import sys
-import urllib.request
-import zipfile
 
 import fuzz_target
 
