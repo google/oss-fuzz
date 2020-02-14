@@ -153,7 +153,7 @@ class GetLatestBuildVersionUnitTest(unittest.TestCase):
     self.assertIsNone(test_target.get_lastest_build_version())
 
 
-class DownloadOldBuildDirIntegrationTests(unittest.TestCase):
+class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
   """Test the download_oss_fuzz_build in function in the fuzz_target module."""
 
   def test_single_download(self):
@@ -192,7 +192,7 @@ class DownloadOldBuildDirIntegrationTests(unittest.TestCase):
       self.assertIsNone(test_target.download_oss_fuzz_build())
 
   def test_invalid_build_dir(self):
-    """Checks the latest build will return None when out_dir doesn't exist."""
+    """Checks the download will return None when out_dir doesn't exist."""
     test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                          'not/a/dir', 'example')
     self.assertIsNone(test_target.download_oss_fuzz_build())

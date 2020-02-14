@@ -191,7 +191,7 @@ class FuzzTarget:
     sanitizer = 'address'
     version = '{project_name}-{sanitizer}-latest.version'.format(
         project_name=self.project_name, sanitizer=sanitizer)
-    version_url = posixpath.join(GCS_BASE_URL, self.project_name, version)
+    version_url = url_join(GCS_BASE_URL, self.project_name, version)
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
@@ -219,8 +219,8 @@ class FuzzTarget:
     if not latest_build_str:
       return None
 
-    oss_fuzz_build_url = posixpath.join(GCS_BASE_URL, self.project_name,
-                                        latest_build_str)
+    oss_fuzz_build_url = url_join(GCS_BASE_URL, self.project_name,
+                                  latest_build_str)
     try:
       response = urllib.request.urlopen(oss_fuzz_build_url)
     except urllib.error.HTTPError:
@@ -229,3 +229,15 @@ class FuzzTarget:
     with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
       zip_file.extractall(build_dir)
     return build_dir
+
+
+def url_join(*argv):
+  """Joins URLs together using the posix join method.
+
+  Args:
+    argv: Sections of a URL to be joined.
+
+  Returns:
+    Joined URL.
+  """
+  return posixpath.join(*argv)
