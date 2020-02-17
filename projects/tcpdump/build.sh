@@ -18,9 +18,11 @@
 cd libpcap
 mkdir build
 cd build
-cmake ..
+cmake .. -DBUILD_SHARED_LIBS=OFF
 make
 make install
+# seems broken for static build only, pkg-config broken as well
+rm /usr/local/bin/pcap-config
 
 cd ../../tcpdump
 # build project
@@ -28,10 +30,7 @@ mkdir build
 cd build
 cmake ..
 make
-
-# build fuzz targets
-$CC $CFLAGS -I.. -I. -c ../fuzz/fuzz_pcap.c -o fuzz_pcap.o
-$CXX $CXXFLAGS fuzz_pcap.o -o $OUT/fuzz_pcap libnetdissect.a ../../libpcap/build/libpcap.a -lFuzzingEngine
+cp fuzz/fuzz* $OUT/
 
 # export other associated stuff
 cd ..
