@@ -104,22 +104,29 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
     """Tests that a vaild fuzz target will return a corpus directory."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
-      test_target.project_name = 'arduinojson'
-      test_target.target_name = 'msgpack_fuzzer'
+      test_target.project_name = 'example'
+      test_target.target_name = 'do_stuff_fuzzer'
       test_target.out_dir = tmp_dir
-      corpus_path = test_target.download_latest_corpus()
-      self.assertIsNotNone(corpus_path)
-      self.assertNotEqual(0, len(os.listdir(corpus_path)))
+      mock = unittest.mock.Mock()
+      mock.return_value = tmp_dir
+      fuzz_target.download_zip = mock
+      test_target.download_latest_corpus()
+      (url, out_dir), _ = mock.call_args
+      print(url)
+      self.assertEqual(url, 'https://storage.googleapis.com/example-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/example_do_stuff_fuzzer/public.zip')
+      self.assertEqual(out_dir, os.path.join(tmp_dir, 'backup_corpus', 'do_stuff_fuzzer'))
+
 
   def test_download_invalid_projects_corpus(self):
     """Tests that a invaild fuzz target will not return a corpus directory."""
-    test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
-    corpus_path = test_target.download_latest_corpus()
-    self.assertIsNone(corpus_path)
-    test_target = fuzz_target.FuzzTarget('not_a_fuzzer', 3, 'test_out',
-                                         'arduinojson')
-    corpus_path = test_target.download_latest_corpus()
-    self.assertIsNone(corpus_path)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_target = fuzz_target.FuzzTarget('testfuzzer', 3, tmp_dir)
+      corpus_path = test_target.download_latest_corpus()
+      self.assertIsNone(corpus_path)
+      test_target = fuzz_target.FuzzTarget('not_a_fuzzer', 3, tmp_dir,
+                                           'not_a_project')
+      corpus_path = test_target.download_latest_corpus()
+      self.assertIsNone(corpus_path)
 
 
 class IsCrashValidUnitTest(unittest.TestCase):
