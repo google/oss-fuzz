@@ -152,3 +152,17 @@ def http_upload_step(data, signed_url, content_type):
       ],
   }
   return step
+
+
+def gsutil_rm_rf_step(url):
+  """Returns a GCB step to recursively delete the object with given GCS url."""
+  step = {
+      'name': 'gcr.io/cloud-builders/gsutil',
+      'args': [
+          '-m',
+          'rm',
+          '-rf',
+          url,
+      ],
+  }
+  return step
