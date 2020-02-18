@@ -32,7 +32,7 @@ You can integrate CIFuzz into your project using the following steps:
 1. Create a `workflows` directory inside of your `.github` directory.
 1. Copy the example [`main.yml`](https://github.com/google/oss-fuzz/blob/master/infra/cifuzz/example_main.yml)
 file over from the OSS-Fuzz repository to the `workflows` directory.
-1. Change the `project-name` value in `main.yml` from `example` to the name of your OSS-Fuzz project. It is **very important** that you use your OSS-Fuzz project name which is case sensitive. This name
+1. Change the `oss-fuzz-project-name` value in `main.yml` from `example` to the name of your OSS-Fuzz project. It is **very important** that you use your OSS-Fuzz project name which is case sensitive. This name
 is the name of your project's subdirectory in the [`projects`](https://github.com/google/oss-fuzz/tree/master/projects) directory of OSS-Fuzz.
 
 Your directory structure should look like the following:
@@ -56,11 +56,12 @@ jobs:
    - name: Build Fuzzers
      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
      with:
-       project-name: 'example'
+       oss-fuzz-project-name: 'example'
        dry-run: false
    - name: Run Fuzzers
      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
      with:
+       oss-fuzz-project-name: 'example'
        fuzz-time: 600
        dry-run: false
    - name: Upload Crash
