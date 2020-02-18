@@ -229,6 +229,7 @@ class FuzzTarget:
       return None
     if not self.project_name:
       return None
+
     build_dir = os.path.join(self.out_dir, 'oss_fuzz_latest', self.project_name)
     if os.path.exists(os.path.join(build_dir, self.target_name)):
       return build_dir
@@ -236,6 +237,7 @@ class FuzzTarget:
     latest_build_str = self.get_lastest_build_version()
     if not latest_build_str:
       return None
+
     oss_fuzz_build_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS,
                                   self.project_name, latest_build_str)
     return download_zip(oss_fuzz_build_url, build_dir)
@@ -246,11 +248,12 @@ class FuzzTarget:
     Returns:
       The local path to to corpus or None if download failed.
     """
-    if not self.project_name:
-      return None
     if not os.path.exists(self.out_dir):
       logging.error('Out directory %s does not exist.', self.out_dir)
       return None
+    if not self.project_name:
+      return None
+
     corpus_dir = os.path.join(self.out_dir, 'backup_corpus', self.target_name)
     os.makedirs(corpus_dir, exist_ok=True)
     corpus_url = url_join(
