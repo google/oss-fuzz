@@ -96,7 +96,9 @@ class GetTestCaseUnitTest(unittest.TestCase):
 
 class DownloadLatestCorpusUnitTest(unittest.TestCase):
   """Test parse_fuzzer_output function in the cifuzz module.
-    #NOTE this test relies on arduinojson having the msgpack_fuzzer."""
+
+  NOTE this test relies on arduinojson having the msgpack_fuzzer.
+  """
 
   def test_download_valid_projects_corpus(self):
     """Tests that a vaild fuzz target will return a corpus directory."""
