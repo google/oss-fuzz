@@ -354,7 +354,7 @@ def main():
   # Otherwise, do all of them.
 
   success = do_checks(changed_files)
-  return bool_to_returncode(success) and run_tests.run_tests()
+  return run_tests.run_tests() and bool_to_returncode(success)
 
 
 if __name__ == '__main__':

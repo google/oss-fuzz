@@ -20,6 +20,7 @@ import utils
 # A list of tests that should not be run due to run time.
 BLACK_LIST = ['bisector_test.py']
 
+
 def run_tests():
   """Run python tests that were affected by a change.."""
   passing_tests = []
@@ -82,7 +83,8 @@ def get_changed_dirs():
   Returns:
     The list of directories that are affected by the change.
   """
-  change_files, _, _ = utils.execute(['git', 'diff', '--name-only', 'origin/master'])
+  change_files, _, _ = utils.execute(
+      ['git', 'diff', '--name-only', 'origin/master'])
   change_files = change_files.split('\n')
   change_dirs = []
   for file_path in change_files:
