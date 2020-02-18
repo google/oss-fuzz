@@ -15,6 +15,7 @@
 import io
 import logging
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -34,6 +35,15 @@ logging.basicConfig(
 
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 
+# Location of google cloud storage for latest OSS-Fuzz builds.
+GCS_BASE_URL = 'https://storage.googleapis.com/'
+
+# Location of cluster fuzz builds on GCS.
+CLUSTER_FUZZ_BUILDS = 'clusterfuzz-builds'
+
+# The name of the zip file to download for geting the corpus.
+CORPUS_ZIP_NAME = 'public.zip'
+
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
@@ -51,6 +61,9 @@ class FuzzTarget:
 
   def __init__(self, target_path, duration, out_dir, project_name=None):
     """Represents a single fuzz target.
+
+    Note: project_name should be none when the fuzzer being run is not
+    associated with a specific OSS-Fuzz project.
 
     Args:
       target_path: The location of the fuzz target binary.
@@ -96,6 +109,7 @@ class FuzzTarget:
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
+
     try:
       _, err = process.communicate(timeout=self.duration)
     except subprocess.TimeoutExpired:
@@ -108,23 +122,24 @@ class FuzzTarget:
     if not test_case:
       logging.error('No test case found in stack trace.', file=sys.stderr)
       return None, None
-    if self.is_reproducible(test_case):
+    if self.is_crash_a_failure(test_case):
       return test_case, err_str
     logging.error('A crash was found but it was not reproducible.')
     return None, None
 
-  def is_reproducible(self, test_case):
+  def is_reproducible(self, test_case, target_path):
     """Checks if the test case reproduces.
 
       Args:
         test_case: The path to the test case to be tested.
+        target_path: The path to the fuzz target to be tested
 
       Returns:
         True if crash is reproducible.
     """
     command = [
         'docker', 'run', '--rm', '--privileged', '-v',
-        '%s:/out' % os.path.dirname(self.target_path), '-v',
+        '%s:/out' % target_path, '-v',
         '%s:/testcase' % test_case, '-t', 'gcr.io/oss-fuzz-base/base-runner',
         'reproduce', self.target_name, '-runs=100'
     ]
@@ -134,33 +149,40 @@ class FuzzTarget:
         return True
     return False
 
-  def download_latest_corpus(self):
-    """Downloads the latest OSS-Fuzz corpus for the target from google cloud.
+  def is_crash_a_failure(self, test_case):
+    """Checks if a crash is reproducible, and if it is, whether it's a new
+    regression that cannot be reproduced with the latest OSS-Fuzz build.
+
+    NOTE: If no project is specified the crash is assumed introduced
+    by the pull request if it is reproducible.
+
+    Args:
+      test_case: The path to the test_case that triggered the crash.
 
     Returns:
-      The local path to to corpus or None if download failed.
+      True if the crash was introduced by the current pull request.
     """
+    reproducible_in_pr = self.is_reproducible(test_case,
+                                              os.path.dirname(self.target_path))
     if not self.project_name:
-      return None
-    if not os.path.exists(self.out_dir):
-      logging.error('Out directory %s does not exist.', self.out_dir)
-      return None
-    corpus_dir = os.path.join(self.out_dir, 'backup_corpus', self.target_name)
-    os.makedirs(corpus_dir, exist_ok=True)
-    http_link = os.path.join(
-        'https://storage.googleapis.com/', self.project_name +
-        '-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/',
-        self.project_name + '_' + self.target_name, 'public.zip')
-    logging.info("Trying to download corpus from: %s", http_link)
-    try:
-      response = urllib.request.urlopen(http_link)
-      with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
-        zip_file.extractall(corpus_dir)
-    except urllib.error.HTTPError:
-      logging.error('Unable to download corpus from: %s', http_link)
-      return None
-    logging.info('Using downloaded corpus.')
-    return corpus_dir
+      return reproducible_in_pr
+
+    if not reproducible_in_pr:
+      logging.info('Crash is not reproducible.')
+      return False
+
+    oss_fuzz_build_dir = self.download_oss_fuzz_build()
+    if not oss_fuzz_build_dir:
+      return False
+
+    reproducible_in_oss_fuzz = self.is_reproducible(test_case,
+                                                    oss_fuzz_build_dir)
+
+    if reproducible_in_pr and not reproducible_in_oss_fuzz:
+      logging.info('Crash is new and reproducible.')
+      return True
+    logging.info('Crash was found in old OSS-Fuzz build.')
+    return False
 
   def get_test_case(self, error_string):
     """Gets the file from a fuzzer run stack trace.
@@ -175,3 +197,102 @@ class FuzzTarget:
     if match:
       return os.path.join(self.out_dir, match.group(1))
     return None
+
+  def get_lastest_build_version(self):
+    """Gets the latest OSS-Fuzz build version for a projects fuzzers.
+
+    Returns:
+      A string with the latest build version or None.
+    """
+    if not self.project_name:
+      return None
+    sanitizer = 'address'
+    version = '{project_name}-{sanitizer}-latest.version'.format(
+        project_name=self.project_name, sanitizer=sanitizer)
+    version_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS, self.project_name, version)
+    try:
+      response = urllib.request.urlopen(version_url)
+    except urllib.error.HTTPError:
+      logging.error('Error getting the lastest build version for %s.',
+                    self.project_name)
+      return None
+    return response.read().decode('UTF-8')
+
+  def download_oss_fuzz_build(self):
+    """Downloads the latest OSS-Fuzz build from GCS.
+
+    Returns:
+      A path to where the OSS-Fuzz build is located, or None.
+    """
+    if not os.path.exists(self.out_dir):
+      logging.error('Out directory %s does not exist.', self.out_dir)
+      return None
+    if not self.project_name:
+      return None
+    build_dir = os.path.join(self.out_dir, 'oss_fuzz_latest', self.project_name)
+    if os.path.exists(os.path.join(build_dir, self.target_name)):
+      return build_dir
+    os.makedirs(build_dir, exist_ok=True)
+    latest_build_str = self.get_lastest_build_version()
+    if not latest_build_str:
+      return None
+    oss_fuzz_build_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS,
+                                  self.project_name, latest_build_str)
+    return download_zip(oss_fuzz_build_url, build_dir)
+
+  def download_latest_corpus(self):
+    """Downloads the latest OSS-Fuzz corpus for the target from google cloud.
+
+    Returns:
+      The local path to to corpus or None if download failed.
+    """
+    if not self.project_name:
+      return None
+    if not os.path.exists(self.out_dir):
+      logging.error('Out directory %s does not exist.', self.out_dir)
+      return None
+    corpus_dir = os.path.join(self.out_dir, 'backup_corpus', self.target_name)
+    os.makedirs(corpus_dir, exist_ok=True)
+    corpus_url = url_join(
+        GCS_BASE_URL,
+        '{0}-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'.format(
+            self.project_name),
+        '{0}_{1}'.format(self.project_name, self.target_name), CORPUS_ZIP_NAME)
+    return download_zip(corpus_url, corpus_dir)
+
+
+def download_zip(http_url, out_dir):
+  """Downloads a zip file from an http url.
+
+  Args:
+    http_url: A url to the zip file.
+    out_dir: The path where the zip file should be extracted.
+
+  Returns:
+    A path to the downloaded file or None on failure.
+  """
+  if not os.path.exists(out_dir):
+    logging.error('Out directory %s does not exist.', self.out_dir)
+    return None
+  tmp_file = os.path.join(out_dir, 'tmp.zip')
+  try:
+    urllib.request.urlretrieve(http_url, tmp_file)
+  except urllib.error.HTTPError:
+    logging.error('Unable to download build from: %s.', oss_fuzz_build_url)
+    return None
+  with zipfile.ZipFile(tmp_file, 'r') as zip_file:
+    zip_file.extractall(out_dir)
+  os.remove(tmp_file)
+  return out_dir
+
+
+def url_join(*argv):
+  """Joins URLs together using the posix join method.
+
+  Args:
+    argv: Sections of a URL to be joined.
+
+  Returns:
+    Joined URL.
+  """
+  return posixpath.join(*argv)
