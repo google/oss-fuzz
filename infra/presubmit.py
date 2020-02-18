@@ -22,6 +22,8 @@ import subprocess
 import sys
 import yaml
 
+import run_tests
+
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -325,7 +327,7 @@ def main():
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
   parser.add_argument('command',
-                      choices=['format', 'lint', 'license'],
+                      choices=['format', 'lint', 'license', 'test'],
                       nargs='?')
   args = parser.parse_args()
 
@@ -346,9 +348,13 @@ def main():
     success = check_license(changed_files)
     return bool_to_returncode(success)
 
+  if args.command == 'test':
+    return run_tests.run_tests()
+
   # Otherwise, do all of them.
+
   success = do_checks(changed_files)
-  return bool_to_returncode(success)
+  return bool_to_returncode(success) and run_tests.run_tests()
 
 
 if __name__ == '__main__':

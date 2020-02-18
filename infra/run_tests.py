@@ -18,9 +18,9 @@ import sys
 import utils
 
 # A list of tests that should not be run due to run time.
-black_list = ['bisector_test.py']
+BLACK_LIST = ['bisector_test.py']
 
-def main():
+def run_tests():
   """Run python tests that were affected by a change.."""
   passing_tests = []
   failing_tests = []
@@ -67,7 +67,7 @@ def run_test_in_dir(dir_to_run):
   print('Running tests in directory: ', dir_to_run)
   for file_name in os.listdir(dir_to_run):
     if '_test.py' in file_name:
-      if file_name in black_list:
+      if file_name in BLACK_LIST:
         continue
       if run_test(os.path.join(dir_to_run, file_name)):
         passing.append(file_name)
@@ -93,4 +93,4 @@ def get_changed_dirs():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(run_tests())
