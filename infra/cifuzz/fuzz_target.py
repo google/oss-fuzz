@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A module to handle running a fuzz target for a specified amount of time."""
-import io
 import logging
 import os
 import posixpath
