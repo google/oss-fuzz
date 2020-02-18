@@ -118,7 +118,7 @@ class RepoManagerCheckoutPullRequestUnitTests(unittest.TestCase):
       test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
       test_repo_manager.checkout_pr('refs/pull/1757/merge')
       self.assertEqual(test_repo_manager.get_current_commit(),
-                       '2a2b11cc3d370db8f7bdf73046f3290a39615347')
+                       'f19daaac70fb15a5c34f73a6b649767bba29ed79')
 
   def test_checkout_invalid_pull_request(self):
     """Tests that the git checkout invalid pull request fails."""
