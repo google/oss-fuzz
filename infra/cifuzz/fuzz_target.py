@@ -40,6 +40,9 @@ GCS_BASE_URL = 'https://storage.googleapis.com/clusterfuzz-builds'
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
+# The name to store the latest OSS-Fuzz build at.
+BUILD_STORE_NAME = 'oss_fuzz_latest.zip'
+
 
 class FuzzTarget:
   """A class to manage a single fuzz target.
@@ -53,6 +56,9 @@ class FuzzTarget:
 
   def __init__(self, target_path, duration, out_dir, project_name=None):
     """Represents a single fuzz target.
+
+    Note: project_name should be none when the fuzzer being run is not
+    associated with a specific OSS-Fuzz project.
 
     Args:
       target_path: The location of the fuzz target binary.
@@ -222,11 +228,11 @@ class FuzzTarget:
     oss_fuzz_build_url = url_join(GCS_BASE_URL, self.project_name,
                                   latest_build_str)
     try:
-      response = urllib.request.urlopen(oss_fuzz_build_url)
+      urllib.request.urlretrieve(oss_fuzz_build_url, BUILD_STORE_NAME)
     except urllib.error.HTTPError:
       logging.error('Unable to download build from: %s.', oss_fuzz_build_url)
       return None
-    with zipfile.ZipFile(io.BytesIO(response.read())) as zip_file:
+    with zipfile.ZipFile(BUILD_STORE_NAME, 'r') as zip_file:
       zip_file.extractall(build_dir)
     return build_dir
 
