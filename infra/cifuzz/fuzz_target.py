@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A module to handle running a fuzz target for a specified amount of time."""
-import io
 import logging
 import os
 import posixpath
@@ -209,7 +208,8 @@ class FuzzTarget:
     sanitizer = 'address'
     version = '{project_name}-{sanitizer}-latest.version'.format(
         project_name=self.project_name, sanitizer=sanitizer)
-    version_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS, self.project_name, version)
+    version_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS, self.project_name,
+                           version)
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
@@ -275,13 +275,13 @@ def download_zip(http_url, out_dir):
     A path to the downloaded file or None on failure.
   """
   if not os.path.exists(out_dir):
-    logging.error('Out directory %s does not exist.', self.out_dir)
+    logging.error('Out directory %s does not exist.', out_dir)
     return None
   tmp_file = os.path.join(out_dir, 'tmp.zip')
   try:
     urllib.request.urlretrieve(http_url, tmp_file)
   except urllib.error.HTTPError:
-    logging.error('Unable to download build from: %s.', oss_fuzz_build_url)
+    logging.error('Unable to download build from: %s.', http_url)
     return None
   with zipfile.ZipFile(tmp_file, 'r') as zip_file:
     zip_file.extractall(out_dir)
