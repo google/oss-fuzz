@@ -95,7 +95,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
 
 
 class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
-  """Test check_reproducibility_and_regression function in the fuzz_target module."""
+  """Test check_reproducibility_and_regression function fuzz_target module."""
 
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
