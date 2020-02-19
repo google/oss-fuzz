@@ -94,7 +94,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
     self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
 
 
-class IsCrashValidUnitTest(unittest.TestCase):
+class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
   """Test check_reproducibility_and_regression function in the fuzz_target module."""
 
   def setUp(self):
