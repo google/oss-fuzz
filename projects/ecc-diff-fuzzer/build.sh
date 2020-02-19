@@ -117,6 +117,7 @@ cmake ..
 make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec
 
+#another target without cryptopp
 rm -Rf *
 cmake -DDISABLE_CRYPTOPP=ON ..
 make -j$(nproc)
