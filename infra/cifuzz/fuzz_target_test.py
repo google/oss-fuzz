@@ -109,7 +109,8 @@ class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
         side_effect=[True, False]), tempfile.TemporaryDirectory() as tmp_dir:
       self.test_target.out_dir = tmp_dir
       self.assertTrue(
-          self.test_target.check_reproducibility_and_regression('/example/crash/testcase'))
+          self.test_target.check_reproducibility_and_regression(
+              '/example/crash/testcase'))
 
   def test_with_invalid_crash(self):
     """Checks to make sure an invalid crash returns false."""
@@ -117,19 +118,22 @@ class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
                                     'is_reproducible',
                                     side_effect=[True, True]):
       self.assertFalse(
-          self.test_target.check_reproducibility_and_regression('/example/crash/testcase'))
+          self.test_target.check_reproducibility_and_regression(
+              '/example/crash/testcase'))
 
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[False, True]):
       self.assertFalse(
-          self.test_target.check_reproducibility_and_regression('/example/crash/testcase'))
+          self.test_target.check_reproducibility_and_regression(
+              '/example/crash/testcase'))
 
       with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                       'is_reproducible',
                                       side_effect=[False, False]):
         self.assertFalse(
-            self.test_target.check_reproducibility_and_regression('/example/crash/testcase'))
+            self.test_target.check_reproducibility_and_regression(
+                '/example/crash/testcase'))
 
 
 class GetLatestBuildVersionUnitTest(unittest.TestCase):

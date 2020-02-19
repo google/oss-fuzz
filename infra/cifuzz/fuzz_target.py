@@ -201,8 +201,9 @@ class FuzzTarget:
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
-      logging.error('Error getting the lastest build version for %s from url %s.',
-                    self.project_name, version_url)
+      logging.error(
+          'Error getting the lastest build version for %s from url %s.',
+          self.project_name, version_url)
       return None
     return response.read().decode('UTF-8')
 
