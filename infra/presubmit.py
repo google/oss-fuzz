@@ -20,9 +20,8 @@ import argparse
 import os
 import subprocess
 import sys
+import unittest
 import yaml
-
-import run_tests
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -322,6 +321,19 @@ def get_changed_files():
   ]
 
 
+def run_tests():
+  changed_dirs = set()
+  for file in get_changed_files():
+    changed_dirs.add(os.path.dirname(file))
+  suite_list = []
+  for change_dir in changed_dirs:
+    suite_list.append(unittest.TestLoader().discover(change_dir,
+                                                     pattern='*_test.py'))
+  full_suite = unittest.TestSuite(suite_list)
+  print(full_suite._tests)
+  unittest.TextTestRunner().run(full_suite)
+
+
 def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
@@ -349,12 +361,12 @@ def main():
     return bool_to_returncode(success)
 
   if args.command == 'test':
-    return run_tests.run_tests()
+    return run_tests()
 
   # Otherwise, do all of them.
 
   success = do_checks(changed_files)
-  return run_tests.run_tests() and bool_to_returncode(success)
+  return run_tests() and bool_to_returncode(success)
 
 
 if __name__ == '__main__':
