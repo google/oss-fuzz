@@ -110,7 +110,7 @@ class FuzzTarget:
     if not test_case:
       logging.error('No test case found in stack trace.', file=sys.stderr)
       return None, None
-    if self.is_crash_a_failure(test_case):
+    if self.check_reproducibility_and_regression(test_case):
       return test_case, err_str
     return None, None
 
@@ -136,7 +136,7 @@ class FuzzTarget:
         return True
     return False
 
-  def is_crash_a_failure(self, test_case):
+  def check_reproducibility_and_regression(self, test_case):
     """Checks if a crash is reproducible, and if it is, whether it's a new
     regression that cannot be reproduced with the latest OSS-Fuzz build.
 
@@ -155,7 +155,7 @@ class FuzzTarget:
       return reproducible_in_pr
 
     if not reproducible_in_pr:
-      logging.info('Crash is not reproducible.')
+      logging.info('ailed to reproduce the crash using the obtained test case.')
       return False
 
     oss_fuzz_build_dir = self.download_oss_fuzz_build()
@@ -166,9 +166,10 @@ class FuzzTarget:
                                                     oss_fuzz_build_dir)
 
     if reproducible_in_pr and not reproducible_in_oss_fuzz:
-      logging.info('Crash is new and reproducible.')
+      logging.info('The crash is reproducible. The crash doesn\'t reproduce ' \
+      'on old builds. This pull request probably introduced the crash.')
       return True
-    logging.info('Crash was found in old OSS-Fuzz build.')
+    logging.info('The crash is reproducible without the current pull request.')
     return False
 
   def get_test_case(self, error_string):
@@ -200,8 +201,8 @@ class FuzzTarget:
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
-      logging.error('Error getting the lastest build version for %s.',
-                    self.project_name)
+      logging.error('Error getting the lastest build version for %s from url %s.',
+                    self.project_name, version_url)
       return None
     return response.read().decode('UTF-8')
 
@@ -233,6 +234,7 @@ class FuzzTarget:
       return None
     with zipfile.ZipFile(BUILD_STORE_NAME, 'r') as zip_file:
       zip_file.extractall(build_dir)
+    os.remove(BUILD_STORE_NAME)
     return build_dir
 
 

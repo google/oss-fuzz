@@ -126,6 +126,10 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
       self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
+
+      # Setting the first return to true than the second to false causes the
+      # emulation of a bug existing in the current PR but not on the downloaded
+      # OSS-Fuzz build.
       with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                       'is_reproducible',
                                       side_effect=[True, False]):
