@@ -29,6 +29,7 @@
 #define MAX_ALLOCATION (3 * GBYTE)
 
 static uint64_t total = 0;
+static uint64_t peak = 0;
 
 static void *jbig2_alloc(Jbig2Allocator *allocator, size_t size)
 {
@@ -45,6 +46,11 @@ static void *jbig2_alloc(Jbig2Allocator *allocator, size_t size)
 
   memcpy(ptr, &size, sizeof(size));
   total += size + ALIGNMENT;
+
+  if (peak == 0 || total / MBYTE > peak / MBYTE) {
+	  peak = total;
+	  fprintf(stderr, "memory: limit: %u Mbyte peak usage: %u Mbyte\n", MAX_ALLOCATION, peak);
+  }
 
   return (unsigned char *) ptr + ALIGNMENT;
 }
@@ -103,6 +109,12 @@ static void *jbig2_realloc(Jbig2Allocator *allocator, void *p, size_t size)
 
   memcpy(p, &size, sizeof(size));
   total += size + ALIGNMENT;
+
+  if (peak == 0 || total / MBYTE > peak / MBYTE) {
+	  peak = total;
+	  fprintf(stderr, "memory: limit: %u Mbyte peak usage: %u Mbyte\n", MAX_ALLOCATION, peak);
+  }
+
   return (unsigned char *) p + ALIGNMENT;
 }
 
@@ -131,6 +143,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
   }
   jbig2_ctx_free(ctx);
+
+  fprintf(stderr, "memory: limit: %u Mbyte peak usage: %u Mbyte\n", MAX_ALLOCATION, peak);
 
   return 0;
 }
