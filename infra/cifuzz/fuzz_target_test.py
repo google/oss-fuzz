@@ -128,12 +128,12 @@ class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
           self.test_target.check_reproducibility_and_regression(
               '/example/crash/testcase'))
 
-      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'is_reproducible',
-                                      side_effect=[False, False]):
-        self.assertFalse(
-            self.test_target.check_reproducibility_and_regression(
-                '/example/crash/testcase'))
+    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                    'is_reproducible',
+                                    side_effect=[False, False]):
+      self.assertFalse(
+          self.test_target.check_reproducibility_and_regression(
+              '/example/crash/testcase'))
 
 
 class GetLatestBuildVersionUnitTest(unittest.TestCase):

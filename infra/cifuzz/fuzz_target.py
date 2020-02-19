@@ -40,7 +40,7 @@ GCS_BASE_URL = 'https://storage.googleapis.com/clusterfuzz-builds'
 REPRODUCE_ATTEMPTS = 10
 
 # The name to store the latest OSS-Fuzz build at.
-BUILD_STORE_NAME = 'oss_fuzz_latest.zip'
+BUILD_ARCHIVE_NAME = 'oss_fuzz_latest.zip'
 
 
 class FuzzTarget:
@@ -155,7 +155,8 @@ class FuzzTarget:
       return reproducible_in_pr
 
     if not reproducible_in_pr:
-      logging.info('ailed to reproduce the crash using the obtained test case.')
+      logging.info(
+          'Failed to reproduce the crash using the obtained test case.')
       return False
 
     oss_fuzz_build_dir = self.download_oss_fuzz_build()
@@ -187,7 +188,7 @@ class FuzzTarget:
     return None
 
   def get_lastest_build_version(self):
-    """Gets the latest OSS-Fuzz build version for a projects fuzzers.
+    """Gets the latest OSS-Fuzz build version for a projects' fuzzers.
 
     Returns:
       A string with the latest build version or None.
@@ -229,13 +230,13 @@ class FuzzTarget:
     oss_fuzz_build_url = url_join(GCS_BASE_URL, self.project_name,
                                   latest_build_str)
     try:
-      urllib.request.urlretrieve(oss_fuzz_build_url, BUILD_STORE_NAME)
+      urllib.request.urlretrieve(oss_fuzz_build_url, BUILD_ARCHIVE_NAME)
     except urllib.error.HTTPError:
       logging.error('Unable to download build from: %s.', oss_fuzz_build_url)
       return None
-    with zipfile.ZipFile(BUILD_STORE_NAME, 'r') as zip_file:
+    with zipfile.ZipFile(BUILD_ARCHIVE_NAME, 'r') as zip_file:
       zip_file.extractall(build_dir)
-    os.remove(BUILD_STORE_NAME)
+    os.remove(BUILD_ARCHIVE_NAME)
     return build_dir
 
 
