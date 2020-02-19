@@ -35,6 +35,7 @@ EXAMPLE_PROJECT = 'example'
 TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'test_files')
 
+
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the utils module."""
 
@@ -129,7 +130,6 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
         os.path.join(TEST_FILES_PATH, 'out',
                      'do_stuff_fuzzer_libfuzzer_address_out'))
 
-
   def test_invlid_build(self):
     """Test run_fuzzers with an invalid build."""
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -160,7 +160,8 @@ class ParseOutputUnitTest(unittest.TestCase):
 
   def test_parse_valid_output(self):
     """Checks that the parse fuzzer output can correctly parse output."""
-    test_output_path = os.path.join(TEST_FILES_PATH, 'example_fuzzer_output.txt')
+    test_output_path = os.path.join(TEST_FILES_PATH,
+                                    'example_fuzzer_output.txt')
     test_summary_path = os.path.join(TEST_FILES_PATH, 'bug_summary_example.txt')
     with tempfile.TemporaryDirectory() as tmp_dir:
       with open(test_output_path, 'r') as test_fuzz_output:

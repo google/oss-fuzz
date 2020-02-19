@@ -22,7 +22,9 @@ import helper
 
 EXAMPLE_PROJECT = 'example'
 
-TEST_OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cifuzz', 'test_files', 'out')
+TEST_OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            'cifuzz', 'test_files', 'out')
+
 
 class IsFuzzTargetLocalUnitTest(unittest.TestCase):
   """Test is_fuzz_target_local function in the utils module."""
@@ -40,8 +42,7 @@ class IsFuzzTargetLocalUnitTest(unittest.TestCase):
     """Checks is_fuzz_target_local function with a valid filepath."""
 
     is_local = utils.is_fuzz_target_local(
-        os.path.join(TEST_OUT_DIR,
-                     'do_stuff_fuzzer'))
+        os.path.join(TEST_OUT_DIR, 'do_stuff_fuzzer'))
     self.assertTrue(is_local)
     is_local = utils.is_fuzz_target_local(TEST_OUT_DIR)
     self.assertFalse(is_local)
@@ -53,7 +54,8 @@ class GetFuzzTargetsUnitTest(unittest.TestCase):
   def test_valid_filepath(self):
     """Tests that fuzz targets can be retrieved once the fuzzers are built."""
     fuzz_targets = utils.get_fuzz_targets(TEST_OUT_DIR)
-    self.assertCountEqual(fuzz_targets, [os.path.join(TEST_OUT_DIR, 'do_stuff_fuzzer')])
+    self.assertCountEqual(fuzz_targets,
+                          [os.path.join(TEST_OUT_DIR, 'do_stuff_fuzzer')])
     fuzz_targets = utils.get_fuzz_targets(
         os.path.join(helper.OSSFUZZ_DIR, 'infra'))
     self.assertFalse(fuzz_targets)
