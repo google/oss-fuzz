@@ -158,11 +158,10 @@ def gsutil_rm_rf_step(url):
   """Returns a GCB step to recursively delete the object with given GCS url."""
   step = {
       'name': 'gcr.io/cloud-builders/gsutil',
+      'entrypoint': 'sh',
       'args': [
-          '-m',
-          'rm',
-          '-rf',
-          url,
+          '-c',
+          'gsutil -m rm -rf %s || exit 0' % url,
       ],
   }
   return step
