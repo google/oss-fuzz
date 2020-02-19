@@ -1,0 +1,62 @@
+project name,status,build time,# fuzzers
+tidy-html5,Success.,00:00:30,2
+gdal,Failed on build.,N/A,N/A
+brotli,Success.,00:00:31,1
+python3-libraries,Failed on build.,N/A,N/A
+ibmswtpm2,Failed on build.,N/A,N/A
+mruby,Success.,00:01:12,2
+libreoffice,Failed on build.,N/A,N/A
+yara,Success.,00:00:46,6
+mercurial,Failed on build.,N/A,N/A
+h2o,Success.,00:02:29,3
+htslib,Success.,00:00:46,1
+wuffs,Success.,00:00:35,2
+go-json-iterator,Failed on build.,N/A,N/A
+xerces-c,Failed on build.,N/A,N/A
+spidermonkey,Failed on build.,N/A,N/A
+libpcap,Success.,00:01:09,3
+kimageformats,Failed on build.,N/A,N/A
+libcacard,Failed on build.,N/A,N/A
+aspell,Failed on build.,N/A,N/A
+wasmtime,Failed on build.,N/A,N/A
+libteken,Failed on build.,N/A,N/A
+lzma,Failed on build.,N/A,N/A
+myanmar-tools,Success.,00:02:05,1
+proj4,Failed on build.,N/A,N/A
+libspng,Success.,00:00:50,2
+libpsl,Success.,00:10:52,12
+lwan,Success.,00:00:57,4
+gfwx,Failed on build.,N/A,N/A
+racket,Failed on build.,N/A,N/A
+pffft,Failed on build.,N/A,N/A
+wireshark,Success.,00:05:29,7
+libsodium,Failed on build.,N/A,N/A
+util-linux,Failed on build.,N/A,N/A
+eigen,Failed on build.,N/A,N/A
+postgis,Success.,00:01:15,3
+libldac,Success.,00:00:40,1
+bignum-fuzzer,Success.,00:06:34,5
+uwebsockets,Failed on build.,N/A,N/A
+cppcheck,Failed on build.,N/A,N/A
+minizip,Success.,00:01:01,2
+nghttp2,Success.,00:01:15,1
+oak,Failed on build.,N/A,N/A
+django,Failed on build.,N/A,N/A
+lcms,Failed on build.,N/A,N/A
+wxwidgets,Failed on build.,N/A,N/A
+qpdf,Success.,00:02:04,9
+xvid,Failed on build.,N/A,N/A
+libpng-proto,Failed on build.,N/A,N/A
+gnutls,Success.,00:14:14,15
+cryptofuzz,Success.,00:19:32,7
+sqlite3,Failed on build.,N/A,N/A
+libarchive,Success.,00:01:30,1
+libxls,Success.,00:01:04,1
+kubernetes,Failed on build.,N/A,N/A
+qpid-proton,Success.,00:00:50,2
+s2opc,Failed on build.,N/A,N/A
+cpython2,Failed on build.,N/A,N/A
+capstone,Success.,00:02:48,2
+nginx,Failed on build.,N/A,N/A
+c-blosc,Success.,00:02:31,1
+keystone,Success.,00:07:17,25
