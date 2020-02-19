@@ -322,6 +322,7 @@ def get_changed_files():
 
 
 def run_tests():
+  """Run all unit tests in directories that are different from HEAD."""
   changed_dirs = set()
   for file in get_changed_files():
     changed_dirs.add(os.path.dirname(file))
