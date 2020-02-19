@@ -162,7 +162,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
         self.assertTrue(run_success)
         self.assertFalse(bug_found)
 
-  def test_invlid_build(self):
+  def test_invalid_build(self):
     """Test run_fuzzers with an invalid build."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
