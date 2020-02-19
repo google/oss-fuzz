@@ -10,7 +10,7 @@ from google.cloud import bigquery
 from google.cloud import storage
 
 # Looking at the date over the past 14 days, as that's how long our logs exist.
-_DAYS_TO_ANALYZE = 3
+_DAYS_TO_ANALYZE = 7
 
 _BQ_CLIENT = bigquery.Client(project='clusterfuzz-external')
 _GCS_CLIENT = storage.Client(project='clusterfuzz-external')
@@ -210,7 +210,7 @@ def _calculate_coverage_diff(coverage_base, coverage_advanced):
   if diff_functions:
     _diff_functions(base, advanced)
 
-  return result
+  return result, diff_functions
 
 
 def _coverage_report(project, day):
@@ -230,9 +230,9 @@ def _get_coverage_diff(row, day):
   coverage_advanced = _read_gcs_file(_COVERAGE_BUCKET, path_advanced)
   if not coverage_base or not coverage_advanced:
     return False
-  diff = _calculate_coverage_diff(coverage_base, coverage_advanced)
-  if any(delta.values() for delta in diff):
-    print('There is a visible coverage difference. Explore the reports:')
+  diff, visible = _calculate_coverage_diff(coverage_base, coverage_advanced)
+  if visible:
+    print('There might be a visible coverage difference. Explore the reports:')
     print(' old: ' + _coverage_report(project, day - _ONE_DAY))
     print(' new: ' + _coverage_report(project, day))
     return True
@@ -302,6 +302,7 @@ def _find_runs(fuzz_target, day):
                              fuzz_target=fuzz_target)
   runs = _BQ_CLIENT.query(query)
   for row in runs:
+    print(row)
     log_data = _get_log(_project_name(fuzz_target), row)
 
 
@@ -318,7 +319,11 @@ def main():
         print(row['fuzz_target'], row['edges_without_strategy'],
               row['edges_with_strategy'], row['edge_coverage_without_strategy'],
               row['edge_coverage_with_strategy'])
-        if (_get_coverage_diff(row, day)):
+        edge_coverage_diff_percent = float(
+            row['edge_coverage_with_strategy'] -
+            row['edge_coverage_without_strategy']) / (
+            row['edge_coverage_without_strategy'])
+        if (_get_coverage_diff(row, day) or edge_coverage_diff_percent < 0.4):
           _find_runs(row['fuzz_target'], day)
 
 
