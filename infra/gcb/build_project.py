@@ -357,7 +357,12 @@ def dataflow_post_build_steps(project_name, env):
 
   steps.append({
       'name': 'gcr.io/oss-fuzz-base/base-runner',
-      'env': env,
+      'env': env + [
+          'COLLECT_DFT_TIMEOUT=2h',
+          'DFT_FILE_SIZE_LIMIT=65535',
+          'DFT_MIN_TIMEOUT=2.0',
+          'DFT_TIMEOUT_RANGE=6.0',
+      ],
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && '

@@ -23,7 +23,9 @@ else
 fi
 
 # Timeout for running a single fuzz target.
-TIMEOUT=1h
+if [ -z "$COLLECT_DFT_TIMEOUT"]; then
+  COLLECT_DFT_TIMEOUT=1h
+fi
 
 # Number of CPUs available, this is needed for running targets in parallel.
 NPROC=$(nproc)
@@ -38,7 +40,7 @@ function run_one_target {
 
   rm -rf $traces && mkdir -p $traces
 
-  timeout $TIMEOUT dataflow_tracer.py $OUT/$target $corpus $traces &> $log
+  timeout $COLLECT_DFT_TIMEOUT dataflow_tracer.py $OUT/$target $corpus $traces &> $log
   if (( $? != 0 )); then
     echo "Error occured while collecting data flow traces for $target:"
     cat $log
