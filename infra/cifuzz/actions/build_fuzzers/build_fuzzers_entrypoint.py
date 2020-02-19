@@ -37,7 +37,7 @@ def main():
   the directory: ${GITHUB_WORKSPACE}/out
 
   Required environment variables:
-    PROJECT_NAME: The name of OSS-Fuzz project.
+    OSS_FUZZ_PROJECT_NAME: The name of OSS-Fuzz project.
     GITHUB_REPOSITORY: The name of the Github repo that called this script.
     GITHUB_SHA: The commit SHA that triggered this script.
     GITHUB_REF: The pull request reference that triggered this script.
@@ -47,7 +47,7 @@ def main():
   Returns:
     0 on success or 1 on Failure.
   """
-  oss_fuzz_project_name = os.environ.get('PROJECT_NAME')
+  oss_fuzz_project_name = os.environ.get('OSS_FUZZ_PROJECT_NAME')
   github_repo_name = os.path.basename(os.environ.get('GITHUB_REPOSITORY'))
   pr_ref = os.environ.get('GITHUB_REF')
   commit_sha = os.environ.get('GITHUB_SHA')

@@ -154,13 +154,14 @@ def build_fuzzers(project_name,
   return True
 
 
-def run_fuzzers(fuzz_seconds, workspace):
+def run_fuzzers(fuzz_seconds, workspace, project_name):
   """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
     fuzz_seconds: The total time allotted for fuzzing.
     workspace: The location in a shared volume to store a git repo and build
       artifacts.
+    project_name: The name of the relevant OSS-Fuzz project.
 
   Returns:
     (True if run was successful, True if bug was found).
@@ -188,7 +189,8 @@ def run_fuzzers(fuzz_seconds, workspace):
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
     target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
-                                    out_dir)
+                                    out_dir, project_name)
+
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
