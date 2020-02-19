@@ -108,7 +108,9 @@ make install
 #build fuzz target
 cd ecfuzzer
 if [ "$ARCHITECTURE" = 'i386' ]; then
-    set GOARCH=386
+    export GOARCH=386
+#needed explicitly because of cross compilation cf https://golang.org/cmd/cgo/
+    export CGO_ENABLED=1
 fi
 zip -r fuzz_ec_seed_corpus.zip corpus/
 cp fuzz_ec_seed_corpus.zip $OUT/
