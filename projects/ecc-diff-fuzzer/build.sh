@@ -107,6 +107,9 @@ make install
 
 #build fuzz target
 cd ecfuzzer
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    set GOARCH=386
+fi
 zip -r fuzz_ec_seed_corpus.zip corpus/
 cp fuzz_ec_seed_corpus.zip $OUT/
 cp fuzz_ec.dict $OUT/
