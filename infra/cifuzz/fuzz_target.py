@@ -42,6 +42,11 @@ REPRODUCE_ATTEMPTS = 10
 # The name to store the latest OSS-Fuzz build at.
 BUILD_ARCHIVE_NAME = 'oss_fuzz_latest.zip'
 
+# The get request for the latest version of a project's build.
+VERSION_STRING = '{project_name}-{sanitizer}-latest.version'
+
+SANITIZER = 'address'
+
 
 class FuzzTarget:
   """A class to manage a single fuzz target.
@@ -195,9 +200,9 @@ class FuzzTarget:
     """
     if not self.project_name:
       return None
-    sanitizer = 'address'
-    version = '{project_name}-{sanitizer}-latest.version'.format(
-        project_name=self.project_name, sanitizer=sanitizer)
+
+    version = VERSION_STRING.format(project_name=self.project_name,
+                                    sanitizer=SANITIZER)
     version_url = url_join(GCS_BASE_URL, self.project_name, version)
     try:
       response = urllib.request.urlopen(version_url)
@@ -206,7 +211,7 @@ class FuzzTarget:
           'Error getting the lastest build version for %s from url %s.',
           self.project_name, version_url)
       return None
-    return response.read().decode('UTF-8')
+    return response.read().decode()
 
   def download_oss_fuzz_build(self):
     """Downloads the latest OSS-Fuzz build from GCS.
