@@ -179,6 +179,10 @@ def get_build_steps(project_dir):
   upload_report_url = UPLOAD_URL_FORMAT.format(project=project_name,
                                                type='reports',
                                                date=report_date)
+
+  # Delete the existing report as gsutil cannot overwrite it in a sane way due
+  # to the lack of `-T` option (it creates a subdir in the destination dir).
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_url))
   build_steps.append({
       'name':
           'gcr.io/cloud-builders/gsutil',
@@ -191,10 +195,11 @@ def get_build_steps(project_dir):
       ],
   })
 
-  # Upload the fuzzer stats.
+  # Upload the fuzzer stats. Delete the old ones just in case.
   upload_fuzzer_stats_url = UPLOAD_URL_FORMAT.format(project=project_name,
                                                      type='fuzzer_stats',
                                                      date=report_date)
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_stats_url))
   build_steps.append({
       'name':
           'gcr.io/cloud-builders/gsutil',
@@ -207,7 +212,11 @@ def get_build_steps(project_dir):
       ],
   })
 
-  # Upload the fuzzer logs.
+  # Upload the fuzzer logs. Delete the old ones just in case
+  upload_fuzzer_logs_url = UPLOAD_URL_FORMAT.format(project=project_name,
+                                                    type='logs',
+                                                    date=report_date),
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_logs_url))
   build_steps.append({
       'name':
           'gcr.io/cloud-builders/gsutil',
@@ -216,9 +225,7 @@ def get_build_steps(project_dir):
           'cp',
           '-r',
           os.path.join(out, 'logs'),
-          UPLOAD_URL_FORMAT.format(project=project_name,
-                                   type='logs',
-                                   date=report_date),
+          upload_fuzzer_logs_url,
       ],
   })
 
