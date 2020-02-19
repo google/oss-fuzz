@@ -105,6 +105,7 @@ class RepoManagerGetCommitListUnitTests(unittest.TestCase):
       with self.assertRaises(ValueError):
         test_repo_manager.get_commit_list(new_commit, 'fakecommit')
       with self.assertRaises(RuntimeError):
+        # pylint: disable=arguments-out-of-order
         test_repo_manager.get_commit_list(new_commit, old_commit)
 
 
