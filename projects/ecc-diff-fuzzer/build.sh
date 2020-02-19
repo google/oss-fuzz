@@ -116,3 +116,8 @@ cd build
 cmake ..
 make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec
+
+rm -Rf *
+cmake -DDISABLE_CRYPTOPP=ON ..
+make -j$(nproc)
+cp ecfuzzer $OUT/fuzz_ec_nocryptopp
