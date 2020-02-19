@@ -87,7 +87,7 @@ def build_fuzzers(project_name,
     True if build succeeded or False on failure.
   """
   # Validate inputs.
-  assert pr_ref or commit_sha
+  #assert pr_ref or commit_sha
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
     return False
@@ -110,17 +110,18 @@ def build_fuzzers(project_name,
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
                                                 repo_name=oss_fuzz_repo_name)
-  try:
-    if pr_ref:
-      build_repo_manager.checkout_pr(pr_ref)
-    else:
-      build_repo_manager.checkout_commit(commit_sha)
-  except RuntimeError:
-    logging.error('Can not check out requested state.')
-    return False
-  except ValueError:
-    logging.error('Invalid commit SHA requested %s.', commit_sha)
-    return False
+  if commit_sha or pr_ref:
+    try:
+      if pr_ref:
+        build_repo_manager.checkout_pr(pr_ref)
+      else:
+        build_repo_manager.checkout_commit(commit_sha)
+    except RuntimeError:
+      logging.error('Can not check out requested state.')
+      return False
+    except ValueError:
+      logging.error('Invalid commit SHA requested %s.', commit_sha)
+      return False
 
   # Build Fuzzers using docker run.
   command = [
