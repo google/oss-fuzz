@@ -368,7 +368,7 @@ def main():
 
   # Need to run tests as root for file operations.
   subprocess.call(['/usr/bin/sudo', '/usr/bin/id'])
-  tests_return_code = run_tests
+  tests_return_code = run_tests()
   return tests_return_code and bool_to_returncode(success)
 
 
