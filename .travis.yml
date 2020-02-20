@@ -18,7 +18,7 @@ matrix:
         - pip install -r infra/dev-requirements.txt
       script: ./infra/presubmit.py
     - name: "tests"
-      script: sudo ./infra/presubmit.py test
+      script: sudo python3 ./infra/cifuzz/cifuzz_test.py RunFuzzersIntegrationTest
     - name: "libfuzzer address x86_64"
       env:
         - TRAVIS_ENGINE=libfuzzer
