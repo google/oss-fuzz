@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
 RUN svn checkout https://svn.code.sf.net/p/freeimage/svn/ freeimage-svn
-WORKDIR $SRC/freeimage-svn
+WORKDIR $SRC/freeimage-svn/FreeImage/trunk/
 COPY build.sh $SRC/
 COPY load_from_memory_fuzzer.cc $SRC/
