@@ -221,10 +221,10 @@ def _get_coverage_diff(row, day):
   project = _project_name(row['fuzz_target'])
   binary = _binary_name(row['command'])
   path_base = _COVERAGE_PATH.format(project=project,
-                                    date=_coverage_date_str(day - _ONE_DAY),
+                                    date=_coverage_date_str(day),
                                     binary=binary)
   path_advanced = _COVERAGE_PATH.format(project=project,
-                                        date=_coverage_date_str(day),
+                                        date=_coverage_date_str(day + _ONE_DAY),
                                         binary=binary)
   coverage_base = _read_gcs_file(_COVERAGE_BUCKET, path_base)
   coverage_advanced = _read_gcs_file(_COVERAGE_BUCKET, path_advanced)
@@ -233,8 +233,8 @@ def _get_coverage_diff(row, day):
   diff, visible = _calculate_coverage_diff(coverage_base, coverage_advanced)
   if visible:
     print('There might be a visible coverage difference. Explore the reports:')
-    print(' old: ' + _coverage_report(project, day - _ONE_DAY))
-    print(' new: ' + _coverage_report(project, day))
+    print(' old: ' + _coverage_report(project, day))
+    print(' new: ' + _coverage_report(project, day + _ONE_DAY))
     return True
   return False
 
@@ -296,7 +296,7 @@ WHERE
 
 def _find_runs(fuzz_target, day):
   start_time = _date_str(day - _ONE_DAY)
-  end_time = _date_str(day + _ONE_DAY)
+  end_time = _date_str(day + 1.5 * _ONE_DAY)
   query = _QUERY_RUNS.format(start_time=start_time,
                              end_time=end_time,
                              fuzz_target=fuzz_target)
