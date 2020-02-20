@@ -219,6 +219,7 @@ class FuzzTarget:
     Returns:
       A path to where the OSS-Fuzz build is located, or None.
     """
+    print('Trying to download_oss_fuzz_build')
     if not os.path.exists(self.out_dir):
       logging.error('Out directory %s does not exist.', self.out_dir)
       return None
