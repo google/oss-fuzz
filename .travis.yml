@@ -8,14 +8,18 @@ before_install:
   - git fetch origin +refs/heads/$TRAVIS_BRANCH
 
 install:
-  - sudo pip install -r infra/travis/requirements.txt
+  - pip install -r infra/travis/requirements.txt
 
 matrix:
   include:
     - name: "presubmit"
       install:
-        - sudo pip install -r infra/dev-requirements.txt
-      script: sudo ./infra/presubmit.py
+        - pip install -r infra/dev-requirements.txt
+      script: ./infra/presubmit.py
+    - name: "tests"
+      install:
+        - pip install -r infra/dev-requirements.txt
+      script: sudo ./infra/presubmit.py test
     - name: "libfuzzer address x86_64"
       env:
         - TRAVIS_ENGINE=libfuzzer

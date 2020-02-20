@@ -366,8 +366,6 @@ def main():
   # Otherwise, do all of them.
   success = do_checks(changed_files)
 
-  # Need to run tests as root for file operations.
-  run_tests()
   return bool_to_returncode(success)
 
 
