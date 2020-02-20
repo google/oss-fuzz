@@ -142,7 +142,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[True, False]):
-      run_success, bug_found = cifuzz.run_fuzzers(5, TEST_FILES_PATH,
+      run_success, bug_found = cifuzz.run_fuzzers(100, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       print("Out dir: ", os.listdir(os.path.join(TEST_FILES_PATH, 'out')))
@@ -156,7 +156,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[True, True]):
-      run_success, bug_found = cifuzz.run_fuzzers(5, TEST_FILES_PATH,
+      run_success, bug_found = cifuzz.run_fuzzers(100, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       self.assertTrue(os.path.exists(build_dir))
@@ -169,7 +169,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
+      run_success, bug_found = cifuzz.run_fuzzers(100, tmp_dir, EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -184,7 +184,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_out_dir(self):
     """Tests run_fuzzers with an invalid out directory."""
-    run_success, bug_found = cifuzz.run_fuzzers(5, 'not/a/valid/path',
+    run_success, bug_found = cifuzz.run_fuzzers(100, 'not/a/valid/path',
                                                 EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
