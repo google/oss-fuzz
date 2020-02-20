@@ -367,7 +367,6 @@ def main():
   success = do_checks(changed_files)
 
   # Need to run tests as root for file operations.
-  subprocess.call(['/usr/bin/sudo', '/usr/bin/id'])
   run_tests()
   return bool_to_returncode(success)
 
