@@ -46,7 +46,8 @@ class IsReproducibleUnitTest(unittest.TestCase):
                                     'execute',
                                     side_effect=test_all_success) as patch:
       self.assertTrue(
-          self.test_target.is_reproducible('/fake/path/to/testcase', '/fake/target'))
+          self.test_target.is_reproducible('/fake/path/to/testcase',
+                                           '/fake/target'))
       self.assertEqual(1, patch.call_count)
 
     test_one_success = [(0, 0, 0)] * 9 + [(0, 0, 1)]
@@ -54,7 +55,8 @@ class IsReproducibleUnitTest(unittest.TestCase):
                                     'execute',
                                     side_effect=test_one_success) as patch:
       self.assertTrue(
-          self.test_target.is_reproducible('/fake/path/to/testcase','/fake/target'))
+          self.test_target.is_reproducible('/fake/path/to/testcase',
+                                           '/fake/target'))
       self.assertEqual(10, patch.call_count)
 
   def test_with_not_reproducible(self):
@@ -63,7 +65,8 @@ class IsReproducibleUnitTest(unittest.TestCase):
     with unittest.mock.patch.object(utils, 'execute',
                                     side_effect=test_all_fail):
       self.assertFalse(
-          self.test_target.is_reproducible('/fake/path/to/testcase', '/fake/target'))
+          self.test_target.is_reproducible('/fake/path/to/testcase',
+                                           '/fake/target'))
 
 
 class GetTestCaseUnitTest(unittest.TestCase):
