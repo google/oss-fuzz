@@ -63,10 +63,11 @@ class IsReproducibleUnitTest(unittest.TestCase):
     """Tests that a is_reproducible will return False if crash not detected."""
     test_all_fail = [(0, 0, 0)] * 10
     with unittest.mock.patch.object(utils, 'execute',
-                                    side_effect=test_all_fail):
+                                    side_effect=test_all_fail) as patch:
       self.assertFalse(
           self.test_target.is_reproducible('/fake/path/to/testcase',
                                            '/fake/target'))
+      self.assertEqual(10, patch.call_count)
 
 
 class GetTestCaseUnitTest(unittest.TestCase):
