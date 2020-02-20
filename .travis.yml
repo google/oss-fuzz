@@ -18,8 +18,6 @@ matrix:
         - pip install -r infra/dev-requirements.txt
       script: ./infra/presubmit.py
     - name: "tests"
-      install:
-        - pip install -r infra/dev-requirements.txt
       script: sudo ./infra/presubmit.py test
     - name: "libfuzzer address x86_64"
       env:
