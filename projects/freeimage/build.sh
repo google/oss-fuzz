@@ -19,9 +19,9 @@
 sed -i 's/Source\/OpenEXR\/IlmImf\/b44ExpLogTable.cpp//' Makefile.srcs
 make LIBRARIES=-lc++ -j$(nproc)
 
-cd $SRC
+INSTALL_DIR="$PWD/Dist"
 
-INSTALL_DIR=$SRC/freeimage-svn/FreeImage/Dist
+cd $SRC
 
 $CXX $CXXFLAGS -I${INSTALL_DIR}/ $LIB_FUZZING_ENGINE \
   load_from_memory_fuzzer.cc ${INSTALL_DIR}/libfreeimage.a \
