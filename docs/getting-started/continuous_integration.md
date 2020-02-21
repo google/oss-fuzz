@@ -62,7 +62,7 @@ jobs:
      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
-       fuzz-time: 600
+       fuzz-seconds: 600
        dry-run: false
    - name: Upload Crash
      uses: actions/upload-artifact@v1
