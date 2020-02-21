@@ -107,13 +107,20 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
       test_target.project_name = 'example'
       test_target.target_name = 'do_stuff_fuzzer'
       test_target.out_dir = tmp_dir
-      with unittest.mock.patch.object(fuzz_target, 'download_zip', return_value=tmp_dir) as mock:
+      with unittest.mock.patch.object(fuzz_target,
+                                      'download_zip',
+                                      return_value=tmp_dir) as mock:
         test_target.download_latest_corpus()
         (url, out_dir), _ = mock.call_args
         print(url)
-        self.assertEqual(url, 'https://storage.googleapis.com/example-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/example_do_stuff_fuzzer/public.zip')
-        self.assertEqual(out_dir, os.path.join(tmp_dir, 'backup_corpus', 'do_stuff_fuzzer'))
-
+        self.assertEqual(
+            url,
+            'https://storage.googleapis.com/example-backup.' \
+            'clusterfuzz-external.appspot.com/corpus/libFuzzer/' \
+            'example_do_stuff_fuzzer/public.zip'
+        )
+        self.assertEqual(
+            out_dir, os.path.join(tmp_dir, 'backup_corpus', 'do_stuff_fuzzer'))
 
   def test_download_invalid_projects_corpus(self):
     """Tests that a invaild fuzz target will not return a corpus directory."""
@@ -125,7 +132,6 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
                                            'not_a_project')
       corpus_path = test_target.download_latest_corpus()
       self.assertIsNone(corpus_path)
-
 
 
 class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):

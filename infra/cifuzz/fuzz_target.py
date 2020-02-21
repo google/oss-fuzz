@@ -218,7 +218,8 @@ class FuzzTarget:
 
     version = VERSION_STRING.format(project_name=self.project_name,
                                     sanitizer=SANITIZER)
-    version_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS, self.project_name, version)
+    version_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS, self.project_name,
+                           version)
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
