@@ -89,6 +89,8 @@ _COVERAGE_BUCKET = 'oss-fuzz-coverage'
 _COVERAGE_PATH = '{project}/logs/{date}/{binary}.json'
 _COVERAGE_REPORT = ('https://storage.googleapis.com/oss-fuzz-coverage/'
                     '{project}/reports/{date}/linux/report.html')
+_COVERAGE_FILE = ('https://storage.googleapis.com/oss-fuzz-coverage/{project}/'
+                  'reports/{date}/linux{file}.html#L{line}')
 _BINARY_PATH_TOKEN = '/mnt/scratch0/clusterfuzz/bot/builds/clusterfuzz-builds'
 _LOG_BUCKET = '{project}-logs.clusterfuzz-external.appspot.com'
 _LOG_PATH = '{fuzz_target}/{job}/{date_slash_time}.log'
@@ -148,19 +150,47 @@ def _compare_files(base, advanced, factor):
   return value_advanced - value_base
 
 
+def _guess_filename(function_info):
+  for fn in function_info['filenames']:
+    if fn.endswith('.c') or fn.endswith('.cpp') or fn.endswith('.cc'):
+      return fn
 
-def _diff_functions(base, advanced):
+  # Try looking for headers
+  for fn in function_info['filenames']:
+    if fn.endswith('.h') or fn.endswith('.hpp'):
+      return fn
+
+  return None
+
+
+def _diff_functions(base, advanced, project, date_base, date_advanced):
   functions_base = base['data'][0]['functions']
   functions_advanced = advanced['data'][0]['functions']
   if len(functions_base) != len(functions_advanced):
-    print('!!!!!!!!!!!!!! DIFFERENT LENGTH!')
-  else:
-    print('?????????????? FUNCTION DIFF COULD BE HERE!')
-  
-  #for f1, f2 
+    print('!!!!!!!!!!!!!! DIFFERENT FUNCTION LENGTH!')
+    return
 
+  for b, a in zip(functions_base, functions_advanced):
+    regions_base = b['regions']
+    regions_advanced = a['regions']
+    for rb, ra in zip(regions_base, regions_advanced):
+      if rb[4] == 0 and ra[4] != 0:
+        file = _guess_filename(b)
+        line_number = rb[0]
+        print('Newly covered region: ', rb, '- > ', ra, 'Might be visible at:')
+        print('\told: ' + _COVERAGE_FILE.format(
+            project=project,
+            date=_coverage_date_str(date_base),
+            file=file,
+            line=line_number))
+        print('\tnew: ' + _COVERAGE_FILE.format(
+            project=project,
+            date=_coverage_date_str(date_advanced),
+            file=file,
+            line=line_number))
 
-def _calculate_coverage_diff(coverage_base, coverage_advanced):
+def _calculate_coverage_diff(coverage_base, coverage_advanced, project,
+                             date_base, date_advanced):
   base = json.loads(coverage_base)
   advanced = json.loads(coverage_advanced)
   files_base = base['data'][0]['files']
@@ -208,7 +238,7 @@ def _calculate_coverage_diff(coverage_base, coverage_advanced):
 
 
   if diff_functions:
-    _diff_functions(base, advanced)
+    _diff_functions(base, advanced, project, date_base, date_advanced)
 
   return result, diff_functions
 
@@ -220,21 +250,25 @@ def _coverage_report(project, day):
 def _get_coverage_diff(row, day):
   project = _project_name(row['fuzz_target'])
   binary = _binary_name(row['command'])
+  date_base = day
+  date_advanced = day + _ONE_DAY
   path_base = _COVERAGE_PATH.format(project=project,
-                                    date=_coverage_date_str(day),
+                                    date=_coverage_date_str(date_base),
                                     binary=binary)
   path_advanced = _COVERAGE_PATH.format(project=project,
-                                        date=_coverage_date_str(day + _ONE_DAY),
+                                        date=_coverage_date_str(date_advanced),
                                         binary=binary)
   coverage_base = _read_gcs_file(_COVERAGE_BUCKET, path_base)
   coverage_advanced = _read_gcs_file(_COVERAGE_BUCKET, path_advanced)
   if not coverage_base or not coverage_advanced:
     return False
-  diff, visible = _calculate_coverage_diff(coverage_base, coverage_advanced)
+
+  diff, visible = _calculate_coverage_diff(coverage_base, coverage_advanced,
+                                           project, date_base, date_advanced)
   if visible:
     print('There might be a visible coverage difference. Explore the reports:')
-    print(' old: ' + _coverage_report(project, day))
-    print(' new: ' + _coverage_report(project, day + _ONE_DAY))
+    print('\told: ' + _coverage_report(project, date_base))
+    print('\tnew: ' + _coverage_report(project, date_advanced))
     return True
   return False
 
