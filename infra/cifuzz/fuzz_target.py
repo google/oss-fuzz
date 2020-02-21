@@ -35,18 +35,25 @@ logging.basicConfig(
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 
 # Location of google cloud storage for latest OSS-Fuzz builds.
-GCS_BASE_URL = 'https://storage.googleapis.com/clusterfuzz-builds'
+GCS_BASE_URL = 'https://storage.googleapis.com/'
 
-# The number of reproduce attempts for a crash.
-REPRODUCE_ATTEMPTS = 10
-
-# The name to store the latest OSS-Fuzz build at.
-BUILD_ARCHIVE_NAME = 'oss_fuzz_latest.zip'
+# Location of cluster fuzz builds on GCS.
+CLUSTER_FUZZ_BUILDS = 'clusterfuzz-builds'
 
 # The get request for the latest version of a project's build.
 VERSION_STRING = '{project_name}-{sanitizer}-latest.version'
 
+# The name to store the latest OSS-Fuzz build at.
+BUILD_ARCHIVE_NAME = 'oss_fuzz_latest.zip'
+
+# The name of the zip file to download for geting the corpus.
+CORPUS_ZIP_NAME = 'public.zip'
+
+# The sanitizer build to download.
 SANITIZER = 'address'
+
+# The number of reproduce attempts for a crash.
+REPRODUCE_ATTEMPTS = 10
 
 
 class FuzzTarget:
@@ -208,11 +215,10 @@ class FuzzTarget:
     """
     if not self.project_name:
       return None
-    sanitizer = 'address'
-    version = '{project_name}-{sanitizer}-latest.version'.format(
-        project_name=self.project_name, sanitizer=sanitizer)
-    version_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS, self.project_name,
-                           version)
+
+    version = VERSION_STRING.format(project_name=self.project_name,
+                                    sanitizer=SANITIZER)
+    version_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS, self.project_name, version)
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
