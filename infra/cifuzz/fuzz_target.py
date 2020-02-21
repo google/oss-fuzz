@@ -154,7 +154,6 @@ class FuzzTarget:
     Returns:
       True if the crash was introduced by the current pull request.
     """
-    print('CHecking reproduce')
     reproducible_in_pr = self.is_reproducible(test_case,
                                               os.path.dirname(self.target_path))
     if not self.project_name:
@@ -220,7 +219,6 @@ class FuzzTarget:
     Returns:
       A path to where the OSS-Fuzz build is located, or None.
     """
-    print('Trying to download_oss_fuzz_build')
     if not os.path.exists(self.out_dir):
       logging.error('Out directory %s does not exist.', self.out_dir)
       return None

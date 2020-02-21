@@ -145,7 +145,6 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
       run_success, bug_found = cifuzz.run_fuzzers(100, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
-      print("Out dir: ", os.listdir(os.path.join(TEST_FILES_PATH, 'out')))
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
       self.assertTrue(run_success)
