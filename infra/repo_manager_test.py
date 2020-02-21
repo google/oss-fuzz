@@ -116,9 +116,9 @@ class RepoManagerCheckoutPullRequestUnitTests(unittest.TestCase):
     """Tests that the git checkout pull request works."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      test_repo_manager.checkout_pr('refs/pull/1757/merge')
+      test_repo_manager.checkout_pr('refs/pull/3415/merge')
       self.assertEqual(test_repo_manager.get_current_commit(),
-                       '2a2b11cc3d370db8f7bdf73046f3290a39615347')
+                       '314c9249a54a08e764a5bbcb7333294ae7c1f9ed')
 
   def test_checkout_invalid_pull_request(self):
     """Tests that the git checkout invalid pull request fails."""

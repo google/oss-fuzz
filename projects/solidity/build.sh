@@ -39,10 +39,15 @@ make ossfuzz ossfuzz_proto ossfuzz_abiv2 -j $(nproc)
 # Copy fuzzer binary, seed corpus, fuzzer options, and dictionary
 cp test/tools/ossfuzz/*_ossfuzz $OUT/
 rm -f $OUT/*.zip
+
+# Update corpus
+cd $SRC/solidity-fuzzing-corpus
+git pull origin master
+
 for dir in $SRC/solidity-fuzzing-corpus/*;
 do
 	name=$(basename $dir)
-	zip -rjq $OUT/$name $dir
+	zip -rq $OUT/$name $dir
 done
 cp $SRC/solidity/test/tools/ossfuzz/config/*.options $OUT/
 cp $SRC/solidity/test/tools/ossfuzz/config/*.dict $OUT/

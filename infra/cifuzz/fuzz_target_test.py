@@ -42,32 +42,32 @@ class IsReproducibleUnitTest(unittest.TestCase):
   def test_with_reproducible(self):
     """Tests that a is_reproducible will return true if crash is detected."""
     test_all_success = [(0, 0, 1)] * 10
-    all_success_mock = unittest.mock.Mock()
-    all_success_mock.side_effect = test_all_success
-    utils.execute = all_success_mock
-    self.assertTrue(
-        self.test_target.is_reproducible('/fake/path/to/testcase',
-                                         '/fake/target'))
-    self.assertEqual(1, all_success_mock.call_count)
+    with unittest.mock.patch.object(utils,
+                                    'execute',
+                                    side_effect=test_all_success) as patch:
+      self.assertTrue(
+          self.test_target.is_reproducible('/fake/path/to/testcase',
+                                           '/fake/target'))
+      self.assertEqual(1, patch.call_count)
 
     test_one_success = [(0, 0, 0)] * 9 + [(0, 0, 1)]
-    one_success_mock = unittest.mock.Mock()
-    one_success_mock.side_effect = test_one_success
-    utils.execute = one_success_mock
-    self.assertTrue(
-        self.test_target.is_reproducible('/fake/path/to/testcase',
-                                         '/fake/target'))
-    self.assertEqual(10, one_success_mock.call_count)
+    with unittest.mock.patch.object(utils,
+                                    'execute',
+                                    side_effect=test_one_success) as patch:
+      self.assertTrue(
+          self.test_target.is_reproducible('/fake/path/to/testcase',
+                                           '/fake/target'))
+      self.assertEqual(10, patch.call_count)
 
   def test_with_not_reproducible(self):
     """Tests that a is_reproducible will return False if crash not detected."""
     test_all_fail = [(0, 0, 0)] * 10
-    all_fail_mock = unittest.mock.Mock()
-    all_fail_mock.side_effect = test_all_fail
-    utils.execute = all_fail_mock
-    self.assertFalse(
-        self.test_target.is_reproducible('/fake/path/to/testcase',
-                                         '/fake/target'))
+    with unittest.mock.patch.object(utils, 'execute',
+                                    side_effect=test_all_fail) as patch:
+      self.assertFalse(
+          self.test_target.is_reproducible('/fake/path/to/testcase',
+                                           '/fake/target'))
+      self.assertEqual(10, patch.call_count)
 
 
 class GetTestCaseUnitTest(unittest.TestCase):
@@ -129,8 +129,9 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
       self.assertIsNone(corpus_path)
 
 
-class IsCrashValidUnitTest(unittest.TestCase):
-  """Test is_crash_a_failure function in the fuzz_target module."""
+
+class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
+  """Test check_reproducibility_and_regression function fuzz_target module."""
 
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
@@ -144,7 +145,8 @@ class IsCrashValidUnitTest(unittest.TestCase):
         side_effect=[True, False]), tempfile.TemporaryDirectory() as tmp_dir:
       self.test_target.out_dir = tmp_dir
       self.assertTrue(
-          self.test_target.is_crash_a_failure('/example/crash/testcase'))
+          self.test_target.check_reproducibility_and_regression(
+              '/example/crash/testcase'))
 
   def test_with_invalid_crash(self):
     """Checks to make sure an invalid crash returns false."""
@@ -152,19 +154,22 @@ class IsCrashValidUnitTest(unittest.TestCase):
                                     'is_reproducible',
                                     side_effect=[True, True]):
       self.assertFalse(
-          self.test_target.is_crash_a_failure('/example/crash/testcase'))
+          self.test_target.check_reproducibility_and_regression(
+              '/example/crash/testcase'))
 
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[False, True]):
       self.assertFalse(
-          self.test_target.is_crash_a_failure('/example/crash/testcase'))
+          self.test_target.check_reproducibility_and_regression(
+              '/example/crash/testcase'))
 
-      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'is_reproducible',
-                                      side_effect=[False, False]):
-        self.assertFalse(
-            self.test_target.is_crash_a_failure('/example/crash/testcase'))
+    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                    'is_reproducible',
+                                    side_effect=[False, False]):
+      self.assertFalse(
+          self.test_target.check_reproducibility_and_regression(
+              '/example/crash/testcase'))
 
 
 class GetLatestBuildVersionUnitTest(unittest.TestCase):
@@ -205,7 +210,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
           oss_fuzz_build_path = test_target.download_oss_fuzz_build()
         self.assertEqual(1, mock_build_version.call_count)
         self.assertIsNotNone(oss_fuzz_build_path)
-        self.assertNotEqual(0, len(os.listdir(oss_fuzz_build_path)))
+        self.assertTrue(os.listdir(oss_fuzz_build_path))
 
   def test_get_valid_project(self):
     """Checks the latest build can be retrieved from gcs."""
@@ -214,7 +219,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
                                            tmp_dir, 'example')
       oss_fuzz_build_path = test_target.download_oss_fuzz_build()
       self.assertIsNotNone(oss_fuzz_build_path)
-      self.assertNotEqual(0, len(os.listdir(oss_fuzz_build_path)))
+      self.assertTrue(os.listdir(oss_fuzz_build_path))
 
   def test_get_invalid_project(self):
     """Checks the latest build will return None when project doesn't exist."""

@@ -35,16 +35,18 @@ logging.basicConfig(
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 
 # Location of google cloud storage for latest OSS-Fuzz builds.
-GCS_BASE_URL = 'https://storage.googleapis.com/'
-
-# Location of cluster fuzz builds on GCS.
-CLUSTER_FUZZ_BUILDS = 'clusterfuzz-builds'
-
-# The name of the zip file to download for geting the corpus.
-CORPUS_ZIP_NAME = 'public.zip'
+GCS_BASE_URL = 'https://storage.googleapis.com/clusterfuzz-builds'
 
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
+
+# The name to store the latest OSS-Fuzz build at.
+BUILD_ARCHIVE_NAME = 'oss_fuzz_latest.zip'
+
+# The get request for the latest version of a project's build.
+VERSION_STRING = '{project_name}-{sanitizer}-latest.version'
+
+SANITIZER = 'address'
 
 
 class FuzzTarget:
@@ -119,11 +121,10 @@ class FuzzTarget:
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)
     if not test_case:
-      logging.error('No test case found in stack trace.', file=sys.stderr)
+      logging.error('No test case found in stack trace: %s.', err_str)
       return None, None
-    if self.is_crash_a_failure(test_case):
+    if self.check_reproducibility_and_regression(test_case):
       return test_case, err_str
-    logging.error('A crash was found but it was not reproducible.')
     return None, None
 
   def is_reproducible(self, test_case, target_path):
@@ -148,7 +149,7 @@ class FuzzTarget:
         return True
     return False
 
-  def is_crash_a_failure(self, test_case):
+  def check_reproducibility_and_regression(self, test_case):
     """Checks if a crash is reproducible, and if it is, whether it's a new
     regression that cannot be reproduced with the latest OSS-Fuzz build.
 
@@ -167,7 +168,8 @@ class FuzzTarget:
       return reproducible_in_pr
 
     if not reproducible_in_pr:
-      logging.info('Crash is not reproducible.')
+      logging.info(
+          'Failed to reproduce the crash using the obtained test case.')
       return False
 
     oss_fuzz_build_dir = self.download_oss_fuzz_build()
@@ -178,9 +180,10 @@ class FuzzTarget:
                                                     oss_fuzz_build_dir)
 
     if reproducible_in_pr and not reproducible_in_oss_fuzz:
-      logging.info('Crash is new and reproducible.')
+      logging.info('The crash is reproducible. The crash doesn\'t reproduce ' \
+      'on old builds. This pull request probably introduced the crash.')
       return True
-    logging.info('Crash was found in old OSS-Fuzz build.')
+    logging.info('The crash is reproducible without the current pull request.')
     return False
 
   def get_test_case(self, error_string):

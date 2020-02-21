@@ -24,9 +24,12 @@
 #include "jbig2.h"
 
 #define ALIGNMENT 16
-#define MAX_ALLOCATION (1024 * 1024 * 1024)
+#define MBYTE (1024 * 1024)
+#define GBYTE (1024 * MBYTE)
+#define MAX_ALLOCATION (3 * GBYTE)
 
 static uint64_t total = 0;
+static uint64_t peak = 0;
 
 static void *jbig2_alloc(Jbig2Allocator *allocator, size_t size)
 {
@@ -34,10 +37,20 @@ static void *jbig2_alloc(Jbig2Allocator *allocator, size_t size)
 
   if (size == 0)
     return NULL;
+  if (size > MAX_ALLOCATION - ALIGNMENT - total)
+    return NULL;
 
   ptr = malloc(size + ALIGNMENT);
+  if (ptr == NULL)
+    return NULL;
+
   memcpy(ptr, &size, sizeof(size));
   total += size + ALIGNMENT;
+
+  if (peak == 0 || total / MBYTE > peak / MBYTE) {
+	  peak = total;
+	  fprintf(stderr, "memory: limit: %u Mbyte peak usage: %u Mbyte\n", MAX_ALLOCATION, peak);
+  }
 
   return (unsigned char *) ptr + ALIGNMENT;
 }
@@ -61,15 +74,16 @@ static void *jbig2_realloc(Jbig2Allocator *allocator, void *p, size_t size)
   if (size > SIZE_MAX - ALIGNMENT)
     return NULL;
 
-  if (size > MAX_ALLOCATION - ALIGNMENT - total)
-    return NULL;
-
   if (oldp == NULL)
   {
     if (size == 0)
       return NULL;
+    if (size > MAX_ALLOCATION - ALIGNMENT - total)
+      return NULL;
 
     p = malloc(size + ALIGNMENT);
+    if (p == NULL)
+      return NULL;
   }
   else
   {
@@ -83,6 +97,9 @@ static void *jbig2_realloc(Jbig2Allocator *allocator, void *p, size_t size)
       return NULL;
     }
 
+    if (size > MAX_ALLOCATION - total + oldsize)
+      return NULL;
+
     p = realloc(oldp, size + ALIGNMENT);
     if (p == NULL)
       return NULL;
@@ -92,6 +109,12 @@ static void *jbig2_realloc(Jbig2Allocator *allocator, void *p, size_t size)
 
   memcpy(p, &size, sizeof(size));
   total += size + ALIGNMENT;
+
+  if (peak == 0 || total / MBYTE > peak / MBYTE) {
+	  peak = total;
+	  fprintf(stderr, "memory: limit: %u Mbyte peak usage: %u Mbyte\n", MAX_ALLOCATION, peak);
+  }
+
   return (unsigned char *) p + ALIGNMENT;
 }
 
@@ -120,6 +143,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
   }
   jbig2_ctx_free(ctx);
+
+  fprintf(stderr, "memory: limit: %u Mbyte peak usage: %u Mbyte\n", MAX_ALLOCATION, peak);
 
   return 0;
 }

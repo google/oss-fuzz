@@ -154,7 +154,7 @@ def build_fuzzers(project_name,
   return True
 
 
-def run_fuzzers(fuzz_seconds, workspace, project_name=None):
+def run_fuzzers(fuzz_seconds, workspace, project_name):
   """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
@@ -188,10 +188,9 @@ def run_fuzzers(fuzz_seconds, workspace, project_name=None):
 
   # Run fuzzers for alotted time.
   for fuzzer_path in fuzzer_paths:
-    target = fuzz_target.FuzzTarget(fuzzer_path,
-                                    fuzz_seconds_per_target,
-                                    out_dir,
-                                    project_name=project_name)
+    target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
+                                    out_dir, project_name)
+
     test_case, stack_trace = target.fuzz()
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
