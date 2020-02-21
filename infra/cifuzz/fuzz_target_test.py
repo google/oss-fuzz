@@ -42,32 +42,32 @@ class IsReproducibleUnitTest(unittest.TestCase):
   def test_with_reproducible(self):
     """Tests that a is_reproducible will return true if crash is detected."""
     test_all_success = [(0, 0, 1)] * 10
-    all_success_mock = unittest.mock.Mock()
-    all_success_mock.side_effect = test_all_success
-    utils.execute = all_success_mock
-    self.assertTrue(
-        self.test_target.is_reproducible('/fake/path/to/testcase',
-                                         '/fake/target'))
-    self.assertEqual(1, all_success_mock.call_count)
+    with unittest.mock.patch.object(utils,
+                                    'execute',
+                                    side_effect=test_all_success) as patch:
+      self.assertTrue(
+          self.test_target.is_reproducible('/fake/path/to/testcase',
+                                           '/fake/target'))
+      self.assertEqual(1, patch.call_count)
 
     test_one_success = [(0, 0, 0)] * 9 + [(0, 0, 1)]
-    one_success_mock = unittest.mock.Mock()
-    one_success_mock.side_effect = test_one_success
-    utils.execute = one_success_mock
-    self.assertTrue(
-        self.test_target.is_reproducible('/fake/path/to/testcase',
-                                         '/fake/target'))
-    self.assertEqual(10, one_success_mock.call_count)
+    with unittest.mock.patch.object(utils,
+                                    'execute',
+                                    side_effect=test_one_success) as patch:
+      self.assertTrue(
+          self.test_target.is_reproducible('/fake/path/to/testcase',
+                                           '/fake/target'))
+      self.assertEqual(10, patch.call_count)
 
   def test_with_not_reproducible(self):
     """Tests that a is_reproducible will return False if crash not detected."""
     test_all_fail = [(0, 0, 0)] * 10
-    all_fail_mock = unittest.mock.Mock()
-    all_fail_mock.side_effect = test_all_fail
-    utils.execute = all_fail_mock
-    self.assertFalse(
-        self.test_target.is_reproducible('/fake/path/to/testcase',
-                                         '/fake/target'))
+    with unittest.mock.patch.object(utils, 'execute',
+                                    side_effect=test_all_fail) as patch:
+      self.assertFalse(
+          self.test_target.is_reproducible('/fake/path/to/testcase',
+                                           '/fake/target'))
+      self.assertEqual(10, patch.call_count)
 
 
 class GetTestCaseUnitTest(unittest.TestCase):

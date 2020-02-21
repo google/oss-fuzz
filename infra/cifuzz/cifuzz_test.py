@@ -17,6 +17,7 @@
 """
 
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -28,8 +29,15 @@ import cifuzz
 import fuzz_target
 
 # NOTE: This integration test relies on
-# https://github.com/google/oss-fuzz/tree/master/projects/example project
+# https://github.com/google/oss-fuzz/tree/master/projects/example project.
 EXAMPLE_PROJECT = 'example'
+
+# Location of files used for testing.
+TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'test_files')
+
+# An example fuzzer that triggers an error.
+EXAMPLE_FUZZER = 'do_stuff_fuzzer'
 
 
 class BuildFuzzersIntegrationTest(unittest.TestCase):
@@ -46,7 +54,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               'oss-fuzz',
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
+      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_FUZZER)))
 
   def test_valid_pull_request(self):
     """Test building fuzzers with valid pull request."""
@@ -58,7 +66,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                                'oss-fuzz',
                                tmp_dir,
                                pr_ref='refs/pull/1757/merge'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
+      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_FUZZER)))
 
   def test_invalid_pull_request(self):
     """Test building fuzzers with invalid pull request."""
@@ -114,60 +122,53 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 class RunFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the cifuzz module."""
 
+  def tearDown(self):
+    """Remove any existing crashes and test files."""
+    out_dir = os.path.join(TEST_FILES_PATH, 'out')
+    for out_file in os.listdir(out_dir):
+      out_path = os.path.join(out_dir, out_file)
+      if out_file == EXAMPLE_FUZZER:
+        continue
+      if os.path.isdir(out_path):
+        shutil.rmtree(out_path)
+      else:
+        os.remove(out_path)
+
   def test_new_bug_found(self):
     """Test run_fuzzers with a valid build."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(
-              EXAMPLE_PROJECT,
-              'oss-fuzz',
-              tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
-
-      # Setting the first return value to True, then the second to False to
-      # emulate a bug existing in the current PR but not on the downloaded
-      # OSS-Fuzz build.
-      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'is_reproducible',
-                                      side_effect=[True, False]):
-        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-        build_dir = os.path.join(tmp_dir, 'out', 'oss_fuzz_latest')
-        self.assertTrue(os.path.exists(build_dir))
-        self.assertNotEqual(0, len(os.listdir(build_dir)))
-        self.assertTrue(run_success)
-        self.assertTrue(bug_found)
+    # Setting the first return value to True, then the second to False to
+    # emulate a bug existing in the current PR but not on the downloaded
+    # OSS-Fuzz build.
+    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                    'is_reproducible',
+                                    side_effect=[True, False]):
+      run_success, bug_found = cifuzz.run_fuzzers(100, TEST_FILES_PATH,
+                                                  EXAMPLE_PROJECT)
+      build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
+      self.assertTrue(os.path.exists(build_dir))
+      self.assertNotEqual(0, len(os.listdir(build_dir)))
+      self.assertTrue(run_success)
+      self.assertTrue(bug_found)
 
   def test_old_bug_found(self):
     """Test run_fuzzers with a bug found in OSS-Fuzz before."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(
-              EXAMPLE_PROJECT,
-              'oss-fuzz',
-              tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, 'do_stuff_fuzzer')))
-      with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                      'is_reproducible',
-                                      side_effect=[True, True]):
-        run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
-        build_dir = os.path.join(tmp_dir, 'out', 'oss_fuzz_latest')
-        self.assertTrue(os.path.exists(build_dir))
-        self.assertNotEqual(0, len(os.listdir(build_dir)))
-        self.assertTrue(run_success)
-        self.assertFalse(bug_found)
+    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                    'is_reproducible',
+                                    side_effect=[True, True]):
+      run_success, bug_found = cifuzz.run_fuzzers(100, TEST_FILES_PATH,
+                                                  EXAMPLE_PROJECT)
+      build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
+      self.assertTrue(os.path.exists(build_dir))
+      self.assertNotEqual(0, len(os.listdir(build_dir)))
+      self.assertTrue(run_success)
+      self.assertFalse(bug_found)
 
   def test_invalid_build(self):
     """Test run_fuzzers with an invalid build."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = cifuzz.run_fuzzers(5, tmp_dir, EXAMPLE_PROJECT)
+      run_success, bug_found = cifuzz.run_fuzzers(100, tmp_dir, EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -182,7 +183,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_out_dir(self):
     """Tests run_fuzzers with an invalid out directory."""
-    run_success, bug_found = cifuzz.run_fuzzers(5, 'not/a/valid/path',
+    run_success, bug_found = cifuzz.run_fuzzers(100, 'not/a/valid/path',
                                                 EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
@@ -193,10 +194,9 @@ class ParseOutputUnitTest(unittest.TestCase):
 
   def test_parse_valid_output(self):
     """Checks that the parse fuzzer output can correctly parse output."""
-    test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'test_files')
-    test_output_path = os.path.join(test_case_path, 'example_fuzzer_output.txt')
-    test_summary_path = os.path.join(test_case_path, 'bug_summary_example.txt')
+    test_output_path = os.path.join(TEST_FILES_PATH,
+                                    'example_fuzzer_output.txt')
+    test_summary_path = os.path.join(TEST_FILES_PATH, 'bug_summary_example.txt')
     with tempfile.TemporaryDirectory() as tmp_dir:
       with open(test_output_path, 'r') as test_fuzz_output:
         cifuzz.parse_fuzzer_output(test_fuzz_output.read(), tmp_dir)

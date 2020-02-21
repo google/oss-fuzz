@@ -10,12 +10,15 @@ before_install:
 install:
   - pip install -r infra/travis/requirements.txt
 
+
 matrix:
   include:
     - name: "presubmit"
       install:
         - pip install -r infra/dev-requirements.txt
       script: ./infra/presubmit.py
+    - name: "tests"
+      script: sudo ./infra/presubmit.py test
     - name: "libfuzzer address x86_64"
       env:
         - TRAVIS_ENGINE=libfuzzer

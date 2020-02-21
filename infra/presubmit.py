@@ -20,6 +20,7 @@ import argparse
 import os
 import subprocess
 import sys
+import unittest
 import yaml
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -320,12 +321,25 @@ def get_changed_files():
   ]
 
 
+def run_tests():
+  """Run all unit tests in directories that are different from HEAD."""
+  changed_dirs = set()
+  for file in get_changed_files():
+    changed_dirs.add(os.path.dirname(file))
+  suite_list = []
+  for change_dir in changed_dirs:
+    suite_list.append(unittest.TestLoader().discover(change_dir,
+                                                     pattern='*_test.py'))
+  full_suite = unittest.TestSuite(suite_list)
+  unittest.TextTestRunner().run(full_suite)
+
+
 def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
   parser.add_argument('command',
-                      choices=['format', 'lint', 'license'],
+                      choices=['format', 'lint', 'license', 'test'],
                       nargs='?')
   args = parser.parse_args()
 
@@ -346,8 +360,12 @@ def main():
     success = check_license(changed_files)
     return bool_to_returncode(success)
 
-  # Otherwise, do all of them.
+  if args.command == 'test':
+    return run_tests()
+
+  # Do all the checks (but no tests).
   success = do_checks(changed_files)
+
   return bool_to_returncode(success)
 
 

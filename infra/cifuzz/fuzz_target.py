@@ -113,7 +113,7 @@ class FuzzTarget:
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)
     if not test_case:
-      logging.error('No test case found in stack trace. %s.', sys.stderr)
+      logging.error('No test case found in stack trace: %s.', err_str)
       return None, None
     if self.check_reproducibility_and_regression(test_case):
       return test_case, err_str

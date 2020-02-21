@@ -29,6 +29,7 @@ import test_repos
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
+@unittest.skip('Test is too long to be run with presubmit.')
 class BisectIntegrationTests(unittest.TestCase):
   """Class to test the functionality of bisection method."""
 
