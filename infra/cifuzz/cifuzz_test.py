@@ -36,7 +36,7 @@ EXAMPLE_PROJECT = 'example'
 TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'test_files')
 
-# An Example fuzzer that trips an error.
+# An example fuzzer that triggers an error.
 EXAMPLE_FUZZER = 'do_stuff_fuzzer'
 
 
@@ -127,15 +127,15 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     out_dir = os.path.join(TEST_FILES_PATH, 'out')
     for out_file in os.listdir(out_dir):
       out_path = os.path.join(out_dir, out_file)
-      if out_file != EXAMPLE_FUZZER:
-        if os.path.isdir(out_path):
-          shutil.rmtree(out_path)
-        else:
-          os.remove(out_path)
+      if out_file == EXAMPLE_FUZZER:
+        continue
+      if os.path.isdir(out_path):
+        shutil.rmtree(out_path)
+      else:
+        os.remove(out_path)
 
   def test_new_bug_found(self):
     """Test run_fuzzers with a valid build."""
-
     # Setting the first return value to True, then the second to False to
     # emulate a bug existing in the current PR but not on the downloaded
     # OSS-Fuzz build.

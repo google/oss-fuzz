@@ -363,7 +363,7 @@ def main():
   if args.command == 'test':
     return run_tests()
 
-  # Otherwise, do all of them.
+  # Do all the checks (but no tests).
   success = do_checks(changed_files)
 
   return bool_to_returncode(success)
