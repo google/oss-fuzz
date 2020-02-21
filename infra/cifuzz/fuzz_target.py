@@ -27,7 +27,7 @@ import zipfile
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
-# TODO: Turn default logging to WARNING when CIFuzz is stable
+# TODO: Turn default logging to WARNING when CIFuzz is stable.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -38,7 +38,7 @@ LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 GCS_BASE_URL = 'https://storage.googleapis.com/'
 
 # Location of cluster fuzz builds on GCS.
-CLUSTER_FUZZ_BUILDS = 'clusterfuzz-builds'
+CLUSTERFUZZ_BUILDS = 'clusterfuzz-builds'
 
 # The get request for the latest version of a project's build.
 VERSION_STRING = '{project_name}-{sanitizer}-latest.version'
@@ -46,7 +46,7 @@ VERSION_STRING = '{project_name}-{sanitizer}-latest.version'
 # The name to store the latest OSS-Fuzz build at.
 BUILD_ARCHIVE_NAME = 'oss_fuzz_latest.zip'
 
-# The name of the zip file to download for geting the corpus.
+# Zip file name containing the corpus.
 CORPUS_ZIP_NAME = 'public.zip'
 
 # The sanitizer build to download.
@@ -63,7 +63,7 @@ class FuzzTarget:
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
     target_path: The location of the fuzz target binary.
-    out_dir: The location of where the output from crashes should be stored.
+    out_dir: The location of where output artifacts are stored.
     project_name: The name of the relevant OSS-Fuzz project.
   """
 
@@ -108,6 +108,8 @@ class FuzzTarget:
     ]
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
         fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
+
+    # If corpus can be downloaded use it for fuzzing.
     latest_corpus_path = self.download_latest_corpus()
     if latest_corpus_path:
       run_fuzzer_command = run_fuzzer_command + ' ' + latest_corpus_path
@@ -208,7 +210,7 @@ class FuzzTarget:
     return None
 
   def get_lastest_build_version(self):
-    """Gets the latest OSS-Fuzz build version for a projects fuzzers.
+    """Gets the latest OSS-Fuzz build version for a projects' fuzzers.
 
     Returns:
       A string with the latest build version or None.
@@ -218,15 +220,15 @@ class FuzzTarget:
 
     version = VERSION_STRING.format(project_name=self.project_name,
                                     sanitizer=SANITIZER)
-    version_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS, self.project_name,
+    version_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS, self.project_name,
                            version)
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
-      logging.error('Error getting the lastest build version for %s.',
-                    self.project_name)
+      logging.error('Error getting latest build version for %s with url %s.',
+                    self.project_name, version_url)
       return None
-    return response.read().decode('UTF-8')
+    return response.read().decode()
 
   def download_oss_fuzz_build(self):
     """Downloads the latest OSS-Fuzz build from GCS.
@@ -248,7 +250,7 @@ class FuzzTarget:
     if not latest_build_str:
       return None
 
-    oss_fuzz_build_url = url_join(GCS_BASE_URL, CLUSTER_FUZZ_BUILDS,
+    oss_fuzz_build_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
                                   self.project_name, latest_build_str)
     return download_zip(oss_fuzz_build_url, build_dir)
 
@@ -278,11 +280,11 @@ def download_zip(http_url, out_dir):
   """Downloads a zip file from an http url.
 
   Args:
-    http_url: A url to the zip file.
-    out_dir: The path where the zip file should be extracted.
+    http_url: A url to the zip file to be downloaded.
+    out_dir: The path where the zip file should be extracted to.
 
   Returns:
-    A path to the downloaded file or None on failure.
+    A path to the extracted file or None on failure.
   """
   if not os.path.exists(out_dir):
     logging.error('Out directory %s does not exist.', out_dir)

@@ -27,8 +27,11 @@ import fuzz_target
 import utils
 
 # NOTE: This integration test relies on
-# https://github.com/google/oss-fuzz/tree/master/projects/example project
+# https://github.com/google/oss-fuzz/tree/master/projects/example project.
 EXAMPLE_PROJECT = 'example'
+
+# An example fuzzer that triggers an error.
+EXAMPLE_FUZZER = 'do_stuff_fuzzer'
 
 
 class IsReproducibleUnitTest(unittest.TestCase):
@@ -95,35 +98,31 @@ class GetTestCaseUnitTest(unittest.TestCase):
 
 
 class DownloadLatestCorpusUnitTest(unittest.TestCase):
-  """Test parse_fuzzer_output function in the cifuzz module.
-
-  NOTE this test relies on arduinojson having the msgpack_fuzzer.
-  """
+  """Test parse_fuzzer_output function in the cifuzz module."""
 
   def test_download_valid_projects_corpus(self):
     """Tests that a vaild fuzz target will return a corpus directory."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
-      test_target.project_name = 'example'
-      test_target.target_name = 'do_stuff_fuzzer'
+      test_target.project_name = EXAMPLE_PROJECT
+      test_target.target_name = EXAMPLE_FUZZER
       test_target.out_dir = tmp_dir
       with unittest.mock.patch.object(fuzz_target,
                                       'download_zip',
                                       return_value=tmp_dir) as mock:
         test_target.download_latest_corpus()
         (url, out_dir), _ = mock.call_args
-        print(url)
         self.assertEqual(
             url,
             'https://storage.googleapis.com/example-backup.' \
             'clusterfuzz-external.appspot.com/corpus/libFuzzer/' \
             'example_do_stuff_fuzzer/public.zip'
         )
-        self.assertEqual(
-            out_dir, os.path.join(tmp_dir, 'backup_corpus', 'do_stuff_fuzzer'))
+        self.assertEqual(out_dir,
+                         os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_FUZZER))
 
   def test_download_invalid_projects_corpus(self):
-    """Tests that a invaild fuzz target will not return a corpus directory."""
+    """Tests that a invaild fuzz target will not return None."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('testfuzzer', 3, tmp_dir)
       corpus_path = test_target.download_latest_corpus()
@@ -139,7 +138,7 @@ class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
 
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
-    self.test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+    self.test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 100,
                                               '/example/outdir', 'example')
 
   def test_with_valid_crash(self):
