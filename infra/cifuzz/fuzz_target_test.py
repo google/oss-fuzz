@@ -18,12 +18,14 @@ import sys
 import tempfile
 import unittest
 import unittest.mock
+import urllib
 
 # Pylint has issue importing utils which is why error suppression is required.
 # pylint: disable=wrong-import-position
 # pylint: disable=import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fuzz_target
+
 import utils
 
 # NOTE: This integration test relies on
@@ -108,7 +110,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
       test_target.target_name = EXAMPLE_FUZZER
       test_target.out_dir = tmp_dir
       with unittest.mock.patch.object(fuzz_target,
-                                      'download_zip',
+                                      'download_and_unpack_zip',
                                       return_value=tmp_dir) as mock:
         test_target.download_latest_corpus()
         (url, out_dir), _ = mock.call_args
@@ -239,6 +241,20 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
     test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                          'not/a/dir', 'example')
     self.assertIsNone(test_target.download_oss_fuzz_build())
+
+
+class DownloadAndUnpackZipUnitTests(unittest.TestCase):
+  """Test the download and unpack functionality in the fuzz_target module."""
+
+  def test_bad_zip_download(self):
+    """Tests download_and_unpack_zip returns none when a bad zip is passed."""
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        urllib.request, 'urlretrieve', return_value=True):
+      file_handle = open(os.path.join(tmp_dir, 'url_tmp.zip'), 'w')
+      file_handle.write('Test file.')
+      file_handle.close()
+      self.assertIsNone(
+          fuzz_target.download_and_unpack_zip('/not/a/real/url', tmp_dir))
 
 
 if __name__ == '__main__':

@@ -252,7 +252,7 @@ class FuzzTarget:
 
     oss_fuzz_build_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
                                   self.project_name, latest_build_str)
-    return download_zip(oss_fuzz_build_url, build_dir)
+    return download_and_unpack_zip(oss_fuzz_build_url, build_dir)
 
   def download_latest_corpus(self):
     """Downloads the latest OSS-Fuzz corpus for the target from google cloud.
@@ -260,27 +260,31 @@ class FuzzTarget:
     Returns:
       The local path to to corpus or None if download failed.
     """
+    if not self.project_name:
+      return None
     if not os.path.exists(self.out_dir):
       logging.error('Out directory %s does not exist.', self.out_dir)
-      return None
-    if not self.project_name:
       return None
 
     corpus_dir = os.path.join(self.out_dir, 'backup_corpus', self.target_name)
     os.makedirs(corpus_dir, exist_ok=True)
+    project_qualified_fuzz_target_name = self.target_name
+    qualified_name_prefix = '%s_' % self.project_name
+    if not self.target_name.startswith(qualified_name_prefix):
+      project_qualified_fuzz_target_name = qualified_name_prefix + self.target_name
     corpus_url = url_join(
         GCS_BASE_URL,
         '{0}-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'.format(
-            self.project_name),
-        '{0}_{1}'.format(self.project_name, self.target_name), CORPUS_ZIP_NAME)
-    return download_zip(corpus_url, corpus_dir)
+            self.project_name), project_qualified_fuzz_target_name,
+        CORPUS_ZIP_NAME)
+    return download_and_unpack_zip(corpus_url, corpus_dir)
 
 
-def download_zip(http_url, out_dir):
-  """Downloads a zip file from an http url.
+def download_and_unpack_zip(http_url, out_dir):
+  """Downloads and unpacks a zip file from an http url.
 
   Args:
-    http_url: A url to the zip file to be downloaded.
+    http_url: A url to the zip file to be downloaded and unpacked.
     out_dir: The path where the zip file should be extracted to.
 
   Returns:
@@ -289,14 +293,24 @@ def download_zip(http_url, out_dir):
   if not os.path.exists(out_dir):
     logging.error('Out directory %s does not exist.', out_dir)
     return None
-  tmp_file = os.path.join(out_dir, 'tmp.zip')
+
+  # Added for the event that download_and_unpack_zip is run in parallel.
+  end_of_url = http_url.rsplit('/', 1)[-1]
+  tmp_file = os.path.join(out_dir, end_of_url + '_tmp.zip')
+
   try:
     urllib.request.urlretrieve(http_url, tmp_file)
   except urllib.error.HTTPError:
     logging.error('Unable to download build from: %s.', http_url)
     return None
-  with zipfile.ZipFile(tmp_file, 'r') as zip_file:
-    zip_file.extractall(out_dir)
+
+  try:
+    with zipfile.ZipFile(tmp_file, 'r') as zip_file:
+      zip_file.extractall(out_dir)
+  except zipfile.BadZipFile:
+    logging.error('Error unpacking zip from %s. Bad Zipfile.', http_url)
+    return None
+
   os.remove(tmp_file)
   return out_dir
 
