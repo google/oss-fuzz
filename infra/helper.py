@@ -542,29 +542,39 @@ def build_fuzzers(args):
 
 def check_build(args):
   """Checks that fuzzers in the container execute without errors."""
-  if not check_project_exists(args.project_name):
+  return check_build_impl(args.project_name, args.fuzzer_name, args.engine,
+                          args.sanitizer, args.architecture, args.e)
+
+
+def check_build_impl(project_name,
+                     fuzzer_name=None,
+                     engine='libfuzzer',
+                     sanitizer='address',
+                     architecture='x86_64',
+                     e=None):
+  """Checks that fuzzers in the container execute without errors."""
+  if not check_project_exists(project_name):
     return 1
 
-  if (args.fuzzer_name and
-      not _check_fuzzer_exists(args.project_name, args.fuzzer_name)):
+  if (fuzzer_name and not _check_fuzzer_exists(project_name, fuzzer_name)):
     return 1
 
   env = [
-      'FUZZING_ENGINE=' + args.engine,
-      'SANITIZER=' + args.sanitizer,
-      'ARCHITECTURE=' + args.architecture,
+      'FUZZING_ENGINE=' + engine,
+      'SANITIZER=' + sanitizer,
+      'ARCHITECTURE=' + architecture,
   ]
-  if args.e:
-    env += args.e
+  if e:
+    env += e
 
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % _get_output_dir(args.project_name), '-t',
+      '%s:/out' % _get_output_dir(project_name), '-t',
       'gcr.io/oss-fuzz-base/base-runner'
   ]
 
-  if args.fuzzer_name:
-    run_args += ['test_one', os.path.join('/out', args.fuzzer_name)]
+  if fuzzer_name:
+    run_args += ['test_one', os.path.join('/out', fuzzer_name)]
   else:
     run_args.append('test_all')
 
@@ -641,10 +651,9 @@ def download_corpora(args):
     with open(os.devnull, 'w') as stdout:
       subprocess.check_call(['gsutil', '--version'], stdout=stdout)
   except OSError:
-    print(
-        'ERROR: gsutil not found. Please install it from '
-        'https://cloud.google.com/storage/docs/gsutil_install',
-        file=sys.stderr)
+    print('ERROR: gsutil not found. Please install it from '
+          'https://cloud.google.com/storage/docs/gsutil_install',
+          file=sys.stderr)
     return False
 
   if args.fuzz_target:
@@ -675,10 +684,9 @@ def download_corpora(args):
 def coverage(args):
   """Generate code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
-    print(
-        'ERROR: --corpus-dir requires specifying a particular fuzz target '
-        'using --fuzz-target',
-        file=sys.stderr)
+    print('ERROR: --corpus-dir requires specifying a particular fuzz target '
+          'using --fuzz-target',
+          file=sys.stderr)
     return 1
 
   if not check_project_exists(args.project_name):
