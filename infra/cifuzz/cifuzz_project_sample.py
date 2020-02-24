@@ -27,9 +27,15 @@ OSS_FUZZ_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 def main():
   projects = os.listdir(os.path.join(OSS_FUZZ_ROOT, 'projects'))
 
+  field_names = ['project name', 'status', 'build time', '# fuzzers']
+  if True:
+    with open('cifuzz_sample.csv', 'w', newline='') as csvfile:
+      writer = csv.DictWriter(csvfile, fieldnames = field_names)
+      writer.writeheader()
+
+
   with open('cifuzz_sample.csv', 'r', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
-    field_names = ['project name', 'status', 'build time', '# fuzzers']
     finished_projects = []
     for row in reader:
       finished_projects.append(row[0])
@@ -44,6 +50,30 @@ def main():
         with open('cifuzz_sample.csv', 'a', newline='') as csvfile:
           writer = csv.DictWriter(csvfile, fieldnames=field_names)
 
+          # Check if project is CIFuzz integrated.
+          proj_docker_file = os.path.join(OSS_FUZZ_ROOT, 'projects', project, 'Dockerfile')
+          if not os.path.exists(proj_docker_file):
+            writer.writerow({'project name': project, 'status': 'No Dockerfile found', 'build time': 'N/A', '# fuzzers': 'N/A'})
+            continue
+
+          # Check if main repo can be detected.
+          with open(proj_docker_file) as f:
+            one_detected = False
+            cont = False
+            for text in f.readlines():
+              if project + ' ' in text.lower() or project + '.git' in text.lower():
+                one_detected = True
+                if 'github' not in text:
+                  writer.writerow({'project name': project, 'status': 'Not a github repo', 'build time': 'N/A', '# fuzzers': 'N/A'})
+                  cont = True
+                break
+            if not one_detected:
+              writer.writerow({'project name': project, 'status': 'Main repo could not be detected', 'build time': 'N/A', '# fuzzers': 'N/A'})
+              continue
+            if cont:
+              continue
+
+          # Check project building and running.
           start_time = time.time()
           out_dir = os.path.join(tmp_dir, 'out')
           build_result = cifuzz.build_fuzzers(project, project, tmp_dir)
