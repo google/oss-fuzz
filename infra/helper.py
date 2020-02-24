@@ -672,8 +672,8 @@ def download_corpora(args):
       return True
     except Exception as error:  # pylint:disable=broad-except
       print('ERROR: corpus download for %s failed: %s' %
-          (fuzz_target, str(error)),
-          file=sys.stderr)
+            (fuzz_target, str(error)),
+            file=sys.stderr)
       return False
 
   print('Downloading corpora for %s project to %s' %
