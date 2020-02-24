@@ -271,7 +271,8 @@ class FuzzTarget:
     project_qualified_fuzz_target_name = self.target_name
     qualified_name_prefix = '%s_' % self.project_name
     if not self.target_name.startswith(qualified_name_prefix):
-      project_qualified_fuzz_target_name = qualified_name_prefix + self.target_name
+      project_qualified_fuzz_target_name = qualified_name_prefix + \
+      self.target_name
     corpus_url = url_join(
         GCS_BASE_URL,
         '{0}-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'.format(
@@ -303,7 +304,6 @@ def download_and_unpack_zip(http_url, out_dir):
     urllib.request.urlretrieve(http_url, tmp_file)
   except urllib.error.HTTPError:
     logging.error('Unable to download build from: %s.', http_url)
-    os.remove(tmp_file)
     return None
 
   try:
