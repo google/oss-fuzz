@@ -1,0 +1,11 @@
+homepage: "https://llvm.org/docs/Proposals/LLVMLibC.html"
+primary_contact: "paulatoth@google.com"
+auto_ccs:
+  - "sivachandra@google.com"
+
+sanitizers:
+  - address
+  - memory
+
+# Bug reports are public by default:
+view_restrictions: none
