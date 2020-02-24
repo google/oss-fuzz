@@ -294,7 +294,8 @@ def download_and_unpack_zip(http_url, out_dir):
     logging.error('Out directory %s does not exist.', out_dir)
     return None
 
-  # Added for the event that download_and_unpack_zip is run in parallel.
+  # Gives the temporary zip file a unique identifier in the case that
+  # that download_and_unpack_zip is done in parallel.
   end_of_url = http_url.rsplit('/', 1)[-1]
   tmp_file = os.path.join(out_dir, end_of_url + '_tmp.zip')
 
@@ -302,6 +303,7 @@ def download_and_unpack_zip(http_url, out_dir):
     urllib.request.urlretrieve(http_url, tmp_file)
   except urllib.error.HTTPError:
     logging.error('Unable to download build from: %s.', http_url)
+    os.remove(tmp_file)
     return None
 
   try:
@@ -309,6 +311,7 @@ def download_and_unpack_zip(http_url, out_dir):
       zip_file.extractall(out_dir)
   except zipfile.BadZipFile:
     logging.error('Error unpacking zip from %s. Bad Zipfile.', http_url)
+    os.remove(tmp_file)
     return None
 
   os.remove(tmp_file)
