@@ -552,7 +552,7 @@ def check_build_impl(project_name,
                      engine='libfuzzer',
                      sanitizer='address',
                      architecture='x86_64',
-                     env_vars=None):
+                     env_vars=None, out_dir=None):
   """Checks that fuzzers in the container execute without errors."""
   if not check_project_exists(project_name):
     return 1
@@ -568,9 +568,11 @@ def check_build_impl(project_name,
   if env_vars:
     env += env_vars
 
+  if not out_dir:
+    out_dir = _get_output_dir(project_name)
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % _get_output_dir(project_name), '-t',
+      '%s:/out' % out_dir, '-t',
       'gcr.io/oss-fuzz-base/base-runner'
   ]
 
