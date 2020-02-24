@@ -545,7 +545,6 @@ def check_build(args):
   return check_build_impl(args.project_name, args.fuzzer_name, args.engine,
                           args.sanitizer, args.architecture, args.e)
 
-
 # pylint: disable=too-many-arguments
 def check_build_impl(project_name,
                      fuzzer_name=None,
@@ -652,9 +651,10 @@ def download_corpora(args):
     with open(os.devnull, 'w') as stdout:
       subprocess.check_call(['gsutil', '--version'], stdout=stdout)
   except OSError:
-    print('ERROR: gsutil not found. Please install it from '
-          'https://cloud.google.com/storage/docs/gsutil_install',
-          file=sys.stderr)
+    print(
+        'ERROR: gsutil not found. Please install it from '
+        'https://cloud.google.com/storage/docs/gsutil_install',
+        file=sys.stderr)
     return False
 
   if args.fuzz_target:
@@ -672,8 +672,8 @@ def download_corpora(args):
       return True
     except Exception as error:  # pylint:disable=broad-except
       print('ERROR: corpus download for %s failed: %s' %
-            (fuzz_target, str(error)),
-            file=sys.stderr)
+          (fuzz_target, str(error)),
+          file=sys.stderr)
       return False
 
   print('Downloading corpora for %s project to %s' %
@@ -685,9 +685,10 @@ def download_corpora(args):
 def coverage(args):
   """Generate code coverage using clang source based code coverage."""
   if args.corpus_dir and not args.fuzz_target:
-    print('ERROR: --corpus-dir requires specifying a particular fuzz target '
-          'using --fuzz-target',
-          file=sys.stderr)
+    print(
+        'ERROR: --corpus-dir requires specifying a particular fuzz target '
+        'using --fuzz-target',
+        file=sys.stderr)
     return 1
 
   if not check_project_exists(args.project_name):
