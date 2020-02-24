@@ -18,6 +18,7 @@ import posixpath
 import re
 import subprocess
 import sys
+import tempfile
 import urllib.error
 import urllib.request
 import zipfile
@@ -297,24 +298,19 @@ def download_and_unpack_zip(http_url, out_dir):
 
   # Gives the temporary zip file a unique identifier in the case that
   # that download_and_unpack_zip is done in parallel.
-  end_of_url = http_url.rsplit('/', 1)[-1]
-  tmp_file = os.path.join(out_dir, end_of_url + '_tmp.zip')
+  with tempfile.NamedTemporaryFile(suffix='.zip') as tmp_file:
+    try:
+      urllib.request.urlretrieve(http_url, tmp_file.name)
+    except urllib.error.HTTPError:
+      logging.error('Unable to download build from: %s.', http_url)
+      return None
 
-  try:
-    urllib.request.urlretrieve(http_url, tmp_file)
-  except urllib.error.HTTPError:
-    logging.error('Unable to download build from: %s.', http_url)
-    return None
-
-  try:
-    with zipfile.ZipFile(tmp_file, 'r') as zip_file:
-      zip_file.extractall(out_dir)
-  except zipfile.BadZipFile:
-    logging.error('Error unpacking zip from %s. Bad Zipfile.', http_url)
-    os.remove(tmp_file)
-    return None
-
-  os.remove(tmp_file)
+    try:
+      with zipfile.ZipFile(tmp_file.name, 'r') as zip_file:
+        zip_file.extractall(out_dir)
+    except zipfile.BadZipFile:
+      logging.error('Error unpacking zip from %s. Bad Zipfile.', http_url)
+      return None
   return out_dir
 
 
