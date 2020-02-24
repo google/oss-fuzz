@@ -546,12 +546,13 @@ def check_build(args):
                           args.sanitizer, args.architecture, args.e)
 
 
+# pylint: disable=too-many-arguments
 def check_build_impl(project_name,
                      fuzzer_name=None,
                      engine='libfuzzer',
                      sanitizer='address',
                      architecture='x86_64',
-                     e=None):
+                     env_vars=None):
   """Checks that fuzzers in the container execute without errors."""
   if not check_project_exists(project_name):
     return 1
@@ -564,8 +565,8 @@ def check_build_impl(project_name,
       'SANITIZER=' + sanitizer,
       'ARCHITECTURE=' + architecture,
   ]
-  if e:
-    env += e
+  if env_vars:
+    env += env_vars
 
   run_args = _env_to_docker_args(env) + [
       '-v',
@@ -651,10 +652,9 @@ def download_corpora(args):
     with open(os.devnull, 'w') as stdout:
       subprocess.check_call(['gsutil', '--version'], stdout=stdout)
   except OSError:
-    print(
-        'ERROR: gsutil not found. Please install it from '
-        'https://cloud.google.com/storage/docs/gsutil_install',
-        file=sys.stderr)
+    print('ERROR: gsutil not found. Please install it from '
+          'https://cloud.google.com/storage/docs/gsutil_install',
+          file=sys.stderr)
     return False
 
   if args.fuzz_target:
@@ -671,10 +671,9 @@ def download_corpora(args):
       _get_latest_corpus(args.project_name, fuzz_target, corpus_dir)
       return True
     except Exception as error:  # pylint:disable=broad-except
-      print(
-          'ERROR: corpus download for %s failed: %s' %
-          (fuzz_target, str(error)),
-          file=sys.stderr)
+      print('ERROR: corpus download for %s failed: %s' %
+            (fuzz_target, str(error)),
+            file=sys.stderr)
       return False
 
   print('Downloading corpora for %s project to %s' %
