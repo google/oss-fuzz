@@ -7,5 +7,9 @@ sanitizers:
   - address
   - memory
 
+# The LLVM build currently supports only libFuzzer
+fuzzing_engines:
+  - libfuzzer
+
 # Bug reports are public by default:
 view_restrictions: none
