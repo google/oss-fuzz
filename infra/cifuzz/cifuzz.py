@@ -151,7 +151,7 @@ def build_fuzzers(project_name,
   if helper.docker_run(command):
     logging.error('Building fuzzers failed.')
     return False
-  return not helper.check_build_impl(project_name, None)
+  return True
 
 
 def run_fuzzers(fuzz_seconds, workspace, project_name):
