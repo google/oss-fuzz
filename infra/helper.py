@@ -545,6 +545,7 @@ def check_build(args):
   return check_build_impl(args.project_name, args.fuzzer_name, args.engine,
                           args.sanitizer, args.architecture, args.e)
 
+
 # pylint: disable=too-many-arguments
 def check_build_impl(project_name,
                      fuzzer_name=None,
