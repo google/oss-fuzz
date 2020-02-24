@@ -61,7 +61,7 @@ def main():
             one_detected = False
             cont = False
             for text in f.readlines():
-              if project + ' ' in text.lower() or project + '.git' in text.lower() or project + '\n' in test.lower():
+              if project + ' ' in text.lower() or project + '.git' in text.lower() or project + '\n' in text.lower():
                 one_detected = True
                 if 'github' not in text:
                   writer.writerow({'project name': project, 'status': 'Not a github repo', 'build time': 'N/A', '# fuzzers': 'N/A'})
