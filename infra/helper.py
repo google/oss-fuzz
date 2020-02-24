@@ -651,9 +651,10 @@ def download_corpora(args):
     with open(os.devnull, 'w') as stdout:
       subprocess.check_call(['gsutil', '--version'], stdout=stdout)
   except OSError:
-    print('ERROR: gsutil not found. Please install it from '
-          'https://cloud.google.com/storage/docs/gsutil_install',
-          file=sys.stderr)
+    print(
+        'ERROR: gsutil not found. Please install it from '
+        'https://cloud.google.com/storage/docs/gsutil_install',
+        file=sys.stderr)
     return False
 
   if args.fuzz_target:
@@ -670,9 +671,10 @@ def download_corpora(args):
       _get_latest_corpus(args.project_name, fuzz_target, corpus_dir)
       return True
     except Exception as error:  # pylint:disable=broad-except
-      print('ERROR: corpus download for %s failed: %s' %
-            (fuzz_target, str(error)),
-            file=sys.stderr)
+      print(
+          'ERROR: corpus download for %s failed: %s' %
+          (fuzz_target, str(error)),
+          file=sys.stderr)
       return False
 
   print('Downloading corpora for %s project to %s' %
