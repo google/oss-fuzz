@@ -79,9 +79,9 @@ def main():
                   oss_fuzz_project_name, pr_ref)
     return error_code
   out_dir = os.path.join(workspace, 'out')
-  return cifuzz.check_fuzzer_build(out_dir)
-
-
+  if cifuzz.check_fuzzer_build(out_dir):
+    return 0
+  return 1
 
 
 if __name__ == '__main__':

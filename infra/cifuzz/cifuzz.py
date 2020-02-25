@@ -130,7 +130,8 @@ def build_fuzzers(project_name,
   # Build Fuzzers using docker run.
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
-      'SANITIZER=' + DEFAULT_SANITIZER, '-e', 'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
+      'SANITIZER=' + DEFAULT_SANITIZER, '-e',
+      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
   ]
   container = utils.get_container_name()
   if container:
@@ -223,17 +224,18 @@ def check_fuzzer_build(out_dir):
   if not os.listdir(out_dir):
     logging.error('No fuzzers found in out directory: %s.', out_dir)
     return False
+
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
-      'SANITIZER=' + DEFAULT_SANITIZER, '-e', 'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
+      'SANITIZER=' + DEFAULT_SANITIZER, '-e',
+      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
   ]
   container = utils.get_container_name()
   if container:
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
   else:
-    command +=   ['-v', '%s:/out' % out_dir]
-
-  command.append('test_all')
+    command += ['-v', '%s:/out' % out_dir]
+  command.extend(['-t', 'gcr.io/oss-fuzz-base/base-runner', 'test_all'])
   exit_code = helper.docker_run(command)
   if exit_code:
     logging.error('Check fuzzer build failed.')
