@@ -5,3 +5,7 @@ auto_ccs:
 architectures:
   - x86_64
   - i386
+sanitizers:
+  - address
+  - undefined
+  - memory
