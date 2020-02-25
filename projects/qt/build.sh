@@ -63,6 +63,7 @@ build_fuzzer() {
     fi
     if [ "$nameScheme" == "old" ]; then
         targetName="$exeName"
+    fi
 
     mv $exeName $OUT/$targetName
     if [ -n "$format" ]; then
