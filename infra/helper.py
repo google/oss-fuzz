@@ -542,42 +542,29 @@ def build_fuzzers(args):
 
 def check_build(args):
   """Checks that fuzzers in the container execute without errors."""
-  return check_build_impl(args.project_name, args.fuzzer_name, args.engine,
-                          args.sanitizer, args.architecture, args.e)
-
-
-# pylint: disable=too-many-arguments
-def check_build_impl(project_name,
-                     fuzzer_name=None,
-                     engine='libfuzzer',
-                     sanitizer='address',
-                     architecture='x86_64',
-                     env_vars=None, out_dir=None):
-  """Checks that fuzzers in the container execute without errors."""
-  if not check_project_exists(project_name):
+  if not check_project_exists(args.project_name):
     return 1
 
-  if (fuzzer_name and not _check_fuzzer_exists(project_name, fuzzer_name)):
+  if (args.fuzzer_name and
+      not _check_fuzzer_exists(args.project_name, args.fuzzer_name)):
     return 1
 
   env = [
-      'FUZZING_ENGINE=' + engine,
-      'SANITIZER=' + sanitizer,
-      'ARCHITECTURE=' + architecture,
+      'FUZZING_ENGINE=' + args.engine,
+      'SANITIZER=' + args.sanitizer,
+      'ARCHITECTURE=' + args.architecture,
   ]
-  if env_vars:
-    env += env_vars
+  if args.e:
+    env += args.e
 
-  if not out_dir:
-    out_dir = _get_output_dir(project_name)
   run_args = _env_to_docker_args(env) + [
       '-v',
-      '%s:/out' % out_dir, '-t',
+      '%s:/out' % _get_output_dir(args.project_name), '-t',
       'gcr.io/oss-fuzz-base/base-runner'
   ]
 
-  if fuzzer_name:
-    run_args += ['test_one', os.path.join('/out', fuzzer_name)]
+  if args.fuzzer_name:
+    run_args += ['test_one', os.path.join('/out', args.fuzzer_name)]
   else:
     run_args.append('test_all')
 

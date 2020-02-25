@@ -21,9 +21,6 @@ import sys
 sys.path.append(os.path.join(os.environ['OSS_FUZZ_ROOT'], 'infra', 'cifuzz'))
 import cifuzz
 
-sys.path.append(os.path.join(os.environ['OSS_FUZZ_ROOT'], 'infra'))
-import helper
-
 # TODO: Turn default logging to INFO when CIFuzz is stable
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -81,7 +78,10 @@ def main():
     logging.error('Error building fuzzers for project %s with pull request %s.',
                   oss_fuzz_project_name, pr_ref)
     return error_code
-  return not helper.check_build_impl(project_name, None)
+  out_dir = os.path.join(workspace, 'out')
+  return cifuzz.check_fuzzer_build(out_dir)
+
+
 
 
 if __name__ == '__main__':
