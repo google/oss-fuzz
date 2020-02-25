@@ -11,4 +11,5 @@ auto_ccs:
   - "yavlasov@google.com"
   - "asraa@google.com"
   - "avd@google.com"
+  - "skerner@google.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
