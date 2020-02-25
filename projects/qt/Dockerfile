@@ -19,7 +19,7 @@ MAINTAINER rlohningqt@gmail.com
 RUN apt-get update && apt-get install -y build-essential python libxcb-xinerama0-dev && apt-get install --no-install-recommends afl-doc
 RUN git clone --branch 5.15 --depth 1 git://code.qt.io/qt/qt5.git qt
 WORKDIR qt
-RUN git submodule update --init --depth 1 qtbase
+RUN git submodule update --init --depth --force 1 qtbase
 WORKDIR $SRC
 RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git
 COPY build.sh $SRC/
