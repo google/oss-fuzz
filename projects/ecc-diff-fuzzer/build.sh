@@ -105,6 +105,16 @@ make -j$(nproc)
 make install
 )
 
+#quickjs
+(
+cd quickjs
+make
+make install
+cp quickjs*.h /usr/local/include/
+cp *.a /usr/local/lib/
+ln -s /usr/bin/nodejs /usr/bin/node
+)
+
 #build fuzz target
 cd ecfuzzer
 if [ "$ARCHITECTURE" = 'i386' ]; then
@@ -122,8 +132,8 @@ cmake ..
 make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec
 
-#another target without cryptopp
+#another target without cryptopp neither javascript
 rm -Rf *
-cmake -DDISABLE_CRYPTOPP=ON ..
+cmake -DDISABLE_CRYPTOPP=ON -DDISABLE_JS=ON ..
 make -j$(nproc)
-cp ecfuzzer $OUT/fuzz_ec_nocryptopp
+cp ecfuzzer $OUT/fuzz_ec_noblocker
