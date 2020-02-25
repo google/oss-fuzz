@@ -141,25 +141,32 @@ class GitDiffUnitTests(unittest.TestCase):
   def test_diff_exists(self):
     """Tests that a real diff is returned when a valid repo manager exists."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with unittest.mock.patch.object(utils, 'execute', return_value=('test.py\ndiff.py',None,0)):
-        diff = self.repo_man.get_git_dif()
+      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      with unittest.mock.patch.object(utils,
+                                      'execute',
+                                      return_value=('test.py\ndiff.py', None,
+                                                    0)):
+        diff = repo_man.get_git_dif()
         self.assertCountEqual(diff, ['test.py', 'diff.py'])
 
   def test_diff_empty(self):
     """Tests that None is returned when there is no difference between repos."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with unittest.mock.patch.object(utils, 'execute', return_value=('',None,0)):
-        diff = self.repo_man.get_git_dif()
+      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      with unittest.mock.patch.object(utils,
+                                      'execute',
+                                      return_value=('', None, 0)):
+        diff = repo_man.get_git_dif()
         self.assertIsNone(diff)
 
   def test_error_on_command(self):
     """Tests that None is returned when the command errors out."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with unittest.mock.patch.object(utils, 'execute', return_value=('','Test error.',1)):
-        diff = self.repo_man.get_git_dif()
+      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      with unittest.mock.patch.object(utils,
+                                      'execute',
+                                      return_value=('', 'Test error.', 1)):
+        diff = repo_man.get_git_dif()
         self.assertIsNone(diff)
 
 
@@ -169,18 +176,17 @@ class GitDiffIntegrationTests(unittest.TestCase):
   def test_diff_exists(self):
     """Tests that a real diff is returned when a valid repo manager exists."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      self.repo_man.checkout_pr('refs/pull/3415/merge')
-      diff = self.repo_man.get_git_dif()
+      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      repo_man.checkout_pr('refs/pull/3415/merge')
+      diff = repo_man.get_git_dif()
       self.assertCountEqual(diff, ['README.md'])
 
   def test_diff_empty(self):
     """Tests that None is returned when there is no difference between repos."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      diff = self.repo_man.get_git_dif()
+      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      diff = repo_man.get_git_dif()
       self.assertIsNone(diff)
-
 
 
 if __name__ == '__main__':

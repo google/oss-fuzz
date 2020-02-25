@@ -101,7 +101,8 @@ class RepoManager:
       A list of changed file paths or None on Error.
     """
     self.fetch_unshallow()
-    out, err_msg, err_code = utils.execute(['git', 'diff', '--name-only', 'origin'], self.repo_dir)
+    out, err_msg, err_code = utils.execute(
+        ['git', 'diff', '--name-only', 'origin'], self.repo_dir)
     if err_code:
       logging.error('Git diff failed with error message %s.', err_msg)
       return None
