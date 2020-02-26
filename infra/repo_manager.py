@@ -109,8 +109,7 @@ class RepoManager:
     if not out:
       logging.info('No diff was found.')
       return None
-    file_diff = list(filter(None, out.split('\n')))
-    return file_diff
+    return [line for line in out.splitlines() if line]
 
   def get_current_commit(self):
     """Gets the current commit SHA of the repo.

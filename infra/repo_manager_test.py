@@ -15,7 +15,7 @@
 
 import os
 import unittest
-import unittest.mock
+from unittest import mock
 import tempfile
 
 import repo_manager
@@ -28,7 +28,7 @@ class TestRepoManager(unittest.TestCase):
   """Class to test the functionality of the RepoManager class."""
 
 
-class RepoManagerCloneUnitTests(unittest.TestCase):
+class RepoManagerCloneUnitTest(unittest.TestCase):
   """Class to test the functionality of clone of the RepoManager class."""
 
   def test_clone_valid_repo(self):
@@ -52,7 +52,7 @@ class RepoManagerCloneUnitTests(unittest.TestCase):
                                  tmp_dir)
 
 
-class RepoManagerCheckoutUnitTests(unittest.TestCase):
+class RepoManagerCheckoutUnitTest(unittest.TestCase):
   """Class to test the functionality of checkout of the RepoManager class."""
 
   def test_checkout_valid_commit(self):
@@ -76,7 +76,7 @@ class RepoManagerCheckoutUnitTests(unittest.TestCase):
         test_repo_manager.checkout_commit('not-a-valid-commit')
 
 
-class RepoManagerGetCommitListUnitTests(unittest.TestCase):
+class RepoManagerGetCommitListUnitTest(unittest.TestCase):
   """Class to test the functionality of get commit list in the
    RepoManager class."""
 
@@ -111,7 +111,7 @@ class RepoManagerGetCommitListUnitTests(unittest.TestCase):
         test_repo_manager.get_commit_list(new_commit, old_commit)
 
 
-class RepoManagerCheckoutPullRequestUnitTests(unittest.TestCase):
+class RepoManagerCheckoutPullRequestUnitTest(unittest.TestCase):
   """Class to test the functionality of checkout_pr of the RepoManager class."""
 
   def test_checkout_valid_pull_request(self):
@@ -135,17 +135,16 @@ class RepoManagerCheckoutPullRequestUnitTests(unittest.TestCase):
         test_repo_manager.checkout_pr('not/a/valid/pr')
 
 
-class GitDiffUnitTests(unittest.TestCase):
+class GitDiffUnitTest(unittest.TestCase):
   """Class testing functionality of get_git_diff in the repo_manager module."""
 
   def test_diff_exists(self):
     """Tests that a real diff is returned when a valid repo manager exists."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with unittest.mock.patch.object(utils,
-                                      'execute',
-                                      return_value=('test.py\ndiff.py', None,
-                                                    0)):
+      with mock.patch.object(utils,
+                             'execute',
+                             return_value=('test.py\ndiff.py', None, 0)):
         diff = repo_man.get_git_dif()
         self.assertCountEqual(diff, ['test.py', 'diff.py'])
 
@@ -153,9 +152,7 @@ class GitDiffUnitTests(unittest.TestCase):
     """Tests that None is returned when there is no difference between repos."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with unittest.mock.patch.object(utils,
-                                      'execute',
-                                      return_value=('', None, 0)):
+      with mock.patch.object(utils, 'execute', return_value=('', None, 0)):
         diff = repo_man.get_git_dif()
         self.assertIsNone(diff)
 
@@ -163,14 +160,14 @@ class GitDiffUnitTests(unittest.TestCase):
     """Tests that None is returned when the command errors out."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with unittest.mock.patch.object(utils,
-                                      'execute',
-                                      return_value=('', 'Test error.', 1)):
+      with mock.patch.object(utils,
+                             'execute',
+                             return_value=('', 'Test error.', 1)):
         diff = repo_man.get_git_dif()
         self.assertIsNone(diff)
 
 
-class GitDiffIntegrationTests(unittest.TestCase):
+class GitDiffIntegrationTest(unittest.TestCase):
   """Class testing functionality of get_git_diff in the repo_manager module."""
 
   def test_diff_exists(self):
