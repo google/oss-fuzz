@@ -216,7 +216,7 @@ def get_project_coverage_report(project_name):
     project_name: The name of the relevant OSS-Fuzz project.
 
   Returns:
-    The report json in dict form or None.
+    The projects coverage json dict or None on failure.
   """
   project_report_url = fuzz_target.url_join(fuzz_target.GCS_BASE_URL,
                                             PROJECT_COVERAGE_REPORT,
@@ -240,7 +240,7 @@ def get_target_coverage_report(project_cov_report, target_name):
     target_name: The name of the fuzz target whos coverage is requested.
 
   Returns:
-    The targets coverage in the form of a json dict or None.
+    The targets coverage json dict or None on failure.
   """
   if 'fuzzer_stats_dir' not in project_cov_report:
     return None
@@ -256,11 +256,11 @@ def get_target_coverage_report(project_cov_report, target_name):
 
 def get_files_covered_by_target(project_cov_report, target_name,
                                 oss_fuzz_project_base):
-  """Get the the files covered by the specific target.
+  """Gets a list of files covered by the specific fuzz target.
 
   Args:
     project_cov_report: A dict containing the project cov report data.
-    target_name: The name of the fuzz target whos coverage is requested.
+    target_name: The name of the fuzz target whose coverage is requested.
     oss_fuzz_project_base: The location where OSS-Fuzz project is cloned too for
       the projects build.
 

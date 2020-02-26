@@ -242,7 +242,7 @@ class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
     self.assertCountEqual(file_list, true_files_list)
 
   def test_invalid_target(self):
-    """Tests that asserts an invalid fuzzer returns None."""
+    """Test asserts an invalid fuzzer returns None."""
     self.assertIsNone(
         cifuzz.get_files_covered_by_target(self.envoy_cov_exmp, 'not-a-fuzzer',
                                            '/src/curl'))
@@ -251,7 +251,7 @@ class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
                                            '/src/curl'))
 
   def test_invalid_project_build_dir(self):
-    """Tests that asserts an invalid build dir returns None."""
+    """Test asserts an invalid build dir returns None."""
     self.assertIsNone(
         cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
                                            self.example_fuzzer, '/no/pe'))
@@ -272,8 +272,7 @@ class GetTargetCoverageReportIntegrationTest(unittest.TestCase):
       self.cov_exmp = json.loads(file.read())
 
   def test_valid_target(self):
-    """Tests that a targets coverage report can be downloaded and parsed.
-    """
+    """Test a target's coverage report can be downloaded and parsed."""
     target_report = cifuzz.get_target_coverage_report(self.cov_exmp,
                                                       self.example_fuzzer)
     self.assertIsNotNone(target_report['data'][0]['files'])
@@ -281,15 +280,13 @@ class GetTargetCoverageReportIntegrationTest(unittest.TestCase):
     self.assertEqual(840, len(target_report['data'][0]['files']))
 
   def test_invalid_target(self):
-    """Tests that an invalid target coverage report will be none.
-    """
+    """Test an invalid target coverage report will be None."""
     self.assertIsNone(
         cifuzz.get_target_coverage_report(self.cov_exmp, 'not-valid-target'))
     self.assertIsNone(cifuzz.get_target_coverage_report(self.cov_exmp, ''))
 
   def test_invalid_project_json(self):
-    """Tests that an invalid target coverage report will be none.
-    """
+    """Test a project json coverage report will be None."""
     self.assertIsNone(
         cifuzz.get_target_coverage_report('not-a-proj', self.example_fuzzer))
     self.assertIsNone(cifuzz.get_target_coverage_report('',
@@ -302,9 +299,9 @@ class GetProjectCoverageReportIntegrationTest(unittest.TestCase):
   test_project = 'curl'
 
   def test_get_valid_project(self):
-    """Tests that a projects coverage report can be downloaded and parsed.
+    """Tests that a project's coverage report can be downloaded and parsed.
 
-    NOTE: This test relies on the envoy repos coverage report.
+    NOTE: This test relies on the test_project repo's coverage report.
     Example was not used because it has no coverage reports.
     """
     cov_report = cifuzz.get_project_coverage_report(self.test_project)
@@ -315,7 +312,7 @@ class GetProjectCoverageReportIntegrationTest(unittest.TestCase):
     self.assertTrue('report_summary_path' in cov_report)
 
   def test_get_invalid_project(self):
-    """Tests that a coverage report can be downloaded and parsed."""
+    """Tests a project's coverage report will return None if bad project."""
     self.assertIsNone(cifuzz.get_project_coverage_report('not-a-proj'))
     self.assertIsNone(cifuzz.get_project_coverage_report(''))
 
