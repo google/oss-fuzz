@@ -307,8 +307,7 @@ def get_json_from_url(url):
   try:
     result_json = json.loads(response.read().decode())
   except ValueError as excp:
-    logging.error('Loading json failed with: %s.',
-                  str(excp))
+    logging.error('Loading json failed with: %s.', str(excp))
     return None
   return result_json
 
