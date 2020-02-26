@@ -29,6 +29,7 @@ RUN apt-get update -y -q && \
         ninja-build \
         python3
 
-RUN git clone --depth=1 https://github.com/apache/arrow.git $SRC/arrow
+RUN git clone --depth=1 --recurse-submodules \
+    https://github.com/apache/arrow.git $SRC/arrow
 
 COPY build.sh $SRC/
