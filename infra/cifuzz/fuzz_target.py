@@ -18,6 +18,8 @@ import posixpath
 import re
 import subprocess
 import sys
+import tempfile
+import urllib.error
 import urllib.request
 import zipfile
 
@@ -26,7 +28,7 @@ import zipfile
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
-# TODO: Turn default logging to WARNING when CIFuzz is stable
+# TODO: Turn default logging to WARNING when CIFuzz is stable.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -34,18 +36,25 @@ logging.basicConfig(
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 
 # Location of google cloud storage for latest OSS-Fuzz builds.
-GCS_BASE_URL = 'https://storage.googleapis.com/clusterfuzz-builds'
+GCS_BASE_URL = 'https://storage.googleapis.com/'
 
-# The number of reproduce attempts for a crash.
-REPRODUCE_ATTEMPTS = 10
-
-# The name to store the latest OSS-Fuzz build at.
-BUILD_ARCHIVE_NAME = 'oss_fuzz_latest.zip'
+# Location of cluster fuzz builds on GCS.
+CLUSTERFUZZ_BUILDS = 'clusterfuzz-builds'
 
 # The get request for the latest version of a project's build.
 VERSION_STRING = '{project_name}-{sanitizer}-latest.version'
 
+# The name to store the latest OSS-Fuzz build at.
+BUILD_ARCHIVE_NAME = 'oss_fuzz_latest.zip'
+
+# Zip file name containing the corpus.
+CORPUS_ZIP_NAME = 'public.zip'
+
+# The sanitizer build to download.
 SANITIZER = 'address'
+
+# The number of reproduce attempts for a crash.
+REPRODUCE_ATTEMPTS = 10
 
 
 class FuzzTarget:
@@ -55,6 +64,7 @@ class FuzzTarget:
     target_name: The name of the fuzz target.
     duration: The length of time in seconds that the target should run.
     target_path: The location of the fuzz target binary.
+    out_dir: The location of where output artifacts are stored.
     project_name: The name of the relevant OSS-Fuzz project.
   """
 
@@ -95,9 +105,17 @@ class FuzzTarget:
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=address', '-e',
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
-        'bash', '-c', 'run_fuzzer {fuzz_target} {options}'.format(
-            fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
+        'bash', '-c'
     ]
+    run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
+        fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
+
+    # If corpus can be downloaded use it for fuzzing.
+    latest_corpus_path = self.download_latest_corpus()
+    if latest_corpus_path:
+      run_fuzzer_command = run_fuzzer_command + ' ' + latest_corpus_path
+    command.append(run_fuzzer_command)
+
     logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
@@ -203,13 +221,13 @@ class FuzzTarget:
 
     version = VERSION_STRING.format(project_name=self.project_name,
                                     sanitizer=SANITIZER)
-    version_url = url_join(GCS_BASE_URL, self.project_name, version)
+    version_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS, self.project_name,
+                           version)
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
-      logging.error(
-          'Error getting the lastest build version for %s from url %s.',
-          self.project_name, version_url)
+      logging.error('Error getting latest build version for %s with url %s.',
+                    self.project_name, version_url)
       return None
     return response.read().decode()
 
@@ -224,6 +242,7 @@ class FuzzTarget:
       return None
     if not self.project_name:
       return None
+
     build_dir = os.path.join(self.out_dir, 'oss_fuzz_latest', self.project_name)
     if os.path.exists(os.path.join(build_dir, self.target_name)):
       return build_dir
@@ -232,17 +251,67 @@ class FuzzTarget:
     if not latest_build_str:
       return None
 
-    oss_fuzz_build_url = url_join(GCS_BASE_URL, self.project_name,
-                                  latest_build_str)
-    try:
-      urllib.request.urlretrieve(oss_fuzz_build_url, BUILD_ARCHIVE_NAME)
-    except urllib.error.HTTPError:
-      logging.error('Unable to download build from: %s.', oss_fuzz_build_url)
+    oss_fuzz_build_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
+                                  self.project_name, latest_build_str)
+    return download_and_unpack_zip(oss_fuzz_build_url, build_dir)
+
+  def download_latest_corpus(self):
+    """Downloads the latest OSS-Fuzz corpus for the target from google cloud.
+
+    Returns:
+      The local path to to corpus or None if download failed.
+    """
+    if not self.project_name:
       return None
-    with zipfile.ZipFile(BUILD_ARCHIVE_NAME, 'r') as zip_file:
-      zip_file.extractall(build_dir)
-    os.remove(BUILD_ARCHIVE_NAME)
-    return build_dir
+    if not os.path.exists(self.out_dir):
+      logging.error('Out directory %s does not exist.', self.out_dir)
+      return None
+
+    corpus_dir = os.path.join(self.out_dir, 'backup_corpus', self.target_name)
+    os.makedirs(corpus_dir, exist_ok=True)
+    project_qualified_fuzz_target_name = self.target_name
+    qualified_name_prefix = '%s_' % self.project_name
+    if not self.target_name.startswith(qualified_name_prefix):
+      project_qualified_fuzz_target_name = qualified_name_prefix + \
+      self.target_name
+    corpus_url = url_join(
+        GCS_BASE_URL,
+        '{0}-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'.format(
+            self.project_name), project_qualified_fuzz_target_name,
+        CORPUS_ZIP_NAME)
+    return download_and_unpack_zip(corpus_url, corpus_dir)
+
+
+def download_and_unpack_zip(http_url, out_dir):
+  """Downloads and unpacks a zip file from an http url.
+
+  Args:
+    http_url: A url to the zip file to be downloaded and unpacked.
+    out_dir: The path where the zip file should be extracted to.
+
+  Returns:
+    A path to the extracted file or None on failure.
+  """
+  if not os.path.exists(out_dir):
+    logging.error('Out directory %s does not exist.', out_dir)
+    return None
+
+  # Gives the temporary zip file a unique identifier in the case that
+  # that download_and_unpack_zip is done in parallel.
+  with tempfile.NamedTemporaryFile(suffix='.zip') as tmp_file:
+    try:
+      urllib.request.urlretrieve(http_url, tmp_file.name)
+    except urllib.error.HTTPError:
+      logging.error('Unable to download build from: %s.', http_url)
+      return None
+
+    try:
+      with zipfile.ZipFile(tmp_file.name, 'r') as zip_file:
+        zip_file.extractall(out_dir)
+    except zipfile.BadZipFile:
+      logging.error('Error unpacking zip from %s. Bad Zipfile.', http_url)
+      return None
+  return out_dir
 
 
 def url_join(*argv):
