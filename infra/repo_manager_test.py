@@ -111,30 +111,6 @@ class RepoManagerGetCommitListUnitTest(unittest.TestCase):
         test_repo_manager.get_commit_list(new_commit, old_commit)
 
 
-class RepoManagerCheckoutPullRequestUnitTest(unittest.TestCase):
-  """Class to test the functionality of checkout_pr of the RepoManager class."""
-
-  def test_checkout_valid_pull_request(self):
-    """Tests that the git checkout pull request works."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      test_repo_manager.checkout_pr('refs/pull/3415/merge')
-      self.assertEqual(test_repo_manager.get_current_commit(),
-                       '2d9759999071e2c0843c63129d8426282a1a7669')
-
-  def test_checkout_invalid_pull_request(self):
-    """Tests that the git checkout invalid pull request fails."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with self.assertRaises(RuntimeError):
-        test_repo_manager.checkout_pr(' ')
-      with self.assertRaises(RuntimeError):
-        test_repo_manager.checkout_pr(
-            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-      with self.assertRaises(RuntimeError):
-        test_repo_manager.checkout_pr('not/a/valid/pr')
-
-
 class GitDiffUnitTest(unittest.TestCase):
   """Class testing functionality of get_git_diff in the repo_manager module."""
 
@@ -166,24 +142,38 @@ class GitDiffUnitTest(unittest.TestCase):
         diff = repo_man.get_git_diff()
         self.assertIsNone(diff)
 
-
-class GitDiffIntegrationTest(unittest.TestCase):
-  """Class testing functionality of get_git_diff in the repo_manager module."""
-
-  def test_diff_exists(self):
-    """Tests that a real diff is returned when a valid repo manager exists."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      repo_man.checkout_pr('refs/pull/3415/merge')
-      diff = repo_man.get_git_diff()
-      self.assertCountEqual(diff, ['README.md'])
-
   def test_diff_empty(self):
     """Tests that None is returned when there is no difference between repos."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
       diff = repo_man.get_git_diff()
       self.assertIsNone(diff)
+
+
+class CheckoutPRIntegrationTest(unittest.TestCase):
+  """Class testing functionality of get_git_diff in the repo_manager module."""
+
+  def test_PR_exists(self):
+    """Tests that a diff is returned when a valid PR is checked out."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      repo_man.checkout_pr('refs/pull/3415/merge')
+      diff = repo_man.get_git_diff()
+      self.assertCountEqual(diff, ['README.md'])
+
+  def test_checkout_invalid_pull_request(self):
+    """Tests that the git checkout invalid pull request fails."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      with self.assertRaises(RuntimeError):
+        test_repo_manager.checkout_pr(' ')
+      with self.assertRaises(RuntimeError):
+        test_repo_manager.checkout_pr(
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+      with self.assertRaises(RuntimeError):
+        test_repo_manager.checkout_pr('not/a/valid/pr')
+
+
 
 
 if __name__ == '__main__':
