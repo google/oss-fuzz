@@ -109,15 +109,17 @@ make install
 (
 cd quickjs
 if [ "$ARCHITECTURE" = 'i386' ]; then
-    sed -i -e 's/#CONFIG_M32/CONFIG_M32/' Makefile
+    # Makefile should not override CFLAGS
+    sed -i -e 's/CFLAGS=/CFLAGS+=/' Makefile
+    CFLAGS="-m32" make libquickjs.a
+else
+    make libquickjs.a
 fi
-make
-make install
 cp quickjs*.h /usr/local/include/
-cp *.a /usr/local/lib/
-ln -s /usr/bin/nodejs /usr/bin/node
+cp libquickjs.a /usr/local/lib/
 )
 
+ln -s /usr/bin/nodejs /usr/bin/node
 mv /usr/lib/x86_64-linux-gnu/libcrypto.a /usr/lib/x86_64-linux-gnu/libcrypto_old.a
 mv /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libcrypto_old.so
 #build fuzz target
@@ -126,6 +128,7 @@ if [ "$ARCHITECTURE" = 'i386' ]; then
     export GOARCH=386
 #needed explicitly because of cross compilation cf https://golang.org/cmd/cgo/
     export CGO_ENABLED=1
+    export CARGO_BUILD_TARGET=i686-unknown-linux-gnu
 fi
 zip -r fuzz_ec_seed_corpus.zip corpus/
 cp fuzz_ec_seed_corpus.zip $OUT/
