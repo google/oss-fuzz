@@ -94,7 +94,7 @@ class RepoManager:
                                    self.repo_dir)
     return not err_code
 
-  def get_git_dif(self):
+  def get_git_diff(self):
     """Gets a list of files that have changed from the repo head.
 
     Returns:
