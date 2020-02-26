@@ -15,15 +15,14 @@
 1. Building fuzzers.
 2. Running fuzzers.
 """
-
-import http
+import json
 import os
+import pickle
 import shutil
 import sys
 import tempfile
 import unittest
 import unittest.mock
-import urllib
 
 # pylint: disable=wrong-import-position
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -219,16 +218,96 @@ class ParseOutputUnitTest(unittest.TestCase):
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
 
 
-class GetCoverageReportJsonIntegrationTest(unittest.TestCase):
-  """Test get_coverage_report_json function in the cifuzz module."""
+class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
+  """Test to get the files covered by a fuzz target in the cifuzz module."""
+
+  example_cov_json = 'example_curl_cov.json'
+  example_fuzzer = 'curl_fuzzer'
+  example_curl_file_list = 'example_curl_file_list'
+
+  def setUp(self):
+    with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
+              'r') as file:
+      self.envoy_cov_exmp = json.loads(file.read())
+
+  def test_valid_target(self):
+    """Tests that covered files can be retrieved from a coverage report."""
+    file_list = cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
+                                                   self.example_fuzzer,
+                                                   '/src/curl')
+
+    with open(os.path.join(TEST_FILES_PATH, 'example_curl_file_list'),
+              'rb') as file_handle:
+      true_files_list = pickle.load(file_handle)
+    self.assertCountEqual(file_list, true_files_list)
+
+  def test_invalid_target(self):
+    """Tests that asserts an invalid fuzzer returns None."""
+    self.assertIsNone(
+        cifuzz.get_files_covered_by_target(self.envoy_cov_exmp, 'not-a-fuzzer',
+                                           '/src/curl'))
+    self.assertIsNone(
+        cifuzz.get_files_covered_by_target(self.envoy_cov_exmp, '',
+                                           '/src/curl'))
+
+  def test_invalid_project_build_dir(self):
+    """Tests that asserts an invalid build dir returns None."""
+    self.assertIsNone(
+        cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
+                                           self.example_fuzzer, '/no/pe'))
+    self.assertIsNone(
+        cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
+                                           self.example_fuzzer, ''))
+
+
+class GetTargetCoverageReportIntegrationTest(unittest.TestCase):
+  """Test get_target_coverage_report function in the cifuzz module."""
+
+  example_cov_json = 'example_curl_cov.json'
+  example_fuzzer = 'curl_fuzzer'
+
+  def setUp(self):
+    with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
+              'r') as file:
+      self.cov_exmp = json.loads(file.read())
+
+  def test_valid_target(self):
+    """Tests that a targets coverage report can be downloaded and parsed.
+    """
+    target_report = cifuzz.get_target_coverage_report(self.cov_exmp,
+                                                      self.example_fuzzer)
+    self.assertIsNotNone(target_report['data'][0]['files'])
+    self.assertIsNotNone(target_report['version'])
+    self.assertEqual(840, len(target_report['data'][0]['files']))
+
+  def test_invalid_target(self):
+    """Tests that an invalid target coverage report will be none.
+    """
+    self.assertIsNone(
+        cifuzz.get_target_coverage_report(self.cov_exmp, 'not-valid-target'))
+    self.assertIsNone(cifuzz.get_target_coverage_report(self.cov_exmp, ''))
+
+  def test_invalid_project_json(self):
+    """Tests that an invalid target coverage report will be none.
+    """
+    self.assertIsNone(
+        cifuzz.get_target_coverage_report('not-a-proj', self.example_fuzzer))
+    self.assertIsNone(cifuzz.get_target_coverage_report('',
+                                                        self.example_fuzzer))
+
+
+class GetProjectCoverageReportIntegrationTest(unittest.TestCase):
+  """Test get_project_coverage_report function in the cifuzz module."""
+
+  test_project = 'curl'
 
   def test_get_valid_project(self):
-    """Tests that a coverage report can be downloaded and parsed.
+    """Tests that a projects coverage report can be downloaded and parsed.
 
     NOTE: This test relies on the envoy repos coverage report.
     Example was not used because it has no coverage reports.
     """
-    cov_report = cifuzz.get_coverage_report_json('envoy')
+    cov_report = cifuzz.get_project_coverage_report(self.test_project)
     self.assertIsNotNone(cov_report)
     self.assertEqual(type(cov_report), dict)
     self.assertTrue('fuzzer_stats_dir' in cov_report)
@@ -237,9 +316,8 @@ class GetCoverageReportJsonIntegrationTest(unittest.TestCase):
 
   def test_get_invalid_project(self):
     """Tests that a coverage report can be downloaded and parsed."""
-    self.assertIsNone(cifuzz.get_coverage_report_json('not-a-proj'))
-    self.assertIsNone(cifuzz.get_coverage_report_json(''))
-
+    self.assertIsNone(cifuzz.get_project_coverage_report('not-a-proj'))
+    self.assertIsNone(cifuzz.get_project_coverage_report(''))
 
 
 if __name__ == '__main__':

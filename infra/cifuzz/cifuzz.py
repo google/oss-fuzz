@@ -66,8 +66,7 @@ STACKTRACE_END_MARKERS = [
 ]
 
 # The path to get project's latest report json files.
-GCS_LATEST_COVERAGE_REPORT = 'http://storage.googleapis.com/' \
-'oss-fuzz-coverage/latest_report_info/'
+PROJECT_COVERAGE_REPORT = 'oss-fuzz-coverage/latest_report_info/'
 
 # TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
@@ -210,7 +209,7 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
   return True, False
 
 
-def get_coverage_report_json(project_name):
+def get_project_coverage_report(project_name):
   """Gets the report json for a specific OSS-Fuzz project from GCS.
 
   Args:
@@ -219,10 +218,76 @@ def get_coverage_report_json(project_name):
   Returns:
     The report json in dict form or None.
   """
-  report_url = fuzz_target.url_join(GCS_LATEST_COVERAGE_REPORT, project_name + '.json')
-  cov_report_json = get_json_from_url(report_url)
+  project_report_url = fuzz_target.url_join(fuzz_target.GCS_BASE_URL,
+                                            PROJECT_COVERAGE_REPORT,
+                                            project_name + '.json')
+  project_cov_json = get_json_from_url(project_report_url)
+  if not project_cov_json:
+    logging.error('Could not get the coverage report json from %s.',
+                  project_report_url)
+    return None
+  if 'fuzzer_stats_dir' not in project_cov_json:
+    logging.error('fuzzer_stats_dir is not a key in downloaded json.')
+    return None
+  return project_cov_json
 
-  return cov_report_json
+
+def get_target_coverage_report(project_cov_report, target_name):
+  """Get the coverage report from a specific fuzz target.
+
+  Args:
+    project_cov_report: A dict containing the project cov report data.
+    target_name: The name of the fuzz target whos coverage is requested.
+
+  Returns:
+    The targets coverage in the form of a json dict or None.
+  """
+  if 'fuzzer_stats_dir' not in project_cov_report:
+    return None
+  fuzzer_report_url_segment = project_cov_report['fuzzer_stats_dir']
+
+  # Converting gs:// to http://
+  fuzzer_report_url_segment = fuzzer_report_url_segment.replace('gs://', '')
+  target_url = fuzz_target.url_join(fuzz_target.GCS_BASE_URL,
+                                    fuzzer_report_url_segment,
+                                    target_name + '.json')
+  return get_json_from_url(target_url)
+
+
+def get_files_covered_by_target(project_cov_report, target_name,
+                                oss_fuzz_project_base):
+  """Get the the files covered by the specific target.
+
+  Args:
+    project_cov_report: A dict containing the project cov report data.
+    target_name: The name of the fuzz target whos coverage is requested.
+    oss_fuzz_project_base: The location where OSS-Fuzz project is cloned too for
+      the projects build.
+
+  Returns:
+    A list of files that the fuzzer covers or None.
+  """
+  if not oss_fuzz_project_base:
+    return None
+  target_cov = get_target_coverage_report(project_cov_report, target_name)
+  if not target_cov:
+    return None
+  if not target_cov['data'][0]['files']:
+    return None
+
+  # Cases like curl there is /src/curl and /src/curl_fuzzers/ this handles it.
+  if not oss_fuzz_project_base.endswith('/'):
+    oss_fuzz_project_base += '/'
+
+  affected_file_list = []
+  for file in target_cov['data'][0]['files']:
+    if file['filename'].startswith(
+        oss_fuzz_project_base) and file['summary']['regions']['count']:
+      affected_file_list.append(file['filename'].replace(
+          oss_fuzz_project_base, ''))
+  if not affected_file_list:
+    return None
+  return affected_file_list
 
 
 def get_json_from_url(url):
@@ -237,18 +302,15 @@ def get_json_from_url(url):
   try:
     response = urllib.request.urlopen(url)
   except urllib.error.HTTPError:
-    logging.error('Error getting json from url %s.', report_url)
+    logging.error('Error getting json from url %s.', url)
     return None
   try:
     result_json = json.loads(response.read().decode())
-  except ValueError as e:
-    logging.error('Loading coverage report json failed with error %s.', str(e))
+  except ValueError as excp:
+    logging.error('Loading coverage report json failed with error %s.',
+                  str(excp))
     return None
   return result_json
-
-
-def get_fuzzer_map(project_name):
-  """Gets a map of files to fuzzers from the coverage report
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):
