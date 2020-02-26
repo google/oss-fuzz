@@ -16,12 +16,14 @@
 2. Running fuzzers.
 """
 
+import http
 import os
 import shutil
 import sys
 import tempfile
 import unittest
 import unittest.mock
+import urllib
 
 # pylint: disable=wrong-import-position
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -215,6 +217,29 @@ class ParseOutputUnitTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       cifuzz.parse_fuzzer_output('not a valid output_string', tmp_dir)
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
+
+
+class GetCoverageReportJsonIntegrationTest(unittest.TestCase):
+  """Test get_coverage_report_json function in the cifuzz module."""
+
+  def test_get_valid_project(self):
+    """Tests that a coverage report can be downloaded and parsed.
+
+    NOTE: This test relies on the envoy repos coverage report.
+    Example was not used because it has no coverage reports.
+    """
+    cov_report = cifuzz.get_coverage_report_json('envoy')
+    self.assertIsNotNone(cov_report)
+    self.assertEqual(type(cov_report), dict)
+    self.assertTrue('fuzzer_stats_dir' in cov_report)
+    self.assertTrue('html_report_url' in cov_report)
+    self.assertTrue('report_summary_path' in cov_report)
+
+  def test_get_invalid_project(self):
+    """Tests that a coverage report can be downloaded and parsed."""
+    self.assertIsNone(cifuzz.get_coverage_report_json('not-a-proj'))
+    self.assertIsNone(cifuzz.get_coverage_report_json(''))
+
 
 
 if __name__ == '__main__':

@@ -18,10 +18,13 @@ This module helps CI tools do the following:
 Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 
+import json
 import logging
 import os
 import shutil
 import sys
+import urllib.error
+import urllib.request
 
 import fuzz_target
 
@@ -61,6 +64,10 @@ STACKTRACE_END_MARKERS = [
     '\nExiting',
     'minidump has been written',
 ]
+
+# The path to get project's latest report json files.
+GCS_LATEST_COVERAGE_REPORT = 'http://storage.googleapis.com/' \
+'oss-fuzz-coverage/latest_report_info/'
 
 # TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
@@ -201,6 +208,30 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
       parse_fuzzer_output(stack_trace, artifacts_dir)
       return True, True
   return True, False
+
+
+def get_coverage_report_json(project_name):
+  """Gets the report json for a specific OSS-Fuzz project from GCS.
+
+  Args:
+    project_name: The name of the relevant OSS-Fuzz project.
+
+  Returns:
+    The report json in dict form or None.
+  """
+  report_url = fuzz_target.url_join(GCS_LATEST_COVERAGE_REPORT, project_name + '.json')
+  try:
+    response = urllib.request.urlopen(report_url)
+  except urllib.error.HTTPError:
+    logging.error('Error getting %s coverage report from url %s.',
+                  project_name, report_url)
+    return None
+  try:
+    request_json = json.loads(response.read().decode())
+  except ValueError as e:
+    logging.error('Loading coverage report json failed with error %s.', str(e))
+    return None
+  return request_json
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):
