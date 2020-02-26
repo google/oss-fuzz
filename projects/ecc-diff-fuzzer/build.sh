@@ -105,14 +105,52 @@ make -j$(nproc)
 make install
 )
 
+#quickjs
+(
+cd quickjs
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    make qjsc
+    cp qjsc /usr/local/bin/
+    make clean
+    # Makefile should not override CFLAGS
+    sed -i -e 's/CFLAGS=/CFLAGS+=/' Makefile
+    CFLAGS="-m32" make libquickjs.a
+else
+    make && make install
+fi
+cp quickjs*.h /usr/local/include/
+cp libquickjs.a /usr/local/lib/
+)
+
+ln -s /usr/bin/nodejs /usr/bin/node
+mv /usr/lib/x86_64-linux-gnu/libcrypto.a /usr/lib/x86_64-linux-gnu/libcrypto_old.a
+mv /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libcrypto_old.so
 #build fuzz target
 cd ecfuzzer
+source $HOME/.cargo/env
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    export GOARCH=386
+#needed explicitly because of cross compilation cf https://golang.org/cmd/cgo/
+    export CGO_ENABLED=1
+    export CARGO_BUILD_TARGET=i686-unknown-linux-gnu
+fi
 zip -r fuzz_ec_seed_corpus.zip corpus/
 cp fuzz_ec_seed_corpus.zip $OUT/
 cp fuzz_ec.dict $OUT/
 
 mkdir build
 cd build
-cmake ..
+#no afl with long javascript initialization
+if [ "$FUZZING_ENGINE" != 'afl' ]; then
+    cmake ..
+    make -j$(nproc)
+    cp ecfuzzer $OUT/fuzz_ec
+    rm -Rf *
+fi
+
+#another target without cryptopp neither javascript
+cmake -DDISABLE_CRYPTOPP=ON -DDISABLE_JS=ON ..
 make -j$(nproc)
-cp ecfuzzer $OUT/fuzz_ec
+cp ecfuzzer $OUT/fuzz_ec_noblocker
+mv /usr/lib/x86_64-linux-gnu/libcrypto_old.a /usr/lib/x86_64-linux-gnu/libcrypto.a
+mv /usr/lib/x86_64-linux-gnu/libcrypto_old.so /usr/lib/x86_64-linux-gnu/libcrypto.so
