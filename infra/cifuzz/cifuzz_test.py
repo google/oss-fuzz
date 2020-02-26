@@ -221,16 +221,16 @@ class CheckFuzzerBuildUnitTest(unittest.TestCase):
   """Tests the check_fuzzer_build function in the cifuzz module."""
 
   def test_correct_fuzzer_build(self):
-    """Checks that the function returns true for valid fuzzer."""
+    """Checks check_fuzzer_build function returns True for valid fuzzers."""
     test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
     self.assertTrue(cifuzz.check_fuzzer_build(test_fuzzer_dir))
 
   def test_not_a_valid_fuzz_path(self):
-    """Tests that false is returned when a bad path is given."""
+    """Tests that False is returned when a bad path is given."""
     self.assertFalse(cifuzz.check_fuzzer_build('not/a/valid/path'))
 
   def test_not_a_valid_fuzzer(self):
-    """Checks a directory that exists but does not have fuzzzers is False."""
+    """Checks a directory that exists but does not have fuzzers is False."""
     self.assertFalse(cifuzz.check_fuzzer_build(TEST_FILES_PATH))
 
 

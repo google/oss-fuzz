@@ -213,10 +213,10 @@ def check_fuzzer_build(out_dir):
   """Checks the integrity of the built fuzzers.
 
   Args:
-    out_dir: The location of the fuzzer binaries.
+    out_dir: The directory containing the fuzzer binaries.
 
   Returns:
-    True if fuzzers are correct or False if not.
+    True if fuzzers are correct.
   """
   if not os.path.exists(out_dir):
     logging.error('Invalid out directory: %s.', out_dir)
