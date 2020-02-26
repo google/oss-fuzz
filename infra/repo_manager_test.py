@@ -142,7 +142,7 @@ class GitDiffUnitTest(unittest.TestCase):
         diff = repo_man.get_git_diff()
         self.assertIsNone(diff)
 
-  def test_diff_empty(self):
+  def test_diff_no_change(self):
     """Tests that None is returned when there is no difference between repos."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
@@ -153,7 +153,7 @@ class GitDiffUnitTest(unittest.TestCase):
 class CheckoutPRIntegrationTest(unittest.TestCase):
   """Class testing functionality of get_git_diff in the repo_manager module."""
 
-  def test_PR_exists(self):
+  def test_pull_request_exists(self):
     """Tests that a diff is returned when a valid PR is checked out."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
@@ -172,8 +172,6 @@ class CheckoutPRIntegrationTest(unittest.TestCase):
             'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
       with self.assertRaises(RuntimeError):
         test_repo_manager.checkout_pr('not/a/valid/pr')
-
-
 
 
 if __name__ == '__main__':
