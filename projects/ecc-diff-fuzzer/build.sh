@@ -108,6 +108,9 @@ make install
 #quickjs
 (
 cd quickjs
+if [ "$ARCHITECTURE" = 'i386' ]; then
+    sed -i -e 's/#CONFIG_M32/CONFIG_M32/' Makefile
+fi
 make
 make install
 cp quickjs*.h /usr/local/include/
@@ -130,12 +133,15 @@ cp fuzz_ec.dict $OUT/
 
 mkdir build
 cd build
-cmake ..
-make -j$(nproc)
-cp ecfuzzer $OUT/fuzz_ec
+#no afl with long javascript initialization
+if [ "$FUZZING_ENGINE" != 'afl' ]; then
+    cmake ..
+    make -j$(nproc)
+    cp ecfuzzer $OUT/fuzz_ec
+    rm -Rf *
+fi
 
 #another target without cryptopp neither javascript
-rm -Rf *
 cmake -DDISABLE_CRYPTOPP=ON -DDISABLE_JS=ON ..
 make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec_noblocker
