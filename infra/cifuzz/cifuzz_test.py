@@ -136,7 +136,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
 
   def test_new_bug_found(self):
     """Test run_fuzzers with a valid build."""
-    # Setting the first return value to True, then the second to False to
+    # Set the first return value to True, then the second to False to
     # emulate a bug existing in the current PR but not on the downloaded
     # OSS-Fuzz build.
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,

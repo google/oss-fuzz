@@ -18,17 +18,22 @@ import sys
 import tempfile
 import unittest
 import unittest.mock
+import urllib
 
 # Pylint has issue importing utils which is why error suppression is required.
 # pylint: disable=wrong-import-position
 # pylint: disable=import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fuzz_target
+
 import utils
 
 # NOTE: This integration test relies on
-# https://github.com/google/oss-fuzz/tree/master/projects/example project
+# https://github.com/google/oss-fuzz/tree/master/projects/example project.
 EXAMPLE_PROJECT = 'example'
+
+# An example fuzzer that triggers an error.
+EXAMPLE_FUZZER = 'do_stuff_fuzzer'
 
 
 class IsReproducibleUnitTest(unittest.TestCase):
@@ -94,12 +99,48 @@ class GetTestCaseUnitTest(unittest.TestCase):
     self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
 
 
+class DownloadLatestCorpusUnitTest(unittest.TestCase):
+  """Test parse_fuzzer_output function in the cifuzz module."""
+
+  def test_download_valid_projects_corpus(self):
+    """Tests that a vaild fuzz target will return a corpus directory."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
+      test_target.project_name = EXAMPLE_PROJECT
+      test_target.target_name = EXAMPLE_FUZZER
+      test_target.out_dir = tmp_dir
+      with unittest.mock.patch.object(fuzz_target,
+                                      'download_and_unpack_zip',
+                                      return_value=tmp_dir) as mock:
+        test_target.download_latest_corpus()
+        (url, out_dir), _ = mock.call_args
+        self.assertEqual(
+            url,
+            'https://storage.googleapis.com/example-backup.' \
+            'clusterfuzz-external.appspot.com/corpus/libFuzzer/' \
+            'example_do_stuff_fuzzer/public.zip'
+        )
+        self.assertEqual(out_dir,
+                         os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_FUZZER))
+
+  def test_download_invalid_projects_corpus(self):
+    """Tests that a invaild fuzz target will not return None."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      test_target = fuzz_target.FuzzTarget('testfuzzer', 3, tmp_dir)
+      corpus_path = test_target.download_latest_corpus()
+      self.assertIsNone(corpus_path)
+      test_target = fuzz_target.FuzzTarget('not_a_fuzzer', 3, tmp_dir,
+                                           'not_a_project')
+      corpus_path = test_target.download_latest_corpus()
+      self.assertIsNone(corpus_path)
+
+
 class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
   """Test check_reproducibility_and_regression function fuzz_target module."""
 
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
-    self.test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+    self.test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 100,
                                               '/example/outdir', 'example')
 
   def test_with_valid_crash(self):
@@ -200,6 +241,20 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
     test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                          'not/a/dir', 'example')
     self.assertIsNone(test_target.download_oss_fuzz_build())
+
+
+class DownloadAndUnpackZipUnitTests(unittest.TestCase):
+  """Test the download and unpack functionality in the fuzz_target module."""
+
+  def test_bad_zip_download(self):
+    """Tests download_and_unpack_zip returns none when a bad zip is passed."""
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        urllib.request, 'urlretrieve', return_value=True):
+      file_handle = open(os.path.join(tmp_dir, 'url_tmp.zip'), 'w')
+      file_handle.write('Test file.')
+      file_handle.close()
+      self.assertIsNone(
+          fuzz_target.download_and_unpack_zip('/not/a/real/url', tmp_dir))
 
 
 if __name__ == '__main__':
