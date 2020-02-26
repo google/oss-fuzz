@@ -15,11 +15,9 @@
 
 import os
 import unittest
-from unittest import mock
 import tempfile
 
 import repo_manager
-import utils
 
 OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz'
 
@@ -28,7 +26,7 @@ class TestRepoManager(unittest.TestCase):
   """Class to test the functionality of the RepoManager class."""
 
 
-class RepoManagerCloneUnitTest(unittest.TestCase):
+class RepoManagerCloneUnitTests(unittest.TestCase):
   """Class to test the functionality of clone of the RepoManager class."""
 
   def test_clone_valid_repo(self):
@@ -52,7 +50,7 @@ class RepoManagerCloneUnitTest(unittest.TestCase):
                                  tmp_dir)
 
 
-class RepoManagerCheckoutUnitTest(unittest.TestCase):
+class RepoManagerCheckoutUnitTests(unittest.TestCase):
   """Class to test the functionality of checkout of the RepoManager class."""
 
   def test_checkout_valid_commit(self):
@@ -76,7 +74,7 @@ class RepoManagerCheckoutUnitTest(unittest.TestCase):
         test_repo_manager.checkout_commit('not-a-valid-commit')
 
 
-class RepoManagerGetCommitListUnitTest(unittest.TestCase):
+class RepoManagerGetCommitListUnitTests(unittest.TestCase):
   """Class to test the functionality of get commit list in the
    RepoManager class."""
 
@@ -111,55 +109,16 @@ class RepoManagerGetCommitListUnitTest(unittest.TestCase):
         test_repo_manager.get_commit_list(new_commit, old_commit)
 
 
-class GitDiffUnitTest(unittest.TestCase):
-  """Class testing functionality of get_git_diff in the repo_manager module."""
+class RepoManagerCheckoutPullRequestUnitTests(unittest.TestCase):
+  """Class to test the functionality of checkout_pr of the RepoManager class."""
 
-  def test_diff_exists(self):
-    """Tests that a real diff is returned when a valid repo manager exists."""
+  def test_checkout_valid_pull_request(self):
+    """Tests that the git checkout pull request works."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with mock.patch.object(utils,
-                             'execute',
-                             return_value=('test.py\ndiff.py', None, 0)):
-        diff = repo_man.get_git_diff()
-        self.assertCountEqual(diff, ['test.py', 'diff.py'])
-
-  def test_diff_empty(self):
-    """Tests that None is returned when there is no difference between repos."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with mock.patch.object(utils, 'execute', return_value=('', None, 0)):
-        diff = repo_man.get_git_diff()
-        self.assertIsNone(diff)
-
-  def test_error_on_command(self):
-    """Tests that None is returned when the command errors out."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      with mock.patch.object(utils,
-                             'execute',
-                             return_value=('', 'Test error.', 1)):
-        diff = repo_man.get_git_diff()
-        self.assertIsNone(diff)
-
-  def test_diff_no_change(self):
-    """Tests that None is returned when there is no difference between repos."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      diff = repo_man.get_git_diff()
-      self.assertIsNone(diff)
-
-
-class CheckoutPRIntegrationTest(unittest.TestCase):
-  """Class testing functionality of get_git_diff in the repo_manager module."""
-
-  def test_pull_request_exists(self):
-    """Tests that a diff is returned when a valid PR is checked out."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      repo_man.checkout_pr('refs/pull/3415/merge')
-      diff = repo_man.get_git_diff()
-      self.assertCountEqual(diff, ['README.md'])
+      test_repo_manager = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
+      test_repo_manager.checkout_pr('refs/pull/3415/merge')
+      self.assertEqual(test_repo_manager.get_current_commit(),
+                       '314c9249a54a08e764a5bbcb7333294ae7c1f9ed')
 
   def test_checkout_invalid_pull_request(self):
     """Tests that the git checkout invalid pull request fails."""
