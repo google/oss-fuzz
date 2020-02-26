@@ -112,8 +112,10 @@ if [ "$ARCHITECTURE" = 'i386' ]; then
     # Makefile should not override CFLAGS
     sed -i -e 's/CFLAGS=/CFLAGS+=/' Makefile
     CFLAGS="-m32" make libquickjs.a
+    CFLAGS="-m32" make qjsc
+    cp qjsc /usr/local/bin/
 else
-    make libquickjs.a
+    make && make install
 fi
 cp quickjs*.h /usr/local/include/
 cp libquickjs.a /usr/local/lib/
