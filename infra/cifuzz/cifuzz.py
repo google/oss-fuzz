@@ -220,18 +220,35 @@ def get_coverage_report_json(project_name):
     The report json in dict form or None.
   """
   report_url = fuzz_target.url_join(GCS_LATEST_COVERAGE_REPORT, project_name + '.json')
+  cov_report_json = get_json_from_url(report_url)
+
+  return cov_report_json
+
+
+def get_json_from_url(url):
+  """Gets a json object from a specified http url.
+
+  Args:
+    url: The location of the json to be downloaded.
+
+  Returns:
+    json dict or None on failure.
+  """
   try:
-    response = urllib.request.urlopen(report_url)
+    response = urllib.request.urlopen(url)
   except urllib.error.HTTPError:
-    logging.error('Error getting %s coverage report from url %s.',
-                  project_name, report_url)
+    logging.error('Error getting json from url %s.', report_url)
     return None
   try:
-    request_json = json.loads(response.read().decode())
+    result_json = json.loads(response.read().decode())
   except ValueError as e:
     logging.error('Loading coverage report json failed with error %s.', str(e))
     return None
-  return request_json
+  return result_json
+
+
+def get_fuzzer_map(project_name):
+  """Gets a map of files to fuzzers from the coverage report
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):
