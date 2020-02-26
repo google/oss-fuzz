@@ -37,12 +37,15 @@ zip -j $WORK/xml $SRC/qtqa/fuzzing/testcases/xml/* /usr/share/afl/testcases/othe
 # build fuzzers
 
 build_fuzzer() {
-    local module=$1
-    local proFilePath=$2
-    local format=${3-""}
-    local dictionary=${4-""}
+    local nameScheme=$1
+    local module=$2
+    local proFilePath=$3
+    local format=${4-""}
+    local dictionary=${5-""}
     local proFileName=${proFilePath##*/}
     local exeName=${proFileName%%.*}
+    local proFileDir=${proFilePath%/*}
+    local targetName="$module"_${proFileDir//\//_}
     mkdir build_fuzzer
     cd build_fuzzer
     $WORK/qtbase/bin/qmake $SRC/qt/$module/tests/libfuzzer/$proFilePath
@@ -58,19 +61,22 @@ build_fuzzer() {
     if [ "$lowercaseExeName" != "$exeName" ]; then
         mv $lowercaseExeName $exeName
     fi
+    if [ "$nameScheme" == "old" ]; then
+        targetName="$exeName"
+    fi
 
-    mv $exeName $OUT
+    mv $exeName $OUT/$targetName
     if [ -n "$format" ]; then
-        cp $WORK/$format.zip $OUT/"$exeName"_seed_corpus.zip
+        cp $WORK/$format.zip $OUT/"$targetName"_seed_corpus.zip
     fi
     if [ -n "$dictionary" ]; then
-        cp $dictionary $OUT/$exeName.dict
+        cp $dictionary $OUT/$targetName.dict
     fi
     cd ..
     rm -r build_fuzzer
 }
 
-build_fuzzer "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "/usr/share/afl/testcases/_extras/xml.dict"
-# build_fuzzer "qtbase" "gui/text/qtextdocument/sethtml/sethtml.pro" "html" "/usr/share/afl/testcases/_extras/html_tags.dict"
-build_fuzzer "qtbase" "gui/text/qtextdocument/setmarkdown/setmarkdown.pro" "markdown"
-build_fuzzer "qtbase" "gui/text/qtextlayout/beginlayout/beginlayout.pro"
+build_fuzzer "old" "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "/usr/share/afl/testcases/_extras/xml.dict"
+# build_fuzzer "new" "qtbase" "gui/text/qtextdocument/sethtml/sethtml.pro" "html" "/usr/share/afl/testcases/_extras/html_tags.dict"
+build_fuzzer "old" "qtbase" "gui/text/qtextdocument/setmarkdown/setmarkdown.pro" "markdown"
+build_fuzzer "old" "qtbase" "gui/text/qtextlayout/beginlayout/beginlayout.pro"
