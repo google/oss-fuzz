@@ -145,7 +145,7 @@ class GitDiffUnitTest(unittest.TestCase):
       with mock.patch.object(utils,
                              'execute',
                              return_value=('test.py\ndiff.py', None, 0)):
-        diff = repo_man.get_git_dif()
+        diff = repo_man.get_git_diff()
         self.assertCountEqual(diff, ['test.py', 'diff.py'])
 
   def test_diff_empty(self):
@@ -153,7 +153,7 @@ class GitDiffUnitTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
       with mock.patch.object(utils, 'execute', return_value=('', None, 0)):
-        diff = repo_man.get_git_dif()
+        diff = repo_man.get_git_diff()
         self.assertIsNone(diff)
 
   def test_error_on_command(self):
@@ -163,7 +163,7 @@ class GitDiffUnitTest(unittest.TestCase):
       with mock.patch.object(utils,
                              'execute',
                              return_value=('', 'Test error.', 1)):
-        diff = repo_man.get_git_dif()
+        diff = repo_man.get_git_diff()
         self.assertIsNone(diff)
 
 
@@ -175,14 +175,14 @@ class GitDiffIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
       repo_man.checkout_pr('refs/pull/3415/merge')
-      diff = repo_man.get_git_dif()
+      diff = repo_man.get_git_diff()
       self.assertCountEqual(diff, ['README.md'])
 
   def test_diff_empty(self):
     """Tests that None is returned when there is no difference between repos."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
-      diff = repo_man.get_git_dif()
+      diff = repo_man.get_git_diff()
       self.assertIsNone(diff)
 
 
