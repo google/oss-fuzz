@@ -275,7 +275,7 @@ def get_files_covered_by_target(project_cov_report, target_name,
   if not target_cov['data'][0]['files']:
     return None
 
-  # Cases like curl there is /src/curl and /src/curl_fuzzers/ this handles it.
+  # Cases like curl there is /src/curl and /src/curl_fuzzers/ are handled.
   if not oss_fuzz_project_base.endswith('/'):
     oss_fuzz_project_base += '/'
 
@@ -294,20 +294,20 @@ def get_json_from_url(url):
   """Gets a json object from a specified http url.
 
   Args:
-    url: The location of the json to be downloaded.
+    url: The url of the json to be downloaded.
 
   Returns:
-    json dict or None on failure.
+    Json dict or None on failure.
   """
   try:
     response = urllib.request.urlopen(url)
   except urllib.error.HTTPError:
-    logging.error('Error getting json from url %s.', url)
+    logging.error('HTTP error with url %s.', url)
     return None
   try:
     result_json = json.loads(response.read().decode())
   except ValueError as excp:
-    logging.error('Loading coverage report json failed with error %s.',
+    logging.error('Loading json failed with: %s.',
                   str(excp))
     return None
   return result_json
