@@ -147,15 +147,28 @@ class FuzzTarget:
       Returns:
         True if crash is reproducible.
     """
-    command = [
-        'docker', 'run', '--rm', '--privileged', '-v',
-        '%s:/out' % target_path, '-v',
-        '%s:/testcase' % test_case, '-t', 'gcr.io/oss-fuzz-base/base-runner',
-        'reproduce', self.target_name, '-runs=100'
+    command = ['docker', 'run', '--rm', '--privileged']
+
+    container = utils.get_container_name()
+    if container:
+      command += [
+          '--volumes-from', container, '-e', 'OUT=' + target_path, '-e',
+          'TESTCASE=' + test_case
+      ]
+    else:
+      command += [
+          '-v', '%s:/out' % target_path, '-v',
+          '%s:/testcase' % test_case
+      ]
+
+    command += [
+        '-t', 'gcr.io/oss-fuzz-base/base-runner', 'reproduce', self.target_name,
+        '-runs=100'
     ]
     for _ in range(REPRODUCE_ATTEMPTS):
-      _, _, err_code = utils.execute(command)
+      _, err_msg, err_code = utils.execute(command)
       if err_code:
+        logging.info('The error for reproduction is %s.', err_msg)
         return True
     return False
 
