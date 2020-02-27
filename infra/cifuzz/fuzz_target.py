@@ -176,7 +176,7 @@ class FuzzTarget:
     for _ in range(REPRODUCE_ATTEMPTS):
       out, _, err_code = utils.execute(command)
       if err_code:
-        logging.error('Out for reproduce command is: %s.', out)
+        logging.error('Output for the reproduce command:\n%s.', out)
         return True
     return False
 
