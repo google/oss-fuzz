@@ -153,7 +153,7 @@ class FuzzTarget:
       return False
     if os.path.exists(target_path):
       os.chmod(os.path.join(target_path, self.target_name), stat.S_IRWXO)
-      
+
     command = ['docker', 'run', '--rm', '--privileged']
     container = utils.get_container_name()
     if container:
