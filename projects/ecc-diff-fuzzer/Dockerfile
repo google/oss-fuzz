@@ -18,8 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER p.antoine@catenacyber.fr
 RUN apt-get update && apt-get install -y make cmake bzip2 autoconf automake gettext libtool python nodejs npm
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="$HOME/.cargo/bin:${PATH}"
-RUN /bin/bash -c "cat $HOME/.cargo/env && echo $HOME && source $HOME/.cargo/env && rustup target add i686-unknown-linux-gnu"
+RUN /bin/bash -c "source $HOME/.cargo/env && rustup target add i686-unknown-linux-gnu"
 RUN npm install -g browserify
 RUN npm install elliptic
 RUN git clone --depth 1 https://github.com/horhof/quickjs quickjs
