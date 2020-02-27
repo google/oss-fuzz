@@ -78,7 +78,10 @@ def main():
     logging.error('Error building fuzzers for project %s with pull request %s.',
                   oss_fuzz_project_name, pr_ref)
     return error_code
-  return 0
+  out_dir = os.path.join(workspace, 'out')
+  if cifuzz.check_fuzzer_build(out_dir):
+    return 0
+  return 1
 
 
 if __name__ == '__main__':

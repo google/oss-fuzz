@@ -217,5 +217,22 @@ class ParseOutputUnitTest(unittest.TestCase):
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
 
 
+class CheckFuzzerBuildUnitTest(unittest.TestCase):
+  """Tests the check_fuzzer_build function in the cifuzz module."""
+
+  def test_correct_fuzzer_build(self):
+    """Checks check_fuzzer_build function returns True for valid fuzzers."""
+    test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
+    self.assertTrue(cifuzz.check_fuzzer_build(test_fuzzer_dir))
+
+  def test_not_a_valid_fuzz_path(self):
+    """Tests that False is returned when a bad path is given."""
+    self.assertFalse(cifuzz.check_fuzzer_build('not/a/valid/path'))
+
+  def test_not_a_valid_fuzzer(self):
+    """Checks a directory that exists but does not have fuzzers is False."""
+    self.assertFalse(cifuzz.check_fuzzer_build(TEST_FILES_PATH))
+
+
 if __name__ == '__main__':
   unittest.main()
