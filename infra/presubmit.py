@@ -326,12 +326,13 @@ def run_tests():
   changed_dirs = set()
   for file in get_changed_files():
     changed_dirs.add(os.path.dirname(file))
+
   suite_list = []
   for change_dir in changed_dirs:
     suite_list.append(unittest.TestLoader().discover(change_dir,
                                                      pattern='*_test.py'))
   full_suite = unittest.TestSuite(suite_list)
-  unittest.TextTestRunner().run(full_suite)
+  return  not unittest.TextTestRunner().run(full_suite).failures
 
 
 def main():
@@ -361,7 +362,7 @@ def main():
     return bool_to_returncode(success)
 
   if args.command == 'test':
-    return run_tests()
+    return bool_to_returncode(run_tests())
 
   # Do all the checks (but no tests).
   success = do_checks(changed_files)
