@@ -9,3 +9,4 @@ sanitizers:
   - address
   - undefined
   - memory
+  
