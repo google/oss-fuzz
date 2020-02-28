@@ -293,7 +293,7 @@ class GetTargetCoverageReportIntegrationTest(unittest.TestCase):
                                                         self.example_fuzzer))
 
 
-class GetLatestCoverageReportIntegrationTest(unittest.TestCase):
+class GetLatestCoverageReportUnitTest(unittest.TestCase):
   """Test get_latest_cov_report_info function in the cifuzz module."""
 
   test_project = 'curl'
@@ -304,12 +304,15 @@ class GetLatestCoverageReportIntegrationTest(unittest.TestCase):
     NOTE: This test relies on the test_project repo's coverage report.
     Example was not used because it has no coverage reports.
     """
-    cov_report = cifuzz.get_latest_cov_report_info(self.test_project)
-    self.assertIsNotNone(cov_report)
-    self.assertEqual(type(cov_report), dict)
-    self.assertTrue('fuzzer_stats_dir' in cov_report)
-    self.assertTrue('html_report_url' in cov_report)
-    self.assertTrue('report_summary_path' in cov_report)
+    with unittest.mock.patch.object(cifuzz,
+                                    'get_json_from_url',
+                                    return_value='{}') as mock_fun:
+
+      cifuzz.get_latest_cov_report_info(self.test_project)
+      (url,), _ = mock_fun.call_args
+      self.assertEqual(
+          'https://storage.googleapis.com/oss-fuzz-coverage/latest_report_info/curl.json',
+          url)
 
   def test_get_invalid_project(self):
     """Tests a project's coverage report will return None if bad project."""
