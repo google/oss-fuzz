@@ -66,7 +66,7 @@ STACKTRACE_END_MARKERS = [
 ]
 
 # The path to get project's latest report json files.
-PROJECT_COVERAGE_REPORT = 'oss-fuzz-coverage/latest_report_info/'
+LATEST_REPORT_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
 
 # TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
@@ -209,42 +209,41 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
   return True, False
 
 
-def get_project_coverage_report(project_name):
-  """Gets the report json for a specific OSS-Fuzz project from GCS.
+def get_latest_cov_report_info(project_name):
+  """Gets latest coverage report info for a specific OSS-Fuzz project from GCS.
 
   Args:
     project_name: The name of the relevant OSS-Fuzz project.
 
   Returns:
-    The projects coverage json dict or None on failure.
+    The projects coverage report info in json dict or None on failure.
   """
-  project_report_url = fuzz_target.url_join(fuzz_target.GCS_BASE_URL,
-                                            PROJECT_COVERAGE_REPORT,
-                                            project_name + '.json')
-  project_cov_json = get_json_from_url(project_report_url)
-  if not project_cov_json:
-    logging.error('Could not get the coverage report json from %s.',
-                  project_report_url)
+  latest_report_info_url = fuzz_target.url_join(fuzz_target.GCS_BASE_URL,
+                                                LATEST_REPORT_INFO_PATH,
+                                                project_name + '.json')
+  latest_cov_info_json = get_json_from_url(latest_report_info_url)
+  if not latest_cov_info_json:
+    logging.error('Could not get the coverage report json from url: %s.',
+                  latest_report_info_url)
     return None
-  if 'fuzzer_stats_dir' not in project_cov_json:
-    logging.error('fuzzer_stats_dir is not a key in downloaded json.')
-    return None
-  return project_cov_json
+  return latest_cov_info_json
 
 
-def get_target_coverage_report(project_cov_report, target_name):
-  """Get the coverage report from a specific fuzz target.
+def get_target_coverage_report(latest_cov_info, target_name):
+  """Get the coverage report for a specific fuzz target.
 
   Args:
-    project_cov_report: A dict containing the project cov report data.
-    target_name: The name of the fuzz target whos coverage is requested.
+    latest_cov_info: A dict containing a project's latest cov report info.
+    target_name: The name of the fuzz target whose coverage is requested.
 
   Returns:
     The targets coverage json dict or None on failure.
   """
-  if 'fuzzer_stats_dir' not in project_cov_report:
+  if 'fuzzer_stats_dir' not in latest_cov_info:
+    logging.error('The latest coverage report information did not cointain' \
+    '\'fuzzer_stats_dir\' key.')
     return None
-  fuzzer_report_url_segment = project_cov_report['fuzzer_stats_dir']
+  fuzzer_report_url_segment = latest_cov_info['fuzzer_stats_dir']
 
   # Converting gs:// to http://
   fuzzer_report_url_segment = fuzzer_report_url_segment.replace('gs://', '')
@@ -254,14 +253,14 @@ def get_target_coverage_report(project_cov_report, target_name):
   return get_json_from_url(target_url)
 
 
-def get_files_covered_by_target(project_cov_report, target_name,
+def get_files_covered_by_target(latest_cov_info, target_name,
                                 oss_fuzz_project_base):
   """Gets a list of files covered by the specific fuzz target.
 
   Args:
-    project_cov_report: A dict containing the project cov report data.
+    latest_cov_info: A dict containing a project's latest cov report info.
     target_name: The name of the fuzz target whose coverage is requested.
-    oss_fuzz_project_base: The location where OSS-Fuzz project is cloned too for
+    oss_fuzz_project_base: The location where OSS-Fuzz project is cloned to for
       the projects build.
 
   Returns:
@@ -269,10 +268,12 @@ def get_files_covered_by_target(project_cov_report, target_name,
   """
   if not oss_fuzz_project_base:
     return None
-  target_cov = get_target_coverage_report(project_cov_report, target_name)
+  target_cov = get_target_coverage_report(latest_cov_info, target_name)
   if not target_cov:
     return None
-  if not target_cov['data'][0]['files']:
+  coverage_per_file = target_cov['data'][0]['files']
+  if not coverage_per_file:
+    logging.info('No files found in coverage report.')
     return None
 
   # Cases like curl there is /src/curl and /src/curl_fuzzers/ are handled.
@@ -280,7 +281,7 @@ def get_files_covered_by_target(project_cov_report, target_name,
     oss_fuzz_project_base += '/'
 
   affected_file_list = []
-  for file in target_cov['data'][0]['files']:
+  for file in coverage_per_file:
     if file['filename'].startswith(
         oss_fuzz_project_base) and file['summary']['regions']['count']:
       affected_file_list.append(file['filename'].replace(
@@ -307,7 +308,7 @@ def get_json_from_url(url):
   try:
     result_json = json.loads(response.read().decode())
   except ValueError as excp:
-    logging.error('Loading json failed with: %s.', str(excp))
+    logging.error('Loading json from url %s failed with: %s.', url, str(excp))
     return None
   return result_json
 

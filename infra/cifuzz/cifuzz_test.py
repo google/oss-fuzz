@@ -293,8 +293,8 @@ class GetTargetCoverageReportIntegrationTest(unittest.TestCase):
                                                         self.example_fuzzer))
 
 
-class GetProjectCoverageReportIntegrationTest(unittest.TestCase):
-  """Test get_project_coverage_report function in the cifuzz module."""
+class GetLatestCoverageReportIntegrationTest(unittest.TestCase):
+  """Test get_latest_cov_report_info function in the cifuzz module."""
 
   test_project = 'curl'
 
@@ -304,7 +304,7 @@ class GetProjectCoverageReportIntegrationTest(unittest.TestCase):
     NOTE: This test relies on the test_project repo's coverage report.
     Example was not used because it has no coverage reports.
     """
-    cov_report = cifuzz.get_project_coverage_report(self.test_project)
+    cov_report = cifuzz.get_latest_cov_report_info(self.test_project)
     self.assertIsNotNone(cov_report)
     self.assertEqual(type(cov_report), dict)
     self.assertTrue('fuzzer_stats_dir' in cov_report)
@@ -313,8 +313,8 @@ class GetProjectCoverageReportIntegrationTest(unittest.TestCase):
 
   def test_get_invalid_project(self):
     """Tests a project's coverage report will return None if bad project."""
-    self.assertIsNone(cifuzz.get_project_coverage_report('not-a-proj'))
-    self.assertIsNone(cifuzz.get_project_coverage_report(''))
+    self.assertIsNone(cifuzz.get_latest_cov_report_info('not-a-proj'))
+    self.assertIsNone(cifuzz.get_latest_cov_report_info(''))
 
 
 if __name__ == '__main__':
