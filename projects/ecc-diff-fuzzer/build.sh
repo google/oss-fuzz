@@ -127,7 +127,6 @@ mv /usr/lib/x86_64-linux-gnu/libcrypto.a /usr/lib/x86_64-linux-gnu/libcrypto_old
 mv /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libcrypto_old.so
 #build fuzz target
 cd ecfuzzer
-source $HOME/.cargo/env
 if [ "$ARCHITECTURE" = 'i386' ]; then
     export GOARCH=386
 #needed explicitly because of cross compilation cf https://golang.org/cmd/cgo/
