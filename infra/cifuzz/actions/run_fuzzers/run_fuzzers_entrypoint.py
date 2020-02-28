@@ -58,7 +58,7 @@ def main():
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
 
   # The default return code when an error occurs.
-  error_code = 1
+  returncode = 1
   if dry_run:
     # A testcase file is required in order for CIFuzz to surface bugs.
     # If the file does not exist, the action will crash attempting to upload it.
@@ -68,17 +68,17 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
 
     # Sets the default return code on error to success.
-    error_code = 0
+    returncode = 0
 
   if not workspace:
     logging.error('This script needs to be run in the Github action context.')
-    return error_code
+    return returncode
   # Run the specified project's fuzzers from the build.
   run_status, bug_found = cifuzz.run_fuzzers(fuzz_seconds, workspace,
                                              oss_fuzz_project_name)
   if not run_status:
     logging.error('Error occured while running in workspace %s.', workspace)
-    return error_code
+    return returncode
   if bug_found:
     logging.info('Bug found.')
     if not dry_run:

@@ -58,30 +58,30 @@ def main():
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
 
   # The default return code when an error occurs.
-  error_code = 1
+  returncode = 1
   if dry_run:
     # Sets the default return code on error to success.
-    error_code = 0
+    returncode = 0
 
   if not workspace:
     logging.error('This script needs to be run in the Github action context.')
-    return error_code
+    return returncode
 
   if event == 'push' and not cifuzz.build_fuzzers(
       oss_fuzz_project_name, github_repo_name, workspace,
       commit_sha=commit_sha):
     logging.error('Error building fuzzers for project %s with commit %s.',
                   oss_fuzz_project_name, commit_sha)
-    return error_code
+    return returncode
   if event == 'pull_request' and not cifuzz.build_fuzzers(
       oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
     logging.error('Error building fuzzers for project %s with pull request %s.',
                   oss_fuzz_project_name, pr_ref)
-    return error_code
+    return returncode
   out_dir = os.path.join(workspace, 'out')
   if cifuzz.check_fuzzer_build(out_dir):
     return 0
-  return 1
+  return returncode
 
 
 if __name__ == '__main__':
