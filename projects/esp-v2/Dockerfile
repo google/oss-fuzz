@@ -22,9 +22,9 @@ FROM gcr.io/oss-fuzz-base/base-builder@sha256:276813aef0ce5972db43c0230f96162003
 MAINTAINER nareddyt@google.com
 
 RUN apt-get update && apt-get -y install  \
-	build-essential \
-	openjdk-8-jdk   \
-	make            \
+    build-essential \
+    openjdk-8-jdk   \
+    make            \
     ninja-build     \
     curl            \
     autoconf        \
