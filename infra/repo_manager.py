@@ -63,8 +63,8 @@ class RepoManager:
     if not os.path.exists(self.base_dir):
       os.makedirs(self.base_dir)
     self.remove_repo()
-    out, _, _ = utils.execute(['git', 'clone', self.repo_url, self.repo_name],
-                              location=self.base_dir)
+    utils.execute(['git', 'clone', self.repo_url, self.repo_name],
+                  location=self.base_dir)
     if not self._is_git_repo():
       raise ValueError('%s is not a git repo' % self.repo_url)
 
