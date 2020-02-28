@@ -81,7 +81,7 @@ def main():
   out_dir = os.path.join(workspace, 'out')
   if cifuzz.check_fuzzer_build(out_dir):
     return 0
-  return 1
+  return error_code
 
 
 if __name__ == '__main__':
