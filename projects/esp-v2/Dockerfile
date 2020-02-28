@@ -14,6 +14,8 @@
 #
 ################################################################################
 
+## This file was copied from envoy (with minor changes).
+
 # TODO(https://github.com/google/oss-fuzz/issues/3093): Stop specifying the
 # image SHA once the bug is fixed.
 FROM gcr.io/oss-fuzz-base/base-builder@sha256:276813aef0ce5972db43c0230f96162003994fa742fb1b2f4e66c67498575c65
@@ -21,12 +23,15 @@ MAINTAINER nareddyt@google.com
 
 RUN apt-get update && apt-get -y install  \
 	build-essential \
+	openjdk-8-jdk   \
 	make            \
-  ninja-build     \
-  curl            \
-  autoconf        \
-  libtool         \
-  wget
+    ninja-build     \
+    curl            \
+    autoconf        \
+    libtool         \
+    wget            \
+    golang          \
+    python
 
 # Install Bazelisk
 RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64; \
