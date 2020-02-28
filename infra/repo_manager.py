@@ -21,6 +21,7 @@ a python API and manage the current state of the git repo.
     r_man =  RepoManager('https://github.com/google/oss-fuzz.git')
     r_man.checkout('5668cc422c2c92d38a370545d3591039fb5bb8d4')
 """
+import logging
 import os
 import shutil
 
@@ -92,6 +93,23 @@ class RepoManager:
     _, _, err_code = utils.execute(['git', 'cat-file', '-e', commit],
                                    self.repo_dir)
     return not err_code
+
+  def get_git_diff(self):
+    """Gets a list of files that have changed from the repo head.
+
+    Returns:
+      A list of changed file paths or None on Error.
+    """
+    self.fetch_unshallow()
+    out, err_msg, err_code = utils.execute(
+        ['git', 'diff', '--name-only', 'origin...'], self.repo_dir)
+    if err_code:
+      logging.error('Git diff failed with error message %s.', err_msg)
+      return None
+    if not out:
+      logging.error('No diff was found.')
+      return None
+    return [line for line in out.splitlines() if line]
 
   def get_current_commit(self):
     """Gets the current commit SHA of the repo.

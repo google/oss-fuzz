@@ -16,6 +16,7 @@ import logging
 import os
 import posixpath
 import re
+import stat
 import subprocess
 import sys
 import tempfile
@@ -147,15 +148,35 @@ class FuzzTarget:
       Returns:
         True if crash is reproducible.
     """
-    command = [
-        'docker', 'run', '--rm', '--privileged', '-v',
-        '%s:/out' % target_path, '-v',
-        '%s:/testcase' % test_case, '-t', 'gcr.io/oss-fuzz-base/base-runner',
-        'reproduce', self.target_name, '-runs=100'
+    if not os.path.exists(test_case):
+      logging.error('Test case %s is not found.', test_case)
+      return False
+    if os.path.exists(target_path):
+      os.chmod(os.path.join(target_path, self.target_name), stat.S_IRWXO)
+
+    command = ['docker', 'run', '--rm', '--privileged']
+    container = utils.get_container_name()
+    if container:
+      command += [
+          '--volumes-from', container, '-e', 'OUT=' + target_path, '-e',
+          'TESTCASE=' + test_case
+      ]
+    else:
+      command += [
+          '-v', '%s:/out' % target_path, '-v',
+          '%s:/testcase' % test_case
+      ]
+
+    command += [
+        '-t', 'gcr.io/oss-fuzz-base/base-runner', 'reproduce', self.target_name,
+        '-runs=100'
     ]
+
+    logging.info('Running reproduce command: %s.', ' '.join(command))
     for _ in range(REPRODUCE_ATTEMPTS):
-      _, _, err_code = utils.execute(command)
+      out, _, err_code = utils.execute(command)
       if err_code:
+        logging.error('Output for the reproduce command:\n%s.', out)
         return True
     return False
 

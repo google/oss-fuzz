@@ -64,6 +64,10 @@ STACKTRACE_END_MARKERS = [
     '\nExiting',
     'minidump has been written',
 ]
+#  Default fuzz configuration.
+DEFAULT_ENGINE = 'libfuzzer'
+DEFAULT_SANITIZER = 'address'
+DEFAULT_ARCHITECTURE = 'x86_64'
 
 # The path to get project's latest report json files.
 LATEST_REPORT_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
@@ -130,8 +134,9 @@ def build_fuzzers(project_name,
 
   # Build Fuzzers using docker run.
   command = [
-      '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
-      'SANITIZER=address', '-e', 'ARCHITECTURE=x86_64'
+      '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
+      'SANITIZER=' + DEFAULT_SANITIZER, '-e',
+      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
   ]
   container = utils.get_container_name()
   if container:
@@ -207,6 +212,40 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
       parse_fuzzer_output(stack_trace, artifacts_dir)
       return True, True
   return True, False
+
+
+def check_fuzzer_build(out_dir):
+  """Checks the integrity of the built fuzzers.
+
+  Args:
+    out_dir: The directory containing the fuzzer binaries.
+
+  Returns:
+    True if fuzzers are correct.
+  """
+  if not os.path.exists(out_dir):
+    logging.error('Invalid out directory: %s.', out_dir)
+    return False
+  if not os.listdir(out_dir):
+    logging.error('No fuzzers found in out directory: %s.', out_dir)
+    return False
+
+  command = [
+      '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
+      'SANITIZER=' + DEFAULT_SANITIZER, '-e',
+      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
+  ]
+  container = utils.get_container_name()
+  if container:
+    command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
+  else:
+    command += ['-v', '%s:/out' % out_dir]
+  command.extend(['-t', 'gcr.io/oss-fuzz-base/base-runner', 'test_all'])
+  exit_code = helper.docker_run(command)
+  if exit_code:
+    logging.error('Check fuzzer build failed.')
+    return False
+  return True
 
 
 def get_latest_cov_report_info(project_name):
