@@ -52,8 +52,8 @@ matrix:
         - TRAVIS_ENGINE=dataflow
         - TRAVIS_SANITIZER=dataflow
         - TRAVIS_ARCHITECTURE=x86_64
-    - name: "tests"
-      script: sudo ./infra/presubmit.py test
+    - name: "infra-tests"
+      script: sudo ./infra/presubmit.py infra-tests
 
 script: ./infra/travis/travis_build.py
 

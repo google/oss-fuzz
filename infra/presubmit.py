@@ -340,7 +340,7 @@ def main():
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
   parser.add_argument('command',
-                      choices=['format', 'lint', 'license', 'test'],
+                      choices=['format', 'lint', 'license', 'infra-tests'],
                       nargs='?')
   args = parser.parse_args()
 
@@ -361,7 +361,7 @@ def main():
     success = check_license(changed_files)
     return bool_to_returncode(success)
 
-  if args.command == 'test':
+  if args.command == 'infra-tests':
     return bool_to_returncode(run_tests())
 
   # Do all the checks (but no tests).
