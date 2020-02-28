@@ -107,7 +107,7 @@ class RepoManager:
       logging.error('Git diff failed with error message %s.', err_msg)
       return None
     if not out:
-      logging.info('No diff was found.')
+      logging.error('No diff was found.')
       return None
     return [line for line in out.splitlines() if line]
 

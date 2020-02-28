@@ -151,7 +151,7 @@ class GitDiffUnitTest(unittest.TestCase):
 
 
 class CheckoutPRIntegrationTest(unittest.TestCase):
-  """Class testing functionality of get_git_diff in the repo_manager module."""
+  """Class testing functionality of checkout_pr in the repo_manager module."""
 
   def test_pull_request_exists(self):
     """Tests that a diff is returned when a valid PR is checked out."""
