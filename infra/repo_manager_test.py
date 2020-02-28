@@ -159,6 +159,7 @@ class CheckoutPRIntegrationTest(unittest.TestCase):
       repo_man = repo_manager.RepoManager(OSS_FUZZ_REPO, tmp_dir)
       repo_man.checkout_pr('refs/pull/3415/merge')
       diff = repo_man.get_git_diff()
+      print(diff)
       self.assertCountEqual(diff, ['README.md'])
 
   def test_checkout_invalid_pull_request(self):
