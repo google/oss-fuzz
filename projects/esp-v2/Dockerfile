@@ -29,7 +29,7 @@ RUN apt-get update && apt-get -y install  \
   wget
 
 # Install Bazelisk
-RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64 \
+RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64; \
     chmod +x /usr/local/bin/bazel
 
 # Install cmake
