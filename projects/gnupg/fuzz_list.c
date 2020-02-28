@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <ftw.h>
 
+#define INCLUDED_BY_MAIN_MODULE 1
 #include "config.h"
 #include "gpg.h"
 #include "../common/types.h"
