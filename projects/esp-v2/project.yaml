@@ -1,0 +1,10 @@
+homepage: "https://github.com/GoogleCloudPlatform/esp-v2"
+primary_contact: "jilinxia@google.com"
+auto_ccs:
+- "nareddyt@google.com"
+- "taoxuy@google.com"
+- "qiwzhang@google.com"
+sanitizers:
+- address
+- undefined
+coverage_extra_args: -ignore-filename-regex=.*\.cache.*esp-v2_deps_cache.*
