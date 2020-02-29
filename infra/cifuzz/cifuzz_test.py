@@ -328,8 +328,8 @@ class GetLatestCoverageReportUnitTest(unittest.TestCase):
       cifuzz.get_latest_cov_report_info(self.test_project)
       (url,), _ = mock_fun.call_args
       self.assertEqual(
-          'https://storage.googleapis.com/oss-fuzz-coverage/latest_report_info/curl.json',
-          url)
+          'https://storage.googleapis.com/oss-fuzz-coverage/'
+          '/latest_report_info/curl.json', url)
 
   def test_get_invalid_project(self):
     """Tests a project's coverage report will return None if bad project."""
