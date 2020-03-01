@@ -437,13 +437,18 @@ cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-noasm_seed
 export CXXFLAGS="$SAVE_CXXFLAGS"
 
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile BoringSSL (with assembly)
     cd $SRC/boringssl
     rm -rf build ; mkdir build
     cd build
-    cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
+    if [[ $CFLAGS = *-m32* ]]
+    then
+        setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
+    else
+        cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
+    fi
     make -j$(nproc) crypto >/dev/null 2>&1
 
     # Compile Cryptofuzz BoringSSL (with assembly) module
