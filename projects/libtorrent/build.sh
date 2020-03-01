@@ -27,7 +27,7 @@ echo "CXXFLAGS=$CXXFLAGS"
 echo "using clang : ossfuzz : $CXX : <compileflags>\"$CXXFLAGS\" <linkflags>\"$CXXFLAGS\" <linkflags>\"${LIB_FUZZING_ENGINE}\" ;" >project-config.jam
 cat project-config.jam
 cd fuzzers
-b2 clang-ossfuzz -j$(nproc) crypto=openssl fuzz=external sanitize=off stage-large
+b2 clang-ossfuzz -j$(nproc) crypto=openssl fuzz=external sanitize=off stage-large logging=off
 cp fuzzers/* $OUT
 
 wget --no-verbose https://github.com/arvidn/libtorrent/releases/download/libtorrent-1_2_1/corpus.zip
