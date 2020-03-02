@@ -92,7 +92,7 @@ class FuzzTarget:
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
-      (test_case, stack trace, time in seconds) if found or
+      (test_case, stack trace, time in seconds) on crash or
       (None, None, time in seconds) on timeout or error.
     """
     logging.info('Fuzzer %s, started.', self.target_name)
