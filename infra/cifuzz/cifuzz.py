@@ -279,8 +279,8 @@ def get_target_coverage_report(latest_cov_info, target_name):
     The targets coverage json dict or None on failure.
   """
   if 'fuzzer_stats_dir' not in latest_cov_info:
-    logging.error('The latest coverage report information did not cointain' \
-    '\'fuzzer_stats_dir\' key.')
+    logging.error('The latest coverage report information did not contain'
+                  '\'fuzzer_stats_dir\' key.')
     return None
   fuzzer_report_url_segment = latest_cov_info['fuzzer_stats_dir']
 
@@ -304,9 +304,12 @@ def get_files_covered_by_target(latest_cov_info, target_name,
 
   Returns:
     A list of files that the fuzzer covers or None.
+
+  Raises:
+    ValueError: When the oss_fuzz_project_base is not defined.
   """
   if not oss_fuzz_project_base:
-    return None
+    raise ValueError('Project base is not defined. Can\'t get coverage')
   target_cov = get_target_coverage_report(latest_cov_info, target_name)
   if not target_cov:
     return None
@@ -345,7 +348,7 @@ def get_json_from_url(url):
     logging.error('HTTP error with url %s.', url)
     return None
   try:
-    result_json = json.loads(response.read().decode())
+    result_json = json.load(response)
   except ValueError as excp:
     logging.error('Loading json from url %s failed with: %s.', url, str(excp))
     return None

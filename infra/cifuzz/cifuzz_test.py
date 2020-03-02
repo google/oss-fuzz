@@ -329,7 +329,7 @@ class GetLatestCoverageReportUnitTest(unittest.TestCase):
       (url,), _ = mock_fun.call_args
       self.assertEqual(
           'https://storage.googleapis.com/oss-fuzz-coverage/'
-          '/latest_report_info/curl.json', url)
+          'latest_report_info/curl.json', url)
 
   def test_get_invalid_project(self):
     """Tests a project's coverage report will return None if bad project."""
