@@ -53,7 +53,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               EXAMPLE_PROJECT,
               'oss-fuzz',
               tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'), cifuzz.BuildStatus.SUCCESS)
+              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'),
+          cifuzz.BuildStatus.SUCCESS)
       self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_FUZZER)))
 
   def test_valid_pull_request(self):
@@ -65,7 +66,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           cifuzz.build_fuzzers(EXAMPLE_PROJECT,
                                'oss-fuzz',
                                tmp_dir,
-                               pr_ref='refs/pull/1757/merge'), cifuzz.BuildStatus.SUCCESS)
+                               pr_ref='refs/pull/1757/merge'),
+          cifuzz.BuildStatus.SUCCESS)
       self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_FUZZER)))
 
   def test_invalid_pull_request(self):
@@ -77,7 +79,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           cifuzz.build_fuzzers(EXAMPLE_PROJECT,
                                'oss-fuzz',
                                tmp_dir,
-                               pr_ref='ref-1/merge'), cifuzz.BuildStatus.CHECKOUT_FAIL)
+                               pr_ref='ref-1/merge'),
+          cifuzz.BuildStatus.CHECKOUT_FAIL)
 
   def test_invalid_project_name(self):
     """Test building fuzzers with invalid project name."""
@@ -87,7 +90,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               'not_a_valid_project',
               'oss-fuzz',
               tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'), cifuzz.BuildStatus.BUILD_FAIL)
+              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'),
+          cifuzz.BuildStatus.BUILD_FAIL)
 
   def test_invalid_repo_name(self):
     """Test building fuzzers with invalid repo name."""
@@ -97,24 +101,24 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               EXAMPLE_PROJECT,
               'not-real-repo',
               tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'), cifuzz.BuildStatus.BUILD_FAIL)
+              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'),
+          cifuzz.BuildStatus.BUILD_FAIL)
 
   def test_invalid_commit_sha(self):
     """Test building fuzzers with invalid commit SHA."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.assertEqual(
-        cifuzz.build_fuzzers(EXAMPLE_PROJECT,
-                             'oss-fuzz',
-                             tmp_dir,
-                             commit_sha='a'), cifuzz.BuildStatus.CHECKOUT_FAIL)
+          cifuzz.build_fuzzers(EXAMPLE_PROJECT,
+                               'oss-fuzz',
+                               tmp_dir,
+                               commit_sha='a'),
+          cifuzz.BuildStatus.CHECKOUT_FAIL)
 
   def test_no_ref_given(self):
     """Test assertion error is thrown when no ref is given."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       with self.assertRaises(AssertionError):
-        cifuzz.build_fuzzers(EXAMPLE_PROJECT,
-                             'oss-fuzz',
-                             tmp_dir)
+        cifuzz.build_fuzzers(EXAMPLE_PROJECT, 'oss-fuzz', tmp_dir)
 
   def test_invalid_workspace(self):
     """Test building fuzzers with invalid workspace."""

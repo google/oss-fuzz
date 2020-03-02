@@ -98,7 +98,7 @@ def build_fuzzers(project_name,
     commit_sha: The commit sha for the project to be built at.
 
   Returns:
-    (True if build succeeded, True if commit checkout succeeded)
+    A cifuzz.BuildStatus enum.
   """
   # Validate inputs.
   assert pr_ref or commit_sha
