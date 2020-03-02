@@ -70,6 +70,10 @@ def main():
     # Sets the default return code on error to success.
     returncode = 0
 
+  if not os.listdir(os.path.join(workspace, 'out')):
+    logging.error('No fuzzers found, check build logs.')
+    return 0
+
   if not workspace:
     logging.error('This script needs to be run in the Github action context.')
     return returncode

@@ -18,6 +18,7 @@ This module helps CI tools do the following:
 Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 
+import enum
 import logging
 import os
 import shutil
@@ -32,6 +33,14 @@ import build_specified_commit
 import helper
 import repo_manager
 import utils
+
+
+class BuildStatus(enum.Enum):
+  """Class to store return cases of build fuzzers function."""
+  SUCCESS = 1
+  CHECKOUT_FAIL = 2
+  BUILD_FAIL = 3
+
 
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
 # Used to get the beginning of the stack trace.
@@ -89,13 +98,13 @@ def build_fuzzers(project_name,
     commit_sha: The commit sha for the project to be built at.
 
   Returns:
-    True if build succeeded or False on failure.
+    (True if build succeeded, True if commit checkout succeeded)
   """
   # Validate inputs.
   assert pr_ref or commit_sha
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
-    return False
+    return BuildStatus.BUILD_FAIL
 
   git_workspace = os.path.join(workspace, 'storage')
   os.makedirs(git_workspace, exist_ok=True)
@@ -107,7 +116,7 @@ def build_fuzzers(project_name,
       project_name, repo_name=project_repo_name)
   if not inferred_url or not oss_fuzz_repo_path:
     logging.error('Could not detect repo from project %s.', project_name)
-    return False
+    return BuildStatus.BUILD_FAIL
   src_in_docker = os.path.dirname(oss_fuzz_repo_path)
   oss_fuzz_repo_name = os.path.basename(oss_fuzz_repo_path)
 
@@ -122,10 +131,10 @@ def build_fuzzers(project_name,
       build_repo_manager.checkout_commit(commit_sha)
   except RuntimeError:
     logging.error('Can not check out requested state.')
-    return False
+    return BuildStatus.CHECKOUT_FAIL
   except ValueError:
     logging.error('Invalid commit SHA requested %s.', commit_sha)
-    return False
+    return BuildStatus.CHECKOUT_FAIL
 
   # Build Fuzzers using docker run.
   command = [
@@ -156,8 +165,8 @@ def build_fuzzers(project_name,
   command.append(bash_command)
   if helper.docker_run(command):
     logging.error('Building fuzzers failed.')
-    return False
-  return True
+    return BuildStatus.BUILD_FAIL
+  return BuildStatus.SUCCESS
 
 
 def run_fuzzers(fuzz_seconds, workspace, project_name):

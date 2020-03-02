@@ -66,18 +66,26 @@ def main():
   if not workspace:
     logging.error('This script needs to be run in the Github action context.')
     return returncode
+  if event == 'push':
+    build_status = cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                        github_repo_name,
+                                        workspace,
+                                        commit_sha=commit_sha)
+  if event == 'pull_request':
+    build_status = cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                        github_repo_name,
+                                        workspace,
+                                        pr_ref=pr_ref)
 
-  if event == 'push' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace,
-      commit_sha=commit_sha):
-    logging.error('Error building fuzzers for project %s with commit %s.',
-                  oss_fuzz_project_name, commit_sha)
+  if build_status == cifuzz.BuildStatus.BUILD_FAIL:
+    logging.error('Error building fuzzers for project %s.',
+                  oss_fuzz_project_name)
     return returncode
-  if event == 'pull_request' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
-    logging.error('Error building fuzzers for project %s with pull request %s.',
-                  oss_fuzz_project_name, pr_ref)
-    return returncode
+  if build_status == cifuzz.BuildStatus.CHECKOUT_FAIL:
+    logging.error('Building fuzzers was unsuccessful. The pull request was '
+                  'probably closed before the fuzzer build finished.')
+    return 0
+
   out_dir = os.path.join(workspace, 'out')
   if cifuzz.check_fuzzer_build(out_dir):
     return 0
