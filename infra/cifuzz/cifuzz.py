@@ -162,6 +162,10 @@ def build_fuzzers(project_name,
   if helper.docker_run(command):
     logging.error('Building fuzzers failed.')
     return False
+  affected_fuzzers = get_affected_fuzzers(project_name, out_dir, build_repo_manager.get_git_diff(), oss_fuzz_repo_path)
+  if affected_fuzzers:
+    logging.info('Using affected fuzzers.\n The following fuzzers are affected: %s', ' '.join(affected_fuzzers))
+
   return True
 
 
@@ -268,6 +272,38 @@ def get_latest_cov_report_info(project_name):
   return latest_cov_info_json
 
 
+def get_affected_fuzzers(project_name, out_dir, files_changed, oss_fuzz_repo_path):
+  """Gets a list of fuzzers affected by the code change.
+
+  Args:
+    project_name: The name of the relevant OSS-Fuzz project.
+    out_dir: The location of the fuzzer binaries.
+    files_changed: A list of files changed from origin.
+    oss_fuzz_repo_path: The location of the source dir in the docker image.
+
+  Returns:
+    A list of fuzzer names.
+  """
+  fuzzer_paths = utils.get_fuzz_targets(out_dir)
+  if not fuzzer_paths:
+    logging.error('No fuzzers found in out dir.')
+    return None
+  if not files_changed:
+    logging.info('No files changed from origin.')
+    return None
+
+  latest_cov_report_info = get_latest_cov_report_info(project_name)
+  if not latest_cov_report_info:
+    logging.error('Could not download latest coverage report.')
+    return None
+  affected_fuzzers = []
+  for fuzzer in fuzzer_paths:
+    covered_files = get_files_covered_by_target(latest_cov_report_info, os.path.basename(fuzzer), oss_fuzz_repo_path)
+    if set(covered_files) & set(files_changed):
+      affected_fuzzers.append(fuzzer)
+  return affected_fuzzers
+
+
 def get_target_coverage_report(latest_cov_info, target_name):
   """Get the coverage report for a specific fuzz target.
 
@@ -293,22 +329,22 @@ def get_target_coverage_report(latest_cov_info, target_name):
 
 
 def get_files_covered_by_target(latest_cov_info, target_name,
-                                oss_fuzz_project_base):
+                                oss_fuzz_repo_path):
   """Gets a list of files covered by the specific fuzz target.
 
   Args:
     latest_cov_info: A dict containing a project's latest cov report info.
     target_name: The name of the fuzz target whose coverage is requested.
-    oss_fuzz_project_base: The location where OSS-Fuzz project is cloned to for
+    oss_fuzz_repo_path: The location where OSS-Fuzz project is cloned to for
       the projects build.
 
   Returns:
     A list of files that the fuzzer covers or None.
 
   Raises:
-    ValueError: When the oss_fuzz_project_base is not defined.
+    ValueError: When the oss_fuzz_repo_path is not defined.
   """
-  if not oss_fuzz_project_base:
+  if not oss_fuzz_repo_path:
     raise ValueError('Project base is not defined. Can\'t get coverage')
   target_cov = get_target_coverage_report(latest_cov_info, target_name)
   if not target_cov:
@@ -319,15 +355,15 @@ def get_files_covered_by_target(latest_cov_info, target_name,
     return None
 
   # Cases like curl there is /src/curl and /src/curl_fuzzers/ are handled.
-  if not oss_fuzz_project_base.endswith('/'):
-    oss_fuzz_project_base += '/'
+  if not oss_fuzz_repo_path.endswith('/'):
+    oss_fuzz_repo_path += '/'
 
   affected_file_list = []
   for file in coverage_per_file:
     if file['filename'].startswith(
-        oss_fuzz_project_base) and file['summary']['regions']['count']:
+        oss_fuzz_repo_path) and file['summary']['regions']['count']:
       affected_file_list.append(file['filename'].replace(
-          oss_fuzz_project_base, ''))
+          oss_fuzz_repo_path, ''))
   if not affected_file_list:
     return None
   return affected_file_list
