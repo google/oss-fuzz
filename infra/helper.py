@@ -171,6 +171,9 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
   shell_parser = subparsers.add_parser(
       'shell', help='Run /bin/bash within the builder container.')
   shell_parser.add_argument('project_name', help='name of the project')
+  shell_parser.add_argument('source_path',
+                            help='path of local source',
+                            nargs='?')
   _add_architecture_args(shell_parser)
   _add_engine_args(shell_parser)
   _add_sanitizer_args(shell_parser)
@@ -867,12 +870,19 @@ def shell(args):
     image_project = 'oss-fuzz'
     out_dir = _get_output_dir(args.project_name)
 
-  run_args = _env_to_docker_args(env) + [
+  run_args = _env_to_docker_args(env)
+  if args.source_path:
+    run_args.extend([
+        '-v',
+        '%s:%s' % (_get_absolute_path(args.source_path), '/src'),
+    ])
+
+  run_args.extend([
       '-v',
       '%s:/out' % out_dir, '-v',
       '%s:/work' % _get_work_dir(args.project_name), '-t',
       'gcr.io/%s/%s' % (image_project, args.project_name), '/bin/bash'
-  ]
+  ])
 
   docker_run(run_args)
   return 0
