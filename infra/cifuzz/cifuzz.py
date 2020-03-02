@@ -163,7 +163,7 @@ def build_fuzzers(project_name,
     logging.error('Building fuzzers failed.')
     return False
 
-  # Get a list of affected fuzzers.
+  # Removes non-affected fuzzers.
   keep_affected_fuzzers(project_name, out_dir,
                         build_repo_manager.get_git_diff(), src_in_docker)
   return True
@@ -342,16 +342,13 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
     out_dir: The location of the fuzzer binaries.
     files_changed: A list of files changed from origin.
     src_in_docker: The location of the source dir in the docker image.
-
-  Returns:
-    A list of fuzzer names.
   """
+  if not files_changed:
+    logging.info('No files changed from origin.')
+    return
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
     logging.error('No fuzzers found in out dir.')
-    return
-  if not files_changed:
-    logging.info('No files changed from origin.')
     return
 
   latest_cov_report_info = get_latest_cov_report_info(project_name)
