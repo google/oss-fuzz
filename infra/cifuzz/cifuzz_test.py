@@ -273,8 +273,8 @@ class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
         cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
                                            self.example_fuzzer, '/no/pe'))
     with self.assertRaises(ValueError):
-        cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
-                                           self.example_fuzzer, '')
+      cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
+                                         self.example_fuzzer, '')
 
 
 class GetTargetCoverageReportIntegrationTest(unittest.TestCase):
@@ -335,7 +335,6 @@ class GetLatestCoverageReportUnitTest(unittest.TestCase):
     """Tests a project's coverage report will return None if bad project."""
     self.assertIsNone(cifuzz.get_latest_cov_report_info('not-a-proj'))
     self.assertIsNone(cifuzz.get_latest_cov_report_info(''))
-
 
 
 if __name__ == '__main__':
