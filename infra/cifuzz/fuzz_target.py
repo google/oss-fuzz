@@ -20,6 +20,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.error
 import urllib.request
 import zipfile
@@ -91,7 +92,8 @@ class FuzzTarget:
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
-      (test_case, stack trace) if found or (None, None) on timeout or error.
+      (test_case, stack trace, time in seconds) if found or
+      (None, None, time in seconds) on timeout or error.
     """
     logging.info('Fuzzer %s, started.', self.target_name)
     docker_container = utils.get_container_name()
@@ -121,22 +123,22 @@ class FuzzTarget:
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-
+    start_time = time.time()
     try:
       _, err = process.communicate(timeout=self.duration)
     except subprocess.TimeoutExpired:
       logging.info('Fuzzer %s, finished with timeout.', self.target_name)
-      return None, None
+      return None, None, time.time() - start_time
 
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)
     if not test_case:
       logging.error('No test case found in stack trace: %s.', err_str)
-      return None, None
+      return None, None, time.time() - start_time
     if self.check_reproducibility_and_regression(test_case):
-      return test_case, err_str
-    return None, None
+      return test_case, err_str, time.time() - start_time
+    return None, None, time.time() - start_time
 
   def is_reproducible(self, test_case, target_path):
     """Checks if the test case reproduces.
