@@ -15,7 +15,6 @@
 is to assert that CIFuzz is able to detect bugs and notify users, as well as
 prevent old bugs from being uncovered."""
 
-
 import os
 import sys
 import tempfile
@@ -24,9 +23,13 @@ import unittest.mock
 
 import cifuzz
 
-os.environ['OSS_FUZZ_ROOT'] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.environ['OSS_FUZZ_ROOT'] = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__)))
 #pylint: disable=wrong-import-position
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'actions', 'build_fuzzers'))
+#pylint: disable=import-error
+sys.path.append(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'actions',
+                 'build_fuzzers'))
 import build_fuzzers_entrypoint
 
 EXAMPLE_PROJECT = 'example'
@@ -34,34 +37,71 @@ EXAMPLE_REPO = 'oss-fuzz'
 GITHUB_REF = 'refs/pull/3415/merge'
 GITHUB_EVENT_NAME = 'pull_request'
 
+
 class GitHubActionsBuildIntegrationTest(unittest.TestCase):
   """Test is_reproducible function in the fuzz_target module."""
 
   def test_dry_run_true_build_fail(self):
+    """Tests that setting dry_run mode prevents common failures."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertFalse(build_w_args('not-a-proj', EXAMPLE_REPO, 'pull_request', GITHUB_REF, tmp_dir, 'true'))
-      self.assertFalse(build_w_args(EXAMPLE_PROJECT, 'not-a-repo', 'pull_request', GITHUB_REF, tmp_dir, 'True'))
-      self.assertFalse(build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'not-a-option', GITHUB_REF, tmp_dir, 'TRUE'))
-      self.assertFalse(build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request', GITHUB_REF, 'not/a/dir', 'truE'))
+      self.assertFalse(
+          build_w_args('not-a-proj', EXAMPLE_REPO, 'pull_request', GITHUB_REF,
+                       tmp_dir, 'true'))
+      self.assertFalse(
+          build_w_args(EXAMPLE_PROJECT, 'not-a-repo', 'pull_request',
+                       GITHUB_REF, tmp_dir, 'True'))
+      self.assertFalse(
+          build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'not-a-option',
+                       GITHUB_REF, tmp_dir, 'TRUE'))
+      self.assertFalse(
+          build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request',
+                       GITHUB_REF, 'not/a/dir', 'truE'))
 
   def test_dry_run_false_build_fail(self):
+    """Test that common build failures exist with out dry_run."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertTrue(build_w_args('not-a-proj', EXAMPLE_REPO, 'pull_request', GITHUB_REF, tmp_dir, 'false'))
-      self.assertTrue(build_w_args(EXAMPLE_PROJECT, 'not-a-repo', 'pull_request', GITHUB_REF, tmp_dir, 'False'))
-      self.assertTrue(build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'not-a-option', GITHUB_REF, tmp_dir, 'FALSE'))
-      self.assertTrue(build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request', GITHUB_REF, 'not/a/dir', 'fALse'))
+      self.assertTrue(
+          build_w_args('not-a-proj', EXAMPLE_REPO, 'pull_request', GITHUB_REF,
+                       tmp_dir, 'false'))
+      self.assertTrue(
+          build_w_args(EXAMPLE_PROJECT, 'not-a-repo', 'pull_request',
+                       GITHUB_REF, tmp_dir, 'False'))
+      self.assertTrue(
+          build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'not-a-option',
+                       GITHUB_REF, tmp_dir, 'FALSE'))
+      self.assertTrue(
+          build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request',
+                       GITHUB_REF, 'not/a/dir', 'fALse'))
 
   def test_build_success(self):
+    """Tests that a projects fuzzers can be built correctly."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertFalse(build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request', GITHUB_REF, tmp_dir, 'false'))
+      self.assertFalse(
+          build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request',
+                       GITHUB_REF, tmp_dir, 'false'))
+      self.assertCountEqual(os.listdir(os.path.join(tmp_dir, 'out')), [
+          'do_stuff_fuzzer', 'do_stuff_fuzzer_seed_corpus.zip',
+          'do_stuff_fuzzer.dict'
+      ])
 
   def test_build_check(self):
+    """Checks that check fuzzers will fail on a bad build check."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      with unittest.mock.patch.object(cifuzz, 'check_fuzzer_build', side_effect=[True, False, False]):
-        self.assertFalse(build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request', GITHUB_REF, tmp_dir, 'false'))
-        self.assertFalse(build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request', GITHUB_REF, tmp_dir, 'true'))
-        self.assertTrue(build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request', GITHUB_REF, tmp_dir, 'false'))
+      with unittest.mock.patch.object(cifuzz,
+                                      'check_fuzzer_build',
+                                      side_effect=[True, False, False]):
+        self.assertFalse(
+            build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request',
+                         GITHUB_REF, tmp_dir, 'false'))
+        self.assertFalse(
+            build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request',
+                         GITHUB_REF, tmp_dir, 'true'))
+        self.assertTrue(
+            build_w_args(EXAMPLE_PROJECT, EXAMPLE_REPO, 'pull_request',
+                         GITHUB_REF, tmp_dir, 'false'))
 
+
+#pylint: disable=too-many-arguments
 def build_w_args(project, repo, event_name, ref, workspace, dry_run):
   """Tests an actions run with the specified arguments.
 
@@ -81,11 +121,13 @@ def build_w_args(project, repo, event_name, ref, workspace, dry_run):
   actions_args['GITHUB_REPOSITORY'] = repo
   actions_args['GITHUB_EVENT_NAME'] = event_name
   actions_args['GITHUB_REF'] = ref
-  actions_args['OSS_FUZZ_ROOT'] = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  actions_args['OSS_FUZZ_ROOT'] = os.path.dirname(
+      os.path.dirname(os.path.abspath(__file__)))
   actions_args['GITHUB_WORKSPACE'] = workspace
   actions_args['DRY_RUN'] = dry_run
   with unittest.mock.patch.dict(os.environ, actions_args):
     return build_fuzzers_entrypoint.main()
 
+
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
