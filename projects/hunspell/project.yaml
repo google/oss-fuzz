@@ -1,0 +1,11 @@
+homepage: "https://hunspell.github.io/"
+primary_contact: ""
+vendor_ccs:
+  - "twsmith@mozilla.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+ - i386
+ - x86_64
