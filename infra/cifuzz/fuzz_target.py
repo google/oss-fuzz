@@ -58,7 +58,7 @@ SANITIZER = 'address'
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
-# The number of seconds over max total time till a process timeout occurs.
+# Seconds on top of duration till a timeout error is raised.
 BUFFER_TIME = 10
 
 
@@ -86,7 +86,7 @@ class FuzzTarget:
       project_name: The name of the relevant OSS-Fuzz project.
     """
     self.target_name = os.path.basename(target_path)
-    self.duration = duration
+    self.duration = int(duration)
     self.target_path = target_path
     self.out_dir = out_dir
     self.project_name = project_name
@@ -115,8 +115,8 @@ class FuzzTarget:
     ]
 
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
-        fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
-    run_fuzzer_command += ' -max_total_time=' + str(self.duration)
+        fuzz_target=self.target_name,
+        options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
 
     # If corpus can be downloaded use it for fuzzing.
     latest_corpus_path = self.download_latest_corpus()
@@ -132,13 +132,16 @@ class FuzzTarget:
     try:
       _, err = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
-      logging.info('Fuzzer %s, finished with timeout.', self.target_name)
-      return None, None, time.time() - start_time
+      logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
+      return None, None
+
+    # Libfuzzer timeout has been reached.
     run_time = time.time() - start_time
     if not process.returncode:
-      logging.info('Fuzzer %s finished fuzzing with no crashes found.',
+      logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
       return None, None, run_time
+
     # Get crash info.
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)

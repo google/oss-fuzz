@@ -42,5 +42,6 @@ RUN git clone --depth 1 https://github.com/ARMmbed/mbed-crypto.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
 RUN apt-get remove -y libunwind8
+RUN apt-get install -y libssl-dev
 
 COPY build.sh $SRC/
