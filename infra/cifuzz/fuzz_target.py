@@ -58,6 +58,9 @@ SANITIZER = 'address'
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
+# The number of seconds over max total time till a process timeout occurs.
+BUFFER_TIME = 10
+
 
 class FuzzTarget:
   """A class to manage a single fuzz target.
@@ -110,8 +113,10 @@ class FuzzTarget:
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
         'bash', '-c'
     ]
+
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
         fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
+    run_fuzzer_command += ' -max_total_time=' + str(self.duration)
 
     # If corpus can be downloaded use it for fuzzing.
     latest_corpus_path = self.download_latest_corpus()
@@ -125,20 +130,24 @@ class FuzzTarget:
                                stderr=subprocess.PIPE)
     start_time = time.time()
     try:
-      _, err = process.communicate(timeout=self.duration)
+      _, err = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
       logging.info('Fuzzer %s, finished with timeout.', self.target_name)
       return None, None, time.time() - start_time
-
-    logging.info('Fuzzer %s, ended before timeout.', self.target_name)
+    run_time = time.time() - start_time
+    if not process.returncode:
+      logging.info('Fuzzer %s finished fuzzing with no crashes found.',
+                   self.target_name)
+      return None, None, run_time
+    # Get crash info.
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)
     if not test_case:
       logging.error('No test case found in stack trace: %s.', err_str)
-      return None, None, time.time() - start_time
+      return None, None, run_time
     if self.check_reproducibility_and_regression(test_case):
-      return test_case, err_str, time.time() - start_time
-    return None, None, time.time() - start_time
+      return test_case, err_str, run_time
+    return None, None, run_time
 
   def is_reproducible(self, test_case, target_path):
     """Checks if the test case reproduces.

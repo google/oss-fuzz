@@ -36,6 +36,9 @@ EXAMPLE_PROJECT = 'example'
 TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'test_files')
 
+# The name of the fuzzer to be built for build_fuzzers integration test.
+FUZZER_TO_BE_BUILT = 'do_stuff_fuzzer'
+
 # An example fuzzer that triggers a crash.
 EXAMPLE_CRASH_FUZZER = 'example_crash_fuzzer'
 
@@ -57,7 +60,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               'oss-fuzz',
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_CRASH_FUZZER)))
+      self.assertTrue(os.path.exists(os.path.join(out_path,
+                                                  FUZZER_TO_BE_BUILT)))
 
   def test_valid_pull_request(self):
     """Test building fuzzers with valid pull request."""
@@ -69,7 +73,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                                'oss-fuzz',
                                tmp_dir,
                                pr_ref='refs/pull/1757/merge'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_CRASH_FUZZER)))
+      self.assertTrue(os.path.exists(os.path.join(out_path,
+                                                  FUZZER_TO_BE_BUILT)))
 
   def test_invalid_pull_request(self):
     """Test building fuzzers with invalid pull request."""
@@ -122,25 +127,15 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         ))
 
 
-class DynamicFuzzerSchedulingIntegrationTest(unittest.TestCase):
-  """Test that the dynamic time allocation is working correctly."""
-
-  def check_total_time():
-    """With assert time elapsed is equal to time given."""
-
-
-
-
 class RunFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the cifuzz module."""
-
 
   def tearDown(self):
     """Remove any existing crashes and test files."""
     out_dir = os.path.join(TEST_FILES_PATH, 'out')
     for out_file in os.listdir(out_dir):
       out_path = os.path.join(out_dir, out_file)
-      if out_file == EXAMPLE_CRASH_FUZZER or out_file == EXAMPLE_NOCRASH_FUZZER:
+      if EXAMPLE_CRASH_FUZZER == out_file or EXAMPLE_NOCRASH_FUZZER == out_file:
         continue
       if os.path.isdir(out_path):
         shutil.rmtree(out_path)
@@ -155,7 +150,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[True, False]):
-      run_success, bug_found = cifuzz.run_fuzzers(100, TEST_FILES_PATH,
+      run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       self.assertTrue(os.path.exists(build_dir))
@@ -168,7 +163,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
                                     side_effect=[True, True]):
-      run_success, bug_found = cifuzz.run_fuzzers(100, TEST_FILES_PATH,
+      run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       self.assertTrue(os.path.exists(build_dir))
@@ -181,7 +176,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = cifuzz.run_fuzzers(100, tmp_dir, EXAMPLE_PROJECT)
+      run_success, bug_found = cifuzz.run_fuzzers(10, tmp_dir, EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -196,7 +191,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_out_dir(self):
     """Tests run_fuzzers with an invalid out directory."""
-    run_success, bug_found = cifuzz.run_fuzzers(100, 'not/a/valid/path',
+    run_success, bug_found = cifuzz.run_fuzzers(10, 'not/a/valid/path',
                                                 EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
