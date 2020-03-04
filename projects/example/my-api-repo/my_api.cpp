@@ -23,3 +23,9 @@ size_t DoStuff(const std::string &str) {
     Idx++;
   return Vec[Idx];
 }
+
+// Do some computations with 'str', return the result.
+size_t DoStuffWell(const std::string &str) {
+  std::vector<int> Vec({0, 1, 2, 3, 4,});
+  return Vec[str.size() % 5];
+}
