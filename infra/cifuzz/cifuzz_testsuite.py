@@ -31,13 +31,13 @@ def main():
   """Runs all relevant CIFuzz tests in a docker container."""
 
   parser = argparse.ArgumentParser(description='Run CIFuzz test suite.')
-  parser.add_argument('--no_docker',
-                      action='store_true')
+  parser.add_argument('--no_docker', action='store_true')
   args = parser.parse_args()
 
   if args.no_docker:
     print('Running CIFuzz tests outside of container.')
-    full_suite = unittest.TestLoader().discover(os.path.dirname(os.path.abspath(__file__)) ,
+    full_suite = unittest.TestLoader().discover(os.path.dirname(
+        os.path.abspath(__file__)),
                                                 pattern='*_test.py')
     return len(unittest.TextTestRunner().run(full_suite).failures)
 
