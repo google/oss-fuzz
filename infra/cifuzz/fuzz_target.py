@@ -57,7 +57,7 @@ SANITIZER = 'address'
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
-# Seconds ontop of duration till a timeout error is raised.
+# Seconds on top of duration till a timeout error is raised.
 BUFFER_TIME = 10
 
 
