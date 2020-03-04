@@ -53,7 +53,9 @@ do
   declare TAGGED=$(bazel query "attr('tags', 'no_fuzz', ${t})")
   if [ -z "${TAGGED}" ]
   then
-    FILTERED_FUZZER_TARGETS+="$t "
+    BASE_PATH=${t//://}
+    BASE_PATH=${BASE_PATH#"//"}
+    FILTERED_FUZZER_TARGETS+="${BASE_PATH} "
     BAZEL_BUILD_TARGETS+="${t}_driverless "
     BAZEL_CORPUS_TARGETS+="${t}_corpus_tar "
   fi
