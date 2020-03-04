@@ -57,6 +57,9 @@ SANITIZER = 'address'
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
+# Seconds ontop of duration till a timeout error is raised.
+BUFFER_TIME = 10
+
 
 class FuzzTarget:
   """A class to manage a single fuzz target.
@@ -110,6 +113,7 @@ class FuzzTarget:
     ]
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
         fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
+    run_fuzzer_command += ' -max_total_time=' + str(self.duration)
 
     # If corpus can be downloaded use it for fuzzing.
     latest_corpus_path = self.download_latest_corpus()
@@ -121,13 +125,20 @@ class FuzzTarget:
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-
     try:
-      _, err = process.communicate(timeout=self.duration)
+      _, err = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
-      logging.info('Fuzzer %s, finished with timeout.', self.target_name)
+      logging.error('Fuzzer %s timeout expired, ending fuzzing.',
+                    self.target_name)
       return None, None
 
+    # Libfuzzer timeout has been reached.
+    if not process.returncode:
+      logging.info('Fuzzer %s finished with no crashes discovered.',
+                   self.target_name)
+      return None, None
+
+    # Crash has been discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)
