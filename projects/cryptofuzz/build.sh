@@ -67,15 +67,9 @@ then
     mv $SRC/nss $SRC/nss-nspr/
     mv $SRC/nspr $SRC/nss-nspr/
     cd $SRC/nss-nspr/
-    if [[ $CFLAGS = *sanitize=address* ]]
-    then
-        CFLAGS="" CXXFLAGS="" nss/build.sh --asan --static
-    elif [[ $CFLAGS = *sanitize=memory* ]]
-    then
-        CFLAGS="" CXXFLAGS="" nss/build.sh --msan --static
-    else
-        CFLAGS="" CXXFLAGS="" nss/build.sh --ubsan --static
-    fi
+
+    CXX="$CXX -stdlib=libc++" LDFLAGS="$CFLAGS" nss/build.sh --enable-fips --static --disable-tests --fuzz=oss
+
     export NSS_NSPR_PATH=$(realpath $SRC/nss-nspr/)
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NSS"
     export LINK_FLAGS="$LINK_FLAGS -lsqlite3"
