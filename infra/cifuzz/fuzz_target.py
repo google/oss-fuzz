@@ -128,7 +128,7 @@ class FuzzTarget:
     try:
       _, err = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
-      logging.error('Fuzzer %s timeout expired, ending fuzzing.',
+      logging.error('Fuzzer %s timed out, ending fuzzing.',
                     self.target_name)
       return None, None
 
