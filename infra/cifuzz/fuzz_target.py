@@ -85,7 +85,7 @@ class FuzzTarget:
       project_name: The name of the relevant OSS-Fuzz project.
     """
     self.target_name = os.path.basename(target_path)
-    self.duration = duration
+    self.duration = int(duration)
     self.target_path = target_path
     self.out_dir = out_dir
     self.project_name = project_name
@@ -112,8 +112,8 @@ class FuzzTarget:
         'bash', '-c'
     ]
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
-        fuzz_target=self.target_name, options=LIBFUZZER_OPTIONS)
-    run_fuzzer_command += ' -max_total_time=' + str(self.duration)
+        fuzz_target=self.target_name,
+        options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
 
     # If corpus can be downloaded use it for fuzzing.
     latest_corpus_path = self.download_latest_corpus()
@@ -128,8 +128,7 @@ class FuzzTarget:
     try:
       _, err = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
-      logging.error('Fuzzer %s timed out, ending fuzzing.',
-                    self.target_name)
+      logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
       return None, None
 
     # Libfuzzer timeout has been reached.
