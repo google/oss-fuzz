@@ -86,7 +86,8 @@ class GetTestCaseUnitTest(unittest.TestCase):
   def test_with_valid_error_string(self):
     """Tests that get_test_case returns the correct test case give an error."""
     test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'test_files', 'example_crash_fuzzer_output.txt')
+                                  'test_files',
+                                  'example_crash_fuzzer_output.txt')
     with open(test_case_path, 'r') as test_fuzz_output:
       parsed_test_case = self.test_target.get_test_case(test_fuzz_output.read())
     self.assertEqual(
