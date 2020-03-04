@@ -20,8 +20,7 @@
 export CFLAGS="$CFLAGS"
 export CXXFLAGS="$CXXFLAGS"
 
-declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzz_test.cc)
-declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}"; done)"
+declare -r FUZZER_TARGETS=$(bazel query 'src/...' --output label | grep '_fuzz_test$')
 
 FUZZER_DICTIONARIES="\
 "
