@@ -65,7 +65,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'),
           cifuzz.BuildStatus.SUCCESS)
-      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
+      self.assertTrue(
+          os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
   def test_valid_pull_request(self):
     """Test building fuzzers with valid pull request."""
@@ -78,7 +79,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                                tmp_dir,
                                pr_ref='refs/pull/1757/merge'),
           cifuzz.BuildStatus.SUCCESS)
-      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
+      self.assertTrue(
+          os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
   def test_invalid_pull_request(self):
     """Test building fuzzers with invalid pull request."""
