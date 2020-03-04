@@ -54,8 +54,10 @@ class GetFuzzTargetsUnitTest(unittest.TestCase):
   def test_valid_filepath(self):
     """Tests that fuzz targets can be retrieved once the fuzzers are built."""
     fuzz_targets = utils.get_fuzz_targets(TEST_OUT_DIR)
-    self.assertCountEqual(fuzz_targets,
-                          [os.path.join(TEST_OUT_DIR, 'example_crash_fuzzer'),os.path.join(TEST_OUT_DIR, 'example_nocrash_fuzzer')])
+    self.assertCountEqual(fuzz_targets, [
+        os.path.join(TEST_OUT_DIR, 'example_crash_fuzzer'),
+        os.path.join(TEST_OUT_DIR, 'example_nocrash_fuzzer')
+    ])
     fuzz_targets = utils.get_fuzz_targets(
         os.path.join(helper.OSSFUZZ_DIR, 'infra'))
     self.assertFalse(fuzz_targets)

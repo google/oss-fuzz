@@ -33,8 +33,11 @@ import utils
 EXAMPLE_PROJECT = 'example'
 
 # An example fuzzer that triggers an error.
-EXAMPLE_FUZZER = 'do_stuff_fuzzer'
+EXAMPLE_FUZZER = 'example_crash_fuzzer'
 
+# Location of files used for testing.
+TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'test_files')
 
 class IsReproducibleUnitTest(unittest.TestCase):
   """Test is_reproducible function in the fuzz_target module."""
@@ -51,17 +54,14 @@ class IsReproducibleUnitTest(unittest.TestCase):
                                     'execute',
                                     side_effect=test_all_success) as patch:
       self.assertTrue(
-          self.test_target.is_reproducible('/fake/path/to/testcase',
-                                           '/fake/target'))
+          self.test_target.is_reproducible(TEST_FILES_PATH, os.path.join(TEST_FILES_PATH, 'out', 'EXAMPLE_FUZZER')))
       self.assertEqual(1, patch.call_count)
 
     test_one_success = [(0, 0, 0)] * 9 + [(0, 0, 1)]
     with unittest.mock.patch.object(utils,
                                     'execute',
                                     side_effect=test_one_success) as patch:
-      self.assertTrue(
-          self.test_target.is_reproducible('/fake/path/to/testcase',
-                                           '/fake/target'))
+      self.assertTrue(self.test_target.is_reproducible(TEST_FILES_PATH, os.path.join(TEST_FILES_PATH, 'out', 'EXAMPLE_FUZZER')))
       self.assertEqual(10, patch.call_count)
 
   def test_with_not_reproducible(self):
@@ -69,9 +69,7 @@ class IsReproducibleUnitTest(unittest.TestCase):
     test_all_fail = [(0, 0, 0)] * 10
     with unittest.mock.patch.object(utils, 'execute',
                                     side_effect=test_all_fail) as patch:
-      self.assertFalse(
-          self.test_target.is_reproducible('/fake/path/to/testcase',
-                                           '/fake/target'))
+      self.assertFalse(self.test_target.is_reproducible(TEST_FILES_PATH, os.path.join(TEST_FILES_PATH, 'out', 'EXAMPLE_FUZZER')))
       self.assertEqual(10, patch.call_count)
 
 
