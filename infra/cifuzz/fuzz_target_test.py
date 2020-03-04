@@ -33,7 +33,7 @@ import utils
 EXAMPLE_PROJECT = 'example'
 
 # An example fuzzer that triggers an error.
-EXAMPLE_FUZZER = 'do_stuff_fuzzer'
+EXAMPLE_CRASH_FUZZER = 'do_stuff_fuzzer'
 
 
 class IsReproducibleUnitTest(unittest.TestCase):
@@ -86,7 +86,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
   def test_with_valid_error_string(self):
     """Tests that get_test_case returns the correct test case give an error."""
     test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'test_files', 'example_fuzzer_output.txt')
+                                  'test_files', 'example_fuzzer_crash_output.txt')
     with open(test_case_path, 'r') as test_fuzz_output:
       parsed_test_case = self.test_target.get_test_case(test_fuzz_output.read())
     self.assertEqual(
@@ -107,7 +107,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
       test_target.project_name = EXAMPLE_PROJECT
-      test_target.target_name = EXAMPLE_FUZZER
+      test_target.target_name = EXAMPLE_CRASH_FUZZER
       test_target.out_dir = tmp_dir
       with unittest.mock.patch.object(fuzz_target,
                                       'download_and_unpack_zip',
@@ -121,7 +121,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
             'example_do_stuff_fuzzer/public.zip'
         )
         self.assertEqual(out_dir,
-                         os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_FUZZER))
+                         os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_CRASH_FUZZER))
 
   def test_download_invalid_projects_corpus(self):
     """Tests that a invaild fuzz target will not return None."""

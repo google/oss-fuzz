@@ -36,8 +36,11 @@ EXAMPLE_PROJECT = 'example'
 TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'test_files')
 
-# An example fuzzer that triggers an error.
-EXAMPLE_FUZZER = 'do_stuff_fuzzer'
+# An example fuzzer that triggers a crash.
+EXAMPLE_CRASH_FUZZER = 'example_crash_fuzzer'
+
+# An example fuzzer that triggers no error.
+EXAMPLE_NOCRASH_FUZZER = 'example_nocrash_fuzzer'
 
 
 class BuildFuzzersIntegrationTest(unittest.TestCase):
@@ -54,7 +57,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               'oss-fuzz',
               tmp_dir,
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_FUZZER)))
+      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_CRASH_FUZZER)))
 
   def test_valid_pull_request(self):
     """Test building fuzzers with valid pull request."""
@@ -66,7 +69,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                                'oss-fuzz',
                                tmp_dir,
                                pr_ref='refs/pull/1757/merge'))
-      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_FUZZER)))
+      self.assertTrue(os.path.exists(os.path.join(out_path, EXAMPLE_CRASH_FUZZER)))
 
   def test_invalid_pull_request(self):
     """Test building fuzzers with invalid pull request."""
@@ -119,15 +122,25 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         ))
 
 
+class DynamicFuzzerSchedulingIntegrationTest(unittest.TestCase):
+  """Test that the dynamic time allocation is working correctly."""
+
+  def check_total_time():
+    """With assert time elapsed is equal to time given."""
+
+
+
+
 class RunFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the cifuzz module."""
+
 
   def tearDown(self):
     """Remove any existing crashes and test files."""
     out_dir = os.path.join(TEST_FILES_PATH, 'out')
     for out_file in os.listdir(out_dir):
       out_path = os.path.join(out_dir, out_file)
-      if out_file == EXAMPLE_FUZZER:
+      if out_file == EXAMPLE_CRASH_FUZZER or out_file == EXAMPLE_NOCRASH_FUZZER:
         continue
       if os.path.isdir(out_path):
         shutil.rmtree(out_path)
@@ -195,7 +208,7 @@ class ParseOutputUnitTest(unittest.TestCase):
   def test_parse_valid_output(self):
     """Checks that the parse fuzzer output can correctly parse output."""
     test_output_path = os.path.join(TEST_FILES_PATH,
-                                    'example_fuzzer_output.txt')
+                                    'example_fuzzer_crash_output.txt')
     test_summary_path = os.path.join(TEST_FILES_PATH, 'bug_summary_example.txt')
     with tempfile.TemporaryDirectory() as tmp_dir:
       with open(test_output_path, 'r') as test_fuzz_output:
