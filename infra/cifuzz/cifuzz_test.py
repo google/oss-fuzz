@@ -362,7 +362,7 @@ class GetLatestCoverageReportUnitTest(unittest.TestCase):
 
 
 class KeepAffectedFuzzersUnitTest(unittest.TestCase):
-  """Test the keep_affected_fuzzer detection in the CIFuzz module."""
+  """Test the keep_affected_fuzzer method in the CIFuzz module."""
 
   test_fuzzer_1 = os.path.join(TEST_FILES_PATH, 'out', 'example_crash_fuzzer')
   test_fuzzer_2 = os.path.join(TEST_FILES_PATH, 'out', 'example_nocrash_fuzzer')
@@ -396,7 +396,7 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
         self.assertEqual(2, len(os.listdir(tmp_dir)))
 
   def test_both_fuzzers_kept_fuzzer(self):
-    """Tests that if both fuzzers are affected then all fuzzers are kept."""
+    """Tests that if both fuzzers are affected then both fuzzers are kept."""
     with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
         cifuzz, 'get_latest_cov_report_info', return_value=1):
       shutil.copy(self.test_fuzzer_1, tmp_dir)
