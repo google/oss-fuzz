@@ -367,6 +367,7 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
     covered_files = get_files_covered_by_target(latest_cov_report_info,
                                                 os.path.basename(fuzzer),
                                                 src_in_docker)
+
     if covered_files and set(covered_files) & set(files_changed):
       affected_fuzzers.append(os.path.basename(fuzzer))
 
@@ -381,7 +382,7 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
   for file in os.listdir(out_dir):
     if file not in affected_fuzzers:
       try:
-        os.remove(file)
+        os.remove(os.path.join(out_dir, file))
       except OSError as error:
         logging.error('%s occured while removing file %s', error, file)
 
