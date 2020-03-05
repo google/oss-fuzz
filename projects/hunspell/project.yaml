@@ -1,6 +1,9 @@
 homepage: "https://hunspell.github.io/"
-primary_contact: ""
+primary_contact: "caolanm@redhat.com"
+auto_ccs:
+  - "security@documentfoundation.org"
 vendor_ccs:
+  - "eakhgari@mozilla.com"
   - "twsmith@mozilla.com"
 sanitizers:
   - address
