@@ -258,11 +258,11 @@ class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
   def setUp(self):
     with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
               'r') as file:
-      self.envoy_cov_exmp = json.loads(file.read())
+      self.proj_cov_report_example = json.loads(file.read())
 
   def test_valid_target(self):
     """Tests that covered files can be retrieved from a coverage report."""
-    file_list = cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
+    file_list = cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
                                                    self.example_fuzzer,
                                                    '/src/curl')
 
@@ -274,19 +274,19 @@ class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
   def test_invalid_target(self):
     """Test asserts an invalid fuzzer returns None."""
     self.assertIsNone(
-        cifuzz.get_files_covered_by_target(self.envoy_cov_exmp, 'not-a-fuzzer',
+        cifuzz.get_files_covered_by_target(self.proj_cov_report_example, 'not-a-fuzzer',
                                            '/src/curl'))
     self.assertIsNone(
-        cifuzz.get_files_covered_by_target(self.envoy_cov_exmp, '',
+        cifuzz.get_files_covered_by_target(self.proj_cov_report_example, '',
                                            '/src/curl'))
 
   def test_invalid_project_build_dir(self):
     """Test asserts an invalid build dir returns None."""
     self.assertIsNone(
-        cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
+        cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
                                            self.example_fuzzer, '/no/pe'))
     self.assertIsNone(
-        cifuzz.get_files_covered_by_target(self.envoy_cov_exmp,
+        cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
                                            self.example_fuzzer, ''))
 
 
