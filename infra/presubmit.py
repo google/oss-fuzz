@@ -332,7 +332,8 @@ def run_tests():
     suite_list.append(unittest.TestLoader().discover(change_dir,
                                                      pattern='*_test.py'))
   full_suite = unittest.TestSuite(suite_list)
-  return not unittest.TextTestRunner().run(full_suite).failures
+  result = unittest.TextTestRunner().run(full_suite)
+  return not result.failures
 
 
 def main():
