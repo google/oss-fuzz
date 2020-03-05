@@ -39,6 +39,7 @@ EXAMPLE_FUZZER = 'example_crash_fuzzer'
 TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'test_files')
 
+
 class IsReproducibleUnitTest(unittest.TestCase):
   """Test is_reproducible function in the fuzz_target module."""
 
@@ -54,14 +55,15 @@ class IsReproducibleUnitTest(unittest.TestCase):
                                     'execute',
                                     side_effect=test_all_success) as patch:
       self.assertTrue(
-          self.test_target.is_reproducible(TEST_FILES_PATH, os.path.join(TEST_FILES_PATH, 'out', 'EXAMPLE_FUZZER')))
+          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
       self.assertEqual(1, patch.call_count)
 
     test_one_success = [(0, 0, 0)] * 9 + [(0, 0, 1)]
     with unittest.mock.patch.object(utils,
                                     'execute',
                                     side_effect=test_one_success) as patch:
-      self.assertTrue(self.test_target.is_reproducible(TEST_FILES_PATH, os.path.join(TEST_FILES_PATH, 'out', 'EXAMPLE_FUZZER')))
+      self.assertTrue(
+          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
       self.assertEqual(10, patch.call_count)
 
   def test_with_not_reproducible(self):
@@ -69,7 +71,8 @@ class IsReproducibleUnitTest(unittest.TestCase):
     test_all_fail = [(0, 0, 0)] * 10
     with unittest.mock.patch.object(utils, 'execute',
                                     side_effect=test_all_fail) as patch:
-      self.assertFalse(self.test_target.is_reproducible(TEST_FILES_PATH, os.path.join(TEST_FILES_PATH, 'out', 'EXAMPLE_FUZZER')))
+      self.assertFalse(
+          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
       self.assertEqual(10, patch.call_count)
 
 
@@ -117,7 +120,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
             url,
             'https://storage.googleapis.com/example-backup.' \
             'clusterfuzz-external.appspot.com/corpus/libFuzzer/' \
-            'example_do_stuff_fuzzer/public.zip'
+            'example_crash_fuzzer/public.zip'
         )
         self.assertEqual(out_dir,
                          os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_FUZZER))
