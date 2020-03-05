@@ -17,8 +17,6 @@ matrix:
       install:
         - pip install -r infra/dev-requirements.txt
       script: ./infra/presubmit.py
-    - name: "tests"
-      script: sudo ./infra/presubmit.py test
     - name: "libfuzzer address x86_64"
       env:
         - TRAVIS_ENGINE=libfuzzer
@@ -54,6 +52,8 @@ matrix:
         - TRAVIS_ENGINE=dataflow
         - TRAVIS_SANITIZER=dataflow
         - TRAVIS_ARCHITECTURE=x86_64
+    - name: "infra-tests"
+      script: sudo ./infra/presubmit.py infra-tests
 
 script: ./infra/travis/travis_build.py
 
