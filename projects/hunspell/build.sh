@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-mv -f ./tests/*.aff $OUT/
-mv -f ./tests/*.dic $OUT/
+mv -f ./tests/korean.* $OUT/
+mv -f ./tests/utf8_nonbmp.* $OUT/
 
 autoreconf -vfi
 ./configure --disable-shared --enable-static
