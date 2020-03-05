@@ -248,10 +248,11 @@ class CheckFuzzerBuildUnitTest(unittest.TestCase):
     self.assertFalse(cifuzz.check_fuzzer_build(TEST_FILES_PATH))
 
 
-class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
+class GetFilesCoveredByTargetUnitTest(unittest.TestCase):
   """Test to get the files covered by a fuzz target in the cifuzz module."""
 
   example_cov_json = 'example_curl_cov.json'
+  example_fuzzer_cov_json = 'example_curl_fuzzer_cov.json'
   example_fuzzer = 'curl_fuzzer'
   example_curl_file_list = 'example_curl_file_list'
 
@@ -259,12 +260,19 @@ class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
     with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
               'r') as file:
       self.proj_cov_report_example = json.loads(file.read())
+    with open(os.path.join(TEST_FILES_PATH, self.example_fuzzer_cov_json),
+              'r') as file:
+      self.fuzzer_cov_report_example = json.loads(file.read())
 
   def test_valid_target(self):
     """Tests that covered files can be retrieved from a coverage report."""
-    file_list = cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
-                                                   self.example_fuzzer,
-                                                   '/src/curl')
+
+    with unittest.mock.patch.object(
+        cifuzz,
+        'get_target_coverage_report',
+        return_value=self.fuzzer_cov_report_example):
+      file_list = cifuzz.get_files_covered_by_target(
+          self.proj_cov_report_example, self.example_fuzzer, '/src/curl')
 
     with open(os.path.join(TEST_FILES_PATH, 'example_curl_file_list'),
               'rb') as file_handle:
@@ -290,7 +298,7 @@ class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
                                            self.example_fuzzer, ''))
 
 
-class GetTargetCoverageReportIntegrationTest(unittest.TestCase):
+class GetTargetCoverageReporUnitTest(unittest.TestCase):
   """Test get_target_coverage_report function in the cifuzz module."""
 
   example_cov_json = 'example_curl_cov.json'
@@ -303,11 +311,14 @@ class GetTargetCoverageReportIntegrationTest(unittest.TestCase):
 
   def test_valid_target(self):
     """Test a target's coverage report can be downloaded and parsed."""
-    target_report = cifuzz.get_target_coverage_report(self.cov_exmp,
-                                                      self.example_fuzzer)
-    self.assertIsNotNone(target_report['data'][0]['files'])
-    self.assertIsNotNone(target_report['version'])
-    self.assertEqual(840, len(target_report['data'][0]['files']))
+    with unittest.mock.patch.object(cifuzz,
+                                    'get_json_from_url',
+                                    return_value='{}') as mock_get_json:
+      cifuzz.get_target_coverage_report(self.cov_exmp, self.example_fuzzer)
+      (url,), _ = mock_get_json.call_args
+      self.assertEqual(
+          'https://storage.googleapis.com/oss-fuzz-coverage/'
+          'curl/fuzzer_stats/20200226/curl_fuzzer.json', url)
 
   def test_invalid_target(self):
     """Test an invalid target coverage report will be None."""

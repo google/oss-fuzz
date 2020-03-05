@@ -309,7 +309,7 @@ def get_files_covered_by_target(latest_cov_info, target_name,
     ValueError: When the oss_fuzz_project_base is not defined.
   """
   if not oss_fuzz_project_base:
-    raise ValueError('Project base is not defined. Can\'t get coverage')
+    return None
   target_cov = get_target_coverage_report(latest_cov_info, target_name)
   if not target_cov:
     return None
