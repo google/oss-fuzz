@@ -15,8 +15,9 @@
 1. Building fuzzers.
 2. Running fuzzers.
 """
-
+import json
 import os
+import pickle
 import shutil
 import sys
 import tempfile
@@ -245,6 +246,119 @@ class CheckFuzzerBuildUnitTest(unittest.TestCase):
   def test_not_a_valid_fuzzer(self):
     """Checks a directory that exists but does not have fuzzers is False."""
     self.assertFalse(cifuzz.check_fuzzer_build(TEST_FILES_PATH))
+
+
+class GetFilesCoveredByTargetUnitTest(unittest.TestCase):
+  """Test to get the files covered by a fuzz target in the cifuzz module."""
+
+  example_cov_json = 'example_curl_cov.json'
+  example_fuzzer_cov_json = 'example_curl_fuzzer_cov.json'
+  example_fuzzer = 'curl_fuzzer'
+  example_curl_file_list = 'example_curl_file_list'
+
+  def setUp(self):
+    with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
+              'r') as file:
+      self.proj_cov_report_example = json.loads(file.read())
+    with open(os.path.join(TEST_FILES_PATH, self.example_fuzzer_cov_json),
+              'r') as file:
+      self.fuzzer_cov_report_example = json.loads(file.read())
+
+  def test_valid_target(self):
+    """Tests that covered files can be retrieved from a coverage report."""
+
+    with unittest.mock.patch.object(
+        cifuzz,
+        'get_target_coverage_report',
+        return_value=self.fuzzer_cov_report_example):
+      file_list = cifuzz.get_files_covered_by_target(
+          self.proj_cov_report_example, self.example_fuzzer, '/src/curl')
+
+    with open(os.path.join(TEST_FILES_PATH, 'example_curl_file_list'),
+              'rb') as file_handle:
+      true_files_list = pickle.load(file_handle)
+    self.assertCountEqual(file_list, true_files_list)
+
+  def test_invalid_target(self):
+    """Test asserts an invalid fuzzer returns None."""
+    self.assertIsNone(
+        cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
+                                           'not-a-fuzzer', '/src/curl'))
+    self.assertIsNone(
+        cifuzz.get_files_covered_by_target(self.proj_cov_report_example, '',
+                                           '/src/curl'))
+
+  def test_invalid_project_build_dir(self):
+    """Test asserts an invalid build dir returns None."""
+    self.assertIsNone(
+        cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
+                                           self.example_fuzzer, '/no/pe'))
+    self.assertIsNone(
+        cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
+                                           self.example_fuzzer, ''))
+
+
+class GetTargetCoverageReporUnitTest(unittest.TestCase):
+  """Test get_target_coverage_report function in the cifuzz module."""
+
+  example_cov_json = 'example_curl_cov.json'
+  example_fuzzer = 'curl_fuzzer'
+
+  def setUp(self):
+    with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
+              'r') as file:
+      self.cov_exmp = json.loads(file.read())
+
+  def test_valid_target(self):
+    """Test a target's coverage report can be downloaded and parsed."""
+    with unittest.mock.patch.object(cifuzz,
+                                    'get_json_from_url',
+                                    return_value='{}') as mock_get_json:
+      cifuzz.get_target_coverage_report(self.cov_exmp, self.example_fuzzer)
+      (url,), _ = mock_get_json.call_args
+      self.assertEqual(
+          'https://storage.googleapis.com/oss-fuzz-coverage/'
+          'curl/fuzzer_stats/20200226/curl_fuzzer.json', url)
+
+  def test_invalid_target(self):
+    """Test an invalid target coverage report will be None."""
+    self.assertIsNone(
+        cifuzz.get_target_coverage_report(self.cov_exmp, 'not-valid-target'))
+    self.assertIsNone(cifuzz.get_target_coverage_report(self.cov_exmp, ''))
+
+  def test_invalid_project_json(self):
+    """Test a project json coverage report will be None."""
+    self.assertIsNone(
+        cifuzz.get_target_coverage_report('not-a-proj', self.example_fuzzer))
+    self.assertIsNone(cifuzz.get_target_coverage_report('',
+                                                        self.example_fuzzer))
+
+
+class GetLatestCoverageReportUnitTest(unittest.TestCase):
+  """Test get_latest_cov_report_info function in the cifuzz module."""
+
+  test_project = 'curl'
+
+  def test_get_valid_project(self):
+    """Tests that a project's coverage report can be downloaded and parsed.
+
+    NOTE: This test relies on the test_project repo's coverage report.
+    Example was not used because it has no coverage reports.
+    """
+    with unittest.mock.patch.object(cifuzz,
+                                    'get_json_from_url',
+                                    return_value='{}') as mock_fun:
+
+      cifuzz.get_latest_cov_report_info(self.test_project)
+      (url,), _ = mock_fun.call_args
+      self.assertEqual(
+          'https://storage.googleapis.com/oss-fuzz-coverage/'
+          'latest_report_info/curl.json', url)
+
+  def test_get_invalid_project(self):
+    """Tests a project's coverage report will return None if bad project."""
+    self.assertIsNone(cifuzz.get_latest_cov_report_info('not-a-proj'))
+    self.assertIsNone(cifuzz.get_latest_cov_report_info(''))
 
 
 if __name__ == '__main__':

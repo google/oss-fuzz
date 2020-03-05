@@ -18,10 +18,13 @@ This module helps CI tools do the following:
 Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 
+import json
 import logging
 import os
 import shutil
 import sys
+import urllib.error
+import urllib.request
 
 import fuzz_target
 
@@ -66,6 +69,9 @@ STACKTRACE_END_MARKERS = [
 DEFAULT_ENGINE = 'libfuzzer'
 DEFAULT_SANITIZER = 'address'
 DEFAULT_ARCHITECTURE = 'x86_64'
+
+# The path to get project's latest report json files.
+LATEST_REPORT_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
 
 # TODO: Turn default logging to WARNING when CIFuzz is stable
 logging.basicConfig(
@@ -241,6 +247,117 @@ def check_fuzzer_build(out_dir):
     logging.error('Check fuzzer build failed.')
     return False
   return True
+
+
+def get_latest_cov_report_info(project_name):
+  """Gets latest coverage report info for a specific OSS-Fuzz project from GCS.
+
+  Args:
+    project_name: The name of the relevant OSS-Fuzz project.
+
+  Returns:
+    The projects coverage report info in json dict or None on failure.
+  """
+  latest_report_info_url = fuzz_target.url_join(fuzz_target.GCS_BASE_URL,
+                                                LATEST_REPORT_INFO_PATH,
+                                                project_name + '.json')
+  latest_cov_info_json = get_json_from_url(latest_report_info_url)
+  if not latest_cov_info_json:
+    logging.error('Could not get the coverage report json from url: %s.',
+                  latest_report_info_url)
+    return None
+  return latest_cov_info_json
+
+
+def get_target_coverage_report(latest_cov_info, target_name):
+  """Get the coverage report for a specific fuzz target.
+
+  Args:
+    latest_cov_info: A dict containing a project's latest cov report info.
+    target_name: The name of the fuzz target whose coverage is requested.
+
+  Returns:
+    The targets coverage json dict or None on failure.
+  """
+  if 'fuzzer_stats_dir' not in latest_cov_info:
+    logging.error('The latest coverage report information did not contain'
+                  '\'fuzzer_stats_dir\' key.')
+    return None
+  fuzzer_report_url_segment = latest_cov_info['fuzzer_stats_dir']
+
+  # Converting gs:// to http://
+  fuzzer_report_url_segment = fuzzer_report_url_segment.replace('gs://', '')
+  target_url = fuzz_target.url_join(fuzz_target.GCS_BASE_URL,
+                                    fuzzer_report_url_segment,
+                                    target_name + '.json')
+  return get_json_from_url(target_url)
+
+
+def get_files_covered_by_target(latest_cov_info, target_name,
+                                oss_fuzz_project_base):
+  """Gets a list of files covered by the specific fuzz target.
+
+  Args:
+    latest_cov_info: A dict containing a project's latest cov report info.
+    target_name: The name of the fuzz target whose coverage is requested.
+    oss_fuzz_project_base: The location where OSS-Fuzz project is cloned to for
+      the projects build.
+
+  Returns:
+    A list of files that the fuzzer covers or None.
+
+  Raises:
+    ValueError: When the oss_fuzz_project_base is not defined.
+  """
+  if not oss_fuzz_project_base:
+    return None
+  target_cov = get_target_coverage_report(latest_cov_info, target_name)
+  if not target_cov:
+    return None
+  coverage_per_file = target_cov['data'][0]['files']
+  if not coverage_per_file:
+    logging.info('No files found in coverage report.')
+    return None
+
+  # Cases like curl there is /src/curl and /src/curl_fuzzers/ are handled.
+  if not oss_fuzz_project_base.endswith('/'):
+    oss_fuzz_project_base += '/'
+
+  affected_file_list = []
+  for file in coverage_per_file:
+    if not file['filename'].startswith(oss_fuzz_project_base):
+      continue
+    if not file['summary']['regions']['count']:
+      # Don't consider a file affected if code in it is never executed.
+      continue
+
+    relative_path = file['filename'].replace(oss_fuzz_project_base, '')
+    affected_file_list.append(relative_path)
+  if not affected_file_list:
+    return None
+  return affected_file_list
+
+
+def get_json_from_url(url):
+  """Gets a json object from a specified http url.
+
+  Args:
+    url: The url of the json to be downloaded.
+
+  Returns:
+    Json dict or None on failure.
+  """
+  try:
+    response = urllib.request.urlopen(url)
+  except urllib.error.HTTPError:
+    logging.error('HTTP error with url %s.', url)
+    return None
+  try:
+    result_json = json.load(response)
+  except ValueError as excp:
+    logging.error('Loading json from url %s failed with: %s.', url, str(excp))
+    return None
+  return result_json
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):
