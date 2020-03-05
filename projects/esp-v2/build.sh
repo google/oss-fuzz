@@ -20,9 +20,6 @@
 export CFLAGS="$CFLAGS"
 export CXXFLAGS="$CXXFLAGS"
 
-declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzz_test.cc)
-declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}"; done)"
-
 FUZZER_DICTIONARIES="\
 "
 
@@ -51,15 +48,16 @@ fi
 declare BAZEL_BUILD_TARGETS=""
 declare BAZEL_CORPUS_TARGETS=""
 declare FILTERED_FUZZER_TARGETS=""
-for t in ${FUZZER_TARGETS}
+for t in $(bazel query 'src/...' --output label | grep '_fuzz_test$')
 do
-  declare BAZEL_PATH="//"$(dirname "$t")":"$(basename "$t")
-  declare TAGGED=$(bazel query "attr('tags', 'no_fuzz', ${BAZEL_PATH})")
+  declare TAGGED=$(bazel query "attr('tags', 'no_fuzz', ${t})")
   if [ -z "${TAGGED}" ]
   then
-    FILTERED_FUZZER_TARGETS+="$t "
-    BAZEL_BUILD_TARGETS+="${BAZEL_PATH}_driverless "
-    BAZEL_CORPUS_TARGETS+="${BAZEL_PATH}_corpus_tar "
+    BASE_PATH=${t//://}
+    BASE_PATH=${BASE_PATH#"//"}
+    FILTERED_FUZZER_TARGETS+="${BASE_PATH} "
+    BAZEL_BUILD_TARGETS+="${t}_driverless "
+    BAZEL_CORPUS_TARGETS+="${t}_corpus_tar "
   fi
 done
 
