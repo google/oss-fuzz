@@ -274,8 +274,8 @@ class GetFilesCoveredByTargetIntegrationTest(unittest.TestCase):
   def test_invalid_target(self):
     """Test asserts an invalid fuzzer returns None."""
     self.assertIsNone(
-        cifuzz.get_files_covered_by_target(self.proj_cov_report_example, 'not-a-fuzzer',
-                                           '/src/curl'))
+        cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
+                                           'not-a-fuzzer', '/src/curl'))
     self.assertIsNone(
         cifuzz.get_files_covered_by_target(self.proj_cov_report_example, '',
                                            '/src/curl'))
