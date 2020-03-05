@@ -64,6 +64,7 @@ STACKTRACE_END_MARKERS = [
     '\nExiting',
     'minidump has been written',
 ]
+
 #  Default fuzz configuration.
 DEFAULT_ENGINE = 'libfuzzer'
 DEFAULT_SANITIZER = 'address'
@@ -311,7 +312,8 @@ def get_files_covered_by_target(latest_cov_info, target_name, src_in_docker):
     ValueError: When the src_in_docker is not defined.
   """
   if not src_in_docker:
-    raise ValueError('Project base is not defined. Can\'t get coverage')
+    logging.error('Project base is not defined. Can\'t get coverage')
+    return None
   target_cov = get_target_coverage_report(latest_cov_info, target_name)
   if not target_cov:
     return None
@@ -326,9 +328,14 @@ def get_files_covered_by_target(latest_cov_info, target_name, src_in_docker):
 
   affected_file_list = []
   for file in coverage_per_file:
-    if file['filename'].startswith(
-        src_in_docker) and file['summary']['regions']['count']:
-      affected_file_list.append(file['filename'].replace(src_in_docker, ''))
+    if not file['filename'].startswith(src_in_docker):
+      continue
+    if not file['summary']['regions']['count']:
+      # Don't consider a file affected if code in it is never executed.
+      continue
+
+    relative_path = file['filename'].replace(src_in_docker, '')
+    affected_file_list.append(relative_path)
   if not affected_file_list:
     return None
   return affected_file_list

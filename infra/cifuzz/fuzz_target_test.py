@@ -33,7 +33,11 @@ import utils
 EXAMPLE_PROJECT = 'example'
 
 # An example fuzzer that triggers an error.
-EXAMPLE_FUZZER = 'do_stuff_fuzzer'
+EXAMPLE_FUZZER = 'example_crash_fuzzer'
+
+# Location of files used for testing.
+TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'test_files')
 
 
 class IsReproducibleUnitTest(unittest.TestCase):
@@ -51,8 +55,7 @@ class IsReproducibleUnitTest(unittest.TestCase):
                                     'execute',
                                     side_effect=test_all_success) as patch:
       self.assertTrue(
-          self.test_target.is_reproducible('/fake/path/to/testcase',
-                                           '/fake/target'))
+          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
       self.assertEqual(1, patch.call_count)
 
     test_one_success = [(0, 0, 0)] * 9 + [(0, 0, 1)]
@@ -60,8 +63,7 @@ class IsReproducibleUnitTest(unittest.TestCase):
                                     'execute',
                                     side_effect=test_one_success) as patch:
       self.assertTrue(
-          self.test_target.is_reproducible('/fake/path/to/testcase',
-                                           '/fake/target'))
+          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
       self.assertEqual(10, patch.call_count)
 
   def test_with_not_reproducible(self):
@@ -70,8 +72,7 @@ class IsReproducibleUnitTest(unittest.TestCase):
     with unittest.mock.patch.object(utils, 'execute',
                                     side_effect=test_all_fail) as patch:
       self.assertFalse(
-          self.test_target.is_reproducible('/fake/path/to/testcase',
-                                           '/fake/target'))
+          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
       self.assertEqual(10, patch.call_count)
 
 
@@ -86,7 +87,8 @@ class GetTestCaseUnitTest(unittest.TestCase):
   def test_with_valid_error_string(self):
     """Tests that get_test_case returns the correct test case give an error."""
     test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'test_files', 'example_fuzzer_output.txt')
+                                  'test_files',
+                                  'example_crash_fuzzer_output.txt')
     with open(test_case_path, 'r') as test_fuzz_output:
       parsed_test_case = self.test_target.get_test_case(test_fuzz_output.read())
     self.assertEqual(
@@ -118,7 +120,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
             url,
             'https://storage.googleapis.com/example-backup.' \
             'clusterfuzz-external.appspot.com/corpus/libFuzzer/' \
-            'example_do_stuff_fuzzer/public.zip'
+            'example_crash_fuzzer/public.zip'
         )
         self.assertEqual(out_dir,
                          os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_FUZZER))
