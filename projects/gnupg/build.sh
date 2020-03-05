@@ -17,13 +17,6 @@
 
 #compile and link statically dependencies
 cd ..
-# we need version 3.14 and only 3.11 was available as a package
-tar -xvzf sqlite-autoconf-3300100.tar.gz
-cd sqlite-autoconf-3300100
-./configure
-make
-make install
-cd ..
 cd libgpg-error
 ./autogen.sh
 ./configure --disable-doc --enable-static --disable-shared
