@@ -64,6 +64,7 @@ STACKTRACE_END_MARKERS = [
     '\nExiting',
     'minidump has been written',
 ]
+
 #  Default fuzz configuration.
 DEFAULT_ENGINE = 'libfuzzer'
 DEFAULT_SANITIZER = 'address'
