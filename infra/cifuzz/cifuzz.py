@@ -325,10 +325,15 @@ def get_files_covered_by_target(latest_cov_info, target_name,
 
   affected_file_list = []
   for file in coverage_per_file:
-    if file['filename'].startswith(
-        oss_fuzz_project_base) and file['summary']['regions']['count']:
-      affected_file_list.append(file['filename'].replace(
-          oss_fuzz_project_base, ''))
+
+    if not file['filename'].startswith(oss_fuzz_project_base):
+      continue
+
+    if not file['summary']['regions']['count']:
+      # Don't consider a file affected if code in it is never executed.
+      continue
+    relative_path = file['filename'].replace(oss_fuzz_project_base, '')
+    affected_file_list.append(relative_path)
   if not affected_file_list:
     return None
   return affected_file_list
