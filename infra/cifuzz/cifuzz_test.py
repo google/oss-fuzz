@@ -161,7 +161,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
-      self.assertTrue(run_success)
+      self.assertFalse(run_success)
       self.assertTrue(bug_found)
 
   def test_old_bug_found(self):
