@@ -33,7 +33,11 @@ import utils
 EXAMPLE_PROJECT = 'example'
 
 # An example fuzzer that triggers an error.
-EXAMPLE_CRASH_FUZZER = 'do_stuff_fuzzer'
+EXAMPLE_FUZZER = 'example_crash_fuzzer'
+
+# Location of files used for testing.
+TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'test_files')
 
 
 class IsReproducibleUnitTest(unittest.TestCase):
@@ -51,8 +55,7 @@ class IsReproducibleUnitTest(unittest.TestCase):
                                     'execute',
                                     side_effect=test_all_success) as patch:
       self.assertTrue(
-          self.test_target.is_reproducible('/fake/path/to/testcase',
-                                           '/fake/target'))
+          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
       self.assertEqual(1, patch.call_count)
 
     test_one_success = [(0, 0, 0)] * 9 + [(0, 0, 1)]
@@ -60,8 +63,7 @@ class IsReproducibleUnitTest(unittest.TestCase):
                                     'execute',
                                     side_effect=test_one_success) as patch:
       self.assertTrue(
-          self.test_target.is_reproducible('/fake/path/to/testcase',
-                                           '/fake/target'))
+          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
       self.assertEqual(10, patch.call_count)
 
   def test_with_not_reproducible(self):
@@ -70,8 +72,7 @@ class IsReproducibleUnitTest(unittest.TestCase):
     with unittest.mock.patch.object(utils, 'execute',
                                     side_effect=test_all_fail) as patch:
       self.assertFalse(
-          self.test_target.is_reproducible('/fake/path/to/testcase',
-                                           '/fake/target'))
+          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
       self.assertEqual(10, patch.call_count)
 
 
@@ -108,7 +109,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
       test_target.project_name = EXAMPLE_PROJECT
-      test_target.target_name = EXAMPLE_CRASH_FUZZER
+      test_target.target_name = EXAMPLE_FUZZER
       test_target.out_dir = tmp_dir
       with unittest.mock.patch.object(fuzz_target,
                                       'download_and_unpack_zip',
@@ -119,11 +120,10 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
             url,
             'https://storage.googleapis.com/example-backup.' \
             'clusterfuzz-external.appspot.com/corpus/libFuzzer/' \
-            'example_do_stuff_fuzzer/public.zip'
+            'example_crash_fuzzer/public.zip'
         )
-        self.assertEqual(
-            out_dir, os.path.join(tmp_dir, 'backup_corpus',
-                                  EXAMPLE_CRASH_FUZZER))
+        self.assertEqual(out_dir,
+                         os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_FUZZER))
 
   def test_download_invalid_projects_corpus(self):
     """Tests that a invaild fuzz target will not return None."""
