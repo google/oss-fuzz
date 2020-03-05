@@ -32,6 +32,7 @@ make -j$(nproc) > /dev/null
 # prepare corpus files
 zip -j $WORK/html $SRC/qtqa/fuzzing/testcases/html/*
 zip -j $WORK/markdown $SRC/qtqa/fuzzing/testcases/markdown/*
+zip -j $WORK/text $SRC/qtqa/fuzzing/testcases/text/* /usr/share/afl/testcases/others/text/*
 zip -j $WORK/xml $SRC/qtqa/fuzzing/testcases/xml/* /usr/share/afl/testcases/others/xml/*
 
 # build fuzzers
@@ -80,4 +81,4 @@ build_fuzzer "new" "qtbase" "corelib/serialization/qcborvalue/fromcbor/fromcbor.
 build_fuzzer "old" "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "/usr/share/afl/testcases/_extras/xml.dict"
 # build_fuzzer "new" "qtbase" "gui/text/qtextdocument/sethtml/sethtml.pro" "html" "/usr/share/afl/testcases/_extras/html_tags.dict"
 build_fuzzer "old" "qtbase" "gui/text/qtextdocument/setmarkdown/setmarkdown.pro" "markdown"
-build_fuzzer "old" "qtbase" "gui/text/qtextlayout/beginlayout/beginlayout.pro"
+build_fuzzer "old" "qtbase" "gui/text/qtextlayout/beginlayout/beginlayout.pro" "text"
