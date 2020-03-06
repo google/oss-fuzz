@@ -1,7 +1,0 @@
-homepage: "https://bellard.org/quickjs/"
-primary_contact: "fabrice@bellard.org"
-auto_ccs :
-- "p.antoine@catenacyber.fr"
-
-sanitizers:
-- address
