@@ -26,8 +26,8 @@ sed -i -e "s/QMAKE_CFLAGS_OPTIMIZE_FULL = -O3/QMAKE_CFLAGS_OPTIMIZE_FULL = -O1/g
 
 # build project
 cd $WORK
-MAKEFLAGS=-j$(nproc) $SRC/qt/configure -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -nomake tests -nomake examples -prefix $PWD/qtbase
-make -j$(nproc) > /dev/null
+MAKEFLAGS=-j$(nproc) $SRC/qt/configure -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -nomake tests -nomake examples -prefix $PWD/qtbase -D QT_NO_DEPRECATED_WARNINGS
+make -j$(nproc)
 
 # prepare corpus files
 zip -j $WORK/html $SRC/qtqa/fuzzing/testcases/html/*
