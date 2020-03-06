@@ -190,12 +190,10 @@ class ProjectYamlChecker:
   def check_valid_language(self):
     """Check that the language specified is valid."""
     language = self.data.get('language')
-    if not language:
-      return
-
     if language not in self.LANGUAGES_SUPPORTED:
-      self.error('{language} is not supported ({supported}).'.format(
-          language=language, supported=self.LANGUAGES_SUPPORTED))
+      self.error(
+          '"language: {language}" is not supported ({supported}).'.format(
+              language=language, supported=self.LANGUAGES_SUPPORTED))
 
 
 def _check_one_project_yaml(project_yaml_filename):
