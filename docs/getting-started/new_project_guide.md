@@ -258,7 +258,7 @@ See the [Provided Environment Variables](https://github.com/google/oss-fuzz/blob
 
 ## Disk space restrictions
 
-Our builders have a disk size of 70GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
+Our builders have a disk size of 250GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
 
 In addition, please keep the size of the build (everything copied to `$OUT`) small (<10GB uncompressed). The build is repeatedly transferred and unzipped during fuzzing and runs on VMs with limited disk space.
 
