@@ -165,8 +165,8 @@ def build_fuzzers(project_name,
     return False
 
   # Removes non-affected fuzzers.
-  keep_affected_fuzzers(project_name, out_dir,
-                        build_repo_manager.get_git_diff(), src_in_docker)
+  remove_unaffected_fuzzers(project_name, out_dir,
+                            build_repo_manager.get_git_diff(), src_in_docker)
   return True
 
 
@@ -323,26 +323,29 @@ def get_files_covered_by_target(latest_cov_info, target_name, src_in_docker):
     return None
 
   # Cases like curl there is /src/curl and /src/curl_fuzzers/ are handled.
-  if not src_in_docker.endswith('/'):
-    src_in_docker += '/'
+  norm_src_in_docker = os.path.normpath(src_in_docker)
+  if not norm_src_in_docker.endswith('/'):
+    norm_src_in_docker += '/'
 
   affected_file_list = []
   for file in coverage_per_file:
-    if not file['filename'].startswith(src_in_docker):
+    norm_file_path = os.path.normpath(file['filename'])
+    if not norm_file_path.startswith(norm_src_in_docker):
       continue
     if not file['summary']['regions']['count']:
       # Don't consider a file affected if code in it is never executed.
       continue
 
-    relative_path = file['filename'].replace(src_in_docker, '')
+    relative_path = file['filename'].replace(norm_src_in_docker, '')
     affected_file_list.append(relative_path)
   if not affected_file_list:
     return None
   return affected_file_list
 
 
-def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
-  """Keeps only the affected fuzzers in the out directory.
+def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
+                              src_in_docker):
+  """Removes all non affected fuzzers in the out directory.
 
   Args:
     project_name: The name of the relevant OSS-Fuzz project.
@@ -372,7 +375,7 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
       affected_fuzzers.append(os.path.basename(fuzzer))
 
   if not affected_fuzzers:
-    logging.info('Not using affected fuzzers.')
+    logging.info('No affected fuzzers detected, keeping all as fallback.')
     return
   logging.info(
       'Using affected fuzzers.\n The following fuzzers are affected: %s',
@@ -380,11 +383,12 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
 
   # Remove all the fuzzers that are not affected
   for file in os.listdir(out_dir):
-    if file not in affected_fuzzers:
-      try:
-        os.remove(os.path.join(out_dir, file))
-      except OSError as error:
-        logging.error('%s occured while removing file %s', error, file)
+    if file in affected_fuzzers:
+      continue
+    try:
+      os.remove(os.path.join(out_dir, file))
+    except OSError as error:
+      logging.error('%s occured while removing file %s', error, file)
 
 
 def get_json_from_url(url):

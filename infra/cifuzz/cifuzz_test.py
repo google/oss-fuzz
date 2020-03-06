@@ -378,8 +378,8 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
                                       'get_files_covered_by_target',
                                       side_effect=[[self.example_file_changed],
                                                    None]):
-        cifuzz.keep_affected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                     [self.example_file_changed], '')
+        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
+                                         [self.example_file_changed], '')
         self.assertEqual(1, len(os.listdir(tmp_dir)))
 
   def test_no_fuzzers_kept_fuzzer(self):
@@ -391,8 +391,8 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
       with unittest.mock.patch.object(cifuzz,
                                       'get_files_covered_by_target',
                                       side_effect=[None, None]):
-        cifuzz.keep_affected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                     [self.example_file_changed], '')
+        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
+                                         [self.example_file_changed], '')
         self.assertEqual(2, len(os.listdir(tmp_dir)))
 
   def test_both_fuzzers_kept_fuzzer(self):
@@ -405,8 +405,8 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
           cifuzz,
           'get_files_covered_by_target',
           side_effect=[self.example_file_changed, self.example_file_changed]):
-        cifuzz.keep_affected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                     [self.example_file_changed], '')
+        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
+                                         [self.example_file_changed], '')
         self.assertEqual(2, len(os.listdir(tmp_dir)))
 
 
