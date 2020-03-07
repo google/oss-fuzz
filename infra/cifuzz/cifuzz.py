@@ -164,7 +164,7 @@ def build_fuzzers(project_name,
     logging.error('Building fuzzers failed.')
     return False
 
-  # Removes non-affected fuzzers.
+  # Remove non-affected fuzzers.
   remove_unaffected_fuzzers(project_name, out_dir,
                             build_repo_manager.get_git_diff(), src_in_docker)
   return True
@@ -322,7 +322,7 @@ def get_files_covered_by_target(latest_cov_info, target_name, src_in_docker):
     logging.info('No files found in coverage report.')
     return None
 
-  # Cases like curl there is /src/curl and /src/curl_fuzzers/ are handled.
+  # Make sure cases like /src/curl and /src/curl/ are both handled.
   norm_src_in_docker = os.path.normpath(src_in_docker)
   if not norm_src_in_docker.endswith('/'):
     norm_src_in_docker += '/'
@@ -371,7 +371,7 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
                                                 os.path.basename(fuzzer),
                                                 src_in_docker)
 
-    if covered_files and set(covered_files) & set(files_changed):
+    if covered_files and set(covered_files).intersection(set(files_changed)):
       affected_fuzzers.append(os.path.basename(fuzzer))
 
   if not affected_fuzzers:
@@ -381,7 +381,7 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
       'Using affected fuzzers.\n The following fuzzers are affected: %s',
       ' '.join(affected_fuzzers))
 
-  # Remove all the fuzzers that are not affected
+  # Remove all the fuzzers that are not affected.
   for file in os.listdir(out_dir):
     if file in affected_fuzzers:
       continue
