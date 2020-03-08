@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
+import docstring
 
 PROJECT_YAML_TEMPLATE = """\
 homepage: "<your_project_homepage>"
