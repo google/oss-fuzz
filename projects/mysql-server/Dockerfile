@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER secalert_us@oracle.com
 RUN apt-get update
-RUN apt-get install -y build-essential libssl-dev libncurses5-dev libncursesw5-dev make cmake perl bison pkg-config
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates build-essential libssl-dev libncurses5-dev libncursesw5-dev make cmake perl bison pkg-config
 RUN git clone --depth 1 https://github.com/mysql/mysql-server
 WORKDIR $SRC
 COPY build.sh $SRC/

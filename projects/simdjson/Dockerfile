@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pauldreikossfuzz@gmail.com
 
-RUN apt-get update && apt-get install -y ninja-build wget
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates ninja-build wget
 
 # We need a modern cmake
 ENV CMAKEVER 3.15.4

@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make
 
 # Get *your* source code here.
 RUN git clone https://github.com/google/oss-fuzz.git my-git-repo

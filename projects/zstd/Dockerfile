@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER nickrterrell@gmail.com
-RUN apt-get update && apt-get install -y make python wget
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make python wget
 # Clone source
 RUN git clone --depth 1 https://github.com/facebook/zstd
 WORKDIR zstd

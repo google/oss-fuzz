@@ -16,7 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates \
     autoconf-archive \
     curl \
     libcmocka0 \

@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER twsmith@mozilla.com
-RUN apt-get update && apt-get install -y make autoconf automake libogg-dev libtool pkg-config wget
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libogg-dev libtool pkg-config wget
 RUN git clone https://git.xiph.org/ogg.git
 RUN git clone https://git.xiph.org/tremor.git
 RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/vorbis decode_corpus

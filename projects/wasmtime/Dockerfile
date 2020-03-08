@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER foote@fastly.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
 
 ENV CARGO_HOME=/rust RUSTUP_HOME=/rust/rustup PATH=$PATH:/rust/bin
 RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly

@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER inferno@chromium.org
-RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool
 RUN git clone --depth 1 -b develop https://github.com/madler/zlib.git
 WORKDIR zlib
 COPY build.sh *_fuzzer.c* $SRC/

@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
 ADD bionic.list /etc/apt/sources.list.d/bionic.list
 ADD nasm_apt.pin /etc/apt/preferences
-RUN apt-get update && apt-get install -y make autoconf automake libtool build-essential \
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool build-essential \
     libass-dev libfreetype6-dev libsdl1.2-dev \
     libvdpau-dev libxcb1-dev libxcb-shm0-dev \
     pkg-config texinfo libbz2-dev zlib1g-dev yasm cmake mercurial wget \

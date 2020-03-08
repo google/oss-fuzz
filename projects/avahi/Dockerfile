@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alex.gaynor@gmail.com
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get install -y autoconf gettext libtool m4 automake pkg-config libexpat-dev libexpat-dev:i386
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates autoconf gettext libtool m4 automake pkg-config libexpat-dev libexpat-dev:i386
 RUN git clone --depth 1 https://github.com/lathiat/avahi
 WORKDIR avahi
 COPY build.sh avahi_packet_consume_record_fuzzer.cc avahi_packet_consume_key_fuzzer.cc $SRC/

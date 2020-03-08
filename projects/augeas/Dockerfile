@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER hhan@redhat.com
-RUN apt-get update && apt-get install -y libreadline-dev libselinux1-dev \
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates libreadline-dev libselinux1-dev \
     libxml2-dev make autoconf automake libtool pkg-config bison flex
 
 RUN git clone --depth 1 https://github.com/hercules-team/augeas

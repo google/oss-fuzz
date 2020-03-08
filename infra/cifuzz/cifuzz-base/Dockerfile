@@ -16,7 +16,7 @@
 
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install -y git \
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates git \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -31,7 +31,7 @@ RUN add-apt-repository \
    xenial \
    stable"
 
-RUN apt-get update && apt-get install docker-ce docker-ce-cli containerd.io -y
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates docker-ce docker-ce-cli containerd.io -y
 
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
 RUN git clone https://github.com/google/oss-fuzz.git ${OSS_FUZZ_ROOT}

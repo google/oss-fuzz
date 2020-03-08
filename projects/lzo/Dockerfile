@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER info@oberhumer.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool wget
 RUN wget -O lzo.tar.gz \
     http://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz
 COPY *.c *.cc *.options build.sh $SRC/

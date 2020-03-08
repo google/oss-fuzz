@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER gjasny@googlemail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool pkg-config
 RUN git clone --depth 1 https://github.com/resiprocate/resiprocate.git resiprocate
 WORKDIR resiprocate
 COPY build.sh $SRC/

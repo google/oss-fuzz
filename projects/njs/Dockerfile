@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
-RUN apt-get update && apt-get install -y make autoconf automake libtool \
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool \
     mercurial libpcre3-dev subversion
 RUN hg clone http://hg.nginx.org/njs
 RUN svn co svn://vcs.exim.org/pcre/code/trunk pcre

@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER elver@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool g++
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool g++
 RUN git clone --depth 1 git://w1.fi/srv/git/hostap.git hostap
 WORKDIR hostap
 COPY build.sh $SRC/

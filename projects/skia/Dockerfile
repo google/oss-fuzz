@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kjlubick@chromium.org
 
 # Mesa needed to build swiftshader
-RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates python wget libglu1-mesa-dev cmake
 
 RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
 ENV PATH="${SRC}/depot_tools:${PATH}"

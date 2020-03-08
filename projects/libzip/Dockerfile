@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 MAINTAINER randy408@protonmail.com
 
-RUN apt-get update && apt-get install -y cmake pkg-config zlib1g-dev liblzma-dev
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates cmake pkg-config zlib1g-dev liblzma-dev
 
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git
 

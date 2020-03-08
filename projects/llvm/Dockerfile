@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kcc@google.com
 RUN apt-get update -y
-RUN apt-get install -y autoconf automake libtool curl make g++ unzip wget git \
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates autoconf automake libtool curl make g++ unzip wget git \
     binutils liblzma-dev libz-dev python-all cmake ninja-build subversion \
     pkg-config
 

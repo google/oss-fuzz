@@ -4,7 +4,7 @@ Use the following instructions to make documentation changes locally.
 
 ## Prerequisites
 ```bash
-$ sudo apt install ruby bundler
+$ sudo apt-get --no-install-recommends  install -y apt-utils ca-certificates ruby bundler
 $ bundle install --path vendor/bundle
 ```
 

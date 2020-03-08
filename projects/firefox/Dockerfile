@@ -16,12 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pdknsk@gmail.com
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates \
   python \
   gawk \
   software-properties-common
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get --no-install-recommends  install -y apt-utils ca-certificates \
   libstdc++6
 RUN git clone --depth 1 https://github.com/mozilla/gecko-dev mozilla-central
 RUN git clone --depth 1 https://github.com/mozillasecurity/fuzzdata

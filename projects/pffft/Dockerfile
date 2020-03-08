@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alessiob@webrtc.org
-RUN apt-get update && apt-get install -y mercurial python-numpy
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates mercurial python-numpy
 RUN hg clone https://bitbucket.org/jpommier/pffft $SRC/pffft
 WORKDIR pffft
 COPY build.sh $SRC

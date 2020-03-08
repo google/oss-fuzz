@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER twsmith@mozilla.com
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get install -y autoconf automake autopoint libtool
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates autoconf automake autopoint libtool
 RUN git clone --depth 1 https://github.com/hunspell/hunspell.git hunspell
 WORKDIR hunspell
 COPY build.sh $SRC/

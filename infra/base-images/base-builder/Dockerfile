@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-clang
-RUN apt-get install -y git \
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates git \
     subversion \
     jq \
     python3 \

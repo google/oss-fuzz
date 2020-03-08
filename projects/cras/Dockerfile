@@ -8,7 +8,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER dgreid@chromium.org
 
 RUN apt-get -y update && \
-      apt-get install -y \
+      apt-get --no-install-recommends  install -y apt-utils ca-certificates \
       automake \
       build-essential \
       cargo \

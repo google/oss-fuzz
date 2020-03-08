@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER Jakub Zawadzki <darkjames-ws@darkjames.pl>
 
-RUN apt-get update && apt-get install -y ninja-build cmake \
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates ninja-build cmake \
                        flex bison libc-ares-dev \
                        libglib2.0-dev libgcrypt20-dev
 

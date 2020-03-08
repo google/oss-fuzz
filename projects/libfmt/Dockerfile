@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pauldreikossfuzz@gmail.com
 RUN echo "CXX=$CXX"
 RUN echo "CXXFLAGS=$CXXFLAGS"
-RUN apt-get update && apt-get install -y cmake ninja-build
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates cmake ninja-build
 
 RUN git clone --depth 1 --branch master \
   https://github.com/fmtlib/fmt.git

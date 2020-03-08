@@ -19,7 +19,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder@sha256:276813aef0ce5972db43c0230f96162003994fa742fb1b2f4e66c67498575c65
 MAINTAINER yangg@google.com
 
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates software-properties-common python-software-properties
 RUN add-apt-repository ppa:webupd8team/java
 RUN apt-get update && apt-get -y install  \
 	vim             \
@@ -32,7 +32,7 @@ RUN apt-get update && apt-get -y install  \
 
 # Install dependencies
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates \
     python-all-dev \
     python3-all-dev \
     python-pip

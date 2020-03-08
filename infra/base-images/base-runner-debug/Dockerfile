@@ -15,4 +15,4 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-runner
-RUN apt-get install -y gdb valgrind zip
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates gdb valgrind zip

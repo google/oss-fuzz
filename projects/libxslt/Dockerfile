@@ -19,7 +19,7 @@ MAINTAINER wellnhofer@aevum.de
 
 # Note that we don't use the system libxml2 but a custom instrumented build.
 # libgcrypt is required for the crypto extensions of libexslt.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates --no-install-recommends \
     make autoconf automake libtool pkg-config \
     libgcrypt-dev
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git

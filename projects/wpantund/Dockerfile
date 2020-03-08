@@ -19,7 +19,7 @@ MAINTAINER rquattle@google.com
 
 RUN apt-get -y update \
 	&& DEBIAN_FRONTEND=noninteractive \
-			apt-get install -y -q --no-install-recommends \
+			apt-get --no-install-recommends  install -y apt-utils ca-certificates -q \
 				gdb \
 				libdbus-1-dev \
 				libboost-dev \

@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER randy408@protonmail.com
 
 RUN apt-get update && \
-    apt-get install -y wget tar cmake
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates wget tar cmake
 
 RUN git clone --depth 1 https://github.com/randy408/libspng.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite

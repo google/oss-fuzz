@@ -16,7 +16,7 @@
 ################################################################################
 
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib"
-apt-get install -y $LLVM_DEP_PACKAGES
+apt-get --no-install-recommends  install -y apt-utils ca-certificates $LLVM_DEP_PACKAGES
 
 # Checkout
 CHECKOUT_RETRIES=10

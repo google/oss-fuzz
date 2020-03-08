@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER sbucur@google.com
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates \
         cmake ninja-build && \
     apt-get clean
 

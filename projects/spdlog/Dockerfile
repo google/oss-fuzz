@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER gmelman1@gmail.com
 
-RUN apt-get update && apt-get install --yes cmake
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates cmake
 
 RUN git clone --depth 1 https://github.com/gabime/spdlog.git
 WORKDIR spdlog

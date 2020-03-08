@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jdanek@redhat.com
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates \
         cmake
 
 RUN git clone https://github.com/apache/qpid-proton.git

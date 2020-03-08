@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER bshas3@email.com
-RUN apt-get update && apt-get install -y make autoconf autopoint libtool zip
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf autopoint libtool zip
 RUN git clone https://git.tukaani.org/xz.git
 COPY build.sh $SRC/
 WORKDIR xz

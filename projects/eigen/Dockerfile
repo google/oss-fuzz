@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER eigen-core-team@lists.tuxfamily.org
-RUN apt-get update && apt-get install --yes cmake mercurial
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates cmake mercurial
 RUN hg clone https://GOOGLE-AUTOFUZZ@bitbucket.org/eigen/eigen
 WORKDIR eigen
 COPY build.sh solver_fuzzer.cc $SRC/

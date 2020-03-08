@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool wget
 # This downloads the latest version at the time of writing. There does not
 # appear to be a head version of FreeImage.
 RUN wget https://downloads.sourceforge.net/freeimage/FreeImage3180.zip

@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER rockdaboot@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool bison
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool bison
 
 RUN git clone git://git.savannah.gnu.org/gnulib.git
 ENV GNULIB_TOOL=$SRC/gnulib/gnulib-tool

@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER t-beu@users.sourceforge.net
-RUN apt-get update && apt-get install -y make autoconf automake libhdf5-dev libtool zlib1g-dev
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libhdf5-dev libtool zlib1g-dev
 ENV HDF5_DIR /usr/lib/x86_64-linux-gnu/hdf5/serial
 RUN git clone --depth 1 git://git.code.sf.net/p/matio/matio matio
 WORKDIR matio

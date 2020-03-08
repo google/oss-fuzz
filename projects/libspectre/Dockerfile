@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER randy408@protonmail.com
 
 RUN apt-get update && \
-    apt-get install -y pkg-config make automake libtool wget
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates pkg-config make automake libtool wget
 
 RUN git clone --depth 1 https://gitlab.freedesktop.org/libspectre/libspectre.git
 

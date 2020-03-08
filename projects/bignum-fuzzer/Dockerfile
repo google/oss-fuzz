@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties wget curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake
-RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates software-properties-common python-software-properties wget curl sudo mercurial autoconf bison texinfo libboost-all-dev cmake
+RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates golang-1.9-go
 RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
 
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.4.2.tar.gz

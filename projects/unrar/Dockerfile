@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER vakh@chromium.org
-RUN apt-get update && apt-get install -y make build-essential
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make build-essential
 
 RUN git clone -b oss_fuzz --depth 1 https://github.com/aawc/unrar.git
 WORKDIR unrar

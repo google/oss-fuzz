@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER cdiehl@mozilla.com
 
-RUN apt-get update && apt-get install -y automake libtool
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates automake libtool
 RUN git clone --depth 1 -b master https://android.googlesource.com/platform/external/libldac
 RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/wav corpora
 

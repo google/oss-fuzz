@@ -24,7 +24,7 @@ COPY --from=base-clang /usr/local/bin/llvm-cov /usr/local/bin/
 COPY --from=base-clang /usr/local/bin/llvm-profdata /usr/local/bin/
 COPY --from=base-clang /usr/local/bin/llvm-symbolizer /usr/local/bin/
 
-RUN apt-get install -y \
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates \
     binutils \
     file \
     fonts-dejavu \

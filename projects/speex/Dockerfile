@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER tmatth@videolan.org
-RUN apt-get update && apt-get install -y make autoconf libtool pkg-config wget
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf libtool pkg-config wget
 RUN git clone https://git.xiph.org/ogg.git
 RUN git clone https://git.xiph.org/speex.git speex
 WORKDIR speex

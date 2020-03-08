@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER lvandeve@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/lvandeve/lodepng.git lodepng     # or use other version control
 WORKDIR lodepng
 COPY build.sh $SRC/

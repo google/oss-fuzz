@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER tsdgeos@gmail.com
-RUN apt-get install --yes cmake
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates cmake
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git
 RUN git clone --depth 1 git://anongit.kde.org/extra-cmake-modules

@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER djm@mindrot.org
-RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN apt-get install -y libz-dev libssl1.0.0 libssl-dev libedit-dev zip
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates libz-dev libssl1.0.0 libssl-dev libedit-dev zip
 RUN git clone --depth 1 https://github.com/openssh/openssh-portable openssh
 RUN git clone --depth 1 https://github.com/djmdjm/openssh-fuzz-cases
 WORKDIR openssh

@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pdknsk@gmail.com
-RUN apt-get update && apt-get install -y mercurial
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates mercurial
 RUN hg clone --uncompressed https://hg.mozilla.org/mozilla-central/
 COPY build.sh $SRC/
 WORKDIR mozilla-central/gfx/qcms

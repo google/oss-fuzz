@@ -20,7 +20,7 @@ FROM ubuntu:16.04
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y libc6-dev binutils libgcc-5-dev && \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates libc6-dev binutils libgcc-5-dev && \
     apt-get autoremove -y
 
 ENV OUT=/out

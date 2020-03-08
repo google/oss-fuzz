@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER sebastian.rasmussen@artifex.com
-RUN apt-get update && apt-get install -y make libtool pkg-config vim libreadline-dev wget autoconf
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make libtool pkg-config vim libreadline-dev wget autoconf
 RUN git clone --recursive --depth 1 git://git.ghostscript.com/jbig2dec.git jbig2dec
 RUN mkdir tests
 RUN cp $SRC/jbig2dec/annex-h.jbig2 tests/annex-h.jb2

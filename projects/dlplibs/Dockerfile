@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER dtardon@redhat.com
 # install build requirements
 RUN apt-get update && \
-    apt-get install -y wget xz-utils autoconf automake libtool pkg-config \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates wget xz-utils autoconf automake libtool pkg-config \
         gperf libglm-dev patch
 ADD https://dev-www.libreoffice.org/src/lcms2-2.8.tar.gz \
     https://dev-www.libreoffice.org/src/zlib-1.2.11.tar.xz \

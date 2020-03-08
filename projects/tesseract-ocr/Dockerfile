@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
-RUN apt-get update && apt-get install -y autoconf automake libtool pkg-config libpng-dev libjpeg8-dev libtiff5-dev zlib1g-dev
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates autoconf automake libtool pkg-config libpng-dev libjpeg8-dev libtiff5-dev zlib1g-dev
 RUN git clone --depth 1 https://github.com/danbloomberg/leptonica
 RUN git clone --depth 1 https://github.com/tesseract-ocr/tesseract
 RUN git clone --depth 1 https://github.com/tesseract-ocr/tessdata

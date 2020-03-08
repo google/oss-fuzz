@@ -22,7 +22,7 @@ MAINTAINER bilboed@bilboed.com
 
 RUN sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list" && \
    apt-get update && \
-   apt-get install -y make autoconf automake libtool build-essential \
+   apt-get --no-install-recommends  install -y apt-utils ca-certificates make autoconf automake libtool build-essential \
     autopoint pkg-config bison flex gettext libffi-dev liblzma-dev \
     libvorbis-dev libtheora-dev libogg-dev zlib1g-dev
 

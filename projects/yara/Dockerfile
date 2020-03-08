@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER vmalvarez@google.com
 RUN \
-  apt-get update && apt-get install -y \
+  apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates \
   automake \
   autoconf \
   make \

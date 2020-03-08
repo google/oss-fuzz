@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jonathan@titanous.com
 RUN apt-get update &&\
-    apt-get install -y gperf m4 gettext python3-pip \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates gperf m4 gettext python3-pip \
         libcap-dev libmount-dev libkmod-dev \
         pkg-config wget &&\
     pip3 install meson ninja

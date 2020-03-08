@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER philipturnbull@github.com
-RUN apt-get update && apt-get install -y make cmake
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make cmake
 RUN git clone --depth 1 https://github.com/commonmark/cmark.git cmark
 WORKDIR cmark
 COPY build.sh *.dict *.options $SRC/

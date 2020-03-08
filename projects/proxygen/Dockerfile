@@ -19,7 +19,7 @@ MAINTAINER mhl@fb.com
 
 # Install packages we need to build dependencies
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates \
     make \
     autoconf \
     automake \
@@ -127,7 +127,7 @@ RUN wget https://github.com/fmtlib/fmt/archive/6.0.0.tar.gz && \
     rm -rf fmt-6.0.0
 
 # Replicate `install-dependencies` from the proxygen `build.sh` script
-RUN apt-get install -y \
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates \
     git \
     flex \
     bison \
@@ -151,7 +151,7 @@ RUN apt-get install -y \
     libunwind8-dev
 
 # Install patchelf so we can fix path to libunwind
-RUN apt-get install patchelf
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates patchelf
 
 # Fetch source and copy over files
 RUN git clone --depth 1 https://github.com/facebook/proxygen.git proxygen

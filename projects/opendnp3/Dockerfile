@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER info@automatak.com
-RUN apt-get update && apt-get install -y make wget tshark
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make wget tshark
 # The CMake version that is available on Ubuntu 16.04 is 3.5.1. OpenDNP3
 # needs CMake 3.8 or higher, because of the C# bindings. Therefore, we
 # manually install a modern CMake until the OSS Fuzz environment updates

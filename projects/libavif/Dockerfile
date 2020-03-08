@@ -21,7 +21,7 @@ ADD bionic.list /etc/apt/sources.list.d/bionic.list
 ADD nasm_apt.pin /etc/apt/preferences
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y curl python3-pip python3-setuptools python3-wheel cmake nasm git && \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates curl python3-pip python3-setuptools python3-wheel cmake nasm git && \
     pip3 install meson ninja
 
 RUN git clone --depth 1 https://github.com/AOMediaCodec/libavif.git libavif

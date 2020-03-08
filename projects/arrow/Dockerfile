@@ -20,7 +20,7 @@ MAINTAINER dev@arrow.apache.org
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y -q && \
     apt-get update -y -q && \
-    apt-get install -y -q --no-install-recommends \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates -q \
         bison \
         build-essential \
         cmake \

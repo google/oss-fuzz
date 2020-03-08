@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER matt@ucc.asn.au
-RUN apt-get update && apt-get install -y libz-dev autoconf mercurial
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates libz-dev autoconf mercurial
 RUN hg clone https://secure.ucc.asn.au/hg/dropbear dropbear
 RUN hg clone https://secure.ucc.asn.au/hg/dropbear-fuzzcorpus dropbear/corpus
 WORKDIR dropbear

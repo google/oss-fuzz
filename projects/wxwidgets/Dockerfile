@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER vadim@wxwidgets.org
-RUN apt-get update && apt-get install -y make
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make
 RUN git clone --recurse-submodules --depth 1 https://github.com/wxWidgets/wxWidgets.git wxwidgets
 WORKDIR wxwidgets
 COPY build.sh $SRC/

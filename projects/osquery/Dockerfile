@@ -17,11 +17,11 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER theopolis@osquery.io
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev
+RUN apt-get --no-install-recommends  install -y apt-utils ca-certificates python python3 bison flex make wget xz-utils libunwind-dev
 
 # Install specific git version.
 RUN export GIT_VER=2.21.0 \
- && apt-get install -y libz-dev gettext nano libssl-dev autoconf libcurl4-openssl-dev \
+ && apt-get --no-install-recommends  install -y apt-utils ca-certificates libz-dev gettext nano libssl-dev autoconf libcurl4-openssl-dev \
  && wget https://github.com/git/git/archive/v$GIT_VER.tar.gz \
  && tar xf v$GIT_VER.tar.gz \
  && cd git-$GIT_VER/ \

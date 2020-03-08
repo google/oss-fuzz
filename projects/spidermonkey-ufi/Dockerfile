@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER cdiehl@mozilla.com
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates \
     autoconf2.13 \
     python \
     libc++1 \

@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER pab.systerel@gmail.com
-RUN apt-get update && apt-get install -y make cmake git curl
+RUN apt-get update && apt-get --no-install-recommends  install -y apt-utils ca-certificates make cmake git curl
 
 # Sources and dependencies
 RUN git clone --depth 1 https://gitlab.com/systerel/S2OPC

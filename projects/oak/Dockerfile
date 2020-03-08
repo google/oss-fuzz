@@ -27,11 +27,11 @@ ARG bazel_url=https://storage.googleapis.com/bazel-apt/pool/jdk1.8/b/bazel/bazel
 
 # Install Bazel.
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates wget && \
     wget "${bazel_url}" -nv -o- -O bazel.deb && \
     echo "${bazel_sha}  bazel.deb" > bazel.sha256 && \
     sha256sum --check bazel.sha256 && \
-    apt-get install -y ./bazel.deb && \
+    apt-get --no-install-recommends  install -y apt-utils ca-certificates ./bazel.deb && \
     rm bazel.deb bazel.sha256 && \
     apt-get clean
 
