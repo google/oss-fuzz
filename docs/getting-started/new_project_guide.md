@@ -72,6 +72,7 @@ Once the template configuration files are created, you can modify them to fit yo
 This configuration file stores project metadata. The following attributes are supported:
 
 - [homepage](#homepage)
+- [language](#language)
 - [primary_contact](#primary)
 - [auto_ccs](#primary)
 - [vendor_ccs](#vendor) (optional)
@@ -81,6 +82,13 @@ This configuration file stores project metadata. The following attributes are su
 
 ### homepage
 You project's homepage.
+
+### language
+
+Programming language the project is written in. Most often this would be `c` or
+`c++`. Other values for this attribute are documented in language specific
+documentation pages (e.g.
+[Integrating a Go project]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)).
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz

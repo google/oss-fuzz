@@ -16,6 +16,7 @@
 
 PROJECT_YAML_TEMPLATE = """\
 homepage: "<your_project_homepage>"
+language: <programming_language>
 primary_contact: "<primary_contact_email>"
 """
 
