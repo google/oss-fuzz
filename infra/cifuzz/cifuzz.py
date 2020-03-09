@@ -312,7 +312,8 @@ def get_files_covered_by_target(latest_cov_info, target_name, src_in_docker):
     ValueError: When the src_in_docker is not defined.
   """
   if not src_in_docker:
-    logging.error('Project base is not defined. Can\'t get coverage')
+    logging.error('Project souce location in docker is not found.'
+                  'Can\'t get coverage information from OSS-Fuzz.')
     return None
   target_cov = get_target_coverage_report(latest_cov_info, target_name)
   if not target_cov:
@@ -347,7 +348,7 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
   Args:
     project_name: The name of the relevant OSS-Fuzz project.
     out_dir: The location of the fuzzer binaries.
-    files_changed: A list of files changed from origin.
+    files_changed: A list of files changed compared to HEAD.
     src_in_docker: The location of the source dir in the docker image.
   """
   if not files_changed:
@@ -367,8 +368,12 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
     covered_files = get_files_covered_by_target(latest_cov_report_info,
                                                 os.path.basename(fuzzer),
                                                 src_in_docker)
+    if not covered_files:
+      # Assume a fuzzer is affected if we can't get its coverage from OSS-Fuzz.
+      affected_fuzzers.append(os.path.basename(fuzzer))
+      continue
 
-    if covered_files and set(covered_files) & set(files_changed):
+    if set(covered_files).intersection(set(files_changed)):
       affected_fuzzers.append(os.path.basename(fuzzer))
 
   if not affected_fuzzers:
@@ -378,9 +383,10 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
       'Using affected fuzzers.\n The following fuzzers are affected: %s',
       ' '.join(affected_fuzzers))
 
+  all_fuzzer_names = map(os.path.basename, fuzzer_paths)
   # Remove all the fuzzers that are not affected
   for file in os.listdir(out_dir):
-    if file not in affected_fuzzers:
+    if file not in affected_fuzzers and file in all_fuzzer_names:
       try:
         os.remove(os.path.join(out_dir, file))
       except OSError as error:
