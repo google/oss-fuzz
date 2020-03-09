@@ -379,7 +379,7 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
                                       side_effect=[[self.example_file_changed],
                                                    None]):
         cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                     [self.example_file_changed], '')
+                                         [self.example_file_changed], '')
         self.assertEqual(2, len(os.listdir(tmp_dir)))
 
   def test_keeping_specific_fuzzer(self):
@@ -393,7 +393,7 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
                                       side_effect=[[self.example_file_changed],
                                                    ['not/a/real/file']]):
         cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                     [self.example_file_changed], '')
+                                         [self.example_file_changed], '')
         self.assertEqual(1, len(os.listdir(tmp_dir)))
 
   def test_no_fuzzers_kept_fuzzer(self):
