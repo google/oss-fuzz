@@ -199,17 +199,18 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
     return False, False
 
   # Run fuzzers for alotted time.
-  fuzzers_left = len(fuzzer_paths)
+  total_num_fuzzers = len(fuzzer_paths)
+  fuzzers_left_to_run = total_num_fuzzers
+  time_left_to_run = fuzz_seconds
   for fuzzer_path in fuzzer_paths:
-    run_seconds = fuzz_seconds // fuzzers_left
-    if run_seconds <= 0:
-      break
+    run_seconds = max(time_left_to_run // fuzzers_left_to_run,
+                      fuzz_seconds // total_num_fuzzers)
 
     target = fuzz_target.FuzzTarget(fuzzer_path, run_seconds, out_dir,
                                     project_name)
     start_time = time.time()
     test_case, stack_trace = target.fuzz()
-    elapsed_time = time.time() - start_time
+    time_left_to_run -= (time.time() - start_time)
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
@@ -218,8 +219,7 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
       shutil.move(test_case, os.path.join(artifacts_dir, 'test_case'))
       parse_fuzzer_output(stack_trace, artifacts_dir)
       return True, True
-    fuzz_seconds = fuzz_seconds - elapsed_time
-    fuzzers_left -= 1
+    fuzzers_left_to_run -= 1
 
   return True, False
 
