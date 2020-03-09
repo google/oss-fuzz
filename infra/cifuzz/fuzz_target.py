@@ -20,7 +20,6 @@ import stat
 import subprocess
 import sys
 import tempfile
-import time
 import urllib.error
 import urllib.request
 import zipfile
@@ -128,7 +127,7 @@ class FuzzTarget:
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-    start_time = time.time()
+
     try:
       _, err = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
@@ -136,21 +135,20 @@ class FuzzTarget:
       return None, None
 
     # Libfuzzer timeout has been reached.
-    run_time = time.time() - start_time
     if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
-      return None, None, run_time
+      return None, None
 
     # Get crash info.
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)
     if not test_case:
       logging.error('No test case found in stack trace: %s.', err_str)
-      return None, None, run_time
+      return None, None
     if self.check_reproducibility_and_regression(test_case):
-      return test_case, err_str, run_time
-    return None, None, run_time
+      return test_case, err_str
+    return None, None
 
   def is_reproducible(self, test_case, target_path):
     """Checks if the test case reproduces.

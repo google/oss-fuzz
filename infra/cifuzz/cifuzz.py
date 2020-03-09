@@ -23,6 +23,7 @@ import logging
 import os
 import shutil
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -201,10 +202,14 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
   fuzzers_left = len(fuzzer_paths)
   for fuzzer_path in fuzzer_paths:
     run_seconds = fuzz_seconds // fuzzers_left
+    if run_seconds <= 0:
+      break
+
     target = fuzz_target.FuzzTarget(fuzzer_path, run_seconds, out_dir,
                                     project_name)
-
-    test_case, stack_trace, elapsed_time = target.fuzz()
+    start_time = time.time()
+    test_case, stack_trace = target.fuzz()
+    elapsed_time = time.time() - start_time
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
