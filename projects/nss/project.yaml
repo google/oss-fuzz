@@ -1,8 +1,8 @@
 homepage: "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS"
-primary_contact: "fkiefer@mozilla.com"
+primary_contact: "jjones@mozilla.com"
 auto_ccs:
-  - "jjones@mozilla.com"
-  - "cdiehl@mozilla.com"
+  - "bbeurdouche@mozilla.com"
+  - "tvandermerwe@mozilla.com"
   - "sledru@mozilla.com"
   - "kjacobs@mozilla.com"
 fuzzing_engines:

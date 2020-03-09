@@ -12,4 +12,3 @@ sanitizers:
   - dataflow
 vendor_ccs:
   - "twsmith@mozilla.com"
-  - "cdiehl@mozilla.com"

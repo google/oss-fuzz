@@ -7,7 +7,6 @@ auto_ccs:
   - "dav1d-fuzz@videolan.org"
 vendor_ccs:
   - "twsmith@mozilla.com"
-  - "cdiehl@mozilla.com"
 sanitizers:
   - address
   - memory

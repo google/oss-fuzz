@@ -1,7 +1,7 @@
 homepage: "https://android.googlesource.com/platform/external/libldac"
 primary_contact: "Chisato.Kenmochi@sony.com"
 auto_ccs:
-  - cdiehl@mozilla.com
+  - twsmith@mozilla.com
 vendor_ccs:
   - bcreasey@google.com
   - hamzeh@google.com
