@@ -7,4 +7,3 @@ sanitizers:
 auto_ccs:
 - "aosmond@mozilla.com"
 - "jmuizelaar@mozilla.com"
-- "cdiehl@mozilla.com"

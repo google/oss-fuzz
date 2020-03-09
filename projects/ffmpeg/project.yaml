@@ -5,6 +5,6 @@ auto_ccs:
  - "michael@niedermayer.cc"
  - "jrummell@google.com"
  - "tfoucu@google.com"
- - "cdiehl@mozilla.com"
+ - "twsmith@mozilla.com"
  - "kempfjb@gmail.com"
 selective_unpack: true

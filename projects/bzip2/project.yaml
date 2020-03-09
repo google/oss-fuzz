@@ -4,7 +4,6 @@ auto_ccs:
   - "bshas3@gmail.com"
 vendor_ccs:
   - "twsmith@mozilla.com"
-  - "cdiehl@mozilla.com"
 fuzzing_engines:
   - libfuzzer
   - afl

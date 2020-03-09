@@ -7,4 +7,3 @@ fuzzing_engines:
 language: rust
 vendor_ccs:
 - "twsmith@mozilla.com"
-- "cdiehl@mozilla.com"
