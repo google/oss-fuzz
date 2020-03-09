@@ -164,9 +164,9 @@ def build_fuzzers(project_name,
     logging.error('Building fuzzers failed.')
     return False
 
-  # Removes non-affected fuzzers.
-  keep_affected_fuzzers(project_name, out_dir,
-                        build_repo_manager.get_git_diff(), src_in_docker)
+  # Remove non-affected fuzzers.
+  remove_unaffected_fuzzers(project_name, out_dir,
+                            build_repo_manager.get_git_diff(), src_in_docker)
   return True
 
 
@@ -323,32 +323,35 @@ def get_files_covered_by_target(latest_cov_info, target_name, src_in_docker):
     logging.info('No files found in coverage report.')
     return None
 
-  # Cases like curl there is /src/curl and /src/curl_fuzzers/ are handled.
-  if not src_in_docker.endswith('/'):
-    src_in_docker += '/'
+  # Make sure cases like /src/curl and /src/curl/ are both handled.
+  norm_src_in_docker = os.path.normpath(src_in_docker)
+  if not norm_src_in_docker.endswith('/'):
+    norm_src_in_docker += '/'
 
   affected_file_list = []
   for file in coverage_per_file:
-    if not file['filename'].startswith(src_in_docker):
+    norm_file_path = os.path.normpath(file['filename'])
+    if not norm_file_path.startswith(norm_src_in_docker):
       continue
     if not file['summary']['regions']['count']:
       # Don't consider a file affected if code in it is never executed.
       continue
 
-    relative_path = file['filename'].replace(src_in_docker, '')
+    relative_path = file['filename'].replace(norm_src_in_docker, '')
     affected_file_list.append(relative_path)
   if not affected_file_list:
     return None
   return affected_file_list
 
 
-def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
-  """Keeps only the affected fuzzers in the out directory.
+def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
+                              src_in_docker):
+  """Removes all non affected fuzzers in the out directory.
 
   Args:
     project_name: The name of the relevant OSS-Fuzz project.
     out_dir: The location of the fuzzer binaries.
-    files_changed: A list of files changed compared to HEAD.
+    files_changed: A list of files changed from origin.
     src_in_docker: The location of the source dir in the docker image.
   """
   if not files_changed:
@@ -373,7 +376,7 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
       affected_fuzzers.append(os.path.basename(fuzzer))
       continue
 
-    if set(covered_files).intersection(set(files_changed)):
+    if covered_files and set(covered_files).intersection(set(files_changed)):
       affected_fuzzers.append(os.path.basename(fuzzer))
 
   if not affected_fuzzers:
@@ -384,7 +387,7 @@ def keep_affected_fuzzers(project_name, out_dir, files_changed, src_in_docker):
       ' '.join(affected_fuzzers))
 
   all_fuzzer_names = map(os.path.basename, fuzzer_paths)
-  # Remove all the fuzzers that are not affected
+  # Remove all the fuzzers that are not affected.
   for file in os.listdir(out_dir):
     if file not in affected_fuzzers and file in all_fuzzer_names:
       try:
