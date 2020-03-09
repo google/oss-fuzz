@@ -62,7 +62,7 @@ do
 done
 
 # Build driverless libraries.
-bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
+bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=sandboxed \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
