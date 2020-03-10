@@ -1,4 +1,5 @@
 homepage: "https://gitlab.com/systerel/S2OPC"
+language: c++
 primary_contact: "pab.systerel@gmail.com"
 auto_ccs:
   - "mcl.systerel@gmail.com"

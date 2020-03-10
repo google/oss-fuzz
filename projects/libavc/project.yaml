@@ -1,4 +1,5 @@
 homepage: "https://android.googlesource.com/platform/external/libavc/"
+language: c++
 primary_contact: "harish.mahendrakar@ittiam.com"
 sanitizers:
   - address

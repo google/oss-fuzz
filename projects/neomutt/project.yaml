@@ -1,4 +1,5 @@
 homepage: "https://neomutt.org"
+language: c++
 primary_contact: "joseph.bisch@gmail.com"
 auto_ccs:
   - "richard.russon@gmail.com"

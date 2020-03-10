@@ -1,4 +1,5 @@
 homepage: "https://libzip.org/"
+language: c++
 primary_contact: "libzip@nih.at"
 auto_ccs:
   - "randy440088@gmail.com"

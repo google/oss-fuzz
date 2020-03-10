@@ -1,4 +1,5 @@
 homepage: "https://github.com/google/wuffs"
+language: c++
 primary_contact: "nigeltao@golang.org"
 fuzzing_engines:
   - libfuzzer

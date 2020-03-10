@@ -1,4 +1,5 @@
 homepage: "https://github.com/guidovranken/bignum-fuzzer"
+language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
     - "martin.swende@ethereum.org"

@@ -92,9 +92,16 @@ class ProjectYamlChecker:
       'view_restrictions',
       'language',
       'help_url',
+      'labels',  # For internal use only, hard to lint as it uses fuzzer names.
+      'selective_unpack',
   ]
 
-  LANGUAGES_SUPPORTED = ['c', 'cpp', 'go', 'rust', 'python']
+  LANGUAGES_SUPPORTED = [
+      'c',
+      'c++',
+      'go',
+      'rust',
+  ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
   # primary contact is probably a mistake.
@@ -188,14 +195,14 @@ class ProjectYamlChecker:
         self.error(email_address + ' is an invalid email address.')
 
   def check_valid_language(self):
-    """Check that the language specified is valid."""
+    """Check that the language is specified and valid."""
     language = self.data.get('language')
     if not language:
-      return
-
-    if language not in self.LANGUAGES_SUPPORTED:
-      self.error('{language} is not supported ({supported}).'.format(
-          language=language, supported=self.LANGUAGES_SUPPORTED))
+      self.error('Missing "language" attribute in project.yaml.')
+    elif language not in self.LANGUAGES_SUPPORTED:
+      self.error(
+          '"language: {language}" is not supported ({supported}).'.format(
+              language=language, supported=self.LANGUAGES_SUPPORTED))
 
 
 def _check_one_project_yaml(project_yaml_filename):

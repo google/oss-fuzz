@@ -1,4 +1,5 @@
 homepage: "http://www.wavpack.com" 
+language: c++
 primary_contact: "david@wavpack.com" 
 auto_ccs:
 - dvbryant@gmail.com

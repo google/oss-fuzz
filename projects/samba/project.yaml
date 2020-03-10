@@ -1,4 +1,5 @@
 homepage: "https://samba.org"
+language: c++
 primary_contact: "douglas.bagnall@catalyst.net.nz"
 auto_ccs:
   - "abartlet+google@catalyst.net.nz"

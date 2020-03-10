@@ -1,4 +1,5 @@
 homepage: "https://github.com/libvips/libvips"
+language: c++
 primary_contact: "jcupitt@gmail.com"
 auto_ccs:
   - "oscar.mira@adevinta.com"

@@ -1,4 +1,5 @@
 homepage: "https://www.theora.org/"
+language: c++
 primary_contact: "guidovranken@gmail.com"
 vendor_ccs:
  - "daede003@umn.edu"

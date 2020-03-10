@@ -1,4 +1,5 @@
 homepage: "http://libcxxabi.llvm.org/"
+language: c++
 primary_contact: "kcc@google.com"
 auto_ccs:
   - "Erik.Pilkington@gmail.com"

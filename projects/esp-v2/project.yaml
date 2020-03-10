@@ -1,4 +1,5 @@
 homepage: "https://github.com/GoogleCloudPlatform/esp-v2"
+language: c++
 primary_contact: "jilinxia@google.com"
 auto_ccs:
 - "nareddyt@google.com"

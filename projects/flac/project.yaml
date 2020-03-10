@@ -1,4 +1,5 @@
 homepage: "https://xiph.org/flac/"
+language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
  - "erik.de.castro.lopo@gmail.com"

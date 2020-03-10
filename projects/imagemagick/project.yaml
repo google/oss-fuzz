@@ -1,4 +1,5 @@
 homepage: "https://www.imagemagick.org"
+language: c++
 primary_contact: "dirk@lemstra.org"
 auto_ccs:
   - paul.l.kehrer@gmail.com

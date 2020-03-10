@@ -1,4 +1,5 @@
 homepage: "http://www.leptonica.com"
+language: c++
 primary_contact: "taking@google.com"
 auto_ccs:
   - "kusano@google.com"

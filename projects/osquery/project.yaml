@@ -1,4 +1,5 @@
 homepage: "https://osquery.io"
+language: c++
 primary_contact: "osquery@osquery.io"
 auto_ccs:
   - "theopolis@osquery.io"

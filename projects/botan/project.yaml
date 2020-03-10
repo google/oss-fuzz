@@ -1,4 +1,5 @@
 homepage: "https://botan.randombit.net"
+language: c++
 primary_contact: "jack.lloyd@gmail.com"
 auto_ccs:
   - "r.korthaus@sirrix.com"

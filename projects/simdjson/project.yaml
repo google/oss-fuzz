@@ -1,4 +1,5 @@
 homepage: "https://github.com/lemire/simdjson"
+language: c++
 primary_contact: "pauldreikossfuzz@gmail.com"
 auto_ccs:
  - "lemire@gmail.com"

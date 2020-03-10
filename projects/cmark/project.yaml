@@ -1,4 +1,5 @@
 homepage: "http://commonmark.org"
+language: c++
 primary_contact: "jgm@berkeley.edu"
 auto_ccs:
   - "kivikakk@github.com"

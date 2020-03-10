@@ -1,4 +1,5 @@
 homepage: "https://matt.ucc.asn.au/dropbear/dropbear.html"
+language: c++
 primary_contact: "matt@ucc.asn.au"
 sanitizers:
   - address

@@ -1,4 +1,5 @@
 homepage: "https://libspng.org"
+language: c++
 primary_contact: "randy408@protonmail.com"
 auto_ccs:
   - "randy440088@gmail.com"

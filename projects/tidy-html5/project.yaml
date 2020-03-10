@@ -1,4 +1,5 @@
 homepage: "http://www.html-tidy.org/"
+language: c++
 primary_contact: "sbucur@google.com"
 auto_ccs:
   - "nmarrow@google.com"

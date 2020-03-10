@@ -1,4 +1,5 @@
 homepage: "https://firebase.google.com/docs/firestore/"
+language: c++
 primary_contact: "varconst@google.com"
 auto_ccs:
   - "varconst@google.com"

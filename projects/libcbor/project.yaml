@@ -1,4 +1,5 @@
 homepage: "https://github.com/PJK/libcbor"
+language: c++
 primary_contact: "me@pavelkalvoda.com"
 auto_ccs:
   - alex.gaynor@gmail.com

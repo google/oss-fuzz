@@ -1,4 +1,5 @@
 homepage: "https://github.com/khaledhosny/ots"
+language: c++
 primary_contact: "dr.khaled.hosny@gmail.com"
 auto_ccs:
   - "kevin899@gmail.com"

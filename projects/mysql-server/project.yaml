@@ -1,4 +1,5 @@
 homepage: "https://www.mysql.com"
+language: c++
 primary_contact: "secalert_us@oracle.com"
 auto_ccs :
 - "p.antoine@catenacyber.fr"

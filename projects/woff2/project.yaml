@@ -1,4 +1,5 @@
 homepage: "https://github.com/google/woff2"
+language: c++
 primary_contact: "rsheeter@google.com"
 auto_ccs:
   - "grieger@google.com"

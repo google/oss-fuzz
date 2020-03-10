@@ -1,4 +1,5 @@
 homepage: "https://gdal.org"
+language: c++
 primary_contact: "even.rouault@gmail.com"
 auto_ccs:
   - "schwehr@gmail.com"

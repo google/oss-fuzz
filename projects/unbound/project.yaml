@@ -1,2 +1,3 @@
 homepage: "https://nlnetlabs.nl/projects/unbound/about/"
+language: c++
 primary_contact: "wouter@nlnetlabs.nl"

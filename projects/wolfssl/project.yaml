@@ -1,4 +1,5 @@
 homepage: "https://www.wolfssl.com/"
+language: c++
 primary_contact: "jacob@wolfssl.com"
 auto_ccs:
   - "david@wolfssl.com"

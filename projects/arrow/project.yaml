@@ -1,4 +1,5 @@
 homepage: "https://arrow.apache.org/"
+language: c++
 primary_contact: "antoine@python.org"
 auto_ccs:
   - "bengilgit@gmail.com"

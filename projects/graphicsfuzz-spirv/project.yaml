@@ -1,4 +1,5 @@
 homepage: "https://www.graphicsfuzz.com"
+language: c++
 primary_contact: "afdx@google.com"
 auto_ccs:
   - "paulthomson@google.com"

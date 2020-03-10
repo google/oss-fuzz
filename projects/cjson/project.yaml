@@ -1,4 +1,5 @@
 homepage: "https://github.com/DaveGamble/cJSON"
+language: c++
 primary_contact: "max@maxbruckner.de"
 auto_ccs:
   - "randy440088@gmail.com"
