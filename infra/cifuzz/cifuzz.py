@@ -163,6 +163,8 @@ def build_fuzzers(project_name,
   if helper.docker_run(command):
     logging.error('Building fuzzers failed.')
     return False
+  remove_unaffected_fuzzers(project_name, out_dir,
+                            build_repo_manager.get_git_diff(), src_in_docker)
   return True
 
 
@@ -293,23 +295,23 @@ def get_target_coverage_report(latest_cov_info, target_name):
   return get_json_from_url(target_url)
 
 
-def get_files_covered_by_target(latest_cov_info, target_name,
-                                oss_fuzz_project_base):
+def get_files_covered_by_target(latest_cov_info, target_name, src_in_docker):
   """Gets a list of files covered by the specific fuzz target.
 
   Args:
     latest_cov_info: A dict containing a project's latest cov report info.
     target_name: The name of the fuzz target whose coverage is requested.
-    oss_fuzz_project_base: The location where OSS-Fuzz project is cloned to for
-      the projects build.
+    src_in_docker: The location of the source dir in the docker image.
 
   Returns:
     A list of files that the fuzzer covers or None.
 
   Raises:
-    ValueError: When the oss_fuzz_project_base is not defined.
+    ValueError: When the src_in_docker is not defined.
   """
-  if not oss_fuzz_project_base:
+  if not src_in_docker:
+    logging.error('Project souce location in docker is not found.'
+                  'Can\'t get coverage information from OSS-Fuzz.')
     return None
   target_cov = get_target_coverage_report(latest_cov_info, target_name)
   if not target_cov:
@@ -319,23 +321,78 @@ def get_files_covered_by_target(latest_cov_info, target_name,
     logging.info('No files found in coverage report.')
     return None
 
-  # Cases like curl there is /src/curl and /src/curl_fuzzers/ are handled.
-  if not oss_fuzz_project_base.endswith('/'):
-    oss_fuzz_project_base += '/'
+  # Make sure cases like /src/curl and /src/curl/ are both handled.
+  norm_src_in_docker = os.path.normpath(src_in_docker)
+  if not norm_src_in_docker.endswith('/'):
+    norm_src_in_docker += '/'
 
   affected_file_list = []
   for file in coverage_per_file:
-    if not file['filename'].startswith(oss_fuzz_project_base):
+    norm_file_path = os.path.normpath(file['filename'])
+    if not norm_file_path.startswith(norm_src_in_docker):
       continue
     if not file['summary']['regions']['count']:
       # Don't consider a file affected if code in it is never executed.
       continue
 
-    relative_path = file['filename'].replace(oss_fuzz_project_base, '')
+    relative_path = file['filename'].replace(norm_src_in_docker, '')
     affected_file_list.append(relative_path)
   if not affected_file_list:
     return None
   return affected_file_list
+
+
+def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
+                              src_in_docker):
+  """Removes all non affected fuzzers in the out directory.
+
+  Args:
+    project_name: The name of the relevant OSS-Fuzz project.
+    out_dir: The location of the fuzzer binaries.
+    files_changed: A list of files changed compared to HEAD.
+    src_in_docker: The location of the source dir in the docker image.
+  """
+  if not files_changed:
+    logging.info('No files changed compared to HEAD.')
+    return
+  fuzzer_paths = utils.get_fuzz_targets(out_dir)
+  if not fuzzer_paths:
+    logging.error('No fuzzers found in out dir.')
+    return
+
+  latest_cov_report_info = get_latest_cov_report_info(project_name)
+  if not latest_cov_report_info:
+    logging.error('Could not download latest coverage report.')
+    return
+  affected_fuzzers = []
+  for fuzzer in fuzzer_paths:
+    covered_files = get_files_covered_by_target(latest_cov_report_info,
+                                                os.path.basename(fuzzer),
+                                                src_in_docker)
+    if not covered_files:
+      # Assume a fuzzer is affected if we can't get its coverage from OSS-Fuzz.
+      affected_fuzzers.append(os.path.basename(fuzzer))
+      continue
+
+    for file in files_changed:
+      if file in covered_files:
+        affected_fuzzers.append(os.path.basename(fuzzer))
+
+  if not affected_fuzzers:
+    logging.info('No affected fuzzers detected, keeping all as fallback.')
+    return
+  logging.info('Using affected fuzzers.\n %s fuzzers affected by pull request',
+               ' '.join(affected_fuzzers))
+
+  all_fuzzer_names = map(os.path.basename, fuzzer_paths)
+
+  # Remove all the fuzzers that are not affected.
+  for fuzzer in all_fuzzer_names:
+    if fuzzer not in affected_fuzzers:
+      try:
+        os.remove(os.path.join(out_dir, fuzzer))
+      except OSError as error:
+        logging.error('%s occured while removing file %s', error, fuzzer)
 
 
 def get_json_from_url(url):
