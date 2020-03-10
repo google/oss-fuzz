@@ -21,15 +21,51 @@ if [ "$SANITIZER" = undefined ]; then
     export CXXFLAGS="$CXXFLAGS -fno-sanitize=unsigned-integer-overflow"
 fi
 cd binutils-gdb
+
+# Comment out the lines of logging to stderror from elfcomm.c
+# This is to make it nicer to read the output of libfuzzer.
+cd binutils
+sed -i 's/vfprintf (stderr/\/\//' elfcomm.c
+sed -i 's/fprintf (stderr/\/\//' elfcomm.c
+cd ../
+
 ./configure --disable-gdb --enable-targets=all
 make MAKEINFO=true && true
+
+# Make fuzzer directory
 mkdir fuzz
 cp ../fuzz_*.c fuzz/
-
 cd fuzz
-ls fuzz_*.c | cut -d. -f1 | while read i; do
+
+for i in fuzz_disassemble fuzz_bfd; do
     $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c $i.c -o $i.o
     $CXX $CXXFLAGS $i.o -o $OUT/$i $LIB_FUZZING_ENGINE ../opcodes/libopcodes.a ../bfd/libbfd.a ../libiberty/libiberty.a ../zlib/libz.a
 done
-
 # TODO build corpuses
+
+# Now compile the src/binutils fuzzers
+cd ../binutils
+
+# First copy the fuzzers, modify applications and copile object files
+for i in readelf cxxfilt; do
+    cp ../../fuzz_$i.c .
+
+    # Modify main functions so we dont have them anymore
+    sed 's/main (int argc/old_main (int argc, char **argv);\nint old_main (int argc/' $i.c >> $i.h
+
+    # Compile object file
+    $CC $CFLAGS -DHAVE_CONFIG_H -I. -I../bfd -I./../bfd -I./../include -I./../zlib -DLOCALEDIR="\"/usr/local/share/locale\"" -Dbin_dummy_emulation=bin_vanilla_emulation -W -Wall -MT fuzz_$i.o -MD -MP -c -o fuzz_$i.o fuzz_$i.c
+done
+
+# Link the files
+## Readelf
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib -o fuzz_readelf fuzz_readelf.o version.o unwind-ia64.o dwarf.o elfcomm.o ../libctf/.libs/libctf-nobfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a 
+mv fuzz_readelf $OUT/fuzz_readelf
+
+### Set up seed corpus for readelf in the form of a single ELF file. 
+zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
+mv fuzz_readelf_seed_corpus.zip $OUT/ 
+
+## cxxfilt
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib -o fuzz_cxxfilt fuzz_cxxfilt.o bucomm.o version.o filemode.o ../bfd/.libs/libbfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a 
+mv fuzz_cxxfilt $OUT/fuzz_cxxfilt
