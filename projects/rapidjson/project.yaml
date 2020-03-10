@@ -1,4 +1,5 @@
 homepage: "https://github.com/tencent/rapidjson"
+language: c++
 primary_contact: "guidovranken@gmail.com"
 sanitizers:
  - address

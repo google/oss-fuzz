@@ -1,4 +1,5 @@
 homepage: "https://github.com/project-oak/oak"
+language: c++
 primary_contact: "tzn@google.com"
 auto_ccs:
   - "project-oak-team@google.com"

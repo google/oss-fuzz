@@ -1,4 +1,5 @@
 homepage: "http://llvm.org/"
+language: c++
 primary_contact: "kcc@google.com"
 auto_ccs:
   - "mascasa@google.com"

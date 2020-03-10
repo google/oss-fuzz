@@ -1,4 +1,5 @@
 homepage: "https://www.torproject.org"
+language: c++
 primary_contact: "nima@torproject.org"
 auto_ccs: "nick.a.mathewson@gmail.com"
 sanitizers:

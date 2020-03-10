@@ -1,4 +1,5 @@
 homepage: "https://code.videolan.org/videolan/dav1d"
+language: c++
 primary_contact: "janne.grunau@gmail.com"
 auto_ccs:
   - "rsbultje@gmail.com"

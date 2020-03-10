@@ -1,4 +1,5 @@
 homepage: https://github.com/google/fuzzer-test-suite
+language: c++
 primary_contact: kcc@google.com
 auto_ccs:
   - "kevinwkt@google.com"

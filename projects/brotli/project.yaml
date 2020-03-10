@@ -1,4 +1,5 @@
 homepage: "https://github.com/google/brotli"
+language: c++
 primary_contact: "eustas@chromium.org"
 vendor_ccs:
   - "jkew@mozilla.com"

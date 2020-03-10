@@ -1,4 +1,5 @@
 homepage: "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey"
+language: c++
 primary_contact: "choller@mozilla.com"
 auto_ccs:
   - sledru@mozilla.com

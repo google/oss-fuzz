@@ -1,4 +1,5 @@
 homepage: "https://ghostscript.com"
+language: c++
 primary_contact: "skau@google.com"
 auto_ccs:
   - "henry.stiles@artifex.com"

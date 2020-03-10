@@ -1,4 +1,5 @@
 homepage: "http://www.grpc.io/"
+language: c++
 primary_contact: "nnoble@google.com"
 auto_ccs:
   - "donnadionne@google.com"

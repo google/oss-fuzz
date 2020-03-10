@@ -1,4 +1,5 @@
 homepage: 'https://searchfox.org/mozilla-central/source/js/src/fuzz-tests/README'
+language: c++
 primary_contact: 'choller@mozilla.com'
 fuzzing_engines:
   - libfuzzer

@@ -1,4 +1,5 @@
 homepage: "https://code.googlesource.com/re2"
+language: c++
 primary_contact: "junyer@google.com"
 sanitizers:
   - address

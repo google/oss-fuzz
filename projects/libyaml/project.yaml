@@ -1,4 +1,5 @@
 homepage: https://github.com/yaml/libyaml
+language: c++
 primary_contact: "sigmavirus24@gmail.com"
 auto_ccs:
   - "alex.gaynor@gmail.com"

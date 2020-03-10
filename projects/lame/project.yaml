@@ -1,4 +1,5 @@
 homepage: "https://sourceforge.net/projects/lame/"
+language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
     - "bouvigne@gmail.com"

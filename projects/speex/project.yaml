@@ -1,4 +1,5 @@
 homepage: "https://speex.org/"
+language: c++
 primary_contact: "tmatth@videolan.org"
 auto_ccs:
   - "twsmith@mozilla.com"

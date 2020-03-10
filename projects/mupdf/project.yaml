@@ -1,4 +1,5 @@
 homepage: "https://www.mupdf.com"
+language: c++
 primary_contact: tor.andersson@artifex.com
 fuzzing_engines:
   - libfuzzer

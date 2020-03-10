@@ -1,4 +1,5 @@
 homepage: https://github.com/Yubico/libfido2
+language: c++
 primary_contact: "g.kihlman@yubico.com"
 auto_ccs:
     - "pedro@ambientworks.net"

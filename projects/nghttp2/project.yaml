@@ -1,4 +1,5 @@
 homepage: "https://nghttp2.org/"
+language: c++
 primary_contact: "tatsuhiro.t@gmail.com"
 sanitizers:
   - address

@@ -1,4 +1,5 @@
 homepage: "https://libsodium.org"
+language: c++
 primary_contact: "ossfuzzz+sodium@gmail.com"
 auto_ccs:
  - "chriswwolfe@gmail.com"

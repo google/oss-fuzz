@@ -1,4 +1,5 @@
 homepage: "https://www.envoyproxy.io/"
+language: c++
 primary_contact: "htuch@google.com"
 auto_ccs:
   - "mattklein123@gmail.com"

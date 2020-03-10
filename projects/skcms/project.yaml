@@ -1,4 +1,5 @@
 homepage: "https://skia.googlesource.com/skcms/+/master"
+language: c++
 primary_contact: "kjlubick@chromium.org"
 auto_ccs:
   - "mtklein@google.com"

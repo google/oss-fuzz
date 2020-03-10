@@ -1,4 +1,5 @@
 homepage: "https://www.gnutls.org"
+language: c++
 primary_contact: "n.mavrogiannopoulos@gmail.com"
 auto_ccs:
   - "daiki.ueno@gmail.com"

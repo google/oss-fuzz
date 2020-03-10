@@ -1,4 +1,5 @@
 homepage: "https://github.com/tpm2-software/tpm2-tss"
+language: c++
 primary_contact: "tadeusz.struk@intel.com"
 auto_ccs:
   - "andreas.fuchs@sit.fraunhofer.de"

@@ -1,4 +1,5 @@
 homepage: "http://php.net/"
+language: c++
 primary_contact: "stas@php.net"
 auto_ccs:
  - "smalyshev@gmail.com"

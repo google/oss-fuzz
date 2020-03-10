@@ -1,3 +1,4 @@
 homepage: "https://tls.mbed.org"
+language: c++
 primary_contact: "support-mbedtls@arm.com"
 auto_ccs : "p.antoine@catenacyber.fr"

@@ -1,4 +1,5 @@
 homepage: "https://android.googlesource.com/platform/external/libldac"
+language: c++
 primary_contact: "Chisato.Kenmochi@sony.com"
 auto_ccs:
   - twsmith@mozilla.com

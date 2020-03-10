@@ -1,4 +1,5 @@
 homepage: "https://github.com/guidovranken/cryptofuzz"
+language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
     - "openssl-security@openssl.org"

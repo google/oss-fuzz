@@ -1,4 +1,5 @@
 homepage: "https://github.com/libexpat/libexpat"
+language: c++
 primary_contact: "sebastian@pipping.org"
 auto_ccs:
  - "rhodri@kynesim.co.uk"

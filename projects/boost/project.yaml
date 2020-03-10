@@ -1,4 +1,5 @@
 homepage: "http://www.boost.org/"
+language: c++
 
 # TODO: add more boost maintainers here and possibly a mailing list.
 # primary_contact: "someone@boost.org"

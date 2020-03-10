@@ -1,4 +1,5 @@
 homepage: "https://github.com/libjpeg-turbo/libjpeg-turbo"
+language: c++
 vendor_ccs:
   - "aosmond@mozilla.com"
   - "tnikkel@mozilla.com"

@@ -1,4 +1,5 @@
 homepage: "https://qpid.apache.org/proton/"
+language: c++
 primary_contact: "jross@apache.org"
 auto_ccs:
  - "security@apache.org"
