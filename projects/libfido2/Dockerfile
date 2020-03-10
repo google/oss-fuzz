@@ -16,11 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER g.kihlman@yubico.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool curl
+RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN apt-get install -y cmake libudev-dev pkg-config chrpath
 RUN git clone --branch v0.5.0 https://github.com/PJK/libcbor
 RUN git clone --branch OpenSSL_1_1_1-stable https://github.com/openssl/openssl
 RUN git clone https://github.com/Yubico/libfido2
-RUN curl -s https://ambientworks.net/libfido2/corpus.tgz > libfido2/fuzz/corpus.tgz
+ADD https://ambientworks.net/libfido2/corpus.tgz libfido2/fuzz/corpus.tgz
 WORKDIR libfido2
 COPY build.sh $SRC/
