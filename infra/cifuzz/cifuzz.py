@@ -163,8 +163,6 @@ def build_fuzzers(project_name,
   if helper.docker_run(command):
     logging.error('Building fuzzers failed.')
     return False
-
-  # Remove non-affected fuzzers.
   remove_unaffected_fuzzers(project_name, out_dir,
                             build_repo_manager.get_git_diff(), src_in_docker)
   return True
@@ -351,11 +349,11 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
   Args:
     project_name: The name of the relevant OSS-Fuzz project.
     out_dir: The location of the fuzzer binaries.
-    files_changed: A list of files changed from origin.
+    files_changed: A list of files changed compared to HEAD.
     src_in_docker: The location of the source dir in the docker image.
   """
   if not files_changed:
-    logging.info('No files changed from origin.')
+    logging.info('No files changed compared to HEAD.')
     return
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
@@ -376,24 +374,25 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
       affected_fuzzers.append(os.path.basename(fuzzer))
       continue
 
-    if covered_files and set(covered_files).intersection(set(files_changed)):
-      affected_fuzzers.append(os.path.basename(fuzzer))
+    for file in files_changed:
+      if file in covered_files:
+        affected_fuzzers.append(os.path.basename(fuzzer))
 
   if not affected_fuzzers:
-    logging.info('Not using affected fuzzers.')
+    logging.info('No affected fuzzers detected, keeping all as fallback.')
     return
-  logging.info(
-      'Using affected fuzzers.\n The following fuzzers are affected: %s',
-      ' '.join(affected_fuzzers))
+  logging.info('Using affected fuzzers.\n %s fuzzers affected by pull request',
+               ' '.join(affected_fuzzers))
 
   all_fuzzer_names = map(os.path.basename, fuzzer_paths)
+
   # Remove all the fuzzers that are not affected.
-  for file in os.listdir(out_dir):
-    if file not in affected_fuzzers and file in all_fuzzer_names:
+  for fuzzer in all_fuzzer_names:
+    if fuzzer not in affected_fuzzers:
       try:
-        os.remove(os.path.join(out_dir, file))
+        os.remove(os.path.join(out_dir, fuzzer))
       except OSError as error:
-        logging.error('%s occured while removing file %s', error, file)
+        logging.error('%s occured while removing file %s', error, fuzzer)
 
 
 def get_json_from_url(url):
