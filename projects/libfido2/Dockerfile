@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER g.kihlman@yubico.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool
+RUN apt-get update && apt-get install -y make autoconf automake libtool curl
 RUN apt-get install -y cmake libudev-dev pkg-config chrpath
 RUN git clone --branch v0.5.0 https://github.com/PJK/libcbor
 RUN git clone --branch OpenSSL_1_1_1-stable https://github.com/openssl/openssl

@@ -61,6 +61,7 @@ for f in `ls fuzz/fuzz_*`; do
 done
 
  # Prepare seed corpora
+curl -s https://ambientworks.net/libfido2/corpus.tgz > ${SRC}/libfido2/fuzz/corpus.tgz
 tar xzf ${SRC}/libfido2/fuzz/corpus.tgz
 (set -e ; cd fuzz_assert/corpus  ; zip -r ${OUT}/fuzz_assert_seed_corpus.zip .)
 (set -e ; cd fuzz_bio/corpus     ; zip -r ${OUT}/fuzz_bio_seed_corpus.zip .)
