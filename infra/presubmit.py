@@ -94,7 +94,12 @@ class ProjectYamlChecker:
       'help_url',
   ]
 
-  LANGUAGES_SUPPORTED = ['c', 'c++', 'go', 'rust',]
+  LANGUAGES_SUPPORTED = [
+      'c',
+      'c++',
+      'go',
+      'rust',
+  ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
   # primary contact is probably a mistake.
