@@ -92,6 +92,8 @@ class ProjectYamlChecker:
       'view_restrictions',
       'language',
       'help_url',
+      'labels',  # For internal use only, hard to lint as it uses fuzzer names.
+      'selective_unpack',
   ]
 
   LANGUAGES_SUPPORTED = [
