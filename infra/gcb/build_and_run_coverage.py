@@ -36,7 +36,7 @@ LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
 UPLOAD_URL_FORMAT = 'gs://' + COVERAGE_BUCKET_NAME + '/{project}/{type}/{date}'
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'cpp']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
 
 
 def skip_build(message):
