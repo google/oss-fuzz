@@ -353,8 +353,9 @@ def get_json_from_url(url):
     logging.error('HTTP error with url %s.', url)
     return None
   try:
-    result_json = json.load(response)
-  except ValueError as excp:
+    # read().decode() fixes compatability issue with urllib response object.
+    result_json = json.loads(response.read().decode())
+  except (ValueError, TypeError, json.JSONDecodeError) as excp:
     logging.error('Loading json from url %s failed with: %s.', url, str(excp))
     return None
   return result_json
