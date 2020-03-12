@@ -361,5 +361,68 @@ class GetLatestCoverageReportUnitTest(unittest.TestCase):
     self.assertIsNone(cifuzz.get_latest_cov_report_info(''))
 
 
+class KeepAffectedFuzzersUnitTest(unittest.TestCase):
+  """Test the keep_affected_fuzzer method in the CIFuzz module."""
+
+  test_fuzzer_1 = os.path.join(TEST_FILES_PATH, 'out', 'example_crash_fuzzer')
+  test_fuzzer_2 = os.path.join(TEST_FILES_PATH, 'out', 'example_nocrash_fuzzer')
+  example_file_changed = 'test.txt'
+
+  def test_keeping_fuzzer_w_no_coverage(self):
+    """Tests that a specific fuzzer is kept if it is deemed affected."""
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        cifuzz, 'get_latest_cov_report_info', return_value=1):
+      shutil.copy(self.test_fuzzer_1, tmp_dir)
+      shutil.copy(self.test_fuzzer_2, tmp_dir)
+      with unittest.mock.patch.object(cifuzz,
+                                      'get_files_covered_by_target',
+                                      side_effect=[[self.example_file_changed],
+                                                   None]):
+        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
+                                         [self.example_file_changed], '')
+        self.assertEqual(2, len(os.listdir(tmp_dir)))
+
+  def test_keeping_specific_fuzzer(self):
+    """Tests that a specific fuzzer is kept if it is deemed affected."""
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        cifuzz, 'get_latest_cov_report_info', return_value=1):
+      shutil.copy(self.test_fuzzer_1, tmp_dir)
+      shutil.copy(self.test_fuzzer_2, tmp_dir)
+      with unittest.mock.patch.object(cifuzz,
+                                      'get_files_covered_by_target',
+                                      side_effect=[[self.example_file_changed],
+                                                   ['not/a/real/file']]):
+        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
+                                         [self.example_file_changed], '')
+        self.assertEqual(1, len(os.listdir(tmp_dir)))
+
+  def test_no_fuzzers_kept_fuzzer(self):
+    """Tests that if there is no affected then all fuzzers are kept."""
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        cifuzz, 'get_latest_cov_report_info', return_value=1):
+      shutil.copy(self.test_fuzzer_1, tmp_dir)
+      shutil.copy(self.test_fuzzer_2, tmp_dir)
+      with unittest.mock.patch.object(cifuzz,
+                                      'get_files_covered_by_target',
+                                      side_effect=[None, None]):
+        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
+                                         [self.example_file_changed], '')
+        self.assertEqual(2, len(os.listdir(tmp_dir)))
+
+  def test_both_fuzzers_kept_fuzzer(self):
+    """Tests that if both fuzzers are affected then both fuzzers are kept."""
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        cifuzz, 'get_latest_cov_report_info', return_value=1):
+      shutil.copy(self.test_fuzzer_1, tmp_dir)
+      shutil.copy(self.test_fuzzer_2, tmp_dir)
+      with unittest.mock.patch.object(
+          cifuzz,
+          'get_files_covered_by_target',
+          side_effect=[self.example_file_changed, self.example_file_changed]):
+        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
+                                         [self.example_file_changed], '')
+        self.assertEqual(2, len(os.listdir(tmp_dir)))
+
+
 if __name__ == '__main__':
   unittest.main()
