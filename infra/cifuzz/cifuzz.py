@@ -379,7 +379,8 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
     fuzzer_name = os.path.basename(fuzzer)
     covered_files = get_files_covered_by_target(latest_cov_report_info,
                                                 fuzzer_name, src_in_docker)
-    logging.info('Fuzzer %s has affected files:\n %s', fuzzer_name, ' '.join(covered_files))
+    logging.info('Fuzzer %s has affected files:\n %s', fuzzer_name,
+                 ' '.join(covered_files))
     if not covered_files:
       # Assume a fuzzer is affected if we can't get its coverage from OSS-Fuzz.
       affected_fuzzers.append(os.path.basename(fuzzer))
