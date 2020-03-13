@@ -23,7 +23,7 @@ RUN perl init-repository --module-subset=qtbase
 WORKDIR qtbase
 RUN git config --global user.name qtrob
 RUN git config --global user.email qtrob@oss-fuzz
-RUN git fetch "https://codereview.qt-project.org/qt/qtbase" refs/changes/71/293771/1 && git cherry-pick FETCH_HEAD
+RUN git cherry-pick 9133bdcf26cc7eacea2933ab09837f0c7113880f
 WORKDIR $SRC
 RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git
 COPY build.sh $SRC/
