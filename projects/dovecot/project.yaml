@@ -1,0 +1,5 @@
+homepage: "https://www.dovecot.org/"
+language: c
+primary_contact: "<primary_contact_email>"
+auto_ccs:
+    - "david@adalogics.com"
