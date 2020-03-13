@@ -94,7 +94,8 @@ class FuzzTarget:
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
-      (test_case, stack trace) if found or (None, None) on timeout or error.
+      (test_case, stack trace, time in seconds) on crash or
+      (None, None, time in seconds) on timeout or error.
     """
     logging.info('Fuzzer %s, started.', self.target_name)
     docker_container = utils.get_container_name()
@@ -111,6 +112,7 @@ class FuzzTarget:
         'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
         'bash', '-c'
     ]
+
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
         fuzz_target=self.target_name,
         options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
@@ -125,6 +127,7 @@ class FuzzTarget:
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
+
     try:
       _, err = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:

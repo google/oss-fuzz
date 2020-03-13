@@ -197,7 +197,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_out_dir(self):
     """Tests run_fuzzers with an invalid out directory."""
-    run_success, bug_found = cifuzz.run_fuzzers(100, 'not/a/valid/path',
+    run_success, bug_found = cifuzz.run_fuzzers(10, 'not/a/valid/path',
                                                 EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)

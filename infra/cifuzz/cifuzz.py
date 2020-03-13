@@ -23,6 +23,7 @@ import logging
 import os
 import shutil
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -198,14 +199,20 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
     logging.error('No fuzzers were found in out directory: %s.',
                   format(out_dir))
     return False, False
-  fuzz_seconds_per_target = fuzz_seconds // len(fuzzer_paths)
 
   # Run fuzzers for alotted time.
+  total_num_fuzzers = len(fuzzer_paths)
+  fuzzers_left_to_run = total_num_fuzzers
+  min_seconds_per_fuzzer = fuzz_seconds // total_num_fuzzers
   for fuzzer_path in fuzzer_paths:
-    target = fuzz_target.FuzzTarget(fuzzer_path, fuzz_seconds_per_target,
-                                    out_dir, project_name)
+    run_seconds = max(fuzz_seconds // fuzzers_left_to_run,
+                      min_seconds_per_fuzzer)
 
+    target = fuzz_target.FuzzTarget(fuzzer_path, run_seconds, out_dir,
+                                    project_name)
+    start_time = time.time()
     test_case, stack_trace = target.fuzz()
+    fuzz_seconds -= (time.time() - start_time)
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
@@ -214,6 +221,8 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
       shutil.move(test_case, os.path.join(artifacts_dir, 'test_case'))
       parse_fuzzer_output(stack_trace, artifacts_dir)
       return True, True
+    fuzzers_left_to_run -= 1
+
   return True, False
 
 
