@@ -201,16 +201,16 @@ def run_fuzzers(fuzz_seconds, workspace, project_name):
   # Run fuzzers for alotted time.
   total_num_fuzzers = len(fuzzer_paths)
   fuzzers_left_to_run = total_num_fuzzers
-  time_left_to_run = fuzz_seconds
+  min_seconds_per_fuzzer = fuzz_seconds // total_num_fuzzers
   for fuzzer_path in fuzzer_paths:
-    run_seconds = max(time_left_to_run // fuzzers_left_to_run,
-                      fuzz_seconds // total_num_fuzzers)
+    run_seconds = max(fuzz_seconds // fuzzers_left_to_run,
+                      min_seconds_per_fuzzer)
 
     target = fuzz_target.FuzzTarget(fuzzer_path, run_seconds, out_dir,
                                     project_name)
     start_time = time.time()
     test_case, stack_trace = target.fuzz()
-    time_left_to_run -= (time.time() - start_time)
+    fuzz_seconds -= (time.time() - start_time)
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:

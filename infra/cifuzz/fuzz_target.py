@@ -140,7 +140,8 @@ class FuzzTarget:
                    self.target_name)
       return None, None
 
-    # Get crash info.
+    # Crash has been discovered.
+    logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)
     if not test_case:
