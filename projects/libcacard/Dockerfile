@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,15 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER ochang@google.com
-RUN apt-get update && apt-get install -y build-essential cmake libicu-dev python
-RUN git clone --depth 1 https://github.com/Microsoft/ChakraCore.git chakra
-WORKDIR chakra
+MAINTAINER jjelen@redhat.com
+RUN apt-get update && apt-get install -y pkg-config libglib2.0-dev gyp libsqlite3-dev mercurial python3-pip
+# Because Ubuntu has really ancient meson out there
+RUN pip3 install meson ninja
+
+#RUN git clone --depth 1 https://gitlab.freedesktop.org/spice/libcacard.git libcacard
+RUN git clone --depth 1 --single-branch --branch fuzzers https://gitlab.freedesktop.org/jjelen/libcacard.git libcacard
+RUN git clone --depth 1 https://github.com/nss-dev/nss.git nss
+RUN hg clone https://hg.mozilla.org/projects/nspr
+
+WORKDIR libcacard
 COPY build.sh $SRC/
