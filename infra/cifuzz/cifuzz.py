@@ -84,7 +84,7 @@ def build_fuzzers(project_name,
                   project_repo_name,
                   workspace,
                   pr_ref=None,
-                  commit_sha=None):
+                  commit_sha=None, sanitizer='address'):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
@@ -94,6 +94,7 @@ def build_fuzzers(project_name,
       artifacts.
     pr_ref: The pull request reference to be built.
     commit_sha: The commit sha for the project to be built at.
+    sanitizer: The sanitizer the fuzzers should be built with.
 
   Returns:
     True if build succeeded or False on failure.
