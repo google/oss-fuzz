@@ -374,10 +374,13 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
     logging.error('Could not download latest coverage report.')
     return
   affected_fuzzers = []
+  logging.info('Files changed in PR:\n%s', '\n'.join(files_changed))
   for fuzzer in fuzzer_paths:
+    fuzzer_name = os.path.basename(fuzzer)
     covered_files = get_files_covered_by_target(latest_cov_report_info,
-                                                os.path.basename(fuzzer),
-                                                src_in_docker)
+                                                fuzzer_name, src_in_docker)
+    logging.info('Fuzzer %s has affected files:\n%s', fuzzer_name,
+                 '\n'.join(covered_files))
     if not covered_files:
       # Assume a fuzzer is affected if we can't get its coverage from OSS-Fuzz.
       affected_fuzzers.append(os.path.basename(fuzzer))
