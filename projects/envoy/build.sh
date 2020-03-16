@@ -31,6 +31,14 @@ FUZZER_DICTIONARIES="\
 # file. Since the build runs with `-Werror` this will cause it to break, so we
 # use `--conlyopt` and `--cxxopt` instead of `--copt`.
 #
+# NOTE: We ignore -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION. All envoy fuzz
+# targets link this flag through their build target rule. Passing this in via CLI
+# will pass this to genrules that build unit tests that rely on production
+# behavior. Ignore this flag so these unit tests don't fail by using a modified
+# RE2 library.
+# TODO(asraa): Figure out how to work around this better.
+CFLAGS=${CFLAGS//"-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"/}
+CXXFLAGS=${CXXFLAGS//"-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"/}
 declare -r EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"
