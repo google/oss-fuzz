@@ -57,10 +57,6 @@ def main():
   # Check if failures should not be reported.
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
 
-  # Check which sanitizer should be used for building.
-  sanitizer = os.environ.get('SANITIZER').lower()
-
-
   # The default return code when an error occurs.
   returncode = 1
   if dry_run:
@@ -72,13 +68,13 @@ def main():
     return returncode
 
   if event == 'push' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace, sanitizer,
+      oss_fuzz_project_name, github_repo_name, workspace,
       commit_sha=commit_sha):
     logging.error('Error building fuzzers for project %s with commit %s.',
                   oss_fuzz_project_name, commit_sha)
     return returncode
   if event == 'pull_request' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace, sanitizer,pr_ref=pr_ref):
+      oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
     logging.error('Error building fuzzers for project %s with pull request %s.',
                   oss_fuzz_project_name, pr_ref)
     return returncode
