@@ -50,7 +50,7 @@ cat fuzzer_list | while read -r line
 do
     # build
     export SINGLE_FUZZ_TARGET="$line"
-    cargo build --manifest-path fuzz/Cargo.toml --bin fuzzer_builder --target x86_64-unknown-linux-gnu
+    cargo build --manifest-path fuzz/Cargo.toml --bin fuzzer_builder --release --target x86_64-unknown-linux-gnu
     # move fuzzer to $OUT
-    mv $SRC/libra/target/x86_64-unknown-linux-gnu/debug/fuzzer_builder $OUT/$SINGLE_FUZZ_TARGET
+    mv $SRC/libra/target/x86_64-unknown-linux-gnu/release/fuzzer_builder $OUT/$SINGLE_FUZZ_TARGET
 done
