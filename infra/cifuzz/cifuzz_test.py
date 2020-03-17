@@ -51,6 +51,7 @@ EXAMPLE_NOCRASH_FUZZER = 'example_nocrash_fuzzer'
 EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 
 MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'memory')
+MEMORY_FUZZER = 'curl_fuzzer_memory'
 UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'undefined')
 
 class BuildFuzzersIntegrationTest(unittest.TestCase):
@@ -134,7 +135,47 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         ))
 
 
-class RunFuzzersIntegrationTest(unittest.TestCase):
+class RunMemoryFuzzerIntegrationTest(unittest.TestCase):
+  """Test build_fuzzers function in the cifuzz module."""
+
+  def tearDown(self):
+    """Remove any existing crashes and test files."""
+    out_dir = os.path.join(MEMORY_FUZZER_DIR, 'out')
+    for out_file in os.listdir(out_dir):
+      out_path = os.path.join(out_dir, out_file)
+      #pylint: disable=consider-using-in
+      if out_file == MEMORY_FUZZER:
+        continue
+      if os.path.isdir(out_path):
+        shutil.rmtree(out_path)
+      else:
+        os.remove(out_path)
+
+   def test_new_bug_found(self):
+     """Test run_fuzzers with a valid build."""
+     # Set the first return value to True, then the second to False to
+     # emulate a bug existing in the current PR but not on the downloaded
+     # OSS-Fuzz build.
+     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                     'is_reproducible',
+                                     side_effect=[True, False]):
+       run_success, bug_found = cifuzz.run_fuzzers(10, MEMORY_FUZZER_DIR,
+                                                   'curl', sanitizer='memory')
+       self.assertTrue(run_success)
+       self.assertTrue(bug_found)
+
+   def test_old_bug_found(self):
+     """Test run_fuzzers with a bug found in OSS-Fuzz before."""
+     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
+                                     'is_reproducible',
+                                     side_effect=[True, True]):
+       run_success, bug_found = cifuzz.run_fuzzers(10, MEMORY_FUZZER_DIR,
+                                                   'curl', sanitizer='memory')
+       self.assertTrue(run_success)
+       self.assertFalse(bug_found)
+
+
+class RunAddressFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the cifuzz module."""
 
   def tearDown(self):
@@ -149,6 +190,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
         shutil.rmtree(out_path)
       else:
         os.remove(out_path)
+
 
   def test_new_bug_found(self):
     """Test run_fuzzers with a valid build."""
