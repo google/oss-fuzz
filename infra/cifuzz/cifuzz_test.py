@@ -50,6 +50,8 @@ EXAMPLE_NOCRASH_FUZZER = 'example_nocrash_fuzzer'
 # A fuzzer to be built in build_fuzzers integration tests.
 EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 
+MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'memory')
+UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'undefined')
 
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the utils module."""
@@ -143,7 +145,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
       #pylint: disable=consider-using-in
       if out_file == EXAMPLE_CRASH_FUZZER or out_file == EXAMPLE_NOCRASH_FUZZER:
         continue
-      if os.path.isdir(out_path):
+      if os.path.isdir(out_path) and out_path != MEMORY_FUZZER_DIR and out_path != UNDEFINED_FUZZER_DIR:
         shutil.rmtree(out_path)
       else:
         os.remove(out_path)
