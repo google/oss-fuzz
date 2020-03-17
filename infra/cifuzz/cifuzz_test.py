@@ -197,12 +197,10 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
     """Remove any existing crashes and test files."""
     out_dir = os.path.join(TEST_FILES_PATH, 'out')
     files_to_keep = [
-        MEMORY_FUZZER_DIR, UNDEFINED_FUZZER_DIR, EXAMPLE_CRASH_FUZZER,
-        EXAMPLE_NOCRASH_FUZZER
+        'undefined', 'memory', EXAMPLE_CRASH_FUZZER, EXAMPLE_NOCRASH_FUZZER
     ]
     for out_file in os.listdir(out_dir):
       out_path = os.path.join(out_dir, out_file)
-      #pylint: disable=consider-using-in
       if out_file in files_to_keep:
         continue
       if os.path.isdir(out_path):
