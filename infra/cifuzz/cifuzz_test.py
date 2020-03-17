@@ -510,6 +510,7 @@ class IsProjectSanitizerUnitTest(unittest.TestCase):
     self.assertFalse(cifuzz.is_project_sanitizer('undefined', 'notaproj'))
 
 
+@unittest.skip('Test is too long to be run with presubmit.')
 class BuildSantizerIntegrationTest(unittest.TestCase):
   """Class to test the is_project_sanitizer function in the cifuzz module.
     Note: This test relies on the curl project being an OSS-Fuzz project."""
