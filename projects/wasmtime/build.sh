@@ -29,7 +29,7 @@ export CXXFLAGS_EXTRA="-stdlib=libc++"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 export RUSTFLAGS="-Cdebuginfo=1 -Cforce-frame-pointers"
 
-cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions
+cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions --features binaryen
 
 FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
 for f in $SRC/wasmtime/fuzz/fuzz_targets/*.rs
