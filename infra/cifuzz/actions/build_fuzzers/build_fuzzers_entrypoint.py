@@ -70,19 +70,24 @@ def main():
     logging.error('This script needs to be run in the Github action context.')
     return returncode
 
-  if event == 'push' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace,
-      commit_sha=commit_sha, sanitizer=sanitizer):
+  if event == 'push' and not cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                                  github_repo_name,
+                                                  workspace,
+                                                  commit_sha=commit_sha,
+                                                  sanitizer=sanitizer):
     logging.error('Error building fuzzers for project %s with commit %s.',
                   oss_fuzz_project_name, commit_sha)
     return returncode
-  if event == 'pull_request' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref, sanitizer=sanitizer):
+  if event == 'pull_request' and not cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                                          github_repo_name,
+                                                          workspace,
+                                                          pr_ref=pr_ref,
+                                                          sanitizer=sanitizer):
     logging.error('Error building fuzzers for project %s with pull request %s.',
                   oss_fuzz_project_name, pr_ref)
     return returncode
   out_dir = os.path.join(workspace, 'out')
-  if cifuzz.check_fuzzer_build(out_dir):
+  if cifuzz.check_fuzzer_build(out_dir, sanitizer=sanitizer):
     return 0
   return returncode
 

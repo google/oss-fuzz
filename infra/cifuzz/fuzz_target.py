@@ -69,7 +69,13 @@ class FuzzTarget:
     project_name: The name of the relevant OSS-Fuzz project.
   """
 
-  def __init__(self, target_path, duration, out_dir, project_name=None, sanitizer='address'):
+  #pylint: disable=too-many-arguments
+  def __init__(self,
+               target_path,
+               duration,
+               out_dir,
+               project_name=None,
+               sanitizer='address'):
     """Represents a single fuzz target.
 
     Note: project_name should be none when the fuzzer being run is not
@@ -106,8 +112,8 @@ class FuzzTarget:
       command += ['-v', '%s:%s' % (self.out_dir, '/out')]
 
     command += [
-        '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER='+self.sanitizer, '-e',
-        'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
+        '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=' + self.sanitizer,
+        '-e', 'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
         'bash', '-c'
     ]
 

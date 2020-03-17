@@ -60,7 +60,6 @@ def main():
   # Check if failures should not be reported.
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
 
-
   # The default return code when an error occurs.
   returncode = 1
   if dry_run:
@@ -78,8 +77,10 @@ def main():
     logging.error('This script needs to be run in the Github action context.')
     return returncode
   # Run the specified project's fuzzers from the build.
-  run_status, bug_found = cifuzz.run_fuzzers(fuzz_seconds, workspace,
-                                             oss_fuzz_project_name, sanitizer=address)
+  run_status, bug_found = cifuzz.run_fuzzers(fuzz_seconds,
+                                             workspace,
+                                             oss_fuzz_project_name,
+                                             sanitizer=sanitizer)
   if not run_status:
     logging.error('Error occured while running in workspace %s.', workspace)
     return returncode
