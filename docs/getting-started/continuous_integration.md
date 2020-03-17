@@ -142,8 +142,6 @@ jobs:
      with:
        name: Undefined-Artifacts
        path: ./out/artifacts
-
-
 ```
 
 ## Understanding results
