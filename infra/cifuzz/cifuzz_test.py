@@ -424,5 +424,58 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
         self.assertEqual(2, len(os.listdir(tmp_dir)))
 
 
+class IsProjectSanitizerUnitTest(unittest.TestCase):
+  """Class to test the is_project_sanitizer function in the cifuzz module.
+    Note: This test relies on the curl project being an OSS-Fuzz project.
+  """
+
+  def test_valid_project_curl(self):
+    """Test if sanitizers can be detected from project.yaml"""
+    self.assertTrue(cifuzz.is_project_sanitizer('memory', 'curl'))
+    self.assertTrue(cifuzz.is_project_sanitizer('address', 'curl'))
+    self.assertTrue(cifuzz.is_project_sanitizer('undefined', 'curl'))
+    self.assertFalse(cifuzz.is_project_sanitizer('not-a-san', 'curl'))
+
+  def test_valid_project_example(self):
+    """Test if sanitizers can be detected from project.yaml"""
+    self.assertFalse(cifuzz.is_project_sanitizer('memory', 'example'))
+    self.assertFalse(cifuzz.is_project_sanitizer('address', 'example'))
+    self.assertFalse(cifuzz.is_project_sanitizer('undefined', 'example'))
+    self.assertFalse(cifuzz.is_project_sanitizer('not-a-san', 'example'))
+
+  def test_invalid_project(self):
+    """Tests that invalid projects return false."""
+    self.assertFalse(cifuzz.is_project_sanitizer('memory','notaproj'))
+    self.assertFalse(cifuzz.is_project_sanitizer('address','notaproj'))
+    self.assertFalse(cifuzz.is_project_sanitizer('undefined','notaproj'))
+
+class BuildSantizerIntegrationTest(unittest.TestCase):
+  """Class to test the is_project_sanitizer function in the cifuzz module.
+    Note: This test relies on the curl project being an OSS-Fuzz project."""
+
+  def test_valid_project_curl_memory(self):
+    """Test if sanitizers can be detected from project.yaml"""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(TEST_FILES_PATH,'out', 'memory')
+      os.makedirs(out_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers('curl',
+                               'curl',
+                               out_path,
+                               pr_ref='fake_pr', sanitizer='memory'))
+
+  def test_valid_project_curl_undefined(self):
+    """Test if sanitizers can be detected from project.yaml"""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(TEST_FILES_PATH,'out', 'undefined')
+      os.makedirs(out_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers('curl',
+                               'curl',
+                               out_path,
+                               pr_ref='fake_pr', sanitizer='undefined'))
+
+
+
 if __name__ == '__main__':
   unittest.main()

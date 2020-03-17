@@ -127,12 +127,13 @@ def build_fuzzers(project_name,
       build_repo_manager.checkout_pr(pr_ref)
     else:
       build_repo_manager.checkout_commit(commit_sha)
-  except RuntimeError:
-    logging.error('Can not check out requested state.')
-    return False
-  except ValueError:
-    logging.error('Invalid commit SHA requested %s.', commit_sha)
-    return False
+  except (RuntimeError, ValueError):
+    if pr_ref:
+      logging.error('Can not check out requested state %s.', pr_ref)
+    else:
+      logging.error('Can not check out requested state %s.', commit_sha)
+    logging.error('Using current repo state.')
+
 
   # Build Fuzzers using docker run.
   command = [
@@ -189,10 +190,10 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
     return False, False
 
   # Check that sanitizer is valid.
-  if(not isProjectSanitizer(project_name, sanitizer)):
-    Log.i("%s is not a project sanitizer, defaulting to address.", sanitizer)
+  if(not is_project_sanitizer(sanitizer, project_name)):
+    logging.info("%s is not a project sanitizer, defaulting to address.", sanitizer)
     sanitizer = 'address'
-  Log.i("Using %s as sanitizer.", sanitizer)
+  logging.info("Using %s as sanitizer.", sanitizer)
 
   out_dir = os.path.join(workspace, 'out')
   artifacts_dir = os.path.join(out_dir, 'artifacts')
@@ -251,7 +252,7 @@ def check_fuzzer_build(out_dir, sanitizer='address'):
   if not os.listdir(out_dir):
     logging.error('No fuzzers found in out directory: %s.', out_dir)
     return False
-  if(not isProjectSanitizer(project_name, sanitizer)):
+  if(not is_project_sanitizer(sanitizer, project_name)):
     Log.i("%s is not a project sanitizer, defaulting to address.", sanitizer)
     sanitizer = 'address'
   Log.i("Using %s as sanitizer.", sanitizer)
@@ -485,7 +486,7 @@ def is_project_sanitizer(sanitizer, oss_fuzz_project_name):
   Returns:
   True if project can use sanitizer.
   """
-  project_yaml = os.path.join(OSSFUZZ_DIR, 'projects', oss_fuzz_project_name, 'project.yaml')
+  project_yaml = os.path.join(helper.OSSFUZZ_DIR, 'projects', oss_fuzz_project_name, 'project.yaml')
   if not os.path.isfile(project_yaml):
    logging.error('project.yaml for project %s could not be found.', oss_fuzz_project_name)
    return False
