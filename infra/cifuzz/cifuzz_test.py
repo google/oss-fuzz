@@ -50,8 +50,8 @@ EXAMPLE_NOCRASH_FUZZER = 'example_nocrash_fuzzer'
 # A fuzzer to be built in build_fuzzers integration tests.
 EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 
-MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'memory')
-UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'undefined')
+MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'memory')
+UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'undefined')
 
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the utils module."""
