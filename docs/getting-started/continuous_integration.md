@@ -14,11 +14,15 @@ fix bugs before they make it into your codebase
 
 ## How it works
 
-CIFuzz works by checking out a repository at the head of a pull request. The
-project's fuzz targets are built and run for
-a definite amount of time (default is 10 minutes). If a bug is found, the
-stack trace as well as the test case are made abailable for download.
- If a crash is not found the test passes with a green check.
+CIFuzz works by checking out a repository at the head of a pull request. For projects
+that support code coverage, fuzzers coverage is compared with PR diffs to determine
+which fuzzers should be used. For projects that do not support code coverage, all
+fuzzers are run for an even length of time. If no bugs are found and the allotted
+time is up (default is 10 minutes), the CI test passes with a green check. But
+if a bug is found, the bug is checked for reproducability and against
+old OSS-Fuzz builds to prevent the reporting of pre-existing bugs. If the bug is both
+new and reproducible, it is reported and the
+stack trace as well as the test case are made available for download.
 
 ## Requirements
 
