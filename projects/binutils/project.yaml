@@ -6,3 +6,13 @@ auto_ccs :
   - "nickc@redhat.com"
   - "amodra@gmail.com"
   - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - memory
+  - dataflow
