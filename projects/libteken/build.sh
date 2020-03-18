@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# To suppress warnings from binaries running during compilation.
+export DFSAN_OPTIONS='warn_unimplemented=0'
+
 # build the library.
 pmake -C libteken teken_state.h
 CFLAGS="$CFLAGS -D__unused=" pmake -C libteken libteken.a
