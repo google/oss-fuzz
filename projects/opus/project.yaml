@@ -5,7 +5,13 @@ auto_ccs:
   - "flim@google.com"
 vendor_ccs:
   - "twsmith@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
-  - memory
   - undefined
+  - memory
+  - dataflow

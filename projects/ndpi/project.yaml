@@ -3,3 +3,13 @@ language: c++
 primary_contact: "luca.deri@gmail.com"
 auto_ccs :
   - "p.antoine@catenacyber.fr"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - memory
+  - dataflow

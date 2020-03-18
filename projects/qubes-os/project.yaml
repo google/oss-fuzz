@@ -5,6 +5,15 @@ auto_ccs:
  - "joanna@invisiblethingslab.com"
  - "marmarek@invisiblethingslab.com"
  - "paras.chetal@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - dataflow
 architectures:
   - x86_64
   - i386
