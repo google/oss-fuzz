@@ -1,0 +1,10 @@
+homepage: "https://github.com/uriparser/uriparser"
+primary_contact: "sebastian@pipping.org"
+sanitizers:
+ - address
+ - memory:
+    experimental: True
+ - undefined
+architectures:
+  - x86_64
+  - i386
