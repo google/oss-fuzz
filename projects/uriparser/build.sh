@@ -18,7 +18,7 @@
 # build project
 mkdir -p build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DURIPARSER_BUILD_DOCS:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF ..  # see CMakeLists.txt for options
+cmake -DCMAKE_BUILD_TYPE=Release -DURIPARSER_BUILD_DOCS:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -DURIPARSER_BUILD_TESTS:BOOL=OFF ..
 make
 make install
 

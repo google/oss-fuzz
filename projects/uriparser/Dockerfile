@@ -16,20 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER sebastian@pipping.org
-RUN apt-get update && apt-get install -y make autoconf automake wget sudo libtool cmake libgtest-dev
-RUN wget https://github.com/google/googletest/archive/release-1.8.1.tar.gz && \
-    tar xzf release-1.8.1.tar.gz && \
-    cd googletest-release-1.8.1 && \
-    export CC=clang && \
-    export CXX=clang++ && \
-    export CXXFLAGS="-stdlib=libc++" && \
-    mkdir build && \
-    cd build && \
-    cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_VERBOSE_MAKEFILE=ON .. && \
-    make -j$(nproc) && \
-    sudo make install && \
-    cd ../.. && \
-    rm -rf googletest-release-1.8.1
+RUN apt-get update && apt-get install -y make autoconf automake wget sudo libtool cmake
 RUN git clone --depth 1 https://github.com/uriparser/uriparser uriparser
 WORKDIR uriparser
 COPY build.sh *.cc $SRC/
