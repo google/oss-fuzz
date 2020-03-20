@@ -118,7 +118,7 @@ ADD https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/gif.dict
     https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/xml.dict \
     https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/html_tags.dict $SRC/
 #fuzzing corpuses
-ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/
+ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/
 RUN mkdir afl-testcases && cd afl-testcases/ && tar xf $SRC/afl_testcases.tgz && cd .. && \
     zip -q $SRC/jpgfuzzer_seed_corpus.zip afl-testcases/jpeg*/full/images/* && \
     zip -q $SRC/giffuzzer_seed_corpus.zip afl-testcases/gif*/full/images/* && \
