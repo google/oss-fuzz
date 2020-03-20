@@ -19,6 +19,6 @@ MAINTAINER ossfuzz@tds.xyz
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool pkg-config libz-dev
 RUN git clone --depth 1 https://github.com/libgd/libgd
-ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/afl_testcases.tgz
+ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/afl_testcases.tgz
 WORKDIR libgd
 COPY build.sh parser_target.cc $SRC/

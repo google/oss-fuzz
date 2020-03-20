@@ -163,7 +163,7 @@ restore it to the new GCS location later (instruction to find the
 new location [here]({{ site.baseurl }}/advanced-topics/corpora/#viewing-the-corpus-for-a-fuzz-target)).
 
 ## Does OSS-Fuzz support AFL or honggfuzz?
-OSS-Fuzz *uses* both [AFL](http://lcamtuf.coredump.cx/afl/) and
+OSS-Fuzz *uses* both [AFL](https://lcamtuf.coredump.cx/afl/) and
 [honggfuzz](https://github.com/google/honggfuzz)
 [fuzzing engines]({{ site.baseurl }}/reference/glossary/#fuzzing-engine).
 Follow the
