@@ -26,14 +26,18 @@ pushd $SRC/Little-CMS
 make -j$(nproc)
 make install
 
-mkdir -p $WORK/poppler
-pushd $WORK/poppler
-cmake $SRC/poppler \
+mkdir -p $SRC/openjpeg/build
+pushd $SRC/openjpeg/build
+cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$WORK
+make -j$(nproc) install
+
+mkdir -p $SRC/poppler/build
+pushd $SRC/poppler/build
+cmake .. \
   -DCMAKE_BUILD_TYPE=debug \
   -DBUILD_SHARED_LIBS=OFF \
   -DFONT_CONFIGURATION=generic \
   -DENABLE_DCTDECODER=none \
-  -DENABLE_LIBOPENJPEG=none \
   -DENABLE_LIBPNG=OFF \
   -DENABLE_ZLIB=OFF \
   -DENABLE_LIBTIFF=OFF \
@@ -51,7 +55,12 @@ fuzz_target=pdf_fuzzer
 
 $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp \
     $SRC/fuzz/pdf_fuzzer.cc -o $OUT/$fuzz_target \
-    $LIB_FUZZING_ENGINE $WORK/poppler/cpp/libpoppler-cpp.a $WORK/poppler/libpoppler.a $WORK/lib/libfreetype.a  $WORK/lib/libfreetype.a $WORK/lib/liblcms2.a
+    $LIB_FUZZING_ENGINE \
+    $SRC/poppler/build/cpp/libpoppler-cpp.a \
+    $SRC/poppler/build/libpoppler.a \
+    $WORK/lib/libfreetype.a \
+    $WORK/lib/liblcms2.a \
+    $WORK/lib/libopenjp2.a
 
 mv $SRC/{*.zip,*.dict} $OUT
 
