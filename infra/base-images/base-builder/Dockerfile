@@ -60,6 +60,9 @@ ENV SANITIZER_FLAGS_coverage ""
 # suppress error messages. See https://github.com/google/oss-fuzz/issues/910.
 ENV UBSAN_OPTIONS="silence_unsigned_overflow=1"
 
+# To suppress warnings from binaries running during compilation.
+ENV DFSAN_OPTIONS='warn_unimplemented=0'
+
 # Default build flags for coverage feedback.
 ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 

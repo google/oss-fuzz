@@ -30,8 +30,8 @@ import subprocess
 import sys
 import templates
 
-OSSFUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-BUILD_DIR = os.path.join(OSSFUZZ_DIR, 'build')
+OSS_FUZZ_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+BUILD_DIR = os.path.join(OSS_FUZZ_DIR, 'build')
 
 BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-image',
@@ -59,7 +59,7 @@ CORPUS_BACKUP_URL_FORMAT = (
 
 def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-many-statements
   """Get subcommand from program arguments and do it."""
-  os.chdir(OSSFUZZ_DIR)
+  os.chdir(OSS_FUZZ_DIR)
   if not os.path.exists(BUILD_DIR):
     os.mkdir(BUILD_DIR)
 
@@ -260,7 +260,7 @@ def _get_command_string(command):
 
 def _get_project_dir(project_name):
   """Returns path to the project."""
-  return os.path.join(OSSFUZZ_DIR, 'projects', project_name)
+  return os.path.join(OSS_FUZZ_DIR, 'projects', project_name)
 
 
 def get_dockerfile_path(project_name):

@@ -39,7 +39,7 @@ if we are not able to accept your project at this time!
 You should look for places in your code that:
 
   - consume un-trusted data from users or from the network.
-  - consume complex data input or event if it's 'trusted'.
+  - consume complex input data even if it's 'trusted'.
   - use an algorithm that has two or more implementations
     (to verify their equivalence).
   - look for existing fuzz target [examples](https://github.com/google/oss-fuzz/tree/master/projects)
@@ -163,7 +163,7 @@ restore it to the new GCS location later (instruction to find the
 new location [here]({{ site.baseurl }}/advanced-topics/corpora/#viewing-the-corpus-for-a-fuzz-target)).
 
 ## Does OSS-Fuzz support AFL or honggfuzz?
-OSS-Fuzz *uses* both [AFL](http://lcamtuf.coredump.cx/afl/) and
+OSS-Fuzz *uses* both [AFL](https://lcamtuf.coredump.cx/afl/) and
 [honggfuzz](https://github.com/google/honggfuzz)
 [fuzzing engines]({{ site.baseurl }}/reference/glossary/#fuzzing-engine).
 Follow the

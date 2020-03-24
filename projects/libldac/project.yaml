@@ -9,5 +9,11 @@ vendor_ccs:
   - geuteneier@google.com
   - hollyhall@google.com
   - mikelogan@google.com
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
+  - dataflow

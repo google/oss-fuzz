@@ -4,7 +4,13 @@ primary_contact: "tmatth@videolan.org"
 auto_ccs:
   - "twsmith@mozilla.com"
   - "le.businessman@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
-  - memory
   - undefined
+  - memory
+  - dataflow

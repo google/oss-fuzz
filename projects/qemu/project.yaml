@@ -1,0 +1,14 @@
+homepage: "https://www.qemu.org/"
+language: c
+primary_contact: "alxndr@bu.edu"
+auto_ccs:
+  - "bsd@redhat.com"
+  - "pbonzini@redhat.com"
+  - "stefanha@redhat.com"
+  - "darren.kenny@oracle.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+architectures:
+  - x86_64
