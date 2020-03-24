@@ -1,6 +1,6 @@
 homepage: "https://github.com/uriparser/uriparser"
 language: c++
-primary_contact: "sebastian@pipping.org"
+primary_contact: "webmaster@hartwork.org"
 sanitizers:
  - address
  - memory:
