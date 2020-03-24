@@ -29,8 +29,8 @@ VALID_TARGET_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 def chdir_to_root():
   """Changes cwd to OSS-Fuzz root directory."""
   # Change to oss-fuzz main directory so helper.py runs correctly.
-  if os.getcwd() != helper.OSSFUZZ_DIR:
-    os.chdir(helper.OSSFUZZ_DIR)
+  if os.getcwd() != helper.OSS_FUZZ_DIR:
+    os.chdir(helper.OSS_FUZZ_DIR)
 
 
 def execute(command, location=None, check_result=False):
