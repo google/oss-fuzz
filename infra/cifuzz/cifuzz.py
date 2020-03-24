@@ -490,7 +490,7 @@ def is_project_sanitizer(sanitizer, oss_fuzz_project_name):
   Returns:
   True if project can use sanitizer.
   """
-  project_yaml = os.path.join(helper.OSSFUZZ_DIR, 'projects',
+  project_yaml = os.path.join(helper.OSS_FUZZ_DIR, 'projects',
                               oss_fuzz_project_name, 'project.yaml')
   if not os.path.isfile(project_yaml):
     logging.error('project.yaml for project %s could not be found.',
