@@ -213,9 +213,12 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
     # Set the first return value to True, then the second to False to
     # emulate a bug existing in the current PR but not on the downloaded
     # OSS-Fuzz build.
-    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                    'is_reproducible',
-                                    side_effect=[True, False]):
+    with unittest.mock.patch.object(
+        fuzz_target.FuzzTarget, 'is_reproducible',
+        side_effect=[True,
+                     False]), unittest.mock.patch.object(cifuzz,
+                                                         'is_project_sanitizer',
+                                                         return_value=True):
       run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
@@ -226,9 +229,12 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
 
   def test_old_bug_found(self):
     """Test run_fuzzers with a bug found in OSS-Fuzz before."""
-    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                    'is_reproducible',
-                                    side_effect=[True, True]):
+    with unittest.mock.patch.object(
+        fuzz_target.FuzzTarget, 'is_reproducible',
+        side_effect=[True,
+                     True]), unittest.mock.patch.object(cifuzz,
+                                                        'is_project_sanitizer',
+                                                        return_value=True):
       run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
@@ -239,7 +245,8 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_build(self):
     """Test run_fuzzers with an invalid build."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        cifuzz, 'is_project_sanitizer', return_value=True):
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
       run_success, bug_found = cifuzz.run_fuzzers(10, tmp_dir, EXAMPLE_PROJECT)
@@ -248,7 +255,8 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_fuzz_seconds(self):
     """Tests run_fuzzers with an invalid fuzz seconds."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        cifuzz, 'is_project_sanitizer', return_value=True):
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
       run_success, bug_found = cifuzz.run_fuzzers(0, tmp_dir, EXAMPLE_PROJECT)

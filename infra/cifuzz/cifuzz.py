@@ -138,10 +138,7 @@ def build_fuzzers(project_name,
     else:
       build_repo_manager.checkout_commit(commit_sha)
   except (RuntimeError, ValueError):
-    if pr_ref:
-      logging.error('Can not check out requested state %s.', pr_ref)
-    else:
-      logging.error('Can not check out requested state %s.', commit_sha)
+    logging.error('Can not check out requested state %s.', pr_ref or commit_sha)
     logging.error('Using current repo state.')
 
   # Build Fuzzers using docker run.
@@ -199,9 +196,9 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
 
   # Check that sanitizer is valid.
   if not is_project_sanitizer(sanitizer, project_name):
-    logging.info("%s is not a project sanitizer, defaulting to address.",
-                 sanitizer)
-    sanitizer = 'address'
+    logging.info("%s is not a project sanitizer.", sanitizer)
+    raise ValueError("{0} is not a valid sanitizer for project {1}".format(
+        sanitizer, project_name))
   logging.info("Using %s as sanitizer.", sanitizer)
 
   out_dir = os.path.join(workspace, 'out')

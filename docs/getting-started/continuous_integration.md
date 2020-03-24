@@ -108,12 +108,14 @@ jobs:
      with:
        oss-fuzz-project-name: 'example'
        dry-run: false
+       # sanitizer: address
    - name: Run Fuzzers
      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
        fuzz-seconds: 600
        dry-run: false
+       # sanitizer: address
    - name: Upload Crash
      uses: actions/upload-artifact@v1
      if: failure()
