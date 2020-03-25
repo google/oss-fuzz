@@ -1,0 +1,297 @@
+diff --git a/fizz/CMakeLists.txt b/fizz/CMakeLists.txt
+index 2ceaf70..5d55e1f 100644
+--- a/fizz/CMakeLists.txt
++++ b/fizz/CMakeLists.txt
+@@ -293,77 +293,78 @@ ELSE(CMAKE_CROSSCOMPILING)
+ ENDIF(CMAKE_CROSSCOMPILING)
+
+ SET(FIZZ_TEST_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+-if(BUILD_TESTS)
+-  enable_testing()
+
+-  find_package(GMock REQUIRED)
+-  if(NOT LIBGMOCK_FOUND)
+-    include(ExternalProject)
+-
+-    # Download and install GoogleMock
+-    ExternalProject_Add(
+-        gtest
+-        GIT_REPOSITORY https://github.com/google/googletest.git
+-        GIT_TAG release-1.8.0
+-        PREFIX gtest
+-        # Disable install step
+-        INSTALL_COMMAND ""
+-        LOG_DOWNLOAD ON
+-        LOG_UPDATE 1
+-        LOG_CONFIGURE ON
+-        LOG_BUILD ON
+-        LOG_TEST 1
+-        LOG_INSTALL 1
+-    )
+-
+-    # Create a libgmock target to be used as a dependency by test programs
+-    add_library(libgmock IMPORTED STATIC GLOBAL)
+-    add_dependencies(libgmock gtest)
+-    add_library(libgmock_main IMPORTED STATIC GLOBAL)
+-    add_dependencies(libgmock_main gtest)
+-
+-    # Set gmock properties
+-    ExternalProject_Get_Property(gtest source_dir binary_dir)
+-    set_target_properties(libgmock PROPERTIES
+-        "IMPORTED_LOCATION" "${binary_dir}/googlemock/libgmock.a"
+-        "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
+-    )
+-    set_target_properties(libgmock_main PROPERTIES
+-        "IMPORTED_LOCATION" "${binary_dir}/googlemock/libgmock_main.a"
+-        "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
+-    )
+-    set(LIBGMOCK_LIBRARIES libgmock libgmock_main)
+-    set(LIBGMOCK_INCLUDE_DIR "${source_dir}/googlemock/include")
+-    set(LIBGTEST_INCLUDE_DIR "${source_dir}/googletest/include")
+-  endif()
++find_package(GMock REQUIRED)
++if(NOT LIBGMOCK_FOUND)
++include(ExternalProject)
++
++# Download and install GoogleMock
++ExternalProject_Add(
++gtest
++GIT_REPOSITORY https://github.com/google/googletest.git
++GIT_TAG release-1.8.0
++PREFIX gtest
++# Disable install step
++INSTALL_COMMAND ""
++LOG_DOWNLOAD ON
++LOG_UPDATE 1
++LOG_CONFIGURE ON
++LOG_BUILD ON
++LOG_TEST 1
++LOG_INSTALL 1
++)
+
+-  add_library(fizz_test_support
+-    crypto/aead/test/TestUtil.cpp
+-    crypto/test/TestUtil.cpp
+-    ${FIZZ_TEST_HEADERS})
++# Create a libgmock target to be used as a dependency by test programs
++add_library(libgmock IMPORTED STATIC GLOBAL)
++add_dependencies(libgmock gtest)
++add_library(libgmock_main IMPORTED STATIC GLOBAL)
++add_dependencies(libgmock_main gtest)
++
++# Set gmock properties
++ExternalProject_Get_Property(gtest source_dir binary_dir)
++set_target_properties(libgmock PROPERTIES
++"IMPORTED_LOCATION" "${binary_dir}/googlemock/libgmock.a"
++"IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
++)
++set_target_properties(libgmock_main PROPERTIES
++"IMPORTED_LOCATION" "${binary_dir}/googlemock/libgmock_main.a"
++"IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
++)
++set(LIBGMOCK_LIBRARIES libgmock libgmock_main)
++set(LIBGMOCK_INCLUDE_DIR "${source_dir}/googlemock/include")
++set(LIBGTEST_INCLUDE_DIR "${source_dir}/googletest/include")
++endif()
+
+-  target_link_libraries(fizz_test_support
+-    PUBLIC
+-      fizz
+-  )
+-
+-  # export fizz headers and targets for unit tests utils
+-  # since other projects such as mvfst and proxygen use them
+-  install(
+-    TARGETS fizz_test_support
+-    EXPORT fizz-exports
+-    ARCHIVE DESTINATION ${FIZZ_TEST_INSTALL_PREFIX}/lib
+-    LIBRARY DESTINATION ${FIZZ_TEST_INSTALL_PREFIX}/lib
+-  )
+-
+-  foreach(dir ${FIZZ_TEST_HEADER_DIRS})
+-    get_filename_component(PARENT_DIR "/${dir}" DIRECTORY)
+-    install(
+-      DIRECTORY ${dir}
+-      DESTINATION "${FIZZ_TEST_INSTALL_PREFIX}/include/fizz${PARENT_DIR}"
+-      FILES_MATCHING PATTERN "*.h"
+-    )
+-  endforeach()
++add_library(fizz_test_support
++crypto/aead/test/TestUtil.cpp
++crypto/test/TestUtil.cpp
++${FIZZ_TEST_HEADERS})
++
++target_link_libraries(fizz_test_support
++PUBLIC
++fizz
++)
++
++# export fizz headers and targets for unit tests utils
++# since other projects such as mvfst and proxygen use them
++install(
++TARGETS fizz_test_support
++EXPORT fizz-exports
++ARCHIVE DESTINATION ${FIZZ_TEST_INSTALL_PREFIX}/lib
++LIBRARY DESTINATION ${FIZZ_TEST_INSTALL_PREFIX}/lib
++)
++
++foreach(dir ${FIZZ_TEST_HEADER_DIRS})
++get_filename_component(PARENT_DIR "/${dir}" DIRECTORY)
++install(
++DIRECTORY ${dir}
++DESTINATION "${FIZZ_TEST_INSTALL_PREFIX}/include/fizz${PARENT_DIR}"
++FILES_MATCHING PATTERN "*.h"
++)
++endforeach()
++
++if(BUILD_TESTS)
++  enable_testing()
+
+   macro(add_gtest test_source test_name)
+     add_executable(${test_name} ${test_source} test/CMakeTestMain.cpp)
+@@ -440,7 +441,7 @@ if(BUILD_TESTS)
+   add_gtest(test/HandshakeTest.cpp HandshakeTest)
+ endif()
+
+-option(BUILD_EXAMPLES "BUILD_EXAMPLES" ON)
++option(BUILD_EXAMPLES "BUILD_EXAMPLES" OFF)
+
+ if(BUILD_EXAMPLES)
+   add_executable(BogoShim test/BogoShim.cpp)
+diff --git a/fizz/cmake/CheckAtomic.cmake b/fizz/cmake/CheckAtomic.cmake
+index b0cadee..2abee5a 100644
+--- a/fizz/cmake/CheckAtomic.cmake
++++ b/fizz/cmake/CheckAtomic.cmake
+@@ -39,55 +39,109 @@
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE
+ # SOFTWARE.
+
+-include(CheckCXXSourceCompiles)
++# atomic builtins are required for threading support.
++
++INCLUDE(CheckCXXSourceCompiles)
++INCLUDE(CheckLibraryExists)
+
+ # Sometimes linking against libatomic is required for atomic ops, if
+ # the platform doesn't support lock-free atomics.
+
+ function(check_working_cxx_atomics varname)
+   set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+-  get_directory_property(compile_options COMPILE_OPTIONS)
+-  set(CMAKE_REQUIRED_FLAGS ${compile_options})
++  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -std=c++11")
+   CHECK_CXX_SOURCE_COMPILES("
+ #include <atomic>
++std::atomic<int> x;
+ int main() {
+-  struct Test { int val; };
+-  std::atomic<Test> s;
+-  s.is_lock_free();
+-}" ${varname})
++  return x;
++}
++" ${varname})
+   set(CMAKE_REQUIRED_FLAGS ${OLD_CMAKE_REQUIRED_FLAGS})
+ endfunction(check_working_cxx_atomics)
+
++function(check_working_cxx_atomics64 varname)
++  set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
++  set(CMAKE_REQUIRED_FLAGS "-std=c++11 ${CMAKE_REQUIRED_FLAGS}")
++  CHECK_CXX_SOURCE_COMPILES("
++#include <atomic>
++#include <cstdint>
++std::atomic<uint64_t> x (0);
++int main() {
++  uint64_t i = x.load(std::memory_order_relaxed);
++  return 0;
++}
++" ${varname})
++  set(CMAKE_REQUIRED_FLAGS ${OLD_CMAKE_REQUIRED_FLAGS})
++endfunction(check_working_cxx_atomics64)
+
+-if(NOT DEFINED PROXYGEN_COMPILER_IS_GCC_COMPATIBLE)
+-  if(CMAKE_COMPILER_IS_GNUCXX)
+-    set(PROXYGEN_COMPILER_IS_GCC_COMPATIBLE ON)
+-  elseif(MSVC)
+-    set(PROXYGEN_COMPILER_IS_GCC_COMPATIBLE OFF)
+-  elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+-    set(PROXYGEN_COMPILER_IS_GCC_COMPATIBLE ON)
+-  elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
+-    set(PROXYGEN_COMPILER_IS_GCC_COMPATIBLE ON)
+-  endif()
+-endif()
+
+ # This isn't necessary on MSVC, so avoid command-line switch annoyance
+ # by only running on GCC-like hosts.
+-if(PROXYGEN_COMPILER_IS_GCC_COMPATIBLE)
++if (LLVM_COMPILER_IS_GCC_COMPATIBLE)
+   # First check if atomics work without the library.
+   check_working_cxx_atomics(HAVE_CXX_ATOMICS_WITHOUT_LIB)
+   # If not, check if the library exists, and atomics work with it.
+   if(NOT HAVE_CXX_ATOMICS_WITHOUT_LIB)
+-    check_library_exists(atomic __atomic_is_lock_free "" HAVE_LIBATOMIC)
+-    if(HAVE_LIBATOMIC)
++    check_library_exists(atomic __atomic_fetch_add_4 "" HAVE_LIBATOMIC)
++    if( HAVE_LIBATOMIC )
+       list(APPEND CMAKE_REQUIRED_LIBRARIES "atomic")
+       check_working_cxx_atomics(HAVE_CXX_ATOMICS_WITH_LIB)
+       if (NOT HAVE_CXX_ATOMICS_WITH_LIB)
+-	message(FATAL_ERROR "Host compiler must support std::atomic!")
++    message(FATAL_ERROR "Host compiler must support std::atomic!")
+       endif()
+-      list(APPEND CMAKE_CXX_STANDARD_LIBRARIES -latomic)
+     else()
+       message(FATAL_ERROR "Host compiler appears to require libatomic, but cannot find it.")
+     endif()
+   endif()
+ endif()
++
++# Check for 64 bit atomic operations.
++if(MSVC)
++  set(HAVE_CXX_ATOMICS64_WITHOUT_LIB True)
++else()
++  check_working_cxx_atomics64(HAVE_CXX_ATOMICS64_WITHOUT_LIB)
++endif()
++
++# If not, check if the library exists, and atomics work with it.
++if(NOT HAVE_CXX_ATOMICS64_WITHOUT_LIB)
++  check_library_exists(atomic __atomic_load_8 "" HAVE_CXX_LIBATOMICS64)
++  if(HAVE_CXX_LIBATOMICS64)
++    list(APPEND CMAKE_REQUIRED_LIBRARIES "atomic")
++    check_working_cxx_atomics64(HAVE_CXX_ATOMICS64_WITH_LIB)
++    if (NOT HAVE_CXX_ATOMICS64_WITH_LIB)
++      message(FATAL_ERROR "Host compiler must support 64-bit std::atomic!")
++    endif()
++  else()
++    message(FATAL_ERROR "Host compiler appears to require libatomic for 64-bit operations, but cannot find it.")
++  endif()
++endif()
++
++## TODO: This define is only used for the legacy atomic operations in
++## llvm's Atomic.h, which should be replaced.  Other code simply
++## assumes C++11 <atomic> works.
++CHECK_CXX_SOURCE_COMPILES("
++#ifdef _MSC_VER
++#include <windows.h>
++#endif
++int main() {
++#ifdef _MSC_VER
++        volatile LONG val = 1;
++        MemoryBarrier();
++        InterlockedCompareExchange(&val, 0, 1);
++        InterlockedIncrement(&val);
++        InterlockedDecrement(&val);
++#else
++        volatile unsigned long val = 1;
++        __sync_synchronize();
++        __sync_val_compare_and_swap(&val, 1, 0);
++        __sync_add_and_fetch(&val, 1);
++        __sync_sub_and_fetch(&val, 1);
++#endif
++        return 0;
++      }
++" LLVM_HAS_ATOMICS)
++
++if( NOT LLVM_HAS_ATOMICS )
++  message(STATUS "Warning: LLVM will be built thread-unsafe because atomic builtins are missing")
++endif()
