@@ -14,37 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-
-# This is only used for local testing
-#cp /src/fuzz-imap-url.c src/lib-imap/
-#cp /src/fuzz-imap-utf7.c src/lib-imap/
-#cp /src/fuzz-http-url.c src/lib-http/
-#####################################
+# Fix up the git
+git checkout fuzzer
 
 ./autogen.sh
-./configure PANDOC=false
-
+./configure PANDOC=false --with-fuzzer=yes
 make
 
-cd src/lib-imap
-
-echo $CFLAGS
-
-
-# fuzz-imap-utf7
-clang $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../src/lib -I../../src/lib-test -I../../src/lib-charset -I../../src/lib-mail   -std=gnu99 -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -Wall -W -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wchar-subscripts -Wformat=2 -Wbad-function-cast -Wno-duplicate-decl-specifier -Wstrict-aliasing=2   -MT test-imap-utf7.o -MD -MP -c -o fuzz-imap-utf7.o fuzz-imap-utf7.c
-
-clang $CFLAGS $LIB_FUZZING_ENGINE -std=gnu99  -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -Wall -W -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wchar-subscripts -Wformat=2 -Wbad-function-cast -Wno-duplicate-decl-specifier -Wstrict-aliasing=2 -Wl,--as-needed -o $OUT/fuzz-imap-utf7 fuzz-imap-utf7.o .libs/imap-utf7.o .libs/imap-quote.o ../lib-test/.libs/libtest.a ../lib/.libs/liblib.a 
-
-# fuzz-imap-url
-clang $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../src/lib -I../../src/lib-test -I../../src/lib-charset -I../../src/lib-mail   -std=gnu99 -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -Wall -W -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wchar-subscripts -Wformat=2 -Wbad-function-cast -Wno-duplicate-decl-specifier -Wstrict-aliasing=2   -MT fuzz-imap-url.o -MD -MP  -c -o fuzz-imap-url.o fuzz-imap-url.c
-
-clang $CFLAGS $LIB_FUZZING_ENGINE -std=gnu99 -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -Wall -W -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wchar-subscripts -Wformat=2 -Wbad-function-cast -Wno-duplicate-decl-specifier -Wstrict-aliasing=2 -Wl,--as-needed -o $OUT/fuzz-imap-url fuzz-imap-url.o .libs/imap-url.o  ../lib-test/.libs/libtest.a ../lib/.libs/liblib.a 
-
-
-
-cd ../lib-http
-# fuzz-http-url
-clang $CFLAGS -DHAVE_CONFIG_H -I. -I../..  -I../../src/lib -I../../src/lib-test -I../../src/lib-dns -I../../src/lib-ssl-iostream -I../../src/lib-master -DPKG_RUNDIR=\""/usr/local/var/run/dovecot"\"   -std=gnu99 -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -Wall -W -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wchar-subscripts -Wformat=2 -Wbad-function-cast -Wno-duplicate-decl-specifier -Wstrict-aliasing=2   -MT fuzz-http-url.o -MD -MP  -c -o fuzz-http-url.o fuzz-http-url.c
-
-clang $CFLAGS $LIB_FUZZING_ENGINE -std=gnu99 -fstack-protector-strong -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -Wall -W -Wmissing-prototypes -Wmissing-declarations -Wpointer-arith -Wchar-subscripts -Wformat=2 -Wbad-function-cast -Wno-duplicate-decl-specifier -Wstrict-aliasing=2 -Wl,--as-needed -o $OUT/fuzz-http-url fuzz-http-url.o .libs/http-url.o .libs/http-header.o -Wl,--export-dynamic  ../lib-test/.libs/libtest.a ../lib/.libs/liblib.a
+cp src/lib-imap/fuzz-imap-utf7 $OUT/
