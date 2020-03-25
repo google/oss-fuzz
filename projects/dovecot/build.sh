@@ -14,11 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
-# Fix up the git
-git checkout -b fuzzer
-
 ./autogen.sh
-./configure PANDOC=false --with-fuzzer=yes
+./configure PANDOC=false --with-fuzzer=clang
 make
 
 # Copy over the fuzzers
