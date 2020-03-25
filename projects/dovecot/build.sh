@@ -15,10 +15,11 @@
 #
 ################################################################################
 # Fix up the git
-git checkout fuzzer
+git checkout -b fuzzer
 
 ./autogen.sh
 ./configure PANDOC=false --with-fuzzer=yes
 make
 
-cp src/lib-imap/fuzz-imap-utf7 $OUT/
+# Copy over the fuzzers
+find . -name "fuzz-*" -executable -exec cp {} $OUT/ \;
