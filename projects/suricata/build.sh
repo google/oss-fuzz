@@ -16,8 +16,8 @@
 ################################################################################
 
 # build dependencies statically
-tar -xvzf lz4-1.8.3.tar.gz
-cd lz4-1.8.3
+tar -xvzf lz4-1.9.2.tar.gz
+cd lz4-1.9.2
 make liblz4.a
 cp lib/liblz4.a /usr/local/lib/
 cp lib/lz4*.h /usr/local/include/
