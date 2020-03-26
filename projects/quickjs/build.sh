@@ -26,10 +26,8 @@ zip -r $OUT/fuzz_compile_seed_corpus.zip tests/*.js
 zip -r $OUT/fuzz_compile_seed_corpus.zip examples/*.js
 
 cd ..
-$CC $CFLAGS -Iquickjs -c fuzz_eval.c -o fuzz_eval.o
-$CXX $CXXFLAGS fuzz_eval.o -o $OUT/fuzz_eval quickjs/libquickjs.a $LIB_FUZZING_ENGINE
-$CC $CFLAGS -Iquickjs -c fuzz_compile.c -o fuzz_compile.o
-$CXX $CXXFLAGS fuzz_compile.o -o $OUT/fuzz_compile quickjs/libquickjs.a $LIB_FUZZING_ENGINE
-$CC $CFLAGS -Iquickjs -c fuzz_regexp.c -o fuzz_regexp.o
-$CXX $CXXFLAGS fuzz_regexp.o -o $OUT/fuzz_regexp quickjs/libquickjs.a $LIB_FUZZING_ENGINE
-
+FUZZ_TARGETS="fuzz_eval fuzz_compile fuzz_regexp"
+for f in $FUZZ_TARGETS; do
+    $CC $CFLAGS -Iquickjs -c $f.c -o $f.o
+    $CXX $CXXFLAGS $f.o -o $OUT/$f quickjs/libquickjs.a $LIB_FUZZING_ENGINE
+done
