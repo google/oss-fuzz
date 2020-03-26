@@ -38,8 +38,8 @@ mkdir -p build_OPT.OBJ
 cd build_OPT.OBJ
 
 ../configure \
-    --enable-optimize \
-    --disable-shared-js \
+    --enable-debug \
+    --enable-optimize="-O2 -gline-tables-only" \
     --disable-jemalloc \
     --enable-tests \
     --enable-fuzzing \
