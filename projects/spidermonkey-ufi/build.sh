@@ -37,9 +37,13 @@ autoconf2.13
 mkdir -p build_OPT.OBJ
 cd build_OPT.OBJ
 
+# See https://bugzilla.mozilla.org/show_bug.cgi?id=1625268
+# for information about `--disable-new-pass-manager` below.
+
 ../configure \
     --enable-debug \
-    --enable-optimize="-O2 -gline-tables-only" \
+    --disable-new-pass-manager \
+    --enable-optimize \
     --disable-jemalloc \
     --enable-tests \
     --enable-fuzzing \
