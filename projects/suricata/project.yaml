@@ -2,7 +2,3 @@ homepage: "https://suricata-ids.org"
 primary_contact: "vjulien@oisf.net"
 auto_ccs :
 - "p.antoine@catenacyber.fr"
-
-sanitizers:
-- address
-- undefined
