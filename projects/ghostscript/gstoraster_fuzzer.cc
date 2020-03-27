@@ -67,7 +67,7 @@ static int gs_to_raster_fuzz(const unsigned char *buf, size_t size)
 		"-dNOINTERPOLATE",
 		"-dNOMEDIAATTRS",
 		"-sstdout=%stderr",
-		"-sOutputFile=%stdout",
+		"-sOutputFile=/dev/null",
 		"-sDEVICE=cups",
 		"-_",
 	};
