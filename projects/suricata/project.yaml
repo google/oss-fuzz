@@ -1,0 +1,5 @@
+homepage: "https://suricata-ids.org"
+language: c++
+primary_contact: "vjulien@oisf.net"
+auto_ccs:
+- "p.antoine@catenacyber.fr"
