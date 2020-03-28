@@ -14,6 +14,7 @@
  */
 
 #include "quickjs-libc.h"
+#include "cutils.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -71,10 +72,28 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
             return 0;
         }
         obj = JS_ReadObject(ctx, bytecode, bytecode_size, JS_READ_OBJ_BYTECODE);
-        JS_FreeValue(ctx, obj);
+        if (JS_IsException(obj)) {
+            return 0;
+        }
         nbinterrupts = 0;
-        //this needs patching so as not to exit on JS exception
-        js_std_eval_binary(ctx, bytecode, bytecode_size, 0);
+        /* this is based on
+         * js_std_eval_binary(ctx, bytecode, bytecode_size, 0);
+         * modified so as not to exit on JS exception
+         */
+        JSValue val;
+        if (JS_VALUE_GET_TAG(obj) == JS_TAG_MODULE) {
+            if (JS_ResolveModule(ctx, obj) < 0) {
+                JS_FreeValue(ctx, obj);
+                return 0;
+            }
+            js_module_set_import_meta(ctx, obj, FALSE, TRUE);
+        }
+        val = JS_EvalFunction(ctx, obj);
+        if (JS_IsException(val)) {
+            js_std_dump_error(ctx);
+            return 0;
+        }
+        JS_FreeValue(ctx, val);
         js_std_loop(ctx);
         js_free(ctx, bytecode);
     }
