@@ -3,8 +3,7 @@ language: c++
 primary_contact: "webmaster@hartwork.org"
 sanitizers:
  - address
- - memory:
-    experimental: True
+ - memory
  - undefined
 architectures:
   - x86_64
