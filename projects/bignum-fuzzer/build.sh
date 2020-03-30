@@ -98,7 +98,7 @@ LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make
 cp $SRC/bignum-fuzzer/fuzzer $OUT/fuzzer_openssl_libgmp_num_len_1200_all_operations_num_loops_1
 
 # Build mbedtls
-cd $SRC/mbedtls/crypto
+cd $SRC/mbedtls
 make lib -j$(nproc)
 
 # Build BoringSSL
@@ -115,7 +115,7 @@ CFLAGS="$CFLAGS -DBIGNUM_FUZZER_BORINGSSL" OPENSSL_INCLUDE_PATH=$SRC/boringssl/i
 
 # Build mbedtls module
 cd $SRC/bignum-fuzzer/modules/mbedtls
-MBEDTLS_LIBMBEDCRYPTO_A_PATH=$SRC/mbedtls/crypto/library/libmbedcrypto.a MBEDTLS_INCLUDE_PATH=$SRC/mbedtls/crypto/include make
+MBEDTLS_LIBMBEDCRYPTO_A_PATH=$SRC/mbedtls/library/libmbedcrypto.a MBEDTLS_INCLUDE_PATH=$SRC/mbedtls/include make
 
 # Build BoringSSL/mbedtls fuzzer
 cd $SRC/bignum-fuzzer
