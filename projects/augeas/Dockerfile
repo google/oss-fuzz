@@ -24,3 +24,4 @@ WORKDIR augeas
 
 COPY build.sh $SRC/
 COPY augeas_escape_name_fuzzer.cc $SRC/
+COPY augeas_fa_fuzzer.cc $SRC/
