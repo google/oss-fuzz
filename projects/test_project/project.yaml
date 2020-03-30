@@ -1,0 +1,8 @@
+homepage: "https://github.com/Yi512He/test_project"
+language: c
+primary_contact: "he57@wisc.edu"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
