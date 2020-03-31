@@ -58,8 +58,10 @@ class GetFuzzTargetsUnitTest(unittest.TestCase):
     nocrash_fuzzer_path = os.path.join(TEST_OUT_DIR, 'example_nocrash_fuzzer')
     self.assertCountEqual(fuzz_targets,
                           [crash_fuzzer_path, nocrash_fuzzer_path])
+
+    # Testing on a arbitrary directory with no fuzz targets in it.
     fuzz_targets = utils.get_fuzz_targets(
-        os.path.join(helper.OSS_FUZZ_DIR, 'infra'))
+        os.path.join(helper.OSS_FUZZ_DIR, 'infra', 'travis'))
     self.assertFalse(fuzz_targets)
 
   def test_invalid_filepath(self):
