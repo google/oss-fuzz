@@ -78,11 +78,10 @@ def get_fuzz_targets(path):
   if not os.path.exists(path):
     return []
   fuzz_target_paths = []
-  for root, _, _ in os.walk(path):
-    for filename in os.listdir(path):
-      file_path = os.path.join(root, filename)
-      if is_fuzz_target_local(file_path):
-        fuzz_target_paths.append(file_path)
+  for file_name in os.listdir(path):
+    file_path = os.path.join(path, file_name)
+    if is_fuzz_target_local(file_path):
+      fuzz_target_paths.append(file_path)
 
   return fuzz_target_paths
 
