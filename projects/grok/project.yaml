@@ -1,5 +1,6 @@
 homepage: "https://github.com/GrokImageCompression/grok"
 primary_contact: "boxerab@gmail.com"
+language: c++
 fuzzing_engines:
   - libfuzzer
   - afl
