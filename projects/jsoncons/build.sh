@@ -16,6 +16,4 @@
 ################################################################################
 
 cd jsoncons
-#mkdir fuzzers
-#cp ../fuzz_parse.cpp ./fuzzers/
 $CXX ./fuzzers/fuzz_parse.cpp -I./include $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parse
