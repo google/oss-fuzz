@@ -20,5 +20,4 @@ RUN apt-get update && apt-get install -y make cmake
 RUN git clone https://github.com/danielaparker/jsoncons
 
 WORKDIR $SRC
-COPY fuzz_parse.cpp $SRC/
 COPY build.sh $SRC/
