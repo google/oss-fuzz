@@ -28,7 +28,7 @@ sed -i 's/#--- object files needed by XpdfWidget/add_library(testXpdfStatic STAT
 mkdir build && cd build
 export LD=$CXX
 cmake ../ -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS"
-make
+make || true
 
 # Build fuzzers
 cp ../../fuzz_zxdoc.cc .
