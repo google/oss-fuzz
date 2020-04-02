@@ -17,23 +17,33 @@
 
 # Note: This project creates Rust fuzz targets exclusively
 
-# make OSS-Fuzz work with Rust
-export CUSTOM_LIBFUZZER_PATH="$LIB_FUZZING_ENGINE_DEPRECATED"
-export CUSTOM_LIBFUZZER_STD_CXX=c++
+# recipe:
+# -------
+# 1. we list all the fuzzers and save to a file fuzzer_list
+# 2. we build the corpus for each fuzzer
+# 3. we build all the fuzzers
+
+# reset flags of OSS-Fuzz
 export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
 export CXXFLAGS_EXTRA="-stdlib=libc++"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
-# RUSTC_BOOTSTRAP: to get some nightly features like ASAN
-export RUSTC_BOOTSTRAP=1 
-
-#
+# correct workdir
 cd $SRC/libra/testsuite/libra-fuzzer
 
-# list fuzzers
+# fetch all dependencies (needed for patching rocksdb)
+cargo fetch
+
+# patch rocksdb to not link libc++ statically
+sed -i "s/link_cpp(&mut build)/build.cpp_link_stdlib(None)/" \
+    /rust/git/checkouts/rust-rocksdb-a9a28e74c6ead8ef/72e45c3/librocksdb_sys/build.rs
+# so now we need to link libc++ at the end
+export RUSTFLAGS="-C link-arg=-L/usr/local/lib -C link-arg=-lc++"
+
+# 1. list fuzzers
 cargo run --bin libra-fuzzer list --no-desc > fuzzer_list
 
-# build corpus and move to $OUT
+# 2. build corpus and move to $OUT
 cat fuzzer_list | while read -r line
 do
     cargo run --bin libra-fuzzer generate -n 128 $line
@@ -41,11 +51,36 @@ do
     rm -r fuzz/corpus/$line
 done
 
-# build fuzzers
-# --cfg fuzzing      -> used to change code logic
-# -Cdebug-assertions -> to get debug_assert in rust
-# other flags        -> taken from cargo fuzz
-export RUSTFLAGS="--cfg fuzzing -Cdebug-assertions -Cpasses=sancov -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-trace-geps -Cllvm-args=-sanitizer-coverage-prune-blocks=0 -Cllvm-args=-sanitizer-coverage-pc-table -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth -Zsanitizer=address -Ccodegen-units=1"
+# rust libfuzzer flags (https://github.com/rust-fuzz/libfuzzer/blob/master/build.rs#L12)
+export CUSTOM_LIBFUZZER_PATH="$LIB_FUZZING_ENGINE_DEPRECATED"
+export CUSTOM_LIBFUZZER_STD_CXX=c++
+# export CUSTOM_LIBFUZZER_STD_CXX=none 
+
+# RUSTC_BOOTSTRAP: to get some nightly features like ASAN
+export RUSTC_BOOTSTRAP=1 
+
+# export fuzzing flags
+RUSTFLAGS="$RUSTFLAGS --cfg fuzzing"          # used to change code logic
+RUSTFLAGS="$RUSTFLAGS -Cdebug-assertions"     # to get debug_assert in rust
+RUSTFLAGS="$RUSTFLAGS -Zsanitizer=address"    # address sanitizer (ASAN)
+
+RUSTFLAGS="$RUSTFLAGS -Cdebuginfo=1"         
+RUSTFLAGS="$RUSTFLAGS -Cforce-frame-pointers"
+
+RUSTFLAGS="$RUSTFLAGS -Cpasses=sancov"
+RUSTFLAGS="$RUSTFLAGS -Cllvm-args=-sanitizer-coverage-level=4"
+RUSTFLAGS="$RUSTFLAGS -Cllvm-args=-sanitizer-coverage-trace-compares"
+RUSTFLAGS="$RUSTFLAGS -Cllvm-args=-sanitizer-coverage-inline-8bit-counters"
+RUSTFLAGS="$RUSTFLAGS -Cllvm-args=-sanitizer-coverage-trace-geps"
+RUSTFLAGS="$RUSTFLAGS -Cllvm-args=-sanitizer-coverage-prune-blocks=0"
+RUSTFLAGS="$RUSTFLAGS -Cllvm-args=-sanitizer-coverage-pc-table"
+RUSTFLAGS="$RUSTFLAGS -Clink-dead-code"
+RUSTFLAGS="$RUSTFLAGS -Cllvm-args=-sanitizer-coverage-stack-depth"
+RUSTFLAGS="$RUSTFLAGS -Ccodegen-units=1"
+
+export RUSTFLAGS
+
+# 3. build all the fuzzers!
 cat fuzzer_list | while read -r line
 do
     # build
