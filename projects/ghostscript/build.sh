@@ -33,7 +33,6 @@ cd ghostpdl
 rm -rf cups/libs || die
 rm -rf freetype || die
 rm -rf libpng || die
-rm -rf tiff || die
 rm -rf zlib || die
 
 mv ../freetype freetype
