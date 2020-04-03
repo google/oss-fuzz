@@ -45,7 +45,7 @@ for file in $SRC/xmlsec/tests/oss-fuzz/*_target.c; do
     $CXX $CXXFLAGS $OUT/${b}_target.o ./src/.libs/libxmlsec1.a \
     ./src/openssl/.libs/libxmlsec1-openssl.a $LIB_FUZZING_ENGINE \
     "$XMLSEC_DEPS_PATH"/lib/libxslt.a "$XMLSEC_DEPS_PATH"/lib/libxml2.a \
-    -lz -o $OUT/${b}_fuzzer
+    -lz -llzma -o $OUT/${b}_fuzzer
 done
 cp $SRC/xmlsec/tests/oss-fuzz/config/*.options $OUT/
 wget -O $OUT/xml.dict https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/xml.dict
