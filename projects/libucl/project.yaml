@@ -1,5 +1,8 @@
 homepage: "https://github.com/vstakhov/libucl"
-primary_contact: "adam@adalogics.com"
+primary_contact: "vsevolod@highsecure.ru"
+auto_ccs:
+        - "adam@adalogics.com"
+
 language: c
 
 fuzzing_engines:
