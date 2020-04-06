@@ -2,3 +2,4 @@ homepage: "https://github.com/weechat/weechat"
 primary_contact: "flashcode@flashtux.org"
 auto_ccs:
   - "security@weechat.org"
+  - "david@adalogics.com"
