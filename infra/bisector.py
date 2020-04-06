@@ -22,8 +22,8 @@ This is done with the following steps:
 
   Typical usage example:
         python3 infra/bisector.py
-          --commit_old 1e403e9259a1abedf108ab86f711ba52c907226d
-          --commit_new f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f
+          --old_commit 1e403e9259a1abedf108ab86f711ba52c907226d
+          --new_commit f79be4f2330f4b89ea2f42e1c44ca998c59a0c0f
           --fuzz_target rules_fuzzer
           --project_name yara
           --testcase infra/yara_testcase
@@ -78,10 +78,10 @@ def main():
   error_sha = bisect(args.old_commit, args.new_commit, args.test_case_path,
                      args.fuzz_target, build_data)
   if not error_sha:
-    logging.error('No error was found in commit range %s:%s', args.commit_old,
-                  args.commit_new)
+    logging.error('No error was found in commit range %s:%s', args.old_commit,
+                  args.new_commit)
     return 1
-  if error_sha == args.commit_old:
+  if error_sha == args.old_commit:
     logging.error(
         'Bisection Error: Both the first and the last commits in'
         'the given range have the same behavior, bisection is not possible. ')
