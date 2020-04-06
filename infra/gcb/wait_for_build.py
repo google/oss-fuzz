@@ -42,7 +42,7 @@ def wait_for_build(build_id, project):
 
     current_status = build_info['status']
     if current_status != status:
-      _print('%s %s', (str(datetime.datetime.now()), current_status))
+      _print('%s %s' % (str(datetime.datetime.now()), current_status))
     status = current_status
     if status in DONE_STATUSES:
       return status == 'SUCCESS'
