@@ -17,6 +17,8 @@ cloudbuild = None
 
 
 def _print(msg):
+  # Print helper writing to stdout and instantly flushing it to ensure the
+  # output is visible in Jenkins console viewer as soon as possible.
   sys.stdout.write(msg)
   sys.stdout.write('\n')
   sys.stdout.flush()
@@ -65,16 +67,14 @@ def main():
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
 
-  success = wait_for_build(args.build_id, args.project)
-  if success:
+  if wait_for_build(args.build_id, args.project):
     return
 
   _print('The build failed. Retrying the same build one more time.')
   retry_info = cloudbuild.projects().builds().retry(projectId=args.project,
                                                     id=args.build_id).execute()
   new_build_id = retry_info['metadata']['build']['id']
-  success = wait_for_build(new_build_id, args.project)
-  if not success:
+  if not wait_for_build(new_build_id, args.project):
     sys.exit(1)
 
 
