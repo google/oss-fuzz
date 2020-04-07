@@ -25,7 +25,7 @@ import subprocess
 import yaml
 
 DEFAULT_ARCHITECTURES = ['x86_64']
-DEFAULT_ENGINES = ['afl', 'libfuzzer']
+DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 
