@@ -20,6 +20,22 @@
 ./configure
 make -j$(nproc) all
 
+# build seed
+SD=seed
+echo "Mary had a little lamb,
+Its fleece was white as snow;
+And everywhere that Mary went
+The lamb was sure to go." >> $SD
+bzip2 -k $SD && gzip -k $SD && lrzip $SD && lz4 -k $SD \
+	&& lzop $SD && xz -k $SD && zstd -k $SD \
+	&& genisoimage -o $SD.iso $SD && lcab $SD $SD.cab \
+	&& lha c $SD.lzh $SD && rar a $SD.rar $SD \
+	&& tar -czvf $SD.tar.gz $SD && jar -cvf $SD $SD \
+	&& zip $SD $SD
+
+zip corpus $SD.* && mv corpus.zip /out/libarchive_fuzzer_seed_corpus.zip
+rm $SD.*
+
 # build fuzzer(s)
 $CXX $CXXFLAGS -Ilibarchive \
     $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \
