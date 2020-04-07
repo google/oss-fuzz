@@ -8,3 +8,4 @@ auto_ccs:
   - "julians.artifex@gmail.com"
 sanitizers:
   - address
+  - memory
