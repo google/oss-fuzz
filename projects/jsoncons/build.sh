@@ -17,3 +17,8 @@
 
 cd jsoncons
 $CXX ./fuzzers/fuzz_parse.cpp -I./include $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parse
+$CXX ./fuzzers/fuzz_csv.cpp -I./include $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_csv
+
+# With third party
+$CXX ./fuzzers/fuzz_bson.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_bson
+$CXX ./fuzzers/fuzz_cbor.cpp -I./include -I./third_party $CXXFLAGS -o $OUT/fuzz_cbor
