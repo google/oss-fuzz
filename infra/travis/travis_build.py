@@ -125,7 +125,10 @@ def build_project(project):
 
   print('Building project', project)
   build_fuzzers(project, engine, sanitizer, architecture)
-  if engine != 'none':
+
+  # TODO(https://github.com/google/oss-fuzz/issues/3592): Re-enable after
+  # Honggfuzz is supported in check_build.
+  if engine not in ['none', 'honggfuzz']:
     check_build(project, engine, sanitizer, architecture)
 
 
