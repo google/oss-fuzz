@@ -49,7 +49,7 @@ cd ..
 cd suricata
 export PATH=$PATH:/root/.cargo/bin
 sh autogen.sh
-./configure --disable-shared --enable-fuzztargets
+./configure --disable-shared --enable-fuzztargets --enable-debug-validation
 make
 
 cp src/fuzz_* $OUT/
