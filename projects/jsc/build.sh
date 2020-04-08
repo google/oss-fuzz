@@ -21,8 +21,6 @@ mkdir $DEPS_PATH
 cd $SRC/icu/source
 ./configure --disable-shared --enable-static --disable-layoutex \
   --disable-tests --disable-samples --with-data-packaging=static --prefix=$DEPS_PATH
-# ugly hack to avoid build error
-echo '#include <locale.h>' >>i18n/digitlst.h
 make install -j$(nproc)
 
 # Ugly ugly hack to get static linking to work for icu.
