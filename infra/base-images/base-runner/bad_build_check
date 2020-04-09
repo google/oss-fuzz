@@ -99,7 +99,7 @@ function check_engine {
       return 1
     fi
   elif [[ "$FUZZING_ENGINE" == honggfuzz ]]; then
-    timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "^Sz:[0-9]+ Tm:[0-9]+" -c $FUZZER_OUTPUT)
     if (( $CHECK_PASSED == 0 )); then
       echo "BAD BUILD: fuzzing $FUZZER with honggfuzz failed."
