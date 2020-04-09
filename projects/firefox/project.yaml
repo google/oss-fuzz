@@ -6,6 +6,7 @@ auto_ccs:
   - sledru@mozilla.com
 fuzzing_engines:
   - libfuzzer
+  - honggfuzz
 sanitizers:
   - address
   - undefined

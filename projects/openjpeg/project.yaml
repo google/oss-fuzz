@@ -6,8 +6,10 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - afl
+  - honggfuzz
   - dataflow
 sanitizers:
   - address
+  - memory
   - dataflow
   - undefined

@@ -6,4 +6,5 @@ sanitizers:
   - undefined
   - memory
 fuzzing_engines:
-   - libfuzzer
+  - libfuzzer
+  - honggfuzz

@@ -10,6 +10,7 @@ auto_ccs:
   - "gdeschner@gmail.com"
 fuzzing_engines:
   - libfuzzer
+  - honggfuzz
 sanitizers:
   - address
   - undefined
