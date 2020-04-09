@@ -11,6 +11,9 @@ vendor_ccs:
   - "jmuizelaar@mozilla.com"
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
 sanitizers:
   - address
   - memory

@@ -60,9 +60,6 @@ for FUZZER_BINARY in $(find $TMP_FUZZER_DIR -maxdepth 1 -executable -type f); do
   if [[ "$FUZZER" == afl-* ]]; then
     continue
   fi
-  if [[ "$FUZZER" == honggfuzz ]]; then
-    continue
-  fi
 
   echo "INFO: performing bad build checks for $FUZZER_BINARY."
 

@@ -3,6 +3,9 @@ language: c++
 primary_contact: "nima@torproject.org"
 auto_ccs:
   - "nick.a.mathewson@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
 sanitizers:
  - address
  - memory

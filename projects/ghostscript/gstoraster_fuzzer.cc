@@ -58,10 +58,12 @@ static int gs_to_raster_fuzz(const unsigned char *buf, size_t size)
 		"gs",
 		"-K1048576",
 		"-r200x200",
+		"-dMaxBitmap=0",
+		"-dBufferSpace=450k",
 		"-dMediaPosition=1",
 		"-dcupsColorSpace=1", /* RGB */
 		"-dQUIET",
-		"-dPARANOIDSAFER",
+		"-dSAFER",
 		"-dNOPAUSE",
 		"-dBATCH",
 		"-dNOINTERPOLATE",
