@@ -44,8 +44,13 @@ class BuildImageIntegrationTests(unittest.TestCase):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_case = test_repos.TEST_REPOS[0]
+      self.assertEqual(0, helper.build_image_impl('gcr.io/oss-fuzz/' +
+                                                  test_case.project_name))
+      host_src_dir = build_specified_commit.copy_src_from_docker(
+          test_case.project_name, tmp_dir)
+
       test_repo_manager = repo_manager.RepoManager(
-          test_case.git_url, tmp_dir, repo_name=test_case.oss_repo_name)
+          test_case.git_url, host_src_dir, repo_name=test_case.oss_repo_name)
       build_data = build_specified_commit.BuildData(
           sanitizer='address',
           architecture='x86_64',
@@ -54,12 +59,14 @@ class BuildImageIntegrationTests(unittest.TestCase):
 
       build_specified_commit.build_fuzzers_from_commit(test_case.old_commit,
                                                        test_repo_manager,
+                                                       host_src_dir,
                                                        build_data)
       old_error_code = helper.reproduce_impl(test_case.project_name,
                                              test_case.fuzz_target, False, [],
                                              [], test_case.test_case_path)
       build_specified_commit.build_fuzzers_from_commit(test_case.new_commit,
                                                        test_repo_manager,
+                                                       host_src_dir,
                                                        build_data)
       new_error_code = helper.reproduce_impl(test_case.project_name,
                                              test_case.fuzz_target, False, [],

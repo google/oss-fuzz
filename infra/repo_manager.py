@@ -53,7 +53,9 @@ class RepoManager:
     else:
       self.repo_name = os.path.basename(self.repo_url).replace('.git', '')
     self.repo_dir = os.path.join(self.base_dir, self.repo_name)
-    self._clone()
+
+    if not os.path.exists(self.repo_dir):
+      self._clone()
 
   def _clone(self):
     """Creates a clone of the repo in the specified directory.
@@ -136,7 +138,7 @@ class RepoManager:
       ValueError: When either the old or new commit does not exist.
       RuntimeError: When there is an error getting the commit list.
     """
-
+    self.fetch_unshallow()
     if not self.commit_exists(old_commit):
       raise ValueError('The old commit %s does not exist' % old_commit)
     if not self.commit_exists(new_commit):
@@ -157,8 +159,8 @@ class RepoManager:
 
   def fetch_unshallow(self):
     """Gets the current git repository history."""
-    git_path = os.path.join(self.repo_dir, '.git', 'shallow')
-    if os.path.exists(git_path):
+    shallow_file = os.path.join(self.repo_dir, '.git', 'shallow')
+    if os.path.exists(shallow_file):
       utils.execute(['git', 'fetch', '--unshallow'],
                     self.repo_dir,
                     check_result=True)
