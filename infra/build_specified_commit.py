@@ -34,15 +34,20 @@ def copy_src_from_docker(project_name, host_dir):
   # Copy /src to host.
   image_name = 'gcr.io/oss-fuzz/' + project_name
   docker_args = [
-      '-v', host_dir + ':/out',
-      image_name, 'cp', '-r',
-      '/src', '/out',
+      '-v',
+      host_dir + ':/out',
+      image_name,
+      'cp',
+      '-r',
+      '/src',
+      '/out',
   ]
   helper.docker_run(docker_args)
   return os.path.join(host_dir, 'src')
 
 
-def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path, build_data):
+def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
+                              build_data):
   """Builds a OSS-Fuzz fuzzer at a  specific commit SHA.
 
   Args:

@@ -505,7 +505,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments
       ]
     else:
       if workdir == '/src':
-        print('Cannot use local checkout with "WORKDIR: /src".', file=sys.stderr)
+        print('Cannot use local checkout with "WORKDIR: /src".',
+              file=sys.stderr)
         return 1
 
       command += [
