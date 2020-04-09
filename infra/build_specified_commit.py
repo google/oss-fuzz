@@ -92,4 +92,6 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   match = re.search(r'\bDetected repo: ([^ ]+) ([^ ]+)', out.rstrip())
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2)
+
+  logging.error('Failed to detect repo:\n%s', out)
   return None, None
