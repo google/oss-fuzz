@@ -16,5 +16,6 @@ vendor_ccs:
   - mikelogan@google.com
 fuzzing_engines:
   - libfuzzer
+  - honggfuzz
 sanitizers:
   - address
