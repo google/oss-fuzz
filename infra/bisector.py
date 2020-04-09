@@ -48,34 +48,36 @@ def main():
   parser = argparse.ArgumentParser(
       description='git bisection for finding introduction of bugs')
 
-  parser.add_argument('--project_name',
-                      help='The name of the project where the bug occurred.',
-                      required=True)
-  parser.add_argument('--new_commit',
-                      help='The newest commit SHA to be bisected.',
-                      required=True)
-  parser.add_argument('--old_commit',
-                      help='The oldest commit SHA to be bisected.',
-                      required=True)
-  parser.add_argument('--fuzz_target',
-                      help='The name of the fuzzer to be built.',
-                      required=True)
-  parser.add_argument('--test_case_path',
-                      help='The path to test case.',
-                      required=True)
-  parser.add_argument('--engine',
-                      help='The default is "libfuzzer".',
-                      default='libfuzzer')
-  parser.add_argument('--sanitizer',
-                      default='address',
-                      help='The default is "address".')
+  parser.add_argument(
+      '--project_name',
+      help='The name of the project where the bug occurred.',
+      required=True)
+  parser.add_argument(
+      '--new_commit',
+      help='The newest commit SHA to be bisected.',
+      required=True)
+  parser.add_argument(
+      '--old_commit',
+      help='The oldest commit SHA to be bisected.',
+      required=True)
+  parser.add_argument(
+      '--fuzz_target',
+      help='The name of the fuzzer to be built.',
+      required=True)
+  parser.add_argument(
+      '--test_case_path', help='The path to test case.', required=True)
+  parser.add_argument(
+      '--engine', help='The default is "libfuzzer".', default='libfuzzer')
+  parser.add_argument(
+      '--sanitizer', default='address', help='The default is "address".')
   parser.add_argument('--architecture', default='x86_64')
   args = parser.parse_args()
 
-  build_data = build_specified_commit.BuildData(project_name=args.project_name,
-                                                engine=args.engine,
-                                                sanitizer=args.sanitizer,
-                                                architecture=args.architecture)
+  build_data = build_specified_commit.BuildData(
+      project_name=args.project_name,
+      engine=args.engine,
+      sanitizer=args.sanitizer,
+      architecture=args.architecture)
 
   error_sha = bisect(args.old_commit, args.new_commit, args.test_case_path,
                      args.fuzz_target, build_data)
@@ -92,7 +94,7 @@ def main():
   return 0
 
 
-def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):
+def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # pylint: disable=too-many-locals
   """From a commit range, this function caluclates which introduced a
   specific error from a fuzz test_case_path.
 
@@ -118,19 +120,16 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):
     host_src_dir = build_specified_commit.copy_src_from_docker(
         build_data.project_name, tmp_dir)
 
-    bisect_repo_manager = repo_manager.RepoManager(repo_url, host_src_dir,
-                                                   repo_name=os.path.basename(repo_path))
+    bisect_repo_manager = repo_manager.RepoManager(
+        repo_url, host_src_dir, repo_name=os.path.basename(repo_path))
     commit_list = bisect_repo_manager.get_commit_list(old_commit, new_commit)
     old_idx = len(commit_list) - 1
     new_idx = 0
     logging.info('Testing against new_commit (%s)', commit_list[new_idx])
-    build_specified_commit.build_fuzzers_from_commit(commit_list[new_idx],
-                                                     bisect_repo_manager,
-                                                     host_src_dir,
-                                                     build_data)
-    expected_error_code = helper.reproduce_impl(build_data.project_name,
-                                                fuzz_target, False, [], [],
-                                                test_case_path)
+    build_specified_commit.build_fuzzers_from_commit(
+        commit_list[new_idx], bisect_repo_manager, host_src_dir, build_data)
+    expected_error_code = helper.reproduce_impl(
+        build_data.project_name, fuzz_target, False, [], [], test_case_path)
 
     # Check if the error is persistent through the commit range
     logging.info('Testing against old_commit (%s)', commit_list[old_idx])
@@ -141,18 +140,15 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):
         build_data,
     )
 
-    if expected_error_code == helper.reproduce_impl(build_data.project_name,
-                                                    fuzz_target, False, [], [],
-                                                    test_case_path):
+    if expected_error_code == helper.reproduce_impl(
+        build_data.project_name, fuzz_target, False, [], [], test_case_path):
       return commit_list[old_idx]
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
       logging.info('Testing against %s', commit_list[curr_idx])
-      build_specified_commit.build_fuzzers_from_commit(commit_list[curr_idx],
-                                                       bisect_repo_manager,
-                                                       host_src_dir,
-                                                       build_data)
+      build_specified_commit.build_fuzzers_from_commit(
+          commit_list[curr_idx], bisect_repo_manager, host_src_dir, build_data)
       error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                          False, [], [], test_case_path)
       if expected_error_code == error_code:
