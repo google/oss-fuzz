@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER rlohningqt@gmail.com
-RUN apt-get update && apt-get install -y build-essential python
+RUN apt-get update && apt-get install -y build-essential
 RUN git clone --branch 5.15 --depth 1 git://code.qt.io/qt/qt5.git qt
 WORKDIR qt
 RUN perl init-repository --module-subset=qtbase
