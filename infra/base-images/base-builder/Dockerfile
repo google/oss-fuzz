@@ -40,9 +40,8 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 # Dependency of go-fuzz.
 RUN go get golang.org/x/tools/go/packages
 
-# go*-fuzz-build is the tool that instruments Go files.
+# go-fuzz-build is the tool that instruments Go files.
 RUN go get github.com/dvyukov/go-fuzz/go-fuzz-build
-RUN go get github.com/mdempsky/go114-fuzz-build
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
