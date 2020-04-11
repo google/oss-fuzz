@@ -31,3 +31,6 @@ function compile_fuzzer {
    # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
 }
+
+compile_fuzzer /cmd/amass/ commandUsage command_usage
+
