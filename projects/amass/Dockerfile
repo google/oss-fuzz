@@ -17,10 +17,10 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
 
-RUN go get github.com/OWASP/Amass; exit 0
+RUN git clone https://github.com/OWASP/Amass.git amass
 
-WORKDIR /go/src/github.com/OWASP/Amass
+WORKDIR amass
 
 RUN go install ./...
 
-COPY build.sh $SRC/
+COPY build.sh $SRC/amass
