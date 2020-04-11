@@ -1,0 +1,10 @@
+homepage: "https://github.com/id-Software/Quake-III-Arena"
+language: c
+primary_contact: "sherif.mansour@owasp.org"
+auto_ccs:
+  - "travis.bradshaw@idsoftware.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined

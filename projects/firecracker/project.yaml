@@ -1,0 +1,10 @@
+homepage: "https://github.com/firecracker-microvm/firecracker"
+language: rust
+primary_contact: "sherif.mansour@owasp.org"
+auto_ccs:
+  - "firecracker-security-disclosures@amazon.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
