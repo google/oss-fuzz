@@ -20,4 +20,4 @@ RUN git clone https://github.com/OWASP/Amass.git amass
 
 WORKDIR amass
 
-COPY build.sh $SRC/amass
+COPY build.sh $SRC
