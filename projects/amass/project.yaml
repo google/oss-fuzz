@@ -1,8 +1,8 @@
-homepage: "https://github.com/id-Software/Quake-III-Arena"
-language: c
+homepage: "https://github.com/OWASP/Amass"
+language: go
 primary_contact: "sherif.mansour@owasp.org"
 auto_ccs:
-  - "travis.bradshaw@idsoftware.com"
+  - "jeff.foley@owasp.org"
 sanitizers:
   - address
   - memory:
