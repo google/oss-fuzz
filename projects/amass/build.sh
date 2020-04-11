@@ -32,5 +32,5 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
 }
 
-compile_fuzzer /root/amass/cmd/amass/ runIntelCommand run_intel_command
+compile_fuzzer /root/amass/semaphore/ TestSimpleSemaphore testsimplesemaphore
 
