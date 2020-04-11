@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+#Complie Amass Binary
+go install ./...
+
 # Based on the function from oss-fuzz/projects/golang/build.sh script.
 
 function compile_fuzzer {
