@@ -1,9 +1,18 @@
 homepage: "https://github.com/OWASP/Amass"
+
 language: go
+
 primary_contact: "sherif.mansour@owasp.org"
+
 auto_ccs:
   - "jeff.foley@owasp.org"
+
 fuzzing_engines:
   - libfuzzer
+
 sanitizers:
   - address
+
+architectures:
+ - x86_64
+ - i386
