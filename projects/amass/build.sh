@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +15,16 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mmoroz@chromium.org
+# Based on the function from oss-fuzz/projects/golang/build.sh script.
 
-RUN go get github.com/OWASP/Amass; exit 0
+function compile_fuzzer {
+  path=$1
+  function=$2
+  fuzzer=$3
 
-WORKDIR /go/src/github.com/OWASP/Amass
+   # Instrument all Go files relevant to this fuzzer
+  go-fuzz-build -libfuzzer -func $function -o $fuzzer.a $path
 
-RUN go install ./...
-
-COPY build.sh $SRC/
+   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
+}
