@@ -43,7 +43,7 @@ CUPS_LDFLAGS=$($CUPSCONFIG --ldflags)
 CUPS_LIBS=$($CUPSCONFIG --image --libs)
 export CXXFLAGS="$CXXFLAGS $CUPS_CFLAGS"
 
-CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS" ./autogen.sh \
+CPPFLAGS="${CPPFLAGS:-} $CUPS_CFLAGS -DPACIFY_VALGRIND" ./autogen.sh \
   CUPSCONFIG=$CUPSCONFIG \
   --enable-freetype --enable-fontconfig \
   --enable-cups --with-ijs --with-jbig2dec \
