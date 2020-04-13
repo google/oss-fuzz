@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+wget "https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh"
+bash "Anaconda3-2020.02-Linux-x86_64.sh" -b
+export PATH=~/anaconda3/bin:$PATH
+conda install protobuf -y
+pip3 install grpcio-tools
+
 cd $SRC/nanopb/tests
 
 # Build seed corpus.
