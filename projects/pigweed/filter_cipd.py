@@ -36,7 +36,7 @@ def main():
   prebuilts = []
   try:
     with open(args.json, 'r') as json_file:
-      return json.load(json_file)
+      prebuilts = json.load(json_file)
   except Exception:
     print('Encountered error attempting to load ' + args.json)
     raise
