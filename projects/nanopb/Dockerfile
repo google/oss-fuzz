@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jpa@npb.mail.kapsi.fi
-RUN apt-get update && apt-get install -y python-pip git scons
-RUN pip install protobuf grpcio-tools
+RUN apt-get update && apt-get install -y python3-pip git scons wget
+RUN python3 -m pip install --upgrade pip
 RUN git clone --depth 1 https://github.com/nanopb/nanopb $SRC/nanopb
 COPY build.sh $SRC/
 
