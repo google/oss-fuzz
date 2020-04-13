@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Based on https://github.com/mdempsky/go114-fuzz-build with minor changes.
+
 package main
 
 import (
@@ -107,7 +109,6 @@ var mainTmpl = template.Must(template.New("main").Parse(`
 package main
 
 import (
-  "reflect"
 	"unsafe"
 	target {{printf "%q" .PkgPath}}
 )
@@ -122,13 +123,7 @@ func LLVMFuzzerInitialize(argc uintptr, argv uintptr) int {
 
 //export LLVMFuzzerTestOneInput
 func LLVMFuzzerTestOneInput(data uintptr, size uint64) int {
-	sh := &reflect.SliceHeader{
-		Data: data,
-		Len:  int(size),
-		Cap:  int(size),
-	}
-
-	input := *(*[]byte)(unsafe.Pointer(sh))
+	input := (*[1<<30]byte)(unsafe.Pointer(data))[:size:size]
 	target.{{.FuzzFunc}}(input)
 
 	return 0
