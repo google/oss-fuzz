@@ -41,6 +41,7 @@ RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
 RUN git clone --depth 1 https://github.com/ARMmbed/mbed-crypto.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
+RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
 
