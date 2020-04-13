@@ -16,8 +16,8 @@
 ################################################################################
 cd lexbor
 mkdir build && cd build
-cmake .. -DLEXBOR_BUILD_SEPARATELY=ON
+cmake .. 
 make
 
-$CC $CFLAGS -I/src/lexbor/source -Wall -pedantic -pipe -std=c99 -fPIC -c  /srx/lexbor/test/fuzzers/lexbor/encoding/decode.c
+$CC $CFLAGS -I/src/lexbor/source -Wall -pedantic -pipe -std=c99 -fPIC -c  /src/lexbor/test/fuzzers/lexbor/encoding/decode.c
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -stdlib=libc++ -Wall -pedantic -pipe -std=c99 -fPIC decode.o  /src/lexbor/build/liblexbor_static.a -Wl,-rpath,/src/lexbor/build -o $OUT/fuzz_decode
