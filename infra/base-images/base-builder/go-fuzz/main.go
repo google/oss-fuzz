@@ -116,13 +116,8 @@ import (
 // #include <stdint.h>
 import "C"
 
-//export LLVMFuzzerInitialize
-func LLVMFuzzerInitialize(argc uintptr, argv uintptr) int {
-	return 0
-}
-
 //export LLVMFuzzerTestOneInput
-func LLVMFuzzerTestOneInput(data uintptr, size uint64) int {
+func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
 	input := (*[1<<30]byte)(unsafe.Pointer(data))[:size:size]
 	target.{{.FuzzFunc}}(input)
 
