@@ -15,11 +15,11 @@
 # limitations under the License.
 #
 ################################################################################
+"""Script to find fuzzers in a Pigweed build."""
 
 import argparse
 import json
 import os
-import pathlib
 import shutil
 import sys
 
@@ -36,8 +36,8 @@ def main():
   testinfo = os.path.join(args.buildroot, 'obj',
                           'pw_module_tests.testinfo.json')
   tests = []
-  with open(testinfo) as f:
-    tests = json.load(f)
+  with open(testinfo) as json_file:
+    tests = json.load(json_file)
   for test in tests:
     if test['type'] != 'fuzzer':
       # Skip unit tests
@@ -51,11 +51,7 @@ def main():
     src = os.path.join(args.buildroot, objdir, fuzzer)
     dst = os.path.join(args.out, '{}_{}'.format(module, fuzzer))
     print('Copying {} to {}'.format(src, dst))
-    try:
-      shutil.copy(src, dst)
-    except:
-      print('Copy failed!')
-      pass
+    shutil.copy(src, dst)
   return 0
 
 

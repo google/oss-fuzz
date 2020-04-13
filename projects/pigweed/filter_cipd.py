@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 ################################################################################
+"""Script for filter Pigweed's CIPD dependencies for OSS Fuzz conflicts."""
 
 import argparse
 import json
@@ -22,50 +23,43 @@ import os
 import sys
 
 
-def parse_args():
+def main():
+  """Main entry point of the script."""
   parser = argparse.ArgumentParser()
   parser.add_argument('--root', default=os.path.join(os.getcwd(), 'pigweed'))
   parser.add_argument(
       '--json', default='pw_env_setup/py/pw_env_setup/cipd_setup/pigweed.json')
   parser.add_argument('--excludes', default='clang', nargs='*')
-  return parser.parse_args()
+  args = parser.parse_args()
 
-
-def load_prebuilts(jsonfile):
+  # Load args.json
+  prebuilts = []
   try:
-    with open(jsonfile, 'r') as f:
-      return json.load(f)
-  except:
-    print('Encountered error attempting to load ' + jsonfile)
+    with open(args.json, 'r') as json_file:
+      return json.load(json_file)
+  except Exception:
+    print('Encountered error attempting to load ' + args.json)
     raise
 
-
-def filter_prebuilts(prebuilts, excludes):
-  for exclude in excludes:
+  # Filter out args.excludes
+  for exclude in args.excludes:
     prebuilts[:] = [p for p in prebuilts if exclude not in str(p['path'])]
-  return prebuilts
 
-
-def dump_prebuilts(prebuilts, jsonfile):
+  # Rename original CIPD JSON file
   try:
-    os.rename(jsonfile, jsonfile + '.orig')
-  except:
-    print('Encountered error attempting to rename ' + jsonfile)
-    raise
-  try:
-    with open(jsonfile, 'w') as f:
-      json.dump(prebuilts, f, indent=2)
-  except:
-    print('Encountered error attempting to write ' + jsonfile)
+    os.rename(args.json, args.json + '.orig')
+  except Exception:
+    print('Encountered error attempting to rename ' + args.json)
     raise
 
+  # Save new CIPD JSON file
+  try:
+    with open(args.json, 'w') as json_file:
+      json.dump(prebuilts, json_file, indent=2)
+  except Exception:
+    print('Encountered error attempting to write ' + args.json)
+    raise
 
-def main():
-  args = parse_args()
-  jsonfile = os.path.join(args.root, args.json)
-  prebuilts = load_prebuilts(jsonfile)
-  filter_prebuilts(prebuilts, args.excludes)
-  dump_prebuilts(prebuilts, jsonfile)
   return 0
 
 
