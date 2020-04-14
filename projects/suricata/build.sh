@@ -49,7 +49,8 @@ cd ..
 cd suricata
 export PATH=$PATH:/root/.cargo/bin
 sh autogen.sh
-./configure --disable-shared --enable-fuzztargets --enable-debug-validation
+#run configure with right options
+./src/tests/fuzz/oss-fuzz-configure.sh
 make
 
 cp src/fuzz_* $OUT/
@@ -69,14 +70,18 @@ set -x
 zip -q -r $OUT/fuzz_siginit_seed_corpus.zip corpus
 cd ../../suricata-verify
 
-# corpus with pcap files
+# corpus with single files
 find . -name "*.pcap" | xargs zip -r $OUT/fuzz_decodepcapfile_seed_corpus.zip
+find . -name "*.yaml" | xargs zip -r $OUT/fuzz_confyamlloadstring_seed_corpus.zip
+find . -name "*.rules" | xargs zip -r $OUT/fuzz_siginit_seed_corpus.zip
 
 # corpus using both rule and pcap as in suricata-verify
 cd tests
 i=0
 mkdir corpus
+set +x
 ls | grep -v corpus | while read t; do
 cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; cat $t/*.pcap >> corpus/$i || true; i=$((i+1));
 done
-zip -q -r $OUT/fuzz_sigyamlpcap_seed_corpus.zip corpus
+set -x
+zip -q -r $OUT/fuzz_sigpcap_seed_corpus.zip corpus
