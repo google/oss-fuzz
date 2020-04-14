@@ -38,8 +38,8 @@ ENV GOPATH /root/go
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 # Uses golang 1.14+ cmd/compile's native libfuzzer instrumentation.
-COPY go-fuzz go-fuzz
-RUN cd go-fuzz && go install
+RUN go get -u github.com/mdempsky/go114-fuzz-build && \
+    ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
 
 # DEPRECATED go-fuzz implementation - github.com/dvyukov/go-fuzz-build based on
 # source-to-source transformation.
