@@ -2,7 +2,7 @@ function compile_fuzzer {
     fuzzer=$(basename $1)
 
     # Instrument all Go files relevant to this fuzzer, compile and store in $fuzzer.a
-    go-fuzz-build -libfuzzer -o $fuzzer.a github.com/dvyukov/go-fuzz-corpus/$fuzzer
+    go-fuzz -o $fuzzer.a github.com/dvyukov/go-fuzz-corpus/$fuzzer
 
     # Instrumented, compiled Go ($fuzzer.a) + libFuzzer = fuzzer binary
     $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o fuzzer-$fuzzer

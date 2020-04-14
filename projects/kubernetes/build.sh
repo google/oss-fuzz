@@ -27,7 +27,7 @@ function compile_fuzzer {
   local fuzzer="${pkg}_${function}"
 
    # Instrument all Go files relevant to this fuzzer
-  go-fuzz-build -libfuzzer -func "${function}" -o "${fuzzer}.a" "k8s.io/kubernetes/test/fuzz/${pkg}"
+  go-fuzz -func "${function}" -o "${fuzzer}.a" "k8s.io/kubernetes/test/fuzz/${pkg}"
 
    # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE "${fuzzer}.a" -lpthread -o "${OUT}/${fuzzer}"

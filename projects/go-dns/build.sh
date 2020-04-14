@@ -22,7 +22,7 @@ function compile_fuzzer {
   fuzzer=$3
 
    # Instrument all Go files relevant to this fuzzer
-  go-fuzz-build -tags fuzz -libfuzzer -func $function -o $fuzzer.a $path
+  go-fuzz -tags fuzz -func $function -o $fuzzer.a $path
 
    # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
