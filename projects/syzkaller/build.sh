@@ -22,16 +22,16 @@ function compile_fuzzer {
   fuzzer=$3
 
    # Instrument all Go files relevant to this fuzzer
-  go-fuzz-build -libfuzzer -func $function -o $fuzzer.a $path 
+  go-fuzz-build -libfuzzer -func $function -o $fuzzer.a $path
 
    # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
 }
 
-compile_fuzzer ./pkg/compiler Fuzz compiler_fuzzer
-compile_fuzzer ./prog/test FuzzDeserialize prog_deserialize_fuzzer
-compile_fuzzer ./prog/test FuzzParseLog prog_parselog_fuzzer
-compile_fuzzer ./pkg/report Fuzz report_fuzzer
+compile_fuzzer syzkaller/pkg/compiler Fuzz compiler_fuzzer
+compile_fuzzer syzkaller/prog/test FuzzDeserialize prog_deserialize_fuzzer
+compile_fuzzer syzkaller/prog/test FuzzParseLog prog_parselog_fuzzer
+compile_fuzzer syzkaller/pkg/report Fuzz report_fuzzer
 
 # This target is way too spammy and OOMs very quickly.
 # compile_fuzzer ./tools/syz-trace2syz/proggen Fuzz trace2syz_fuzzer
