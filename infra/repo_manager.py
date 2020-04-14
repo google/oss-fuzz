@@ -135,14 +135,14 @@ class RepoManager:
       The list of commit SHAs from newest to oldest.
 
     Raises:
-      ValueError: When either the old or new commit does not exist.
+      ValueError: When either the oldest or newest commit does not exist.
       RuntimeError: When there is an error getting the commit list.
     """
     self.fetch_unshallow()
     if oldest_commit and not self.commit_exists(oldest_commit):
       raise ValueError('The oldest commit %s does not exist' % oldest_commit)
     if not self.commit_exists(newest_commit):
-      raise ValueError('The new commit %s does not exist' % newest_commit)
+      raise ValueError('The newest commit %s does not exist' % newest_commit)
     if oldest_commit == newest_commit:
       return [oldest_commit]
 
