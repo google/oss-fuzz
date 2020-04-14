@@ -29,9 +29,9 @@ libFuzzer command line interface as non-Go fuzz targets.
 
 ## Project files
 
-First, you need to write a Go fuzz target that accepts a stream of
-random bytes and calls the program API with that. This fuzz target
-should reside in your project repository
+First, you need to write a Go fuzz target that accepts a stream of bytes and
+calls the program API with that. This fuzz target should reside in your project
+repository
 ([example](https://github.com/golang/go/blob/4ad13555184eb0697c2e92c64c1b0bdb287ccc10/src/html/fuzz.go#L13)).
 
 The structure of the project directory in OSS-Fuzz repository doesn't differ for
