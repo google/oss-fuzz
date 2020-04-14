@@ -8,4 +8,4 @@ auto_ccs:
 sanitizers:
 - address
 - undefined
-coverage_extra_args: -ignore-filename-regex=.*\.cache.*esp-v2_deps_cache.*
+coverage_extra_args: -ignore-filename-regex=.*\.cache.* -ignore-filename-regex=.*bazel-out.*
