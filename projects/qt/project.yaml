@@ -3,5 +3,3 @@ language: c++
 primary_contact: "rlohningqt@gmail.com"
 auto_ccs:
   - "shawn.t.rutledge@gmail.com"
-sanitizers:
- - address
