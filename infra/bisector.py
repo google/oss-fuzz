@@ -147,7 +147,7 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
-      logging.info('Testing against %s', commit_list[curr_idx])
+      logging.info('Testing against %s (idx=%d)', commit_list[curr_idx], curr_idx)
       build_specified_commit.build_fuzzers_from_commit(commit_list[curr_idx],
                                                        bisect_repo_manager,
                                                        host_src_dir, build_data)
