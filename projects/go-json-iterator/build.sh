@@ -28,4 +28,4 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
 }
 
-compile_fuzzer fuzz Fuzz fuzz_json
+compile_fuzzer . Fuzz fuzz_json
