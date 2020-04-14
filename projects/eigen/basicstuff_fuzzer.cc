@@ -23,22 +23,22 @@ static constexpr Eigen::Index kEigenIndexOne = static_cast<Eigen::Index>(1);
 
 template <typename T>
 T ConsumeValue(FuzzedDataProvider* stream) {
-  return static_cast<T>(stream->ConsumeIntegral<T>());
+  return stream->ConsumeIntegral<T>();
 }
 
 template <>
 float ConsumeValue(FuzzedDataProvider* stream) {
-  return static_cast<float>(stream->ConsumeFloatingPoint<float>());
+  return stream->ConsumeFloatingPoint<float>();
 }
 
 template <>
 double ConsumeValue(FuzzedDataProvider* stream) {
-  return static_cast<double>(stream->ConsumeFloatingPoint<double>());
+  return stream->ConsumeFloatingPoint<double>();
 }
 
 template <>
 long double ConsumeValue(FuzzedDataProvider* stream) {
-  return static_cast<long double>(stream->ConsumeFloatingPoint<long double>());
+  return stream->ConsumeFloatingPoint<long double>();
 }
 
 template <>
