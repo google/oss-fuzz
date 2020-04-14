@@ -55,8 +55,7 @@ def main():
                       help='The newest commit SHA to be bisected.',
                       required=True)
   parser.add_argument('--old_commit',
-                      help='The oldest commit SHA to be bisected.',
-                      required=True)
+                      help='The oldest commit SHA to be bisected.')
   parser.add_argument('--fuzz_target',
                       help='The name of the fuzzer to be built.',
                       required=True)
@@ -111,7 +110,7 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
   """
   with tempfile.TemporaryDirectory() as tmp_dir:
     repo_url, repo_path = build_specified_commit.detect_main_repo(
-        build_data.project_name, commit=old_commit)
+        build_data.project_name, commit=new_commit)
     if not repo_url or not repo_path:
       raise ValueError('Main git repo can not be determined.')
 
@@ -120,7 +119,7 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
 
     bisect_repo_manager = repo_manager.RepoManager(
         repo_url, host_src_dir, repo_name=os.path.basename(repo_path))
-    commit_list = bisect_repo_manager.get_commit_list(old_commit, new_commit)
+    commit_list = bisect_repo_manager.get_commit_list(new_commit, old_commit)
     old_idx = len(commit_list) - 1
     new_idx = 0
     logging.info('Testing against new_commit (%s)', commit_list[new_idx])
@@ -132,18 +131,19 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
                                                 test_case_path)
 
     # Check if the error is persistent through the commit range
-    logging.info('Testing against old_commit (%s)', commit_list[old_idx])
-    build_specified_commit.build_fuzzers_from_commit(
-        commit_list[old_idx],
-        bisect_repo_manager,
-        host_src_dir,
-        build_data,
-    )
+    if old_commit:
+      logging.info('Testing against old_commit (%s)', commit_list[old_idx])
+      build_specified_commit.build_fuzzers_from_commit(
+          commit_list[old_idx],
+          bisect_repo_manager,
+          host_src_dir,
+          build_data,
+      )
 
-    if expected_error_code == helper.reproduce_impl(build_data.project_name,
-                                                    fuzz_target, False, [], [],
-                                                    test_case_path):
-      return commit_list[old_idx]
+      if expected_error_code == helper.reproduce_impl(build_data.project_name,
+                                                      fuzz_target, False, [],
+                                                      [], test_case_path):
+        return commit_list[old_idx]
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
