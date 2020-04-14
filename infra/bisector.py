@@ -32,6 +32,7 @@ This is done with the following steps:
 
 import argparse
 import logging
+import os
 import tempfile
 
 import build_specified_commit
@@ -42,6 +43,7 @@ import utils
 
 def main():
   """Finds the commit SHA where an error was initally introduced."""
+  logging.getLogger().setLevel(logging.INFO)
   utils.chdir_to_root()
   parser = argparse.ArgumentParser(
       description='git bisection for finding introduction of bugs')
@@ -90,7 +92,7 @@ def main():
   return 0
 
 
-def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):
+def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # pylint: disable=too-many-locals
   """From a commit range, this function caluclates which introduced a
   specific error from a fuzz test_case_path.
 
@@ -108,27 +110,33 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):
     ValueError: when a repo url can't be determine from the project.
   """
   with tempfile.TemporaryDirectory() as tmp_dir:
-    repo_url, repo_name = build_specified_commit.detect_main_repo(
+    repo_url, repo_path = build_specified_commit.detect_main_repo(
         build_data.project_name, commit=old_commit)
-    if not repo_url or not repo_name:
+    if not repo_url or not repo_path:
       raise ValueError('Main git repo can not be determined.')
-    bisect_repo_manager = repo_manager.RepoManager(repo_url,
-                                                   tmp_dir,
-                                                   repo_name=repo_name)
+
+    host_src_dir = build_specified_commit.copy_src_from_docker(
+        build_data.project_name, tmp_dir)
+
+    bisect_repo_manager = repo_manager.RepoManager(
+        repo_url, host_src_dir, repo_name=os.path.basename(repo_path))
     commit_list = bisect_repo_manager.get_commit_list(old_commit, new_commit)
     old_idx = len(commit_list) - 1
     new_idx = 0
+    logging.info('Testing against new_commit (%s)', commit_list[new_idx])
     build_specified_commit.build_fuzzers_from_commit(commit_list[new_idx],
                                                      bisect_repo_manager,
-                                                     build_data)
+                                                     host_src_dir, build_data)
     expected_error_code = helper.reproduce_impl(build_data.project_name,
                                                 fuzz_target, False, [], [],
                                                 test_case_path)
 
     # Check if the error is persistent through the commit range
+    logging.info('Testing against old_commit (%s)', commit_list[old_idx])
     build_specified_commit.build_fuzzers_from_commit(
         commit_list[old_idx],
         bisect_repo_manager,
+        host_src_dir,
         build_data,
     )
 
@@ -139,9 +147,11 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
+      logging.info('Testing against %s (idx=%d)', commit_list[curr_idx],
+                   curr_idx)
       build_specified_commit.build_fuzzers_from_commit(commit_list[curr_idx],
                                                        bisect_repo_manager,
-                                                       build_data)
+                                                       host_src_dir, build_data)
       error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                          False, [], [], test_case_path)
       if expected_error_code == error_code:

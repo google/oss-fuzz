@@ -29,7 +29,25 @@ BuildData = collections.namedtuple(
     'BuildData', ['project_name', 'engine', 'sanitizer', 'architecture'])
 
 
-def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
+def copy_src_from_docker(project_name, host_dir):
+  """Copy /src from docker to the host."""
+  # Copy /src to host.
+  image_name = 'gcr.io/oss-fuzz/' + project_name
+  docker_args = [
+      '-v',
+      host_dir + ':/out',
+      image_name,
+      'cp',
+      '-r',
+      '/src',
+      '/out',
+  ]
+  helper.docker_run(docker_args)
+  return os.path.join(host_dir, 'src')
+
+
+def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
+                              build_data):
   """Builds a OSS-Fuzz fuzzer at a  specific commit SHA.
 
   Args:
@@ -46,9 +64,8 @@ def build_fuzzers_from_commit(commit, build_repo_manager, build_data):
                                    sanitizer=build_data.sanitizer,
                                    architecture=build_data.architecture,
                                    env_to_add=None,
-                                   source_path=build_repo_manager.repo_dir,
-                                   mount_location=os.path.join(
-                                       '/src', build_repo_manager.repo_name))
+                                   source_path=host_src_path,
+                                   mount_location=os.path.join('/src'))
 
 
 def detect_main_repo(project_name, repo_name=None, commit=None):
