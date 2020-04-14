@@ -124,37 +124,44 @@ class RepoManager:
                               check_result=True)
     return out.strip('\n')
 
-  def get_commit_list(self, old_commit, new_commit):
+  def get_commit_list(self, newest_commit, oldest_commit=None):
     """Gets the list of commits(inclusive) between the old and new commits.
 
     Args:
-      old_commit: The oldest commit to be in the list.
-      new_commit: The newest commit to be in the list.
+      newest_commit: The newest commit to be in the list.
+      oldest_commit: The (optional) oldest commit to be in the list.
 
     Returns:
       The list of commit SHAs from newest to oldest.
 
     Raises:
-      ValueError: When either the old or new commit does not exist.
+      ValueError: When either the oldest or newest commit does not exist.
       RuntimeError: When there is an error getting the commit list.
     """
     self.fetch_unshallow()
-    if not self.commit_exists(old_commit):
-      raise ValueError('The old commit %s does not exist' % old_commit)
-    if not self.commit_exists(new_commit):
-      raise ValueError('The new commit %s does not exist' % new_commit)
-    if old_commit == new_commit:
-      return [old_commit]
-    out, _, err_code = utils.execute(
-        ['git', 'rev-list', old_commit + '..' + new_commit], self.repo_dir)
+    if oldest_commit and not self.commit_exists(oldest_commit):
+      raise ValueError('The oldest commit %s does not exist' % oldest_commit)
+    if not self.commit_exists(newest_commit):
+      raise ValueError('The newest commit %s does not exist' % newest_commit)
+    if oldest_commit == newest_commit:
+      return [oldest_commit]
+
+    if oldest_commit:
+      commit_range = oldest_commit + '..' + newest_commit
+    else:
+      commit_range = newest_commit
+
+    out, _, err_code = utils.execute(['git', 'rev-list', commit_range],
+                                     self.repo_dir)
     commits = out.split('\n')
     commits = [commit for commit in commits if commit]
     if err_code or not commits:
       raise RuntimeError('Error getting commit list between %s and %s ' %
-                         (old_commit, new_commit))
+                         (oldest_commit, newest_commit))
 
     # Make sure result is inclusive
-    commits.append(old_commit)
+    if oldest_commit:
+      commits.append(oldest_commit)
     return commits
 
   def fetch_unshallow(self):
