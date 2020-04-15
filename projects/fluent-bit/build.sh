@@ -22,4 +22,5 @@ make || true
 cp ../tests/internal/fuzzers/* .
 
 # Now compile the fuzzers
-$CXX flb_json_fuzzer.cpp -o $OUT/flb_json_fuzzer $CXXFLAGS $LIB_FUZZING_ENGINE  library/libfluent-bit.a  library/libmk_core.a library/libjsmn.a library/libmsgpackc.a library/libmpack-static.a
+$CC $CFLAGS -c flb_json_fuzzer.c -o flb_json_fuzzer.o
+$CXX flb_json_fuzzer.o -o $OUT/flb_json_fuzzer $CXXFLAGS $LIB_FUZZING_ENGINE  library/libfluent-bit.a  library/libmk_core.a library/libjsmn.a library/libmsgpackc.a library/libmpack-static.a
