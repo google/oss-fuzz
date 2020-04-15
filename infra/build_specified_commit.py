@@ -58,7 +58,7 @@ def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
   Returns:
     0 on successful build or error code on failure.
   """
-  build_repo_manager.checkout_commit(commit)
+  build_repo_manager.checkout_commit(commit, clean=False)
   result = helper.build_fuzzers_impl(project_name=build_data.project_name,
                                      clean=True,
                                      engine=build_data.engine,

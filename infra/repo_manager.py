@@ -186,7 +186,7 @@ class RepoManager:
                   self.repo_dir,
                   check_result=True)
 
-  def checkout_commit(self, commit):
+  def checkout_commit(self, commit, clean=True):
     """Checks out a specific commit from the repo.
 
     Args:
@@ -202,7 +202,8 @@ class RepoManager:
     utils.execute(['git', 'checkout', '-f', commit],
                   self.repo_dir,
                   check_result=True)
-    utils.execute(['git', 'clean', '-fxd'], self.repo_dir, check_result=True)
+    if clean:
+      utils.execute(['git', 'clean', '-fxd'], self.repo_dir, check_result=True)
     if self.get_current_commit() != commit:
       raise RuntimeError('Error checking out commit %s' % commit)
 
