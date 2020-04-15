@@ -39,6 +39,7 @@ def copy_src_from_docker(project_name, host_dir):
       image_name,
       'cp',
       '-r',
+      '-p',
       '/src',
       '/out',
   ]
