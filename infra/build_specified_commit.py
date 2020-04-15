@@ -59,14 +59,15 @@ def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
     0 on successful build or error code on failure.
   """
   build_repo_manager.checkout_commit(commit)
-  return helper.build_fuzzers_impl(project_name=build_data.project_name,
-                                   clean=True,
-                                   engine=build_data.engine,
-                                   sanitizer=build_data.sanitizer,
-                                   architecture=build_data.architecture,
-                                   env_to_add=None,
-                                   source_path=host_src_path,
-                                   mount_location=os.path.join('/src'))
+  result = helper.build_fuzzers_impl(project_name=build_data.project_name,
+                                     clean=True,
+                                     engine=build_data.engine,
+                                     sanitizer=build_data.sanitizer,
+                                     architecture=build_data.architecture,
+                                     env_to_add=None,
+                                     source_path=host_src_path,
+                                     mount_location=os.path.join('/src'))
+  return result == 0
 
 
 def detect_main_repo(project_name, repo_name=None, commit=None):

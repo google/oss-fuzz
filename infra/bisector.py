@@ -123,9 +123,10 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
     old_idx = len(commit_list) - 1
     new_idx = 0
     logging.info('Testing against new_commit (%s)', commit_list[new_idx])
-    build_specified_commit.build_fuzzers_from_commit(commit_list[new_idx],
-                                                     bisect_repo_manager,
-                                                     host_src_dir, build_data)
+    if not build_specified_commit.build_fuzzers_from_commit(
+        commit_list[new_idx], bisect_repo_manager, host_src_dir, build_data):
+      raise RuntimeError('Failed to build new_commit')
+
     expected_error_code = helper.reproduce_impl(build_data.project_name,
                                                 fuzz_target, False, [], [],
                                                 test_case_path)
@@ -133,12 +134,13 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
     # Check if the error is persistent through the commit range
     if old_commit:
       logging.info('Testing against old_commit (%s)', commit_list[old_idx])
-      build_specified_commit.build_fuzzers_from_commit(
+      if not build_specified_commit.build_fuzzers_from_commit(
           commit_list[old_idx],
           bisect_repo_manager,
           host_src_dir,
           build_data,
-      )
+      ):
+        raise RuntimeError('Failed to build old_commit')
 
       if expected_error_code == helper.reproduce_impl(build_data.project_name,
                                                       fuzz_target, False, [],
