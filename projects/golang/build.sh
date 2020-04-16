@@ -13,23 +13,23 @@
 # limitations under the License.
 
 function compile_fuzzer {
-    fuzzer=$(basename $1)
+  fuzzer=$(basename $1)
 
-    # Instrument all Go files relevant to this fuzzer, compile and store in $fuzzer.a
-    go-fuzz -o $fuzzer.a github.com/dvyukov/go-fuzz-corpus/$fuzzer
+  # Compile and instrument all Go files relevant to this fuzz target.
+  go-fuzz -o $fuzzer.a github.com/dvyukov/go-fuzz-corpus/$fuzzer
 
-    # Instrumented, compiled Go ($fuzzer.a) + libFuzzer = fuzzer binary
-    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o fuzzer-$fuzzer
+  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o fuzzer-$fuzzer
 
-    # Copy the fuzzer binary
-    cp fuzzer-$fuzzer $OUT
+  # Copy the fuzzer binary
+  cp fuzzer-$fuzzer $OUT
 
-    # Pack the seed corpus
-    zip -r fuzzer-${fuzzer}_seed_corpus.zip \
-        $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/$fuzzer/corpus
+  # Pack the seed corpus
+  zip -r fuzzer-${fuzzer}_seed_corpus.zip \
+      $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/$fuzzer/corpus
 
-    # Copy the seed corpus
-    cp fuzzer-${fuzzer}_seed_corpus.zip $OUT
+  # Copy the seed corpus
+  cp fuzzer-${fuzzer}_seed_corpus.zip $OUT
 }
 
 export -f compile_fuzzer
