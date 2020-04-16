@@ -73,33 +73,8 @@ def get_build_steps(project_dir):
   image = project_yaml['image']
   report_date = datetime.datetime.now().strftime('%Y%m%d')
 
-  build_steps = [
-      {
-          'args': [
-              'clone',
-              'https://github.com/google/oss-fuzz.git',
-          ],
-          'name': 'gcr.io/cloud-builders/git',
-      },
-      {
-          'name': 'gcr.io/cloud-builders/docker',
-          'args': [
-              'build',
-              '-t',
-              image,
-              '.',
-          ],
-          'dir': 'oss-fuzz/projects/' + name,
-      },
-      {
-          'name': image,
-          'args': [
-              'bash', '-c',
-              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-          ],
-          'env': ['OSSFUZZ_REVISION=$REVISION_ID'],
-      },
-  ]
+  build_steps = build_lib.project_image_steps(name, image,
+                                              project_yaml['language'])
 
   env = CONFIGURATION[:]
   out = '/workspace/out/' + SANITIZER

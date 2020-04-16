@@ -113,41 +113,16 @@ def get_build_steps(project_dir):
 
   ts = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
-  build_steps = [
-      {
-          'args': [
-              'clone',
-              'https://github.com/google/oss-fuzz.git',
-          ],
-          'name': 'gcr.io/cloud-builders/git',
-      },
-      {
-          'name': 'gcr.io/cloud-builders/docker',
-          'args': [
-              'build',
-              '-t',
-              image,
-              '.',
-          ],
-          'dir': 'oss-fuzz/projects/' + name,
-      },
-      {
-          'name': image,
-          'args': [
-              'bash', '-c',
-              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-          ],
-          'env': ['OSSFUZZ_REVISION=$REVISION_ID'],
-      },
-      {
-          'name': 'gcr.io/oss-fuzz-base/msan-builder',
-          'args': [
-              'bash',
-              '-c',
-              'cp -r /msan /workspace',
-          ],
-      },
-  ]
+  build_steps = build_lib.project_image_steps(name, image,
+                                              project_yaml['language'])
+  build_steps.append({
+      'name': 'gcr.io/oss-fuzz-base/msan-builder',
+      'args': [
+          'bash',
+          '-c',
+          'cp -r /msan /workspace',
+      ],
+  })
 
   for fuzzing_engine in project_yaml['fuzzing_engines']:
     for sanitizer in get_sanitizers(project_yaml):
