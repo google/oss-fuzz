@@ -19,17 +19,11 @@ function compile_fuzzer {
   go-fuzz -o $fuzzer.a github.com/dvyukov/go-fuzz-corpus/$fuzzer
 
   # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o fuzzer-$fuzzer
-
-  # Copy the fuzzer binary
-  cp fuzzer-$fuzzer $OUT
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/fuzzer-$fuzzer
 
   # Pack the seed corpus
-  zip -r fuzzer-${fuzzer}_seed_corpus.zip \
+  zip -r $OUT/fuzzer-${fuzzer}_seed_corpus.zip \
       $GOPATH/src/github.com/dvyukov/go-fuzz-corpus/$fuzzer/corpus
-
-  # Copy the seed corpus
-  cp fuzzer-${fuzzer}_seed_corpus.zip $OUT
 }
 
 export -f compile_fuzzer
