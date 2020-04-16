@@ -28,5 +28,5 @@ function compile_fuzzer {
 }
 
 # Same as usual except for added -tags fuzz.
-compile_fuzzer /root/go/src/github.com/miekg/dns/ FuzzNewRR fuzz_newrr
-compile_fuzzer /root/go/src/github.com/miekg/dns/ Fuzz fuzz_msg_unpack
+compile_fuzzer github.com/miekg/dns FuzzNewRR fuzz_newrr
+compile_fuzzer github.com/miekg/dns Fuzz fuzz_msg_unpack
