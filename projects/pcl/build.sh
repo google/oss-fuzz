@@ -23,6 +23,6 @@ cmake \
   -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${OUT} \
   -DLIB_FUZZING_ENGINE:string={LIB_FUZZING_ENGINE} \
   $@ \
-  ${SRC}
+  ${SRC}/src
 
 make -j${nproc}

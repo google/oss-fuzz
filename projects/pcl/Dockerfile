@@ -65,9 +65,13 @@ RUN wget -qO ensenso.deb https://download.ensenso.com/s/ensensosdk/download?file
  && rm ensenso.deb
 #### COPY_END
 
-RUN git clone https://github.com/PointCloudLibrary/pcl.git
+RUN git clone --depth=50 https://github.com/PointCloudLibrary/pcl.git \
+ && mkdir -p pcl/build \
+ && cd  pcl/build \
+ && cmake .. \
+ && make install
 WORKDIR pcl
 
 # copy build script and other fuzzer files in src dir
-COPY build.sh pcl_test.cpp $SRC/
+COPY build.sh src $SRC/
 
