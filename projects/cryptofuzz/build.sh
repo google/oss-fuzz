@@ -437,11 +437,11 @@ then
     else
         cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
     fi
-    make -j$(nproc) crypto >/dev/null 2>&1
+    make -j$(nproc) crypto decrepit >/dev/null 2>&1
 
     # Compile Cryptofuzz BoringSSL (with assembly) module
     cd $SRC/cryptofuzz/modules/openssl
-    OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" make -B
+    OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" BORINGSSL_LIBDECREPIT_A_PATH="$SRC/boringssl/build/decrepit/libdecrepit.a" make -B
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
@@ -464,11 +464,11 @@ cd $SRC/boringssl
 rm -rf build ; mkdir build
 cd build
 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
-make -j$(nproc) crypto >/dev/null 2>&1
+make -j$(nproc) crypto decrepit >/dev/null 2>&1
 
 # Compile Cryptofuzz BoringSSL (with assembly) module
 cd $SRC/cryptofuzz/modules/openssl
-OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" make -B
+OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" BORINGSSL_LIBDECREPIT_A_PATH="$SRC/boringssl/build/decrepit/libdecrepit.a" make -B
 
 # Compile Cryptofuzz
 cd $SRC/cryptofuzz
