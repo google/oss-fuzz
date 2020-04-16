@@ -82,11 +82,11 @@ function compile_fuzzer {
   function=$2
   fuzzer=$3
 
-   # Instrument all Go files relevant to this fuzzer
+  # Compile and instrument all Go files relevant to this fuzz target.
   go-fuzz -func $function -o $fuzzer.a $path
 
-   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
+  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
 
 compile_fuzzer ./pkg/compiler Fuzz compiler_fuzzer
