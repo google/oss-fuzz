@@ -1,4 +1,4 @@
-#! /usr/bin/env sh
+################################################################################
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
+cmake_minimum_required(VERSION 3.5)
+project(pcl_fuzz_check)
 
-mkdir -p build && cd build
-cmake \
-  -DCMAKE_C_COMPILER=${CC} \
-  -DCMAKE_CXX_COMPILER=${CXX} \
-  -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
-  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${OUT} \
-  -DLIB_FUZZING_ENGINE:string={LIB_FUZZING_ENGINE} \
-  $@ \
-  ${SRC}
+find_package(PCL COMPONENTS io REQUIRED)
 
-make -j${nproc}
+SET(LIB_FUZZING_ENGINE "" CACHE STRING "Location of static library for fuzzing")
+add_library(libFuzz STATIC IMPORTED)
+set_target_properties(libFuzz PROPERTIES IMPORTED_LOCATION ${LIB_FUZZING_ENGINE})
+
+add_executable(png_fuzzer png.cpp)
+target_link_libraries(pcl_demo ${PCL_LIBRARIES} libFuzz)
