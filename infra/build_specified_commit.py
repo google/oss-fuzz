@@ -23,6 +23,8 @@ import logging
 import re
 
 import helper
+import repo_manager
+import shutil
 import utils
 
 BuildData = collections.namedtuple(
@@ -49,7 +51,7 @@ def copy_src_from_docker(project_name, host_dir):
 
 def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
                               build_data):
-  """Builds a OSS-Fuzz fuzzer at a  specific commit SHA.
+  """Builds a OSS-Fuzz fuzzer at a specific commit SHA.
 
   Args:
     commit: The commit SHA to build the fuzzers at.
@@ -58,15 +60,51 @@ def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
   Returns:
     0 on successful build or error code on failure.
   """
-  build_repo_manager.checkout_commit(commit, clean=False)
-  result = helper.build_fuzzers_impl(project_name=build_data.project_name,
-                                     clean=True,
-                                     engine=build_data.engine,
-                                     sanitizer=build_data.sanitizer,
-                                     architecture=build_data.architecture,
-                                     env_to_add=None,
-                                     source_path=host_src_path,
-                                     mount_location=os.path.join('/src'))
+  oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+  num_retry = 1
+
+  for i in range(num_retry + 1):
+    build_repo_manager.checkout_commit(commit, clean=False)
+    result = helper.build_fuzzers_impl(project_name=build_data.project_name,
+                                       clean=True,
+                                       engine=build_data.engine,
+                                       sanitizer=build_data.sanitizer,
+                                       architecture=build_data.architecture,
+                                       env_to_add=None,
+                                       source_path=host_src_path,
+                                       mount_location='/src')
+    if result == 0 or i == num_retry:
+      break
+
+    # Retry with an OSS-Fuzz builder container that's closer to the project
+    # commit date.
+    commit_date = build_repo_manager.commit_date(commit)
+    projects_dir = os.path.join('projects', build_data.project_name)
+
+    # Find first change in the projects/<PROJECT> directory before the project
+    # commit date.
+    oss_fuzz_commit, _, _ = oss_fuzz_repo_manager.git([
+        'log', '--before=' + commit_date.isoformat(), '-n1', '--format=%H',
+        projects_dir
+    ],
+                                                      check_result=True)
+    oss_fuzz_commit = oss_fuzz_commit.strip()
+
+    logging.info('Build failed. Retrying on earlier OSS-Fuzz commit %s.',
+                 oss_fuzz_commit)
+
+    # Check out projects/<PROJECT> dir to the commit that was found.
+    oss_fuzz_repo_manager.git(['checkout', oss_fuzz_commit, projects_dir],
+                              check_result=True)
+
+    # Rebuild image and re-copy src dir since things in /src could have changed.
+    if not helper.build_image_impl(build_data.project_name):
+      raise RuntimeError('Failed to rebuild image.')
+
+    shutil.rmtree(host_src_path, ignore_errors=True)
+    copy_src_from_docker(build_data.project_name,
+                         os.path.dirname(host_src_path))
+
   return result == 0
 
 
