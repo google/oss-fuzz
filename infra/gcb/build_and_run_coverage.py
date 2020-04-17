@@ -71,10 +71,10 @@ def get_build_steps(project_dir):
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
+  language = project_yaml['language']
   report_date = datetime.datetime.now().strftime('%Y%m%d')
 
-  build_steps = build_lib.project_image_steps(name, image,
-                                              project_yaml['language'])
+  build_steps = build_lib.project_image_steps(name, image, language)
 
   env = CONFIGURATION[:]
   out = '/workspace/out/' + SANITIZER
