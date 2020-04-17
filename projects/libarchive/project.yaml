@@ -4,7 +4,6 @@ primary_contact: "joerg.sonnenberger@googlemail.com"
 auto_ccs:
   - "kientzle@gmail.com"
   - "martin@matuska.org"
-  - "adam@adalogics.com"
 sanitizers:
   - address
   - memory:
