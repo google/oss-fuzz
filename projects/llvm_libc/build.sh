@@ -42,7 +42,8 @@ cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../$LLVM \
     "${CMAKE_FUZZING_CONFIG}" \
     -DLLVM_NO_DEAD_STRIP=ON \
     -DLLVM_USE_SANITIZER="${LLVM_SANITIZER}" \
-    -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly
+    -DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD=WebAssembly \
+    -DLLVM_LIBC_ENABLE_LINTING=OFF
 
 ninja libc-fuzzer
 cp projects/libc/fuzzing/*/*_fuzz $OUT
