@@ -93,20 +93,22 @@ export CXXFLAGS="$CXXFLAGS -I$SRC/cityhash/src"
 export CRYPTOFUZZ_REFERENCE_CITY_O_PATH="$SRC/cityhash/src/city.o"
 
 ##############################################################################
+# Compile cryptopp
+cd $SRC/cryptopp
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
-    # Compile cryptopp (with assembly)
-    cd $SRC/cryptopp
     make -j$(nproc) >/dev/null 2>&1
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
-    export LIBCRYPTOPP_A_PATH="$SRC/cryptopp/libcryptopp.a"
-    export CRYPTOPP_INCLUDE_PATH="$SRC/cryptopp"
-
-    # Compile Cryptofuzz cryptopp (with assembly) module
-    cd $SRC/cryptofuzz/modules/cryptopp
-    make -B
+else
+    CXXFLAGS="$CXXFLAGS -DCRYPTOPP_DISABLE_ASM=1" make -j$(nproc) >/dev/null 2>&1
 fi
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
+export LIBCRYPTOPP_A_PATH="$SRC/cryptopp/libcryptopp.a"
+export CRYPTOPP_INCLUDE_PATH="$SRC/cryptopp"
+
+# Compile Cryptofuzz cryptopp module
+cd $SRC/cryptofuzz/modules/cryptopp
+make -B
 
 ##############################################################################
 # Compile mbed crypto
@@ -149,58 +151,60 @@ cd $SRC/cryptofuzz/modules/botan
 make -B
 
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* ]]
+# Compile libgpg-error (dependency of libgcrypt)
+cd $SRC/
+tar jxvf libgpg-error-1.36.tar.bz2
+cd libgpg-error-1.36/
+if [[ $CFLAGS != *-m32* ]]
 then
-    # Compile libgpg-error (dependency of libgcrypt)
-    cd $SRC/
-    tar jxvf libgpg-error-1.36.tar.bz2
-    cd libgpg-error-1.36/
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./configure --enable-static
-    else
-        ./configure --enable-static --host=i386
-    fi
-    make -j$(nproc) >/dev/null 2>&1
-    make install
-    export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
-
-    # Compile libgcrypt (with assembly)
-    cd $SRC/libgcrypt
-    autoreconf -ivf
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./configure --enable-static --disable-doc
-    else
-        ./configure --enable-static --disable-doc --host=i386
-    fi
-    make -j$(nproc) >/dev/null 2>&1
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGCRYPT"
-    export LIBGCRYPT_A_PATH="$SRC/libgcrypt/src/.libs/libgcrypt.a"
-    export LIBGCRYPT_INCLUDE_PATH="$SRC/libgcrypt/src"
-
-    # Compile Cryptofuzz libgcrypt (with assembly) module
-    cd $SRC/cryptofuzz/modules/libgcrypt
-    make -B
+    ./configure --enable-static
+else
+    ./configure --enable-static --host=i386
 fi
+make -j$(nproc) >/dev/null 2>&1
+make install
+export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
 
+# Compile libgcrypt
+cd $SRC/libgcrypt
+autoreconf -ivf
+if [[ $CFLAGS = *-m32* ]]
+then
+    ./configure --enable-static --disable-doc --host=i386
+elif [[ $CFLAGS = *sanitize=memory* ]]
+then
+    ./configure --enable-static --disable-doc --disable-asm
+else
+    ./configure --enable-static --disable-doc
+fi
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGCRYPT"
+export LIBGCRYPT_A_PATH="$SRC/libgcrypt/src/.libs/libgcrypt.a"
+export LIBGCRYPT_INCLUDE_PATH="$SRC/libgcrypt/src"
+
+# Compile Cryptofuzz libgcrypt module
+cd $SRC/cryptofuzz/modules/libgcrypt
+make -B
+
+# Compile libsodium
+cd $SRC/libsodium
+autoreconf -ivf
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
-    # Compile libsodium (with assembly)
-    cd $SRC/libsodium
-    autoreconf -ivf
     ./configure
-    make -j$(nproc) >/dev/null 2>&1
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
-    export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
-    export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
-
-    # Compile Cryptofuzz libsodium (with assembly) module
-    cd $SRC/cryptofuzz/modules/libsodium
-    make -B
+else
+    ./configure --disable-asm
 fi
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
+export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
+export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
+
+# Compile Cryptofuzz libsodium module
+cd $SRC/cryptofuzz/modules/libsodium
+make -B
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
@@ -437,11 +441,11 @@ then
     else
         cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
     fi
-    make -j$(nproc) crypto decrepit >/dev/null 2>&1
+    make -j$(nproc) crypto >/dev/null 2>&1
 
     # Compile Cryptofuzz BoringSSL (with assembly) module
     cd $SRC/cryptofuzz/modules/openssl
-    OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" BORINGSSL_LIBDECREPIT_A_PATH="$SRC/boringssl/build/decrepit/libdecrepit.a" make -B
+    OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" make -B
 
     # Compile Cryptofuzz
     cd $SRC/cryptofuzz
@@ -464,11 +468,11 @@ cd $SRC/boringssl
 rm -rf build ; mkdir build
 cd build
 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DOPENSSL_NO_ASM=1 ..
-make -j$(nproc) crypto decrepit >/dev/null 2>&1
+make -j$(nproc) crypto >/dev/null 2>&1
 
 # Compile Cryptofuzz BoringSSL (with assembly) module
 cd $SRC/cryptofuzz/modules/openssl
-OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" BORINGSSL_LIBDECREPIT_A_PATH="$SRC/boringssl/build/decrepit/libdecrepit.a" make -B
+OPENSSL_INCLUDE_PATH="$SRC/boringssl/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/boringssl/build/crypto/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BORINGSSL" make -B
 
 # Compile Cryptofuzz
 cd $SRC/cryptofuzz
