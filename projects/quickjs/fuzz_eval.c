@@ -61,9 +61,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         }
         nbinterrupts = 0;
         //the final 0 does not count (as in strlen)
-        JS_Eval(ctx, (const char *)Data, Size-1, "<none>", JS_EVAL_TYPE_GLOBAL);
+        JSValue val = JS_Eval(ctx, (const char *)Data, Size-1, "<none>", JS_EVAL_TYPE_GLOBAL);
         //TODO targets with JS_ParseJSON, JS_ReadObject
-        js_std_loop(ctx);
+        if (!JS_IsException(val)) {
+            js_std_loop(ctx);
+            JS_FreeValue(ctx, val);
+        }
     }
 
     return 0;

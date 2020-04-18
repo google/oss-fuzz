@@ -73,6 +73,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         }
         obj = JS_ReadObject(ctx, bytecode, bytecode_size, JS_READ_OBJ_BYTECODE);
         if (JS_IsException(obj)) {
+            js_free(ctx, bytecode);
             return 0;
         }
         nbinterrupts = 0;
@@ -84,6 +85,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         if (JS_VALUE_GET_TAG(obj) == JS_TAG_MODULE) {
             if (JS_ResolveModule(ctx, obj) < 0) {
                 JS_FreeValue(ctx, obj);
+                js_free(ctx, bytecode);
                 return 0;
             }
             js_module_set_import_meta(ctx, obj, FALSE, TRUE);
@@ -91,10 +93,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         val = JS_EvalFunction(ctx, obj);
         if (JS_IsException(val)) {
             js_std_dump_error(ctx);
-            return 0;
+        } else {
+            js_std_loop(ctx);
         }
         JS_FreeValue(ctx, val);
-        js_std_loop(ctx);
         js_free(ctx, bytecode);
     }
 
