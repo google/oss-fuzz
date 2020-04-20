@@ -33,7 +33,7 @@ bzip2 -k $SD && gzip -k $SD && lrzip $SD && lz4 -k $SD \
 	&& tar -czvf $SD.tar.gz $SD && jar -cvf $SD $SD \
 	&& zip $SD $SD
 
-zip corpus $SD.* && mv corpus.zip /out/libarchive_fuzzer_seed_corpus.zip
+zip corpus.zip $SD.* && mv corpus.zip /out/libarchive_fuzzer_seed_corpus.zip
 rm $SD.*
 
 # build fuzzer(s)
