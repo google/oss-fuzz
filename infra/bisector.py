@@ -31,6 +31,7 @@ This is done with the following steps:
 """
 
 import argparse
+import collections
 import logging
 import os
 import tempfile
@@ -39,6 +40,8 @@ import build_specified_commit
 import helper
 import repo_manager
 import utils
+
+Result = collections.namedtuple('Result', ['repo_url', 'commit'])
 
 
 def main():
@@ -103,7 +106,7 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
     build_data: a class holding all of the input parameters for bisection.
 
   Returns:
-    The commit SHA that introduced the error or None.
+    A Result.
 
   Raises:
     ValueError: when a repo url can't be determine from the project.
@@ -145,7 +148,7 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
       if expected_error_code == helper.reproduce_impl(build_data.project_name,
                                                       fuzz_target, False, [],
                                                       [], test_case_path):
-        return commit_list[old_idx]
+        return Result(repo_url, commit_list[old_idx])
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
@@ -160,7 +163,7 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
         new_idx = curr_idx
       else:
         old_idx = curr_idx
-    return commit_list[new_idx]
+    return Result(repo_url, commit_list[new_idx])
 
 
 if __name__ == '__main__':
