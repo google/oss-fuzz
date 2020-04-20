@@ -148,7 +148,7 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
       if expected_error_code == helper.reproduce_impl(build_data.project_name,
                                                       fuzz_target, False, [],
                                                       [], test_case_path):
-        return Result(repo_url, lcommit_list[old_idx])
+        return Result(repo_url, commit_list[old_idx])
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
