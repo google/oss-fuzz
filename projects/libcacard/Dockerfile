@@ -20,8 +20,7 @@ RUN apt-get update && apt-get install -y pkg-config libglib2.0-dev gyp libsqlite
 # Because Ubuntu has really ancient meson out there
 RUN pip3 install meson ninja
 
-#RUN git clone --depth 1 https://gitlab.freedesktop.org/spice/libcacard.git libcacard
-RUN git clone --depth 1 --single-branch --branch fuzzers https://gitlab.freedesktop.org/jjelen/libcacard.git libcacard
+RUN git clone --depth 1 --single-branch --branch master https://gitlab.freedesktop.org/spice/libcacard.git libcacard
 RUN git clone --depth 1 https://github.com/nss-dev/nss.git nss
 RUN hg clone https://hg.mozilla.org/projects/nspr
 
