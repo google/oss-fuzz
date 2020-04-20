@@ -56,8 +56,8 @@ class BisectIntegrationTests(unittest.TestCase):
             sanitizer='address',
             architecture='x86_64')
         result = bisector.bisect(test_repo.old_commit, test_repo.new_commit,
-                                    test_repo.test_case_path,
-                                    test_repo.fuzz_target, build_data)
+                                 test_repo.test_case_path,
+                                 test_repo.fuzz_target, build_data)
         self.assertEqual(result.commit, test_repo.intro_commit)
 
 
