@@ -94,35 +94,23 @@ def main():
   return 0
 
 
-def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # pylint: disable=too-many-locals
-  """From a commit range, this function caluclates which introduced a
-  specific error from a fuzz test_case_path.
-
-  Args:
-    old_commit: The oldest commit in the error regression range.
-    new_commit: The newest commit in the error regression range.
-    test_case_path: The file path of the test case that triggers the error
-    fuzz_target: The name of the fuzzer to be tested.
-    build_data: a class holding all of the input parameters for bisection.
-
-  Returns:
-    A Result.
-
-  Raises:
-    ValueError: when a repo url can't be determine from the project.
-  """
+def _bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # pylint: disable=too-many-locals
+  """Perform the bisect."""
   with tempfile.TemporaryDirectory() as tmp_dir:
     repo_url, repo_path = build_specified_commit.detect_main_repo(
         build_data.project_name, commit=new_commit)
     if not repo_url or not repo_path:
       raise ValueError('Main git repo can not be determined.')
 
+    # Copy /src from the built Docker container to ensure all dependencies
+    # exist. This will be mounted when running them.
     host_src_dir = build_specified_commit.copy_src_from_docker(
         build_data.project_name, tmp_dir)
 
-    bisect_repo_manager = repo_manager.RepoManager(
-        repo_url, host_src_dir, repo_name=os.path.basename(repo_path))
+    bisect_repo_manager = repo_manager.BaseRepoManager(
+        os.path.join(host_src_dir, os.path.basename(repo_path)))
     commit_list = bisect_repo_manager.get_commit_list(new_commit, old_commit)
+
     old_idx = len(commit_list) - 1
     new_idx = 0
     logging.info('Testing against new_commit (%s)', commit_list[new_idx])
@@ -164,6 +152,35 @@ def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # 
       else:
         old_idx = curr_idx
     return Result(repo_url, commit_list[new_idx])
+
+
+def bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # pylint: disable=too-many-locals
+  """From a commit range, this function caluclates which introduced a
+  specific error from a fuzz test_case_path.
+
+  Args:
+    old_commit: The oldest commit in the error regression range.
+    new_commit: The newest commit in the error regression range.
+    test_case_path: The file path of the test case that triggers the error
+    fuzz_target: The name of the fuzzer to be tested.
+    build_data: a class holding all of the input parameters for bisection.
+
+  Returns:
+    The commit SHA that introduced the error or None.
+
+  Raises:
+    ValueError: when a repo url can't be determine from the project.
+  """
+  result = _bisect(old_commit, new_commit, test_case_path, fuzz_target,
+                   build_data)
+
+  # Clean up projects/ as _bisect may have modified it.
+  oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+  oss_fuzz_repo_manager.git(['reset', 'projects'])
+  oss_fuzz_repo_manager.git(['checkout', 'projects'])
+  oss_fuzz_repo_manager.git(['clean', '-fxd', 'projects'])
+
+  return result
 
 
 if __name__ == '__main__':
