@@ -4,6 +4,7 @@ primary_contact: "tadeusz.struk@intel.com"
 auto_ccs:
   - "andreas.fuchs@sit.fraunhofer.de"
   - "john.s.andersen@intel.com"
+  - "william.c.roberts@intel.com"
 sanitizers:
   - address
   - memory
