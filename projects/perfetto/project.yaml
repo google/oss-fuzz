@@ -8,6 +8,7 @@ auto_ccs:
   - "primiano@google.com"
   - "rsavitski@google.com"
   - "taylori@google.com"
+  - "eseckler@google.com"
 vendor_ccs:
   - bcreasey@google.com
   - hamzeh@google.com
