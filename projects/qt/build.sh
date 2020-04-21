@@ -79,6 +79,7 @@ build_fuzzer() {
     rm -r build_fuzzer
 }
 
+build_fuzzer "new" "qtbase" "corelib/serialization/qcborstreamreader/next/next.pro"
 build_fuzzer "new" "qtbase" "corelib/serialization/qcborvalue/fromcbor/fromcbor.pro"
 build_fuzzer "new" "qtbase" "corelib/serialization/qtextstream/extractionoperator-float/extractionoperator-float.pro" "text"
 build_fuzzer "old" "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "$SRC/AFL/dictionaries/xml.dict"
