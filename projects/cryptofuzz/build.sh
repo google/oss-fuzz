@@ -151,41 +151,41 @@ cd $SRC/cryptofuzz/modules/botan
 make -B
 
 ##############################################################################
-# Compile libgpg-error (dependency of libgcrypt)
-cd $SRC/
-tar jxvf libgpg-error-1.36.tar.bz2
-cd libgpg-error-1.36/
-if [[ $CFLAGS != *-m32* ]]
+if [[ $CFLAGS != *sanitize=memory* ]]
 then
-    ./configure --enable-static
-else
-    ./configure --enable-static --host=i386
+    # Compile libgpg-error (dependency of libgcrypt)
+    cd $SRC/
+    tar jxvf libgpg-error-1.36.tar.bz2
+    cd libgpg-error-1.36/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./configure --enable-static
+    else
+        ./configure --enable-static --host=i386
+    fi
+    make -j$(nproc) >/dev/null 2>&1
+    make install
+    export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
+
+    # Compile libgcrypt
+    cd $SRC/libgcrypt
+    autoreconf -ivf
+    if [[ $CFLAGS = *-m32* ]]
+    then
+        ./configure --enable-static --disable-doc --host=i386
+    else
+        ./configure --enable-static --disable-doc
+    fi
+    make -j$(nproc) >/dev/null 2>&1
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGCRYPT"
+    export LIBGCRYPT_A_PATH="$SRC/libgcrypt/src/.libs/libgcrypt.a"
+    export LIBGCRYPT_INCLUDE_PATH="$SRC/libgcrypt/src"
+
+    # Compile Cryptofuzz libgcrypt module
+    cd $SRC/cryptofuzz/modules/libgcrypt
+    make -B
 fi
-make -j$(nproc) >/dev/null 2>&1
-make install
-export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
-
-# Compile libgcrypt
-cd $SRC/libgcrypt
-autoreconf -ivf
-if [[ $CFLAGS = *-m32* ]]
-then
-    ./configure --enable-static --disable-doc --host=i386
-elif [[ $CFLAGS = *sanitize=memory* ]]
-then
-    ./configure --enable-static --disable-doc --disable-asm
-else
-    ./configure --enable-static --disable-doc
-fi
-make -j$(nproc) >/dev/null 2>&1
-
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGCRYPT"
-export LIBGCRYPT_A_PATH="$SRC/libgcrypt/src/.libs/libgcrypt.a"
-export LIBGCRYPT_INCLUDE_PATH="$SRC/libgcrypt/src"
-
-# Compile Cryptofuzz libgcrypt module
-cd $SRC/cryptofuzz/modules/libgcrypt
-make -B
 
 # Compile libsodium
 cd $SRC/libsodium
