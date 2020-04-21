@@ -47,7 +47,7 @@ done
 cd ../binutils
 
 # First copy the fuzzers, modify applications and copile object files
-for i in readelf cxxfilt; do
+for i in readelf; do
     cp ../../fuzz_$i.c .
 
     # Modify main functions so we dont have them anymore
@@ -65,7 +65,3 @@ mv fuzz_readelf $OUT/fuzz_readelf
 ### Set up seed corpus for readelf in the form of a single ELF file. 
 zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
 mv fuzz_readelf_seed_corpus.zip $OUT/ 
-
-## cxxfilt
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib -o fuzz_cxxfilt fuzz_cxxfilt.o bucomm.o version.o filemode.o ../bfd/.libs/libbfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a 
-mv fuzz_cxxfilt $OUT/fuzz_cxxfilt
