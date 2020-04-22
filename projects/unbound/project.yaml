@@ -1,3 +1,6 @@
 homepage: "https://nlnetlabs.nl/projects/unbound/about/"
-language: c++
+language: c
 primary_contact: "wouter@nlnetlabs.nl"
+auto_ccs:
+  - "ralph@nlnetlabs.nl"
+  - "george@nlnetlabs.nl"
