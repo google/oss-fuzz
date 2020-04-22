@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER davidwg@fb.com
 
 # install other tools we might need
-RUN apt-get update && apt-get install -y cmake curl
+RUN apt-get update && apt-get install -y cmake curl g++-8
 
 # install rust and cargo-fuzz
 ENV CARGO_HOME=/rust RUSTUP_HOME=/rust/rustup PATH=$PATH:/rust/bin
