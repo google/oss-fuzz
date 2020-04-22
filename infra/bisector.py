@@ -79,18 +79,18 @@ def main():
                                                 sanitizer=args.sanitizer,
                                                 architecture=args.architecture)
 
-  error_sha = bisect(args.old_commit, args.new_commit, args.test_case_path,
+  result = bisect(args.old_commit, args.new_commit, args.test_case_path,
                      args.fuzz_target, build_data)
-  if not error_sha:
+  if not result.commit:
     logging.error('No error was found in commit range %s:%s', args.old_commit,
                   args.new_commit)
     return 1
-  if error_sha == args.old_commit:
+  if result.commit == args.old_commit:
     logging.error(
         'Bisection Error: Both the first and the last commits in'
         'the given range have the same behavior, bisection is not possible. ')
     return 1
-  print('Error was introduced at commit %s' % error_sha)
+  print('Error was introduced at commit %s' % result.commit)
   return 0
 
 
