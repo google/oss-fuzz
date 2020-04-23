@@ -49,8 +49,9 @@ def _make_gitdirs_relative(src_dir):
         if line.startswith(_GIT_DIR_MARKER):
           absolute_path = line[len(_GIT_DIR_MARKER):].strip()
           current_dir = os.path.dirname(file_path)
-          relative_path = os.path.relpath(absolute_path,
-                                          current_dir.replace(src_dir, '/src'))
+          # Rebase to /src rather than the host src dir.
+          base_dir = current_dir.replace(src_dir, '/src')
+          relative_path = os.path.relpath(absolute_path, base_dir)
           logging.info('Replacing absolute submodule gitdir from %s to %s',
                        absolute_path, relative_path)
 
