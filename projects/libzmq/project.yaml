@@ -1,9 +1,10 @@
 homepage: "https://github.com/zeromq/libzmq"
 language: c++
-primary_contact: "bluca@debian.org"
+primary_contact: "luca.boccassi@gmail.com"
 sanitizers:
   - address
   - memory
 architectures:
   - x86_64
   - i386
+

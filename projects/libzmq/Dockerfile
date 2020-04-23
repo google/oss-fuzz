@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER bluca@debian.org
+MAINTAINER luca.boccassi@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext pkg-config build-essential
 RUN git clone --depth 1 https://github.com/zeromq/libzmq.git
 WORKDIR libzmq
