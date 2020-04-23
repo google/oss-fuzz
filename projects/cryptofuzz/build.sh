@@ -304,13 +304,18 @@ make -B
 
 
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile LibreSSL (with assembly)
     cd $SRC/libressl
     rm -rf build ; mkdir build
     cd build
-    cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    else
+        setarch i386 cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    fi
     make -j$(nproc) crypto >/dev/null 2>&1
 
     # Compile Cryptofuzz LibreSSL (with assembly) module
