@@ -1,0 +1,10 @@
+homepage: "https://github.com/martijnvanbrummelen/nwipe"
+language: c
+primary_contact: "nick.craig.law@gmail.com"
+auto_ccs:
+  - "martijn@brumit.nl"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
