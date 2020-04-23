@@ -1,0 +1,5 @@
+homepage: "https://github.com/seladb/PcapPlusPlus"
+language: c++
+primary_contact: "pcapplusplus@gmail.com"
+auto_ccs:
+  - "zlowram@gmail.com"
