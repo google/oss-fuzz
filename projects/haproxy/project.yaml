@@ -1,5 +1,5 @@
 homepage: "https://github.com/haproxy/haproxy"
-primary_contact: "fuzzing@haproxy.com"
+primary_contact: "fuzzing@haproxy.org"
 language: c++
 auto_ccs:
   - "david@adalogics.com"
