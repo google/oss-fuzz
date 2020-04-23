@@ -30,6 +30,38 @@ import utils
 BuildData = collections.namedtuple(
     'BuildData', ['project_name', 'engine', 'sanitizer', 'architecture'])
 
+_GIT_DIR_MARKER = 'gitdir: '
+
+
+def _make_gitdirs_relative(src_dir):
+  """Make gitdirs relative."""
+  for root_dir, _, files in os.walk(src_dir):
+    for filename in files:
+      if filename != '.git':
+        continue
+
+      file_path = os.path.join(root_dir, filename)
+      with open(file_path) as handle:
+        lines = handle.readlines()
+
+      new_lines = []
+      for line in lines:
+        if line.startswith(_GIT_DIR_MARKER):
+          absolute_path = line[len(_GIT_DIR_MARKER):].strip()
+          current_dir = os.path.dirname(file_path)
+          # Rebase to /src rather than the host src dir.
+          base_dir = current_dir.replace(src_dir, '/src')
+          relative_path = os.path.relpath(absolute_path, base_dir)
+          logging.info('Replacing absolute submodule gitdir from %s to %s',
+                       absolute_path, relative_path)
+
+          line = _GIT_DIR_MARKER + relative_path
+
+        new_lines.append(line)
+
+      with open(file_path, 'w') as handle:
+        handle.write('\n'.join(new_lines))
+
 
 def copy_src_from_docker(project_name, host_dir):
   """Copy /src from docker to the host."""
@@ -46,7 +78,13 @@ def copy_src_from_docker(project_name, host_dir):
       '/out',
   ]
   helper.docker_run(docker_args)
-  return os.path.join(host_dir, 'src')
+
+  # Submodules can have gitdir entries which point to absolute paths. Make them
+  # relative, as otherwise we can't do operations on the checkout on the host.
+  src_dir = os.path.join(host_dir, 'src')
+  _make_gitdirs_relative(src_dir)
+
+  return src_dir
 
 
 def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
