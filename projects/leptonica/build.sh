@@ -101,7 +101,7 @@ export LEPTONICA_LIBS="$WORK/lib/libjbig.a $WORK/lib/libzstd.a $WORK/lib/libwebp
   --prefix="$WORK" \
   LIBS="$LEPTONICA_LIBS" \
   LDFLAGS="-L$WORK/lib" \
-  CPPFLAGS="-I$WORK/include -DNO_CONSOLE_IO"
+  CPPFLAGS="-I$WORK/include"
 make -j$(nproc)
 make install
 
