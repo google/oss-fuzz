@@ -21,8 +21,8 @@ cmake \
   -DCMAKE_CXX_COMPILER=${CXX} \
   -DCMAKE_CXX_FLAGS="${CXXFLAGS}" \
   -DCMAKE_RUNTIME_OUTPUT_DIRECTORY=${OUT} \
-  -DLIB_FUZZING_ENGINE:string={LIB_FUZZING_ENGINE} \
+  -DLIB_FUZZING_ENGINE:string=${LIB_FUZZING_ENGINE} \
   $@ \
-  ${SRC}/src
+  ${SRC}
 
-make -j${nproc}
+make -j$(nproc)

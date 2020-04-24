@@ -24,4 +24,4 @@ add_library(libFuzz STATIC IMPORTED)
 set_target_properties(libFuzz PROPERTIES IMPORTED_LOCATION ${LIB_FUZZING_ENGINE})
 
 add_executable(png_fuzzer png.cpp)
-target_link_libraries(pcl_demo ${PCL_LIBRARIES} libFuzz)
+target_link_libraries(png_fuzzer ${PCL_LIBRARIES} libFuzz)
