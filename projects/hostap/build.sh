@@ -21,12 +21,24 @@ export LDO=$CXX
 export LDFLAGS="$CXXFLAGS $LIB_FUZZING_ENGINE"
 export CFLAGS="$CFLAGS -MMD"
 
+if [[ "$ARCHITECTURE" == "i386" ]]; then
+	# Force static link
+	rm -v /lib/i386-linux-gnu/libcrypto.so* || :
+fi
+
 # Specific to hostap's rules.include: set empty, as we directly set required
 # sanitizer flags in CFLAGS and LDFLAGS (above).
 export FUZZ_FLAGS=
 
 for target in fuzzing/*; do
   [[ -d "$target" ]] || continue
+
+  if [[ "$SANITIZER" == "dataflow" ]]; then
+	  # libcrypto seems to cause problems with 'dataflow' sanitizer.
+	  [[ "$target" == "fuzzing/dpp-uri" ]] && continue || :
+	  [[ "$target" == "fuzzing/sae" ]] && continue || :
+  fi
+
   (
     cd "$target"
     make clean
