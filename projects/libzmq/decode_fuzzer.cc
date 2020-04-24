@@ -21,8 +21,15 @@
 #include "include/zmq.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  uint8_t secret_key[32];
+  uint8_t *secret_key;
+  // As per API definition, input must be divisible by 5, so truncate it if it's not
+  size -= size % 5;
+  // As per API definition, the destination must be at least 0.8 times the input data
+  secret_key = (uint8_t *)malloc(size * 4 / 5);
+  if (!secret_key)
+    return -1;
   std::string z85_secret_key(reinterpret_cast<const char *>(data), size);
   zmq_z85_decode(secret_key, z85_secret_key.c_str());
+  free(secret_key);
   return 0;
 }
