@@ -50,12 +50,5 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	free (dump_ctf_strtab_name);
 	free (dump_ctf_parent_name);
 
-	// Unless we set this global variable to NULL, then we will run 
-	// into a use-after-free error after a certain set of iterations. 
-	// I have applied this patch because the authors of binutils
-	// prefer to think of their applications as "one-use-only" as written
-    // here: https://github.com/google/oss-fuzz/pull/2617
-	symtab_shndx_list = NULL;
-
 	return 0;
 }
