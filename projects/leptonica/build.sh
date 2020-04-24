@@ -117,3 +117,17 @@ $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
   "$WORK/lib/libz.a" \
   $LIB_FUZZING_ENGINE
 
+$CXX $CXXFLAGS -std=c++11 -I"$WORK/include" \
+  "$SRC/pixa_recog_fuzzer.cc" -o "$OUT/pixa_recog_fuzzer" \
+  -Isrc/ \
+  "$WORK/lib/liblept.a" \
+  "$WORK/lib/libtiff.a" \
+  "$WORK/lib/libwebp.a" \
+  "$WORK/lib/libpng.a" \
+  "$WORK/lib/libjpeg.a" \
+  "$WORK/lib/libjbig.a" \
+  "$WORK/lib/libzstd.a" \
+  "$WORK/lib/libz.a" \
+  $LIB_FUZZING_ENGINE
+
+cd $SRC/leptonica/prog/recog/sets && zip pixa_recog_fuzzer_seed_corpus.zip test01.pa && mv pixa_recog_fuzzer_seed_corpus.zip /out/
