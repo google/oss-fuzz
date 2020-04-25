@@ -79,6 +79,21 @@ then
     make -B
 fi
 
+
+# Compile libtomcrypt
+cd $SRC/libtomcrypt
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBTOMCRYPT"
+    export LIBTOMCRYPT_INCLUDE_PATH=$(realpath src/headers/)
+    export LIBTOMCRYPT_A_PATH=$(realpath libtomcrypt.a)
+
+    # Compile Cryptofuzz libtomcrypt module
+    cd $SRC/cryptofuzz/modules/libtomcrypt
+    make -B
+fi
+
 # Compile Cityhash
 cd $SRC/cityhash
 if [[ $CFLAGS != *-m32* ]]
