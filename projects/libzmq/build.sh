@@ -17,8 +17,8 @@
 
 # build project
 cd $SRC/libzmq
-./autogen.sh --disable-shared
-./configure
+./autogen.sh
+./configure --disable-shared --disable-perf --disable-curve-keygen
 make -j$(nproc) V=1
 
 # build fuzzers
