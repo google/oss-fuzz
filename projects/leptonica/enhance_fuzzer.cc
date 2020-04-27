@@ -27,7 +27,6 @@
 extern "C" int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-
         PIX *pix, *pix0, *pix1, *pix2, *pix3, *pix4;
 
         pix = pixReadMem(data, size);
