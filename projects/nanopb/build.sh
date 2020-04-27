@@ -15,10 +15,6 @@
 #
 ################################################################################
 
-export PATH=~/anaconda3/bin:$PATH
-conda install protobuf -y
-pip3 install grpcio-tools
-
 cd $SRC/nanopb/tests
 
 # Build seed corpus.

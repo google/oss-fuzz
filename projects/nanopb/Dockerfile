@@ -16,12 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jpa@npb.mail.kapsi.fi
-RUN apt-get update && apt-get install -y python3-pip git scons wget
+RUN apt-get update && apt-get install -y python3-pip git wget
 RUN python3 -m pip install --upgrade pip
+RUN pip3 install protobuf grpcio-tools scons
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 100
 RUN git clone --depth 1 https://github.com/nanopb/nanopb $SRC/nanopb
-
-RUN wget "https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh"
-RUN bash "Anaconda3-2020.02-Linux-x86_64.sh" -b
-
 COPY build.sh $SRC/
 
