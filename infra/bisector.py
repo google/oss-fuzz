@@ -32,6 +32,9 @@ This is done with the following steps:
 
 import argparse
 import collections
+import datetime
+from distutils import spawn
+import json
 import logging
 import os
 import tempfile
@@ -94,8 +97,33 @@ def main():
   return 0
 
 
+def _load_base_builder_repo():
+  """Get base-image digests."""
+  gcloud_path = spawn.find_executable('gcloud')
+  if not gcloud_path:
+    logging.warning('gcloud not found in PATH.')
+    return None
+
+  result, _, _ = utils.execute([
+      gcloud_path, 'container', 'images', 'list-tags',
+      'gcr.io/oss-fuzz-base/base-builder', '--format=json'
+  ],
+                               check_result=True)
+  result = json.loads(result)
+
+  repo = build_specified_commit.BaseBuilderRepo()
+  for image in result:
+    timestamp = datetime.datetime.fromisoformat(
+        image['timestamp']['datetime']).astimezone(datetime.timezone.utc)
+    repo.add_digest(timestamp, image['digest'])
+
+  return repo
+
+
 def _bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  # pylint: disable=too-many-locals
   """Perform the bisect."""
+  base_builder_repo = _load_base_builder_repo()
+
   with tempfile.TemporaryDirectory() as tmp_dir:
     repo_url, repo_path = build_specified_commit.detect_main_repo(
         build_data.project_name, commit=new_commit)
@@ -115,7 +143,11 @@ def _bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  #
     new_idx = 0
     logging.info('Testing against new_commit (%s)', commit_list[new_idx])
     if not build_specified_commit.build_fuzzers_from_commit(
-        commit_list[new_idx], bisect_repo_manager, host_src_dir, build_data):
+        commit_list[new_idx],
+        bisect_repo_manager,
+        host_src_dir,
+        build_data,
+        base_builder_repo=base_builder_repo):
       raise RuntimeError('Failed to build new_commit')
 
     expected_error_code = helper.reproduce_impl(build_data.project_name,
@@ -130,7 +162,7 @@ def _bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  #
           bisect_repo_manager,
           host_src_dir,
           build_data,
-      ):
+          base_builder_repo=base_builder_repo):
         raise RuntimeError('Failed to build old_commit')
 
       if expected_error_code == helper.reproduce_impl(build_data.project_name,
@@ -146,7 +178,11 @@ def _bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  #
       logging.info('Testing against %s (idx=%d)', commit_list[curr_idx],
                    curr_idx)
       if not build_specified_commit.build_fuzzers_from_commit(
-          commit_list[curr_idx], bisect_repo_manager, host_src_dir, build_data):
+          commit_list[curr_idx],
+          bisect_repo_manager,
+          host_src_dir,
+          build_data,
+          base_builder_repo=base_builder_repo):
         # Treat build failures as if we couldn't repo.
         # TODO(ochang): retry nearby commits?
         old_idx = curr_idx

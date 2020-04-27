@@ -17,6 +17,7 @@ This module is allows each of the OSS Fuzz projects fuzzers to be built
 from a specific point in time. This feature can be used for implementations
 like continuious integration fuzzing and bisection to find errors
 """
+import bisect
 import os
 import collections
 import logging
@@ -31,6 +32,27 @@ BuildData = collections.namedtuple(
     'BuildData', ['project_name', 'engine', 'sanitizer', 'architecture'])
 
 _GIT_DIR_MARKER = 'gitdir: '
+
+
+class BaseBuilderRepo:
+  """Repo of base-builder images."""
+
+  def __init__(self):
+    self.timestamps = []
+    self.digests = []
+
+  def add_digest(self, timestamp, digest):
+    """Add a digest."""
+    self.timestamps.append(timestamp)
+    self.digests.append(digest)
+
+  def find_digest(self, timestamp):
+    """Find the latest image before the given timestamp."""
+    index = bisect.bisect_right(self.timestamps, timestamp)
+    if index > 0:
+      return self.digests[index - 1]
+
+    raise ValueError('Failed to find suitable base-builder.')
 
 
 def _make_gitdirs_relative(src_dir):
@@ -60,7 +82,23 @@ def _make_gitdirs_relative(src_dir):
         new_lines.append(line)
 
       with open(file_path, 'w') as handle:
-        handle.write('\n'.join(new_lines))
+        handle.write(''.join(new_lines))
+
+
+def _replace_base_builder_digest(dockerfile_path, digest):
+  """Replace the base-builder digest in a Dockerfile."""
+  with open(dockerfile_path) as handle:
+    lines = handle.readlines()
+
+  new_lines = []
+  for line in lines:
+    if line.strip().startswith('FROM'):
+      line = 'FROM gcr.io/oss-fuzz-base/base-builder@' + digest
+
+    new_lines.append(line)
+
+  with open(dockerfile_path, 'w') as handle:
+    handle.write(''.join(new_lines))
 
 
 def copy_src_from_docker(project_name, host_dir):
@@ -87,14 +125,18 @@ def copy_src_from_docker(project_name, host_dir):
   return src_dir
 
 
-def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
-                              build_data):
+def build_fuzzers_from_commit(commit,
+                              build_repo_manager,
+                              host_src_path,
+                              build_data,
+                              base_builder_repo=None):
   """Builds a OSS-Fuzz fuzzer at a specific commit SHA.
 
   Args:
     commit: The commit SHA to build the fuzzers at.
     build_repo_manager: The OSS-Fuzz project's repo manager to be built at.
     build_data: A struct containing project build information.
+    base_builder_repo: A BaseBuilderRepo.
   Returns:
     0 on successful build or error code on failure.
   """
@@ -137,6 +179,13 @@ def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
     # Check out projects/<PROJECT> dir to the commit that was found.
     oss_fuzz_repo_manager.git(['checkout', oss_fuzz_commit, projects_dir],
                               check_result=True)
+
+    # Also use the closest base-builder we can find.
+    if base_builder_repo:
+      base_builder_digest = base_builder_repo.find_digest(commit_date)
+      logging.info('Using base-builder with digest %s.', base_builder_digest)
+      _replace_base_builder_digest(os.path.join(projects_dir, 'Dockerfile'),
+                                   base_builder_digest)
 
     # Rebuild image and re-copy src dir since things in /src could have changed.
     if not helper.build_image_impl(build_data.project_name):
