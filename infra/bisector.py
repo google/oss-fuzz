@@ -80,7 +80,7 @@ def main():
                                                 architecture=args.architecture)
 
   result = bisect(args.old_commit, args.new_commit, args.test_case_path,
-                     args.fuzz_target, build_data)
+                  args.fuzz_target, build_data)
   if not result.commit:
     logging.error('No error was found in commit range %s:%s', args.old_commit,
                   args.new_commit)
@@ -136,15 +136,22 @@ def _bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  #
       if expected_error_code == helper.reproduce_impl(build_data.project_name,
                                                       fuzz_target, False, [],
                                                       [], test_case_path):
-        return Result(repo_url, commit_list[old_idx])
+        logging.warning(
+            'old_commit has the same result as new_commit, ignoring.')
+        commit_list = bisect_repo_manager.get_commit_list(new_commit)
+        old_idx = len(commit_list) - 1
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
       logging.info('Testing against %s (idx=%d)', commit_list[curr_idx],
                    curr_idx)
-      build_specified_commit.build_fuzzers_from_commit(commit_list[curr_idx],
-                                                       bisect_repo_manager,
-                                                       host_src_dir, build_data)
+      if not build_specified_commit.build_fuzzers_from_commit(
+          commit_list[curr_idx], bisect_repo_manager, host_src_dir, build_data):
+        # Treat build failures as if we couldn't repo.
+        # TODO(ochang): retry nearby commits?
+        old_idx = curr_idx
+        continue
+
       error_code = helper.reproduce_impl(build_data.project_name, fuzz_target,
                                          False, [], [], test_case_path)
       if expected_error_code == error_code:
