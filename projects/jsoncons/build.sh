@@ -24,3 +24,12 @@ $CXX ./fuzzers/fuzz_cbor.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_
 $CXX ./fuzzers/fuzz_bson.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_bson
 $CXX ./fuzzers/fuzz_msgpack.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_msgpack
 $CXX ./fuzzers/fuzz_ubjson.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_ubjson
+
+
+# Fuzzers with encoders
+$CXX ./fuzzers/fuzz_bson_encoder.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_bson_encoder
+$CXX ./fuzzers/fuzz_cbor_encoder.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_cbor_encoder
+$CXX ./fuzzers/fuzz_csv_encoder.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_csv_encoder
+$CXX ./fuzzers/fuzz_json_encoder.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_json_encoder
+$CXX ./fuzzers/fuzz_msgpack_encoder.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_msgpack_encoder
+$CXX ./fuzzers/fuzz_ubjson_encoder.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_ubjson_encoder
