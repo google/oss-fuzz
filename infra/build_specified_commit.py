@@ -129,7 +129,7 @@ def build_fuzzers_from_commit(commit, build_repo_manager, host_src_path,
     oss_fuzz_commit = oss_fuzz_commit.strip()
     if not oss_fuzz_commit:
       logging.warning('No suitable earlier OSS-Fuzz commit found.')
-      break
+      return False
 
     logging.info('Build failed. Retrying on earlier OSS-Fuzz commit %s.',
                  oss_fuzz_commit)
