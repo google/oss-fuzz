@@ -22,7 +22,6 @@ import os
 import collections
 import logging
 import re
-import shutil
 
 import helper
 import repo_manager
@@ -93,7 +92,7 @@ def _replace_base_builder_digest(dockerfile_path, digest):
   new_lines = []
   for line in lines:
     if line.strip().startswith('FROM'):
-      line = 'FROM gcr.io/oss-fuzz-base/base-builder@' + digest
+      line = 'FROM gcr.io/oss-fuzz-base/base-builder@' + digest + '\n'
 
     new_lines.append(line)
 
@@ -109,9 +108,9 @@ def copy_src_from_docker(project_name, host_dir):
       '-v',
       host_dir + ':/out',
       image_name,
-      'cp',
-      '-r',
-      '-p',
+      'rsync',
+      '-az',
+      '--delete',
       '/src',
       '/out',
   ]
@@ -143,6 +142,11 @@ def build_fuzzers_from_commit(commit,
   oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
   num_retry = 1
 
+  def cleanup():
+    # Re-copy /src for a clean checkout every time.
+    copy_src_from_docker(build_data.project_name,
+                         os.path.dirname(host_src_path))
+
   for i in range(num_retry + 1):
     build_repo_manager.checkout_commit(commit, clean=False)
     result = helper.build_fuzzers_impl(project_name=build_data.project_name,
@@ -171,7 +175,7 @@ def build_fuzzers_from_commit(commit,
     oss_fuzz_commit = oss_fuzz_commit.strip()
     if not oss_fuzz_commit:
       logging.warning('No suitable earlier OSS-Fuzz commit found.')
-      return False
+      break
 
     logging.info('Build failed. Retrying on earlier OSS-Fuzz commit %s.',
                  oss_fuzz_commit)
@@ -191,10 +195,9 @@ def build_fuzzers_from_commit(commit,
     if not helper.build_image_impl(build_data.project_name):
       raise RuntimeError('Failed to rebuild image.')
 
-    shutil.rmtree(host_src_path, ignore_errors=True)
-    copy_src_from_docker(build_data.project_name,
-                         os.path.dirname(host_src_path))
+    cleanup()
 
+  cleanup()
   return result == 0
 
 
