@@ -81,7 +81,6 @@ jobs:
 
 ### Optional configuration
 
-#### Configurable Variables
 `fuzz-time`: Determines how long CIFuzz spends fuzzing your project in seconds.
 The default is 600 seconds. The GitHub Actions max run time is 21600 seconds (6 hours).
 
@@ -89,67 +88,6 @@ The default is 600 seconds. The GitHub Actions max run time is 21600 seconds (6 
 CIFuzz will never report a failure even if it finds a crash in your project.
 This requires the user to manually check the logs for detected bugs. If dry run mode is desired,
 make sure to set the dry-run parameters in both the `Build Fuzzers` and `Run Fuzzers` action step.
-
-#### Adding Other Sanitizers
-CIFuzz supports address, memory and undefined sanitizers. Address is the default
-sanitizer and will be used for every job in which a sanitizer is not specified.
-To add another sanitizer to your workflow copy the `Fuzzing` job and rename it
-to the sanitizer you want to fuzz with. Then add the sanitizer variable to both
-the `Build Fuzzers` step and the `Run Fuzzers` step. The choices are `'address'`,
-`'memory'`, and `'undefined'`. Once this additional job is configured the CIFuzz
-workflow will run all of the jobs corresponding to each sanitizer simultaneously.
-It is important to note that the `Build Fuzzers` and the `Run Fuzzers` sanitizer
-field needs to be the same. See the following main.yml file for an example.
-
-```yaml
-name: CIFuzz
-on: [pull_request]
-jobs:
- AddressFuzzing:
-   runs-on: ubuntu-latest
-   steps:
-   - name: Build Fuzzers
-     uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
-     with:
-       oss-fuzz-project-name: 'example'
-       dry-run: false
-       # sanitizer: address
-   - name: Run Fuzzers
-     uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
-     with:
-       oss-fuzz-project-name: 'example'
-       fuzz-seconds: 600
-       dry-run: false
-       # sanitizer: address
-   - name: Upload Crash
-     uses: actions/upload-artifact@v1
-     if: failure()
-     with:
-       name: Address-Artifacts
-       path: ./out/artifacts
- UndefinedFuzzing:
-   runs-on: ubuntu-latest
-   steps:
-   - name: Build Fuzzers
-     uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
-     with:
-       oss-fuzz-project-name: 'example'
-       dry-run: false
-       sanitizer: 'undefined'
-   - name: Run Fuzzers
-     uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
-     with:
-       oss-fuzz-project-name: 'example'
-       fuzz-seconds: 600
-       dry-run: false
-       sanitizer: 'undefined'
-   - name: Upload Crash
-     uses: actions/upload-artifact@v1
-     if: failure()
-     with:
-       name: Undefined-Artifacts
-       path: ./out/artifacts
-```
 
 ## Understanding results
 

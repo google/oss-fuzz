@@ -68,6 +68,7 @@ STACKTRACE_END_MARKERS = [
 
 #  Default fuzz configuration.
 DEFAULT_ENGINE = 'libfuzzer'
+DEFAULT_SANITIZER = 'address'
 DEFAULT_ARCHITECTURE = 'x86_64'
 
 # The path to get project's latest report json files.
@@ -79,14 +80,11 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
-# pylint: disable=too-many-arguments
-# pylint: disable=too-many-locals
 def build_fuzzers(project_name,
                   project_repo_name,
                   workspace,
                   pr_ref=None,
-                  commit_sha=None,
-                  sanitizer='address'):
+                  commit_sha=None):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
@@ -96,7 +94,6 @@ def build_fuzzers(project_name,
       artifacts.
     pr_ref: The pull request reference to be built.
     commit_sha: The commit sha for the project to be built at.
-    sanitizer: The sanitizer the fuzzers should be built with.
 
   Returns:
     True if build succeeded or False on failure.
@@ -106,13 +103,6 @@ def build_fuzzers(project_name,
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
     return False
-
-  # Check that sanitizer is valid.
-  if not is_project_sanitizer(sanitizer, project_name):
-    logging.info("%s is not a project sanitizer, defaulting to address.",
-                 sanitizer)
-    sanitizer = 'address'
-  logging.info("Using %s as sanitizer.", sanitizer)
 
   git_workspace = os.path.join(workspace, 'storage')
   os.makedirs(git_workspace, exist_ok=True)
@@ -137,14 +127,18 @@ def build_fuzzers(project_name,
       build_repo_manager.checkout_pr(pr_ref)
     else:
       build_repo_manager.checkout_commit(commit_sha)
-  except (RuntimeError, ValueError):
-    logging.error('Can not check out requested state %s.', pr_ref or commit_sha)
-    logging.error('Using current repo state.')
+  except RuntimeError:
+    logging.error('Can not check out requested state.')
+    return False
+  except ValueError:
+    logging.error('Invalid commit SHA requested %s.', commit_sha)
+    return False
 
   # Build Fuzzers using docker run.
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
-      'SANITIZER=' + sanitizer, '-e', 'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
+      'SANITIZER=' + DEFAULT_SANITIZER, '-e',
+      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
   ]
   container = utils.get_container_name()
   if container:
@@ -176,7 +170,7 @@ def build_fuzzers(project_name,
   return True
 
 
-def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
+def run_fuzzers(fuzz_seconds, workspace, project_name):
   """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
@@ -184,7 +178,6 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
     workspace: The location in a shared volume to store a git repo and build
       artifacts.
     project_name: The name of the relevant OSS-Fuzz project.
-    sanitizer: The sanitizer the fuzzers should be run with.
 
   Returns:
     (True if run was successful, True if bug was found).
@@ -193,14 +186,6 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
     return False, False
-
-  # Check that sanitizer is valid.
-  if not is_project_sanitizer(sanitizer, project_name):
-    logging.info("%s is not a project sanitizer.", sanitizer)
-    raise ValueError("{0} is not a valid sanitizer for project {1}".format(
-        sanitizer, project_name))
-  logging.info("Using %s as sanitizer.", sanitizer)
-
   out_dir = os.path.join(workspace, 'out')
   artifacts_dir = os.path.join(out_dir, 'artifacts')
   os.makedirs(artifacts_dir, exist_ok=True)
@@ -224,11 +209,8 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
     run_seconds = max(fuzz_seconds // fuzzers_left_to_run,
                       min_seconds_per_fuzzer)
 
-    target = fuzz_target.FuzzTarget(fuzzer_path,
-                                    run_seconds,
-                                    out_dir,
-                                    project_name,
-                                    sanitizer=sanitizer)
+    target = fuzz_target.FuzzTarget(fuzzer_path, run_seconds, out_dir,
+                                    project_name)
     start_time = time.time()
     test_case, stack_trace = target.fuzz()
     fuzz_seconds -= (time.time() - start_time)
@@ -245,12 +227,11 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
   return True, False
 
 
-def check_fuzzer_build(out_dir, sanitizer='address'):
+def check_fuzzer_build(out_dir):
   """Checks the integrity of the built fuzzers.
 
   Args:
     out_dir: The directory containing the fuzzer binaries.
-    sanitizer: The sanitizer the fuzzers are built with.
 
   Returns:
     True if fuzzers are correct.
@@ -264,7 +245,8 @@ def check_fuzzer_build(out_dir, sanitizer='address'):
 
   command = [
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
-      'SANITIZER=' + sanitizer, '-e', 'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
+      'SANITIZER=' + DEFAULT_SANITIZER, '-e',
+      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
   ]
   container = utils.get_container_name()
   if container:
@@ -478,27 +460,3 @@ def parse_fuzzer_output(fuzzer_output, out_dir):
   summary_file_path = os.path.join(out_dir, 'bug_summary.txt')
   with open(summary_file_path, 'a') as summary_handle:
     summary_handle.write(summary_str)
-
-
-def is_project_sanitizer(sanitizer, oss_fuzz_project_name):
-  """Finds all of the sanitizers a project can use for building and running.
-
-  Args:
-   sanitizer: The desired sanitizer.
-   oss_fuzz_project_name: The name of the relevant OSS-Fuzz project.
-
-  Returns:
-  True if project can use sanitizer.
-  """
-  project_yaml = os.path.join(helper.OSS_FUZZ_DIR, 'projects',
-                              oss_fuzz_project_name, 'project.yaml')
-  if not os.path.isfile(project_yaml):
-    logging.error('project.yaml for project %s could not be found.',
-                  oss_fuzz_project_name)
-    return False
-
-  # Simple parse to prevent adding pyYAML dependency.
-  with open(project_yaml, 'r') as file_handle:
-    if sanitizer + '\n' in file_handle.read():
-      return True
-  return False

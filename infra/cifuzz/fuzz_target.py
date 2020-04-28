@@ -51,6 +51,9 @@ BUILD_ARCHIVE_NAME = 'oss_fuzz_latest.zip'
 # Zip file name containing the corpus.
 CORPUS_ZIP_NAME = 'public.zip'
 
+# The sanitizer build to download.
+SANITIZER = 'address'
+
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
@@ -69,13 +72,7 @@ class FuzzTarget:
     project_name: The name of the relevant OSS-Fuzz project.
   """
 
-  #pylint: disable=too-many-arguments
-  def __init__(self,
-               target_path,
-               duration,
-               out_dir,
-               project_name=None,
-               sanitizer='address'):
+  def __init__(self, target_path, duration, out_dir, project_name=None):
     """Represents a single fuzz target.
 
     Note: project_name should be none when the fuzzer being run is not
@@ -92,7 +89,6 @@ class FuzzTarget:
     self.target_path = target_path
     self.out_dir = out_dir
     self.project_name = project_name
-    self.sanitizer = sanitizer
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
@@ -112,8 +108,8 @@ class FuzzTarget:
       command += ['-v', '%s:%s' % (self.out_dir, '/out')]
 
     command += [
-        '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=' + self.sanitizer,
-        '-e', 'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
+        '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=address', '-e',
+        'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
         'bash', '-c'
     ]
 
@@ -257,7 +253,7 @@ class FuzzTarget:
       return None
 
     version = VERSION_STRING.format(project_name=self.project_name,
-                                    sanitizer=self.sanitizer)
+                                    sanitizer=SANITIZER)
     version_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS, self.project_name,
                            version)
     try:

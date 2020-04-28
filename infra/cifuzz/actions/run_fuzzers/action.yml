@@ -12,9 +12,6 @@ inputs:
   dry-run:
     description: 'If set, run the action without actually reporting a failure.'
     default: false
-  sanitizer:
-    description: 'The sanitizer to run the fuzzers with.'
-    default: 'address'
 runs:
   using: 'docker'
   image: 'Dockerfile'
