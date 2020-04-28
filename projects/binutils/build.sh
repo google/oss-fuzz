@@ -65,3 +65,6 @@ mv fuzz_readelf $OUT/fuzz_readelf
 ### Set up seed corpus for readelf in the form of a single ELF file. 
 zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
 mv fuzz_readelf_seed_corpus.zip $OUT/ 
+
+## Copy over the options file
+cp $SRC/fuzz_readelf.options $OUT/fuzz_readelf.options
