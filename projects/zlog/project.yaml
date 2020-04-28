@@ -1,0 +1,5 @@
+homepage: "https://github.com/HardySimpson/zlog"
+primary_contact: "HardySimpson1984@gmail.com"
+language: c
+auto_ccs:
+  - "adam@adalogics.com"
