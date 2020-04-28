@@ -58,10 +58,6 @@ for i in readelf; do
 done
 
 # Link the files
-# In these cases we dont want to detect leaks as the applications are thought of as "one-time-use".
-# Leaving a link to maintainers discussing this: https://github.com/google/oss-fuzz/pull/2617
-export ASAN_OPTIONS=detect_leaks=0
-
 ## Readelf
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib -o fuzz_readelf fuzz_readelf.o version.o unwind-ia64.o dwarf.o elfcomm.o ../libctf/.libs/libctf-nobfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a 
 mv fuzz_readelf $OUT/fuzz_readelf
@@ -69,3 +65,6 @@ mv fuzz_readelf $OUT/fuzz_readelf
 ### Set up seed corpus for readelf in the form of a single ELF file. 
 zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
 mv fuzz_readelf_seed_corpus.zip $OUT/ 
+
+## Copy over the options file
+cp $SRC/fuzz_readelf.options $OUT/fuzz_readelf.options
