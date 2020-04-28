@@ -84,7 +84,7 @@ class BaseRepoManager:
     """
     out, _, _ = self.git(['show', '-s', '--format=%ct', commit],
                          check_result=True)
-    return datetime.datetime.fromtimestamp(int(out))
+    return datetime.datetime.fromtimestamp(int(out), tz=datetime.timezone.utc)
 
   def get_git_diff(self):
     """Gets a list of files that have changed from the repo head.
