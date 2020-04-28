@@ -1,5 +1,6 @@
 #!/bin/bash -eu
 # Copyright 2020 Google Inc.
+# Copyright 2020 Luca Boccassi <bluca@debian.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +16,17 @@
 #
 ################################################################################
 
-# build project
-cd $SRC/libzmq
+# build project and dependencies
+cd "${SRC}/libsodium"
 ./autogen.sh
-./configure --disable-shared --disable-perf --disable-curve-keygen
-make -j$(nproc) V=1
+./configure --disable-shared
+make -j$(nproc) V=1 install DESTDIR=/tmp/zmq_install_dir
 
-# build fuzzers
-for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
-  fuzz_basename=$(basename -s .cc $fuzzers)
-  $CXX $CXXFLAGS -std=c++11 -I. \
-  $fuzzers $LIB_FUZZING_ENGINE ./src/.libs/libzmq.a  \
-  -o $OUT/$fuzz_basename
-done
+cd "${SRC}/libzmq"
+./autogen.sh
+export LDFLAGS="$(PKG_CONFIG_PATH=/tmp/zmq_install_dir/usr/local/lib/pkgconfig pkg-config --static --libs --define-prefix libsodium)"
+export CXXFLAGS="$CXXFLAGS $(PKG_CONFIG_PATH=/tmp/zmq_install_dir/usr/local/lib/pkgconfig pkg-config --static --cflags --define-prefix libsodium)"
+./configure --disable-shared --disable-perf --disable-curve-keygen PKG_CONFIG_PATH=/tmp/zmq_install_dir/usr/local/lib/pkgconfig --with-libsodium=yes --with-fuzzing-installdir=fuzzers --with-fuzzing-engine=$LIB_FUZZING_ENGINE
+make -j$(nproc) V=1 install DESTDIR=/tmp/zmq_install_dir
+
+cp /tmp/zmq_install_dir/usr/local/fuzzers/* "${OUT}"
