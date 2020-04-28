@@ -255,7 +255,6 @@ def check_fuzzer_build(out_dir, sanitizer='address'):
   Returns:
     True if fuzzers are correct.
   """
-
   if not os.path.exists(out_dir):
     logging.error('Invalid out directory: %s.', out_dir)
     return False
@@ -267,14 +266,6 @@ def check_fuzzer_build(out_dir, sanitizer='address'):
       '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
       'SANITIZER=' + sanitizer, '-e', 'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
   ]
-
-  allowed_broken_targets_percentage = os.getenv(
-      'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
-  if allowed_broken_targets_percentage is not None:
-    set_env_var_arg = ('ALLOWED_BROKEN_TARGETS_PERCENTAGE=' +
-                       allowed_broken_targets_percentage)
-    command += ['-e', set_env_var_arg]
-
   container = utils.get_container_name()
   if container:
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
