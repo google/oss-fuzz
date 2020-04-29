@@ -1,4 +1,5 @@
 homepage: "https://github.com/kkos/oniguruma"
+language: c
 primary_contact: "kkosako0@gmail.com"
 sanitizers:
   - address
