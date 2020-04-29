@@ -1,0 +1,2 @@
+[libfuzzer]
+dict = ascii_compatible.dict
