@@ -31,7 +31,7 @@ RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 RUN git clone --depth 1 https://github.com/libressl-portable/portable libressl
 RUN cd $SRC/libressl && ./update.sh
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp/
-RUN git clone --depth 1 https://dev.gnupg.org/source/libgcrypt.git
+RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git
 RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2
 RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star evercrypt
 RUN git clone --depth 1 https://github.com/google/cityhash.git
