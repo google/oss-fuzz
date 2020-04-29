@@ -45,5 +45,6 @@ RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
+RUN git clone --depth 1 https://github.com/P-H-C/phc-winner-argon2.git
 
 COPY build.sh $SRC/

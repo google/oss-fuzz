@@ -28,6 +28,8 @@ auto_ccs:
     - "kjacobs@mozilla.com"
     - "matthias.st.pierre@gmail.com"
     - "kaleb.himes@gmail.com"
+    - "jeanphilippe.aumasson@gmail.com"
+    - "khovratovich@gmail.com"
 sanitizers:
  - address
  - undefined
