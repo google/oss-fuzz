@@ -157,26 +157,39 @@ class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
 
   def test_with_invalid_crash(self):
     """Checks to make sure an invalid crash returns false."""
-    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                    'is_reproducible',
-                                    side_effect=[True, True]):
+    with unittest.mock.patch.object(
+        fuzz_target.FuzzTarget, 'is_reproducible',
+        side_effect=[False, True]), tempfile.TemporaryDirectory() as tmp_dir:
+      self.test_target.out_dir = tmp_dir
       self.assertFalse(
           self.test_target.check_reproducibility_and_regression(
               '/example/crash/testcase'))
 
-    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                    'is_reproducible',
-                                    side_effect=[False, True]):
+    with unittest.mock.patch.object(
+        fuzz_target.FuzzTarget, 'is_reproducible',
+        side_effect=[False, False]), tempfile.TemporaryDirectory() as tmp_dir:
+      self.test_target.out_dir = tmp_dir
       self.assertFalse(
           self.test_target.check_reproducibility_and_regression(
               '/example/crash/testcase'))
 
-    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                    'is_reproducible',
-                                    side_effect=[False, False]):
-      self.assertFalse(
+  @unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
+                       return_value=None)
+  @unittest.mock.patch('logging.info')
+  def test_no_oss_fuzz_build(self, mocked_info, _):
+    """Tests that check_reproducibility_and_regression returns True if bug is
+    reproducible but no OSS-Fuzz build exists. This will happen for new
+    fuzzers or if there is a network error."""
+    with unittest.mock.patch.object(
+        fuzz_target.FuzzTarget, 'is_reproducible',
+        side_effect=[True, False]), tempfile.TemporaryDirectory() as tmp_dir:
+      self.test_target.out_dir = tmp_dir
+      self.assertTrue(
           self.test_target.check_reproducibility_and_regression(
               '/example/crash/testcase'))
+      mocked_info.assert_called_with(
+          'Could not download OSS-Fuzz build of project, '
+          'assuming crash is new.')
 
 
 class GetLatestBuildVersionUnitTest(unittest.TestCase):
