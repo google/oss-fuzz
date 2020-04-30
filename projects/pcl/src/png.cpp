@@ -40,15 +40,16 @@ auto min_sum_factors(T num) {
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    std::size_t height, width;
-    std::tie(height, width) = min_sum_factors(size);
+    auto details = min_sum_factors(size);
+    std::size_t height = details.lower, width = details.higher;
     std::vector<std::uint8_t> input(data, data + size), decoded;
     for (int compression_level = 0; compression_level < 10;
          ++compression_level) {
         std::vector<std::uint8_t> output;
         pcl::io::encodeMonoImageToPNG(input, width, height, output,
                                       compression_level);
-        std::size_t d_width, d_height, n_channels;
+        std::size_t d_width, d_height;
+        unsigned int n_channels;
         pcl::io::decodePNGToImage(output, decoded, d_width, d_height,
                                   n_channels);
 
