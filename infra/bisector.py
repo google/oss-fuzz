@@ -105,8 +105,13 @@ def _load_base_builder_repo():
     return None
 
   result, _, _ = utils.execute([
-      gcloud_path, 'container', 'images', 'list-tags',
-      'gcr.io/oss-fuzz-base/base-builder', '--format=json'
+      gcloud_path,
+      'container',
+      'images',
+      'list-tags',
+      'gcr.io/oss-fuzz-base/base-builder',
+      '--format=json',
+      '--sort-by=timestamp',
   ],
                                check_result=True)
   result = json.loads(result)
