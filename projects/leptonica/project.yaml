@@ -5,6 +5,7 @@ auto_ccs:
   - "kusano@google.com"
   - "dbloomberg@google.com"
   - "stjoweil@googlemail.com"
+  - "Adam@adalogics.com"
 sanitizers:
   - address
   - undefined
