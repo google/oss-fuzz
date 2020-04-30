@@ -22,7 +22,7 @@ make install
 
 # Leave build directory
 cd ..
-# Enable glob start, i.e. **/*.c finds all *.c files recursively
+# Enable glob star, i.e. **/*.c finds all *.c files recursively
 shopt -s globstar;
 
 # Copy the fuzzer executables, zip-ed corpora, options and dictionary files to $OUT
