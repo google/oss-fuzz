@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.2)
 project (pcl_fuzz_check)
 
 find_package (PCL COMPONENTS io REQUIRED)
@@ -25,4 +25,4 @@ set_target_properties (libFuzz PROPERTIES IMPORTED_LOCATION ${LIB_FUZZING_ENGINE
 
 add_executable (png_fuzzer png.cpp)
 target_link_libraries (png_fuzzer ${PCL_LIBRARIES} libFuzz)
-set_property (TARGET png_fuzzer PROPERTY CXX_STANDARD 17)
+set_property (TARGET png_fuzzer PROPERTY CXX_STANDARD 14)

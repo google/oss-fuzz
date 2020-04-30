@@ -17,6 +17,8 @@
 
 #include <pcl/compression/libpng_wrapper.h>
 
+#include <tuple>
+
 template <typename T>
 auto min_sum_factors(T num) {
     struct factors {
@@ -38,7 +40,8 @@ auto min_sum_factors(T num) {
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    auto [height, width] = min_sum_factors(size);
+    std::size_t height, width;
+    std::tie(height, width) = min_sum_factors(size);
     std::vector<std::uint8_t> input(data, data + size), decoded;
     for (int compression_level = 0; compression_level < 10;
          ++compression_level) {
