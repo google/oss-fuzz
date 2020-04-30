@@ -43,7 +43,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     for (int compression_level = 0; compression_level < 10;
          ++compression_level) {
         std::vector<std::uint8_t> output;
-        pcl::io::encodeMonoImageToPNG(data, width, height, output,
+        pcl::io::encodeMonoImageToPNG(input, width, height, output,
                                       compression_level);
         std::size_t d_width, d_height, n_channels;
         pcl::io::decodePNGToImage(output, decoded, d_width, d_height,

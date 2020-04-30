@@ -14,14 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-cmake_minimum_required(VERSION 3.5)
-project(pcl_fuzz_check)
+cmake_minimum_required (VERSION 3.5)
+project (pcl_fuzz_check)
 
-find_package(PCL COMPONENTS io REQUIRED)
+find_package (PCL COMPONENTS io REQUIRED)
 
-SET(LIB_FUZZING_ENGINE "" CACHE STRING "Location of static library for fuzzing")
-add_library(libFuzz STATIC IMPORTED)
-set_target_properties(libFuzz PROPERTIES IMPORTED_LOCATION ${LIB_FUZZING_ENGINE})
+SET (LIB_FUZZING_ENGINE "" CACHE STRING "Location of static library for fuzzing")
+add_library (libFuzz STATIC IMPORTED)
+set_target_properties (libFuzz PROPERTIES IMPORTED_LOCATION ${LIB_FUZZING_ENGINE})
 
-add_executable(png_fuzzer png.cpp)
-target_link_libraries(png_fuzzer ${PCL_LIBRARIES} libFuzz)
+add_executable (png_fuzzer png.cpp)
+target_link_libraries (png_fuzzer ${PCL_LIBRARIES} libFuzz)
+set_property (TARGET png_fuzzer PROPERTY CXX_STANDARD 17)
