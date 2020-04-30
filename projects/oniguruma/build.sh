@@ -29,4 +29,5 @@ $CC $CFLAGS -o $FUZZ_SRCDIR/fuzzer_syntax.o -I src -c -DSYNTAX_TEST $FUZZ_SRCDIR
 $CXX $CXXFLAGS -o $OUT/$FUZZ_TARGET $FUZZ_SRCDIR/fuzzer_syntax.o $LIB_FUZZING_ENGINE src/.libs/libonig.a
 
 # setup files
-cp $FUZZ_SRCDIR/$FUZZ_TARGET.options $FUZZ_SRCDIR/ascii_compatible.dict $OUT/
+cp $FUZZ_SRCDIR/$FUZZ_TARGET.options $OUT/
+cp $FUZZ_SRCDIR/ascii_compatible.dict $OUT/$FUZZ_TARGET.dict
