@@ -289,6 +289,13 @@ then
     LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
 fi
 
+# libtomcrypt can only be compiled with NSS, because OpenSSL, LibreSSL and
+# BoringSSL have symbol collisions with libtomcrypt.
+#
+# So, now that NSS-based Cryptofuzz has been compiled, remove libtomcrypt
+export CXXFLAGS=${CXXFLAGS/-DCRYPTOFUZZ_LIBTOMCRYPT/}
+rm -rf "$LIBTOMCRYPT_A_PATH"
+
 ##############################################################################
 # Compile wolfCrypt
 cd $SRC/wolfssl
