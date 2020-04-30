@@ -464,6 +464,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments
     return 1
 
   project_out_dir = _get_output_dir(project_name)
+  project_work_dir = _get_work_dir(project_name)
+
   if clean:
     print('Cleaning existing build artifacts.')
 
@@ -472,6 +474,12 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments
         '-v',
         '%s:/out' % project_out_dir, '-t',
         'gcr.io/oss-fuzz/%s' % project_name, '/bin/bash', '-c', 'rm -rf /out/*'
+    ])
+
+    docker_run([
+        '-v',
+        '%s:/work' % project_work_dir, '-t',
+        'gcr.io/oss-fuzz/%s' % project_name, '/bin/bash', '-c', 'rm -rf /work/*'
     ])
 
   else:
@@ -483,8 +491,6 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments
   ]
   if env_to_add:
     env += env_to_add
-
-  project_work_dir = _get_work_dir(project_name)
 
   # Copy instrumented libraries.
   if sanitizer == 'memory':

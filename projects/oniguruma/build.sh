@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +15,19 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER bluca@debian.org
-RUN apt-get update && apt-get install -y make autoconf automake libtool gettext pkg-config build-essential
-RUN git clone --depth 1 https://github.com/zeromq/libzmq.git
-RUN git clone --depth 1 -b stable https://github.com/jedisct1/libsodium.git
-WORKDIR libzmq
-COPY build.sh $SRC/
+# build project
+./autogen.sh
+./configure
+make clean
+make -j$(nproc)
+
+FUZZ_SRCDIR=harnesses
+FUZZ_TARGET=fuzzer
+
+# build fuzzer
+$CC $CFLAGS -o $FUZZ_SRCDIR/fuzzer_syntax.o -I src -c -DSYNTAX_TEST $FUZZ_SRCDIR/base.c
+$CXX $CXXFLAGS -o $OUT/$FUZZ_TARGET $FUZZ_SRCDIR/fuzzer_syntax.o $LIB_FUZZING_ENGINE src/.libs/libonig.a
+
+# setup files
+cp $FUZZ_SRCDIR/$FUZZ_TARGET.options $OUT/
+cp $FUZZ_SRCDIR/ascii_compatible.dict $OUT/$FUZZ_TARGET.dict
