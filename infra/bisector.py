@@ -173,10 +173,7 @@ def _bisect(old_commit, new_commit, test_case_path, fuzz_target, build_data):  #
       if expected_error_code == helper.reproduce_impl(build_data.project_name,
                                                       fuzz_target, False, [],
                                                       [], test_case_path):
-        logging.warning(
-            'old_commit has the same result as new_commit, ignoring.')
-        commit_list = bisect_repo_manager.get_commit_list(new_commit)
-        old_idx = len(commit_list) - 1
+        raise RuntimeError('old_commit had same result as new_commit')
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
