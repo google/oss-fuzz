@@ -41,6 +41,13 @@ RUN mkdir rapidjson_corpus
 RUN unzip -j rapidjson.zip -d rapidjson_corpus
 RUN rm rapidjson.zip
 
+RUN git clone --depth 1 https://github.com/minio/simdjson-fuzz
+RUN mkdir simdjson_corpus
+RUN cp -r simdjson-fuzz/corpus/corpus/ simdjson_corpus/
+RUN rm -rf simdjson-fuzz
+
+
+
 # Finish.
 
 WORKDIR wuffs
