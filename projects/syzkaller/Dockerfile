@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER mmoroz@chromium.org
 
-RUN go get -u -d github.com/google/syzkaller/...
+RUN go get -u -d github.com/google/syzkaller/prog
 
 # Dependency for one of the fuzz targets.
 RUN go get github.com/ianlancetaylor/demangle
