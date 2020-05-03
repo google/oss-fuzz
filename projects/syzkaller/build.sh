@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,7 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
 
+make descriptions
 compile_fuzzer ./pkg/compiler Fuzz compiler_fuzzer
 compile_fuzzer ./prog/test FuzzDeserialize prog_deserialize_fuzzer
 compile_fuzzer ./prog/test FuzzParseLog prog_parselog_fuzzer
