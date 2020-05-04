@@ -784,13 +784,14 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     env_to_add,
     fuzzer_args,
     testcase_path,
-    runner=docker_run):
+    runner=docker_run,
+    err_result=1):
   """Reproduces a testcase in the container."""
   if not check_project_exists(project_name):
-    return 1
+    return err_result
 
   if not _check_fuzzer_exists(project_name, fuzzer_name):
-    return 1
+    return err_result
 
   debugger = ''
   env = []
