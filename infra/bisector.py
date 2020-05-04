@@ -157,6 +157,7 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
 
   logging.info('stdout =\n%s', out)
   logging.info('stderr =\n%s', err)
+  # pylint: disable=unsupported-membership-test
   return all(marker in out or marker in err for marker in CRASH_MARKERS)
 
 
