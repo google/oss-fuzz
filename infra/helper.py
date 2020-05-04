@@ -778,8 +778,13 @@ def reproduce(args):
 
 
 def reproduce_impl(  # pylint: disable=too-many-arguments
-    project_name, fuzzer_name, valgrind, env_to_add, fuzzer_args,
-    testcase_path, runner=docker_run):
+    project_name,
+    fuzzer_name,
+    valgrind,
+    env_to_add,
+    fuzzer_args,
+    testcase_path,
+    runner=docker_run):
   """Reproduces a testcase in the container."""
   if not check_project_exists(project_name):
     return 1

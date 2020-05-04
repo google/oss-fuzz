@@ -146,8 +146,11 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
     return utils.execute(command + args)
 
   logging.info('Checking for crash')
-  out, err, _ = helper.reproduce_impl(project_name, fuzz_target, False, [], [],
-                                      test_case_path, runner=docker_run)
+  out, err, _ = helper.reproduce_impl(project_name,
+                                      fuzz_target,
+                                      False, [], [],
+                                      test_case_path,
+                                      runner=docker_run)
   logging.info('stdout =\n%s', out)
   logging.info('stderr =\n%s', err)
   return all(marker in out or marker in err for marker in CRASH_MARKERS)
@@ -194,8 +197,8 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
     else:
       raise ValueError('Invalid bisect type ' + bisect_type)
 
-    if _check_for_crash(
-        build_data.project_name, fuzz_target, test_case_path) != expected_error:
+    if _check_for_crash(build_data.project_name, fuzz_target,
+                        test_case_path) != expected_error:
       raise RuntimeError('new_commit didn\'t have expected result.')
 
     # Check if the error is persistent through the commit range
@@ -209,8 +212,8 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
           base_builder_repo=base_builder_repo):
         raise RuntimeError('Failed to build old_commit')
 
-      if _check_for_crash(
-          build_data.project_name, fuzz_target, test_case_path) == expected_error:
+      if _check_for_crash(build_data.project_name, fuzz_target,
+                          test_case_path) == expected_error:
         raise RuntimeError('old_commit had same result as new_commit')
 
     while old_idx - new_idx > 1:
@@ -258,8 +261,8 @@ def bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
   Raises:
     ValueError: when a repo url can't be determine from the project.
   """
-  result = _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
-                   build_data)
+  result = _bisect(bisect_type, old_commit, new_commit, test_case_path,
+                   fuzz_target, build_data)
 
   # Clean up projects/ as _bisect may have modified it.
   oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
