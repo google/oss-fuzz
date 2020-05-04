@@ -3,3 +3,7 @@ language: c++
 primary_contact: "pcapplusplus@gmail.com"
 auto_ccs:
   - "zlowram@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
