@@ -17,8 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER neildhar@fb.com
 RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool wget ninja-build \
-    libicu-dev python zip libreadline-dev libatomic-ops-dev
+    apt-get install -y make autoconf automake libtool wget libicu-dev \
+    python zip libreadline-dev libatomic-ops-dev
 # Install cmake
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.16.6/cmake-3.16.6-Linux-x86_64.sh; \
     chmod +x cmake-3.16.6-Linux-x86_64.sh; \

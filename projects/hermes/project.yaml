@@ -1,5 +1,5 @@
 homepage: "https://github.com/facebook/hermes"
-language: C++
+language: c++
 primary_contact: "neildhar@fb.com"
 auto_ccs:
   - "dulinr@fb.com"
