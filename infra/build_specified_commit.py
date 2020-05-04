@@ -109,7 +109,7 @@ def copy_src_from_docker(project_name, host_dir):
       host_dir + ':/out',
       image_name,
       'rsync',
-      '-az',
+      '-aW',
       '--delete',
       '/src',
       '/out',
