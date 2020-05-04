@@ -55,8 +55,8 @@ def execute(command, location=None, check_result=False):
                              stderr=subprocess.PIPE,
                              cwd=location)
   out, err = process.communicate()
-  out = out.decode('ascii')
-  err = err.decode('ascii')
+  out = out.decode('utf-8', errors='ignore')
+  err = err.decode('utf-8', errors='ignore')
   if err:
     logging.debug('Stderr of command \'%s\' is %s.', ' '.join(command), err)
   if check_result and process.returncode:
