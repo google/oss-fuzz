@@ -56,6 +56,8 @@ END_MARKERS = [
     'SUMMARY:',
 ]
 
+DEDUP_TOKEN_MARKER = 'DEDUP_TOKEN:'
+
 
 def main():
   """Finds the commit SHA where an error was initally introduced."""
@@ -139,6 +141,18 @@ def _load_base_builder_repo():
   return repo
 
 
+def _get_dedup_token(output):
+  """Get dedup token."""
+  for line in output.splitlines():
+    token_location = line.find(DEDUP_TOKEN_MARKER)
+    if token_location == -1:
+      continue
+
+    return line[token_location + len(DEDUP_TOKEN_MARKER):].strip()
+
+  return None
+
+
 def _check_for_crash(project_name, fuzz_target, test_case_path):
   """Check for crash."""
 
@@ -157,7 +171,7 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
                                                 runner=docker_run,
                                                 err_result=(None, None, None))
   if return_code is None:
-    return False
+    return None
 
   logging.info('stdout =\n%s', out)
   logging.info('stderr =\n%s', err)
@@ -166,7 +180,10 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
   has_start_marker = any(
       marker in out or marker in err for marker in START_MARKERS)
   has_end_marker = any(marker in out or marker in err for marker in END_MARKERS)
-  return has_start_marker and has_end_marker
+  if not has_start_marker or not has_end_marker:
+    return None
+
+  return _get_dedup_token(out + err)
 
 
 # pylint: disable=too-many-locals
@@ -204,15 +221,19 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
       raise RuntimeError('Failed to build new_commit')
 
     if bisect_type == 'fixed':
-      expected_error = False
+      should_crash = False
     elif bisect_type == 'regressed':
-      expected_error = True
+      should_crash = True
     else:
       raise ValueError('Invalid bisect type ' + bisect_type)
 
-    if _check_for_crash(build_data.project_name, fuzz_target,
-                        test_case_path) != expected_error:
-      raise RuntimeError('new_commit didn\'t have expected result.')
+    expected_error = _check_for_crash(build_data.project_name, fuzz_target,
+                                      test_case_path)
+    logging.info('new_commit result = %s', expected_error)
+
+    if not should_crash and expected_error:
+      logging.warning('new_commit crashed but not shouldn\'t. '
+                      'Continuing to see if stack changes.')
 
     # Check if the error is persistent through the commit range
     if old_commit:
@@ -244,9 +265,10 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
         old_idx = curr_idx
         continue
 
-      is_error = _check_for_crash(build_data.project_name, fuzz_target,
-                                  test_case_path)
-      if expected_error == is_error:
+      current_error = _check_for_crash(build_data.project_name, fuzz_target,
+                                       test_case_path)
+      logging.info('Current result = %s', current_error)
+      if expected_error == current_error:
         new_idx = curr_idx
       else:
         old_idx = curr_idx
