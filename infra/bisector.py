@@ -47,8 +47,12 @@ import utils
 
 Result = collections.namedtuple('Result', ['repo_url', 'commit'])
 
-CRASH_MARKERS = [
+START_MARKERS = [
     '==ERROR',
+    '==WARNING',
+]
+
+END_MARKERS = [
     'SUMMARY:',
 ]
 
@@ -157,8 +161,12 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
 
   logging.info('stdout =\n%s', out)
   logging.info('stderr =\n%s', err)
+
   # pylint: disable=unsupported-membership-test
-  return all(marker in out or marker in err for marker in CRASH_MARKERS)
+  has_start_marker = any(
+      marker in out or marker in err for marker in START_MARKERS)
+  has_end_marker = any(marker in out or marker in err for marker in END_MARKERS)
+  return has_start_marker and has_end_marker
 
 
 # pylint: disable=too-many-locals
