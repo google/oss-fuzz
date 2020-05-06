@@ -18,7 +18,7 @@
 # build project
 make -j$(nproc) clean
 make -j$(nproc) libzopfli.a
-ls
+
 # build fuzzers
 for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
   base=$(basename -s .cc $fuzzers)
