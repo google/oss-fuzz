@@ -19,12 +19,12 @@
 ./autogen.sh
 ./configure
 make -j$(nproc) all
-ls
-find . -name "*.a"
+
 # build fuzzers
 for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
   fuzz_basename=$(basename -s .cc $fuzzers)
   $CXX $CXXFLAGS -std=c++11 -I. \
   $fuzzers $LIB_FUZZING_ENGINE ./libusb/.libs/libusb-1.0.a \
+  -lpthread -ludev \
   -o $OUT/$fuzz_basename
 done
