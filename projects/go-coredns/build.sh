@@ -22,7 +22,7 @@ function compile_fuzzer {
   fuzzer=$3
 
   # Compile and instrument all Go files relevant to this fuzz target.
-  go-fuzz-build -libfuzzer -tags gofuzz -func $function -o $fuzzer.a $path
+  go-fuzz -func $function -o $fuzzer.a $path
 
   # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
@@ -33,7 +33,7 @@ cd coredns
 ls plugin/*/fuzz.go | while read target
 do
     fuzzed_plugin=`echo $target | cut -d'/' -f 2`
-    compile_fuzzer ./plugin/$fuzzed_plugin Fuzz fuzz_plugin_$fuzzed_plugin
+    compile_fuzzer github.com/coredns/coredns/plugin/$fuzzed_plugin Fuzz fuzz_plugin_$fuzzed_plugin
 done
 
-compile_fuzzer ./test Fuzz fuzz_core
+compile_fuzzer github.com/coredns/coredns/test Fuzz fuzz_core
