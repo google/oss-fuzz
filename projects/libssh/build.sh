@@ -27,7 +27,7 @@ fuzzers=$(find $SRC/libssh/tests/fuzz/ -name "*_fuzzer.cpp")
 for f in $fuzzers; do
     fuzzerName=$(basename $f .cpp)
     echo "Building fuzzer $fuzzerName"
-    $CXX $CXXFLAGS -std=c++11 -I$SRC/libssh/include/ \
+    $CXX $CXXFLAGS -std=c++11 -I$SRC/libssh/include/ -I$BUILD/include/ \
         "$f" -o "$OUT/$fuzzerName" \
         $LIB_FUZZING_ENGINE ./src/libssh.a -Wl,-Bstatic -lcrypto -lz -Wl,-Bdynamic
 
