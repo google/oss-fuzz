@@ -41,8 +41,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return LIBUSB_ERROR_NO_MEM;
   }
 
-  libusb_fill_control_setup(buffer,
-    bmRequestType, bRequest, wValue, wIndex, wLength);
+  libusb_fill_control_setup(
+    buffer, bmRequestType, bRequest, wValue, wIndex, wLength);
 
   libusb_free_transfer(transfer);
   return 0;
