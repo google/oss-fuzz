@@ -296,16 +296,15 @@ def bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
   Raises:
     ValueError: when a repo url can't be determine from the project.
   """
-  result = _bisect(bisect_type, old_commit, new_commit, test_case_path,
+  try:
+    return _bisect(bisect_type, old_commit, new_commit, test_case_path,
                    fuzz_target, build_data)
-
-  # Clean up projects/ as _bisect may have modified it.
-  oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
-  oss_fuzz_repo_manager.git(['reset', 'projects'])
-  oss_fuzz_repo_manager.git(['checkout', 'projects'])
-  oss_fuzz_repo_manager.git(['clean', '-fxd', 'projects'])
-
-  return result
+  finally:
+    # Clean up projects/ as _bisect may have modified it.
+    oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+    oss_fuzz_repo_manager.git(['reset', 'projects'])
+    oss_fuzz_repo_manager.git(['checkout', 'projects'])
+    oss_fuzz_repo_manager.git(['clean', '-fxd', 'projects'])
 
 
 if __name__ == '__main__':
