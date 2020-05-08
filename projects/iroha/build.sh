@@ -16,11 +16,18 @@
 ################################################################################
 
 cd $SRC/iroha
+./vcpkg/oss/build_deps.sh
 ./clean.sh
 mkdir build
 cd build
- 
-cmake -DCMAKE_TOOLCHAIN_FILE=/opt/dependencies/scripts/buildsystems/vcpkg.cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DFUZZING=ON ..
+
+export ASAN_OPTIONS=detect_leaks=0
+SANITIZER_FLAGS_VAR=SANITIZER_FLAGS_${SANITIZER}
+export CFLAGS="$CFLAGS ${!SANITIZER_FLAGS_VAR}"
+export CXXFLAGS="$CXXFLAGS ${!SANITIZER_FLAGS_VAR}"
+export LDFLAGS="${!SANITIZER_FLAGS_VAR}"
+
+$CMAKE -DCMAKE_TOOLCHAIN_FILE=/tmp/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DFUZZING_ONLY=ON ..
 make fuzzing
   
 cp test_bin/* $OUT/
