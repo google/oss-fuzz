@@ -1,0 +1,9 @@
+homepage: "https://github.com/caarlos0/env"
+primary_contact: "root@carlosbecker.dev"
+auto_ccs :
+- "adam@adalogics.com"
+language: go
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
