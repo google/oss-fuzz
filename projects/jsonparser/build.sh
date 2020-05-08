@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-#cd jsonparser
+
 function compile_fuzzer {
   path=$1
   function=$2
