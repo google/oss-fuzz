@@ -1,0 +1,10 @@
+homepage: "https://github.com/MontFerret/ferret"
+primary_contact: "ziflex@gmail.com"
+auto_ccs :
+  - "winter.has.come.622@gmail.com"
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
