@@ -5,5 +5,5 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 language: rust
-auto_css:
+auto_ccs:
   - "david@adalogics.com"
