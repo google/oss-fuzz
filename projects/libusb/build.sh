@@ -14,4 +14,17 @@
 # limitations under the License.
 #
 ################################################################################
-$SRC/tesseract/unittest/fuzzers/oss-fuzz-build.sh
+
+# build project
+./autogen.sh
+./configure
+make -j$(nproc) all
+
+# build fuzzer
+for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
+    fuzzer_basename=$(basename -s .cc $fuzzer)
+    $CXX $CXXFLAGS -std=c++11 -I. \
+    $fuzzer $LIB_FUZZING_ENGINE ./libusb/.libs/libusb-1.0.a \
+    -lpthread -ludev \
+    -o $OUT/$fuzzer_basename
+done

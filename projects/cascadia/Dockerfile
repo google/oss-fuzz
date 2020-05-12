@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,4 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-$SRC/tesseract/unittest/fuzzers/oss-fuzz-build.sh
+
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER cascadia@balholm.com
+RUN go get github.com/andybalholm/cascadia
+
+COPY build.sh $SRC/
+WORKDIR $SRC/

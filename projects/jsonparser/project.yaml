@@ -1,0 +1,9 @@
+homepage: "https://github.com/buger/jsonparser"
+primary_contact: "leonsbox@gmail.com"
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
