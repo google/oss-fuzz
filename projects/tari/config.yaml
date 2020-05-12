@@ -1,0 +1,9 @@
+homepage: "https://github.com/tari-project/tari"
+language: rust
+primary_contact: "security@tari.com"
+auto_ccs:
+  - "caylemeister@tari.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
