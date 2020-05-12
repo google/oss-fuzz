@@ -253,8 +253,11 @@ def check_fuzzer_build(out_dir):
   allowed_broken_targets_percentage = os.getenv(
       'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
   if allowed_broken_targets_percentage is not None:
-    command += ['-e', ('ALLOWED_BROKEN_TARGETS_PERCENTAGE=' +
-                       allowed_broken_targets_percentage)]
+    command += [
+        '-e',
+        ('ALLOWED_BROKEN_TARGETS_PERCENTAGE=' +
+         allowed_broken_targets_percentage)
+    ]
 
   container = utils.get_container_name()
   if container:
