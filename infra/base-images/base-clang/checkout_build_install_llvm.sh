@@ -52,8 +52,8 @@ LLVM_SRC=$SRC/llvm-project
 # For manual bumping.
 OUR_LLVM_REVISION=e84b7a5fe230e42b8e6fe451369874a773bf1867
 
-# To allow for manual downgrades. Set to 0 not to force a manual downgrade.
-# Set to 1 to force a manual downgrade.
+# To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
+# *not* force a manual downgrade). Set to 1 to force a manual downgrade.
 FORCE_OUR_REVISION=0
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K[a-f0-9]+(?=')" scripts/update.py)
 
@@ -61,12 +61,12 @@ clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
 set +e
 git -C $LLVM_SRC merge-base --is-ancestor $OUR_LLVM_REVISION $LLVM_REVISION
-IS_OUR_REVISION_ANCESTOR=$?
+IS_OUR_REVISION_ANCESTOR_RETCODE=$?
 set -e
 
 # Use our revision if specified by FORCE_OUR_REVISION or if our revision is a
 # later revision than Chrome's (i.e. not an ancestor of Chrome's).
-if [ $IS_OUR_REVISION_ANCESTOR -ne 0 ] || [ $FORCE_OUR_REVISION -eq 1 ] ; then
+if [ $IS_OUR_REVISION_ANCESTOR_RETCODE -ne 0 ] || [ $FORCE_OUR_REVISION -eq 1 ] ; then
   LLVM_REVISION=$OUR_LLVM_REVISION
 fi
 
