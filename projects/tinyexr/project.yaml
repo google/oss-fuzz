@@ -1,3 +1,8 @@
-homepage: "<your_project_homepage>"
-language: <programming_language>  # Example values: c, c++, go, rust.
+homepage: "https://github.com/syoyo/tinyexr"
+language: c++  # Example values: c, c++, go, rust.
 primary_contact: "<primary_contact_email>"
+fuzzing_engines:
+    - libfuzzer
+sanitizers:
+    - address
+    - undefined

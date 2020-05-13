@@ -15,14 +15,13 @@
 #
 ################################################################################
 
-# build project
-# e.g.
-# ./autogen.sh
-# ./configure
-# make -j$(nproc) all
+# Env settings
+CXX=clang++
+
+# prepare files
+cp test/fuzzer/fuzz.cc $SRC/tinyexr_fuzzer.cc
 
 # build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     $LIB_FUZZING_ENGINE /path/to/library.a
+$CXX $CXXFLAGS -std=c++11 -I. \
+     $SRC/tinyexr_fuzzer.cc -o $OUT/tinyexr_fuzzer \
+     $LIB_FUZZING_ENGINE
