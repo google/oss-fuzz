@@ -23,7 +23,6 @@ function compile_fuzzer {
 
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
-
 mkdir $GOPATH/src/github.com/dragonflyoss
 cp -r $SRC/Dragonfly $GOPATH/src/github.com/dragonflyoss/
 
