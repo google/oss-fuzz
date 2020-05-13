@@ -2,9 +2,8 @@ homepage: "https://www.qubes-os.org/"
 language: c++
 primary_contact: "jpo@vt.edu"
 auto_ccs:
- - "joanna@invisiblethingslab.com"
  - "marmarek@invisiblethingslab.com"
- - "paras.chetal@gmail.com"
+ - "pawel@invisiblethingslab.com"
 fuzzing_engines:
   - libfuzzer
   - afl

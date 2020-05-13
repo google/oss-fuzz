@@ -6,6 +6,3 @@ auto_ccs:
   - "tvandermerwe@mozilla.com"
   - "sledru@mozilla.com"
   - "kjacobs@mozilla.com"
-fuzzing_engines:
-  - libfuzzer
-  - afl

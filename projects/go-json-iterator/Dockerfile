@@ -19,6 +19,6 @@ MAINTAINER taowen@gmail.com
 RUN go get github.com/json-iterator/go
 
 RUN mkdir fuzz
-COPY fuzz_json.go fuzz/
+COPY fuzz_json.go fuzz
 COPY build.sh $SRC/
 WORKDIR fuzz

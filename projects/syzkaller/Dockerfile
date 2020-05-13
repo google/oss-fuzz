@@ -22,6 +22,6 @@ RUN go get -u -d github.com/google/syzkaller/...
 # Dependency for one of the fuzz targets.
 RUN go get github.com/ianlancetaylor/demangle
 
-RUN git clone --depth 1 https://github.com/google/syzkaller.git syzkaller
+RUN git clone --depth 1 https://github.com/google/syzkaller.git
 WORKDIR syzkaller
 COPY build.sh $SRC/

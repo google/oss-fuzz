@@ -2,6 +2,7 @@ homepage: "http://qt-project.org"
 language: c++
 primary_contact: "rlohningqt@gmail.com"
 auto_ccs:
-  - "shawn.t.rutledge@gmail.com"
-sanitizers:
- - address
+ - "shawn.t.rutledge@gmail.com"
+architectures:
+ - x86_64
+ - i386

@@ -27,6 +27,7 @@ auto_ccs:
     - "sledru@mozilla.com"
     - "kjacobs@mozilla.com"
     - "matthias.st.pierre@gmail.com"
+    - "kaleb.himes@gmail.com"
 sanitizers:
  - address
  - undefined

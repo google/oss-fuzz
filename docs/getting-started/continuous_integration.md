@@ -38,6 +38,7 @@ You can integrate CIFuzz into your project using the following steps:
 file over from the OSS-Fuzz repository to the `workflows` directory.
 1. Change the `oss-fuzz-project-name` value in `main.yml` from `example` to the name of your OSS-Fuzz project. It is **very important** that you use your OSS-Fuzz project name which is case sensitive. This name
 is the name of your project's subdirectory in the [`projects`](https://github.com/google/oss-fuzz/tree/master/projects) directory of OSS-Fuzz.
+1. Set the value of `fuzz-seconds`. The longest time that the project maintainers are acceptable with should be used. This value should be at minimum 600 seconds and scale with project size.
 
 Your directory structure should look like the following:
 ```
@@ -58,6 +59,7 @@ jobs:
    runs-on: ubuntu-latest
    steps:
    - name: Build Fuzzers
+     id: build
      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
@@ -70,7 +72,7 @@ jobs:
        dry-run: false
    - name: Upload Crash
      uses: actions/upload-artifact@v1
-     if: failure()
+     if: failure() && steps.build.outcome == 'success'
      with:
        name: artifacts
        path: ./out/artifacts

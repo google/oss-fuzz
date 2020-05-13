@@ -87,7 +87,7 @@ case $(uname -m) in
         ;;
 esac
 
-PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang"
+PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
 cmake -G "Ninja" \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \

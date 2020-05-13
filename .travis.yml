@@ -37,6 +37,11 @@ matrix:
         - TRAVIS_ENGINE=afl
         - TRAVIS_SANITIZER=address
         - TRAVIS_ARCHITECTURE=x86_64
+    - name: "honggfuzz address x86_64"
+      env:
+        - TRAVIS_ENGINE=honggfuzz
+        - TRAVIS_SANITIZER=address
+        - TRAVIS_ARCHITECTURE=x86_64
     - name: "none address x86_64"
       env:
         - TRAVIS_ENGINE=none

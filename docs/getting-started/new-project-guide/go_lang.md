@@ -22,12 +22,17 @@ process. The key specifics of integrating a Go project are outlined below.
 ## Go-fuzz support
 
 OSS-Fuzz supports **go-fuzz** in the
-[libFuzzer compatible mode](https://github.com/dvyukov/go-fuzz#libfuzzer-support)
+[libFuzzer compatible mode](https://github.com/mdempsky/go114-fuzz-build)
 only. In that mode, fuzz targets for Go use the libFuzzer engine with native Go
 coverage instrumentation. Binaries compiled in this mode provide the same
 libFuzzer command line interface as non-Go fuzz targets.
 
 ## Project files
+
+First, you need to write a Go fuzz target that accepts a stream of bytes and
+calls the program API with that. This fuzz target should reside in your project
+repository
+([example](https://github.com/golang/go/blob/4ad13555184eb0697c2e92c64c1b0bdb287ccc10/src/html/fuzz.go#L13)).
 
 The structure of the project directory in OSS-Fuzz repository doesn't differ for
 projects written in Go. The project files have the following Go specific
@@ -66,7 +71,7 @@ RUN go get github.com/ianlancetaylor/demangle
 
 ### build.sh
 
-In order to build a Go fuzz target, you need to call `go-fuzz-build -libfuzzer`
+In order to build a Go fuzz target, you need to call `go-fuzz`
 command first, and then link the resulting `.a` file against
 `$LIB_FUZZING_ENGINE` using the `$CXX $CXXFLAGS ...` command.
 [Example](https://github.com/google/oss-fuzz/blob/356f2b947670b7eb33a1f535c71bc5c87a60b0d1/projects/syzkaller/build.sh#L19):
@@ -77,11 +82,11 @@ function compile_fuzzer {
   function=$2
   fuzzer=$3
 
-   # Instrument all Go files relevant to this fuzzer
-  go-fuzz-build -libfuzzer -func $function -o $fuzzer.a $path 
+  # Compile and instrument all Go files relevant to this fuzz target.
+  go-fuzz -func $function -o $fuzzer.a $path
 
-   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
+  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
 
 compile_fuzzer ./pkg/compiler Fuzz compiler_fuzzer

@@ -2,8 +2,6 @@ homepage: https://github.com/google/fuzzer-test-suite
 language: c++
 primary_contact: kcc@google.com
 auto_ccs:
-  - "kevinwkt@google.com"
-  - "kodewilliams@google.com"
   - "metzman@google.com"
   - "mmoroz@google.com"
 
@@ -11,6 +9,4 @@ sanitizers:
   - address
 
 fuzzing_engines:
-  - afl
-
-disabled: True
+  - honggfuzz

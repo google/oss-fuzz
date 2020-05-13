@@ -30,9 +30,12 @@ overview of ClusterFuzz user interface is available on this [page].
 
 ### Fuzz Target
 
-In addition to its general definition, in OSS-Fuzz a fuzz target can be used to
-[reproduce bug reports]({{ site.baseurl }}/advanced-topics/reproducing/). It is recommended to use it for
-regression testing as well (see [ideal integration]({{ site.baseurl }}/advanced-topics/ideal-integration/)).
+In addition to its
+[general definition](https://github.com/google/fuzzing/blob/master/docs/glossary.md#fuzz-target),
+in OSS-Fuzz a fuzz target can be used to
+[reproduce bug reports]({{ site.baseurl }}/advanced-topics/reproducing/).
+It is recommended to use it for regression testing as well (see
+[ideal integration]({{ site.baseurl }}/advanced-topics/ideal-integration/)).
 
 ### Job type
 

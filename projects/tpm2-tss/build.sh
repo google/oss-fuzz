@@ -28,8 +28,9 @@ export GEN_FUZZ=1
   --enable-debug \
   --with-fuzzing=ossfuzz \
   --enable-tcti-fuzzing \
-  --enable-tcti-device=no \
-  --enable-tcti-mssim=no \
+  --disable-tcti-device \
+  --disable-tcti-mssim \
+  --disable-tcti-swtpm \
   --disable-doxygen-doc \
   --disable-shared \
   --disable-fapi

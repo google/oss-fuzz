@@ -109,45 +109,22 @@ def get_build_steps(project_dir):
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
+  language = project_yaml['language']
   run_tests = project_yaml['run_tests']
 
   ts = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
-  build_steps = [
-      {
-          'args': [
-              'clone',
-              'https://github.com/google/oss-fuzz.git',
-          ],
-          'name': 'gcr.io/cloud-builders/git',
-      },
-      {
-          'name': 'gcr.io/cloud-builders/docker',
-          'args': [
-              'build',
-              '-t',
-              image,
-              '.',
-          ],
-          'dir': 'oss-fuzz/projects/' + name,
-      },
-      {
-          'name': image,
-          'args': [
-              'bash', '-c',
-              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-          ],
-          'env': ['OSSFUZZ_REVISION=$REVISION_ID'],
-      },
-      {
-          'name': 'gcr.io/oss-fuzz-base/msan-builder',
-          'args': [
-              'bash',
-              '-c',
-              'cp -r /msan /workspace',
-          ],
-      },
-  ]
+  build_steps = build_lib.project_image_steps(name, image, language)
+
+  # Copy over MSan instrumented libraries.
+  build_steps.append({
+      'name': 'gcr.io/oss-fuzz-base/msan-builder',
+      'args': [
+          'bash',
+          '-c',
+          'cp -r /msan /workspace',
+      ],
+  })
 
   for fuzzing_engine in project_yaml['fuzzing_engines']:
     for sanitizer in get_sanitizers(project_yaml):

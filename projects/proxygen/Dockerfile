@@ -46,7 +46,7 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.15.2/cmake-3.15.2
     rm -rf cmake-3.15.2
 
 # Install and build boost from source so we can have it use libc++
-RUN wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz && \
+RUN wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz && \
     tar xzf boost_1_70_0.tar.gz && \
     cd boost_1_70_0 && \
     ./bootstrap.sh --with-toolset=clang && \

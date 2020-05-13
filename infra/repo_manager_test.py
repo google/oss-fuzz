@@ -92,7 +92,7 @@ class RepoManagerGetCommitListUnitTest(unittest.TestCase):
           '97dee00a3c4ce95071c3e061592f5fd577dea886',
           '04ea24ee15bbe46a19e5da6c5f022a2ffdfbdb3b'
       ]
-      result_list = test_repo_manager.get_commit_list(old_commit, new_commit)
+      result_list = test_repo_manager.get_commit_list(new_commit, old_commit)
       self.assertListEqual(commit_list, result_list)
 
   def test_invalid_commit_list(self):
@@ -108,7 +108,7 @@ class RepoManagerGetCommitListUnitTest(unittest.TestCase):
         test_repo_manager.get_commit_list(new_commit, 'fakecommit')
       with self.assertRaises(RuntimeError):
         # pylint: disable=arguments-out-of-order
-        test_repo_manager.get_commit_list(new_commit, old_commit)
+        test_repo_manager.get_commit_list(old_commit, new_commit)
 
 
 class GitDiffUnitTest(unittest.TestCase):

@@ -26,7 +26,7 @@
 #define ALIGNMENT 16
 #define MBYTE (1024 * 1024)
 #define GBYTE (1024 * MBYTE)
-#define MAX_ALLOCATION (3 * GBYTE)
+#define MAX_ALLOCATION (1 * GBYTE)
 
 static uint64_t total = 0;
 static uint64_t peak = 0;

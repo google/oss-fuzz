@@ -41,7 +41,7 @@ ENGINE_INFO = {
                    supported_architectures=['x86_64']),
     'honggfuzz':
         EngineInfo(upload_bucket='clusterfuzz-builds-honggfuzz',
-                   supported_sanitizers=['address', 'memory', 'undefined'],
+                   supported_sanitizers=['address'],
                    supported_architectures=['x86_64']),
     'dataflow':
         EngineInfo(upload_bucket='clusterfuzz-builds-dataflow',
@@ -165,3 +165,36 @@ def gsutil_rm_rf_step(url):
       ],
   }
   return step
+
+
+def project_image_steps(name, image, language):
+  """Returns GCB steps to build OSS-Fuzz project image."""
+  steps = [{
+      'args': [
+          'clone',
+          'https://github.com/google/oss-fuzz.git',
+      ],
+      'name': 'gcr.io/cloud-builders/git',
+  }, {
+      'name': 'gcr.io/cloud-builders/docker',
+      'args': [
+          'build',
+          '-t',
+          image,
+          '.',
+      ],
+      'dir': 'oss-fuzz/projects/' + name,
+  }, {
+      'name':
+          image,
+      'args': [
+          'bash', '-c',
+          'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
+      ],
+      'env': [
+          'OSSFUZZ_REVISION=$REVISION_ID',
+          'FUZZING_LANGUAGE=%s' % language,
+      ],
+  }]
+
+  return steps

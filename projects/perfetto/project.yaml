@@ -8,13 +8,17 @@ auto_ccs:
   - "primiano@google.com"
   - "rsavitski@google.com"
   - "taylori@google.com"
+  - "eseckler@google.com"
 vendor_ccs:
   - bcreasey@google.com
   - hamzeh@google.com
   - geuteneier@google.com
   - hollyhall@google.com
   - mikelogan@google.com
+  - maverickm@google.com
+  - warrenwright@google.com
 fuzzing_engines:
   - libfuzzer
+  - honggfuzz
 sanitizers:
   - address

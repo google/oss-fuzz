@@ -79,6 +79,21 @@ then
     make -B
 fi
 
+
+# Compile libtomcrypt
+cd $SRC/libtomcrypt
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBTOMCRYPT"
+    export LIBTOMCRYPT_INCLUDE_PATH=$(realpath src/headers/)
+    export LIBTOMCRYPT_A_PATH=$(realpath libtomcrypt.a)
+
+    # Compile Cryptofuzz libtomcrypt module
+    cd $SRC/cryptofuzz/modules/libtomcrypt
+    make -B
+fi
+
 # Compile Cityhash
 cd $SRC/cityhash
 if [[ $CFLAGS != *-m32* ]]
@@ -93,20 +108,22 @@ export CXXFLAGS="$CXXFLAGS -I$SRC/cityhash/src"
 export CRYPTOFUZZ_REFERENCE_CITY_O_PATH="$SRC/cityhash/src/city.o"
 
 ##############################################################################
+# Compile cryptopp
+cd $SRC/cryptopp
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
-    # Compile cryptopp (with assembly)
-    cd $SRC/cryptopp
     make -j$(nproc) >/dev/null 2>&1
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
-    export LIBCRYPTOPP_A_PATH="$SRC/cryptopp/libcryptopp.a"
-    export CRYPTOPP_INCLUDE_PATH="$SRC/cryptopp"
-
-    # Compile Cryptofuzz cryptopp (with assembly) module
-    cd $SRC/cryptofuzz/modules/cryptopp
-    make -B
+else
+    CXXFLAGS="$CXXFLAGS -DCRYPTOPP_DISABLE_ASM=1" make -j$(nproc) >/dev/null 2>&1
 fi
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
+export LIBCRYPTOPP_A_PATH="$SRC/cryptopp/libcryptopp.a"
+export CRYPTOPP_INCLUDE_PATH="$SRC/cryptopp"
+
+# Compile Cryptofuzz cryptopp module
+cd $SRC/cryptofuzz/modules/cryptopp
+make -B
 
 ##############################################################################
 # Compile mbed crypto
@@ -165,14 +182,14 @@ then
     make install
     export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
 
-    # Compile libgcrypt (with assembly)
+    # Compile libgcrypt
     cd $SRC/libgcrypt
     autoreconf -ivf
-    if [[ $CFLAGS != *-m32* ]]
+    if [[ $CFLAGS = *-m32* ]]
     then
-        ./configure --enable-static --disable-doc
-    else
         ./configure --enable-static --disable-doc --host=i386
+    else
+        ./configure --enable-static --disable-doc
     fi
     make -j$(nproc) >/dev/null 2>&1
 
@@ -180,33 +197,29 @@ then
     export LIBGCRYPT_A_PATH="$SRC/libgcrypt/src/.libs/libgcrypt.a"
     export LIBGCRYPT_INCLUDE_PATH="$SRC/libgcrypt/src"
 
-    # Compile Cryptofuzz libgcrypt (with assembly) module
+    # Compile Cryptofuzz libgcrypt module
     cd $SRC/cryptofuzz/modules/libgcrypt
     make -B
 fi
 
-##############################################################################
-# libsodium is currently disabled due to crashes whose cause
-# is not entirely clear.
-# It will be enabled again once the problem has been resolved.
-# See also: https://github.com/jedisct1/libsodium/issues/859
-#
-#if [[ $CFLAGS != *sanitize=memory* ]]
-#then
-#    # Compile libsodium (with assembly)
-#    cd $SRC/libsodium
-#    autoreconf -ivf
-#    ./configure
-#    make -j$(nproc) >/dev/null 2>&1
-#
-#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
-#    export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
-#    export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
-#
-#    # Compile Cryptofuzz libsodium (with assembly) module
-#    cd $SRC/cryptofuzz/modules/libsodium
-#    make -B
-#fi
+# Compile libsodium
+cd $SRC/libsodium
+autoreconf -ivf
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    ./configure
+else
+    ./configure --disable-asm
+fi
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
+export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
+export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
+
+# Compile Cryptofuzz libsodium module
+cd $SRC/cryptofuzz/modules/libsodium
+make -B
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
@@ -276,6 +289,16 @@ then
     LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
 fi
 
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    # libtomcrypt can only be compiled with NSS, because OpenSSL, LibreSSL and
+    # BoringSSL have symbol collisions with libtomcrypt.
+    #
+    # So, now that NSS-based Cryptofuzz has been compiled, remove libtomcrypt
+    export CXXFLAGS=${CXXFLAGS/-DCRYPTOFUZZ_LIBTOMCRYPT/}
+    rm -rf "$LIBTOMCRYPT_A_PATH"
+fi
+
 ##############################################################################
 # Compile wolfCrypt
 cd $SRC/wolfssl
@@ -306,13 +329,18 @@ make -B
 
 
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile LibreSSL (with assembly)
     cd $SRC/libressl
     rm -rf build ; mkdir build
     cd build
-    cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    else
+        setarch i386 cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    fi
     make -j$(nproc) crypto >/dev/null 2>&1
 
     # Compile Cryptofuzz LibreSSL (with assembly) module

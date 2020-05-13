@@ -31,7 +31,7 @@ RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 RUN git clone --depth 1 https://github.com/libressl-portable/portable libressl
 RUN cd $SRC/libressl && ./update.sh
 RUN git clone --depth 1 https://github.com/weidai11/cryptopp/
-RUN git clone --depth 1 https://dev.gnupg.org/source/libgcrypt.git
+RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git
 RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2
 RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star evercrypt
 RUN git clone --depth 1 https://github.com/google/cityhash.git
@@ -41,6 +41,8 @@ RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
 RUN git clone --depth 1 https://github.com/ARMmbed/mbed-crypto.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
+RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
+RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
 

@@ -37,11 +37,9 @@ ENV GOPATH /root/go
 # $GOPATH/bin is for the binaries from the dependencies installed via "go get".
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
-# Dependency of go-fuzz.
-RUN go get golang.org/x/tools/go/packages
-
-# go-fuzz-build is the tool that instruments Go files.
-RUN go get github.com/dvyukov/go-fuzz/go-fuzz-build
+# Uses golang 1.14+ cmd/compile's native libfuzzer instrumentation.
+RUN go get -u github.com/mdempsky/go114-fuzz-build && \
+    ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"

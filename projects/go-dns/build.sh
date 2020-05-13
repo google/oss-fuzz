@@ -15,19 +15,18 @@
 #
 ################################################################################
 
-# build target function
 function compile_fuzzer {
   path=$1
   function=$2
   fuzzer=$3
 
-   # Instrument all Go files relevant to this fuzzer
-  go-fuzz-build -tags fuzz -libfuzzer -func $function -o $fuzzer.a $path
+  # Compile and instrument all Go files relevant to this fuzz target.
+  go-fuzz -tags fuzz -func $function -o $fuzzer.a $path
 
-   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -lpthread -o $OUT/$fuzzer
+  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
 
-#same as usual except for added -tags fuzz
-compile_fuzzer /root/go/src/github.com/miekg/dns/ FuzzNewRR fuzz_newrr
-compile_fuzzer /root/go/src/github.com/miekg/dns/ Fuzz fuzz_msg_unpack
+# Same as usual except for added -tags fuzz.
+compile_fuzzer github.com/miekg/dns FuzzNewRR fuzz_newrr
+compile_fuzzer github.com/miekg/dns Fuzz fuzz_msg_unpack
