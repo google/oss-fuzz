@@ -23,5 +23,4 @@ function compile_fuzzer {
 
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
-
 compile_fuzzer github.com/vitessio/vitess/go/vt/sqlparser Fuzz fuzz
