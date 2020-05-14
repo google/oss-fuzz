@@ -1,0 +1,8 @@
+homepage: "https://beltoforion.de/article.php?a=muparser"
+language: c, c++
+primary_contact: "todo@gmail.com"
+fuzzing_engines:
+    - libfuzzer
+sanitizers:
+    - address
+    - undefined
