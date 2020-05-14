@@ -6,4 +6,3 @@ auto_ccs:
  - "kyprizel@gmail.com"
 sanitizers:
   - address
-  - undefined
