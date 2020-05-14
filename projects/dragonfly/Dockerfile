@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,20 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER flim@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-
-RUN git clone https://gitlab.xiph.org/xiph/opus.git
-RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
-WORKDIR opus
+MAINTAINER zj3142063@gmail.com
+RUN go get	github.com/go-openapi/swag \
+		github.com/go-openapi/validate \
+		gopkg.in/warnings.v0 \
+		github.com/gorilla/mux \
+		github.com/prometheus/client_golang/prometheus \ 
+		github.com/pkg/errors \
+		github.com/sirupsen/logrus \
+		gopkg.in/gcfg.v1 \
+		github.com/valyala/fasthttp \
+		gopkg.in/natefinch/lumberjack.v2 \
+		github.com/emirpasic/gods/maps/treemap \
+		github.com/emirpasic/gods/utils \
+		github.com/willf/bitset
+RUN git clone https://github.com/dragonflyoss/Dragonfly
 COPY build.sh $SRC/
+WORKDIR $SRC/

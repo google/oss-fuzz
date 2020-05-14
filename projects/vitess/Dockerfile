@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER flim@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-
-RUN git clone https://gitlab.xiph.org/xiph/opus.git
-RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
-WORKDIR opus
+MAINTAINER adam@adalogics.com
+RUN go get 	github.com/vitessio/vitess \
+		vitess.io/vitess/go/bytes2 \
+		vitess.io/vitess/go/sqltypes \
+		vitess.io/vitess/go/vt/log \
+		vitess.io/vitess/go/vt/proto/query \
+		vitess.io/vitess/go/vt/proto/vtrpc \
+		vitess.io/vitess/go/vt/vterrors \
+		vitess.io/vitess/go/vt/vtgate/evalengine
 COPY build.sh $SRC/
+WORKDIR $SRC/

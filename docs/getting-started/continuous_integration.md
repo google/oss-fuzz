@@ -90,6 +90,10 @@ CIFuzz will never report a failure even if it finds a crash in your project.
 This requires the user to manually check the logs for detected bugs. If dry run mode is desired,
 make sure to set the dry-run parameters in both the `Build Fuzzers` and `Run Fuzzers` action step.
 
+`allowed-broken-targets-percentage`: Can be set if you want to set a stricter
+limit for broken fuzz targets than OSS-Fuzz's check_build. Most users should
+not set this.
+
 ## Understanding results
 
 The results of CIFuzz can be found in two different places.

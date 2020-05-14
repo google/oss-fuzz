@@ -248,6 +248,17 @@ def check_fuzzer_build(out_dir):
       'SANITIZER=' + DEFAULT_SANITIZER, '-e',
       'ARCHITECTURE=' + DEFAULT_ARCHITECTURE
   ]
+
+  # Set ALLOWED_BROKEN_TARGETS_PERCENTAGE in docker if specified by user.
+  allowed_broken_targets_percentage = os.getenv(
+      'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
+  if allowed_broken_targets_percentage is not None:
+    command += [
+        '-e',
+        ('ALLOWED_BROKEN_TARGETS_PERCENTAGE=' +
+         allowed_broken_targets_percentage)
+    ]
+
   container = utils.get_container_name()
   if container:
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]

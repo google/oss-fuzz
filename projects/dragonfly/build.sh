@@ -1,4 +1,5 @@
-# Copyright 2017 Google Inc.
+#/bin/bash -eu
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +14,17 @@
 # limitations under the License.
 #
 ################################################################################
+function compile_fuzzer {
+  path=$1
+  function=$2
+  fuzzer=$3
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER flim@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
+  go-fuzz -func $function -o $fuzzer.a $path
 
-RUN git clone https://gitlab.xiph.org/xiph/opus.git
-RUN wget https://opus-codec.org/static/testvectors/opus_testvectors.tar.gz
-WORKDIR opus
-COPY build.sh $SRC/
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
+}
+mkdir $GOPATH/src/github.com/dragonflyoss
+cp -r $SRC/Dragonfly $GOPATH/src/github.com/dragonflyoss/
+
+compile_fuzzer github.com/dragonflyoss/Dragonfly/dfget/core/uploader FuzzParseParams uploader_fuzz
+compile_fuzzer github.com/dragonflyoss/Dragonfly/supernode/daemon/mgr/cdn Fuzz cdn_fuzz
