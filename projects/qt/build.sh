@@ -35,6 +35,7 @@ make -j$(nproc)
 # prepare corpus files
 zip -j $WORK/cbor $SRC/qtqa/fuzzing/testcases/cbor/*
 zip -j $WORK/html $SRC/qtqa/fuzzing/testcases/html/*
+zip -j $WORK/images $SRC/qtqa/fuzzing/testcases/svg/* $SRC/AFL/testcases/images/*/*
 zip -j $WORK/markdown $SRC/qtqa/fuzzing/testcases/markdown/*
 zip -j $WORK/ssl.pem.zip $SRC/qtqa/fuzzing/testcases/ssl.pem/*
 zip -j $WORK/text $SRC/qtqa/fuzzing/testcases/text/* $SRC/AFL/testcases/others/text/*
@@ -85,6 +86,7 @@ build_fuzzer "new" "qtbase" "corelib/serialization/qcborvalue/fromcbor/fromcbor.
 build_fuzzer "new" "qtbase" "corelib/serialization/qtextstream/extractionoperator-float/extractionoperator-float.pro" "text"
 build_fuzzer "old" "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "$SRC/AFL/dictionaries/xml.dict"
 build_fuzzer "new" "qtbase" "corelib/text/qregularexpression/optimize/optimize.pro" "" "$SRC/AFL/dictionaries/regexp.dict"
+build_fuzzer "new" "qtbase" "gui/image/qimage/loadfromdata/loadfromdata.pro" "images"
 build_fuzzer "new" "qtbase" "gui/painting/qcolorspace/fromiccprofile/fromiccprofile.pro"
 build_fuzzer "new" "qtbase" "gui/text/qtextdocument/sethtml/sethtml.pro" "html" "$SRC/AFL/dictionaries/html_tags.dict"
 build_fuzzer "old" "qtbase" "gui/text/qtextdocument/setmarkdown/setmarkdown.pro" "markdown"
