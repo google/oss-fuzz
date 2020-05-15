@@ -394,7 +394,8 @@ def main():
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
   parser.add_argument('command',
-                      choices=['format', 'lint', 'license', 'infra-tests'],
+                      choices=['format', 'lint', 'license', 'infra-tests',
+                               'check_dockerfile'],
                       nargs='?')
 
   parser.add_argument('--all-files',
@@ -425,6 +426,10 @@ def main():
 
   if args.command == 'infra-tests':
     return bool_to_returncode(run_tests())
+
+  if args.command == 'check_dockerfile':
+    success = check_dockerfile(relevant_files)
+    return bool_to_returncode(success)
 
   # Do all the checks (but no tests).
   success = do_checks(relevant_files)
