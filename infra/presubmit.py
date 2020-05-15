@@ -18,12 +18,16 @@
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import unittest
 import yaml
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Copied from infra/gcb/build_project.py
+WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 
 def _is_project_file(actual_path, expected_filename):
@@ -220,16 +224,59 @@ def check_project_yaml(paths):
   return all([_check_one_project_yaml(path) for path in paths])
 
 
-def do_checks(changed_files):
+def workdir_from_dockerfile(dockerfile):
+  """Parse WORKDIR from the Dockerfile. ."""
+  with open(dockerfile) as f:
+    lines = f.readlines()
+
+  for line in lines:
+    match = re.match(WORKDIR_REGEX, line)
+    if match:
+      # We need to escape '$' since they're used for subsitutions in Container
+      # Builer builds.
+      return match.group(1).replace('$', '$$')
+
+  return None
+
+def _check_one_dockerfile(path):
+  """Do checks on the Dockerfile."""
+  if os.path.basename(path) != 'Dockerfile':
+    return True
+
+  with open(path) as dockerfile_handle:
+    dockerfile = dockerfile_handle.readlines()
+
+  workdir_lines = [line for line in dockerfile if re.match(WORKDIR_REGEX, line)]
+  if len(workdir_lines) > 1:
+    print('Error in {path}: Dockerfile contains multiple WORKDIR commands: '
+          '"""\n{workdir_commands}"""\n'
+          'Please use at most one'.format(
+              path=path,
+              workdir_commands=' '.join(workdir_lines)))
+    return False
+
+  return True
+
+
+
+def check_dockerfile(paths):
+  """Call _check_one_project_yaml on each path in |paths|. Return True if
+  the result of every call is True."""
+  return all([_check_one_dockerfile(path) for path in paths])
+
+
+def do_checks(relevant_files):
   """Run all presubmit checks return False if any fails."""
   checks = [
-      check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine
+      # check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine,
+      check_dockerfile,
+
   ]
   # Use a list comprehension here and in other cases where we use all() so that
   # we don't quit early on failure. This is more user-friendly since the more
   # errors we spit out at once, the less frequently the less check-fix-check
   # cycles they need to do.
-  return all([check(changed_files) for check in checks])
+  return all([check(relevant_files) for check in checks])
 
 
 _CHECK_LICENSE_FILENAMES = ['Dockerfile']
@@ -328,6 +375,16 @@ def get_changed_files():
   ]
 
 
+def get_all_files():
+  """Return a list of absolute paths of all files in the repo."""
+  ls_files_command = ['git', 'ls-files']
+  return [
+      os.path.abspath(path)
+      for path in subprocess.check_output(
+          ls_files_command).decode().splitlines()
+  ]
+
+
 def run_tests():
   """Run all unit tests in directories that are different from HEAD."""
   changed_dirs = set()
@@ -353,30 +410,39 @@ def main():
   parser.add_argument('command',
                       choices=['format', 'lint', 'license', 'infra-tests'],
                       nargs='?')
-  args = parser.parse_args()
 
-  changed_files = get_changed_files()
+  parser.add_argument('--all-files',
+                      '-a',
+                      help='Run presubmit on all files.',
+                      action='store_true')
+  args = parser.parse_args()
 
   os.chdir(_SRC_ROOT)
 
+  if args.all_files:
+    relevant_files = get_all_files()
+  else:
+    relevant_files = get_changed_files()
+
+
   # Do one specific check if the user asked for it.
   if args.command == 'format':
-    success = yapf(changed_files, False)
+    success = yapf(relevant_files, False)
     return bool_to_returncode(success)
 
   if args.command == 'lint':
-    success = lint(changed_files)
+    success = lint(relevant_files)
     return bool_to_returncode(success)
 
   if args.command == 'license':
-    success = check_license(changed_files)
+    success = check_license(relevant_files)
     return bool_to_returncode(success)
 
   if args.command == 'infra-tests':
     return bool_to_returncode(run_tests())
 
   # Do all the checks (but no tests).
-  success = do_checks(changed_files)
+  success = do_checks(relevant_files)
 
   return bool_to_returncode(success)
 
