@@ -64,7 +64,8 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     detected."""
     self._set_up_fakefs()
     all_repro = [EXECUTE_FAILURE_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
-    with unittest.mock.patch('utils.execute', side_effect=all_repro) as patch:
+    with unittest.mock.patch('utils.execute',
+                             side_effect=all_repro) as mocked_execute:
       result = self.test_target.is_reproducible(TEST_FILES_PATH,
                                                 self.fuzz_target_bin)
       self.assertEqual(result, (True, True))
@@ -83,7 +84,7 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     self._set_up_fakefs()
     last_time_repro = [EXECUTE_SUCCESS_RETVAL] * 9 + [EXECUTE_FAILURE_RETVAL]
     with unittest.mock.patch('utils.execute',
-                             side_effect=last_time_repro) as patch:
+                             side_effect=last_time_repro) as mocked_execute:
       self.assertTrue(
           self.test_target.is_reproducible(TEST_FILES_PATH,
                                            self.fuzz_target_bin))
@@ -153,10 +154,11 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
       test_target.project_name = EXAMPLE_PROJECT
       test_target.target_name = EXAMPLE_FUZZER
       test_target.out_dir = tmp_dir
-      with unittest.mock.patch('fuzz_target.download_and_unpack_zip',
-                               return_value=tmp_dir) as mock:
+      with unittest.mock.patch(
+          'fuzz_target.download_and_unpack_zip',
+          return_value=tmp_dir) as mocked_download_and_unpack_zip:
         test_target.download_latest_corpus()
-        (url, out_dir), _ = mock.call_args
+        (url, out_dir), _ = mocked_download_and_unpack_zip.call_args
         self.assertEqual(
             url,
             'https://storage.googleapis.com/example-backup.'
@@ -290,7 +292,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
       latest_version = test_target.get_lastest_build_version()
       with unittest.mock.patch(
           'fuzz_target.FuzzTarget.get_lastest_build_version',
-          return_value=latest_version) as mock_build_version:
+          return_value=latest_version) as mocked_build_version:
         for _ in range(5):
           oss_fuzz_build_path = test_target.download_oss_fuzz_build()
         self.assertEqual(1, mock_build_version.call_count)
