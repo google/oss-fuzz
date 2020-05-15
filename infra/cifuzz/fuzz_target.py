@@ -134,13 +134,13 @@ class FuzzTarget:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
       return None, None
 
-    # Libfuzzer timeout has been reached.
+    # Libfuzzer timeout was reached.
     if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
       return None, None
 
-    # Crash has been discovered.
+    # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)

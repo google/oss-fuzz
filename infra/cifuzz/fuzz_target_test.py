@@ -61,7 +61,7 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin, fuzz_target.REPRODUCE_ATTEMPTS,
                                               '/example/outdir')
 
-  def test_with_reproducible(self, _):
+  def test_reproducible(self, _):
     """Tests that is_reproducible will return True, True if crash is
     detected."""
     self._set_up_fakefs()
@@ -79,7 +79,7 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     self.fs.create_file(self.fuzz_target_bin)
     self.fs.add_real_directory(TEST_FILES_PATH)
 
-  def test_with_flaky(self, _):
+  def test_flaky(self, _):
     """Tests that is_reproducible will return True, True if crash is
     detected on the last attempt."""
     self._set_up_fakefs()
@@ -91,13 +91,13 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
                                            self.fuzz_target_bin))
       self.assertEqual(fuzz_target.REPRODUCE_ATTEMPTS, patch.call_count)
 
-  def test_with_non_existent_fuzzer(self, _):
+  def test_non_existent_fuzzer(self, _):
     """Tests that is_reproducible will report that it could not attempt
     reproduction if the fuzzer does not exist."""
     self.assertFalse(
         self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist')[1])
 
-  def test_with_unreproducible(self, _):
+  def test_unreproducible(self, _):
     """Tests that is_reproducible returns (True, True) for a crash that cannot
     be reproduced."""
     all_unrepro = [EXECUTE_SUCCESS_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
@@ -117,7 +117,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
     self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
                                               '/example/outdir')
 
-  def test_with_valid_error_string(self):
+  def test_valid_error_string(self):
     """Tests that get_test_case returns the correct test case give an error."""
     test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   'test_files',
@@ -128,7 +128,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
         parsed_test_case,
         '/example/outdir/crash-ad6700613693ef977ff3a8c8f4dae239c3dde6f5')
 
-  def test_with_invalid_error_string(self):
+  def test_invalid_error_string(self):
     """Tests that get_test_case will return None with a bad error string."""
     self.assertIsNone(self.test_target.get_test_case(''))
     self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
@@ -181,7 +181,7 @@ class CheckReproducibilityAndRegressionUnitTest(
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin, 100,
                                               '/example/outdir', 'example')
 
-  def test_with_valid_crash(self):
+  def test_valid_crash(self):
     """Checks to make sure a valid crash returns True."""
     with unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
                              side_effect=[(True, True), (False, True)]):
@@ -205,7 +205,7 @@ class CheckReproducibilityAndRegressionUnitTest(
       (
           [(False, True), (False, True)],),
   ])
-  def test_with_invalid_crash(self, is_reproducible_retvals):
+  def test_invalid_crash(self, is_reproducible_retvals):
     """Checks an invalid crash causes the method to return False."""
     self.setUpPyfakefs()
     self.fs.create_file(self.fuzz_target_bin)
