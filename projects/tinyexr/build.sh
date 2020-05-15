@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# Env settings
-CXX=clang++
-
 # prepare files
 cp test/fuzzer/fuzz.cc $SRC/tinyexr_fuzzer.cc
 
