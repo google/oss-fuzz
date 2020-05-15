@@ -159,24 +159,29 @@ class FuzzTarget:
         target_path: The path to the fuzz target to be tested
 
       Returns:
-        True if crash is reproducible.
+        True, True if crash is reproducible and we were able to run the binary.
     """
     if not os.path.exists(test_case):
-      logging.error('Test case %s is not found.', test_case)
-      return False
-    if os.path.exists(target_path):
-      os.chmod(os.path.join(target_path, self.target_name), stat.S_IRWXO)
+      logging.error('Test case %s not found.', test_case)
+      return False, False
 
+    if not os.path.exists(target_path):
+      logging.error('Target %s not found.', target_path)
+      return False, False
+
+    os.chmod(target_path, stat.S_IRWXO)
+
+    target_dirname = os.path.dirname(target_path)
     command = ['docker', 'run', '--rm', '--privileged']
     container = utils.get_container_name()
     if container:
       command += [
-          '--volumes-from', container, '-e', 'OUT=' + target_path, '-e',
+          '--volumes-from', container, '-e', 'OUT=' + target_dirname, '-e',
           'TESTCASE=' + test_case
       ]
     else:
       command += [
-          '-v', '%s:/out' % target_path, '-v',
+          '-v', '%s:/out' % target_dirname, '-v',
           '%s:/testcase' % test_case
       ]
 
@@ -187,10 +192,17 @@ class FuzzTarget:
 
     logging.info('Running reproduce command: %s.', ' '.join(command))
     for _ in range(REPRODUCE_ATTEMPTS):
-      _, _, err_code = utils.execute(command)
-      if err_code:
-        return True
-    return False
+      _, _, return_code = utils.execute(command)
+      if return_code != 0:
+        logging.info(
+            'Reproduce command returned: %s. Reproducible on %s.',
+            error_code, target_path)
+
+        return True, True
+
+    logging.info('Reproduce command returned 0. Not reproducible on %s.',
+                 target_path)
+    return False, True
 
   def check_reproducibility_and_regression(self, test_case):
     """Checks if a crash is reproducible, and if it is, whether it's a new
@@ -205,27 +217,42 @@ class FuzzTarget:
     Returns:
       True if the crash was introduced by the current pull request.
     """
-    reproducible_in_pr = self.is_reproducible(test_case,
-                                              os.path.dirname(self.target_path))
-    if not self.project_name:
-      return reproducible_in_pr
+    reproducible_on_pr_build, ran_target = self.is_reproducible(
+        test_case, self.target_path)
 
-    if not reproducible_in_pr:
+    if not ran_target:
+      raise Exception(
+          'Could not run target when checking for reproducibility.'
+          'Please file an issue:'
+          'https://github.com/google/oss-fuzz/issues/new.')
+
+    if not self.project_name:
+      # TODO(metzman): This check seems overly defensive and the branch seems
+      # dead. Figure this out and remove it if it is dead.
+      return reproducible_on_pr_build
+
+    if not reproducible_on_pr_build:
       logging.info(
           'Failed to reproduce the crash using the obtained test case.')
       return False
 
     oss_fuzz_build_dir = self.download_oss_fuzz_build()
-    if not oss_fuzz_build_dir:
-      return False
+    oss_fuzz_target_path = os.path.join(oss_fuzz_build_dir, self.target_name)
+    reproducible_on_oss_fuzz_build, ran_target = self.is_reproducible(
+        test_case, oss_fuzz_target_path)
 
-    reproducible_in_oss_fuzz = self.is_reproducible(test_case,
-                                                    oss_fuzz_build_dir)
-
-    if reproducible_in_pr and not reproducible_in_oss_fuzz:
-      logging.info('The crash is reproducible. The crash doesn\'t reproduce ' \
-      'on old builds. This pull request probably introduced the crash.')
+    if not ran_target:
+      logging.info('Crash is reproducible. Could not run OSS-Fuzz build of '
+                   'target to determine if novel. Assuming this pull request '
+                   'introduced the crash.')
       return True
+
+    if not reproducible_on_oss_fuzz_build:
+      logging.info('The crash is reproducible. The crash doesn\'t reproduce '
+                   'on old builds. This pull request probably introduced the '
+                   'crash.')
+      return True
+
     logging.info('The crash is reproducible without the current pull request.')
     return False
 
