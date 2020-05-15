@@ -46,8 +46,8 @@ EXECUTE_SUCCESS_RETVAL = ('', '', 0)
 EXECUTE_FAILURE_RETVAL = ('', '', 1)
 
 
-# TODO(metzman): Use patch from clusterfuzz/src/python/tests/test_libs/
-# so that we don't need to accept this as an argument in every test method.
+# TODO(metzman): Use patch from test_libs/helpers.py in clusterfuzz so that we
+# don't need to accept this as an argument in every test method.
 @unittest.mock.patch('utils.get_container_name', return_value='container')
 class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
   """Test is_reproducible function in the fuzz_target module."""

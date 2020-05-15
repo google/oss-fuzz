@@ -161,7 +161,7 @@ class FuzzTarget:
       Returns:
         (True, True) if crash is reproducible and we were able to run the
         binary.
-        (True, False) if we were not able to attempt reproduction. Do not rely
+        (False, False) if we were not able to attempt reproduction. Do not rely
         on the first return value in this case.
         (False, True) if we were able to attempt reproduction but the crash did
         not reproduce.
@@ -255,7 +255,7 @@ class FuzzTarget:
 
     if not ran_target:
       # This happens if the project has OSS-Fuzz builds, but the fuzz target
-      # doesn't.
+      # is not in it.
       logging.info(could_not_test_on_oss_fuzz_message)
       return True
 
