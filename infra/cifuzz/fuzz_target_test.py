@@ -65,9 +65,9 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     """Tests that is_reproducible will return True, True if crash is
     detected."""
     self._set_up_fakefs()
-    all_success = [EXECUTE_FAILURE_RETVAL] * 10
+    all_repro = [EXECUTE_FAILURE_RETVAL] * 10
     with unittest.mock.patch.object(utils, 'execute',
-                                    side_effect=all_success) as patch:
+                                    side_effect=all_repro) as patch:
       result = self.test_target.is_reproducible(TEST_FILES_PATH,
                                                 self.fuzz_target_bin)
       self.assertEqual(result, (True, True))
@@ -84,10 +84,10 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     """Tests that is_reproducible will return True, True if crash is
     detected on the last attempt."""
     self._set_up_fakefs()
-    last_time_success = [EXECUTE_SUCCESS_RETVAL] * 9 + [EXECUTE_FAILURE_RETVAL]
+    last_time_repro = [EXECUTE_SUCCESS_RETVAL] * 9 + [EXECUTE_FAILURE_RETVAL]
     with unittest.mock.patch.object(utils,
                                     'execute',
-                                    side_effect=last_time_success) as patch:
+                                    side_effect=last_time_repro) as patch:
       self.assertTrue(
           self.test_target.is_reproducible(TEST_FILES_PATH,
                                            self.fuzz_target_bin))
@@ -102,10 +102,9 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
   def test_with_unreproducible(self, _):
     """Tests that is_reproducible returns (True, True) for a crash that cannot
     be reproduced."""
-    all_fail = [EXECUTE_FAILURE_RETVAL] * 10
+    all_unrepro = [EXECUTE_SUCCESS_RETVAL] * 10
     self._set_up_fakefs()
-    with unittest.mock.patch.object(utils, 'execute', side_effect=all_fail):
-
+    with unittest.mock.patch.object(utils, 'execute', side_effect=all_unrepro):
       result = self.test_target.is_reproducible(TEST_FILES_PATH,
                                                 self.fuzz_target_bin)
       expected_result = (False, True)
