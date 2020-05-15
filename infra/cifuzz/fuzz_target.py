@@ -57,7 +57,7 @@ SANITIZER = 'address'
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
-# Seconds on top of duration till a timeout error is raised.
+# Seconds on top of duration until a timeout error is raised.
 BUFFER_TIME = 10
 
 
@@ -159,7 +159,12 @@ class FuzzTarget:
         target_path: The path to the fuzz target to be tested
 
       Returns:
-        True, True if crash is reproducible and we were able to run the binary.
+        (True, True) if crash is reproducible and we were able to run the
+        binary.
+        (True, False) if we were not able to attempt reproduction. Do not rely
+        on the first return value in this case.
+        (False, True) if we were able to attempt reproduction but the crash did
+        not reproduce.
     """
     if not os.path.exists(test_case):
       logging.error('Test case %s not found.', test_case)
@@ -181,7 +186,8 @@ class FuzzTarget:
       ]
     else:
       command += [
-          '-v', '%s:/out' % target_dirname, '-v',
+          '-v',
+          '%s:/out' % target_dirname, '-v',
           '%s:/testcase' % test_case
       ]
 
@@ -192,11 +198,10 @@ class FuzzTarget:
 
     logging.info('Running reproduce command: %s.', ' '.join(command))
     for _ in range(REPRODUCE_ATTEMPTS):
-      _, _, return_code = utils.execute(command)
-      if return_code != 0:
-        logging.info(
-            'Reproduce command returned: %s. Reproducible on %s.',
-            error_code, target_path)
+      _, _, returncode = utils.execute(command)
+      if returncode != 0:
+        logging.info('Reproduce command returned: %s. Reproducible on %s.',
+                     returncode, target_path)
 
         return True, True
 
@@ -221,14 +226,13 @@ class FuzzTarget:
         test_case, self.target_path)
 
     if not ran_target:
-      raise Exception(
-          'Could not run target when checking for reproducibility.'
-          'Please file an issue:'
-          'https://github.com/google/oss-fuzz/issues/new.')
+      raise Exception('Could not run target when checking for reproducibility.'
+                      'Please file an issue:'
+                      'https://github.com/google/oss-fuzz/issues/new.')
 
     if not self.project_name:
       # TODO(metzman): This check seems overly defensive and the branch seems
-      # dead. Figure this out and remove it if it is dead.
+      # dead. Figure this out and remove the branch if branch is dead.
       return reproducible_on_pr_build
 
     if not reproducible_on_pr_build:
@@ -236,15 +240,25 @@ class FuzzTarget:
           'Failed to reproduce the crash using the obtained test case.')
       return False
 
+    could_not_test_on_oss_fuzz_message = (
+        'Crash is reproducible. Could not run OSS-Fuzz build of '
+        'target to determine if novel. Assuming this pull request '
+        'introduced the crash.')
+
     oss_fuzz_build_dir = self.download_oss_fuzz_build()
+    if not oss_fuzz_build_dir:
+      # Crash is reproducible on PR build and we can't test on OSS-Fuzz build.
+      logging.info(could_not_test_on_oss_fuzz_message)
+      return True
+
     oss_fuzz_target_path = os.path.join(oss_fuzz_build_dir, self.target_name)
     reproducible_on_oss_fuzz_build, ran_target = self.is_reproducible(
         test_case, oss_fuzz_target_path)
 
     if not ran_target:
-      logging.info('Crash is reproducible. Could not run OSS-Fuzz build of '
-                   'target to determine if novel. Assuming this pull request '
-                   'introduced the crash.')
+      # This happens if the project has OSS-Fuzz builds, but the fuzz target
+      # doesn't.
+      logging.info(could_not_test_on_oss_fuzz_message)
       return True
 
     if not reproducible_on_oss_fuzz_build:

@@ -20,6 +20,9 @@ import unittest
 import unittest.mock
 import urllib
 
+import parameterized
+from pyfakefs import fake_filesystem_unittest
+
 # Pylint has issue importing utils which is why error suppression is required.
 # pylint: disable=wrong-import-position
 # pylint: disable=import-error
@@ -39,41 +42,74 @@ EXAMPLE_FUZZER = 'example_crash_fuzzer'
 TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'test_files')
 
+# The return value of a successful call to utils.execute.
+EXECUTE_SUCCESS_RETVAL = ('', '', 0)
 
-class IsReproducibleUnitTest(unittest.TestCase):
+# The return value of a failed call to utils.execute.
+EXECUTE_FAILURE_RETVAL = ('', '', 1)
+
+
+# TODO(metzman): Use patch from clusterfuzz/src/python/tests/test_libs/
+# so that we don't need to accept this as an argument in every test method.
+@unittest.mock.patch('utils.get_container_name', return_value='container')
+class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
   """Test is_reproducible function in the fuzz_target module."""
 
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
-    self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
+    self.fuzz_target_bin = '/example/path'
+    self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin, 10,
                                               '/example/outdir')
 
-  def test_with_reproducible(self):
-    """Tests that a is_reproducible will return true if crash is detected."""
-    test_all_success = [(0, 0, 1)] * 10
-    with unittest.mock.patch.object(utils,
-                                    'execute',
-                                    side_effect=test_all_success) as patch:
-      self.assertTrue(
-          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
+  def test_with_reproducible(self, _):
+    """Tests that is_reproducible will return True, True if crash is
+    detected."""
+    self._set_up_fakefs()
+    all_success = [EXECUTE_FAILURE_RETVAL] * 10
+    with unittest.mock.patch.object(utils, 'execute',
+                                    side_effect=all_success) as patch:
+      result = self.test_target.is_reproducible(TEST_FILES_PATH,
+                                                self.fuzz_target_bin)
+      self.assertEqual(result, (True, True))
       self.assertEqual(1, patch.call_count)
 
-    test_one_success = [(0, 0, 0)] * 9 + [(0, 0, 1)]
+  def _set_up_fakefs(self):
+    """Helper to setup pyfakefs and add important files to the fake
+    filesystem."""
+    self.setUpPyfakefs()
+    self.fs.create_file(self.fuzz_target_bin)
+    self.fs.add_real_directory(TEST_FILES_PATH)
+
+  def test_with_flaky(self, _):
+    """Tests that is_reproducible will return True, True if crash is
+    detected on the last attempt."""
+    self._set_up_fakefs()
+    last_time_success = [EXECUTE_SUCCESS_RETVAL] * 9 + [EXECUTE_FAILURE_RETVAL]
     with unittest.mock.patch.object(utils,
                                     'execute',
-                                    side_effect=test_one_success) as patch:
+                                    side_effect=last_time_success) as patch:
       self.assertTrue(
-          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
+          self.test_target.is_reproducible(TEST_FILES_PATH,
+                                           self.fuzz_target_bin))
       self.assertEqual(10, patch.call_count)
 
-  def test_with_not_reproducible(self):
-    """Tests that a is_reproducible will return False if crash not detected."""
-    test_all_fail = [(0, 0, 0)] * 10
-    with unittest.mock.patch.object(utils, 'execute',
-                                    side_effect=test_all_fail) as patch:
-      self.assertFalse(
-          self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist'))
-      self.assertEqual(10, patch.call_count)
+  def test_with_non_existent_fuzzer(self, _):
+    """Tests that is_reproducible will report that it could not attempt
+    reproduction if the fuzzer does not exist."""
+    self.assertFalse(
+        self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist')[1])
+
+  def test_with_unreproducible(self, _):
+    """Tests that is_reproducible returns (True, True) for a crash that cannot
+    be reproduced."""
+    all_fail = [EXECUTE_FAILURE_RETVAL] * 10
+    self._set_up_fakefs()
+    with unittest.mock.patch.object(utils, 'execute', side_effect=all_fail):
+
+      result = self.test_target.is_reproducible(TEST_FILES_PATH,
+                                                self.fuzz_target_bin)
+      expected_result = (False, True)
+      self.assertEqual(result, expected_result)
 
 
 class GetTestCaseUnitTest(unittest.TestCase):
@@ -137,46 +173,58 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
       self.assertIsNone(corpus_path)
 
 
-class CheckReproducibilityAndRegressionUnitTest(unittest.TestCase):
-  """Test check_reproducibility_and_regression function fuzz_target module."""
+class CheckReproducibilityAndRegressionUnitTest(
+    fake_filesystem_unittest.TestCase):
+  """Test check_reproducibility_and_regression method of
+  fuzz_target.FuzzTarget."""
 
   def setUp(self):
-    """Sets up dummy fuzz target to test is_reproducible method."""
-    self.test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 100,
+    """Sets up dummy fuzz target to test check_reproducibility_and_regression
+    method."""
+    self.fuzz_target_bin = '/example/do_stuff_fuzzer'
+    self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin, 100,
                                               '/example/outdir', 'example')
 
   def test_with_valid_crash(self):
-    """Checks to make sure a valid crash returns true."""
-    with unittest.mock.patch.object(
-        fuzz_target.FuzzTarget, 'is_reproducible',
-        side_effect=[True, False]), tempfile.TemporaryDirectory() as tmp_dir:
-      self.test_target.out_dir = tmp_dir
-      self.assertTrue(
-          self.test_target.check_reproducibility_and_regression(
-              '/example/crash/testcase'))
-
-  def test_with_invalid_crash(self):
-    """Checks to make sure an invalid crash returns false."""
+    """Checks to make sure a valid crash returns True."""
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
-                                    side_effect=[True, True]):
-      self.assertFalse(
-          self.test_target.check_reproducibility_and_regression(
-              '/example/crash/testcase'))
+                                    side_effect=[(True, True), (False, True)]):
+      with tempfile.TemporaryDirectory() as tmp_dir:
+        self.test_target.out_dir = tmp_dir
+        self.assertTrue(
+            self.test_target.check_reproducibility_and_regression(
+                '/example/crash/testcase'))
 
+  @parameterized.parameterized.expand([
+      # Reproducible, but also reproducible on OSS-Fuzz.
+      (
+          [(True, True), (True, True)],),
+
+      # Not reproducible, but somehow reproducible on OSS-Fuzz.
+      # Unlikely to happen in real world except if test is flaky.
+      (
+          [(False, True), (True, False)],),
+
+      # Not reproducible, and not reproducible on OSS-Fuzz.
+      (
+          [(False, True), (False, True)],),
+  ])
+  def test_with_invalid_crash(self, is_reproducible_retvals):
+    """Checks an invalid crash causes the method to return False."""
+    self.setUpPyfakefs()
+    self.fs.create_file(self.fuzz_target_bin)
+    self.fs.add_real_directory(TEST_FILES_PATH)
     with unittest.mock.patch.object(fuzz_target.FuzzTarget,
                                     'is_reproducible',
-                                    side_effect=[False, True]):
-      self.assertFalse(
-          self.test_target.check_reproducibility_and_regression(
-              '/example/crash/testcase'))
+                                    side_effect=is_reproducible_retvals):
+      oss_fuzz_build_path = '/oss-fuzz-build'
 
-    with unittest.mock.patch.object(fuzz_target.FuzzTarget,
-                                    'is_reproducible',
-                                    side_effect=[False, False]):
-      self.assertFalse(
-          self.test_target.check_reproducibility_and_regression(
-              '/example/crash/testcase'))
+      with unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
+                               return_value=oss_fuzz_build_path):
+        self.assertFalse(
+            self.test_target.check_reproducibility_and_regression(
+                '/example/crash/testcase'))
 
 
 class GetLatestBuildVersionUnitTest(unittest.TestCase):
