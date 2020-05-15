@@ -393,10 +393,10 @@ def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
-  parser.add_argument('command',
-                      choices=['format', 'lint', 'license', 'infra-tests',
-                               'check_dockerfile'],
-                      nargs='?')
+  parser.add_argument(
+      'command',
+      choices=['format', 'lint', 'license', 'infra-tests', 'check_dockerfile'],
+      nargs='?')
 
   parser.add_argument('--all-files',
                       '-a',
