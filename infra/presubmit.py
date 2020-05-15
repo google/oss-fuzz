@@ -224,20 +224,6 @@ def check_project_yaml(paths):
   return all([_check_one_project_yaml(path) for path in paths])
 
 
-def workdir_from_dockerfile(dockerfile):
-  """Parse WORKDIR from the Dockerfile. ."""
-  with open(dockerfile) as f:
-    lines = f.readlines()
-
-  for line in lines:
-    match = re.match(WORKDIR_REGEX, line)
-    if match:
-      # We need to escape '$' since they're used for subsitutions in Container
-      # Builer builds.
-      return match.group(1).replace('$', '$$')
-
-  return None
-
 def _check_one_dockerfile(path):
   """Do checks on the Dockerfile."""
   if os.path.basename(path) != 'Dockerfile':
@@ -251,12 +237,10 @@ def _check_one_dockerfile(path):
     print('Error in {path}: Dockerfile contains multiple WORKDIR commands: '
           '"""\n{workdir_commands}"""\n'
           'Please use at most one'.format(
-              path=path,
-              workdir_commands=' '.join(workdir_lines)))
+              path=path, workdir_commands=' '.join(workdir_lines)))
     return False
 
   return True
-
 
 
 def check_dockerfile(paths):
@@ -268,9 +252,12 @@ def check_dockerfile(paths):
 def do_checks(relevant_files):
   """Run all presubmit checks return False if any fails."""
   checks = [
-      # check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine,
+      check_license,
+      yapf,
+      lint,
+      check_project_yaml,
+      check_lib_fuzzing_engine,
       check_dockerfile,
-
   ]
   # Use a list comprehension here and in other cases where we use all() so that
   # we don't quit early on failure. This is more user-friendly since the more
@@ -379,8 +366,7 @@ def get_all_files():
   """Return a list of absolute paths of all files in the repo."""
   ls_files_command = ['git', 'ls-files']
   return [
-      os.path.abspath(path)
-      for path in subprocess.check_output(
+      os.path.abspath(path) for path in subprocess.check_output(
           ls_files_command).decode().splitlines()
   ]
 
@@ -423,7 +409,6 @@ def main():
     relevant_files = get_all_files()
   else:
     relevant_files = get_changed_files()
-
 
   # Do one specific check if the user asked for it.
   if args.command == 'format':
