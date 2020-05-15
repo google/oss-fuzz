@@ -5,5 +5,4 @@ fuzzing_engines:
     - libfuzzer
 sanitizers:
     - address
-    - memory
     - undefined
