@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,14 +31,14 @@ RUN wget --quiet https://github.com/Kitware/CMake/releases/download/v3.14.5/cmak
 # (Mismatch between libstdc++ and libc++ maybe?)
 # It works if we build `rdkit` using gcc or build boost using clang instead.
 # We've opted for building boost using clang.
-WORKDIR /src
+RUN cd $SRC
 RUN wget --quiet https://sourceforge.net/projects/boost/files/boost/1.69.0/boost_1_69_0.tar.bz2
 RUN tar xjf boost_1_69_0.tar.bz2
-WORKDIR /src/boost_1_69_0
+RUN cd $SRC/boost_1_69_0
 RUN ./bootstrap.sh --with-toolset=clang --with-libraries=serialization,system,iostreams,regex
 RUN ./b2 -q -j2 toolset=clang cxxflags="-fPIC $CXXFLAGS $CXXFLAGS_EXTRA" link=static install
 
-WORKDIR /src
+RUN cd $SRC
 RUN git clone --depth 1 https://github.com/rdkit/rdkit.git rdkit
-WORKDIR rdkit
+WORKDIR $SRC/rdkit
 COPY build.sh $SRC/
