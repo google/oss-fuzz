@@ -1,5 +1,5 @@
 homepage: "https://beltoforion.de/article.php?a=muparser"
-language: c, c++
+language: c++
 primary_contact: "todo@gmail.com"
 fuzzing_engines:
     - libfuzzer
