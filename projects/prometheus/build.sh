@@ -1,3 +1,4 @@
+#/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,19 +14,16 @@
 # limitations under the License.
 #
 ################################################################################
+function compile_fuzzer {
+  path=$1
+  function=$2
+  fuzzer=$3
 
-FROM gcr.io/oss-fuzz-base/base-builder
+  go-fuzz -func $function -o $fuzzer.a $path
 
-MAINTAINER randy408@protonmail.com
-
-RUN apt-get update && \
-    apt-get install -y pkg-config make automake libtool wget
-
-RUN git clone --depth 1 https://gitlab.freedesktop.org/libspectre/libspectre.git
-
-RUN wget -O $SRC/libspectre/ghostscript-9.52.tar.gz https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/ghostscript-9.52.tar.gz
-RUN tar xvzf $SRC/libspectre/ghostscript-9.52.tar.gz --directory $SRC/libspectre/
-RUN mv $SRC/libspectre/ghostscript-9.52 $SRC/libspectre/ghostscript
-
-WORKDIR $SRC/libspectre/
-COPY build.sh $SRC/
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
+}
+compile_fuzzer github.com/prometheus/prometheus/promql FuzzParseMetric fuzzParseMetric
+compile_fuzzer github.com/prometheus/prometheus/promql FuzzParseOpenMetric fuzzParseOpenMetric
+compile_fuzzer github.com/prometheus/prometheus/promql FuzzParseMetricSelector fuzzParseMetricSelector
+compile_fuzzer github.com/prometheus/prometheus/promql FuzzParseExpr fuzzParseExpr
