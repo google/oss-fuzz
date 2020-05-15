@@ -231,8 +231,6 @@ class FuzzTarget:
                       'https://github.com/google/oss-fuzz/issues/new.')
 
     if not self.project_name:
-      # TODO(metzman): This check seems overly defensive and the branch seems
-      # dead. Figure this out and remove the branch if branch is dead.
       return reproducible_on_pr_build
 
     if not reproducible_on_pr_build:
