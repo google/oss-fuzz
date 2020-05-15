@@ -4,5 +4,3 @@ primary_contact: "clickhouse-feedback@yandex-team.com"
 auto_ccs:
  - "security@yandex-team.com"
  - "kyprizel@gmail.com"
-sanitizers:
-  - address
