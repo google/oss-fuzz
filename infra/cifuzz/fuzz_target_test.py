@@ -61,15 +61,21 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
 
   def test_reproducible(self, _):
     """Tests that is_reproducible will return True, True if crash is
-    detected."""
+    detected and that the command used to reproduce is correct."""
     self._set_up_fakefs()
     all_repro = [EXECUTE_FAILURE_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
     with unittest.mock.patch('utils.execute',
                              side_effect=all_repro) as mocked_execute:
       result = self.test_target.is_reproducible(TEST_FILES_PATH,
                                                 self.fuzz_target_bin)
+      mocked_execute.assert_called_once_with([
+          'docker', 'run', '--rm', '--privileged', '--volumes-from',
+          'container', '-e', 'OUT=/example', '-e',
+          'TESTCASE=' + TEST_FILES_PATH, '-t',
+          'gcr.io/oss-fuzz-base/base-runner', 'reproduce', 'path', '-runs=100'
+      ])
       self.assertEqual(result, (True, True))
-      self.assertEqual(1, patch.call_count)
+      self.assertEqual(1, mocked_execute.call_count)
 
   def _set_up_fakefs(self):
     """Helper to setup pyfakefs and add important files to the fake
@@ -88,7 +94,8 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
       self.assertTrue(
           self.test_target.is_reproducible(TEST_FILES_PATH,
                                            self.fuzz_target_bin))
-      self.assertEqual(fuzz_target.REPRODUCE_ATTEMPTS, patch.call_count)
+      self.assertEqual(fuzz_target.REPRODUCE_ATTEMPTS,
+                       mocked_execute.call_count)
 
   def test_non_existent_fuzzer(self, _):
     """Tests that is_reproducible will report that it could not attempt
@@ -160,11 +167,9 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
         test_target.download_latest_corpus()
         (url, out_dir), _ = mocked_download_and_unpack_zip.call_args
         self.assertEqual(
-            url,
-            'https://storage.googleapis.com/example-backup.'
+            url, 'https://storage.googleapis.com/example-backup.'
             'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
-            'example_crash_fuzzer/public.zip'
-        )
+            'example_crash_fuzzer/public.zip')
         self.assertEqual(out_dir,
                          os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_FUZZER))
 
@@ -244,15 +249,15 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
     PR build but the target is not in the OSS-Fuzz build (usually because it
     is new)."""
     os.remove(self.oss_fuzz_target_path)
-    with unittest.mock.patch(
-        'fuzz_target.FuzzTarget.is_reproducible',
-        side_effect=[(True, True), (True, False)]) as mocked_is_reproducible:
+    with unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
+                             side_effect=[(True, True), (True, False)
+                                         ]) as mocked_is_reproducible:
       with unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
                                return_value=self.oss_fuzz_build_path):
         self.assertTrue(
             self.test_target.is_crash_reportable('/example/crash/testcase'))
-    mocked_is_reproducible.assert_any_call(
-        '/example/crash/testcase', self.oss_fuzz_target_path)
+    mocked_is_reproducible.assert_any_call('/example/crash/testcase',
+                                           self.oss_fuzz_target_path)
     mocked_info.assert_called_with(
         'Crash is reproducible. Could not run OSS-Fuzz build of '
         'target to determine if this pull request introduced crash. '
@@ -292,10 +297,10 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
       latest_version = test_target.get_lastest_build_version()
       with unittest.mock.patch(
           'fuzz_target.FuzzTarget.get_lastest_build_version',
-          return_value=latest_version) as mocked_build_version:
+          return_value=latest_version) as mocked_get_latest_build_version:
         for _ in range(5):
           oss_fuzz_build_path = test_target.download_oss_fuzz_build()
-        self.assertEqual(1, mock_build_version.call_count)
+        self.assertEqual(1, mocked_get_latest_build_version.call_count)
         self.assertIsNotNone(oss_fuzz_build_path)
         self.assertTrue(os.listdir(oss_fuzz_build_path))
 
