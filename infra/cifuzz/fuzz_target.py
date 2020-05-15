@@ -57,7 +57,7 @@ SANITIZER = 'address'
 # The number of reproduce attempts for a crash.
 REPRODUCE_ATTEMPTS = 10
 
-# Seconds on top of duration till a timeout error is raised.
+# Seconds on top of duration until a timeout error is raised.
 BUFFER_TIME = 10
 
 
@@ -134,20 +134,20 @@ class FuzzTarget:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
       return None, None
 
-    # Libfuzzer timeout has been reached.
+    # Libfuzzer timeout was reached.
     if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
       return None, None
 
-    # Crash has been discovered.
+    # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     err_str = err.decode('ascii')
     test_case = self.get_test_case(err_str)
     if not test_case:
       logging.error('No test case found in stack trace: %s.', err_str)
       return None, None
-    if self.check_reproducibility_and_regression(test_case):
+    if self.is_crash_reportable(test_case):
       return test_case, err_str
     return None, None
 
@@ -159,24 +159,35 @@ class FuzzTarget:
         target_path: The path to the fuzz target to be tested
 
       Returns:
-        True if crash is reproducible.
+        (True, True) if crash is reproducible and we were able to run the
+        binary.
+        (True, False) if we were not able to attempt reproduction. Do not rely
+        on the first return value in this case.
+        (False, True) if we were able to attempt reproduction but the crash did
+        not reproduce.
     """
     if not os.path.exists(test_case):
-      logging.error('Test case %s is not found.', test_case)
-      return False
-    if os.path.exists(target_path):
-      os.chmod(os.path.join(target_path, self.target_name), stat.S_IRWXO)
+      logging.error('Test case %s not found.', test_case)
+      return False, False
 
+    if not os.path.exists(target_path):
+      logging.error('Target %s not found.', target_path)
+      return False, False
+
+    os.chmod(target_path, stat.S_IRWXO)
+
+    target_dirname = os.path.dirname(target_path)
     command = ['docker', 'run', '--rm', '--privileged']
     container = utils.get_container_name()
     if container:
       command += [
-          '--volumes-from', container, '-e', 'OUT=' + target_path, '-e',
+          '--volumes-from', container, '-e', 'OUT=' + target_dirname, '-e',
           'TESTCASE=' + test_case
       ]
     else:
       command += [
-          '-v', '%s:/out' % target_path, '-v',
+          '-v',
+          '%s:/out' % target_dirname, '-v',
           '%s:/testcase' % test_case
       ]
 
@@ -187,12 +198,18 @@ class FuzzTarget:
 
     logging.info('Running reproduce command: %s.', ' '.join(command))
     for _ in range(REPRODUCE_ATTEMPTS):
-      _, _, err_code = utils.execute(command)
-      if err_code:
-        return True
-    return False
+      _, _, returncode = utils.execute(command)
+      if returncode != 0:
+        logging.info('Reproduce command returned: %s. Reproducible on %s.',
+                     returncode, target_path)
 
-  def check_reproducibility_and_regression(self, test_case):
+        return True, True
+
+    logging.info('Reproduce command returned 0. Not reproducible on %s.',
+                 target_path)
+    return False, True
+
+  def is_crash_reportable(self, test_case):
     """Checks if a crash is reproducible, and if it is, whether it's a new
     regression that cannot be reproduced with the latest OSS-Fuzz build.
 
@@ -205,27 +222,49 @@ class FuzzTarget:
     Returns:
       True if the crash was introduced by the current pull request.
     """
-    reproducible_in_pr = self.is_reproducible(test_case,
-                                              os.path.dirname(self.target_path))
-    if not self.project_name:
-      return reproducible_in_pr
+    reproducible_on_pr_build, ran_target = self.is_reproducible(
+        test_case, self.target_path)
 
-    if not reproducible_in_pr:
+    if not ran_target:
+      raise Exception('Could not run target when checking for reproducibility.'
+                      'Please file an issue:'
+                      'https://github.com/google/oss-fuzz/issues/new.')
+
+    if not self.project_name:
+      return reproducible_on_pr_build
+
+    if not reproducible_on_pr_build:
       logging.info(
           'Failed to reproduce the crash using the obtained test case.')
       return False
 
+    could_not_test_on_oss_fuzz_message = (
+        'Crash is reproducible. Could not run OSS-Fuzz build of '
+        'target to determine if this pull request introduced crash. '
+        'Assuming this pull request introduced crash.')
+
     oss_fuzz_build_dir = self.download_oss_fuzz_build()
     if not oss_fuzz_build_dir:
-      return False
-
-    reproducible_in_oss_fuzz = self.is_reproducible(test_case,
-                                                    oss_fuzz_build_dir)
-
-    if reproducible_in_pr and not reproducible_in_oss_fuzz:
-      logging.info('The crash is reproducible. The crash doesn\'t reproduce ' \
-      'on old builds. This pull request probably introduced the crash.')
+      # Crash is reproducible on PR build and we can't test on OSS-Fuzz build.
+      logging.info(could_not_test_on_oss_fuzz_message)
       return True
+
+    oss_fuzz_target_path = os.path.join(oss_fuzz_build_dir, self.target_name)
+    reproducible_on_oss_fuzz_build, ran_target = self.is_reproducible(
+        test_case, oss_fuzz_target_path)
+
+    if not ran_target:
+      # This happens if the project has OSS-Fuzz builds, but the fuzz target
+      # doesn't.
+      logging.info(could_not_test_on_oss_fuzz_message)
+      return True
+
+    if not reproducible_on_oss_fuzz_build:
+      logging.info('The crash is reproducible. The crash doesn\'t reproduce '
+                   'on old builds. This pull request probably introduced the '
+                   'crash.')
+      return True
+
     logging.info('The crash is reproducible without the current pull request.')
     return False
 

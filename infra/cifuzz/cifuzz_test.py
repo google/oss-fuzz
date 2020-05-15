@@ -157,7 +157,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     # OSS-Fuzz build.
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
-                           side_effect=[True, False]):
+                           side_effect=[(True, True), (False, True)]):
       run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
@@ -170,7 +170,7 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     """Test run_fuzzers with a bug found in OSS-Fuzz before."""
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
-                           side_effect=[True, True]):
+                           side_effect=[(True, True), (True, True)]):
       run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
