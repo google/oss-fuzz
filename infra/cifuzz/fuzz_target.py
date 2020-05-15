@@ -68,7 +68,7 @@ COULD_NOT_TEST_ON_OSS_FUZZ_MESSAGE = (
     'Assuming this pull request introduced crash.')
 
 
-class ReproduceError:
+class ReproduceError(Exception):
   """Error for when we can't attempt to reproduce a crash."""
 
 
@@ -180,7 +180,7 @@ class FuzzTarget:
       raise ReproduceError('Test case %s not found.' % test_case)
 
     if not os.path.exists(target_path):
-      raise ReproduceError('Target %s not found.', % target_path)
+      raise ReproduceError('Target %s not found.' % target_path)
 
     os.chmod(target_path, stat.S_IRWXO)
 

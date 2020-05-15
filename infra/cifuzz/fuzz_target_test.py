@@ -74,7 +74,7 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
           'TESTCASE=' + TEST_FILES_PATH, '-t',
           'gcr.io/oss-fuzz-base/base-runner', 'reproduce', 'path', '-runs=100'
       ])
-      self.assertEqual(result, (True, True))
+      self.assertTrue(result)
       self.assertEqual(1, mocked_execute.call_count)
 
   def _set_up_fakefs(self):
@@ -98,32 +98,30 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
                        mocked_execute.call_count)
 
   def test_non_existent_fuzzer(self, _):
-    """Tests that is_reproducible will report that it could not attempt
-    reproduction if the fuzzer does not exist."""
-    result = self.test_target.is_reproducible(TEST_FILES_PATH,
-                                              '/non-existent-path')
-    expected_result = (False, False)
-    self.assertEqual(result, expected_result)
+    """Tests that is_reproducible will raise an error if it could not attempt
+    reproduction when the fuzzer does not exist."""
+    with self.assertRaises(fuzz_target.ReproduceError):
+      self.test_target.is_reproducible(TEST_FILES_PATH,
+                                       '/non-existent-path')
 
   def test_unreproducible(self, _):
-    """Tests that is_reproducible returns (True, True) for a crash that cannot
+    """Tests that is_reproducible returns False for a crash that cannot
     be reproduced."""
     all_unrepro = [EXECUTE_SUCCESS_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
     self._set_up_fakefs()
     with unittest.mock.patch('utils.execute', side_effect=all_unrepro):
       result = self.test_target.is_reproducible(TEST_FILES_PATH,
                                                 self.fuzz_target_bin)
-      expected_result = (False, True)
-      self.assertEqual(result, expected_result)
+      self.assertFalse(result)
 
   def test_non_existent_testcase(self, _):
     """Tests that method reports it did not attempt reproduction if testcase
     doesn't exist."""
     self._set_up_fakefs()
-    result = self.test_target.is_reproducible('/non-existent-path',
+
+    with self.assertRaises(fuzz_target.ReproduceError):
+      self.test_target.is_reproducible('/non-existent-path',
                                               self.fuzz_target_bin)
-    expected_result = (False, False)
-    self.assertEqual(result, expected_result)
 
 
 class GetTestCaseUnitTest(unittest.TestCase):
@@ -204,8 +202,9 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
   @unittest.mock.patch('logging.info')
   def test_new_reproducible_crash(self, mocked_info):
     """Tests that a new reproducible crash returns True."""
+
     with unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
-                             side_effect=[(True, True), (False, True)]):
+                             side_effect=[True, False]):
       with tempfile.TemporaryDirectory() as tmp_dir:
         self.test_target.out_dir = tmp_dir
         self.assertTrue(
@@ -218,14 +217,14 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
   # yapf: disable
   @parameterized.parameterized.expand([
       # Reproducible on PR build, but also reproducible on OSS-Fuzz.
-      ([(True, True), (True, True)],),
+      ([True, True],),
 
       # Not reproducible on PR build, but somehow reproducible on OSS-Fuzz.
       # Unlikely to happen in real world except if test is flaky.
-      ([(False, True), (True, False)],),
+      ([False, True],),
 
       # Not reproducible on PR build, and not reproducible on OSS-Fuzz.
-      ([(False, True), (False, True)],),
+      ([False, False],),
   ])
   # yapf: enable
   def test_invalid_crash(self, is_reproducible_retvals):
@@ -243,15 +242,20 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
 
   @unittest.mock.patch('logging.info')
   @unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
-                       return_value=(True, True))
+                       return_value=[True])
   def test_reproducible_no_oss_fuzz_target(self, _, mocked_info):
     """Tests that is_crash_reportable returns True when a crash repros on the
     PR build but the target is not in the OSS-Fuzz build (usually because it
     is new)."""
     os.remove(self.oss_fuzz_target_path)
-    with unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
-                             side_effect=[(True, True), (True, False)
-                                         ]) as mocked_is_reproducible:
+    def is_reproducible_side_effect(_, target_path):
+      if os.path.dirname(target_path) == self.oss_fuzz_build_path:
+        raise fuzz_target.ReproduceError()
+      return True
+
+    with unittest.mock.patch(
+        'fuzz_target.FuzzTarget.is_reproducible',
+        side_effect=is_reproducible_side_effect) as mocked_is_reproducible:
       with unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
                                return_value=self.oss_fuzz_build_path):
         self.assertTrue(
