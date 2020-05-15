@@ -186,15 +186,27 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
     self.fuzz_target_bin = '/example/do_stuff_fuzzer'
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin, 100,
                                               '/example/outdir', 'example')
+    self.oss_fuzz_build_path = '/oss-fuzz-build'
+    self.setUpPyfakefs()
+    self.fs.create_file(self.fuzz_target_bin)
+    self.oss_fuzz_target_path = os.path.join(
+        self.oss_fuzz_build_path, os.path.basename(self.fuzz_target_bin))
+    self.fs.create_file(self.oss_fuzz_target_path)
+    self.fs.add_real_directory(TEST_FILES_PATH)
 
-  def test_valid_crash(self):
-    """Tests that a valid crash returns True."""
+  @unittest.mock.patch('logging.info')
+  def test_reportable_crash(self, mocked_info):
+    """Tests that a reportable crash returns True."""
     with unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
                              side_effect=[(True, True), (False, True)]):
       with tempfile.TemporaryDirectory() as tmp_dir:
         self.test_target.out_dir = tmp_dir
         self.assertTrue(
             self.test_target.is_crash_reportable('/example/crash/testcase'))
+    mocked_info.assert_called_with(
+        'The crash is reproducible. The crash doesn\'t reproduce '
+        'on old builds. This pull request probably introduced the '
+        'crash.')
 
   # yapf: disable
   @parameterized.parameterized.expand([
@@ -210,18 +222,39 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
   ])
   # yapf: enable
   def test_invalid_crash(self, is_reproducible_retvals):
-    """Tests that an invalid crash causes the method to return False."""
+    """Tests that an reportable crash causes the method to return False."""
     self.setUpPyfakefs()
     self.fs.create_file(self.fuzz_target_bin)
     self.fs.add_real_directory(TEST_FILES_PATH)
     with unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
                              side_effect=is_reproducible_retvals):
-      oss_fuzz_build_path = '/oss-fuzz-build'
 
       with unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
-                               return_value=oss_fuzz_build_path):
+                               return_value=self.oss_fuzz_build_path):
         self.assertFalse(
             self.test_target.is_crash_reportable('/example/crash/testcase'))
+
+  @unittest.mock.patch('logging.info')
+  @unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
+                       return_value=(True, True))
+  def test_reproducible_no_oss_fuzz_target(self, _, mocked_info):
+    """Tests that is_crash_reportable returns True when a crash repros on the
+    PR build but the target is not in the OSS-Fuzz build (usually because it
+    is new)."""
+    os.remove(self.oss_fuzz_target_path)
+    with unittest.mock.patch(
+        'fuzz_target.FuzzTarget.is_reproducible',
+        side_effect=[(True, True), (True, False)]) as mocked_is_reproducible:
+      with unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
+                               return_value=self.oss_fuzz_build_path):
+        self.assertTrue(
+            self.test_target.is_crash_reportable('/example/crash/testcase'))
+    mocked_is_reproducible.assert_any_call(
+        '/example/crash/testcase', self.oss_fuzz_target_path)
+    mocked_info.assert_called_with(
+        'Crash is reproducible. Could not run OSS-Fuzz build of '
+        'target to determine if this pull request introduced crash. '
+        'Assuming this pull request introduced crash.')
 
 
 class GetLatestBuildVersionUnitTest(unittest.TestCase):

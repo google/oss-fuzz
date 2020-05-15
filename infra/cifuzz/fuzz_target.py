@@ -240,8 +240,8 @@ class FuzzTarget:
 
     could_not_test_on_oss_fuzz_message = (
         'Crash is reproducible. Could not run OSS-Fuzz build of '
-        'target to determine if novel. Assuming this pull request '
-        'introduced the crash.')
+        'target to determine if this pull request introduced crash. '
+        'Assuming this pull request introduced crash.')
 
     oss_fuzz_build_dir = self.download_oss_fuzz_build()
     if not oss_fuzz_build_dir:
