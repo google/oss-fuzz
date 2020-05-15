@@ -18,7 +18,6 @@ import sys
 import tempfile
 import unittest
 import unittest.mock
-import urllib
 
 import parameterized
 from pyfakefs import fake_filesystem_unittest
@@ -28,8 +27,6 @@ from pyfakefs import fake_filesystem_unittest
 # pylint: disable=import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fuzz_target
-
-import utils
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
@@ -95,7 +92,8 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
   def test_non_existent_fuzzer(self, _):
     """Tests that is_reproducible will report that it could not attempt
     reproduction if the fuzzer does not exist."""
-    result = self.test_target.is_reproducible(TEST_FILES_PATH, '/non-existent-path')
+    result = self.test_target.is_reproducible(TEST_FILES_PATH,
+                                              '/non-existent-path')
     expected_result = (False, False)
     self.assertEqual(result, expected_result)
 
@@ -114,8 +112,8 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     """Tests that method reports it did not attempt reproduction if testcase
     doesn't exist."""
     self._set_up_fakefs()
-    result = self.test_target.is_reproducible(
-        '/non-existent-path', self.fuzz_target_bin)
+    result = self.test_target.is_reproducible('/non-existent-path',
+                                              self.fuzz_target_bin)
     expected_result = (False, False)
     self.assertEqual(result, expected_result)
 
@@ -180,27 +178,23 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
       self.assertIsNone(corpus_path)
 
 
-class CheckReproducibilityAndRegressionUnitTest(
-    fake_filesystem_unittest.TestCase):
-  """Test check_reproducibility_and_regression method of
-  fuzz_target.FuzzTarget."""
+class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
+  """Test is_crash_reportable method of fuzz_target.FuzzTarget."""
 
   def setUp(self):
-    """Sets up dummy fuzz target to test check_reproducibility_and_regression
-    method."""
+    """Sets up dummy fuzz target to test is_crash_reportable method."""
     self.fuzz_target_bin = '/example/do_stuff_fuzzer'
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin, 100,
                                               '/example/outdir', 'example')
 
   def test_valid_crash(self):
-    """Checks to make sure a valid crash returns True."""
+    """Tests that a valid crash returns True."""
     with unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
                              side_effect=[(True, True), (False, True)]):
       with tempfile.TemporaryDirectory() as tmp_dir:
         self.test_target.out_dir = tmp_dir
         self.assertTrue(
-            self.test_target.check_reproducibility_and_regression(
-                '/example/crash/testcase'))
+            self.test_target.is_crash_reportable('/example/crash/testcase'))
 
   # yapf: disable
   @parameterized.parameterized.expand([
@@ -216,7 +210,7 @@ class CheckReproducibilityAndRegressionUnitTest(
   ])
   # yapf: enable
   def test_invalid_crash(self, is_reproducible_retvals):
-    """Checks an invalid crash causes the method to return False."""
+    """Tests that an invalid crash causes the method to return False."""
     self.setUpPyfakefs()
     self.fs.create_file(self.fuzz_target_bin)
     self.fs.add_real_directory(TEST_FILES_PATH)
@@ -227,15 +221,14 @@ class CheckReproducibilityAndRegressionUnitTest(
       with unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
                                return_value=oss_fuzz_build_path):
         self.assertFalse(
-            self.test_target.check_reproducibility_and_regression(
-                '/example/crash/testcase'))
+            self.test_target.is_crash_reportable('/example/crash/testcase'))
 
 
 class GetLatestBuildVersionUnitTest(unittest.TestCase):
   """Test the get_latest_build_version function in the fuzz_target module."""
 
   def test_get_valid_project(self):
-    """Checks the latest build can be retrieved from gcs."""
+    """Tests that the latest build can be retrieved from GCS."""
     test_target = fuzz_target.FuzzTarget('/example/path', 10, '/example/outdir',
                                          'example')
     latest_build = test_target.get_lastest_build_version()
@@ -244,7 +237,8 @@ class GetLatestBuildVersionUnitTest(unittest.TestCase):
     self.assertTrue('address' in latest_build)
 
   def test_get_invalid_project(self):
-    """Checks the latest build will return None when project doesn't exist."""
+    """Tests that the latest build will return None when project doesn't
+    exist."""
     test_target = fuzz_target.FuzzTarget('/example/path', 10, '/example/outdir',
                                          'not-a-proj')
     self.assertIsNone(test_target.get_lastest_build_version())
@@ -256,7 +250,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
   """Test the download_oss_fuzz_build in function in the fuzz_target module."""
 
   def test_single_download(self):
-    """Checks that the build directory was only downloaded once."""
+    """Tests that the build directory was only downloaded once."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                            tmp_dir, 'example')
@@ -271,7 +265,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
         self.assertTrue(os.listdir(oss_fuzz_build_path))
 
   def test_get_valid_project(self):
-    """Checks the latest build can be retrieved from gcs."""
+    """Tests the latest build can be retrieved from GCS."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                            tmp_dir, 'example')
@@ -280,7 +274,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
       self.assertTrue(os.listdir(oss_fuzz_build_path))
 
   def test_get_invalid_project(self):
-    """Checks the latest build will return None when project doesn't exist."""
+    """Tests the latest build will return None when project doesn't exist."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                            tmp_dir)
@@ -290,7 +284,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
       self.assertIsNone(test_target.download_oss_fuzz_build())
 
   def test_invalid_build_dir(self):
-    """Checks the download will return None when out_dir doesn't exist."""
+    """Tests the download will return None when out_dir doesn't exist."""
     test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                          'not/a/dir', 'example')
     self.assertIsNone(test_target.download_oss_fuzz_build())

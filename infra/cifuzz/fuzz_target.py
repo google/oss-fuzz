@@ -147,7 +147,7 @@ class FuzzTarget:
     if not test_case:
       logging.error('No test case found in stack trace: %s.', err_str)
       return None, None
-    if self.check_reproducibility_and_regression(test_case):
+    if self.is_crash_reportable(test_case):
       return test_case, err_str
     return None, None
 
@@ -209,7 +209,7 @@ class FuzzTarget:
                  target_path)
     return False, True
 
-  def check_reproducibility_and_regression(self, test_case):
+  def is_crash_reportable(self, test_case):
     """Checks if a crash is reproducible, and if it is, whether it's a new
     regression that cannot be reproduced with the latest OSS-Fuzz build.
 
