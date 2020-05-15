@@ -195,8 +195,8 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
     self.fs.add_real_directory(TEST_FILES_PATH)
 
   @unittest.mock.patch('logging.info')
-  def test_reportable_crash(self, mocked_info):
-    """Tests that a reportable crash returns True."""
+  def test_new_reproducible_crash(self, mocked_info):
+    """Tests that a new reproducible crash returns True."""
     with unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
                              side_effect=[(True, True), (False, True)]):
       with tempfile.TemporaryDirectory() as tmp_dir:
