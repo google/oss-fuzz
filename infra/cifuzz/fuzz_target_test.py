@@ -159,8 +159,8 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
         (url, out_dir), _ = mock.call_args
         self.assertEqual(
             url,
-            'https://storage.googleapis.com/example-backup.' \
-            'clusterfuzz-external.appspot.com/corpus/libFuzzer/' \
+            'https://storage.googleapis.com/example-backup.'
+            'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
             'example_crash_fuzzer/public.zip'
         )
         self.assertEqual(out_dir,
