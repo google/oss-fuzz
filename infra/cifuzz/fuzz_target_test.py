@@ -58,7 +58,8 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
     self.fuzz_target_bin = '/example/path'
-    self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin, fuzz_target.REPRODUCE_ATTEMPTS,
+    self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin,
+                                              fuzz_target.REPRODUCE_ATTEMPTS,
                                               '/example/outdir')
 
   def test_reproducible(self, _):
@@ -94,8 +95,9 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
   def test_non_existent_fuzzer(self, _):
     """Tests that is_reproducible will report that it could not attempt
     reproduction if the fuzzer does not exist."""
-    self.assertFalse(
-        self.test_target.is_reproducible(TEST_FILES_PATH, '/not/exist')[1])
+    result = self.test_target.is_reproducible(TEST_FILES_PATH, '/non-existent-path')
+    expected_result = (False, False)
+    self.assertEqual(result, expected_result)
 
   def test_unreproducible(self, _):
     """Tests that is_reproducible returns (True, True) for a crash that cannot
@@ -107,6 +109,15 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
                                                 self.fuzz_target_bin)
       expected_result = (False, True)
       self.assertEqual(result, expected_result)
+
+  def test_non_existent_testcase(self, _):
+    """Tests that method reports it did not attempt reproduction if testcase
+    doesn't exist."""
+    self._set_up_fakefs()
+    result = self.test_target.is_reproducible(
+        '/non-existent-path', self.fuzz_target_bin)
+    expected_result = (False, False)
+    self.assertEqual(result, expected_result)
 
 
 class GetTestCaseUnitTest(unittest.TestCase):
@@ -191,20 +202,19 @@ class CheckReproducibilityAndRegressionUnitTest(
             self.test_target.check_reproducibility_and_regression(
                 '/example/crash/testcase'))
 
+  # yapf: disable
   @parameterized.parameterized.expand([
-      # Reproducible, but also reproducible on OSS-Fuzz.
-      (
-          [(True, True), (True, True)],),
+      # Reproducible on PR build, but also reproducible on OSS-Fuzz.
+      ([(True, True), (True, True)],),
 
-      # Not reproducible, but somehow reproducible on OSS-Fuzz.
+      # Not reproducible on PR build, but somehow reproducible on OSS-Fuzz.
       # Unlikely to happen in real world except if test is flaky.
-      (
-          [(False, True), (True, False)],),
+      ([(False, True), (True, False)],),
 
-      # Not reproducible, and not reproducible on OSS-Fuzz.
-      (
-          [(False, True), (False, True)],),
+      # Not reproducible on PR build, and not reproducible on OSS-Fuzz.
+      ([(False, True), (False, True)],),
   ])
+  # yapf: enable
   def test_invalid_crash(self, is_reproducible_retvals):
     """Checks an invalid crash causes the method to return False."""
     self.setUpPyfakefs()
