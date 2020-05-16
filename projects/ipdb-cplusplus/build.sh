@@ -15,8 +15,9 @@
 #
 ################################################################################
 
-# prepare rapidjson
+# prepare rapidjson and seeds
 cp -r ../rapidjson/include ./
+cp ../rapidjson-fuzzers/fuzzer_seed_corpus.zip $OUT/meta_parse_fuzzer_seed_corpus.zip
 
 # build fuzzers
 $CXX $CXXFLAGS -std=c++11 -Iinclude -I. \
