@@ -1,3 +1,7 @@
 homepage: "https://github.com/ipipdotnet/ipdb-cplusplus"
 language: c++
 primary_contact: "TODO@gmail.com"
+fuzzing_engines:
+    - libfuzzer
+sanitizers:
+    - address
