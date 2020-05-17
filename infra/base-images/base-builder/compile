@@ -74,6 +74,9 @@ if [[ $FUZZING_LANGUAGE == "rust" ]]; then
   # See https://github.com/rust-fuzz/libfuzzer/blob/master/build.rs#L12.
   export CUSTOM_LIBFUZZER_PATH="$LIB_FUZZING_ENGINE_DEPRECATED"
   export CUSTOM_LIBFUZZER_STD_CXX=c++
+
+  # Set RUSTC_BOOTSTRAP to get nightly features like sanitizers.
+  export RUSTC_BOOTSTRAP=1
 else
   export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
   export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"

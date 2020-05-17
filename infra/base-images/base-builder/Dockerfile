@@ -50,9 +50,6 @@ ENV PATH=$PATH:/rust/bin
 RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
 RUN cargo install cargo-fuzz
 
-# Set RUSTC_BOOTSTRAP to get nightly features like ASAN.
-ENV RUSTC_BOOTSTRAP=1
-
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
 
