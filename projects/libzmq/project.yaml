@@ -4,6 +4,7 @@ primary_contact: "bluca@debian.org"
 auto_ccs:
   - "luca.boccassi@gmail.com"
   - "somdoron@gmail.com"
+  - "simon.giesecke@gmail.com"
 sanitizers:
   - address
   - memory
