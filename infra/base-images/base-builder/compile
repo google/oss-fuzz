@@ -63,8 +63,24 @@ if [ $FUZZING_ENGINE = "none" ]; then
   export COVERAGE_FLAGS=
 fi
 
-export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
-export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
+if [[ $FUZZING_LANGUAGE == "rust" ]]; then
+  # Rust does not support sanitizers and coverage flags via CFLAGS/CXXFLAGS.
+  # Instead, use RUSTFLAGS.
+  # FIXME: Support code coverage once support is in.
+  # See https://github.com/rust-lang/rust/issues/34701.
+  export RUSTFLAGS="--cfg fuzzing -Zsanitizer=${SANITIZER} -Cdebuginfo=1 -Cforce-frame-pointers"
+
+  # Add Rust libfuzzer flags.
+  # See https://github.com/rust-fuzz/libfuzzer/blob/master/build.rs#L12.
+  export CUSTOM_LIBFUZZER_PATH="$LIB_FUZZING_ENGINE_DEPRECATED"
+  export CUSTOM_LIBFUZZER_STD_CXX=c++
+
+  # Set RUSTC_BOOTSTRAP to get nightly features like sanitizers.
+  export RUSTC_BOOTSTRAP=1
+else
+  export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
+  export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
+fi
 
 echo "CC=$CC"
 echo "CXX=$CXX"
