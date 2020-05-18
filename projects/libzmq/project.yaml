@@ -5,6 +5,8 @@ auto_ccs:
   - "luca.boccassi@gmail.com"
   - "somdoron@gmail.com"
   - "simon.giesecke@gmail.com"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
   - address
   - memory
