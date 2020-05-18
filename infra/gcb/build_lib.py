@@ -179,12 +179,12 @@ def project_image_steps(name, image, language):
       'name': 'gcr.io/cloud-builders/docker',
       'args': [
           'build',
+          '-e FUZZING_LANGUAGE=%s' % language,
           '-t',
           image,
           '.',
       ],
       'dir': 'oss-fuzz/projects/' + name,
-      'env': ['FUZZING_LANGUAGE=%s' % language],
   }, {
       'name':
           image,
