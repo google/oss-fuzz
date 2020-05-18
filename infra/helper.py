@@ -486,6 +486,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments
     print('Keeping existing build artifacts as-is (if any).')
   env = [
       'FUZZING_ENGINE=' + engine,
+      'FUZZING_LANGUAGE=c++',  # TODO: Replace with actual language.
       'SANITIZER=' + sanitizer,
       'ARCHITECTURE=' + architecture,
   ]
