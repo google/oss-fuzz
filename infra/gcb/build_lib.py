@@ -184,7 +184,6 @@ def project_image_steps(name, image, language):
           '.',
       ],
       'dir': 'oss-fuzz/projects/' + name,
-      'env': ['FUZZING_LANGUAGE=%s' % language],
   }, {
       'name':
           image,
