@@ -17,6 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER p.antoine@catenacyber.fr
 RUN apt-get update && apt-get install -y make cmake bzip2 autoconf automake gettext libtool python nodejs npm
+ENV CARGO_HOME=/rust RUSTUP_HOME=/rust/rustup PATH=$PATH:/rust/bin
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 RUN rustup target add i686-unknown-linux-gnu
 RUN npm install -g browserify
 RUN npm install elliptic

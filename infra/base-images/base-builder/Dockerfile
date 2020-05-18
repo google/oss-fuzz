@@ -15,16 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-clang
-RUN apt-get update && apt-get install -y \
-    binutils-dev \
-    curl \
-    git \
-    jq \
-    libc6-dev-i386 \
-    make \
-    python3 \
+RUN apt-get install -y git \
     subversion \
-    zip
+    jq \
+    python3 \
+    zip \
+    make \
+    binutils-dev \
+    libc6-dev-i386
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
@@ -42,13 +40,6 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 # Uses golang 1.14+ cmd/compile's native libfuzzer instrumentation.
 RUN go get -u github.com/mdempsky/go114-fuzz-build && \
     ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
-
-# Install Rust and cargo-fuzz for libFuzzer instrumentation.
-ENV CARGO_HOME=/rust
-ENV RUSTUP_HOME=/rust/rustup
-ENV PATH=$PATH:/rust/bin
-RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
-RUN cargo install cargo-fuzz
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
