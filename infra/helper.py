@@ -297,7 +297,7 @@ def _get_project_language(project_name):
       if match:
         return match.group(1)
 
-  raise Exception('FUZZING_LANGUAGE not found in project.yaml.')
+  raise Exception('language attribute not found in project.yaml.')
 
 
 def _add_architecture_args(parser, choices=('x86_64', 'i386')):
