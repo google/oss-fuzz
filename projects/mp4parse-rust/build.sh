@@ -16,19 +16,7 @@
 ################################################################################
 
 # Note: This project creates Rust fuzz targets exclusively
-
-export CUSTOM_LIBFUZZER_PATH="$LIB_FUZZING_ENGINE_DEPRECATED"
-export CUSTOM_LIBFUZZER_STD_CXX=c++
 PROJECT_DIR=$SRC/mp4parse-rust
-
-# Because Rust does not support sanitizers via CFLAGS/CXXFLAGS, the environment
-# variables are overridden with values from base-images/base-clang only
-
-export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
-export CXXFLAGS_EXTRA="-stdlib=libc++"
-export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
-export RUSTFLAGS="-Cdebuginfo=1 -Cforce-frame-pointers"
-
 cd $PROJECT_DIR/mp4parse_capi/fuzz && cargo fuzz build -O --debug-assertions
 
 mkdir $PROJECT_DIR/corpus
