@@ -161,6 +161,7 @@ def get_build_steps(project_dir):
         env.append('OUT=' + out)
         env.append('MSAN_LIBS_PATH=/workspace/msan')
         env.append('ARCHITECTURE=' + architecture)
+        env.append('FUZZING_LANGUAGE=' + language)
 
         workdir = workdir_from_dockerfile(dockerfile_path)
         if not workdir:
