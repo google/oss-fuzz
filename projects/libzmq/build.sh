@@ -18,7 +18,7 @@
 
 # build project and dependencies
 cd "${SRC}/libsodium"
-./autogen.sh
+DO_NOT_UPDATE_CONFIG_SCRIPTS=1 ./autogen.sh
 ./configure --disable-shared
 make -j$(nproc) V=1 install DESTDIR=/tmp/zmq_install_dir
 
