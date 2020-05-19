@@ -1,9 +1,16 @@
 homepage: "https://c-ares.haxx.se/"
+language: c++
 primary_contact: "drysdale@google.com"
+fuzzing_engines:
+  - afl
+  - libfuzzer
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
   - memory
   - undefined
+  - dataflow
 architectures:
   - x86_64
   - i386

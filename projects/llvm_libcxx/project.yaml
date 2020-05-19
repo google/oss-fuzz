@@ -1,4 +1,5 @@
 homepage: "https://libcxx.llvm.org/"
+language: c++
 primary_contact: "mclow.lists@gmail.com"
 auto_ccs:
   - "timshen91@gmail.com"

@@ -29,8 +29,8 @@ VALID_TARGET_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 def chdir_to_root():
   """Changes cwd to OSS-Fuzz root directory."""
   # Change to oss-fuzz main directory so helper.py runs correctly.
-  if os.getcwd() != helper.OSSFUZZ_DIR:
-    os.chdir(helper.OSSFUZZ_DIR)
+  if os.getcwd() != helper.OSS_FUZZ_DIR:
+    os.chdir(helper.OSS_FUZZ_DIR)
 
 
 def execute(command, location=None, check_result=False):
@@ -55,8 +55,8 @@ def execute(command, location=None, check_result=False):
                              stderr=subprocess.PIPE,
                              cwd=location)
   out, err = process.communicate()
-  out = out.decode('ascii')
-  err = err.decode('ascii')
+  out = out.decode('utf-8', errors='ignore')
+  err = err.decode('utf-8', errors='ignore')
   if err:
     logging.debug('Stderr of command \'%s\' is %s.', ' '.join(command), err)
   if check_result and process.returncode:
@@ -78,9 +78,9 @@ def get_fuzz_targets(path):
   if not os.path.exists(path):
     return []
   fuzz_target_paths = []
-  for root, _, _ in os.walk(path):
-    for filename in os.listdir(path):
-      file_path = os.path.join(root, filename)
+  for root, _, fuzzers in os.walk(path):
+    for fuzzer in fuzzers:
+      file_path = os.path.join(root, fuzzer)
       if is_fuzz_target_local(file_path):
         fuzz_target_paths.append(file_path)
 

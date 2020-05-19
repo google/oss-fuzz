@@ -1,4 +1,5 @@
 homepage: "https://code.videolan.org/videolan/dav1d"
+language: c++
 primary_contact: "janne.grunau@gmail.com"
 auto_ccs:
   - "rsbultje@gmail.com"
@@ -6,8 +7,8 @@ auto_ccs:
   - "b@rr-dav.id.au"
   - "dav1d-fuzz@videolan.org"
 vendor_ccs:
+  - "negge@mozilla.com"
   - "twsmith@mozilla.com"
-  - "cdiehl@mozilla.com"
 sanitizers:
   - address
   - memory

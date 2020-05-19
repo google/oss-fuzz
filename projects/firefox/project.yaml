@@ -1,11 +1,12 @@
 homepage: "https://www.mozilla.org/firefox/"
+language: c++
 primary_contact: "choller@mozilla.com"
 auto_ccs:
   - twsmith@mozilla.com
-  - cdiehl@mozilla.com
   - sledru@mozilla.com
 fuzzing_engines:
   - libfuzzer
+  - honggfuzz
 sanitizers:
   - address
   - undefined

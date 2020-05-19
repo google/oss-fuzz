@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ MAINTAINER randy408@protonmail.com
 RUN apt-get update && \
     apt-get install -y wget tar cmake
 
-RUN git clone --depth 1 https://gitlab.com/randy408/libspng.git
+RUN git clone --depth 1 https://github.com/randy408/libspng.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
 
 WORKDIR libspng

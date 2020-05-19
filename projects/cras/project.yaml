@@ -1,4 +1,5 @@
 homepage: "https://www.chromium.org"
+language: c++
 primary_contact: "dgreid@chromium.org"
 auto_ccs:
   - "hychao@chromium.org"

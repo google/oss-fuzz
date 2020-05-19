@@ -1,10 +1,16 @@
 homepage: "https://www.unicorn-engine.org"
+language: c++
 primary_contact: "unicorn.emu@gmail.com"
-auto_ccs :
-- "p.antoine@catenacyber.fr"
-- "ch980501427@gmail.com"
-
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+  - "ch980501427@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
-- address
-- memory
-- undefined
+  - address
+  - undefined
+  - memory
+  - dataflow

@@ -39,6 +39,9 @@ Before you can start setting up your new project for fuzzing, you must do the fo
   [docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)
   periodically to garbage-collect unused images.
 
+- (optional) [Install gsutil](https://cloud.google.com/storage/docs/gsutil_install) for local code coverage sanity check.
+  For Google internal (gLinux) machines, please refer [here](https://cloud.google.com/storage/docs/gsutil_install#deb) instead.
+
 ## Creating the file structure
 
 Each OSS-Fuzz project has a subdirectory
@@ -72,6 +75,7 @@ Once the template configuration files are created, you can modify them to fit yo
 This configuration file stores project metadata. The following attributes are supported:
 
 - [homepage](#homepage)
+- [language](#language)
 - [primary_contact](#primary)
 - [auto_ccs](#primary)
 - [vendor_ccs](#vendor) (optional)
@@ -81,6 +85,13 @@ This configuration file stores project metadata. The following attributes are su
 
 ### homepage
 You project's homepage.
+
+### language
+
+Programming language the project is written in. Most often this would be `c` or
+`c++`. Other values for this attribute are documented in language specific
+documentation pages (e.g.
+[Integrating a Go project]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)).
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -210,9 +221,9 @@ cp $SRC/*.dict $SRC/*.options $OUT/
 
 If your project is written in Go, check out the [Integrating a Go project]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/) page.
 
-**Notes:**
+**Note:**
 
-1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for both libFuzzer and AFL fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
+1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for libFuzzer, AFL and Honggfuzz fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
 2. Make sure that the binary names for your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 3. Don't remove source code files. They are needed for code coverage.
@@ -258,7 +269,7 @@ See the [Provided Environment Variables](https://github.com/google/oss-fuzz/blob
 
 ## Disk space restrictions
 
-Our builders have a disk size of 70GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
+Our builders have a disk size of 250GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
 
 In addition, please keep the size of the build (everything copied to `$OUT`) small (<10GB uncompressed). The build is repeatedly transferred and unzipped during fuzzing and runs on VMs with limited disk space.
 
@@ -298,12 +309,7 @@ You can build your docker image and fuzz targets locally, so you can test them b
     ```
 
 4. We recommend taking a look at your code coverage as a sanity check to make sure that your
-fuzz targets get to the code you expect:
-
-    ```bash
-    $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
-    $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
-    ```
+fuzz targets get to the code you expect. Please refer to [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/).
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined) 
 configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify

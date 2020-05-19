@@ -1,4 +1,5 @@
 homepage: "https://github.com/nlohmann/json"
+language: c++
 primary_contact: "niels.lohmann@gmail.com"
 sanitizers:
  - address

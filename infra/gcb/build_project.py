@@ -38,6 +38,9 @@ DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['libfuzzer', 'afl', 'honggfuzz']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
+LATEST_VERSION_FILENAME = 'latest.version'
+LATEST_VERSION_CONTENT_TYPE = 'text/plain'
+
 
 def usage():
   sys.stderr.write('Usage: ' + sys.argv[0] + ' <project_dir>\n')
@@ -58,7 +61,6 @@ def load_project_yaml(project_dir):
     project_yaml.setdefault('run_tests', True)
     project_yaml.setdefault('coverage_extra_args', '')
     project_yaml.setdefault('labels', {})
-    project_yaml.setdefault('language', 'cpp')
     return project_yaml
 
 
@@ -107,45 +109,22 @@ def get_build_steps(project_dir):
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
+  language = project_yaml['language']
   run_tests = project_yaml['run_tests']
 
   ts = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
-  build_steps = [
-      {
-          'args': [
-              'clone',
-              'https://github.com/google/oss-fuzz.git',
-          ],
-          'name': 'gcr.io/cloud-builders/git',
-      },
-      {
-          'name': 'gcr.io/cloud-builders/docker',
-          'args': [
-              'build',
-              '-t',
-              image,
-              '.',
-          ],
-          'dir': 'oss-fuzz/projects/' + name,
-      },
-      {
-          'name': image,
-          'args': [
-              'bash', '-c',
-              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-          ],
-          'env': ['OSSFUZZ_REVISION=$REVISION_ID'],
-      },
-      {
-          'name': 'gcr.io/oss-fuzz-base/msan-builder',
-          'args': [
-              'bash',
-              '-c',
-              'cp -r /msan /workspace',
-          ],
-      },
-  ]
+  build_steps = build_lib.project_image_steps(name, image, language)
+
+  # Copy over MSan instrumented libraries.
+  build_steps.append({
+      'name': 'gcr.io/oss-fuzz-base/msan-builder',
+      'args': [
+          'bash',
+          '-c',
+          'cp -r /msan /workspace',
+      ],
+  })
 
   for fuzzing_engine in project_yaml['fuzzing_engines']:
     for sanitizer in get_sanitizers(project_yaml):
@@ -158,6 +137,8 @@ def get_build_steps(project_dir):
         env.extend(CONFIGURATIONS['sanitizer-' + sanitizer])
         out = '/workspace/out/' + sanitizer
         stamped_name = '-'.join([name, sanitizer, ts])
+        latest_version_file = '-'.join(
+            [name, sanitizer, LATEST_VERSION_FILENAME])
         zip_file = stamped_name + '.zip'
         stamped_srcmap_file = stamped_name + '.srcmap.json'
         bucket = build_lib.ENGINE_INFO[fuzzing_engine].upload_bucket
@@ -168,6 +149,10 @@ def get_build_steps(project_dir):
         srcmap_url = build_lib.get_signed_url(
             build_lib.GCS_UPLOAD_URL_FORMAT.format(bucket, name,
                                                    stamped_srcmap_file))
+        latest_version_url = build_lib.GCS_UPLOAD_URL_FORMAT.format(
+            bucket, name, latest_version_file)
+        latest_version_url = build_lib.get_signed_url(
+            latest_version_url, content_type=LATEST_VERSION_CONTENT_TYPE)
 
         targets_list_filename = build_lib.get_targets_list_filename(sanitizer)
         targets_list_url = build_lib.get_signed_url(
@@ -176,6 +161,7 @@ def get_build_steps(project_dir):
         env.append('OUT=' + out)
         env.append('MSAN_LIBS_PATH=/workspace/msan')
         env.append('ARCHITECTURE=' + architecture)
+        env.append('FUZZING_LANGUAGE=' + language)
 
         workdir = workdir_from_dockerfile(dockerfile_path)
         if not workdir:
@@ -206,8 +192,8 @@ def get_build_steps(project_dir):
                     # `cd /src && cd {workdir}` (where {workdir} is parsed from
                     # the Dockerfile). Container Builder overrides our workdir
                     # so we need to add this step to set it back.
-                    ('rm -r /out && cd /src && cd {workdir} && mkdir -p {out} && '
-                     'compile || (echo "{failure_msg}" && false)'
+                    ('rm -r /out && cd /src && cd {workdir} && mkdir -p {out} '
+                     '&& compile || (echo "{failure_msg}" && false)'
                     ).format(workdir=workdir, out=out, failure_msg=failure_msg),
                 ],
             })
@@ -324,6 +310,9 @@ def get_build_steps(project_dir):
                     targets_list_url,
                 ],
             },
+            # upload the latest.version file
+            build_lib.http_upload_step(zip_file, latest_version_url,
+                                       LATEST_VERSION_CONTENT_TYPE),
             # cleanup
             {
                 'name': image,
@@ -344,8 +333,15 @@ def dataflow_post_build_steps(project_name, env):
     return None
 
   steps.append({
-      'name': 'gcr.io/oss-fuzz-base/base-runner',
-      'env': env,
+      'name':
+          'gcr.io/oss-fuzz-base/base-runner',
+      'env':
+          env + [
+              'COLLECT_DFT_TIMEOUT=2h',
+              'DFT_FILE_SIZE_LIMIT=65535',
+              'DFT_MIN_TIMEOUT=2.0',
+              'DFT_TIMEOUT_RANGE=6.0',
+          ],
       'args': [
           'bash', '-c',
           ('for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*}; done && '

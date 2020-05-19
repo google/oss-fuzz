@@ -1,0 +1,9 @@
+homepage: "https://github.com/miekg/dns"
+primary_contact: "miek@miek.nl"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+language: go
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address

@@ -20,6 +20,10 @@
 ./configure
 make -j$(nproc) all
 
+# build seed
+cp $SRC/libarchive/contrib/oss-fuzz/corpus.zip\
+       	$OUT/libarchive_fuzzer_seed_corpus.zip
+
 # build fuzzer(s)
 $CXX $CXXFLAGS -Ilibarchive \
     $SRC/libarchive_fuzzer.cc -o $OUT/libarchive_fuzzer \

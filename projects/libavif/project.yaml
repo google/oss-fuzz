@@ -1,2 +1,5 @@
 homepage: "https://github.com/AOMediaCodec/libavif"
+language: c++
 primary_contact: "joedrago@gmail.com"
+auto_ccs:
+  - "wtc@google.com"

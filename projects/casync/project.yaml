@@ -1,4 +1,5 @@
 homepage: "https://github.com/casync/casync"
+language: c++
 primary_contact: "lennart@poettering.net"
 sanitizers:
   - address

@@ -30,12 +30,13 @@ HTML_REPORT_URL_FORMAT = (build_lib.GCS_URL_BASENAME + COVERAGE_BUCKET_NAME +
 # This is needed for ClusterFuzz to pick up the most recent reports data.
 LATEST_REPORT_INFO_URL = ('/' + COVERAGE_BUCKET_NAME +
                           '/latest_report_info/{project}.json')
+LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
 
 # Link where to upload code coverage report files to.
 UPLOAD_URL_FORMAT = 'gs://' + COVERAGE_BUCKET_NAME + '/{project}/{type}/{date}'
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'cpp']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
 
 
 def skip_build(message):
@@ -43,7 +44,7 @@ def skip_build(message):
   sys.stderr.write('%s\n' % message)
 
   # Since the script should print build_id, print '0' as a special value.
-  print '0'
+  print('0')
   exit(0)
 
 
@@ -70,39 +71,15 @@ def get_build_steps(project_dir):
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
+  language = project_yaml['language']
   report_date = datetime.datetime.now().strftime('%Y%m%d')
 
-  build_steps = [
-      {
-          'args': [
-              'clone',
-              'https://github.com/google/oss-fuzz.git',
-          ],
-          'name': 'gcr.io/cloud-builders/git',
-      },
-      {
-          'name': 'gcr.io/cloud-builders/docker',
-          'args': [
-              'build',
-              '-t',
-              image,
-              '.',
-          ],
-          'dir': 'oss-fuzz/projects/' + name,
-      },
-      {
-          'name': image,
-          'args': [
-              'bash', '-c',
-              'srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json'
-          ],
-          'env': ['OSSFUZZ_REVISION=$REVISION_ID'],
-      },
-  ]
+  build_steps = build_lib.project_image_steps(name, image, language)
 
   env = CONFIGURATION[:]
   out = '/workspace/out/' + SANITIZER
   env.append('OUT=' + out)
+  env.append('FUZZING_LANGUAGE=' + language)
 
   workdir = build_project.workdir_from_dockerfile(dockerfile_path)
   if not workdir:
@@ -178,6 +155,10 @@ def get_build_steps(project_dir):
   upload_report_url = UPLOAD_URL_FORMAT.format(project=project_name,
                                                type='reports',
                                                date=report_date)
+
+  # Delete the existing report as gsutil cannot overwrite it in a sane way due
+  # to the lack of `-T` option (it creates a subdir in the destination dir).
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_url))
   build_steps.append({
       'name':
           'gcr.io/cloud-builders/gsutil',
@@ -190,10 +171,11 @@ def get_build_steps(project_dir):
       ],
   })
 
-  # Upload the fuzzer stats.
+  # Upload the fuzzer stats. Delete the old ones just in case.
   upload_fuzzer_stats_url = UPLOAD_URL_FORMAT.format(project=project_name,
                                                      type='fuzzer_stats',
                                                      date=report_date)
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_stats_url))
   build_steps.append({
       'name':
           'gcr.io/cloud-builders/gsutil',
@@ -206,7 +188,11 @@ def get_build_steps(project_dir):
       ],
   })
 
-  # Upload the fuzzer logs.
+  # Upload the fuzzer logs. Delete the old ones just in case
+  upload_fuzzer_logs_url = UPLOAD_URL_FORMAT.format(project=project_name,
+                                                    type='logs',
+                                                    date=report_date),
+  build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_logs_url))
   build_steps.append({
       'name':
           'gcr.io/cloud-builders/gsutil',
@@ -215,9 +201,7 @@ def get_build_steps(project_dir):
           'cp',
           '-r',
           os.path.join(out, 'logs'),
-          UPLOAD_URL_FORMAT.format(project=project_name,
-                                   type='logs',
-                                   date=report_date),
+          upload_fuzzer_logs_url,
       ],
   })
 
@@ -238,8 +222,7 @@ def get_build_steps(project_dir):
   # Update the latest report information file for ClusterFuzz.
   latest_report_info_url = build_lib.get_signed_url(
       LATEST_REPORT_INFO_URL.format(project=project_name),
-      method='PUT',
-      content_type='application/json')
+      content_type=LATEST_REPORT_INFO_CONTENT_TYPE)
   latest_report_info_body = json.dumps({
       'fuzzer_stats_dir':
           upload_fuzzer_stats_url,
@@ -253,19 +236,10 @@ def get_build_steps(project_dir):
           os.path.join(upload_report_url, PLATFORM, 'summary.json'),
   })
 
-  build_steps.append({
-      'name':
-          'gcr.io/cloud-builders/curl',
-      'args': [
-          '-H',
-          'Content-Type: application/json',
-          '-X',
-          'PUT',
-          '-d',
-          latest_report_info_body,
-          latest_report_info_url,
-      ],
-  })
+  build_steps.append(
+      build_lib.http_upload_step(latest_report_info_body,
+                                 latest_report_info_url,
+                                 LATEST_REPORT_INFO_CONTENT_TYPE))
   return build_steps
 
 

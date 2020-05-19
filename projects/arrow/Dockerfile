@@ -21,9 +21,15 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y -q && \
     apt-get update -y -q && \
     apt-get install -y -q --no-install-recommends \
+        bison \
+        build-essential \
         cmake \
+        flex \
+        libboost-all-dev \
         ninja-build \
         python3
 
-RUN git clone --depth=1 https://github.com/apache/arrow.git $SRC/arrow
+RUN git clone --depth=1 --recurse-submodules \
+    https://github.com/apache/arrow.git $SRC/arrow
+
 COPY build.sh $SRC/

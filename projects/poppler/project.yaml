@@ -1,4 +1,5 @@
 homepage: https://poppler.freedesktop.org/
+language: c++
 primary_contact: tsdgeos@gmail.com
 sanitizers:
   - address

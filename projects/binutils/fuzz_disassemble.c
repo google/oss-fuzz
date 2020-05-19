@@ -45,9 +45,6 @@ static int objdump_sprintf (void *vf, const char *format, ...)
     //vfprintf(stdout, format, args);
     va_end (args);
     f->pos += n;
-    //reset to keep just one line
-    if (f->pos != 0 && f->buffer[f->pos - 1] == '\n')
-        f->pos = 0;
     return n;
 }
 
@@ -85,6 +82,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         if (disasfunc != NULL) {
             disassemble_init_for_target(&disasm_info);
             while (1) {
+                s.pos = 0;
                 int octets = disasfunc(disasm_info.buffer_vma, &disasm_info);
                 if (octets < (int) disasm_info.octets_per_byte)
                     break;

@@ -29,6 +29,7 @@ import test_repos
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
+@unittest.skip('Test is too long to be run with presubmit.')
 class BisectIntegrationTests(unittest.TestCase):
   """Class to test the functionality of bisection method."""
 
@@ -54,10 +55,10 @@ class BisectIntegrationTests(unittest.TestCase):
             engine='libfuzzer',
             sanitizer='address',
             architecture='x86_64')
-        error_sha = bisector.bisect(test_repo.old_commit, test_repo.new_commit,
-                                    test_repo.test_case_path,
-                                    test_repo.fuzz_target, build_data)
-        self.assertEqual(error_sha, test_repo.intro_commit)
+        result = bisector.bisect(test_repo.old_commit, test_repo.new_commit,
+                                 test_repo.test_case_path,
+                                 test_repo.fuzz_target, build_data)
+        self.assertEqual(result.commit, test_repo.intro_commit)
 
 
 if __name__ == '__main__':

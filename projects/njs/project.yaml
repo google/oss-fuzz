@@ -1,4 +1,5 @@
 homepage: "https://nginx.org/en/docs/njs/"
+language: c++
 primary_contact: "xeioex@nginx.com"
 auto_ccs:
  - "alexander.borisov@nginx.com"

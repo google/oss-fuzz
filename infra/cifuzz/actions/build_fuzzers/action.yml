@@ -2,15 +2,19 @@
 name: 'build-fuzzers'
 description: "Builds an OSS-Fuzz project's fuzzers."
 inputs:
-  project-name:
+  oss-fuzz-project-name:
     description: 'Name of the corresponding OSS-Fuzz project.'
     required: true
   dry-run:
     description: 'If set, run the action without actually reporting a failure.'
     default: false
+  allowed-broken-targets-percentage:
+    description: 'The percentage of broken targets allowed in bad_build_check.'
+    required: false
 runs:
   using: 'docker'
   image: 'Dockerfile'
   env:
-    PROJECT_NAME: ${{ inputs.project-name }}
+    OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
     DRY_RUN: ${{ inputs.dry-run}}
+    ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}

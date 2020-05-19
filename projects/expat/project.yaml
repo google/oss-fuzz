@@ -1,4 +1,5 @@
 homepage: "https://github.com/libexpat/libexpat"
+language: c++
 primary_contact: "sebastian@pipping.org"
 auto_ccs:
  - "rhodri@kynesim.co.uk"
@@ -6,7 +7,7 @@ auto_ccs:
  - "webmaster@hartwork.org"
  - "bshas3@gmail.com"
 vendor_ccs:
- - "cdiehl@mozilla.com"
+ - "twsmith@mozilla.com"
 sanitizers:
   - address
   - memory

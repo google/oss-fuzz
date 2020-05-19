@@ -1,4 +1,15 @@
 homepage: "https://www.freedesktop.org/wiki/Software/libspectre/"
+language: c++
 primary_contact: "tsdgeos@gmail.com"
 auto_ccs:
   - "randy440088@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - memory
+  - dataflow

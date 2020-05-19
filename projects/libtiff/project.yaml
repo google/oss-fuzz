@@ -1,4 +1,5 @@
 homepage: "http://www.libtiff.org"
+language: c++
 primary_contact: "even.rouault@gmail.com"
 auto_ccs:
   - paul.l.kehrer@gmail.com

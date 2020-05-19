@@ -1,4 +1,5 @@
 homepage: https://cgit.kde.org/karchive.git/
+language: c++
 primary_contact: tsdgeos@gmail.com
 sanitizers:
   - address

@@ -1,7 +1,8 @@
 homepage: "https://github.com/google/skia"
+language: c++
 primary_contact: "kjlubick@chromium.org"
 auto_ccs:
-  - "hcm@chromium.org"
+  - "hcm@google.com"
   - "mtklein@google.com"
   - "reed@google.com"
   - "bsalomon@google.com"

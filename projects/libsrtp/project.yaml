@@ -1,4 +1,5 @@
 homepage: "https://github.com/cisco/libsrtp"
+language: c++
 primary_contact: "richbarn@cisco.com"
 auto_ccs:
  - "guidovranken@gmail.com"

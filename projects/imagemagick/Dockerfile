@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER paul.l.kehrer@gmail.com
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
-    apt-get install -y make autoconf automake libtool pkg-config cmake nasm autopoint libc6:i386 libc6-dev:i386
+    apt-get install -y make autoconf automake libtool pkg-config cmake nasm autopoint po4a libc6:i386 libc6-dev:i386
 RUN git clone --depth 1 https://github.com/imagemagick/imagemagick
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://github.com/strukturag/libde265
@@ -34,6 +34,6 @@ RUN git clone --depth 1 https://github.com/pnggroup/libpng
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS
 RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/heic heic_corpus
 RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
-ADD http://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
+ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz afl_testcases.tgz
 WORKDIR imagemagick
 COPY build.sh $SRC/

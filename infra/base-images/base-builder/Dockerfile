@@ -15,14 +15,16 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-clang
-RUN apt-get install -y git \
-    subversion \
-    jq \
-    python3 \
-    zip \
-    make \
+RUN apt-get update && apt-get install -y \
     binutils-dev \
-    libc6-dev-i386
+    curl \
+    git \
+    jq \
+    libc6-dev-i386 \
+    make \
+    python3 \
+    subversion \
+    zip
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
@@ -37,11 +39,16 @@ ENV GOPATH /root/go
 # $GOPATH/bin is for the binaries from the dependencies installed via "go get".
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
-# Dependency of go-fuzz.
-RUN go get golang.org/x/tools/go/packages
+# Uses golang 1.14+ cmd/compile's native libfuzzer instrumentation.
+RUN go get -u github.com/mdempsky/go114-fuzz-build && \
+    ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
 
-# go-fuzz-build is the tool that instruments Go files.
-RUN go get github.com/dvyukov/go-fuzz/go-fuzz-build
+# Install Rust and cargo-fuzz for libFuzzer instrumentation.
+ENV CARGO_HOME=/rust
+ENV RUSTUP_HOME=/rust/rustup
+ENV PATH=$PATH:/rust/bin
+RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+RUN cargo install cargo-fuzz
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
@@ -59,6 +66,9 @@ ENV SANITIZER_FLAGS_coverage ""
 # We use unsigned-integer-overflow as an additional coverage signal and have to
 # suppress error messages. See https://github.com/google/oss-fuzz/issues/910.
 ENV UBSAN_OPTIONS="silence_unsigned_overflow=1"
+
+# To suppress warnings from binaries running during compilation.
+ENV DFSAN_OPTIONS='warn_unimplemented=0'
 
 # Default build flags for coverage feedback.
 ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"

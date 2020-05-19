@@ -1,6 +1,10 @@
 homepage: "http://eigen.tuxfamily.org/index.php?title=Main_Page"
+language: c++
 primary_contact: "eigen-core-team@lists.tuxfamily.org"
 sanitizers:
-  - address
-  - memory
-  - undefined
+ - address
+ - memory
+ - undefined
+architectures:
+  - x86_64
+  - i386

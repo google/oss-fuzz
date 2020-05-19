@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Builds and runs specific OSS-Fuzz project's fuzzers for CI tools."""
+import json
 import logging
 import os
 import sys
@@ -37,19 +38,20 @@ def main():
   the directory: ${GITHUB_WORKSPACE}/out
 
   Required environment variables:
-    PROJECT_NAME: The name of OSS-Fuzz project.
+    OSS_FUZZ_PROJECT_NAME: The name of OSS-Fuzz project.
     GITHUB_REPOSITORY: The name of the Github repo that called this script.
     GITHUB_SHA: The commit SHA that triggered this script.
-    GITHUB_REF: The pull request reference that triggered this script.
     GITHUB_EVENT_NAME: The name of the hook event that triggered this script.
+    GITHUB_EVENT_PATH:
+      The path to the file containing the POST payload of the webhook:
+      https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners
     GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
 
   Returns:
     0 on success or 1 on Failure.
   """
-  oss_fuzz_project_name = os.environ.get('PROJECT_NAME')
+  oss_fuzz_project_name = os.environ.get('OSS_FUZZ_PROJECT_NAME')
   github_repo_name = os.path.basename(os.environ.get('GITHUB_REPOSITORY'))
-  pr_ref = os.environ.get('GITHUB_REF')
   commit_sha = os.environ.get('GITHUB_SHA')
   event = os.environ.get('GITHUB_EVENT_NAME')
   workspace = os.environ.get('GITHUB_WORKSPACE')
@@ -58,27 +60,35 @@ def main():
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
 
   # The default return code when an error occurs.
-  error_code = 1
+  returncode = 1
   if dry_run:
     # Sets the default return code on error to success.
-    error_code = 0
+    returncode = 0
 
   if not workspace:
     logging.error('This script needs to be run in the Github action context.')
-    return error_code
+    return returncode
 
   if event == 'push' and not cifuzz.build_fuzzers(
       oss_fuzz_project_name, github_repo_name, workspace,
       commit_sha=commit_sha):
     logging.error('Error building fuzzers for project %s with commit %s.',
                   oss_fuzz_project_name, commit_sha)
-    return error_code
-  if event == 'pull_request' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
-    logging.error('Error building fuzzers for project %s with pull request %s.',
-                  oss_fuzz_project_name, pr_ref)
-    return error_code
-  return 0
+    return returncode
+  if event == 'pull_request':
+    with open(os.environ.get('GITHUB_EVENT_PATH'), encoding='utf-8') as file:
+      event = json.load(file)
+      pr_ref = 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
+      if not cifuzz.build_fuzzers(
+          oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
+        logging.error(
+            'Error building fuzzers for project %s with pull request %s.',
+            oss_fuzz_project_name, pr_ref)
+        return returncode
+  out_dir = os.path.join(workspace, 'out')
+  if cifuzz.check_fuzzer_build(out_dir):
+    return 0
+  return returncode
 
 
 if __name__ == '__main__':

@@ -48,19 +48,25 @@ git clone https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 
 LLVM_SRC=$SRC/llvm-project
-OUR_LLVM_REVISION=e84b7a5fe230e42b8e6fe451369874a773bf1867  # For manual bumping.
-FORCE_OUR_REVISION=0  # To allow for manual downgrades.
+
+# For manual bumping.
+OUR_LLVM_REVISION=e84b7a5fe230e42b8e6fe451369874a773bf1867
+
+# To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
+# *not* force a manual downgrade). Set to 1 to force a manual downgrade.
+FORCE_OUR_REVISION=0
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K[a-f0-9]+(?=')" scripts/update.py)
 
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
 set +e
-IS_OUR_REVISION_ANCESTOR=$(git -C $LLVM_SRC merge-base --is-ancestor $OUR_LLVM_REVISION $LLVM_REVISION)
+git -C $LLVM_SRC merge-base --is-ancestor $OUR_LLVM_REVISION $LLVM_REVISION
+IS_OUR_REVISION_ANCESTOR_RETCODE=$?
 set -e
 
-# Use our revision if specified or if our revision is a later revision than
-# Chrome's.
-if [ ! $IS_OUR_REVISION_ANCESTOR  ] || [ $FORCE_OUR_REVISION ] ; then
+# Use our revision if specified by FORCE_OUR_REVISION or if our revision is a
+# later revision than Chrome's (i.e. not an ancestor of Chrome's).
+if [ $IS_OUR_REVISION_ANCESTOR_RETCODE -ne 0 ] || [ $FORCE_OUR_REVISION -eq 1 ] ; then
   LLVM_REVISION=$OUR_LLVM_REVISION
 fi
 
@@ -87,7 +93,7 @@ case $(uname -m) in
         ;;
 esac
 
-PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang"
+PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
 cmake -G "Ninja" \
       -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \

@@ -46,40 +46,39 @@ def main():
     FUZZ_SECONDS: The length of time in seconds that fuzzers are to be run.
     GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
     DRY_RUN: If true, no failures will surface.
+    OSS_FUZZ_PROJECT_NAME: The name of the relevant OSS-Fuzz project.
 
   Returns:
     0 on success or 1 on Failure.
   """
   fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
   workspace = os.environ.get('GITHUB_WORKSPACE')
-
+  oss_fuzz_project_name = os.environ.get('OSS_FUZZ_PROJECT_NAME')
   # Check if failures should not be reported.
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
 
   # The default return code when an error occurs.
-  error_code = 1
+  returncode = 1
   if dry_run:
     # A testcase file is required in order for CIFuzz to surface bugs.
     # If the file does not exist, the action will crash attempting to upload it.
     # The dry run needs this file because it is set to upload a test case both
     # on successful runs and on failures.
-    out_dir = os.path.join(workspace, 'out')
+    out_dir = os.path.join(workspace, 'out', 'artifacts')
     os.makedirs(out_dir, exist_ok=True)
-    file_handle = open(os.path.join(out_dir, 'testcase'), 'w')
-    file_handle.write('No bugs detected.')
-    file_handle.close()
 
     # Sets the default return code on error to success.
-    error_code = 0
+    returncode = 0
 
   if not workspace:
     logging.error('This script needs to be run in the Github action context.')
-    return error_code
+    return returncode
   # Run the specified project's fuzzers from the build.
-  run_status, bug_found = cifuzz.run_fuzzers(fuzz_seconds, workspace)
+  run_status, bug_found = cifuzz.run_fuzzers(fuzz_seconds, workspace,
+                                             oss_fuzz_project_name)
   if not run_status:
     logging.error('Error occured while running in workspace %s.', workspace)
-    return error_code
+    return returncode
   if bug_found:
     logging.info('Bug found.')
     if not dry_run:

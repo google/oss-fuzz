@@ -1,4 +1,5 @@
 homepage: "https://github.com/tbeu/matio"
+language: c++
 primary_contact: "t-beu@users.sourceforge.net"
 sanitizers:
   - address

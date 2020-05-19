@@ -1,4 +1,5 @@
 homepage: "https://github.com/guidovranken/cryptofuzz"
+language: c++
 primary_contact: "guidovranken@gmail.com"
 auto_ccs:
     - "openssl-security@openssl.org"
@@ -25,7 +26,10 @@ auto_ccs:
     - "jjones@mozilla.com"
     - "sledru@mozilla.com"
     - "kjacobs@mozilla.com"
+    - "bbeurdouche@mozilla.com"
+    - "tvandermerwe@mozilla.com"
     - "matthias.st.pierre@gmail.com"
+    - "kaleb.himes@gmail.com"
 sanitizers:
  - address
  - undefined

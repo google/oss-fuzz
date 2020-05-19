@@ -2,6 +2,9 @@
 name: 'run-fuzzers'
 description: 'Runs fuzz target binaries for a specified length of time.'
 inputs:
+  oss-fuzz-project-name:
+    description: 'The OSS-Fuzz project name.'
+    required: true
   fuzz-seconds:
     description: 'The total time allotted for fuzzing in seconds.'
     required: true
@@ -13,5 +16,6 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   env:
+    OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}

@@ -20,5 +20,5 @@ RUN apt-get update && apt-get -y install \
     cmake \
     libunwind-dev
 RUN git clone https://github.com/google/myanmar-tools.git
-WORKDIR $SRC/myanmar-tools/clients/cpp/
+WORKDIR $SRC/myanmar-tools
 COPY build.sh $SRC/

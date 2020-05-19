@@ -10,6 +10,7 @@ before_install:
 install:
   - pip install -r infra/travis/requirements.txt
 
+
 matrix:
   include:
     - name: "presubmit"
@@ -36,6 +37,11 @@ matrix:
         - TRAVIS_ENGINE=afl
         - TRAVIS_SANITIZER=address
         - TRAVIS_ARCHITECTURE=x86_64
+    - name: "honggfuzz address x86_64"
+      env:
+        - TRAVIS_ENGINE=honggfuzz
+        - TRAVIS_SANITIZER=address
+        - TRAVIS_ARCHITECTURE=x86_64
     - name: "none address x86_64"
       env:
         - TRAVIS_ENGINE=none
@@ -51,6 +57,8 @@ matrix:
         - TRAVIS_ENGINE=dataflow
         - TRAVIS_SANITIZER=dataflow
         - TRAVIS_ARCHITECTURE=x86_64
+    - name: "infra-tests"
+      script: sudo ./infra/presubmit.py infra-tests
 
 script: ./infra/travis/travis_build.py
 
