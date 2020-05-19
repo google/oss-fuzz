@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Builds and runs specific OSS-Fuzz project's fuzzers for CI tools."""
+import json
 import logging
 import os
 import sys
@@ -40,8 +41,10 @@ def main():
     OSS_FUZZ_PROJECT_NAME: The name of OSS-Fuzz project.
     GITHUB_REPOSITORY: The name of the Github repo that called this script.
     GITHUB_SHA: The commit SHA that triggered this script.
-    GITHUB_REF: The pull request reference that triggered this script.
     GITHUB_EVENT_NAME: The name of the hook event that triggered this script.
+    GITHUB_EVENT_PATH:
+      The path to the file containing the POST payload of the webhook:
+      https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners
     GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
 
   Returns:
@@ -49,7 +52,6 @@ def main():
   """
   oss_fuzz_project_name = os.environ.get('OSS_FUZZ_PROJECT_NAME')
   github_repo_name = os.path.basename(os.environ.get('GITHUB_REPOSITORY'))
-  pr_ref = os.environ.get('GITHUB_REF')
   commit_sha = os.environ.get('GITHUB_SHA')
   event = os.environ.get('GITHUB_EVENT_NAME')
   workspace = os.environ.get('GITHUB_WORKSPACE')
@@ -73,11 +75,16 @@ def main():
     logging.error('Error building fuzzers for project %s with commit %s.',
                   oss_fuzz_project_name, commit_sha)
     return returncode
-  if event == 'pull_request' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
-    logging.error('Error building fuzzers for project %s with pull request %s.',
-                  oss_fuzz_project_name, pr_ref)
-    return returncode
+  if event == 'pull_request':
+    with open(os.environ.get('GITHUB_EVENT_PATH'), encoding='utf-8') as file:
+      event = json.load(file)
+      pr_ref = 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
+      if not cifuzz.build_fuzzers(
+          oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
+        logging.error(
+            'Error building fuzzers for project %s with pull request %s.',
+            oss_fuzz_project_name, pr_ref)
+        return returncode
   out_dir = os.path.join(workspace, 'out')
   if cifuzz.check_fuzzer_build(out_dir):
     return 0
