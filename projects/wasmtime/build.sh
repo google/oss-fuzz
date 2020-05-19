@@ -17,7 +17,10 @@
 
 # Note: This project creates Rust fuzz targets exclusively
 PROJECT_DIR=$SRC/wasmtime
-cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions --features binaryen
+
+# Build with all features to enable the binaryen-using fuzz targets, and
+# the peepmatic fuzz targets.
+cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions --all-features
 
 FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
 for f in $SRC/wasmtime/fuzz/fuzz_targets/*.rs
