@@ -297,7 +297,7 @@ def _get_project_language(project_name):
       if match:
         return match.group(1)
 
-  raise Exception('language attribute not found in project.yaml.')
+  return None
 
 
 def _add_architecture_args(parser, choices=('x86_64', 'i386')):
@@ -465,7 +465,7 @@ def build_image(args):
   return 1
 
 
-def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals
+def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
     project_name,
     clean,
     engine,
@@ -482,6 +482,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals
   project_out_dir = _get_output_dir(project_name)
   project_work_dir = _get_work_dir(project_name)
   project_language = _get_project_language(project_name)
+  if not project_language:
+    print('WARNING: language not specified in project.yaml. Build may fail.')
 
   if clean:
     print('Cleaning existing build artifacts.')
@@ -503,10 +505,13 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals
     print('Keeping existing build artifacts as-is (if any).')
   env = [
       'FUZZING_ENGINE=' + engine,
-      'FUZZING_LANGUAGE=' + project_language,
       'SANITIZER=' + sanitizer,
       'ARCHITECTURE=' + architecture,
   ]
+
+  if project_language:
+    env.append('FUZZING_LANGUAGE=' + project_language)
+
   if env_to_add:
     env += env_to_add
 
