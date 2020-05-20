@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2017 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,32 @@
 # limitations under the License.
 #
 ################################################################################
+
+I386_PACKAGES="libeigen3-dev:i386 python3:i386 libpython3-all-dev:i386 \
+              zlib1g-dev:i386 libbz2-dev:i386"
+X64_PACKAGES="libeigen3-dev python3 libpython3-all-dev \
+              zlib1g-dev libbz2-dev"
+
+if [ "$ARCHITECTURE" = "i386" ]; then
+    apt-get install -y $I386_PACKAGES
+else
+    apt-get install -y $X64_PACKAGES
+fi
+
+
+# We're building `rdkit` using clang, but the boost package is built using gcc.
+# For whatever reason, linking would fail.
+# (Mismatch between libstdc++ and libc++ maybe?)
+# It works if we build `rdkit` using gcc or build boost using clang instead.
+# We've opted for building boost using clang.
+cd $SRC && \
+wget --quiet https://sourceforge.net/projects/boost/files/boost/1.69.0/boost_1_69_0.tar.bz2 && \
+tar xjf boost_1_69_0.tar.bz2 && \
+cd $SRC/boost_1_69_0 && \
+./bootstrap.sh --with-toolset=clang --with-libraries=serialization,system,iostreams,regex && \
+./b2 -q -j$(nproc) toolset=clang cxxflags="-fPIC $CXXFLAGS $CXXFLAGS_EXTRA" link=static install
+
+cd $SRC/rdkit
 
 mkdir -p build && cd build
 cmake -DRDK_BUILD_PYTHON_WRAPPERS=OFF -DLIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE} -DRDK_BUILD_FUZZ_TARGETS=ON -DRDK_INSTALL_STATIC_LIBS=ON -DBoost_USE_STATIC_LIBS=ON ..
