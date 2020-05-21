@@ -24,12 +24,8 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
 
-git clone https://github.com/tdewolff/fuzz
-cp -rf $SRC/fuzz/minify $GOPATH/src/github.com/tdewolff/minify/fuzz
-
-
-ls $GOPATH/src/github.com/tdewolff/minify/fuzz | while read target
+ls $GOPATH/src/github.com/tdewolff/minify/tests | while read target
 do
     echo $target
-    compile_fuzzer github.com/tdewolff/minify/fuzz/$target Fuzz fuzz_$target
+    compile_fuzzer github.com/tdewolff/minify/tests/$target Fuzz fuzz_$target
 done
