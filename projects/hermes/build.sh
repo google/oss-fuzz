@@ -23,7 +23,7 @@ then
     CONFIGURE_FLAGS="--enable-ubsan"
 fi
 
-./utils/build/configure.py "${OUT}/build" --build-system "Unix Makefiles" ${CONFIGURE_FLAGS} \
+./utils/build/configure.py "${OUT}/build" --build-system "Ninja" ${CONFIGURE_FLAGS} \
                            --cmake-flags="-DHERMES_USE_STATIC_ICU=ON -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE}"
 cmake --build "$OUT/build"  --parallel --target fuzzer-jsi-entry
 cp "${OUT}/build/bin/fuzzer-jsi-entry" "${OUT}"
