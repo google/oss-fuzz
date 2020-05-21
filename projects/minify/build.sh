@@ -24,8 +24,8 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
 
-ls $GOPATH/src/github.com/tdewolff/minify/tests | while read target
+find $GOPATH/src/github.com/tdewolff/minify/tests/*/ -maxdepth 1 -type d | while read target
 do
-    echo $target
-    compile_fuzzer github.com/tdewolff/minify/tests/$target Fuzz fuzz_$target
+    fuzz_target=`echo $target | cut -d'/' -f 9`
+    compile_fuzzer github.com/tdewolff/minify/tests/$fuzz_target Fuzz $fuzz_target-fuzzer
 done
