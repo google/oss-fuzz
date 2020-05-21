@@ -74,9 +74,6 @@ export RUSTFLAGS="--cfg fuzzing -Zsanitizer=${SANITIZER} -Cdebuginfo=1 -Cforce-f
 export CUSTOM_LIBFUZZER_PATH="$LIB_FUZZING_ENGINE_DEPRECATED"
 export CUSTOM_LIBFUZZER_STD_CXX=c++
 
-# Set RUSTC_BOOTSTRAP to get nightly features like sanitizers.
-export RUSTC_BOOTSTRAP=1
-
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
