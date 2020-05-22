@@ -67,7 +67,11 @@ fi
 # use RUSTFLAGS.
 # FIXME: Support code coverage once support is in.
 # See https://github.com/rust-lang/rust/issues/34701.
-export RUSTFLAGS="--cfg fuzzing -Zsanitizer=${SANITIZER} -Cdebuginfo=1 -Cforce-frame-pointers"
+if [ "$SANITIZER" != "undefined" ] && [ "$ARCHITECTURE" != 'i386' ]; then
+  export RUSTFLAGS="--cfg fuzzing -Zsanitizer=${SANITIZER} -Cdebuginfo=1 -Cforce-frame-pointers"
+else
+  export RUSTFLAGS="--cfg fuzzing -Cdebuginfo=1 -Cforce-frame-pointers"
+fi
 
 # Add Rust libfuzzer flags.
 # See https://github.com/rust-fuzz/libfuzzer/blob/master/build.rs#L12.
