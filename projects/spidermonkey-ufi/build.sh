@@ -21,13 +21,9 @@ FUZZ_TARGETS=(
   Wasm
 )
 
-# Install dependencies. Note that bootstrap installs cargo, which must be added
-# to PATH via source. In a successive run (for a different sanitizer), the
-# cargo installation carries over, but bootstrap fails if cargo is not in PATH.
+# Install dependencies.
 export SHELL=/bin/bash
-[[ -f "$HOME/.cargo/env" ]] && source $HOME/.cargo/env
 ../../mach bootstrap --no-interactive --application-choice browser
-source $HOME/.cargo/env
 
 autoconf2.13
 
