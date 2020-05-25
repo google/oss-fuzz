@@ -22,6 +22,7 @@ import os
 import collections
 import logging
 import re
+import shutil
 
 import helper
 import repo_manager
@@ -104,13 +105,17 @@ def copy_src_from_docker(project_name, host_dir):
   """Copy /src from docker to the host."""
   # Copy /src to host.
   image_name = 'gcr.io/oss-fuzz/' + project_name
+  src_dir = os.path.join(host_dir, 'src')
+  if os.path.exists(src_dir):
+    shutil.rmtree(src_dir, ignore_errors=True)
+
   docker_args = [
       '-v',
       host_dir + ':/out',
       image_name,
-      'rsync',
-      '-aW',
-      '--delete',
+      'cp',
+      '-r',
+      '-p',
       '/src',
       '/out',
   ]
@@ -118,9 +123,7 @@ def copy_src_from_docker(project_name, host_dir):
 
   # Submodules can have gitdir entries which point to absolute paths. Make them
   # relative, as otherwise we can't do operations on the checkout on the host.
-  src_dir = os.path.join(host_dir, 'src')
   _make_gitdirs_relative(src_dir)
-
   return src_dir
 
 
