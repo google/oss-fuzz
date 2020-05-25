@@ -22,6 +22,7 @@ import os
 import collections
 import logging
 import re
+import shutil
 
 import helper
 import repo_manager
