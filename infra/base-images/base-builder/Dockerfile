@@ -15,16 +15,21 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-clang
-RUN apt-get update && apt-get install -y \
-    binutils-dev \
-    curl \
-    git \
-    jq \
-    libc6-dev-i386 \
-    make \
-    python3 \
-    subversion \
-    zip
+
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:git-core/ppa && \
+    apt-get update && \
+    apt-get install -y \
+        binutils-dev \
+        curl \
+        git \
+        jq \
+        libc6-dev-i386 \
+        make \
+        python3 \
+        subversion \
+        zip
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
