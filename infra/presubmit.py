@@ -337,6 +337,12 @@ def run_tests():
   # TODO(metzman): This approach for running tests is flawed since tests can
   # fail even if their directory isn't changed. Figure out if it is needed (to
   # save time) and remove it if it isn't.
+  suite_list = []
+  for change_dir in changed_dirs:
+    suite_list.append(unittest.TestLoader().discover(change_dir,
+                                                     pattern='*_test.py'))
+  full_suite = unittest.TestSuite([])
+  result = unittest.TextTestRunner().run(full_suite)
   return not result.failures and not result.errors
 
 
