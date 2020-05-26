@@ -23,9 +23,9 @@ MAINTAINER randy408@protonmail.com
 
 RUN git clone --depth 1 https://github.com/nothings/stb.git
 
-wget -O $SRC/stb/gif.tar.gz https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/imagetestsuite/imagetestsuite-gif-1.00.tar.gz
-wget -O $SRC/stb/jpg.tar.gz https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/imagetestsuite/imagetestsuite-jpg-1.00.tar.gz
-wget -O $SRC/stb/tests/gif.dict https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/gif.dict &> /dev/null
+RUN wget -O $SRC/stb/gif.tar.gz https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/imagetestsuite/imagetestsuite-gif-1.00.tar.gz
+RUN wget -O $SRC/stb/jpg.tar.gz https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/imagetestsuite/imagetestsuite-jpg-1.00.tar.gz
+RUN wget -O $SRC/stb/tests/gif.dict https://raw.githubusercontent.com/mirrorer/afl/master/dictionaries/gif.dict &> /dev/null
 
 WORKDIR stb
 COPY build.sh $SRC/
