@@ -101,8 +101,7 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     """Tests that is_reproducible will raise an error if it could not attempt
     reproduction when the fuzzer does not exist."""
     with self.assertRaises(fuzz_target.ReproduceError):
-      self.test_target.is_reproducible(TEST_FILES_PATH,
-                                       '/non-existent-path')
+      self.test_target.is_reproducible(TEST_FILES_PATH, '/non-existent-path')
 
   def test_unreproducible(self, _):
     """Tests that is_reproducible returns False for a crash that cannot
@@ -121,7 +120,7 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
 
     with self.assertRaises(fuzz_target.ReproduceError):
       self.test_target.is_reproducible('/non-existent-path',
-                                              self.fuzz_target_bin)
+                                       self.fuzz_target_bin)
 
 
 class GetTestCaseUnitTest(unittest.TestCase):
@@ -248,6 +247,7 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
     PR build but the target is not in the OSS-Fuzz build (usually because it
     is new)."""
     os.remove(self.oss_fuzz_target_path)
+
     def is_reproducible_side_effect(_, target_path):
       if os.path.dirname(target_path) == self.oss_fuzz_build_path:
         raise fuzz_target.ReproduceError()
