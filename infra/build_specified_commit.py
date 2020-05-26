@@ -55,6 +55,34 @@ class BaseBuilderRepo:
     raise ValueError('Failed to find suitable base-builder.')
 
 
+def _replace_gitdir(src_dir, file_path):
+  """Replace gitdir with a relative path."""
+  with open(file_path) as handle:
+    lines = handle.readlines()
+
+  new_lines = []
+  for line in lines:
+    if line.startswith(_GIT_DIR_MARKER):
+      absolute_path = line[len(_GIT_DIR_MARKER):].strip()
+      if not os.path.isabs(absolute_path):
+        # Already relative.
+        return
+
+      current_dir = os.path.dirname(file_path)
+      # Rebase to /src rather than the host src dir.
+      base_dir = current_dir.replace(src_dir, '/src')
+      relative_path = os.path.relpath(absolute_path, base_dir)
+      logging.info('Replacing absolute submodule gitdir from %s to %s',
+                   absolute_path, relative_path)
+
+      line = _GIT_DIR_MARKER + relative_path
+
+    new_lines.append(line)
+
+  with open(file_path, 'w') as handle:
+    handle.write(''.join(new_lines))
+
+
 def _make_gitdirs_relative(src_dir):
   """Make gitdirs relative."""
   for root_dir, _, files in os.walk(src_dir):
@@ -63,26 +91,7 @@ def _make_gitdirs_relative(src_dir):
         continue
 
       file_path = os.path.join(root_dir, filename)
-      with open(file_path) as handle:
-        lines = handle.readlines()
-
-      new_lines = []
-      for line in lines:
-        if line.startswith(_GIT_DIR_MARKER):
-          absolute_path = line[len(_GIT_DIR_MARKER):].strip()
-          current_dir = os.path.dirname(file_path)
-          # Rebase to /src rather than the host src dir.
-          base_dir = current_dir.replace(src_dir, '/src')
-          relative_path = os.path.relpath(absolute_path, base_dir)
-          logging.info('Replacing absolute submodule gitdir from %s to %s',
-                       absolute_path, relative_path)
-
-          line = _GIT_DIR_MARKER + relative_path
-
-        new_lines.append(line)
-
-      with open(file_path, 'w') as handle:
-        handle.write(''.join(new_lines))
+      _replace_gitdir(src_dir, file_path)
 
 
 def _replace_base_builder_digest(dockerfile_path, digest):
