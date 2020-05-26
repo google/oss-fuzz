@@ -24,7 +24,7 @@ make
 # Compile fuzzer.
 $CXX $CXXFLAGS -I../include $LIB_FUZZING_ENGINE \
     ../src/test_lib_json/fuzz.cpp -o $OUT/jsoncpp_fuzzer \
-    src/lib_json/libjsoncpp.a
+    lib/libjsoncpp.a
 
 # Add dictionary.
 cp $SRC/jsoncpp/src/test_lib_json/fuzz.dict $OUT/jsoncpp_fuzzer.dict
