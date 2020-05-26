@@ -237,9 +237,9 @@ class FuzzTarget:
       reproducible_on_pr_build = self.is_reproducible(test_case,
                                                       self.target_path)
     except ReproduceError as error:
-      logs.error('Could not run target when checking for reproducibility.'
-                 'Please file an issue:'
-                 'https://github.com/google/oss-fuzz/issues/new.')
+      logging.error('Could not run target when checking for reproducibility.'
+                    'Please file an issue:'
+                    'https://github.com/google/oss-fuzz/issues/new.')
       raise error
 
     if not self.project_name:

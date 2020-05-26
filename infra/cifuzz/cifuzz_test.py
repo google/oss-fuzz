@@ -158,7 +158,8 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
                            side_effect=[True, False]):
-      run_success = cifuzz.run_fuzzers(10, TEST_FILES_PATH, EXAMPLE_PROJECT)
+      run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
+                                                  EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
@@ -170,7 +171,8 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
                            side_effect=[True, True]):
-      bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH, EXAMPLE_PROJECT)
+      run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
+                                                  EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
