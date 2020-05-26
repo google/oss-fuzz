@@ -21,6 +21,8 @@ then
 elif [ "${SANITIZER}" = undefined ]
 then
     CONFIGURE_FLAGS="--enable-ubsan"
+else
+    CONFIGURE_FLAGS=""
 fi
 
 ./utils/build/configure.py "${OUT}/build" --build-system "Ninja" ${CONFIGURE_FLAGS} \
