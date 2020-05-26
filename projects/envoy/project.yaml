@@ -13,5 +13,9 @@ auto_ccs:
   - "asraa@google.com"
   - "adip@google.com"
   - "avd@google.com"
+  - "akonradi@google.com"
+  - "liebchen@google.com"
+  - "samflattery@google.com"
+  - "jianwendong@google.com"
   - "skerner@google.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
