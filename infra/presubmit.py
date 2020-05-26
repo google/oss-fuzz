@@ -341,8 +341,8 @@ def run_tests():
   for change_dir in changed_dirs:
     suite_list.append(unittest.TestLoader().discover(change_dir,
                                                      pattern='*_test.py'))
-  full_suite = unittest.TestSuite([])
-  result = unittest.TextTestRunner().run(full_suite)
+  suite = unittest.TestSuite(suite_list)
+  result = unittest.TextTestRunner().run(suite)
   return not result.failures and not result.errors
 
 
