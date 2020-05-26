@@ -30,12 +30,12 @@ index 22fd36ce1b..8a6025f641 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 609e40ccae..db9d67b966 100644
+index 99c8bd8284..335d2e97a0 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
-@@ -959,6 +959,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
+@@ -958,6 +958,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
      // transform the path into device space
-     pathPtr->transform(*matrix, devPathPtr);
+     pathPtr->transform(matrixProvider->localToDevice(), devPathPtr);
  
 +#if defined(IS_FUZZING)
 +    if (devPathPtr->countPoints() > 1000) {
@@ -80,7 +80,7 @@ index d998029a2b..8807c1fc4d 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index 705809de99..ef4e406816 100644
+index c840a68a03..5692773a33 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
 @@ -262,6 +262,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
@@ -114,10 +114,10 @@ index f294dbe4a0..12100e1624 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index 5afe53ab70..41d28b0602 100644
+index 09c061de51..34b3f0bd63 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
-@@ -3142,7 +3142,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+@@ -3173,7 +3173,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
                                     SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
      SkASSERT(!oval.isEmpty());
      SkASSERT(sweepAngle);
@@ -131,10 +131,10 @@ index 5afe53ab70..41d28b0602 100644
      path->setIsVolatile(true);
      path->setFillType(SkPathFillType::kWinding);
 diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index 041f6f0469..0270f810c4 100644
+index c7e26df8d4..eb9b28141d 100644
 --- a/src/core/SkReadBuffer.cpp
 +++ b/src/core/SkReadBuffer.cpp
-@@ -276,7 +276,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
+@@ -277,7 +277,12 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
  uint32_t SkReadBuffer::getArrayCount() {
      const size_t inc = sizeof(uint32_t);
      fError = fError || !IsPtrAlign4(fReader.peek()) || !fReader.isAvailable(inc);
@@ -148,10 +148,10 @@ index 041f6f0469..0270f810c4 100644
  
  /*  Format:
 diff --git a/src/core/SkScan_Hairline.cpp b/src/core/SkScan_Hairline.cpp
-index 589bd1cccd..a4c661c69d 100644
+index eeea9e78f0..4c8d2a8f3f 100644
 --- a/src/core/SkScan_Hairline.cpp
 +++ b/src/core/SkScan_Hairline.cpp
-@@ -121,7 +121,11 @@ void SkScan::HairLineRgn(const SkPoint array[], int arrayCount, const SkRegion*
+@@ -122,7 +122,11 @@ void SkScan::HairLineRgn(const SkPoint array[], int arrayCount, const SkRegion*
              if (ix0 == ix1) {// too short to draw
                  continue;
              }
@@ -164,7 +164,7 @@ index 589bd1cccd..a4c661c69d 100644
              SkFixed slope = SkFixedDiv(dy, dx);
              SkFixed startY = SkFDot6ToFixed(y0) + (slope * ((32 - x0) & 63) >> 6);
  
-@@ -137,7 +141,11 @@ void SkScan::HairLineRgn(const SkPoint array[], int arrayCount, const SkRegion*
+@@ -138,7 +142,11 @@ void SkScan::HairLineRgn(const SkPoint array[], int arrayCount, const SkRegion*
              if (iy0 == iy1) { // too short to draw
                  continue;
              }
