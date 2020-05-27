@@ -264,7 +264,7 @@ class FuzzTarget:
           test_case, oss_fuzz_target_path)
     except ReproduceError:
       # This happens if the project has OSS-Fuzz builds, but the fuzz target
-      # is not in it.
+      # is not in it (e.g. because the fuzz target is new).
       logging.info(COULD_NOT_TEST_ON_OSS_FUZZ_MESSAGE)
       return True
 
