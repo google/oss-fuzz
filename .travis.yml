@@ -56,7 +56,7 @@ matrix:
         - TRAVIS_SANITIZER=dataflow
         - TRAVIS_ARCHITECTURE=x86_64
     - name: "infra-tests"
-      script: sudo pip install -r infra/travis/requirements.txt && sudo ./infra/presubmit.py infra-tests
+      script: sudo --preserve-env=HOME /bin/bash -c 'source $HOME/virtualenv/python3.6/bin/activate ./infra/presubmit.py infra-tests'
 
 script: ./infra/travis/travis_build.py
 
