@@ -35,10 +35,6 @@ EXAMPLE_PROJECT = 'example'
 # An example fuzzer that triggers an error.
 EXAMPLE_FUZZER = 'example_crash_fuzzer'
 
-# Location of files used for testing.
-TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'test_files')
-
 # The return value of a successful call to utils.execute.
 EXECUTE_SUCCESS_RETVAL = ('', '', 0)
 
@@ -50,28 +46,29 @@ EXECUTE_FAILURE_RETVAL = ('', '', 1)
 # don't need to accept this as an argument in every test method.
 @unittest.mock.patch('utils.get_container_name', return_value='container')
 class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
-  """Test is_reproducible method in the fuzz_target.FuzzTarget class."""
+  """Tests the is_reproducible method in the fuzz_target.FuzzTarget class."""
 
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
-    self.fuzz_target_bin = '/example/path'
-    self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin,
+    self.fuzz_target_path = '/example/path'
+    self.testcase_path = '/testcase'
+    self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path,
                                               fuzz_target.REPRODUCE_ATTEMPTS,
                                               '/example/outdir')
 
   def test_reproducible(self, _):
-    """Tests that is_reproducible will return True if crash is detected and that
-    the command used to reproduce is correct."""
+    """Tests that is_reproducible returns True if crash is detected and that
+    is_reproducible uses the correct command to reproduce a crash."""
     self._set_up_fakefs()
     all_repro = [EXECUTE_FAILURE_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
     with unittest.mock.patch('utils.execute',
                              side_effect=all_repro) as mocked_execute:
-      result = self.test_target.is_reproducible(TEST_FILES_PATH,
-                                                self.fuzz_target_bin)
+      result = self.test_target.is_reproducible(self.testcase_path,
+                                                self.fuzz_target_path)
       mocked_execute.assert_called_once_with([
           'docker', 'run', '--rm', '--privileged', '--volumes-from',
           'container', '-e', 'OUT=/example', '-e',
-          'TESTCASE=' + TEST_FILES_PATH, '-t',
+          'TESTCASE=' + self.testcase_path, '-t',
           'gcr.io/oss-fuzz-base/base-runner', 'reproduce', 'path', '-runs=100'
       ])
       self.assertTrue(result)
@@ -81,8 +78,8 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     """Helper to setup pyfakefs and add important files to the fake
     filesystem."""
     self.setUpPyfakefs()
-    self.fs.create_file(self.fuzz_target_bin)
-    self.fs.add_real_directory(TEST_FILES_PATH)
+    self.fs.create_file(self.fuzz_target_path)
+    self.fs.create_file(self.testcase_path)
 
   def test_flaky(self, _):
     """Tests that is_reproducible returns True if crash is detected on the last
@@ -92,25 +89,25 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     with unittest.mock.patch('utils.execute',
                              side_effect=last_time_repro) as mocked_execute:
       self.assertTrue(
-          self.test_target.is_reproducible(TEST_FILES_PATH,
-                                           self.fuzz_target_bin))
+          self.test_target.is_reproducible(self.testcase_path,
+                                           self.fuzz_target_path))
       self.assertEqual(fuzz_target.REPRODUCE_ATTEMPTS,
                        mocked_execute.call_count)
 
-  def test_non_existent_fuzzer(self, _):
-    """Tests that is_reproducible will raise an error if it could not attempt
-    reproduction when the fuzzer does not exist."""
+  def test_nonexistent_fuzzer(self, _):
+    """Tests that is_reproducible raises an error if it could not attempt
+    reproduction because the fuzzer doesn't exist."""
     with self.assertRaises(fuzz_target.ReproduceError):
-      self.test_target.is_reproducible(TEST_FILES_PATH, '/non-existent-path')
+      self.test_target.is_reproducible(self.testcase_path, '/non-existent-path')
 
   def test_unreproducible(self, _):
-    """Tests that is_reproducible returns False for a crash that cannot
-    be reproduced."""
+    """Tests that is_reproducible returns False for a crash that did not
+    reproduce."""
     all_unrepro = [EXECUTE_SUCCESS_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
     self._set_up_fakefs()
     with unittest.mock.patch('utils.execute', side_effect=all_unrepro):
-      result = self.test_target.is_reproducible(TEST_FILES_PATH,
-                                                self.fuzz_target_bin)
+      result = self.test_target.is_reproducible(self.testcase_path,
+                                                self.fuzz_target_path)
       self.assertFalse(result)
 
 
@@ -134,7 +131,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
         '/example/outdir/crash-ad6700613693ef977ff3a8c8f4dae239c3dde6f5')
 
   def test_invalid_error_string(self):
-    """Tests that get_test_case will return None with a bad error string."""
+    """Tests that get_test_case returns None with a bad error string."""
     self.assertIsNone(self.test_target.get_test_case(''))
     self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
 
@@ -143,7 +140,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
   """Test parse_fuzzer_output function in the cifuzz module."""
 
   def test_download_valid_projects_corpus(self):
-    """Tests that a vaild fuzz target will return a corpus directory."""
+    """Tests that a vaild fuzz target returns a corpus directory."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
       test_target.project_name = EXAMPLE_PROJECT
@@ -162,7 +159,7 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
                          os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_FUZZER))
 
   def test_download_invalid_projects_corpus(self):
-    """Tests that a invaild fuzz target will not return None."""
+    """Tests that a invaild fuzz target does not return None."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('testfuzzer', 3, tmp_dir)
       corpus_path = test_target.download_latest_corpus()
@@ -178,16 +175,17 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     """Sets up dummy fuzz target to test is_crash_reportable method."""
-    self.fuzz_target_bin = '/example/do_stuff_fuzzer'
-    self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_bin, 100,
+    self.fuzz_target_path = '/example/do_stuff_fuzzer'
+    self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path, 100,
                                               '/example/outdir', 'example')
     self.oss_fuzz_build_path = '/oss-fuzz-build'
     self.setUpPyfakefs()
-    self.fs.create_file(self.fuzz_target_bin)
+    self.fs.create_file(self.fuzz_target_path)
     self.oss_fuzz_target_path = os.path.join(
-        self.oss_fuzz_build_path, os.path.basename(self.fuzz_target_bin))
+        self.oss_fuzz_build_path, os.path.basename(self.fuzz_target_path))
     self.fs.create_file(self.oss_fuzz_target_path)
-    self.fs.add_real_directory(TEST_FILES_PATH)
+    self.testcase_path = '/testcase'
+    self.fs.create_file(self.testcase_path, contents='')
 
   @unittest.mock.patch('logging.info')
   def test_new_reproducible_crash(self, mocked_info):
@@ -198,7 +196,7 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
       with tempfile.TemporaryDirectory() as tmp_dir:
         self.test_target.out_dir = tmp_dir
         self.assertTrue(
-            self.test_target.is_crash_reportable('/example/crash/testcase'))
+            self.test_target.is_crash_reportable(self.testcase_path))
     mocked_info.assert_called_with(
         'The crash is reproducible. The crash doesn\'t reproduce '
         'on old builds. This pull request probably introduced the '
@@ -218,17 +216,14 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
   ])
   # yapf: enable
   def test_invalid_crash(self, is_reproducible_retvals):
-    """Tests that an reportable crash causes the method to return False."""
-    self.setUpPyfakefs()
-    self.fs.create_file(self.fuzz_target_bin)
-    self.fs.add_real_directory(TEST_FILES_PATH)
+    """Tests that a nonreportable crash causes the method to return False."""
     with unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
                              side_effect=is_reproducible_retvals):
 
       with unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
                                return_value=self.oss_fuzz_build_path):
         self.assertFalse(
-            self.test_target.is_crash_reportable('/example/crash/testcase'))
+            self.test_target.is_crash_reportable(self.testcase_path))
 
   @unittest.mock.patch('logging.info')
   @unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
@@ -250,8 +245,8 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
       with unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
                                return_value=self.oss_fuzz_build_path):
         self.assertTrue(
-            self.test_target.is_crash_reportable('/example/crash/testcase'))
-    mocked_is_reproducible.assert_any_call('/example/crash/testcase',
+            self.test_target.is_crash_reportable(self.testcase_path))
+    mocked_is_reproducible.assert_any_call(self.testcase_path,
                                            self.oss_fuzz_target_path)
     mocked_info.assert_called_with(
         'Crash is reproducible. Could not run OSS-Fuzz build of '
@@ -272,8 +267,7 @@ class GetLatestBuildVersionUnitTest(unittest.TestCase):
     self.assertTrue('address' in latest_build)
 
   def test_get_invalid_project(self):
-    """Tests that the latest build will return None when project doesn't
-    exist."""
+    """Tests that the latest build returns None when project doesn't exist."""
     test_target = fuzz_target.FuzzTarget('/example/path', 10, '/example/outdir',
                                          'not-a-proj')
     self.assertIsNone(test_target.get_lastest_build_version())
@@ -309,7 +303,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
       self.assertTrue(os.listdir(oss_fuzz_build_path))
 
   def test_get_invalid_project(self):
-    """Tests the latest build will return None when project doesn't exist."""
+    """Tests the latest build returns None when project doesn't exist."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                            tmp_dir)
@@ -319,7 +313,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
       self.assertIsNone(test_target.download_oss_fuzz_build())
 
   def test_invalid_build_dir(self):
-    """Tests the download will return None when out_dir doesn't exist."""
+    """Tests the download returns None when out_dir doesn't exist."""
     test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                          'not/a/dir', 'example')
     self.assertIsNone(test_target.download_oss_fuzz_build())

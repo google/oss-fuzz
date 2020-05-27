@@ -174,7 +174,7 @@ class FuzzTarget:
         binary.
 
       Raises:
-        ReproduceError if we can't reproduce attempt to reproduce the crash.
+        ReproduceError if we can't attempt to reproduce the crash.
     """
 
     if not os.path.exists(target_path):
@@ -233,7 +233,7 @@ class FuzzTarget:
       ReproduceError if we can't attempt to reproduce the crash on the PR build.
     """
     if not os.path.exists(test_case):
-      raise RuntimeError('Test case %s not found.' % test_case)
+      raise ReproduceError('Test case %s not found.' % test_case)
 
     try:
       reproducible_on_pr_build = self.is_reproducible(test_case,
