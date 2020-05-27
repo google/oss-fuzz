@@ -27,7 +27,7 @@ RUN apt-get -y update && \
       wget \
       zip
 RUN apt-get clean
-RUN cd /tmp && git clone https://github.com/ndevilla/iniparser.git && \
+RUN cd /tmp && git clone --depth 1 https://github.com/ndevilla/iniparser.git && \
       cd iniparser && \
       make && \
       cp libiniparser.* /usr/local/lib && \
@@ -53,6 +53,6 @@ RUN mkdir -p /tmp/alsa-build && cd /tmp/alsa-build && \
       make install
 
 
-RUN cd $SRC && git clone https://chromium.googlesource.com/chromiumos/third_party/adhd
+RUN cd $SRC && git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/adhd
 WORKDIR adhd/cras
 COPY build.sh $SRC/

@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER sebastian.rasmussen@artifex.com
 RUN apt-get update && apt-get install -y make libtool pkg-config vim libreadline-dev wget autoconf
-RUN git clone --recursive --depth 1 git://git.ghostscript.com/jbig2dec.git jbig2dec
+RUN git clone --depth 1 --recursive --depth 1 git://git.ghostscript.com/jbig2dec.git jbig2dec
 RUN mkdir tests
 RUN cp $SRC/jbig2dec/annex-h.jbig2 tests/annex-h.jb2
 RUN cd tests && wget https://jbig2dec.com/tests/t89-halftone.zip && unzip t89-halftone.zip

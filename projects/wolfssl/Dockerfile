@@ -18,8 +18,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER levi@wolfssl.com
 
 RUN apt-get update && apt-get install -y make autoconf automake libtool zip
-RUN git clone https://github.com/wolfssl/wolfssl --depth 1 $SRC/wolfssl
-RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
+RUN git clone --depth 1 https://github.com/wolfssl/wolfssl --depth 1 $SRC/wolfssl
+RUN git clone --depth 1 https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
 
 WORKDIR wolfssl
 

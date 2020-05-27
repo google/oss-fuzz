@@ -21,6 +21,6 @@ RUN apt-get update && apt-get install -y \
   yasm \
   python
 
-RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
+RUN git clone --depth 1 --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
 WORKDIR mozilla-central/js/src/
 COPY build.sh $SRC/

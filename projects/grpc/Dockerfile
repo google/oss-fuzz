@@ -45,6 +45,6 @@ RUN pip install futures==2.2.0 enum34==1.0.4 protobuf==3.5.2.post1 six==1.10.0 t
 #========================
 # Bazel installation
 
-RUN git clone --recursive https://github.com/grpc/grpc grpc
+RUN git clone --depth 1 --recursive https://github.com/grpc/grpc grpc
 WORKDIR $SRC/grpc/
 COPY build.sh $SRC/

@@ -23,7 +23,7 @@ RUN git clone --depth 1 https://github.com/madler/zlib.git zlib
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff libtiff
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git libpng
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp libwebp
-RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit jbigkit
+RUN git clone --depth 1 https://www.cl.cam.ac.uk/~mgk25/git/jbigkit jbigkit
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo libjpeg-turbo
 RUN git clone --depth 1 https://github.com/facebook/zstd zstd
 WORKDIR leptonica

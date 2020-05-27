@@ -23,6 +23,6 @@ RUN apt-get update && \
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.16.6/cmake-3.16.6-Linux-x86_64.sh; \
     chmod +x cmake-3.16.6-Linux-x86_64.sh; \
     ./cmake-3.16.6-Linux-x86_64.sh --skip-license --prefix="/usr/local"
-RUN git clone https://github.com/facebook/hermes.git
+RUN git clone --depth 1 https://github.com/facebook/hermes.git
 WORKDIR hermes
 COPY build.sh $SRC/

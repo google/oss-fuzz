@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool build-es
     pkg-config texinfo libbz2-dev zlib1g-dev yasm cmake mercurial wget \
     xutils-dev libpciaccess-dev nasm
 
-RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+RUN git clone --depth 1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
 RUN wget https://www.alsa-project.org/files/pub/lib/alsa-lib-1.1.0.tar.bz2
 RUN git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git

@@ -19,13 +19,13 @@ RUN apt-get update && apt-get install -y cmake ninja-build
 
 RUN mkdir -p graphicsfuzz-spirv
 
-RUN git clone --depth=1 https://github.com/KhronosGroup/glslang.git graphicsfuzz-spirv/glslang
-RUN git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Cross.git graphicsfuzz-spirv/SPIRV-Cross
+RUN git clone --depth 1 --depth=1 https://github.com/KhronosGroup/glslang.git graphicsfuzz-spirv/glslang
+RUN git clone --depth 1 --depth=1 https://github.com/KhronosGroup/SPIRV-Cross.git graphicsfuzz-spirv/SPIRV-Cross
 
-RUN git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Tools.git graphicsfuzz-spirv/SPIRV-Tools
-RUN git clone --depth=1 https://github.com/KhronosGroup/SPIRV-Headers graphicsfuzz-spirv/SPIRV-Tools/external/spirv-headers
-RUN git clone --depth=1 https://github.com/google/effcee graphicsfuzz-spirv/SPIRV-Tools/external/effcee
-RUN git clone --depth=1 https://github.com/google/re2 graphicsfuzz-spirv/SPIRV-Tools/external/re2
+RUN git clone --depth 1 --depth=1 https://github.com/KhronosGroup/SPIRV-Tools.git graphicsfuzz-spirv/SPIRV-Tools
+RUN git clone --depth 1 --depth=1 https://github.com/KhronosGroup/SPIRV-Headers graphicsfuzz-spirv/SPIRV-Tools/external/spirv-headers
+RUN git clone --depth 1 --depth=1 https://github.com/google/effcee graphicsfuzz-spirv/SPIRV-Tools/external/effcee
+RUN git clone --depth 1 --depth=1 https://github.com/google/re2 graphicsfuzz-spirv/SPIRV-Tools/external/re2
 
 COPY build.sh $SRC/
 

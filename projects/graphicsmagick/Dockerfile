@@ -30,7 +30,7 @@ RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone --depth 1 https://git.savannah.nongnu.org/r/freetype/freetype2
 RUN git clone --depth 1 https://github.com/pnggroup/libpng
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS
-RUN git clone https://git.ghostscript.com/ghostpdl.git
+RUN git clone --depth 1 https://git.ghostscript.com/ghostpdl.git
 RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
 
 WORKDIR graphicsmagick

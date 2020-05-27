@@ -36,7 +36,7 @@ RUN apt-get install -y \
     wget \
     zip
 
-RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage
+RUN git clone --depth 1 https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage
 RUN pip3 install -r /opt/code_coverage/requirements.txt
 
 COPY bad_build_check \

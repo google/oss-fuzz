@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
  libtool \
  gettext gengetopt curl gperf
 
-RUN git clone --depth=1 https://git.savannah.gnu.org/git/libidn.git
+RUN git clone --depth 1 --depth=1 https://git.savannah.gnu.org/git/libidn.git
 
 WORKDIR libidn
 COPY build.sh $SRC/

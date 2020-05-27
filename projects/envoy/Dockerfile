@@ -39,6 +39,6 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5
     chmod +x cmake-3.14.5-Linux-x86_64.sh; \
     ./cmake-3.14.5-Linux-x86_64.sh --skip-license --prefix="/usr/local"
 
-RUN git clone https://github.com/envoyproxy/envoy.git
+RUN git clone --depth 1 https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/
 COPY build.sh $SRC/

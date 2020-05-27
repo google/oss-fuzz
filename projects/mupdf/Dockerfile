@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jonathan@titanous.com
 RUN apt-get update && apt-get install -y make libtool pkg-config
-RUN git clone --recursive --depth 1 git://git.ghostscript.com/mupdf.git mupdf
+RUN git clone --depth 1 --recursive --depth 1 git://git.ghostscript.com/mupdf.git mupdf
 RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
     zip -q $SRC/pdf_fuzzer_seed_corpus.zip pdf.js/test/pdfs/*.pdf && \
     rm -rf pdf.js

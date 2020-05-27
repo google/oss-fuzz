@@ -35,14 +35,14 @@ RUN apt-get update && apt-get install -y \
  mercurial
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
-RUN git clone git://git.savannah.gnu.org/gnulib.git
-RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
-RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git
+RUN git clone --depth 1 git://git.savannah.gnu.org/gnulib.git
+RUN git clone --depth 1 --depth=1 https://git.savannah.gnu.org/git/libunistring.git
+RUN git clone --depth 1 --depth=1 https://gitlab.com/libidn/libidn2.git
 RUN hg clone https://gmplib.org/repo/gmp/ gmp
-RUN git clone --depth=1 https://gitlab.com/gnutls/libtasn1.git
-RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+RUN git clone --depth 1 --depth=1 https://gitlab.com/gnutls/libtasn1.git
+RUN git clone --depth 1 --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 
-RUN git clone --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git
+RUN git clone --depth 1 --depth=1 --recursive https://gitlab.com/gnutls/gnutls.git
 
 WORKDIR gnutls
 COPY build.sh $SRC/

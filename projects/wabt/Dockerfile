@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER binji@chromium.org
 RUN apt-get update && apt-get install -y cmake libtool make python
-RUN git clone --recursive https://github.com/WebAssembly/wabt
+RUN git clone --depth 1 --recursive https://github.com/WebAssembly/wabt
 WORKDIR wabt
 RUN git submodule init
 RUN git submodule update

@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER alexhultman@gmail.com
 RUN apt-get update && apt-get install -y libz-dev
-RUN git clone --recursive https://github.com/uNetworking/uWebSockets.git uWebSockets
+RUN git clone --depth 1 --recursive https://github.com/uNetworking/uWebSockets.git uWebSockets
 WORKDIR uWebSockets
 COPY build.sh $SRC/

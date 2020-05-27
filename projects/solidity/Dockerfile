@@ -22,12 +22,12 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5
     chmod +x cmake-3.14.5-Linux-x86_64.sh; \
     ./cmake-3.14.5-Linux-x86_64.sh --skip-license --prefix="/usr"
 
-RUN git clone --recursive https://github.com/ethereum/solidity.git solidity
+RUN git clone --depth 1 --recursive https://github.com/ethereum/solidity.git solidity
 RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
-RUN git clone --recursive -b boost-1.69.0 https://github.com/boostorg/boost.git \
+RUN git clone --depth 1 --recursive -b boost-1.69.0 https://github.com/boostorg/boost.git \
     boost
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
-RUN git clone --branch="v0.4.0" --recurse-submodules \
+RUN git clone --depth 1 --branch="v0.4.0" --recurse-submodules \
     https://github.com/ethereum/evmone.git
 
 # Install statically built dependencies in "/usr" directory

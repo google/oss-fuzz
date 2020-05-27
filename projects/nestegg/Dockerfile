@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kinetik@flim.org
 RUN apt-get update && apt-get install -y subversion wget
-RUN git clone https://github.com/kinetiknz/nestegg.git
+RUN git clone --depth 1 https://github.com/kinetiknz/nestegg.git
 
 # collect corpus
 RUN svn export https://github.com/webmproject/libwebm.git/trunk/testing/testdata/

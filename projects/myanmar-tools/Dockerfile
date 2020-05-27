@@ -19,6 +19,6 @@ RUN apt-get update && apt-get -y install \
     build-essential \
     cmake \
     libunwind-dev
-RUN git clone https://github.com/google/myanmar-tools.git
+RUN git clone --depth 1 https://github.com/google/myanmar-tools.git
 WORKDIR $SRC/myanmar-tools
 COPY build.sh $SRC/

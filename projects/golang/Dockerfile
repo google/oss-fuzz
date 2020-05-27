@@ -19,7 +19,7 @@ MAINTAINER guidovranken@gmail.com
 
 RUN mkdir -p $GOPATH/src/github.com/dvyukov/ && \
     cd $GOPATH/src/github.com/dvyukov/ && \
-    git clone https://github.com/dvyukov/go-fuzz-corpus
+    git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
 
 COPY build.sh $SRC/
 

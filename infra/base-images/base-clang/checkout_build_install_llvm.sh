@@ -29,7 +29,7 @@ function clone_with_retries {
   set +e
   for i in $(seq 1 $CHECKOUT_RETRIES); do
     rm -rf $LOCAL_PATH
-    git clone $REPOSITORY $LOCAL_PATH
+    git clone --depth 1 $REPOSITORY $LOCAL_PATH
     CHECKOUT_RETURN_CODE=$?
     if [ $CHECKOUT_RETURN_CODE -eq 0 ]; then
       break
@@ -44,7 +44,7 @@ function clone_with_retries {
 # Use chromium's clang revision
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
-git clone https://chromium.googlesource.com/chromium/src/tools/clang
+git clone --depth 1 https://chromium.googlesource.com/chromium/src/tools/clang
 cd clang
 
 LLVM_SRC=$SRC/llvm-project

@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER bug-binutils@gnu.org
 RUN apt-get update && apt-get install -y make
 RUN apt-get install -y flex bison
-RUN git clone --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git binutils-gdb
+RUN git clone --depth 1 --recursive --depth 1 git://sourceware.org/git/binutils-gdb.git binutils-gdb
 WORKDIR $SRC
 COPY build.sh $SRC/
 COPY fuzz_*.c $SRC/

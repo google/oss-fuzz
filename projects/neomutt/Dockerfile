@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER joseph.bisch@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool xsltproc libncursesw5-dev libtinfo5 libxml2-dev libxml2-utils libidn11-dev
-RUN git clone https://github.com/neomutt/neomutt neomutt
+RUN git clone --depth 1 https://github.com/neomutt/neomutt neomutt
 WORKDIR neomutt
 COPY build.sh $SRC/

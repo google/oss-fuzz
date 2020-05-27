@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y \
   libseccomp-dev \
   libcap-ng-dev
 
-RUN git clone --recurse-submodules --depth 1 \
+RUN git clone --depth 1 --recurse-submodules --depth 1 \
   https://github.com/USBGuard/usbguard usbguard
 WORKDIR usbguard
 COPY build.sh $SRC

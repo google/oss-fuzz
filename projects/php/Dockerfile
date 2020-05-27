@@ -19,6 +19,6 @@ MAINTAINER stas@php.net
 RUN apt-get update && \
     apt-get install -y autoconf automake libtool bison re2c pkg-config
 RUN git clone --depth 1 --branch master https://github.com/php/php-src.git php-src
-RUN git clone https://github.com/kkos/oniguruma.git php-src/oniguruma
+RUN git clone --depth 1 https://github.com/kkos/oniguruma.git php-src/oniguruma
 WORKDIR php-src
 COPY build.sh *.options $SRC/

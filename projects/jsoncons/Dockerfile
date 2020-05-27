@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER david@adalogics.com
 RUN apt-get update && apt-get install -y make cmake
-RUN git clone https://github.com/danielaparker/jsoncons
+RUN git clone --depth 1 https://github.com/danielaparker/jsoncons
 
 WORKDIR $SRC
 COPY build.sh $SRC/

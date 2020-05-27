@@ -22,6 +22,6 @@ RUN mkdir afl-testcases
 RUN cd afl-testcases/ && curl https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar -xz
 RUN zip guetzli_fuzzer_seed_corpus.zip afl-testcases/jpeg/full/images/* afl-testcases/jpeg_turbo/full/images/* $SRC/libjpeg-turbo/testimages/
 
-RUN git clone --depth=1 https://github.com/google/guetzli guetzli
+RUN git clone --depth 1 --depth=1 https://github.com/google/guetzli guetzli
 WORKDIR guetzli
 COPY build.sh $SRC/

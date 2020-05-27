@@ -22,7 +22,7 @@ RUN apt-get update && \
         cmake ninja-build && \
     apt-get clean
 
-RUN git clone --single-branch \
+RUN git clone --depth 1 --single-branch \
     https://github.com/google/double-conversion.git double-conversion
 WORKDIR double-conversion
 COPY build.sh $SRC/

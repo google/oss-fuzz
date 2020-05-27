@@ -33,11 +33,11 @@ RUN apt-get update && apt-get install -y \
 	pkg-config
 
 # install libsrtp dep from source
-RUN git clone --single-branch --branch 2_2_x_throttle https://github.com/cisco/libsrtp.git libsrtp
+RUN git clone --depth 1 --single-branch --branch 2_2_x_throttle https://github.com/cisco/libsrtp.git libsrtp
 RUN cd libsrtp && ./configure --enable-openssl && make -j$(nproc) shared_library && make install
 
 # fetch Janus code
-RUN git clone --single-branch --branch master https://github.com/meetecho/janus-gateway.git janus-gateway
+RUN git clone --depth 1 --single-branch --branch master https://github.com/meetecho/janus-gateway.git janus-gateway
 
 WORKDIR $SRC
 COPY build.sh $SRC/

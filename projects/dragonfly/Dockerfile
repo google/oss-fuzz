@@ -29,6 +29,6 @@ RUN go get	github.com/go-openapi/swag \
 		github.com/emirpasic/gods/maps/treemap \
 		github.com/emirpasic/gods/utils \
 		github.com/willf/bitset
-RUN git clone https://github.com/dragonflyoss/Dragonfly
+RUN git clone --depth 1 https://github.com/dragonflyoss/Dragonfly
 COPY build.sh $SRC/
 WORKDIR $SRC/

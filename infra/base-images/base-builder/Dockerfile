@@ -129,7 +129,7 @@ RUN mkdir $PRECOMPILED_DIR
 
 WORKDIR $SRC
 
-RUN git clone -b stable https://github.com/google/AFL.git afl
+RUN git clone --depth 1 -b stable https://github.com/google/AFL.git afl
 
 ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
 RUN mkdir honggfuzz && \

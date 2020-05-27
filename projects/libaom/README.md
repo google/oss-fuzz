@@ -10,7 +10,7 @@
 1.  Go to your own fork of the repo, which will be at
     https://github.com/\<git_username\>/oss-fuzz
 1.  Click on “clone or download” and pick “Clone with SSH” method (I found that
-    easier to use for “git push”). Then copy that URL and run “git clone \<URL\>”
+    easier to use for “git push”). Then copy that URL and run “git clone --depth 1 \<URL\>”
     in terminal. Now you have a local repo, and **your fork** of the remote repo
     will be called “**origin**” in your git config.
 1.  Configure a remote repo pointing to the **upstream repo**

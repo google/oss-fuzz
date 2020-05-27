@@ -37,14 +37,14 @@ RUN apt-get update && apt-get install -y \
  rsync
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
-RUN git clone git://git.savannah.gnu.org/gnulib.git
-RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
-RUN git clone --depth=1 --recursive https://gitlab.com/libidn/libidn2.git
-RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
-RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
-RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
+RUN git clone --depth 1 git://git.savannah.gnu.org/gnulib.git
+RUN git clone --depth 1 --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
+RUN git clone --depth 1 --depth=1 --recursive https://gitlab.com/libidn/libidn2.git
+RUN git clone --depth 1 --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
+RUN git clone --depth 1 --depth=1 https://git.lysator.liu.se/nettle/nettle.git
+RUN git clone --depth 1 --depth=1 https://gitlab.com/gnutls/gnutls.git
 
-RUN git clone --recursive https://git.savannah.gnu.org/git/wget.git
+RUN git clone --depth 1 --recursive https://git.savannah.gnu.org/git/wget.git
 
 WORKDIR wget
 COPY build.sh $SRC/

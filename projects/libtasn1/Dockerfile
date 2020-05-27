@@ -18,11 +18,11 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER rockdaboot@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool bison
 
-RUN git clone git://git.savannah.gnu.org/gnulib.git
+RUN git clone --depth 1 git://git.savannah.gnu.org/gnulib.git
 ENV GNULIB_TOOL=$SRC/gnulib/gnulib-tool
 ENV GNULIB_SRCDIR=$SRC/gnulib
 
-RUN git clone https://gitlab.com/gnutls/libtasn1.git
+RUN git clone --depth 1 https://gitlab.com/gnutls/libtasn1.git
 
 WORKDIR libtasn1
 COPY build.sh $SRC/

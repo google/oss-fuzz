@@ -18,11 +18,11 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER zlowram@gmail.com
 
 RUN apt-get update && apt-get install -y gcc g++ make cmake flex bison
-RUN git clone https://github.com/seladb/PcapPlusPlus PcapPlusPlus
+RUN git clone --depth 1 https://github.com/seladb/PcapPlusPlus PcapPlusPlus
 
 # Get tcpdump's test pcaps as seed corpus
-RUN git clone --depth=1 https://github.com/the-tcpdump-group/tcpdump.git tcpdump
-RUN git clone --depth=1 https://github.com/the-tcpdump-group/libpcap.git libpcap
+RUN git clone --depth 1 --depth=1 https://github.com/the-tcpdump-group/tcpdump.git tcpdump
+RUN git clone --depth 1 --depth=1 https://github.com/the-tcpdump-group/libpcap.git libpcap
 
 WORKDIR PcapPlusPlus
 

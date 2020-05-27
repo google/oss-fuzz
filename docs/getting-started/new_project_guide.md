@@ -176,11 +176,11 @@ FROM gcr.io/oss-fuzz-base/base-builder       # base image with clang toolchain
 MAINTAINER YOUR_EMAIL                        # maintainer for this file
 RUN apt-get update && apt-get install -y ... # install required packages to build your project
 RUN go get ...                               # install dependencies to build your Go project
-RUN git clone <git_url> <checkout_dir>       # checkout all sources needed to build your project
+RUN git clone --depth 1 <git_url> <checkout_dir>       # checkout all sources needed to build your project
 WORKDIR <checkout_dir>                       # current directory for the build script
 COPY build.sh fuzzer.cc $SRC/                # copy build script and other fuzzer files in src dir
 ```
-In the above example, the git clone will check out the source to `$SRC/<checkout_dir>`.
+In the above example, the git clone --depth 1 will check out the source to `$SRC/<checkout_dir>`.
 
 For an example, see
 [expat/Dockerfile](https://github.com/google/oss-fuzz/tree/master/projects/expat/Dockerfile)

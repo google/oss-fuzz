@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN git clone https://gitlab.com/samba-team/samba samba
+RUN git clone --depth 1 https://gitlab.com/samba-team/samba samba
 RUN samba/lib/fuzzing/oss-fuzz/build_image.sh
 
 WORKDIR samba

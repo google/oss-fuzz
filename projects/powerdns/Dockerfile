@@ -24,7 +24,7 @@ MAINTAINER remi.gacogne@powerdns.com
 RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex libboost-all-dev libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel
 
 # checkout all sources needed to build your project
-RUN git clone https://github.com/PowerDNS/pdns.git pdns
+RUN git clone --depth 1 https://github.com/PowerDNS/pdns.git pdns
 
 # current directory for build script
 WORKDIR pdns

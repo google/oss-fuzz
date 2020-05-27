@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jonathan.foote@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake pkg-config libssl-dev
-RUN git clone https://github.com/h2o/picotls
+RUN git clone --depth 1 https://github.com/h2o/picotls
 WORKDIR picotls
 RUN git submodule init
 RUN git submodule update
