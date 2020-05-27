@@ -18,6 +18,3 @@ auto_ccs:
   - ssahani@vmware.com
   - chris@chrisdown.name
   - the.anitazha@gmail.com
-fuzzing_engines:
-  - libfuzzer
-  - afl
