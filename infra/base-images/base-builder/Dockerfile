@@ -50,7 +50,9 @@ RUN cd /tmp/ && \
     cd Python-$PYTHON_VERSION && \
     ./configure --enable-optimizations && \
     make -j install && \
-    rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION
+    cd .. && \
+    rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
+    apt-get remove -y libbz2-dev  # https://github.com/google/oss-fuzz/issues/3888
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
