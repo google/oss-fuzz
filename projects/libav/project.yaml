@@ -1,0 +1,12 @@
+homepage: "https://libav.org/"
+language: c++
+primary_contact: "libav-security@libav.org"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
