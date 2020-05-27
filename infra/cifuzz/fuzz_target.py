@@ -176,8 +176,6 @@ class FuzzTarget:
       Raises:
         ReproduceError if we can't reproduce attempt to reproduce the crash.
     """
-    if not os.path.exists(test_case):
-      raise ReproduceError('Test case %s not found.' % test_case)
 
     if not os.path.exists(target_path):
       raise ReproduceError('Target %s not found.' % target_path)
@@ -218,8 +216,9 @@ class FuzzTarget:
     return False
 
   def is_crash_reportable(self, test_case):
-    """Checks if a crash is reproducible, and if it is, whether it's a new
-    regression that cannot be reproduced with the latest OSS-Fuzz build.
+    """Returns True if a crash is reportable. This means the crash is
+    reproducible but not reproducible on a build from OSS-Fuzz (meaning the
+    crash was introduced by this PR).
 
     NOTE: If no project is specified the crash is assumed introduced
     by the pull request if it is reproducible.
@@ -233,6 +232,9 @@ class FuzzTarget:
     Raises:
       ReproduceError if we can't attempt to reproduce the crash on the PR build.
     """
+    if not os.path.exists(test_case):
+      raise RuntimeError('Test case %s not found.' % test_case)
+
     try:
       reproducible_on_pr_build = self.is_reproducible(test_case,
                                                       self.target_path)

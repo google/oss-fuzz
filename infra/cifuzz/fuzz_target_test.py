@@ -50,7 +50,7 @@ EXECUTE_FAILURE_RETVAL = ('', '', 1)
 # don't need to accept this as an argument in every test method.
 @unittest.mock.patch('utils.get_container_name', return_value='container')
 class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
-  """Test is_reproducible function in the fuzz_target module."""
+  """Test is_reproducible method in the fuzz_target.FuzzTarget class."""
 
   def setUp(self):
     """Sets up dummy fuzz target to test is_reproducible method."""
@@ -60,8 +60,8 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
                                               '/example/outdir')
 
   def test_reproducible(self, _):
-    """Tests that is_reproducible will return True, True if crash is
-    detected and that the command used to reproduce is correct."""
+    """Tests that is_reproducible will return True if crash is detected and that
+    the command used to reproduce is correct."""
     self._set_up_fakefs()
     all_repro = [EXECUTE_FAILURE_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
     with unittest.mock.patch('utils.execute',
@@ -85,8 +85,8 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
     self.fs.add_real_directory(TEST_FILES_PATH)
 
   def test_flaky(self, _):
-    """Tests that is_reproducible will return True, True if crash is
-    detected on the last attempt."""
+    """Tests that is_reproducible returns True if crash is detected on the last
+    attempt."""
     self._set_up_fakefs()
     last_time_repro = [EXECUTE_SUCCESS_RETVAL] * 9 + [EXECUTE_FAILURE_RETVAL]
     with unittest.mock.patch('utils.execute',
@@ -112,15 +112,6 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
       result = self.test_target.is_reproducible(TEST_FILES_PATH,
                                                 self.fuzz_target_bin)
       self.assertFalse(result)
-
-  def test_non_existent_testcase(self, _):
-    """Tests that method reports it did not attempt reproduction if testcase
-    doesn't exist."""
-    self._set_up_fakefs()
-
-    with self.assertRaises(fuzz_target.ReproduceError):
-      self.test_target.is_reproducible('/non-existent-path',
-                                       self.fuzz_target_bin)
 
 
 class GetTestCaseUnitTest(unittest.TestCase):
