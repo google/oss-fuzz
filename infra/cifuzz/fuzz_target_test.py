@@ -195,8 +195,8 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
                              side_effect=[True, False]):
       with tempfile.TemporaryDirectory() as tmp_dir:
         self.test_target.out_dir = tmp_dir
-        self.assertTrue(
-            self.test_target.is_crash_reportable(self.testcase_path))
+        self.assertTrue(self.test_target.is_crash_reportable(
+            self.testcase_path))
     mocked_info.assert_called_with(
         'The crash is reproducible. The crash doesn\'t reproduce '
         'on old builds. This pull request probably introduced the '
@@ -244,8 +244,8 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
         side_effect=is_reproducible_side_effect) as mocked_is_reproducible:
       with unittest.mock.patch('fuzz_target.FuzzTarget.download_oss_fuzz_build',
                                return_value=self.oss_fuzz_build_path):
-        self.assertTrue(
-            self.test_target.is_crash_reportable(self.testcase_path))
+        self.assertTrue(self.test_target.is_crash_reportable(
+            self.testcase_path))
     mocked_is_reproducible.assert_any_call(self.testcase_path,
                                            self.oss_fuzz_target_path)
     mocked_info.assert_called_with(
