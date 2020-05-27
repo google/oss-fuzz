@@ -34,9 +34,11 @@ $CC $CFLAGS -Iinclude -Iebtree  -g -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERS
 ar cr libetree.a ./ebtree/*.o
 ar cr libhaproxy.a ./src/*.o
 
-cp $SRC/fuzz_hpack_decode.c .
-$CC $CFLAGS -Iinclude -Iebtree  -g  -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERSION=\"\" -DCONFIG_HAPROXY_DATE=\"\" -c fuzz_hpack_decode.c  -o fuzz_hpack_decode.o
-$CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_hpack_decode.o libhaproxy.a libetree.a -o $OUT/fuzz_hpack_decode
+# Disable this for now as updates in haproxy requires 
+# significant changes in the fuzzer. 
+#cp $SRC/fuzz_hpack_decode.c .
+#$CC $CFLAGS -Iinclude -Iebtree  -g  -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERSION=\"\" -DCONFIG_HAPROXY_DATE=\"\" -c fuzz_hpack_decode.c  -o fuzz_hpack_decode.o
+#$CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_hpack_decode.o libhaproxy.a libetree.a -o fuzz_hpack_decode
 
 # Now compile more fuzzers
 cp $SRC/fuzz_cfg_parser.c .
