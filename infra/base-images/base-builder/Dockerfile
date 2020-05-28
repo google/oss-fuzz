@@ -22,18 +22,17 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y \
         binutils-dev \
+        build-essential \
         curl \
         git \
         jq \
         libc6-dev-i386 \
-        make \
         subversion \
         zip
 
 # Build and install latest Python 3 (3.8.3).
 ENV PYTHON_VERSION 3.8.3
-RUN apt-get install -y \
-        build-essential \
+RUN export PYTHON_DEPS="\
         zlib1g-dev \
         libncurses5-dev \
         libgdbm-dev \
@@ -43,8 +42,9 @@ RUN apt-get install -y \
         libreadline-dev \
         libffi-dev \
         libbz2-dev \
-        liblzma-dev
-RUN cd /tmp/ && \
+        liblzma-dev" && \
+    apt-get install -y $PYTHON_DEPS && \
+    cd /tmp/ && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
@@ -52,7 +52,7 @@ RUN cd /tmp/ && \
     make -j install && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
-    apt-get remove -y libbz2-dev  # https://github.com/google/oss-fuzz/issues/3888
+    apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
