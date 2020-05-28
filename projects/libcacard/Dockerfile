@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER jjelen@redhat.com
 RUN apt-get update && apt-get install -y pkg-config libglib2.0-dev gyp libsqlite3-dev mercurial python3-pip
 # Because Ubuntu has really ancient meson out there
-RUN pip3 install meson ninja
+RUN pip3 install --no-cache-dir meson ninja
 
 RUN git clone --depth 1 --single-branch --branch master https://gitlab.freedesktop.org/spice/libcacard.git libcacard
 RUN git clone --depth 1 https://github.com/nss-dev/nss.git nss

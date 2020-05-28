@@ -52,7 +52,7 @@ RUN apt-get update && \
     python-cryptography \
     python3-cryptography
 
-RUN pip3 install cpp-coveralls
+RUN pip3 install --no-cache-dir cpp-coveralls
 
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-6.0 100
 RUN update-alternatives --install /usr/bin/scan-build scan-build /usr/bin/scan-build-6.0 100

@@ -22,7 +22,7 @@ ADD nasm_apt.pin /etc/apt/preferences
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y curl python3-pip python3-setuptools python3-wheel cmake git && \
-    pip3 install meson ninja
+    pip3 install --no-cache-dir meson ninja
 
 RUN git clone --depth 1 https://github.com/AOMediaCodec/libavif.git libavif
 WORKDIR libavif
