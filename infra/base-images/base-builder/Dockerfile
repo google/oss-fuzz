@@ -43,8 +43,8 @@ RUN apt-get install -y \
         libreadline-dev \
         libffi-dev \
         libbz2-dev \
-        liblzma-dev
-RUN cd /tmp/ && \
+        liblzma-dev && \
+    cd /tmp/ && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
