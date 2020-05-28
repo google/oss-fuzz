@@ -15,9 +15,7 @@
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER david@adalogics.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python
 
 RUN git clone --depth 1 https://github.com/servo/html5ever
 WORKDIR $SRC
-
 COPY build.sh $SRC/
