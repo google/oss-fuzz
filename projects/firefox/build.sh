@@ -49,9 +49,6 @@ export SHELL=/bin/bash
 rm tools/fuzzing/libfuzzer/patches/*.patch
 touch tools/fuzzing/libfuzzer/patches/dummy.patch
 
-# The git version used on oss-fuzz does not support --shallow-since
-sed -i -e 's/--shallow-since "[^"]*"/--depth 1/' tools/fuzzing/libfuzzer/clone_libfuzzer.sh
-
 # Update internal libFuzzer.
 (cd tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh HEAD)
 
