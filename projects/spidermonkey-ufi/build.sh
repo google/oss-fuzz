@@ -27,6 +27,10 @@ export SHELL=/bin/bash
 
 autoconf2.13
 
+# Skip patches for now
+rm tools/fuzzing/libfuzzer/patches/*.patch
+touch tools/fuzzing/libfuzzer/patches/dummy.patch
+
 # Update internal libFuzzer.
 (cd ../../tools/fuzzing/libfuzzer && ./clone_libfuzzer.sh HEAD)
 
