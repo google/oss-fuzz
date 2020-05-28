@@ -1,0 +1,11 @@
+homepage: "https://getmonero.org/"
+language: c++
+primary_contact: "binaryfate01@gmail.com"
+auto_ccs:
+  - luigi1111w@gmail.com
+  - ric@ts.org
+  - moneromooo@protonmail.com
+sanitizers:
+  - address
+architectures:
+  - x86_64
