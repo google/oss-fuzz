@@ -8,6 +8,8 @@ auto_ccs:
   - "tim@corelight.com"
   - "seth@corelight.com"
   - "justin@corelight.com"
+  - "vern@corelight.com"
+  - "vlad@es.net"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
