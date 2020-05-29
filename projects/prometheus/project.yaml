@@ -1,7 +1,10 @@
 homepage: "https://github.com/prometheus/prometheus"
 primary_contact: "prometheus-team@googlegroups.com"
 auto_ccs :
-  -  "adam@adalogics.com"
+  - "julius.volz@gmail.com"
+  - "brian.brazil@robustperception.io"
+  - "roidelapluie@prometheus.io"
+  - "richih@richih.org"
 language: go
 fuzzing_engines:
   - libfuzzer
