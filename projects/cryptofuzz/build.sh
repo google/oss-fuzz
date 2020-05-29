@@ -94,6 +94,28 @@ then
     make -B
 fi
 
+# Compile SymCrypt
+cd $SRC/SymCrypt/
+if [[ $CFLAGS != *sanitize=undefined* ]]
+then
+    # Unittests don't build with clang and are not needed anyway
+    sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
+
+    mkdir b/
+    cd b/
+    cmake ../
+    make -j$(nproc)
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
+    export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
+    export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/x86_64/Generic/libsymcrypt_common.a)
+    export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/x86_64/Generic/symcrypt_generic.a)
+
+    # Compile Cryptofuzz SymCrypt module
+    cd $SRC/cryptofuzz/modules/symcrypt
+    make -B
+fi
+
 # Compile Cityhash
 cd $SRC/cityhash
 if [[ $CFLAGS != *-m32* ]]

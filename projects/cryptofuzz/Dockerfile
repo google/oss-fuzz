@@ -17,7 +17,12 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER guidovranken@gmail.com
 
-RUN apt-get update && apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake libboost-all-dev wget mercurial gyp ninja-build zlib1g-dev libsqlite3-dev
+RUN apt-get update && \
+    apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget && \
+    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
+    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main' && \
+    apt-get update && \
+    apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake libboost-all-dev mercurial gyp ninja-build zlib1g-dev libsqlite3-dev
 
 # BoringSSL needs Go to build
 RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
@@ -43,6 +48,7 @@ RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
 RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
+RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
 

@@ -23,8 +23,9 @@ RUN apt-get update && \
 
 RUN git clone --depth 1 https://gitlab.freedesktop.org/libspectre/libspectre.git
 
-RUN wget -O $SRC/libspectre/ghostscript-9.50.tar.gz https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs950/ghostscript-9.50.tar.gz
-RUN tar xvzf $SRC/libspectre/ghostscript-9.50.tar.gz --directory $SRC/libspectre/
+RUN wget -O $SRC/libspectre/ghostscript-9.52.tar.gz https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs952/ghostscript-9.52.tar.gz
+RUN tar xvzf $SRC/libspectre/ghostscript-9.52.tar.gz --directory $SRC/libspectre/
+RUN mv $SRC/libspectre/ghostscript-9.52 $SRC/libspectre/ghostscript
 
 WORKDIR $SRC/libspectre/
 COPY build.sh $SRC/

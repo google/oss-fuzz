@@ -39,6 +39,9 @@ Before you can start setting up your new project for fuzzing, you must do the fo
   [docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)
   periodically to garbage-collect unused images.
 
+- (optional) [Install gsutil](https://cloud.google.com/storage/docs/gsutil_install) for local code coverage sanity check.
+  For Google internal (gLinux) machines, please refer [here](https://cloud.google.com/storage/docs/gsutil_install#deb) instead.
+
 ## Creating the file structure
 
 Each OSS-Fuzz project has a subdirectory
@@ -306,12 +309,7 @@ You can build your docker image and fuzz targets locally, so you can test them b
     ```
 
 4. We recommend taking a look at your code coverage as a sanity check to make sure that your
-fuzz targets get to the code you expect:
-
-    ```bash
-    $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
-    $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
-    ```
+fuzz targets get to the code you expect. Please refer to [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/).
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined) 
 configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify

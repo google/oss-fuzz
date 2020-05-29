@@ -15,14 +15,44 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-clang
-RUN apt-get install -y git \
-    subversion \
-    jq \
-    python3 \
-    zip \
-    make \
-    binutils-dev \
-    libc6-dev-i386
+
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:git-core/ppa && \
+    apt-get update && \
+    apt-get install -y \
+        binutils-dev \
+        build-essential \
+        curl \
+        git \
+        jq \
+        libc6-dev-i386 \
+        subversion \
+        zip
+
+# Build and install latest Python 3 (3.8.3).
+ENV PYTHON_VERSION 3.8.3
+RUN export PYTHON_DEPS="\
+        zlib1g-dev \
+        libncurses5-dev \
+        libgdbm-dev \
+        libnss3-dev \
+        libssl-dev \
+        libsqlite3-dev \
+        libreadline-dev \
+        libffi-dev \
+        libbz2-dev \
+        liblzma-dev" && \
+    apt-get install -y $PYTHON_DEPS && \
+    cd /tmp/ && \
+    curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
+    tar -xvf Python-$PYTHON_VERSION.tar.xz && \
+    cd Python-$PYTHON_VERSION && \
+    ./configure --enable-optimizations && \
+    make -j install && \
+    cd .. && \
+    rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
+    apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
@@ -41,10 +71,12 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 RUN go get -u github.com/mdempsky/go114-fuzz-build && \
     ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
 
-# DEPRECATED go-fuzz implementation - github.com/dvyukov/go-fuzz-build based on
-# source-to-source transformation.
-RUN go get golang.org/x/tools/go/packages
-RUN go get github.com/dvyukov/go-fuzz/go-fuzz-build
+# Install Rust and cargo-fuzz for libFuzzer instrumentation.
+ENV CARGO_HOME=/rust
+ENV RUSTUP_HOME=/rust/rustup
+ENV PATH=$PATH:/rust/bin
+RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+RUN cargo install cargo-fuzz
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"

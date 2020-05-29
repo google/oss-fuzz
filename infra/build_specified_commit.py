@@ -22,6 +22,7 @@ import os
 import collections
 import logging
 import re
+import shutil
 
 import helper
 import repo_manager
@@ -54,6 +55,34 @@ class BaseBuilderRepo:
     raise ValueError('Failed to find suitable base-builder.')
 
 
+def _replace_gitdir(src_dir, file_path):
+  """Replace gitdir with a relative path."""
+  with open(file_path) as handle:
+    lines = handle.readlines()
+
+  new_lines = []
+  for line in lines:
+    if line.startswith(_GIT_DIR_MARKER):
+      absolute_path = line[len(_GIT_DIR_MARKER):].strip()
+      if not os.path.isabs(absolute_path):
+        # Already relative.
+        return
+
+      current_dir = os.path.dirname(file_path)
+      # Rebase to /src rather than the host src dir.
+      base_dir = current_dir.replace(src_dir, '/src')
+      relative_path = os.path.relpath(absolute_path, base_dir)
+      logging.info('Replacing absolute submodule gitdir from %s to %s',
+                   absolute_path, relative_path)
+
+      line = _GIT_DIR_MARKER + relative_path
+
+    new_lines.append(line)
+
+  with open(file_path, 'w') as handle:
+    handle.write(''.join(new_lines))
+
+
 def _make_gitdirs_relative(src_dir):
   """Make gitdirs relative."""
   for root_dir, _, files in os.walk(src_dir):
@@ -62,26 +91,7 @@ def _make_gitdirs_relative(src_dir):
         continue
 
       file_path = os.path.join(root_dir, filename)
-      with open(file_path) as handle:
-        lines = handle.readlines()
-
-      new_lines = []
-      for line in lines:
-        if line.startswith(_GIT_DIR_MARKER):
-          absolute_path = line[len(_GIT_DIR_MARKER):].strip()
-          current_dir = os.path.dirname(file_path)
-          # Rebase to /src rather than the host src dir.
-          base_dir = current_dir.replace(src_dir, '/src')
-          relative_path = os.path.relpath(absolute_path, base_dir)
-          logging.info('Replacing absolute submodule gitdir from %s to %s',
-                       absolute_path, relative_path)
-
-          line = _GIT_DIR_MARKER + relative_path
-
-        new_lines.append(line)
-
-      with open(file_path, 'w') as handle:
-        handle.write(''.join(new_lines))
+      _replace_gitdir(src_dir, file_path)
 
 
 def _replace_base_builder_digest(dockerfile_path, digest):
@@ -104,13 +114,17 @@ def copy_src_from_docker(project_name, host_dir):
   """Copy /src from docker to the host."""
   # Copy /src to host.
   image_name = 'gcr.io/oss-fuzz/' + project_name
+  src_dir = os.path.join(host_dir, 'src')
+  if os.path.exists(src_dir):
+    shutil.rmtree(src_dir, ignore_errors=True)
+
   docker_args = [
       '-v',
       host_dir + ':/out',
       image_name,
-      'rsync',
-      '-aW',
-      '--delete',
+      'cp',
+      '-r',
+      '-p',
       '/src',
       '/out',
   ]
@@ -118,9 +132,7 @@ def copy_src_from_docker(project_name, host_dir):
 
   # Submodules can have gitdir entries which point to absolute paths. Make them
   # relative, as otherwise we can't do operations on the checkout on the host.
-  src_dir = os.path.join(host_dir, 'src')
   _make_gitdirs_relative(src_dir)
-
   return src_dir
 
 

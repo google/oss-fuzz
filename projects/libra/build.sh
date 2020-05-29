@@ -56,9 +56,6 @@ export CUSTOM_LIBFUZZER_PATH="$LIB_FUZZING_ENGINE_DEPRECATED"
 export CUSTOM_LIBFUZZER_STD_CXX=c++
 # export CUSTOM_LIBFUZZER_STD_CXX=none 
 
-# RUSTC_BOOTSTRAP: to get some nightly features like ASAN
-export RUSTC_BOOTSTRAP=1 
-
 # export fuzzing flags
 RUSTFLAGS="$RUSTFLAGS --cfg fuzzing"          # used to change code logic
 RUSTFLAGS="$RUSTFLAGS -Cdebug-assertions"     # to get debug_assert in rust

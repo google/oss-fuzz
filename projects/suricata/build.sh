@@ -44,10 +44,10 @@ make -j$(nproc)
 make install
 cd ..
 
+export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 
 # build project
 cd suricata
-export PATH=$PATH:/root/.cargo/bin
 sh autogen.sh
 #run configure with right options
 ./src/tests/fuzz/oss-fuzz-configure.sh

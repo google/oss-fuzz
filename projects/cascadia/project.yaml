@@ -1,0 +1,9 @@
+homepage: "https://github.com/andybalholm/cascadia"
+primary_contact: "cascadia@balholm.com"
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address

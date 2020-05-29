@@ -16,12 +16,12 @@
 ################################################################################
 
 # Compile proto C++ bindings
-protoc \
-    --proto_path=$SRC/solidity/test/tools/ossfuzz yulProto.proto \
-    --cpp_out=$SRC/solidity/test/tools/ossfuzz
-protoc \
-    --proto_path=$SRC/solidity/test/tools/ossfuzz abiV2Proto.proto \
-    --cpp_out=$SRC/solidity/test/tools/ossfuzz
+for protoName in yul abiV2 sol;
+do
+	protoc \
+	    --proto_path=$SRC/solidity/test/tools/ossfuzz "$protoName"Proto.proto \
+	    --cpp_out=$SRC/solidity/test/tools/ossfuzz
+done
 
 # Build solidity
 cd $SRC/solidity

@@ -59,6 +59,14 @@ END_MARKERS = [
 DEDUP_TOKEN_MARKER = 'DEDUP_TOKEN:'
 
 
+class BisectError(Exception):
+  """Bisection error."""
+
+  def __init__(self, message, repo_url):
+    super().__init__(message)
+    self.repo_url = repo_url
+
+
 def main():
   """Finds the commit SHA where an error was initally introduced."""
   logging.getLogger().setLevel(logging.INFO)
@@ -218,14 +226,14 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
         host_src_dir,
         build_data,
         base_builder_repo=base_builder_repo):
-      raise RuntimeError('Failed to build new_commit')
+      raise BisectError('Failed to build new_commit', repo_url)
 
     if bisect_type == 'fixed':
       should_crash = False
     elif bisect_type == 'regressed':
       should_crash = True
     else:
-      raise ValueError('Invalid bisect type ' + bisect_type)
+      raise BisectError('Invalid bisect type ' + bisect_type, repo_url)
 
     expected_error = _check_for_crash(build_data.project_name, fuzz_target,
                                       test_case_path)
@@ -244,11 +252,11 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
           host_src_dir,
           build_data,
           base_builder_repo=base_builder_repo):
-        raise RuntimeError('Failed to build old_commit')
+        raise BisectError('Failed to build old_commit', repo_url)
 
       if _check_for_crash(build_data.project_name, fuzz_target,
                           test_case_path) == expected_error:
-        raise RuntimeError('old_commit had same result as new_commit')
+        raise BisectError('old_commit had same result as new_commit', repo_url)
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
@@ -296,16 +304,15 @@ def bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
   Raises:
     ValueError: when a repo url can't be determine from the project.
   """
-  result = _bisect(bisect_type, old_commit, new_commit, test_case_path,
+  try:
+    return _bisect(bisect_type, old_commit, new_commit, test_case_path,
                    fuzz_target, build_data)
-
-  # Clean up projects/ as _bisect may have modified it.
-  oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
-  oss_fuzz_repo_manager.git(['reset', 'projects'])
-  oss_fuzz_repo_manager.git(['checkout', 'projects'])
-  oss_fuzz_repo_manager.git(['clean', '-fxd', 'projects'])
-
-  return result
+  finally:
+    # Clean up projects/ as _bisect may have modified it.
+    oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+    oss_fuzz_repo_manager.git(['reset', 'projects'])
+    oss_fuzz_repo_manager.git(['checkout', 'projects'])
+    oss_fuzz_repo_manager.git(['clean', '-fxd', 'projects'])
 
 
 if __name__ == '__main__':
