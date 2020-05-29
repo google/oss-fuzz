@@ -30,7 +30,7 @@ sed -i -e "s/QMAKE_CXXFLAGS_RTTI_OFF    = -fno-rtti/QMAKE_CXXFLAGS_RTTI_OFF    =
 # build project
 cd $WORK
 MAKEFLAGS=-j$(nproc) $SRC/qt/configure -qt-libmd4c -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -nomake tests -nomake examples -prefix $PWD/qtbase -D QT_NO_DEPRECATED_WARNINGS
-make -j$(nproc)
+make -j$(nproc) > /dev/null
 
 # prepare corpus files
 zip -j $WORK/cbor $SRC/qtqa/fuzzing/testcases/cbor/*
