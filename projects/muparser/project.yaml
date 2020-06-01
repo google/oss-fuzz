@@ -1,0 +1,10 @@
+homepage: "https://beltoforion.de/article.php?a=muparser"
+language: c++
+primary_contact: "github_contact@beltoforion.de"
+auto_ccs:
+    - "zhichengcai@google.com"
+fuzzing_engines:
+    - libfuzzer
+sanitizers:
+    - address
+    - undefined
