@@ -23,6 +23,7 @@ import collections
 import logging
 import re
 import shutil
+import time
 
 import helper
 import repo_manager
@@ -32,6 +33,8 @@ BuildData = collections.namedtuple(
     'BuildData', ['project_name', 'engine', 'sanitizer', 'architecture'])
 
 _GIT_DIR_MARKER = 'gitdir: '
+_IMAGE_BUILD_TRIES = 3
+_IMAGE_BUILD_RETRY_SLEEP = 30.0
 
 
 class BaseBuilderRepo:
@@ -136,6 +139,19 @@ def copy_src_from_docker(project_name, host_dir):
   return src_dir
 
 
+def _build_image_with_retries(project_name):
+  """Build image with retries."""
+
+  for _ in range(_IMAGE_BUILD_TRIES):
+    result = helper.build_image_impl(project_name)
+    if result:
+      return result
+
+    time.sleep(_IMAGE_BUILD_RETRY_SLEEP)
+
+  return result
+
+
 def build_fuzzers_from_commit(commit,
                               build_repo_manager,
                               host_src_path,
@@ -204,7 +220,7 @@ def build_fuzzers_from_commit(commit,
                                    base_builder_digest)
 
     # Rebuild image and re-copy src dir since things in /src could have changed.
-    if not helper.build_image_impl(build_data.project_name):
+    if not _build_image_with_retries(build_data.project_name):
       raise RuntimeError('Failed to rebuild image.')
 
     cleanup()
@@ -238,7 +254,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
 
   # Change to oss-fuzz main directory so helper.py runs correctly.
   utils.chdir_to_root()
-  if not helper.build_image_impl(project_name):
+  if not _build_image_with_retries(project_name):
     logging.error('Error: building %s image failed.', project_name)
     return None, None
   docker_image_name = 'gcr.io/oss-fuzz/' + project_name
