@@ -40,10 +40,6 @@ char tmp_buf[MAX_RQ_SIZE];
 
 struct buffer tmp   = { .area = tmp_buf,   .data = 0, .size = sizeof(tmp_buf)   };
 
-
-
-
-
 /* Empty function we dont need - we just need a callback */
 void debug_hexdump(FILE *out, const char *pfx, const char *buf,
                    unsigned int baseaddr, int len)
@@ -66,8 +62,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
         memcpy(new_str, data, size);
         new_str[size] = '\0';
         struct http_hdr list[MAX_HDR_NUM];
-
-        //dht = hpack_dht_alloc(dht_size);
 
         pool.size = dht_size;
         pool_head_hpack_tbl = &pool;
