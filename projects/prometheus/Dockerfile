@@ -18,4 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER julius.volz@gmail.com
 RUN go get github.com/prometheus/prometheus/cmd/...
 COPY build.sh $SRC/
-WORKDIR $SRC/
+RUN mkdir $SRC/prometheus/
+WORKDIR $SRC/prometheus/
