@@ -1,0 +1,10 @@
+homepage: "https://www.libraw.org/"
+language: c++
+primary_contact: "TODO@gmail.com"
+auto_ccs:
+    - "pinheirojamie@google.com"
+sanitizers:
+    - address
+    - memory
+        experimental: True
+    - undefined
