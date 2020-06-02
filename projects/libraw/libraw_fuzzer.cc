@@ -21,26 +21,26 @@ limitations under the License.
 #include <libraw.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // RAW files less than 10mb
+  // Input less than 10mb
   if (size > 10000000) {
     return 0;
   }
 
   LibRaw lib_raw;
 
-  int err = lib_raw.open_buffer(
+  int result = lib_raw.open_buffer(
       const_cast<char*>(reinterpret_cast<const char*>(data)), size);
-  if (err != LIBRAW_SUCCESS) {
+  if (result != LIBRAW_SUCCESS) {
     return 0;
   }
 
-  err = lib_raw.unpack();
-  if (err != LIBRAW_SUCCESS) {
+  result = lib_raw.unpack();
+  if (result != LIBRAW_SUCCESS) {
     return 0;
   }
 
-  err = lib_raw.dcraw_process();
-  if (err != LIBRAW_SUCCESS) {
+  result = lib_raw.dcraw_process();
+  if (result != LIBRAW_SUCCESS) {
     return 0;
   }
 
