@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER TODO@gmail.com
+MAINTAINER jesteele@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
 RUN git clone --depth 1 https://github.com/libraw/libraw
 WORKDIR libraw
