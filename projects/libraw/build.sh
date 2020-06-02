@@ -21,7 +21,7 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 
 # build project
 ./mkdist.sh
-./configure
+./configure --disable-examples
 make
 
 # build fuzzers
