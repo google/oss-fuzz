@@ -1,7 +1,8 @@
 homepage: "https://www.libraw.org/"
 language: c++
-primary_contact: "TODO@gmail.com"
+primary_contact: "jesteele@google.com"
 auto_ccs:
+    - "nchusid@google.com"
     - "pinheirojamie@google.com"
 sanitizers:
     - address
