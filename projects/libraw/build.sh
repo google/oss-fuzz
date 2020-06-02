@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Disable UBSan vptr
+export CFLAGS="$CFLAGS -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+
 # build project
 ./mkdist.sh
 ./configure
