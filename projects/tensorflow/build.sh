@@ -15,31 +15,6 @@
 #
 ################################################################################
 
-# First, determine the latest Bazel we can support
-BAZEL_VERSION=$(
-  grep '_TF_MAX_BAZEL_VERSION =' configure.py | \
-  cut -d\' -f2 | tr -d '[:space:]'
-)
-if [ -z ${BAZEL_VERSION} ]; then
-  echo "Couldn't find a valid bazel version in configure.py script"
-  exit 1
-fi
-
-# Then, install it
-curl -fSsL -O https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
-chmod +x ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
-./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
-
-# Finally, check instalation before proceeding to compile
-INSTALLED_VERSION=$(
-  bazel version | grep 'Build label' | cut -d: -f2 | tr -d '[:space:]'
-)
-if [ ${INSTALLED_VERSION} != ${BAZEL_VERSION} ]; then
-  echo "Couldn't install required Bazel. "
-  echo "Want ${BAZEL_VERSION}. Got ${INSTALLED_VERSION}."
-  exit 1
-fi
-
 # Generate the list of fuzzers we have (only the base/op name).
 FUZZING_BUILD_FILE="tensorflow/core/kernels/fuzzing/BUILD"
 declare -r FUZZERS=$(
@@ -50,13 +25,13 @@ declare -r FUZZERS=$(
 # Note the c++11/libc++ flags to build using the same toolchain as the one used
 # to build libFuzzingEngine.
 CFLAGS="${CFLAGS} -fno-sanitize=vptr"
-CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
+CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr"
+
+# Force Python3 and install required python deps
+PYTHON=python3
 
 # Make sure we run ./configure to detect when we are using a Bazel out of range
-yes "" | ./configure
-
-# See https://github.com/bazelbuild/bazel/issues/6697
-sed '/::kM..SeedBytes/d' -i tensorflow/stream_executor/rng.cc
+yes "" | ${PYTHON} configure.py
 
 # Due to statically linking boringssl dependency, we have to define one extra
 # flag when compiling for memory fuzzing (see the boringssl project).
