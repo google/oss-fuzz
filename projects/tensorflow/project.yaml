@@ -2,7 +2,6 @@ homepage: "https://www.tensorflow.org"
 language: c++
 primary_contact: "mihaimaruseac@google.com"
 auto_ccs:
- - "dga@google.com"
  - "frankchn@google.com"
 fuzzing_engines:
   - libfuzzer
