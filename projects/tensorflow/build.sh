@@ -33,9 +33,6 @@ PYTHON=python3
 # Make sure we run ./configure to detect when we are using a Bazel out of range
 yes "" | ${PYTHON} configure.py
 
-# See https://github.com/bazelbuild/bazel/issues/6697
-sed '/::kM..SeedBytes/d' -i tensorflow/stream_executor/rng.cc
-
 # Due to statically linking boringssl dependency, we have to define one extra
 # flag when compiling for memory fuzzing (see the boringssl project).
 if [ "$SANITIZER" = "memory" ]
