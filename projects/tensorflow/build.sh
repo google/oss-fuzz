@@ -27,8 +27,11 @@ declare -r FUZZERS=$(
 CFLAGS="${CFLAGS} -fno-sanitize=vptr"
 CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
 
+# Force Python3 and install required python deps
+PYTHON=python3
+
 # Make sure we run ./configure to detect when we are using a Bazel out of range
-yes "" | ./configure
+yes "" | ${PYTHON} configure.py
 
 # See https://github.com/bazelbuild/bazel/issues/6697
 sed '/::kM..SeedBytes/d' -i tensorflow/stream_executor/rng.cc

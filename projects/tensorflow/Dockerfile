@@ -19,8 +19,8 @@ MAINTAINER mihaimaruseac@google.com
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
-        python-dev \
-        python-future \
+        python3-dev \
+        python3-future \
         rsync \
         && \
     apt-get clean && \
