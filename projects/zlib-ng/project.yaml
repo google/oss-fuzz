@@ -3,6 +3,7 @@ language: c++
 primary_contact: "zlib-ng@circlestorm.org"
 auto_ccs:
   - "sebpop@gmail.com"
+  - "nathan.moinvaziri@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl
