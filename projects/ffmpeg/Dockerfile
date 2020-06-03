@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool build-es
     libass-dev libfreetype6-dev libsdl1.2-dev \
     libvdpau-dev libxcb1-dev libxcb-shm0-dev \
     pkg-config texinfo libbz2-dev zlib1g-dev yasm cmake mercurial wget \
-    xutils-dev libpciaccess-dev nasm
+    xutils-dev libpciaccess-dev nasm rsync
 
 RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 

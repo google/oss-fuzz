@@ -1,5 +1,5 @@
-#!/bin/bash -u
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,19 @@
 #
 ################################################################################
 
-if (( $# < 1 )); then
-  echo "Usage: $0 \"path_download_to url_download_from\" (can be repeated)" >&2
-  exit 1
-fi
+# build project
+cmake . -DBUILD_SHARED_LIBS=OFF
+make -j$(nproc)
 
-for pair in "$@"; do
-  read path url <<< "$pair"
-  wget -q -O $path $url || rm $path
-done
+# install
+make install
+ldconfig
 
-# Always exit with 0 as we do not track wget return codes and should not rely
-# on the latest command execution.
-exit 0
+# build fuzzers
+MU_CXXFLAGS=$(pkg-config muparser --cflags)
+MU_LIBS=$(pkg-config muparser --libs)
+
+$CXX -std=c++11 $CXXFLAGS -I. \
+     $MU_CXXFLAGS $MU_LIBS \
+     $SRC/set_eval_fuzzer.cc -o $OUT/set_eval_fuzzer \
+     $LIB_FUZZING_ENGINE libmuparser.a

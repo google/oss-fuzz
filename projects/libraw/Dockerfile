@@ -1,5 +1,4 @@
-#!/bin/bash -u
-# Copyright 2018 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +14,9 @@
 #
 ################################################################################
 
-if (( $# < 1 )); then
-  echo "Usage: $0 \"path_download_to url_download_from\" (can be repeated)" >&2
-  exit 1
-fi
-
-for pair in "$@"; do
-  read path url <<< "$pair"
-  wget -q -O $path $url || rm $path
-done
-
-# Always exit with 0 as we do not track wget return codes and should not rely
-# on the latest command execution.
-exit 0
+FROM gcr.io/oss-fuzz-base/base-builder
+MAINTAINER jesteele@google.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
+RUN git clone --depth 1 https://github.com/libraw/libraw
+WORKDIR libraw
+COPY build.sh libraw_fuzzer.cc $SRC/

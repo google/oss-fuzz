@@ -1,5 +1,5 @@
-#!/bin/bash -u
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,12 @@
 #
 ################################################################################
 
-if (( $# < 1 )); then
-  echo "Usage: $0 \"path_download_to url_download_from\" (can be repeated)" >&2
-  exit 1
-fi
+# build project
+./mkdist.sh
+./configure --disable-examples
+make
 
-for pair in "$@"; do
-  read path url <<< "$pair"
-  wget -q -O $path $url || rm $path
-done
-
-# Always exit with 0 as we do not track wget return codes and should not rely
-# on the latest command execution.
-exit 0
+# build fuzzers
+$CXX $CXXFLAGS -std=c++11 -Ilibraw \
+    $SRC/libraw_fuzzer.cc -o $OUT/libraw_fuzzer \
+    $LIB_FUZZING_ENGINE lib/.libs/libraw.a

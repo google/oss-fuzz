@@ -96,10 +96,13 @@ def find_last_build(builds, project, build_tag_suffix):
           build_project.GCB_LOGS_BUCKET)
       log_name = 'log-{0}.txt'.format(build['id'])
       log = gcb_bucket.blob(log_name)
-      dest_log = status_bucket.blob(log_name)
+      if not log.exists():
+        print >> sys.stderr, 'Failed to find build log', log_name
+        continue
 
       with tempfile.NamedTemporaryFile() as f:
         log.download_to_filename(f.name)
+        dest_log = status_bucket.blob(log_name)
         dest_log.upload_from_filename(f.name, content_type='text/plain')
 
       return build
