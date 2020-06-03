@@ -16,7 +16,7 @@
 ################################################################################
 
 # build project
-cmake . -DBUILD_SHARED_LIBS=OFF
+cmake . -DBUILD_SHARED_LIBS=OFF  -DENABLE_OPENMP=OFF
 make -j$(nproc)
 
 # install
