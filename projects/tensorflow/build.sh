@@ -29,6 +29,7 @@ CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
 
 # Force Python3 and install required python deps
 PYTHON=python3
+${PYTHON} -m pip install numpy
 
 # Make sure we run ./configure to detect when we are using a Bazel out of range
 yes "" | ${PYTHON} configure.py
