@@ -35,7 +35,7 @@ make -j$(nproc) > /dev/null
 # prepare corpus files
 zip -j $WORK/cbor $SRC/qtqa/fuzzing/testcases/cbor/*
 zip -j $WORK/html $SRC/qtqa/fuzzing/testcases/html/*
-zip -j $WORK/images $SRC/qtqa/fuzzing/testcases/svg/* $SRC/AFL/testcases/images/*/* $SRC/AFL/testcases/others/pdf/*
+zip -j $WORK/images $SRC/qtqa/fuzzing/testcases/svg/* $SRC/AFL/testcases/images/*/*
 zip -j $WORK/markdown $SRC/qtqa/fuzzing/testcases/markdown/*
 zip -j $WORK/qml $SRC/qtqa/fuzzing/testcases/qml/*
 zip -j $WORK/ssl.pem.zip $SRC/qtqa/fuzzing/testcases/ssl.pem/*
