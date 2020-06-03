@@ -61,4 +61,6 @@ done
 mkdir -p $OUT/lib
 cp -L /usr/lib/x86_64-linux-gnu/libc++.so.1 $OUT/lib
 cp -L /usr/lib/x86_64-linux-gnu/libc++abi.so.1 $OUT/lib
-
+cp -L dist/bin/libnspr4.so $OUT/lib
+cp -L dist/bin/libplc4.so $OUT/lib
+cp -L dist/bin/libplds4.so $OUT/lib
