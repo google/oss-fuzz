@@ -25,7 +25,7 @@ declare -r FUZZERS=$(
 # Note the c++11/libc++ flags to build using the same toolchain as the one used
 # to build libFuzzingEngine.
 CFLAGS="${CFLAGS} -fno-sanitize=vptr"
-CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr -std=c++11 -stdlib=libc++"
+CXXFLAGS="${CXXFLAGS} -fno-sanitize=vptr"
 
 # Force Python3 and install required python deps
 PYTHON=python3
