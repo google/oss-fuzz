@@ -19,12 +19,11 @@ MAINTAINER mihaimaruseac@google.com
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
-        python3-dev \
-        python3-future \
         rsync \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+RUN python3 -m pip install numpy
 
 # Install Bazel from apt-get to ensure dependencies are there
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
