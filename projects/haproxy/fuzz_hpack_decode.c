@@ -15,6 +15,9 @@
  * #
  * ################################################################################
  * */
+
+#define HPACK_STANDALONE
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -27,7 +30,6 @@
 #include <common/chunk.h>
 #include <common/hpack-dec.h>
 #include <common/mini-clist.h>
-#define HPACK_STANDALONE
 
 #define MAX_RQ_SIZE 65536
 #define MAX_HDR_NUM 1000
