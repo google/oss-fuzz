@@ -15,17 +15,18 @@
 #
 ################################################################################
 
-I386_PACKAGES="libeigen3-dev:i386 python3:i386 libpython3-all-dev:i386 \
-              zlib1g-dev:i386 libbz2-dev:i386"
-X64_PACKAGES="libeigen3-dev python3 libpython3-all-dev \
-              zlib1g-dev libbz2-dev"
-
-if [ "$ARCHITECTURE" = "i386" ]; then
-    apt-get install -y $I386_PACKAGES
-else
-    apt-get install -y $X64_PACKAGES
-fi
-
+# Build zlib
+git clone --depth 1 -b master https://github.com/madler/zlib.git $SRC/zlib
+cd $SRC/zlib
+OLD_CFLAGS="$CFLAGS"
+export LDFLAGS="-fPIC $CFLAGS"
+export CFLAGS="-fPIC $CFLAGS"
+# Only build static libraries, so we don't accidentally link to zlib dynamically.
+./configure --static
+make -j$(nproc) clean
+make -j$(nproc) all install
+unset LDFLAGS
+export CFLAGS="$OLD_CFLAGS"
 
 # We're building `rdkit` using clang, but the boost package is built using gcc.
 # For whatever reason, linking would fail.
@@ -37,7 +38,7 @@ wget --quiet https://sourceforge.net/projects/boost/files/boost/1.69.0/boost_1_6
 tar xjf boost_1_69_0.tar.bz2 && \
 cd $SRC/boost_1_69_0 && \
 ./bootstrap.sh --with-toolset=clang --with-libraries=serialization,system,iostreams,regex && \
-./b2 -q -j$(nproc) toolset=clang cxxflags="-fPIC $CXXFLAGS $CXXFLAGS_EXTRA" link=static install
+./b2 -q -j$(nproc) toolset=clang linkflags="-fPIC $CXXFLAGS $CXXFLAGS_EXTRA" cxxflags="-fPIC $CXXFLAGS $CXXFLAGS_EXTRA" link=static install
 
 cd $SRC/rdkit
 
