@@ -363,13 +363,8 @@ def _env_to_docker_args(env_list):
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 
-def _workdir_from_dockerfile(project_name):
-  """Parse WORKDIR from the Dockerfile for the given project."""
-  dockerfile_path = get_dockerfile_path(project_name)
-
-  with open(dockerfile_path) as file_handle:
-    lines = file_handle.readlines()
-
+def workdir_from_lines(lines, default='/src'):
+  """Get the WORKDIR from the given lines."""
   for line in reversed(lines):  # reversed to get last WORKDIR.
     match = re.match(WORKDIR_REGEX, line)
     if match:
@@ -381,7 +376,17 @@ def _workdir_from_dockerfile(project_name):
 
       return os.path.normpath(workdir)
 
-  return os.path.join('/src', project_name)
+  return default
+
+
+def _workdir_from_dockerfile(project_name):
+  """Parse WORKDIR from the Dockerfile for the given project."""
+  dockerfile_path = get_dockerfile_path(project_name)
+
+  with open(dockerfile_path) as file_handle:
+    lines = file_handle.readlines()
+
+  return workdir_from_lines(lines, default=os.path.join('/src', project_name))
 
 
 def docker_run(run_args, print_output=True):
