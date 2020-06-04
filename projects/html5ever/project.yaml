@@ -1,0 +1,9 @@
+homepage: "https://github.com/servo/html5ever"
+primary_contact: "servo-ops@mozilla.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
