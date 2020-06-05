@@ -18,4 +18,5 @@ auto_ccs:
   - "samflattery@google.com"
   - "jianwendong@google.com"
   - "skerner@google.com"
+  - "rdsmith@google.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
