@@ -1,0 +1,10 @@
+homepage: "https://github.com/xiph/rnnoise.git"
+language: c++
+primary_contact: "TODO@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
