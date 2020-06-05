@@ -15,11 +15,10 @@
 #
 ################################################################################
 
-# Unpack the file
-tar -zxvf xpdf-4.02.tar.gz   
-
-# Now make the build directory
-cd xpdf-4.02
+# Unpack the file and cd into it
+tar -zxvf xpdf-latest.tar.gz
+dir_name=`tar -tzf xpdf-latest.tar.gz | head -1 | cut -f1 -d"/"`
+cd $dir_name
 
 # Make minor change in the CMakeFiles file.
 sed -i 's/#--- object files needed by XpdfWidget/add_library(testXpdfStatic STATIC $<TARGET_OBJECTS:xpdf_objs>)\n#--- object files needed by XpdfWidget/' ./xpdf/CMakeLists.txt
