@@ -211,6 +211,8 @@ def build_fuzzers_from_commit(commit,
   dockerfile_path = os.path.join(projects_dir, 'Dockerfile')
 
   for i in range(num_retry + 1):
+    build_repo_manager.checkout_commit(commit, clean=False)
+
     post_checkout_steps = get_required_post_checkout_steps(dockerfile_path)
     for workdir, post_checkout_step in post_checkout_steps:
       logging.info('Running post-checkout step `%s` in %s.', post_checkout_step,
@@ -226,7 +228,6 @@ def build_fuzzers_from_commit(commit,
           post_checkout_step,
       ])
 
-    build_repo_manager.checkout_commit(commit, clean=False)
     result = helper.build_fuzzers_impl(project_name=build_data.project_name,
                                        clean=True,
                                        engine=build_data.engine,
