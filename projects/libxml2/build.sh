@@ -36,7 +36,7 @@ for fuzzer in xml; do
         fuzz/$fuzzer.o fuzz/fuzz.o \
         -o $OUT/$fuzzer \
         $LIB_FUZZING_ENGINE \
-        .libs/libxml2.a -lz -llzma
+        .libs/libxml2.a -Wl,-Bstatic -lz -llzma -Wl,-Bdynamic
 
     zip -j $OUT/${fuzzer}_seed_corpus.zip fuzz/seed/$fuzzer/*
 done
