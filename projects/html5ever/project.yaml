@@ -7,3 +7,4 @@ fuzzing_engines:
 language: rust
 auto_ccs:
   - "david@adalogics.com"
+  - "jmatthews@mozilla.com"
