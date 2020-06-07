@@ -1,5 +1,8 @@
 homepage: "https://nodejs.org"
 primary_contact: "security@nodejs.org"
 language: c++
+sanitizers:
+  - address
+  - memory
 auto_ccs:
   - "david@adalogics.com"

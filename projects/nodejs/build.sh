@@ -34,14 +34,14 @@ CMDS="-D__STDC_FORMAT_MACROS -D__POSIX__ -DNODE_HAVE_I18N_SUPPORT=1 \
 # Includes
 INCLUDES="-I./ -I../deps/v8/include -I../deps/uv/include"
 
-clang++ -o fuzzers/fuzz_url.o fuzzers/fuzz_url.cc $CXXFLAGS $CMDS $INCLUDES \
+$CXX -o fuzzers/fuzz_url.o fuzzers/fuzz_url.cc $CXXFLAGS $CMDS $INCLUDES \
         -pthread -fno-omit-frame-pointer -fno-rtti -fno-exceptions -std=gnu++1y -MMD -c
 
 cd /src/node/out
 rm -rf ./library_files && mkdir library_files
 find . -name "*.a" -exec cp {} ./library_files/ \;
 
-clang++ -o $OUT/fuzz_url $LIB_FUZZING_ENGINE $CXXFLAGS \
+$CXX -o $OUT/fuzz_url $LIB_FUZZING_ENGINE $CXXFLAGS \
   -rdynamic -Wl,-z,noexecstack,-z,relro,-z,now \
   -pthread -Wl,--start-group \
   ./Release/obj.target/cctest/src/node_snapshot_stub.o \
