@@ -19,23 +19,20 @@ cd node
 export LDFLAGS="-fsanitize=fuzzer-no-link -stdlib=libc++ -fsanitize=address"
 export LD="clang++"
 
-./configure
+./configure --without-intl --without-node-code-cache --without-dtrace --without-snapshot --without-ssl
 make -j4
 
 # Build the fuzzer
 cd src
-mkdir fuzzers
+rm -rf ./fuzzers && mkdir fuzzers
 cp /src/fuzz_url.cc ./fuzzers/
 
-# Give the proper settings
-CMDS="-DV8_DEPRECATION_WARNINGS -DV8_IMMINENT_DEPRECATION_WARNINGS \
- -D__STDC_FORMAT_MACROS -DOPENSSL_NO_PINSHARED -DOPENSSL_THREADS \
- -DNODE_ARCH=\"x64\" -DNODE_PLATFORM=\"linux\" -DNODE_WANT_INTERNALS=1 \
- -DHAVE_OPENSSL=1 -DHAVE_INSPECTOR=1 -D__POSIX__ -DNODE_HAVE_I18N_SUPPORT=1"
+# Compilation settings
+CMDS="-D__STDC_FORMAT_MACROS -D__POSIX__ -DNODE_HAVE_I18N_SUPPORT=1 \
+ -DNODE_ARCH=\"x64\" -DNODE_PLATFORM=\"linux\" -DNODE_WANT_INTERNALS=1"
 
 # Includes
-INCLUDES="-I./ -I../deps/v8/include \
- -I../deps/uv/include -I../deps/openssl/openssl/include"
+INCLUDES="-I./ -I../deps/v8/include -I../deps/uv/include"
 
 clang++ -o fuzzers/fuzz_url.o fuzzers/fuzz_url.cc $CXXFLAGS $CMDS $INCLUDES \
         -pthread -fno-omit-frame-pointer -fno-rtti -fno-exceptions -std=gnu++1y -MMD -c
@@ -43,7 +40,6 @@ clang++ -o fuzzers/fuzz_url.o fuzzers/fuzz_url.cc $CXXFLAGS $CMDS $INCLUDES \
 cd /src/node/out
 rm -rf ./library_files && mkdir library_files
 find . -name "*.a" -exec cp {} ./library_files/ \;
-rm ./library_files/libicutools.a
 
 clang++ -o $OUT/fuzz_url $LIB_FUZZING_ENGINE $CXXFLAGS \
   -rdynamic -Wl,-z,noexecstack,-z,relro,-z,now \
@@ -52,3 +48,4 @@ clang++ -o $OUT/fuzz_url $LIB_FUZZING_ENGINE $CXXFLAGS \
   ./Release/obj.target/cctest/src/node_code_cache_stub.o \
   ../src/fuzzers/fuzz_url.o ./library_files/*.a \
   -latomic -lm -ldl -Wl,--end-group
+
