@@ -14,38 +14,33 @@
 # limitations under the License.
 #
 ################################################################################
-cd node
+cd $SRC/node
 
+# Build node
 export LDFLAGS="$CXXFLAGS"
 export LD="$CXX"
-
 ./configure --without-intl --without-node-code-cache --without-dtrace --without-snapshot --without-ssl
-make -j4
+make -j$(nproc)
 
-# Build the fuzzer
-cd src
-rm -rf ./fuzzers && mkdir fuzzers
-cp /src/fuzz_url.cc ./fuzzers/
-
-# Compilation settings
-CMDS="-D__STDC_FORMAT_MACROS -D__POSIX__ -DNODE_HAVE_I18N_SUPPORT=1 \
- -DNODE_ARCH=\"x64\" -DNODE_PLATFORM=\"linux\" -DNODE_WANT_INTERNALS=1"
-
-# Includes
-INCLUDES="-I./ -I../deps/v8/include -I../deps/uv/include"
-
-$CXX -o fuzzers/fuzz_url.o fuzzers/fuzz_url.cc $CXXFLAGS $CMDS $INCLUDES \
-        -pthread -fno-omit-frame-pointer -fno-rtti -fno-exceptions -std=gnu++1y -MMD -c
-
-cd /src/node/out
+# Gather static libraries
+cd $SRC/node/out
 rm -rf ./library_files && mkdir library_files
 find . -name "*.a" -exec cp {} ./library_files/ \;
 
+# Build the fuzzers
+CMDS="-D__STDC_FORMAT_MACROS -D__POSIX__ -DNODE_HAVE_I18N_SUPPORT=1 \
+ -DNODE_ARCH=\"x64\" -DNODE_PLATFORM=\"linux\" -DNODE_WANT_INTERNALS=1"
+INCLUDES="-I../src -I../deps/v8/include -I../deps/uv/include"
+
+# Compilation
+$CXX -o fuzz_url.o $SRC/fuzz_url.cc $CXXFLAGS $CMDS $INCLUDES \
+        -pthread -fno-omit-frame-pointer -fno-rtti -fno-exceptions -std=gnu++1y -MMD -c
+
+# Linking
 $CXX -o $OUT/fuzz_url $LIB_FUZZING_ENGINE $CXXFLAGS \
   -rdynamic -Wl,-z,noexecstack,-z,relro,-z,now \
   -pthread -Wl,--start-group \
   ./Release/obj.target/cctest/src/node_snapshot_stub.o \
   ./Release/obj.target/cctest/src/node_code_cache_stub.o \
-  ../src/fuzzers/fuzz_url.o ./library_files/*.a \
+  fuzz_url.o ./library_files/*.a \
   -latomic -lm -ldl -Wl,--end-group
-
