@@ -16,8 +16,8 @@
 ################################################################################
 cd node
 
-export LDFLAGS="-fsanitize=fuzzer-no-link -stdlib=libc++ -fsanitize=address"
-export LD="clang++"
+export LDFLAGS="$CXXFLAGS"
+export LD="$CXX"
 
 ./configure --without-intl --without-node-code-cache --without-dtrace --without-snapshot --without-ssl
 make -j4
