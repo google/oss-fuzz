@@ -16,8 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER even.rouault@spatialys.com
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y make autoconf automake libtool g++ sqlite3 pkg-config
 
 RUN git clone --depth 1 https://github.com/OSGeo/proj proj

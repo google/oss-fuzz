@@ -17,8 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER wellnhofer@aevum.de
 
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         make autoconf automake libtool pkg-config \
         zlib1g-dev zlib1g-dev:i386 liblzma-dev liblzma-dev:i386
