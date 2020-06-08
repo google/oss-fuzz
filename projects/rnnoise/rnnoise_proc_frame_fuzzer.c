@@ -24,27 +24,23 @@
 #define FRAME_SIZE 480
 
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-    char* filename = fuzzer_get_tmpfile(data, size);
-    if (filename == NULL) {
-      return 0;
-    }
+    char* tmp_filename = fuzzer_get_tmpfile(data, size);
 
     int i;
-    int first = 1;
     float x[FRAME_SIZE];
     FILE *f1;
     DenoiseState *st;
     st = rnnoise_create(NULL);
-    f1 = fopen(filename, "r");
+    f1 = fopen(tmp_filename, "r");
 
-    while(1) {
-      short tmp[FRAME_SIZE];
-      fread(tmp, sizeof(short), FRAME_SIZE, f1);
-      if (feof(f1)) break;
-      for (i=0; i<FRAME_SIZE;i++) x[i] = tmp[i];
-      rnnoise_process_frame(st, x, x);
-    }
+    short tmp[FRAME_SIZE];
+    fread(tmp, sizeof(short), FRAME_SIZE, f1);
+
+    for (i=0; i<FRAME_SIZE;i++) x[i] = tmp[i];
+    rnnoise_process_frame(st, x, x);
+
     rnnoise_destroy(st);
     fclose(f1);
+    fuzzer_release_tmpfile(tmp_filename);
     return 0;
 }

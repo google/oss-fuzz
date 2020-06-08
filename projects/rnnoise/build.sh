@@ -21,8 +21,7 @@
 make
 make install
 cd ..
-find . -name "*.a"
-ls
+
 # build fuzzers
 FUZZ_TARGETS="rnnoise_proc_frame_fuzzer"
 for f in $FUZZ_TARGETS; do
