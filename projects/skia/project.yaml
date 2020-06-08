@@ -6,6 +6,7 @@ auto_ccs:
   - "mtklein@google.com"
   - "reed@google.com"
   - "bsalomon@google.com"
+  - "zepenghu@google.com"
 vendor_ccs:
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"
