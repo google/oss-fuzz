@@ -1,4 +1,4 @@
-homepage: "https://github.com/servo/servo"
+homepage: "https://github.com/servo"
 primary_contact: "servo-ops@mozilla.com"
 sanitizers:
   - address
