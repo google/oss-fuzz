@@ -1,0 +1,10 @@
+homepage: "https://github.com/servo/rust-url"
+primary_contact: "vgosu@mozilla.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
+  - "jmatthews@mozilla.com"
