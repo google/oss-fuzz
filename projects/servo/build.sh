@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +14,11 @@
 # limitations under the License.
 #
 ################################################################################
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER david@adalogics.com
 
-RUN git clone --depth 1 https://github.com/servo/html5ever
-WORKDIR $SRC
-COPY build.sh $SRC/
+cd $SRC/html5ever/html5ever
+cargo fuzz build -O 
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_document_parse $OUT/
+
+cd $SRC/rust-url
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/parse $OUT/fuzz-url-parse
