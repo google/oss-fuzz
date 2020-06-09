@@ -20,7 +20,6 @@ RUN apt-get update && apt-get install -y libc6-dev:i386
 RUN git clone --branch 5.15 --depth 1 git://code.qt.io/qt/qt5.git qt
 WORKDIR qt
 RUN git submodule update --init --depth 1 qtbase
-RUN git submodule update --init --depth 1 qtdeclarative
 WORKDIR $SRC
 RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git
 RUN git clone --depth 1 https://github.com/google/AFL.git
