@@ -17,5 +17,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER david@adalogics.com
 
 RUN git clone --depth 1 https://github.com/servo/html5ever
+RUN git clone --depth 1 https://github.com/servo/rust-url
+
 WORKDIR $SRC
 COPY build.sh $SRC/

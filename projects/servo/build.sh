@@ -18,3 +18,7 @@
 cd $SRC/html5ever/html5ever
 cargo fuzz build -O 
 cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_document_parse $OUT/
+
+cd $SRC/rust-url
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/parse $OUT/fuzz-url-parse
