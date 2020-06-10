@@ -16,25 +16,21 @@
 ################################################################################
 
 # build project
-# e.g.
-# ./autogen.sh
-# ./configure
-# make -j$(nproc) all
+cd $WORK/
+cmake $SRC/draco
+# The draco_decoder and draco_encoder binaries don't build nicely with OSS-Fuzz
+# options, so just build the Draco shared libraries.
+make -j$(nproc) draco
 
 # build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     $LIB_FUZZING_ENGINE /path/to/library.a
-
-mkdir /fuzzing && cd /fuzzing
-git clone https://github.com/google/draco
-git clone https://github.com/google/security-research-pocs
-mkdir draco/build
-cd /fuzzing/draco/build
-cmake ..
-make
-
-$CXX -I../../ -I../src -I./ -std=c++11 $CXXFLAGS $LDFLAGS -o fuzzer \
-  /fuzzing/security-research-pocs/autofuzz/draco_decoder_fuzzer.cc \
-  libdraco.a -lFuzzer
+for fuzzer in $(find $SRC/fuzz -name '*.cc'); do
+  fuzzer_basename=$(basename -s .cc $fuzzer)
+  $CXX $CXXFLAGS \
+    -I $SRC/ \
+    -I $SRC/draco/src \
+    -I $WORK/ \
+    $LIB_FUZZING_ENGINE \
+    $fuzzer \
+    $WORK/libdraco.a \
+    -o $OUT/$fuzzer_basename
+done
