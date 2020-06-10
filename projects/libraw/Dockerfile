@@ -19,4 +19,7 @@ MAINTAINER jesteele@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
 RUN git clone --depth 1 https://github.com/libraw/libraw
 WORKDIR libraw
-COPY build.sh libraw_fuzzer.cc $SRC/
+COPY corpus/* build.sh libraw_fuzzer.cc $SRC/
+RUN zip $SRC/libraw_cr2_fuzzer_seed_corpus.zip $SRC/canon_eos_20d.cr2
+RUN zip $SRC/libraw_nef_fuzzer_seed_corpus.zip $SRC/nikon_d90.nef
+RUN zip $SRC/libraw_raf_fuzzer_seed_corpus.zip $SRC/fuji_finepix_e550.raf

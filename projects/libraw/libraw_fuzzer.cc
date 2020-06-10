@@ -39,9 +39,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  result = lib_raw.dcraw_process();
-  if (result != LIBRAW_SUCCESS) {
-    return 0;
+  int options[] = {0, 1, 2, 3, 4, 11, 12};
+
+  for (int i = 0; i < 7; i++) {
+    lib_raw.output_params_ptr()->user_qual = options[i];
+
+    result = lib_raw.dcraw_process();
+    if (result != LIBRAW_SUCCESS) {
+      return 0;
+    }
   }
 
   return 0;
