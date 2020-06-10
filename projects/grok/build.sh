@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-export PATH=${SRC}/cmake-install/bin:${PATH}
+
 mkdir build
 cd build
 cmake ..
