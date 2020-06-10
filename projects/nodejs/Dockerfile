@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER rlohningqt@gmail.com
-RUN apt-get update && apt-get install -y libc6-dev:i386
-RUN git clone --branch 5.15 --depth 1 git://code.qt.io/qt/qt5.git qt
-WORKDIR qt
-RUN git submodule update --init --depth 1 qtbase
+MAINTAINER david@adalogics.com
+RUN apt-get update && apt-get install -y make
+RUN apt-get install -y flex bison build-essential
+RUN git clone --recursive --depth 1 https://github.com/nodejs/node
 WORKDIR $SRC
-RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git
-RUN git clone --depth 1 https://github.com/google/AFL.git
 COPY build.sh $SRC/
+
+COPY fuzz_url.cc $SRC/
