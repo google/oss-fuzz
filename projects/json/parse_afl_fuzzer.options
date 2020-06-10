@@ -1,4 +1,0 @@
-[libfuzzer]
-max_len = 456
-timeout = 10
-dict = json.dict
