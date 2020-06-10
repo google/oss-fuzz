@@ -16,7 +16,6 @@
 ################################################################################
 
 # build project
-cd $WORK/
 cmake $SRC/draco
 # The draco_decoder and draco_encoder binaries don't build nicely with OSS-Fuzz
 # options, so just build the Draco shared libraries.
