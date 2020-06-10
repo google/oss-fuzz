@@ -68,7 +68,8 @@ $SRC/depot_tools/gn gen out/Fuzz\
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]
-      skia_enable_fontmgr_custom=false
+      skia_enable_fontmgr_custom_directory=false
+      skia_enable_fontmgr_custom_embedded=false
       skia_enable_fontmgr_custom_empty=true
       skia_enable_gpu=true
       skia_enable_skottie=true
@@ -85,7 +86,8 @@ $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]
-      skia_enable_fontmgr_custom=false
+      skia_enable_fontmgr_custom_directory=false
+      skia_enable_fontmgr_custom_embedded=false
       skia_enable_fontmgr_custom_empty=true
       skia_enable_gpu=true
       skia_enable_skottie=true
