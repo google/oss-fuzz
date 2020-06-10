@@ -25,6 +25,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 RUN python3 -m pip install numpy
 
+# Due to Bazel bug, need to symlink python3 to python
+# See https://github.com/bazelbuild/bazel/issues/8665
+RUN ln -s /usr/local/bin/python3 /usr/local/bin/python
+
 # Install Bazelisk to keep bazel in sync with the version required by TensorFlow
 RUN curl -Lo /usr/bin/bazel \
         https://github.com/bazelbuild/bazelisk/releases/download/v1.1.0/bazelisk-linux-amd64 \
