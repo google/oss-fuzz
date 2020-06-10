@@ -164,7 +164,7 @@ def get_required_post_checkout_steps(dockerfile_path):
 
   # If the build.sh is copied from upstream, we need to copy it again after
   # changing the revision to ensure correct building.
-  post_run_pattern = re.compile(r'\s*RUN\s*(.*build\.sh.*(\$SRC| /src).*)')
+  post_run_pattern = re.compile(r'\s*RUN\s*(.*build\.sh.*(\$SRC|/src).*)')
 
   with open(dockerfile_path) as handle:
     lines = handle.readlines()
@@ -178,7 +178,8 @@ def get_required_post_checkout_steps(dockerfile_path):
     match = post_run_pattern.match(line)
     if match:
       workdir = helper.workdir_from_lines(lines[:i])
-      subsequent_run_cmds.append((workdir, match.group(1)))
+      command = match.group(1)
+      subsequent_run_cmds.append((workdir, command))
 
   return subsequent_run_cmds
 
