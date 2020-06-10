@@ -21,8 +21,8 @@
 #include "libevent/include/event2/keyvalq_struct.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    std::string fuzz_string(reinterpret_cast<const char *>(data), size);
-    struct evkeyvalq headers;
-    evhttp_parse_query(fuzz_string.c_str(), &headers);
-    return 0;
+  std::string fuzz_string(reinterpret_cast<const char *>(data), size);
+  struct evkeyvalq headers;
+  evhttp_parse_query(fuzz_string.c_str(), &headers);
+  return 0;
 }
