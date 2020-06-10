@@ -36,11 +36,6 @@ RUN apt-get update && apt-get -y install  \
 RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64; \
     chmod +x /usr/local/bin/bazel
 
-# Install cmake
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5-Linux-x86_64.sh; \
-    chmod +x cmake-3.14.5-Linux-x86_64.sh; \
-    ./cmake-3.14.5-Linux-x86_64.sh --skip-license --prefix="/usr/local"
-
 RUN git clone --depth 1 https://github.com/GoogleCloudPlatform/esp-v2.git
 WORKDIR $SRC/esp-v2/
 COPY build.sh $SRC/

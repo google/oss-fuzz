@@ -16,13 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER greg.landrum@gmail.com
-RUN dpkg --add-architecture i386 && \
-  apt-get update && apt-get install -y make wget cmake libeigen3-dev
-
-# Install latest cmake
-RUN wget --quiet https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5-Linux-x86_64.sh; \
-    chmod +x cmake-3.14.5-Linux-x86_64.sh; \
-    ./cmake-3.14.5-Linux-x86_64.sh --skip-license --prefix="/usr/local"
+RUN apt-get update && apt-get install -y wget libeigen3-dev
 
 RUN git clone --depth 1 https://github.com/rdkit/rdkit.git $SRC/rdkit
 WORKDIR $SRC/rdkit
