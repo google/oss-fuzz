@@ -23,4 +23,4 @@ for F in $FUZZER_FILES; do
     FUZZER=$(basename $F .cpp)
     cp $SRC/fuzzer-parse.options $OUT/$FUZZER.options
 done
-cp $SRC/*.dict $SRC/parse_afl_fuzzer.options $OUT/
+cp $SRC/parse_afl_fuzzer.dict $OUT/
