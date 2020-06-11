@@ -22,3 +22,4 @@ runs:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
+    SANITIZER: ${{ inputs.sanitizer }}
