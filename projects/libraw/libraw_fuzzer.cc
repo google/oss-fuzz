@@ -20,6 +20,16 @@ limitations under the License.
 
 #include <libraw.h>
 
+enum InterpolationOptions {
+  Linear = 0,
+  Vng = 1, 
+  Ppg = 2,
+  Ahd = 3,
+  Dcb = 4,
+  Dht = 11,
+  AhdModified = 12
+};
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Input less than 10mb
   if (size > 10000000) {
@@ -39,10 +49,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  int options[] = {0, 1, 2, 3, 4, 11, 12};
+  InterpolationOptions options[] = {Linear, Vng, Ppg, Ahd, Dcb, Dht, AhdModified};
 
-  for (int i = 0; i < 7; i++) {
-    lib_raw.output_params_ptr()->user_qual = options[i];
+  for (int i = 0; i < sizeof(options); i++) {
+    lib_raw.output_params_ptr()->user_qual = static_cast<int>(options[i]);
 
     result = lib_raw.dcraw_process();
     if (result != LIBRAW_SUCCESS) {
