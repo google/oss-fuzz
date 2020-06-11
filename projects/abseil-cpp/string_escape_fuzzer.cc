@@ -23,26 +23,40 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 	std::string escaped, unescaped;
 	escaped = absl::CHexEscape(str);
 	absl::CUnescape(escaped, &unescaped);
-	
+	if (str != unescaped)
+		abort();
+
 	escaped = absl::CEscape(str);
 	absl::CUnescape(escaped, &unescaped);
-	
+	if (str != unescaped)
+		abort();
+
 	escaped = absl::Utf8SafeCEscape(str);
 	absl::CUnescape(escaped, &unescaped);
+	if (str != unescaped)
+		abort();
 	
 	escaped = absl::Utf8SafeCHexEscape(str);
 	absl::CUnescape(escaped, &unescaped);
+	if (str != unescaped)
+		abort();
 	
 	std::string encoded, decoded;
 	absl::Base64Escape(str, &encoded);
 	absl::Base64Unescape(encoded, &decoded);
+	if (str != unescaped)
+		abort();
 
 	absl::WebSafeBase64Escape(str, &encoded);
 	absl::WebSafeBase64Unescape(encoded, &decoded);
+	if (str != decoded)
+		abort();
 
 	std::string hex_result, bytes_result;
 	hex_result = absl::BytesToHexString(str);
 	bytes_result = absl::HexStringToBytes(hex_result);
+	if (str != decoded)
+		abort();
 
 	return 0;
 }

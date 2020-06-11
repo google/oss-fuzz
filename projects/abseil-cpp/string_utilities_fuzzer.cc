@@ -16,6 +16,8 @@
 
 #include <string>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/numbers.h"
@@ -23,18 +25,17 @@
 
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-	// First 4 bytes for float, next 4 for double, next 4 for int, next 1 for boolean, then atleast 1 for string 1
-	size_t min_length = 14 * sizeof(uint8_t);
-	if (size < min_length)
+	if (size < 14)
 		return 0;
-	std::string str (reinterpret_cast<const char*>(data), size);
-	std::string float_str, double_str, int_str, bool_str, str1, str2;
-	float_str = str.substr(0, 4);
-	double_str = str.substr(4, 4);
-	int_str = str.substr(8, 4);
-	bool_str = str.substr(12, 1);
-	str1 = str.substr(13, (sizeof(str) - 12)/2);
-	str2 = str.substr(13 + str1.length());
+
+	// First 4 bytes for float, next 4 for double, next 4 for int, next 1 for boolean, then atleast 1 for string 1
+	FuzzedDataProvider fuzzed_data(data, size);
+	std::string float_str = fuzzed_data.ConsumeBytesAsString(4);
+	std::string double_str = fuzzed_data.ConsumeBytesAsString(4);
+	std::string int_str = fuzzed_data.ConsumeBytesAsString(4);
+	std::string bool_str = fuzzed_data.ConsumeBytesAsString(1);
+	std::string str1 = fuzzed_data.ConsumeRandomLengthString();
+	std::string str2 = fuzzed_data.ConsumeRemainingBytesAsString();
 
 	float float_value;
 	double double_value;
@@ -52,6 +53,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 	absl::StrAppend(&str1, str2);
 	std::string str_result = absl::StrCat(str1, float_value, double_value, int_value, bool_value);
 	std::vector<std::string> v = absl::StrSplit(str_result, ".");
-	str_result = absl::StrJoin(v, ".");
+	absl::StrJoin(v, ".");
 	return 0;
 }
