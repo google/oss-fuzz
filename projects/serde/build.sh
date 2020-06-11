@@ -15,7 +15,12 @@
 #
 ################################################################################
 
-# Note: This project creates Rust fuzz targets exclusively
+# Serde json
 cd $SRC/json
 cargo fuzz build -O 
 cp fuzz/target/x86_64-unknown-linux-gnu/release/from_slice $OUT/
+
+# Serde yaml
+cd $SRC/serde-yaml
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_from_slice $OUT/

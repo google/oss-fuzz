@@ -1,4 +1,4 @@
-homepage: "https://github.com/serde-rs/json"
+homepage: "https://github.com/serde-rs"
 primary_contact: "dtolnay@gmail.com"
 sanitizers:
   - address
