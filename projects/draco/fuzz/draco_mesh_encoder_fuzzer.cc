@@ -25,7 +25,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   draco::TriangleSoupMeshBuilder mesh_builder;
   FuzzedDataProvider stream(data, size);
 
-  uint num_faces = stream.ConsumeIntegral<uint>();
+  const uint num_faces = 5;
   mesh_builder.Start(num_faces);
 
   const int32_t pos_att_id = mesh_builder.AddAttribute(
