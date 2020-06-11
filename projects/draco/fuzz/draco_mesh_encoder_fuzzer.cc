@@ -22,6 +22,7 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
+  // Build the mesh
   draco::TriangleSoupMeshBuilder mesh_builder;
   FuzzedDataProvider stream(data, size);
 
@@ -98,10 +99,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   auto mesh = mesh_builder.Finalize();
-
   if (mesh == NULL)
     return 0;
 
+  // Encode the mesh
   draco::Encoder encoder;
   encoder.SetAttributeQuantization(draco::GeometryAttribute::POSITION,
     stream.ConsumeIntegral<int>());
