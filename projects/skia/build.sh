@@ -18,26 +18,27 @@
 # Build SwiftShader
 pushd third_party/externals/swiftshader/
 export SWIFTSHADER_INCLUDE_PATH=$PWD/include
-rm -rf build
-mkdir build
+# SwiftShader already has a build/ directory, use something else
+rm -rf build_swiftshader
+mkdir build_swiftshader
 
-cd build
+cd build_swiftshader
 if [ $SANITIZER == "coverage" ]; then
   cmake ..
 else
   if [ $SANITIZER == "address" ]; then
-    CMAKE_SANITIZER="ASAN"
+    CMAKE_SANITIZER="SWIFTSHADER_ASAN"
   elif [ $SANITIZER == "memory" ]; then
-    CMAKE_SANITIZER="MSAN"
+    CMAKE_SANITIZER="SWIFTSHADER_MSAN"
   elif [ $SANITIZER == "undefined" ]; then
-    CMAKE_SANITIZER="UBSAN"
+    CMAKE_SANITIZER="SWIFTSHADER_UBSAN"
   else
     exit 1
   fi
   CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -D$CMAKE_SANITIZER=1
 fi
 
-make -j
+make -j2 libGLESv2 libEGL
 cp libGLESv2.so libEGL.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
