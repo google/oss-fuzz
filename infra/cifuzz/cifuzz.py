@@ -14,7 +14,7 @@
 """Module used by CI tools in order to interact with fuzzers.
 This module helps CI tools do the following:
   1. Build fuzzers.
-  2. Run fuzzers. 
+  2. Run fuzzers.
 Eventually it will be used to help CI tools determine which fuzzers to run.
 """
 

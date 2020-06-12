@@ -94,15 +94,14 @@ def should_build(project_yaml):
     section)? Uses |defaults| if |yaml_name| section is unspecified."""
     return os.getenv(env_var) in project_yaml.get(yaml_name, defaults)
 
-  return (is_enabled('TRAVIS_ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
-          is_enabled('TRAVIS_SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
-          is_enabled('TRAVIS_ARCHITECTURE', 'architectures',
-                     DEFAULT_ARCHITECTURES))
+  return (is_enabled('ENGINE', 'fuzzing_engines', DEFAULT_ENGINES) and
+          is_enabled('SANITIZER', 'sanitizers', DEFAULT_SANITIZERS) and
+          is_enabled('ARCHITECTURE', 'architectures', DEFAULT_ARCHITECTURES))
 
 
 def build_project(project):
-  """Do the build of |project| that is specified by the TRAVIS_* environment
-  variables (TRAVIS_SANITIZER, TRAVIS_ENGINE, and TRAVIS_ARCHITECTURE)."""
+  """Do the build of |project| that is specified by the environment variables -
+  SANITIZER, ENGINE, and ARCHITECTURE."""
   root = get_oss_fuzz_root()
   project_yaml_path = os.path.join(root, 'projects', project, 'project.yaml')
   with open(project_yaml_path) as file_handle:
@@ -112,9 +111,9 @@ def build_project(project):
     print('Project {0} is disabled, skipping build.'.format(project))
     return
 
-  engine = os.getenv('TRAVIS_ENGINE')
-  sanitizer = os.getenv('TRAVIS_SANITIZER')
-  architecture = os.getenv('TRAVIS_ARCHITECTURE')
+  engine = os.getenv('ENGINE')
+  sanitizer = os.getenv('SANITIZER')
+  architecture = os.getenv('ARCHITECTURE')
 
   if not should_build(project_yaml):
     print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
