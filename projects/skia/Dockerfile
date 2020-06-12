@@ -73,6 +73,8 @@ RUN wget -O $SRC/skia/sksl_seed_corpus.zip https://storage.googleapis.com/skia-f
 
 RUN wget -O $SRC/skia/api_skdescriptor_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_skdescriptor_seed_corpus.zip
 
+RUN wget -O $SRC/skia/svg_dom_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/svg_seed_corpus.zip 
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff

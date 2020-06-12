@@ -452,3 +452,16 @@ test_app("skdescriptor_deserialize") {
     ":skia",
   ]
 }
+
+test_app("svg_dom") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSVG.cpp",
+  ]
+  deps = [
+    ":experimental_svg_model",
+    ":flags",
+    ":skia",
+  ]
+}

@@ -42,7 +42,7 @@ else
   CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -D$CMAKE_SANITIZER=1
 fi
 
-make -j2 libGLESv2 libEGL
+make -j14 libGLESv2 libEGL
 cp libGLESv2.so libEGL.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
@@ -110,7 +110,8 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_null_canvas api_image_filter api_pathop \
                                    api_polyutils android_codec image_decode_incremental \
                                    sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
-                                   api_skdescriptor skdescriptor_deserialize
+                                   api_skdescriptor skdescriptor_deserialize\
+                                   svg_dom
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -242,3 +243,6 @@ cp ./api_skdescriptor_seed_corpus.zip $OUT/api_skdescriptor_seed_corpus.zip
 cp out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
 cp ./skdescriptor_deserialize.options $OUT/skdescriptor_deserialize.options
 cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
+
+cp out/Fuzz/svg_dom $OUT/svg_dom
+cp ./svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
