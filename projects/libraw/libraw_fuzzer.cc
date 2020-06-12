@@ -31,8 +31,8 @@ enum InterpolationOptions {
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  // Input less than 10mb
-  if (size > 10000000) {
+  // Input less than 15mb
+  if (size > 15000000) {
     return 0;
   }
 
