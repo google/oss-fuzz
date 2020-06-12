@@ -31,7 +31,11 @@ else
   elif [ $SANITIZER == "memory" ]; then
     CMAKE_SANITIZER="SWIFTSHADER_MSAN"
   elif [ $SANITIZER == "undefined" ]; then
-    CMAKE_SANITIZER="SWIFTSHADER_UBSAN"
+    # The current SwiftShader build needs -fno-sanitize=vptr, but it cannot be
+    # specified here since -fsanitize=undefined will always come after any
+    # user specified flags passed to cmake. SwiftShader does not need to be
+    # built with the undefined sanitizer in order to fuzz Skia, so don't.
+    CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
   else
     exit 1
   fi
