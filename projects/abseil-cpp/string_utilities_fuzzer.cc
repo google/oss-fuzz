@@ -18,6 +18,7 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/numbers.h"
@@ -25,22 +26,19 @@
 
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-	if (size < 14)
-		return 0;
-
-	// First 4 bytes for float, next 4 for double, next 4 for int, next 1 for boolean, then atleast 1 for string 1
 	FuzzedDataProvider fuzzed_data(data, size);
-	std::string float_str = fuzzed_data.ConsumeBytesAsString(4);
-	std::string double_str = fuzzed_data.ConsumeBytesAsString(4);
-	std::string int_str = fuzzed_data.ConsumeBytesAsString(4);
-	std::string bool_str = fuzzed_data.ConsumeBytesAsString(1);
+	float float_value = fuzzed_data.ConsumeFloatingPoint<float>();
+	double double_value = fuzzed_data.ConsumeFloatingPoint<double>();
+	int int_value = fuzzed_data.ConsumeIntegral<int>();
+	bool bool_value = fuzzed_data.ConsumeBool();
 	std::string str1 = fuzzed_data.ConsumeRandomLengthString();
 	std::string str2 = fuzzed_data.ConsumeRemainingBytesAsString();
 
-	float float_value;
-	double double_value;
-	int int_value;
-	bool bool_value;
+	std::string float_str = absl::StrFormat("%g", float_value);
+	std::string double_str = absl::StrFormat("%g", double_value);
+	std::string int_str = absl::StrFormat("%d", int_value);
+	std::string bool_str = absl::StrFormat("%d", bool_value);
+	
 	if (!absl::SimpleAtof(float_str, &float_value))
 		return 0;
 	if (!absl::SimpleAtod(double_str, &double_value))

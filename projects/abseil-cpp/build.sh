@@ -38,6 +38,8 @@ $CXX $CXXFLAGS -I../ \
 	absl/strings/libabsl_strings.a \
 	absl/numeric/libabsl_int128.a \
 	absl/strings/libabsl_strings_internal.a \
+	absl/strings/libabsl_cord.a \
+	absl/strings/libabsl_str_format_internal.a \
 	absl/base/libabsl_base.a \
 	absl/base/libabsl_throw_delegate.a \
 	absl/base/libabsl_raw_logging_internal.a
