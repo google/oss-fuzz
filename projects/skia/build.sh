@@ -241,5 +241,4 @@ cp ./skdescriptor_deserialize.options $OUT/skdescriptor_deserialize.options
 cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
 cp out/Fuzz/svg_dom $OUT/svg_dom
-cp ./svg_dom.options $OUT/svg_dom.options
 cp ./svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip

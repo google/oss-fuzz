@@ -113,8 +113,6 @@ COPY sksl.options $SRC/skia/sksl2spirv.options
 COPY sksl.options $SRC/skia/sksl2metal.options
 COPY sksl.options $SRC/skia/sksl2pipeline.options
 
-COPY svg_dom.options $SRC/skia/svg_dom.options
-
 COPY json.dict $SRC/skia/json.dict
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
