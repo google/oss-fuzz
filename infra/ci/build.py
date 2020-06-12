@@ -32,10 +32,8 @@ DEFAULT_SANITIZERS = ['address', 'undefined']
 def get_modified_buildable_projects():
   """Returns a list of all the projects modified in this commit that have a
   build.sh file."""
-  master_head_sha = subprocess.check_output(
-      ['git', 'merge-base', 'HEAD', 'FETCH_HEAD']).decode().strip()
-  output = subprocess.check_output(
-      ['git', 'diff', '--name-only', 'HEAD', master_head_sha]).decode()
+  output = subprocess.check_output(['git', 'diff', '--name-only',
+                                    'FETCH_HEAD']).decode()
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
   modified_projects = set(re.findall(projects_regex, output))
   projects_dir = os.path.join(get_oss_fuzz_root(), 'projects')
