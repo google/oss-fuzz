@@ -1,4 +1,4 @@
-homepage: "https://github.com/bblanchon/ArduinoJso"
+homepage: "https://github.com/bblanchon/ArduinoJson"
 language: c++
 primary_contact: "benoit.blanchon@gmail.com"
 sanitizers:
