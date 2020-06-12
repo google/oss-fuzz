@@ -50,6 +50,12 @@ EXAMPLE_NOCRASH_FUZZER = 'example_nocrash_fuzzer'
 # A fuzzer to be built in build_fuzzers integration tests.
 EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 
+MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'memory')
+MEMORY_FUZZER = 'curl_fuzzer_memory'
+
+UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'undefined')
+UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
+
 # pylint: disable=no-self-use
 
 
@@ -88,7 +94,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      self.assertFalse(
+      self.assertTrue(
           cifuzz.build_fuzzers(EXAMPLE_PROJECT,
                                'oss-fuzz',
                                tmp_dir,
@@ -134,16 +140,70 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         ))
 
 
-class RunFuzzersIntegrationTest(unittest.TestCase):
+class RunMemoryFuzzerIntegrationTest(unittest.TestCase):
+  """Test build_fuzzers function in the cifuzz module."""
+
+  def tearDown(self):
+    """Remove any existing crashes and test files."""
+    out_dir = os.path.join(MEMORY_FUZZER_DIR, 'out')
+    for out_file in os.listdir(out_dir):
+      out_path = os.path.join(out_dir, out_file)
+      #pylint: disable=consider-using-in
+      if out_file == MEMORY_FUZZER:
+        continue
+      if os.path.isdir(out_path):
+        shutil.rmtree(out_path)
+      else:
+        os.remove(out_path)
+
+  def test_run_with_memory_sanitizer(self):
+    """Test run_fuzzers with a valid build."""
+    run_success, bug_found = cifuzz.run_fuzzers(10,
+                                                MEMORY_FUZZER_DIR,
+                                                'curl',
+                                                sanitizer='memory')
+    self.assertTrue(run_success)
+    self.assertFalse(bug_found)
+
+
+class RunUndefinedFuzzerIntegrationTest(unittest.TestCase):
+  """Test build_fuzzers function in the cifuzz module."""
+
+  def tearDown(self):
+    """Remove any existing crashes and test files."""
+    out_dir = os.path.join(UNDEFINED_FUZZER_DIR, 'out')
+    for out_file in os.listdir(out_dir):
+      out_path = os.path.join(out_dir, out_file)
+      #pylint: disable=consider-using-in
+      if out_file == UNDEFINED_FUZZER:
+        continue
+      if os.path.isdir(out_path):
+        shutil.rmtree(out_path)
+      else:
+        os.remove(out_path)
+
+  def test_run_with_undefined_sanitizer(self):
+    """Test run_fuzzers with a valid build."""
+    run_success, bug_found = cifuzz.run_fuzzers(10,
+                                                UNDEFINED_FUZZER_DIR,
+                                                'curl',
+                                                sanitizer='undefined')
+    self.assertTrue(run_success)
+    self.assertFalse(bug_found)
+
+
+class RunAddressFuzzersIntegrationTest(unittest.TestCase):
   """Test build_fuzzers function in the cifuzz module."""
 
   def tearDown(self):
     """Remove any existing crashes and test files."""
     out_dir = os.path.join(TEST_FILES_PATH, 'out')
+    files_to_keep = [
+        'undefined', 'memory', EXAMPLE_CRASH_FUZZER, EXAMPLE_NOCRASH_FUZZER
+    ]
     for out_file in os.listdir(out_dir):
       out_path = os.path.join(out_dir, out_file)
-      #pylint: disable=consider-using-in
-      if out_file == EXAMPLE_CRASH_FUZZER or out_file == EXAMPLE_NOCRASH_FUZZER:
+      if out_file in files_to_keep:
         continue
       if os.path.isdir(out_path):
         shutil.rmtree(out_path)
@@ -157,7 +217,10 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     # OSS-Fuzz build.
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
-                           side_effect=[True, False]):
+                           side_effect=[True, False]), mock.patch.object(
+                               cifuzz,
+                               'is_project_sanitizer',
+                               return_value=True):
       run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
@@ -170,7 +233,10 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
     """Test run_fuzzers with a bug found in OSS-Fuzz before."""
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
-                           side_effect=[True, True]):
+                           side_effect=[True, True]), mock.patch.object(
+                               cifuzz,
+                               'is_project_sanitizer',
+                               return_value=True):
       run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
@@ -181,7 +247,8 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_build(self):
     """Test run_fuzzers with an invalid build."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        cifuzz, 'is_project_sanitizer', return_value=True):
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
       run_success, bug_found = cifuzz.run_fuzzers(10, tmp_dir, EXAMPLE_PROJECT)
@@ -190,7 +257,8 @@ class RunFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_fuzz_seconds(self):
     """Tests run_fuzzers with an invalid fuzz seconds."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
+    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
+        cifuzz, 'is_project_sanitizer', return_value=True):
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
       run_success, bug_found = cifuzz.run_fuzzers(0, tmp_dir, EXAMPLE_PROJECT)
@@ -431,6 +499,58 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
         cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
                                          [self.example_file_changed], '')
         self.assertEqual(2, len(os.listdir(tmp_dir)))
+
+
+class IsProjectSanitizerUnitTest(unittest.TestCase):
+  """Class to test the is_project_sanitizer function in the cifuzz module.
+    Note: This test relies on the curl project being an OSS-Fuzz project.
+  """
+
+  def test_valid_project_curl(self):
+    """Test if sanitizers can be detected from project.yaml"""
+    self.assertTrue(cifuzz.is_project_sanitizer('memory', 'curl'))
+    self.assertTrue(cifuzz.is_project_sanitizer('address', 'curl'))
+    self.assertTrue(cifuzz.is_project_sanitizer('undefined', 'curl'))
+    self.assertFalse(cifuzz.is_project_sanitizer('not-a-san', 'curl'))
+
+  def test_valid_project_example(self):
+    """Test if sanitizers can be detected from project.yaml"""
+    self.assertFalse(cifuzz.is_project_sanitizer('memory', 'example'))
+    self.assertFalse(cifuzz.is_project_sanitizer('address', 'example'))
+    self.assertFalse(cifuzz.is_project_sanitizer('undefined', 'example'))
+    self.assertFalse(cifuzz.is_project_sanitizer('not-a-san', 'example'))
+
+  def test_invalid_project(self):
+    """Tests that invalid projects return false."""
+    self.assertFalse(cifuzz.is_project_sanitizer('memory', 'notaproj'))
+    self.assertFalse(cifuzz.is_project_sanitizer('address', 'notaproj'))
+    self.assertFalse(cifuzz.is_project_sanitizer('undefined', 'notaproj'))
+
+
+@unittest.skip('Test is too long to be run with presubmit.')
+class BuildSantizerIntegrationTest(unittest.TestCase):
+  """Class to test the is_project_sanitizer function in the cifuzz module.
+    Note: This test relies on the curl project being an OSS-Fuzz project."""
+
+  def test_valid_project_curl_memory(self):
+    """Test if sanitizers can be detected from project.yaml"""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      self.assertTrue(
+          cifuzz.build_fuzzers('curl',
+                               'curl',
+                               tmp_dir,
+                               pr_ref='fake_pr',
+                               sanitizer='memory'))
+
+  def test_valid_project_curl_undefined(self):
+    """Test if sanitizers can be detected from project.yaml"""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      self.assertTrue(
+          cifuzz.build_fuzzers('curl',
+                               'curl',
+                               tmp_dir,
+                               pr_ref='fake_pr',
+                               sanitizer='undefined'))
 
 
 if __name__ == '__main__':
