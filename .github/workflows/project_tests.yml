@@ -9,17 +9,28 @@ jobs:
       matrix:
         engine:
           - libfuzzer
-          - afl
-          - honggfuzz
-          - none
         sanitizer:
           - address
           - memory
           - undefined
-          - dataflow
         architecture:
           - x86_64
-          - i386
+        include:
+          - engine: afl
+            sanitizer: address
+            architecture: x86_64
+          - engine: honggfuzz
+            sanitizer: address
+            architecture: x86_64
+          - engine: libfuzzer
+            sanitizer: address
+            architecture: i386
+          - engine: none
+            sanitizer: address
+            architecture: x86_64
+          - engine: dataflow
+            sanitizer: dataflow
+            architecture: x86_64
     env:
       ENGINE: ${{ matrix.engine }}
       SANITIZER: ${{ matrix.sanitizer }}
