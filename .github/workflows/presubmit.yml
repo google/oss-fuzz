@@ -6,18 +6,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - run: |  # Needed for git diff to work.
-        git fetch origin master --depth 1
-        git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+      - uses: actions/checkout@v2
+      - run: |  # Needed for git diff to work.
+          git fetch origin master --depth 1
+          git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 
-    - name: Setup python environment
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.7
+      - name: Setup python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
 
-    - name: Install dependencies
-      run: pip install -r infra/ci/requirements.txt
+      - name: Install dependencies
+        run: pip install -r infra/ci/requirements.txt
 
-    - name: Run presubmit checks
-      run: python infra/presubmit.py
+      - name: Run presubmit checks
+        run: python infra/presubmit.py
