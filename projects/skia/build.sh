@@ -42,7 +42,11 @@ else
   CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 fi
 
+<<<<<<< HEAD
 $SRC/depot_tools/ninja libGLESv2 libEGL
+=======
+make -j14 libGLESv2 libEGL
+>>>>>>> 59eb605e... [skia] add svg fuzzer
 cp libGLESv2.so libEGL.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
@@ -215,7 +219,9 @@ cp ./api_skdescriptor_seed_corpus.zip $OUT/api_skdescriptor_seed_corpus.zip
 
 # Don't have any examples of an SkDescriptor atm, so some random bytes is all we have.
 cp out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
+
 cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
 cp out/Fuzz/svg_dom $OUT/svg_dom
+
 cp ./svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
