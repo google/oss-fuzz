@@ -24,7 +24,7 @@ mkdir build_swiftshader
 
 cd build_swiftshader
 if [ $SANITIZER == "coverage" ]; then
-  cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja"
+  cmake ..
 else
   if [ $SANITIZER == "address" ]; then
     CMAKE_SANITIZER="SWIFTSHADER_ASAN"
@@ -42,11 +42,7 @@ else
   CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 fi
 
-<<<<<<< HEAD
 $SRC/depot_tools/ninja libGLESv2 libEGL
-=======
-make -j14 libGLESv2 libEGL
->>>>>>> 59eb605e... [skia] add svg fuzzer
 cp libGLESv2.so libEGL.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
@@ -115,7 +111,7 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_polyutils android_codec image_decode_incremental \
                                    sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
                                    api_skdescriptor skdescriptor_deserialize\
-                                   svg_dom
+                                   svg_dom api_svg_canvas
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -219,9 +215,10 @@ cp ./api_skdescriptor_seed_corpus.zip $OUT/api_skdescriptor_seed_corpus.zip
 
 # Don't have any examples of an SkDescriptor atm, so some random bytes is all we have.
 cp out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
-
 cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
 cp out/Fuzz/svg_dom $OUT/svg_dom
-
 cp ./svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
+
+cp out/Fuzz/api_svg_canvas $OUT/api_svg_canvas
+cp ./canvas_seed_corpus.zip $OUT/api_svg_canvas_corpus.zip
