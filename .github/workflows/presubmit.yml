@@ -16,6 +16,10 @@ jobs:
       with:
         python-version: 3.7
 
+    - name: Install dependencies
+      run: |
+        pip install -r infra/ci/requirements.txt
+
     - name: Run presubmit checks
       run: |
-        python3 ./infra/presubmit.py
+        python ./infra/presubmit.py
