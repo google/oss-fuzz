@@ -39,10 +39,10 @@ else
   else
     exit 1
   fi
-  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -D$CMAKE_SANITIZER=1
+  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 fi
 
-make -j14 libGLESv2 libEGL
+$SRC/depot_tools/ninja libGLESv2 libEGL
 cp libGLESv2.so libEGL.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
