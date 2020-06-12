@@ -19,12 +19,6 @@ MAINTAINER pauldreikossfuzz@gmail.com
 
 RUN apt-get update && apt-get install -y ninja-build wget
 
-# We need a modern cmake
-ENV CMAKEVER 3.15.4
-RUN wget --quiet https://github.com/Kitware/CMake/releases/download/v${CMAKEVER}/cmake-${CMAKEVER}-Linux-x86_64.sh ;\
-    chmod +x cmake-${CMAKEVER}-Linux-x86_64.sh ; \
-    ./cmake-${CMAKEVER}-Linux-x86_64.sh --skip-license --prefix="/usr/local"
-
 RUN git clone --depth 1 https://github.com/simdjson/simdjson.git simdjson
 WORKDIR simdjson
 COPY build.sh $SRC/

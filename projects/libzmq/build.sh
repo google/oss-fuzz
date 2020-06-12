@@ -18,15 +18,15 @@
 
 # build project and dependencies
 cd "${SRC}/libsodium"
-./autogen.sh
-./configure --disable-shared
+DO_NOT_UPDATE_CONFIG_SCRIPTS=1 ./autogen.sh
+./configure --disable-shared --prefix=/install_prefix --disable-asm
 make -j$(nproc) V=1 install DESTDIR=/tmp/zmq_install_dir
 
 cd "${SRC}/libzmq"
 ./autogen.sh
-export LDFLAGS="$(PKG_CONFIG_PATH=/tmp/zmq_install_dir/usr/local/lib/pkgconfig pkg-config --static --libs --define-prefix libsodium)"
-export CXXFLAGS="$CXXFLAGS $(PKG_CONFIG_PATH=/tmp/zmq_install_dir/usr/local/lib/pkgconfig pkg-config --static --cflags --define-prefix libsodium)"
-./configure --disable-shared --disable-perf --disable-curve-keygen PKG_CONFIG_PATH=/tmp/zmq_install_dir/usr/local/lib/pkgconfig --with-libsodium=yes --with-fuzzing-installdir=fuzzers --with-fuzzing-engine=$LIB_FUZZING_ENGINE
+export LDFLAGS+=" $(PKG_CONFIG_PATH=/tmp/zmq_install_dir/install_prefix/lib/pkgconfig pkg-config --static --libs --define-prefix libsodium)"
+export CXXFLAGS+=" $(PKG_CONFIG_PATH=/tmp/zmq_install_dir/install_prefix/lib/pkgconfig pkg-config --static --cflags --define-prefix libsodium)"
+./configure --disable-shared --prefix=/install_prefix --disable-perf --disable-curve-keygen PKG_CONFIG_PATH=/tmp/zmq_install_dir/install_prefix/lib/pkgconfig --with-libsodium=yes --with-fuzzing-installdir=fuzzers --with-fuzzing-engine=$LIB_FUZZING_ENGINE
 make -j$(nproc) V=1 install DESTDIR=/tmp/zmq_install_dir
 
-cp /tmp/zmq_install_dir/usr/local/fuzzers/* "${OUT}"
+cp /tmp/zmq_install_dir/install_prefix/fuzzers/* "${OUT}"

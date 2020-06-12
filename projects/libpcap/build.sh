@@ -17,7 +17,6 @@
 
 cd libpcap
 # build project
-git apply ../patch.diff
 mkdir build
 cd build
 cmake ..

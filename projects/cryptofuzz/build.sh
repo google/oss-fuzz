@@ -94,6 +94,28 @@ then
     make -B
 fi
 
+# Compile SymCrypt
+cd $SRC/SymCrypt/
+if [[ $CFLAGS != *sanitize=undefined* ]]
+then
+    # Unittests don't build with clang and are not needed anyway
+    sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
+
+    mkdir b/
+    cd b/
+    cmake ../
+    make -j$(nproc)
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
+    export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
+    export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/x86_64/Generic/libsymcrypt_common.a)
+    export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/x86_64/Generic/symcrypt_generic.a)
+
+    # Compile Cryptofuzz SymCrypt module
+    cd $SRC/cryptofuzz/modules/symcrypt
+    make -B
+fi
+
 # Compile Cityhash
 cd $SRC/cityhash
 if [[ $CFLAGS != *-m32* ]]
@@ -304,7 +326,7 @@ fi
 cd $SRC/wolfssl
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then

@@ -32,9 +32,6 @@ This is done with the following steps:
 
 import argparse
 import collections
-import datetime
-from distutils import spawn
-import json
 import logging
 import os
 import sys
@@ -57,6 +54,14 @@ END_MARKERS = [
 ]
 
 DEDUP_TOKEN_MARKER = 'DEDUP_TOKEN:'
+
+
+class BisectError(Exception):
+  """Bisection error."""
+
+  def __init__(self, message, repo_url):
+    super().__init__(message)
+    self.repo_url = repo_url
 
 
 def main():
@@ -113,34 +118,6 @@ def main():
   return 0
 
 
-def _load_base_builder_repo():
-  """Get base-image digests."""
-  gcloud_path = spawn.find_executable('gcloud')
-  if not gcloud_path:
-    logging.warning('gcloud not found in PATH.')
-    return None
-
-  result, _, _ = utils.execute([
-      gcloud_path,
-      'container',
-      'images',
-      'list-tags',
-      'gcr.io/oss-fuzz-base/base-builder',
-      '--format=json',
-      '--sort-by=timestamp',
-  ],
-                               check_result=True)
-  result = json.loads(result)
-
-  repo = build_specified_commit.BaseBuilderRepo()
-  for image in result:
-    timestamp = datetime.datetime.fromisoformat(
-        image['timestamp']['datetime']).astimezone(datetime.timezone.utc)
-    repo.add_digest(timestamp, image['digest'])
-
-  return repo
-
-
 def _get_dedup_token(output):
   """Get dedup token."""
   for line in output.splitlines():
@@ -192,7 +169,7 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
             build_data):
   """Perform the bisect."""
   # pylint: disable=too-many-branches
-  base_builder_repo = _load_base_builder_repo()
+  base_builder_repo = build_specified_commit.load_base_builder_repo()
 
   with tempfile.TemporaryDirectory() as tmp_dir:
     repo_url, repo_path = build_specified_commit.detect_main_repo(
@@ -218,14 +195,14 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
         host_src_dir,
         build_data,
         base_builder_repo=base_builder_repo):
-      raise RuntimeError('Failed to build new_commit')
+      raise BisectError('Failed to build new_commit', repo_url)
 
     if bisect_type == 'fixed':
       should_crash = False
     elif bisect_type == 'regressed':
       should_crash = True
     else:
-      raise ValueError('Invalid bisect type ' + bisect_type)
+      raise BisectError('Invalid bisect type ' + bisect_type, repo_url)
 
     expected_error = _check_for_crash(build_data.project_name, fuzz_target,
                                       test_case_path)
@@ -244,11 +221,11 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
           host_src_dir,
           build_data,
           base_builder_repo=base_builder_repo):
-        raise RuntimeError('Failed to build old_commit')
+        raise BisectError('Failed to build old_commit', repo_url)
 
       if _check_for_crash(build_data.project_name, fuzz_target,
                           test_case_path) == expected_error:
-        raise RuntimeError('old_commit had same result as new_commit')
+        raise BisectError('old_commit had same result as new_commit', repo_url)
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
@@ -296,16 +273,15 @@ def bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
   Raises:
     ValueError: when a repo url can't be determine from the project.
   """
-  result = _bisect(bisect_type, old_commit, new_commit, test_case_path,
+  try:
+    return _bisect(bisect_type, old_commit, new_commit, test_case_path,
                    fuzz_target, build_data)
-
-  # Clean up projects/ as _bisect may have modified it.
-  oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
-  oss_fuzz_repo_manager.git(['reset', 'projects'])
-  oss_fuzz_repo_manager.git(['checkout', 'projects'])
-  oss_fuzz_repo_manager.git(['clean', '-fxd', 'projects'])
-
-  return result
+  finally:
+    # Clean up projects/ as _bisect may have modified it.
+    oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+    oss_fuzz_repo_manager.git(['reset', 'projects'])
+    oss_fuzz_repo_manager.git(['checkout', 'projects'])
+    oss_fuzz_repo_manager.git(['clean', '-fxd', 'projects'])
 
 
 if __name__ == '__main__':

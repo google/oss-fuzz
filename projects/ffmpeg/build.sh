@@ -139,6 +139,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --enable-nonfree \
     --disable-muxers \
     --disable-protocols \
+    --disable-demuxer=rtp,rtsp,sdp \
     --disable-devices \
     --disable-shared
 make clean

@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool build-es
     libass-dev libfreetype6-dev libsdl1.2-dev \
     libvdpau-dev libxcb1-dev libxcb-shm0-dev \
     pkg-config texinfo libbz2-dev zlib1g-dev yasm cmake mercurial wget \
-    xutils-dev libpciaccess-dev nasm
+    xutils-dev libpciaccess-dev nasm rsync
 
 RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
@@ -33,9 +33,9 @@ RUN git clone --depth 1 git://anongit.freedesktop.org/git/xorg/lib/libXfixes
 RUN git clone --depth 1 https://github.com/01org/libva
 RUN git clone --depth 1 -b libvdpau-1.2 git://people.freedesktop.org/~aplattner/libvdpau
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libvpx
-RUN git clone --depth 1 git://git.xiph.org/ogg.git
-RUN git clone --depth 1 git://git.xiph.org/opus.git
-RUN git clone --depth 1 git://git.xiph.org/theora.git
-RUN git clone --depth 1 git://git.xiph.org/vorbis.git
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/opus.git
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/theora.git
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/vorbis.git
 
 COPY build.sh group_seed_corpus.py $SRC/

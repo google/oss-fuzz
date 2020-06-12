@@ -1,0 +1,9 @@
+homepage: "https://github.com/pingcap/tidb"
+primary_contact: "zhouqiang@pingcap.com"
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

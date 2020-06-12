@@ -18,26 +18,31 @@
 # Build SwiftShader
 pushd third_party/externals/swiftshader/
 export SWIFTSHADER_INCLUDE_PATH=$PWD/include
-rm -rf build
-mkdir build
+# SwiftShader already has a build/ directory, use something else
+rm -rf build_swiftshader
+mkdir build_swiftshader
 
-cd build
+cd build_swiftshader
 if [ $SANITIZER == "coverage" ]; then
   cmake ..
 else
   if [ $SANITIZER == "address" ]; then
-    CMAKE_SANITIZER="ASAN"
+    CMAKE_SANITIZER="SWIFTSHADER_ASAN"
   elif [ $SANITIZER == "memory" ]; then
-    CMAKE_SANITIZER="MSAN"
+    CMAKE_SANITIZER="SWIFTSHADER_MSAN"
   elif [ $SANITIZER == "undefined" ]; then
-    CMAKE_SANITIZER="UBSAN"
+    # The current SwiftShader build needs -fno-sanitize=vptr, but it cannot be
+    # specified here since -fsanitize=undefined will always come after any
+    # user specified flags passed to cmake. SwiftShader does not need to be
+    # built with the undefined sanitizer in order to fuzz Skia, so don't.
+    CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
   else
     exit 1
   fi
-  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -D$CMAKE_SANITIZER=1
+  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 fi
 
-make -j
+$SRC/depot_tools/ninja libGLESv2 libEGL
 cp libGLESv2.so libEGL.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
@@ -67,7 +72,8 @@ $SRC/depot_tools/gn gen out/Fuzz\
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]
-      skia_enable_fontmgr_custom=false
+      skia_enable_fontmgr_custom_directory=false
+      skia_enable_fontmgr_custom_embedded=false
       skia_enable_fontmgr_custom_empty=true
       skia_enable_gpu=true
       skia_enable_skottie=true
@@ -84,7 +90,8 @@ $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]
-      skia_enable_fontmgr_custom=false
+      skia_enable_fontmgr_custom_directory=false
+      skia_enable_fontmgr_custom_embedded=false
       skia_enable_fontmgr_custom_empty=true
       skia_enable_gpu=true
       skia_enable_skottie=true
@@ -103,7 +110,8 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_null_canvas api_image_filter api_pathop \
                                    api_polyutils android_codec image_decode_incremental \
                                    sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
-                                   api_skdescriptor skdescriptor_deserialize
+                                   api_skdescriptor skdescriptor_deserialize\
+                                   svg_dom
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -235,3 +243,6 @@ cp ./api_skdescriptor_seed_corpus.zip $OUT/api_skdescriptor_seed_corpus.zip
 cp out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
 cp ./skdescriptor_deserialize.options $OUT/skdescriptor_deserialize.options
 cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
+
+cp out/Fuzz/svg_dom $OUT/svg_dom
+cp ./svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip

@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER david@adalogics.com
 RUN apt-get update && apt-get install -y make wget cmake libqt4-dev
-RUN wget https://xpdfreader-dl.s3.amazonaws.com/xpdf-4.02.tar.gz
+RUN wget --no-check-certificate https://dl.xpdfreader.com/xpdf-latest.tar.gz
 
 WORKDIR $SRC
 COPY fuzz_*.cc $SRC/

@@ -1,9 +1,9 @@
 homepage: "https://github.com/haproxy/haproxy"
-primary_contact: "fuzzing@haproxy.org"
+primary_contact: "adam@adalogics.com"
 language: c++
 auto_ccs:
   - "david@adalogics.com"
-  - "adam@adalogics.com"
+  - "timwolla@googlemail.com"
+  - "willy@1wt.eu"
 sanitizers:
   - address
-  - memory
