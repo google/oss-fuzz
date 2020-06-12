@@ -2,7 +2,7 @@ name: Infra tests
 on:
   pull_request:
     paths:
-    - 'infra/**'
+      - 'infra/**'
 
 jobs:
   build:
