@@ -1,5 +1,8 @@
 name: Infra tests
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+    - 'infra/**'
 
 jobs:
   build:
