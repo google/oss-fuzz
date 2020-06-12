@@ -82,8 +82,6 @@ RUN git apply skia.diff
 
 COPY image_filter_deserialize_width.options $SRC/skia/image_filter_deserialize_width.options
 
-COPY svg_dom.options $SRC/skia/svg_dom.options
-
 COPY json.dict $SRC/skia/json.dict
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
