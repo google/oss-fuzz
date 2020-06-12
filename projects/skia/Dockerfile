@@ -34,8 +34,7 @@ RUN bin/sync
 WORKDIR $SRC/skia/third_party/externals/swiftshader/
 # TODO(metzman): Come up with a better long term solution, such as downloading
 # prebuilt libraries, than pinning swiftshader to a known working revision.
-RUN git checkout bf8fd5b5fb6892dabcc21b4b86d41cd40cb9b4b5
-RUN git submodule update --init
+RUN git checkout 45510ad8a77862c1ce2e33f0efed41544f5f048b
 WORKDIR $SRC/skia
 
 RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
