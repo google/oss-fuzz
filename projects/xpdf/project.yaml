@@ -3,6 +3,5 @@ primary_contact: "xpdf@xpdfreader.com"
 language: c++
 sanitizers:
   - address
-  - memory
 auto_ccs :
   - "david@adalogics.com"
