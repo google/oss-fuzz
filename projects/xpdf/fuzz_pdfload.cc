@@ -12,31 +12,53 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <exception>
 #include "PDFDoc.h"
+#include "GlobalParams.h"
 #include "Zoox.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-	char filename[256];
-	sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-	FILE *fp = fopen(filename, "wb");
-	if (!fp)
-		return 0;
-	fwrite(data, size, 1, fp);
-	fclose(fp);
+    char filename[256];
+    sprintf(filename, "/tmp/libfuzzer.%d", getpid());
+    FILE *fp = fopen(filename, "wb");
+    if (!fp)
+        return 0;
+    fwrite(data, size, 1, fp);
+    fclose(fp);
 
-	PDFDoc *doc;
-	doc = new PDFDoc(filename, NULL, NULL);
-	if (doc->isOk())
-	{
-		doc->getNumPages();
-	}
-	delete doc;
+    // Main fuzzing logic
+    Object info, xfa;
+    Object *acroForm;
+    globalParams = new GlobalParams(NULL);
+    globalParams->setErrQuiet(1);
+    globalParams->setupBaseFonts(NULL);
 
-	unlink(filename);
+    PDFDoc *doc = NULL;
+    try {
+        doc = new PDFDoc(filename, NULL, NULL);
+        if (doc->isOk() == gTrue)
+        {
+            doc->getNumPages();
+            if ((acroForm = doc->getCatalog()->getAcroForm())->isDict()) {
+                acroForm->dictLookup("XFA", &xfa);
+                xfa.free();
+            }
+        }
+    } catch (...) {
+
+    }
+
+    // Cleanup
+    if (doc != NULL)
+        delete doc;
+    delete globalParams;
+
+    // cleanup temporary file
+    unlink(filename);
     return 0;
 }
+
