@@ -14,32 +14,60 @@
 #
 ################################################################################
 
-#Compiling and building dependencies
-mkdir -p build
-cd build
-cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-	-DBUILD_SHARED_LIBS=OFF -G "Unix Makefiles" ..
-make
-#Building string_escape_fuzzer
-$CXX $CXXFLAGS -I../ \
-	$SRC/string_escape_fuzzer.cc -o $OUT/string_escape_fuzzer \
-	$LIB_FUZZING_ENGINE \
-	absl/strings/libabsl_strings.a \
-	absl/numeric/libabsl_int128.a \
-	absl/strings/libabsl_strings_internal.a \
-	absl/base/libabsl_base.a \
-	absl/base/libabsl_throw_delegate.a \
-	absl/base/libabsl_raw_logging_internal.a
+readonly EXTRA_BAZEL_FLAGS="$(
+for f in ${CFLAGS}; do
+  echo "--conlyopt=${f}" "--linkopt=${f}"
+done
+for f in ${CXXFLAGS}; do
+  echo "--cxxopt=${f}" "--linkopt=${f}"
+done
+)"
 
-#Building string_utilities_fuzzer
-$CXX $CXXFLAGS -I../ \
-	$SRC/string_utilities_fuzzer.cc -o $OUT/string_utilities_fuzzer \
-	$LIB_FUZZING_ENGINE \
-	absl/strings/libabsl_strings.a \
-	absl/numeric/libabsl_int128.a \
-	absl/strings/libabsl_strings_internal.a \
-	absl/strings/libabsl_cord.a \
-	absl/strings/libabsl_str_format_internal.a \
-	absl/base/libabsl_base.a \
-	absl/base/libabsl_throw_delegate.a \
-	absl/base/libabsl_raw_logging_internal.a
+bazel build \
+	--dynamic_mode=off \
+	--spawn_strategy=standalone \
+	--genrule_strategy=standalone \
+	--strip=never \
+	--linkopt=-lc++ \
+	--linkopt=-pthread \
+	--copt=${LIB_FUZZING_ENGINE} \
+	--linkopt=${LIB_FUZZING_ENGINE} \
+	${EXTRA_BAZEL_FLAGS} \
+	string_escape_fuzzer \
+	--verbose_failures
+
+bazel build \
+	--dynamic_mode=off \
+	--spawn_strategy=standalone \
+	--genrule_strategy=standalone \
+	--strip=never \
+	--linkopt=-lc++ \
+	--linkopt=-pthread \
+	--copt=${LIB_FUZZING_ENGINE} \
+	--linkopt=${LIB_FUZZING_ENGINE} \
+	${EXTRA_BAZEL_FLAGS} \
+	string_utilities_fuzzer \
+	--verbose_failures
+
+if [ "$SANITIZER" = "coverage" ]
+then
+  # The build invoker looks for sources in $SRC, but it turns out that we need
+  # to not be buried under src/, paths are expected at out/proc/self/cwd by
+  # the profiler.
+  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
+  mkdir -p "${REMAP_PATH}"
+  mkdir -p "${REMAP_PATH}/external/com_google_absl"
+  rsync -av "${SRC}"/abseil-cpp/absl "${REMAP_PATH}/external/com_google_absl"
+  # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
+  # filter out the build objects from bazel-out/. Also need to resolve symlinks,
+  # since they don't make sense outside the build container.
+  declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
+    "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
+  rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/bazel-out "${REMAP_PATH}"
+
+  cp "string_escape_fuzzer.cc" "${OUT}/proc/self/cwd"
+  cp "string_utilities_fuzzer.cc" "${OUT}/proc/self/cwd"
+fi
+
+cp "./bazel-bin/string_escape_fuzzer" "${OUT}/"
+cp "./bazel-bin/string_utilities_fuzzer" "${OUT}/"
