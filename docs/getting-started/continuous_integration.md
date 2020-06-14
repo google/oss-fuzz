@@ -95,64 +95,42 @@ make sure to set the dry-run parameters in both the `Build Fuzzers` and `Run Fuz
 limit for broken fuzz targets than OSS-Fuzz's check_build. Most users should
 not set this.
 
-#### Adding Other Sanitizers
-CIFuzz supports address, memory and undefined sanitizers. Address is the default
-sanitizer and will be used for every job in which a sanitizer is not specified.
-To add another sanitizer to your workflow copy the `Fuzzing` job and rename it
-to the sanitizer you want to fuzz with. Then add the sanitizer variable to both
-the `Build Fuzzers` step and the `Run Fuzzers` step. The choices are `'address'`,
-`'memory'`, and `'undefined'`. Once this additional job is configured the CIFuzz
-workflow will run all of the jobs corresponding to each sanitizer simultaneously.
-It is important to note that the `Build Fuzzers` and the `Run Fuzzers` sanitizer
-field needs to be the same. See the following main.yml file for an example.
+`sanitizer`: Determines a sanitizer to build and run fuzz targets with. The choices are `'address'`,
+`'memory'` and `'undefined'`. The default is `'address'`. It is important to note that the `Build Fuzzers`
+and the `Run Fuzzers` sanitizer field needs to be the same. To specify a list of sanitizers
+a [matrix](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix)
+can be used. To use a sanitizer add it to the list of sanitizers in the matrix field below:
 
 ```yaml
 name: CIFuzz
 on: [pull_request]
 jobs:
- AddressFuzzing:
+ Fuzzing:
    runs-on: ubuntu-latest
+   strategy:
+     fail-fast: false
+     matrix:
+       sanitizer: [address, undefined, memory]
    steps:
-   - name: Build Fuzzers
+   - name: Build Fuzzers (${{ matrix.sanitizer }})
+     id: build
      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
        dry-run: false
-       # sanitizer: address
-   - name: Run Fuzzers
+       sanitizer: ${{ matrix.sanitizer }}
+   - name: Run Fuzzers (${{ matrix.sanitizer }})
      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
        fuzz-seconds: 600
        dry-run: false
-       # sanitizer: address
+       sanitizer: ${{ matrix.sanitizer }}
    - name: Upload Crash
      uses: actions/upload-artifact@v1
-     if: failure()
+     if: failure() && steps.build.outcome == 'success'
      with:
-       name: Address-Artifacts
-       path: ./out/artifacts
- UndefinedFuzzing:
-   runs-on: ubuntu-latest
-   steps:
-   - name: Build Fuzzers
-     uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
-     with:
-       oss-fuzz-project-name: 'example'
-       dry-run: false
-       sanitizer: 'undefined'
-   - name: Run Fuzzers
-     uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
-     with:
-       oss-fuzz-project-name: 'example'
-       fuzz-seconds: 600
-       dry-run: false
-       sanitizer: 'undefined'
-   - name: Upload Crash
-     uses: actions/upload-artifact@v1
-     if: failure()
-     with:
-       name: Undefined-Artifacts
+       name: ${{ matrix.sanitizer }}-artifacts
        path: ./out/artifacts
 ```
 
