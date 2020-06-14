@@ -65,12 +65,12 @@ then
   mkdir -p "${REMAP_PATH}"
   mkdir -p "${REMAP_PATH}/external/com_google_absl"
   rsync -av "${SRC}"/abseil-cpp/absl "${REMAP_PATH}/external/com_google_absl"
-  # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
-  # filter out the build objects from bazel-out/. Also need to resolve symlinks,
-  # since they don't make sense outside the build container.
+
   declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
     "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
   rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/bazel-out "${REMAP_PATH}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
 
   cp "string_escape_fuzzer.cc" "${OUT}/proc/self/cwd"
   cp "string_utilities_fuzzer.cc" "${OUT}/proc/self/cwd"
