@@ -1,4 +1,4 @@
-homepage: "https://www.ffmpeg.org/"
+homepage: "https://www.ffmpeg.org"
 language: c++
 primary_contact: "ffmpeg-security@ffmpeg.org"
 auto_ccs:

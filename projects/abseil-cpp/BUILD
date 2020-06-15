@@ -14,14 +14,17 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jesteele@google.com
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config
-RUN git clone --depth 1 https://github.com/libraw/libraw
-WORKDIR libraw
+cc_binary(
+	name = "string_escape_fuzzer",
+	deps = ["@com_google_absl//absl/strings"],
+	srcs = ["string_escape_fuzzer.cc"],
+)
 
-ADD http://oss-fuzz-corpus.storage.googleapis.com/libraw/libraw_cr2_fuzzer_seed_corpus.zip $SRC/
-ADD http://oss-fuzz-corpus.storage.googleapis.com/libraw/libraw_nef_fuzzer_seed_corpus.zip $SRC/
-ADD http://oss-fuzz-corpus.storage.googleapis.com/libraw/libraw_raf_fuzzer_seed_corpus.zip $SRC/
-
-COPY build.sh libraw_fuzzer.cc $SRC/
+cc_binary(
+	name = "string_utilities_fuzzer",
+	deps = [
+		"@com_google_absl//absl/strings",
+		"@com_google_absl//absl/strings:cord"
+		],
+	srcs = ["string_utilities_fuzzer.cc"],
+)
