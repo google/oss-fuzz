@@ -46,6 +46,8 @@ def main():
       The path to the file containing the POST payload of the webhook:
       https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners#filesystems-on-github-hosted-runners
     GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
+    DRY_RUN: If true, no failures will surface.
+    SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
     0 on success or 1 on Failure.
@@ -55,6 +57,7 @@ def main():
   commit_sha = os.environ.get('GITHUB_SHA')
   event = os.environ.get('GITHUB_EVENT_NAME')
   workspace = os.environ.get('GITHUB_WORKSPACE')
+  sanitizer = os.environ.get('SANITIZER').lower()
 
   # Check if failures should not be reported.
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
@@ -69,24 +72,31 @@ def main():
     logging.error('This script needs to be run in the Github action context.')
     return returncode
 
-  if event == 'push' and not cifuzz.build_fuzzers(
-      oss_fuzz_project_name, github_repo_name, workspace,
-      commit_sha=commit_sha):
+  if event == 'push' and not cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                                  github_repo_name,
+                                                  workspace,
+                                                  commit_sha=commit_sha,
+                                                  sanitizer=sanitizer):
     logging.error('Error building fuzzers for project %s with commit %s.',
                   oss_fuzz_project_name, commit_sha)
     return returncode
+
   if event == 'pull_request':
     with open(os.environ.get('GITHUB_EVENT_PATH'), encoding='utf-8') as file:
       event = json.load(file)
       pr_ref = 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
-      if not cifuzz.build_fuzzers(
-          oss_fuzz_project_name, github_repo_name, workspace, pr_ref=pr_ref):
+      if not cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                  github_repo_name,
+                                  workspace,
+                                  pr_ref=pr_ref,
+                                  sanitizer=sanitizer):
         logging.error(
             'Error building fuzzers for project %s with pull request %s.',
             oss_fuzz_project_name, pr_ref)
         return returncode
+
   out_dir = os.path.join(workspace, 'out')
-  if cifuzz.check_fuzzer_build(out_dir):
+  if cifuzz.check_fuzzer_build(out_dir, sanitizer=sanitizer):
     return 0
   return returncode
 

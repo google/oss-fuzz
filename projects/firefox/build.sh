@@ -24,6 +24,7 @@ FUZZ_TARGETS=(
   ContentParentIPC
   CompositorManagerParentIPC
   ContentSecurityPolicyParser
+  FeaturePolicyParser
   # Image
   ImageGIF
   ImageICO
