@@ -20,4 +20,5 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/lvandeve/lodepng.git lodepng     # or use other version control
 WORKDIR lodepng
 ADD http://oss-fuzz-corpus.storage.googleapis.com/lodepng/lodepng_fuzzer_seed_corpus.zip $SRC/
-COPY build.sh lodepng_fuzzer.dict $SRC/
+ADD https://raw.githubusercontent.com/google/AFL/master/dictionaries/png.dict $SRC/lodepng_fuzzer.dict
+COPY build.sh $SRC/
