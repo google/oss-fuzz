@@ -68,5 +68,25 @@ for bazel_target in ${FUZZERS}; do
   cp ${bazel_location} ${OUT}/$fuzz_name
 done
 
+# For coverage, we need to remap source files to correspond to the Bazel build
+# paths. We also need to resolve all symlinks that Bazel creates.
+if [ "$SANITIZER" = "coverage" ]
+then
+  declare -r RSYNC_CMD="rsync -avLkR"
+  declare -r REMAP_PATH=${OUT}/proc/self/cwd/
+  mkdir -p ${REMAP_PATH}
+
+  # Sync existing code.
+  ${RSYNC_CMD} tensorflow/ ${REMAP_PATH}
+
+  # Sync generated proto files.
+  ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/core/protobuf ${REMAP_PATH}
+
+  # Sync external dependencies. We don't need to include `bazel-tensorflow`.
+  pushd bazel-tensorflow
+  ${RSYNC_CMD} external/ ${REMAP_PATH}
+  popd
+fi
+
 # Finally, make sure we don't accidentally run with stuff from the bazel cache.
 rm -f bazel-*
