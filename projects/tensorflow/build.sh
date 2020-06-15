@@ -65,7 +65,7 @@ for bazel_target in ${FUZZERS}; do
   colon_index=$(expr index "${bazel_target}" ":")
   fuzz_name="${bazel_target:$colon_index}"
   bazel_location="bazel-bin/${bazel_target/:/\/}"
-  mv ${bazel_location} ${OUT}/$fuzz_name
+  cp ${bazel_location} ${OUT}/$fuzz_name
 done
 
 # Finally, make sure we don't accidentally run with stuff from the bazel cache.
