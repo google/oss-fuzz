@@ -26,13 +26,18 @@ yes "" | ${PYTHON} configure.py
 #
 # Note: Make sure that by this line `$CFLAGS` and `$CXXFLAGS` are properly set
 # up as further changes to them won't be visible to Bazel.
+#
+# Note: We remove the `-stdlib=libc++` flag as Bazel produces linker errors if
+# it is present.
 declare -r EXTRA_FLAGS="\
 $(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"
 done
 for f in ${CXXFLAGS}; do
-  echo "--cxxopt=${f}" "--linkopt=${f}"
+  if [[ "$f" != "-stdlib=libc++" ]]; then
+    echo "--cxxopt=${f}" "--linkopt=${f}"
+  fi
 done
 )"
 
