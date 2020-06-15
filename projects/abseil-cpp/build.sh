@@ -62,9 +62,7 @@ then
   rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
   rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
 
-  cp "string_escape_fuzzer.cc" "${OUT}/proc/self/cwd"
-  cp "string_utilities_fuzzer.cc" "${OUT}/proc/self/cwd"
+  cp *fuzzer.cc "${OUT}/proc/self/cwd"
 fi
 
-cp "./bazel-bin/string_escape_fuzzer" "${OUT}/"
-cp "./bazel-bin/string_utilities_fuzzer" "${OUT}/" 
+cp "./bazel-bin/"*fuzzer "${OUT}/"
