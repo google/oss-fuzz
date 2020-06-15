@@ -30,31 +30,21 @@ then
 fi
 )"
 
-bazel build \
-	--dynamic_mode=off \
-	--spawn_strategy=standalone \
-	--genrule_strategy=standalone \
-	--strip=never \
-	--linkopt=-lc++ \
-	--linkopt=-pthread \
-	--copt=${LIB_FUZZING_ENGINE} \
-	--linkopt=${LIB_FUZZING_ENGINE} \
-	${EXTRA_BAZEL_FLAGS} \
-	string_escape_fuzzer \
-	--verbose_failures
+declare FUZZ_TARGETS=("string_escape_fuzzer" "string_utilities_fuzzer")
 
 bazel build \
+	--verbose_failures \
 	--dynamic_mode=off \
 	--spawn_strategy=standalone \
 	--genrule_strategy=standalone \
 	--strip=never \
-	--linkopt=-lc++ \
 	--linkopt=-pthread \
 	--copt=${LIB_FUZZING_ENGINE} \
 	--linkopt=${LIB_FUZZING_ENGINE} \
+	--linkopt=-lc++ \
 	${EXTRA_BAZEL_FLAGS} \
-	string_utilities_fuzzer \
-	--verbose_failures
+	${FUZZ_TARGETS[*]}
+
 
 if [ "$SANITIZER" = "coverage" ]
 then
@@ -77,4 +67,4 @@ then
 fi
 
 cp "./bazel-bin/string_escape_fuzzer" "${OUT}/"
-cp "./bazel-bin/string_utilities_fuzzer" "${OUT}/"
+cp "./bazel-bin/string_utilities_fuzzer" "${OUT}/" 

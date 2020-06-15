@@ -16,14 +16,12 @@
 
 cc_binary(
 	name = "string_escape_fuzzer",
-	linkopts = ["-fsanitize=fuzzer"],
 	deps = ["@com_google_absl//absl/strings"],
 	srcs = ["string_escape_fuzzer.cc"],
 )
 
 cc_binary(
 	name = "string_utilities_fuzzer",
-	linkopts = ["-fsanitize=fuzzer"],
 	deps = [
 		"@com_google_absl//absl/strings",
 		"@com_google_absl//absl/strings:cord"
