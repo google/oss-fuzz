@@ -43,7 +43,7 @@ done
 
 # Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
 # supported fuzzers are in `//tensorflow/security/fuzzing`.
-declare -r FUZZERS=$(bazel query 'tests(//tensorflow/security/fuzzing/...)' | tail -n1)
+declare -r FUZZERS=$(bazel query 'tests(//tensorflow/security/fuzzing/...)' | grep -v identity)
 
 # Build the fuzzer targets.
 # Pass in `--verbose_failures` so it is easy to debug compile crashes.
