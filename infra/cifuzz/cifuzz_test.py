@@ -514,6 +514,9 @@ class IsProjectSanitizerUnitTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
+    self.fake_project = 'fake_project'
+    self.project_yaml = os.path.join(OSS_FUZZ_DIR, 'projects',
+                                     self.fake_project, 'project.yaml')
 
   def test_valid_project_curl(self):
     """Test if sanitizers can be detected from project.yaml"""
@@ -541,15 +544,25 @@ class IsProjectSanitizerUnitTest(fake_filesystem_unittest.TestCase):
   def test_no_specified_sanitizers(self):
     """Tests is_project_sanitizer returns True for any fuzzer if non are
     specified."""
-    fake_project = 'fake_project'
-    project_yaml = os.path.join(OSS_FUZZ_DIR, 'projects', fake_project,
-                                'project.yaml')
     contents = 'homepage: "https://my-api.example.com'
-    self.fs.create_file(project_yaml, contents=contents)
-    self.assertTrue(cifuzz.is_project_sanitizer('address', fake_project))
-    self.assertTrue(cifuzz.is_project_sanitizer('undefined', fake_project))
-    self.assertFalse(cifuzz.is_project_sanitizer('memory', fake_project))
-    self.assertFalse(cifuzz.is_project_sanitizer('fake', fake_project))
+    self.fs.create_file(self.project_yaml, contents=contents)
+    self.assertTrue(cifuzz.is_project_sanitizer('address', self.fake_project))
+    self.assertTrue(cifuzz.is_project_sanitizer('undefined', self.fake_project))
+    self.assertFalse(cifuzz.is_project_sanitizer('memory', self.fake_project))
+    self.assertFalse(cifuzz.is_project_sanitizer('fake', self.fake_project))
+
+  def test_experimental_sanitizer(self):
+    """Tests that experimental sanitizers are handled properly."""
+    contents = ('homepage: "https://my-api.example.com\n'
+                'sanitizers:\n'
+                'memory:\n'
+                'experimental: True\n'
+                '- address')
+    self.fs.create_file(self.project_yaml, contents=contents)
+    self.assertTrue(cifuzz.is_project_sanitizer('address', self.fake_project))
+    self.assertFalse(cifuzz.is_project_sanitizer('undefined',
+                                                 self.fake_project))
+    self.assertTrue(cifuzz.is_project_sanitizer('memory', self.fake_project))
 
 
 @unittest.skip('Test is too long to be run with presubmit.')

@@ -531,6 +531,7 @@ def is_project_sanitizer(sanitizer, oss_fuzz_project_name):
     logging.info('No sanitizers defined in project.yaml. '
                  'Only allowing address and undefined')
     return sanitizer in {'address', 'undefined'}
-  if sanitizer + '\n' in file_data:
+
+  if sanitizer in file_data:
     return True
   return False
