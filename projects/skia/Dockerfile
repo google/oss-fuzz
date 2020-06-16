@@ -80,7 +80,6 @@ COPY build.sh $SRC/
 COPY skia.diff $SRC/skia/skia.diff
 RUN git apply skia.diff
 
-COPY image_filter_deserialize.options $SRC/skia/image_filter_deserialize.options
 COPY image_filter_deserialize_width.options $SRC/skia/image_filter_deserialize_width.options
 
 COPY json.dict $SRC/skia/json.dict

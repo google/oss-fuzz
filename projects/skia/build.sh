@@ -135,7 +135,6 @@ cp out/Fuzz/animated_image_decode $OUT/animated_image_decode
 cp ./animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpus.zip
 
 cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize
-cp ./image_filter_deserialize.options $OUT/image_filter_deserialize.options
 cp ./image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
 
 # Only create the width version of image_filter_deserialize if building with
