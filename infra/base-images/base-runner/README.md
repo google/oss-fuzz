@@ -1,5 +1,5 @@
 # base-runner
-> Base image for fuzzer runners.
+> Base image for fuzzer runners:
 
 ```bash
 docker run -ti gcr.io/oss-fuzz-base/base-runner <command> <args>
