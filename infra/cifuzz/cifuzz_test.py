@@ -530,8 +530,8 @@ class IsProjectSanitizerUnitTest(fake_filesystem_unittest.TestCase):
     """Test if sanitizers can be detected from project.yaml"""
     self.fs.add_real_directory(OSS_FUZZ_DIR)
     self.assertFalse(cifuzz.is_project_sanitizer('memory', 'example'))
-    self.assertFalse(cifuzz.is_project_sanitizer('address', 'example'))
-    self.assertFalse(cifuzz.is_project_sanitizer('undefined', 'example'))
+    self.assertTrue(cifuzz.is_project_sanitizer('address', 'example'))
+    self.assertTrue(cifuzz.is_project_sanitizer('undefined', 'example'))
     self.assertFalse(cifuzz.is_project_sanitizer('not-a-san', 'example'))
 
   def test_invalid_project(self):
