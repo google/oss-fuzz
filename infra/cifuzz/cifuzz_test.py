@@ -546,7 +546,10 @@ class IsProjectSanitizerUnitTest(fake_filesystem_unittest.TestCase):
                                 'project.yaml')
     contents = 'homepage: "https://my-api.example.com'
     self.fs.create_file(project_yaml, contents=contents)
-    self.assertTrue(cifuzz.is_project_sanitizer('memory', fake_project))
+    self.assertTrue(cifuzz.is_project_sanitizer('address', fake_project))
+    self.assertTrue(cifuzz.is_project_sanitizer('undefined', fake_project))
+    self.assertFalse(cifuzz.is_project_sanitizer('memory', fake_project))
+    self.assertFalse(cifuzz.is_project_sanitizer('fake', fake_project))
 
 
 @unittest.skip('Test is too long to be run with presubmit.')
