@@ -102,6 +102,7 @@ a [matrix](https://help.github.com/en/actions/reference/workflow-syntax-for-gith
 can be used. To use a sanitizer add it to the list of sanitizers in the matrix field below:
 
 ```yaml
+{% raw %}
 name: CIFuzz
 on: [pull_request]
 jobs:
@@ -132,6 +133,7 @@ jobs:
      with:
        name: ${{ matrix.sanitizer }}-artifacts
        path: ./out/artifacts
+{% endraw %}
 ```
 
 ## Understanding results
