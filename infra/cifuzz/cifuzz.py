@@ -524,6 +524,13 @@ def is_project_sanitizer(sanitizer, oss_fuzz_project_name):
 
   # Simple parse to prevent adding pyYAML dependency.
   with open(project_yaml, 'r') as file_handle:
-    if sanitizer + '\n' in file_handle.read():
-      return True
+    file_data = file_handle.read()
+
+  # TODO(metzman): Replace this with proper handling of project.yaml files.
+  if 'sanitizers:\n' not in file_data:
+    logging.info('No sanitizers defined in project.yaml, assuming %s is valid.',
+                 sanitizer)
+    return True
+  if sanitizer + '\n' in file_data:
+    return True
   return False
