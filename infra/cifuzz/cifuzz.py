@@ -528,8 +528,8 @@ def is_project_sanitizer(sanitizer, oss_fuzz_project_name):
 
   # TODO(metzman): Replace this with proper handling of project.yaml files.
   if 'sanitizers:\n' not in file_data:
-    logging.info('No sanitizers defined in project.yaml.',
-                 sanitizer)
+    logging.info('No sanitizers defined in project.yaml. '
+                 'Only allowing address and undefined')
     return sanitizer in {'address', 'undefined'}
   if sanitizer + '\n' in file_data:
     return True
