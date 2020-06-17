@@ -27,17 +27,13 @@ yes "" | ${PYTHON} configure.py
 # Note: Make sure that by this line `$CFLAGS` and `$CXXFLAGS` are properly set
 # up as further changes to them won't be visible to Bazel.
 #
-# Note: We remove the `-stdlib=libc++` flag as Bazel produces linker errors if
-# it is present.
 declare -r EXTRA_FLAGS="\
 $(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"
 done
 for f in ${CXXFLAGS}; do
-  if [[ "$f" != "-stdlib=libc++" ]]; then
     echo "--cxxopt=${f}" "--linkopt=${f}"
-  fi
 done
 )"
 
@@ -46,12 +42,14 @@ done
 declare -r FUZZERS=$(bazel query 'tests(//tensorflow/security/fuzzing/...)' | grep -v identity)
 
 # Build the fuzzer targets.
+# Pass in `--config=libc++` to link against libc++.
 # Pass in `--verbose_failures` so it is easy to debug compile crashes.
 # Pass in `--strip=never` to ensure coverage support.
 # Pass in `$LIB_FUZZING_ENGINE` to `--copt` and `--linkopt` to ensure we have a
 # `main` symbol defined (all these fuzzers build without a `main` and by default
 # `$CFLAGS` and `CXXFLAGS` compile with `-fsanitize=fuzzer-no-link`).
 bazel build \
+  --config=libc++ \
   ${EXTRA_FLAGS} \
   --verbose_failures \
   --strip=never \
