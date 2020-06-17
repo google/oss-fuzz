@@ -27,6 +27,10 @@ yes "" | ${PYTHON} configure.py
 # Note: Make sure that by this line `$CFLAGS` and `$CXXFLAGS` are properly set
 # up as further changes to them won't be visible to Bazel.
 #
+# Note: for builds using the undefined behavior sanitizer we need to link
+# `clang_rt` ubsan library. Since Bazel uses `clang` for linking instead of
+# `clang++`, we need to add the additional `--linkopt` flag.
+# See issue: https://github.com/bazelbuild/bazel/issues/8777
 declare -r EXTRA_FLAGS="\
 $(
 for f in ${CFLAGS}; do
@@ -35,6 +39,10 @@ done
 for f in ${CXXFLAGS}; do
     echo "--cxxopt=${f}" "--linkopt=${f}"
 done
+if [ "$SANITIZER" = "undefined" ]
+then
+  echo "--linkopt=$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)"
+fi
 )"
 
 # Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
