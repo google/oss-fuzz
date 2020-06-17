@@ -18,8 +18,8 @@
 # build project
 case "$SANITIZER" in
   "address") configure_flags="--enable-addrsan" ;;
-  "ubsan") configure_flags="--enable-ubsan" ;;
-  "undefined") configure_flags="" ;;
+  "undefined") configure_flags="--enable-ubsan" ;;
+  "*") configure_flags="" ;;
 esac
 
 $SRC/e2fsprogs/configure $configure_flags
