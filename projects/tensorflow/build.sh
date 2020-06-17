@@ -78,7 +78,7 @@ done
 # paths. We also need to resolve all symlinks that Bazel creates.
 if [ "$SANITIZER" = "coverage" ]
 then
-  declare -r RSYNC_CMD="rsync -avLkR"
+  declare -r RSYNC_CMD="rsync -aLkR"
   declare -r REMAP_PATH=${OUT}/proc/self/cwd/
   mkdir -p ${REMAP_PATH}
 
