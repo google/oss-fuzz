@@ -16,8 +16,14 @@
 ################################################################################
 
 # build project
-# $SRC/e2fsprogs/configure
-# make -j$(nproc) all
+case "$SANITIZER" in
+  "address") configure_flags="--enable-addrsan" ;;
+  "ubsan") configure_flags="--enable-ubsan" ;;
+  "undefined") configure_flags="" ;;
+esac
+
+$SRC/e2fsprogs/configure $configure_flags
+make -j$(nproc) all
 
 # build fuzzers
 for fuzzer in $(find $SRC/ -name '*_fuzzer.cc'); do

@@ -19,11 +19,9 @@ RUN apt-get install -y --allow-downgrades --allow-remove-essential --allow-chang
 RUN git clone --depth 1 https://github.com/tytso/e2fsprogs
 
 COPY build.sh $SRC/
+COPY ext2fs_combined_fuzzer.cc $SRC/
 COPY ext2fs_open_fuzzer.cc $SRC/
 COPY ext2fs_read_inode_bitmap_fuzzer.cc $SRC/
 COPY ext2fs_read_block_bitmap_fuzzer.cc $SRC/
 COPY ext2fs_check_directory_fuzzer.cc $SRC/
 WORKDIR $SRC/e2fsprogs
-
-RUN $SRC/e2fsprogs/configure
-RUN make -j`nproc` all
