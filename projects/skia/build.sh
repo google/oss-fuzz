@@ -24,7 +24,7 @@ mkdir build_swiftshader
 
 cd build_swiftshader
 if [ $SANITIZER == "coverage" ]; then
-  cmake ..
+  cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja"
 else
   if [ $SANITIZER == "address" ]; then
     CMAKE_SANITIZER="SWIFTSHADER_ASAN"
