@@ -26,7 +26,7 @@ $SRC/e2fsprogs/configure $configure_flags
 make -j$(nproc) all
 
 # build fuzzers
-for fuzzer in $(find $SRC/ -name '*_fuzzer.cc'); do
+for fuzzer in $(find $SRC/fuzz -name '*_fuzzer.cc'); do
   fuzzer_basename=$(basename -s .cc $fuzzer)
   $CXX $CXXFLAGS \
     $LIB_FUZZING_ENGINE \
