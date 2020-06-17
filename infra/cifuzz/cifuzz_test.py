@@ -108,13 +108,13 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_project_name(self):
     """Test building fuzzers with invalid project name."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertFalse(
-          cifuzz.build_fuzzers(
-              'not_a_valid_project',
-              'oss-fuzz',
-              tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+    with tempfile.TemporaryDirectory() as tmp_dir, self.assertRaises(
+        ValueError):
+      cifuzz.build_fuzzers(
+          'not_a_valid_project',
+          'oss-fuzz',
+          tmp_dir,
+          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
 
   def test_invalid_repo_name(self):
     """Test building fuzzers with invalid repo name."""
