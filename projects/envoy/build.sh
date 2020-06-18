@@ -72,6 +72,7 @@ done
 
 # Build driverless libraries.
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
+  --discard_analysis_cache --notrack_incremental_state --nokeep_state_after_build \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
