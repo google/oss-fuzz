@@ -22,7 +22,7 @@ BUILDS=(floating fixed)
 tar xvf $SRC/opus_testvectors.tar.gz
 
 if [[ $CFLAGS = *sanitize=memory* ]]; then
-  extra_c_flags="-D_FORTIFY_SOURCE=0"
+  CFLAGS+="-D_FORTIFY_SOURCE=0"
 fi
 
 ./autogen.sh
@@ -37,9 +37,7 @@ for build in "${BUILDS[@]}"; do
       ;;
   esac
 
-  ./configure \
-    CFLAGS="${extra_c_flags}" $extra_args \
-    --enable-static --disable-shared --disable-doc
+  ./configure $extra_args --enable-static --disable-shared --disable-doc
   make -j$(nproc)
 
   # Build all fuzzers
