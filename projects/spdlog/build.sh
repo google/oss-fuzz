@@ -25,6 +25,3 @@ for f in $(find $SRC -name '*_fuzzer.cc'); do
     $f $LIB_FUZZING_ENGINE ./libspdlog.a \
     -o $OUT/$b
 done
-
-cp $SRC/spdlog_fuzzer_seed_corpus.zip $OUT/
-cp $SRC/*.dict $SRC/*.options $OUT/

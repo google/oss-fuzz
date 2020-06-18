@@ -30,27 +30,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-
   FuzzedDataProvider stream(data, size);
 
-  const unsigned long size_arg = stream.ConsumeIntegral<unsigned long>();
-  const unsigned long int_arg = stream.ConsumeIntegral<unsigned long>();
+  const size_t size_arg = stream.ConsumeIntegral<size_t>();
+  const int int_arg = stream.ConsumeIntegral<int>();
   const std::string string_arg = stream.ConsumeRandomLengthString(size);
   const std::string format_string = stream.ConsumeRemainingBytesAsString();
-
   spdlog::info(format_string.c_str(), size_arg, int_arg, string_arg);
-  spdlog::trace(format_string.c_str(), size_arg, int_arg, string_arg);
-  spdlog::debug(format_string.c_str(), size_arg, int_arg, string_arg);
-  spdlog::error(format_string.c_str(), size_arg, int_arg, string_arg);
-  spdlog::warn(format_string.c_str(), size_arg, int_arg, string_arg);
-  spdlog::critical(format_string.c_str(), size_arg, int_arg, string_arg);
-
-  SPDLOG_INFO(format_string.c_str(), size_arg, int_arg, string_arg);
-  SPDLOG_TRACE(format_string.c_str(), size_arg, int_arg, string_arg);
-  SPDLOG_DEBUG(format_string.c_str(), size_arg, int_arg, string_arg);
-  SPDLOG_ERROR(format_string.c_str(), size_arg, int_arg, string_arg);
-  SPDLOG_WARN(format_string.c_str(), size_arg, int_arg, string_arg);
-  SPDLOG_CRITICAL(format_string.c_str(), size_arg, int_arg, string_arg);
 
   return 0;
 }
