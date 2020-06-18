@@ -22,7 +22,7 @@ BUILDS=(floating fixed)
 tar xvf $SRC/opus_testvectors.tar.gz
 
 if [[ $CFLAGS = *sanitize=memory* ]]; then
-  CFLAGS+="-D_FORTIFY_SOURCE=0"
+  CFLAGS+=" -D_FORTIFY_SOURCE=0"
 fi
 
 ./autogen.sh
