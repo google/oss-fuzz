@@ -10,7 +10,7 @@ permalink: /getting-started/continuous-integration/
 
 OSS-Fuzz offers **CIFuzz**, which will run your fuzz targets each time a pull request
 is submitted, for projects hosted on GitHub. This allows you to detect and
-fix bugs before they make it into your codebase
+fix bugs before they make it into your codebase.
 
 ## How it works
 
