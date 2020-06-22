@@ -15,6 +15,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <fuzzer/FuzzedDataProvider.h>
 
 #include "ext2fs/ext2fs.h"
 
@@ -22,11 +23,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   static const char* pattern = "/dev/shm/ext2XXXXXX";
   int fd;
   char* fname;
+  FuzzedDataProvider stream(data, size);
+  const unsigned int fuzz_target = stream.ConsumeIntegral<unsigned int>() % 2;
 
   // Write our data to a temp file.
   fname = strdup(pattern);
   fd = mkstemp(fname);
-  write(fd, data, size);
+  std::vector<char> data_ = stream.ConsumeRemainingBytes<char>();
+  write(fd, data_.data(), data_.size());
   close(fd);
 
   ext2_filsys fs;
@@ -37,8 +41,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       &fs);
 
   if (!retval) {
-    void *buf;
-    retval = ext2fs_write_dir_block3(fs, 0, buf, 0);
+    switch (fuzz_target) {
+      case 0: {
+        ext2fs_read_block_bitmap(fs);
+        break;
+      }
+      case 1: {
+        ext2fs_read_inode_bitmap(fs);
+        break;
+      }
+      default: {
+        return 0;
+      }
+    }
     ext2fs_close(fs);
   }
 
