@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-cmake -Dsctp_build_programs=0 -Dsctp_debug=0 -Dsctp_invariants=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo .
+cmake -Dsctp_build_programs=0 -Dsctp_debug=0 -Dsctp_invariants=1 -Dsctp_build_fuzzer=1 -DCMAKE_BUILD_TYPE=RelWithDebInfo .
 make -j$(nproc)
 cd fuzzer
 
