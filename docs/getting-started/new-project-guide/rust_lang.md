@@ -32,8 +32,8 @@ quite easy to run the fuzzers locally yourself if you get a failing test case!
 First you'll want to follow the [setup instructions for `cargo fuzz`
 itself](https://rust-fuzz.github.io/book/). Afterwards your project should have:
 
-* A top-level `fuzz` directory
-* A `fuzz/Cargo.toml` manifest which pulls in necessary dependencies to fuzz
+* A top-level `fuzz` directory.
+* A `fuzz/Cargo.toml` manifest which pulls in necessary dependencies to fuzz.
 * Some `fuzz/fuzz_targets/*.rs` files which are the fuzz targets that will be
   compiled and run on OSS-Fuzz.
 
