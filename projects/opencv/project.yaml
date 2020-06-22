@@ -1,4 +1,5 @@
 homepage: "https://opencv.org/"
+language: c++
 primary_contact: "garybradski@gmail.com"
 
 auto_ccs:

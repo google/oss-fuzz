@@ -1,7 +1,9 @@
 homepage: https://github.com/hercules-team/augeas
+language: c++
 primary_contact: lutter@watzmann.net
 auto_ccs:
   - hhan@redhat.com
+  - adam@adalogics.com
 sanitizers:
   - address
   - undefined

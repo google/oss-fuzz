@@ -27,4 +27,4 @@ RUN git clone https://www.cl.cam.ac.uk/~mgk25/git/jbigkit jbigkit
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo libjpeg-turbo
 RUN git clone --depth 1 https://github.com/facebook/zstd zstd
 WORKDIR leptonica
-COPY build.sh pix_rotate_shear_fuzzer.cc $SRC/
+COPY build.sh $SRC/

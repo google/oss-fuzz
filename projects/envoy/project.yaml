@@ -1,4 +1,5 @@
 homepage: "https://www.envoyproxy.io/"
+language: c++
 primary_contact: "htuch@google.com"
 auto_ccs:
   - "mattklein123@gmail.com"
@@ -10,4 +11,13 @@ auto_ccs:
   - "envoy-security@googlegroups.com"
   - "yavlasov@google.com"
   - "asraa@google.com"
+  - "adip@google.com"
+  - "avd@google.com"
+  - "akonradi@google.com"
+  - "liebchen@google.com"
+  - "samflattery@google.com"
+  - "jianwendong@google.com"
+  - "skerner@google.com"
+  - "arthuryan@google.com"
+  - "rdsmith@google.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*

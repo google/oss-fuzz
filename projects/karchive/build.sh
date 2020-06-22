@@ -69,7 +69,7 @@ sed -i -e "s/DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH/DEFINES += QT_NO_USI
 ./configure --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v
 cd src
 ../bin/qmake -o Makefile src.pro
-make sub-corelib -j$(nproc)
+make sub-corelib sub-rcc -j$(nproc)
 
 # Build karchive
 cd $SRC

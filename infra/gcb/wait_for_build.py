@@ -16,9 +16,17 @@ POLL_INTERVAL = 15
 cloudbuild = None
 
 
+def _print(msg):
+  # Print helper writing to stdout and instantly flushing it to ensure the
+  # output is visible in Jenkins console viewer as soon as possible.
+  sys.stdout.write(msg)
+  sys.stdout.write('\n')
+  sys.stdout.flush()
+
+
 def get_build(build_id, cloudbuild, project):
-  return cloudbuild.projects().builds().get(
-      projectId=project, id=build_id).execute()
+  return cloudbuild.projects().builds().get(projectId=project,
+                                            id=build_id).execute()
 
 
 def wait_for_build(build_id, project):
@@ -36,8 +44,7 @@ def wait_for_build(build_id, project):
 
     current_status = build_info['status']
     if current_status != status:
-      print datetime.datetime.now(), current_status
-      sys.stdout.flush()
+      _print('%s %s' % (str(datetime.datetime.now()), current_status))
     status = current_status
     if status in DONE_STATUSES:
       return status == 'SUCCESS'
@@ -49,8 +56,10 @@ def main():
   global cloudbuild
 
   parser = argparse.ArgumentParser(description='Wait for build to complete')
-  parser.add_argument(
-      '-p', '--project', help='Cloud Project', default='oss-fuzz')
+  parser.add_argument('-p',
+                      '--project',
+                      help='Cloud Project',
+                      default='oss-fuzz')
   parser.add_argument('build_id', help='The Container Builder build ID.')
 
   args = parser.parse_args()
@@ -58,9 +67,14 @@ def main():
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
 
-  success = wait_for_build(args.build_id, args.project)
+  if wait_for_build(args.build_id, args.project):
+    return
 
-  if not success:
+  _print('The build failed. Retrying the same build one more time.')
+  retry_info = cloudbuild.projects().builds().retry(projectId=args.project,
+                                                    id=args.build_id).execute()
+  new_build_id = retry_info['metadata']['build']['id']
+  if not wait_for_build(new_build_id, args.project):
     sys.exit(1)
 
 

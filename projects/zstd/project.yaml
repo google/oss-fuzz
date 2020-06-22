@@ -1,4 +1,5 @@
 homepage: "http://facebook.github.io/zstd/"
+language: c++
 primary_contact: "terrelln@fb.com"
 auto_ccs:
   - "NickRTerrell@gmail.com"
@@ -7,10 +8,13 @@ auto_ccs:
   - "felixh@fb.com"
   - "dpc@fb.com"
   - "bimbashrestha@fb.com"
+  - "mhl@fb.com"
+  - "reed@fb.com"
 fuzzing_engines:
   - libfuzzer
   - afl
   - dataflow
+  - honggfuzz
 sanitizers:
   - address
   - dataflow

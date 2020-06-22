@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# Build LPM
-(mkdir LPM && cd LPM && cmake $SRC/libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
-
 # Instrument mruby
 (
 cd $SRC/mruby

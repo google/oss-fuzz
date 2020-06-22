@@ -15,49 +15,43 @@
 #
 ################################################################################
 
-pushd $SRC/Python-2.7.15/
-patch -p1 <<'EOF'
-Index: v2_7_unstable/Python/pymath.c
-===================================================================
---- v2_7_unstable.orig/Python/pymath.c
-+++ v2_7_unstable/Python/pymath.c
-@@ -18,6 +18,7 @@ double _Py_force_double(double x)
- /* inline assembly for getting and setting the 387 FPU control word on
-    gcc/x86 */
+# Ignore memory leaks from python scripts invoked in the build
+export ASAN_OPTIONS="detect_leaks=0"
+export MSAN_OPTIONS="halt_on_error=0:exitcode=0:report_umrs=0"
 
-+__attribute__((no_sanitize_memory))
- unsigned short _Py_get_387controlword(void) {
-     unsigned short cw;
-     __asm__ __volatile__ ("fnstcw %0" : "=m" (cw));
-Index: v2_7_unstable/Modules/_ctypes/callproc.c
-===================================================================
---- v2_7_unstable.orig/Modules/_ctypes/callproc.c
-+++ v2_7_unstable/Modules/_ctypes/callproc.c
-@@ -1166,6 +1166,10 @@ PyObject *_ctypes_callproc(PPROC pProc,
+# Remove -pthread from CFLAGS, this trips up ./configure
+# which thinks pthreads are available without any CLI flags
+CFLAGS=${CFLAGS//"-pthread"/}
 
-     rtype = _ctypes_get_ffi_type(restype);
-     resbuf = alloca(max(rtype->size, sizeof(ffi_arg)));
-+    /* ffi_call actually initializes resbuf, but from asm, which
-+     * MemorySanitizer can't detect. Avoid false positives from MSan. */
-+    if (resbuf != NULL)
-+        memset(resbuf, 0, max(rtype->size, sizeof(ffi_arg)));
+FLAGS=()
+case $SANITIZER in
+  address)
+    FLAGS+=("--with-address-sanitizer")
+    ;;
+  memory)
+    FLAGS+=("--with-memory-sanitizer")
+    # installing ensurepip takes a while with MSAN instrumentation, so
+    # we disable it here
+    FLAGS+=("--without-ensurepip")
+    ;;
+  undefined)
+    FLAGS+=("--with-undefined-behavior-sanitizer")
+    ;;
+esac
 
-     avalues = (void **)alloca(sizeof(void *) * argcount);
-     atypes = (ffi_type **)alloca(sizeof(ffi_type *) * argcount);
-EOF
-
+pushd $SRC/Python-3.8.3/
 if [ -e $OUT/sanpy/cflags -a "$(cat $OUT/sanpy/cflags)" = "${CFLAGS}" ] ; then
     echo 'Python cflags unchanged, no need to rebuild'
 else
     rm -rf $OUT/sanpy
-    ASAN_OPTIONS=detect_leaks=0 ./configure --without-pymalloc \
+    ./configure "${FLAGS[@]:-}" \
                 --prefix=$OUT/sanpy CFLAGS="${CFLAGS}" LINKCC="${CXX}" \
                 LDFLAGS="${CXXFLAGS}"
     grep -v HAVE_GETC_UNLOCKED < pyconfig.h > tmp && mv tmp pyconfig.h
-    ASAN_OPTIONS=detect_leaks=0 make && make install
+    make && make install
     echo "${CFLAGS}" > $OUT/sanpy/cflags
 fi
 popd
 
 cd contrib/fuzz
-make clean oss-fuzz
+make clean oss-fuzz PYTHON_CONFIG=$OUT/sanpy/bin/python3.8-config PYTHON_CONFIG_FLAGS="--ldflags --embed"

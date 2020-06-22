@@ -17,12 +17,15 @@
 
 ./bootstrap
 # FIXME FUZZING_LIBS="$LIB_FUZZING_ENGINE" fails with some missing C++ library, I don't know how to fix this
-./configure --disable-shared --disable-pcsc --enable-ctapi --enable-fuzzing FUZZING_LIBS="$LIB_FUZZING_ENGINE"
+./configure --disable-optimization --disable-shared --disable-pcsc --enable-ctapi --enable-fuzzing FUZZING_LIBS="$LIB_FUZZING_ENGINE"
 make -j4
 
-cp src/tests/fuzzing/fuzz_asn1_print $OUT
-cp src/tests/fuzzing/fuzz_asn1_sig_value $OUT
-cp src/tests/fuzzing/fuzz_pkcs15_decode $OUT
-cp src/tests/fuzzing/fuzz_pkcs15_reader $OUT
+fuzzerFiles=$(find $SRC/opensc/src/tests/fuzzing/ -name "fuzz_*.c")
 
-#cp src/tests/fuzzing/fuzz_pkcs15_reader.options $OUT
+for F in $fuzzerFiles; do
+    fuzzerName=$(basename $F .c)
+    cp "$SRC/opensc/src/tests/fuzzing/$fuzzerName" $OUT
+    if [ -d "$SRC/opensc/src/tests/fuzzing/corpus/${fuzzerName}" ]; then
+        zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/opensc/src/tests/fuzzing/corpus/${fuzzerName}/*
+    fi
+done

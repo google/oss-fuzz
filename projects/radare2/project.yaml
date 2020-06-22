@@ -1,4 +1,5 @@
 homepage: "https://github.com/radare/radare2"
+language: c++
 primary_contact: "pancake@nopcode.org"
 auto_ccs:
   - "zlowram@gmail.com"

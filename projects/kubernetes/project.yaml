@@ -1,0 +1,7 @@
+homepage: "https://kubernetes.io"
+primary_contact: "mikedanese@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+language: go

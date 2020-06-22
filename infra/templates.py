@@ -13,9 +13,11 @@
 # limitations under the License.
 #
 ################################################################################
+"""Templates for OSS-Fuzz project files."""
 
 PROJECT_YAML_TEMPLATE = """\
 homepage: "<your_project_homepage>"
+language: <programming_language>  # Example values: c, c++, go, rust.
 primary_contact: "<primary_contact_email>"
 """
 

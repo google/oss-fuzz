@@ -35,17 +35,9 @@ make clean
 make -j$(nproc) all
 make install
 
-cd $SRC/drm
-# Requires xutils-dev libpciaccess-dev
-./autogen.sh
-./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
-make clean
-make -j$(nproc)
-make install
-
 cd $SRC/fdk-aac
 autoreconf -fiv
-CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base" \
+CXXFLAGS="$CXXFLAGS -fno-sanitize=shift-base,signed-integer-overflow" \
 ./configure --prefix="$FFMPEG_DEPS_PATH" --disable-shared
 make clean
 make -j$(nproc) all
@@ -147,6 +139,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
     --enable-nonfree \
     --disable-muxers \
     --disable-protocols \
+    --disable-demuxer=rtp,rtsp,sdp \
     --disable-devices \
     --disable-shared
 make clean
@@ -157,8 +150,8 @@ make -j$(nproc) install
 # TODO: implement a better way to maintain a minimized seed corpora
 # for all targets. As of 2017-05-04 now the combined size of corpora
 # is too big for ClusterFuzz (over 10Gb compressed data).
-# export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
-# make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
+export TEST_SAMPLES_PATH=$SRC/ffmpeg/fate-suite/
+make fate-rsync SAMPLES=$TEST_SAMPLES_PATH
 
 # Build the fuzzers.
 cd $SRC/ffmpeg
@@ -167,6 +160,15 @@ FUZZ_TARGET_SOURCE=$SRC/ffmpeg/tools/target_dec_fuzzer.c
 
 export TEMP_VAR_CODEC="AV_CODEC_ID_H264"
 export TEMP_VAR_CODEC_TYPE="VIDEO"
+
+CONDITIONALS=`grep 'BSF 1$' config.h | sed 's/#define CONFIG_\(.*\)_BSF 1/\1/'`
+for c in $CONDITIONALS ; do
+  fuzzer_name=ffmpeg_BSF_${c}_fuzzer
+  symbol=`echo $c | sed "s/.*/\L\0/"`
+  echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
+  make tools/target_bsf_${symbol}_fuzzer
+  mv tools/target_bsf_${symbol}_fuzzer $OUT/${fuzzer_name}
+done
 
 # Build fuzzers for decoders.
 CONDITIONALS=`grep 'DECODER 1$' config.h | sed 's/#define CONFIG_\(.*\)_DECODER 1/\1/'`
@@ -183,6 +185,13 @@ fuzzer_name=ffmpeg_DEMUXER_fuzzer
 echo -en "[libfuzzer]\nmax_len = 1000000\n" > $OUT/${fuzzer_name}.options
 make tools/target_dem_fuzzer
 mv tools/target_dem_fuzzer $OUT/${fuzzer_name}
+
+# We do not need raw reference files for the muxer
+rm `find fate-suite -name '*.s16'`
+rm `find fate-suite -name '*.dec'`
+rm `find fate-suite -name '*.pcm'`
+
+zip -r $OUT/${fuzzer_name}_seed_corpus.zip fate-suite
 
 # Find relevant corpus in test samples and archive them for every fuzzer.
 #cd $SRC

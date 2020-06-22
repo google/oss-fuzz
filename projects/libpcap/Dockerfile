@@ -22,5 +22,4 @@ RUN git clone --depth 1 https://github.com/the-tcpdump-group/libpcap.git libpcap
 RUN git clone --depth=1 https://github.com/the-tcpdump-group/tcpdump.git tcpdump
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY patch.diff $SRC/
 

@@ -1,4 +1,5 @@
 homepage: "https://www.openssl.org/"
+language: c++
 primary_contact: "kurt@roeckx.be"
 auto_ccs: 
  - "openssl-security@openssl.org"

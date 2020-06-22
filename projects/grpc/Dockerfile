@@ -14,7 +14,9 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+# TODO(https://github.com/google/oss-fuzz/issues/3093): Stop specifying the
+# image SHA once the bug is fixed.
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:276813aef0ce5972db43c0230f96162003994fa742fb1b2f4e66c67498575c65
 MAINTAINER yangg@google.com
 
 RUN apt-get update && apt-get install -y software-properties-common python-software-properties

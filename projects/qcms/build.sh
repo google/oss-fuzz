@@ -17,11 +17,12 @@
 
 # moz.build
 $CC $CFLAGS -c \
-  -DNDEBUG -msse -msse2 -Wno-missing-field-initializers \
+  -DNDEBUG -mavx -msse -msse2 -Wno-missing-field-initializers \
   chain.c \
   iccread.c \
   matrix.c \
   transform.cpp \
+  transform-avx.cpp \
   transform-sse1.cpp \
   transform-sse2.cpp \
   transform_util.c

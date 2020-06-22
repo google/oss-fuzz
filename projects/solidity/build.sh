@@ -16,12 +16,12 @@
 ################################################################################
 
 # Compile proto C++ bindings
-protoc \
-    --proto_path=$SRC/solidity/test/tools/ossfuzz yulProto.proto \
-    --cpp_out=$SRC/solidity/test/tools/ossfuzz
-protoc \
-    --proto_path=$SRC/solidity/test/tools/ossfuzz abiV2Proto.proto \
-    --cpp_out=$SRC/solidity/test/tools/ossfuzz
+for protoName in yul abiV2 sol;
+do
+	protoc \
+	    --proto_path=$SRC/solidity/test/tools/ossfuzz "$protoName"Proto.proto \
+	    --cpp_out=$SRC/solidity/test/tools/ossfuzz
+done
 
 # Build solidity
 cd $SRC/solidity
@@ -39,10 +39,15 @@ make ossfuzz ossfuzz_proto ossfuzz_abiv2 -j $(nproc)
 # Copy fuzzer binary, seed corpus, fuzzer options, and dictionary
 cp test/tools/ossfuzz/*_ossfuzz $OUT/
 rm -f $OUT/*.zip
+
+# Update corpus
+cd $SRC/solidity-fuzzing-corpus
+git pull origin master
+
 for dir in $SRC/solidity-fuzzing-corpus/*;
 do
 	name=$(basename $dir)
-	zip -rjq $OUT/$name $dir
+	zip -rq $OUT/$name $dir
 done
 cp $SRC/solidity/test/tools/ossfuzz/config/*.options $OUT/
 cp $SRC/solidity/test/tools/ossfuzz/config/*.dict $OUT/

@@ -39,6 +39,9 @@ Before you can start setting up your new project for fuzzing, you must do the fo
   [docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)
   periodically to garbage-collect unused images.
 
+- (optional) [Install gsutil](https://cloud.google.com/storage/docs/gsutil_install) for local code coverage sanity check.
+  For Google internal (gLinux) machines, please refer [here](https://cloud.google.com/storage/docs/gsutil_install#deb) instead.
+
 ## Creating the file structure
 
 Each OSS-Fuzz project has a subdirectory
@@ -72,6 +75,7 @@ Once the template configuration files are created, you can modify them to fit yo
 This configuration file stores project metadata. The following attributes are supported:
 
 - [homepage](#homepage)
+- [language](#language)
 - [primary_contact](#primary)
 - [auto_ccs](#primary)
 - [vendor_ccs](#vendor) (optional)
@@ -81,6 +85,15 @@ This configuration file stores project metadata. The following attributes are su
 
 ### homepage
 You project's homepage.
+
+### language
+
+Programming language the project is written in. Values you can specify include:
+
+* `c`
+* `c++`
+* [`go`]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)
+* [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -107,7 +120,7 @@ runtime dependencies are listed in the OSS-Fuzz
 Then, you can opt in by adding "memory" to your list of sanitizers.
 
 If your project does not build with a particular sanitizer configuration and you need some time to fix
-it, you can use `sanitizers` to override the defaults temporarily. For example, to disable the 
+it, you can use `sanitizers` to override the defaults temporarily. For example, to disable the
 UndefinedBehaviourSanitizer build, just specify all supported sanitizers except "undefined".
 
 If you want to test a particular sanitizer to see what crashes it generates without filing
@@ -136,7 +149,7 @@ architectures:
  - x86_64
  - i386
  ```
- 
+
 By fuzzing on i386 you might find bugs that:
 * Only occur in architecture-specific source code (e.g. code that contains i386 assembly).
 * Exist in architecture-independent source code and which only affects i386 users.
@@ -186,7 +199,7 @@ In general, this script should do the following:
 - Build the project using your build system with the correct compiler.
 - Provide compiler flags as [environment variables](#Requirements).
 - Build your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) and link your project's build with libFuzzer.
-   
+
 Resulting binaries should be placed in `$OUT`.
 
 Here's an example from Expat ([source](https://github.com/google/oss-fuzz/blob/master/projects/expat/build.sh)):
@@ -210,9 +223,9 @@ cp $SRC/*.dict $SRC/*.options $OUT/
 
 If your project is written in Go, check out the [Integrating a Go project]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/) page.
 
-**Notes:**
+**Note:**
 
-1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for both libFuzzer and AFL fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
+1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for libFuzzer, AFL and Honggfuzz fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
 2. Make sure that the binary names for your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 3. Don't remove source code files. They are needed for code coverage.
@@ -258,7 +271,7 @@ See the [Provided Environment Variables](https://github.com/google/oss-fuzz/blob
 
 ## Disk space restrictions
 
-Our builders have a disk size of 70GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
+Our builders have a disk size of 250GB (this includes space taken up by the OS). Builds must keep peak disk usage below this.
 
 In addition, please keep the size of the build (everything copied to `$OUT`) small (<10GB uncompressed). The build is repeatedly transferred and unzipped during fuzzing and runs on VMs with limited disk space.
 
@@ -269,7 +282,7 @@ your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) run in, 
 
 ## Testing locally
 
-You can build your docker image and fuzz targets locally, so you can test them before you push them to the OSS-Fuzz repository. 
+You can build your docker image and fuzz targets locally, so you can test them before you push them to the OSS-Fuzz repository.
 
 1. Run the same helper script you used to create your directory structure, this time using it to build your docker image and [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target):
 
@@ -285,8 +298,8 @@ You can build your docker image and fuzz targets locally, so you can test them b
     **Note:** You *must* run your fuzz target binaries inside the base-runner docker
     container to make sure that they work properly.
 
-2. Find failures to fix by running the `check_build` command: 
-    
+2. Find failures to fix by running the `check_build` command:
+
     ```bash
     $ python infra/helper.py check_build $PROJECT_NAME
     ```
@@ -298,14 +311,9 @@ You can build your docker image and fuzz targets locally, so you can test them b
     ```
 
 4. We recommend taking a look at your code coverage as a sanity check to make sure that your
-fuzz targets get to the code you expect:
+fuzz targets get to the code you expect. Please refer to [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/).
 
-    ```bash
-    $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
-    $ python infra/helper.py coverage $PROJECT_NAME <fuzz_target>
-    ```
-
-**Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined) 
+**Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
 configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
 that all system dependencies are
 [instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).

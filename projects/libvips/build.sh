@@ -78,10 +78,12 @@ make -j$(nproc)
 make install
 popd
 
-# libtiff
+# libtiff ... a bug in libtiff master as of 20 Nov 2019 means we have to 
+# explicitly disable lzma
 pushd $SRC/libtiff
 autoreconf -fi
 ./configure \
+  --disable-lzma \
   --disable-shared \
   --disable-dependency-tracking \
   --prefix=$WORK
@@ -128,7 +130,7 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libtiff.a \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
-    -lfftw3 -lgmodule-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
+    -lfftw3 -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
     -Wl,-Bdynamic -pthread
   ln -sf "seed_corpus.zip" "$OUT/${target}_seed_corpus.zip"
 done

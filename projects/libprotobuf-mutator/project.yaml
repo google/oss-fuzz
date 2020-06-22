@@ -1,2 +1,4 @@
+homepage: "https://github.com/google/libprotobuf-mutator"
+language: c++
 auto_ccs:
   - "vitalybuka@chromium.org"

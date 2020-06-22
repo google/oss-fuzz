@@ -21,15 +21,23 @@ pushd $SRC/freetype2
 make -j$(nproc)
 make install
 
-mkdir -p $WORK/poppler
-pushd $WORK/poppler
-cmake $SRC/poppler \
+pushd $SRC/Little-CMS
+./configure --prefix="$WORK" --disable-shared PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
+make -j$(nproc)
+make install
+
+mkdir -p $SRC/openjpeg/build
+pushd $SRC/openjpeg/build
+cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$WORK
+make -j$(nproc) install
+
+mkdir -p $SRC/poppler/build
+pushd $SRC/poppler/build
+cmake .. \
   -DCMAKE_BUILD_TYPE=debug \
   -DBUILD_SHARED_LIBS=OFF \
   -DFONT_CONFIGURATION=generic \
   -DENABLE_DCTDECODER=none \
-  -DENABLE_LIBOPENJPEG=none \
-  -DENABLE_CMS=none \
   -DENABLE_LIBPNG=OFF \
   -DENABLE_ZLIB=OFF \
   -DENABLE_LIBTIFF=OFF \
@@ -40,15 +48,19 @@ cmake $SRC/poppler \
   -DENABLE_UTILS=OFF \
   -DWITH_Cairo=OFF \
   -DWITH_NSS3=OFF \
-  -DFREETYPE_INCLUDE_DIRS=$WORK/include/freetype2 \
-  -DFREETYPE_LIBRARY=$WORK/lib
+  -DCMAKE_INSTALL_PREFIX=$WORK
 make -j$(nproc) poppler poppler-cpp
 
 fuzz_target=pdf_fuzzer
 
 $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp \
     $SRC/fuzz/pdf_fuzzer.cc -o $OUT/$fuzz_target \
-    $LIB_FUZZING_ENGINE $WORK/poppler/cpp/libpoppler-cpp.a $WORK/poppler/libpoppler.a $WORK/lib/libfreetype.a
+    $LIB_FUZZING_ENGINE \
+    $SRC/poppler/build/cpp/libpoppler-cpp.a \
+    $SRC/poppler/build/libpoppler.a \
+    $WORK/lib/libfreetype.a \
+    $WORK/lib/liblcms2.a \
+    $WORK/lib/libopenjp2.a
 
 mv $SRC/{*.zip,*.dict} $OUT
 

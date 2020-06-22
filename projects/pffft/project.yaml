@@ -1,4 +1,5 @@
 homepage: "https://bitbucket.org/jpommier/pffft"
+language: c++
 primary_contact: "pommier@modartt.com"
 auto_ccs:
   - "alessiob@webrtc.org"
@@ -6,6 +7,7 @@ auto_ccs:
 fuzzing_engines:
   - libfuzzer
   - afl
+  - honggfuzz
   - dataflow
 sanitizers:
   - address

@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -euv
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,12 +27,14 @@ cmake -GNinja \
 
 ninja -v liblwan.a
 
-zip -jr $OUT/request_fuzzer_seed_corpus.zip $SRC/lwan/fuzz/corpus/corpus-request-*
-
 cp $SRC/lwan/fuzz/*.dict $OUT/
 
 for fuzzer in $SRC/lwan/src/bin/fuzz/*_fuzzer.cc; do
 	executable=$(basename $fuzzer .cc)
+	corpus_base=$(basename $fuzzer _fuzzer.cc)
+
+	zip -jr $OUT/${executable}_seed_corpus.zip $SRC/lwan/fuzz/corpus/corpus-${corpus_base}-*
+	
 	$CXX $CXXFLAGS -std=c++11 \
 		-Wl,-whole-archive $WORK/lwan/src/lib/liblwan.a -Wl,-no-whole-archive \
 		-I$SRC/lwan/src/lib $fuzzer \

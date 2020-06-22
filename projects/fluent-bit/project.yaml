@@ -1,0 +1,6 @@
+homepage: "https://github.com/fluent/fluent-bit"
+primary_contact: "edsiper@gmail.com"
+language: c++
+auto_ccs:
+  - "david@adalogics.com"
+  - "wppttt@amazon.com"

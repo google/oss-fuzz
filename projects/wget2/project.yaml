@@ -1,4 +1,5 @@
 homepage: "https://gitlab.com/gnuwget/wget2"
+language: c++
 primary_contact: "rockdaboot@gmail.com"
 auto_ccs:
   - "tim.ruehsen@gmx.de"

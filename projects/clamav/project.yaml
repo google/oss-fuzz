@@ -1,4 +1,5 @@
 homepage: "https://www.clamav.net/"
+language: c++
 primary_contact: "clamav.fuzz@gmail.com"
 auto_ccs:
     - clamav-bugs@external.cisco.com

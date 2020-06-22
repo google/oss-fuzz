@@ -1,4 +1,5 @@
 homepage: "https://libcoap.net/"
+language: c++
 primary_contact: "bergmann@tzi.org"
 auto_ccs:
     - "libcoap@gmail.com"

@@ -1,4 +1,5 @@
 homepage: "http://www.graphicsmagick.org/"
+language: c++
 primary_contact: "bobjfriesenhahn@gmail.com"
 auto_ccs:
     - troyjp@gmail.com
@@ -11,3 +12,7 @@ sanitizers:
 architectures:
     - x86_64
     - i386
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - afl

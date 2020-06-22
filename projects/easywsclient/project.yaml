@@ -1,0 +1,10 @@
+homepage: "https://github.com/dhbaird/easywsclient"
+language: c++
+primary_contact: "dhbaird@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386

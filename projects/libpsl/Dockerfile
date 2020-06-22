@@ -42,7 +42,7 @@ RUN git clone --depth=1 https://git.savannah.gnu.org/git/libunistring.git
 RUN git clone --depth=1 https://gitlab.com/libidn/libidn2.git && \
     rmdir libidn2/gnulib && ln -s $SRC/gnulib libidn2/gnulib
 RUN git clone --depth=1 https://git.savannah.gnu.org/git/libidn.git
-RUN wget http://download.icu-project.org/files/icu4c/59.1/icu4c-59_1-src.tgz && tar xvfz icu4c-59_1-src.tgz
+RUN wget https://github.com/unicode-org/icu/releases/download/release-59-2/icu4c-59_2-src.tgz && tar xvfz icu4c-59_2-src.tgz
 
 RUN git clone --depth=1 --recursive https://github.com/rockdaboot/libpsl.git
 

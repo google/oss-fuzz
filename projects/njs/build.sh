@@ -27,17 +27,9 @@ popd
 rm -rf build
 
 ./configure
-make njs
+make njs_fuzzer
 
-# build fuzzers
-# e.g.
-$CC $CFLAGS -Inxt -Ibuild -Isrc -c \
-    $SRC/njs_process_script_fuzzer.c -o build/njs_process_script_fuzzer.o
-
-$CXX $CXXFLAGS build/njs_process_script_fuzzer.o \
-    -o $OUT/njs_process_script_fuzzer \
-    $LIB_FUZZING_ENGINE build/libnjs.a \
-    $SRC/pcre/.libs/libpcre.a -lm -lreadline
+cp ./build/njs_process_script_fuzzer $OUT/
 
 SEED_CORPUS_PATH=$OUT/njs_process_script_fuzzer_seed_corpus
 mkdir -p $SEED_CORPUS_PATH

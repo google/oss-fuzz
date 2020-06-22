@@ -1,0 +1,16 @@
+homepage: "https://www.qemu.org/"
+language: c
+primary_contact: "alxndr@bu.edu"
+auto_ccs:
+  - "bsd@redhat.com"
+  - "pbonzini@redhat.com"
+  - "stefanha@redhat.com"
+  - "darren.kenny@oracle.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+architectures:
+  - x86_64

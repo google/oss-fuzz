@@ -1,4 +1,5 @@
 homepage: "https://aomedia.org/av1-features/get-started/"
+language: c++
 primary_contact: "urvang@google.com"
 sanitizers:
 - address
@@ -10,4 +11,4 @@ auto_ccs:
 - jzern@google.com
 - wtc@google.com
 vendor_ccs:
-- cdiehl@mozilla.com
+- twsmith@mozilla.com

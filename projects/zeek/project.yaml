@@ -1,0 +1,17 @@
+homepage: "https://www.zeek.org"
+language: c++
+primary_contact: "security@zeek.org"
+auto_ccs:
+  - "jsiwek@corelight.com"
+  - "robin@corelight.com"
+  - "johanna@corelight.com"
+  - "tim@corelight.com"
+  - "seth@corelight.com"
+  - "justin@corelight.com"
+  - "vern@corelight.com"
+  - "vlad@es.net"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+sanitizers:
+  - address

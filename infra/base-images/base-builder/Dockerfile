@@ -15,17 +15,52 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-clang
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y git \
-    subversion \
-    jq \
-    python3 \
-    zip \
-    make \
-    libunwind8-dev \
-    binutils-dev \
-    libblocksruntime-dev \
-    libc6-dev-i386
+
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:git-core/ppa && \
+    apt-get update && \
+    apt-get install -y \
+        binutils-dev \
+        build-essential \
+        curl \
+        git \
+        jq \
+        libc6-dev-i386 \
+        subversion \
+        zip
+
+# Install cmake.
+ENV CMAKE_VERSION 3.17.3
+RUN curl -L -O https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
+    chmod +x cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
+    ./cmake-$CMAKE_VERSION-Linux-x86_64.sh --skip-license --prefix="/usr/local" && \
+    rm cmake-$CMAKE_VERSION-Linux-x86_64.sh
+
+# Build and install latest Python 3 (3.8.3).
+ENV PYTHON_VERSION 3.8.3
+RUN export PYTHON_DEPS="\
+        zlib1g-dev \
+        libncurses5-dev \
+        libgdbm-dev \
+        libnss3-dev \
+        libssl-dev \
+        libsqlite3-dev \
+        libreadline-dev \
+        libffi-dev \
+        libbz2-dev \
+        liblzma-dev" && \
+    apt-get install -y $PYTHON_DEPS && \
+    cd /tmp/ && \
+    curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
+    tar -xvf Python-$PYTHON_VERSION.tar.xz && \
+    cd Python-$PYTHON_VERSION && \
+    ./configure --enable-optimizations && \
+    make -j install && \
+    cd .. && \
+    rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
+    apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
@@ -40,17 +75,22 @@ ENV GOPATH /root/go
 # $GOPATH/bin is for the binaries from the dependencies installed via "go get".
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
-# Dependency of go-fuzz.
-RUN go get golang.org/x/tools/go/packages
+# Uses golang 1.14+ cmd/compile's native libfuzzer instrumentation.
+RUN go get -u github.com/mdempsky/go114-fuzz-build && \
+    ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
 
-# go-fuzz-build is the tool that instruments Go files.
-RUN go get github.com/dvyukov/go-fuzz/go-fuzz-build
+# Install Rust and cargo-fuzz for libFuzzer instrumentation.
+ENV CARGO_HOME=/rust
+ENV RUSTUP_HOME=/rust/rustup
+ENV PATH=$PATH:/rust/bin
+RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+RUN cargo install cargo-fuzz
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
 
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
-ENV SANITIZER_FLAGS_undefined "-fsanitize=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,unsigned-integer-overflow,vla-bound,vptr -fno-sanitize-recover=bool,array-bounds,float-divide-by-zero,function,integer-divide-by-zero,return,shift,signed-integer-overflow,vla-bound,vptr"
+ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
 
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
@@ -63,6 +103,9 @@ ENV SANITIZER_FLAGS_coverage ""
 # suppress error messages. See https://github.com/google/oss-fuzz/issues/910.
 ENV UBSAN_OPTIONS="silence_unsigned_overflow=1"
 
+# To suppress warnings from binaries running during compilation.
+ENV DFSAN_OPTIONS='warn_unimplemented=0'
+
 # Default build flags for coverage feedback.
 ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 
@@ -71,7 +114,7 @@ ENV COVERAGE_FLAGS="-fsanitize=fuzzer-no-link"
 ENV COVERAGE_FLAGS_coverage "-fprofile-instr-generate -fcoverage-mapping -pthread -Wl,--no-as-needed -Wl,-ldl -Wl,-lm -Wno-unused-command-line-argument"
 
 # Coverage isntrumentation flags for dataflow builds.
-ENV COVERAGE_FLAGS_dataflow="-fsanitize-coverage=trace-pc-guard,pc-table,func,trace-cmp"
+ENV COVERAGE_FLAGS_dataflow="-fsanitize-coverage=trace-pc-guard,pc-table,bb,trace-cmp"
 
 # Default sanitizer, fuzzing engine and architecture to use.
 ENV SANITIZER="address"
@@ -91,6 +134,9 @@ ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 # TODO: remove after tpm2 catchup.
 ENV FUZZER_LDFLAGS ""
 
+ENV PRECOMPILED_DIR="/usr/lib/precompiled"
+RUN mkdir $PRECOMPILED_DIR
+
 WORKDIR $SRC
 
 RUN git clone -b stable https://github.com/google/AFL.git afl
@@ -102,6 +148,10 @@ RUN mkdir honggfuzz && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    srcmap write_labels.py /usr/local/bin/
+    precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
+
+COPY detect_repo.py /opt/cifuzz/
+
+RUN precompile_honggfuzz
 
 CMD ["compile"]

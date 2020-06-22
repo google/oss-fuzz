@@ -67,7 +67,8 @@ LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
 ./configure --with-nettle-mini --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
-    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --prefix=$WGET2_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
+    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite \
+    --prefix=$WGET2_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
 make -j$(nproc)
 make install
 

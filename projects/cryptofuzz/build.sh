@@ -60,6 +60,62 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
+# Compile NSS
+if [[ $CFLAGS != *-m32* ]]
+then
+    mkdir $SRC/nss-nspr
+    mv $SRC/nss $SRC/nss-nspr/
+    mv $SRC/nspr $SRC/nss-nspr/
+    cd $SRC/nss-nspr/
+
+    CXX="$CXX -stdlib=libc++" LDFLAGS="$CFLAGS" nss/build.sh --enable-fips --static --disable-tests --fuzz=oss
+
+    export NSS_NSPR_PATH=$(realpath $SRC/nss-nspr/)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NSS"
+    export LINK_FLAGS="$LINK_FLAGS -lsqlite3"
+
+    # Compile Cryptofuzz NSS module
+    cd $SRC/cryptofuzz/modules/nss
+    make -B
+fi
+
+
+# Compile libtomcrypt
+cd $SRC/libtomcrypt
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBTOMCRYPT"
+    export LIBTOMCRYPT_INCLUDE_PATH=$(realpath src/headers/)
+    export LIBTOMCRYPT_A_PATH=$(realpath libtomcrypt.a)
+
+    # Compile Cryptofuzz libtomcrypt module
+    cd $SRC/cryptofuzz/modules/libtomcrypt
+    make -B
+fi
+
+# Compile SymCrypt
+cd $SRC/SymCrypt/
+if [[ $CFLAGS != *sanitize=undefined* ]]
+then
+    # Unittests don't build with clang and are not needed anyway
+    sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
+
+    mkdir b/
+    cd b/
+    cmake ../
+    make -j$(nproc)
+
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SYMCRYPT"
+    export SYMCRYPT_INCLUDE_PATH=$(realpath ../inc/)
+    export LIBSYMCRYPT_COMMON_A_PATH=$(realpath lib/x86_64/Generic/libsymcrypt_common.a)
+    export SYMCRYPT_GENERIC_A_PATH=$(realpath lib/x86_64/Generic/symcrypt_generic.a)
+
+    # Compile Cryptofuzz SymCrypt module
+    cd $SRC/cryptofuzz/modules/symcrypt
+    make -B
+fi
+
 # Compile Cityhash
 cd $SRC/cityhash
 if [[ $CFLAGS != *-m32* ]]
@@ -74,20 +130,43 @@ export CXXFLAGS="$CXXFLAGS -I$SRC/cityhash/src"
 export CRYPTOFUZZ_REFERENCE_CITY_O_PATH="$SRC/cityhash/src/city.o"
 
 ##############################################################################
+# Compile cryptopp
+cd $SRC/cryptopp
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
-    # Compile cryptopp (with assembly)
-    cd $SRC/cryptopp
     make -j$(nproc) >/dev/null 2>&1
-
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
-    export LIBCRYPTOPP_A_PATH="$SRC/cryptopp/libcryptopp.a"
-    export CRYPTOPP_INCLUDE_PATH="$SRC/cryptopp"
-
-    # Compile Cryptofuzz cryptopp (with assembly) module
-    cd $SRC/cryptofuzz/modules/cryptopp
-    make -B
+else
+    CXXFLAGS="$CXXFLAGS -DCRYPTOPP_DISABLE_ASM=1" make -j$(nproc) >/dev/null 2>&1
 fi
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
+export LIBCRYPTOPP_A_PATH="$SRC/cryptopp/libcryptopp.a"
+export CRYPTOPP_INCLUDE_PATH="$SRC/cryptopp"
+
+# Compile Cryptofuzz cryptopp module
+cd $SRC/cryptofuzz/modules/cryptopp
+make -B
+
+##############################################################################
+# Compile mbed crypto
+cd $SRC/mbed-crypto/
+scripts/config.pl set MBEDTLS_PLATFORM_MEMORY
+if [[ $CFLAGS == *sanitize=memory* ]]
+then
+    scripts/config.pl unset MBEDTLS_HAVE_ASM
+    scripts/config.pl unset MBEDTLS_PADLOCK_C
+    scripts/config.pl unset MBEDTLS_AESNI_C
+fi
+mkdir build/
+cd build/
+cmake .. -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
+make -j$(nproc) >/dev/null 2>&1
+export MBEDTLS_LIBMBEDCRYPTO_A_PATH="$SRC/mbed-crypto/build/library/libmbedcrypto.a"
+export MBEDTLS_INCLUDE_PATH="$SRC/mbed-crypto/include"
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS"
+# Compile Cryptofuzz mbed crypto module
+cd $SRC/cryptofuzz/modules/mbedtls
+make -B
 
 ##############################################################################
 # Compile Botan
@@ -125,14 +204,14 @@ then
     make install
     export LINK_FLAGS="$LINK_FLAGS $SRC/libgpg-error-1.36/src/.libs/libgpg-error.a"
 
-    # Compile libgcrypt (with assembly)
+    # Compile libgcrypt
     cd $SRC/libgcrypt
     autoreconf -ivf
-    if [[ $CFLAGS != *-m32* ]]
+    if [[ $CFLAGS = *-m32* ]]
     then
-        ./configure --enable-static --disable-doc
-    else
         ./configure --enable-static --disable-doc --host=i386
+    else
+        ./configure --enable-static --disable-doc
     fi
     make -j$(nproc) >/dev/null 2>&1
 
@@ -140,33 +219,29 @@ then
     export LIBGCRYPT_A_PATH="$SRC/libgcrypt/src/.libs/libgcrypt.a"
     export LIBGCRYPT_INCLUDE_PATH="$SRC/libgcrypt/src"
 
-    # Compile Cryptofuzz libgcrypt (with assembly) module
+    # Compile Cryptofuzz libgcrypt module
     cd $SRC/cryptofuzz/modules/libgcrypt
     make -B
 fi
 
-##############################################################################
-# libsodium is currently disabled due to crashes whose cause
-# is not entirely clear.
-# It will be enabled again once the problem has been resolved.
-# See also: https://github.com/jedisct1/libsodium/issues/859
-#
-#if [[ $CFLAGS != *sanitize=memory* ]]
-#then
-#    # Compile libsodium (with assembly)
-#    cd $SRC/libsodium
-#    autoreconf -ivf
-#    ./configure
-#    make -j$(nproc) >/dev/null 2>&1
-#
-#    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
-#    export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
-#    export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
-#
-#    # Compile Cryptofuzz libsodium (with assembly) module
-#    cd $SRC/cryptofuzz/modules/libsodium
-#    make -B
-#fi
+# Compile libsodium
+cd $SRC/libsodium
+autoreconf -ivf
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    ./configure
+else
+    ./configure --disable-asm
+fi
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBSODIUM"
+export LIBSODIUM_A_PATH="$SRC/libsodium/src/libsodium/.libs/libsodium.a"
+export LIBSODIUM_INCLUDE_PATH="$SRC/libsodium/src/libsodium/include"
+
+# Compile Cryptofuzz libsodium module
+cd $SRC/cryptofuzz/modules/libsodium
+make -B
 
 if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
 then
@@ -214,14 +289,80 @@ then
     make -B
 fi
 
+if [[ $CFLAGS != *-m32* ]]
+then
+    # Compile Cryptofuzz (NSS-based)
+    cd $SRC/cryptofuzz
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL $INCLUDE_PATH_FLAGS" make -B -j$(nproc)
+
+    # Generate dictionary
+    ./generate_dict
+
+    # Copy fuzzer
+    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-nss
+    # Copy dictionary
+    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-nss.dict
+    # Copy seed corpus
+    cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-nss_seed_corpus.zip
+
+    rm $SRC/cryptofuzz/modules/nss/module.a
+
+    CXXFLAGS=${CXXFLAGS//"-DCRYPTOFUZZ_NSS"/}
+    LINK_FLAGS=${LINK_FLAGS//"-lsqlite3"/}
+fi
+
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    # libtomcrypt can only be compiled with NSS, because OpenSSL, LibreSSL and
+    # BoringSSL have symbol collisions with libtomcrypt.
+    #
+    # So, now that NSS-based Cryptofuzz has been compiled, remove libtomcrypt
+    export CXXFLAGS=${CXXFLAGS/-DCRYPTOFUZZ_LIBTOMCRYPT/}
+    rm -rf "$LIBTOMCRYPT_A_PATH"
+fi
+
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+# Compile wolfCrypt
+cd $SRC/wolfssl
+autoreconf -ivf
+
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb"
+
+if [[ $CFLAGS = *sanitize=memory* ]]
+then
+    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-asm"
+fi
+
+if [[ $CFLAGS = *-m32* ]]
+then
+    export WOLFCRYPT_CONFIGURE_PARAMS="$WOLFCRYPT_CONFIGURE_PARAMS -disable-fastmath"
+fi
+
+./configure $WOLFCRYPT_CONFIGURE_PARAMS
+make -j$(nproc) >/dev/null 2>&1
+
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_WOLFCRYPT"
+export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl/src/.libs/libwolfssl.a"
+export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl"
+
+# Compile Cryptofuzz wolfcrypt (without assembly) module
+cd $SRC/cryptofuzz/modules/wolfcrypt
+make -B
+
+
+##############################################################################
+if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile LibreSSL (with assembly)
     cd $SRC/libressl
     rm -rf build ; mkdir build
     cd build
-    cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    else
+        setarch i386 cmake -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" ..
+    fi
     make -j$(nproc) crypto >/dev/null 2>&1
 
     # Compile Cryptofuzz LibreSSL (with assembly) module
@@ -270,6 +411,10 @@ then
     # Copy seed corpus
     cp $SRC/cryptofuzz-corpora/libressl_latest.zip $OUT/cryptofuzz-libressl-noasm_seed_corpus.zip
 fi
+
+# OpenSSL can currently not be used together with wolfCrypt due to symbol collisions
+export SAVE_CXXFLAGS="$CXXFLAGS"
+export CXXFLAGS=${CXXFLAGS/-DCRYPTOFUZZ_WOLFCRYPT/}
 
 ##############################################################################
 if [[ $CFLAGS != *sanitize=memory* ]]
@@ -333,14 +478,21 @@ cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-noasm_seed_corpus.zip
 
+export CXXFLAGS="$SAVE_CXXFLAGS"
+
 ##############################################################################
-if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+if [[ $CFLAGS != *sanitize=memory* ]]
 then
     # Compile BoringSSL (with assembly)
     cd $SRC/boringssl
     rm -rf build ; mkdir build
     cd build
-    cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
+    if [[ $CFLAGS = *-m32* ]]
+    then
+        setarch i386 cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 -DCMAKE_ASM_FLAGS="-m32" ..
+    else
+        cmake -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_C_FLAGS="$CFLAGS" -DBORINGSSL_ALLOW_CXX_RUNTIME=1 ..
+    fi
     make -j$(nproc) crypto >/dev/null 2>&1
 
     # Compile Cryptofuzz BoringSSL (with assembly) module
@@ -387,138 +539,3 @@ cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl-noasm
 cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-boringssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/boringssl_latest.zip $OUT/cryptofuzz-boringssl-noasm_seed_corpus.zip
-
-
-##############################################################################
-cd $SRC;
-unzip OpenSSL_1_1_0-stable.zip
-
-if [[ $CFLAGS != *sanitize=memory* ]]
-then
-    # Compile Openssl 1.1.0 (with assembly)
-    cd $SRC/openssl-OpenSSL_1_1_0-stable/
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./config --debug enable-md2 enable-rc5 $CFLAGS
-    else
-        setarch i386 ./config --debug enable-md2 enable-rc5 $CFLAGS
-    fi
-    make depend
-    make -j$(nproc) >/dev/null 2>&1
-
-    # Compile Cryptofuzz OpenSSL 1.1.0 (with assembly) module
-    cd $SRC/cryptofuzz/modules/openssl
-    OPENSSL_INCLUDE_PATH="$SRC/openssl-OpenSSL_1_1_0-stable/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl-OpenSSL_1_1_0-stable/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_OPENSSL_110" make -B
-
-    # Compile Cryptofuzz
-    cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl-OpenSSL_1_1_0-stable/include $INCLUDE_PATH_FLAGS -DCRYPTOFUZZ_OPENSSL_110" make -B -j$(nproc) >/dev/null 2>&1
-
-    # Generate dictionary
-    ./generate_dict
-
-    # Copy fuzzer
-    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-110
-    # Copy dictionary
-    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-110.dict
-    # Copy seed corpus
-    cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl_seed_corpus.zip
-fi
-
-##############################################################################
-# Compile Openssl 1.1.0 (without assembly)
-cd $SRC/openssl-OpenSSL_1_1_0-stable/
-make clean || true
-if [[ $CFLAGS != *-m32* ]]
-then
-    ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
-else
-    setarch i386 ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
-fi
-make depend
-make -j$(nproc) >/dev/null 2>&1
-
-# Compile Cryptofuzz OpenSSL 1.1.0 (without assembly) module
-cd $SRC/cryptofuzz/modules/openssl
-OPENSSL_INCLUDE_PATH="$SRC/openssl-OpenSSL_1_1_0-stable/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl-OpenSSL_1_1_0-stable/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_OPENSSL_110" make -B
-
-# Compile Cryptofuzz
-cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl-OpenSSL_1_1_0-stable/include $INCLUDE_PATH_FLAGS -DCRYPTOFUZZ_OPENSSL_110" make -B -j$(nproc) >/dev/null 2>&1
-
-# Generate dictionary
-./generate_dict
-
-# Copy fuzzer
-cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-110-noasm
-# Copy dictionary
-cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-110-noasm.dict
-# Copy seed corpus
-cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-110-noasm_seed_corpus.zip
-##############################################################################
-cd $SRC;
-unzip OpenSSL_1_0_2-stable.zip
-
-if [[ $CFLAGS != *sanitize=memory* ]]
-then
-    # Compile Openssl 1.0.2 (with assembly)
-    cd $SRC/openssl-OpenSSL_1_0_2-stable/
-    if [[ $CFLAGS != *-m32* ]]
-    then
-        ./config --debug enable-md2 enable-rc5 $CFLAGS
-    else
-        setarch i386 ./config --debug enable-md2 enable-rc5 $CFLAGS
-    fi
-    make depend
-    make -j$(nproc) >/dev/null 2>&1
-
-    # Compile Cryptofuzz OpenSSL 1.0.2 (with assembly) module
-    cd $SRC/cryptofuzz/modules/openssl
-    OPENSSL_INCLUDE_PATH="$SRC/openssl-OpenSSL_1_0_2-stable/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl-OpenSSL_1_0_2-stable/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_OPENSSL_102" make -B
-
-    # Compile Cryptofuzz
-    cd $SRC/cryptofuzz
-    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl-OpenSSL_1_0_2-stable/include $INCLUDE_PATH_FLAGS -DCRYPTOFUZZ_OPENSSL_102" make -B -j$(nproc) >/dev/null 2>&1
-
-    # Generate dictionary
-    ./generate_dict
-
-    # Copy fuzzer
-    cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-102
-    # Copy dictionary
-    cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-102.dict
-    # Copy seed corpus
-    cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl_seed_corpus.zip
-fi
-
-##############################################################################
-# Compile Openssl 1.0.2 (without assembly)
-cd $SRC/openssl-OpenSSL_1_0_2-stable/
-make clean || true
-if [[ $CFLAGS != *-m32* ]]
-then
-    ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS -DPURIFY
-else
-    setarch i386 ./config --debug no-asm enable-md2 enable-rc5 $CFLAGS
-fi
-make depend
-make -j$(nproc) >/dev/null 2>&1
-
-# Compile Cryptofuzz OpenSSL 1.0.2 (without assembly) module
-cd $SRC/cryptofuzz/modules/openssl
-OPENSSL_INCLUDE_PATH="$SRC/openssl-OpenSSL_1_0_2-stable/include" OPENSSL_LIBCRYPTO_A_PATH="$SRC/openssl-OpenSSL_1_0_2-stable/libcrypto.a" CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_OPENSSL_102" make -B
-
-# Compile Cryptofuzz
-cd $SRC/cryptofuzz
-LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" CXXFLAGS="$CXXFLAGS -I $SRC/openssl-OpenSSL_1_0_2-stable/include $INCLUDE_PATH_FLAGS -DCRYPTOFUZZ_OPENSSL_102" make -B -j$(nproc) >/dev/null 2>&1
-
-# Generate dictionary
-./generate_dict
-
-# Copy fuzzer
-cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-openssl-102-noasm
-# Copy dictionary
-cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-openssl-102-noasm.dict
-# Copy seed corpus
-cp $SRC/cryptofuzz-corpora/openssl_latest.zip $OUT/cryptofuzz-openssl-102-noasm_seed_corpus.zip
-

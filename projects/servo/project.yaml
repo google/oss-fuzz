@@ -1,0 +1,11 @@
+homepage: "https://github.com/servo"
+primary_contact: "servo-ops@mozilla.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "jmatthews@mozilla.com"
+  - "vgosu@mozilla.com"
+  - "david@adalogics.com"

@@ -21,8 +21,10 @@ RUN apt-get update && apt-get -y install build-essential automake libtool git py
 
 WORKDIR qubes-os
 
-RUN git        clone --single-branch https://github.com/QubesOS/qubes-app-linux-input-proxy $SRC/qubes-os/app-linux-input-proxy
+RUN git clone --single-branch https://github.com/QubesOS/qubes-app-linux-input-proxy $SRC/qubes-os/app-linux-input-proxy
 
 RUN git clone --single-branch https://github.com/QubesOS/qubes-core-qubesdb $SRC/qubes-os/qubes-core-qubesdb
+
+RUN git clone --single-branch https://github.com/QubesOS/qubes-core-qrexec $SRC/qubes-os/qubes-core-qrexec
 
 COPY build.sh *.options $SRC/

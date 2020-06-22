@@ -31,22 +31,8 @@ RUN apt-get update && \
     python \
     python-dev
 
-# We need a newer version of CMake than is available in the base builder image
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.15.2/cmake-3.15.2.tar.gz && \
-    tar xzf cmake-3.15.2.tar.gz && \
-    cd cmake-3.15.2 && \
-    export CC=clang && \
-    export CXX=clang++ && \
-    CXXFLAGS="" && \
-    CFLAGS="" && \
-    ./bootstrap && \
-    make -j$(nproc) && \
-    make install && \
-    cd .. && \
-    rm -rf cmake-3.15.2
-
 # Install and build boost from source so we can have it use libc++
-RUN wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.gz && \
+RUN wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz && \
     tar xzf boost_1_70_0.tar.gz && \
     cd boost_1_70_0 && \
     ./bootstrap.sh --with-toolset=clang && \
@@ -111,6 +97,21 @@ RUN wget https://github.com/facebook/zstd/releases/download/v1.4.2/zstd-1.4.2.ta
     cd .. && \
     rm -rf zstd-1.4.2
 
+# Build and install `fmt` needed by folly
+RUN wget https://github.com/fmtlib/fmt/archive/6.0.0.tar.gz && \
+    tar xzf 6.0.0.tar.gz && \
+    cd fmt-6.0.0 && \
+    export CC=clang && \
+    export CXX=clang++ && \
+    export CXXFLAGS="-stdlib=libc++" && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make -j$(nproc) && \
+    sudo make install && \
+    cd ../.. && \
+    rm -rf fmt-6.0.0
+
 # Replicate `install-dependencies` from the proxygen `build.sh` script
 RUN apt-get install -y \
     git \
@@ -132,7 +133,8 @@ RUN apt-get install -y \
     zlib1g-dev \
     binutils-dev \
     libsodium-dev \
-    libdouble-conversion-dev
+    libdouble-conversion-dev \
+    libunwind8-dev
 
 # Install patchelf so we can fix path to libunwind
 RUN apt-get install patchelf

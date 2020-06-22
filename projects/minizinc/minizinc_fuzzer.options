@@ -1,3 +1,0 @@
-[libfuzzer]
-only_ascii = 1
-detect_leaks = 0

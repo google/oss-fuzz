@@ -1,4 +1,5 @@
 homepage: "https://github.com/Blosc/c-blosc"
+language: c++
 primary_contact: "blosc.oss.fuzz@gmail.com"
 sanitizers:
   - address

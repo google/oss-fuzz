@@ -34,8 +34,7 @@ RUN bin/sync
 WORKDIR $SRC/skia/third_party/externals/swiftshader/
 # TODO(metzman): Come up with a better long term solution, such as downloading
 # prebuilt libraries, than pinning swiftshader to a known working revision.
-RUN git checkout bf8fd5b5fb6892dabcc21b4b86d41cd40cb9b4b5
-RUN git submodule update --init
+RUN git checkout 45510ad8a77862c1ce2e33f0efed41544f5f048b
 WORKDIR $SRC/skia
 
 RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
@@ -72,41 +71,16 @@ RUN wget -O $SRC/skia/api_polyutils_seed_corpus.zip https://storage.googleapis.c
 
 RUN wget -O $SRC/skia/sksl_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_seed_corpus.zip
 
+RUN wget -O $SRC/skia/api_skdescriptor_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_skdescriptor_seed_corpus.zip
+
+RUN wget -O $SRC/skia/svg_dom_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/svg_seed_corpus.zip 
+
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
 RUN git apply skia.diff
 
-COPY region_deserialize.options $SRC/skia/region_deserialize.options
-COPY region_set_path.options $SRC/skia/region_set_path.options
-COPY image_filter_deserialize.options $SRC/skia/image_filter_deserialize.options
 COPY image_filter_deserialize_width.options $SRC/skia/image_filter_deserialize_width.options
-COPY textblob_deserialize.options $SRC/skia/textblob_deserialize.options
-COPY path_deserialize.options $SRC/skia/path_deserialize.options
-COPY encoder.options $SRC/skia/encoder.options
-
-# Codec fuzzers can share options
-COPY image_codec.options $SRC/skia/android_codec.options
-COPY image_codec.options $SRC/skia/animated_image_decode.options
-COPY image_codec.options $SRC/skia/image_decode.options
-COPY image_codec.options $SRC/skia/image_decode_incremental.options
-
-# API fuzzers can share options
-COPY api_fuzzers.options $SRC/skia/api_draw_functions.options
-COPY api_fuzzers.options $SRC/skia/api_gradients.options
-COPY api_fuzzers.options $SRC/skia/api_image_filter.options
-COPY api_fuzzers.options $SRC/skia/api_mock_gpu_canvas.options
-COPY api_fuzzers.options $SRC/skia/api_null_canvas.options
-COPY api_fuzzers.options $SRC/skia/api_path_measure.options
-COPY api_fuzzers.options $SRC/skia/api_pathop.options
-COPY api_fuzzers.options $SRC/skia/api_polyutils.options
-COPY api_fuzzers.options $SRC/skia/api_raster_n32_canvas.options
-
-# SKSL fuzzers can share options
-COPY sksl.options $SRC/skia/sksl2glsl.options
-COPY sksl.options $SRC/skia/sksl2spirv.options
-COPY sksl.options $SRC/skia/sksl2metal.options
-COPY sksl.options $SRC/skia/sksl2pipeline.options
 
 COPY json.dict $SRC/skia/json.dict
 

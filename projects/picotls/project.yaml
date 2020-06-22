@@ -1,4 +1,5 @@
 homepage: "https://github.com/h2o/picotls"
+language: c++
 primary_contact: "jonathan.foote@gmail.com"
 auto_ccs:
   - "frederik.deweerdt@gmail.com"

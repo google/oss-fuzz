@@ -1,0 +1,10 @@
+homepage: "https://github.com/uriparser/uriparser"
+language: c++
+primary_contact: "webmaster@hartwork.org"
+sanitizers:
+ - address
+ - memory
+ - undefined
+architectures:
+  - x86_64
+  - i386

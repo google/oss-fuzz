@@ -17,11 +17,10 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER janne-vlc@jannau.net
 
-ADD bionic.list /etc/apt/sources.list.d/bionic.list
+ADD nasm.list /etc/apt/sources.list.d/nasm.list
 ADD nasm_apt.pin /etc/apt/preferences
 
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install --no-install-recommends -y libstdc++-5-dev libstdc++-5-dev:i386 curl python3-pip python3-setuptools python3-wheel nasm && \
     pip3 install meson ninja
 RUN curl --silent -O https://storage.googleapis.com/aom-test-data/fuzzer/dec_fuzzer_seed_corpus.zip

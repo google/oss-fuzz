@@ -1,4 +1,5 @@
 homepage: "https://solidity.readthedocs.io"
+language: c++
 primary_contact: "bhargava.shastry@ethereum.org"
 auto_ccs:
   - "axic@ethereum.org"

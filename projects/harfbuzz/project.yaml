@@ -1,4 +1,5 @@
 homepage: "https://github.com/harfbuzz/harfbuzz"
+language: c++
 primary_contact: "harfbuzz-admin@googlegroups.com"
 auto_ccs:
   - "behdad.esfahbod@gmail.com"
@@ -12,12 +13,21 @@ auto_ccs:
   - "cchapman@adobe.com"
   - "ariza@typekit.com"
   - "qxliu@google.com"
+  - "ckitagawa@google.com"
 vendor_ccs:
-  - "cdiehl@mozilla.com"
+  - "jmuizelaar@mozilla.com"
+  - "lsalzman@mozilla.com"
+  - "twsmith@mozilla.com"
+fuzzing_engines:
+ - libfuzzer
+ - afl
+ - honggfuzz
+ - dataflow
 sanitizers:
  - address
  - undefined
  - memory
+ - dataflow
 architectures:
   - x86_64
   - i386

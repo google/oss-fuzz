@@ -1,4 +1,5 @@
 homepage: https://www.openssh.com/
+language: c++
 primary_contact: "djm@mindrot.org"
 auto_ccs:
         - "dtucker@dtucker.net.au"

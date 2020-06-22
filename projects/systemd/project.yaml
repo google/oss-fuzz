@@ -1,4 +1,5 @@
 homepage: "https://freedesktop.org/wiki/Software/systemd/"
+language: c++
 primary_contact: "lennart@poettering.net"
 sanitizers:
   - address
@@ -17,3 +18,5 @@ auto_ccs:
   - johannbg@gmail.com
   - ssahani@vmware.com
   - chris@chrisdown.name
+  - the.anitazha@gmail.com
+  - daan.j.demeyer@gmail.com

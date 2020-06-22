@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-./autogen.sh
+./autogen.sh --no-po4a
 ./configure \
   --enable-static \
   --disable-debug \

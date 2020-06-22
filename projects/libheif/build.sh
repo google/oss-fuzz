@@ -56,7 +56,7 @@ PKG_CONFIG="pkg-config --static" PKG_CONFIG_PATH="$DEPS_PATH/lib/pkgconfig" ./co
     --enable-static \
     --disable-examples \
     --disable-go \
-    --enable-libfuzzer
+    --enable-libfuzzer="$LIB_FUZZING_ENGINE"
 make clean
 make -j$(nproc)
 

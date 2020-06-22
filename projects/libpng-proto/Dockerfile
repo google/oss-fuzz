@@ -23,4 +23,4 @@ RUN git clone --depth 1 https://github.com/glennrp/libpng.git
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
 RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
-COPY build.sh png_fuzz_proto.proto  png_proto_fuzzer_example.cc libpng_transforms_fuzzer.cc $SRC/
+COPY build.sh png_fuzz_proto.proto png_proto_fuzzer_example.cc libpng_transforms_fuzzer.cc png_proto_mutator.cc $SRC/

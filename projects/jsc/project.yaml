@@ -1,4 +1,5 @@
 homepage: https://webkit.org/
+language: c++
 fuzzing_engines:
   - none
 sanitizers:

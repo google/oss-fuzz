@@ -1,4 +1,5 @@
 homepage: "http://libsass.org/"
+language: c++
 primary_contact: "xzyfer@gmail.com"
 
 sanitizers:

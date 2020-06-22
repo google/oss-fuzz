@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-./boot.sh && ./configure && make -j$(nproc) && make oss-fuzz-targets
+./boot.sh && HAVE_UNWIND=no ./configure --enable-ndebug && make -j$(nproc) && make oss-fuzz-targets
 
 cp $SRC/openvswitch/tests/oss-fuzz/config/*.options $OUT/
 cp $SRC/openvswitch/tests/oss-fuzz/config/*.dict $OUT/

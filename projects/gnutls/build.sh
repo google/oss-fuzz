@@ -77,7 +77,8 @@ cd $SRC/gnutls
 ./bootstrap
 ASAN_OPTIONS=detect_leaks=0 LIBS="-lunistring" CXXFLAGS="$CXXFLAGS -L$DEPS_PATH/lib" \
   ./configure --enable-fuzzer-target --disable-gcc-warnings --enable-static --disable-shared --disable-doc --disable-tests \
-    --disable-tools --disable-cxx --disable-maintainer-mode --disable-libdane --without-p11-kit $GNUTLS_CONFIGURE_FLAGS
+    --disable-tools --disable-cxx --disable-maintainer-mode --disable-libdane --without-p11-kit \
+    --disable-full-test-suite $GNUTLS_CONFIGURE_FLAGS
 
 # Do not use the syscall interface for randomness in oss-fuzz, it seems
 # to confuse memory sanitizer.

@@ -1,10 +1,16 @@
 homepage: "http://www.littlecms.com/"
+language: c++
 primary_contact: "marti.maria.s@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
-  - memory:
-     experimental: True
   - undefined
+  - memory
+  - dataflow
 architectures:
   - x86_64
   - i386

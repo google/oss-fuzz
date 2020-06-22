@@ -31,6 +31,14 @@ FUZZER_DICTIONARIES="\
 # file. Since the build runs with `-Werror` this will cause it to break, so we
 # use `--conlyopt` and `--cxxopt` instead of `--copt`.
 #
+# NOTE: We ignore -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION. All envoy fuzz
+# targets link this flag through their build target rule. Passing this in via CLI
+# will pass this to genrules that build unit tests that rely on production
+# behavior. Ignore this flag so these unit tests don't fail by using a modified
+# RE2 library.
+# TODO(asraa): Figure out how to work around this better.
+CFLAGS=${CFLAGS//"-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"/}
+CXXFLAGS=${CXXFLAGS//"-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"/}
 declare -r EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"
@@ -64,6 +72,7 @@ done
 
 # Build driverless libraries.
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
+  --discard_analysis_cache --notrack_incremental_state --nokeep_state_after_build \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
@@ -119,6 +128,8 @@ do
   mkdir -p "${CORPUS_UNTAR_PATH}"
   tar -C "${CORPUS_UNTAR_PATH}" -xvf bazel-bin/"${t}"_corpus_tar.tar
   TARGET_BASE="$(expr "$t" : '.*/\(.*\)_fuzz_test')"
+  # There may be *.dict files in this folder that need to be moved into the OUT dir.
+  find "${CORPUS_UNTAR_PATH}" -type f -name *.dict -exec mv -n {} "${OUT}"/ \;
   zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
     "${CORPUS_UNTAR_PATH}"/*
 done

@@ -1,4 +1,5 @@
 homepage: "http://www.xmlsoft.org/"
+language: c++
 primary_contact: "wellnhofer@aevum.de"
 vendor_ccs:
   - "akilsrin@apple.com"
@@ -8,9 +9,10 @@ sanitizers:
   - address
   - memory
   - undefined
-labels:
-  libxml2_xml_reader_for_file_fuzzer:
-    - sundew
 architectures:
   - x86_64
   - i386
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - afl

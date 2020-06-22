@@ -1,0 +1,17 @@
+homepage: "https://github.com/zeromq/libzmq"
+language: c++
+primary_contact: "bluca@debian.org"
+auto_ccs:
+  - "luca.boccassi@gmail.com"
+  - "somdoron@gmail.com"
+  - "simon.giesecke@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+sanitizers:
+  - address
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386

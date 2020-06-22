@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-patch -p1 < $SRC/c_tests_fuzz_CMakeLists.patch || (cat c/tests/fuzz/CMakeLists.txt.rej && false)
 mkdir build
 pushd build
   cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC_LIBS=ON -DENABLE_FUZZ_TESTING=ON -DFUZZ_REGRESSION_TESTS=OFF

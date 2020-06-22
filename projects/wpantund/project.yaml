@@ -1,4 +1,5 @@
 homepage: "https://github.com/openthread/wpantund"
+language: c++
 primary_contact: "rquattle@google.com"
 auto_ccs:
  - "abtink@google.com"

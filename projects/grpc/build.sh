@@ -15,56 +15,32 @@
 #
 ################################################################################
 
-cp /usr/lib/libFuzzingEngine.a fuzzer_lib.a
+set -o errexit
+set -o nounset
 
-cat >> BUILD << END
-
-cc_import(
-  name = "fuzzer_lib",
-  static_library = "//:fuzzer_lib.a",
-  alwayslink = 1,
+readonly FUZZER_DICTIONARIES=(
+  test/core/end2end/fuzzers/hpack.dictionary
 )
-END
 
-cat > test/core/util/grpc_fuzzer.bzl << END
-
-load("//bazel:grpc_build_system.bzl", "grpc_cc_binary")
-
-def grpc_fuzzer(name, corpus=[], srcs = [], deps = [], size = "large", timeout = "long", language="", **kwargs):
-  grpc_cc_binary(
-    name = name,
-    srcs = srcs,
-    language = language,
-    deps = deps + ["//:fuzzer_lib"],
-    **kwargs
-  )
-END
-
-FUZZER_DICTIONARIES="\
-test/core/end2end/fuzzers/api_fuzzer.dictionary \
-test/core/end2end/fuzzers/hpack.dictionary \
-"
-
-FUZZER_TARGETS="\
-test/core/json:json_fuzzer \
-test/core/client_channel:uri_fuzzer_test \
-test/core/http:request_fuzzer \
-test/core/http:response_fuzzer \
-test/core/nanopb:fuzzer_response \
-test/core/nanopb:fuzzer_serverlist \
-test/core/slice:percent_decode_fuzzer \
-test/core/slice:percent_encode_fuzzer \
-test/core/transport/chttp2:hpack_parser_fuzzer \
-test/core/end2end/fuzzers:api_fuzzer \
-test/core/end2end/fuzzers:client_fuzzer \
-test/core/end2end/fuzzers:server_fuzzer \
-test/core/security:ssl_server_fuzzer \
-test/core/security:alts_credentials_fuzzer \
-"
+readonly FUZZER_TARGETS=(
+  test/core/json:json_fuzzer
+  test/core/client_channel:uri_fuzzer_test
+  test/core/http:request_fuzzer
+  test/core/http:response_fuzzer
+  test/core/nanopb:fuzzer_response
+  test/core/nanopb:fuzzer_serverlist
+  test/core/slice:percent_decode_fuzzer
+  test/core/slice:percent_encode_fuzzer
+  test/core/transport/chttp2:hpack_parser_fuzzer
+  test/core/end2end/fuzzers:client_fuzzer
+  test/core/end2end/fuzzers:server_fuzzer
+  test/core/security:ssl_server_fuzzer
+  test/core/security:alts_credentials_fuzzer
+)
 
 # build grpc
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
-NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
+readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr'
 
 # Copied from envoy's build.sh
 # Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
@@ -74,7 +50,7 @@ NO_VPTR="--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr"
 # file. Since the build runs with `-Werror` this will cause it to break, so we
 # use `--conlyopt` and `--cxxopt` instead of `--copt`.
 #
-declare -r EXTRA_BAZEL_FLAGS="$(
+readonly EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"
 done
@@ -89,65 +65,79 @@ then
 fi
 )"
 
-tools/bazel build --dynamic_mode=off --spawn_strategy=standalone --genrule_strategy=standalone \
-  $NO_VPTR \
+tools/bazel build \
+  --dynamic_mode=off \
+  --spawn_strategy=standalone \
+  --genrule_strategy=standalone \
+  ${NO_VPTR} \
   --strip=never \
-  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
-  $FUZZER_TARGETS --verbose_failures
+  --linkopt=-lc++ \
+  --linkopt=-pthread \
+  --copt=${LIB_FUZZING_ENGINE} \
+  --linkopt=${LIB_FUZZING_ENGINE} \
+  ${EXTRA_BAZEL_FLAGS} \
+  ${FUZZER_TARGETS[@]} \
+  --verbose_failures
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
-if [ "$SANITIZER" = "coverage" ]
+if [ "${SANITIZER}" = 'coverage' ]
 then
   # The build invoker looks for sources in $SRC, but it turns out that we need
   # to not be buried under src/, paths are expected at out/proc/self/cwd by
   # the profiler.
-  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
+  readonly REMAP_PATH="${OUT}/proc/self/cwd"
   mkdir -p "${REMAP_PATH}"
   rsync -av "${SRC}"/grpc/src "${REMAP_PATH}"
   rsync -av "${SRC}"/grpc/test "${REMAP_PATH}"
   # Remove filesystem loop manually.
   rm -rf "${SRC}"/grpc/bazel-grpc/external/grpc
   # Clean up symlinks with a missing referrant.
-  find "${SRC}"/grpc/bazel-grpc/external -follow -type l -ls -delete || echo "Symlink cleanup soft fail"
+  find "${SRC}"/grpc/bazel-grpc/external -follow -type l -ls -delete || echo 'Symlink cleanup soft fail'
   rsync -avLk "${SRC}"/grpc/bazel-grpc/external "${REMAP_PATH}"
   # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
   # filter out the build objects from bazel-out/. Also need to resolve symlinks,
   # since they don't make sense outside the build container.
-  declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
-    "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
+  readonly RSYNC_FILTER_ARGS=(
+    '--include=*.h'
+    '--include=*.cc'
+    '--include=*.hpp'
+    '--include=*.cpp'
+    '--include=*.c'
+    '--include=*/'
+    '--exclude=*'
+  )
   rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/grpc/bazel-out "${REMAP_PATH}"
   rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
   rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
 fi
 
-for target in $FUZZER_TARGETS; do
+for target in "${FUZZER_TARGETS[@]}"; do
   # replace : with /
   fuzzer_name=${target/:/\/}
   echo "Copying fuzzer $fuzzer_name"
-  cp bazel-bin/$fuzzer_name $OUT/
+  cp "bazel-bin/$fuzzer_name" "$OUT/"
 done
 
 # Copy dictionaries and options files to $OUT/
-for dict in $FUZZER_DICTIONARIES; do
-  cp $dict $OUT/
+for dict in "${FUZZER_DICTIONARIES[@]}"; do
+  cp "${dict}" "${OUT}/"
 done
 
-cp $SRC/grpc/tools/fuzzer/options/*.options $OUT/
+cp ${SRC}/grpc/tools/fuzzer/options/*.options "${OUT}/"
 
 # We don't have a consistent naming convention between fuzzer files and corpus
 # directories so we resort to hard coding zipping corpuses
-zip $OUT/json_fuzzer_seed_corpus.zip test/core/json/corpus/*
-zip $OUT/uri_fuzzer_test_seed_corpus.zip test/core/client_channel/uri_corpus/*
-zip $OUT/request_fuzzer_seed_corpus.zip test/core/http/request_corpus/*
-zip $OUT/response_fuzzer_seed_corpus.zip test/core/http/response_corpus/*
-zip $OUT/fuzzer_response_seed_corpus.zip test/core/nanopb/corpus_response/*
-zip $OUT/fuzzer_serverlist_seed_corpus.zip test/core/nanopb/corpus_serverlist/*
-zip $OUT/percent_decode_fuzzer_seed_corpus.zip test/core/slice/percent_decode_corpus/*
-zip $OUT/percent_encode_fuzzer_seed_corpus.zip test/core/slice/percent_encode_corpus/*
-zip $OUT/hpack_parser_fuzzer_seed_corpus.zip test/core/transport/chttp2/hpack_parser_corpus/*
-zip $OUT/api_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/api_fuzzer_corpus/*
-zip $OUT/client_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/client_fuzzer_corpus/*
-zip $OUT/server_fuzzer_seed_corpus.zip test/core/end2end/fuzzers/server_fuzzer_corpus/*
-zip $OUT/ssl_server_fuzzer_seed_corpus.zip test/core/security/corpus/ssl_server_corpus/*
-zip $OUT/alts_credentials_fuzzer_seed_corpus.zip test/core/security/corpus/alts_credentials_corpus/*
+zip "${OUT}/json_fuzzer_seed_corpus.zip" test/core/json/corpus/*
+zip "${OUT}/uri_fuzzer_test_seed_corpus.zip" test/core/client_channel/uri_corpus/*
+zip "${OUT}/request_fuzzer_seed_corpus.zip" test/core/http/request_corpus/*
+zip "${OUT}/response_fuzzer_seed_corpus.zip" test/core/http/response_corpus/*
+zip "${OUT}/fuzzer_response_seed_corpus.zip" test/core/nanopb/corpus_response/*
+zip "${OUT}/fuzzer_serverlist_seed_corpus.zip" test/core/nanopb/corpus_serverlist/*
+zip "${OUT}/percent_decode_fuzzer_seed_corpus.zip" test/core/slice/percent_decode_corpus/*
+zip "${OUT}/percent_encode_fuzzer_seed_corpus.zip" test/core/slice/percent_encode_corpus/*
+zip "${OUT}/hpack_parser_fuzzer_seed_corpus.zip" test/core/transport/chttp2/hpack_parser_corpus/*
+zip "${OUT}/client_fuzzer_seed_corpus.zip" test/core/end2end/fuzzers/client_fuzzer_corpus/*
+zip "${OUT}/server_fuzzer_seed_corpus.zip" test/core/end2end/fuzzers/server_fuzzer_corpus/*
+zip "${OUT}/ssl_server_fuzzer_seed_corpus.zip" test/core/security/corpus/ssl_server_corpus/*
+zip "${OUT}/alts_credentials_fuzzer_seed_corpus.zip" test/core/security/corpus/alts_credentials_corpus/*
