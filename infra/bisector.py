@@ -32,9 +32,6 @@ This is done with the following steps:
 
 import argparse
 import collections
-import datetime
-from distutils import spawn
-import json
 import logging
 import os
 import sys
@@ -121,34 +118,6 @@ def main():
   return 0
 
 
-def _load_base_builder_repo():
-  """Get base-image digests."""
-  gcloud_path = spawn.find_executable('gcloud')
-  if not gcloud_path:
-    logging.warning('gcloud not found in PATH.')
-    return None
-
-  result, _, _ = utils.execute([
-      gcloud_path,
-      'container',
-      'images',
-      'list-tags',
-      'gcr.io/oss-fuzz-base/base-builder',
-      '--format=json',
-      '--sort-by=timestamp',
-  ],
-                               check_result=True)
-  result = json.loads(result)
-
-  repo = build_specified_commit.BaseBuilderRepo()
-  for image in result:
-    timestamp = datetime.datetime.fromisoformat(
-        image['timestamp']['datetime']).astimezone(datetime.timezone.utc)
-    repo.add_digest(timestamp, image['digest'])
-
-  return repo
-
-
 def _get_dedup_token(output):
   """Get dedup token."""
   for line in output.splitlines():
@@ -200,7 +169,7 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
             build_data):
   """Perform the bisect."""
   # pylint: disable=too-many-branches
-  base_builder_repo = _load_base_builder_repo()
+  base_builder_repo = build_specified_commit.load_base_builder_repo()
 
   with tempfile.TemporaryDirectory() as tmp_dir:
     repo_url, repo_path = build_specified_commit.detect_main_repo(

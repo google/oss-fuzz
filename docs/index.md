@@ -24,7 +24,8 @@ OSS-Fuzz aims to make common open source software more secure and stable by
 combining modern fuzzing techniques with scalable,
 distributed execution.
 
-We support the [libFuzzer](http://llvm.org/docs/LibFuzzer.html) and [AFL](https://lcamtuf.coredump.cx/afl/) fuzzing engines
+We support the [libFuzzer](http://llvm.org/docs/LibFuzzer.html), [AFL](https://lcamtuf.coredump.cx/afl/) and
+[Honggfuzz](https://github.com/google/honggfuzz) fuzzing engines
 in combination with [Sanitizers](https://github.com/google/sanitizers), as well as
 [ClusterFuzz](https://github.com/google/clusterfuzz),
 a distributed fuzzer execution environment and reporting tool. 
@@ -43,7 +44,7 @@ are listed on the [useful links]({{ site.baseurl }}/reference/useful-links/#tuto
 [libFuzzer tutorial]: https://github.com/google/fuzzing/blob/master/tutorial/libFuzzerTutorial.md
 
 ## Trophies
-As of January 2020, OSS-Fuzz has found over [16,000] bugs in [250] open source projects.
+As of June 2020, OSS-Fuzz has found over [20,000] bugs in [300] open source projects.
 
-[16,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
-[250]: https://github.com/google/oss-fuzz/tree/master/projects
+[20,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
+[300]: https://github.com/google/oss-fuzz/tree/master/projects

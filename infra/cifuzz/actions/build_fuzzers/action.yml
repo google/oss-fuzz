@@ -11,6 +11,9 @@ inputs:
   allowed-broken-targets-percentage:
     description: 'The percentage of broken targets allowed in bad_build_check.'
     required: false
+  sanitizer:
+    description: 'The sanitizer to build the fuzzers with.'
+    default: 'address'
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -18,3 +21,4 @@ runs:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
     DRY_RUN: ${{ inputs.dry-run}}
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
+    SANITIZER: ${{ inputs.sanitizer }}

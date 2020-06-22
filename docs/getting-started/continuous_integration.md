@@ -10,7 +10,7 @@ permalink: /getting-started/continuous-integration/
 
 OSS-Fuzz offers **CIFuzz**, which will run your fuzz targets each time a pull request
 is submitted, for projects hosted on GitHub. This allows you to detect and
-fix bugs before they make it into your codebase
+fix bugs before they make it into your codebase.
 
 ## How it works
 
@@ -82,6 +82,7 @@ jobs:
 
 ### Optional configuration
 
+#### Configurable Variables
 `fuzz-time`: Determines how long CIFuzz spends fuzzing your project in seconds.
 The default is 600 seconds. The GitHub Actions max run time is 21600 seconds (6 hours).
 
@@ -93,6 +94,47 @@ make sure to set the dry-run parameters in both the `Build Fuzzers` and `Run Fuz
 `allowed-broken-targets-percentage`: Can be set if you want to set a stricter
 limit for broken fuzz targets than OSS-Fuzz's check_build. Most users should
 not set this.
+
+`sanitizer`: Determines a sanitizer to build and run fuzz targets with. The choices are `'address'`,
+`'memory'` and `'undefined'`. The default is `'address'`. It is important to note that the `Build Fuzzers`
+and the `Run Fuzzers` sanitizer field needs to be the same. To specify a list of sanitizers
+a [matrix](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix)
+can be used. To use a sanitizer add it to the list of sanitizers in the matrix field below:
+
+```yaml
+{% raw %}
+name: CIFuzz
+on: [pull_request]
+jobs:
+ Fuzzing:
+   runs-on: ubuntu-latest
+   strategy:
+     fail-fast: false
+     matrix:
+       sanitizer: [address, undefined, memory]
+   steps:
+   - name: Build Fuzzers (${{ matrix.sanitizer }})
+     id: build
+     uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+     with:
+       oss-fuzz-project-name: 'example'
+       dry-run: false
+       sanitizer: ${{ matrix.sanitizer }}
+   - name: Run Fuzzers (${{ matrix.sanitizer }})
+     uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+     with:
+       oss-fuzz-project-name: 'example'
+       fuzz-seconds: 600
+       dry-run: false
+       sanitizer: ${{ matrix.sanitizer }}
+   - name: Upload Crash
+     uses: actions/upload-artifact@v1
+     if: failure() && steps.build.outcome == 'success'
+     with:
+       name: ${{ matrix.sanitizer }}-artifacts
+       path: ./out/artifacts
+{% endraw %}
+```
 
 ## Understanding results
 

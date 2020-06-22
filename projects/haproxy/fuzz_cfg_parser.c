@@ -22,6 +22,9 @@
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
+    if (size < 50)
+        return 0;
+
 	char filename[256];
 	sprintf(filename, "/tmp/libfuzzer.%d", getpid());
 

@@ -88,10 +88,12 @@ You project's homepage.
 
 ### language
 
-Programming language the project is written in. Most often this would be `c` or
-`c++`. Other values for this attribute are documented in language specific
-documentation pages (e.g.
-[Integrating a Go project]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)).
+Programming language the project is written in. Values you can specify include:
+
+* `c`
+* `c++`
+* [`go`]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)
+* [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -118,7 +120,7 @@ runtime dependencies are listed in the OSS-Fuzz
 Then, you can opt in by adding "memory" to your list of sanitizers.
 
 If your project does not build with a particular sanitizer configuration and you need some time to fix
-it, you can use `sanitizers` to override the defaults temporarily. For example, to disable the 
+it, you can use `sanitizers` to override the defaults temporarily. For example, to disable the
 UndefinedBehaviourSanitizer build, just specify all supported sanitizers except "undefined".
 
 If you want to test a particular sanitizer to see what crashes it generates without filing
@@ -147,7 +149,7 @@ architectures:
  - x86_64
  - i386
  ```
- 
+
 By fuzzing on i386 you might find bugs that:
 * Only occur in architecture-specific source code (e.g. code that contains i386 assembly).
 * Exist in architecture-independent source code and which only affects i386 users.
@@ -197,7 +199,7 @@ In general, this script should do the following:
 - Build the project using your build system with the correct compiler.
 - Provide compiler flags as [environment variables](#Requirements).
 - Build your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) and link your project's build with libFuzzer.
-   
+
 Resulting binaries should be placed in `$OUT`.
 
 Here's an example from Expat ([source](https://github.com/google/oss-fuzz/blob/master/projects/expat/build.sh)):
@@ -280,7 +282,7 @@ your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) run in, 
 
 ## Testing locally
 
-You can build your docker image and fuzz targets locally, so you can test them before you push them to the OSS-Fuzz repository. 
+You can build your docker image and fuzz targets locally, so you can test them before you push them to the OSS-Fuzz repository.
 
 1. Run the same helper script you used to create your directory structure, this time using it to build your docker image and [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target):
 
@@ -296,8 +298,8 @@ You can build your docker image and fuzz targets locally, so you can test them b
     **Note:** You *must* run your fuzz target binaries inside the base-runner docker
     container to make sure that they work properly.
 
-2. Find failures to fix by running the `check_build` command: 
-    
+2. Find failures to fix by running the `check_build` command:
+
     ```bash
     $ python infra/helper.py check_build $PROJECT_NAME
     ```
@@ -311,7 +313,7 @@ You can build your docker image and fuzz targets locally, so you can test them b
 4. We recommend taking a look at your code coverage as a sanity check to make sure that your
 fuzz targets get to the code you expect. Please refer to [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/).
 
-**Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined) 
+**Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
 configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
 that all system dependencies are
 [instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).

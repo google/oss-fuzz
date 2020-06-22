@@ -27,19 +27,17 @@ make TARGET=generic
 # We dont want the main function but we need the rest of the stuff in haproxy.c
 cd /src/haproxy
 sed 's/int main(int argc/int main2(int argc/g' -i ./src/haproxy.c
-sed 's/dladdr(main,/dladdr(main2,/g' -i ./src/standard.c
-sed 's/(void*)main/(void*)main2/g' -i ./src/standard.c
+sed 's/dladdr(main,/dladdr(main2,/g' -i ./src/tools.c
+sed 's/(void*)main/(void*)main2/g' -i ./src/tools.c
 
-$CC $CFLAGS -Iinclude -Iebtree  -g -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERSION=\"\" -DCONFIG_HAPROXY_DATE=\"\" -c -o ./src/haproxy.o ./src/haproxy.c
-ar cr libetree.a ./ebtree/*.o
+
+SETTINGS="-Iinclude -g -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERSION=\"\" -DCONFIG_HAPROXY_DATE=\"\""
+
+$CC $CFLAGS $SETTINGS -c -o ./src/haproxy.o ./src/haproxy.c
 ar cr libhaproxy.a ./src/*.o
 
-cp $SRC/fuzz_hpack_decode.c .
-$CC $CFLAGS -Iinclude -Iebtree  -g  -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERSION=\"\" -DCONFIG_HAPROXY_DATE=\"\" -c fuzz_hpack_decode.c  -o fuzz_hpack_decode.o
-$CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_hpack_decode.o libhaproxy.a libetree.a -o $OUT/fuzz_hpack_decode
-
-# Now compile more fuzzers
-cp $SRC/fuzz_cfg_parser.c .
-$CC $CFLAGS -Iinclude -Iebtree  -g  -DUSE_POLL -DUSE_TPROXY -DCONFIG_HAPROXY_VERSION=\"\" -DCONFIG_HAPROXY_DATE=\"\" -c -o fuzz_cfg_parser.o fuzz_cfg_parser.c
-$CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_cfg_parser.o libhaproxy.a libetree.a -o $OUT/fuzz_cfg_parser
-################################################################################
+for fuzzer in hpack_decode cfg_parser; do
+  cp $SRC/fuzz_${fuzzer}.c .
+  $CC $CFLAGS $SETTINGS -c fuzz_${fuzzer}.c  -o fuzz_${fuzzer}.o
+  $CXX -g $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_${fuzzer}.o libhaproxy.a -o $OUT/fuzz_${fuzzer}
+done

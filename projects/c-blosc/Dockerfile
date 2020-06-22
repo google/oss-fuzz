@@ -19,4 +19,4 @@ MAINTAINER blosc.oss.fuzz@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake
 RUN git clone --depth 1 https://github.com/Blosc/c-blosc.git c-blosc
 WORKDIR c-blosc
-COPY build.sh blosc_fuzzer.cc $SRC/
+COPY build.sh $SRC/

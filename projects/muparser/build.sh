@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+CFLAGS="${CFLAGS} -fno-sanitize=integer-divide-by-zero,float-divide-by-zero"
+CXXFLAGS="${CXXFLAGS} -fno-sanitize=integer-divide-by-zero,float-divide-by-zero"
+
 # build project
 cmake . -DBUILD_SHARED_LIBS=OFF  -DENABLE_OPENMP=OFF
 make -j$(nproc)

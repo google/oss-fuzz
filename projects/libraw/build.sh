@@ -15,12 +15,30 @@
 #
 ################################################################################
 
+# copy corpuses
+cp $SRC/libraw_cr2_fuzzer_seed_corpus.zip \
+    $SRC/libraw_nef_fuzzer_seed_corpus.zip \
+    $SRC/libraw_raf_fuzzer_seed_corpus.zip \
+    $OUT/
+
 # build project
-./mkdist.sh
+autoreconf --install
 ./configure --disable-examples
 make
 
 # build fuzzers
 $CXX $CXXFLAGS -std=c++11 -Ilibraw \
     $SRC/libraw_fuzzer.cc -o $OUT/libraw_fuzzer \
+    $LIB_FUZZING_ENGINE lib/.libs/libraw.a
+
+$CXX $CXXFLAGS -std=c++11 -Ilibraw \
+    $SRC/libraw_fuzzer.cc -o $OUT/libraw_cr2_fuzzer \
+    $LIB_FUZZING_ENGINE lib/.libs/libraw.a
+
+$CXX $CXXFLAGS -std=c++11 -Ilibraw \
+    $SRC/libraw_fuzzer.cc -o $OUT/libraw_nef_fuzzer \
+    $LIB_FUZZING_ENGINE lib/.libs/libraw.a
+
+$CXX $CXXFLAGS -std=c++11 -Ilibraw \
+    $SRC/libraw_fuzzer.cc -o $OUT/libraw_raf_fuzzer \
     $LIB_FUZZING_ENGINE lib/.libs/libraw.a

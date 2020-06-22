@@ -41,4 +41,4 @@ for fuzzer in xml; do
     zip -j $OUT/${fuzzer}_seed_corpus.zip fuzz/seed/$fuzzer/*
 done
 
-cp fuzz/*.dict $OUT/
+cp fuzz/*.dict fuzz/*.options $OUT/
