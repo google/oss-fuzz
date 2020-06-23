@@ -103,9 +103,10 @@ mkdir -p $OUT/lib
 cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 $OUT/lib/
 
 # Move out tzdata
-# See also https://github.com/googleinterns/zetasql-fuzzing/pull/3
 mkdir -p $OUT/data
 cp -r /usr/share/zoneinfo $OUT/data/
+# Set localtime to UTC
+ln -sf Etc/UTC $OUT/data/zoneinfo/localtime
 
 # Move out fuzz target
 cp bazel-bin/"${FUZZER_PATH}" "${OUT}"/
