@@ -50,7 +50,8 @@ language: rust
 
 The only supported fuzzing engine and sanitizer are `libfuzzer` and `address`,
 respectively.
-[Example](https://github.com/google/oss-fuzz/blob/12ef3654b3e9adfd20b5a6afdde54819ba71493d/projects/serde_json/project.yaml#L3-L6)
+
+[Example](https://github.com/google/oss-fuzz/blob/12ef3654b3e9adfd20b5a6afdde54819ba71493d/projects/serde_json/project.yaml#L3-L6):
 
 ```yaml
 sanitizers:
