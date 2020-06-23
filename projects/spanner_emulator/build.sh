@@ -32,7 +32,6 @@
 export CFLAGS="$CFLAGS"
 export CXXFLAGS="$CXXFLAGS"
 echo "beginning!!!!!!!!!!!!!!!!!!!!!!!!!!1"
-eval "ls"
 
 declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzz_test.cc)
 declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}"; done)"
@@ -66,7 +65,8 @@ done
 
 declare BAZEL_BUILD_TARGETS="//src/fuzz:all"
 
-
+# Temporary hack, see https://github.com/google/oss-fuzz/issues/383
+readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr'
 
 
 # Build driverless libraries.
@@ -85,6 +85,7 @@ bazel build --verbose_failures  --strip=never \
   --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   --define LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE} \
   --linkopt="-rpath '\$ORIGIN\/lib'" \
+  ${NO_VPTR} \
   ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]}
 
