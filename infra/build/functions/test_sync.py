@@ -72,6 +72,7 @@ def _wait_for_emulator_ready(proc,
   return thread
 
 class Repository():
+  """Mocking Github Repository"""
   def __init__(self, name, file_type, path):
     self.contents = []
     self.name = name
@@ -79,6 +80,7 @@ class Repository():
     self.path = path
 
   def get_contents(self, path):
+    """"Get contents of repository"""
     if self.path == path:
       return self.contents
 
@@ -87,7 +89,9 @@ class Repository():
         return content_file.contents
 
 class TestDataSync(unittest.TestCase):
+  """Unit tests for sync"""
   def test_sync_projects(self):
+    """Testing sync_projects()"""
     client = ndb.Client()
 
     with client.context():
@@ -101,6 +105,7 @@ class TestDataSync(unittest.TestCase):
       self.assertEqual(projects, {project.name for project in projects_query})
 
   def test_get_projects(self):
+    """Testing get_projects()"""
     repo = Repository("oss-fuzz", "dir", "projects")
     for i in range(3):
       name = "test" + str(i)
@@ -115,8 +120,8 @@ class TestDataSync(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  ds_emulator = start_datastore_emulator()
-  _wait_for_emulator_ready(ds_emulator, 'datastore',
+  DS_EMULATOR = start_datastore_emulator()
+  _wait_for_emulator_ready(DS_EMULATOR, 'datastore',
                            _DATASTORE_READY_INDICATOR)
   unittest.main(exit=False)
   # TODO: replace this with a cleaner way of killing the process

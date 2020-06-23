@@ -23,12 +23,15 @@ from google.cloud import ndb
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 
 class Project(ndb.Model):
+  """Datastore Entity Project"""
   name = ndb.StringProperty()
 
 class GitAuth(ndb.Model):
+  """Datastore Entity GitAuth"""
   access_token = ndb.StringProperty()
 
 def sync_projects(projects):
+  """Sync projects with cloud datastore"""
   to_remove = [
       project for project in Project.query()
       if project.name not in projects
@@ -51,6 +54,7 @@ def _has_docker_file(repo, project_path):
              for content_file in repo.get_contents(project_path))
 
 def get_projects(repo):
+  """get projects from git repo"""
   contents = repo.get_contents("projects")
   projects = {
       content_file.name
@@ -61,6 +65,7 @@ def get_projects(repo):
   return projects
 
 def sync(event, context):
+  """sync with cloud datastore"""
   client = ndb.Client()
 
   with client.context():
