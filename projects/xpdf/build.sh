@@ -36,3 +36,6 @@ for fuzzer in zxdoc pdfload; do
       ./xpdf/libtestXpdfStatic.a ./fofi/libfofi.a ./goo/libgoo.a \
       -I../ -I../goo -I../fofi -I. -I../xpdf
 done
+
+# Copy over options files
+cp $SRC/fuzz_pdfload.options $OUT/

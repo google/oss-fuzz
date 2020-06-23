@@ -38,6 +38,7 @@ zip -j $WORK/html $SRC/qtqa/fuzzing/testcases/html/*
 zip -j $WORK/images $SRC/qtqa/fuzzing/testcases/svg/* $SRC/AFL/testcases/images/*/*
 zip -j $WORK/markdown $SRC/qtqa/fuzzing/testcases/markdown/*
 zip -j $WORK/ssl.pem.zip $SRC/qtqa/fuzzing/testcases/ssl.pem/*
+zip -j $WORK/svg $SRC/qtqa/fuzzing/testcases/svg/*
 zip -j $WORK/text $SRC/qtqa/fuzzing/testcases/text/* $SRC/AFL/testcases/others/text/*
 zip -j $WORK/xml $SRC/qtqa/fuzzing/testcases/xml/* $SRC/AFL/testcases/others/xml/*
 
@@ -92,3 +93,4 @@ build_fuzzer "new" "qtbase" "gui/text/qtextdocument/sethtml/sethtml.pro" "html" 
 build_fuzzer "old" "qtbase" "gui/text/qtextdocument/setmarkdown/setmarkdown.pro" "markdown"
 build_fuzzer "new" "qtbase" "gui/text/qtextlayout/beginlayout/beginlayout.pro" "text"
 build_fuzzer "new" "qtbase" "network/ssl/qsslcertificate/qsslcertificate/pem/pem.pro" "ssl.pem"
+build_fuzzer "new" "qtsvg" "svg/qsvgrenderer/render/render.pro" "svg"

@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,4 +14,8 @@
 #
 ################################################################################
 
-sh $SRC/draco/src/draco/tools/fuzz/build.sh
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev patchelf
+RUN git clone --depth 1 https://git.qemu.org/git/qemu.git qemu
+WORKDIR qemu
+RUN cp scripts/oss-fuzz/build.sh $SRC
