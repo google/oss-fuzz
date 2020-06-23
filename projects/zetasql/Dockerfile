@@ -26,7 +26,6 @@ RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
 
 RUN apt-get update && apt-get -y install bazel-1.0.0
 
-RUN git clone -b simple_fuzzer --depth 1 \
-    https://github.com/googleinterns/zetasql-fuzzing.git zetasql
+RUN git clone --depth 1 https://github.com/googleinterns/zetasql-fuzzing.git zetasql
 COPY build.sh $SRC/
 WORKDIR zetasql
