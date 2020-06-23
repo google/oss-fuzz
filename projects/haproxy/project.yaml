@@ -7,3 +7,6 @@ auto_ccs:
   - "willy@1wt.eu"
 sanitizers:
   - address
+
+# Bug reports are public by default:
+view_restrictions: none
