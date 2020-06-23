@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER evmaus@google.com
-RUN apt-get update && apt-get -y install make autoconf automake libtool wget openjdk-8-jdk python
+RUN apt-get update && apt-get -y install make autoconf automake libtool wget openjdk-8-jdk python libunwind-dev tzdata
 
 # Install Bazelisk
 RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64

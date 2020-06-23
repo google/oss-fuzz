@@ -68,16 +68,33 @@ declare BAZEL_BUILD_TARGETS="//src/fuzz:all"
 
 
 
+
 # Build driverless libraries.
-bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
-  --genrule_strategy=standalone --strip=never \
-  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
+bazel build --verbose_failures  --strip=never \
+  --dynamic_mode=off \
+  --copt=-fno-sanitize=vptr \
+  --linkopt=-fno-sanitize=vptr \
   --copt -D__SANITIZE_ADDRESS__ \
-  --build_tag_filters=-no_asan \
-  --cxxopt="-stdlib=libc++" --linkopt="--rtlib=compiler-rt" \
-  --linkopt="--unwindlib=libunwind" --linkopt="-stdlib=libc++" \
-  --linkopt="-lc++" --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
+  --copt -D__OSS_FUZZ__ \
+  --copt -fno-sanitize-blacklist \
+  --cxxopt="-stdlib=libc++" \
+  --linkopt="--rtlib=compiler-rt" \
+  --linkopt="--unwindlib=libunwind" \
+  --linkopt="-stdlib=libc++" \
+  --linkopt="-lc++" \
+  --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
+  --define LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE} \
+  --linkopt="-rpath '\$ORIGIN\/lib'" \
+  ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]}
+
+# Move out dynamically linked libraries
+mkdir -p $OUT/lib
+cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 $OUT/lib/
+
+# Move out tzdata
+mkdir -p $OUT/data
+cp -r /usr/share/zoneinfo $OUT/data/
   
 # Copy dictionaries and options files to $OUT/
 for d in $FUZZER_DICTIONARIES; do
