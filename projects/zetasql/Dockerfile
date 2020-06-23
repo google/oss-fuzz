@@ -16,9 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER zdwho@google.com
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get --no-install-recommends install -y \
         make autoconf automake libtool apt-transport-https \
-        libunwind-dev tzdata chrpath \
+        libunwind-dev tzdata rsync \
         curl gnupg openjdk-8-jdk
 
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \

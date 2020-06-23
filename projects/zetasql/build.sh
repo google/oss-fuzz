@@ -35,11 +35,16 @@ for f in ${CXXFLAGS}; do
   echo "--cxxopt=${f}" "--linkopt=${f}"
 done
 
+# Questionable code block currently under investigation.
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
   # See issue: https://github.com/bazelbuild/bazel/issues/8777
-  echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
+  # echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
+
+  # Modeled after: https://github.com/envoyproxy/envoy/blob/master/bazel/setup_clang.sh
+  echo "--linkopt=-L$(dirname $(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1))"
+  echo "--linkopt=-l:libclang_rt.ubsan_standalone_cxx-x86_64.a"
 fi
 )"
 
@@ -51,7 +56,7 @@ declare FUZZ_TARGET="//zetasql/fuzzing:simple_evaluator_fuzzer"
 
 # Build fuzz target
 # see https://google.github.io/oss-fuzz/further-reading/fuzzer-environment/
-bazel-1.0.0 build -s --verbose_failures --compilation_mode=dbg \
+bazel-1.0.0 build --verbose_failures --compilation_mode=dbg \
   --dynamic_mode=off \
   --spawn_strategy=standalone \
   --genrule_strategy=standalone \
@@ -65,6 +70,33 @@ bazel-1.0.0 build -s --verbose_failures --compilation_mode=dbg \
   --define LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE} \
   ${EXTRA_BAZEL_FLAGS} ${NO_VPTR} \
   ${FUZZ_TARGET}
+
+# Profiling with coverage requires that we resolve+copy all Bazel symlinks and
+# also remap everything under proc/self/cwd to correspond to Bazel build paths.
+if [ "$SANITIZER" = "coverage" ]
+then
+  # The build invoker looks for sources in $SRC, but it turns out that we need
+  # to not be buried under src/, paths are expected at out/proc/self/cwd by
+  # the profiler.
+  declare -r REMAP_PATH="${OUT}/proc/self/cwd"
+  mkdir -p "${REMAP_PATH}"
+  # For .cc, we only really care about source/ today.
+  rsync -av "${SRC}"/zetasql/zetasql "${REMAP_PATH}"
+  # Remove filesystem loop manually.
+  rm -rf "${SRC}"/zetasql/bazel-zetasql/external/com_google_zetasql
+  # Clean up symlinks with a missing referrant.
+  find "${SRC}"/zetasql/bazel-zetasql/external -follow -type l -ls -delete || echo "Symlink cleanup soft fail"
+  rsync -avLk "${SRC}"/zetasql/bazel-zetasql/external "${REMAP_PATH}"
+  # For .h, and some generated artifacts, we need bazel-out/. Need to heavily
+  # filter out the build objects from bazel-out/. Also need to resolve symlinks,
+  # since they don't make sense outside the build container.
+  declare -r RSYNC_FILTER_ARGS=("--include" "*.h" "--include" "*.cc" "--include" \
+    "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*.hh" "--include" \
+    "*.inc" "--include" "*/" "--exclude" "*")
+  rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/zetasql/bazel-out "${REMAP_PATH}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
+  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
+fi
 
 # Move out dynamically linked libraries
 mkdir -p $OUT/lib
