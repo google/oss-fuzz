@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Cloud functions for build scheduling"""
+"""Cloud functions for build scheduling."""
 
 import re
 
@@ -25,18 +25,18 @@ VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 
 # pylint: disable=too-few-public-methods
 class Project(ndb.Model):
-  """Datastore Entity Project"""
+  """Represents an integrated OSS-Fuzz project."""
   name = ndb.StringProperty()
 
 
 # pylint: disable=too-few-public-methods
 class GitAuth(ndb.Model):
-  """Datastore Entity GitAuth"""
+  """Represents Github access token entity."""
   access_token = ndb.StringProperty()
 
 
 def sync_projects(projects):
-  """Sync projects with cloud datastore"""
+  """Sync projects with cloud datastore."""
   project_query = Project.query()
   projects_to_remove = [
       project.key for project in project_query if project.name not in projects
@@ -46,18 +46,22 @@ def sync_projects(projects):
 
   existing_projects = {project.name for project in project_query}
 
-  for project in projects:
-    if project not in existing_projects:
-      Project(name=project).put()
+  new_projects = [
+      Project(name=project)
+      for project in projects
+      if project not in existing_projects
+  ]
+  ndb.put_multi(new_projects)
 
 
 def _has_docker_file(repo, project_path):
+  """Checks if project has a Dockerfile."""
   return any(content_file.name == 'Dockerfile'
              for content_file in repo.get_contents(project_path))
 
 
 def get_projects(repo):
-  """get projects from git repo"""
+  """Get project list from git repository."""
   contents = repo.get_contents('projects')
   projects = {
       content_file.name
@@ -70,21 +74,17 @@ def get_projects(repo):
 
 
 def sync(event, context):
-  """sync with cloud datastore"""
+  """Sync projects with cloud datastore."""
   client = ndb.Client()
 
   with client.context():
-    try:
-      token = GitAuth.query().get()
-      if token is None:
-        raise RuntimeError("No access token provided")
-    except RuntimeError as re:
-      print(re)
+    token = GitAuth.query().get()
+    if token is None:
+      raise RuntimeError('No access token provided')
     access_token = token.access_token
 
-  github_client = Github(access_token)
-  repo = github_client.get_repo('google/oss-fuzz')
-  projects = get_projects(repo)
+    github_client = Github(access_token)
+    repo = github_client.get_repo('google/oss-fuzz')
+    projects = get_projects(repo)
 
-  with client.context():
     sync_projects(projects)

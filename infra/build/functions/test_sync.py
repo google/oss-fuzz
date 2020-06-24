@@ -14,7 +14,7 @@
 #
 ################################################################################
 """Unit tests for Cloud Function sync, which syncs the list of github projects
-and uploads them to the Cloud Datastore"""
+and uploads them to the Cloud Datastore."""
 
 import os
 import unittest
@@ -77,8 +77,8 @@ def _wait_for_emulator_ready(proc,
 
 
 # pylint: disable=too-few-public-methods
-class Repository():
-  """Mocking Github Repository"""
+class Repository:
+  """Mocking Github Repository."""
 
   def __init__(self, name, file_type, path):
     self.contents = []
@@ -87,7 +87,7 @@ class Repository():
     self.path = path
 
   def get_contents(self, path):
-    """"Get contents of repository"""
+    """"Get contents of repository."""
     if self.path == path:
       return self.contents
 
@@ -99,10 +99,10 @@ class Repository():
 
 
 class TestDataSync(unittest.TestCase):
-  """Unit tests for sync"""
+  """Unit tests for sync."""
 
   def test_sync_projects(self):
-    """Testing sync_projects()"""
+    """Testing sync_projects()."""
     client = ndb.Client()
 
     with client.context():
@@ -116,7 +116,7 @@ class TestDataSync(unittest.TestCase):
       self.assertEqual(projects, {project.name for project in projects_query})
 
   def test_get_projects(self):
-    """Testing get_projects()"""
+    """Testing get_projects()."""
     repo = Repository('oss-fuzz', 'dir', 'projects')
     for i in range(3):
       name = 'test' + str(i)
