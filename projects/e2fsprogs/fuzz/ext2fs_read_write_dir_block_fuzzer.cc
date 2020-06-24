@@ -15,14 +15,16 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <fcntl.h>
+#include <assert.h>
+#include <sys/syscall.h>
+#include <linux/memfd.h>
 #include <fuzzer/FuzzedDataProvider.h>
 
 #include "ext2fs/ext2fs.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
-  enum Fuzzer {
+  enum FuzzerType {
     ext2fsReadDirBlock,
     ext2fsReadDirBlock2,
     ext2fsReadDirBlock3,
@@ -33,11 +35,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   };
 
   FuzzedDataProvider stream(data, size);
-  const Fuzzer f = stream.ConsumeEnum<Fuzzer>();
-  static const char* fname = "/dev/shm/ext2_test_file";
+  const FuzzerType f = stream.ConsumeEnum<FuzzerType>();
+  static const char* fname = "/tmp/ext2_test_file";
 
   // Write our data to a temp file.
-  int fd = open(fname, O_RDWR|O_CREAT|O_TRUNC);
+  int fd = syscall(SYS_memfd_create, fname, 0);
   std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
   write(fd, buffer.data(), buffer.size());
   close(fd);
@@ -77,7 +79,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         break;
       }
       default: {
-        return 0;
+        assert(false);
       }
     }
     ext2fs_close(fs);
