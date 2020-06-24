@@ -14,18 +14,16 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include "ext2fs/ext2fs.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  static const char* pattern = "/dev/shm/ext2XXXXXX";
-  int fd;
-  char* fname;
+  static const char* fname = "/dev/shm/ext2_test_file";
 
   // Write our data to a temp file.
-  fname = strdup(pattern);
-  fd = mkstemp(fname);
+  int fd = open(fname, O_RDWR|O_CREAT|O_TRUNC);
   write(fd, data, size);
   close(fd);
 
@@ -41,7 +39,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     ext2fs_close(fs);
   }
 
-  unlink(fname);
-  free(fname);
   return 0;
 }

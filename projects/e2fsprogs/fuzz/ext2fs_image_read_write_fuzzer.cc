@@ -15,22 +15,31 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <fuzzer/FuzzedDataProvider.h>
 
 #include "ext2fs/ext2fs.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  static const char* pattern = "/dev/shm/ext2XXXXXX";
-  int fd;
-  char* fname;
+
+  enum Fuzzer {
+    ext2fsImageBitmapRead,
+    ext2fsImageInodeRead,
+    ext2fsImageSuperRead,
+    ext2fsImageBitmapWrite,
+    ext2fsImageInodeWrite,
+    ext2fsImageSuperWrite,
+    kMaxValue = ext2fsImageSuperWrite
+  };
+
   FuzzedDataProvider stream(data, size);
-  const unsigned int fuzz_target = stream.ConsumeIntegral<unsigned int>() % 6;
+  const Fuzzer f = stream.ConsumeEnum<Fuzzer>();
+  static const char* fname = "/dev/shm/ext2_test_file";
 
   // Write our data to a temp file.
-  fname = strdup(pattern);
-  fd = mkstemp(fname);
-  std::vector<char> data_ = stream.ConsumeRemainingBytes<char>();
-  write(fd, data_.data(), data_.size());
+  int fd = open(fname, O_RDWR|O_CREAT|O_TRUNC);
+  std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
+  write(fd, buffer.data(), buffer.size());
   close(fd);
 
   ext2_filsys fs;
@@ -41,28 +50,28 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       &fs);
 
   if (!retval) {
-    switch (fuzz_target) {
-      case 0: {
+    switch (f) {
+      case ext2fsImageBitmapRead: {
         ext2fs_image_bitmap_read(fs, fd, 0);
         break;
       }
-      case 1: {
+      case ext2fsImageInodeRead: {
         ext2fs_image_inode_read(fs, fd, 0);
         break;
       }
-      case 2: {
+      case ext2fsImageSuperRead: {
         ext2fs_image_super_read(fs, fd, 0);
         break;
       }
-      case 3: {
+      case ext2fsImageBitmapWrite: {
         ext2fs_image_bitmap_write(fs, fd, 0);
         break;
       }
-      case 4: {
+      case ext2fsImageInodeWrite: {
         ext2fs_image_inode_write(fs, fd, 0);
         break;
       }
-      case 5: {
+      case ext2fsImageSuperWrite: {
         ext2fs_image_super_write(fs, fd, 0);
         break;
       }
@@ -73,7 +82,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     ext2fs_close(fs);
   }
 
-  unlink(fname);
-  free(fname);
   return 0;
 }

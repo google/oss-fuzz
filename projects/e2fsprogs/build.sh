@@ -16,13 +16,8 @@
 ################################################################################
 
 # build project
-case $SANITIZER in
-  address) configure_flags="--enable-addrsan" ;;
-  undefined) configure_flags="--enable-ubsan" ;;
-  *) configure_flags="" ;;
-esac
-
-$SRC/e2fsprogs/configure $configure_flags
+export LDFLAGS="$CXXFLAGS"
+$SRC/e2fsprogs/configure
 make -j$(nproc) all
 
 # build fuzzers

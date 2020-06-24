@@ -15,22 +15,31 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <fuzzer/FuzzedDataProvider.h>
 
 #include "ext2fs/ext2fs.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  static const char* pattern = "/dev/shm/ext2XXXXXX";
-  int fd;
-  char* fname;
+
+  enum Fuzzer {
+    ext2fsReadDirBlock,
+    ext2fsReadDirBlock2,
+    ext2fsReadDirBlock3,
+    ext2fsWriteDirBlock,
+    ext2fsWriteDirBlock2,
+    ext2fsWriteDirBlock3,
+    kMaxValue = ext2fsWriteDirBlock3
+  };
+
   FuzzedDataProvider stream(data, size);
-  const unsigned int fuzz_target = stream.ConsumeIntegral<unsigned int>() % 6;
+  const Fuzzer f = stream.ConsumeEnum<Fuzzer>();
+  static const char* fname = "/dev/shm/ext2_test_file";
 
   // Write our data to a temp file.
-  fname = strdup(pattern);
-  fd = mkstemp(fname);
-  std::vector<char> data_ = stream.ConsumeRemainingBytes<char>();
-  write(fd, data_.data(), data_.size());
+  int fd = open(fname, O_RDWR|O_CREAT|O_TRUNC);
+  std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
+  write(fd, buffer.data(), buffer.size());
   close(fd);
 
   ext2_filsys fs;
@@ -42,28 +51,28 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (!retval) {
     void *buf;
-    switch (fuzz_target) {
-      case 0: {
+    switch (f) {
+      case ext2fsReadDirBlock: {
         ext2fs_read_dir_block(fs, 0, buf);
         break;
       }
-      case 1: {
+      case ext2fsReadDirBlock2: {
         ext2fs_read_dir_block2(fs, 0, buf, 0);
         break;
       }
-      case 2: {
+      case ext2fsReadDirBlock3: {
         ext2fs_read_dir_block3(fs, 0, buf, 0);
         break;
       }
-      case 3: {
+      case ext2fsWriteDirBlock: {
         ext2fs_write_dir_block(fs, 0, buf);
         break;
       }
-      case 4: {
+      case ext2fsWriteDirBlock2: {
         ext2fs_write_dir_block2(fs, 0, buf, 0);
         break;
       }
-      case 5: {
+      case ext2fsWriteDirBlock3: {
         ext2fs_write_dir_block3(fs, 0, buf, 0);
         break;
       }
@@ -74,7 +83,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     ext2fs_close(fs);
   }
 
-  unlink(fname);
-  free(fname);
   return 0;
 }
