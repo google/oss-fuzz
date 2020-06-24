@@ -73,17 +73,22 @@ def get_projects(repo):
   return projects
 
 
+def get_access_token():
+  """Retrieves Github's Access token from Cloud Datastore."""
+  token = GitAuth.query().get()
+  if token is None:
+    raise RuntimeError('No access token available')
+  return token.access_token
+
+
 def sync(event, context):
   """Sync projects with cloud datastore."""
+
+  del event, context  #unused
   client = ndb.Client()
 
   with client.context():
-    token = GitAuth.query().get()
-    if token is None:
-      raise RuntimeError('No access token provided')
-    access_token = token.access_token
-
-    github_client = Github(access_token)
+    github_client = Github(get_access_token())
     repo = github_client.get_repo('google/oss-fuzz')
     projects = get_projects(repo)
 

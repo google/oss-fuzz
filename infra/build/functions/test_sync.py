@@ -25,6 +25,7 @@ from google.cloud import ndb
 
 from main import sync_projects
 from main import get_projects
+from main import get_access_token
 from main import Project
 
 _EMULATOR_TIMEOUT = 20
@@ -80,8 +81,8 @@ def _wait_for_emulator_ready(proc,
 class Repository:
   """Mocking Github Repository."""
 
-  def __init__(self, name, file_type, path):
-    self.contents = []
+  def __init__(self, name, file_type, path, contents=None):
+    self.contents = contents or []
     self.name = name
     self.type = file_type
     self.path = path
@@ -117,17 +118,62 @@ class TestDataSync(unittest.TestCase):
 
   def test_get_projects(self):
     """Testing get_projects()."""
-    repo = Repository('oss-fuzz', 'dir', 'projects')
-    for i in range(3):
-      name = 'test' + str(i)
-      repo.contents.append(Repository(name, 'dir', 'projects/' + name))
-      project = repo.contents[i]
-      project.contents.append(Repository('Dockerfile', 'file', 'placeholder'))
 
-    # Removing Dockerfile from project test1
-    repo.contents[1].contents.pop()
+    repo = Repository('oss-fuzz', 'dir', 'projects', [
+        Repository(
+            'test0', 'dir', 'projects/test0',
+            [Repository('Dockerfile', 'file', 'projects/test0/Dockerfile')]),
+        Repository(
+            'test1', 'dir', 'projects/test1',
+            [Repository('Dockerfile', 'file', 'projects/test1/Dockerfile')])
+    ])
 
-    self.assertEqual(get_projects(repo), {'test0', 'test2'})
+    self.assertEqual(get_projects(repo), {'test0', 'test1'})
+
+  def test_get_projects_no_docker_file(self):
+    """Testing get_projects() with missing dockerfile"""
+
+    repo = Repository('oss-fuzz', 'dir', 'projects', [
+        Repository(
+            'test0', 'dir', 'projects/test0',
+            [Repository('Dockerfile', 'file', 'projects/test0/Dockerfile')]),
+        Repository('test1', 'dir', 'projects/test1')
+    ])
+
+    self.assertEqual(get_projects(repo), {'test0'})
+
+  def test_get_projects_invalid_project_name(self):
+    """Testing get_projects() with invalid project name"""
+
+    repo = Repository('oss-fuzz', 'dir', 'projects', [
+        Repository(
+            'test0', 'dir', 'projects/test0',
+            [Repository('Dockerfile', 'file', 'projects/test0/Dockerfile')]),
+        Repository(
+            'test1@', 'dir', 'projects/test1',
+            [Repository('Dockerfile', 'file', 'projects/test1/Dockerfile')])
+    ])
+
+    self.assertEqual(get_projects(repo), {'test0'})
+
+  def test_get_projects_non_directory_type_project(self):
+    """Testing get_projects() when a file in projects/ is not of type 'dir'."""
+
+    repo = Repository('oss-fuzz', 'dir', 'projects', [
+        Repository(
+            'test0', 'dir', 'projects/test0',
+            [Repository('Dockerfile', 'file', 'projects/test0/Dockerfile')]),
+        Repository('test1', 'file', 'projects/test1')
+    ])
+
+    self.assertEqual(get_projects(repo), {'test0'})
+
+  def test_get_access_token(self):
+    """Testing get_access_token()."""
+    client = ndb.Client()
+
+    with client.context():
+      self.assertRaises(RuntimeError, get_access_token)
 
 
 if __name__ == '__main__':
