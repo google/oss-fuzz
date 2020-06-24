@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,5 +14,5 @@
 #
 ################################################################################
 
-PyGithub
-google-cloud-ndb
+PyGithub==1.51
+google-cloud-ndb==1.3.0

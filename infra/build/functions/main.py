@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
+"""Cloud functions for build scheduling"""
 
 import re
 
@@ -22,58 +22,68 @@ from google.cloud import ndb
 
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 
+
+# pylint: disable=too-few-public-methods
 class Project(ndb.Model):
   """Datastore Entity Project"""
   name = ndb.StringProperty()
 
+
+# pylint: disable=too-few-public-methods
 class GitAuth(ndb.Model):
   """Datastore Entity GitAuth"""
   access_token = ndb.StringProperty()
 
+
 def sync_projects(projects):
   """Sync projects with cloud datastore"""
-  to_remove = [
-      project for project in Project.query()
-      if project.name not in projects
+  project_query = Project.query()
+  projects_to_remove = [
+      project.key for project in project_query if project.name not in projects
   ]
 
-  for project in to_remove:
-    project.key.delete()
+  ndb.delete_multi(projects_to_remove)
 
-  already_exist = {
-      project.name for project in Project.query()
-      if project.name in projects
-    }
+  existing_projects = {project.name for project in project_query}
 
   for project in projects:
-    if project not in already_exist:
+    if project not in existing_projects:
       Project(name=project).put()
 
+
 def _has_docker_file(repo, project_path):
-  return any(content_file.name == "Dockerfile"
+  return any(content_file.name == 'Dockerfile'
              for content_file in repo.get_contents(project_path))
+
 
 def get_projects(repo):
   """get projects from git repo"""
-  contents = repo.get_contents("projects")
+  contents = repo.get_contents('projects')
   projects = {
       content_file.name
       for content_file in contents
-      if content_file.type == "dir" and _has_docker_file(repo, content_file.path)
-      and VALID_PROJECT_NAME.match(content_file.name)
+      if content_file.type == 'dir' and
+      _has_docker_file(repo, content_file.path) and
+      VALID_PROJECT_NAME.match(content_file.name)
   }
   return projects
+
 
 def sync(event, context):
   """sync with cloud datastore"""
   client = ndb.Client()
 
   with client.context():
-    token = iter(GitAuth.query()).next()
+    try:
+      token = GitAuth.query().get()
+      if token is None:
+        raise RuntimeError("No access token provided")
+    except RuntimeError as re:
+      print(re)
     access_token = token.access_token
 
   github_client = Github(access_token)
-  repo = github_client.get_repo("google/oss-fuzz")
+  repo = github_client.get_repo('google/oss-fuzz')
   projects = get_projects(repo)
 
   with client.context():

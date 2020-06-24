@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +13,8 @@
 # limitations under the License.
 #
 ################################################################################
+"""Unit tests for Cloud Function sync, which syncs the list of github projects
+and uploads them to the Cloud Datastore"""
 
 import os
 import unittest
@@ -26,9 +27,9 @@ from main import sync_projects
 from main import get_projects
 from main import Project
 
-
 _EMULATOR_TIMEOUT = 20
 _DATASTORE_READY_INDICATOR = b'is now running'
+
 
 def start_datastore_emulator():
   """Start Datastore emulator."""
@@ -46,11 +47,13 @@ def start_datastore_emulator():
                           stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
 
+
 def _wait_for_emulator_ready(proc,
                              emulator,
                              indicator,
                              timeout=_EMULATOR_TIMEOUT):
   """Wait for emulator to be ready."""
+
   def _read_thread(proc, ready_event):
     """Thread to continuously read from the process stdout."""
     ready = False
@@ -61,6 +64,7 @@ def _wait_for_emulator_ready(proc,
       if not ready and indicator in line:
         ready = True
         ready_event.set()
+
   # Wait for process to become ready.
   ready_event = threading.Event()
   thread = threading.Thread(target=_read_thread, args=(proc, ready_event))
@@ -71,8 +75,11 @@ def _wait_for_emulator_ready(proc,
         '{} emulator did not get ready in time.'.format(emulator))
   return thread
 
+
+# pylint: disable=too-few-public-methods
 class Repository():
   """Mocking Github Repository"""
+
   def __init__(self, name, file_type, path):
     self.contents = []
     self.name = name
@@ -88,17 +95,21 @@ class Repository():
       if content_file.path == path:
         return content_file.contents
 
+    return None
+
+
 class TestDataSync(unittest.TestCase):
   """Unit tests for sync"""
+
   def test_sync_projects(self):
     """Testing sync_projects()"""
     client = ndb.Client()
 
     with client.context():
-      Project(name="test1").put()
-      Project(name="test2").put()
+      Project(name='test1').put()
+      Project(name='test2').put()
 
-      projects = {"test1", "test3"}
+      projects = {'test1', 'test3'}
       sync_projects(projects)
 
       projects_query = Project.query()
@@ -106,23 +117,22 @@ class TestDataSync(unittest.TestCase):
 
   def test_get_projects(self):
     """Testing get_projects()"""
-    repo = Repository("oss-fuzz", "dir", "projects")
+    repo = Repository('oss-fuzz', 'dir', 'projects')
     for i in range(3):
-      name = "test" + str(i)
-      repo.contents.append(Repository(name, "dir", "projects/" + name))
+      name = 'test' + str(i)
+      repo.contents.append(Repository(name, 'dir', 'projects/' + name))
       project = repo.contents[i]
-      project.contents.append(Repository("Dockerfile", "file", "placeholder"))
+      project.contents.append(Repository('Dockerfile', 'file', 'placeholder'))
 
     # Removing Dockerfile from project test1
     repo.contents[1].contents.pop()
 
-    self.assertEqual(get_projects(repo), {"test0", "test2"})
+    self.assertEqual(get_projects(repo), {'test0', 'test2'})
 
 
 if __name__ == '__main__':
   DS_EMULATOR = start_datastore_emulator()
-  _wait_for_emulator_ready(DS_EMULATOR, 'datastore',
-                           _DATASTORE_READY_INDICATOR)
+  _wait_for_emulator_ready(DS_EMULATOR, 'datastore', _DATASTORE_READY_INDICATOR)
   unittest.main(exit=False)
   # TODO: replace this with a cleaner way of killing the process
-  os.system("pkill -f datastore")
+  os.system('pkill -f datastore')
