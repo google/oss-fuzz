@@ -14,7 +14,8 @@ limitations under the License.
 */
 
 #include "readelf.h"
-
+#include <stdio.h>
+#include <stdint.h>
 int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
