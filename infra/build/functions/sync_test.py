@@ -113,6 +113,7 @@ class TestDataSync(unittest.TestCase):
     os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:' + str(
         _DATASTORE_EMULATOR_PORT)
     os.environ['GOOGLE_CLOUD_PROJECT'] = _TEST_PROJECT_ID
+    os.environ['DATASTORE_DATASET'] = _TEST_PROJECT_ID
 
   def test_sync_projects(self):
     """Testing sync_projects()."""
