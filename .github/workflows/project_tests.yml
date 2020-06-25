@@ -13,6 +13,7 @@ jobs:
           - address
           - memory
           - undefined
+          - coverage
         architecture:
           - x86_64
         include:

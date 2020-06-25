@@ -1,4 +1,15 @@
 homepage: "https://github.com/karelzak/util-linux"
 primary_contact: "ruediger.meier@ga-group.nl"
+language: c
 auto_ccs:
   - "kzak@redhat.com"
+  - "evvers@ya.ru"
+  - "evverx@gmail.com"
+architectures:
+  - x86_64
+  - i386
+sanitizers:
+  - address
+  - undefined
+# util-linux is failing to compile with MSan
+# - memory
