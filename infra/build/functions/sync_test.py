@@ -62,7 +62,6 @@ def _wait_for_emulator_ready(proc,
     ready = False
     while True:
       line = proc.stdout.readline()
-      print(line)
       if not line:
         break
       if not ready and indicator in line:
