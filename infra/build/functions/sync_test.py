@@ -22,6 +22,7 @@ import subprocess
 import threading
 
 from google.cloud import ndb
+from google.auth.credentials import AnonymousCredentials
 
 from sync import sync_projects
 from sync import get_projects
@@ -104,7 +105,7 @@ class TestDataSync(unittest.TestCase):
 
   def test_sync_projects(self):
     """Testing sync_projects()."""
-    client = ndb.Client()
+    client = ndb.Client(credentials=AnonymousCredentials())
 
     with client.context():
       Project(name='test1').put()
@@ -170,7 +171,7 @@ class TestDataSync(unittest.TestCase):
 
   def test_get_access_token(self):
     """Testing get_access_token()."""
-    client = ndb.Client()
+    client = ndb.Client(credentials=AnonymousCredentials())
 
     with client.context():
       self.assertRaises(RuntimeError, get_access_token)
