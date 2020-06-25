@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER evvers@ya.ru
 RUN apt-get update && apt-get install -y autoconf automake autopoint bison libtool pkg-config
-RUN git clone --depth 1 https://github.com/karelzak/util-linux util-linux
+RUN git clone --depth 1 https://github.com/evverx/util-linux util-linux && cd util-linux && git fetch origin fuzz && git checkout -qf FETCH_HEAD
 WORKDIR util-linux
 COPY build.sh $SRC/
