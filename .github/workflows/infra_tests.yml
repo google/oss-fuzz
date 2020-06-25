@@ -24,5 +24,15 @@ jobs:
           pip install -r infra/ci/requirements.txt
           pip install -r infra/build/functions/requirements.txt
 
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '298.0.0'
+      - run:
+          gcloud components install beta cloud-datastore-emulator &&
+          gcloud info
+
+
       - name: Run infra tests
         run: python infra/presubmit.py infra-tests
+
+
