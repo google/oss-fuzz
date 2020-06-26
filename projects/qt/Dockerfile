@@ -23,5 +23,5 @@ RUN git submodule update --init --depth 1 qtbase
 RUN git submodule update --init --depth 1 qtsvg
 WORKDIR $SRC
 RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git
+RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
 RUN git clone --depth 1 https://github.com/google/AFL.git
-COPY build.sh $SRC/
