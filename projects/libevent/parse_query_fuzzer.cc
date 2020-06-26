@@ -23,6 +23,8 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   std::string fuzz_string(reinterpret_cast<const char *>(data), size);
   struct evkeyvalq headers;
-  evhttp_parse_query(fuzz_string.c_str(), &headers);
+  if (evhttp_parse_query(fuzz_string.c_str(), &headers) == 0) {
+    evhttp_clear_headers(&headers);
+  }
   return 0;
 }
