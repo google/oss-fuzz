@@ -85,7 +85,12 @@ build_fuzzer() {
 build_fuzzer "new" "qtbase" "corelib/serialization/qcborstreamreader/next/next.pro" "cbor"
 build_fuzzer "new" "qtbase" "corelib/serialization/qcborvalue/fromcbor/fromcbor.pro" "cbor"
 build_fuzzer "new" "qtbase" "corelib/serialization/qtextstream/extractionoperator-float/extractionoperator-float.pro" "text"
-build_fuzzer "old" "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "$SRC/AFL/dictionaries/xml.dict"
+build_fuzzer "new" "qtbase" "corelib/serialization/qxmlstream/qxmlstreamreader/readnext/readnext.pro" "xml" "$SRC/AFL/dictionaries/xml.dict"
+
+# import existing corpus, remove after first build
+rm $OUT/qtbase_corelib_serialization_qxmlstream_qxmlstreamreader_readnext_seed_corpus.zip
+curl -o $OUT/qtbase_corelib_serialization_qxmlstream_qxmlstreamreader_readnext_seed_corpus.zip https://bugreports.qt.io/secure/attachment/95884/corpus_libFuzzer_qt_readnext_2020-06-25.zip
+
 build_fuzzer "new" "qtbase" "corelib/text/qregularexpression/optimize/optimize.pro" "" "$SRC/AFL/dictionaries/regexp.dict"
 build_fuzzer "new" "qtbase" "gui/image/qimage/loadfromdata/loadfromdata.pro" "images"
 build_fuzzer "new" "qtbase" "gui/painting/qcolorspace/fromiccprofile/fromiccprofile.pro"
