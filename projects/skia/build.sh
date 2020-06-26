@@ -54,8 +54,14 @@ DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
 # TODO(metzman): Stop using gold when
 # bugs.chromium.org/p/oss-fuzz/issues/detail?id=16777 gets resolved.
 export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr "-DIS_FUZZING_WITH_LIBFUZZER""
+export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
 export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH -fuse-ld=gold"
+
+if [ "$FUZZING_ENGINE" == "libfuzzer" ]
+then
+  export CFLAGS="$CFLAGS -DIS_FUZZING_WITH_LIBFUZZER"
+  export CXXFLAGS="$CXXFLAGS -DIS_FUZZING_WITH_LIBFUZZER"
+fi
 
 # This splits a space separated list into a quoted, comma separated list for gn.
 export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
