@@ -19,11 +19,13 @@ export BOOST_ROOT=/src/monero/boost_1_70_0
 export OPENSSL_ROOT_DIR=/src/monero/openssl-1.1.1g
 
 cd monero
+sed -i -e 's/include(FindCcache)/# include(FindCcache)/' CMakeLists.txt
 git submodule init
 git submodule update
 mkdir -p build
 cd build
-cmake -D SANITIZE=ON -D OSSFUZZ=ON -D STATIC=ON -D BUILD_TESTS=ON -D USE_LTO=OFF -D ARCH="default" ..
+export CXXFLAGS="$CXXFLAGS -fPIC"
+cmake -D OSSFUZZ=ON -D STATIC=ON -D BUILD_TESTS=ON -D USE_LTO=OFF -D ARCH="default" ..
 make -C tests/fuzz \
   base58_fuzz_tests \
   block_fuzz_tests \
@@ -37,7 +39,8 @@ make -C tests/fuzz \
   signature_fuzz_tests \
   transaction_fuzz_tests \
   cold-outputs_fuzz_tests \
-  cold-transaction_fuzz_tests
+  cold-transaction_fuzz_tests \
+  tx-extra_fuzz_tests
 
 cd /src/monero/monero/build/tests/fuzz
 for fuzzer in *_fuzz_tests
