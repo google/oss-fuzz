@@ -15,17 +15,4 @@
 #
 ################################################################################
 
-# build libpcap
-tar -xvzf libpcap-1.9.1.tar.gz
-cd libpcap-1.9.1
-./configure --disable-shared
-make -j$(nproc)
-make install
-cd ..
-
-# build project
-cd ndpi
-sh autogen.sh
-./configure --enable-fuzztargets
-make
-ls fuzz/fuzz* | grep -v "\." | while read i; do cp $i $OUT/; done
+bash -x ./ndpi/tests/ossfuzz.sh
