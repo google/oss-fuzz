@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER rlohningqt@gmail.com
-RUN apt-get update && apt-get install -y libc6-dev:i386
-RUN git clone --branch 5.15 --depth 1 git://code.qt.io/qt/qt5.git qt
-WORKDIR qt
-RUN git submodule update --init --depth 1 qtbase
-RUN git submodule update --init --depth 1 qtsvg
-WORKDIR $SRC
-RUN git clone --depth 1 git://code.qt.io/qt/qtqa.git
-RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
-RUN git clone --depth 1 https://github.com/google/AFL.git
+MAINTAINER taku@google.com
+RUN apt-get update && apt-get install -y make autoconf automake libtool cmake build-essential pkg-config libgoogle-perftools-dev
+RUN git clone --depth 1 https://github.com/google/sentencepiece.git sentencepiece
+WORKDIR sentencepiece
+COPY build.sh *.cc $SRC/
