@@ -51,7 +51,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   InterpolationOptions options[] = {Linear, Vng, Ppg, Ahd, Dcb, Dht, AhdModified};
 
-  for (int i = 0; i < sizeof(options); i++) {
+  for (int i = 0; i < sizeof(options)/sizeof(*options); i++) {
     lib_raw.output_params_ptr()->user_qual = static_cast<int>(options[i]);
 
     result = lib_raw.dcraw_process();

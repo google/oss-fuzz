@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,20 +14,30 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-#include "blosc/blosc.h"
+#include "ext2fs/ext2fs.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  if (size < BLOSC_MIN_HEADER_LENGTH) return 0;
+  static const char* fname = "/tmp/ext2_test_file";
 
-  size_t nbytes, cbytes, blocksize;
-  blosc_cbuffer_sizes(data, &nbytes, &cbytes, &blocksize);
-  if (cbytes != size) return 0;
-  if (nbytes == 0) return 0;
+  // Write our data to a temp file.
+  int fd = open(fname, O_RDWR|O_CREAT|O_TRUNC);
+  write(fd, data, size);
+  close(fd);
 
-  void *output = malloc(nbytes);
-  blosc_decompress_ctx(data, output, nbytes, /*numinternalthreads=*/1);
-  free(output);
+  ext2_filsys fs;
+  errcode_t retval = ext2fs_open(
+      fname,
+      0, 0, 0,
+      unix_io_manager,
+      &fs);
+
+  if (!retval) {
+    retval = ext2fs_check_directory(fs, EXT2_ROOT_INO);
+    ext2fs_close(fs);
+  }
+
   return 0;
 }

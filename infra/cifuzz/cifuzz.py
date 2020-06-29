@@ -109,10 +109,8 @@ def build_fuzzers(project_name,
 
   # Check that sanitizer is valid.
   if not is_project_sanitizer(sanitizer, project_name):
-    logging.info("%s is not a project sanitizer, defaulting to address.",
-                 sanitizer)
-    sanitizer = 'address'
-  logging.info("Using %s as sanitizer.", sanitizer)
+    raise ValueError("{0} is not a valid sanitizer for project {1}".format(
+        sanitizer, project_name))
 
   git_workspace = os.path.join(workspace, 'storage')
   os.makedirs(git_workspace, exist_ok=True)
@@ -204,7 +202,6 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
 
   # Check that sanitizer is valid.
   if not is_project_sanitizer(sanitizer, project_name):
-    logging.info("%s is not a project sanitizer.", sanitizer)
     raise ValueError("{0} is not a valid sanitizer for project {1}".format(
         sanitizer, project_name))
   logging.info("Using %s as sanitizer.", sanitizer)
@@ -524,6 +521,15 @@ def is_project_sanitizer(sanitizer, oss_fuzz_project_name):
 
   # Simple parse to prevent adding pyYAML dependency.
   with open(project_yaml, 'r') as file_handle:
-    if sanitizer + '\n' in file_handle.read():
-      return True
-  return False
+    file_data = file_handle.read()
+
+  # TODO(metzman): Replace this with proper handling of project.yaml files.
+  if 'sanitizers:' not in file_data:
+    logging.info('No sanitizers defined in project.yaml. '
+                 'Only allowing address and undefined')
+
+    # List is from:
+    # https://google.github.io/oss-fuzz/getting-started/new-project-guide/#sanitizers
+    return sanitizer in ('address', 'undefined')
+
+  return sanitizer in file_data
