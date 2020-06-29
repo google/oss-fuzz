@@ -23,13 +23,15 @@ import threading
 
 from google.cloud import ndb
 
-from main import sync_projects
-from main import get_projects
-from main import get_access_token
-from main import Project
+from sync import sync_projects
+from sync import get_projects
+from sync import get_access_token
+from sync import Project
 
 _EMULATOR_TIMEOUT = 20
 _DATASTORE_READY_INDICATOR = b'is now running'
+_DATASTORE_EMULATOR_PORT = 8432
+_TEST_PROJECT_ID = 'test-project'
 
 
 def start_datastore_emulator():
@@ -41,8 +43,8 @@ def start_datastore_emulator():
       'datastore',
       'start',
       '--consistency=1.0',
-      '--host-port=localhost:' + str(os.environ.get('DATASTORE_EMULATOR_PORT')),
-      '--project=' + os.environ.get('DATASTORE_PROJECT_ID'),
+      '--host-port=localhost:' + str(_DATASTORE_EMULATOR_PORT),
+      '--project=' + _TEST_PROJECT_ID,
       '--no-store-on-disk',
   ],
                           stdout=subprocess.PIPE,
@@ -102,6 +104,16 @@ class Repository:
 class TestDataSync(unittest.TestCase):
   """Unit tests for sync."""
 
+  @classmethod
+  def setUpClass(cls):
+    ds_emulator = start_datastore_emulator()
+    _wait_for_emulator_ready(ds_emulator, 'datastore',
+                             _DATASTORE_READY_INDICATOR)
+    os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:' + str(
+        _DATASTORE_EMULATOR_PORT)
+    os.environ['GOOGLE_CLOUD_PROJECT'] = _TEST_PROJECT_ID
+    os.environ['DATASTORE_DATASET'] = _TEST_PROJECT_ID
+
   def test_sync_projects(self):
     """Testing sync_projects()."""
     client = ndb.Client()
@@ -115,6 +127,8 @@ class TestDataSync(unittest.TestCase):
 
       projects_query = Project.query()
       self.assertEqual(projects, {project.name for project in projects_query})
+
+    # Todo: Clean datastore in case of new tests relating to same entities.
 
   def test_get_projects(self):
     """Testing get_projects()."""
@@ -175,10 +189,12 @@ class TestDataSync(unittest.TestCase):
     with client.context():
       self.assertRaises(RuntimeError, get_access_token)
 
+  @classmethod
+  def tearDownClass(cls):
+    # TODO: replace this with a cleaner way of killing the process
+    os.system('pkill -f datastore')
+
 
 if __name__ == '__main__':
-  DS_EMULATOR = start_datastore_emulator()
-  _wait_for_emulator_ready(DS_EMULATOR, 'datastore', _DATASTORE_READY_INDICATOR)
+
   unittest.main(exit=False)
-  # TODO: replace this with a cleaner way of killing the process
-  os.system('pkill -f datastore')
