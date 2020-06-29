@@ -20,7 +20,6 @@ RUN apt-get update -y && \
   apt-get install -y make autoconf automake libtool zlib1g-dev \
   protobuf-compiler libprotobuf-dev binutils cmake \
   ninja-build liblzma-dev libz-dev pkg-config
-
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
