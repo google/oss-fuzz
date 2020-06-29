@@ -18,9 +18,15 @@
 ./configure
 make "-j$(nproc)"
 
-$CXX $CXXFLAGS -std=c++11 -Iinclude \
-    $SRC/libyaml_fuzzer.cc -o $OUT/libyaml_fuzzer \
-    $LIB_FUZZING_ENGINE src/.libs/libyaml.a
-
-cp $SRC/libyaml_fuzzer_seed_corpus.zip $OUT/
-cp $SRC/*.dict $SRC/*.options $OUT/
+for fuzzer in $(find $SRC/fuzz -name '*_fuzzer.cc'); do
+  fuzzer_basename=$(basename -s .cc $fuzzer)
+  $CXX $CXXFLAGS \
+      -std=c++11 \
+      -Iinclude \
+      $fuzzer \
+      -o $OUT/$fuzzer_basename \
+      $LIB_FUZZING_ENGINE \
+      src/.libs/libyaml.a
+  cp $SRC/libyaml_seed_corpus.zip "${OUT}/${fuzzer_basename}_seed_corpus.zip"
+  cp $SRC/libyaml_fuzzer.options "${OUT}/${fuzzer_basename}.options"
+done
