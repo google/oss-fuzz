@@ -23,9 +23,9 @@ make -j $(nproc)
 make install
 
 # build fuzzers
-for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
-  fuzz_basename=$(basename -s .cc $fuzzers)
+for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
+  fuzz_basename=$(basename -s .cc $fuzzer)
   $CXX $CXXFLAGS -std=c++11 -I. \
-  $fuzzers $LIB_FUZZING_ENGINE ./src/libsentencepiece.a \
-  -o $OUT/$fuzz_basename
+        $fuzzers $LIB_FUZZING_ENGINE ./src/libsentencepiece.a \
+        -o $OUT/$fuzz_basename
 done
