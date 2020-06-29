@@ -30,3 +30,5 @@ for fuzzer in $(find $SRC/fuzz -name '*_fuzzer.cc'); do
   cp $SRC/libyaml_seed_corpus.zip "${OUT}/${fuzzer_basename}_seed_corpus.zip"
   cp $SRC/libyaml_fuzzer.options "${OUT}/${fuzzer_basename}.options"
 done
+
+cp $SRC/yaml.dict $OUT/
