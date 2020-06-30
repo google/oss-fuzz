@@ -15,23 +15,8 @@
 #
 ################################################################################
 
-# build project
-# e.g.
-# ./autogen.sh
-# ./configure
-# make -j$(nproc) all
-
-# build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     $LIB_FUZZING_ENGINE /path/to/library.a
-
-
-
 export CFLAGS="$CFLAGS"
 export CXXFLAGS="$CXXFLAGS"
-echo "beginning!!!!!!!!!!!!!!!!!!!!!!!!!!1"
 
 declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzz_test.cc)
 declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}"; done)"
