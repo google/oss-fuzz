@@ -42,9 +42,7 @@ fi
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
 readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr'
 
-readonly FUZZER_TARGETS=(
-  'oak/server:wasm_node_fuzz'
-)
+readonly FUZZER_TARGETS=()
 
 bazel build \
   --client_env=CC=${CC} \
