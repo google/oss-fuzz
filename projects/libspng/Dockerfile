@@ -21,10 +21,9 @@ MAINTAINER randy408@protonmail.com
 RUN apt-get update && \
     apt-get install -y wget tar cmake
 
-
-RUN wget -O $SRC/libspng/zlib-1.2.11.tar.gz http://www.zlib.net/zlib-1.2.11.tar.gz
-RUN tar xzvf $SRC/libspng/zlib-1.2.11.tar.gz --directory $SRC/libspng/
-RUN mv $SRC/libspng/zlib-1.2.11 $SRC/libspng/zlib
+RUN wget -O $WORK/zlib.tar.gz http://www.zlib.net/zlib-1.2.11.tar.gz
+RUN tar xzvf $WORK/zlib.tar.gz --directory $SRC/
+RUN mv $SRC/zlib-1.2.11 $SRC/zlib
 RUN git clone --depth 1 https://github.com/randy408/libspng.git
 RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
 
