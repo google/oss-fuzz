@@ -21,12 +21,22 @@ cmake -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
       -DBUILD_SHARED_LIBS=OFF -G "Unix Makefiles" ..
 make
 
+# Compile fuzzer.
+$CXX $CXXFLAGS -I../include $LIB_FUZZING_ENGINE \
+    ../src/test_lib_json/fuzz.cpp -o $OUT/jsoncpp_fuzzer \
+    lib/libjsoncpp.a
+
+# Add dictionary.
+cp $SRC/jsoncpp/src/test_lib_json/fuzz.dict $OUT/jsoncpp_fuzzer.dict
+
+# Compile json proto.
 rm -rf genfiles && mkdir genfiles && ../LPM/external.protobuf/bin/protoc json.proto --cpp_out=genfiles --proto_path=$SRC
 
+# Compile LPM fuzzer.
 $CXX $CXXFLAGS -I genfiles -I.. -I ../libprotobuf-mutator/ -I ../LPM/external.protobuf/include -I../include $LIB_FUZZING_ENGINE \
     $SRC/jsoncpp_fuzz_proto.cc genfiles/json.pb.cc $SRC/json_proto_converter.cc \
     ../LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
     ../LPM/src/libprotobuf-mutator.a \
     ../LPM/external.protobuf/lib/libprotobuf.a \
-    -o  $OUT/jsoncpp_fuzzer \
+    -o  $OUT/jsoncpp_proto_fuzzer \
     lib/libjsoncpp.a
