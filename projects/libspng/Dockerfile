@@ -21,6 +21,7 @@ MAINTAINER randy408@protonmail.com
 RUN apt-get update && \
     apt-get install -y wget tar cmake
 
+
 RUN wget -O $WORK/zlib.tar.gz http://www.zlib.net/zlib-1.2.11.tar.gz
 RUN tar xzvf $WORK/zlib.tar.gz --directory $SRC/
 RUN mv $SRC/zlib-1.2.11 $SRC/zlib
