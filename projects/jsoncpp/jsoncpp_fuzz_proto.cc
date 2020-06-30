@@ -1,4 +1,3 @@
-#include "jsoncpp_fuzz_proto.h"
 #include "json.pb.h"
 #include "json_proto_converter.h"
 #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
@@ -9,6 +8,8 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <cstddef>
+#include <stdint.h>
 
 namespace Json {
 class Exception;
