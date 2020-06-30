@@ -71,9 +71,9 @@ do
 done
 
 # Build driverless libraries.
+# Benchmark about 1.5-2 GB per CPU
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --discard_analysis_cache --notrack_incremental_state --nokeep_state_after_build \
-  # Benchmark about 1.5-2 GB per CPU
   --local_cpu_resources=16 \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
