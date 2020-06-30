@@ -22,6 +22,6 @@ RUN apt-get update && apt-get -y install make autoconf automake libtool wget ope
 RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64
 RUN chmod +x /usr/local/bin/bazel
 
-RUN git clone --single-branch --branch volfson https://github.com/googleinterns/cloud-spanner-emulator-fuzzing.git fuzz     # or use other version control
+RUN git clone https://github.com/googleinterns/cloud-spanner-emulator-fuzzing.git fuzz
 WORKDIR fuzz
 COPY build.sh $SRC/
