@@ -21,24 +21,12 @@ export CXXFLAGS="$CXXFLAGS"
 declare -r FUZZER_TARGETS_CC=$(find . -name *_fuzz_test.cc)
 declare -r FUZZER_TARGETS="$(for t in ${FUZZER_TARGETS_CC}; do echo "${t:2:-3}"; done)"
 
-FUZZER_DICTIONARIES="\
-"
-
 # Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
 # compilation and linking.
 #
 # Some flags, such as `-stdlib=libc++`, generate warnings if used on a C source
 # file. Since the build runs with `-Werror` this will cause it to break, so we
 # use `--conlyopt` and `--cxxopt` instead of `--copt`.
-#
-# NOTE: We ignore -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION. All envoy fuzz
-# targets link this flag through their build target rule. Passing this in via CLI
-# will pass this to genrules that build unit tests that rely on production
-# behavior. Ignore this flag so these unit tests don't fail by using a modified
-# RE2 library.
-# TODO(asraa): Figure out how to work around this better.
-CFLAGS=${CFLAGS//"-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"/}
-CXXFLAGS=${CXXFLAGS//"-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"/}
 declare -r EXTRA_BAZEL_FLAGS="$(
 for f in ${CFLAGS}; do
   echo "--conlyopt=${f}" "--linkopt=${f}"
@@ -53,7 +41,6 @@ declare BAZEL_BUILD_TARGETS="//src/fuzz:all"
 
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
 readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr'
-
 
 # Build driverless libraries.
 bazel build --verbose_failures  --strip=never \
@@ -82,11 +69,6 @@ cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 $OUT/lib/
 # Move out tzdata
 mkdir -p $OUT/data
 cp -r /usr/share/zoneinfo $OUT/data/
-  
-# Copy dictionaries and options files to $OUT/
-for d in $FUZZER_DICTIONARIES; do
-  cp "$d" "${OUT}"/
-done
 
 # Move out fuzz target
 cp bazel-bin/"${BAZEL_TARGET_PATH}" "${OUT}"/
