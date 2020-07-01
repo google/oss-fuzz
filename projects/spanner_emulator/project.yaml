@@ -6,3 +6,4 @@ auto_ccs:
   - "volfson@google.com"
 sanitizers:
  - address
+ - memory
