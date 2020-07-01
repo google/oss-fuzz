@@ -1,5 +1,5 @@
 diff --git a/src/backend/Makefile b/src/backend/Makefile
-index 9706a95848..5888e7819d 100644
+index 9706a95848..fddb2b6f88 100644
 --- a/src/backend/Makefile
 +++ b/src/backend/Makefile
 @@ -17,7 +17,7 @@ subdir = src/backend
@@ -11,10 +11,11 @@ index 9706a95848..5888e7819d 100644
  	main nodes optimizer partitioning port postmaster \
  	regex replication rewrite \
  	statistics storage tcop tsearch utils $(top_builddir)/src/timezone \
-@@ -43,6 +43,10 @@ OBJS = \
+@@ -43,6 +43,11 @@ OBJS = \
  	$(top_builddir)/src/common/libpgcommon_srv.a \
  	$(top_builddir)/src/port/libpgport_srv.a
  
++
 +TMPVAR := $(OBJS)
 +OBJS_WITHOUT_FUZZER = $(filter-out fuzzer/objfiles.txt, $(TMPVAR))
 +OBJS_WITHOUT_MAIN = $(filter-out main/objfiles.txt, $(TMPVAR))
@@ -22,7 +23,7 @@ index 9706a95848..5888e7819d 100644
  # We put libpgport and libpgcommon into OBJS, so remove it from LIBS; also add
  # libldap and ICU
  LIBS := $(filter-out -lpgport -lpgcommon, $(LIBS)) $(LDAP_LIBS_BE) $(ICU_LIBS)
-@@ -56,22 +60,26 @@ endif
+@@ -56,15 +61,19 @@ endif
  
  ##########################################################################
  
@@ -44,14 +45,6 @@ index 9706a95848..5888e7819d 100644
  endif
  endif
  endif
- 
- ifeq ($(PORTNAME), cygwin)
- 
--postgres: $(OBJS)
-+postgres: $(OBJS_WITHOUT_FUZZER)
- 	$(CC) $(CFLAGS) $(call expand_subsys,$^) $(LDFLAGS) $(LDFLAGS_EX) $(export_dynamic) -Wl,--stack,$(WIN32_STACK_RLIMIT) -Wl,--export-all-symbols -Wl,--out-implib=libpostgres.a $(LIBS) -o $@
- 
- # libpostgres.a is actually built in the preceding rule, but we need this to
 diff --git a/src/backend/fuzzer/Makefile b/src/backend/fuzzer/Makefile
 new file mode 100644
 index 0000000000..c80b215031

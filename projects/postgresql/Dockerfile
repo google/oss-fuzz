@@ -21,5 +21,5 @@ RUN apt-get update && apt-get install -y make libreadline-dev zlib1g-dev bison f
 
 RUN git clone git://git.postgresql.org/git/postgresql.git
 
-WORKDIR postgres
-COPY fix.diff build.sh *.dict *.options $SRC/
+WORKDIR postgresql
+COPY add_fuzzers.diff build.sh *.dict *.options $SRC/
