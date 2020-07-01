@@ -48,6 +48,7 @@ for f in ${CXXFLAGS}; do
 done
 )"
 
+declare BAZEL_TARGET_PATH="src/fuzz/simple_fuzz_test"
 declare BAZEL_BUILD_TARGETS="//src/fuzz:all"
 
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
@@ -86,6 +87,9 @@ cp -r /usr/share/zoneinfo $OUT/data/
 for d in $FUZZER_DICTIONARIES; do
   cp "$d" "${OUT}"/
 done
+
+# Move out fuzz target
+cp bazel-bin/"${BAZEL_TARGET_PATH}" "${OUT}"/
 
 # Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build
 # cache.
