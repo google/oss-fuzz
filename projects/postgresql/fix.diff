@@ -1,5 +1,5 @@
 diff --git a/src/backend/Makefile b/src/backend/Makefile
-index 9706a95848..f901d1153c 100644
+index 9706a95848..5888e7819d 100644
 --- a/src/backend/Makefile
 +++ b/src/backend/Makefile
 @@ -17,7 +17,7 @@ subdir = src/backend
@@ -22,7 +22,7 @@ index 9706a95848..f901d1153c 100644
  # We put libpgport and libpgcommon into OBJS, so remove it from LIBS; also add
  # libldap and ICU
  LIBS := $(filter-out -lpgport -lpgcommon, $(LIBS)) $(LDAP_LIBS_BE) $(ICU_LIBS)
-@@ -56,15 +60,19 @@ endif
+@@ -56,22 +60,26 @@ endif
  
  ##########################################################################
  
@@ -44,12 +44,20 @@ index 9706a95848..f901d1153c 100644
  endif
  endif
  endif
+ 
+ ifeq ($(PORTNAME), cygwin)
+ 
+-postgres: $(OBJS)
++postgres: $(OBJS_WITHOUT_FUZZER)
+ 	$(CC) $(CFLAGS) $(call expand_subsys,$^) $(LDFLAGS) $(LDFLAGS_EX) $(export_dynamic) -Wl,--stack,$(WIN32_STACK_RLIMIT) -Wl,--export-all-symbols -Wl,--out-implib=libpostgres.a $(LIBS) -o $@
+ 
+ # libpostgres.a is actually built in the preceding rule, but we need this to
 diff --git a/src/backend/fuzzer/Makefile b/src/backend/fuzzer/Makefile
 new file mode 100644
-index 0000000000..c768ad81af
+index 0000000000..c80b215031
 --- /dev/null
 +++ b/src/backend/fuzzer/Makefile
-@@ -0,0 +1,24 @@
+@@ -0,0 +1,16 @@
 +#-------------------------------------------------------------------------
 +#
 +# Makefile for the fuzzer module
@@ -64,22 +72,14 @@ index 0000000000..c768ad81af
 +
 +OBJS = parser_fuzzer.o
 +
-+
-+# parser_fuzzer.o: parser_fuzzer.c
-+# 	clang -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -I$(
-+# includedir_server) -I$(
-+# includedir_internal) -c $
-+#< -o $
-+#@
-+
 +include $(top_srcdir)/src/backend/common.mk
 +
 diff --git a/src/backend/fuzzer/parser_fuzzer.c b/src/backend/fuzzer/parser_fuzzer.c
 new file mode 100644
-index 0000000000..2d0b0cd9a4
+index 0000000000..6c555d55dd
 --- /dev/null
 +++ b/src/backend/fuzzer/parser_fuzzer.c
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,41 @@
 +// Copyright 2019 Google LLC
 +//
 +// Licensed under the Apache License, Version 2.0 (the "License");
@@ -99,39 +99,7 @@ index 0000000000..2d0b0cd9a4
 +#include "parser/parser.h"
 +#include "utils/memutils.h"
 +
-+const char *progname;
-+/*
-+static inline void *
-+ pg_malloc_internal(size_t size, int flags)
-+ {
-+     void       *tmp;
-+ 
-+     // Avoid unportable behavior of malloc(0)
-+     if (size == 0)
-+         size = 1;
-+     tmp = malloc(size);
-+     if (tmp == NULL)
-+     {
-+         if ((flags & MCXT_ALLOC_NO_OOM) == 0)
-+         {
-+             fprintf(stderr, _("out of memory\n"));
-+             exit(EXIT_FAILURE);
-+         }
-+         return NULL;
-+     }
-+ 
-+     if ((flags & MCXT_ALLOC_ZERO) != 0)
-+         MemSet(tmp, 0, size);
-+     return tmp;
-+ }
-+
-+void *
-+ pg_malloc_extended(size_t size, int flags)
-+ {
-+     return pg_malloc_internal(size, flags);
-+ }
-+*/
-+
++const char *progname = "progname";
 +
 +/*
 +** Main entry point.  The fuzzer invokes this function with each
@@ -140,13 +108,11 @@ index 0000000000..2d0b0cd9a4
 +int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 +  MemoryContextInit();
 +  sigjmp_buf local_sigjmp_buf;
-+  char* query = (char*) malloc(size+1);
++  char* query = (char*) malloc( (size+1)*sizeof(char) );
 +  query[size] = '\0';
-+  for(int i=0; i<size; i++){
-+    query[i] = (char)(data[i]);
-+  }
++  memcpy(query, data, size);
 +  
-+  if(!sigsetjmp(local_sigjmp_buf,0)){
++  if(!sigsetjmp(local_sigjmp_buf,0)){ 
 +    PG_exception_stack = &local_sigjmp_buf;
 +    raw_parser(query);
 +  }
