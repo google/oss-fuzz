@@ -23,10 +23,10 @@ import threading
 
 from google.cloud import ndb
 
-from sync import sync_projects
-from sync import get_projects
-from sync import get_access_token
-from sync import Project
+from main import sync_projects
+from main import get_projects
+from main import get_access_token
+from main import Project
 
 _EMULATOR_TIMEOUT = 20
 _DATASTORE_READY_INDICATOR = b'is now running'
