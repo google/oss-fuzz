@@ -14,11 +14,17 @@
 #
 ################################################################################
 
-JOB_TOPIC=sync-topic
+JOB_TOPIC=schedule-project-sync
 SCHEDULER_JOB=sync-scheduler
 JOB_SCHEDULE="*/30 * * * *"
 MESSAGE="Start Sync"
 ENTRY_POINT=sync
+
+if [ "$1" ]; then
+	gcloud config set project $1
+else
+	echo -e "\n Usage ./deploy.sh my-project-name"; exit;
+fi
 
 # Checking if the given pubsub topic exists
 if ! gcloud pubsub topics describe $JOB_TOPIC ;
