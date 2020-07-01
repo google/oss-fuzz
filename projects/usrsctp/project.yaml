@@ -4,6 +4,8 @@ primary_contact: "weinrank@fh-muenster.de"
 auto_ccs:
   - "t00fcxen@googlemail.com"
   - "markwo@google.com"
+  - "natashenka@google.com"
+  - "yuquanw@google.com"
 fuzzing_engines:
   - libfuzzer
   - afl
@@ -13,4 +15,3 @@ sanitizers:
   - address
   - undefined
   - memory
-  - dataflow

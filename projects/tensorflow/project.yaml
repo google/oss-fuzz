@@ -3,7 +3,7 @@ language: c++
 primary_contact: "mihaimaruseac@google.com"
 auto_ccs:
  - "frankchn@google.com"
-fuzzing_engines:
-  - libfuzzer
 sanitizers:
   - address
+  - undefined
+  - memory

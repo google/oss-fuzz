@@ -12,6 +12,9 @@ inputs:
   dry-run:
     description: 'If set, run the action without actually reporting a failure.'
     default: false
+  sanitizer:
+    description: 'The sanitizer to run the fuzzers with.'
+    default: 'address'
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -19,3 +22,4 @@ runs:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
+    SANITIZER: ${{ inputs.sanitizer }}

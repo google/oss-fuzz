@@ -63,7 +63,6 @@ function run_fuzz_target {
   local profraw_file_mask="$DUMPS_DIR/$target.*.profraw"
   local profdata_file="$DUMPS_DIR/$target.profdata"
   local corpus_real="/corpus/${target}"
-  mkdir -p $corpus_real
 
   # -merge=1 requires an output directory, create a dummy dir for that.
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"

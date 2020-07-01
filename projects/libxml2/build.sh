@@ -28,9 +28,11 @@ fi
     --without-legacy \
     --without-python
 make -j$(nproc) V=1
-make -C fuzz V=1 seed/xml.stamp fuzz.o xml.o
+make -C fuzz V=1 seed/schema.stamp seed/xml.stamp fuzz.o
+cp -r test/HTML fuzz/seed/html
 
-for fuzzer in xml; do
+for fuzzer in html schema xml; do
+    make -C fuzz $fuzzer.o
     # Link with $CXX
     $CXX $CXXFLAGS \
         fuzz/$fuzzer.o fuzz/fuzz.o \
