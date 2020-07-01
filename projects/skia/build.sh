@@ -111,7 +111,7 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_polyutils android_codec image_decode_incremental \
                                    sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
                                    api_skdescriptor skdescriptor_deserialize\
-                                   svg_dom
+                                   svg_dom api_svg_canvas
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -219,3 +219,6 @@ cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.
 
 cp out/Fuzz/svg_dom $OUT/svg_dom
 cp ./svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
+
+cp out/Fuzz/api_svg_canvas $OUT/api_svg_canvas
+cp ./canvas_seed_corpus.zip $OUT/api_svg_canvas_corpus.zip
