@@ -39,7 +39,7 @@ OPENEXR_LIBS=(
   "/work/IlmBase/Imath/libImath-2_5.a"
 )
 
-for fuzzer in $(find $SRC/ -name '*_fuzzer.cc'); do
+for fuzzer in $SRC/*_fuzzer.cc; do
   fuzzer_basename=$(basename -s .cc $fuzzer)
   $CXX $CXXFLAGS -std=c++11 -pthread \
     ${OPENEXR_INCLUDES[@]} \
