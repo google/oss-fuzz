@@ -21,31 +21,35 @@ MESSAGE="Start Sync"
 ENTRY_POINT=sync
 
 if [ "$1" ]; then
-	gcloud config set project $1
+	PROJECT_ID=$1
 else
 	echo -e "\n Usage ./deploy.sh my-project-name"; exit;
 fi
 
 # Checking if the given pubsub topic exists
-if ! gcloud pubsub topics describe $JOB_TOPIC ;
+if ! gcloud pubsub topics describe $JOB_TOPIC --project $PROJECT_ID ;
 	then
-		gcloud pubsub topics create $JOB_TOPIC
+		gcloud pubsub topics create $JOB_TOPIC \
+		--project $PROJECT_ID
 fi
 # Checking if the given scheduler job exists
-if gcloud scheduler jobs describe $SCHEDULER_JOB;
+if gcloud scheduler jobs describe $SCHEDULER_JOB --project $PROJECT_ID ;
 	then
 		gcloud scheduler jobs update pubsub sync-scheduler \
 			--schedule "$JOB_SCHEDULE" \
 			--topic $JOB_TOPIC \
-			--message-body "$MESSAGE"
+			--message-body "$MESSAGE" \
+			--project $PROJECT_ID
 	else
 		gcloud scheduler jobs create pubsub sync-scheduler \
 			--schedule "$JOB_SCHEDULE" \
 			--topic $JOB_TOPIC \
-			--message-body "$MESSAGE"
+			--message-body "$MESSAGE" \
+			--project $PROJECT_ID
 fi
 
 gcloud functions deploy sync \
 	--entry-point $ENTRY_POINT \
 	--trigger-topic $JOB_TOPIC \
-	--runtime python37
+	--runtime python37 \
+	--project $PROJECT_ID
