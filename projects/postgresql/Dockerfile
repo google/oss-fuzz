@@ -18,11 +18,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER sfrost@snowman.net
 
 RUN apt-get update && apt-get install -y make libreadline-dev zlib1g-dev bison flex
-# autoconf automake libtool curl tcl zlib1g-dev
 
-RUN git clone https://github.com/postgres/postgres.git
-
-# RUN find $SRC/sqlite3 -name "*.test" | xargs zip $SRC/ossfuzz_seed_corpus.zip
+RUN git clone git://git.postgresql.org/git/postgresql.git
 
 WORKDIR postgres
 COPY fix.diff build.sh *.dict *.options $SRC/
