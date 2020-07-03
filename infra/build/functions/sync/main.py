@@ -15,17 +15,22 @@
 ################################################################################
 """Cloud functions for build scheduling."""
 
-import re
+import logging
 import os
+import re
 import yaml
 
 from github import Github
+from google.api_core import exceptions
 from google.cloud import ndb
 from google.cloud import scheduler_v1
-from google.api_core import exceptions
 
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_SCHEDULE = '0 6 * * *'
+
+
+class ProjectYamlError(Exception):
+  """Error in project.yaml format."""
 
 
 # pylint: disable=too-few-public-methods
@@ -50,44 +55,21 @@ def create_scheduler(cloud_scheduler_client, project_name, schedule):
       'name': parent + '/jobs/' + project_name + '-scheduler',
       'pubsub_target': {
           'topic_name': 'projects/' + project_id + '/topics/request-build',
-          'data': bytes(project_name, 'utf-8')
+          'data': project_name.encode(encoding='UTF-8')
       },
       'schedule': schedule
   }
 
-  try:
-    cloud_scheduler_client.create_job(parent, job)
-    return True
-
-  except exceptions.GoogleAPICallError as error:
-    print(error.message)
-
-  except exceptions.RetryError as error:
-    print(error.message)
-
-  except ValueError:
-    print("Incorrect parameters passed")
-
-  return False
+  cloud_scheduler_client.create_job(parent, job)
 
 
-def delete_schedulers(cloud_scheduler_client, project_list):
+def delete_scheduler(cloud_scheduler_client, project_name):
   """Deletes schedulers for projects that were removed."""
   project_id = os.environ.get('GCP_PROJECT')
   location_id = os.environ.get('FUNCTION_REGION')
-  for project in project_list:
-    name = cloud_scheduler_client.job_path(project_id, location_id,
-                                           project + '-scheduler')
-    try:
-      cloud_scheduler_client.delete_job(name)
-    except exceptions.GoogleAPICallError as error:
-      print(error.message)
-
-    except exceptions.RetryError as error:
-      print(error.message)
-
-    except ValueError:
-      print("Incorrect parameters passed")
+  name = cloud_scheduler_client.job_path(project_id, location_id,
+                                         project_name + '-scheduler')
+  cloud_scheduler_client.delete_job(name)
 
 
 def update_scheduler(cloud_scheduler_client, project, schedule):
@@ -99,59 +81,49 @@ def update_scheduler(cloud_scheduler_client, project, schedule):
       'name': parent + '/jobs/' + project.name + '-scheduler',
       'pubsub_target': {
           'topic_name': 'projects/' + project_id + '/topics/request-build',
-          'data': bytes(project.name, 'utf-8')
+          'data': project.name.encode(encoding='UTF-8')
       },
       'schedule': project.schedule
   }
 
   update_mask = {'schedule': schedule}
-
-  try:
-    cloud_scheduler_client.update(job, update_mask)
-
-  except exceptions.GoogleAPICallError as error:
-    print(error.message)
-
-  except exceptions.RetryError as error:
-    print(error.message)
-
-  except ValueError:
-    print("Incorrect parameters passed")
+  cloud_scheduler_client.update(job, update_mask)
 
 
 def sync_projects(cloud_scheduler_client, projects):
   """Sync projects with cloud datastore."""
   project_query = Project.query()
-  projects_to_remove = [
-      project.key for project in project_query if project.name not in projects
-  ]
-  schedulers_to_remove = [
-      project.name for project in project_query if project.name not in projects
-  ]
-
-  ndb.delete_multi(projects_to_remove)
-  delete_schedulers(cloud_scheduler_client, schedulers_to_remove)
+  for project in project_query:
+    if project.name not in projects:
+      try:
+        delete_scheduler(cloud_scheduler_client, project.name)
+        project.key.delete()
+      except exceptions.GoogleAPICallError as error:
+        logging.error('Scheduler deletion for %s failed with %s', project.name,
+                      error)
 
   existing_projects = {project.name for project in project_query}
 
-  new_projects = [
-      Project(name=project_name, schedule=projects[project_name])
-      for project_name in projects
-      if project_name not in existing_projects
-  ]
-
   for project_name in projects:
     if project_name not in existing_projects:
-      create_scheduler(cloud_scheduler_client, project_name,
-                       projects[project_name])
-
-  ndb.put_multi(new_projects)
+      try:
+        create_scheduler(cloud_scheduler_client, project_name,
+                         projects[project_name])
+        Project(name=project_name, schedule=projects[project_name]).put()
+      except exceptions.GoogleAPICallError as error:
+        logging.error('Scheduler creation for %s failed with %s', project_name,
+                      error)
 
   for project in project_query:
     if project.name in projects and project.schedule != projects[project.name]:
-      update_scheduler(cloud_scheduler_client, project, projects[project.name])
-      project.schedule = projects[project.name]
-      project.put()
+      try:
+        update_scheduler(cloud_scheduler_client, project,
+                         projects[project.name])
+        project.schedule = projects[project.name]
+        project.put()
+      except exceptions.GoogleAPICallError as error:
+        logging.error('Updating scheduler for %s failed with %s', project.name,
+                      error)
 
 
 def _has_docker_file(project_contents):
@@ -163,18 +135,29 @@ def _has_docker_file(project_contents):
 def get_schedule(project_contents):
   """Checks for schedule parameter in yaml file else uses DEFAULT_SCHEDULE."""
   for content_file in project_contents:
-    if content_file.name == 'project.yaml':
-      yaml_str = content_file.decoded_content.decode('utf-8')
-      project_yaml = yaml.safe_load(yaml_str)
-      if 'schedule' not in project_yaml:
-        schedule = DEFAULT_SCHEDULE
-      else:
+    if content_file.name != 'project.yaml':
+      continue
+    yaml_str = content_file.decoded_content.decode('utf-8')
+    project_yaml = yaml.safe_load(yaml_str)
+    if 'schedule' in project_yaml:
+      try:
         times_per_day = int(project_yaml['schedule'])
-        interval = 24 // times_per_day
-        hours = []
-        for hour in range(6, 30, interval):
-          hours.append(hour % 24)
-        schedule = '0 ' + ','.join(str(hour) for hour in hours) + ' * * *'
+        if times_per_day not in range(1, 5):
+          raise ProjectYamlError('Parameter not in range [1-4]')
+      except ValueError:
+        raise ProjectYamlError('Parameter not an integer')
+
+      # Starting at 6:00 am, next build schedules are added at 'interval' slots
+      # Example for interval 2, hours = [6, 18] and schedule = '0 6,18 * * *'
+
+      interval = 24 // times_per_day
+      hours = []
+      for hour in range(6, 30, interval):
+        hours.append(hour % 24)
+      schedule = '0 ' + ','.join(str(hour) for hour in hours) + ' * * *'
+
+    else:
+      schedule = DEFAULT_SCHEDULE
 
   return schedule
 
@@ -188,7 +171,12 @@ def get_projects(repo):
         content_file.name):
       project_contents = repo.get_contents(content_file.path)
       if _has_docker_file(project_contents):
-        projects[content_file.name] = get_schedule(project_contents)
+        try:
+          projects[content_file.name] = get_schedule(project_contents)
+        except ProjectYamlError as error:
+          logging.error(
+              'Incorrect format for project.yaml file of %s with error %s',
+              content_file.name, error)
 
   return projects
 

@@ -277,6 +277,32 @@ class TestDataSync(unittest.TestCase):
 
     self.assertEqual(get_projects(repo), {'test0': '0 6 * * *'})
 
+  def test_invalid_yaml_format(self):
+    """Testing invalid yaml schedule parameter argument."""
+
+    repo = Repository('oss-fuzz', 'dir', 'projects', [
+        Repository('test0', 'dir', 'projects/test0', [
+            Repository('Dockerfile', 'file', 'projects/test0/Dockerfile'),
+            Repository('project.yaml', 'file', 'projects/test0/project.yaml')
+        ])
+    ])
+    repo.contents[0].contents[1].set_yaml_contents(b'schedule: some-string')
+
+    self.assertEqual(get_projects(repo), {})
+
+  def test_yaml_out_of_range(self):
+    """Testing invalid yaml schedule parameter argument."""
+
+    repo = Repository('oss-fuzz', 'dir', 'projects', [
+        Repository('test0', 'dir', 'projects/test0', [
+            Repository('Dockerfile', 'file', 'projects/test0/Dockerfile'),
+            Repository('project.yaml', 'file', 'projects/test0/project.yaml')
+        ])
+    ])
+    repo.contents[0].contents[1].set_yaml_contents(b'schedule: 5')
+
+    self.assertEqual(get_projects(repo), {})
+
   def test_get_access_token(self):
     """Testing get_access_token()."""
     client = ndb.Client()
