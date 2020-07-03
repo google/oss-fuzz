@@ -14,5 +14,8 @@
 #
 ################################################################################
 
+PyYaml==5.3
 PyGithub==1.51
 google-cloud-ndb==1.3.0
+google-cloud-scheduler==1.3.0
+google-api-core==1.21.0
