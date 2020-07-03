@@ -129,14 +129,14 @@ class CloudSchedulerClient:
     return 'projects/{}/location/{}/jobs/{}'.format(project_id, location_id,
                                                     name)
 
-  def delete_schedulers(self, name):
+  def delete_job(self, name):
     """Simulate delete jobs."""
     for job in self.schedulers:
       if job['name'] == name:
         self.schedulers.remove(job)
         break
 
-  def update_scheduler(self, job, update_mask):
+  def update(self, job, update_mask):
     """Simulate update jobs."""
     for existing_job in self.schedulers:
       if existing_job == job:
