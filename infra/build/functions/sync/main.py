@@ -26,7 +26,8 @@ from google.cloud import ndb
 from google.cloud import scheduler_v1
 
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
-DEFAULT_SCHEDULE = '0 6 * * *'
+DEFAULT_BUILDS_PER_DAY = 1
+MAX_BUILDS_PER_DAY = 4
 
 
 class ProjectYamlError(Exception):
@@ -55,7 +56,7 @@ def create_scheduler(cloud_scheduler_client, project_name, schedule):
       'name': parent + '/jobs/' + project_name + '-scheduler',
       'pubsub_target': {
           'topic_name': 'projects/' + project_id + '/topics/request-build',
-          'data': project_name.encode(encoding='UTF-8')
+          'data': project_name.encode()
       },
       'schedule': schedule
   }
@@ -81,7 +82,7 @@ def update_scheduler(cloud_scheduler_client, project, schedule):
       'name': parent + '/jobs/' + project.name + '-scheduler',
       'pubsub_target': {
           'topic_name': 'projects/' + project_id + '/topics/request-build',
-          'data': project.name.encode(encoding='UTF-8')
+          'data': project.name.encode()
       },
       'schedule': project.schedule
   }
@@ -94,36 +95,41 @@ def sync_projects(cloud_scheduler_client, projects):
   """Sync projects with cloud datastore."""
   project_query = Project.query()
   for project in project_query:
-    if project.name not in projects:
-      try:
-        delete_scheduler(cloud_scheduler_client, project.name)
-        project.key.delete()
-      except exceptions.GoogleAPICallError as error:
-        logging.error('Scheduler deletion for %s failed with %s', project.name,
-                      error)
+    if project.name in projects:
+      continue
+
+    try:
+      delete_scheduler(cloud_scheduler_client, project.name)
+      project.key.delete()
+    except exceptions.GoogleAPICallError as error:
+      logging.error('Scheduler deletion for %s failed with %s', project.name,
+                    error)
 
   existing_projects = {project.name for project in project_query}
 
   for project_name in projects:
-    if project_name not in existing_projects:
-      try:
-        create_scheduler(cloud_scheduler_client, project_name,
-                         projects[project_name])
-        Project(name=project_name, schedule=projects[project_name]).put()
-      except exceptions.GoogleAPICallError as error:
-        logging.error('Scheduler creation for %s failed with %s', project_name,
-                      error)
+    if project_name in existing_projects:
+      continue
+
+    try:
+      create_scheduler(cloud_scheduler_client, project_name,
+                       projects[project_name])
+      Project(name=project_name, schedule=projects[project_name]).put()
+    except exceptions.GoogleAPICallError as error:
+      logging.error('Scheduler creation for %s failed with %s', project_name,
+                    error)
 
   for project in project_query:
-    if project.name in projects and project.schedule != projects[project.name]:
-      try:
-        update_scheduler(cloud_scheduler_client, project,
-                         projects[project.name])
-        project.schedule = projects[project.name]
-        project.put()
-      except exceptions.GoogleAPICallError as error:
-        logging.error('Updating scheduler for %s failed with %s', project.name,
-                      error)
+    if project.name not in projects or project.schedule == projects[
+        project.name]:
+      continue
+    try:
+      update_scheduler(cloud_scheduler_client, project, projects[project.name])
+      project.schedule = projects[project.name]
+      project.put()
+    except exceptions.GoogleAPICallError as error:
+      logging.error('Updating scheduler for %s failed with %s', project.name,
+                    error)
 
 
 def _has_docker_file(project_contents):
@@ -139,25 +145,19 @@ def get_schedule(project_contents):
       continue
     yaml_str = content_file.decoded_content.decode('utf-8')
     project_yaml = yaml.safe_load(yaml_str)
-    if 'schedule' in project_yaml:
-      try:
-        times_per_day = int(project_yaml['schedule'])
-        if times_per_day not in range(1, 5):
-          raise ProjectYamlError('Parameter not in range [1-4]')
-      except ValueError:
-        raise ProjectYamlError('Parameter not an integer')
+    times_per_day = project_yaml.get('schedule', DEFAULT_BUILDS_PER_DAY)
+    if not isinstance(times_per_day, int) or times_per_day not in range(
+        1, MAX_BUILDS_PER_DAY + 1):
+      raise ProjectYamlError('Parameter is not an integer in range [1-4]')
 
       # Starting at 6:00 am, next build schedules are added at 'interval' slots
       # Example for interval 2, hours = [6, 18] and schedule = '0 6,18 * * *'
 
-      interval = 24 // times_per_day
-      hours = []
-      for hour in range(6, 30, interval):
-        hours.append(hour % 24)
-      schedule = '0 ' + ','.join(str(hour) for hour in hours) + ' * * *'
-
-    else:
-      schedule = DEFAULT_SCHEDULE
+    interval = 24 // times_per_day
+    hours = []
+    for hour in range(6, 30, interval):
+      hours.append(hour % 24)
+    schedule = '0 ' + ','.join(str(hour) for hour in hours) + ' * * *'
 
   return schedule
 
@@ -167,16 +167,20 @@ def get_projects(repo):
   projects = {}
   contents = repo.get_contents('projects')
   for content_file in contents:
-    if content_file.type == 'dir' and VALID_PROJECT_NAME.match(
+    if content_file.type != 'dir' or not VALID_PROJECT_NAME.match(
         content_file.name):
-      project_contents = repo.get_contents(content_file.path)
-      if _has_docker_file(project_contents):
-        try:
-          projects[content_file.name] = get_schedule(project_contents)
-        except ProjectYamlError as error:
-          logging.error(
-              'Incorrect format for project.yaml file of %s with error %s',
-              content_file.name, error)
+      continue
+
+    project_contents = repo.get_contents(content_file.path)
+    if not _has_docker_file(project_contents):
+      continue
+
+    try:
+      projects[content_file.name] = get_schedule(project_contents)
+    except ProjectYamlError as error:
+      logging.error(
+          'Incorrect format for project.yaml file of %s with error %s',
+          content_file.name, error)
 
   return projects
 
