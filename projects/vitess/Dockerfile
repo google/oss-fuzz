@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER adam@adalogics.com
+LABEL maintainer="adam@adalogics.com"
 RUN go get 	github.com/vitessio/vitess \
 		vitess.io/vitess/go/bytes2 \
 		vitess.io/vitess/go/sqltypes \

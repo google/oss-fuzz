@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kcwu@google.com
+LABEL maintainer="kcwu@google.com"
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git lcms
 WORKDIR lcms

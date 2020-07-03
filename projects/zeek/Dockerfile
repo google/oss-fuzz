@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jsiwek@corelight.com
+LABEL maintainer="jsiwek@corelight.com"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         patchelf \

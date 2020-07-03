@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER pauldreikossfuzz@gmail.com
+LABEL maintainer="pauldreikossfuzz@gmail.com"
 
 RUN apt-get update && apt-get install -y ninja-build wget
 

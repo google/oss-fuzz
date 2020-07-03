@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mike.aizatsky@gmail.com
+LABEL maintainer="mike.aizatsky@gmail.com"
 RUN apt-get update && apt-get install -y make
 
 RUN git clone --depth 1 https://github.com/unicode-org/icu.git icu

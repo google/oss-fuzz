@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER clamav.fuzz@gmail.com
+LABEL maintainer="clamav.fuzz@gmail.com"
 RUN apt-get update && apt-get install -y \
     flex bison \
     libssl-dev \

@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kinetik@flim.org
+LABEL maintainer="kinetik@flim.org"
 RUN apt-get update && apt-get install -y subversion wget
 RUN git clone https://github.com/kinetiknz/nestegg.git
 

@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER zdwho@google.com
+LABEL maintainer="zdwho@google.com"
 RUN apt-get update && apt-get --no-install-recommends install -y \
         make autoconf automake libtool apt-transport-https \
         libunwind-dev tzdata rsync \

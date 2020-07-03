@@ -16,7 +16,7 @@
 
 # google oss-fuzz stuff
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER davidwg@fb.com
+LABEL maintainer="davidwg@fb.com"
 
 # install other tools we might need
 RUN apt-get update && apt-get install -y cmake curl

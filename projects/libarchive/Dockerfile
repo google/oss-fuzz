@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kcwu@google.com
+LABEL maintainer="kcwu@google.com"
 
 # Installing optional libraries can utilize more code path and/or improve
 # performance (avoid calling external programs).

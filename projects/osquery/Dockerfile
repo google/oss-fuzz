@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER theopolis@osquery.io
+LABEL maintainer="theopolis@osquery.io"
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends python python3 bison flex make wget xz-utils libunwind-dev
 

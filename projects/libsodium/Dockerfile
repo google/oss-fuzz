@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER chriswwolfe@gmail.com
+LABEL maintainer="chriswwolfe@gmail.com"
 RUN apt-get update && apt-get install -y make
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git --branch stable libsodium
 WORKDIR libsodium

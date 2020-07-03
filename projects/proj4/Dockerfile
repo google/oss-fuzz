@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER even.rouault@spatialys.com
+LABEL maintainer="even.rouault@spatialys.com"
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool g++ sqlite3 pkg-config
 

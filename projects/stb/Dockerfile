@@ -19,7 +19,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
     apt-get install -y wget tar
 
-MAINTAINER randy408@protonmail.com
+LABEL maintainer="randy408@protonmail.com"
 
 RUN git clone --depth 1 https://github.com/nothings/stb.git
 

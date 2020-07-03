@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER nathan.moinvaziri@gmail.com
+LABEL maintainer="nathan.moinvaziri@gmail.com"
 RUN apt-get update && apt-get install -y make cmake pkg-config
 
 RUN git clone -b dev https://github.com/nmoinvaz/minizip

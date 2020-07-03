@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER ejb@ql.org
+LABEL maintainer="ejb@ql.org"
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake nasm
 RUN git clone --depth 1 https://github.com/qpdf/qpdf.git qpdf
 RUN git clone --depth 1 https://github.com/madler/zlib.git zlib

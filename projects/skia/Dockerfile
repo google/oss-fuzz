@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kjlubick@chromium.org
+LABEL maintainer="kjlubick@chromium.org"
 
 # Mesa needed to build swiftshader
 RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake

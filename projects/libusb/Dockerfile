@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER christopher.a.dickens@gmail.com
+LABEL maintainer="christopher.a.dickens@gmail.com"
 RUN apt-get update && apt-get install -y make autoconf automake libtool libudev-dev
 RUN git clone --depth 1 https://github.com/libusb/libusb libusb
 WORKDIR libusb

@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER taking@google.com
+LABEL maintainer="taking@google.com"
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake nasm
 RUN git clone --depth 1 https://github.com/DanBloomberg/leptonica.git leptonica

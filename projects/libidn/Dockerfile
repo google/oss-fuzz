@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER rockdaboot@gmail.com
+LABEL maintainer="rockdaboot@gmail.com"
 RUN apt-get update && apt-get install -y \
  pkg-config \
  autopoint \

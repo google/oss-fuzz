@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER sffc@google.com
+LABEL maintainer="sffc@google.com"
 
 RUN apt-get update && apt-get -y install \
     build-essential \

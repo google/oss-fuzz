@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER pdknsk@gmail.com
+LABEL maintainer="pdknsk@gmail.com"
 RUN apt-get update && apt-get install -y --no-install-recommends \
   python \
   gawk \

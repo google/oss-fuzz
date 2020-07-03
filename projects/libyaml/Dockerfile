@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER alex.gaynor@gmail.com
+LABEL maintainer="alex.gaynor@gmail.com"
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 
 RUN git clone --depth=1 https://github.com/yaml/libyaml

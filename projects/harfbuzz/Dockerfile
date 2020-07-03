@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mmoroz@chromium.org
+LABEL maintainer="mmoroz@chromium.org"
 RUN apt-get update && apt-get install -y make autoconf automake libtool ragel pkg-config
 
 RUN git clone --depth 1 https://github.com/harfbuzz/harfbuzz.git

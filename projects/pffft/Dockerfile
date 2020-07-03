@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER alessiob@webrtc.org
+LABEL maintainer="alessiob@webrtc.org"
 RUN apt-get update && apt-get install -y mercurial python-numpy
 RUN hg clone https://bitbucket.org/jpommier/pffft $SRC/pffft
 WORKDIR pffft

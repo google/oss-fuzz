@@ -16,7 +16,7 @@
 
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER htuch@google.com
+LABEL maintainer="htuch@google.com"
 
 RUN apt-get update && apt-get -y install  \
 	build-essential \

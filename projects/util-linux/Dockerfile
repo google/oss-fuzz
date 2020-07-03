@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER evvers@ya.ru
+LABEL maintainer="evvers@ya.ru"
 RUN apt-get update && apt-get install -y autoconf automake autopoint bison libtool pkg-config
 RUN git clone --depth 1 https://github.com/karelzak/util-linux
 WORKDIR util-linux

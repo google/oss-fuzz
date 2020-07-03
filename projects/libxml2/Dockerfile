@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER wellnhofer@aevum.de
+LABEL maintainer="wellnhofer@aevum.de"
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

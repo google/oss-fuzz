@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER guidovranken@gmail.com
+LABEL maintainer="guidovranken@gmail.com"
 
 RUN mkdir -p $GOPATH/src/github.com/dvyukov/ && \
     cd $GOPATH/src/github.com/dvyukov/ && \

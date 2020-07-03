@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER dtardon@redhat.com
+LABEL maintainer="dtardon@redhat.com"
 # install build requirements
 RUN apt-get update && \
     apt-get install -y wget xz-utils autoconf automake libtool pkg-config \

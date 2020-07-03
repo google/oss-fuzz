@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mhl@fb.com
+LABEL maintainer="mhl@fb.com"
 
 # Install packages we need to build dependencies
 RUN apt-get update && \

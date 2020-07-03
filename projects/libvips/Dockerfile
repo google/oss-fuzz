@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER oscar.mira@adevinta.com
+LABEL maintainer="oscar.mira@adevinta.com"
 RUN apt-get update && apt-get install -y \
   curl \
   automake \

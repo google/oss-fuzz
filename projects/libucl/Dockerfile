@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER adam@adalogics.com
+LABEL maintainer="adam@adalogics.com"
 RUN apt-get update && apt-get install -y make cmake autoconf pkg-config libtool
 RUN git clone https://github.com/vstakhov/libucl
 

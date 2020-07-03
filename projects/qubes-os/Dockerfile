@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER paras.chetal@gmail.com
+LABEL maintainer="paras.chetal@gmail.com"
 
 RUN apt-get update && apt-get -y install build-essential automake libtool git python libsystemd-dev
 

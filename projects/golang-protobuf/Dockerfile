@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER dneil@google.com
+LABEL maintainer="dneil@google.com"
 
 ENV GO111MODULE="on"
 ENV GOFUZZ111MODULE="on"

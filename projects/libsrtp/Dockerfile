@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER guidovranken@gmail.com
+LABEL maintainer="guidovranken@gmail.com"
 RUN apt-get update && apt-get install -y sudo autoconf build-essential libssl-dev pkg-config
 
 RUN git clone --depth 1 https://github.com/cisco/libsrtp

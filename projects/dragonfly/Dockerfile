@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER zj3142063@gmail.com
+LABEL maintainer="zj3142063@gmail.com"
 RUN go get	github.com/go-openapi/swag \
 		github.com/go-openapi/validate \
 		gopkg.in/warnings.v0 \
