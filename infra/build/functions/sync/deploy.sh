@@ -14,7 +14,8 @@
 #
 ################################################################################
 
-JOB_TOPIC=schedule-project-sync
+SCHEDULE_JOB_TOPIC=schedule-project-sync
+BUILD_JOB_TOPIC=request-build
 SCHEDULER_JOB=sync-scheduler
 JOB_SCHEDULE="*/30 * * * *"
 MESSAGE="Start Sync"
@@ -26,30 +27,38 @@ else
 	echo -e "\n Usage ./deploy.sh my-project-name"; exit;
 fi
 
-# Checking if the given pubsub topic exists
-if ! gcloud pubsub topics describe $JOB_TOPIC --project $PROJECT_ID ;
+# All the individual project build schedulers will rely on this
+if ! gcloud pubsub topics describe $BUILD_JOB_TOPIC --project $PROJECT_ID ;
 	then
-		gcloud pubsub topics create $JOB_TOPIC \
+		gcloud pubsub topics create $BUILD_JOB_TOPIC \
+		--project $PROJECT_ID
+fi
+
+# Checking if the given pubsub topic exists
+if ! gcloud pubsub topics describe $SCHEDULE_JOB_TOPIC --project $PROJECT_ID ;
+	then
+		gcloud pubsub topics create $SCHEDULE_JOB_TOPIC \
 		--project $PROJECT_ID
 fi
 # Checking if the given scheduler job exists
 if gcloud scheduler jobs describe $SCHEDULER_JOB --project $PROJECT_ID ;
 	then
-		gcloud scheduler jobs update pubsub sync-scheduler \
+		gcloud scheduler jobs update pubsub $SCHEDULER_JOB \
 			--schedule "$JOB_SCHEDULE" \
-			--topic $JOB_TOPIC \
+			--topic $SCHEDULE_JOB_TOPIC \
 			--message-body "$MESSAGE" \
 			--project $PROJECT_ID
 	else
-		gcloud scheduler jobs create pubsub sync-scheduler \
+		gcloud scheduler jobs create pubsub $SCHEDULER_JOB \
 			--schedule "$JOB_SCHEDULE" \
-			--topic $JOB_TOPIC \
+			--topic $SCHEDULE_JOB_TOPIC \
 			--message-body "$MESSAGE" \
 			--project $PROJECT_ID
 fi
 
 gcloud functions deploy sync \
 	--entry-point $ENTRY_POINT \
-	--trigger-topic $JOB_TOPIC \
+	--trigger-topic $SCHEDULE_JOB_TOPIC \
 	--runtime python37 \
-	--project $PROJECT_ID
+	--project $PROJECT_ID \
+	--timeout 540
