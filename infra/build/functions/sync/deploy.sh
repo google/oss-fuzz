@@ -43,13 +43,13 @@ fi
 # Checking if the given scheduler job exists
 if gcloud scheduler jobs describe $SCHEDULER_JOB --project $PROJECT_ID ;
 	then
-		gcloud scheduler jobs update pubsub sync-scheduler \
+		gcloud scheduler jobs update pubsub $SCHEDULER_JOB \
 			--schedule "$JOB_SCHEDULE" \
 			--topic $SCHEDULE_JOB_TOPIC \
 			--message-body "$MESSAGE" \
 			--project $PROJECT_ID
 	else
-		gcloud scheduler jobs create pubsub sync-scheduler \
+		gcloud scheduler jobs create pubsub $SCHEDULER_JOB \
 			--schedule "$JOB_SCHEDULE" \
 			--topic $SCHEDULE_JOB_TOPIC \
 			--message-body "$MESSAGE" \
