@@ -175,9 +175,8 @@ new location [here]({{ site.baseurl }}/advanced-topics/corpora/#viewing-the-corp
 OSS-Fuzz *uses* both [AFL](https://lcamtuf.coredump.cx/afl/) and
 [honggfuzz](https://github.com/google/honggfuzz)
 [fuzzing engines]({{ site.baseurl }}/reference/glossary/#fuzzing-engine).
-Follow the
-[ideal integration guide] and OSS-Fuzz will use all its fuzzing engines on your
-code.
+Follow the [ideal integration guide] and OSS-Fuzz will use all its fuzzing
+engines on your code.
 
 ## What are the specs on your machines?
 
