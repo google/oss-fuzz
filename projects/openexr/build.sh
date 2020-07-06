@@ -27,7 +27,7 @@ CMAKE_SETTINGS=(
 cmake $SRC/openexr ${CMAKE_SETTINGS[@]}
 make -j$(nproc)
 
-OPENEXR_INCLUDES=(
+INCLUDES=(
   "-I $SRC/openexr/OpenEXR/IlmImf"
   "-I $SRC/openexr/IlmBase/Imath"
   "-I $SRC/openexr/IlmBase/Iex"
@@ -36,7 +36,7 @@ OPENEXR_INCLUDES=(
   "-I $WORK/IlmBase/config"
 )
 
-OPENEXR_LIBS=(
+LIBS=(
   "$WORK/OpenEXR/IlmImf/libIlmImf-2_5.a"
   "$WORK/IlmBase/Iex/libIex-2_5.a"
   "$WORK/IlmBase/Half/libHalf-2_5.a"
@@ -46,11 +46,6 @@ OPENEXR_LIBS=(
 
 for fuzzer in $SRC/*_fuzzer.cc; do
   fuzzer_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -std=c++11 -pthread \
-    ${OPENEXR_INCLUDES[@]} \
-    $fuzzer \
-    $LIB_FUZZING_ENGINE \
-    ${OPENEXR_LIBS[@]} \
-    -lz \
+  $CXX $CXXFLAGS -std=c++11 -pthread ${INCLUDES[@]} $fuzzer $LIB_FUZZING_ENGINE ${LIBS[@]} -lz \
     -o $OUT/$fuzzer_basename
 done
