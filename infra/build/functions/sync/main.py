@@ -31,6 +31,7 @@ DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
 ProjectMetaData = namedtuple('ProjectMetaData', 'schedule')
 
+
 class ProjectYamlError(Exception):
   """Error in project.yaml format."""
 
