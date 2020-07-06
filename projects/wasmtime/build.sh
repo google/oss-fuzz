@@ -23,6 +23,7 @@ PROJECT_DIR=$SRC/wasmtime
 cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions --all-features
 
 FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
+
 for f in $SRC/wasmtime/fuzz/fuzz_targets/*.rs
 do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
