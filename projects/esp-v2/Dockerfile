@@ -17,7 +17,6 @@
 ## This file was copied from envoy (with minor changes).
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER nareddyt@google.com
 
 RUN apt-get update && apt-get -y install  \
     build-essential \

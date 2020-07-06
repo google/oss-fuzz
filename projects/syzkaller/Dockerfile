@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mmoroz@chromium.org
 
 RUN go get -u -d github.com/google/syzkaller/prog
 

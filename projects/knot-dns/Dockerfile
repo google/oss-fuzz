@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jonathan.foote@gmail.com
 RUN apt-get update && apt-get install -y \
  autoconf \
  autogen \

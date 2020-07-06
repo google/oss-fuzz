@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER neildhar@fb.com
 RUN apt-get update && \
     apt-get install -y make autoconf automake libtool wget libicu-dev \
     ninja-build python zip libreadline-dev libatomic-ops-dev

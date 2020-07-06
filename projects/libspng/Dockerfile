@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-MAINTAINER randy408@protonmail.com
 
 RUN apt-get update && \
     apt-get install -y wget tar cmake

@@ -18,7 +18,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 # maintainer for this file
-MAINTAINER remi.gacogne@powerdns.com
 
 # install required packages to build your project
 RUN apt-get update && apt-get install -y autoconf automake bison dh-autoreconf flex libboost-all-dev libluajit-5.1-dev libedit-dev libprotobuf-dev libssl-dev libtool make pkg-config protobuf-compiler ragel

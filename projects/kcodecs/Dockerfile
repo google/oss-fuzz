@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER tsdgeos@gmail.com
 RUN apt-get install --yes cmake gperf
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 https://invent.kde.org/frameworks/kcodecs.git
