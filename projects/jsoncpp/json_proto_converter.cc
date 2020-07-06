@@ -72,4 +72,8 @@ std::string JsonProtoConverter::Convert(
   return data_.str();
 }
 
+int32_t JsonProtoConverter::GetSettings(const JsonObject& json_object) {
+  return json_object.settings();
+}
+
 }  // namespace json_proto

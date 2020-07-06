@@ -21,4 +21,4 @@ RUN git clone --depth 1 https://github.com/open-source-parsers/jsoncpp
 WORKDIR jsoncpp
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
-COPY build.sh jsoncpp_fuzz_proto.cc json.proto json_proto_converter.h json_proto_converter.cc $SRC/
+COPY build.sh *.proto *.h *.cc $SRC/

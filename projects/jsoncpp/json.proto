@@ -10,8 +10,9 @@ syntax = "proto2";
 package json_proto;
 
 message JsonObject {
-  required string name = 1;
-  required JsonValue value = 2;
+  required int32 settings = 1;
+  required string name = 2;
+  required JsonValue value = 3;
 }
 
 message JsonValue {

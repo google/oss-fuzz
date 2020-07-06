@@ -16,6 +16,7 @@ class JsonProtoConverter {
  public:
   std::string Convert(const json_proto::JsonObject&);
   std::string Convert(const json_proto::ArrayValue&);
+  int32_t GetSettings(const json_proto::JsonObject&);
 
  private:
   std::stringstream data_;

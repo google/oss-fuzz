@@ -10,24 +10,14 @@
 #include <iostream>
 #include <cstddef>
 #include <stdint.h>
+#include <iostream>
 
 namespace Json {
 class Exception;
 }
 
-extern "C" int FuzzJson(const uint8_t* data, size_t size) {
+extern "C" int FuzzJson(const char* data_str, size_t size, int32_t hash_settings) {
   Json::CharReaderBuilder builder;
-
-  if (size < sizeof(uint32_t)) {
-    return 0;
-  }
-
-  const uint32_t hash_settings = static_cast<uint32_t>(data[0]) |
-                                 (static_cast<uint32_t>(data[1]) << 8) |
-                                 (static_cast<uint32_t>(data[2]) << 16) |
-                                 (static_cast<uint32_t>(data[3]) << 24);
-  data += sizeof(uint32_t);
-  size -= sizeof(uint32_t);
 
   builder.settings_["failIfExtra"] = hash_settings & (1 << 0);
   builder.settings_["allowComments_"] = hash_settings & (1 << 1);
@@ -44,17 +34,17 @@ extern "C" int FuzzJson(const uint8_t* data, size_t size) {
   std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
 
   Json::Value root;
-  const auto data_str = reinterpret_cast<const char*>(data);
   try {
     reader->parse(data_str, data_str + size, &root, nullptr);
   } catch (Json::Exception const&) {
   }
-  // Whether it succeeded or not doesn't matter.
+
   return 0;
 }
 
 DEFINE_PROTO_FUZZER(const json_proto::JsonObject &json_proto) {
   json_proto::JsonProtoConverter converter;
   auto s = converter.Convert(json_proto);
-  FuzzJson((const uint8_t*)s.data(), s.size());
+  int32_t hash_settings = converter.GetSettings(json_proto);
+  FuzzJson(s.data(), s.size(), hash_settings);
 }
