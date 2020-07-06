@@ -15,6 +15,7 @@
 ################################################################################
 """Cloud functions for build scheduling."""
 
+from collections import namedtuple
 import logging
 import os
 import re
@@ -93,8 +94,7 @@ def update_scheduler(cloud_scheduler_client, project, schedule):
 
 def sync_projects(cloud_scheduler_client, projects):
   """Sync projects with cloud datastore."""
-  project_query = Project.query()
-  for project in project_query:
+  for project in Project.query():
     if project.name in projects:
       continue
 
@@ -105,7 +105,7 @@ def sync_projects(cloud_scheduler_client, projects):
       logging.error('Scheduler deletion for %s failed with %s', project.name,
                     error)
 
-  existing_projects = {project.name for project in project_query}
+  existing_projects = {project.name for project in Project.query()}
 
   for project_name in projects:
     if project_name in existing_projects:
@@ -113,19 +113,20 @@ def sync_projects(cloud_scheduler_client, projects):
 
     try:
       create_scheduler(cloud_scheduler_client, project_name,
-                       projects[project_name])
-      Project(name=project_name, schedule=projects[project_name]).put()
+                       projects[project_name][0])
+      Project(name=project_name, schedule=projects[project_name][0]).put()
     except exceptions.GoogleAPICallError as error:
       logging.error('Scheduler creation for %s failed with %s', project_name,
                     error)
 
-  for project in project_query:
+  for project in Project.query():
     if project.name not in projects or project.schedule == projects[
         project.name]:
       continue
     try:
-      update_scheduler(cloud_scheduler_client, project, projects[project.name])
-      project.schedule = projects[project.name]
+      update_scheduler(cloud_scheduler_client, project,
+                       projects[project.name][0])
+      project.schedule = projects[project.name][0]
       project.put()
     except exceptions.GoogleAPICallError as error:
       logging.error('Updating scheduler for %s failed with %s', project.name,
@@ -143,8 +144,7 @@ def get_schedule(project_contents):
   for content_file in project_contents:
     if content_file.name != 'project.yaml':
       continue
-    yaml_str = content_file.decoded_content.decode('utf-8')
-    project_yaml = yaml.safe_load(yaml_str)
+    project_yaml = yaml.safe_load(content_file.decoded_content.decode('utf-8'))
     times_per_day = project_yaml.get('schedule', DEFAULT_BUILDS_PER_DAY)
     if not isinstance(times_per_day, int) or times_per_day not in range(
         1, MAX_BUILDS_PER_DAY + 1):
@@ -165,6 +165,7 @@ def get_schedule(project_contents):
 def get_projects(repo):
   """Get project list from git repository."""
   projects = {}
+  ProjectMetaData = namedtuple('ProjectMetaData', 'schedule')
   contents = repo.get_contents('projects')
   for content_file in contents:
     if content_file.type != 'dir' or not VALID_PROJECT_NAME.match(
@@ -176,7 +177,8 @@ def get_projects(repo):
       continue
 
     try:
-      projects[content_file.name] = get_schedule(project_contents)
+      projects[content_file.name] = ProjectMetaData(
+          schedule=get_schedule(project_contents))
     except ProjectYamlError as error:
       logging.error(
           'Incorrect format for project.yaml file of %s with error %s',
