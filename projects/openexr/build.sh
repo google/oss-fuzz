@@ -16,10 +16,15 @@
 ################################################################################
 
 cd $WORK/
-cmake $SRC/openexr \
-  -DPYILMBASE_ENABLE=OFF \
-  -DBUILD_TESTING=OFF \
-  -DBUILD_SHARED_LIBS=OFF
+
+CMAKE_SETTINGS=(
+  "-D BUILD_SHARED_LIBS=OFF"         # Build static libraries only
+  "-D PYILMBASE_ENABLE=OFF"          # Don't build Python support
+  "-D BUILD_TESTING=OFF"             # Or tests
+  "-D OPENEXR_BUILD_UTILS=OFF"       # Or utilities
+  "-D INSTALL_OPENEXR_EXAMPLES=OFF"  # Or examples
+)
+cmake $SRC/openexr ${CMAKE_SETTINGS[@]}
 make -j$(nproc)
 
 OPENEXR_INCLUDES=(
