@@ -23,6 +23,8 @@ CMAKE_SETTINGS=(
   "-D BUILD_TESTING=OFF"             # Or tests
   "-D OPENEXR_BUILD_UTILS=OFF"       # Or utilities
   "-D INSTALL_OPENEXR_EXAMPLES=OFF"  # Or examples
+  "-D OPENEXR_LIB_SUFFIX="           # Don't append the version number to library files
+  "-D ILMBASE_LIB_SUFFIX="
 )
 cmake $SRC/openexr ${CMAKE_SETTINGS[@]}
 make -j$(nproc)
@@ -37,11 +39,11 @@ INCLUDES=(
 )
 
 LIBS=(
-  "$WORK/OpenEXR/IlmImf/libIlmImf-2_5.a"
-  "$WORK/IlmBase/Iex/libIex-2_5.a"
-  "$WORK/IlmBase/Half/libHalf-2_5.a"
-  "$WORK/IlmBase/IlmThread/libIlmThread-2_5.a"
-  "$WORK/IlmBase/Imath/libImath-2_5.a"
+  "$WORK/OpenEXR/IlmImf/libIlmImf.a"
+  "$WORK/IlmBase/Iex/libIex.a"
+  "$WORK/IlmBase/Half/libHalf.a"
+  "$WORK/IlmBase/IlmThread/libIlmThread.a"
+  "$WORK/IlmBase/Imath/libImath.a"
 )
 
 for fuzzer in $SRC/*_fuzzer.cc; do
