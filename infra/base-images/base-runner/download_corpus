@@ -22,7 +22,7 @@ fi
 
 for pair in "$@"; do
   read path url <<< "$pair"
-  wget -q -O $path $url || rm $path
+  wget -q -O $path $url
 done
 
 # Always exit with 0 as we do not track wget return codes and should not rely

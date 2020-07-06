@@ -71,8 +71,10 @@ do
 done
 
 # Build driverless libraries.
+# Benchmark about 2 GB per CPU (14 threads for 28.8 GB RAM)
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --discard_analysis_cache --notrack_incremental_state --nokeep_state_after_build \
+  --local_cpu_resources=HOST_CPUS*0.45 \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \

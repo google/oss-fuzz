@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER lebedev.ri@gmail.com
 RUN apt-get update && \
     apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget && \
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \

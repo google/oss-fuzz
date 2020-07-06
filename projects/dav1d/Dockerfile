@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER janne-vlc@jannau.net
 
 ADD nasm.list /etc/apt/sources.list.d/nasm.list
 ADD nasm_apt.pin /etc/apt/preferences
