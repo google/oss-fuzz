@@ -15,33 +15,14 @@
 #
 ################################################################################
 
-# Disable:
-# 1. UBSan vptr since target built with -fno-rtti.
-export CFLAGS="$CFLAGS -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+export CXXFLAGS="$CXXFLAGS -DHB_NO_MT -DHAVE_GETPAGESIZE -DHAVE_STDBOOL_H -DHAVE_MMAP -DHAVE_UNISTD_H -DHAVE_SYS_MMAN_H -DHAVE_SYSCONF -DHAVE_ATEXIT"
+export CXXFLAGS="$CXXFLAGS src/harfbuzz.cc -Isrc"
 
-# Build the library.
-./autogen.sh
-./configure --enable-static --disable-shared
-make clean
-make -j$(nproc) CPPFLAGS="-DHB_NO_VISIBILITY" V=1 all
-
-# Build the fuzzer.
-$CXX $CXXFLAGS -std=c++11 -Isrc \
-    ./test/fuzzing/hb-shape-fuzzer.cc -o $OUT/hb-shape-fuzzer \
-    $LIB_FUZZING_ENGINE ./src/.libs/libharfbuzz.a
-
-$CXX $CXXFLAGS -std=c++11 -Isrc \
-    ./test/fuzzing/hb-draw-fuzzer.cc -o $OUT/hb-draw-fuzzer \
-    $LIB_FUZZING_ENGINE ./src/.libs/libharfbuzz.a
-
-$CXX $CXXFLAGS -std=c++11 -Isrc \
-    ./test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer \
-    $LIB_FUZZING_ENGINE ./src/.libs/libharfbuzz-subset.a ./src/.libs/libharfbuzz.a
-
-$CXX $CXXFLAGS -std=c++11 -Isrc \
-    ./test/fuzzing/hb-set-fuzzer.cc -o $OUT/hb-set-fuzzer \
-    $LIB_FUZZING_ENGINE ./src/.libs/libharfbuzz.a
+# Build the fuzzers.
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS test/fuzzing/hb-shape-fuzzer.cc -o $OUT/hb-shape-fuzzer
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS test/fuzzing/hb-draw-fuzzer.cc -o $OUT/hb-draw-fuzzer
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS src/hb-subset*.cc test/fuzzing/hb-subset-fuzzer.cc -o $OUT/hb-subset-fuzzer
+$CXX $LIB_FUZZING_ENGINE $CXXFLAGS test/fuzzing/hb-set-fuzzer.cc -o $OUT/hb-set-fuzzer
 
 # Archive and copy to $OUT seed corpus if the build succeeded.
 mkdir all-fonts

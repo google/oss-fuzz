@@ -15,8 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool ragel pkg-config
-
 RUN git clone --depth 1 https://github.com/harfbuzz/harfbuzz.git
 WORKDIR harfbuzz
 COPY build.sh $SRC/
