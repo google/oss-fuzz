@@ -29,7 +29,8 @@ from google.cloud import scheduler_v1
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
-ProjectMetaData = namedtuple('ProjectMetaData', 'schedule')
+
+ProjectMetadata = namedtuple('ProjectMetadata', 'schedule')
 
 
 class ProjectYamlError(Exception):
@@ -113,8 +114,8 @@ def sync_projects(cloud_scheduler_client, projects):
 
     try:
       create_scheduler(cloud_scheduler_client, project_name,
-                       projects[project_name][0])
-      Project(name=project_name, schedule=projects[project_name][0]).put()
+                       projects[project_name].schedule)
+      Project(name=project_name, schedule=projects[project_name].schedule).put()
     except exceptions.GoogleAPICallError as error:
       logging.error('Scheduler creation for %s failed with %s', project_name,
                     error)
@@ -125,8 +126,8 @@ def sync_projects(cloud_scheduler_client, projects):
       continue
     try:
       update_scheduler(cloud_scheduler_client, project,
-                       projects[project.name][0])
-      project.schedule = projects[project.name][0]
+                       projects[project.name].schedule)
+      project.schedule = projects[project.name].schedule
       project.put()
     except exceptions.GoogleAPICallError as error:
       logging.error('Updating scheduler for %s failed with %s', project.name,
@@ -176,7 +177,7 @@ def get_projects(repo):
       continue
 
     try:
-      projects[content_file.name] = ProjectMetaData(
+      projects[content_file.name] = ProjectMetadata(
           schedule=get_schedule(project_contents))
     except ProjectYamlError as error:
       logging.error(
