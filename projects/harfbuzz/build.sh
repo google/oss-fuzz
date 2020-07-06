@@ -26,6 +26,7 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
 make clean
 make -j$(nproc) CPPFLAGS="-DHB_NO_VISIBILITY" V=1 all
 
+
 # Build the fuzzer.
 $CXX $CXXFLAGS -std=c++11 -Isrc \
     ./test/fuzzing/hb-shape-fuzzer.cc -o $OUT/hb-shape-fuzzer \
