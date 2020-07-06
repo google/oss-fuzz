@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="miek@miek.nl"
 RUN go get -t github.com/miekg/dns
 
 COPY build.sh $SRC/

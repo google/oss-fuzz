@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="fmayer@google.com"
 
 RUN apt-get update
 RUN apt-get -y install python curl

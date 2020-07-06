@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="alex.gaynor@gmail.com"
 RUN apt-get update && apt-get install -y \
   autoconf2.13 \
   yasm \

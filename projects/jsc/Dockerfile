@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="ochang@google.com"
 RUN apt-get update && apt-get install -y make autoconf automake libtool python ruby ninja-build bison flex gperf wget
 
 RUN git clone --depth 1 git://git.webkit.org/WebKit.git

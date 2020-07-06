@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="adam@adalogics.com"
 RUN go get -u github.com/tdewolff/minify
 COPY build.sh $SRC/
 WORKDIR $SRC/

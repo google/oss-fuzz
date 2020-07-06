@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="cascadia@balholm.com"
 RUN go get github.com/andybalholm/cascadia
 
 COPY build.sh $SRC/

@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="will.scott@protocol.io"
 RUN go get -t github.com/ipfs/go-datastore
 
 COPY build.sh $SRC/

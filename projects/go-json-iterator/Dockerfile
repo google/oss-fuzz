@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="taowen@gmail.com"
 RUN go get github.com/json-iterator/go
 
 RUN mkdir fuzz

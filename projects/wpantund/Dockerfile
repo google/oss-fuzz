@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="rquattle@google.com"
 
 RUN apt-get -y update \
 	&& DEBIAN_FRONTEND=noninteractive \

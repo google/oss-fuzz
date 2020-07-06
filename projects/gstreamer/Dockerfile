@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="bilboed@bilboed.com"
 # Install the build dependencies
 
 # install the minimum

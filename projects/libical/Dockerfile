@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="tsdgeos@gmail.com"
 
 RUN git clone --depth 1 https://github.com/libical/libical.git
 COPY build.sh $SRC

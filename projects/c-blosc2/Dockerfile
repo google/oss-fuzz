@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="blosc.oss.fuzz@gmail.com"
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake
 RUN git clone --depth 1 https://github.com/Blosc/c-blosc2.git c-blosc2
 WORKDIR c-blosc2
