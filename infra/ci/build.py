@@ -28,6 +28,9 @@ DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
+# Languages from project.yaml that have code coverage support.
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
+
 
 def get_modified_buildable_projects():
   """Returns a list of all the projects modified in this commit that have a
@@ -112,6 +115,14 @@ def build_project(project):
   engine = os.getenv('ENGINE')
   sanitizer = os.getenv('SANITIZER')
   architecture = os.getenv('ARCHITECTURE')
+  language = project_yaml.get('language')
+
+  if (sanitizer == 'coverage' and
+      language not in LANGUAGES_WITH_COVERAGE_SUPPORT):
+    print(('Project "{project}" is written in "{language}", '
+           'coverage is not supported yet.').format(project=project,
+                                                    language=language))
+    return
 
   if sanitizer != 'coverage' and not should_build(project_yaml):
     print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
