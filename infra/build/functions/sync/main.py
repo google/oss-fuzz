@@ -29,7 +29,7 @@ from google.cloud import scheduler_v1
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
-
+ProjectMetaData = namedtuple('ProjectMetaData', 'schedule')
 
 class ProjectYamlError(Exception):
   """Error in project.yaml format."""
@@ -106,7 +106,6 @@ def sync_projects(cloud_scheduler_client, projects):
                     error)
 
   existing_projects = {project.name for project in Project.query()}
-
   for project_name in projects:
     if project_name in existing_projects:
       continue
@@ -165,7 +164,6 @@ def get_schedule(project_contents):
 def get_projects(repo):
   """Get project list from git repository."""
   projects = {}
-  ProjectMetaData = namedtuple('ProjectMetaData', 'schedule')
   contents = repo.get_contents('projects')
   for content_file in contents:
     if content_file.type != 'dir' or not VALID_PROJECT_NAME.match(
