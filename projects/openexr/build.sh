@@ -32,11 +32,11 @@ OPENEXR_INCLUDES=(
 )
 
 OPENEXR_LIBS=(
-  "/work/OpenEXR/IlmImf/libIlmImf-2_5.a"
-  "/work/IlmBase/Iex/libIex-2_5.a"
-  "/work/IlmBase/Half/libHalf-2_5.a"
-  "/work/IlmBase/IlmThread/libIlmThread-2_5.a"
-  "/work/IlmBase/Imath/libImath-2_5.a"
+  "$WORK/OpenEXR/IlmImf/libIlmImf-2_5.a"
+  "$WORK/IlmBase/Iex/libIex-2_5.a"
+  "$WORK/IlmBase/Half/libHalf-2_5.a"
+  "$WORK/IlmBase/IlmThread/libIlmThread-2_5.a"
+  "$WORK/IlmBase/Imath/libImath-2_5.a"
 )
 
 for fuzzer in $SRC/*_fuzzer.cc; do
