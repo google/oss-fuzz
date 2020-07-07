@@ -23,7 +23,7 @@ rm -rf $build
 mkdir -p $build
 
 # Configure the project.
-meson -Dfuzzer_ldflags=$LIB_FUZZING_ENGINE \
+meson -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
       $build \
    || (cat build/meson-logs/meson-log.txt && false)
 
