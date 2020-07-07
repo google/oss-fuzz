@@ -15,9 +15,7 @@
 ################################################################################
 """Cloud function to build base images on Google Cloud Builder."""
 
-import os
 import sys
-import yaml
 
 import google.auth
 from googleapiclient.discovery import build
@@ -59,12 +57,14 @@ def get_steps(images, tag_prefix):
 
 def get_logs_url(build_id, project_id):
   """Returns url for build logs."""
-  URL_FORMAT = ('https://console.developers.google.com/logs/viewer?'
+  url_format = ('https://console.developers.google.com/logs/viewer?'
                 'resource=build%2Fbuild_id%2F{0}&project={1}')
-  return URL_FORMAT.format(build_id, project_id)
+  return url_format.format(build_id, project_id)
 
-
+# pylint: disable=no-member
 def build_base_images(event, context):
+  """Cloud function to build base images."""
+  del event, context
   credentials, project_id = google.auth.default()
   tag_prefix = 'gcr.io/' + project_id + '/'
   build_body = {
