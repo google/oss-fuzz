@@ -21,6 +21,11 @@ syntax = "proto2";
 
 package json_proto;
 
+message JsonParseAPI {
+  required int32 settings = 1;
+  required JsonObject object_value = 2;
+}
+
 message JsonObject {
   required int32 settings = 1;
   required string name = 2;
