@@ -18,7 +18,7 @@ JOB_TOPIC=schedule-base-image-build
 SCHEDULER_JOB=base-image-scheduler
 JOB_SCHEDULE="0 3 * * *"
 MESSAGE="Start base image build"
-ENTRY_POINT=build_base_images
+ENTRY_POINT=base_builder
 
 if [ "$1" ]; then
 	PROJECT_ID=$1
