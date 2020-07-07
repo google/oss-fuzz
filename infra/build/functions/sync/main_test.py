@@ -27,8 +27,8 @@ from google.cloud import ndb
 
 from main import get_access_token
 from main import get_projects
-from main import Project
 from main import sync_projects
+from main import Project
 
 _EMULATOR_TIMEOUT = 20
 _DATASTORE_READY_INDICATOR = b'is now running'
