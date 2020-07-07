@@ -36,7 +36,7 @@ for f in ${CXXFLAGS}; do
 done
 )"
 
-declare BAZEL_TARGET_PATH="src/fuzz/simple_fuzz_test"
+declare BAZEL_TARGET_PATH="k8-fastbuild/bin/src/fuzz"
 declare BAZEL_BUILD_TARGETS="//src/fuzz:all"
 
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
@@ -71,7 +71,7 @@ mkdir -p $OUT/data
 cp -r /usr/share/zoneinfo $OUT/data/
 
 # Move out fuzz target
-cp bazel-bin/"${BAZEL_TARGET_PATH}" "${OUT}"/
+cp "${SRC}"/fuzz/bazel-out/"${BAZEL_TARGET_PATH}"/*_fuzz_test "${OUT}"/
 
 # Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build
 # cache.
