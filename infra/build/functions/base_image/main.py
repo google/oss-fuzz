@@ -61,6 +61,7 @@ def get_logs_url(build_id, project_id):
                 'resource=build%2Fbuild_id%2F{0}&project={1}')
   return url_format.format(build_id, project_id)
 
+
 # pylint: disable=no-member
 def build_base_images(event, context):
   """Cloud function to build base images."""
