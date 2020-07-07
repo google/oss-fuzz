@@ -13,7 +13,6 @@
 # limitations under the License.
 #
 ################################################################################
-
 """Cloud function to build base images on Google Cloud Builder."""
 
 import os
@@ -31,6 +30,7 @@ BASE_IMAGES = [
     'base-runner-debug',
     'base-msan-builder',
 ]
+
 
 def get_steps(images, tag_prefix):
   """Genereates steps for building base images."""
@@ -65,19 +65,22 @@ def get_logs_url(build_id, project_id):
 
 
 def build_base_images(event, context):
-  credentials, project_id= google.auth.default()
+  credentials, project_id = google.auth.default()
   tag_prefix = 'gcr.io/' + project_id + '/'
   build_body = {
       'steps': get_steps(BASE_IMAGES, tag_prefix),
       'timeout': str(4 * 3600) + 's',
       'options': {
-      		'machineType': 'N1_HIGHCPU_32'
-      		},
+          'machineType': 'N1_HIGHCPU_32'
+      },
       'images': [tag_prefix + base_image for base_image in BASE_IMAGES],
   }
-  cloudbuild = build('cloudbuild', 'v1', credentials=credentials, cache_discovery=False)
-  build_info = cloudbuild.projects().builds().create(
-      projectId=project_id, body=build_body).execute()
+  cloudbuild = build('cloudbuild',
+                     'v1',
+                     credentials=credentials,
+                     cache_discovery=False)
+  build_info = cloudbuild.projects().builds().create(projectId=project_id,
+                                                     body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
   print('Logs:', get_logs_url(build_id, project_id), file=sys.stderr)
   print(build_id)
