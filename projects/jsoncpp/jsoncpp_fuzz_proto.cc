@@ -61,6 +61,6 @@ extern "C" int FuzzJson(const char* data_str, size_t size, int32_t hash_settings
 DEFINE_PROTO_FUZZER(const json_proto::JsonParseAPI &json_proto) {
   json_proto::JsonProtoConverter converter;
   auto s = converter.Convert(json_proto.object_value());
-  int32_t hash_settings = converter.GetSettings(json_proto.settings());
+  int32_t hash_settings = json_proto.settings();
   FuzzJson(s.data(), s.size(), hash_settings);
 }
