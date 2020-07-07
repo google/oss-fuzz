@@ -18,16 +18,17 @@ and uploads them to the Cloud Datastore."""
 
 from collections import namedtuple
 import os
-import unittest
 import subprocess
 import threading
+import unittest
+import requests
 
 from google.cloud import ndb
 
-from main import sync_projects
-from main import get_projects
 from main import get_access_token
+from main import get_projects
 from main import Project
+from main import sync_projects
 
 _EMULATOR_TIMEOUT = 20
 _DATASTORE_READY_INDICATOR = b'is now running'
@@ -180,8 +181,9 @@ class TestDataSync(unittest.TestCase):
           'test1': '0 8 * * *',
           'test2': '0 7 * * *'
       }, {project.name: project.schedule for project in projects_query})
-      clean = [project.key for project in projects_query]
-      ndb.delete_multi(clean)
+      req = requests.post(
+          'http://localhost:{}/reset'.format(_DATASTORE_EMULATOR_PORT))
+      req.raise_for_status()
 
   def test_sync_projects_create(self):
     """"Testing sync_projects() creating new schedule."""
@@ -202,8 +204,9 @@ class TestDataSync(unittest.TestCase):
           'test1': '0 8 * * *',
           'test2': '0 7 * * *'
       }, {project.name: project.schedule for project in projects_query})
-      clean = [project.key for project in projects_query]
-      ndb.delete_multi(clean)
+      req = requests.post(
+          'http://localhost:{}/reset'.format(_DATASTORE_EMULATOR_PORT))
+      req.raise_for_status()
 
   def test_sync_projects_delete(self):
     """Testing sync_projects() deleting."""
@@ -221,8 +224,9 @@ class TestDataSync(unittest.TestCase):
       self.assertEqual(
           {'test1': '0 8 * * *'},
           {project.name: project.schedule for project in projects_query})
-      clean = [project.key for project in projects_query]
-      ndb.delete_multi(clean)
+      req = requests.post(
+          'http://localhost:{}/reset'.format(_DATASTORE_EMULATOR_PORT))
+      req.raise_for_status()
 
   def test_get_projects_yaml(self):
     """Testing get_projects() yaml get_schedule()."""
