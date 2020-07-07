@@ -8,6 +8,8 @@ import os
 import sys
 import yaml
 
+import six
+
 from oauth2client.client import GoogleCredentials
 from googleapiclient.discovery import build
 
@@ -23,7 +25,7 @@ BASE_IMAGES = [
 TAG_PREFIX = 'gcr.io/oss-fuzz-base/'
 
 
-def get_steps(images):
+def get_steps(images, tag_prefix=TAG_PREFIX):
   steps = [{
       'args': [
           'clone',
@@ -37,7 +39,7 @@ def get_steps(images):
         'args': [
             'build',
             '-t',
-            TAG_PREFIX + base_image,
+            tag_prefix + base_image,
             '.',
         ],
         'dir': 'oss-fuzz/infra/base-images/' + base_image,
@@ -47,10 +49,10 @@ def get_steps(images):
   return steps
 
 
-def get_logs_url(build_id):
+def get_logs_url(build_id, project_id='oss-fuzz-base'):
   URL_FORMAT = ('https://console.developers.google.com/logs/viewer?'
-                'resource=build%2Fbuild_id%2F{0}&project=oss-fuzz-base')
-  return URL_FORMAT.format(build_id)
+                'resource=build%2Fbuild_id%2F{0}&project={1}')
+  return URL_FORMAT.format(build_id, project_id)
 
 
 def main():
@@ -71,8 +73,8 @@ def main():
       projectId='oss-fuzz-base', body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
 
-  print >> sys.stderr, 'Logs:', get_logs_url(build_id)
-  print build_id
+  six.print_('Logs:', get_logs_url(build_id), file=sys.stderr)
+  six.print_(build_id)
 
 
 if __name__ == '__main__':

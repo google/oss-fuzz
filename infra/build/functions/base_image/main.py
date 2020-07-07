@@ -20,61 +20,28 @@ import sys
 import google.auth
 from googleapiclient.discovery import build
 
-BASE_IMAGES = [
-    'base-image',
-    'base-clang',
-    'base-builder',
-    'base-runner',
-    'base-runner-debug',
-    'base-msan-builder',
-]
-
-
-def get_steps(images, tag_prefix):
-  """Genereates steps for building base images."""
-  steps = [{
-      'args': [
-          'clone',
-          'https://github.com/google/oss-fuzz.git',
-      ],
-      'name': 'gcr.io/cloud-builders/git',
-  }]
-
-  for base_image in images:
-    steps.append({
-        'args': [
-            'build',
-            '-t',
-            tag_prefix + base_image,
-            '.',
-        ],
-        'dir': 'oss-fuzz/infra/base-images/' + base_image,
-        'name': 'gcr.io/cloud-builders/docker',
-    })
-
-  return steps
-
-
-def get_logs_url(build_id, project_id):
-  """Returns url for build logs."""
-  url_format = ('https://console.developers.google.com/logs/viewer?'
-                'resource=build%2Fbuild_id%2F{0}&project={1}')
-  return url_format.format(build_id, project_id)
+import build_base_images
 
 
 # pylint: disable=no-member
-def build_base_images(event, context):
+def base_builder(event, context):
   """Cloud function to build base images."""
   del event, context
   credentials, project_id = google.auth.default()
-  tag_prefix = 'gcr.io/' + project_id + '/'
+  tag_prefix = f'gcr.io/{project_id}/'
   build_body = {
-      'steps': get_steps(BASE_IMAGES, tag_prefix),
-      'timeout': str(4 * 3600) + 's',
+      'steps':
+          build_base_images.get_steps(build_base_images.BASE_IMAGES,
+                                      tag_prefix),
+      'timeout':
+          str(4 * 3600) + 's',
       'options': {
           'machineType': 'N1_HIGHCPU_32'
       },
-      'images': [tag_prefix + base_image for base_image in BASE_IMAGES],
+      'images': [
+          tag_prefix + base_image
+          for base_image in build_base_images.BASE_IMAGES
+      ],
   }
   cloudbuild = build('cloudbuild',
                      'v1',
@@ -83,5 +50,7 @@ def build_base_images(event, context):
   build_info = cloudbuild.projects().builds().create(projectId=project_id,
                                                      body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
-  print('Logs:', get_logs_url(build_id, project_id), file=sys.stderr)
+  print('Logs:',
+        build_base_images.get_logs_url(build_id, project_id),
+        file=sys.stderr)
   print(build_id)
