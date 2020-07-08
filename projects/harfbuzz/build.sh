@@ -28,7 +28,9 @@ rm -rf $build
 mkdir -p $build
 
 # Build the library.
-meson --default-library=static -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
+meson --default-library=static --wrap-mode=nodownload \
+      -Dexperimental_api=true \
+      -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
       $build \
    || (cat build/meson-logs/meson-log.txt && false)
 
