@@ -49,7 +49,7 @@ fi
 )"
 
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
-readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr'
+readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --cxxopt=-fno-sanitize=vptr'
 
 declare FUZZER_PATH="zetasql/fuzzing/simple_evaluator_fuzzer"
 declare FUZZ_TARGET="//zetasql/fuzzing:simple_evaluator_fuzzer"

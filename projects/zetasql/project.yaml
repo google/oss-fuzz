@@ -4,6 +4,3 @@ primary_contact: "evmaus@google.com"
 auto_ccs:
  - "zdwho@google.com"
  - "shumway@google.com"
-sanitizers:
- - address
- - memory
