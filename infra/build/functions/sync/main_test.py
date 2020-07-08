@@ -301,7 +301,8 @@ class TestDataSync(unittest.TestCase):
             Repository('project.yaml', 'file', 'projects/test0/project.yaml')
         ])
     ])
-    repo.contents[0].contents[1].set_yaml_contents(b'builds_per_day: some-string')
+    repo.contents[0].contents[1].set_yaml_contents(
+        b'builds_per_day: some-string')
 
     self.assertEqual(get_projects(repo), {})
 
