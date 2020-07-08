@@ -15,7 +15,7 @@
 ################################################################################
 """Cloud function to build base images on Google Cloud Builder."""
 
-import sys
+import logging
 
 import google.auth
 from googleapiclient.discovery import build
@@ -50,7 +50,5 @@ def base_builder(event, context):
   build_info = cloudbuild.projects().builds().create(projectId=project_id,
                                                      body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
-  print('Logs:',
-        build_base_images.get_logs_url(build_id, project_id),
-        file=sys.stderr)
-  print(build_id)
+  logging.info('Build ID: %s', build_id)
+  logging.info('Logs: %s', build_base_images.get_logs_url(build_id, project_id))

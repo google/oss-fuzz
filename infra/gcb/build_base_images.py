@@ -18,12 +18,11 @@
 
 Usage: build_base_images.py
 """
+from __future__ import print_function
 
 import os
 import sys
 import yaml
-
-import six
 
 from googleapiclient.discovery import build
 from oauth2client.client import GoogleCredentials
@@ -91,8 +90,8 @@ def main():
                                                      body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
 
-  six.print_('Logs:', get_logs_url(build_id), file=sys.stderr)
-  six.print_(build_id)
+  print('Logs:', get_logs_url(build_id), file=sys.stderr)
+  print(build_id)
 
 
 if __name__ == '__main__':
