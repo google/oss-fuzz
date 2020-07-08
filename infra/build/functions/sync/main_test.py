@@ -238,8 +238,8 @@ class TestDataSync(unittest.TestCase):
             Repository('project.yaml', 'file', 'projects/test1/project.yaml')
         ])
     ])
-    repo.contents[0].contents[1].set_yaml_contents(b'schedule: 2')
-    repo.contents[1].contents[1].set_yaml_contents(b'schedule: 3')
+    repo.contents[0].contents[1].set_yaml_contents(b'builds_per_day: 2')
+    repo.contents[1].contents[1].set_yaml_contents(b'builds_per_day: 3')
 
     self.assertEqual(
         get_projects(repo), {
@@ -301,7 +301,8 @@ class TestDataSync(unittest.TestCase):
             Repository('project.yaml', 'file', 'projects/test0/project.yaml')
         ])
     ])
-    repo.contents[0].contents[1].set_yaml_contents(b'schedule: some-string')
+    repo.contents[0].contents[1].set_yaml_contents(
+        b'builds_per_day: some-string')
 
     self.assertEqual(get_projects(repo), {})
 
@@ -314,7 +315,7 @@ class TestDataSync(unittest.TestCase):
             Repository('project.yaml', 'file', 'projects/test0/project.yaml')
         ])
     ])
-    repo.contents[0].contents[1].set_yaml_contents(b'schedule: 5')
+    repo.contents[0].contents[1].set_yaml_contents(b'builds_per_day: 5')
 
     self.assertEqual(get_projects(repo), {})
 

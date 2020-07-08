@@ -146,15 +146,15 @@ def get_schedule(project_contents):
     if content_file.name != 'project.yaml':
       continue
     project_yaml = yaml.safe_load(content_file.decoded_content.decode('utf-8'))
-    times_per_day = project_yaml.get('schedule', DEFAULT_BUILDS_PER_DAY)
-    if not isinstance(times_per_day, int) or times_per_day not in range(
+    builds_per_day = project_yaml.get('builds_per_day', DEFAULT_BUILDS_PER_DAY)
+    if not isinstance(builds_per_day, int) or builds_per_day not in range(
         1, MAX_BUILDS_PER_DAY + 1):
       raise ProjectYamlError('Parameter is not an integer in range [1-4]')
 
       # Starting at 6:00 am, next build schedules are added at 'interval' slots
       # Example for interval 2, hours = [6, 18] and schedule = '0 6,18 * * *'
 
-    interval = 24 // times_per_day
+    interval = 24 // builds_per_day
     hours = []
     for hour in range(6, 30, interval):
       hours.append(hour % 24)
