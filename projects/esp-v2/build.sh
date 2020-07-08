@@ -94,7 +94,9 @@ then
     "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
   rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/esp-v2/bazel-out "${REMAP_PATH}"
   rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
-  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
+  # Some low-level libraries are built located /tmp.
+  # But ESPv2 engineeers don't really look at them.
+  # rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
 fi
 
 # Copy out test driverless binaries from bazel-bin/.

@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER gmelman1@gmail.com
 
 RUN apt-get update && apt-get install --yes cmake
 

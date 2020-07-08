@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jpa@npb.mail.kapsi.fi
 RUN apt-get update && apt-get install -y python3-pip git wget
 RUN python3 -m pip install --upgrade pip
 RUN pip3 install protobuf grpcio-tools scons

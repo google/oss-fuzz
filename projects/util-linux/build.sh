@@ -15,4 +15,10 @@
 #
 ################################################################################
 
-tools/oss-fuzz.sh
+set -x
+
+./autogen.sh
+./configure --disable-all-programs --enable-libmount --enable-libblkid
+make -j$(nproc) V=1 libmount.la libblkid.la
+$CC $CFLAGS -Wall -Wextra -include config.h -I./include -I./libblkid/src -I./libmount/src -c $SRC/test_mount_fuzz.c -o test_mount_fuzz.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE test_mount_fuzz.o ./.libs/libblkid.a ./.libs/libmount.a .libs/libblkid.a -o $OUT/test_mount_fuzz

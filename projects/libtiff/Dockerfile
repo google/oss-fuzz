@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER paul.l.kehrer@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake nasm
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://github.com/madler/zlib

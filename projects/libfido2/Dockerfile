@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER g.kihlman@yubico.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN apt-get install -y cmake libudev-dev pkg-config chrpath
 RUN git clone --branch v0.7.0 https://github.com/PJK/libcbor

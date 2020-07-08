@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -eux
 # Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,10 +27,11 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
 
-compile_fuzzer ./pkg/compiler Fuzz compiler_fuzzer
-compile_fuzzer ./prog/test FuzzDeserialize prog_deserialize_fuzzer
-compile_fuzzer ./prog/test FuzzParseLog prog_parselog_fuzzer
-compile_fuzzer ./pkg/report Fuzz report_fuzzer
+make descriptions
+compile_fuzzer github.com/google/syzkaller/pkg/compiler Fuzz compiler_fuzzer
+compile_fuzzer github.com/google/syzkaller/prog/test FuzzDeserialize prog_deserialize_fuzzer
+compile_fuzzer github.com/google/syzkaller/prog/test FuzzParseLog prog_parselog_fuzzer
+compile_fuzzer github.com/google/syzkaller/pkg/report Fuzz report_fuzzer
 
 # This target is way too spammy and OOMs very quickly.
 # compile_fuzzer ./tools/syz-trace2syz/proggen Fuzz trace2syz_fuzzer

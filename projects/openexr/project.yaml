@@ -1,3 +1,9 @@
 homepage: "https://openexr.com"
 language: c++
+<<<<<<< HEAD
 primary_contact: "cary@ilm.com"
+=======
+primary_contact: "twodeecoda@gmail.com"
+auto_ccs:
+  - "cbpilm@gmail.com"
+>>>>>>> 5735c8b72362336fe4b2ed1f55300c87cb61f8b6
