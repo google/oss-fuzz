@@ -49,7 +49,7 @@ fi
 )"
 
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
-readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr'
+readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --cxxopt=-fno-sanitize=vptr'
 
 declare FUZZER_PATH=$(for path in $(find zetasql/fuzzing -name *_fuzzer.cc); do echo "${path%.*}"; done)
 declare FUZZ_TARGET="$(for fuzzer in ${FUZZER_PATH}; do echo "//$(dirname ${fuzzer}):$(basename ${fuzzer})"; done)"
