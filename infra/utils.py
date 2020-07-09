@@ -97,9 +97,12 @@ def get_container_name():
   """
   with open('/proc/self/cgroup') as file_handle:
     if 'docker' not in file_handle.read():
+      logging.debug('Not running in docker container.')
       return None
   with open('/etc/hostname') as file_handle:
-    return file_handle.read().strip()
+    name = file_handle.read().strip()
+  logging.debug('Container name: %s', name)
+  return name
 
 
 def is_fuzz_target_local(file_path):
