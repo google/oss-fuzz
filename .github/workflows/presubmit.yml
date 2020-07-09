@@ -18,8 +18,5 @@ jobs:
 
       - name: Test
         run: 
-          pip install -r infra/ci/requirements.txt
-          pip install -r infra/build/functions/requirements.txt
+          cat /proc/self/cgroup
 
-      - name: Run presubmit checks
-        run: python infra/presubmit.py
