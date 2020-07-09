@@ -166,6 +166,7 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
 
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-arguments
+# pylint: disable=too-many-statements
 def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
             build_data):
   """Perform the bisect."""
