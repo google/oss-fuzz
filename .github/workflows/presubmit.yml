@@ -16,9 +16,8 @@ jobs:
         with:
           python-version: 3.7
 
-      - name: Install dependencies
+      - name: Test
         run: 
-          cat /proc/self/cgroup
           pip install -r infra/ci/requirements.txt
           pip install -r infra/build/functions/requirements.txt
 
