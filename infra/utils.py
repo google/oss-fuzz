@@ -93,8 +93,9 @@ def get_container_name():
   Returns:
     Container name or None if not in a container.
   """
-  result = subprocess.run(['systemd-detect-virt', '-c'],
-                          stdout=subprocess.PIPE).stdout
+  result = subprocess.run(  # pylint: disable=subprocess-run-check
+      ['systemd-detect-virt', '-c'],
+      stdout=subprocess.PIPE).stdout
   if b'docker' not in result:
     return None
   with open('/etc/hostname') as file_handle:
