@@ -56,10 +56,10 @@ EXAMPLE_NOCRASH_FUZZER = 'example_nocrash_fuzzer'
 # A fuzzer to be built in build_fuzzers integration tests.
 EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 
-MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'memory')
+MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'memory')
 MEMORY_FUZZER = 'curl_fuzzer_memory'
 
-UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'undefined')
+UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'undefined')
 UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
 # pylint: disable=no-self-use
