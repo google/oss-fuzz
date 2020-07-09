@@ -16,7 +16,7 @@
 ##############################################################################
 set -eu
 
-FUZZERS="opus_decode_fuzzer"
+FUZZERS="opus_decode_fuzzer.c opus_multi_fuzzer.cc"
 BUILDS=(floating fixed)
 
 tar xvf $SRC/opus_testvectors.tar.gz
@@ -42,18 +42,20 @@ for build in "${BUILDS[@]}"; do
 
   # Build all fuzzers
   for fuzzer in $FUZZERS; do
+    fuzzer_basename=$(echo $fuzzer | cut -f 1 -d '.')
+
     $CC $CFLAGS -c -Iinclude \
-      tests/$fuzzer.c \
+      tests/$fuzzer \
       -o $fuzzer.o
 
     $CXX $CXXFLAGS \
       $fuzzer.o \
-      -o $OUT/${fuzzer}_${build} \
+      -o $OUT/${fuzzer_basename}_${build} \
       $LIB_FUZZING_ENGINE .libs/libopus.a
 
     # Setup the .options and test corpus zip files using the corresponding
     # fuzzer's name
-    cp tests/$fuzzer.options $OUT/${fuzzer}_${build}.options
-    zip -r $OUT/${fuzzer}_${build}_seed_corpus.zip opus_testvectors/
+    cp tests/$fuzzer_basename.options $OUT/${fuzzer_basename}_${build}.options
+    zip -r $OUT/${fuzzer_basename}_${build}_seed_corpus.zip opus_testvectors/
   done
 done
