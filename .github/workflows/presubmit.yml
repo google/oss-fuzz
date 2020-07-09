@@ -18,6 +18,7 @@ jobs:
 
       - name: Install dependencies
         run: 
+          cat /proc/self/cgroup
           pip install -r infra/ci/requirements.txt
           pip install -r infra/build/functions/requirements.txt
 
