@@ -224,4 +224,4 @@ cp out/Fuzz/api_svg_canvas $OUT/api_svg_canvas
 cp ./canvas_seed_corpus.zip $OUT/api_svg_canvas_corpus.zip
 
 cp out/Fuzz/skruntimeeffect $OUT/skruntimeeffect
-cp ./sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect.zip
+cp ./sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
