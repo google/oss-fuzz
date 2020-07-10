@@ -173,9 +173,8 @@ def get_project_metadata(project_contents):
       1, MAX_BUILDS_PER_DAY + 1):
     raise ProjectYamlError('Parameter is not an integer in range [1-4]')
 
-    # Starting at 6:00 am, next build schedules are added at 'interval' slots
-    # Example for interval 2, hours = [6, 18] and schedule = '0 6,18 * * *'
-
+  # Starting at 6:00 am, next build schedules are added at 'interval' slots
+  # Example for interval 2, hours = [6, 18] and schedule = '0 6,18 * * *'
   interval = 24 // builds_per_day
   hours = []
   for hour in range(6, 30, interval):
