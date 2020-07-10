@@ -78,24 +78,7 @@ jobs:
        path: ./out/artifacts
 ```
 
-You can make CIFuzz to trigger only on certain branches or paths by following the
-instructions [here](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions).
-For example, the following code can used in `on.pull_request` attribute in snippet
-above to trigger CIFuzz on C/C++ code residing on master and release branches:
 
-```
-on:
-  pull_request:
-    branches: 
-      - master
-      - 'releases/**'
-    paths:
-      - '**.c'
-      - '**.cc'
-      - '**.cpp'
-      - '**.cxx'
-      - '**.h'
-```
     
 
 
@@ -153,6 +136,50 @@ jobs:
        name: ${{ matrix.sanitizer }}-artifacts
        path: ./out/artifacts
 {% endraw %}
+```
+
+#### Branches and paths
+
+You can make CIFuzz to trigger only on certain branches or paths by following the
+instructions [here](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions).
+For example, the following code can used in `on.pull_request` attribute in snippet
+above to trigger CIFuzz on C/C++ code residing on master and release branches:
+
+```yaml
+name: CIFuzz
+on:
+  pull_request:
+    branches: 
+      - master
+      - 'releases/**'
+    paths:
+      - '**.c'
+      - '**.cc'
+      - '**.cpp'
+      - '**.cxx'
+      - '**.h'
+jobs:
+ Fuzzing:
+   runs-on: ubuntu-latest
+   steps:
+   - name: Build Fuzzers
+     id: build
+     uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+     with:
+       oss-fuzz-project-name: 'example'
+       dry-run: false
+   - name: Run Fuzzers
+     uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+     with:
+       oss-fuzz-project-name: 'example'
+       fuzz-seconds: 600
+       dry-run: false
+   - name: Upload Crash
+     uses: actions/upload-artifact@v1
+     if: failure() && steps.build.outcome == 'success'
+     with:
+       name: artifacts
+       path: ./out/artifacts
 ```
 
 ## Understanding results
