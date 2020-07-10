@@ -26,7 +26,7 @@
 #include <iostream>
 #include <cstddef>
 #include <stdint.h>
-#include <iostream>
+#include <cstring>
 
 namespace Json {
 class Exception;
@@ -49,9 +49,13 @@ void FuzzJson(std::string data_str, int32_t hash_settings) {
 
   std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
 
+  data_str.assign(data_str.begin(), data_str.end());
+  const char* begin = data_str.c_str();
+  const char* end = begin + data_str.length();
+
   Json::Value root;
   try {
-    reader->parse(&*(data_str.begin()), &*(data_str.end()), &root, nullptr);
+    reader->parse(begin, end, &root, nullptr);
   } catch (Json::Exception const&) {
   }
 }
