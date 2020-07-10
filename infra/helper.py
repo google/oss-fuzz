@@ -751,11 +751,15 @@ def coverage(args):
   run_args.extend([
       '-v',
       '%s:/out' % _get_output_dir(args.project_name),
-      '-p',
-      '%s:%s' % (args.port, args.port),
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
   ])
+
+  if args.port:
+    run_args.extend([
+        '-p',
+        '%s:%s' % (args.port, args.port),
+    ])
 
   run_args.append('coverage')
   if args.fuzz_target:
