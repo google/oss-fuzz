@@ -30,7 +30,8 @@ VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
 
-ProjectMetadata = namedtuple('ProjectMetadata', 'schedule')
+ProjectMetadata = namedtuple('ProjectMetadata',
+                             'schedule project_yaml_contents dockerfile_lines')
 
 
 class ProjectYamlError(Exception):
@@ -42,6 +43,8 @@ class Project(ndb.Model):
   """Represents an integrated OSS-Fuzz project."""
   name = ndb.StringProperty()
   schedule = ndb.StringProperty()
+  project_yaml_contents = ndb.StringProperty()
+  dockerfile_lines = ndb.StringProperty(repeated=True)
 
 
 # pylint: disable=too-few-public-methods
@@ -115,23 +118,38 @@ def sync_projects(cloud_scheduler_client, projects):
     try:
       create_scheduler(cloud_scheduler_client, project_name,
                        projects[project_name].schedule)
-      Project(name=project_name, schedule=projects[project_name].schedule).put()
+      project_metadata = projects[project_name]
+      Project(name=project_name,
+              schedule=project_metadata.schedule,
+              project_yaml_contents=project_metadata.project_yaml_contents,
+              dockerfile_lines=project_metadata.dockerfile_lines).put()
     except exceptions.GoogleAPICallError as error:
       logging.error('Scheduler creation for %s failed with %s', project_name,
                     error)
 
   for project in Project.query():
     if project.name not in projects or project.schedule == projects[
-        project.name]:
+        project.name].schedule:
       continue
+    update_flag = 0
     try:
       update_scheduler(cloud_scheduler_client, project,
                        projects[project.name].schedule)
       project.schedule = projects[project.name].schedule
-      project.put()
+      update_flag = 1
     except exceptions.GoogleAPICallError as error:
       logging.error('Updating scheduler for %s failed with %s', project.name,
                     error)
+    if project.project_yaml_contents != project_metadata.project_yaml_contents:
+      project.project_yaml_contents = project_metadata.project_yaml_contents
+      update_flag = 1
+
+    if project.dockerfile_lines != project_metadata.dockerfile_lines:
+      project.dockerfile_lines = project_metadata.dockerfile_lines
+      update_flag = 1
+
+    if update_flag:
+      project.put()
 
 
 def _has_docker_file(project_contents):
@@ -140,27 +158,33 @@ def _has_docker_file(project_contents):
       content_file.name == 'Dockerfile' for content_file in project_contents)
 
 
-def get_schedule(project_contents):
+def get_project_metadata(project_contents):
   """Checks for schedule parameter in yaml file else uses DEFAULT_SCHEDULE."""
   for content_file in project_contents:
-    if content_file.name != 'project.yaml':
-      continue
-    project_yaml = yaml.safe_load(content_file.decoded_content.decode('utf-8'))
-    builds_per_day = project_yaml.get('builds_per_day', DEFAULT_BUILDS_PER_DAY)
-    if not isinstance(builds_per_day, int) or builds_per_day not in range(
-        1, MAX_BUILDS_PER_DAY + 1):
-      raise ProjectYamlError('Parameter is not an integer in range [1-4]')
+    if content_file.name == 'project.yaml':
+      project_yaml_contents = content_file.decoded_content.decode('utf-8')
 
-      # Starting at 6:00 am, next build schedules are added at 'interval' slots
-      # Example for interval 2, hours = [6, 18] and schedule = '0 6,18 * * *'
+    if content_file.name == 'Dockerfile':
+      dockerfile_contents = content_file.decoded_content.decode('utf-8')
 
-    interval = 24 // builds_per_day
-    hours = []
-    for hour in range(6, 30, interval):
-      hours.append(hour % 24)
-    schedule = '0 ' + ','.join(str(hour) for hour in hours) + ' * * *'
+  project_yaml = yaml.safe_load(project_yaml_contents)
+  builds_per_day = project_yaml.get('builds_per_day', DEFAULT_BUILDS_PER_DAY)
+  if not isinstance(builds_per_day, int) or builds_per_day not in range(
+      1, MAX_BUILDS_PER_DAY + 1):
+    raise ProjectYamlError('Parameter is not an integer in range [1-4]')
 
-  return schedule
+    # Starting at 6:00 am, next build schedules are added at 'interval' slots
+    # Example for interval 2, hours = [6, 18] and schedule = '0 6,18 * * *'
+
+  interval = 24 // builds_per_day
+  hours = []
+  for hour in range(6, 30, interval):
+    hours.append(hour % 24)
+  schedule = '0 ' + ','.join(str(hour) for hour in hours) + ' * * *'
+
+  dockerfile_lines = dockerfile_contents.split('\n')
+
+  return ProjectMetadata(schedule, project_yaml_contents, dockerfile_lines)
 
 
 def get_projects(repo):
@@ -177,8 +201,7 @@ def get_projects(repo):
       continue
 
     try:
-      projects[content_file.name] = ProjectMetadata(
-          schedule=get_schedule(project_contents))
+      projects[content_file.name] = get_project_metadata(project_contents)
     except ProjectYamlError as error:
       logging.error(
           'Incorrect format for project.yaml file of %s with error %s',
