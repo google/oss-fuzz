@@ -1,4 +1,4 @@
-// Copyright 2019 Google Inc.
+// Copyright 2020 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ namespace Json {
 class Exception;
 }
 
-extern "C" int FuzzJson(const char* data_str, size_t size, int32_t hash_settings) {
+void FuzzJson(std::string data_str, int32_t hash_settings) {
   Json::CharReaderBuilder builder;
 
   builder.settings_["failIfExtra"] = hash_settings & (1 << 0);
@@ -51,16 +51,14 @@ extern "C" int FuzzJson(const char* data_str, size_t size, int32_t hash_settings
 
   Json::Value root;
   try {
-    reader->parse(data_str, data_str + size, &root, nullptr);
+    reader->parse(&*(data_str.begin()), &*(data_str.end()), &root, nullptr);
   } catch (Json::Exception const&) {
   }
-
-  return 0;
 }
 
 DEFINE_PROTO_FUZZER(const json_proto::JsonParseAPI &json_proto) {
   json_proto::JsonProtoConverter converter;
-  auto s = converter.Convert(json_proto.object_value());
+  std::string data_str = converter.Convert(json_proto.object_value());
   int32_t hash_settings = json_proto.settings();
-  FuzzJson(s.data(), s.size(), hash_settings);
+  FuzzJson(data_str, hash_settings);
 }

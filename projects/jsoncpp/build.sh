@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ cp $SRC/jsoncpp/src/test_lib_json/fuzz.dict $OUT/jsoncpp_fuzzer.dict
 rm -rf genfiles && mkdir genfiles && ../LPM/external.protobuf/bin/protoc json.proto --cpp_out=genfiles --proto_path=$SRC
 
 # Compile LPM fuzzer.
+if [[ $CFLAGS != *sanitize=memory* ]]; then
 $CXX $CXXFLAGS -I genfiles -I .. -I ../libprotobuf-mutator/ -I ../LPM/external.protobuf/include -I ../include $LIB_FUZZING_ENGINE \
     $SRC/jsoncpp_fuzz_proto.cc genfiles/json.pb.cc $SRC/json_proto_converter.cc \
     ../LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
@@ -40,3 +41,4 @@ $CXX $CXXFLAGS -I genfiles -I .. -I ../libprotobuf-mutator/ -I ../LPM/external.p
     ../LPM/external.protobuf/lib/libprotobuf.a \
     -o  $OUT/jsoncpp_proto_fuzzer \
     lib/libjsoncpp.a
+fi
