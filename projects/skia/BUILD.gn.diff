@@ -495,3 +495,15 @@ test_app("svg_dom") {
     ":skia",
   ]
 }
+
+test_app("skruntimeeffect") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSkRuntimeEffect.cpp",
+  ]
+  deps = [
+    ":gpu_tool_utils",
+    ":skia",
+  ]
+}
