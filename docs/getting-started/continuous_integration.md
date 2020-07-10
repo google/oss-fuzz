@@ -79,9 +79,6 @@ jobs:
 ```
 
 
-    
-
-
 ### Optional configuration
 
 #### Configurable Variables
