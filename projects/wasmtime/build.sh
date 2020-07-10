@@ -34,10 +34,10 @@ build() {
       dst_name=$fuzzer_prefix$src_name
       cp $FUZZ_TARGET_OUTPUT_DIR/$src_name $OUT/$dst_name
 
-      if [[ -d $PROJECT_DIR/$project-libfuzzer-corpus/$src_name/ ]]; then
+      if [[ -d $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/ ]]; then
           zip -jr \
               $OUT/${dst_name}_seed_corpus.zip \
-              $PROJECT_DIR/$project-libfuzzer-corpus/$src_name/
+              $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/
       fi
 
       cp $SRC/default.options $OUT/$dst_name.options
