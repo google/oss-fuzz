@@ -27,7 +27,7 @@ jobs:
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: '298.0.0'
-        run: |
+      - run: |
           gcloud components install beta cloud-datastore-emulator
           gcloud info
 
