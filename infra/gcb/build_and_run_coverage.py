@@ -68,7 +68,7 @@ def usage():
 
 
 # pylint: disable=too-many-locals
-def get_build_steps(project_dir, project_yaml, workdir, gcp_project_base):
+def get_build_steps(project_dir, project_yaml, workdir, base_images_project):
   """Returns build steps for project."""
   project_name = os.path.basename(project_dir)
   if project_yaml['disabled']:
@@ -142,7 +142,7 @@ def get_build_steps(project_dir, project_yaml, workdir, gcp_project_base):
     coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
   build_steps.append({
-      'name': f'gcr.io/{gcp_project_base}/base-runner',
+      'name': f'gcr.io/{base_images_project}/base-runner',
       'env': coverage_env,
       'args': [
           'bash', '-c',
@@ -253,13 +253,13 @@ def get_build_steps(project_dir, project_yaml, workdir, gcp_project_base):
   return build_steps
 
 
-# pylint: disable=missing-function-docstring
 def main():
+  """Build and run coverage for projects."""
   if len(sys.argv) != 2:
     usage()
 
-  gcp_project = 'oss-fuzz'
-  gcp_project_base = 'oss-fuzz-base'
+  image_project = 'oss-fuzz'
+  base_images_project = 'oss-fuzz-base'
   project_dir = sys.argv[1].rstrip(os.path.sep)
   project_name = os.path.basename(project_dir)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
@@ -273,8 +273,8 @@ def main():
 
   workdir = build_project.workdir_from_dockerfile(dockerfile_contents)
   project_yaml = build_project.set_yaml_defaults(project_name, project_yaml,
-                                                 gcp_project)
-  steps = get_build_steps(project_dir, project_yaml, workdir, gcp_project_base)
+                                                 image_project)
+  steps = get_build_steps(project_dir, project_yaml, workdir, base_images_project)
   build_project.run_build(steps, project_name, COVERAGE_BUILD_TAG)
 
 

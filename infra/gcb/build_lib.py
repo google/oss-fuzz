@@ -17,9 +17,9 @@
 import base64
 import collections
 import os
+import six.moves.urllib.parse as urlparse
 import sys
 import time
-import six.moves.urllib.parse as urlparse
 
 import requests
 

@@ -25,6 +25,7 @@ import datetime
 import json
 import os
 import re
+import six
 import sys
 import yaml
 
@@ -63,11 +64,11 @@ def usage():
   sys.exit(1)
 
 
-def set_yaml_defaults(project_name, project_yaml, gcp_project):
+def set_yaml_defaults(project_name, project_yaml, image_project):
   """Set project.yaml's default parameters."""
   project_yaml.setdefault('disabled', False)
   project_yaml.setdefault('name', project_name)
-  project_yaml.setdefault('image', f'gcr.io/{gcp_project}/' + project_name)
+  project_yaml.setdefault('image', f'gcr.io/{image_project}/' + project_name)
   project_yaml.setdefault('architectures', DEFAULT_ARCHITECTURES)
   project_yaml.setdefault('sanitizers', DEFAULT_SANITIZERS)
   project_yaml.setdefault('fuzzing_engines', DEFAULT_ENGINES)
@@ -93,7 +94,7 @@ def get_sanitizers(project_yaml):
 
   processed_sanitizers = []
   for sanitizer in sanitizers:
-    if isinstance(sanitizer, str):
+    if isinstance(sanitizer, six.string_types):
       processed_sanitizers.append(sanitizer)
     elif isinstance(sanitizer, dict):
       for key in sanitizer.iterkeys():
@@ -102,10 +103,10 @@ def get_sanitizers(project_yaml):
   return processed_sanitizers
 
 
-def workdir_from_dockerfile(dockerfile_contents):
+def workdir_from_dockerfile(dockerfile_lines):
   """Parse WORKDIR from the Dockerfile."""
   workdir_regex = re.compile(r'\s*WORKDIR\s*([^\s]+)')
-  for line in dockerfile_contents:
+  for line in dockerfile_lines:
     match = re.match(workdir_regex, line)
     if match:
       # We need to escape '$' since they're used for subsitutions in Container
@@ -116,7 +117,7 @@ def workdir_from_dockerfile(dockerfile_contents):
 
 
 # pylint: disable=too-many-locals
-def get_build_steps(project_yaml, workdir, gcp_project_base):
+def get_build_steps(project_yaml, dockerfile_lines, base_images_project):
   """Returns build steps for project."""
   name = project_yaml['name']
   image = project_yaml['image']
@@ -129,7 +130,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
 
   # Copy over MSan instrumented libraries.
   build_steps.append({
-      'name': f'gcr.io/{gcp_project_base}/msan-builder',
+      'name': f'gcr.io/{base_images_project}/msan-builder',
       'args': [
           'bash',
           '-c',
@@ -174,6 +175,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
         env.append('ARCHITECTURE=' + architecture)
         env.append('FUZZING_LANGUAGE=' + language)
 
+        workdir = workdir_from_dockerfile(dockerfile_contents)
         if not workdir:
           workdir = '/src'
 
@@ -212,7 +214,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
           # Patch dynamic libraries to use instrumented ones.
           build_steps.append({
               'name':
-                  f'gcr.io/{gcp_project_base}/msan-builder',
+                  f'gcr.io/{base_images_project}/msan-builder',
               'args': [
                   'bash',
                   '-c',
@@ -241,7 +243,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
               # test binaries
               {
                   'name':
-                      f'gcr.io/{gcp_project_base}/base-runner',
+                      f'gcr.io/{base_images_project}/base-runner',
                   'env':
                       env,
                   'args': [
@@ -266,7 +268,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
 
         if sanitizer == 'dataflow' and fuzzing_engine == 'dataflow':
           dataflow_steps = dataflow_post_build_steps(name, env,
-                                                     gcp_project_base)
+                                                     base_images_project)
           if dataflow_steps:
             build_steps.extend(dataflow_steps)
           else:
@@ -276,7 +278,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
             # generate targets list
             {
                 'name':
-                    f'gcr.io/{gcp_project_base}/base-runner',
+                    f'gcr.io/{base_images_project}/base-runner',
                 'env':
                     env,
                 'args': [
@@ -298,7 +300,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
             },
             # upload srcmap
             {
-                'name': f'gcr.io/{gcp_project_base}/uploader',
+                'name': f'gcr.io/{base_images_project}/uploader',
                 'args': [
                     '/workspace/srcmap.json',
                     srcmap_url,
@@ -306,7 +308,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
             },
             # upload binaries
             {
-                'name': f'gcr.io/{gcp_project_base}/uploader',
+                'name': f'gcr.io/{base_images_project}/uploader',
                 'args': [
                     os.path.join(out, zip_file),
                     upload_url,
@@ -315,7 +317,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
             # upload targets list
             {
                 'name':
-                    f'gcr.io/{gcp_project_base}/uploader',
+                    f'gcr.io/{base_images_project}/uploader',
                 'args': [
                     '/workspace/{0}'.format(targets_list_filename),
                     targets_list_url,
@@ -338,7 +340,7 @@ def get_build_steps(project_yaml, workdir, gcp_project_base):
   return build_steps
 
 
-def dataflow_post_build_steps(project_name, env, gcp_project_base):
+def dataflow_post_build_steps(project_name, env, base_images_project):
   """Appends dataflow post build steps."""
   steps = build_lib.download_corpora_steps(project_name)
   if not steps:
@@ -346,7 +348,7 @@ def dataflow_post_build_steps(project_name, env, gcp_project_base):
 
   steps.append({
       'name':
-          f'gcr.io/{gcp_project_base}/base-runner',
+          f'gcr.io/{base_images_project}/base-runner',
       'env':
           env + [
               'COLLECT_DFT_TIMEOUT=2h',
@@ -367,11 +369,11 @@ def dataflow_post_build_steps(project_name, env, gcp_project_base):
   return steps
 
 
-def get_logs_url(build_id, gcp_project='oss-fuzz'):
+def get_logs_url(build_id, image_project='oss-fuzz'):
   """Returns url where logs are displayed for the build."""
   url_format = ('https://console.developers.google.com/logs/viewer?'
                 'resource=build%2Fbuild_id%2F{0}&project={1}')
-  return url_format.format(build_id, gcp_project)
+  return url_format.format(build_id, image_project)
 
 
 # pylint: disable=no-member
@@ -399,27 +401,26 @@ def run_build(build_steps, project_name, tag):
   print(build_id)
 
 
-# pylint: disable=missing-function-docstring
 def main():
+  """Build and run projects."""
   if len(sys.argv) != 2:
     usage()
 
-  gcp_project = 'oss-fuzz'
-  gcp_project_base = 'oss-fuzz-base'
+  image_project = 'oss-fuzz'
+  base_images_project = 'oss-fuzz-base'
   project_dir = sys.argv[1].rstrip(os.path.sep)
   dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   project_yaml_path = os.path.join(project_dir, 'project.yaml')
   project_name = os.path.basename(project_dir)
 
   with open(dockerfile_path) as dockerfile:
-    dockerfile_contents = dockerfile.readlines()
+    dockerfile_lines = dockerfile.readlines()
 
   with open(project_yaml_path) as project_yaml_file:
     project_yaml = yaml.safe_load(project_yaml_file)
 
-  workdir = workdir_from_dockerfile(dockerfile_contents)
-  project_yaml = set_yaml_defaults(project_name, project_yaml, gcp_project)
-  steps = get_build_steps(project_yaml, workdir, gcp_project_base)
+  #project_yaml = set_yaml_defaults(project_name, project_yaml, image_project)
+  steps = get_build_steps(project_yaml, dockerfile_lines, base_images_project)
 
   run_build(steps, project_name, FUZZING_BUILD_TAG)
 
