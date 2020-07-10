@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <stdint.h>
 #include <cstring>
+#include <iostream>
 
 namespace Json {
 class Exception;
@@ -48,8 +49,7 @@ void FuzzJson(std::string data_str, int32_t hash_settings) {
   builder.settings_["allowTrailingCommas_"] = hash_settings & (1 << 10);
 
   std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
-
-  data_str.assign(data_str.begin(), data_str.end());
+  
   const char* begin = data_str.c_str();
   const char* end = begin + data_str.length();
 

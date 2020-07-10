@@ -29,11 +29,11 @@ $CXX $CXXFLAGS -I../include $LIB_FUZZING_ENGINE \
 # Add dictionary.
 cp $SRC/jsoncpp/src/test_lib_json/fuzz.dict $OUT/jsoncpp_fuzzer.dict
 
+if [[ $CFLAGS != *sanitize=memory* ]]; then
 # Compile json proto.
 rm -rf genfiles && mkdir genfiles && ../LPM/external.protobuf/bin/protoc json.proto --cpp_out=genfiles --proto_path=$SRC
 
 # Compile LPM fuzzer.
-if [[ $CFLAGS != *sanitize=memory* ]]; then
 $CXX $CXXFLAGS -I genfiles -I .. -I ../libprotobuf-mutator/ -I ../LPM/external.protobuf/include -I ../include $LIB_FUZZING_ENGINE \
     $SRC/jsoncpp_fuzz_proto.cc genfiles/json.pb.cc $SRC/json_proto_converter.cc \
     ../LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
