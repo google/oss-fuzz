@@ -139,8 +139,8 @@ jobs:
 
 You can make CIFuzz to trigger only on certain branches or paths by following the
 instructions [here](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions).
-For example, the following code can used in `on.pull_request` attribute in snippet
-above to trigger CIFuzz on C/C++ code residing on master and release branches:
+For example, the following code can used to trigger CIFuzz only on C/C++ code
+residing on master and release branches:
 
 ```yaml
 name: CIFuzz
