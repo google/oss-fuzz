@@ -78,6 +78,25 @@ jobs:
        path: ./out/artifacts
 ```
 
+You can make CIFuzz to trigger only on certain branches or paths by following the
+instructions [here](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions).
+For example, the following code can used in `on.pull_request` attribute in snippet
+above to trigger CIFuzz on C/C++ code residing on master and release branches:
+
+```
+on:
+  pull_request:
+    branches: 
+      - master
+      - 'releases/**'
+    paths:
+      - '**.c'
+      - '**.cc'
+      - '**.cpp'
+      - '**.cxx'
+      - '**.h'
+```
+    
 
 
 ### Optional configuration
