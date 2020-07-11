@@ -68,9 +68,10 @@ def usage():
 
 
 # pylint: disable=too-many-locals
-def get_build_steps(project_dir, project_yaml, workdir, base_images_project):
+def get_build_steps(project_name, project_yaml, dockerfile_lines, image_project,
+                    base_images_project):
   """Returns build steps for project."""
-  project_name = os.path.basename(project_dir)
+  build_project.load_project_yaml(project_name, project_yaml, image_project)
   if project_yaml['disabled']:
     skip_build('Project "%s" is disabled.' % project_name)
 
@@ -92,6 +93,7 @@ def get_build_steps(project_dir, project_yaml, workdir, base_images_project):
   env.append('OUT=' + out)
   env.append('FUZZING_LANGUAGE=' + language)
 
+  workdir = build_project.workdir_from_dockerfile(dockerfile_lines)
   if not workdir:
     workdir = '/src'
 
@@ -266,15 +268,13 @@ def main():
   project_yaml_path = os.path.join(project_dir, 'project.yaml')
 
   with open(dockerfile_path) as docker_file:
-    dockerfile_contents = docker_file.readlines()
+    dockerfile_lines = docker_file.readlines()
 
   with open(project_yaml_path) as project_yaml_file:
     project_yaml = yaml.safe_load(project_yaml_file)
 
-  workdir = build_project.workdir_from_dockerfile(dockerfile_contents)
-  project_yaml = build_project.set_yaml_defaults(project_name, project_yaml,
-                                                 image_project)
-  steps = get_build_steps(project_dir, project_yaml, workdir, base_images_project)
+  steps = get_build_steps(project_name, project_yaml, dockerfile_lines,
+                          image_project, base_images_project)
   build_project.run_build(steps, project_name, COVERAGE_BUILD_TAG)
 
 
