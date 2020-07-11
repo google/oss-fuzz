@@ -17,6 +17,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
 
+RUN git clone --depth 1 https://github.com/bytecodealliance/wasm-tools wasm-tools
+
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime wasmtime
 WORKDIR wasmtime
 RUN git submodule update --init --recursive
