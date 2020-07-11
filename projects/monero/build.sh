@@ -48,7 +48,7 @@ do
   cp "$fuzzer" "$OUT"
   base=$(echo $fuzzer | sed -e s/_fuzz_tests//)
   cd "/src/monero/monero/tests/data/fuzz/$base"
-  rm -f "${OUT}/${base}_seed_corpus.zip"
+  rm -f "${OUT}/${fuzzer}_seed_corpus.zip"
   for f in *
   do
     h=$(sha1sum "$f" | awk '{print $1}')
