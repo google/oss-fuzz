@@ -46,10 +46,10 @@ for build in "${BUILDS[@]}"; do
 
     $CC $CFLAGS -c -Iinclude \
       tests/$fuzzer \
-      -o $fuzzer.o
+      -o $fuzzer_basename.o
 
     $CXX $CXXFLAGS \
-      $fuzzer.o \
+      $fuzzer_basename.o \
       -o $OUT/${fuzzer_basename}_${build} \
       $LIB_FUZZING_ENGINE .libs/libopus.a
 
