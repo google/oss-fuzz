@@ -30,8 +30,8 @@ VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
 
-ProjectMetadata = namedtuple('ProjectMetadata',
-                             'schedule project_yaml_contents dockerfile_lines')
+ProjectMetadata = namedtuple(
+    'ProjectMetadata', 'schedule project_yaml_contents dockerfile_contents')
 
 
 class ProjectYamlError(Exception):
@@ -43,8 +43,8 @@ class Project(ndb.Model):
   """Represents an integrated OSS-Fuzz project."""
   name = ndb.StringProperty()
   schedule = ndb.StringProperty()
-  project_yaml_contents = ndb.StringProperty()
-  dockerfile_lines = ndb.StringProperty(repeated=True)
+  project_yaml_contents = ndb.TextProperty()
+  dockerfile_contents = ndb.TextProperty()
 
 
 # pylint: disable=too-few-public-methods
@@ -122,33 +122,34 @@ def sync_projects(cloud_scheduler_client, projects):
       Project(name=project_name,
               schedule=project_metadata.schedule,
               project_yaml_contents=project_metadata.project_yaml_contents,
-              dockerfile_lines=project_metadata.dockerfile_lines).put()
+              dockerfile_contents=project_metadata.dockerfile_contents).put()
     except exceptions.GoogleAPICallError as error:
       logging.error('Scheduler creation for %s failed with %s', project_name,
                     error)
 
   for project in Project.query():
-    if project.name not in projects or project.schedule == projects[
-        project.name].schedule:
+    if project.name not in projects:
       continue
-    update_flag = 0
-    try:
-      update_scheduler(cloud_scheduler_client, project,
-                       projects[project.name].schedule)
-      project.schedule = projects[project.name].schedule
-      update_flag = 1
-    except exceptions.GoogleAPICallError as error:
-      logging.error('Updating scheduler for %s failed with %s', project.name,
-                    error)
+    project_metadata = projects[project.name]
+    project_changed = 0
+    if project.schedule != project_metadata.schedule:
+      try:
+        update_scheduler(cloud_scheduler_client, project,
+                         projects[project.name].schedule)
+        project.schedule = project_metadata.schedule
+        project_changed = 1
+      except exceptions.GoogleAPICallError as error:
+        logging.error('Updating scheduler for %s failed with %s', project.name,
+                      error)
     if project.project_yaml_contents != project_metadata.project_yaml_contents:
       project.project_yaml_contents = project_metadata.project_yaml_contents
-      update_flag = 1
+      project_changed = 1
 
-    if project.dockerfile_lines != project_metadata.dockerfile_lines:
-      project.dockerfile_lines = project_metadata.dockerfile_lines
-      update_flag = 1
+    if project.dockerfile_contents != project_metadata.dockerfile_contents:
+      project.dockerfile_contents = project_metadata.dockerfile_contents
+      project_changed = 1
 
-    if update_flag:
+    if project_changed:
       project.put()
 
 
@@ -181,9 +182,7 @@ def get_project_metadata(project_contents):
     hours.append(hour % 24)
   schedule = '0 ' + ','.join(str(hour) for hour in hours) + ' * * *'
 
-  dockerfile_lines = dockerfile_contents.split('\n')
-
-  return ProjectMetadata(schedule, project_yaml_contents, dockerfile_lines)
+  return ProjectMetadata(schedule, project_yaml_contents, dockerfile_contents)
 
 
 def get_projects(repo):

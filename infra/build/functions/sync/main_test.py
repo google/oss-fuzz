@@ -35,8 +35,8 @@ _EMULATOR_TIMEOUT = 20
 _DATASTORE_READY_INDICATOR = b'is now running'
 _DATASTORE_EMULATOR_PORT = 8432
 _TEST_PROJECT_ID = 'test-project'
-ProjectMetadata = namedtuple('ProjectMetadata',
-                             'schedule project_yaml_contents dockerfile_lines')
+ProjectMetadata = namedtuple(
+    'ProjectMetadata', 'schedule project_yaml_contents dockerfile_contents')
 
 
 def start_datastore_emulator():
@@ -177,15 +177,15 @@ class TestDataSync(unittest.TestCase):
       Project(name='test1',
               schedule='0 8 * * *',
               project_yaml_contents='',
-              dockerfile_lines=[]).put()
+              dockerfile_contents='').put()
       Project(name='test2',
               schedule='0 9 * * *',
               project_yaml_contents='',
-              dockerfile_lines=[]).put()
+              dockerfile_contents='').put()
 
       projects = {
-          'test1': ProjectMetadata('0 8 * * *', '', []),
-          'test2': ProjectMetadata('0 7 * * *', '', [])
+          'test1': ProjectMetadata('0 8 * * *', '', ''),
+          'test2': ProjectMetadata('0 7 * * *', '', '')
       }
       sync_projects(cloud_scheduler_client, projects)
 
@@ -204,11 +204,11 @@ class TestDataSync(unittest.TestCase):
       Project(name='test1',
               schedule='0 8 * * *',
               project_yaml_contents='',
-              dockerfile_lines=[]).put()
+              dockerfile_contents='').put()
 
       projects = {
-          'test1': ProjectMetadata('0 8 * * *', '', []),
-          'test2': ProjectMetadata('0 7 * * *', '', [])
+          'test1': ProjectMetadata('0 8 * * *', '', ''),
+          'test2': ProjectMetadata('0 7 * * *', '', '')
       }
       sync_projects(cloud_scheduler_client, projects)
 
@@ -227,13 +227,13 @@ class TestDataSync(unittest.TestCase):
       Project(name='test1',
               schedule='0 8 * * *',
               project_yaml_contents='',
-              dockerfile_lines=[]).put()
+              dockerfile_contents='').put()
       Project(name='test2',
               schedule='0 9 * * *',
               project_yaml_contents='',
-              dockerfile_lines=[]).put()
+              dockerfile_contents='').put()
 
-      projects = {'test1': ProjectMetadata('0 8 * * *', '', [])}
+      projects = {'test1': ProjectMetadata('0 8 * * *', '', '')}
       sync_projects(cloud_scheduler_client, projects)
 
       projects_query = Project.query()
@@ -261,10 +261,10 @@ class TestDataSync(unittest.TestCase):
         get_projects(repo), {
             'test0':
                 ProjectMetadata('0 6,18 * * *', 'builds_per_day: 2',
-                                ['name: test']),
+                                'name: test'),
             'test1':
                 ProjectMetadata('0 6,14,22 * * *', 'builds_per_day: 3',
-                                ['name: test'])
+                                'name: test')
         })
 
   def test_get_projects_no_docker_file(self):
@@ -280,7 +280,7 @@ class TestDataSync(unittest.TestCase):
 
     self.assertEqual(
         get_projects(repo),
-        {'test0': ProjectMetadata('0 6 * * *', 'name: test', ['name: test'])})
+        {'test0': ProjectMetadata('0 6 * * *', 'name: test', 'name: test')})
 
   def test_get_projects_invalid_project_name(self):
     """Testing get_projects() with invalid project name"""
@@ -298,7 +298,7 @@ class TestDataSync(unittest.TestCase):
 
     self.assertEqual(
         get_projects(repo),
-        {'test0': ProjectMetadata('0 6 * * *', 'name: test', ['name: test'])})
+        {'test0': ProjectMetadata('0 6 * * *', 'name: test', 'name: test')})
 
   def test_get_projects_non_directory_type_project(self):
     """Testing get_projects() when a file in projects/ is not of type 'dir'."""
@@ -313,7 +313,7 @@ class TestDataSync(unittest.TestCase):
 
     self.assertEqual(
         get_projects(repo),
-        {'test0': ProjectMetadata('0 6 * * *', 'name: test', ['name: test'])})
+        {'test0': ProjectMetadata('0 6 * * *', 'name: test', 'name: test')})
 
   def test_invalid_yaml_format(self):
     """Testing invalid yaml schedule parameter argument."""
