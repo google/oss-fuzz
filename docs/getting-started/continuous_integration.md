@@ -179,7 +179,7 @@ jobs:
        path: ./out/artifacts
 ```
 
-Feel free to checkout CIFuzz configs for OSS-Fuzz projects. Example -
+You can checkout CIFuzz configs for OSS-Fuzz projects. Example -
 [systemd](https://github.com/systemd/systemd/blob/master/.github/workflows/cifuzz.yml),
 [curl](https://github.com/curl/curl/blob/master/.github/workflows/fuzz.yml).
 
