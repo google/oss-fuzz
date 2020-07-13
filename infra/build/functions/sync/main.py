@@ -97,6 +97,7 @@ def update_scheduler(cloud_scheduler_client, project, schedule):
   cloud_scheduler_client.update(job, update_mask)
 
 
+# pylint: disable=too-many-branches
 def sync_projects(cloud_scheduler_client, projects):
   """Sync projects with cloud datastore."""
   for project in Project.query():
@@ -131,23 +132,23 @@ def sync_projects(cloud_scheduler_client, projects):
     if project.name not in projects:
       continue
     project_metadata = projects[project.name]
-    project_changed = 0
+    project_changed = False
     if project.schedule != project_metadata.schedule:
       try:
         update_scheduler(cloud_scheduler_client, project,
                          projects[project.name].schedule)
         project.schedule = project_metadata.schedule
-        project_changed = 1
+        project_changed = True
       except exceptions.GoogleAPICallError as error:
         logging.error('Updating scheduler for %s failed with %s', project.name,
                       error)
     if project.project_yaml_contents != project_metadata.project_yaml_contents:
       project.project_yaml_contents = project_metadata.project_yaml_contents
-      project_changed = 1
+      project_changed = True
 
     if project.dockerfile_contents != project_metadata.dockerfile_contents:
       project.dockerfile_contents = project_metadata.dockerfile_contents
-      project_changed = 1
+      project_changed = True
 
     if project_changed:
       project.put()
