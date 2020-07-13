@@ -44,14 +44,21 @@ for build in "${BUILDS[@]}"; do
   for fuzzer in $FUZZERS; do
     fuzzer_basename=$(echo $fuzzer | cut -f 1 -d '.')
 
-    $CC $CFLAGS -c -Iinclude \
-      tests/$fuzzer \
-      -o $fuzzer_basename.o
+    if [ ${fuzzer: -2} == ".c" ]; then
+      $CC $CFLAGS -c -Iinclude \
+        tests/$fuzzer \
+        -o $fuzzer_basename.o
 
-    $CXX $CXXFLAGS \
-      $fuzzer_basename.o \
-      -o $OUT/${fuzzer_basename}_${build} \
-      $LIB_FUZZING_ENGINE .libs/libopus.a
+      $CXX $CXXFLAGS \
+        $fuzzer_basename.o \
+        -o $OUT/${fuzzer_basename}_${build} \
+        $LIB_FUZZING_ENGINE .libs/libopus.a
+    else
+      $CXX $CXXFLAGS -Iinclude \
+        tests/$fuzzer \
+        -o $OUT/${fuzzer_basename}_${build} \
+        $LIB_FUZZING_ENGINE .libs/libopus.a
+    fi
 
     # Setup the .options and test corpus zip files using the corresponding
     # fuzzer's name
