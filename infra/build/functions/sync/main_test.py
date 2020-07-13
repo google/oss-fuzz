@@ -16,7 +16,6 @@
 """Unit tests for Cloud Function sync, which syncs the list of github projects
 and uploads them to the Cloud Datastore."""
 
-from collections import namedtuple
 import os
 import subprocess
 import threading
@@ -30,12 +29,12 @@ from main import get_access_token
 from main import get_projects
 from main import sync_projects
 from main import Project
+from main import ProjectMetadata
 
 _EMULATOR_TIMEOUT = 20
 _DATASTORE_READY_INDICATOR = b'is now running'
 _DATASTORE_EMULATOR_PORT = 8432
 _TEST_PROJECT_ID = 'test-project'
-ProjectMetadata = namedtuple('ProjectMetadata', 'schedule')
 
 
 def start_datastore_emulator():
@@ -173,12 +172,18 @@ class TestDataSync(unittest.TestCase):
     cloud_scheduler_client = CloudSchedulerClient()
 
     with client.context():
-      Project(name='test1', schedule='0 8 * * *').put()
-      Project(name='test2', schedule='0 9 * * *').put()
+      Project(name='test1',
+              schedule='0 8 * * *',
+              project_yaml_contents='',
+              dockerfile_contents='').put()
+      Project(name='test2',
+              schedule='0 9 * * *',
+              project_yaml_contents='',
+              dockerfile_contents='').put()
 
       projects = {
-          'test1': ProjectMetadata('0 8 * * *'),
-          'test2': ProjectMetadata('0 7 * * *')
+          'test1': ProjectMetadata('0 8 * * *', '', ''),
+          'test2': ProjectMetadata('0 7 * * *', '', '')
       }
       sync_projects(cloud_scheduler_client, projects)
 
@@ -194,11 +199,14 @@ class TestDataSync(unittest.TestCase):
     cloud_scheduler_client = CloudSchedulerClient()
 
     with client.context():
-      Project(name='test1', schedule='0 8 * * *').put()
+      Project(name='test1',
+              schedule='0 8 * * *',
+              project_yaml_contents='',
+              dockerfile_contents='').put()
 
       projects = {
-          'test1': ProjectMetadata('0 8 * * *'),
-          'test2': ProjectMetadata('0 7 * * *')
+          'test1': ProjectMetadata('0 8 * * *', '', ''),
+          'test2': ProjectMetadata('0 7 * * *', '', '')
       }
       sync_projects(cloud_scheduler_client, projects)
 
@@ -214,10 +222,16 @@ class TestDataSync(unittest.TestCase):
     cloud_scheduler_client = CloudSchedulerClient()
 
     with client.context():
-      Project(name='test1', schedule='0 8 * * *').put()
-      Project(name='test2', schedule='0 9 * * *').put()
+      Project(name='test1',
+              schedule='0 8 * * *',
+              project_yaml_contents='',
+              dockerfile_contents='').put()
+      Project(name='test2',
+              schedule='0 9 * * *',
+              project_yaml_contents='',
+              dockerfile_contents='').put()
 
-      projects = {'test1': ProjectMetadata('0 8 * * *')}
+      projects = {'test1': ProjectMetadata('0 8 * * *', '', '')}
       sync_projects(cloud_scheduler_client, projects)
 
       projects_query = Project.query()
@@ -243,8 +257,12 @@ class TestDataSync(unittest.TestCase):
 
     self.assertEqual(
         get_projects(repo), {
-            'test0': ProjectMetadata('0 6,18 * * *'),
-            'test1': ProjectMetadata('0 6,14,22 * * *')
+            'test0':
+                ProjectMetadata('0 6,18 * * *', 'builds_per_day: 2',
+                                'name: test'),
+            'test1':
+                ProjectMetadata('0 6,14,22 * * *', 'builds_per_day: 3',
+                                'name: test')
         })
 
   def test_get_projects_no_docker_file(self):
@@ -258,8 +276,9 @@ class TestDataSync(unittest.TestCase):
         Repository('test1', 'dir', 'projects/test1')
     ])
 
-    self.assertEqual(get_projects(repo),
-                     {'test0': ProjectMetadata('0 6 * * *')})
+    self.assertEqual(
+        get_projects(repo),
+        {'test0': ProjectMetadata('0 6 * * *', 'name: test', 'name: test')})
 
   def test_get_projects_invalid_project_name(self):
     """Testing get_projects() with invalid project name"""
@@ -275,8 +294,9 @@ class TestDataSync(unittest.TestCase):
         ])
     ])
 
-    self.assertEqual(get_projects(repo),
-                     {'test0': ProjectMetadata('0 6 * * *')})
+    self.assertEqual(
+        get_projects(repo),
+        {'test0': ProjectMetadata('0 6 * * *', 'name: test', 'name: test')})
 
   def test_get_projects_non_directory_type_project(self):
     """Testing get_projects() when a file in projects/ is not of type 'dir'."""
@@ -289,8 +309,9 @@ class TestDataSync(unittest.TestCase):
         Repository('test1', 'file', 'projects/test1')
     ])
 
-    self.assertEqual(get_projects(repo),
-                     {'test0': ProjectMetadata('0 6 * * *')})
+    self.assertEqual(
+        get_projects(repo),
+        {'test0': ProjectMetadata('0 6 * * *', 'name: test', 'name: test')})
 
   def test_invalid_yaml_format(self):
     """Testing invalid yaml schedule parameter argument."""
