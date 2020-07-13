@@ -16,7 +16,6 @@
 """Unit tests for Cloud Function sync, which syncs the list of github projects
 and uploads them to the Cloud Datastore."""
 
-from collections import namedtuple
 import os
 import subprocess
 import threading
@@ -30,13 +29,12 @@ from main import get_access_token
 from main import get_projects
 from main import sync_projects
 from main import Project
+from main import ProjectMetadata
 
 _EMULATOR_TIMEOUT = 20
 _DATASTORE_READY_INDICATOR = b'is now running'
 _DATASTORE_EMULATOR_PORT = 8432
 _TEST_PROJECT_ID = 'test-project'
-ProjectMetadata = namedtuple(
-    'ProjectMetadata', 'schedule project_yaml_contents dockerfile_contents')
 
 
 def start_datastore_emulator():
