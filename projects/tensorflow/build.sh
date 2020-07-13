@@ -56,6 +56,7 @@ declare -r FUZZERS=$(bazel query 'tests(//tensorflow/security/fuzzing/...)' | gr
 # Pass in `$LIB_FUZZING_ENGINE` to `--copt` and `--linkopt` to ensure we have a
 # `main` symbol defined (all these fuzzers build without a `main` and by default
 # `$CFLAGS` and `CXXFLAGS` compile with `-fsanitize=fuzzer-no-link`).
+# Since we have `assert` in fuzzers, make sure `NDEBUG` is not defined
 bazel build \
   --config=libc++ \
   ${EXTRA_FLAGS} \
@@ -63,6 +64,7 @@ bazel build \
   --strip=never \
   --copt=${LIB_FUZZING_ENGINE} \
   --linkopt=${LIB_FUZZING_ENGINE} \
+  --copt='-UNDEBUG' \
   -- ${FUZZERS}
 
 # The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
