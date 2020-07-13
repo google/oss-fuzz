@@ -20,8 +20,8 @@ import os
 import sys
 import time
 
-import requests
 import six.moves.urllib.parse as urlparse
+import requests
 
 from oauth2client.service_account import ServiceAccountCredentials
 
