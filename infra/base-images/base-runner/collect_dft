@@ -23,7 +23,7 @@ else
 fi
 
 # Timeout for running a single fuzz target.
-if [ -z "$COLLECT_DFT_TIMEOUT"]; then
+if [ -z "$COLLECT_DFT_TIMEOUT" ]; then
   COLLECT_DFT_TIMEOUT=1h
 fi
 
