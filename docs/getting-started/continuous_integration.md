@@ -179,6 +179,10 @@ jobs:
        path: ./out/artifacts
 ```
 
+Feel free to checkout CIFuzz configs for OSS-Fuzz projects. Example -
+[systemd](https://github.com/systemd/systemd/blob/master/.github/workflows/cifuzz.yml),
+[curl](https://github.com/curl/curl/blob/master/.github/workflows/fuzz.yml).
+
 ## Understanding results
 
 The results of CIFuzz can be found in two different places.
