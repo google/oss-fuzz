@@ -6,4 +6,4 @@ auto_ccs:
  - "shumway@google.com"
 sanitizers:
  - address
- - memory
+ - undefined
