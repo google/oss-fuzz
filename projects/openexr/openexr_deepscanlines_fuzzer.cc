@@ -26,6 +26,8 @@
 #include <ImfNamespace.h>
 #include <ImfStdIO.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 namespace IMF = OPENEXR_IMF_NAMESPACE;
 using namespace IMF;
 using IMATH_NAMESPACE::Box2i;
@@ -109,9 +111,9 @@ static void readFile(T *inpart) {
   }
 }
 
-static void readFileSingle(IStream& is) {
+static void readFileSingle(IStream& is, uint8_t width, uint8_t height) {
   DeepScanLineInputFile *file = NULL;
-  Header header(263, 197);
+  Header header(width, height);
   try {
     file = new DeepScanLineInputFile(header, &is, EXR_VERSION, 0);
   } catch (...) {
@@ -156,11 +158,16 @@ static void readFileMulti(IStream& is) {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 3) return 0;
 
-  const std::string s(reinterpret_cast<const char*>(data), size);
+  FuzzedDataProvider stream(data, size);
+  uint8_t width = stream.ConsumeIntegral<uint8_t>();
+  uint8_t height = stream.ConsumeIntegral<uint8_t>();
+  std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
+
+  const std::string s(buffer.data(), buffer.size());
   StdISStream is;
   is.str(s);
 
-  readFileSingle(is);
+  readFileSingle(is, width, height);
   readFileMulti(is);
   return 0;
 }
