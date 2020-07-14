@@ -29,6 +29,7 @@ import build_lib
 BASE_PROJECT = 'oss-fuzz-base'
 
 
+# pylint: disable=too-few-public-methods
 class Project(ndb.Model):
   """Represents an integrated OSS-Fuzz project."""
   name = ndb.StringProperty()
@@ -37,7 +38,10 @@ class Project(ndb.Model):
   dockerfile_lines = ndb.StringProperty(repeated=True)
 
 
+# pylint: disable=no-member
 def request_build(event, context):
+  """Entry point for cloud function to request builds."""
+  del context  #unused
   if 'data' in event:
     project_name = base64.b64decode(event['data']).decode('utf-8')
   else:
@@ -48,8 +52,8 @@ def request_build(event, context):
     query = Project.query(Project.name == project_name)
     if not query:
       logging.error(
-          f'Missing project metadata for project {project_name} in cloud datastore'
-      )
+          'Missing project metadata for project %s in cloud datastore',
+          project_name)
       sys.exit(1)
 
     project = query.get()
