@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <stddef.h>
-#include <memory>
+#include <stdlib.h>
 
 #include "opus.h"
 #include "opus_multistream.h"
@@ -24,7 +24,7 @@ struct TocInfo {
   int frame_len_x2;      // in [ms*2]. x2 is to avoid float value of 2.5 ms
 };
 
-void extractTocInfo(const uint8_t toc, TocInfo *const info) {
+void extractTocInfo(const uint8_t toc, struct TocInfo *const info) {
   const int frame_lengths_x2[3][4] = {
     {20, 40, 80, 120},
     {20, 40, 20, 40},
@@ -57,14 +57,16 @@ void extractTocInfo(const uint8_t toc, TocInfo *const info) {
   }
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  if (size < 3) return 0;
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  if (size < 3 || size > 1000000) return 0;
 
   // Using last byte as a number of streams (instead of rand_r). Each stream
   // should be at least 3 bytes long hence divmod.
   int streams = 1 + data[size - 1] % (size / 3);
   if (streams > 255) streams = 255;
-  std::unique_ptr<unsigned char[]> mapping(new unsigned char[streams]);
+  unsigned char *mapping = (unsigned char*) malloc(sizeof(unsigned char)*streams);
+  if (!mapping) return 0;
+
   for (int i = 0; i < streams; ++i) {
     mapping[i] = i;
   }
@@ -74,19 +76,24 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   int error = 0;
   OpusMSDecoder *const decoder = opus_multistream_decoder_create(
-      info.frequency * 1000, streams, streams, 0, mapping.get(), &error);
+      info.frequency * 1000, streams, streams, 0, mapping, &error);
 
-  if (decoder == nullptr || error) return 0;
+  if (!decoder || error) return 0;
 
   const int frame_size = (info.frequency * info.frame_len_x2) / 2;
-  std::unique_ptr<opus_int16[]> pcm(new opus_int16[frame_size * streams]);
+  opus_int16 *pcm = (opus_int16*) malloc(sizeof(opus_int16)*frame_size*streams);
+  if (!pcm) goto exit;
 
   // opus_decode wants us to use its return value, but we don't really care.
   const int foo =
-      opus_multistream_decode(decoder, data, size, pcm.get(), frame_size, 0);
+      opus_multistream_decode(decoder, data, size, pcm, frame_size, 0);
   (void)foo;
 
   opus_multistream_decoder_destroy(decoder);
 
+  free(pcm);
+
+exit:
+  free(mapping);
   return 0;
 }
