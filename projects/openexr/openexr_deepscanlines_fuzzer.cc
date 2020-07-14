@@ -111,7 +111,7 @@ static void readFile(T *inpart) {
   }
 }
 
-static void readFileSingle(IStream& is, uint8_t width, uint8_t height) {
+static void readFileSingle(IStream& is, uint64_t width, uint64_t height) {
   DeepScanLineInputFile *file = NULL;
   Header header(width, height);
   try {
