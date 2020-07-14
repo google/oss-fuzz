@@ -22,7 +22,6 @@ import datetime
 import json
 import os
 import sys
-import yaml
 
 import build_lib
 import build_project

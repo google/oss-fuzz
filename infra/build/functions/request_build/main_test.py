@@ -16,7 +16,6 @@
 """Unit tests for Cloud Function request builds which builds projects."""
 
 import datetime
-import mock
 import os
 import subprocess
 import threading
@@ -25,6 +24,8 @@ import unittest
 import requests
 
 from google.cloud import ndb
+
+import mock
 
 from main import get_build_steps
 from datastore_entities import Project
@@ -81,6 +82,7 @@ def _wait_for_emulator_ready(proc,
 
 
 class SpoofedDatetime(datetime.datetime):
+  """Mocking Datetime class for now() function."""
 
   @classmethod
   def now(cls):
@@ -111,6 +113,7 @@ class TestRequestBuilds(unittest.TestCase):
   @mock.patch('datetime.datetime')
   def test_get_build_steps(self, mocked_url, mocked_time):
     """Test for get_build_steps."""
+    del mocked_url, mocked_time
     datetime.datetime = SpoofedDatetime
     project_yaml_contents = 'language: c++\nsanitizers:\n  - address\narchitectures:\n  - x86_64\n'
     image_project = 'oss-fuzz'
