@@ -156,11 +156,11 @@ static void readFileMulti(IStream& is) {
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  if (size < 3) return 0;
+  if (size < 16) return 0;
 
   FuzzedDataProvider stream(data, size);
-  uint8_t width = stream.ConsumeIntegral<uint8_t>();
-  uint8_t height = stream.ConsumeIntegral<uint8_t>();
+  uint64_t width = stream.ConsumeIntegral<uint64_t>();
+  uint64_t height = stream.ConsumeIntegral<uint64_t>();
   std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
 
   const std::string s(buffer.data(), buffer.size());
