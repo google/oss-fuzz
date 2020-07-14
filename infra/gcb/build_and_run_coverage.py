@@ -68,10 +68,12 @@ def usage():
 
 
 # pylint: disable=too-many-locals
-def get_build_steps(project_name, project_yaml, dockerfile_lines, image_project,
-                    base_images_project):
+def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
+                    image_project, base_images_project):
   """Returns build steps for project."""
-  build_project.load_project_yaml(project_name, project_yaml, image_project)
+  project_yaml = build_project.load_project_yaml(project_name,
+                                                 project_yaml_file,
+                                                 image_project)
   if project_yaml['disabled']:
     skip_build('Project "%s" is disabled.' % project_name)
 
@@ -270,10 +272,7 @@ def main():
   with open(dockerfile_path) as docker_file:
     dockerfile_lines = docker_file.readlines()
 
-  with open(project_yaml_path) as project_yaml_file:
-    project_yaml = yaml.safe_load(project_yaml_file)
-
-  steps = get_build_steps(project_name, project_yaml, dockerfile_lines,
+  steps = get_build_steps(project_name, project_yaml_path, dockerfile_lines,
                           image_project, base_images_project)
   build_project.run_build(steps, project_name, COVERAGE_BUILD_TAG)
 

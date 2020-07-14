@@ -26,6 +26,9 @@ from google.api_core import exceptions
 from google.cloud import ndb
 from google.cloud import scheduler_v1
 
+from datastore_entities import Project
+from datastore_entities import GitAuth
+
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
@@ -36,21 +39,6 @@ ProjectMetadata = namedtuple(
 
 class ProjectYamlError(Exception):
   """Error in project.yaml format."""
-
-
-# pylint: disable=too-few-public-methods
-class Project(ndb.Model):
-  """Represents an integrated OSS-Fuzz project."""
-  name = ndb.StringProperty()
-  schedule = ndb.StringProperty()
-  project_yaml_contents = ndb.TextProperty()
-  dockerfile_contents = ndb.TextProperty()
-
-
-# pylint: disable=too-few-public-methods
-class GitAuth(ndb.Model):
-  """Represents Github access token entity."""
-  access_token = ndb.StringProperty()
 
 
 def create_scheduler(cloud_scheduler_client, project_name, schedule):

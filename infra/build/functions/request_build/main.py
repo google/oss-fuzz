@@ -25,17 +25,33 @@ from google.cloud import ndb
 
 import build_project
 import build_lib
+from datastore_entities import Project
 
 BASE_PROJECT = 'oss-fuzz-base'
 
 
-# pylint: disable=too-few-public-methods
-class Project(ndb.Model):
-  """Represents an integrated OSS-Fuzz project."""
-  name = ndb.StringProperty()
-  schedule = ndb.StringProperty()
-  project_yaml_contents = ndb.StringProperty()
-  dockerfile_lines = ndb.StringProperty(repeated=True)
+def get_project_data(project_name):
+  """Retrieve project metadata from datastore."""
+  client = ndb.Client()
+  with client.context():
+    query = Project.query(Project.name == project_name)
+    project = query.get()
+    if project is None:
+      raise RuntimeError(
+          'Project {0} not available in cloud datastore'.format(project_name))
+    project_yaml_contents = project.project_yaml_contents
+    dockerfile_lines = project.dockerfile_contents.split('\n')
+
+  return (project_yaml_contents, dockerfile_lines)
+
+
+def get_build_steps(project_name, image_project, base_images_project):
+  project_yaml_contents, dockerfile_lines = get_project_data(project_name)
+  build_steps = build_project.get_build_steps(project_name,
+                                              project_yaml_contents,
+                                              dockerfile_lines, image_project,
+                                              base_images_project)
+  return build_steps
 
 
 # pylint: disable=no-member
@@ -50,21 +66,17 @@ def request_build(event, context):
   client = ndb.Client()
   with client.context():
     query = Project.query(Project.name == project_name)
-    if not query:
-      logging.error(
-          'Missing project metadata for project %s in cloud datastore',
-          project_name)
-      sys.exit(1)
-
     project = query.get()
-    project_yaml = yaml.safe_load(project.project_yaml_contents)
-    dockerfile_lines = project.dockerfile_lines
+    if project is None:
+      raise RuntimeError(
+          'Project {0} not available in cloud datastore'.format(project_name))
+    project_yaml_file = project.project_yaml_contents
+    dockerfile_lines = project.dockerfile_contents.split('\n')
 
   credentials, image_project = google.auth.default()
 
-  build_steps = build_project.get_build_steps(project_name, project_yaml,
-                                              dockerfile_lines, image_project,
-                                              BASE_PROJECT)
+  build_steps = get_build_steps(project_name, image_project, BASE_PROJECT)
+
   build_body = {
       'steps': build_steps,
       'timeout': str(build_lib.BUILD_TIMEOUT) + 's',

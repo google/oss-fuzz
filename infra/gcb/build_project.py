@@ -117,16 +117,19 @@ def workdir_from_dockerfile(dockerfile_lines):
   return None
 
 
-def load_project_yaml(project_name, project_yaml, image_project):
+def load_project_yaml(project_name, project_yaml_file, image_project):
   """Loads project yaml and sets default values."""
+  project_yaml = yaml.safe_load(project_yaml_file)
   set_yaml_defaults(project_name, project_yaml, image_project)
+  return project_yaml
 
 
 # pylint: disable=too-many-locals
-def get_build_steps(project_name, project_yaml, dockerfile_lines, image_project,
-                    base_images_project):
+def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
+                    image_project, base_images_project):
   """Returns build steps for project."""
-  load_project_yaml(project_name, project_yaml, image_project)
+  project_yaml = load_project_yaml(project_name, project_yaml_file,
+                                   image_project)
   name = project_yaml['name']
   image = project_yaml['image']
   language = project_yaml['language']
@@ -426,10 +429,7 @@ def main():
   with open(dockerfile_path) as dockerfile:
     dockerfile_lines = dockerfile.readlines()
 
-  with open(project_yaml_path) as project_yaml_file:
-    project_yaml = yaml.safe_load(project_yaml_file)
-
-  steps = get_build_steps(project_name, project_yaml, dockerfile_lines,
+  steps = get_build_steps(project_name, project_yaml_path, dockerfile_lines,
                           image_project, base_images_project)
 
   run_build(steps, project_name, FUZZING_BUILD_TAG)
