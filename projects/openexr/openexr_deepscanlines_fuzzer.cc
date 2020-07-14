@@ -24,6 +24,9 @@
 #include <ImfDeepScanLineInputPart.h>
 #include <ImfMultiPartInputFile.h>
 #include <ImfNamespace.h>
+#include <ImfStdIO.h>
+
+#include <fuzzer/FuzzedDataProvider.h>
 
 namespace IMF = OPENEXR_IMF_NAMESPACE;
 using namespace IMF;
@@ -108,10 +111,11 @@ static void readFile(T *inpart) {
   }
 }
 
-static void readFileSingle(const char filename[]) {
+static void readFileSingle(IStream& is, uint64_t width, uint64_t height) {
   DeepScanLineInputFile *file = NULL;
+  Header header(width, height);
   try {
-    file = new DeepScanLineInputFile(filename, 0);
+    file = new DeepScanLineInputFile(header, &is, EXR_VERSION, 0);
   } catch (...) {
     return;
   }
@@ -124,10 +128,10 @@ static void readFileSingle(const char filename[]) {
   delete file;
 }
 
-static void readFileMulti(const char filename[]) {
+static void readFileMulti(IStream& is) {
   MultiPartInputFile *file = NULL;
   try {
-    file = new MultiPartInputFile(filename, 0);
+    file = new MultiPartInputFile(is, 0);
   } catch (...) {
     return;
   }
@@ -151,35 +155,19 @@ static void readFileMulti(const char filename[]) {
 
 }  // namespace
 
-// from cl/164883104
-static char *buf_to_file(const char *buf, size_t size) {
-  char *name = strdup("/dev/shm/fuzz-XXXXXX");
-  int fd = mkstemp(name);
-  if (fd < 0) {
-    perror("open");
-    exit(1);
-  }
-  size_t pos = 0;
-  while (pos < size) {
-    int nbytes = write(fd, &buf[pos], size - pos);
-    if (nbytes <= 0) {
-      perror("write");
-      exit(1);
-    }
-    pos += nbytes;
-  }
-  if (close(fd) != 0) {
-    perror("close");
-    exit(1);
-  }
-  return name;
-}
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  char *file = buf_to_file((const char *)data, size);
-  readFileSingle(file);
-  readFileMulti(file);
-  unlink(file);
-  free(file);
+  if (size < 16) return 0;
+
+  FuzzedDataProvider stream(data, size);
+  uint64_t width = stream.ConsumeIntegral<uint64_t>();
+  uint64_t height = stream.ConsumeIntegral<uint64_t>();
+  std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
+
+  const std::string s(buffer.data(), buffer.size());
+  StdISStream is;
+  is.str(s);
+
+  readFileSingle(is, width, height);
+  readFileMulti(is);
   return 0;
 }

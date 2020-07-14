@@ -8,3 +8,15 @@ vendor_ccs:
   - "jmuizelaar@mozilla.com"
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - memory
+architectures:
+  - x86_64
+  - i386

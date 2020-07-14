@@ -29,6 +29,7 @@
 #include <ImfTiledInputPart.h>
 #include <ImfTiledOutputPart.h>
 #include <OpenEXRConfig.h>
+#include <ImfStdIO.h>
 
 using namespace OPENEXR_IMF_INTERNAL_NAMESPACE;
 using IMATH_NAMESPACE::Box2i;
@@ -49,10 +50,10 @@ void readImageONE(TiledRgbaInputFile *in, int dwx, int dwy) {
   }
 }
 
-void readImageONE2(const char fileName[]) {
+void readImageONE2(IStream& is) {
   MultiPartInputFile *in;
   try {
-    in = new MultiPartInputFile(fileName);
+    in = new MultiPartInputFile(is);
   } catch (...) {
     return;
   }
@@ -140,13 +141,13 @@ void readImageRIP(TiledRgbaInputFile *in, int dwx, int dwy) {
 
 }  // namespace
 
-static void fuzzImage(const char filename[]) {
+static void fuzzImage(IStream& is) {
   Header::setMaxImageSize(10000, 10000);
   Header::setMaxTileSize(10000, 10000);
 
   TiledRgbaInputFile *in;
   try {
-    in = new TiledRgbaInputFile(filename);
+    in = new TiledRgbaInputFile(is);
   } catch (...) {
     return;
   }
@@ -158,39 +159,16 @@ static void fuzzImage(const char filename[]) {
   readImageMIP(in, dwx, dwy);
   readImageRIP(in, dwx, dwy);
   readImageONE(in, dwx, dwy);
-  readImageONE2(filename);
+  readImageONE2(is);
 
   delete in;
 }
 
-// from cl/164883104
-static char *buf_to_file(const char *buf, size_t size) {
-  char *name = strdup("/dev/shm/fuzz-XXXXXX");
-  int fd = mkstemp(name);
-  if (fd < 0) {
-    perror("open");
-    exit(1);
-  }
-  size_t pos = 0;
-  while (pos < size) {
-    int nbytes = write(fd, &buf[pos], size - pos);
-    if (nbytes <= 0) {
-      perror("write");
-      exit(1);
-    }
-    pos += nbytes;
-  }
-  if (close(fd) != 0) {
-    perror("close");
-    exit(1);
-  }
-  return name;
-}
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  char *file = buf_to_file((const char *)data, size);
-  fuzzImage(file);
-  unlink(file);
-  free(file);
+  const std::string s(reinterpret_cast<const char*>(data), size);
+  StdISStream is;
+  is.str(s);
+
+  fuzzImage(is);
   return 0;
 }

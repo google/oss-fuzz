@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,17 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool gettext autopoint
-RUN git clone --depth 1 https://github.com/libexif/libexif
-RUN git clone --depth 1 https://github.com/ianare/exif-samples
-WORKDIR libexif
-COPY exif_loader_fuzzer.cc exif_from_data_fuzzer.cc build.sh $SRC/
+function compile_fuzzer {
+  path=$1
+  function=$2
+  fuzzer=$3
+
+   # Instrument all Go files relevant to this fuzzer
+  go-fuzz -func $function -o $fuzzer.a $path
+
+   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
+}
+
+# TODO commit fuzz test in project repo
+compile_fuzzer github.com/influxdata/influxdb/jsonweb FuzzJsonWeb fuzzjsonweb

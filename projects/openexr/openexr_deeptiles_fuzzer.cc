@@ -23,6 +23,7 @@
 #include <ImfDeepTiledInputFile.h>
 #include <ImfDeepTiledInputPart.h>
 #include <ImfTiledInputPart.h>
+#include <ImfStdIO.h>
 
 namespace IMF = OPENEXR_IMF_NAMESPACE;
 using namespace IMF;
@@ -115,10 +116,10 @@ static void readFile(T *part) {
   }
 }
 
-static void readFileSingle(const char filename[]) {
+static void readFileSingle(IStream& is) {
   DeepTiledInputFile *file;
   try {
-    file = new DeepTiledInputFile(filename, 8);
+    file = new DeepTiledInputFile(is, 8);
   } catch (...) {
     return;
   }
@@ -131,11 +132,11 @@ static void readFileSingle(const char filename[]) {
   delete file;
 }
 
-static void readFileMulti(const char filename[]) {
+static void readFileMulti(IStream& is) {
   MultiPartInputFile *file;
 
   try {
-    file = new MultiPartInputFile(filename, 8);
+    file = new MultiPartInputFile(is, 8);
   } catch (...) {
     return;
   }
@@ -161,36 +162,15 @@ static void readFileMulti(const char filename[]) {
 
 }  // namespace
 
-// from cl/164883104
-static char *buf_to_file(const char *buf, size_t size) {
-  char *name = strdup("/dev/shm/fuzz-XXXXXX");
-  int fd = mkstemp(name);
-  if (fd < 0) {
-    perror("open");
-    exit(1);
-  }
-  size_t pos = 0;
-  while (pos < size) {
-    int nbytes = write(fd, &buf[pos], size - pos);
-    if (nbytes <= 0) {
-      perror("write");
-      exit(1);
-    }
-    pos += nbytes;
-  }
-  if (close(fd) != 0) {
-    perror("close");
-    exit(1);
-  }
-  return name;
-}
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  char *file = buf_to_file((const char *)data, size);
+
+  const std::string s(reinterpret_cast<const char*>(data), size);
+  StdISStream is;
+  is.str(s);
+
   Header::setMaxImageSize(10000, 10000);
-  readFileSingle(file);
-  readFileMulti(file);
-  unlink(file);
-  free(file);
+  readFileSingle(is);
+  readFileMulti(is);
+
   return 0;
 }

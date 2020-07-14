@@ -1,4 +1,4 @@
-# Copyright 2018 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool gettext autopoint
-RUN git clone --depth 1 https://github.com/libexif/libexif
-RUN git clone --depth 1 https://github.com/ianare/exif-samples
-WORKDIR libexif
-COPY exif_loader_fuzzer.cc exif_from_data_fuzzer.cc build.sh $SRC/
+MAINTAINER william@influxdata.com
+RUN go get github.com/influxdata/influxdb
+RUN go get github.com/dgrijalva/jwt-go
+
+COPY build.sh $SRC/
+WORKDIR $SRC/

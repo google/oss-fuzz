@@ -22,16 +22,17 @@
 #include <ImfInputPart.h>
 #include <ImfMultiPartInputFile.h>
 #include <ImfRgbaFile.h>
+#include <ImfStdIO.h>
 
 using namespace OPENEXR_IMF_INTERNAL_NAMESPACE;
 using IMATH_NAMESPACE::Box2i;
 
 namespace {
 
-static void readSingle(const char fileName[]) {
+static void readSingle(IStream& is) {
   RgbaInputFile *in = NULL;
   try {
-    in = new RgbaInputFile(fileName);
+    in = new RgbaInputFile(is);
   } catch (...) {
     return;
   }
@@ -54,10 +55,10 @@ static void readSingle(const char fileName[]) {
   delete in;
 }
 
-static void readMulti(const char fileName[]) {
+static void readMulti(IStream& is) {
   MultiPartInputFile *file;
   try {
-    file = new MultiPartInputFile(fileName);
+    file = new MultiPartInputFile(is);
   } catch (...) {
     return;
   }
@@ -98,35 +99,12 @@ static void readMulti(const char fileName[]) {
 
 }  // namespace
 
-// from cl/164883104
-static char *buf_to_file(const char *buf, size_t size) {
-  char *name = strdup("/dev/shm/fuzz-XXXXXX");
-  int fd = mkstemp(name);
-  if (fd < 0) {
-    perror("open");
-    exit(1);
-  }
-  size_t pos = 0;
-  while (pos < size) {
-    int nbytes = write(fd, &buf[pos], size - pos);
-    if (nbytes <= 0) {
-      perror("write");
-      exit(1);
-    }
-    pos += nbytes;
-  }
-  if (close(fd) != 0) {
-    perror("close");
-    exit(1);
-  }
-  return name;
-}
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  char *file = buf_to_file((const char *)data, size);
-  readSingle(file);
-  readMulti(file);
-  unlink(file);
-  free(file);
+  const std::string s(reinterpret_cast<const char*>(data), size);
+  StdISStream is;
+  is.str(s);
+
+  readSingle(is);
+  readMulti(is);
   return 0;
 }
