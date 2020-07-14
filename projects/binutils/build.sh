@@ -37,7 +37,7 @@ mkdir fuzz
 cp ../fuzz_*.c fuzz/
 cd fuzz
 
-for i in fuzz_disassemble fuzz_bfd fuzz_demangle; do
+for i in fuzz_disassemble fuzz_bfd; do
     $CC $CFLAGS -I ../include -I ../bfd -I ../opcodes -c $i.c -o $i.o
     $CXX $CXXFLAGS $i.o -o $OUT/$i $LIB_FUZZING_ENGINE ../opcodes/libopcodes.a ../bfd/libbfd.a ../libiberty/libiberty.a ../zlib/libz.a
 done
@@ -59,12 +59,12 @@ done
 
 # Link the files
 ## Readelf
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib -o fuzz_readelf fuzz_readelf.o version.o unwind-ia64.o dwarf.o elfcomm.o ../libctf/.libs/libctf-nobfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib -o fuzz_readelf fuzz_readelf.o version.o unwind-ia64.o dwarf.o elfcomm.o ../libctf/.libs/libctf-nobfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a 
 mv fuzz_readelf $OUT/fuzz_readelf
 
-### Set up seed corpus for readelf in the form of a single ELF file.
+### Set up seed corpus for readelf in the form of a single ELF file. 
 zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
-mv fuzz_readelf_seed_corpus.zip $OUT/
+mv fuzz_readelf_seed_corpus.zip $OUT/ 
 
 ## Copy over the options file
 cp $SRC/fuzz_readelf.options $OUT/fuzz_readelf.options
