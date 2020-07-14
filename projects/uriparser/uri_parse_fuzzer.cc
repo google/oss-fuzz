@@ -5,8 +5,6 @@
 #include <fuzzer/FuzzedDataProvider.h>
 
 using std::string;
-// #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
-// #include "uriparser_fuzzer.pb.h"
 #include "uriparser/include/uriparser/Uri.h"
 #include "uriparser/include/uriparser/UriBase.h"
 
