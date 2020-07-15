@@ -21,6 +21,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <fuzzer/FuzzedDataProvider.h>
 
 using std::string;
 using std::make_pair;
@@ -42,7 +43,11 @@ std::vector<std::pair<std::string, std::string>> ToVector(
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  const std::string query(reinterpret_cast<const char *>(data), size);
+  FuzzedDataProvider stream(data, size);
+  size_t maxSize = stream.ConsumeIntegral<size_t>();
+
+  const std::string query(reinterpret_cast<const char *>(
+      stream.ConsumeRemainingBytes<char>().data()), size);
 
   UriQueryListA *query_list = nullptr;
   int item_count = -1;
@@ -58,7 +63,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  size_t max_size = 5000;
   std::vector<char> buf(max_size, 0);
   int written = -1;
   char *dest = &buf[0];
