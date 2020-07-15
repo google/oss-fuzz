@@ -19,8 +19,6 @@ and uploads them to the Cloud Datastore."""
 import os
 import unittest
 
-import requests
-
 from google.cloud import ndb
 
 from datastore_entities import Project
@@ -100,8 +98,8 @@ class TestDataSync(unittest.TestCase):
 
   @classmethod
   def setUpClass(cls):
-    ds_emulator = test_utils.start_datastore_emulator()
-    test_utils.wait_for_emulator_ready(ds_emulator, 'datastore',
+    cls.ds_emulator = test_utils.start_datastore_emulator()
+    test_utils.wait_for_emulator_ready(cls.ds_emulator, 'datastore',
                                        test_utils.DATASTORE_READY_INDICATOR)
     os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:' + str(
         test_utils.DATASTORE_EMULATOR_PORT)
@@ -111,9 +109,7 @@ class TestDataSync(unittest.TestCase):
     os.environ['FUNCTION_REGION'] = 'us-central1'
 
   def setUp(self):
-    req = requests.post('http://localhost:{}/reset'.format(
-        test_utils.DATASTORE_EMULATOR_PORT))
-    req.raise_for_status()
+    test_utils.reset_ds_emulator()
 
   def test_sync_projects_update(self):
     """Testing sync_projects() updating a schedule."""
@@ -294,7 +290,7 @@ class TestDataSync(unittest.TestCase):
   @classmethod
   def tearDownClass(cls):
     # TODO: replace this with a cleaner way of killing the process
-    os.system('pkill -f datastore')
+    test_utils.cleanup_emulator(cls.ds_emulator)
 
 
 if __name__ == '__main__':

@@ -14,8 +14,11 @@
 #
 ################################################################################
 """Utility functions for testing cloud functions."""
+import os
 import subprocess
 import threading
+
+import requests
 
 DATASTORE_READY_INDICATOR = b'is now running'
 DATASTORE_EMULATOR_PORT = 8432
@@ -64,3 +67,16 @@ def wait_for_emulator_ready(proc, emulator, indicator,
     raise RuntimeError(
         '{} emulator did not get ready in time.'.format(emulator))
   return thread
+
+
+def reset_ds_emulator():
+  """Reset ds emulator/clean all entities."""
+  req = requests.post(
+      'http://localhost:{}/reset'.format(DATASTORE_EMULATOR_PORT))
+  req.raise_for_status()
+
+
+def cleanup_emulator(ds_emulator):
+  """Cleanup the system processes made by ds emulator."""
+  del ds_emulator  #To do, find a better way to cleanup emulator
+  os.system('pkill -f datastore')

@@ -106,7 +106,8 @@ def get_signed_url(path, method='PUT', content_type=''):
   timestamp = int(time.time() + BUILD_TIMEOUT)
   blob = '{0}\n\n{1}\n{2}\n{3}'.format(method, content_type, timestamp, path)
 
-  if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
+  service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+  if service_account_path:
     creds = ServiceAccountCredentials.from_json_keyfile_name(
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
     client_id = creds.service_account_email

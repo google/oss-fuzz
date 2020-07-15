@@ -14,13 +14,11 @@
 #
 ################################################################################
 """Unit tests for Cloud Function request builds which builds projects."""
-
+import json
 import datetime
 import os
 import unittest
 from unittest import mock
-
-import requests
 
 from google.cloud import ndb
 
@@ -43,8 +41,8 @@ class TestRequestBuilds(unittest.TestCase):
 
   @classmethod
   def setUpClass(cls):
-    ds_emulator = test_utils.start_datastore_emulator()
-    test_utils.wait_for_emulator_ready(ds_emulator, 'datastore',
+    cls.ds_emulator = test_utils.start_datastore_emulator()
+    test_utils.wait_for_emulator_ready(cls.ds_emulator, 'datastore',
                                        test_utils.DATASTORE_READY_INDICATOR)
     os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:' + str(
         test_utils.DATASTORE_EMULATOR_PORT)
@@ -54,9 +52,7 @@ class TestRequestBuilds(unittest.TestCase):
     os.environ['FUNCTION_REGION'] = 'us-central1'
 
   def setUp(self):
-    req = requests.post('http://localhost:{}/reset'.format(
-        test_utils.DATASTORE_EMULATOR_PORT))
-    req.raise_for_status()
+    test_utils.reset_ds_emulator()
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
   @mock.patch('datetime.datetime')
@@ -68,9 +64,9 @@ class TestRequestBuilds(unittest.TestCase):
     image_project = 'oss-fuzz'
     base_images_project = 'oss-fuzz-base'
     testcase_path = os.path.join(os.path.dirname(__file__),
-                                 'expected_build_steps.txt')
+                                 'expected_build_steps.json')
     with open(testcase_path) as testcase_file:
-      expected_build_steps = testcase_file.readline()
+      expected_build_steps = json.load(testcase_file)
 
     with ndb.Client().context():
       Project(name='test-project',
@@ -79,7 +75,7 @@ class TestRequestBuilds(unittest.TestCase):
 
     build_steps = get_build_steps('test-project', image_project,
                                   base_images_project)
-    self.assertEqual(str(build_steps), expected_build_steps)
+    self.assertEqual(build_steps, expected_build_steps)
 
   def test_get_build_steps_no_project(self):
     """Test for when project isn't available in datastore."""
@@ -90,7 +86,7 @@ class TestRequestBuilds(unittest.TestCase):
   @classmethod
   def tearDownClass(cls):
     # TODO: replace this with a cleaner way of killing the process
-    os.system('pkill -f datastore')
+    test_utils.cleanup_emulator(cls.ds_emulator)
 
 
 if __name__ == '__main__':
