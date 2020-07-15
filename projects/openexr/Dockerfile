@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool zlib1g-dev
 RUN git clone --depth 1 https://github.com/AcademySoftwareFoundation/openexr openexr
 WORKDIR openexr
-COPY build.sh openexr_deepscanlines_fuzzer.cc openexr_deeptiles_fuzzer.cc openexr_scanlines_fuzzer.cc openexr_tiles_fuzzer.cc $SRC/
+COPY build.sh *_fuzzer.cc $SRC/

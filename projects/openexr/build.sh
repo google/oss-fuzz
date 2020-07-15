@@ -31,6 +31,7 @@ make -j$(nproc)
 
 INCLUDES=(
   "-I $SRC/openexr/OpenEXR/IlmImf"
+  "-I $SRC/openexr/OpenEXR/exrenvmap"
   "-I $SRC/openexr/IlmBase/Imath"
   "-I $SRC/openexr/IlmBase/Iex"
   "-I $SRC/openexr/IlmBase/Half"
@@ -45,6 +46,9 @@ LIBS=(
   "$WORK/IlmBase/IlmThread/libIlmThread.a"
   "$WORK/IlmBase/Imath/libImath.a"
 )
+
+# "$WORK/OpenEXR/IlmImfUtil/libIlmImfUtil.a"
+# "$WORK/IlmBase/IexMath/libIexMath.a"
 
 for fuzzer in $SRC/*_fuzzer.cc; do
   fuzzer_basename=$(basename -s .cc $fuzzer)
