@@ -40,9 +40,7 @@ def start_datastore_emulator():
                           stderr=subprocess.STDOUT)
 
 
-def wait_for_emulator_ready(proc,
-                            emulator,
-                            indicator,
+def wait_for_emulator_ready(proc, emulator, indicator,
                             timeout=EMULATOR_TIMEOUT):
   """Wait for emulator to be ready."""
 
