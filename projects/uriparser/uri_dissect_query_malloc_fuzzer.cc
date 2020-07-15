@@ -44,7 +44,7 @@ std::vector<std::pair<std::string, std::string>> ToVector(
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzedDataProvider stream(data, size);
-  size_t maxSize = stream.ConsumeIntegral<size_t>();
+  uint16_t maxSize = stream.ConsumeIntegral<uint16_t>();
 
   std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
   const std::string query(
