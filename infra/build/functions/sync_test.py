@@ -25,10 +25,10 @@ import requests
 
 from google.cloud import ndb
 
-from main import get_access_token
-from main import get_projects
-from main import sync_projects
-from main import ProjectMetadata
+from sync import get_access_token
+from sync import get_projects
+from sync import sync_projects
+from sync import ProjectMetadata
 from datastore_entities import Project
 
 _EMULATOR_TIMEOUT = 20

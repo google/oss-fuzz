@@ -13,18 +13,21 @@
 # limitations under the License.
 #
 ################################################################################
+"""Cloud functions for build infrastructure."""
 
-JOB_TOPIC=request-build
-ENTRY_POINT=request_build
+import base_images
+import sync
+import request_build
 
-if [ "$1" ]; then
-	PROJECT_ID=$1
-else
-	echo -e "\n Usage ./deploy.sh my-project-name"; exit;
-fi
 
-gcloud functions deploy request-build \
-	--entry-point $ENTRY_POINT \
-	--trigger-topic $JOB_TOPIC \
-	--runtime python37 \
-	--project $PROJECT_ID
+def build_project(event, context):
+	"""Entry point for cloud function to requesting project builds."""
+	request_build.request_build(event, context)
+
+def project_sync(event, context):
+	"""Entry point for cloud function that syncs projects from github."""
+	sync.sync(event, context)
+
+def build_base_images(event, context):
+	"""Entry point for cloud function that builds base images."""
+	base_images.base_builder(event, context)

@@ -27,7 +27,7 @@ from google.cloud import ndb
 
 import mock
 
-from main import get_build_steps
+from request_build import get_build_steps
 from datastore_entities import Project
 
 _EMULATOR_TIMEOUT = 20
