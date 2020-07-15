@@ -81,6 +81,7 @@ def _wait_for_emulator_ready(proc,
   return thread
 
 
+# pylint: disable=arguments-differ
 class SpoofedDatetime(datetime.datetime):
   """Mocking Datetime class for now() function."""
 
