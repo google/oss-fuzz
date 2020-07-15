@@ -22,8 +22,8 @@ import google.auth
 from googleapiclient.discovery import build
 from google.cloud import ndb
 
-import build_project
 import build_lib
+import build_project
 from datastore_entities import Project
 
 BASE_PROJECT = 'oss-fuzz-base'
@@ -31,8 +31,7 @@ BASE_PROJECT = 'oss-fuzz-base'
 
 def get_project_data(project_name):
   """Retrieve project metadata from datastore."""
-  client = ndb.Client()
-  with client.context():
+  with ndb.Client().context():
     query = Project.query(Project.name == project_name)
     project = query.get()
     if project is None:
@@ -63,18 +62,8 @@ def request_build(event, context):
   else:
     logging.error('Project name missing from payload')
     sys.exit(1)
-  client = ndb.Client()
-  with client.context():
-    query = Project.query(Project.name == project_name)
-    project = query.get()
-    if project is None:
-      raise RuntimeError(
-          'Project {0} not available in cloud datastore'.format(project_name))
-    project_yaml_file = project.project_yaml_contents
-    dockerfile_lines = project.dockerfile_contents.split('\n')
 
   credentials, image_project = google.auth.default()
-
   build_steps = get_build_steps(project_name, image_project, BASE_PROJECT)
 
   build_body = {

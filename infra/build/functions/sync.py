@@ -26,8 +26,8 @@ from google.api_core import exceptions
 from google.cloud import ndb
 from google.cloud import scheduler_v1
 
-from datastore_entities import Project
 from datastore_entities import GitAuth
+from datastore_entities import Project
 
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
@@ -208,9 +208,8 @@ def get_access_token():
 def sync(event, context):
   """Sync projects with cloud datastore."""
   del event, context  #unused
-  client = ndb.Client()
 
-  with client.context():
+  with ndb.Client().context():
     github_client = Github(get_access_token())
     repo = github_client.get_repo('google/oss-fuzz')
     projects = get_projects(repo)
