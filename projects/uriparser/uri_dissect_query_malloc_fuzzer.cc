@@ -63,11 +63,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  std::vector<char> buf(max_size, 0);
+  std::vector<char> buf(maxSize, 0);
   int written = -1;
   char *dest = &buf[0];
   // Reverse the process of uriDissectQueryMallocA.
-  result = uriComposeQueryA(dest, query_list, max_size, &written);
+  result = uriComposeQueryA(dest, query_list, maxSize, &written);
 
   auto queries = ToVector(query_list);
 

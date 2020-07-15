@@ -67,11 +67,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   FuzzedDataProvider stream(data, size);
   bool domainRelative = stream.ConsumeBool();
-  uint64_t bufSize = stream.ConsumeIntegral<uint64_t>();
   size_t uriSize = stream.remaining_bytes() / 2;
 
   const std::string uri1 = stream.ConsumeBytesAsString(uriSize);
-  const std::string uri2 = stream.ConsumeRemainingBytes().data();
+  const std::string uri2 = stream.ConsumeRemainingBytes<char>().data();
 
   Escapes(uri1);
   Escapes(uri2);
@@ -89,11 +88,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  {
-    char buf[bufSize] = {};
-    int written = 0;
-    uriToStringA(buf, state1.uri, sizeof(buf), &written);
-  }
+  char buf[1024 * 8] = {0};
+  int written = 0;
+  uriToStringA(buf, state1.uri, sizeof(buf), &written);
 
   UriParserA parser2;
   UriParserStateA state2;
