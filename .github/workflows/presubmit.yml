@@ -6,10 +6,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Cleanup
-        run: |
-          rm -rf /opt/hostedtoolcache/*
-
       - uses: actions/checkout@v2
       - run: |  # Needed for git diff to work.
           git fetch origin master --depth 1
