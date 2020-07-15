@@ -10,4 +10,4 @@ sanitizers:
   - address
   - undefined
   - memory
-coverage_extra_args: -ignore-filename-regex=.*/\sanpy/.*
+coverage_extra_args: -ignore-filename-regex=.*/sanpy/.*
