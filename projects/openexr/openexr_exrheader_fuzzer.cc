@@ -1,36 +1,16 @@
-///////////////////////////////////////////////////////////////////////////
+// Copyright 2020 Google LLC
 //
-// Copyright (c) 2012, Industrial Light & Magic, a division of Lucas
-// Digital Ltd. LLC
-// 
-// All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-// *       Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-// *       Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-// *       Neither the name of Industrial Light & Magic nor the names of
-// its contributors may be used to endorse or promote products derived
-// from this software without specific prior written permission. 
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-///////////////////////////////////////////////////////////////////////////
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 
 //-----------------------------------------------------------------------------
@@ -61,6 +41,7 @@
 #include <ImfVecAttribute.h>
 #include <ImfVersion.h>
 #include <ImfHeader.h>
+#include <ImfStdIO.h>
 
 #include <iostream>
 #include <iomanip>
@@ -285,37 +266,15 @@ printChannelList (const ChannelList &cl)
 
 
 void
-printInfo (const char fileName[])
+printInfo (IStream &is)
 {
-    MultiPartInputFile in (fileName);
+    MultiPartInputFile in(is, 0);
     int parts = in.parts();
 
-    //
-    // Check to see if any parts are incomplete
-    //
-
-    bool fileComplete = true;
-
-    for (int i = 0; i < parts && fileComplete; ++i)
-        if (!in.partComplete (i))
-            fileComplete = false;
-
-    //
-    // Print file name and file format version
-    //
-
-    cout << "\nfile " << fileName <<
-            (fileComplete? "": " (incomplete)") <<
-            ":\n\n";
-
-    cout << "file format version: " <<
-            getVersion (in.version()) << ", "
-            "flags 0x" <<
-            setbase (16) << getFlags (in.version()) << setbase (10) << "\n";
-
-    //
-    // Print the header of every part in the file
-    //
+    getVersion(in.version());
+    setbase(16);
+    getFlags(in.version());
+    setbase(10);
 
     for (int p = 0; p < parts ; ++p)
     {
@@ -323,131 +282,92 @@ printInfo (const char fileName[])
 
         if (parts != 1)
         {
-            cout  << "\n\n part " << p <<
-            (in.partComplete (p)? "": " (incomplete)") <<
-            ":\n";
+            in.partComplete(p);
 
         }
-	 
+
         for (Header::ConstIterator i = h.begin(); i != h.end(); ++i)
         {
             const Attribute *a = &i.attribute();
-            cout << i.name() << " (type " << a->typeName() << ")";
+            i.name();
+            a->typeName();
 
             if (const Box2iAttribute *ta =
                             dynamic_cast <const Box2iAttribute *> (a))
             {
-                cout << ": " << ta->value().min << " - " << ta->value().max;
+                ta->value().min;
+                ta->value().max;
             }
 
             else if (const Box2fAttribute *ta =
                             dynamic_cast <const Box2fAttribute *> (a))
             {
-                cout << ": " << ta->value().min << " - " << ta->value().max;
+                ta->value().min;
+                ta->value().max;
             }
             else if (const ChannelListAttribute *ta =
                             dynamic_cast <const ChannelListAttribute *> (a))
             {
-                cout << ":";
-                printChannelList (ta->value());
+                printChannelList(ta->value());
             }
             else if (const ChromaticitiesAttribute *ta =
                             dynamic_cast <const ChromaticitiesAttribute *> (a))
             {
-                cout << ":\n"
-                "    red   " << ta->value().red << "\n"
-                "    green " << ta->value().green << "\n"
-                "    blue  " << ta->value().blue << "\n"
-                "    white " << ta->value().white;
+                ta->value().red;
+                ta->value().green;
+                ta->value().blue;
+                ta->value().white;
             }
             else if (const CompressionAttribute *ta =
                             dynamic_cast <const CompressionAttribute *> (a))
             {
-                cout << ": ";
-                printCompression (ta->value());
+                printCompression(ta->value());
             }
             else if (const DoubleAttribute *ta =
                             dynamic_cast <const DoubleAttribute *> (a))
             {
-                cout << ": " << ta->value();
+                ta->value();
             }
             else if (const EnvmapAttribute *ta =
                             dynamic_cast <const EnvmapAttribute *> (a))
             {
-                cout << ": ";
-                printEnvmap (ta->value());
+                printEnvmap(ta->value());
             }
             else if (const FloatAttribute *ta =
                             dynamic_cast <const FloatAttribute *> (a))
             {
-                cout << ": " << ta->value();
+                ta->value();
             }
             else if (const IntAttribute *ta =
                             dynamic_cast <const IntAttribute *> (a))
             {
-                cout << ": " << ta->value();
+                ta->value();
             }
             else if (const KeyCodeAttribute *ta =
                             dynamic_cast <const KeyCodeAttribute *> (a))
             {
-                cout << ":\n"
-                "    film manufacturer code " <<
-                ta->value().filmMfcCode() << "\n"
-                "    film type code " <<
-                ta->value().filmType() << "\n"
-                "    prefix " <<
-                ta->value().prefix() << "\n"
-                "    count " <<
-                ta->value().count() << "\n"
-                "    perf offset " <<
-                ta->value().perfOffset() << "\n"
-                "    perfs per frame " <<
-                ta->value().perfsPerFrame() << "\n"
-                "    perfs per count " <<
+                ta->value().filmMfcCode();
+                ta->value().filmType();
+                ta->value().prefix();
+                ta->value().count();
+                ta->value().perfOffset();
+                ta->value().perfsPerFrame();
                 ta->value().perfsPerCount();
             }
             else if (const LineOrderAttribute *ta =
                             dynamic_cast <const LineOrderAttribute *> (a))
             {
-                cout << ": ";
-                printLineOrder (ta->value());
+                printLineOrder(ta->value());
             }
             else if (const M33fAttribute *ta =
                             dynamic_cast <const M33fAttribute *> (a))
             {
-                cout << ":\n"
-                "   (" <<
-                ta->value()[0][0] << " " <<
-                ta->value()[0][1] << " " <<
-                ta->value()[0][2] << "\n    " <<
-                ta->value()[1][0] << " " <<
-                ta->value()[1][1] << " " <<
-                ta->value()[1][2] << "\n    " <<
-                ta->value()[2][0] << " " <<
-                ta->value()[2][1] << " " <<
-                ta->value()[2][2] << ")";
+                ta->value();
             }
             else if (const M44fAttribute *ta =
                             dynamic_cast <const M44fAttribute *> (a))
             {
-                cout << ":\n"
-                "   (" <<
-                ta->value()[0][0] << " " <<
-                ta->value()[0][1] << " " <<
-                ta->value()[0][2] << " " <<
-                ta->value()[0][3] << "\n    " <<
-                ta->value()[1][0] << " " <<
-                ta->value()[1][1] << " " <<
-                ta->value()[1][2] << " " <<
-                ta->value()[1][3] << "\n    " <<
-                ta->value()[2][0] << " " <<
-                ta->value()[2][1] << " " <<
-                ta->value()[2][2] << " " <<
-                ta->value()[2][3] << "\n    " <<
-                ta->value()[3][0] << " " <<
-                ta->value()[3][1] << " " <<
-                ta->value()[3][2] << " " <<
-                ta->value()[3][3] << ")";
+                ta->value();
             }
             else if (const PreviewImageAttribute *ta =
                             dynamic_cast <const PreviewImageAttribute *> (a))
@@ -523,44 +443,20 @@ printInfo (const char fileName[])
                 cout << ": " << ta->value();
             }
 
-            cout << '\n';
         }
     }
 
-    cout << endl;
 }
 
 
-void
-usageMessage (const char argv0[])
-{
-    std::cerr << "usage: " << argv0 << " imagefile [imagefile ...]\n";
-}
-
-
-static bool initialized = false;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  if (!initialized) {
-    ignore_stdout();
-    initialized = true;
-  }
 
-  const char *file = buf_to_file(data, size);
-  if (file == NULL) {
-    exit(EXIT_FAILURE);
-  }
+  const std::string s(reinterpret_cast<const char*>(data), size);
+  StdISStream is;
+  is.str(s);
 
-  try {
-    printInfo(file);
-  }
-  catch (const std::exception &e) {
-    std::cout << e.what() << std::endl;
-  }
-
-  if (delete_file(file) != 0) {
-    exit(EXIT_FAILURE);
-  }
+  printInfo(is);
 
   return 0;
 }

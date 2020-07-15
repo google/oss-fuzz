@@ -12,20 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "readInputImage.h"
-#include "makeCubeMap.h"
+#include <makeCubeMap.h>
+#include <makeLatLongMap.h>
+#include <blurImage.h>
 #include <EnvmapImage.h>
 #include <ImfEnvmap.h>
 #include <ImfHeader.h>
 
 #include <iostream>
+#include <exception>
+#include <string>
+#include <string.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-namespace IMF = OPENEXR_IMF_NAMESPACE;
+#include "namespaceAlias.h"
 using namespace IMF;
+using namespace std;
 
 static char *buf_to_file(const char *buf, size_t size) {
   char *name = strdup("/dev/shm/fuzz-XXXXXX");
