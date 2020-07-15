@@ -32,7 +32,6 @@ jobs:
           gcloud components install beta cloud-datastore-emulator
           gcloud info
 
-
       - name: Run infra tests
         run: python infra/presubmit.py infra-tests
 
