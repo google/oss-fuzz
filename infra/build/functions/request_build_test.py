@@ -119,7 +119,9 @@ class TestRequestBuilds(unittest.TestCase):
     project_yaml_contents = 'language: c++\nsanitizers:\n  - address\narchitectures:\n  - x86_64\n'
     image_project = 'oss-fuzz'
     base_images_project = 'oss-fuzz-base'
-    with open('expected_build_steps.txt') as testcase_file:
+    testcase_path = os.path.join(os.path.dirname(__file__),
+                                 'expected_build_steps.txt')
+    with open(testcase_path) as testcase_file:
       expected_build_steps = testcase_file.readline()
 
     client = ndb.Client()
