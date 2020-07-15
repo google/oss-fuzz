@@ -26,7 +26,53 @@ SYNC_SCHEDULER_JOB=sync-scheduler
 SYNC_JOB_SCHEDULE="*/30 * * * *"
 SYNC_MESSAGE="Start Sync"
 
+function deploy_pubsub_topic {
+	topic=$1
+	project=$2
 
+	if ! gcloud pubsub topics describe $topic --project $project ;
+		then
+			gcloud pubsub topics create $topic \
+			--project $project
+	fi
+}
+
+function deploy_scheduler {
+	scheduler_name=$1
+	schedule="$2"
+	topic=$3
+	message="$4"
+	project=$5
+
+	if gcloud scheduler jobs describe $scheduler_name --project $project ;
+		then
+			gcloud scheduler jobs update pubsub $scheduler_name \
+			--schedule "$schedule" \
+			--topic $topic \
+			--message-body "$message" \
+			--project $project
+		else
+			gcloud scheduler jobs create pubsub $scheduler_name \
+			--schedule "$schedule" \
+			--topic $topic \
+			--message-body "$message" \
+			--project $project
+	fi
+}
+
+function deploy_cloud_function {
+	name=$1
+	entry_point=$2
+	topic=$3
+	project=$4
+
+	gcloud functions deploy $name \
+	--entry-point $entry_point \
+	--trigger-topic topic \
+	--runtime python37 \
+	--project $project \
+	--timeout 540
+}
 
 if [ "$1" ]; then
 	PROJECT_ID=$1
@@ -34,72 +80,33 @@ else
 	echo -e "\n Usage ./deploy.sh my-project-name"; exit;
 fi
 
+deploy_pubsub_topic $BUILD_JOB_TOPIC $PROJECT_ID
+deploy_pubsub_topic $SYNC_JOB_TOPIC $PROJECT_ID
+deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $PROJECT_ID
 
-if ! gcloud pubsub topics describe $BUILD_JOB_TOPIC --project $PROJECT_ID ;
-	then
-		gcloud pubsub topics create $BUILD_JOB_TOPIC \
-		--project $PROJECT_ID
-fi
+deploy_scheduler $SYNC_SCHEDULER_JOB \
+				 "$SYNC_JOB_SCHEDULE" \
+				 $SYNC_JOB_TOPIC \
+				 "$SYNC_MESSAGE" \
+				  $PROJECT_ID
 
+deploy_scheduler $BASE_IMAGE_SCHEDULER_JOB \
+				 "$BASE_IMAGE SCHEDULE" \
+				  $BASE_IMAGE_JOB_TOPIC \
+				  "$BASE_IMAGE_MESSAGE" \
+				  $PROJECT_ID
 
-if ! gcloud pubsub topics describe $SYNC_JOB_TOPIC --project $PROJECT_ID ;
-	then
-		gcloud pubsub topics create $SYNC_JOB_TOPIC \
-		--project $PROJECT_ID
-fi
+deploy_cloud_function sync \
+					  project_sync \
+					  $SYNC_JOB_TOPIC \
+					  $PROJECT_ID
 
-if gcloud scheduler jobs describe $SYNC_SCHEDULER_JOB --project $PROJECT_ID ;
-	then
-		gcloud scheduler jobs update pubsub $SYNC_SCHEDULER_JOB \
-			--schedule "$SYNC_JOB_SCHEDULE" \
-			--topic $SYNC_JOB_TOPIC \
-			--message-body "$SYNC_MESSAGE" \
-			--project $PROJECT_ID
-	else
-		gcloud scheduler jobs create pubsub $SYNC_SCHEDULER_JOB \
-			--schedule "$SYNC_JOB_SCHEDULE" \
-			--topic $SYNC_JOB_TOPIC \
-			--message-body "$SYNC_MESSAGE" \
-			--project $PROJECT_ID
-fi
+deploy_cloud_function base-image-build \
+					  build_base_images \
+					  $BASE_IMAGE_JOB_TOPIC \
+					  $PROJECT_ID
 
-gcloud functions deploy sync \
-	--entry-point project_sync \
-	--trigger-topic $SYNC_JOB_TOPIC \
-	--runtime python37 \
-	--project $PROJECT_ID \
-	--timeout 540
-
-if ! gcloud pubsub topics describe $BASE_IMAGE_JOB_TOPIC --project $PROJECT_ID ;
-	then
-		gcloud pubsub topics create $BASE_IMAGE_JOB_TOPIC \
-		--project $PROJECT_ID
-fi
-
-if gcloud scheduler jobs describe $BASE_IMAGE_SCHEDULER_JOB --project $PROJECT_ID ;
-	then
-		gcloud scheduler jobs update pubsub $BASE_IMAGE_SCHEDULER_JOB \
-			--schedule "$BASE_IMAGE_SCHEDULE" \
-			--topic $BASE_IMAGE_JOB_TOPIC \
-			--message-body "$BASE_IMAGE_MESSAGE" \
-			--project $PROJECT_ID
-	else
-		gcloud scheduler jobs create pubsub $BASE_IMAGE_SCHEDULER_JOB \
-			--schedule "$BASE_IMAGE_SCHEDULE" \
-			--topic $BASE_IMAGE_JOB_TOPIC \
-			--message-body "$BASE_IMAGE_MESSAGE" \
-			--project $PROJECT_ID
-fi
-
-gcloud functions deploy base-image-build \
-	--entry-point build_base_images \
-	--trigger-topic $BASE_IMAGE_JOB_TOPIC \
-	--runtime python37 \
-	--project $PROJECT_ID
-
-
-gcloud functions deploy request-build \
-	--entry-point build_project \
-	--trigger-topic $BUILD_JOB_TOPIC \
-	--runtime python37 \
-	--project $PROJECT_ID
+deploy_cloud_function request-build \
+					  build_project \
+					  $BUILD_JOB_TOPIC \
+					  $PROJECT_ID
