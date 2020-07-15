@@ -24,9 +24,11 @@ def build_project(event, context):
   """Entry point for cloud function to requesting project builds."""
   request_build.request_build(event, context)
 
+
 def project_sync(event, context):
   """Entry point for cloud function that syncs projects from github."""
   sync.sync(event, context)
+
 
 def build_base_images(event, context):
   """Entry point for cloud function that builds base images."""
