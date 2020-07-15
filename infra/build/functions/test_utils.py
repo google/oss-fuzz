@@ -17,10 +17,10 @@
 import subprocess
 import threading
 
-_DATASTORE_READY_INDICATOR = b'is now running'
-_DATASTORE_EMULATOR_PORT = 8432
-_EMULATOR_TIMEOUT = 20
-_TEST_PROJECT_ID = 'test-project'
+DATASTORE_READY_INDICATOR = b'is now running'
+DATASTORE_EMULATOR_PORT = 8432
+EMULATOR_TIMEOUT = 20
+TEST_PROJECT_ID = 'test-project'
 
 
 def start_datastore_emulator():
@@ -32,18 +32,18 @@ def start_datastore_emulator():
       'datastore',
       'start',
       '--consistency=1.0',
-      '--host-port=localhost:' + str(_DATASTORE_EMULATOR_PORT),
-      '--project=' + _TEST_PROJECT_ID,
+      '--host-port=localhost:' + str(DATASTORE_EMULATOR_PORT),
+      '--project=' + TEST_PROJECT_ID,
       '--no-store-on-disk',
   ],
                           stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
 
 
-def _wait_for_emulator_ready(proc,
-                             emulator,
-                             indicator,
-                             timeout=_EMULATOR_TIMEOUT):
+def wait_for_emulator_ready(proc,
+                            emulator,
+                            indicator,
+                            timeout=EMULATOR_TIMEOUT):
   """Wait for emulator to be ready."""
 
   def _read_thread(proc, ready_event):
