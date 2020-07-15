@@ -88,7 +88,7 @@ def check_build(project, engine, sanitizer, architecture):
 
 
 def should_build(project_yaml):
-  """Is the build specified by travis enabled in the |project_yaml|?"""
+  """Is the build specified enabled in the |project_yaml|?"""
 
   def is_enabled(env_var, yaml_name, defaults):
     """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
