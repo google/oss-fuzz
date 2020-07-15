@@ -429,8 +429,9 @@ def main():
   with open(dockerfile_path) as dockerfile:
     dockerfile_lines = dockerfile.readlines()
 
-  steps = get_build_steps(project_name, project_yaml_path, dockerfile_lines,
-                          image_project, base_images_project)
+  with open(project_yaml_path) as project_yaml_file:
+    steps = get_build_steps(project_name, project_yaml_file, dockerfile_lines,
+                            image_project, base_images_project)
 
   run_build(steps, project_name, FUZZING_BUILD_TAG)
 

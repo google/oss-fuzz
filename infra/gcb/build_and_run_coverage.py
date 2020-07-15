@@ -271,8 +271,10 @@ def main():
   with open(dockerfile_path) as docker_file:
     dockerfile_lines = docker_file.readlines()
 
-  steps = get_build_steps(project_name, project_yaml_path, dockerfile_lines,
-                          image_project, base_images_project)
+  with open(project_yaml_path) as project_yaml_file:
+    steps = get_build_steps(project_name, project_yaml_file, dockerfile_lines,
+                            image_project, base_images_project)
+
   build_project.run_build(steps, project_name, COVERAGE_BUILD_TAG)
 
 
