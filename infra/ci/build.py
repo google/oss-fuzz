@@ -139,7 +139,7 @@ def build_project(project):
 
 
 def main():
-  """Build modified projects on travis."""
+  """Build modified projects on github actions."""
   projects = get_modified_buildable_projects()
   failed_projects = []
   for project in projects:
