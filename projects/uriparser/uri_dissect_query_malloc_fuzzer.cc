@@ -46,8 +46,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzedDataProvider stream(data, size);
   size_t maxSize = stream.ConsumeIntegral<size_t>();
 
-  const std::string query(reinterpret_cast<const char *>(
-      stream.ConsumeRemainingBytes<char>().data()), size);
+  std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
+  const std::string query(
+      reinterpret_cast<const char *>(buffer.data()), buffer.size());
 
   UriQueryListA *query_list = nullptr;
   int item_count = -1;

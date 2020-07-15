@@ -70,7 +70,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t uriSize = stream.remaining_bytes() / 2;
 
   const std::string uri1 = stream.ConsumeBytesAsString(uriSize);
-  const std::string uri2 = stream.ConsumeRemainingBytes<char>().data();
+  const std::string uri2 = stream.ConsumeRemainingBytesAsString();
 
   Escapes(uri1);
   Escapes(uri2);
