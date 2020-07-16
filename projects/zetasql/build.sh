@@ -51,8 +51,10 @@ fi
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
 readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr --cxxopt=-fno-sanitize=vptr'
 
-declare FUZZER_PATH=$(for path in $(find zetasql/fuzzing -name *_fuzzer.cc); do echo "${path%.*}"; done)
-declare FUZZ_TARGET="$(for fuzzer in ${FUZZER_PATH}; do echo "//$(dirname ${fuzzer}):$(basename ${fuzzer})"; done)"
+# Get all fuzz targets via `bazal query` and output error info to stderr. 
+# Exit status from `bazel query` is preserved from variable substitution.
+exec {FD}>&2; FUZZ_TARGETS=($(bazel-1.0.0 query 'attr("tags", "fuzzer", //...)' 2>&${FD})); exec {FD}>&-
+declare -ar FUZZ_TARGETS
 
 # Build fuzz target
 # see https://google.github.io/oss-fuzz/further-reading/fuzzer-environment/
@@ -69,7 +71,7 @@ bazel-1.0.0 build --verbose_failures --compilation_mode=dbg \
   --linkopt="-rpath '\$ORIGIN\/lib'" \
   --define LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE} \
   ${EXTRA_BAZEL_FLAGS} ${NO_VPTR} \
-  ${FUZZ_TARGET}
+  "${FUZZ_TARGETS[@]}"
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
@@ -109,9 +111,11 @@ cp -r /usr/share/zoneinfo $OUT/data/
 ln -sf Etc/UTC $OUT/data/zoneinfo/localtime
 
 # Move out fuzz target
-for fuzzer in ${FUZZER_PATH};
+for target in ${FUZZ_TARGETS[@]};
 do
-    cp bazel-bin/"${fuzzer}" "${OUT}"/
+    # Transform //foo/bar:baz to foo/bar/baz
+    relative_path=$(sed 's/^\/\/\(.*\):/\1\//' <<< "$target")
+    cp bazel-bin/"${relative_path}" "${OUT}"/
 done
 
 # Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build
