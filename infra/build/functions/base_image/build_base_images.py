@@ -1,1 +1,0 @@
-../../../gcb/build_base_images.py
