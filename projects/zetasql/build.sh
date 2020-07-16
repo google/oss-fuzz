@@ -18,8 +18,6 @@
 # This build.sh is partly modeled after that of envoyproxy:
 # https://github.com/google/oss-fuzz/blob/master/projects/envoy/build.sh
 
-set -e
-
 export CFLAGS="$CFLAGS"
 export CXXFLAGS="$CXXFLAGS"
 
