@@ -15,9 +15,33 @@
 #
 ################################################################################
 
+: ${LD:="${CXX}"}
+: ${LDFLAGS:="${CXXFLAGS}"}  # to make sure we link with sanitizer runtime
+
+cmake_args=(
+    # Specific to Expat
+    -DEXPAT_BUILD_FUZZERS=ON
+    -DEXPAT_OSSFUZZ_BUILD=ON
+    -DEXPAT_SHARED_LIBS=OFF
+
+    # C compiler
+    -DCMAKE_C_COMPILER="${CC}"
+    -DCMAKE_C_FLAGS="${CFLAGS}"
+
+    # C++ compiler
+    -DCMAKE_CXX_COMPILER="${CXX}"
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS}"
+
+    # Linker
+    -DCMAKE_LINKER="${LD}"
+    -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}"
+    -DCMAKE_MODULE_LINKER_FLAGS="${LDFLAGS}"
+    -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
+)
+
 mkdir -p build
 cd build
-cmake ../expat -DEXPAT_BUILD_FUZZERS=ON -DEXPAT_OSSFUZZ_BUILD=ON -DEXPAT_SHARED_LIBS=OFF
+cmake ../expat "${cmake_args[@]}"
 make -j$(nproc)
 
 for fuzzer in fuzz/*;
