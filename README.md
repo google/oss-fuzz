@@ -19,7 +19,7 @@ techniques with scalable, distributed execution.
 [Core Infrastructure Initiative]: https://www.coreinfrastructure.org/
 
 We support the [libFuzzer], [AFL], and [Honggfuzz] fuzzing engines in
-combination with [Sanitizers], as well as [ClusterFuzz]; a distributed fuzzer
+combination with [Sanitizers], as well as [ClusterFuzz], a distributed fuzzer
 execution environment and reporting tool.
 
 [libFuzzer]: http://llvm.org/docs/LibFuzzer.html
@@ -42,11 +42,11 @@ Read our [detailed documentation] to learn how to use OSS-Fuzz.
 [detailed documentation]: https://google.github.io/oss-fuzz
 
 ## Trophies
-As of June 2020, OSS-Fuzz has found over [20,000] bugs in [300+] open source
+As of June 2020, OSS-Fuzz has found over [20,000] bugs in [300] open source
 projects.
 
 [20,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
-[300+]: https://github.com/google/oss-fuzz/tree/master/projects
+[300]: https://github.com/google/oss-fuzz/tree/master/projects
 
 ## Blog posts
 * 2016-12-01 - [Announcing OSS-Fuzz: Continuous fuzzing for open source software]
