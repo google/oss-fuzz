@@ -17,7 +17,7 @@
 
 # build project
 patch Makefile -i Makefile.patch
-make -sC Source CXX=clang++ batchbuild -j$(nproc)
+make -s CXX=clang++ batchbuild -j$(nproc)
 ar -qc libastc.a  *.o
 
 # build fuzzers
@@ -26,5 +26,5 @@ for fuzzer in $SRC/*_fuzzer.cc; do
       -DASTCENC_SSE=0 -DASTCENC_AVX=0 -DASTCENC_POPCNT=0 \
       -I. \
       $fuzzer -o $OUT/$(basename -s .cc $fuzzer) \
-      $LIB_FUZZING_ENGINE $SRC/astc-encoder/libastc.a
+      $LIB_FUZZING_ENGINE $SRC/astc-encoder/Source/libastc.a
 done
