@@ -1,0 +1,21 @@
+diff --git a/Source/Makefile b/Source/Makefile
+index f7eedcd..5dc737a 100644
+--- a/Source/Makefile
++++ b/Source/Makefile
+@@ -84,16 +84,6 @@ EXTERNAL_OBJECTS = $(EXTERNAL_SOURCES:.h=-$(VEC).o)
+ 
+ BINARY = astcenc-$(VEC)
+ 
+-CXXFLAGS = -std=c++14 -fvisibility=hidden -mfpmath=sse \
+-           -Wall -Wextra -Wpedantic -Werror -Werror=shadow -Wdouble-promotion
+-
+-# Validate that the DBG parameter is a supported value, and patch CXXFLAGS
+-ifeq ($(DBG),0)
+-CXXFLAGS += -O3 -DNDEBUG -flto
+-else
+-CXXFLAGS += -O0 -g
+-endif
+-
+ # Validate that the VEC parameter is a supported value, and patch CXXFLAGS
+ ifeq ($(VEC),nointrin)
+ CXXFLAGS += -msse2 -DASTCENC_SSE=0 -DASTCENC_AVX=0 -DASTCENC_POPCNT=0

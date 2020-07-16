@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+# !/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +16,15 @@
 ################################################################################
 
 # build project
-make
-# make -C Source CXX=clang++ VEC=avx2 -j$(nproc)
+patch Makefile -i Makefile.patch
+make -sC Source CXX=clang++ batchbuild -j$(nproc)
+ar -qc libastc.a  *.o
 
 # build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     $LIB_FUZZING_ENGINE /path/to/library.a
+for fuzzer in $SRC/*_fuzzer.cc; do
+  $CXX $CXXFLAGS \
+      -DASTCENC_SSE=0 -DASTCENC_AVX=0 -DASTCENC_POPCNT=0 \
+      -I. \
+      $fuzzer -o $OUT/$(basename -s .cc $fuzzer) \
+      $LIB_FUZZING_ENGINE $SRC/astc-encoder/libastc.a
+done
