@@ -20,7 +20,7 @@
 
 using std::string;
 #include "uriparser/include/uriparser/Uri.h"
-#include "uriparser/include/uriparser/UriBase.h"
+#include "uriparser/include/uriparser/UriIp4.h"
 
 class UriParserA {
  public:
@@ -41,26 +41,32 @@ void Escapes(const std::string &uri) {
   std::vector<char> buf1(uri.size() * 6 + 1);
   std::vector<char> buf2(uri.size() * 3 + 1);
 
-  char *result = uriEscapeA(first, &buf1[0], URI_TRUE, URI_TRUE);
+  char *result;
+  result = uriEscapeA(first, &buf1[0], URI_TRUE, URI_TRUE);
   result = uriEscapeA(first, &buf1[0], URI_FALSE, URI_TRUE);
   result = uriEscapeA(first, &buf2[0], URI_TRUE, URI_FALSE);
   result = uriEscapeA(first, &buf2[0], URI_FALSE, URI_FALSE);
+  uriUnescapeInPlaceA(&buf1[0]);
+  uriUnescapeInPlaceA(&buf2[0]);
 }
 
 void FileNames(const std::string &uri) {
   const size_t size = 8 + 3 * uri.size() + 1;
   std::vector<char> buf(size);
+
+  uriUnixFilenameToUriStringA(uri.c_str(), &buf[0]);
+  uriWindowsFilenameToUriStringA(uri.c_str(), &buf[0]);
+  uriUriStringToUnixFilenameA(uri.c_str(), &buf[0]);
+  uriUriStringToWindowsFilenameA(uri.c_str(), &buf[0]);
 }
 
-// Yuck!  The header situation for uriparse is rough.
-extern "C" {
 int uriParseIpFourAddressA(unsigned char *octetOutput, const char *first,
                            const char *afterLast);
-}
 
 void Ipv4(const std::string &s) {
   const char *cstr = s.c_str();
   unsigned char result[4] = {};
+  uriParseIpFourAddressA(result, cstr, &cstr[s.size()]);
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
