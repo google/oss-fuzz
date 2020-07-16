@@ -31,7 +31,7 @@ We support the [libFuzzer], [AFL], and [Honggfuzz] fuzzing engines in
 combination with [Sanitizers], as well as [ClusterFuzz], a distributed fuzzer
 execution environment and reporting tool.
 
-[libFuzzer]: http://llvm.org/docs/LibFuzzer.html
+[libFuzzer]: https://llvm.org/docs/LibFuzzer.html
 [AFL]: https://lcamtuf.coredump.cx/afl/
 [Honggfuzz]: https://github.com/google/honggfuzz
 [Sanitizers]: https://github.com/google/sanitizers
@@ -40,7 +40,7 @@ execution environment and reporting tool.
 Currently, OSS-Fuzz supports C/C++, Rust, and Go code. Other languages supported
 by [LLVM] may work too. OSS-Fuzz supports fuzzing x86_64 and i386 builds.
 
-[LLVM]: http://llvm.org
+[LLVM]: https://llvm.org
 
 ## Learn more about fuzzing
 
