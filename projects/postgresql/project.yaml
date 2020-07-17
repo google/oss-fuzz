@@ -3,7 +3,6 @@ primary_contact: "sfrost@snowman.net"
 language: c
 auto_ccs :
   - "ouyangyunshu@google.com"
-
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
