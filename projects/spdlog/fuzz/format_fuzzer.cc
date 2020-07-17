@@ -39,27 +39,25 @@ public:
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  if (size == 0) {
+    return 0;
+  }
+
   static std::shared_ptr<spdlog::logger> my_logger;
   if (!my_logger.get()) {
     my_logger = spdlog::basic_logger_mt("basic_logger", "/dev/null");
     spdlog::set_default_logger(my_logger);
   }
 
-  if (size == 0) {
-    return 0;
-  }
-
-
   FuzzedDataProvider stream(data, size);
 
   const unsigned long size_arg = stream.ConsumeIntegral<unsigned long>();
   const unsigned long  int_arg = stream.ConsumeIntegral<unsigned long>();
-  const char flag = (char)(stream.ConsumeIntegral<unsigned char>());
+  const char flag = (char)(stream.ConsumeIntegral<char>()); // unsigned
   const std::string pattern = stream.ConsumeRandomLengthString();
   my_formatter_txt = stream.ConsumeRandomLengthString();
   const std::string string_arg = stream.ConsumeRandomLengthString();
   const std::string format_string = stream.ConsumeRemainingBytesAsString();
-  // const std::string format_string = stream.ConsumeRandomLengthString(size);
 
   using spdlog::details::make_unique;
   auto formatter = make_unique<spdlog::pattern_formatter>();

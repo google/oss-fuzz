@@ -22,18 +22,17 @@
 #include "spdlog/cfg/env.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  if (size == 0) {
+    return 0;
+  }
+
   static std::shared_ptr<spdlog::logger> my_logger;
   if (!my_logger.get()) {
     my_logger = spdlog::basic_logger_mt("basic_logger", "/dev/null");
     spdlog::set_default_logger(my_logger);
   }
 
-  if (size == 0) {
-    return 0;
-  }
-
   FuzzedDataProvider stream(data, size);
-
   
   std::vector<std::string> strings;
   const unsigned char strsize = stream.ConsumeIntegral<unsigned char>();
@@ -41,15 +40,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     strings.push_back(stream.ConsumeRandomLengthString());
   }
   std::vector<char*> argvv; argvv.reserve(strsize);
-  for(unsigned char i=0; i< strsize; ++i)
+  for(unsigned char i=0; i< strsize; ++i){
     argvv.push_back(const_cast<char*>(strings[i].c_str()));
+  }
   
-  const unsigned char int_arg = strsize;
-  if(int_arg==0) return 0;
+  if(strsize==0) return 0;
   
   const char** argv = (const char**) &argvv[0];
   spdlog::cfg::load_env_levels();
-  spdlog::cfg::load_argv_levels(int_arg, argv);
+  spdlog::cfg::load_argv_levels(strsize, argv);
   spdlog::info(stream.ConsumeRemainingBytesAsString());
   
   return 0;
