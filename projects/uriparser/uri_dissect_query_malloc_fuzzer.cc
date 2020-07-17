@@ -21,34 +21,13 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <fuzzer/FuzzedDataProvider.h>
 
 using std::string;
-using std::make_pair;
 #include "uriparser/include/uriparser/Uri.h"
-#include "uriparser/include/uriparser/UriBase.h"
-
-std::vector<std::pair<std::string, std::string>> ToVector(
-    UriQueryListA *query_list) {
-  std::vector<std::pair<std::string, std::string>> result;
-  if (query_list == nullptr) return result;
-  for (UriQueryListA *entry = query_list; entry != nullptr;
-       entry = entry->next) {
-    // The value can be a nullptr.
-    result.push_back(std::make_pair(
-        entry->key, entry->value == nullptr ? "null" : entry->value));
-  }
-  uriFreeQueryListA(query_list);
-  return result;
-}
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  FuzzedDataProvider stream(data, size);
-  uint16_t maxSize = stream.ConsumeIntegral<uint16_t>();
 
-  std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
-  const std::string query(
-      reinterpret_cast<const char *>(buffer.data()), buffer.size());
+  const string query(reinterpret_cast<const char *>(data), size);
 
   UriQueryListA *query_list = nullptr;
   int item_count = -1;
@@ -60,17 +39,21 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   int result =
       uriDissectQueryMallocA(&query_list, &item_count, query_start, query_end);
 
-  if (query_list == nullptr || result != URI_SUCCESS) {
+  if (query_list == nullptr || result != URI_SUCCESS || item_count < -1) {
     return 0;
   }
 
-  std::vector<char> buf(maxSize, 0);
+  int chars_required;
+  if (uriComposeQueryCharsRequiredA(query_list, &chars_required)) {
+    return 0;
+  }
+  std::vector<char> buf(chars_required, 0);
   int written = -1;
   char *dest = &buf[0];
   // Reverse the process of uriDissectQueryMallocA.
-  result = uriComposeQueryA(dest, query_list, maxSize, &written);
+  result = uriComposeQueryA(dest, query_list, chars_required, &written);
 
-  auto queries = ToVector(query_list);
+  uriFreeQueryListA(query_list);
 
   return 0;
 }

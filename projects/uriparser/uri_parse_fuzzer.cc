@@ -34,7 +34,7 @@ class UriParserA {
   UriUriA uri_;
 };
 
-void Escapes(const std::string &uri) {
+void Escapes(const string &uri) {
   const char *first = uri.c_str();
   // A new line char takes 6 char to encode.
   // Use a vector to make a C string.
@@ -44,13 +44,14 @@ void Escapes(const std::string &uri) {
   char *result;
   result = uriEscapeA(first, &buf1[0], URI_TRUE, URI_TRUE);
   result = uriEscapeA(first, &buf1[0], URI_FALSE, URI_TRUE);
+  if (buf1 != nullptr) uriUnescapeInPlaceA(&buf1[0]);
+
   result = uriEscapeA(first, &buf2[0], URI_TRUE, URI_FALSE);
   result = uriEscapeA(first, &buf2[0], URI_FALSE, URI_FALSE);
-  uriUnescapeInPlaceA(&buf1[0]);
-  uriUnescapeInPlaceA(&buf2[0]);
+  if (buf2 != nullptr) uriUnescapeInPlaceA(&buf2[0]);
 }
 
-void FileNames(const std::string &uri) {
+void FileNames(const string &uri) {
   const size_t size = 8 + 3 * uri.size() + 1;
   std::vector<char> buf(size);
 
@@ -63,7 +64,7 @@ void FileNames(const std::string &uri) {
 int uriParseIpFourAddressA(unsigned char *octetOutput, const char *first,
                            const char *afterLast);
 
-void Ipv4(const std::string &s) {
+void Ipv4(const string &s) {
   const char *cstr = s.c_str();
   unsigned char result[4] = {};
   uriParseIpFourAddressA(result, cstr, &cstr[s.size()]);
@@ -75,8 +76,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   bool domainRelative = stream.ConsumeBool();
   size_t uriSize = stream.remaining_bytes() / 2;
 
-  const std::string uri1 = stream.ConsumeBytesAsString(uriSize);
-  const std::string uri2 = stream.ConsumeRemainingBytesAsString();
+  const string uri1 = stream.ConsumeBytesAsString(uriSize);
+  const string uri2 = stream.ConsumeRemainingBytesAsString();
 
   Escapes(uri1);
   Escapes(uri2);
@@ -101,7 +102,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   UriParserA parser2;
   UriParserStateA state2;
   state2.uri = parser2.get_mutable_uri();
-  if (URI_SUCCESS != uriParseUriA(&state2, uri2.c_str())) return 0;
+  if (URI_SUCCESS != uriParseUriA(&state2, uri2.c_str())) {
+    return 0;
+  }
 
   uriEqualsUriA(state1.uri, state2.uri);
 
