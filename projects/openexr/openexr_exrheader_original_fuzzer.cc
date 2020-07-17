@@ -1,16 +1,36 @@
-// Copyright 2020 Google LLC
+///////////////////////////////////////////////////////////////////////////
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// Copyright (c) 2012, Industrial Light & Magic, a division of Lucas
+// Digital Ltd. LLC
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+// All rights reserved.
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+// *       Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+// *       Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+// *       Neither the name of Industrial Light & Magic nor the names of
+// its contributors may be used to endorse or promote products derived
+// from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+///////////////////////////////////////////////////////////////////////////
 
 
 //-----------------------------------------------------------------------------
@@ -41,11 +61,14 @@
 #include <ImfVecAttribute.h>
 #include <ImfVersion.h>
 #include <ImfHeader.h>
-#include <ImfStdIO.h>
 
 #include <iostream>
 #include <iomanip>
-
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <vector>
 
 using namespace OPENEXR_IMF_NAMESPACE;
 using namespace std;
@@ -266,15 +289,37 @@ printChannelList (const ChannelList &cl)
 
 
 void
-printInfo (IStream &is)
+printInfo (const char fileName[])
 {
-    MultiPartInputFile in(is, 0);
+    MultiPartInputFile in (fileName);
     int parts = in.parts();
 
-    getVersion(in.version());
-    setbase(16);
-    getFlags(in.version());
-    setbase(10);
+    //
+    // Check to see if any parts are incomplete
+    //
+
+    bool fileComplete = true;
+
+    for (int i = 0; i < parts && fileComplete; ++i)
+        if (!in.partComplete (i))
+            fileComplete = false;
+
+    //
+    // Print file name and file format version
+    //
+
+    cout << "\nfile " << fileName <<
+            (fileComplete? "": " (incomplete)") <<
+            ":\n\n";
+
+    cout << "file format version: " <<
+            getVersion (in.version()) << ", "
+            "flags 0x" <<
+            setbase (16) << getFlags (in.version()) << setbase (10) << "\n";
+
+    //
+    // Print the header of every part in the file
+    //
 
     for (int p = 0; p < parts ; ++p)
     {
@@ -282,92 +327,131 @@ printInfo (IStream &is)
 
         if (parts != 1)
         {
-            in.partComplete(p);
+            cout  << "\n\n part " << p <<
+            (in.partComplete (p)? "": " (incomplete)") <<
+            ":\n";
 
         }
 
         for (Header::ConstIterator i = h.begin(); i != h.end(); ++i)
         {
             const Attribute *a = &i.attribute();
-            i.name();
-            a->typeName();
+            cout << i.name() << " (type " << a->typeName() << ")";
 
             if (const Box2iAttribute *ta =
                             dynamic_cast <const Box2iAttribute *> (a))
             {
-                ta->value().min;
-                ta->value().max;
+                cout << ": " << ta->value().min << " - " << ta->value().max;
             }
 
             else if (const Box2fAttribute *ta =
                             dynamic_cast <const Box2fAttribute *> (a))
             {
-                ta->value().min;
-                ta->value().max;
+                cout << ": " << ta->value().min << " - " << ta->value().max;
             }
             else if (const ChannelListAttribute *ta =
                             dynamic_cast <const ChannelListAttribute *> (a))
             {
-                printChannelList(ta->value());
+                cout << ":";
+                printChannelList (ta->value());
             }
             else if (const ChromaticitiesAttribute *ta =
                             dynamic_cast <const ChromaticitiesAttribute *> (a))
             {
-                ta->value().red;
-                ta->value().green;
-                ta->value().blue;
-                ta->value().white;
+                cout << ":\n"
+                "    red   " << ta->value().red << "\n"
+                "    green " << ta->value().green << "\n"
+                "    blue  " << ta->value().blue << "\n"
+                "    white " << ta->value().white;
             }
             else if (const CompressionAttribute *ta =
                             dynamic_cast <const CompressionAttribute *> (a))
             {
-                printCompression(ta->value());
+                cout << ": ";
+                printCompression (ta->value());
             }
             else if (const DoubleAttribute *ta =
                             dynamic_cast <const DoubleAttribute *> (a))
             {
-                ta->value();
+                cout << ": " << ta->value();
             }
             else if (const EnvmapAttribute *ta =
                             dynamic_cast <const EnvmapAttribute *> (a))
             {
-                printEnvmap(ta->value());
+                cout << ": ";
+                printEnvmap (ta->value());
             }
             else if (const FloatAttribute *ta =
                             dynamic_cast <const FloatAttribute *> (a))
             {
-                ta->value();
+                cout << ": " << ta->value();
             }
             else if (const IntAttribute *ta =
                             dynamic_cast <const IntAttribute *> (a))
             {
-                ta->value();
+                cout << ": " << ta->value();
             }
             else if (const KeyCodeAttribute *ta =
                             dynamic_cast <const KeyCodeAttribute *> (a))
             {
-                ta->value().filmMfcCode();
-                ta->value().filmType();
-                ta->value().prefix();
-                ta->value().count();
-                ta->value().perfOffset();
-                ta->value().perfsPerFrame();
+                cout << ":\n"
+                "    film manufacturer code " <<
+                ta->value().filmMfcCode() << "\n"
+                "    film type code " <<
+                ta->value().filmType() << "\n"
+                "    prefix " <<
+                ta->value().prefix() << "\n"
+                "    count " <<
+                ta->value().count() << "\n"
+                "    perf offset " <<
+                ta->value().perfOffset() << "\n"
+                "    perfs per frame " <<
+                ta->value().perfsPerFrame() << "\n"
+                "    perfs per count " <<
                 ta->value().perfsPerCount();
             }
             else if (const LineOrderAttribute *ta =
                             dynamic_cast <const LineOrderAttribute *> (a))
             {
-                printLineOrder(ta->value());
+                cout << ": ";
+                printLineOrder (ta->value());
             }
             else if (const M33fAttribute *ta =
                             dynamic_cast <const M33fAttribute *> (a))
             {
-                ta->value();
+                cout << ":\n"
+                "   (" <<
+                ta->value()[0][0] << " " <<
+                ta->value()[0][1] << " " <<
+                ta->value()[0][2] << "\n    " <<
+                ta->value()[1][0] << " " <<
+                ta->value()[1][1] << " " <<
+                ta->value()[1][2] << "\n    " <<
+                ta->value()[2][0] << " " <<
+                ta->value()[2][1] << " " <<
+                ta->value()[2][2] << ")";
             }
             else if (const M44fAttribute *ta =
                             dynamic_cast <const M44fAttribute *> (a))
             {
-                ta->value();
+                cout << ":\n"
+                "   (" <<
+                ta->value()[0][0] << " " <<
+                ta->value()[0][1] << " " <<
+                ta->value()[0][2] << " " <<
+                ta->value()[0][3] << "\n    " <<
+                ta->value()[1][0] << " " <<
+                ta->value()[1][1] << " " <<
+                ta->value()[1][2] << " " <<
+                ta->value()[1][3] << "\n    " <<
+                ta->value()[2][0] << " " <<
+                ta->value()[2][1] << " " <<
+                ta->value()[2][2] << " " <<
+                ta->value()[2][3] << "\n    " <<
+                ta->value()[3][0] << " " <<
+                ta->value()[3][1] << " " <<
+                ta->value()[3][2] << " " <<
+                ta->value()[3][3] << ")";
             }
             else if (const PreviewImageAttribute *ta =
                             dynamic_cast <const PreviewImageAttribute *> (a))
@@ -443,20 +527,59 @@ printInfo (IStream &is)
                 cout << ": " << ta->value();
             }
 
+            cout << '\n';
         }
     }
 
+    cout << endl;
 }
 
 
+void
+usageMessage (const char argv0[])
+{
+    std::cerr << "usage: " << argv0 << " imagefile [imagefile ...]\n";
+}
+
+static char *buf_to_file(const char *buf, size_t size) {
+  char *name = strdup("/dev/shm/fuzz-XXXXXX");
+  int fd = mkstemp(name);
+  if (fd < 0) {
+    perror("open");
+    exit(1);
+  }
+  size_t pos = 0;
+  while (pos < size) {
+    int nbytes = write(fd, &buf[pos], size - pos);
+    if (nbytes <= 0) {
+      perror("write");
+      exit(1);
+    }
+    pos += nbytes;
+  }
+  if (close(fd) != 0) {
+    perror("close");
+    exit(1);
+  }
+  return name;
+}
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
-  const std::string s(reinterpret_cast<const char*>(data), size);
-  StdISStream is;
-  is.str(s);
+  char *file = buf_to_file((const char *)data, size);
+  if (file == NULL) {
+    exit(EXIT_FAILURE);
+  }
 
-  printInfo(is);
+  try {
+    printInfo(file);
+  }
+  catch (const std::exception &e) {
+    ;
+  }
+
+  unlink(file);
+  free(file);
 
   return 0;
 }

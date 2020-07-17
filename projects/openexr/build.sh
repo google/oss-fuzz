@@ -36,7 +36,6 @@ INCLUDES=(
   "-I $SRC/openexr/IlmBase/Half"
   "-I $WORK/OpenEXR/config"
   "-I $WORK/IlmBase/config"
-  "-I $SRC/openexr/OpenEXR/exrheader"
 )
 
 LIBS=(
