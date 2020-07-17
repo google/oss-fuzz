@@ -113,6 +113,7 @@ ninja
 ninja install
 rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
+# 32-bit libraries.
 mkdir -p $WORK/i386
 cd $WORK/i386
 cmake -G "Ninja" \
@@ -128,6 +129,7 @@ ninja cxx
 ninja install-cxx
 rm -rf $WORK/i386
 
+# MemorySanitizer instrumented libraries.
 mkdir -p $WORK/msan
 cd $WORK/msan
 
@@ -148,7 +150,24 @@ ninja cxx
 ninja install-cxx
 rm -rf $WORK/msan
 
+# DataFlowSanitizer instrumented libraries.
+mkdir -p $WORK/dfsan
+cd $WORK/dfsan
+
+cmake -G "Ninja" \
+      -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+      -DLLVM_USE_SANITIZER=DataFlow -DCMAKE_INSTALL_PREFIX=/usr/dfsan/ \
+      -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON \
+      -DCMAKE_BUILD_TYPE=Release -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
+      -DLLVM_ENABLE_PROJECTS=$PROJECTS_TO_BUILD \
+      $LLVM_SRC/llvm
+ninja cxx cxxabi
+ninja install-cxx install-cxxabi
+rm -rf $WORK/dfsan
+
+# libFuzzer sources.
 cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
+
 # Cleanup
 rm -rf $LLVM_SRC
 rm -rf $SRC/chromium_tools
