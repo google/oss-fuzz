@@ -23,24 +23,22 @@ rm -rf build_swiftshader
 mkdir build_swiftshader
 
 cd build_swiftshader
-if [ $SANITIZER == "coverage" ]; then
-  cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja"
+if [ $SANITIZER == "address" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_ASAN"
+elif [ $SANITIZER == "memory" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_MSAN"
+elif [ $SANITIZER == "undefined" ]; then
+  # The current SwiftShader build needs -fno-sanitize=vptr, but it cannot be
+  # specified here since -fsanitize=undefined will always come after any
+  # user specified flags passed to cmake. SwiftShader does not need to be
+  # built with the undefined sanitizer in order to fuzz Skia, so don't.
+  CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
+elif [ $SANITIZER == "coverage" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_EMIT_COVERAGE"
 else
-  if [ $SANITIZER == "address" ]; then
-    CMAKE_SANITIZER="SWIFTSHADER_ASAN"
-  elif [ $SANITIZER == "memory" ]; then
-    CMAKE_SANITIZER="SWIFTSHADER_MSAN"
-  elif [ $SANITIZER == "undefined" ]; then
-    # The current SwiftShader build needs -fno-sanitize=vptr, but it cannot be
-    # specified here since -fsanitize=undefined will always come after any
-    # user specified flags passed to cmake. SwiftShader does not need to be
-    # built with the undefined sanitizer in order to fuzz Skia, so don't.
-    CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
-  else
-    exit 1
-  fi
-  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
+  exit 1
 fi
+CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 
 $SRC/depot_tools/ninja libGLESv2 libEGL
 cp libGLESv2.so libEGL.so $OUT
