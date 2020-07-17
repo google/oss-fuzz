@@ -101,12 +101,7 @@ class TestDataSync(unittest.TestCase):
     cls.ds_emulator = test_utils.start_datastore_emulator()
     test_utils.wait_for_emulator_ready(cls.ds_emulator, 'datastore',
                                        test_utils.DATASTORE_READY_INDICATOR)
-    os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:' + str(
-        test_utils.DATASTORE_EMULATOR_PORT)
-    os.environ['GOOGLE_CLOUD_PROJECT'] = test_utils.TEST_PROJECT_ID
-    os.environ['DATASTORE_DATASET'] = test_utils.TEST_PROJECT_ID
-    os.environ['GCP_PROJECT'] = 'test-project'
-    os.environ['FUNCTION_REGION'] = 'us-central1'
+    test_utils.set_gcp_environment()
 
   def setUp(self):
     test_utils.reset_ds_emulator()
