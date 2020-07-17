@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   const unsigned long size_arg = stream.ConsumeIntegral<unsigned long>();
   const unsigned long  int_arg = stream.ConsumeIntegral<unsigned long>();
-  const char flag = (char)(stream.ConsumeIntegral<char>()); // unsigned
+  const char flag = (char)(stream.ConsumeIntegral<char>());
   const std::string pattern = stream.ConsumeRandomLengthString();
   my_formatter_txt = stream.ConsumeRandomLengthString();
   const std::string string_arg = stream.ConsumeRandomLengthString();
