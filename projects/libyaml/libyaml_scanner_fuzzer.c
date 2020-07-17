@@ -23,7 +23,7 @@
 #undef NDEBUG
 #endif
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_parser_t parser;
   yaml_token_t token;
   int done = 0;

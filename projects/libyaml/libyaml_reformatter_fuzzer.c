@@ -23,7 +23,7 @@
 #undef NDEBUG
 #endif
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 2) return 0;
 
   int k;
@@ -33,14 +33,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   yaml_parser_t parser;
   yaml_emitter_t emitter;
-  yaml_document_t document;
+  yaml_event_t event;
   FILE *f;
 
   /* Clear the objects. */
 
   memset(&parser, 0, sizeof(parser));
   memset(&emitter, 0, sizeof(emitter));
-  memset(&document, 0, sizeof(document));
+  memset(&event, 0, sizeof(event));
 
   /* Initialize the parser and emitter objects. */
 
@@ -69,18 +69,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   {
       /* Get the next event. */
 
-      if (!yaml_parser_load(&parser, &document))
+      if (!yaml_parser_parse(&parser, &event))
           break;
 
       /* Check if this is the stream end. */
 
-      if (!yaml_document_get_root_node(&document)) {
+      if (event.type == YAML_STREAM_END_EVENT) {
           done = 1;
       }
 
       /* Emit the event. */
 
-      if (!yaml_emitter_dump(&emitter, &document))
+      if (!yaml_emitter_emit(&emitter, &event))
           break;
   }
 

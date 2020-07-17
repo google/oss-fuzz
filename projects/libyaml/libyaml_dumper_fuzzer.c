@@ -177,7 +177,7 @@ error:
     return 0;
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 2) return 0;
 
   yaml_parser_t parser;
