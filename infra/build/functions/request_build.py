@@ -16,7 +16,6 @@
 """Cloud function to request builds."""
 import base64
 import logging
-import sys
 
 import google.auth
 from googleapiclient.discovery import build
@@ -53,12 +52,12 @@ def get_build_steps(project_name, image_project, base_images_project):
   return build_steps
 
 
-def run_build(project_name, image_project, build_steps, timeout, credentials,
-              tag):
+# pylint: disable=no-member
+def run_build(project_name, image_project, build_steps, credentials, tag):
   """Execute build on cloud build."""
   build_body = {
       'steps': build_steps,
-      'timeout': str(timeout) + 's',
+      'timeout': str(build_lib.BUILD_TIMEOUT) + 's',
       'options': {
           'machineType': 'N1_HIGHCPU_32'
       },
@@ -84,10 +83,8 @@ def request_build(event, context):
   if 'data' in event:
     project_name = base64.b64decode(event['data']).decode('utf-8')
   else:
-    logging.error('Project name missing from payload')
-    sys.exit(1)
+    raise RuntimeError('Project name missing from payload')
 
   credentials, image_project = google.auth.default()
   build_steps = get_build_steps(project_name, image_project, BASE_PROJECT)
-  run_build(project_name, image_project, build_steps, build_lib.BUILD_TIMEOUT,
-            credentials, '-fuzzing')
+  run_build(project_name, image_project, build_steps, credentials, '-fuzzing')

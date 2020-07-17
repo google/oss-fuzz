@@ -95,6 +95,7 @@ def cleanup_emulator(ds_emulator):
 
 
 def set_gcp_environment():
+  """Set environment variables for simulating in google cloud platform."""
   os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:' + str(
       DATASTORE_EMULATOR_PORT)
   os.environ['GOOGLE_CLOUD_PROJECT'] = TEST_PROJECT_ID

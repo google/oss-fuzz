@@ -16,8 +16,9 @@
 """Cloud functions for build infrastructure."""
 
 import base_images
-import sync
+import project_sync
 import request_build
+import request_coverage_build
 
 
 def build_project(event, context):
@@ -25,11 +26,16 @@ def build_project(event, context):
   request_build.request_build(event, context)
 
 
-def project_sync(event, context):
+def sync(event, context):
   """Entry point for cloud function that syncs projects from github."""
-  sync.sync(event, context)
+  project_sync.sync(event, context)
 
 
 def build_base_images(event, context):
   """Entry point for cloud function that builds base images."""
   base_images.base_builder(event, context)
+
+
+def coverage_build(event, context):
+  """Entry point for cloud function to build coverage reports."""
+  request_coverage_build.request_coverage_build(event, context)

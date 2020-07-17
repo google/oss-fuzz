@@ -51,7 +51,11 @@ class TestRequestCoverageBuilds(unittest.TestCase):
     """Test for get_build_steps."""
     del mocked_url, mocked_corpora_steps, mocked_time
     datetime.datetime = test_utils.SpoofedDatetime
-    project_yaml_contents = 'language: c++\nsanitizers:\n  - address\narchitectures:\n  - x86_64\n'
+    project_yaml_contents = ('language: c++\n'
+                             'sanitizers:\n'
+                             '  - address\n'
+                             'architectures:\n'
+                             '  - x86_64\n')
     dockerfile_contents = 'test line'
     image_project = 'oss-fuzz'
     base_images_project = 'oss-fuzz-base'
@@ -74,7 +78,6 @@ class TestRequestCoverageBuilds(unittest.TestCase):
 
   @classmethod
   def tearDownClass(cls):
-    # TODO: replace this with a cleaner way of killing the process
     test_utils.cleanup_emulator(cls.ds_emulator)
 
 

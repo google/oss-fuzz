@@ -19,7 +19,6 @@ import google.auth
 from google.cloud import ndb
 
 import build_and_run_coverage
-import build_lib
 from datastore_entities import Project
 import request_build
 
@@ -43,17 +42,15 @@ def request_coverage_build(event, context):
   del event, context  #unused
 
   with ndb.Client().context():
-
     credentials, image_project = google.auth.default()
     for project in Project.query():
       project_name = project.name
       project_yaml_contents = project.project_yaml_contents
-      dockerfile_content = project.dockerfile_content
-      dockerfile_lines = dockerfile_content.split('\n')
+      dockerfile_lines = project.dockerfile_contents.split('\n')
 
       build_steps = get_coverage_build_steps(project_name,
                                              project_yaml_contents,
                                              dockerfile_lines, image_project,
                                              BASE_PROJECT)
       request_build.run_build(project_name, image_project, build_steps,
-                              build_lib.BUILD_TIMEOUT, credentials, '-coverage')
+                              credentials, '-coverage')

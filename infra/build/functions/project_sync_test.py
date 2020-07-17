@@ -16,16 +16,15 @@
 """Unit tests for Cloud Function sync, which syncs the list of github projects
 and uploads them to the Cloud Datastore."""
 
-import os
 import unittest
 
 from google.cloud import ndb
 
 from datastore_entities import Project
-from sync import get_access_token
-from sync import get_projects
-from sync import ProjectMetadata
-from sync import sync_projects
+from project_sync import get_access_token
+from project_sync import get_projects
+from project_sync import ProjectMetadata
+from project_sync import sync_projects
 import test_utils
 
 
@@ -284,7 +283,6 @@ class TestDataSync(unittest.TestCase):
 
   @classmethod
   def tearDownClass(cls):
-    # TODO: replace this with a cleaner way of killing the process
     test_utils.cleanup_emulator(cls.ds_emulator)
 
 
