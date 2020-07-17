@@ -44,11 +44,11 @@ void Escapes(const string &uri) {
   char *result;
   result = uriEscapeA(first, &buf1[0], URI_TRUE, URI_TRUE);
   result = uriEscapeA(first, &buf1[0], URI_FALSE, URI_TRUE);
-  if (buf1 != nullptr) uriUnescapeInPlaceA(&buf1[0]);
+  if (buf1.data()) uriUnescapeInPlaceA(&buf1[0]);
 
   result = uriEscapeA(first, &buf2[0], URI_TRUE, URI_FALSE);
   result = uriEscapeA(first, &buf2[0], URI_FALSE, URI_FALSE);
-  if (buf2 != nullptr) uriUnescapeInPlaceA(&buf2[0]);
+  if (buf2.data()) uriUnescapeInPlaceA(&buf2[0]);
 }
 
 void FileNames(const string &uri) {
