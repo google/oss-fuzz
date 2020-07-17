@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,12 +31,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   FuzzedDataProvider stream(data, size);
-
-  const size_t size_arg = stream.ConsumeIntegral<size_t>();
-  const int int_arg = stream.ConsumeIntegral<int>();
-  const std::string string_arg = stream.ConsumeRandomLengthString(size);
-  const std::string format_string = stream.ConsumeRemainingBytesAsString();
-  spdlog::info(format_string.c_str(), size_arg, int_arg, string_arg);
+  const std::string str = stream.ConsumeRemainingBytesAsString();
+  spdlog::set_pattern(str);
 
   return 0;
 }
