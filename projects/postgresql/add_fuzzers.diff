@@ -1,20 +1,17 @@
 diff --git a/src/backend/Makefile b/src/backend/Makefile
-index 9706a95848..5243ba7ee2 100644
+index 9706a95848..034a452b89 100644
 --- a/src/backend/Makefile
 +++ b/src/backend/Makefile
-@@ -43,6 +43,11 @@ OBJS = \
+@@ -43,6 +43,8 @@ OBJS = \
  	$(top_builddir)/src/common/libpgcommon_srv.a \
  	$(top_builddir)/src/port/libpgport_srv.a
  
-+
-+TMPVAR := $(OBJS)
-+# OBJS_WITHOUT_FUZZER = $(filter-out fuzzer/objfiles.txt, $(TMPVAR))
-+OBJS_WITHOUT_MAIN = $(filter-out main/objfiles.txt, $(TMPVAR))
++OBJS_WITHOUT_MAIN = $(filter-out main/objfiles.txt, $(OBJS))
 +
  # We put libpgport and libpgcommon into OBJS, so remove it from LIBS; also add
  # libldap and ICU
  LIBS := $(filter-out -lpgport -lpgcommon, $(LIBS)) $(LDAP_LIBS_BE) $(ICU_LIBS)
-@@ -56,7 +61,7 @@ endif
+@@ -56,7 +58,7 @@ endif
  
  ##########################################################################
  
@@ -23,229 +20,18 @@ index 9706a95848..5243ba7ee2 100644
  
  ifneq ($(PORTNAME), cygwin)
  ifneq ($(PORTNAME), win32)
-@@ -65,6 +70,16 @@ ifneq ($(PORTNAME), aix)
+@@ -65,6 +67,14 @@ ifneq ($(PORTNAME), aix)
  postgres: $(OBJS)
  	$(CC) $(CFLAGS) $(call expand_subsys,$^) $(LDFLAGS) $(LDFLAGS_EX) $(export_dynamic) $(LIBS) -o $@
  
 +
 +fuzzer/parser_fuzzer: fuzzer/parser_fuzzer.o $(OBJS_WITHOUT_MAIN)
-+	# clang++ -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope  $(call expand_subsys, $^) -o $@ -fsanitize=fuzzer
 +	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE)
 +
 +fuzzer/json_parser_fuzzer: fuzzer/json_parser_fuzzer.o $(OBJS_WITHOUT_MAIN)
-+	 # clang++ -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope $(call expand_subsys, $^) -o $@ -fsanitize=fuzzer
 +	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE)
 +
 +
  endif
  endif
  endif
-diff --git a/src/backend/fuzzer/Makefile b/src/backend/fuzzer/Makefile
-new file mode 100644
-index 0000000000..d8e94c6581
---- /dev/null
-+++ b/src/backend/fuzzer/Makefile
-@@ -0,0 +1,24 @@
-+#-------------------------------------------------------------------------
-+#
-+# Makefile for the fuzzer module
-+#
-+# src/backend/fuzzer/Makefile
-+#
-+#-------------------------------------------------------------------------
-+
-+subdir = src/backend/fuzzer
-+top_builddir = ../../..
-+include $(top_builddir)/src/Makefile.global
-+
-+OBJS = \
-+	parser_fuzzer.o \
-+	json_parser_fuzzer.o
-+
-+# parser_fuzzer.o: parser_fuzzer.c
-+# 	clang -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -I../../../src/include -I/home/ouyangyunshu/postgresql/bld/../src/include -c $^ -o $@
-+
-+# json_parser_fuzzer.o: json_parser_fuzzer.c
-+# 	clang -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link -I../../../src/include -I/home/ouyangyunshu/postgresql/bld/../src/include -c $^ -o $@
-+
-+include $(top_srcdir)/src/backend/common.mk
-+
-diff --git a/src/backend/fuzzer/json_parser_fuzzer.c b/src/backend/fuzzer/json_parser_fuzzer.c
-new file mode 100644
-index 0000000000..87ffbd64ec
---- /dev/null
-+++ b/src/backend/fuzzer/json_parser_fuzzer.c
-@@ -0,0 +1,42 @@
-+// Copyright 2019 Google LLC
-+//
-+// Licensed under the Apache License, Version 2.0 (the "License");
-+// you may not use this file except in compliance with the License.
-+// You may obtain a copy of the License at
-+//
-+//      http://www.apache.org/licenses/LICENSE-2.0
-+//
-+// Unless required by applicable law or agreed to in writing, software
-+// distributed under the License is distributed on an "AS IS" BASIS,
-+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+// See the License for the specific language governing permissions and
-+// limitations under the License.
-+
-+#include "postgres.h"
-+#include "common/jsonapi.h"
-+#include "mb/pg_wchar.h"
-+#include "utils/memutils.h"
-+
-+const char *progname = "progname";
-+
-+/*
-+** Main entry point.  The fuzzer invokes this function with each
-+** fuzzed input.
-+*/
-+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-+	MemoryContextInit();
-+	JsonSemAction sem = nullSemAction;
-+	char *buffer = (char *) calloc(size+1, sizeof(char));
-+	sigjmp_buf local_sigjmp_buf;
-+	memcpy(buffer, data, size);
-+	JsonLexContext *lex = makeJsonLexContextCstringLen(buffer, size+1, PG_UTF8, true);
-+	if(!sigsetjmp(local_sigjmp_buf,0)){
-+		error_context_stack = NULL;
-+		PG_exception_stack = &local_sigjmp_buf;
-+		pg_parse_json(lex, &sem);
-+	}
-+	free(buffer);
-+	FlushErrorState();
-+    MemoryContextDelete(TopMemoryContext);
-+	return 0;
-+}
-diff --git a/src/backend/fuzzer/parser_fuzzer.c b/src/backend/fuzzer/parser_fuzzer.c
-new file mode 100644
-index 0000000000..2540f2e0c7
---- /dev/null
-+++ b/src/backend/fuzzer/parser_fuzzer.c
-@@ -0,0 +1,41 @@
-+// Copyright 2019 Google LLC
-+//
-+// Licensed under the Apache License, Version 2.0 (the "License");
-+// you may not use this file except in compliance with the License.
-+// You may obtain a copy of the License at
-+//
-+//      http://www.apache.org/licenses/LICENSE-2.0
-+//
-+// Unless required by applicable law or agreed to in writing, software
-+// distributed under the License is distributed on an "AS IS" BASIS,
-+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+// See the License for the specific language governing permissions and
-+// limitations under the License.
-+
-+#include "postgres.h"
-+#include "parser/gramparse.h"
-+#include "parser/parser.h"
-+#include "utils/memutils.h"
-+#include "storage/ipc.h"
-+
-+const char *progname = "progname";
-+
-+/*
-+** Main entry point.  The fuzzer invokes this function with each
-+** fuzzed input.
-+*/
-+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-+	MemoryContextInit();
-+	sigjmp_buf local_sigjmp_buf;
-+ 	char* query = (char*) calloc( (size+1), sizeof(char) );
-+	memcpy(query, data, size);
-+	if(!sigsetjmp(local_sigjmp_buf,0)){
-+		error_context_stack = NULL;
-+		PG_exception_stack = &local_sigjmp_buf;
-+		raw_parser(query);
-+	}
-+	FlushErrorState();
-+	free(query);
-+    MemoryContextDelete(TopMemoryContext);
-+	return 0;
-+}
-diff --git a/src/backend/parser/scan.l b/src/backend/parser/scan.l
-index b1ea0cb538..62220cb4c6 100644
---- a/src/backend/parser/scan.l
-+++ b/src/backend/parser/scan.l
-@@ -1100,10 +1100,10 @@ scanner_errposition(int location, core_yyscan_t yyscanner)
- static void
- scb_error_callback(void *arg)
- {
--	ScannerCallbackState *scbstate = (ScannerCallbackState *) arg;
--
--	if (geterrcode() != ERRCODE_QUERY_CANCELED)
-+        ScannerCallbackState *scbstate = (ScannerCallbackState *) arg;
-+	if (geterrcode() != ERRCODE_QUERY_CANCELED){
- 		(void) scanner_errposition(scbstate->location, scbstate->yyscanner);
-+        }
- }
- 
- /*
-diff --git a/src/backend/storage/ipc/ipc.c b/src/backend/storage/ipc/ipc.c
-index bdbc2c3ac4..c3bfaace21 100644
---- a/src/backend/storage/ipc/ipc.c
-+++ b/src/backend/storage/ipc/ipc.c
-@@ -149,7 +149,9 @@ proc_exit(int code)
- 
- 	elog(DEBUG3, "exit(%d)", code);
- 
--	exit(code);
-+	if(PG_exception_stack != NULL)
-+		siglongjmp(*PG_exception_stack, 1);
-+	// exit(code);
- }
- 
- /*
-diff --git a/src/backend/utils/error/elog.c b/src/backend/utils/error/elog.c
-index e976201030..b33c3f5631 100644
---- a/src/backend/utils/error/elog.c
-+++ b/src/backend/utils/error/elog.c
-@@ -469,8 +469,9 @@ errfinish(const char *filename, int lineno, const char *funcname)
- 	 */
- 	for (econtext = error_context_stack;
- 		 econtext != NULL;
--		 econtext = econtext->previous)
-+		 econtext = econtext->previous){
- 		econtext->callback(econtext->arg);
-+	}
- 
- 	/*
- 	 * If ERROR (not more nor less) we pass it off to the current handler.
-@@ -1713,9 +1714,9 @@ void
- pg_re_throw(void)
- {
- 	/* If possible, throw the error to the next outer setjmp handler */
--	if (PG_exception_stack != NULL)
-+	if (PG_exception_stack != NULL){
- 		siglongjmp(*PG_exception_stack, 1);
--	else
-+	} else
- 	{
- 		/*
- 		 * If we get here, elog(ERROR) was thrown inside a PG_TRY block, which
-diff --git a/src/backend/utils/mmgr/.#mcxt.c b/src/backend/utils/mmgr/.#mcxt.c
-new file mode 120000
-index 0000000000..25e17c3523
---- /dev/null
-+++ b/src/backend/utils/mmgr/.#mcxt.c
-@@ -0,0 +1 @@
-+ouyangyunshu@penguin.11068:1594025468
-\ No newline at end of file
-diff --git a/src/backend/utils/mmgr/mcxt.c b/src/backend/utils/mmgr/mcxt.c
-index abda22fa57..5aaa9bc07c 100644
---- a/src/backend/utils/mmgr/mcxt.c
-+++ b/src/backend/utils/mmgr/mcxt.c
-@@ -212,9 +212,9 @@ MemoryContextDelete(MemoryContext context)
- {
- 	AssertArg(MemoryContextIsValid(context));
- 	/* We had better not be deleting TopMemoryContext ... */
--	Assert(context != TopMemoryContext);
-+	// Assert(context != TopMemoryContext);
- 	/* And not CurrentMemoryContext, either */
--	Assert(context != CurrentMemoryContext);
-+	// Assert(context != CurrentMemoryContext);
- 
- 	/* save a function call in common case where there are no children */
- 	if (context->firstchild != NULL)

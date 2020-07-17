@@ -15,6 +15,7 @@
 #
 ################################################################################
 git apply ../add_fuzzers.diff
+cp -r $SRC/fuzzer src/backend/
 mkdir bld
 cd bld
 
@@ -22,4 +23,3 @@ cd bld
 make -j$(nproc)
 
 cp src/backend/fuzzer/*_fuzzer $OUT/
-cp $SRC/*.options $SRC/*.dict $OUT/
