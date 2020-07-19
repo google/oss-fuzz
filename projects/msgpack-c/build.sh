@@ -15,11 +15,6 @@
 #
 ################################################################################
 
-cmake -DCMAKE_C_COMPILER="$CC" -DCMAKE_CXX_COMPILER="$CXX" \
-      -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-      -DMSGPACK_CXX11=ON .
-make -j$(nproc) all
-
 for f in $SRC/msgpack-c/fuzz/*_fuzzer.cpp; do
     # NOTE(derwolfe): the naming scheme for fuzzers and seed corpora is
     # fuzzer = something_something_fuzzer.cpp
@@ -27,7 +22,7 @@ for f in $SRC/msgpack-c/fuzz/*_fuzzer.cpp; do
     fuzzer=$(basename "$f" .cpp)
     $CXX $CXXFLAGS -std=c++11 -Iinclude -I"$SRC/msgpack-c/include" \
          "$f" -o "$OUT/${fuzzer}" \
-         $LIB_FUZZING_ENGINE "$SRC/msgpack-c/libmsgpackc.a"
+         $LIB_FUZZING_ENGINE
 
     if [ -d "$SRC/msgpack-c/fuzz/${fuzzer}_seed_corpus" ]; then
         zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "$SRC/msgpack-c/fuzz/${fuzzer}_seed_corpus/"
