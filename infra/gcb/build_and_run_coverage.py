@@ -57,7 +57,7 @@ def skip_build(message):
 
   # Since the script should print build_id, print '0' as a special value.
   print('0')
-  # Todo: remove sys.exit call after infra migration
+  # TODO: remove sys.exit call after infra migration.
   sys.exit(0)
 
 
