@@ -116,6 +116,60 @@ then
     make -B
 fi
 
+# Compile Nettle
+mkdir $SRC/nettle-install/
+cd $SRC/nettle/
+bash .bootstrap
+./configure --disable-documentation --disable-openssl --prefix=`realpath ../nettle-install`
+make -j$(nproc)
+make install
+if [[ $CFLAGS != *-m32* ]]
+then
+export LIBNETTLE_A_PATH=`realpath ../nettle-install/lib/libnettle.a`
+else
+export LIBNETTLE_A_PATH=`realpath ../nettle-install/lib32/libnettle.a`
+fi
+export NETTLE_INCLUDE_PATH=`realpath ../nettle-install/include`
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NETTLE"
+# Compile Cryptofuzz Nettle module
+cd $SRC/cryptofuzz/modules/nettle
+make -B
+
+# Compile libgmp
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    cd $SRC/libgmp/
+    autoreconf -ivf
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./configure --enable-maintainer-mode
+    else
+        setarch i386 ./configure --enable-maintainer-mode
+    fi
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_LIBGMP"
+    export LIBGMP_INCLUDE_PATH=$(realpath .)
+    export LIBGMP_A_PATH=$(realpath .libs/libgmp.a)
+    # Compile Cryptofuzz libgmp module
+    cd $SRC/cryptofuzz/modules/libgmp
+    make -B
+fi
+
+# Compile mpdecimal
+cd $SRC/
+tar zxf mpdecimal-2.5.0.tar.gz
+cd mpdecimal-2.5.0/
+./configure
+cd libmpdec/
+make libmpdec.a -j$(nproc)
+cd ../
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MPDECIMAL"
+export LIBMPDEC_A_PATH=$(realpath libmpdec/libmpdec.a)
+export LIBMPDEC_INCLUDE_PATH=$(realpath libmpdec/)
+# Compile Cryptofuzz mpdecimal module
+cd $SRC/cryptofuzz/modules/mpdecimal
+make -B
+
 # Compile Cityhash
 cd $SRC/cityhash
 if [[ $CFLAGS != *-m32* ]]
@@ -331,7 +385,7 @@ fi
 cd $SRC/wolfssl
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
