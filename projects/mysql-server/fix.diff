@@ -35,6 +35,20 @@ index 9172c3e5b86..5005f38857c 100644
  };
  
  enum mysql_ssl_mode {
+diff --git a/include/mysql.h.pp b/include/mysql.h.pp
+index 2ec68913ba0..80dc99d1aaa 100644
+--- a/include/mysql.h.pp
++++ b/include/mysql.h.pp
+@@ -483,7 +483,8 @@ enum mysql_protocol_type {
+   MYSQL_PROTOCOL_TCP,
+   MYSQL_PROTOCOL_SOCKET,
+   MYSQL_PROTOCOL_PIPE,
+-  MYSQL_PROTOCOL_MEMORY
++  MYSQL_PROTOCOL_MEMORY,
++  MYSQL_PROTOCOL_FUZZ
+ };
+ enum mysql_ssl_mode {
+   SSL_MODE_DISABLED = 1,
 diff --git a/include/violite.h b/include/violite.h
 index c04e82505a7..2498ba0053c 100644
 --- a/include/violite.h
