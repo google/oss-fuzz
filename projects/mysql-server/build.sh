@@ -27,6 +27,8 @@ else
 fi
 make install
 cp $OUT/mysql/bin/fuzz* $OUT/
+#temporary disabled
+rm $OUT/fuzz_docommand
 cp ../fuzz/fuzz*.options $OUT/
 cp ../fuzz/fuzz*.dict $OUT/
 cp ../fuzz/init*.sql $OUT/
