@@ -91,9 +91,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   UriParserA parser1;
   UriParserStateA state1;
   state1.uri = parser1.get_mutable_uri();
-  if (URI_SUCCESS != uriParseUriA(&state1, uri1.c_str())) {
+  if (uriParseUriA(&state1, uri1.c_str()) != URI_SUCCESS)
     return 0;
-  }
 
   char buf[1024 * 8] = {0};
   int written = 0;
@@ -102,9 +101,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   UriParserA parser2;
   UriParserStateA state2;
   state2.uri = parser2.get_mutable_uri();
-  if (URI_SUCCESS != uriParseUriA(&state2, uri2.c_str())) {
+  if (uriParseUriA(&state2, uri2.c_str()) != URI_SUCCESS)
     return 0;
-  }
 
   uriEqualsUriA(state1.uri, state2.uri);
 
