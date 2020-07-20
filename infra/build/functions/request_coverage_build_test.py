@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Unit tests for Cloud Function request builds which builds projects."""
+"""Unit tests for Cloud Function that builds coverage reports."""
 import json
 import datetime
 import os
@@ -23,11 +23,11 @@ from unittest import mock
 from google.cloud import ndb
 
 from datastore_entities import Project
-from request_build import get_build_steps
+from build_and_run_coverage import get_build_steps
 import test_utils
 
 
-class TestRequestBuilds(unittest.TestCase):
+class TestRequestCoverageBuilds(unittest.TestCase):
   """Unit tests for sync."""
 
   @classmethod
@@ -41,37 +41,39 @@ class TestRequestBuilds(unittest.TestCase):
     test_utils.reset_ds_emulator()
 
   @mock.patch('build_lib.get_signed_url', return_value='test_url')
+  @mock.patch('build_lib.download_corpora_steps',
+              return_value=[{
+                  'url': 'test_download'
+              }])
   @mock.patch('datetime.datetime')
-  def test_get_build_steps(self, mocked_url, mocked_time):
+  def test_get_coverage_build_steps(self, mocked_url, mocked_corpora_steps,
+                                    mocked_time):
     """Test for get_build_steps."""
-    del mocked_url, mocked_time
+    del mocked_url, mocked_corpora_steps, mocked_time
     datetime.datetime = test_utils.SpoofedDatetime
     project_yaml_contents = ('language: c++\n'
                              'sanitizers:\n'
                              '  - address\n'
                              'architectures:\n'
                              '  - x86_64\n')
+    dockerfile_contents = 'test line'
     image_project = 'oss-fuzz'
     base_images_project = 'oss-fuzz-base'
     testcase_path = os.path.join(os.path.dirname(__file__),
-                                 'expected_build_steps.json')
+                                 'expected_coverage_build_steps.json')
     with open(testcase_path) as testcase_file:
-      expected_build_steps = json.load(testcase_file)
+      expected_coverage_build_steps = json.load(testcase_file)
 
     with ndb.Client().context():
       Project(name='test-project',
               project_yaml_contents=project_yaml_contents,
-              dockerfile_contents='test line').put()
+              dockerfile_contents=dockerfile_contents).put()
 
-    build_steps = get_build_steps('test-project', image_project,
+    dockerfile_lines = dockerfile_contents.split('\n')
+    build_steps = get_build_steps('test-project', project_yaml_contents,
+                                  dockerfile_lines, image_project,
                                   base_images_project)
-    self.assertEqual(build_steps, expected_build_steps)
-
-  def test_get_build_steps_no_project(self):
-    """Test for when project isn't available in datastore."""
-    with ndb.Client().context():
-      self.assertRaises(RuntimeError, get_build_steps, 'test-project',
-                        'oss-fuzz', 'oss-fuzz-base')
+    self.assertEqual(build_steps, expected_coverage_build_steps)
 
   @classmethod
   def tearDownClass(cls):

@@ -14,6 +14,7 @@
 #
 ################################################################################
 """Utility functions for testing cloud functions."""
+import datetime
 import os
 import subprocess
 import threading
@@ -24,6 +25,15 @@ DATASTORE_READY_INDICATOR = b'is now running'
 DATASTORE_EMULATOR_PORT = 8432
 EMULATOR_TIMEOUT = 20
 TEST_PROJECT_ID = 'test-project'
+
+
+# pylint: disable=arguments-differ
+class SpoofedDatetime(datetime.datetime):
+  """Mocking Datetime class for now() function."""
+
+  @classmethod
+  def now(cls):
+    return datetime.datetime(2020, 1, 1, 0, 0, 0)
 
 
 def start_datastore_emulator():
@@ -82,3 +92,13 @@ def cleanup_emulator(ds_emulator):
   """Cleanup the system processes made by ds emulator."""
   del ds_emulator  #To do, find a better way to cleanup emulator
   os.system('pkill -f datastore')
+
+
+def set_gcp_environment():
+  """Set environment variables for simulating in google cloud platform."""
+  os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:' + str(
+      DATASTORE_EMULATOR_PORT)
+  os.environ['GOOGLE_CLOUD_PROJECT'] = TEST_PROJECT_ID
+  os.environ['DATASTORE_DATASET'] = TEST_PROJECT_ID
+  os.environ['GCP_PROJECT'] = TEST_PROJECT_ID
+  os.environ['FUNCTION_REGION'] = 'us-central1'

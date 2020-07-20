@@ -16,7 +16,6 @@
 """Cloud function to request builds."""
 import base64
 import logging
-import sys
 
 import google.auth
 from googleapiclient.discovery import build
@@ -54,25 +53,15 @@ def get_build_steps(project_name, image_project, base_images_project):
 
 
 # pylint: disable=no-member
-def request_build(event, context):
-  """Entry point for cloud function to request builds."""
-  del context  #unused
-  if 'data' in event:
-    project_name = base64.b64decode(event['data']).decode('utf-8')
-  else:
-    logging.error('Project name missing from payload')
-    sys.exit(1)
-
-  credentials, image_project = google.auth.default()
-  build_steps = get_build_steps(project_name, image_project, BASE_PROJECT)
-
+def run_build(project_name, image_project, build_steps, credentials, tag):
+  """Execute build on cloud build."""
   build_body = {
       'steps': build_steps,
       'timeout': str(build_lib.BUILD_TIMEOUT) + 's',
       'options': {
           'machineType': 'N1_HIGHCPU_32'
       },
-      'tags': [project_name + '-fuzzing',],
+      'tags': [project_name + tag,],
   }
 
   cloudbuild = build('cloudbuild',
@@ -85,3 +74,17 @@ def request_build(event, context):
 
   logging.info('Build ID: %s', build_id)
   logging.info('Logs: %s', build_project.get_logs_url(build_id, image_project))
+
+
+# pylint: disable=no-member
+def request_build(event, context):
+  """Entry point for cloud function to request builds."""
+  del context  #unused
+  if 'data' in event:
+    project_name = base64.b64decode(event['data']).decode('utf-8')
+  else:
+    raise RuntimeError('Project name missing from payload')
+
+  credentials, image_project = google.auth.default()
+  build_steps = get_build_steps(project_name, image_project, BASE_PROJECT)
+  run_build(project_name, image_project, build_steps, credentials, '-fuzzing')

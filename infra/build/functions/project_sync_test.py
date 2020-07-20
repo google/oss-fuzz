@@ -16,16 +16,15 @@
 """Unit tests for Cloud Function sync, which syncs the list of github projects
 and uploads them to the Cloud Datastore."""
 
-import os
 import unittest
 
 from google.cloud import ndb
 
 from datastore_entities import Project
-from sync import get_access_token
-from sync import get_projects
-from sync import ProjectMetadata
-from sync import sync_projects
+from project_sync import get_access_token
+from project_sync import get_projects
+from project_sync import ProjectMetadata
+from project_sync import sync_projects
 import test_utils
 
 
@@ -101,12 +100,7 @@ class TestDataSync(unittest.TestCase):
     cls.ds_emulator = test_utils.start_datastore_emulator()
     test_utils.wait_for_emulator_ready(cls.ds_emulator, 'datastore',
                                        test_utils.DATASTORE_READY_INDICATOR)
-    os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:' + str(
-        test_utils.DATASTORE_EMULATOR_PORT)
-    os.environ['GOOGLE_CLOUD_PROJECT'] = test_utils.TEST_PROJECT_ID
-    os.environ['DATASTORE_DATASET'] = test_utils.TEST_PROJECT_ID
-    os.environ['GCP_PROJECT'] = 'test-project'
-    os.environ['FUNCTION_REGION'] = 'us-central1'
+    test_utils.set_gcp_environment()
 
   def setUp(self):
     test_utils.reset_ds_emulator()
@@ -289,7 +283,6 @@ class TestDataSync(unittest.TestCase):
 
   @classmethod
   def tearDownClass(cls):
-    # TODO: replace this with a cleaner way of killing the process
     test_utils.cleanup_emulator(cls.ds_emulator)
 
 

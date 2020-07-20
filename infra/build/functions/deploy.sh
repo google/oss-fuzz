@@ -21,10 +21,16 @@ BASE_IMAGE_MESSAGE="Start base image build"
 
 BUILD_JOB_TOPIC=request-build
 
+COVERAGE_BUILD_JOB_TOPIC=request-coverage-build
+COVERAGE_BUILD_SCHEDULER_JOB=coverage-build-scheduler
+COVERAGE_BUILD_SCHEDULE="0 6 * * *"
+COVERAGE_BUILD_MESSAGE="Start coverage report builds"
+
 SYNC_JOB_TOPIC=schedule-project-sync
 SYNC_SCHEDULER_JOB=sync-scheduler
 SYNC_JOB_SCHEDULE="*/30 * * * *"
 SYNC_MESSAGE="Start Sync"
+
 
 function deploy_pubsub_topic {
 	topic=$1
@@ -68,21 +74,23 @@ function deploy_cloud_function {
 
 	gcloud functions deploy $name \
 	--entry-point $entry_point \
-	--trigger-topic topic \
+	--trigger-topic $topic \
 	--runtime python37 \
 	--project $project \
 	--timeout 540
 }
 
-if [ "$1" ]; then
+if [ $# == 2 ]; then
 	PROJECT_ID=$1
+	BASE_PROJECT_ID=$2
 else
-	echo -e "\n Usage ./deploy.sh my-project-name"; exit;
+	echo -e "\n Usage ./deploy.sh <project-name> <base-project-name>"; exit;
 fi
 
 deploy_pubsub_topic $BUILD_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $SYNC_JOB_TOPIC $PROJECT_ID
-deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $PROJECT_ID
+deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $BASE_PROJECT_ID
+deploy_pubsub_topic $COVERAGE_BUILD_JOB_TOPIC $PROJECT_ID
 
 deploy_scheduler $SYNC_SCHEDULER_JOB \
 				 "$SYNC_JOB_SCHEDULE" \
@@ -94,19 +102,30 @@ deploy_scheduler $BASE_IMAGE_SCHEDULER_JOB \
 				 "$BASE_IMAGE SCHEDULE" \
 				  $BASE_IMAGE_JOB_TOPIC \
 				  "$BASE_IMAGE_MESSAGE" \
-				  $PROJECT_ID
+				  $BASE_PROJECT_ID
+
+deploy_scheduler $COVERAGE_BUILD_SCHEDULER_JOB \
+				 "$COVERAGE_BUILD_SCHEDULE" \
+				 $COVERAGE_BUILD_JOB_TOPIC \
+				 "$COVERAGE_BUILD_MESSAGE" \
+				 $PROJECT_ID
 
 deploy_cloud_function sync \
-					  project_sync \
+					  sync \
 					  $SYNC_JOB_TOPIC \
 					  $PROJECT_ID
 
 deploy_cloud_function base-image-build \
 					  build_base_images \
 					  $BASE_IMAGE_JOB_TOPIC \
-					  $PROJECT_ID
+					  $BASE_PROJECT_ID
 
 deploy_cloud_function request-build \
 					  build_project \
 					  $BUILD_JOB_TOPIC \
+					  $PROJECT_ID
+
+deploy_cloud_function request-coverage-build \
+					  coverage_build \
+					  $COVERAGE_BUILD_JOB_TOPIC \
 					  $PROJECT_ID
