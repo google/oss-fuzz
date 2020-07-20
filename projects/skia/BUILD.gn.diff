@@ -294,7 +294,6 @@ test_app("api_svg_canvas") {
     "fuzz/FuzzCanvas.cpp",
     "fuzz/FuzzCommon.cpp",
     "fuzz/oss_fuzz/FuzzAPISVGCanvas.cpp",
-    "src/svg/SkSVGCanvas.cpp",
     "tools/Resources.cpp",
     "tools/UrlDataManager.cpp",
     "tools/debugger/DebugCanvas.cpp",
