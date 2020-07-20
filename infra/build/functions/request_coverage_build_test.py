@@ -23,7 +23,7 @@ from unittest import mock
 from google.cloud import ndb
 
 from datastore_entities import Project
-from request_coverage_build import get_coverage_build_steps
+from build_and_run_coverage import get_build_steps
 import test_utils
 
 
@@ -70,10 +70,9 @@ class TestRequestCoverageBuilds(unittest.TestCase):
               dockerfile_contents=dockerfile_contents).put()
 
     dockerfile_lines = dockerfile_contents.split('\n')
-    build_steps = get_coverage_build_steps('test-project',
-                                           project_yaml_contents,
-                                           dockerfile_lines, image_project,
-                                           base_images_project)
+    build_steps = get_build_steps('test-project', project_yaml_contents,
+                                  dockerfile_lines, image_project,
+                                  base_images_project)
     self.assertEqual(build_steps, expected_coverage_build_steps)
 
   @classmethod

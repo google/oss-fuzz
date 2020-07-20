@@ -25,18 +25,6 @@ import request_build
 BASE_PROJECT = 'oss-fuzz-base'
 
 
-def get_coverage_build_steps(project_name, project_yaml_contents,
-                             dockerfile_lines, image_project,
-                             base_images_project):
-  """Retrieve coverage build steps."""
-  build_steps = build_and_run_coverage.get_build_steps(project_name,
-                                                       project_yaml_contents,
-                                                       dockerfile_lines,
-                                                       image_project,
-                                                       base_images_project)
-  return build_steps
-
-
 def request_coverage_build(event, context):
   """Entry point for coverage build cloud function."""
   del event, context  #unused
@@ -47,10 +35,12 @@ def request_coverage_build(event, context):
       project_name = project.name
       project_yaml_contents = project.project_yaml_contents
       dockerfile_lines = project.dockerfile_contents.split('\n')
-
-      build_steps = get_coverage_build_steps(project_name,
-                                             project_yaml_contents,
-                                             dockerfile_lines, image_project,
-                                             BASE_PROJECT)
+      # Todo, remove sys.exit call after infra migration
+      try:
+        build_steps = build_and_run_coverage.get_build_steps(
+            project_name, project_yaml_contents, dockerfile_lines,
+            image_project, BASE_PROJECT)
+      except SystemExit:
+        continue
       request_build.run_build(project_name, image_project, build_steps,
                               credentials, '-coverage')
