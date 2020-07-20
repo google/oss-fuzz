@@ -36,6 +36,8 @@ jobs:
       ENGINE: ${{ matrix.engine }}
       SANITIZER: ${{ matrix.sanitizer }}
       ARCHITECTURE: ${{ matrix.architecture }}
+      ACTIONS_STEP_DEBUG: true
+      ACTIONS_RUNNER_DEBUG: true
 
     steps:
       - uses: actions/checkout@v2

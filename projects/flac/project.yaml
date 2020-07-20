@@ -7,8 +7,6 @@ vendor_ccs:
  - "twsmith@mozilla.com"
 sanitizers:
  - address
- - undefined
- - memory
 architectures:
  - x86_64
- - i386
+
