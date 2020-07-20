@@ -1,4 +1,4 @@
-homepage: "https://github.com/libyal/libevt"
+homepage: "https://github.com/libyal"
 language: c
 primary_contact: "joachim.metz@gmail.com"
 sanitizers:
