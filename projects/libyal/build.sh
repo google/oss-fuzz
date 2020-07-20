@@ -17,43 +17,43 @@
 
 for PROJECT in ${SRC}/*;
 do
-	PROJECT=$(basename ${PROJECT});
+  PROJECT=$(basename ${PROJECT})
 
-	# A libyal project should have an ossfuzz directory and a synclibs.sh script.
-	if ! test -d ${SRC}/${PROJECT}/ossfuzz || ! test -x ${SRC}/${PROJECT}/synclibs.sh;
-	then
-		continue;
-	fi
-	cd ${SRC}/${PROJECT};
+  # A libyal project should have an ossfuzz directory and a synclibs.sh script.
+  if ! test -d ${SRC}/${PROJECT}/ossfuzz || ! test -x ${SRC}/${PROJECT}/synclibs.sh;
+  then
+    continue
+  fi
+  cd ${SRC}/${PROJECT}
 
-	# Prepare the project source for build.
-	./synclibs.sh
-	./autogen.sh
-	./configure --enable-shared=no
+  # Prepare the project source for build.
+  ./synclibs.sh
+  ./autogen.sh
+  ./configure --enable-shared=no
 
-	# Build the project and fuzzer binaries.
-	make -j$(nproc) LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE}
+  # Build the project and fuzzer binaries.
+  make -j$(nproc) LIB_FUZZING_ENGINE=${LIB_FUZZING_ENGINE}
 
-	# Download the test data if supported.
-	if test -x ./synctestdata.sh;
-	then
-		./synctestdata.sh;
-	fi
+  # Download the test data if supported.
+  if test -x ./synctestdata.sh;
+  then
+    ./synctestdata.sh
+  fi
 
-	# Copy the fuzzer binaries and test data to the output directory.
-	for FUZZER_TARGET in $(cd ossfuzz && find . -executable -type f);
-	do
-		FUZZER_TARGET=$(basename ${FUZZER_TARGET});
+  # Copy the fuzzer binaries and test data to the output directory.
+  for FUZZ_TARGET in $(cd ossfuzz && find . -executable -type f);
+  do
+    FUZZ_TARGET=$(basename ${FUZZ_TARGET})
 
-		# Prefix the fuzzer binaries with the project name.
-		cp ossfuzz/${FUZZER_TARGET} ${OUT}/${PROJECT}_${FUZZER_TARGET};
+    # Prefix the fuzzer binaries with the project name.
+    cp ossfuzz/${FUZZ_TARGET} ${OUT}/${PROJECT}_${FUZZ_TARGET}
 
-		# Download the test data if supported.
-		if test -d tests/input/public;
-		then
-			(cd tests/input/public && zip ${OUT}/${PROJECT}_${FUZZER_TARGET}_seed_corpus.zip *);
-		else
-			(cd tests/data && zip ${OUT}/${PROJECT}_${FUZZER_TARGET}_seed_corpus.zip ${FUZZER_TARGET/_fuzzer/}.*);
-		fi
-	done
+    # Download the test data if supported.
+    if test -d tests/input/public;
+    then
+      (cd tests/input/public && zip ${OUT}/${PROJECT}_${FUZZ_TARGET}_seed_corpus.zip *)
+    else
+      (cd tests/data && zip ${OUT}/${PROJECT}_${FUZZ_TARGET}_seed_corpus.zip ${FUZZ_TARGET/_fuzzer/}.*)
+    fi
+  done
 done
