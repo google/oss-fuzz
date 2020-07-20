@@ -35,14 +35,13 @@ def request_coverage_build(event, context):
       project_name = project.name
       project_yaml_contents = project.project_yaml_contents
       dockerfile_lines = project.dockerfile_contents.split('\n')
-      # Todo: remove sys.exit call after infra migration
+      # Catching sys.exit() for a project's build steps to avoid it
+      # from interferring with other remaining builds.
       try:
         build_steps = build_and_run_coverage.get_build_steps(
             project_name, project_yaml_contents, dockerfile_lines,
             image_project, BASE_PROJECT)
       except SystemExit:
-        # Catching sys.exit() for a project's build steps to avoid it
-        # from interferring with other remaining builds.
         continue
       request_build.run_build(project_name, image_project, build_steps,
                               credentials, '-coverage')
