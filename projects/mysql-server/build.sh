@@ -28,7 +28,7 @@ fi
 make install
 cp $OUT/mysql/bin/fuzz* $OUT/
 #FIXME: Temporary disabled due to fix needed in target with mysql 8.21
-rm $OUT/fuzz_docommand
+#rm $OUT/fuzz_docommand
 cp ../fuzz/fuzz*.options $OUT/
 cp ../fuzz/fuzz*.dict $OUT/
 cp ../fuzz/init*.sql $OUT/
