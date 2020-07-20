@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef NDEBUG
 #undef NDEBUG
@@ -26,10 +27,9 @@
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 2) return 0;
 
-  int k;
-  int done = 0;
-  int canonical = data[0] & 1;
-  int unicode = data[1] & 1;
+  bool is_done = false;
+  bool is_canonical = data[0] & 1;
+  bool is_unicode = data[1] & 1;
 
   yaml_parser_t parser;
   yaml_emitter_t emitter;
@@ -60,12 +60,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (!f) return 0;
   yaml_emitter_set_output_file(&emitter, f);
 
-  yaml_emitter_set_canonical(&emitter, canonical);
-  yaml_emitter_set_unicode(&emitter, unicode);
+  yaml_emitter_set_canonical(&emitter, is_canonical);
+  yaml_emitter_set_unicode(&emitter, is_unicode);
 
   /* The main loop. */
 
-  while (!done)
+  while (!is_done)
   {
       /* Get the next event. */
 
@@ -75,7 +75,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       /* Check if this is the stream end. */
 
       if (!yaml_document_get_root_node(&document)) {
-          done = 1;
+          is_done = true;
       }
 
       /* Emit the event. */

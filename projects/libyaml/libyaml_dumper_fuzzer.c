@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef NDEBUG
 #undef NDEBUG
@@ -58,7 +59,7 @@ int compare_nodes(yaml_document_t *document1, int index1,
             if ((node1->data.sequence.items.top - node1->data.sequence.items.start) !=
                     (node2->data.sequence.items.top - node2->data.sequence.items.start))
                 return 0;
-            for (k = 0; k < (node1->data.sequence.items.top - node1->data.sequence.items.start); k ++) {
+            for (int k = 0; k < (node1->data.sequence.items.top - node1->data.sequence.items.start); k ++) {
                 if (!compare_nodes(document1, node1->data.sequence.items.start[k],
                             document2, node2->data.sequence.items.start[k], level)) return 0;
             }
@@ -67,7 +68,7 @@ int compare_nodes(yaml_document_t *document1, int index1,
             if ((node1->data.mapping.pairs.top - node1->data.mapping.pairs.start) !=
                     (node2->data.mapping.pairs.top - node2->data.mapping.pairs.start))
                 return 0;
-            for (k = 0; k < (node1->data.mapping.pairs.top - node1->data.mapping.pairs.start); k ++) {
+            for (int k = 0; k < (node1->data.mapping.pairs.top - node1->data.mapping.pairs.start); k ++) {
                 if (!compare_nodes(document1, node1->data.mapping.pairs.start[k].key,
                             document2, node2->data.mapping.pairs.start[k].key, level)) return 0;
                 if (!compare_nodes(document1, node1->data.mapping.pairs.start[k].value,
@@ -94,7 +95,7 @@ int compare_documents(yaml_document_t *document1, yaml_document_t *document2)
     if ((document1->tag_directives.end - document1->tag_directives.start) !=
             (document2->tag_directives.end - document2->tag_directives.start))
         return 0;
-    for (k = 0; k < (document1->tag_directives.end - document1->tag_directives.start); k ++) {
+    for (int k = 0; k < (document1->tag_directives.end - document1->tag_directives.start); k ++) {
         if ((strcmp((char *)document1->tag_directives.start[k].handle,
                         (char *)document2->tag_directives.start[k].handle) != 0)
                 || (strcmp((char *)document1->tag_directives.start[k].prefix,
@@ -188,12 +189,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t written = 0;
   yaml_document_t documents[MAX_DOCUMENTS];
   size_t document_number = 0;
-  int done = 0;
+  bool is_done = false;
   int count = 0;
   int error = 0;
   int k;
-  int canonical = data[0] & 1;
-  int unicode = data[1] & 1;
+  bool is_canonical = data[0] & 1;
+  bool is_unicode = data[1] & 1;
   memset(buffer, 0, BUFFER_SIZE+1);
   memset(documents, 0, MAX_DOCUMENTS*sizeof(yaml_document_t));
 
@@ -204,24 +205,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if(!yaml_emitter_initialize(&emitter))
     return 0;
 
-  if (canonical) {
-      yaml_emitter_set_canonical(&emitter, 1);
-  }
-  if (unicode) {
-      yaml_emitter_set_unicode(&emitter, 1);
-  }
+  yaml_emitter_set_canonical(&emitter, is_canonical);
+  yaml_emitter_set_unicode(&emitter, is_unicode);
+
   yaml_emitter_set_output_string(&emitter, buffer, BUFFER_SIZE, &written);
   yaml_emitter_open(&emitter);
 
-  while (!done)
+  while (!is_done)
   {
       if (!yaml_parser_load(&parser, &document)) {
           error = 1;
           break;
       }
 
-      done = (!yaml_document_get_root_node(&document));
-      if (!done) {
+      is_done = (!yaml_document_get_root_node(&document));
+      if (!is_done) {
           if(document_number >= MAX_DOCUMENTS) {
             yaml_document_delete(&document);
             error = 1;
@@ -251,21 +249,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (!error)
   {
-      count = done = 0;
+      count = is_done = 0;
       if(!yaml_parser_initialize(&parser))
         return 0;
 
       yaml_parser_set_input_string(&parser, buffer, written);
 
-      while (!done)
+      while (!is_done)
       {
           if(!(yaml_parser_load(&parser, &document) || 0)) {
             yaml_parser_delete(&parser);
             return 0;
           }
 
-          done = (!yaml_document_get_root_node(&document));
-          if (!done) {
+          is_done = (!yaml_document_get_root_node(&document));
+          if (!is_done) {
               if(!(compare_documents(documents+count, &document) || 0)) {
                 yaml_parser_delete(&parser);
                 return 0;
@@ -277,7 +275,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       yaml_parser_delete(&parser);
   }
 
-  for (k = 0; k < document_number; k ++) {
+  for (int k = 0; k < document_number; k ++) {
       yaml_document_delete(documents+k);
   }
 

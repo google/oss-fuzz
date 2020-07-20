@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef NDEBUG
 #undef NDEBUG
@@ -50,7 +51,7 @@ int compare_events(yaml_event_t *event1, yaml_event_t *event2)
             if ((event1->data.document_start.tag_directives.end - event1->data.document_start.tag_directives.start) !=
                     (event2->data.document_start.tag_directives.end - event2->data.document_start.tag_directives.start))
                 return 0;
-            for (k = 0; k < (event1->data.document_start.tag_directives.end - event1->data.document_start.tag_directives.start); k ++) {
+            for (int k = 0; k < (event1->data.document_start.tag_directives.end - event1->data.document_start.tag_directives.start); k ++) {
                 if ((strcmp((char *)event1->data.document_start.tag_directives.start[k].handle,
                                 (char *)event2->data.document_start.tag_directives.start[k].handle) != 0)
                         || (strcmp((char *)event1->data.document_start.tag_directives.start[k].prefix,
@@ -206,12 +207,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t written = 0;
   yaml_event_t events[MAX_EVENTS];
   size_t event_number = 0;
-  int done = 0;
+  bool is_done = false;
   int count = 0;
   int error = 0;
-  int k;
-  int canonical = data[0] & 1;
-  int unicode = data[1] & 1;
+  bool is_canonical = data[0] & 1;
+  bool is_unicode = data[1] & 1;
   memset(buffer, 0, BUFFER_SIZE+1);
   memset(events, 0, MAX_EVENTS*sizeof(yaml_event_t));
 
@@ -224,22 +224,22 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
   }
 
-  if (canonical) {
+  if (is_canonical) {
       yaml_emitter_set_canonical(&emitter, 1);
   }
-  if (unicode) {
+  if (is_unicode) {
       yaml_emitter_set_unicode(&emitter, 1);
   }
   yaml_emitter_set_output_string(&emitter, buffer, BUFFER_SIZE, &written);
 
-  while (!done)
+  while (!is_done)
   {
       if (!yaml_parser_parse(&parser, &event)) {
           error = 1;
           break;
       }
 
-      done = (event.type == YAML_STREAM_END_EVENT);
+      is_done = (event.type == YAML_STREAM_END_EVENT);
       if(!(event_number < MAX_EVENTS)) {
         yaml_event_delete(&event);
         error = 1;
@@ -265,18 +265,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (!error)
   {
-      count = done = 0;
+      count = is_done = 0;
       if(!yaml_parser_initialize(&parser))
         return 0;
 
       yaml_parser_set_input_string(&parser, buffer, written);
 
-      while (!done)
+      while (!is_done)
       {
           if(!yaml_parser_parse(&parser, &event))
             break;
 
-          done = (event.type == YAML_STREAM_END_EVENT);
+          is_done = (event.type == YAML_STREAM_END_EVENT);
           if(!compare_events(events+count, &event)) {
             yaml_event_delete(&event);
             break;
@@ -288,7 +288,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       yaml_parser_delete(&parser);
   }
 
-  for (k = 0; k < event_number; k ++) {
+  for (int k = 0; k < event_number; k ++) {
       yaml_event_delete(events+k);
   }
 

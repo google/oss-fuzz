@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef NDEBUG
 #undef NDEBUG
@@ -26,7 +27,7 @@
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_parser_t parser;
   yaml_token_t token;
-  int done = 0;
+  bool is_done = false;
   int count = 0;
   int error = 0;
 
@@ -35,14 +36,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   yaml_parser_set_input_string(&parser, data, size);
 
-  while (!done)
+  while (!is_done)
   {
       if (!yaml_parser_scan(&parser, &token)) {
           error = 1;
           break;
       }
 
-      done = (token.type == YAML_STREAM_END_TOKEN);
+      is_done = (token.type == YAML_STREAM_END_TOKEN);
 
       yaml_token_delete(&token);
 

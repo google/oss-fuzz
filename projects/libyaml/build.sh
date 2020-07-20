@@ -19,7 +19,7 @@
 make "-j$(nproc)"
 
 for fuzzer in $SRC/*_fuzzer.c; do
-  fuzzer_basename=$(basename -s .cc $fuzzer)
+  fuzzer_basename=$(basename -s .c $fuzzer)
 
   $CC $CFLAGS \
       -Iinclude -c $fuzzer \
@@ -31,7 +31,7 @@ for fuzzer in $SRC/*_fuzzer.c; do
       -o $OUT/$fuzzer_basename \
       $LIB_FUZZING_ENGINE \
       src/.libs/libyaml.a
-      
+
   cp $SRC/libyaml_seed_corpus.zip "${OUT}/${fuzzer_basename}_seed_corpus.zip"
   cp $SRC/libyaml_fuzzer.options "${OUT}/${fuzzer_basename}.options"
 done

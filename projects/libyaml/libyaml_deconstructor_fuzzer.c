@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef NDEBUG
 #undef NDEBUG
@@ -26,10 +27,9 @@
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 2) return 0;
 
-  int k;
-  int done = 0;
-  int canonical = data[0] & 1;
-  int unicode = data[1] & 1;
+  bool is_done = false;
+  bool is_canonical = data[0] & 1;
+  bool is_unicode = data[1] & 1;
 
   yaml_parser_t parser;
   yaml_emitter_t emitter;
@@ -65,8 +65,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (!f) return 0;
   yaml_emitter_set_output_file(&emitter, f);
 
-  yaml_emitter_set_canonical(&emitter, canonical);
-  yaml_emitter_set_unicode(&emitter, unicode);
+  yaml_emitter_set_canonical(&emitter, is_canonical);
+  yaml_emitter_set_unicode(&emitter, is_unicode);
 
   /* Create and emit the STREAM-START event. */
 
@@ -94,7 +94,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   /* Loop through the input events. */
 
-  while (!done)
+  while (!is_done)
   {
       /* Get the next event. */
 
@@ -104,7 +104,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       /* Check if this is the stream end. */
 
       if (input_event.type == YAML_STREAM_END_EVENT) {
-          done = 1;
+          is_done = true;
       }
 
       /* Create and emit a MAPPING-START event. */
