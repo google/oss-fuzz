@@ -22,6 +22,8 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
+
 using std::string;
 #include "uriparser/include/uriparser/Uri.h"
 
@@ -45,7 +47,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   int chars_required;
   if (uriComposeQueryCharsRequiredA(query_list, &chars_required) != URI_SUCCESS)
     return 0;
-    
+
+  if (!chars_required) return 0;
+
   std::vector<char> buf(chars_required, 0);
   int written = -1;
   char *dest = &buf[0];
