@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index ba974215d2a..eeda8656f9f 100644
+index eb0885f95e2..b30095535a8 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -547,6 +547,7 @@ IF(WITH_JEMALLOC)
+@@ -565,6 +565,7 @@ IF(WITH_JEMALLOC)
    STRING_APPEND(CMAKE_CXX_FLAGS " -fno-builtin-realloc -fno-builtin-free")
  ENDIF()
  
@@ -10,7 +10,7 @@ index ba974215d2a..eeda8656f9f 100644
  OPTION(ENABLED_PROFILING "Enable profiling" ON)
  OPTION(WITHOUT_SERVER OFF)
  IF(UNIX)
-@@ -1494,6 +1495,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
+@@ -1520,6 +1521,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
    TARGET_LINK_LIBRARIES(server_unittest_library ${ICU_LIBRARIES})
  ENDIF()
  
@@ -22,10 +22,10 @@ index ba974215d2a..eeda8656f9f 100644
  # It is referenced by some of the directories below, so we insert it here.
  ADD_SUBDIRECTORY(scripts)
 diff --git a/include/mysql.h b/include/mysql.h
-index 1f499e9d9e5..a85c181ae78 100644
+index 9172c3e5b86..5005f38857c 100644
 --- a/include/mysql.h
 +++ b/include/mysql.h
-@@ -261,7 +261,8 @@ enum mysql_protocol_type {
+@@ -262,7 +262,8 @@ enum mysql_protocol_type {
    MYSQL_PROTOCOL_TCP,
    MYSQL_PROTOCOL_SOCKET,
    MYSQL_PROTOCOL_PIPE,
@@ -35,8 +35,22 @@ index 1f499e9d9e5..a85c181ae78 100644
  };
  
  enum mysql_ssl_mode {
+diff --git a/include/mysql.h.pp b/include/mysql.h.pp
+index 2ec68913ba0..80dc99d1aaa 100644
+--- a/include/mysql.h.pp
++++ b/include/mysql.h.pp
+@@ -483,7 +483,8 @@ enum mysql_protocol_type {
+   MYSQL_PROTOCOL_TCP,
+   MYSQL_PROTOCOL_SOCKET,
+   MYSQL_PROTOCOL_PIPE,
+-  MYSQL_PROTOCOL_MEMORY
++  MYSQL_PROTOCOL_MEMORY,
++  MYSQL_PROTOCOL_FUZZ
+ };
+ enum mysql_ssl_mode {
+   SSL_MODE_DISABLED = 1,
 diff --git a/include/violite.h b/include/violite.h
-index 18e0d5736bd..d9badcbb667 100644
+index c04e82505a7..2498ba0053c 100644
 --- a/include/violite.h
 +++ b/include/violite.h
 @@ -108,12 +108,14 @@ enum enum_vio_type : int {
@@ -55,7 +69,7 @@ index 18e0d5736bd..d9badcbb667 100644
  };
  
  /**
-@@ -443,4 +445,20 @@ struct Vio {
+@@ -444,4 +446,20 @@ struct Vio {
  
  #define SSL_handle SSL *
  
@@ -127,10 +141,10 @@ index 8253e3967d4..034c71de600 100644
      *failed = true;
      return 0;
 diff --git a/sql-common/client.cc b/sql-common/client.cc
-index 2f058e8d7d7..7885fa53f01 100644
+index ffb136b5b28..eca117c5ed6 100644
 --- a/sql-common/client.cc
 +++ b/sql-common/client.cc
-@@ -5802,6 +5802,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
+@@ -5774,6 +5774,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
      }
    }
  #endif /* _WIN32 */
@@ -144,10 +158,10 @@ index 2f058e8d7d7..7885fa53f01 100644
    if (!net->vio &&
        (!mysql->options.protocol ||
 diff --git a/sql/mysqld.cc b/sql/mysqld.cc
-index 85b93bbf97e..26cf655b8c1 100644
+index 682e8d5ae13..68935ea75de 100644
 --- a/sql/mysqld.cc
 +++ b/sql/mysqld.cc
-@@ -6500,7 +6500,9 @@ int mysqld_main(int argc, char **argv)
+@@ -6784,7 +6784,9 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);  // Will do exit
    }
  
@@ -157,7 +171,7 @@ index 85b93bbf97e..26cf655b8c1 100644
  
    size_t guardize = 0;
  #ifndef _WIN32
-@@ -6985,8 +6987,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7269,8 +7271,10 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);
  
  #ifndef _WIN32
@@ -168,7 +182,7 @@ index 85b93bbf97e..26cf655b8c1 100644
  #endif
  
    /* set all persistent options */
-@@ -7128,8 +7132,9 @@ int mysqld_main(int argc, char **argv)
+@@ -7412,8 +7416,9 @@ int mysqld_main(int argc, char **argv)
    }
  
    start_handle_manager();
@@ -179,7 +193,7 @@ index 85b93bbf97e..26cf655b8c1 100644
  
    LogEvent()
        .type(LOG_TYPE_ERROR)
-@@ -7176,6 +7181,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7460,6 +7465,10 @@ int mysqld_main(int argc, char **argv)
  
    (void)RUN_HOOK(server_state, before_handle_connection, (nullptr));
  
@@ -190,7 +204,7 @@ index 85b93bbf97e..26cf655b8c1 100644
  #if defined(_WIN32)
    setup_conn_event_handler_threads();
  #else
-@@ -9983,6 +9992,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
+@@ -10289,6 +10298,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
  
    if (opt_short_log_format) opt_specialflag |= SPECIAL_SHORT_LOG_FORMAT;
  
@@ -201,10 +215,10 @@ index 85b93bbf97e..26cf655b8c1 100644
      LogErr(ERROR_LEVEL, ER_CONNECTION_HANDLING_OOM);
      return 1;
 diff --git a/storage/innobase/buf/buf0buf.cc b/storage/innobase/buf/buf0buf.cc
-index 25aec18f5bd..1dd4f7809db 100644
+index d4a5459a171..72101c888e1 100644
 --- a/storage/innobase/buf/buf0buf.cc
 +++ b/storage/innobase/buf/buf0buf.cc
-@@ -1483,18 +1483,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
+@@ -1484,18 +1484,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
        n = n_instances;
      }
  
@@ -238,38 +252,37 @@ index d44eebce63a..975bc878e17 100644
  
  IF(WIN32)
 diff --git a/vio/vio.cc b/vio/vio.cc
-index 57e9d069f58..63d6254e917 100644
+index 38e3d90f20e..abbc9a52478 100644
 --- a/vio/vio.cc
 +++ b/vio/vio.cc
-@@ -291,6 +291,27 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
-     vio->is_blocking_flag = true;
-     return false;
-   }
-+  if (type == VIO_TYPE_FUZZ) {
-+    vio->viodelete = vio_delete;
-+    vio->vioerrno = vio_errno;
-+    vio->read = vio_read_buff_fuzz;
-+    vio->write = vio_write_buff_fuzz;
-+    vio->fastsend = vio_fastsend_fuzz;
-+    vio->viokeepalive = vio_keepalive_fuzz;
-+    vio->should_retry = vio_should_retry_fuzz;
-+    vio->was_timeout = vio_was_timeout_fuzz;
-+    vio->vioshutdown = vio_shutdown_fuzz;
-+    vio->peer_addr = vio_peer_addr;
-+    vio->timeout = vio_socket_timeout_fuzz;
-+    vio->io_wait = vio_io_wait_fuzz;
-+    vio->is_connected = vio_is_connected_fuzz;
-+    vio->has_data = vio->read_buffer ? vio_buff_has_data : has_no_data;
-+    vio->is_blocking = vio_is_blocking;
-+    vio->set_blocking = vio_set_blocking;
-+    vio->set_blocking_flag = vio_set_blocking_flag;
-+    vio->is_blocking_flag = false;
-+    return false;
-+  }
-   vio->viodelete = vio_delete;
-   vio->vioerrno = vio_errno;
-   vio->read = vio->read_buffer ? vio_read_buff : vio_read;
-@@ -560,7 +581,8 @@ static const vio_string vio_type_names[] = {{"", 0},
+@@ -284,6 +284,26 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
+       vio->is_blocking_flag = true;
+       break;
+ 
++    case VIO_TYPE_FUZZ:
++      vio->viodelete = vio_delete;
++      vio->vioerrno = vio_errno;
++      vio->read = vio_read_buff_fuzz;
++      vio->write = vio_write_buff_fuzz;
++      vio->fastsend = vio_fastsend_fuzz;
++      vio->viokeepalive = vio_keepalive_fuzz;
++      vio->should_retry = vio_should_retry_fuzz;
++      vio->was_timeout = vio_was_timeout_fuzz;
++      vio->vioshutdown = vio_shutdown_fuzz;
++      vio->peer_addr = vio_peer_addr;
++      vio->timeout = vio_socket_timeout_fuzz;
++      vio->io_wait = vio_io_wait_fuzz;
++      vio->is_connected = vio_is_connected_fuzz;
++      vio->has_data = vio->read_buffer ? vio_buff_has_data : has_no_data;
++      vio->is_blocking = vio_is_blocking;
++      vio->set_blocking = vio_set_blocking;
++      vio->set_blocking_flag = vio_set_blocking_flag;
++      vio->is_blocking_flag = false;
++
+     default:
+       vio->viodelete = vio_delete;
+       vio->vioerrno = vio_errno;
+@@ -568,7 +588,8 @@ static const vio_string vio_type_names[] = {{"", 0},
                                              {STRING_WITH_LEN("SSL/TLS")},
                                              {STRING_WITH_LEN("Shared Memory")},
                                              {STRING_WITH_LEN("Internal")},
