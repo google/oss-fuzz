@@ -189,7 +189,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t written = 0;
   yaml_document_t documents[MAX_DOCUMENTS];
   size_t document_number = 0;
-  bool is_done = false;
+  bool done = false;
   int count = 0;
   int error = 0;
   int k;
@@ -211,15 +211,15 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_emitter_set_output_string(&emitter, buffer, BUFFER_SIZE, &written);
   yaml_emitter_open(&emitter);
 
-  while (!is_done)
+  while (!done)
   {
       if (!yaml_parser_load(&parser, &document)) {
           error = 1;
           break;
       }
 
-      is_done = (!yaml_document_get_root_node(&document));
-      if (!is_done) {
+      done = (!yaml_document_get_root_node(&document));
+      if (!done) {
           if(document_number >= MAX_DOCUMENTS) {
             yaml_document_delete(&document);
             error = 1;
@@ -249,21 +249,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (!error)
   {
-      count = is_done = 0;
+      count = done = 0;
       if(!yaml_parser_initialize(&parser))
         return 0;
 
       yaml_parser_set_input_string(&parser, buffer, written);
 
-      while (!is_done)
+      while (!done)
       {
           if(!(yaml_parser_load(&parser, &document) || 0)) {
             yaml_parser_delete(&parser);
             return 0;
           }
 
-          is_done = (!yaml_document_get_root_node(&document));
-          if (!is_done) {
+          done = (!yaml_document_get_root_node(&document));
+          if (!done) {
               if(!(compare_documents(documents+count, &document) || 0)) {
                 yaml_parser_delete(&parser);
                 return 0;

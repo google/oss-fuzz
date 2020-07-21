@@ -27,7 +27,7 @@
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 2) return 0;
 
-  bool is_done = false;
+  bool done = false;
   bool is_canonical = data[0] & 1;
   bool is_unicode = data[1] & 1;
 
@@ -65,7 +65,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   /* The main loop. */
 
-  while (!is_done)
+  while (!done)
   {
       /* Get the next event. */
 
@@ -75,7 +75,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       /* Check if this is the stream end. */
 
       if (!yaml_document_get_root_node(&document)) {
-          is_done = true;
+          done = true;
       }
 
       /* Emit the event. */

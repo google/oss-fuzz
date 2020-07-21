@@ -207,7 +207,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t written = 0;
   yaml_event_t events[MAX_EVENTS];
   size_t event_number = 0;
-  bool is_done = false;
+  bool done = false;
   int count = 0;
   int error = 0;
   bool is_canonical = data[0] & 1;
@@ -232,14 +232,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
   yaml_emitter_set_output_string(&emitter, buffer, BUFFER_SIZE, &written);
 
-  while (!is_done)
+  while (!done)
   {
       if (!yaml_parser_parse(&parser, &event)) {
           error = 1;
           break;
       }
 
-      is_done = (event.type == YAML_STREAM_END_EVENT);
+      done = (event.type == YAML_STREAM_END_EVENT);
       if(!(event_number < MAX_EVENTS)) {
         yaml_event_delete(&event);
         error = 1;
@@ -265,18 +265,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (!error)
   {
-      count = is_done = 0;
+      count = done = 0;
       if(!yaml_parser_initialize(&parser))
         return 0;
 
       yaml_parser_set_input_string(&parser, buffer, written);
 
-      while (!is_done)
+      while (!done)
       {
           if(!yaml_parser_parse(&parser, &event))
             break;
 
-          is_done = (event.type == YAML_STREAM_END_EVENT);
+          done = (event.type == YAML_STREAM_END_EVENT);
           if(!compare_events(events+count, &event)) {
             yaml_event_delete(&event);
             break;

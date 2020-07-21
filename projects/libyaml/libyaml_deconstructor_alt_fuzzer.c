@@ -27,7 +27,7 @@
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 2) return 0;
 
-  bool is_done = false;
+  bool done = false;
   bool is_canonical = data[0] & 1;
   bool is_unicode = data[1] & 1;
 
@@ -88,7 +88,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   /* Loop through the input events. */
 
-  while (!is_done)
+  while (!done)
   {
       int properties, key, value, map, seq;
 
@@ -100,7 +100,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       /* Check if this is the stream end. */
 
       if (input_event.type == YAML_STREAM_END_EVENT) {
-          is_done = true;
+          done = true;
       }
 
       /* Create a mapping node and attach it to the root sequence. */

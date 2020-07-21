@@ -27,7 +27,7 @@
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_parser_t parser;
   yaml_document_t document;
-  bool is_done = false;
+  bool done = false;
   int count = 0;
   int error = 0;
 
@@ -36,18 +36,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   yaml_parser_set_input_string(&parser, data, size);
 
-  while (!is_done)
+  while (!done)
   {
       if (!yaml_parser_load(&parser, &document)) {
           error = 1;
           break;
       }
 
-      is_done = (!yaml_document_get_root_node(&document));
+      done = (!yaml_document_get_root_node(&document));
 
       yaml_document_delete(&document);
 
-      if (!is_done) count ++;
+      if (!done) count ++;
   }
 
   yaml_parser_delete(&parser);
