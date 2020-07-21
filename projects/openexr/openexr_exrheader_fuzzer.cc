@@ -240,7 +240,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   StdISStream is;
   is.str(s);
 
-  printInfo(is);
+  try {
+    printInfo(is);
+  } catch (IEX_NAMESPACE::InputExc& e) {
+    ;
+  } catch (IEX_NAMESPACE::ArgExc& e) {
+    ;
+  }
 
   return 0;
 }

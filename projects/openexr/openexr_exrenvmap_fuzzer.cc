@@ -28,8 +28,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "namespaceAlias.h"
-using namespace IMF;
+using namespace OPENEXR_IMF_NAMESPACE;
 using namespace std;
 
 static char *buf_to_file(const char *buf, size_t size) {
@@ -74,17 +73,23 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   Header header;
   RgbaChannels channels;
 
-  readInputImage (file, 0, 0,
-                  overrideInputType, false,
-                  image, header, channels);
+  try {
+    readInputImage (file, 0, 0,
+                    overrideInputType, false,
+                    image, header, channels);
 
-  makeCubeMap (image, header, channels,
-               "/dev/null",
-               tileWidth, tileHeight,
-               levelMode, roundingMode,
-               compression, mapWidth,
-               filterRadius, numSamples,
-               false);
+    makeCubeMap (image, header, channels,
+                 "/dev/null",
+                 tileWidth, tileHeight,
+                 levelMode, roundingMode,
+                 compression, mapWidth,
+                 filterRadius, numSamples,
+                 false);
+  } catch (IEX_NAMESPACE::InputExc& e) {
+    ;
+  } catch (IEX_NAMESPACE::ArgExc& e) {
+    ;
+  }
 
   unlink(file);
   free(file);
