@@ -12,13 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-//-----------------------------------------------------------------------------
-//
-//	Utility program to print an image file's header
-//
-//-----------------------------------------------------------------------------
-
 #include "ImfNamespace.h"
 #include <ImfMultiPartInputFile.h>
 #include <ImfBoxAttribute.h>
