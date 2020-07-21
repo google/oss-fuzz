@@ -22,8 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include <iostream>
-
 using std::string;
 #include "uriparser/include/uriparser/Uri.h"
 
