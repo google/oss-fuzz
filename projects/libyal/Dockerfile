@@ -18,13 +18,18 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt-get update && apt-get install -y make autoconf automake autopoint libtool pkg-config
 
+RUN git clone --depth 1 https://github.com/libyal/libfwnt.git libfwnt
+RUN git clone --depth 1 https://github.com/libyal/libfwsi.git libfwsi
+
 RUN git clone --depth 1 https://github.com/libyal/libesedb.git libesedb
 RUN git clone --depth 1 https://github.com/libyal/libevt.git libevt
 RUN git clone --depth 1 https://github.com/libyal/libevtx.git libevtx
 RUN git clone --depth 1 https://github.com/libyal/libexe.git libexe
 RUN git clone --depth 1 https://github.com/libyal/liblnk.git liblnk
 RUN git clone --depth 1 https://github.com/libyal/libmsiecf.git libmsiecf
+RUN git clone --depth 1 https://github.com/libyal/libolecf.git libolecf
 RUN git clone --depth 1 https://github.com/libyal/libregf.git libregf
+RUN git clone --depth 1 https://github.com/libyal/libscca.git libscca
 
 WORKDIR libyal
 COPY build.sh $SRC/
