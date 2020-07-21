@@ -17,14 +17,11 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
-  if (size > 64) return 0;
-
   FuzzedDataProvider stream(data, size);
   int quantization_level = stream.ConsumeIntegral<int>();
-  //((((blockmode >> 4) & 1) | ((blockmode & 3) << 1)) - 2) + 6 * ((blockmode >> 9) & 1)
   std::vector<uint8_t> buffer = stream.ConsumeRemainingBytes<uint8_t>();
 
-  uint8_t out[10 * size];
+  uint8_t *out;
   encode_ise(quantization_level, buffer.size(), buffer.data(), out, 0);
 
 	return 0;
