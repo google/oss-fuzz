@@ -195,8 +195,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   int k;
   bool is_canonical = data[0] & 1;
   bool is_unicode = data[1] & 1;
-  memset(buffer, 0, BUFFER_SIZE+1);
-  memset(documents, 0, MAX_DOCUMENTS*sizeof(yaml_document_t));
+  data = data + 2;
+  size = size - 2;
 
   if(!yaml_parser_initialize(&parser))
     return 0;

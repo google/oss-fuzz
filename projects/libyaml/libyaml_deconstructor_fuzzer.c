@@ -24,25 +24,25 @@
 #undef NDEBUG
 #endif
 
+static int
+yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
+    return 0;
+}
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size < 2) return 0;
 
   bool done = false;
   bool is_canonical = data[0] & 1;
   bool is_unicode = data[1] & 1;
+  data = data + 2;
+  size = size - 2;
 
   yaml_parser_t parser;
   yaml_emitter_t emitter;
   yaml_event_t input_event;
   yaml_event_t output_event;
   FILE *f;
-
-  /* Clear the objects. */
-
-  memset(&parser, 0, sizeof(parser));
-  memset(&emitter, 0, sizeof(emitter));
-  memset(&input_event, 0, sizeof(input_event));
-  memset(&output_event, 0, sizeof(output_event));
 
   /* Initialize the parser and emitter objects. */
 
@@ -61,9 +61,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   /* Set the emitter parameters. */
 
-  f = tmpfile();
-  if (!f) return 0;
-  yaml_emitter_set_output_file(&emitter, f);
+  yaml_write_handler_t *handler;
+  yaml_emitter_set_output(&emitter, yaml_write_handler, &emitter);
 
   yaml_emitter_set_canonical(&emitter, is_canonical);
   yaml_emitter_set_unicode(&emitter, is_unicode);
