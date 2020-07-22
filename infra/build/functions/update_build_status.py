@@ -15,12 +15,10 @@
 ################################################################################
 """Cloud function to request builds."""
 import logging
-import tempfile
 
 import google.auth
 from googleapiclient.discovery import build
 from google.cloud import ndb
-from google.cloud import storage
 
 import build_and_run_coverage
 import build_project
@@ -29,20 +27,21 @@ from datastore_entities import BuildsHistory
 from datastore_entities import Project
 
 
+# pylint: disable=no-member
 def get_last_build(build_ids):
   """Returns build object for the last finished build of project."""
   credentials, image_project = google.auth.default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
 
   for build_id in reversed(build_ids):
-    build = cloudbuild.projects().builds().get(projectId=image_project,
-                                               id=build_id).execute()
-    if build['status'] == 'WORKING':
+    project_build = cloudbuild.projects().builds().get(projectId=image_project,
+                                                       id=build_id).execute()
+    if project_build['status'] == 'WORKING':
       continue
 
     if not builds_status.upload_log(build_id):
       continue
-    return build
+    return project_build
 
   return None
 
@@ -52,24 +51,24 @@ def update_build_status(build_tag_suffix, status_filename):
   successes = []
   failures = []
   builds = BuildsHistory.query()
-  for build in builds:
-    if build.build_tag_suffix != build_tag_suffix:
+  for project_build in builds:
+    if project_build.build_tag_suffix != build_tag_suffix:
       continue
-    last_build = find_last_build(build.build_ids)
+    last_build = get_last_build(project_build.build_ids)
     if not last_build:
-      logging.error('Failed to get last build for project %s', build.project)
+      logging.error('Failed to get last build for project %s', project_build.project)
       continue
 
     if last_build['status'] == 'SUCCESS':
       successes.append({
-          'name': project,
+          'name': project_build.project,
           'build_id': last_build['id'],
           'finish_time': last_build['finishTime'],
           'success': True,
       })
     else:
       failures.append({
-          'name': project,
+          'name': project_build.project,
           'build_id': last_build['id'],
           'finish_time': last_build['finishTime'],
           'success': False,
@@ -81,6 +80,8 @@ def update_build_status(build_tag_suffix, status_filename):
 # pylint: disable=no-member
 def update_status(event, context):
   """Entry point for cloud function to update build statuses and badges."""
+  del event, context #unused
+
   with ndb.Client().context():
     update_build_status(build_project.FUZZING_BUILD_TAG,
                         status_filename='status.json')
@@ -113,5 +114,5 @@ def update_status(event, context):
       if not last_coverage_build:
         continue
 
-      build_status.update_build_badges(project.name, last_build,
-                                       last_coverage_build)
+      builds_status.update_build_badges(project.name, last_build,
+                                        last_coverage_build)
