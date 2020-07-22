@@ -42,17 +42,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (query_list == nullptr || result != URI_SUCCESS || item_count < 0)
     return 0;
 
-  int chars_required;
+  int chars_required = 0;
   if (uriComposeQueryCharsRequiredA(query_list, &chars_required) != URI_SUCCESS)
     return 0;
-    
+
+  if (!chars_required) {
+    uriFreeQueryListA(query_list);
+    return 0;
+  }
+
   std::vector<char> buf(chars_required, 0);
   int written = -1;
-  char *dest = &buf[0];
   // Reverse the process of uriDissectQueryMallocA.
-  result = uriComposeQueryA(dest, query_list, chars_required, &written);
+  result = uriComposeQueryA(buf.data(), query_list, chars_required, &written);
 
   uriFreeQueryListA(query_list);
-
   return 0;
 }
