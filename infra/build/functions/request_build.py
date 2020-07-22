@@ -27,16 +27,20 @@ from datastore_entities import BuildsHistory
 from datastore_entities import Project
 
 BASE_PROJECT = 'oss-fuzz-base'
+MAX_BUILD_HISTORY_LENGTH = 64
 
 
 def update_build_history(project_name, build_id, tag):
   """Update build history of project."""
-  build_history = BuildsHistory.query(BuildsHistory.project==project_name, BuildsHistory.tag==tag)
+  build_history = BuildsHistory.query(BuildsHistory.project == project_name,
+                                      BuildsHistory.build_tag_suffix == tag)
   project = build_history.get()
   if project is None:
-    project = BuildsHistory(tag=tag, project=project_name, build_ids=[])
+    project = BuildsHistory(build_tag_suffix=tag,
+                            project=project_name,
+                            build_ids=[])
 
-  if len(project.build_ids) > 63:
+  if len(project.build_ids) >= MAX_BUILD_HISTORY_LENGTH:
     project.build_ids.pop(0)
 
   project.build_ids.append(build_id)
@@ -76,6 +80,7 @@ def run_build(project_name, image_project, build_steps, credentials, tag):
       'options': {
           'machineType': 'N1_HIGHCPU_32'
       },
+      'logsBucket': build_project.GCB_LOGS_BUCKET,
       'tags': [project_name + tag,],
   }
 

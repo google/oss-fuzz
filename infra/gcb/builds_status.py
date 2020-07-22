@@ -1,4 +1,21 @@
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
 #!/usr/bin/env python2
+"""Upload log files and update build statuses, badges for projects."""
+
 from __future__ import print_function
 from builtins import range
 
@@ -26,28 +43,32 @@ MAX_BUILD_RESULTS = 2000
 BUILDS_PAGE_SIZE = 256
 BADGE_IMAGE_TYPES = {'svg': 'image/svg+xml', 'png': 'image/png'}
 
-_client = None
+_CLIENT = None
 
 
+# pylint: disable=global-statement
 def _get_storage_client():
   """Return storage client."""
-  global _client
-  if not _client:
-    _client = storage.Client()
+  global _CLIENT
+  if not _CLIENT:
+    _CLIENT = storage.Client()
 
-  return _client
+  return _CLIENT
 
 
 def usage():
+  """Output usage syntax."""
   sys.stderr.write('Usage: ' + sys.argv[0] + ' <projects_dir>\n')
-  exit(1)
+  sys.exit(1)
 
 
+# pylint: disable=unused-variable
 def scan_project_names(projects_dir):
+  """Scan and return project list from directory."""
   projects = []
   for root, dirs, files in os.walk(projects_dir):
-    for f in files:
-      if f == 'Dockerfile':
+    for file in files:
+      if file == 'Dockerfile':
         projects.append(os.path.basename(root))
   return sorted(projects)
 
@@ -68,31 +89,35 @@ def upload_status(successes, failures, status_filename):
 
 
 def is_build_successful(build):
+  """Check build success."""
   return build['status'] == 'SUCCESS'
 
 
 def upload_log(build_id):
   """Uploads log file oss-fuzz-build-logs."""
   status_bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
-  gcb_bucket = _get_storage_client().get_bucket(
-  build_project.GCB_LOGS_BUCKET)
+  gcb_bucket = _get_storage_client().get_bucket(build_project.GCB_LOGS_BUCKET)
   log_name = 'log-{0}.txt'.format(build_id)
   log = gcb_bucket.blob(log_name)
+  dest_log = status_bucket.blob(log_name)
 
   if not log.exists():
     print('Failed to find build log {0}'.format(log_name), file=sys.stderr)
     return False
-  
-  with tempfile.NamedTemporaryFile() as f:
-    log.download_to_filename(f.name)
-    dest_log = status_bucket.blob(log_name)
-    dest_log.upload_from_filename(f.name, content_type='text/plain')
+
+  if dest_log.exists():
+    return True
+
+  with tempfile.NamedTemporaryFile() as file:
+    log.download_to_filename(file.name)
+    dest_log.upload_from_filename(file.name, content_type='text/plain')
 
   return True
 
 
 def find_last_build(builds, project, build_tag_suffix):
-  DELAY_MINUTES = 40
+  """Find last finished build of project."""
+  delay_minutes = 40
   tag = project + '-' + build_tag_suffix
 
   builds = builds.get(tag)
@@ -112,7 +137,7 @@ def find_last_build(builds, project, build_tag_suffix):
 
     finish_time = dateutil.parser.parse(build['finishTime'], ignoretz=True)
     if (datetime.datetime.utcnow() - finish_time >=
-        datetime.timedelta(minutes=DELAY_MINUTES)):
+        datetime.timedelta(minutes=delay_minutes)):
 
       if not upload_log(build['id']):
         continue
@@ -123,11 +148,12 @@ def find_last_build(builds, project, build_tag_suffix):
 
 
 def execute_with_retries(request):
+  """Execute request with retries."""
   for i in range(RETRY_COUNT + 1):
     try:
       return request.execute()
-    except Exception as e:
-      print('request failed with {0}, retrying...'.format(str(e)))
+    except Exception as error:
+      print('request failed with {0}, retrying...'.format(str(error)))
       if i < RETRY_COUNT:
         time.sleep(RETRY_WAIT)
         continue
@@ -147,7 +173,8 @@ def get_builds(cloudbuild):
         projectId='oss-fuzz', pageSize=page_size, pageToken=next_page_token))
 
     if not 'builds' in response:
-      print('Invalid response from builds list: {0}'.format(response), file=sys.stderr)
+      print('Invalid response from builds list: {0}'.format(response),
+            file=sys.stderr)
       return None
 
     ungrouped_builds.extend(response['builds'])
@@ -165,6 +192,7 @@ def get_builds(cloudbuild):
 
 
 def update_build_status(builds, projects, build_tag_suffix, status_filename):
+  """Update build statuses of projects as a json to cloud storage."""
   successes = []
   failures = []
 
@@ -195,37 +223,32 @@ def update_build_status(builds, projects, build_tag_suffix, status_filename):
   upload_status(successes, failures, status_filename)
 
 
-def update_build_badges(builds, projects, build_tag, coverage_tag):
-  for project in projects:
-    last_build = find_last_build(builds, project, build_tag)
-    last_coverage_build = find_last_build(builds, project, coverage_tag)
-    if not last_build or not last_coverage_build:
-      continue
+def update_build_badges(project, last_build, last_coverage_build):
+  """Upload badges of given project."""
+  badge = 'building'
+  if not is_build_successful(last_coverage_build):
+    badge = 'coverage_failing'
+  if not is_build_successful(last_build):
+    badge = 'failing'
 
-    badge = 'building'
-    if not is_build_successful(last_coverage_build):
-      badge = 'coverage_failing'
-    if not is_build_successful(last_build):
-      badge = 'failing'
+  print("[badge] {}: {}".format(project, badge))
 
-    print("[badge] {}: {}".format(project, badge))
+  for extension, mime_type in BADGE_IMAGE_TYPES.items():
+    badge_name = '{badge}.{extension}'.format(badge=badge, extension=extension)
+    # Retrieve the image relative to this script's location
+    badge_file = os.path.join(SCRIPT_DIR, 'badge_images', badge_name)
 
-    for extension, mime_type in BADGE_IMAGE_TYPES.items():
-      badge_name = '{badge}.{extension}'.format(
-          badge=badge, extension=extension)
-      # Retrieve the image relative to this script's location
-      badge_file = os.path.join(SCRIPT_DIR, 'badge_images', badge_name)
+    # The uploaded blob name should look like `badges/project.png`
+    blob_name = '{badge_dir}/{project_name}.{extension}'.format(
+        badge_dir=BADGE_DIR, project_name=project, extension=extension)
 
-      # The uploaded blob name should look like `badges/project.png`
-      blob_name = '{badge_dir}/{project_name}.{extension}'.format(
-          badge_dir=BADGE_DIR, project_name=project, extension=extension)
-
-      status_bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
-      badge_blob = status_bucket.blob(blob_name)
-      badge_blob.upload_from_filename(badge_file, content_type=mime_type)
+    status_bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
+    badge_blob = status_bucket.blob(blob_name)
+    badge_blob.upload_from_filename(badge_file, content_type=mime_type)
 
 
 def main():
+  """Update build statuses and badges."""
   if len(sys.argv) != 2:
     usage()
 
@@ -236,22 +259,23 @@ def main():
   cloudbuild = gcb_build('cloudbuild', 'v1', credentials=credentials)
 
   builds = get_builds(cloudbuild)
-  update_build_status(
-      builds,
-      projects,
-      build_project.FUZZING_BUILD_TAG,
-      status_filename='status.json')
-  update_build_status(
-      builds,
-      projects,
-      build_and_run_coverage.COVERAGE_BUILD_TAG,
-      status_filename='status-coverage.json')
+  update_build_status(builds,
+                      projects,
+                      build_project.FUZZING_BUILD_TAG,
+                      status_filename='status.json')
+  update_build_status(builds,
+                      projects,
+                      build_and_run_coverage.COVERAGE_BUILD_TAG,
+                      status_filename='status-coverage.json')
 
-  update_build_badges(
-    builds,
-    projects,
-    build_tag=build_project.FUZZING_BUILD_TAG,
-    coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
+  for project in projects:
+    last_build = find_last_build(builds, project,
+                                 build_project.FUZZING_BUILD_TAG)
+    last_coverage_build = find_last_build(
+        builds, project, build_and_run_coverage.COVERAGE_BUILD_TAG)
+    if not last_build or not last_coverage_build:
+      continue
+    update_build_badges(project, last_build, last_coverage_build)
 
 
 if __name__ == '__main__':

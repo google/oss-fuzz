@@ -26,24 +26,17 @@ import build_and_run_coverage
 import build_project
 import builds_status
 from datastore_entities import BuildsHistory
+from datastore_entities import Project
 
 
-# TODO: update function in builds_status.py after migration.
-def get_last_build(builds, project, build_tag_suffix):
+def get_last_build(build_ids):
   """Returns build object for the last finished build of project."""
-  with ndb.Client().context():
-    build_history = builds.filter(BuildsHistory.project == project)
-    build_history_with_tag = build_history.filter(BuildsHistory.tag == tag)
-  
-  project_build_history = build_history_with_tag.get()
-  if not project_build_history:
-    return None
-
   credentials, image_project = google.auth.default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
 
-  for build_id in reversed(project_build_history.build_ids):
-    build = cloudbuild.projects().builds().get(projectId=image_project, id=build_id).execute()
+  for build_id in reversed(build_ids):
+    build = cloudbuild.projects().builds().get(projectId=image_project,
+                                               id=build_id).execute()
     if build['status'] == 'WORKING':
       continue
 
@@ -54,31 +47,71 @@ def get_last_build(builds, project, build_tag_suffix):
   return None
 
 
+def update_build_status(build_tag_suffix, status_filename):
+  """Update build statuses."""
+  successes = []
+  failures = []
+  builds = BuildsHistory.query()
+  for build in builds:
+    if build.build_tag_suffix != build_tag_suffix:
+      continue
+    last_build = find_last_build(build.build_ids)
+    if not last_build:
+      logging.error('Failed to get last build for project %s', build.project)
+      continue
+
+    if last_build['status'] == 'SUCCESS':
+      successes.append({
+          'name': project,
+          'build_id': last_build['id'],
+          'finish_time': last_build['finishTime'],
+          'success': True,
+      })
+    else:
+      failures.append({
+          'name': project,
+          'build_id': last_build['id'],
+          'finish_time': last_build['finishTime'],
+          'success': False,
+      })
+
+  builds_status.upload_status(successes, failures, status_filename)
+
+
 # pylint: disable=no-member
 def update_status(event, context):
   """Entry point for cloud function to update build statuses and badges."""
   with ndb.Client().context():
-    builds = BuildsHistory.query()
+    update_build_status(build_project.FUZZING_BUILD_TAG,
+                        status_filename='status.json')
+    update_build_status(build_and_run_coverage.COVERAGE_BUILD_TAG,
+                        status_filename='status-coverage.json')
 
-  projects = [build.project for build in builds if build.tag=='-fuzzing']
+    for project in Project.query():
+      build_history_query = BuildsHistory.query(
+          BuildsHistory.project == project.name,
+          BuildsHistory.build_tag_suffix == build_project.FUZZING_BUILD_TAG)
 
-  #TODO; Cleanup after infrastructure migration
-  builds_status.find_last_build = get_last_build
+      build_history = build_history_query.get()
+      if not build_history:
+        continue
+      last_build = get_last_build(build_history.build_ids)
 
-  builds_status.update_build_status(
-      builds
-      projects,
-      build_project.FUZZING_BUILD_TAG,
-      status_filename='status.json')
-  builds_status.update_build_status(
-      builds
-      projects,
-      build_and_run_coverage.COVERAGE_BUILD_TAG,
-      status_filename='status-coverage.json')
+      if not last_build:
+        continue
 
-  for project in projects:
-    last_co
-    update_build_badges(
-        projects,
-        build_tag=build_project.FUZZING_BUILD_TAG,
-        coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
+      coverage_build_history_query = BuildsHistory.query(
+          BuildsHistory.project == project.name,
+          BuildsHistory.build_tag_suffix == build_and_run_coverage.
+          COVERAGE_BUILD_TAG)
+
+      coverage_build_history = coverage_build_history_query.get()
+      if not coverage_build_history:
+        continue
+
+      last_coverage_build = get_last_build(coverage_build_history.build_ids)
+      if not last_coverage_build:
+        continue
+
+      build_status.update_build_badges(project.name, last_build,
+                                       last_coverage_build)

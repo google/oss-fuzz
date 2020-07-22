@@ -78,11 +78,14 @@ class TestRequestBuilds(unittest.TestCase):
   def test_build_history(self):
     """Testing build history."""
     with ndb.Client().context():
-      BuildsHistory(tag='-fuzzing', project='test-project', build_ids=[str(i) for i in range(1, 65)]).put()
+      BuildsHistory(build_tag_suffix='-fuzzing',
+                    project='test-project',
+                    build_ids=[str(i) for i in range(1, 65)]).put()
       update_build_history('test-project', '65', '-fuzzing')
       expected_build_ids = [str(i) for i in range(2, 66)]
 
-      self.assertEqual(BuildsHistory.query().get().build_ids, expected_build_ids)
+      self.assertEqual(BuildsHistory.query().get().build_ids,
+                       expected_build_ids)
 
   def test_build_history_no_existing_project(self):
     """Testing build history when build history object is missing."""
@@ -90,8 +93,8 @@ class TestRequestBuilds(unittest.TestCase):
       update_build_history('test-project', '1', '-fuzzing')
       expected_build_ids = ['1']
 
-      self.assertEqual(BuildsHistory.query().get().build_ids, expected_build_ids)
-
+      self.assertEqual(BuildsHistory.query().get().build_ids,
+                       expected_build_ids)
 
   @classmethod
   def tearDownClass(cls):
