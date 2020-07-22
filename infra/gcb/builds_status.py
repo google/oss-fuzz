@@ -223,12 +223,13 @@ def update_build_status(builds, projects, build_tag_suffix, status_filename):
   upload_status(successes, failures, status_filename)
 
 
-def update_build_badges(project, last_build, last_coverage_build):
+def update_build_badges(project, last_build_successful,
+                        last_coverage_build_successful):
   """Upload badges of given project."""
   badge = 'building'
-  if not is_build_successful(last_coverage_build):
+  if last_coverage_build_successful:
     badge = 'coverage_failing'
-  if not is_build_successful(last_build):
+  if last_build_successful:
     badge = 'failing'
 
   print("[badge] {}: {}".format(project, badge))
@@ -275,7 +276,10 @@ def main():
         builds, project, build_and_run_coverage.COVERAGE_BUILD_TAG)
     if not last_build or not last_coverage_build:
       continue
-    update_build_badges(project, last_build, last_coverage_build)
+    last_build_successful = is_build_successful(last_build)
+    last_coverage_build_successful = is_build_successful(last_coverage_build)
+    update_build_badges(project, last_build_successful,
+                        last_coverage_build_successful)
 
 
 if __name__ == '__main__':

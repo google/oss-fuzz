@@ -30,14 +30,14 @@ BASE_PROJECT = 'oss-fuzz-base'
 MAX_BUILD_HISTORY_LENGTH = 64
 
 
-def update_build_history(project_name, build_id, tag):
+def update_build_history(project_name, build_id, build_tag_suffix):
   """Update build history of project."""
-  project_key = ndb.Key(BuildsHistory, project_name + tag)
+  project_key = ndb.Key(BuildsHistory, project_name + build_tag_suffix)
   project = project_key.get()
 
   if project is None:
-    project = BuildsHistory(id=project_name + tag,
-                            build_tag_suffix=tag,
+    project = BuildsHistory(id=project_name + build_tag_suffix,
+                            build_tag_suffix=build_tag_suffix,
                             project=project_name,
                             build_ids=[])
 

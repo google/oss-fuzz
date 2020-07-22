@@ -27,6 +27,10 @@ from datastore_entities import BuildsHistory
 from datastore_entities import Project
 
 
+class MissingBuildLogError(Exception):
+  """Missing build log file in cloud storage."""
+
+
 # pylint: disable=no-member
 def get_last_build(build_ids):
   """Returns build object for the last finished build of project."""
@@ -40,7 +44,11 @@ def get_last_build(build_ids):
       continue
 
     if not builds_status.upload_log(build_id):
-      continue
+      log_name = 'log-{0}'.format(build_id)
+      raise MissingBuildLogError(
+          'Critical Error Missing build log file {0} in cloud storage'.format(
+              log_name))
+
     return project_build
 
   return None
@@ -48,12 +56,11 @@ def get_last_build(build_ids):
 
 def update_build_status(build_tag_suffix, status_filename):
   """Update build statuses."""
+  statuses = {}
   successes = []
   failures = []
-  builds = BuildsHistory.query()
-  for project_build in builds:
-    if project_build.build_tag_suffix != build_tag_suffix:
-      continue
+  for project_build in BuildsHistory.query(
+      BuildsHistory.build_tag_suffix == build_tag_suffix):
     last_build = get_last_build(project_build.build_ids)
     if not last_build:
       logging.error('Failed to get last build for project %s',
@@ -61,6 +68,7 @@ def update_build_status(build_tag_suffix, status_filename):
       continue
 
     if last_build['status'] == 'SUCCESS':
+      statuses[project_build.project] = True
       successes.append({
           'name': project_build.project,
           'build_id': last_build['id'],
@@ -68,6 +76,7 @@ def update_build_status(build_tag_suffix, status_filename):
           'success': True,
       })
     else:
+      statuses[project_build.project] = False
       failures.append({
           'name': project_build.project,
           'build_id': last_build['id'],
@@ -76,6 +85,7 @@ def update_build_status(build_tag_suffix, status_filename):
       })
 
   builds_status.upload_status(successes, failures, status_filename)
+  return statuses
 
 
 # pylint: disable=no-member
@@ -84,32 +94,16 @@ def update_status(event, context):
   del event, context  #unused
 
   with ndb.Client().context():
-    update_build_status(build_project.FUZZING_BUILD_TAG,
-                        status_filename='status.json')
-    update_build_status(build_and_run_coverage.COVERAGE_BUILD_TAG,
-                        status_filename='status-coverage.json')
+    project_build_statuses = update_build_status(
+        build_project.FUZZING_BUILD_TAG, status_filename='status.json')
+    coverage_build_statuses = update_build_status(
+        build_and_run_coverage.COVERAGE_BUILD_TAG,
+        status_filename='status-coverage.json')
 
     for project in Project.query():
-      build_history_key = ndb.Key(
-          BuildsHistory, project.name + build_project.FUZZING_BUILD_TAG)
-      build_history = build_history_key.get()
-      if not build_history:
-        continue
-      last_build = get_last_build(build_history.build_ids)
-
-      if not last_build:
+      if project.name not in project_build_statuses or project.name not in coverage_build_statuses:
         continue
 
-      coverage_build_history_key = ndb.Key(
-          BuildsHistory,
-          project.name + build_and_run_coverage.COVERAGE_BUILD_TAG)
-      coverage_build_history = coverage_build_history_key.get()
-      if not coverage_build_history:
-        continue
-
-      last_coverage_build = get_last_build(coverage_build_history.build_ids)
-      if not last_coverage_build:
-        continue
-
-      builds_status.update_build_badges(project.name, last_build,
-                                        last_coverage_build)
+      builds_status.update_build_badges(project.name,
+                                        project_build_statuses[project.name],
+                                        coverage_build_statuses[project.name])
