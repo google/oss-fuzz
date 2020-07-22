@@ -1,4 +1,6 @@
 #!/usr/bin/env python2
+from __future__ import print_function
+from builtins import range
 
 import datetime
 import os
@@ -69,13 +71,33 @@ def is_build_successful(build):
   return build['status'] == 'SUCCESS'
 
 
+def upload_log(build_id):
+  """Uploads log file oss-fuzz-build-logs."""
+  status_bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
+  gcb_bucket = _get_storage_client().get_bucket(
+  build_project.GCB_LOGS_BUCKET)
+  log_name = 'log-{0}.txt'.format(build_id)
+  log = gcb_bucket.blob(log_name)
+
+  if not log.exists():
+    print('Failed to find build log {0}'.format(log_name), file=sys.stderr)
+    return False
+  
+  with tempfile.NamedTemporaryFile() as f:
+    log.download_to_filename(f.name)
+    dest_log = status_bucket.blob(log_name)
+    dest_log.upload_from_filename(f.name, content_type='text/plain')
+
+  return True
+
+
 def find_last_build(builds, project, build_tag_suffix):
   DELAY_MINUTES = 40
   tag = project + '-' + build_tag_suffix
 
   builds = builds.get(tag)
   if not builds:
-    print >> sys.stderr, 'Failed to find builds with tag', tag
+    print('Failed to find builds with tag {0}'.format(tag), file=sys.stderr)
     return None
 
   for build in builds:
@@ -91,19 +113,9 @@ def find_last_build(builds, project, build_tag_suffix):
     finish_time = dateutil.parser.parse(build['finishTime'], ignoretz=True)
     if (datetime.datetime.utcnow() - finish_time >=
         datetime.timedelta(minutes=DELAY_MINUTES)):
-      status_bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
-      gcb_bucket = _get_storage_client().get_bucket(
-          build_project.GCB_LOGS_BUCKET)
-      log_name = 'log-{0}.txt'.format(build['id'])
-      log = gcb_bucket.blob(log_name)
-      if not log.exists():
-        print >> sys.stderr, 'Failed to find build log', log_name
-        continue
 
-      with tempfile.NamedTemporaryFile() as f:
-        log.download_to_filename(f.name)
-        dest_log = status_bucket.blob(log_name)
-        dest_log.upload_from_filename(f.name, content_type='text/plain')
+      if not upload_log(build['id']):
+        continue
 
       return build
 
@@ -111,7 +123,7 @@ def find_last_build(builds, project, build_tag_suffix):
 
 
 def execute_with_retries(request):
-  for i in xrange(RETRY_COUNT + 1):
+  for i in range(RETRY_COUNT + 1):
     try:
       return request.execute()
     except Exception as e:
@@ -135,7 +147,7 @@ def get_builds(cloudbuild):
         projectId='oss-fuzz', pageSize=page_size, pageToken=next_page_token))
 
     if not 'builds' in response:
-      print >> sys.stderr, 'Invalid response from builds list:', response
+      print('Invalid response from builds list: {0}'.format(response), file=sys.stderr)
       return None
 
     ungrouped_builds.extend(response['builds'])
@@ -157,14 +169,14 @@ def update_build_status(builds, projects, build_tag_suffix, status_filename):
   failures = []
 
   for project in projects:
-    print project
+    print(project)
 
     last_build = find_last_build(builds, project, build_tag_suffix)
     if not last_build:
-      print >> sys.stderr, 'Failed to get build for', project
+      print('Failed to get build for {0}'.format(project), file=sys.stderr)
       continue
 
-    print last_build['startTime'], last_build['status'], last_build['id']
+    print(last_build['startTime'], last_build['status'], last_build['id'])
     if is_build_successful(last_build):
       successes.append({
           'name': project,
@@ -236,10 +248,10 @@ def main():
       status_filename='status-coverage.json')
 
   update_build_badges(
-      builds,
-      projects,
-      build_tag=build_project.FUZZING_BUILD_TAG,
-      coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
+    builds,
+    projects,
+    build_tag=build_project.FUZZING_BUILD_TAG,
+    coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
 
 
 if __name__ == '__main__':

@@ -30,3 +30,10 @@ class Project(ndb.Model):
 class GitAuth(ndb.Model):
   """Represents Github access token entity."""
   access_token = ndb.StringProperty()
+
+
+# pylint: disable=too-few-public-methods
+class BuildsHistory(ndb.Model):
+	tag = ndb.StringProperty()
+	project = ndb.StringProperty()
+	build_ids = ndb.StringProperty(repeated=True)
