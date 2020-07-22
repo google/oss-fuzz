@@ -27,17 +27,41 @@
 #define BUFFER_SIZE 65536
 #define MAX_EVENTS   1024
 
-int events_equal(yaml_event_t *event1, yaml_event_t *event2)
+static int
+yaml_write_handler(void *data, unsigned char *buffer, size_t size)
+{
+    yaml_emitter_t *emitter = (yaml_emitter_t *)data;
+
+    if (emitter->output.string.size - *emitter->output.string.size_written
+            < size) {
+        memcpy(emitter->output.string.buffer
+                + *emitter->output.string.size_written,
+                buffer,
+                emitter->output.string.size
+                - *emitter->output.string.size_written);
+        *emitter->output.string.size_written = emitter->output.string.size;
+        return 0;
+    }
+
+    size = emitter->output.string.size - *emitter->output.string.size_written;
+    memcpy(emitter->output.string.buffer
+            + *emitter->output.string.size_written, buffer, size);
+    *emitter->output.string.size_written += size;
+    return 1;
+}
+
+bool events_equal(yaml_event_t *event1, yaml_event_t *event2)
 {
     int k;
+    bool success = true;
 
     if (event1->type != event2->type)
-        return true;
+        return success;
 
     switch (event1->type)
     {
         case YAML_STREAM_START_EVENT:
-            return false;
+            return !success;
             /* return (event1->data.stream_start.encoding ==
                     event2->data.stream_start.encoding); */
 
@@ -47,23 +71,23 @@ int events_equal(yaml_event_t *event1, yaml_event_t *event2)
                     || (event1->data.document_start.version_directive && event2->data.document_start.version_directive
                         && (event1->data.document_start.version_directive->major != event2->data.document_start.version_directive->major
                             || event1->data.document_start.version_directive->minor != event2->data.document_start.version_directive->minor)))
-                return true;
+                return success;
             if ((event1->data.document_start.tag_directives.end - event1->data.document_start.tag_directives.start) !=
                     (event2->data.document_start.tag_directives.end - event2->data.document_start.tag_directives.start))
-                return true;
+                return success;
             for (int k = 0; k < (event1->data.document_start.tag_directives.end - event1->data.document_start.tag_directives.start); k ++) {
                 if ((strcmp((char *)event1->data.document_start.tag_directives.start[k].handle,
                                 (char *)event2->data.document_start.tag_directives.start[k].handle) != 0)
                         || (strcmp((char *)event1->data.document_start.tag_directives.start[k].prefix,
                             (char *)event2->data.document_start.tag_directives.start[k].prefix) != 0))
-                    return true;
+                    return success;
             }
             /* if (event1->data.document_start.implicit != event2->data.document_start.implicit)
-                return true; */
-            return false;
+                return success; */
+            return !success;
 
         case YAML_DOCUMENT_END_EVENT:
-            return false;
+            return !success;
             /* return (event1->data.document_end.implicit ==
                     event2->data.document_end.implicit); */
 
@@ -77,7 +101,7 @@ int events_equal(yaml_event_t *event1, yaml_event_t *event2)
                     || (event1->data.scalar.anchor && event2->data.scalar.anchor
                         && strcmp((char *)event1->data.scalar.anchor,
                             (char *)event2->data.scalar.anchor) != 0))
-                return true;
+                return success;
             if ((event1->data.scalar.tag && !event2->data.scalar.tag
                         && strcmp((char *)event1->data.scalar.tag, "!") != 0)
                     || (!event1->data.scalar.tag && event2->data.scalar.tag
@@ -85,16 +109,16 @@ int events_equal(yaml_event_t *event1, yaml_event_t *event2)
                     || (event1->data.scalar.tag && event2->data.scalar.tag
                         && strcmp((char *)event1->data.scalar.tag,
                             (char *)event2->data.scalar.tag) != 0))
-                return true;
+                return success;
             if ((event1->data.scalar.length != event2->data.scalar.length)
                     || memcmp(event1->data.scalar.value, event2->data.scalar.value,
                         event1->data.scalar.length) != 0)
-                return true;
+                return success;
             if ((event1->data.scalar.plain_implicit != event2->data.scalar.plain_implicit)
                     || (event2->data.scalar.quoted_implicit != event2->data.scalar.quoted_implicit)
                     /* || (event2->data.scalar.style != event2->data.scalar.style) */)
-                return true;
-            return false;
+                return success;
+            return !success;
 
         case YAML_SEQUENCE_START_EVENT:
             if ((event1->data.sequence_start.anchor && !event2->data.sequence_start.anchor)
@@ -102,17 +126,17 @@ int events_equal(yaml_event_t *event1, yaml_event_t *event2)
                     || (event1->data.sequence_start.anchor && event2->data.sequence_start.anchor
                         && strcmp((char *)event1->data.sequence_start.anchor,
                             (char *)event2->data.sequence_start.anchor) != 0))
-                return true;
+                return success;
             if ((event1->data.sequence_start.tag && !event2->data.sequence_start.tag)
                     || (!event1->data.sequence_start.tag && event2->data.sequence_start.tag)
                     || (event1->data.sequence_start.tag && event2->data.sequence_start.tag
                         && strcmp((char *)event1->data.sequence_start.tag,
                             (char *)event2->data.sequence_start.tag) != 0))
-                return true;
+                return success;
             if ((event1->data.sequence_start.implicit != event2->data.sequence_start.implicit)
                     /* || (event2->data.sequence_start.style != event2->data.sequence_start.style) */)
-                return true;
-            return false;
+                return success;
+            return !success;
 
         case YAML_MAPPING_START_EVENT:
             if ((event1->data.mapping_start.anchor && !event2->data.mapping_start.anchor)
@@ -120,25 +144,27 @@ int events_equal(yaml_event_t *event1, yaml_event_t *event2)
                     || (event1->data.mapping_start.anchor && event2->data.mapping_start.anchor
                         && strcmp((char *)event1->data.mapping_start.anchor,
                             (char *)event2->data.mapping_start.anchor) != 0))
-                return true;
+                return success;
             if ((event1->data.mapping_start.tag && !event2->data.mapping_start.tag)
                     || (!event1->data.mapping_start.tag && event2->data.mapping_start.tag)
                     || (event1->data.mapping_start.tag && event2->data.mapping_start.tag
                         && strcmp((char *)event1->data.mapping_start.tag,
                             (char *)event2->data.mapping_start.tag) != 0))
-                return true;
+                return success;
             if ((event1->data.mapping_start.implicit != event2->data.mapping_start.implicit)
                     /* || (event2->data.mapping_start.style != event2->data.mapping_start.style) */)
-                return true;
-            return false;
+                return success;
+            return !success;
 
         default:
-            return false;
+            return !success;
     }
 }
 
-int copy_event(yaml_event_t *event_to, yaml_event_t *event_from)
+bool copy_event(yaml_event_t *event_to, yaml_event_t *event_from)
 {
+    bool success = true;
+
     switch (event_from->type)
     {
         case YAML_STREAM_START_EVENT:
@@ -194,7 +220,7 @@ int copy_event(yaml_event_t *event_to, yaml_event_t *event_from)
             return yaml_mapping_end_event_initialize(event_to);
     }
 
-    return 0;
+    return success;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -227,7 +253,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_emitter_set_canonical(&emitter, is_canonical);
   yaml_emitter_set_unicode(&emitter, is_unicode);
 
-  yaml_emitter_set_output_string(&emitter, buffer, BUFFER_SIZE, &written);
+  yaml_emitter_set_output(&emitter, yaml_write_handler, &emitter);
+  emitter.output.string.buffer = buffer;
+  emitter.output.string.size = BUFFER_SIZE;
+  emitter.output.string.size_written = written;
+  written = 0;
 
   while (!done)
   {
@@ -243,7 +273,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         break;
       }
 
-      if(!copy_event(&events[event_number++], &event)) {
+      if(copy_event(&events[event_number++], &event)) {
         yaml_event_delete(&event);
         error = 1;
         break;
@@ -262,7 +292,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (!error)
   {
-      count = done = 0;
+      count = 0;
+      done = false;
       if(!yaml_parser_initialize(&parser))
         return 0;
 

@@ -30,93 +30,98 @@
 bool nodes_equal(yaml_document_t *document1, int index1,
         yaml_document_t *document2, int index2, int level)
 {
-    if (level++ > 1000) return true;
+    bool success = true;
+
+    if (level++ > 1000) return success;
     yaml_node_t *node1 = yaml_document_get_node(document1, index1);
 
     if(!node1)
-      return true;
+      return success;
 
     yaml_node_t *node2 = yaml_document_get_node(document2, index2);
 
     if(!node2)
-      return true;
+      return success;
 
     int k;
 
     if (node1->type != node2->type)
-        return true;
+        return success;
 
-    if (strcmp((char *)node1->tag, (char *)node2->tag) != 0) return true;
+    if (strcmp((char *)node1->tag, (char *)node2->tag) != 0) return success;
 
     switch (node1->type) {
         case YAML_SCALAR_NODE:
             if (node1->data.scalar.length != node2->data.scalar.length)
-                return true;
+                return success;
             if (strncmp((char *)node1->data.scalar.value, (char *)node2->data.scalar.value,
-                        node1->data.scalar.length) != 0) return true;
+                        node1->data.scalar.length) != 0) return success;
             break;
         case YAML_SEQUENCE_NODE:
             if ((node1->data.sequence.items.top - node1->data.sequence.items.start) !=
                     (node2->data.sequence.items.top - node2->data.sequence.items.start))
-                return true;
+                return success;
             for (int k = 0; k < (node1->data.sequence.items.top - node1->data.sequence.items.start); k ++) {
                 if (nodes_equal(document1, node1->data.sequence.items.start[k],
-                            document2, node2->data.sequence.items.start[k], level)) return true;
+                            document2, node2->data.sequence.items.start[k], level)) return success;
             }
             break;
         case YAML_MAPPING_NODE:
             if ((node1->data.mapping.pairs.top - node1->data.mapping.pairs.start) !=
                     (node2->data.mapping.pairs.top - node2->data.mapping.pairs.start))
-                return true;
+                return success;
             for (int k = 0; k < (node1->data.mapping.pairs.top - node1->data.mapping.pairs.start); k ++) {
                 if (nodes_equal(document1, node1->data.mapping.pairs.start[k].key,
-                            document2, node2->data.mapping.pairs.start[k].key, level)) return true;
+                            document2, node2->data.mapping.pairs.start[k].key, level)) return success;
                 if (nodes_equal(document1, node1->data.mapping.pairs.start[k].value,
-                            document2, node2->data.mapping.pairs.start[k].value, level)) return true;
+                            document2, node2->data.mapping.pairs.start[k].value, level)) return success;
             }
             break;
         default:
-            return true;
+            return success;
     }
-    return false;
+    return !success;
 }
 
-int documents_equal(yaml_document_t *document1, yaml_document_t *document2)
+bool documents_equal(yaml_document_t *document1, yaml_document_t *document2)
 {
     int k;
+    bool success = true;
 
     if ((document1->version_directive && !document2->version_directive)
             || (!document1->version_directive && document2->version_directive)
             || (document1->version_directive && document2->version_directive
                 && (document1->version_directive->major != document2->version_directive->major
                     || document1->version_directive->minor != document2->version_directive->minor)))
-        return true;
+        return success;
 
     if ((document1->tag_directives.end - document1->tag_directives.start) !=
             (document2->tag_directives.end - document2->tag_directives.start))
-        return true;
+        return success;
     for (int k = 0; k < (document1->tag_directives.end - document1->tag_directives.start); k ++) {
         if ((strcmp((char *)document1->tag_directives.start[k].handle,
                         (char *)document2->tag_directives.start[k].handle) != 0)
                 || (strcmp((char *)document1->tag_directives.start[k].prefix,
                     (char *)document2->tag_directives.start[k].prefix) != 0))
-            return true;
+            return success;
     }
 
     if ((document1->nodes.top - document1->nodes.start) !=
             (document2->nodes.top - document2->nodes.start))
-        return true;
+        return success;
 
     if (document1->nodes.top != document1->nodes.start) {
         if (nodes_equal(document1, 1, document2, 1, 0))
-            return true;
+            return success;
     }
 
-    return false;
+    return !success;
 }
 
-int copy_document(yaml_document_t *document_to, yaml_document_t *document_from)
+bool copy_document(yaml_document_t *document_to, yaml_document_t *document_from)
 {
+    bool success = true;
+
     yaml_node_t *node;
     yaml_node_item_t *item;
     yaml_node_pair_t *pair;
@@ -125,7 +130,7 @@ int copy_document(yaml_document_t *document_to, yaml_document_t *document_from)
                 document_from->tag_directives.start,
                 document_from->tag_directives.end,
                 document_from->start_implicit, document_from->end_implicit))
-        return 0;
+        return success;
 
     for (node = document_from->nodes.start;
             node < document_from->nodes.top; node ++) {
@@ -171,11 +176,11 @@ int copy_document(yaml_document_t *document_to, yaml_document_t *document_from)
                 break;
         }
     }
-    return 1;
+    return !success;
 
 error:
     yaml_document_delete(document_to);
-    return 0;
+    return success;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -226,7 +231,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             break;
           }
 
-          if(!copy_document(&documents[document_number++], &document)) {
+          if(copy_document(&documents[document_number++], &document)) {
             yaml_document_delete(&document);
             error = 1;
             break;
@@ -249,7 +254,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (!error)
   {
-      count = done = 0;
+      count = 0;
+      done = false;
       if (!yaml_parser_initialize(&parser))
         return 0;
 

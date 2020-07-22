@@ -61,7 +61,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   /* Set the emitter parameters. */
 
-  yaml_write_handler_t *handler;
   yaml_emitter_set_output(&emitter, yaml_write_handler, &emitter);
 
   yaml_emitter_set_canonical(&emitter, is_canonical);
