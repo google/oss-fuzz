@@ -27,61 +27,61 @@
 #define BUFFER_SIZE 65536
 #define MAX_DOCUMENTS  16
 
-int compare_nodes(yaml_document_t *document1, int index1,
+bool nodes_equal(yaml_document_t *document1, int index1,
         yaml_document_t *document2, int index2, int level)
 {
-    if (level++ > 1000) return 0;
+    if (level++ > 1000) return true;
     yaml_node_t *node1 = yaml_document_get_node(document1, index1);
 
     if(!node1)
-      return 0;
+      return true;
 
     yaml_node_t *node2 = yaml_document_get_node(document2, index2);
 
     if(!node2)
-      return 0;
+      return true;
 
     int k;
 
     if (node1->type != node2->type)
-        return 0;
+        return true;
 
-    if (strcmp((char *)node1->tag, (char *)node2->tag) != 0) return 0;
+    if (strcmp((char *)node1->tag, (char *)node2->tag) != 0) return true;
 
     switch (node1->type) {
         case YAML_SCALAR_NODE:
             if (node1->data.scalar.length != node2->data.scalar.length)
-                return 0;
+                return true;
             if (strncmp((char *)node1->data.scalar.value, (char *)node2->data.scalar.value,
-                        node1->data.scalar.length) != 0) return 0;
+                        node1->data.scalar.length) != 0) return true;
             break;
         case YAML_SEQUENCE_NODE:
             if ((node1->data.sequence.items.top - node1->data.sequence.items.start) !=
                     (node2->data.sequence.items.top - node2->data.sequence.items.start))
-                return 0;
+                return true;
             for (int k = 0; k < (node1->data.sequence.items.top - node1->data.sequence.items.start); k ++) {
-                if (!compare_nodes(document1, node1->data.sequence.items.start[k],
-                            document2, node2->data.sequence.items.start[k], level)) return 0;
+                if (nodes_equal(document1, node1->data.sequence.items.start[k],
+                            document2, node2->data.sequence.items.start[k], level)) return true;
             }
             break;
         case YAML_MAPPING_NODE:
             if ((node1->data.mapping.pairs.top - node1->data.mapping.pairs.start) !=
                     (node2->data.mapping.pairs.top - node2->data.mapping.pairs.start))
-                return 0;
+                return true;
             for (int k = 0; k < (node1->data.mapping.pairs.top - node1->data.mapping.pairs.start); k ++) {
-                if (!compare_nodes(document1, node1->data.mapping.pairs.start[k].key,
-                            document2, node2->data.mapping.pairs.start[k].key, level)) return 0;
-                if (!compare_nodes(document1, node1->data.mapping.pairs.start[k].value,
-                            document2, node2->data.mapping.pairs.start[k].value, level)) return 0;
+                if (nodes_equal(document1, node1->data.mapping.pairs.start[k].key,
+                            document2, node2->data.mapping.pairs.start[k].key, level)) return true;
+                if (nodes_equal(document1, node1->data.mapping.pairs.start[k].value,
+                            document2, node2->data.mapping.pairs.start[k].value, level)) return true;
             }
             break;
         default:
-            return 0;
+            return true;
     }
-    return 1;
+    return false;
 }
 
-int compare_documents(yaml_document_t *document1, yaml_document_t *document2)
+int documents_equal(yaml_document_t *document1, yaml_document_t *document2)
 {
     int k;
 
@@ -90,29 +90,29 @@ int compare_documents(yaml_document_t *document1, yaml_document_t *document2)
             || (document1->version_directive && document2->version_directive
                 && (document1->version_directive->major != document2->version_directive->major
                     || document1->version_directive->minor != document2->version_directive->minor)))
-        return 0;
+        return true;
 
     if ((document1->tag_directives.end - document1->tag_directives.start) !=
             (document2->tag_directives.end - document2->tag_directives.start))
-        return 0;
+        return true;
     for (int k = 0; k < (document1->tag_directives.end - document1->tag_directives.start); k ++) {
         if ((strcmp((char *)document1->tag_directives.start[k].handle,
                         (char *)document2->tag_directives.start[k].handle) != 0)
                 || (strcmp((char *)document1->tag_directives.start[k].prefix,
                     (char *)document2->tag_directives.start[k].prefix) != 0))
-            return 0;
+            return true;
     }
 
     if ((document1->nodes.top - document1->nodes.start) !=
             (document2->nodes.top - document2->nodes.start))
-        return 0;
+        return true;
 
     if (document1->nodes.top != document1->nodes.start) {
-        if (!compare_nodes(document1, 1, document2, 1, 0))
-            return 0;
+        if (nodes_equal(document1, 1, document2, 1, 0))
+            return true;
     }
 
-    return 1;
+    return false;
 }
 
 int copy_document(yaml_document_t *document_to, yaml_document_t *document_from)
@@ -226,7 +226,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             break;
           }
 
-          if(!copy_document(&(documents[document_number++]), &document)) {
+          if(!copy_document(&documents[document_number++], &document)) {
             yaml_document_delete(&document);
             error = 1;
             break;
@@ -250,21 +250,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (!error)
   {
       count = done = 0;
-      if(!yaml_parser_initialize(&parser))
+      if (!yaml_parser_initialize(&parser))
         return 0;
 
       yaml_parser_set_input_string(&parser, buffer, written);
 
       while (!done)
       {
-          if(!(yaml_parser_load(&parser, &document) || 0)) {
+          if(!yaml_parser_load(&parser, &document)) {
             yaml_parser_delete(&parser);
             return 0;
           }
 
-          done = (!yaml_document_get_root_node(&document));
+          done = !yaml_document_get_root_node(&document);
           if (!done) {
-              if(!(compare_documents(documents+count, &document) || 0)) {
+              if (documents_equal(documents+count, &document)) {
                 yaml_parser_delete(&parser);
                 return 0;
               }
