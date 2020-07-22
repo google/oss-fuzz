@@ -32,11 +32,12 @@ MAX_BUILD_HISTORY_LENGTH = 64
 
 def update_build_history(project_name, build_id, tag):
   """Update build history of project."""
-  build_history = BuildsHistory.query(BuildsHistory.project == project_name,
-                                      BuildsHistory.build_tag_suffix == tag)
-  project = build_history.get()
+  project_key = ndb.Key(BuildsHistory, project_name + tag)
+  project = project_key.get()
+
   if project is None:
-    project = BuildsHistory(build_tag_suffix=tag,
+    project = BuildsHistory(id=project_name + tag,
+                            build_tag_suffix=tag,
                             project=project_name,
                             build_ids=[])
 

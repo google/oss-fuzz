@@ -56,7 +56,8 @@ def update_build_status(build_tag_suffix, status_filename):
       continue
     last_build = get_last_build(project_build.build_ids)
     if not last_build:
-      logging.error('Failed to get last build for project %s', project_build.project)
+      logging.error('Failed to get last build for project %s',
+                    project_build.project)
       continue
 
     if last_build['status'] == 'SUCCESS':
@@ -80,7 +81,7 @@ def update_build_status(build_tag_suffix, status_filename):
 # pylint: disable=no-member
 def update_status(event, context):
   """Entry point for cloud function to update build statuses and badges."""
-  del event, context #unused
+  del event, context  #unused
 
   with ndb.Client().context():
     update_build_status(build_project.FUZZING_BUILD_TAG,
@@ -89,11 +90,9 @@ def update_status(event, context):
                         status_filename='status-coverage.json')
 
     for project in Project.query():
-      build_history_query = BuildsHistory.query(
-          BuildsHistory.project == project.name,
-          BuildsHistory.build_tag_suffix == build_project.FUZZING_BUILD_TAG)
-
-      build_history = build_history_query.get()
+      build_history_key = ndb.Key(
+          BuildsHistory, project.name + build_project.FUZZING_BUILD_TAG)
+      build_history = build_history_key.get()
       if not build_history:
         continue
       last_build = get_last_build(build_history.build_ids)
@@ -101,12 +100,10 @@ def update_status(event, context):
       if not last_build:
         continue
 
-      coverage_build_history_query = BuildsHistory.query(
-          BuildsHistory.project == project.name,
-          BuildsHistory.build_tag_suffix == build_and_run_coverage.
-          COVERAGE_BUILD_TAG)
-
-      coverage_build_history = coverage_build_history_query.get()
+      coverage_build_history_key = ndb.Key(
+          BuildsHistory,
+          project.name + build_and_run_coverage.COVERAGE_BUILD_TAG)
+      coverage_build_history = coverage_build_history_key.get()
       if not coverage_build_history:
         continue
 
