@@ -53,7 +53,7 @@ def get_project_data(project_name):
   with ndb.Client().context():
     query = Project.query(Project.name == project_name)
     project = query.get()
-    if project is None:
+    if not Project:
       raise RuntimeError(
           'Project {0} not available in cloud datastore'.format(project_name))
     project_yaml_contents = project.project_yaml_contents

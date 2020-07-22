@@ -45,9 +45,7 @@ def get_last_build(build_ids):
 
     if not builds_status.upload_log(build_id):
       log_name = 'log-{0}'.format(build_id)
-      raise MissingBuildLogError(
-          'Critical Error Missing build log file {0} in cloud storage'.format(
-              log_name))
+      raise MissingBuildLogError('Missing build log file {0}'.format(log_name))
 
     return project_build
 
