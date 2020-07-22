@@ -36,7 +36,7 @@ def update_build_history(project_name, build_id, build_tag_suffix):
   project = project_key.get()
 
   if project is None:
-    project = BuildsHistory(id=project_name + build_tag_suffix,
+    project = BuildsHistory(id=project_name + '-' + build_tag_suffix,
                             build_tag_suffix=build_tag_suffix,
                             project=project_name,
                             build_ids=[])

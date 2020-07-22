@@ -14,7 +14,10 @@
 #
 ################################################################################
 """Cloud function to request builds."""
+import os
 import logging
+
+import requests
 
 import google.auth
 from googleapiclient.discovery import build
@@ -26,16 +29,35 @@ import builds_status
 from datastore_entities import BuildsHistory
 from datastore_entities import Project
 
+# pylint: disable=line-too-long
+BADGE_IMAGES_BASE_URL = "https://raw.githubusercontent.com/google/oss-fuzz/master/infra/gcb/badge_images/"
+BADGES = ['building', 'coverage_building', 'failing']
+
 
 class MissingBuildLogError(Exception):
   """Missing build log file in cloud storage."""
+
+
+def download_badge_images():
+  """Download badge images from github into a /tmp."""
+  if not os.path.exists('/tmp/badge_images'):
+    os.mkdir('/tmp/badge_images')
+  for badge in BADGES:
+    for extension in builds_status.BADGE_IMAGE_TYPES:
+      filename = badge + '.' + extension
+      response = requests.get(BADGE_IMAGES_BASE_URL + filename)
+      with open('/tmp/badge_images/' + filename, 'wb') as image:
+        image.write(response.content)
 
 
 # pylint: disable=no-member
 def get_last_build(build_ids):
   """Returns build object for the last finished build of project."""
   credentials, image_project = google.auth.default()
-  cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
+  cloudbuild = build('cloudbuild',
+                     'v1',
+                     credentials=credentials,
+                     cache_discovery=False)
 
   for build_id in reversed(build_ids):
     project_build = cloudbuild.projects().builds().get(projectId=image_project,
@@ -90,6 +112,7 @@ def update_build_status(build_tag_suffix, status_filename):
 def update_status(event, context):
   """Entry point for cloud function to update build statuses and badges."""
   del event, context  #unused
+  builds_status.SCRIPT_DIR = '/tmp'
 
   with ndb.Client().context():
     project_build_statuses = update_build_status(
@@ -97,6 +120,8 @@ def update_status(event, context):
     coverage_build_statuses = update_build_status(
         build_and_run_coverage.COVERAGE_BUILD_TAG,
         status_filename='status-coverage.json')
+
+    download_badge_images()
 
     for project in Project.query():
       if project.name not in project_build_statuses or project.name not in coverage_build_statuses:

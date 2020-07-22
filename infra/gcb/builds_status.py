@@ -227,9 +227,9 @@ def update_build_badges(project, last_build_successful,
                         last_coverage_build_successful):
   """Upload badges of given project."""
   badge = 'building'
-  if last_coverage_build_successful:
+  if not last_coverage_build_successful:
     badge = 'coverage_failing'
-  if last_build_successful:
+  if not last_build_successful:
     badge = 'failing'
 
   print("[badge] {}: {}".format(project, badge))
