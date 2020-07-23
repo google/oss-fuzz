@@ -35,7 +35,7 @@ def update_build_history(project_name, build_id, build_tag_suffix):
   project_key = ndb.Key(BuildsHistory, project_name + build_tag_suffix)
   project = project_key.get()
 
-  if project is None:
+  if not project:
     project = BuildsHistory(id=project_name + '-' + build_tag_suffix,
                             build_tag_suffix=build_tag_suffix,
                             project=project_name,
