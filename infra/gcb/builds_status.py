@@ -42,17 +42,18 @@ MAX_BUILD_RESULTS = 2000
 BUILDS_PAGE_SIZE = 256
 BADGE_IMAGE_TYPES = {'svg': 'image/svg+xml', 'png': 'image/png'}
 
-_CLIENT = None
+# pylint: disable=invalid-name
+_client = None
 
 
 # pylint: disable=global-statement
 def get_storage_client():
   """Return storage client."""
-  global _CLIENT
-  if not _CLIENT:
-    _CLIENT = storage.Client()
+  global _client
+  if not _client:
+    _client = storage.Client()
 
-  return _CLIENT
+  return _client
 
 
 def usage():
@@ -108,7 +109,6 @@ def upload_log(build_id):
     return True
 
   gcb_bucket.copy_blob(log, status_bucket)
-
   return True
 
 
