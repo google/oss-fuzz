@@ -39,7 +39,7 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-builder',
     'gcr.io/oss-fuzz-base/base-runner',
     'gcr.io/oss-fuzz-base/base-runner-debug',
-    'gcr.io/oss-fuzz-base/base-msan-builder',
+    'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
     'gcr.io/oss-fuzz-base/msan-builder',
 ]
 
@@ -567,8 +567,12 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
             '-v',
             '%s:/out' % project_out_dir, '-v',
             '%s:/work' % project_work_dir
-        ] + _env_to_docker_args(env) +
-        ['gcr.io/oss-fuzz-base/base-msan-builder', 'patch_build.py', '/out'])
+        ] + _env_to_docker_args(env) + [
+            'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
+            'patch_build.py',
+            '/out'
+        ]
+    )
 
   return 0
 

@@ -21,7 +21,12 @@ def main():
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
 
   image = 'gcr.io/oss-fuzz-base/msan-builder'
-  steps = build_base_images.get_steps(['base-msan-builder', 'msan-builder'])
+  steps = build_base_images.get_steps(
+      [
+          'base-sanitizer-libs-builder',
+          'msan-builder',
+      ]
+  )
   ts = datetime.datetime.utcnow().strftime('%Y%m%d%H%M')
   upload_name = 'msan-libs-' + ts + '.zip'
 
@@ -47,7 +52,7 @@ def main():
       'timeout': str(6 * 3600) + 's',
       'options': options,
       'images': [
-          'gcr.io/oss-fuzz-base/base-msan-builder',
+          'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
           image,
       ],
   }
