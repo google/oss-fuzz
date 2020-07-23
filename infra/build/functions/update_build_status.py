@@ -14,10 +14,7 @@
 #
 ################################################################################
 """Cloud function to request builds."""
-import os
 import logging
-
-import requests
 
 import google.auth
 from googleapiclient.discovery import build
@@ -29,25 +26,12 @@ import builds_status
 from datastore_entities import BuildsHistory
 from datastore_entities import Project
 
-# pylint: disable=line-too-long
-BADGE_IMAGES_BASE_URL = "https://raw.githubusercontent.com/google/oss-fuzz/master/infra/gcb/badge_images/"
-BADGES = ['building', 'coverage_building', 'failing']
+BADGE_DIR = 'badge_images'
+DESTINATION_BADGE_DIR = 'badges'
 
 
 class MissingBuildLogError(Exception):
   """Missing build log file in cloud storage."""
-
-
-def download_badge_images():
-  """Download badge images from github into a /tmp."""
-  if not os.path.exists('/tmp/badge_images'):
-    os.mkdir('/tmp/badge_images')
-  for badge in BADGES:
-    for extension in builds_status.BADGE_IMAGE_TYPES:
-      filename = badge + '.' + extension
-      response = requests.get(BADGE_IMAGES_BASE_URL + filename)
-      with open('/tmp/badge_images/' + filename, 'wb') as image:
-        image.write(response.content)
 
 
 # pylint: disable=no-member
@@ -108,11 +92,41 @@ def update_build_status(build_tag_suffix, status_filename):
   return statuses
 
 
+def update_build_badges(project, last_build_successful,
+                        last_coverage_build_successful):
+  """Upload badges of given project."""
+  badge = 'building'
+  if not last_coverage_build_successful:
+    badge = 'coverage_failing'
+  if not last_build_successful:
+    badge = 'failing'
+
+  print("[badge] {}: {}".format(project, badge))
+
+  for extension in builds_status.BADGE_IMAGE_TYPES:
+    badge_name = '{badge}.{extension}'.format(badge=badge, extension=extension)
+
+    # Copy blob from badge_images/badge_name to badges/project/
+    blob_name = '{badge_dir}/{badge_name}'.format(badge_dir=BADGE_DIR,
+                                                  badge_name=badge_name)
+
+    destination_blob_name = '{badge_dir}/{project_name}.{extension}'.format(
+        badge_dir=DESTINATION_BADGE_DIR,
+        project_name=project,
+        extension=extension)
+
+    status_bucket = builds_status.get_storage_client().get_bucket(
+        builds_status.STATUS_BUCKET)
+    badge_blob = status_bucket.blob(blob_name)
+    status_bucket.copy_blob(badge_blob,
+                            status_bucket,
+                            new_name=destination_blob_name)
+
+
 # pylint: disable=no-member
 def update_status(event, context):
   """Entry point for cloud function to update build statuses and badges."""
   del event, context  #unused
-  builds_status.SCRIPT_DIR = '/tmp'
 
   with ndb.Client().context():
     project_build_statuses = update_build_status(
@@ -121,12 +135,9 @@ def update_status(event, context):
         build_and_run_coverage.COVERAGE_BUILD_TAG,
         status_filename='status-coverage.json')
 
-    download_badge_images()
-
     for project in Project.query():
       if project.name not in project_build_statuses or project.name not in coverage_build_statuses:
         continue
 
-      builds_status.update_build_badges(project.name,
-                                        project_build_statuses[project.name],
-                                        coverage_build_statuses[project.name])
+      update_build_badges(project.name, project_build_statuses[project.name],
+                          coverage_build_statuses[project.name])

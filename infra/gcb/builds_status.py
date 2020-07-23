@@ -47,7 +47,7 @@ _CLIENT = None
 
 
 # pylint: disable=global-statement
-def _get_storage_client():
+def get_storage_client():
   """Return storage client."""
   global _CLIENT
   if not _CLIENT:
@@ -82,7 +82,7 @@ def upload_status(successes, failures, status_filename):
       'last_updated': datetime.datetime.utcnow().ctime()
   }
 
-  bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
+  bucket = get_storage_client().get_bucket(STATUS_BUCKET)
   blob = bucket.blob(status_filename)
   blob.cache_control = 'no-cache'
   blob.upload_from_string(json.dumps(data), content_type='application/json')
@@ -95,8 +95,8 @@ def is_build_successful(build):
 
 def upload_log(build_id):
   """Uploads log file oss-fuzz-build-logs."""
-  status_bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
-  gcb_bucket = _get_storage_client().get_bucket(build_project.GCB_LOGS_BUCKET)
+  status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
+  gcb_bucket = get_storage_client().get_bucket(build_project.GCB_LOGS_BUCKET)
   log_name = 'log-{0}.txt'.format(build_id)
   log = gcb_bucket.blob(log_name)
   dest_log = status_bucket.blob(log_name)
@@ -108,9 +108,7 @@ def upload_log(build_id):
   if dest_log.exists():
     return True
 
-  with tempfile.NamedTemporaryFile() as file:
-    log.download_to_filename(file.name)
-    dest_log.upload_from_filename(file.name, content_type='text/plain')
+  gcb_bucket.copy_blob(log, status_bucket)
 
   return True
 
@@ -243,7 +241,7 @@ def update_build_badges(project, last_build_successful,
     blob_name = '{badge_dir}/{project_name}.{extension}'.format(
         badge_dir=BADGE_DIR, project_name=project, extension=extension)
 
-    status_bucket = _get_storage_client().get_bucket(STATUS_BUCKET)
+    status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
     badge_blob = status_bucket.blob(blob_name)
     badge_blob.upload_from_filename(badge_file, content_type=mime_type)
 

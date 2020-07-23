@@ -25,6 +25,7 @@ from google.cloud import ndb
 from datastore_entities import BuildsHistory
 from datastore_entities import Project
 from request_build import get_build_steps
+from request_build import get_project_data
 from request_build import update_build_history
 import test_utils
 
@@ -96,6 +97,11 @@ class TestRequestBuilds(unittest.TestCase):
 
       self.assertEqual(BuildsHistory.query().get().build_ids,
                        expected_build_ids)
+
+  def test_get_project_data(self):
+    """Testing get project data."""
+    with ndb.Client().context():
+      self.assertRaises(RuntimeError, get_project_data, 'test-project')
 
   @classmethod
   def tearDownClass(cls):
