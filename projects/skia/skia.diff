@@ -30,7 +30,7 @@ index 22fd36ce1b..8a6025f641 100644
          const uint8_t* rowA = nullptr;
          const uint8_t* rowB = nullptr;
 diff --git a/src/core/SkDraw.cpp b/src/core/SkDraw.cpp
-index 99c8bd8284..335d2e97a0 100644
+index 48858d1c9b..8fe7057a26 100644
 --- a/src/core/SkDraw.cpp
 +++ b/src/core/SkDraw.cpp
 @@ -958,6 +958,12 @@ void SkDraw::drawPath(const SkPath& origSrcPath, const SkPaint& origPaint,
@@ -47,10 +47,10 @@ index 99c8bd8284..335d2e97a0 100644
  }
  
 diff --git a/src/core/SkImageFilter.cpp b/src/core/SkImageFilter.cpp
-index 80f4d0b62d..c4aabb0540 100644
+index 11bbd36693..f5fb7247af 100644
 --- a/src/core/SkImageFilter.cpp
 +++ b/src/core/SkImageFilter.cpp
-@@ -176,6 +176,12 @@ bool SkImageFilter_Base::Common::unflatten(SkReadBuffer& buffer, int expectedCou
+@@ -174,6 +174,12 @@ bool SkImageFilter_Base::Common::unflatten(SkReadBuffer& buffer, int expectedCou
          return false;
      }
  
@@ -64,12 +64,12 @@ index 80f4d0b62d..c4aabb0540 100644
      for (int i = 0; i < count; i++) {
          fInputs.push_back(buffer.readBool() ? buffer.readImageFilter() : nullptr);
 diff --git a/src/core/SkMallocPixelRef.cpp b/src/core/SkMallocPixelRef.cpp
-index d998029a2b..8807c1fc4d 100644
+index 02fd9c4580..7a23974b85 100644
 --- a/src/core/SkMallocPixelRef.cpp
 +++ b/src/core/SkMallocPixelRef.cpp
-@@ -37,6 +37,11 @@ sk_sp<SkPixelRef> SkMallocPixelRef::MakeAllocate(const SkImageInfo& info, size_t
-             return nullptr;
-         }
+@@ -34,6 +34,11 @@ sk_sp<SkPixelRef> SkMallocPixelRef::MakeAllocate(const SkImageInfo& info, size_t
+     if (SkImageInfo::ByteSizeOverflowed(size)) {
+         return nullptr;
      }
 +#if defined(IS_FUZZING)
 +    if (size > 100000) {
@@ -80,7 +80,7 @@ index d998029a2b..8807c1fc4d 100644
      if (nullptr == addr) {
          return nullptr;
 diff --git a/src/core/SkMaskFilter.cpp b/src/core/SkMaskFilter.cpp
-index c840a68a03..5692773a33 100644
+index 222a5943e1..466307e9b3 100644
 --- a/src/core/SkMaskFilter.cpp
 +++ b/src/core/SkMaskFilter.cpp
 @@ -262,6 +262,11 @@ bool SkMaskFilterBase::filterPath(const SkPath& devPath, const SkMatrix& matrix,
@@ -96,10 +96,10 @@ index c840a68a03..5692773a33 100644
                              SkMask::kComputeBoundsAndRenderImage_CreateMode,
                              style)) {
 diff --git a/src/core/SkPaint.cpp b/src/core/SkPaint.cpp
-index f294dbe4a0..12100e1624 100644
+index 001fa39338..f0b2bcd684 100644
 --- a/src/core/SkPaint.cpp
 +++ b/src/core/SkPaint.cpp
-@@ -449,6 +449,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
+@@ -333,6 +333,13 @@ bool SkPaint::getFillPath(const SkPath& src, SkPath* dst, const SkRect* cullRect
  
      SkStrokeRec rec(*this, resScale);
  
@@ -114,41 +114,22 @@ index f294dbe4a0..12100e1624 100644
      SkPath tmpPath;
  
 diff --git a/src/core/SkPath.cpp b/src/core/SkPath.cpp
-index 09c061de51..34b3f0bd63 100644
+index 0122601937..8c46011fe3 100644
 --- a/src/core/SkPath.cpp
 +++ b/src/core/SkPath.cpp
-@@ -3173,7 +3173,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
+@@ -3182,7 +3182,11 @@ void SkPathPriv::CreateDrawArcPath(SkPath* path, const SkRect& oval, SkScalar st
                                     SkScalar sweepAngle, bool useCenter, bool isFillNoPathEffect) {
      SkASSERT(!oval.isEmpty());
      SkASSERT(sweepAngle);
 -
 +#if defined(IS_FUZZING)
-+    if (sweepAngle > 3600.0f || sweepAngle < 3600.0f) {
++    if (sweepAngle > 3600.0f || sweepAngle < -3600.0f) {
 +        return;
 +    }
 +#endif
      path->reset();
      path->setIsVolatile(true);
      path->setFillType(SkPathFillType::kWinding);
-diff --git a/src/core/SkReadBuffer.cpp b/src/core/SkReadBuffer.cpp
-index c7e26df8d4..eb9b28141d 100644
---- a/src/core/SkReadBuffer.cpp
-+++ b/src/core/SkReadBuffer.cpp
-@@ -299,8 +299,13 @@ sk_sp<SkData> SkReadBuffer::readByteArrayAsData() {
- uint32_t SkReadBuffer::getArrayCount() {
-     const size_t inc = sizeof(uint32_t);
-     if (!this->validate(IsPtrAlign4(fCurr) && this->isAvailable(inc))) {
-         return 0;
-     }
-+#if defined(IS_FUZZING)
-+    uint32_t retVal = *(uint32_t*)fCurr;
-+    return retVal < 1000 ? retVal: 1000;
-+#else
-     return *((uint32_t*)fCurr);
-+#endif
- }
- 
- /*  Format:
 diff --git a/src/core/SkScan_Hairline.cpp b/src/core/SkScan_Hairline.cpp
 index eeea9e78f0..4c8d2a8f3f 100644
 --- a/src/core/SkScan_Hairline.cpp
@@ -180,7 +161,7 @@ index eeea9e78f0..4c8d2a8f3f 100644
              SkFixed startX = SkFDot6ToFixed(x0) + (slope * ((32 - y0) & 63) >> 6);
  
 diff --git a/src/effects/Sk1DPathEffect.cpp b/src/effects/Sk1DPathEffect.cpp
-index 360179d663..04df451f2a 100644
+index 16dee4a90b..a306585b20 100644
 --- a/src/effects/Sk1DPathEffect.cpp
 +++ b/src/effects/Sk1DPathEffect.cpp
 @@ -19,6 +19,11 @@
@@ -211,23 +192,6 @@ index fa19bb96b8..005daff13b 100644
  
      const SkMatrix& mat = this->getMatrix();
      SkPoint src, dst;
-diff --git a/src/effects/SkDashPathEffect.cpp b/src/effects/SkDashPathEffect.cpp
-index d392dc2317..d71515f1d4 100644
---- a/src/effects/SkDashPathEffect.cpp
-+++ b/src/effects/SkDashPathEffect.cpp
-@@ -381,6 +381,12 @@ sk_sp<SkFlattenable> SkDashImpl::CreateProc(SkReadBuffer& buffer) {
-         return nullptr;
-     }
- 
-+#if defined(IS_FUZZING)
-+    // TODO(kjlubick) Can this be removed now that we have the check above?
-+    if (count > 20) {
-+        return nullptr;
-+    }
-+#endif
-     SkAutoSTArray<32, SkScalar> intervals(count);
-     if (buffer.readScalarArray(intervals.get(), count)) {
-         return SkDashPathEffect::Make(intervals.get(), SkToInt(count), phase);
 diff --git a/src/effects/SkDiscretePathEffect.cpp b/src/effects/SkDiscretePathEffect.cpp
 index 4ad1165b0f..a79526a909 100644
 --- a/src/effects/SkDiscretePathEffect.cpp
