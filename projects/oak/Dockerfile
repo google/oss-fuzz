@@ -17,7 +17,6 @@
 # TODO(https://github.com/google/oss-fuzz/issues/3093): Stop specifying the
 # image SHA once the bug is fixed.
 FROM gcr.io/oss-fuzz-base/base-builder@sha256:276813aef0ce5972db43c0230f96162003994fa742fb1b2f4e66c67498575c65
-MAINTAINER tzn@google.com
 
 # Use a fixed Bazel version.
 # https://github.com/google/asylo/blob/088ea3490dd4579655bd5b65b0e31fe18de7f6dd/asylo/distrib/toolchain/Dockerfile#L48-L71

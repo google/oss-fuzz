@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER guidovranken@gmail.com
 
 RUN apt-get update && \
     apt-get install -y apt-transport-https ca-certificates gnupg software-properties-common wget && \
@@ -43,7 +42,7 @@ RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/golang/go
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
-RUN git clone --depth 1 https://github.com/ARMmbed/mbed-crypto.git
+RUN git clone --depth 1 https://github.com/ARMmbed/mbedtls.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git

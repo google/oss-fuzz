@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER yguyon@google.com
 RUN apt-get update && apt-get install -y autoconf make libtool zip
 RUN git clone https://chromium.googlesource.com/webm/libwebp
 RUN git clone https://chromium.googlesource.com/webm/libwebp-test-data

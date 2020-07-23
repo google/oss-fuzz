@@ -284,6 +284,35 @@ test_app("api_null_canvas") {
   ]
 }
 
+test_app("api_svg_canvas") {
+  include_dirs = [
+    "include",
+    "include/svg",
+  ]
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCanvas.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzAPISVGCanvas.cpp",
+    "tools/Resources.cpp",
+    "tools/UrlDataManager.cpp",
+    "tools/debugger/DebugCanvas.cpp",
+    "tools/debugger/DebugLayerManager.cpp",
+    "tools/debugger/DrawCommand.cpp",
+    "tools/debugger/JsonWriteBuffer.cpp",
+    "tools/fonts/TestFontMgr.cpp",
+    "tools/fonts/TestSVGTypeface.cpp",
+    "tools/fonts/TestTypeface.cpp",
+  ]
+  deps = [
+    ":experimental_svg_model",
+    ":flags",
+    ":gpu_tool_utils",
+    ":skia",
+    "//third_party/libpng",
+  ]
+}
+
 test_app("png_encoder") {
   sources = [
     "fuzz/Fuzz.cpp",
@@ -462,6 +491,18 @@ test_app("svg_dom") {
   deps = [
     ":experimental_svg_model",
     ":flags",
+    ":skia",
+  ]
+}
+
+test_app("skruntimeeffect") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSkRuntimeEffect.cpp",
+  ]
+  deps = [
+    ":gpu_tool_utils",
     ":skia",
   ]
 }

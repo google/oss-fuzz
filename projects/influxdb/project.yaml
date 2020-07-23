@@ -4,3 +4,7 @@ primary_contact: "william@influxdata.com"
 auto_ccs:
   - "palbert@influxdata.com"
   - "ryan@influxdata.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

@@ -120,6 +120,10 @@ def PatchBuild(output_directory):
   for root_dir, _, filenames in os.walk(output_directory):
     for filename in filenames:
       file_path = os.path.join(root_dir, filename)
+
+      if os.path.islink(file_path):
+        continue
+
       if not IsElf(file_path):
         continue
 

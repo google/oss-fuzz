@@ -107,10 +107,7 @@ def build_fuzzers(project_name,
     logging.error('Invalid workspace: %s.', workspace)
     return False
 
-  # Check that sanitizer is valid.
-  if not is_project_sanitizer(sanitizer, project_name):
-    raise ValueError("{0} is not a valid sanitizer for project {1}".format(
-        sanitizer, project_name))
+  logging.info("Using %s sanitizer.", sanitizer)
 
   git_workspace = os.path.join(workspace, 'storage')
   os.makedirs(git_workspace, exist_ok=True)
@@ -200,11 +197,7 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
     logging.error('Invalid workspace: %s.', workspace)
     return False, False
 
-  # Check that sanitizer is valid.
-  if not is_project_sanitizer(sanitizer, project_name):
-    raise ValueError("{0} is not a valid sanitizer for project {1}".format(
-        sanitizer, project_name))
-  logging.info("Using %s as sanitizer.", sanitizer)
+  logging.info("Using %s sanitizer.", sanitizer)
 
   out_dir = os.path.join(workspace, 'out')
   artifacts_dir = os.path.join(out_dir, 'artifacts')
@@ -500,36 +493,3 @@ def parse_fuzzer_output(fuzzer_output, out_dir):
   summary_file_path = os.path.join(out_dir, 'bug_summary.txt')
   with open(summary_file_path, 'a') as summary_handle:
     summary_handle.write(summary_str)
-
-
-def is_project_sanitizer(sanitizer, oss_fuzz_project_name):
-  """Finds all of the sanitizers a project can use for building and running.
-
-  Args:
-   sanitizer: The desired sanitizer.
-   oss_fuzz_project_name: The name of the relevant OSS-Fuzz project.
-
-  Returns:
-  True if project can use sanitizer.
-  """
-  project_yaml = os.path.join(helper.OSS_FUZZ_DIR, 'projects',
-                              oss_fuzz_project_name, 'project.yaml')
-  if not os.path.isfile(project_yaml):
-    logging.error('project.yaml for project %s could not be found.',
-                  oss_fuzz_project_name)
-    return False
-
-  # Simple parse to prevent adding pyYAML dependency.
-  with open(project_yaml, 'r') as file_handle:
-    file_data = file_handle.read()
-
-  # TODO(metzman): Replace this with proper handling of project.yaml files.
-  if 'sanitizers:' not in file_data:
-    logging.info('No sanitizers defined in project.yaml. '
-                 'Only allowing address and undefined')
-
-    # List is from:
-    # https://google.github.io/oss-fuzz/getting-started/new-project-guide/#sanitizers
-    return sanitizer in ('address', 'undefined')
-
-  return sanitizer in file_data

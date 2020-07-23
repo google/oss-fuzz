@@ -23,24 +23,22 @@ rm -rf build_swiftshader
 mkdir build_swiftshader
 
 cd build_swiftshader
-if [ $SANITIZER == "coverage" ]; then
-  cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja"
+if [ $SANITIZER == "address" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_ASAN"
+elif [ $SANITIZER == "memory" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_MSAN"
+elif [ $SANITIZER == "undefined" ]; then
+  # The current SwiftShader build needs -fno-sanitize=vptr, but it cannot be
+  # specified here since -fsanitize=undefined will always come after any
+  # user specified flags passed to cmake. SwiftShader does not need to be
+  # built with the undefined sanitizer in order to fuzz Skia, so don't.
+  CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
+elif [ $SANITIZER == "coverage" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_EMIT_COVERAGE"
 else
-  if [ $SANITIZER == "address" ]; then
-    CMAKE_SANITIZER="SWIFTSHADER_ASAN"
-  elif [ $SANITIZER == "memory" ]; then
-    CMAKE_SANITIZER="SWIFTSHADER_MSAN"
-  elif [ $SANITIZER == "undefined" ]; then
-    # The current SwiftShader build needs -fno-sanitize=vptr, but it cannot be
-    # specified here since -fsanitize=undefined will always come after any
-    # user specified flags passed to cmake. SwiftShader does not need to be
-    # built with the undefined sanitizer in order to fuzz Skia, so don't.
-    CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
-  else
-    exit 1
-  fi
-  CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
+  exit 1
 fi
+CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 
 $SRC/depot_tools/ninja libGLESv2 libEGL
 cp libGLESv2.so libEGL.so $OUT
@@ -51,11 +49,9 @@ popd
 DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
          -Wno-cast-qual"
 # Disable UBSan vptr since target built with -fno-rtti.
-# TODO(metzman): Stop using gold when
-# bugs.chromium.org/p/oss-fuzz/issues/detail?id=16777 gets resolved.
 export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
 export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr "-DIS_FUZZING_WITH_LIBFUZZER""
-export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH -fuse-ld=gold"
+export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
 export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
@@ -111,7 +107,7 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_polyutils android_codec image_decode_incremental \
                                    sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
                                    api_skdescriptor skdescriptor_deserialize\
-                                   svg_dom
+                                   svg_dom api_svg_canvas skruntimeeffect
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -219,3 +215,9 @@ cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.
 
 cp out/Fuzz/svg_dom $OUT/svg_dom
 cp ./svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
+
+cp out/Fuzz/api_svg_canvas $OUT/api_svg_canvas
+cp ./canvas_seed_corpus.zip $OUT/api_svg_canvas_seed_corpus.zip
+
+cp out/Fuzz/skruntimeeffect $OUT/skruntimeeffect
+cp ./sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip

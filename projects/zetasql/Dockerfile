@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER zdwho@google.com
 RUN apt-get update && apt-get --no-install-recommends install -y \
         make autoconf automake libtool apt-transport-https \
         libunwind-dev tzdata rsync \
@@ -26,6 +25,7 @@ RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add - && \
 
 RUN apt-get update && apt-get -y install bazel-1.0.0
 
-RUN git clone --depth 1 https://github.com/googleinterns/zetasql-fuzzing.git zetasql
+RUN git clone -b master --depth 1 \
+    https://github.com/googleinterns/zetasql-fuzzing.git zetasql
 COPY build.sh $SRC/
 WORKDIR zetasql

@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER keir@google.com
 RUN apt-get update && apt-get install -y git build-essential python
 
 RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1

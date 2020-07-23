@@ -8,6 +8,7 @@ auto_ccs:
  - shane@unicode.org
  - srl295@gmail.com
  - nrunge@google.com
+ - ftang@google.com
 sanitizers:
  - address
  - memory
