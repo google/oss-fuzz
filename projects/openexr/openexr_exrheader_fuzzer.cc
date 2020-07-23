@@ -43,21 +43,13 @@ using namespace OPENEXR_IMF_NAMESPACE;
 using namespace std;
 
 void
-printTimeCode (TimeCode tc)
+dumpTimeCode (TimeCode tc)
 {
-    setfill ('0');
-#ifndef HAVE_COMPLETE_IOMANIP
     tc.hours();
     tc.minutes();
     tc.seconds();
     tc.frame();
-#else
-    right << tc.hours();
-    right << tc.minutes();
-    right << tc.seconds();
-    right << tc.frame();
-#endif
-    setfill (' ');
+
     tc.dropFrame();
     tc.colorFrame();
     tc.fieldPhase();
@@ -68,7 +60,7 @@ printTimeCode (TimeCode tc)
 }
 
 void
-printChannelList (const ChannelList &cl)
+dumpChannelList (const ChannelList &cl)
 {
     for (ChannelList::ConstIterator i = cl.begin(); i != cl.end(); ++i)
     {
@@ -79,15 +71,13 @@ printChannelList (const ChannelList &cl)
 
 
 void
-printInfo (IStream &is)
+dumpInfo (IStream &is)
 {
     MultiPartInputFile in(is, 0);
     int parts = in.parts();
 
     getVersion(in.version());
-    setbase(16);
     getFlags(in.version());
-    setbase(10);
 
     for (int p = 0; p < parts ; ++p)
     {
@@ -96,7 +86,6 @@ printInfo (IStream &is)
         if (parts != 1)
         {
             in.partComplete(p);
-
         }
 
         for (Header::ConstIterator i = h.begin(); i != h.end(); ++i)
@@ -119,7 +108,7 @@ printInfo (IStream &is)
             else if (const ChannelListAttribute *ta =
                             dynamic_cast <const ChannelListAttribute *> (a))
             {
-                printChannelList(ta->value());
+                dumpChannelList(ta->value());
             }
             else if (const ChromaticitiesAttribute *ta =
                             dynamic_cast <const ChromaticitiesAttribute *> (a))
@@ -180,7 +169,7 @@ printInfo (IStream &is)
                                 i != ta->value().end();
                                 ++i)
                 {
-                    ;
+                    *i;
                 }
             }
             else if (const RationalAttribute *ta =
@@ -197,7 +186,7 @@ printInfo (IStream &is)
             else if (const TimeCodeAttribute *ta =
                             dynamic_cast <const TimeCodeAttribute *> (a))
             {
-                printTimeCode (ta->value());
+                dumpTimeCode (ta->value());
             }
             else if (const V2iAttribute *ta =
                             dynamic_cast <const V2iAttribute *> (a))
@@ -225,8 +214,6 @@ printInfo (IStream &is)
 
 }
 
-
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   const std::string s(reinterpret_cast<const char*>(data), size);
@@ -234,7 +221,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   is.str(s);
 
   try {
-    printInfo(is);
+    dumpInfo(is);
   } catch (IEX_NAMESPACE::InputExc& e) {
     ;
   } catch (IEX_NAMESPACE::ArgExc& e) {

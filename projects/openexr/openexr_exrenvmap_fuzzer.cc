@@ -32,7 +32,7 @@ using namespace OPENEXR_IMF_NAMESPACE;
 using namespace std;
 
 static char *buf_to_file(const char *buf, size_t size) {
-  char *name = strdup("/dev/shm/fuzz-XXXXXX");
+  char *name = strdup("/tmp/fuzz-XXXXXX");
   int fd = mkstemp(name);
   if (fd < 0) {
     perror("open");
