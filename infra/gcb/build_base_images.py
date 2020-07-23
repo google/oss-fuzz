@@ -33,7 +33,7 @@ BASE_IMAGES = [
     'base-builder',
     'base-runner',
     'base-runner-debug',
-    'base-msan-builder',
+    'base-sanitizer-builder',
 ]
 
 TAG_PREFIX = 'gcr.io/oss-fuzz-base/'
