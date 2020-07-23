@@ -14,40 +14,38 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "asn1_pdu.pb.h"
-#include "fuzzing/proto/asn1-pdu-proto/asn1_proto_to_der.h"
-#include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
+// This fuzz target fuzzes the same API as
+// https://github.com/google/boringssl/blob/master/fuzz/pkcs8.cc, but it employs
+// libprotobuf-mutator for structure-aware fuzzing.
+
 #include <openssl/bytestring.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/mem.h>
+#include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
+#include "fuzzing/proto/asn1-pdu-proto/asn1_proto_to_der.h"
+#include "asn1_pdu.pb.h"
 
-int FUZZ_PKCS8(const uint8_t *buf, size_t len) {
+DEFINE_PROTO_FUZZER(const asn1_pdu::PDU& asn1) {
+  asn1_pdu::ASN1ProtoToDER converter;
+  std::vector<uint8_t> encoded = converter.ProtoToDER(asn1);
+  const uint8_t* buf = encoded.data();
+  size_t len = encoded.size();
+
   CBS cbs;
   CBS_init(&cbs, buf, len);
-  EVP_PKEY *pkey = EVP_parse_private_key(&cbs);
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_private_key(&cbs));
   if (pkey == NULL) {
-    return 0;
+    return;
   }
 
-  uint8_t *der;
+  uint8_t* der;
   size_t der_len;
-  CBB cbb;
-  if (CBB_init(&cbb, 0) &&
-      EVP_marshal_private_key(&cbb, pkey) &&
-      CBB_finish(&cbb, &der, &der_len)) {
+  bssl::ScopedCBB cbb;
+  if (CBB_init(cbb.get(), 0) &&
+      EVP_marshal_private_key(cbb.get(), pkey.get()) &&
+      CBB_finish(cbb.get(), &der, &der_len)) {
     OPENSSL_free(der);
   }
-  CBB_cleanup(&cbb);
-  EVP_PKEY_free(pkey);
   ERR_clear_error();
-  return 0;
-}
-
-DEFINE_PROTO_FUZZER(const asn1_pdu::PDU &asn1) {
-  asn1_pdu::ASN1ProtoToDER converter = asn1_pdu::ASN1ProtoToDER();
-  std::vector<uint8_t> der = converter.ProtoToDER(asn1);
-  const uint8_t* ptr = &der[0];
-  size_t size = der.size();
-  FUZZ_PKCS8(ptr, size);
 }

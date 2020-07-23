@@ -14,33 +14,33 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "asn1_pdu.pb.h"
-#include "fuzzing/proto/asn1-pdu-proto/asn1_proto_to_der.h"
-#include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
+// This fuzz target fuzzes the same API as
+// https://github.com/google/boringssl/blob/master/fuzz/cert.cc, but it employs
+// libprotobuf-mutator for structure-aware fuzzing.
+
 #include <openssl/err.h>
 #include <openssl/mem.h>
 #include <openssl/x509.h>
+#include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
+#include "fuzzing/proto/asn1-pdu-proto/asn1_proto_to_der.h"
+#include "asn1_pdu.pb.h"
 
-int FUZZ_CERT(const uint8_t *buf, size_t len) {
-  X509 *x509 = d2i_X509(NULL, &buf, len);
+DEFINE_PROTO_FUZZER(const asn1_pdu::PDU& asn1) {
+  asn1_pdu::ASN1ProtoToDER converter;
+  std::vector<uint8_t> encoded = converter.ProtoToDER(asn1);
+  const uint8_t* buf = encoded.data();
+  size_t len = encoded.size();
+
+  X509* x509 = d2i_X509(NULL, &buf, len);
   if (x509 != NULL) {
     // Extract the public key.
     EVP_PKEY_free(X509_get_pubkey(x509));
 
     // Reserialize the structure.
-    uint8_t *der = NULL;
+    uint8_t* der = NULL;
     i2d_X509(x509, &der);
     OPENSSL_free(der);
   }
   X509_free(x509);
   ERR_clear_error();
-  return 0;
-}
-
-DEFINE_PROTO_FUZZER(const asn1_pdu::PDU &asn1) {
-  asn1_pdu::ASN1ProtoToDER converter = asn1_pdu::ASN1ProtoToDER();
-  std::vector<uint8_t> der = converter.ProtoToDER(asn1);
-  const uint8_t* ptr = &der[0];
-  size_t size = der.size();
-  FUZZ_CERT(ptr, size);
 }

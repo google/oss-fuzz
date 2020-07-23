@@ -14,29 +14,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "asn1_pdu.pb.h"
-#include "fuzzing/proto/asn1-pdu-proto/asn1_proto_to_der.h"
-#include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
+// This fuzz target fuzzes the same API as
+// https://github.com/google/boringssl/blob/master/fuzz/pkcs12.cc, but it
+// employs libprotobuf-mutator for structure-aware fuzzing.
+
 #include <openssl/bytestring.h>
 #include <openssl/evp.h>
 #include <openssl/pkcs8.h>
 #include <openssl/x509.h>
-#include <iostream>
+#include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
+#include "fuzzing/proto/asn1-pdu-proto/asn1_proto_to_der.h"
+#include "asn1_pdu.pb.h"
 
-int FUZZ_PKCS12(const uint8_t *buf, size_t len) {
+DEFINE_PROTO_FUZZER(const asn1_pdu::PDU& asn1) {
+  asn1_pdu::ASN1ProtoToDER converter;
+  std::vector<uint8_t> encoded = converter.ProtoToDER(asn1);
+  const uint8_t* buf = encoded.data();
+  size_t len = encoded.size();
+
   bssl::UniquePtr<STACK_OF(X509)> certs(sk_X509_new_null());
-  EVP_PKEY *key = nullptr;
+  EVP_PKEY* key = nullptr;
   CBS cbs;
   CBS_init(&cbs, buf, len);
   PKCS12_get_key_and_certs(&key, certs.get(), &cbs, "foo");
   EVP_PKEY_free(key);
-  return 0;
-}
-
-DEFINE_PROTO_FUZZER(const asn1_pdu::PDU &asn1) {
-  asn1_pdu::ASN1ProtoToDER converter = asn1_pdu::ASN1ProtoToDER();
-  std::vector<uint8_t> der = converter.ProtoToDER(asn1);
-  const uint8_t* ptr = &der[0];
-  size_t size = der.size();
-  FUZZ_PKCS12(ptr, size);
 }
