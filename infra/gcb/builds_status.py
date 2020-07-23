@@ -220,29 +220,35 @@ def update_build_status(builds, projects, build_tag_suffix, status_filename):
   upload_status(successes, failures, status_filename)
 
 
-def update_build_badges(project, last_build_successful,
-                        last_coverage_build_successful):
-  """Upload badges of given project."""
-  badge = 'building'
-  if not last_coverage_build_successful:
-    badge = 'coverage_failing'
-  if not last_build_successful:
-    badge = 'failing'
+def update_build_badges(builds, projects, build_tag, coverage_tag):
+  """Update build badges of projects."""
+  for project in projects:
+    last_build = find_last_build(builds, project, build_tag)
+    last_coverage_build = find_last_build(builds, project, coverage_tag)
+    if not last_build or not last_coverage_build:
+      continue
 
-  print("[badge] {}: {}".format(project, badge))
+    badge = 'building'
+    if not is_build_successful(last_coverage_build):
+      badge = 'coverage_failing'
+    if not is_build_successful(last_build):
+      badge = 'failing'
 
-  for extension, mime_type in BADGE_IMAGE_TYPES.items():
-    badge_name = '{badge}.{extension}'.format(badge=badge, extension=extension)
-    # Retrieve the image relative to this script's location
-    badge_file = os.path.join(SCRIPT_DIR, 'badge_images', badge_name)
+    print("[badge] {}: {}".format(project, badge))
 
-    # The uploaded blob name should look like `badges/project.png`
-    blob_name = '{badge_dir}/{project_name}.{extension}'.format(
-        badge_dir=BADGE_DIR, project_name=project, extension=extension)
+    for extension, mime_type in BADGE_IMAGE_TYPES.items():
+      badge_name = '{badge}.{extension}'.format(
+          badge=badge, extension=extension)
+      # Retrieve the image relative to this script's location
+      badge_file = os.path.join(SCRIPT_DIR, 'badge_images', badge_name)
 
-    status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
-    badge_blob = status_bucket.blob(blob_name)
-    badge_blob.upload_from_filename(badge_file, content_type=mime_type)
+      # The uploaded blob name should look like `badges/project.png`
+      blob_name = '{badge_dir}/{project_name}.{extension}'.format(
+          badge_dir=BADGE_DIR, project_name=project, extension=extension)
+
+      status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
+      badge_blob = status_bucket.blob(blob_name)
+      badge_blob.upload_from_filename(badge_file, content_type=mime_type)
 
 
 def main():
@@ -266,17 +272,11 @@ def main():
                       build_and_run_coverage.COVERAGE_BUILD_TAG,
                       status_filename='status-coverage.json')
 
-  for project in projects:
-    last_build = find_last_build(builds, project,
-                                 build_project.FUZZING_BUILD_TAG)
-    last_coverage_build = find_last_build(
-        builds, project, build_and_run_coverage.COVERAGE_BUILD_TAG)
-    if not last_build or not last_coverage_build:
-      continue
-    last_build_successful = is_build_successful(last_build)
-    last_coverage_build_successful = is_build_successful(last_coverage_build)
-    update_build_badges(project, last_build_successful,
-                        last_coverage_build_successful)
+  update_build_badges(
+      builds,
+      projects,
+      build_tag=build_project.FUZZING_BUILD_TAG,
+      coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
 
 
 if __name__ == '__main__':
