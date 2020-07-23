@@ -237,8 +237,8 @@ def update_build_badges(builds, projects, build_tag, coverage_tag):
     print("[badge] {}: {}".format(project, badge))
 
     for extension, mime_type in BADGE_IMAGE_TYPES.items():
-      badge_name = '{badge}.{extension}'.format(
-          badge=badge, extension=extension)
+      badge_name = '{badge}.{extension}'.format(badge=badge,
+                                                extension=extension)
       # Retrieve the image relative to this script's location
       badge_file = os.path.join(SCRIPT_DIR, 'badge_images', badge_name)
 
@@ -272,11 +272,10 @@ def main():
                       build_and_run_coverage.COVERAGE_BUILD_TAG,
                       status_filename='status-coverage.json')
 
-  update_build_badges(
-      builds,
-      projects,
-      build_tag=build_project.FUZZING_BUILD_TAG,
-      coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
+  update_build_badges(builds,
+                      projects,
+                      build_tag=build_project.FUZZING_BUILD_TAG,
+                      coverage_tag=build_and_run_coverage.COVERAGE_BUILD_TAG)
 
 
 if __name__ == '__main__':
