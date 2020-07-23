@@ -23,7 +23,6 @@ import datetime
 import os
 import sys
 import json
-import tempfile
 import time
 
 import dateutil.parser
