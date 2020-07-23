@@ -142,8 +142,13 @@ void readImageRIP(TiledRgbaInputFile *in, int dwx, int dwy) {
 }  // namespace
 
 static void fuzzImage(IStream& is) {
-  Header::setMaxImageSize(10000, 10000);
-  Header::setMaxTileSize(10000, 10000);
+
+  try {
+    Header::setMaxImageSize(10000, 10000);
+    Header::setMaxTileSize(10000, 10000);
+  } catch (...) {
+    return;
+  }
 
   TiledRgbaInputFile *in;
   try {
