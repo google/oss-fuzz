@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 MAINTAINER kim.kulling@googlemail.com
-RUN apt-get update && apt-get install -y cmake 
+RUN apt-get update && apt-get install -y cmake ninja-build
 RUN git clone --depth 1 --recursive https://github.com/assimp/assimp.git
 WORKDIR assimp
 COPY build.sh $SRC/
