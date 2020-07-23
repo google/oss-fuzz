@@ -1,9 +1,22 @@
 homepage: "https://github.com/assimp/assimp"
+language: c++
 primary_contact: "kim.kulling@googlemail.com"
 auto_ccs:
   - "kim.kulling@googlemail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
   - memory:
      experimental: True
   - undefined
+  - dataflow
+architectures:
+  - x86_64
+  - i38
+architectures:
+  - x86_64
+  - i3866
