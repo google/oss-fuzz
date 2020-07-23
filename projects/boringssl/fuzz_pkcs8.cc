@@ -23,7 +23,7 @@
 #include <openssl/evp.h>
 #include <openssl/mem.h>
 #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
-#include "fuzzing/proto/asn1-pdu-proto/asn1_proto_to_der.h"
+#include "fuzzing/proto/asn1-pdu/asn1_proto_to_der.h"
 #include "asn1_pdu.pb.h"
 
 DEFINE_PROTO_FUZZER(const asn1_pdu::PDU& asn1) {
