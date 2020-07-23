@@ -27,5 +27,4 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
 
-# TODO commit fuzz test in project repo
 compile_fuzzer github.com/influxdata/influxdb/jsonweb FuzzJsonWeb fuzzjsonweb
