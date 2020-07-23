@@ -19,6 +19,7 @@ import base_images
 import project_sync
 import request_build
 import request_coverage_build
+import update_build_status
 
 
 def build_project(event, context):
@@ -39,3 +40,8 @@ def build_base_images(event, context):
 def coverage_build(event, context):
   """Entry point for cloud function to build coverage reports."""
   request_coverage_build.request_coverage_build(event, context)
+
+
+def builds_status(event, context):
+  """Entry point for builds status cloud function."""
+  update_build_status.update_status(event, context)

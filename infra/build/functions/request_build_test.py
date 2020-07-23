@@ -22,8 +22,11 @@ from unittest import mock
 
 from google.cloud import ndb
 
+from datastore_entities import BuildsHistory
 from datastore_entities import Project
 from request_build import get_build_steps
+from request_build import get_project_data
+from request_build import update_build_history
 import test_utils
 
 
@@ -72,6 +75,33 @@ class TestRequestBuilds(unittest.TestCase):
     with ndb.Client().context():
       self.assertRaises(RuntimeError, get_build_steps, 'test-project',
                         'oss-fuzz', 'oss-fuzz-base')
+
+  def test_build_history(self):
+    """Testing build history."""
+    with ndb.Client().context():
+      BuildsHistory(id='test-project-fuzzing',
+                    build_tag_suffix='fuzzing',
+                    project='test-project',
+                    build_ids=[str(i) for i in range(1, 65)]).put()
+      update_build_history('test-project', '65', '-fuzzing')
+      expected_build_ids = [str(i) for i in range(2, 66)]
+
+      self.assertEqual(BuildsHistory.query().get().build_ids,
+                       expected_build_ids)
+
+  def test_build_history_no_existing_project(self):
+    """Testing build history when build history object is missing."""
+    with ndb.Client().context():
+      update_build_history('test-project', '1', 'fuzzing')
+      expected_build_ids = ['1']
+
+      self.assertEqual(BuildsHistory.query().get().build_ids,
+                       expected_build_ids)
+
+  def test_get_project_data(self):
+    """Testing get project data."""
+    with ndb.Client().context():
+      self.assertRaises(RuntimeError, get_project_data, 'test-project')
 
   @classmethod
   def tearDownClass(cls):

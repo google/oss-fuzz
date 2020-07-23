@@ -31,6 +31,11 @@ SYNC_SCHEDULER_JOB=sync-scheduler
 SYNC_JOB_SCHEDULE="*/30 * * * *"
 SYNC_MESSAGE="Start Sync"
 
+UPDATE_BUILD_JOB_TOPIC=builds-status
+UPDATE_BUILD_SCHEDULER_JOB=builds-status-scheduler
+UPDATE_BUILD_JOB_SCHEDULE="*/30 * * * *"
+UPDATE_BUILD_MESSAGE="Update build statuses"
+
 
 function deploy_pubsub_topic {
 	topic=$1
@@ -91,6 +96,7 @@ deploy_pubsub_topic $BUILD_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $SYNC_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $BASE_PROJECT_ID
 deploy_pubsub_topic $COVERAGE_BUILD_JOB_TOPIC $PROJECT_ID
+deploy_pubsub_topic $UPDATE_BUILD_JOB_TOPIC $PROJECT_ID
 
 deploy_scheduler $SYNC_SCHEDULER_JOB \
 				 "$SYNC_JOB_SCHEDULE" \
@@ -110,6 +116,13 @@ deploy_scheduler $COVERAGE_BUILD_SCHEDULER_JOB \
 				 "$COVERAGE_BUILD_MESSAGE" \
 				 $PROJECT_ID
 
+deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB \
+				 "$UPDATE_BUILD_JOB_SCHEDULE" \
+				 $UPDATE_BUILD_JOB_TOPIC \
+				 "$UPDATE_BUILD_MESSAGE" \
+				 $PROJECT_ID 
+
+
 deploy_cloud_function sync \
 					  sync \
 					  $SYNC_JOB_TOPIC \
@@ -128,4 +141,9 @@ deploy_cloud_function request-build \
 deploy_cloud_function request-coverage-build \
 					  coverage_build \
 					  $COVERAGE_BUILD_JOB_TOPIC \
+					  $PROJECT_ID
+
+deploy_cloud_function update-builds \
+					  builds_status \
+					  $UPDATE_BUILD_JOB_TOPIC \
 					  $PROJECT_ID

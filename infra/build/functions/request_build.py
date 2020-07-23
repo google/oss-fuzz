@@ -23,9 +23,29 @@ from google.cloud import ndb
 
 import build_lib
 import build_project
+from datastore_entities import BuildsHistory
 from datastore_entities import Project
 
 BASE_PROJECT = 'oss-fuzz-base'
+MAX_BUILD_HISTORY_LENGTH = 64
+
+
+def update_build_history(project_name, build_id, build_tag_suffix):
+  """Update build history of project."""
+  project_key = ndb.Key(BuildsHistory, project_name + build_tag_suffix)
+  project = project_key.get()
+
+  if not project:
+    project = BuildsHistory(id=project_name + '-' + build_tag_suffix,
+                            build_tag_suffix=build_tag_suffix,
+                            project=project_name,
+                            build_ids=[])
+
+  if len(project.build_ids) >= MAX_BUILD_HISTORY_LENGTH:
+    project.build_ids.pop(0)
+
+  project.build_ids.append(build_id)
+  project.put()
 
 
 def get_project_data(project_name):
@@ -33,7 +53,7 @@ def get_project_data(project_name):
   with ndb.Client().context():
     query = Project.query(Project.name == project_name)
     project = query.get()
-    if project is None:
+    if not project:
       raise RuntimeError(
           'Project {0} not available in cloud datastore'.format(project_name))
     project_yaml_contents = project.project_yaml_contents
@@ -61,6 +81,7 @@ def run_build(project_name, image_project, build_steps, credentials, tag):
       'options': {
           'machineType': 'N1_HIGHCPU_32'
       },
+      'logsBucket': build_project.GCB_LOGS_BUCKET,
       'tags': [project_name + tag,],
   }
 
@@ -72,6 +93,7 @@ def run_build(project_name, image_project, build_steps, credentials, tag):
                                                      body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
 
+  update_build_history(project_name, build_id, tag)
   logging.info('Build ID: %s', build_id)
   logging.info('Logs: %s', build_project.get_logs_url(build_id, image_project))
 
