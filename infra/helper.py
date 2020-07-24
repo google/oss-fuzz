@@ -121,6 +121,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
   _add_engine_args(run_fuzzer_parser)
   _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
+  run_fuzzer_parser.add_argument(
+      '--corpus-dir', help='directory to store corpus for the fuzz target')
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args',
@@ -739,6 +741,12 @@ def coverage(args):
 
   run_args = _env_to_docker_args(env)
 
+  if args.port:
+    run_args.extend([
+        '-p',
+        '%s:%s' % (args.port, args.port),
+    ])
+
   if args.corpus_dir:
     if not os.path.exists(args.corpus_dir):
       print('ERROR: the path provided in --corpus-dir argument does not exist',
@@ -755,12 +763,6 @@ def coverage(args):
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
   ])
-
-  if args.port:
-    run_args.extend([
-        '-p',
-        '%s:%s' % (args.port, args.port),
-    ])
 
   run_args.append('coverage')
   if args.fuzz_target:
@@ -792,14 +794,28 @@ def run_fuzzer(args):
   if args.e:
     env += args.e
 
-  run_args = _env_to_docker_args(env) + [
+  run_args = _env_to_docker_args(env)
+
+  if args.corpus_dir:
+    if not os.path.exists(args.corpus_dir):
+      print('ERROR: the path provided in --corpus-dir argument does not exist',
+            file=sys.stderr)
+      return 1
+    corpus_dir = os.path.realpath(args.corpus_dir)
+    run_args.extend([
+        '-v',
+        '{corpus_dir}:/tmp/{fuzzer}_corpus'.format(corpus_dir=corpus_dir,
+                                                   fuzzer=args.fuzzer_name)
+    ])
+
+  run_args.extend([
       '-v',
       '%s:/out' % _get_output_dir(args.project_name),
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
       'run_fuzzer',
       args.fuzzer_name,
-  ] + args.fuzzer_args
+  ] + args.fuzzer_args)
 
   return docker_run(run_args)
 

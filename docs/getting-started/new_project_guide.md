@@ -306,11 +306,23 @@ You can build your docker image and fuzz targets locally, so you can test them b
 3. If you want to test changes against a particular fuzz target, run the following command:
 
     ```bash
-    $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>
+    $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
     ```
 
-4. We recommend taking a look at your code coverage as a sanity check to make sure that your
-fuzz targets get to the code you expect. Please refer to [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/).
+4. We recommend taking a look at your code coverage as a sanity check to make
+sure that your fuzz targets get to the code you expect. This would use the
+corpus generated from the previous `run_fuzzer` step in your local corpus
+directory.
+
+    ```bash
+    $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
+    $ python infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
+    ```
+
+Please refer to
+[code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
+information on code coverage generation.
+
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
 configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
