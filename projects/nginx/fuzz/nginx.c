@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <nginx.h>
-
+#include <sys/socket.h>
+#include <sys/types.h>
 
 static void ngx_cleanup_environment(void *data);
 static void *ngx_core_module_create_conf(ngx_cycle_t *cycle);
@@ -182,6 +183,22 @@ ngx_module_t  ngx_core_module = {
 
 
 static char **ngx_os_environ;
+
+
+int __wrap_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen){
+  return 0;
+}
+
+
+ssize_t __wrap_listen(int fd, void* buf, size_t bytes) {
+  return 0;
+}
+
+
+int __wrap_setsockopt(int fd, int level, int optname, const void *optval, socklen_t optlen) {
+  return 0;
+}
+
 
 char **
 ngx_set_environment(ngx_cycle_t *cycle, ngx_uint_t *last)
