@@ -562,17 +562,14 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
   # Patch MSan builds to use instrumented shared libraries.
   if sanitizer == 'memory':
-    docker_run(
-        [
-            '-v',
-            '%s:/out' % project_out_dir, '-v',
-            '%s:/work' % project_work_dir
-        ] + _env_to_docker_args(env) + [
-            'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
-            'patch_build.py',
-            '/out'
-        ]
-    )
+    docker_run([
+        '-v',
+        '%s:/out' % project_out_dir, '-v',
+        '%s:/work' % project_work_dir
+    ] + _env_to_docker_args(env) + [
+        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder', 'patch_build.py',
+        '/out'
+    ])
 
   return 0
 
