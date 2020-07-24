@@ -15,7 +15,7 @@
 #include "astcenc_internal.h"
 #include <fuzzer/FuzzedDataProvider.h>
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   FuzzedDataProvider stream(data, size);
   int quantization_level = stream.ConsumeIntegral<int>();
@@ -24,5 +24,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   uint8_t *out;
   encode_ise(quantization_level, buffer.size(), buffer.data(), out, 0);
 
-	return 0;
+  return 0;
 }
