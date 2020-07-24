@@ -15,8 +15,15 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-sanitizer-libs-builder
+
+# Take all libraries from lib/dfsan
+RUN cp -R /usr/dfsan/lib/* /usr/lib/
+
+RUN mkdir /dfsan
+WORKDIR /dfsan
+
 ENV PYTHONUNBUFFERED 1
-RUN msan_build.py --work-dir=$WORK \
+RUN dfsan_build.py --work-dir=$WORK \
     libarchive13 \
     libattr1 \
     libbz2-1.0 \
@@ -35,4 +42,4 @@ RUN msan_build.py --work-dir=$WORK \
     libssl1.0.0 \
     libxml2 \
     zlib1g \
-    /msan
+    /dfsan

@@ -20,11 +20,11 @@ def main():
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
 
-  image = 'gcr.io/oss-fuzz-base/msan-builder'
+  image = 'gcr.io/oss-fuzz-base/msan-libs-builder'
   steps = build_base_images.get_steps(
       [
           'base-sanitizer-libs-builder',
-          'msan-builder',
+          'msan-libs-builder',
       ]
   )
   ts = datetime.datetime.utcnow().strftime('%Y%m%d%H%M')
