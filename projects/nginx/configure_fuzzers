@@ -1,5 +1,6 @@
 FUZZ_SRCS="src/fuzz/nginx.c \
-	   src/fuzz/http_request_fuzzer.c"
+	   src/fuzz/http_request_fuzzer.c \
+	   src/fuzz/http_grpc_fuzzer.c"
 
 echo "creating $NGX_MAKEFILE"
 
@@ -219,7 +220,7 @@ ngx_objs=`echo $ngx_all_objs $ngx_modules_obj \
     | sed -e "s/  *\([^ ][^ ]*\)/$ngx_long_regex_cont\1/g" \
           -e "s/\//$ngx_regex_dirsep/g"`
 
-ngx_objs_fuzz=`echo $ngx_fuzz_objs $ngx_all_objs $ngx_modules_obj \
+ngx_objs_fuzz=`echo $NGX_OBJS/src/fuzz/nginx.o $ngx_all_objs $ngx_modules_obj \
     | sed -e "s;$NGX_OBJS/src/core/nginx.o;;g" \
       	  -e "s/  *\([^ ][^ ]*\)/$ngx_long_regex_cont\1/g" \
           -e "s/\//$ngx_regex_dirsep/g"`
@@ -241,10 +242,15 @@ cat << END                                                    >> $NGX_MAKEFILE
 
 build:	binary modules manpage
 
-binary:	$NGX_OBJS${ngx_dirsep}http_request_fuzzer$ngx_binext
+binary:	$NGX_OBJS${ngx_dirsep}http_request_fuzzer$ngx_binext \
+	$NGX_OBJS${ngx_dirsep}http_grpc_fuzzer$ngx_binext
 
 $NGX_OBJS${ngx_dirsep}http_request_fuzzer$ngx_binext: $ngx_deps_fuzz$ngx_spacer
-	 \$(CXX) \$(CXXFLAGS) $ngx_long_start$ngx_binout$NGX_OBJS${ngx_dirsep}http_request_fuzzer$ngx_binexit$ngx_long_cont$ngx_objs_fuzz \$(LIB_FUZZING_ENGINE) $ngx_libs$ngx_link$ngx_main_link
+	 \$(CXX) \$(CXXFLAGS) $ngx_long_start$ngx_binout$NGX_OBJS${ngx_dirsep}http_request_fuzzer$ngx_binexit$ngx_long_cont$ngx_objs_fuzz $NGX_OBJS${ngx_dirsep}src${ngx_dirsep}fuzz${ngx_dirsep}http_request_fuzzer.o \$(LIB_FUZZING_ENGINE) $ngx_libs$ngx_link$ngx_main_link
+$ngx_long_end					    
+
+$NGX_OBJS${ngx_dirsep}http_grpc_fuzzer$ngx_binext: $ngx_deps_fuzz$ngx_spacer
+	 \$(CXX) \$(CXXFLAGS) $ngx_long_start$ngx_binout$NGX_OBJS${ngx_dirsep}http_grpc_fuzzer$ngx_binexit$ngx_long_cont$ngx_objs_fuzz $NGX_OBJS${ngx_dirsep}src${ngx_dirsep}fuzz${ngx_dirsep}http_grpc_fuzzer.o \$(LIB_FUZZING_ENGINE) $ngx_libs$ngx_link$ngx_main_link
 $ngx_long_end					    
 
 modules:
