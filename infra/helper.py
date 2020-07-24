@@ -121,8 +121,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
   _add_engine_args(run_fuzzer_parser)
   _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
-  run_fuzzer_parser.add_argument('--corpus-dir',
-                                 help='output location for corpus')
+  run_fuzzer_parser.add_argument(
+      '--corpus-dir', help='directory to store corpus for the fuzz target')
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args',
