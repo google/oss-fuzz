@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
 
@@ -88,10 +87,6 @@ static char configuration[] =
 "}\n"
 "\n";
 
-ssize_t __wrap_listen(int fd, void* buf, size_t bytes) {
-  return 0;
-}
-
 static ngx_cycle_t *cycle;
 static ngx_log_t ngx_log;
 static ngx_open_file_t ngx_log_file;
@@ -100,13 +95,16 @@ static char arg1[] = { 0, 0xAA, 0 };
 
 extern char **environ;
 
-static char *socket_name = "nginx.sock";
 static char *config_file = "socket_config.conf";
 
 // Create a base state for Nginx without starting the server
-char *InitializeNginx(void) {
+int InitializeNginx(void) {
   ngx_log_t *log;
   ngx_cycle_t init_cycle;
+
+  if( access("nginx.sock", F_OK ) != -1 ) {
+    remove("nginx.sock");
+  }
 
   ngx_debug_init();
   ngx_strerror_init();
@@ -158,10 +156,9 @@ char *InitializeNginx(void) {
 
   ngx_os_status(cycle->log);
   ngx_cycle = cycle;
-  return config_file;
+  return 0;
 }
 
-// If this function is called, the fuzzer needs to be updated
 void invalid_call(void) { }
 
 struct fuzzing_data {
@@ -181,18 +178,16 @@ static ssize_t recv_handler(ngx_connection_t *c, u_char *buf, size_t size) {
 }
 
 
-// Used when sending data, basically do nothing
+// Used when sending data, do nothing
 ngx_chain_t *send_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit) {
   return in;
 }
 
+int LLVMFuzzerInitialize(int *argc, char ***argv){
+  return InitializeNginx();
+}
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t data_len) {
-  if( access("nginx.sock", F_OK ) != -1 ) {
-    remove("nginx.sock");
-  }
-
-  InitializeNginx();
-
   ngx_event_t read_event = {};
   ngx_event_t write_event = {};
   ngx_connection_t local = {};
@@ -210,7 +205,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t data_len) {
   local.read = &read_event;
   local.write = &write_event;
 
-  // Do our best to create fake free connection to feed the http handler
+  // Create fake free connection to feed the http handler
   ngx_cycle->free_connections = &local;
   ngx_cycle->free_connection_n = 1;
 
@@ -223,7 +218,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t data_len) {
   c->sockaddr = ls->sockaddr;
   c->listening = ls;
   c->recv = recv_handler;  // Where the input will be read
-  c->send_chain = send_chain;  // Reply, do nothing
+  c->send_chain = send_chain;
   c->send = (ngx_send_pt)invalid_call;
   c->recv_chain = (ngx_recv_chain_pt)invalid_call;
   c->log = &ngx_log;
@@ -247,10 +242,5 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t data_len) {
     ngx_http_close_connection(c);
   }
 
-  ngx_close_listening_sockets(cycle);
-  ngx_destroy_pool(ngx_cycle->pool);
-  ngx_strerror_delete();
-
-  remove("nginx.sock");
   return 0;
 }
