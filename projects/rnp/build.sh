@@ -25,16 +25,21 @@ make
 make install
 cd ..
 
+# -DENABLE_SANITIZERS=0 because oss-fuzz will add the sanitizer flags in CFLAGS
+# See https://github.com/google/oss-fuzz/pull/4189 to explain CMAKE_C_LINK_EXECUTABLE
+
 mkdir rnp-build
 cd rnp-build
 cmake \
-    -DENABLE_SANITIZERS=1 \
-    -DENABLE_FUZZING=1 \
+    -DENABLE_SANITIZERS=0 \
+    -DENABLE_FUZZERS=1 \
     -DCMAKE_C_COMPILER=$CC \
     -DCMAKE_CXX_COMPILER=$CXX \
+    -DCMAKE_C_LINK_EXECUTABLE="$CXX <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBUILD_SHARED_LIBS=on \
     -DBUILD_TESTING=off \
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
     ../rnp/
 make
 
