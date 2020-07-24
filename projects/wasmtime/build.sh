@@ -16,17 +16,36 @@
 ################################################################################
 
 # Note: This project creates Rust fuzz targets exclusively
-PROJECT_DIR=$SRC/wasmtime
+
+build() {
+  project=$1
+  shift
+  fuzzer_prefix=$1
+  shift
+  PROJECT_DIR=$SRC/$project
+
+  cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions "$@"
+
+  FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
+
+  for f in $PROJECT_DIR/fuzz/fuzz_targets/*.rs
+  do
+      src_name=$(basename ${f%.*})
+      dst_name=$fuzzer_prefix$src_name
+      cp $FUZZ_TARGET_OUTPUT_DIR/$src_name $OUT/$dst_name
+
+      if [[ -d $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/ ]]; then
+          zip -jr \
+              $OUT/${dst_name}_seed_corpus.zip \
+              $SRC/wasmtime/wasmtime-libfuzzer-corpus/$dst_name/
+      fi
+
+      cp $SRC/default.options $OUT/$dst_name.options
+  done
+}
 
 # Build with all features to enable the binaryen-using fuzz targets, and
 # the peepmatic fuzz targets.
-cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions --all-features
+build wasmtime "" --all-features
 
-FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
-for f in $SRC/wasmtime/fuzz/fuzz_targets/*.rs
-do
-    FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
-    zip -jr $OUT/${FUZZ_TARGET_NAME}_seed_corpus.zip $PROJECT_DIR/wasmtime-libfuzzer-corpus/$FUZZ_TARGET_NAME/
-    cp $SRC/default.options $OUT/$FUZZ_TARGET_NAME.options
-done
+build wasm-tools wasm-tools-

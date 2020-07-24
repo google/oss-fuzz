@@ -1,3 +1,4 @@
+disabled: True
 homepage: "https://github.com/project-oak/oak"
 language: c++
 primary_contact: "tzn@google.com"

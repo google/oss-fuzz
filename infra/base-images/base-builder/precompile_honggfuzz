@@ -31,8 +31,9 @@ apt-get install -y ${PACKAGES[@]}
 pushd $SRC/honggfuzz > /dev/null
 make clean
 # These CFLAGs match honggfuzz's default, with the exception of -mtune to
-# improve portability.
-CC=clang CFLAGS="-O3 -funroll-loops" make
+# improve portability and `-D_HF_LINUX_NO_BFD` to remove assembly instructions
+# from the filenames.
+CC=clang CFLAGS="-O3 -funroll-loops -D_HF_LINUX_NO_BFD" make
 
 # libhfuzz.a will be added by CC/CXX linker directly during linking,
 # but it's defined here to satisfy the build infrastructure

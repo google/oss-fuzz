@@ -4,6 +4,7 @@ primary_contact: "asn@cryptomilk.org"
 auto_ccs:
  - "cryptomilk@gmail.com"
  - "jakuje@gmail.com"
+ - "anderson.sasaki@gmail.com"
 sanitizers:
   - address
   - memory

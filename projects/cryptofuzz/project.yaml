@@ -30,6 +30,7 @@ auto_ccs:
     - "tvandermerwe@mozilla.com"
     - "matthias.st.pierre@gmail.com"
     - "kaleb.himes@gmail.com"
+    - "polubelovam@gmail.com"
 sanitizers:
  - address
  - undefined

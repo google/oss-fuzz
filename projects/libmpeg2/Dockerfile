@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER harish.mahendrakar@ittiam.com
 RUN apt-get update && apt-get install -y wget cmake
 RUN git clone https://android.googlesource.com/platform/external/libmpeg2
 ADD https://storage.googleapis.com/android_media/external/libmpeg2/fuzzer/mpeg2_dec_fuzzer_seed_corpus.zip $SRC/

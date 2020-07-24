@@ -15,9 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER bluca@debian.org
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext pkg-config build-essential
 RUN git clone --depth 1 https://github.com/zeromq/libzmq.git
+RUN git clone --depth 1 https://github.com/zeromq/libzmq-fuzz-corpora.git
 RUN git clone --depth 1 -b stable https://github.com/jedisct1/libsodium.git
 WORKDIR libzmq
 COPY build.sh $SRC/

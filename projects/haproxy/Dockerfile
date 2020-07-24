@@ -14,7 +14,6 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER david@adalogics.com
 RUN apt-get update && apt-get install -y make
 RUN git clone https://github.com/haproxy/haproxy
 

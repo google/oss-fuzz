@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER vmalvarez@google.com
 RUN \
   apt-get update && apt-get install -y \
   automake \

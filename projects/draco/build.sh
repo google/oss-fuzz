@@ -15,21 +15,4 @@
 #
 ################################################################################
 
-# build project
-cmake $SRC/draco
-# The draco_decoder and draco_encoder binaries don't build nicely with OSS-Fuzz
-# options, so just build the Draco shared libraries.
-make -j$(nproc) draco
-
-# build fuzzers
-for fuzzer in $(find $SRC/fuzz -name '*.cc'); do
-  fuzzer_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS \
-    -I $SRC/ \
-    -I $SRC/draco/src \
-    -I $WORK/ \
-    $LIB_FUZZING_ENGINE \
-    $fuzzer \
-    $WORK/libdraco.a \
-    -o $OUT/$fuzzer_basename
-done
+sh $SRC/draco/src/draco/tools/fuzz/build.sh

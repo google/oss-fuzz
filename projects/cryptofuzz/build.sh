@@ -148,9 +148,14 @@ cd $SRC/cryptofuzz/modules/cryptopp
 make -B
 
 ##############################################################################
-# Compile mbed crypto
-cd $SRC/mbed-crypto/
+# Compile mbed TLS
+cd $SRC/mbedtls/
 scripts/config.pl set MBEDTLS_PLATFORM_MEMORY
+scripts/config.pl set MBEDTLS_CMAC_C
+scripts/config.pl set MBEDTLS_NIST_KW_C
+scripts/config.pl set MBEDTLS_ARIA_C
+scripts/config.pl set MBEDTLS_MD2_C
+scripts/config.pl set MBEDTLS_MD4_C
 if [[ $CFLAGS == *sanitize=memory* ]]
 then
     scripts/config.pl unset MBEDTLS_HAVE_ASM
@@ -161,8 +166,8 @@ mkdir build/
 cd build/
 cmake .. -DENABLE_PROGRAMS=0 -DENABLE_TESTING=0
 make -j$(nproc) >/dev/null 2>&1
-export MBEDTLS_LIBMBEDCRYPTO_A_PATH="$SRC/mbed-crypto/build/library/libmbedcrypto.a"
-export MBEDTLS_INCLUDE_PATH="$SRC/mbed-crypto/include"
+export MBEDTLS_LIBMBEDCRYPTO_A_PATH="$SRC/mbedtls/build/library/libmbedcrypto.a"
+export MBEDTLS_INCLUDE_PATH="$SRC/mbedtls/include"
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MBEDTLS"
 # Compile Cryptofuzz mbed crypto module
 cd $SRC/cryptofuzz/modules/mbedtls
@@ -326,7 +331,7 @@ fi
 cd $SRC/wolfssl
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then

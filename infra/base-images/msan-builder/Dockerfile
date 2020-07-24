@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-msan-builder
+FROM gcr.io/oss-fuzz-base/base-sanitizer-libs-builder
 ENV PYTHONUNBUFFERED 1
 RUN msan_build.py --work-dir=$WORK \
     libarchive13 \

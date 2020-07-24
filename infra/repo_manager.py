@@ -109,7 +109,21 @@ class BaseRepoManager:
       The current active commit SHA.
     """
     out, _, _ = self.git(['rev-parse', 'HEAD'], check_result=True)
-    return out.strip('\n')
+    return out.strip()
+
+  def get_parent(self, commit, count):
+    """Gets the count'th parent of the given commit.
+
+    Returns:
+      The parent commit SHA.
+    """
+    self.fetch_unshallow()
+    out, _, err_code = self.git(['rev-parse', commit + '~' + str(count)],
+                                check_result=False)
+    if err_code:
+      return None
+
+    return out.strip()
 
   def get_commit_list(self, newest_commit, oldest_commit=None):
     """Gets the list of commits(inclusive) between the old and new commits.

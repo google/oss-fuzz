@@ -89,15 +89,15 @@ def get_fuzz_targets(path):
 
 def get_container_name():
   """Gets the name of the current docker container you are in.
-  /proc/self/cgroup can be used to check control groups e.g. Docker.
-  See: https://docs.docker.com/config/containers/runmetrics/ for more info.
 
   Returns:
     Container name or None if not in a container.
   """
-  with open('/proc/self/cgroup') as file_handle:
-    if 'docker' not in file_handle.read():
-      return None
+  result = subprocess.run(  # pylint: disable=subprocess-run-check
+      ['systemd-detect-virt', '-c'],
+      stdout=subprocess.PIPE).stdout
+  if b'docker' not in result:
+    return None
   with open('/etc/hostname') as file_handle:
     return file_handle.read().strip()
 

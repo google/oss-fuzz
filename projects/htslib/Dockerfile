@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER rmd@sanger.ac.uk
 RUN apt-get update && apt-get install -y make autoconf automake zlib1g-dev libbz2-dev liblzma-dev libcurl4-gnutls-dev libssl-dev
 RUN git clone --depth 1 https://github.com/samtools/htslib.git htslib
 WORKDIR htslib
