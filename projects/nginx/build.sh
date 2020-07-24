@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
-git apply ../add_fuzzers.diff
-
 cp -r $SRC/fuzz src/.
 cp $SRC/configure_fuzzers auto/make
 
 auto/configure \
-    --with-ld-opt="-Wl,--wrap=listen" \
+    --with-ld-opt="-Wl,--wrap=listen -Wl,--wrap=setsockopt -Wl,--wrap=bind" \
+    --with-http_v2_module \
     --http-fastcgi-temp-path=$OUT/ \
-    --http-uwsgi-temp-path=$OUT/ \
-    --http-scgi-temp-path=$OUT
+    --http-uwsgi-temp-path=$OUT/
 make -j$(nproc)
 
 cp objs/*_fuzzer $OUT/
