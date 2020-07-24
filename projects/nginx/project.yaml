@@ -7,5 +7,3 @@ sanitizers:
   - address
   - memory
   - undefined
-
-
