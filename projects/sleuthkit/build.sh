@@ -22,8 +22,29 @@ export CXXFLAGS="$CXXFLAGS -Wno-error=non-c-typedef-for-linkage"
 ./configure --enable-static --disable-shared --disable-java
 make -j$(nproc)
 
-# build fuzzers
-# e.g.
-# $CXX $CXXFLAGS -std=c++11 -Iinclude \
-#     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \
-#     $LIB_FUZZING_ENGINE /path/to/library.a
+declare -A TSL_FS_TYPES=(
+  ["ext"]="TSK_FS_TYPE_EXT_DETECT"
+  ["fat"]="TSK_FS_TYPE_FAT_DETECT"
+  ["hfs"]="TSK_FS_TYPE_HFS"
+  ["ntfs"]="TSK_FS_TYPE_NTFS"
+  ["iso9660"]="TSK_FS_TYPE_ISO9660"
+)
+
+declare -A TSL_VS_TYPES=(
+  ["dos"]="TSK_VS_TYPE_DOS"
+  ["gpt"]="TSK_VS_TYPE_GPT"
+  ["mac"]="TSK_VS_TYPE_MAC"
+  ["sun"]="TSK_VS_TYPE_SUN"
+)
+
+for type in ${!TSL_FS_TYPES[@]}; do
+  $CXX $CXXFLAGS -std=c++11 -I.. -I. -Itsk -DFSTYPE=${TSL_FS_TYPES[$type]} \
+      $SRC/sleuthkit_fls_fuzzer.cc -o $OUT/sleuthkit_fls_${type}_fuzzer \
+      $LIB_FUZZING_ENGINE $SRC/sleuthkit/tsk/.libs/libtsk.a
+done
+
+for type in ${!TSL_VS_TYPES[@]}; do
+  $CXX $CXXFLAGS -std=c++11 -I.. -I. -Itsk -DVSTYPE=${TSL_VS_TYPES[$type]} \
+      $SRC/sleuthkit_mmls_fuzzer.cc -o $OUT/sleuthkit_mmls_${type}_fuzzer \
+      $LIB_FUZZING_ENGINE $SRC/sleuthkit/tsk/.libs/libtsk.a
+done
