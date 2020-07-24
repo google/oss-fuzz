@@ -19,4 +19,4 @@ architectures:
   - i38
 architectures:
   - x86_64
-  - i3866
+  - i386
