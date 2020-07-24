@@ -29,7 +29,7 @@
     ]
   },
   {
-    "name": "gcr.io/oss-fuzz-base/msan-builder",
+    "name": "gcr.io/oss-fuzz-base/msan-libs-builder",
     "args": [
       "bash",
       "-c",

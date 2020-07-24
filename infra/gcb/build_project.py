@@ -139,7 +139,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
   build_steps = build_lib.project_image_steps(name, image, language)
   # Copy over MSan instrumented libraries.
   build_steps.append({
-      'name': 'gcr.io/{0}/msan-builder'.format(base_images_project),
+      'name': 'gcr.io/{0}/msan-libs-builder'.format(base_images_project),
       'args': [
           'bash',
           '-c',
@@ -224,7 +224,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
           # Patch dynamic libraries to use instrumented ones.
           build_steps.append({
               'name':
-                  'gcr.io/{0}/msan-builder'.format(base_images_project),
+                  'gcr.io/{0}/msan-libs-builder'.format(base_images_project),
               'args': [
                   'bash',
                   '-c',

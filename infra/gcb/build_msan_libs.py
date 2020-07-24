@@ -20,13 +20,11 @@ def main():
   if 'GCB_OPTIONS' in os.environ:
     options = yaml.safe_load(os.environ['GCB_OPTIONS'])
 
-  image = 'gcr.io/oss-fuzz-base/msan-builder'
-  steps = build_base_images.get_steps(
-      [
-          'base-sanitizer-libs-builder',
-          'msan-builder',
-      ]
-  )
+  image = 'gcr.io/oss-fuzz-base/msan-libs-builder'
+  steps = build_base_images.get_steps([
+      'base-sanitizer-libs-builder',
+      'msan-libs-builder',
+  ])
   ts = datetime.datetime.utcnow().strftime('%Y%m%d%H%M')
   upload_name = 'msan-libs-' + ts + '.zip'
 
@@ -59,8 +57,8 @@ def main():
 
   credentials = GoogleCredentials.get_application_default()
   cloudbuild = build('cloudbuild', 'v1', credentials=credentials)
-  build_info = cloudbuild.projects().builds().create(
-      projectId='oss-fuzz-base', body=build_body).execute()
+  build_info = cloudbuild.projects().builds().create(projectId='oss-fuzz-base',
+                                                     body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
 
   print >> sys.stderr, 'Logs:', build_base_images.get_logs_url(build_id)
