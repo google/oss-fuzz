@@ -67,8 +67,6 @@ TSK_IMG_INFO *mem_open(const uint8_t *data, size_t size) {
   img->imgstat = mem_imgstat;
   img->size = size;
   img->sector_size = 512;
-  // Not sure why we have to initialize this.
-  memset(img->cache_len, 0, TSK_IMG_INFO_CACHE_NUM * sizeof(size_t));
   tsk_init_lock(&(img->cache_lock));
   inmemory_img->data = data;
   inmemory_img->size = size;
