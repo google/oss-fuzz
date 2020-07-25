@@ -1,0 +1,9 @@
+homepage: "https://github.com/chronotope/chrono"
+primary_contact: "quodlibetor@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
