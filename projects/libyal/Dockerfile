@@ -16,8 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install -y make autoconf automake autopoint libtool pkg-config
+RUN apt-get update && apt-get install -y make autoconf automake autopoint libtool pkg-config flex byacc
 
+RUN git clone --depth 1 https://github.com/libyal/libfplist.git libfplist
 RUN git clone --depth 1 https://github.com/libyal/libfwnt.git libfwnt
 RUN git clone --depth 1 https://github.com/libyal/libfwsi.git libfwsi
 
@@ -30,6 +31,14 @@ RUN git clone --depth 1 https://github.com/libyal/libmsiecf.git libmsiecf
 RUN git clone --depth 1 https://github.com/libyal/libolecf.git libolecf
 RUN git clone --depth 1 https://github.com/libyal/libregf.git libregf
 RUN git clone --depth 1 https://github.com/libyal/libscca.git libscca
+
+RUN git clone --depth 1 https://github.com/libyal/libfsapfs.git libfsapfs
+
+RUN git clone --depth 1 https://github.com/libyal/libfsapfs.git libbde
+
+RUN git clone --depth 1 https://github.com/libyal/libqcow.git libqcow
+RUN git clone --depth 1 https://github.com/libyal/libvhdi.git libvhdi
+RUN git clone --depth 1 https://github.com/libyal/libvmdk.git libvmdk
 
 WORKDIR libyal
 COPY build.sh $SRC/
