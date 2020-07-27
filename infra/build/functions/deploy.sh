@@ -1,3 +1,4 @@
+#!/bin/bash -ex
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,16 +59,16 @@ function deploy_scheduler {
 	if gcloud scheduler jobs describe $scheduler_name --project $project ;
 		then
 			gcloud scheduler jobs update pubsub $scheduler_name \
+			--project $project \
 			--schedule "$schedule" \
 			--topic $topic \
-			--message-body "$message" \
-			--project $project
+			--message-body "$message"
 		else
 			gcloud scheduler jobs create pubsub $scheduler_name \
+			--project $project \
 			--schedule "$schedule" \
 			--topic $topic \
-			--message-body "$message" \
-			--project $project
+			--message-body "$message"
 	fi
 }
 
