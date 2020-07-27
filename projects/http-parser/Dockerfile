@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER david@adalogics.com
 RUN apt-get update && apt-get install -y make cmake
 RUN git clone https://github.com/nodejs/http-parser
 

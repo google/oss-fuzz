@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER p.antoine@catenacyber.fr
 RUN apt-get update && apt-get install -y make cmake bzip2 autoconf automake gettext libtool python nodejs npm
 RUN rustup target add i686-unknown-linux-gnu
 RUN npm install -g browserify

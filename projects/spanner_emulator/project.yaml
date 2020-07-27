@@ -4,3 +4,9 @@ primary_contact: "evmaus@google.com"
 auto_ccs:
   - "snehashah@google.com"
   - "volfson@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+sanitizers:
+  - address
+  - memory

@@ -28,4 +28,4 @@ cd ndpi
 sh autogen.sh
 ./configure --enable-fuzztargets
 make
-ls fuzz/fuzz* | grep -v "\." | while read i; do cp $i $OUT/; done
+ls fuzz/fuzz* | grep -v "\." | grep -v "with_main" | while read i; do cp $i $OUT/; done

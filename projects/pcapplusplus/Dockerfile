@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER zlowram@gmail.com
 
 RUN apt-get update && apt-get install -y gcc g++ make cmake flex bison
 RUN git clone https://github.com/seladb/PcapPlusPlus PcapPlusPlus

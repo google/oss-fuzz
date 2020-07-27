@@ -25,7 +25,11 @@ import unittest
 from unittest import mock
 
 # pylint: disable=wrong-import-position
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(INFRA_DIR)
+
+OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
+
 import cifuzz
 import fuzz_target
 
@@ -50,10 +54,10 @@ EXAMPLE_NOCRASH_FUZZER = 'example_nocrash_fuzzer'
 # A fuzzer to be built in build_fuzzers integration tests.
 EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 
-MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'memory')
+MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'memory')
 MEMORY_FUZZER = 'curl_fuzzer_memory'
 
-UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'out', 'undefined')
+UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'undefined')
 UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
 # pylint: disable=no-self-use
@@ -217,10 +221,7 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
     # OSS-Fuzz build.
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
-                           side_effect=[True, False]), mock.patch.object(
-                               cifuzz,
-                               'is_project_sanitizer',
-                               return_value=True):
+                           side_effect=[True, False]):
       run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
@@ -233,10 +234,7 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
     """Test run_fuzzers with a bug found in OSS-Fuzz before."""
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
-                           side_effect=[True, True]), mock.patch.object(
-                               cifuzz,
-                               'is_project_sanitizer',
-                               return_value=True):
+                           side_effect=[True, True]):
       run_success, bug_found = cifuzz.run_fuzzers(10, TEST_FILES_PATH,
                                                   EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
@@ -247,8 +245,7 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_build(self):
     """Test run_fuzzers with an invalid build."""
-    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
-        cifuzz, 'is_project_sanitizer', return_value=True):
+    with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
       run_success, bug_found = cifuzz.run_fuzzers(10, tmp_dir, EXAMPLE_PROJECT)
@@ -257,8 +254,7 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_fuzz_seconds(self):
     """Tests run_fuzzers with an invalid fuzz seconds."""
-    with tempfile.TemporaryDirectory() as tmp_dir, unittest.mock.patch.object(
-        cifuzz, 'is_project_sanitizer', return_value=True):
+    with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
       run_success, bug_found = cifuzz.run_fuzzers(0, tmp_dir, EXAMPLE_PROJECT)
@@ -501,35 +497,9 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
         self.assertEqual(2, len(os.listdir(tmp_dir)))
 
 
-class IsProjectSanitizerUnitTest(unittest.TestCase):
-  """Class to test the is_project_sanitizer function in the cifuzz module.
-    Note: This test relies on the curl project being an OSS-Fuzz project.
-  """
-
-  def test_valid_project_curl(self):
-    """Test if sanitizers can be detected from project.yaml"""
-    self.assertTrue(cifuzz.is_project_sanitizer('memory', 'curl'))
-    self.assertTrue(cifuzz.is_project_sanitizer('address', 'curl'))
-    self.assertTrue(cifuzz.is_project_sanitizer('undefined', 'curl'))
-    self.assertFalse(cifuzz.is_project_sanitizer('not-a-san', 'curl'))
-
-  def test_valid_project_example(self):
-    """Test if sanitizers can be detected from project.yaml"""
-    self.assertFalse(cifuzz.is_project_sanitizer('memory', 'example'))
-    self.assertFalse(cifuzz.is_project_sanitizer('address', 'example'))
-    self.assertFalse(cifuzz.is_project_sanitizer('undefined', 'example'))
-    self.assertFalse(cifuzz.is_project_sanitizer('not-a-san', 'example'))
-
-  def test_invalid_project(self):
-    """Tests that invalid projects return false."""
-    self.assertFalse(cifuzz.is_project_sanitizer('memory', 'notaproj'))
-    self.assertFalse(cifuzz.is_project_sanitizer('address', 'notaproj'))
-    self.assertFalse(cifuzz.is_project_sanitizer('undefined', 'notaproj'))
-
-
 @unittest.skip('Test is too long to be run with presubmit.')
 class BuildSantizerIntegrationTest(unittest.TestCase):
-  """Class to test the is_project_sanitizer function in the cifuzz module.
+  """Integration tests for the build_fuzzers function in the cifuzz module.
     Note: This test relies on the curl project being an OSS-Fuzz project."""
 
   def test_valid_project_curl_memory(self):

@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+export CFLAGS="$CFLAGS -fPIC"
 cd janet
 make
 

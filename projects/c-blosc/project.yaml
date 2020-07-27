@@ -1,9 +1,12 @@
 homepage: "https://github.com/Blosc/c-blosc"
 language: c++
 primary_contact: "blosc.oss.fuzz@gmail.com"
+auto_ccs:
+  - "nathan.moinvaziri@gmail.com"
 sanitizers:
   - address
   - memory
+  - undefined
 architectures:
   - x86_64
   - i386

@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER guidovranken@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake build-essential libbz2-dev libc6-dev libffi-dev libfreetype6-dev libgdbm-dev libjpeg-turbo8-dev liblcms2-dev libncursesw5-dev libreadline-dev libsqlite3-dev libssl-dev libtiff5-dev libtool libwebp-dev make python python-dev python-setuptools tk-dev wget zlib1g-dev libwebp-dev
 RUN wget https://github.com/python/cpython/archive/v3.8.1.tar.gz
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow.git pillow

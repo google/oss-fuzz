@@ -14,7 +14,6 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER david@adalogics.com
 
 RUN git clone --depth 1 https://github.com/dtolnay/serde-yaml serde-yaml
 WORKDIR $SRC

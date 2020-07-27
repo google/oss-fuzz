@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER adam@adalogics.com
 RUN go get github.com/valyala/fastjson
 
 COPY build.sh $SRC/

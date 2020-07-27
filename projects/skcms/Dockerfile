@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kjlubick@chromium.org
 
 RUN apt-get update && apt-get install -y wget
 
