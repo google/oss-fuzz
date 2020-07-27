@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y libpcre3-dev zlib1g-dev
 RUN git clone https://github.com/nginx/nginx.git
 WORKDIR nginx
 COPY fuzz $SRC/fuzz
-COPY build.sh configure_fuzzers $SRC/
+COPY build.sh add_fuzzers.diff make_fuzzers $SRC/

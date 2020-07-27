@@ -14,11 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
+git apply $SRC/add_fuzzers.diff
+
 cp -r $SRC/fuzz src/.
-cp $SRC/configure_fuzzers auto/make
+cp $SRC/make_fuzzers auto/make_fuzzers
 
 auto/configure \
-    --with-ld-opt="-Wl,--wrap=listen -Wl,--wrap=setsockopt -Wl,--wrap=bind" \
+    --with-ld-opt="-Wl,--wrap=listen -Wl,--wrap=setsockopt -Wl,--wrap=bind -Wl,--wrap=shutdown" \
     --with-http_v2_module \
     --http-fastcgi-temp-path=$OUT/ \
     --http-uwsgi-temp-path=$OUT/

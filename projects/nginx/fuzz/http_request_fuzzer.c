@@ -23,6 +23,9 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+
 // Based on the firebase 100k nginx configuration
 static char configuration[] =
 "error_log stderr emerg;\n"
@@ -96,6 +99,7 @@ static char arg1[] = { 0, 0xAA, 0 };
 extern char **environ;
 
 static char *config_file = "socket_config.conf";
+
 
 // Create a base state for Nginx without starting the server
 int InitializeNginx(void) {
