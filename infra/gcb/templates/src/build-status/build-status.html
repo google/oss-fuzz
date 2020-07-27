@@ -27,7 +27,7 @@
       data="{{routeData}}">
     </app-route>
     <style is="custom-style" include="iron-flex iron-flex-alignment">
-      <style > 
+      <style> 
       .paper-item-link {
         color: inherit;
         text-decoration: none;
@@ -168,7 +168,6 @@
                 <pre>Finish Time : [[finish_time]]</pre>
               </template>
           </template>
-          
           <template is="dom-if" if="[[loading_log]]">
             Loading...
           </template>
@@ -191,7 +190,7 @@
         return {
           log: {
             type: String,
-            value: "",
+            value: '',
           },
           loading_log: {
             type: Boolean,
@@ -199,7 +198,7 @@
           },
           finish_time: {
             type: String,
-            value: "",
+            value: '',
           }
         }
       }
@@ -213,73 +212,73 @@
           // in the URL, we can proceed to load that project's log.
           return
         }
-        var project = this.getProjectByName(this.routeData.project_name)
-        this.build_history = this.getHistoryByName(this.routeData.project_name)
-        this.project = project
-        this.project_name = project.name
-        this.log = ""
-        this.finish_time = ""
+        var project = this.getProjectByName(this.routeData.project_name);
+        this.build_history = this.getHistoryByName(this.routeData.project_name);
+        this.project = project;
+        this.project_name = project.name;
+        this.log = "";
+        this.finish_time = "";
       }
 
       getProjectByName(project_name) {
         return this.status.last_successful_build.find(
           p => p.name === project_name
-        )
+        );
       }
 
       getHistoryByName(project_name) {
         const history = this.status.build_history.find(
           p => p.name === project_name
-        )
+        );
 
-        return history
+        return history;
       }
 
       onResponseForFuzzing(e) {
-        this.status_fuzzing = e.detail.response
+        this.status_fuzzing = e.detail.response;
         // console.log(this.tab_count)
         if (!this.status) {
           // Show status of the fuzzing builds by default.
-          this.status = this.status_fuzzing
+          this.status = this.status_fuzzing;
           // Manually invoke a _routeChanged call, in order to load the log for
           // someone going directly to a project's URL.
-          this._routeChanged()
+          this._routeChanged();
         }
       }
 
       onResponseForCoverage(e) {
-        this.status_coverage = e.detail.response
+        this.status_coverage = e.detail.response;
       }
 
       onLogResponse(e) {
-        this.log = e.detail.response
-        this.loading_log = false
+        this.log = e.detail.response;
+        this.loading_log = false;
       }
 
       onTap(e) {
         // Change the route, this should auto-magically update the url in the
         // browser and invoke the _routeChanged method.
-        this.set("route.path", e.model.project.name)
+        this.set("route.path", e.model.project.name);
       }
 
       onChanged(e) {
         if (this.$.build_type.selected == "coverage") {
-          this.status = this.status_coverage
+          this.status = this.status_coverage;
         } else {
-          this.status = this.status_fuzzing
+          this.status = this.status_fuzzing;
         }
       }
 
       onBuildHistoryClick(e) {
-        var ajax = this.$.logxhr
-        const id = e.model.__data.history.build_id
-        const fTime = e.model.__data.history.finish_time
-        ajax.url = "/logs/log-" + id + ".txt"
+        var ajax = this.$.logxhr;
+        const id = e.model.__data.history.build_id;
+        const fTime = e.model.__data.history.finish_time;
+        ajax.url = "/logs/log-" + id + ".txt";
         ajax.generateRequest();
-        this.loading_log = true
-        this.log = ""
-        this.finish_time = this.toLocalDate(fTime)
-        this.build_id = id
+        this.loading_log = true;
+        this.log = "";
+        this.finish_time = this.toLocalDate(fTime);
+        this.build_id = id;
         
       }
 
@@ -316,7 +315,7 @@
       }
 
       getLocalDate(str) {
-        let date = new Date(str)
+        let date = new Date(str);
         var day = this.pad(date.getDate());
         var month = this.pad(date.getMonth() + 1);
         var year = date.getFullYear();
