@@ -24,6 +24,15 @@ rm -rf ${WORK}/build
 mkdir -p ${WORK}/build
 cd ${WORK}/build
 
+if [ -f "${SRC}/clamav-devel/autogen.sh" ]
+then
+    /bin/chmod +x ${SRC}/clamav-devel/autogen.sh
+    ${SRC}/clamav-devel/autogen.sh
+fi
+
+# Remove ltdl so clamav build doesn't detect it and add it as a dependency.
+apt remove -y libtool libltdl-dev libltdl7
+
 #
 # Run ./configure
 #
