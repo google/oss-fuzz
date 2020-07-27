@@ -50,7 +50,8 @@ language: rust
 
 The only supported fuzzing engine and sanitizer are `libfuzzer` and `address`,
 respectively.
-[Example](https://github.com/google/oss-fuzz/blob/12ef3654b3e9adfd20b5a6afdde54819ba71493d/projects/serde_json/project.yaml#L3-L6)
+
+[Example](https://github.com/google/oss-fuzz/blob/12ef3654b3e9adfd20b5a6afdde54819ba71493d/projects/serde_json/project.yaml#L3-L6):
 
 ```yaml
 sanitizers:
@@ -65,7 +66,8 @@ The OSS-Fuzz builder image has the latest nightly release of Rust as well as
 `cargo fuzz` pre-installed and in `PATH`. In the `Dockerfile` for your project
 all you'll need to do is fetch the latest copy of your code and install any
 system dependencies necessary to build your project.
-[Example](https://github.com/google/oss-fuzz/blob/12ef3654b3e9adfd20b5a6afdde54819ba71493d/projects/serde_json/Dockerfile#L18-L20)
+
+[Example](https://github.com/google/oss-fuzz/blob/12ef3654b3e9adfd20b5a6afdde54819ba71493d/projects/serde_json/Dockerfile#L18-L20):
 
 ```dockerfile
 RUN git clone --depth 1 https://github.com/serde-rs/json json
