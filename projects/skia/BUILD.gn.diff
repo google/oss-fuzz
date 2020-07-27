@@ -117,6 +117,35 @@ test_app("animated_image_decode") {
   ]
 }
 
+test_app("api_create_ddl") {
+  include_dirs = [
+    "include",
+    "include/gpu",
+  ]
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCreateDDL.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzAPICreateDDL.cpp",
+    "tools/Resources.cpp",
+    "tools/UrlDataManager.cpp",
+    "tools/debugger/DebugCanvas.cpp",
+    "tools/debugger/DebugLayerManager.cpp",
+    "tools/debugger/DrawCommand.cpp",
+    "tools/debugger/JsonWriteBuffer.cpp",
+    "tools/fonts/TestFontMgr.cpp",
+    "tools/fonts/TestSVGTypeface.cpp",
+    "tools/fonts/TestTypeface.cpp",
+  ]
+  deps = [
+    ":experimental_svg_model",
+    ":flags",
+    ":gpu_tool_utils",
+    ":skia",
+    "//third_party/libpng",
+  ]
+}
+
 test_app("api_draw_functions") {
   sources = [
     "fuzz/Fuzz.cpp",
