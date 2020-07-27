@@ -9,5 +9,7 @@ sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
+  - afl
+  - honggfuzz
 architectures:
   - x86_64
