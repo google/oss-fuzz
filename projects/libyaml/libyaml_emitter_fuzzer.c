@@ -312,7 +312,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         break;
 
       done = (event.type == YAML_STREAM_END_EVENT);
-      if (!events_equal(events + count, &event)) {
+      if (events_equal(events + count, &event)) {
         yaml_event_delete(&event);
         break;
       }
