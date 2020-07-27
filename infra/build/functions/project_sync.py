@@ -26,7 +26,7 @@ from google.api_core import exceptions
 from google.cloud import ndb
 from google.cloud import scheduler_v1
 
-from datastore_entities import GitAuth
+from datastore_entities import GithubCreds
 from datastore_entities import Project
 
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
@@ -92,6 +92,7 @@ def sync_projects(cloud_scheduler_client, projects):
     if project.name in projects:
       continue
 
+    logging.info('Deleting project %s', project.name)
     try:
       delete_scheduler(cloud_scheduler_client, project.name)
       project.key.delete()
@@ -119,10 +120,13 @@ def sync_projects(cloud_scheduler_client, projects):
   for project in Project.query():
     if project.name not in projects:
       continue
+
+    logging.info('Setting up project %s', project.name)
     project_metadata = projects[project.name]
     project_changed = False
     if project.schedule != project_metadata.schedule:
       try:
+        logging.info('Schedule changed.')
         update_scheduler(cloud_scheduler_client, project,
                          projects[project.name].schedule)
         project.schedule = project_metadata.schedule
@@ -197,12 +201,12 @@ def get_projects(repo):
   return projects
 
 
-def get_access_token():
-  """Retrieves Github's Access token from Cloud Datastore."""
-  token = GitAuth.query().get()
-  if token is None:
-    raise RuntimeError('No access token available')
-  return token.access_token
+def get_github_creds():
+  """Retrieves GitHub client credentials."""
+  git_creds = GithubCreds.query().get()
+  if git_creds is None:
+    raise RuntimeError('Git credentials not available.')
+  return git_creds
 
 
 def sync(event, context):
@@ -210,7 +214,8 @@ def sync(event, context):
   del event, context  #unused
 
   with ndb.Client().context():
-    github_client = Github(get_access_token())
+    git_creds = get_github_creds()
+    github_client = Github(git_creds.client_id, git_creds.client_secret)
     repo = github_client.get_repo('google/oss-fuzz')
     projects = get_projects(repo)
     cloud_scheduler_client = scheduler_v1.CloudSchedulerClient()

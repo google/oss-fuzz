@@ -27,9 +27,10 @@ class Project(ndb.Model):
 
 
 # pylint: disable=too-few-public-methods
-class GitAuth(ndb.Model):
-  """Represents Github access token entity."""
-  access_token = ndb.StringProperty()
+class GithubCreds(ndb.Model):
+  """Represents GitHub credentials."""
+  client_id = ndb.StringProperty()
+  client_secret = ndb.StringProperty()
 
 
 # pylint: disable=too-few-public-methods

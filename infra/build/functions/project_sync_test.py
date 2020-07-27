@@ -21,7 +21,7 @@ import unittest
 from google.cloud import ndb
 
 from datastore_entities import Project
-from project_sync import get_access_token
+from project_sync import get_github_creds
 from project_sync import get_projects
 from project_sync import ProjectMetadata
 from project_sync import sync_projects
@@ -276,10 +276,10 @@ class TestDataSync(unittest.TestCase):
 
     self.assertEqual(get_projects(repo), {})
 
-  def test_get_access_token(self):
-    """Testing get_access_token()."""
+  def test_get_github_creds(self):
+    """Testing get_github_creds()."""
     with ndb.Client().context():
-      self.assertRaises(RuntimeError, get_access_token)
+      self.assertRaises(RuntimeError, get_github_creds)
 
   @classmethod
   def tearDownClass(cls):
