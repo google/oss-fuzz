@@ -5,5 +5,7 @@ auto_ccs:
   - "tom@ritter.vg"
 sanitizers:
   - address
+  - undefined
 fuzzing_engines:
   - libfuzzer
+  - honggfuzz
