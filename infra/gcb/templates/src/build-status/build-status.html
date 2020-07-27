@@ -27,7 +27,7 @@
       data="{{routeData}}">
     </app-route>
     <style is="custom-style" include="iron-flex iron-flex-alignment">
-      <style> 
+    <style> 
       .paper-item-link {
         color: inherit;
         text-decoration: none;
@@ -175,8 +175,8 @@
         </div>
       </paper-card>
     </div>
-    <iron-ajax id="status_fuzzing" auto handle-as="json" url="/status.json" on-response="onResponseForFuzzing"></iron-ajax>
-    <iron-ajax id="status_coverage" auto handle-as="json" url="/status-coverage.json" on-response="onResponseForCoverage"></iron-ajax>
+      <iron-ajax id="status_fuzzing" auto handle-as="json" url="/status.json" on-response="onResponseForFuzzing"></iron-ajax>
+      <iron-ajax id="status_coverage" auto handle-as="json" url="/status-coverage.json" on-response="onResponseForCoverage"></iron-ajax>
     <iron-ajax id="logxhr" handle-as="text" on-response="onLogResponse"></iron-ajax>
   </template>
 
