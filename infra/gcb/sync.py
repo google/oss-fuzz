@@ -13,7 +13,6 @@ JENKINS_SERVER = ('localhost', 8080)
 
 JOB_TEMPLATES = [
     {'prefix': 'projects/', 'config': 'base_job.xml'},
-    {'prefix': 'coverage/', 'config': 'coverage_job.xml'},
 ]
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
