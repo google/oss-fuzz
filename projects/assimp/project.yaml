@@ -3,18 +3,12 @@ language: c++
 primary_contact: "kim.kulling@googlemail.com"
 auto_ccs:
   - "kim.kulling@googlemail.com"
-fuzzing_engines:
-  - libfuzzer
-  - afl
-  - honggfuzz
+#fuzzing_engines:
+#  - libfuzzer
+#  - afl
+#  - honggfuzz
 sanitizers:
   - address
   - memory:
      experimental: True
   - undefined
-architectures:
-  - x86_64
-  - i38
-architectures:
-  - x86_64
-  - i386
