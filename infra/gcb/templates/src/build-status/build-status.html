@@ -132,14 +132,21 @@ limitations under the License. -->
             <paper-item on-tap="onTap">
               <paper-item-body two-line>
                 <div>
-                  <template is="dom-if" if="[[!project.history.0.success]]">
+                  <template is="dom-if" if="[[!isSuccessful(project)]]">
                     <iron-icon class="icon-error" icon="icons:error"></iron-icon>
                   </template>
                   [[project.name]]
                 </div>
-                <div secondary title$="Last built [[toLocalDate(project.finish_time)]]">
-                  Last built [[toLocalDate(project.history.0.finish_time)]]
-                </div>
+                <template is="dom-if" if="[[project.history.length]]">
+                 <div secondary title$="Last built [[toLocalDate(project.finish_time)]]">
+                    Last built [[toLocalDate(project.history.0.finish_time)]]
+                 </div>
+                </template>
+                <template is="dom-if" if="[[!project.history.length]]">
+                  <div secondary title$="Not built yet">
+                    Not built yet
+                  </div>
+                </template>
               </paper-item-body>
             </paper-item>
           </template>
@@ -147,14 +154,19 @@ limitations under the License. -->
       </paper-card>
       <paper-card class="log">
         <div class="card-content">
-          <template is="dom-if" if="[[!project]]">
+          <template is="dom-if" if="[[!build_history]]">
             Select a project to see logs.
           </template>
-          <template is="dom-if" if="[[project]]">
+          <template is="dom-if" if="[[build_history.history.length]]">
             Last Successfull build:
+            <template is="dom-if" if="[[project]]">
               <paper-button raised on-click="onLastSuccessClick" class="green">
                 [[getLocalDate(project.finish_time)]]
               </paper-button>
+            </template>
+            <template is="dom-if" if="[[!project]]">
+              None yet.
+            </template>
               <div style="margin: 20px 0;">
                 Build History: <br>
                 <template is="dom-repeat" items="[[build_history.history]]" as="history">
@@ -226,10 +238,8 @@ limitations under the License. -->
           // in the URL, we can proceed to load that project's log.
           return
         }
-        var project = this.getProjectByName(this.routeData.project_name);
+        this.project = this.getProjectByName(this.routeData.project_name);
         this.build_history = this.getHistoryByName(this.routeData.project_name);
-        this.project = project;
-        this.project_name = project.name;
         this.log = "";
         this.finish_time = "";
       }
@@ -338,6 +348,10 @@ limitations under the License. -->
 
         var dateStr = day + "/" + month + "/" + year + " " + hour + ":" + minutes;
         return dateStr;
+      }
+
+      isSuccessful(project) {
+        return (!project.history.length || project.history[0].success)
       }
     }
 
