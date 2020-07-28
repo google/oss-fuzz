@@ -100,6 +100,11 @@ limitations under the License. -->
         margin-right: 0.2em;
       }
 
+      .icon-waiting {
+        color: var(--paper-yellow-500);
+        margin-right: 0.2em;
+      }
+
       .projects {
         min-width: 10em;
       }
@@ -134,6 +139,9 @@ limitations under the License. -->
                 <div>
                   <template is="dom-if" if="[[!isSuccessful(project)]]">
                     <iron-icon class="icon-error" icon="icons:error"></iron-icon>
+                  </template>
+                  <template is="dom-if" if="[[!project.history.length]]">
+                    <iron-icon class="icon-waiting" icon="icons:error"></iron-icon>
                   </template>
                   [[project.name]]
                 </div>
@@ -233,12 +241,16 @@ limitations under the License. -->
       }
 
       _routeChanged() {
+        if(!this.routeData.project_name)
+          this.build_history = "";
         if (!this.status || !this.routeData.project_name) {
           // If our status json is loaded and there is a project_name specified
           // in the URL, we can proceed to load that project's log.
           return
         }
         this.project = this.getProjectByName(this.routeData.project_name);
+        if (typeof this.project === "undefined")
+          this.project = "";
         this.build_history = this.getHistoryByName(this.routeData.project_name);
         this.log = "";
         this.finish_time = "";
@@ -251,16 +263,13 @@ limitations under the License. -->
       }
 
       getHistoryByName(project_name) {
-        const history = this.status.build_history.find(
+        return this.status.build_history.find(
           p => p.name === project_name
         );
-
-        return history;
       }
 
       onResponseForFuzzing(e) {
         this.status_fuzzing = e.detail.response;
-        // console.log(this.tab_count)
         if (!this.status) {
           // Show status of the fuzzing builds by default.
           this.status = this.status_fuzzing;
@@ -295,26 +304,25 @@ limitations under the License. -->
 
       onBuildHistoryClick(e) {
         var ajax = this.$.logxhr;
-        const id = e.model.__data.history.build_id;
-        const fTime = e.model.__data.history.finish_time;
-        ajax.url = "/logs/log-" + id + ".txt";
+        const id = e.model.history.build_id;
+        const finishTime = e.model.history.finish_time;
+        ajax.url = "/log-" + id + ".txt";
         ajax.generateRequest();
         this.loading_log = true;
         this.log = "";
-        this.finish_time = this.toLocalDate(fTime);
+        this.finish_time = this.toLocalDate(finishTime);
         this.build_id = id;
-        
       }
 
       onLastSuccessClick(e) {
         var ajax = this.$.logxhr;
         const id = this.project.build_id;
-        const fTime = this.project.finish_time;
-        ajax.url = "/logs/log-" + id + ".txt";
+        const finishTime = this.project.finish_time;
+        ajax.url = "/log-" + id + ".txt";
         ajax.generateRequest();
         this.loading_log = true;
         this.log = "";
-        this.finish_time = this.toLocalDate(fTime);
+        this.finish_time = this.toLocalDate(finishTime);
         this.build_id = id;
       }
 
@@ -334,8 +342,7 @@ limitations under the License. -->
       }
 
       pad(n) {
-        {return n<10 ? '0'+n : n;}
-
+        return n<10 ? '0'+n : n;
       }
 
       getLocalDate(str) {
