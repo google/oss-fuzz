@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #include "astcenc_internal.h"
+
+#include <algorithm>
 #include <fuzzer/FuzzedDataProvider.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -21,8 +23,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   int quantization_level = stream.ConsumeIntegral<int>();
   std::vector<uint8_t> buffer = stream.ConsumeRemainingBytes<uint8_t>();
 
-  uint8_t *out;
-  decode_ise(quantization_level, buffer.size(), buffer.data(), out, 0);
+  // encode_ise and decode_ise will each write a max of 64 bytes to the buffer
+  size = std::min<size_t>(buffer.size(), 64);
+  uint8_t encode_out[size];
+  uint8_t decode_out[size];
+
+  encode_ise(quantization_level, size, buffer.data(), encode_out, 0);
+  decode_ise(quantization_level, size, encode_out, decode_out, 0);
 
   return 0;
 }

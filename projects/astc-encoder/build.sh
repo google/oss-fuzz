@@ -17,7 +17,7 @@
 
 # build project
 patch -R Makefile -i Makefile.patch
-make -s CXX=clang++ batchbuild -j$(nproc)
+make -s batchbuild -j$(nproc)
 ar -qc libastc.a  *.o
 
 # build fuzzers
