@@ -15,14 +15,6 @@
 #
 ################################################################################
 
-# show config 
-echo "CC: $CC"
-echo "CXX: $CXX"
-echo "LIB_FUZZING_ENGINE: $LIB_FUZZING_ENGINE"
-echo "CFLAGS: $CFLAGS"
-echo "CXXFLAGS: $CXXFLAGS"
-echo "ARCHITECTURE: $ARCHITECTURE"
-
 # generate build env and build assimp
 cmake CMakeLists.txt -G "Ninja" -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_SAMPLES=OFF
 cmake --build .
@@ -31,5 +23,3 @@ cmake --build .
 $CXX $CXXFLAGS -std=c++11 -I$SRC/assimp/include \
 	fuzz/assimp_fuzzer.cc -o $OUT/assimp_fuzzer \
 	$LIB_FUZZING_ENGINE $SRC/assimp/lib/libassimp.a $SRC/assimp/lib/libIrrXML.a $SRC/assimp/lib/libzlibstatic.a
-
-
