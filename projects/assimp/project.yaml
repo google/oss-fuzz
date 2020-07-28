@@ -1,0 +1,8 @@
+homepage: "https://github.com/assimp/assimp"
+language: c++
+primary_contact: "kim.kulling@googlemail.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
