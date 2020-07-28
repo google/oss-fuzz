@@ -2,11 +2,9 @@ homepage: "https://github.com/googleinterns/cloud-spanner-emulator-fuzzing"
 language: c++
 primary_contact: "evmaus@google.com"
 auto_ccs:
-  - "snehashah@google.com"
-  - "volfson@google.com"
+  - "cloud-spanner-emulator-dev+fuzztests@google.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
 sanitizers:
   - address
-  - memory
