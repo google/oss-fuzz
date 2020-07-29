@@ -1,4 +1,8 @@
-FUZZ_SRCS="src/fuzz/http_request_fuzzer.c"
+sed -i 's/fuzz_without_main(/main(/g' src/core/nginx.c
+sed -i 's/main(/fuzz_without_main(/g' src/core/nginx.c
+
+FUZZ_SRCS="src/fuzz/http_request_fuzzer.c \
+	   src/fuzz/wrappers.c"
 
 mkdir -p $NGX_OBJS/src/fuzz
 
@@ -10,6 +14,10 @@ ngx_all_objs_fuzz=`echo $FUZZ_SRCS $ngx_all_srcs \
 
 ngx_deps_fuzz=`echo $ngx_all_objs_fuzz $ngx_modules_obj $ngx_res $LINK_DEPS \
     | sed -e "s/  *\([^ ][^ ]*\)/$ngx_regex_cont\1/g" \
+          -e "s/\//$ngx_regex_dirsep/g"`
+
+ngx_objs=`echo  $NGX_OBJS${ngx_dirsep}src/fuzz/wrappers.o $ngx_all_objs $ngx_modules_obj \
+    | sed -e "s/  *\([^ ][^ ]*\)/$ngx_long_regex_cont\1/g" \
           -e "s/\//$ngx_regex_dirsep/g"`
 
 # the fuzzers

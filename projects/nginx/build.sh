@@ -20,10 +20,10 @@ cp -r $SRC/fuzz src/.
 cp $SRC/make_fuzzers auto/make_fuzzers
 
 auto/configure \
-    --with-ld-opt="-Wl,--wrap=listen -Wl,--wrap=setsockopt -Wl,--wrap=bind -Wl,--wrap=shutdown" \
+    --with-ld-opt="-Wl,--wrap=listen -Wl,--wrap=setsockopt -Wl,--wrap=bind -Wl,--wrap=shutdown -Wl,--wrap=connect" \
     --with-http_v2_module \
     --http-fastcgi-temp-path=$OUT/ \
     --http-uwsgi-temp-path=$OUT/
-make -j$(nproc)
+make -f objs/Makefile fuzzers
 
 cp objs/*_fuzzer $OUT/
