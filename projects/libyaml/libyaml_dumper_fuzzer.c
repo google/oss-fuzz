@@ -221,8 +221,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   int k;
   bool is_canonical = data[0] & 1;
   bool is_unicode = data[1] & 1;
-  data = data + 2;
-  size = size - 2;
+  data += 2;
+  size -= 2;
 
   if (!yaml_parser_initialize(&parser))
     return 0;
