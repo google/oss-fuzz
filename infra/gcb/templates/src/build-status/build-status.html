@@ -1,11 +1,8 @@
 <!-- Copyright 2020 Google Inc.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
      http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -137,7 +134,7 @@ limitations under the License. -->
           </paper-tabs>
         </div>
         <div class="card-content">
-          <template is="dom-repeat" items="[[status.build_history]]" as="project">
+          <template is="dom-repeat" items="[[status.projects]]" as="project">
             <paper-item on-tap="onTap">
               <paper-item-body two-line>
                 <div>
@@ -166,22 +163,22 @@ limitations under the License. -->
       </paper-card>
       <paper-card class="log">
         <div class="card-content">
-          <template is="dom-if" if="[[!build_history]]">
+          <template is="dom-if" if="[[!project]]">
             Select a project to see logs.
           </template>
-          <template is="dom-if" if="[[build_history.history.length]]">
+          <template is="dom-if" if="[[build_history.length]]">
             Last Successfull build:
-            <template is="dom-if" if="[[project]]">
+            <template is="dom-if" if="[[last_successful_build]]">
               <paper-button raised on-click="onRequestLog" class="green">
-                [[getLocalDate(project.finish_time)]]
+                [[getLocalDate(last_successful_build.finish_time)]]
               </paper-button>
             </template>
-            <template is="dom-if" if="[[!project]]">
+            <template is="dom-if" if="[[!last_successful_build]]">
               None yet.
             </template>
               <div class="buildHistory">
                 Build History: <br>
-                <template is="dom-repeat" items="[[build_history.history]]" as="history">
+                <template is="dom-repeat" items="[[build_history]]" as="history">
                   <paper-button raised on-click="onRequestLog">
                     <template is="dom-if" if="[[history.success]]">
                       <iron-icon class="icon-success" icon="icons:done"></iron-icon>
@@ -246,28 +243,25 @@ limitations under the License. -->
 
       _routeChanged() {
         if(!this.routeData.project_name)
-          this.build_history = "";
+          this.project = "";
         if (!this.status || !this.routeData.project_name) {
           // If our status json is loaded and there is a project_name specified
           // in the URL, we can proceed to load that project's log.
           return
         }
         this.project = this.getProjectByName(this.routeData.project_name);
-        if (!this.project)
-          this.project = "";
-        this.build_history = this.getHistoryByName(this.routeData.project_name);
+        this.build_history = this.project.history;
+        if (this.project['last_successful_build']){
+          this.last_successful_build = this.project.last_successful_build;
+        } else{
+          this.last_successful_build = "";
+        }
         this.log = "";
         this.finish_time = "";
       }
 
       getProjectByName(project_name) {
-        return this.status.last_successful_build.find(
-          p => p.name === project_name
-        );
-      }
-
-      getHistoryByName(project_name) {
-        return this.status.build_history.find(
+        return this.status.projects.find(
           p => p.name === project_name
         );
       }

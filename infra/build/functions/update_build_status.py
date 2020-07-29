@@ -36,6 +36,26 @@ class MissingBuildLogError(Exception):
   """Missing build log file in cloud storage."""
 
 
+def sort_projects(projects, statuses):
+  """Sort projects in order Failures, Successes, Not yet built."""
+  # if project is in statuses then it is either successful or failed.
+  # if project is not in statuses means it was not built.
+  sorted_projects = []
+  for i in range(3):
+    for project in projects:
+      if i == 0:
+        if not statuses[project.name]:
+          sorted_projects.append(project)
+      if i == 1:
+        if statuses[project.name]:
+          sorted_projects.append(project)
+      if i == 2:
+        if project.name not in statuses:
+          sorted_projects.append(project)
+
+  return sorted_projects
+
+
 # pylint: disable=no-member
 def get_build_history(build_ids):
   """Returns build object for the last finished build of project."""
@@ -46,12 +66,20 @@ def get_build_history(build_ids):
                      cache_discovery=False)
 
   history = []
+  last_successful_build = None
 
   for build_id in reversed(build_ids):
     project_build = cloudbuild.projects().builds().get(projectId=image_project,
                                                        id=build_id).execute()
     if project_build['status'] == 'WORKING':
       continue
+
+    if not last_successful_build and builds_status.is_build_successful(
+        project_build):
+      last_successful_build = {
+          'build_id': build_id,
+          'finish_time': project_build['finishTime'],
+      }
 
     if not builds_status.upload_log(build_id):
       log_name = 'log-{0}'.format(build_id)
@@ -66,74 +94,52 @@ def get_build_history(build_ids):
     if len(history) == MAX_BUILD_LOGS:
       break
 
-  return history
+  project = {'history': history}
+  if last_successful_build:
+    project['last_successful_build'] = last_successful_build
+
+  return project
 
 
 # pylint: disable=too-many-locals
 def update_build_status(build_tag, status_filename):
   """Update build statuses."""
-  build_history = []
-  last_successful_build = []
+  projects = []
   statuses = {}
-  successes = []
-  failures = []
-  not_yet_built = []
   for project_build in BuildsHistory.query(
       BuildsHistory.build_tag == build_tag).order('project'):
 
-    history = get_build_history(project_build.build_ids)
-    if not history:
-      not_yet_built.append({'name': project_build.project, 'history': history})
+    project = get_build_history(project_build.build_ids)
+    project['name'] = project_build.project
+    projects.append(project)
+    last_successful_build = ndb.Key(LastSuccessfulBuild,
+                                    project.name + '-' + build_tag).get()
+    if project.history:
+      statuses[project.name] = project.history[0].success
+
+    if not last_successful_build and 'last_successful_build' not in project:
       continue
 
-    if history[0].success:
-      statuses[project_build.project] = True
-      successes.append({'name': project_build.project, 'history': history})
+    if 'last_successful_build' not in project:
+      project['last_successful_build'] = {
+          'build_id': last_successful_build.build_id,
+          'finish_time': last_successful_build.finish_time
+      }
     else:
-      statuses[project_build.project] = False
-      failures.append({'name': project_build.project, 'history': history})
+      if last_successful_build:
+        last_successful_build.build_id = project[
+            'last_successful_build'].build_id
+        last_successful_build.finish_time = project[
+            'last_successful_build'].finish_time
+      else:
+        last_successful_build = LastSuccessfulBuild(
+            id=project.name + '-' + build_tag,
+            project=project.name,
+            uild_id=project['last_successful_build'].build_id,
+            finish_time=project['last_successful_build'].finish_time)
+      last_successful_build.put()
 
-  for project in failures:
-    build_history.append(project)
-    last_success = ndb.Key(LastSuccessfulBuild,
-                           project.name + '-' + build_tag).get()
-    if not last_success:
-      continue
-    last_successful_build.append({
-        'name': project.name,
-        'build_id': last_success.build_id,
-        'finish_time': last_success.finish_time
-    })
-
-  for project in not_yet_built:
-    build_history.append(project)
-
-  for project in successes:
-    last_success = ndb.Key(LastSuccessfulBuild,
-                           project.name + '-' + build_tag).get()
-
-    if last_success:
-      last_success.build_id = project.history[0].build_id
-      last_success.finish_time = project.history[0].finish_time
-    else:
-      last_success = LastSuccessfulBuild(
-          id=project.name + '-' + build_tag,
-          project=project.name,
-          build_id=project.history[0].build_id,
-          finish_time=project.history[0].finish_time)
-
-    last_success.put()
-    build_history.append(project)
-    last_successful_build.append({
-        'name': project.name,
-        'build_id': last_success.build_id,
-        'finish_time': last_success.finish_time
-    })
-
-  data = {
-      'last_successful_build': last_successful_build,
-      'build_history': build_history
-  }
+  data = {'projects': sort_projects(projects, statuses)}
   bucket = builds_status.get_storage_client().get_bucket(
       builds_status.STATUS_BUCKET)
   blob = bucket.blob(status_filename)
