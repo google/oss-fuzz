@@ -36,6 +36,15 @@ class MissingBuildLogError(Exception):
   """Missing build log file in cloud storage."""
 
 
+def upload_status(data, status_filename):
+  """Upload json file to cloud storage."""
+  bucket = builds_status.get_storage_client().get_bucket(
+      builds_status.STATUS_BUCKET)
+  blob = bucket.blob(status_filename)
+  blob.cache_control = 'no-cache'
+  blob.upload_from_string(json.dumps(data), content_type='application/json')
+
+
 def sort_projects(projects, statuses):
   """Sort projects in order Failures, Successes, Not yet built."""
   # if project is in statuses then it is either successful or failed.
@@ -43,17 +52,24 @@ def sort_projects(projects, statuses):
   sorted_projects = []
   for i in range(3):
     for project in projects:
+      name = project['name']
       if i == 0:
-        if not statuses[project.name]:
+        if name in statuses and (not statuses[name]):
           sorted_projects.append(project)
       if i == 1:
-        if statuses[project.name]:
+        if name in statuses and statuses[name]:
           sorted_projects.append(project)
       if i == 2:
-        if project.name not in statuses:
+        if name not in statuses:
           sorted_projects.append(project)
 
   return sorted_projects
+
+
+def get_build(cloudbuild, image_project, build_id):
+  """Get build object from cloudbuild."""
+  return cloudbuild.projects().builds().get(projectId=image_project,
+                                            id=build_id).execute()
 
 
 # pylint: disable=no-member
@@ -69,13 +85,12 @@ def get_build_history(build_ids):
   last_successful_build = None
 
   for build_id in reversed(build_ids):
-    project_build = cloudbuild.projects().builds().get(projectId=image_project,
-                                                       id=build_id).execute()
+    project_build = get_build(cloudbuild, image_project, build_id)
     if project_build['status'] == 'WORKING':
       continue
 
-    if not last_successful_build and builds_status.is_build_successful(
-        project_build):
+    if (not last_successful_build
+       ) and builds_status.is_build_successful(project_build):
       last_successful_build = {
           'build_id': build_id,
           'finish_time': project_build['finishTime'],
@@ -97,7 +112,6 @@ def get_build_history(build_ids):
   project = {'history': history}
   if last_successful_build:
     project['last_successful_build'] = last_successful_build
-
   return project
 
 
@@ -113,9 +127,9 @@ def update_build_status(build_tag, status_filename):
     project['name'] = project_build.project
     projects.append(project)
     last_successful_build = ndb.Key(LastSuccessfulBuild,
-                                    project.name + '-' + build_tag).get()
-    if project.history:
-      statuses[project.name] = project.history[0].success
+                                    project_build.name + '-' + build_tag).get()
+    if project['history']:
+      statuses[project_build.name] = project['history'][0]['success']
 
     if not last_successful_build and 'last_successful_build' not in project:
       continue
@@ -127,24 +141,20 @@ def update_build_status(build_tag, status_filename):
       }
     else:
       if last_successful_build:
-        last_successful_build.build_id = project[
-            'last_successful_build'].build_id
-        last_successful_build.finish_time = project[
-            'last_successful_build'].finish_time
+        last_successful_build.build_id = project['last_successful_build'][
+            'build_id']
+        last_successful_build.finish_time = project['last_successful_build'][
+            'finish_time']
       else:
         last_successful_build = LastSuccessfulBuild(
-            id=project.name + '-' + build_tag,
-            project=project.name,
-            uild_id=project['last_successful_build'].build_id,
-            finish_time=project['last_successful_build'].finish_time)
+            id=project_build.name + '-' + build_tag,
+            project=project_build.name,
+            uild_id=project['last_successful_build']['build_id'],
+            finish_time=project['last_successful_build']['finish_time'])
       last_successful_build.put()
 
   data = {'projects': sort_projects(projects, statuses)}
-  bucket = builds_status.get_storage_client().get_bucket(
-      builds_status.STATUS_BUCKET)
-  blob = bucket.blob(status_filename)
-  blob.cache_control = 'no-cache'
-  blob.upload_from_string(json.dumps(data), content_type='application/json')
+  upload_status(data, status_filename)
 
   return statuses
 
