@@ -15,6 +15,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
+#include <ngx_event.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,9 +23,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <time.h>
-
-#include <sys/types.h>
-#include <sys/socket.h>
 
 // Based on the firebase 100k nginx configuration
 static char configuration[] =
@@ -101,6 +99,74 @@ extern char **environ;
 static char *config_file = "socket_config.conf";
 
 
+struct fuzzing_data {
+  const uint8_t *data;
+  size_t data_len;
+};
+
+static struct fuzzing_data request;
+static struct fuzzing_data reply;
+
+static ngx_http_upstream_t *upstream = NULL;
+static ngx_http_request_t *req_reply = NULL;
+static ngx_http_cleanup_t cln_new = {};
+static int cln_added = 0;
+
+// Called when finalizing the request to upstream
+// Do not need to clean the request pool
+static void cleanup_reply(void *data){
+  req_reply=NULL;
+}
+ 
+// Called by the http parser to read the buffer
+static ssize_t request_recv_handler(ngx_connection_t *c, u_char *buf, size_t size) {
+  if (request.data_len < size)
+    size = request.data_len;
+  memcpy(buf, request.data, size);
+  request.data += size;
+  request.data_len -= size;
+  return size;
+}
+
+// Feed fuzzing input for the reply from upstream
+static ssize_t reply_recv_handler(ngx_connection_t *c, u_char *buf, size_t size) {
+  req_reply = (ngx_http_request_t *)(c->data);
+  if(!cln_added){ // add cleanup so that we know whether everything is cleanup correctly
+    cln_added=1;
+    cln_new.handler = cleanup_reply;
+    cln_new.next = req_reply->cleanup;
+    cln_new.data = NULL;
+    req_reply->cleanup = &cln_new;
+  }
+  upstream = req_reply->upstream;
+
+  if (reply.data_len < size)
+    size = reply.data_len;
+  memcpy(buf, reply.data, size);
+  reply.data += size;
+  reply.data_len -= size; 
+  if (size == 0)
+    c->read->ready = 0;
+  return size;
+}
+
+static ngx_int_t add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags){
+  return NGX_OK;
+}
+
+static ngx_int_t init_event(ngx_cycle_t *cycle, ngx_msec_t timer){
+  return NGX_OK;
+}
+
+
+// Used when sending data, do nothing
+static ngx_chain_t *send_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit) {
+  c->read->ready=1;
+  c->recv = reply_recv_handler;
+  return in->next;
+}
+
+
 // Create a base state for Nginx without starting the server
 int InitializeNginx(void) {
   ngx_log_t *log;
@@ -160,58 +226,54 @@ int InitializeNginx(void) {
 
   ngx_os_status(cycle->log);
   ngx_cycle = cycle;
+
+  ngx_event_actions.add = add_event;
+  ngx_event_actions.init = init_event;
+  ngx_io.send_chain = send_chain;
+  ngx_event_flags =1;
+  ngx_event_timer_init(cycle->log);
   return 0;
 }
 
+
 void invalid_call(void) { }
 
-struct fuzzing_data {
-  const uint8_t *data;
-  size_t data_len;
-};
-
-// Called by the http parser to read the buffer
-static ssize_t recv_handler(ngx_connection_t *c, u_char *buf, size_t size) {
-  struct fuzzing_data *data = (struct fuzzing_data*)(c->write->data);
-  if (data->data_len < size)
-    size = data->data_len;
-  memcpy(buf, data->data, size);
-  data->data += size;
-  data->data_len -= size;
-  return size;
-}
-
-
-// Used when sending data, do nothing
-ngx_chain_t *send_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit) {
-  return in;
-}
 
 int LLVMFuzzerInitialize(int *argc, char ***argv){
   return InitializeNginx();
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t data_len) {
-  ngx_event_t read_event = {};
-  ngx_event_t write_event = {};
-  ngx_connection_t local = {};
+  // have two free connections, one for client, one for upstream
+  ngx_event_t read_event1 = {};
+  ngx_event_t write_event1 = {};
+  ngx_connection_t local1 = {};
+  ngx_event_t read_event2 = {};
+  ngx_event_t write_event2 = {};
+  ngx_connection_t local2 = {};
   ngx_connection_t *c;
   ngx_listening_t *ls;
-  struct fuzzing_data fuzz_data;
 
-  fuzz_data.data = data;
-  fuzz_data.data_len = data_len;
+  request.data = data;
+  request.data_len = data_len/2;
+  reply.data = data+data_len/2;
+  reply.data_len = data_len - data_len/2;
 
   // Use listening entry created from configuration
   ls = (ngx_listening_t*)ngx_cycle->listening.elts;
 
   // Fake event ready for dispatch on read
-  local.read = &read_event;
-  local.write = &write_event;
+  local1.read = &read_event1;
+  local1.write = &write_event1;
+  local2.read = &read_event2;
+  local2.write = &write_event2;
+  local2.send_chain = send_chain;
 
   // Create fake free connection to feed the http handler
-  ngx_cycle->free_connections = &local;
-  ngx_cycle->free_connection_n = 1;
+  ngx_cycle->free_connections = &local1;
+  local1.data = &local2;
+
+  ngx_cycle->free_connection_n = 2;
 
   // Initialize connection
   c = ngx_get_connection(255, &ngx_log);
@@ -221,7 +283,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t data_len) {
   c->pool = ngx_create_pool(256, ngx_cycle->log);
   c->sockaddr = ls->sockaddr;
   c->listening = ls;
-  c->recv = recv_handler;  // Where the input will be read
+  c->recv = request_recv_handler;  // Where the input will be read
   c->send_chain = send_chain;
   c->send = (ngx_send_pt)invalid_call;
   c->recv_chain = (ngx_recv_chain_pt)invalid_call;
@@ -233,18 +295,24 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t data_len) {
   c->local_sockaddr = ls->sockaddr;
   c->local_socklen = ls->socklen;
 
-  read_event.ready = 1;
-  write_event.data = &fuzz_data;
-  write_event.ready = write_event.delayed = 1;
+  read_event1.ready = 1;
+  write_event1.ready = write_event1.delayed = 1;
 
   // Will redirect to http parser
   ngx_http_init_connection(c);
 
   // Clean-up in case of error
-  if (!c->destroyed) {
-    ngx_http_free_request((ngx_http_request_t *)(c->data), 0);
+  if(req_reply && upstream && upstream->cleanup){
+    (*(upstream->cleanup))(req_reply);
+    if(!c->destroyed)
+      ngx_http_close_connection(c);
+  } else if (!c->destroyed) {
+    ngx_http_request_t * r = (ngx_http_request_t *)(c->data);
+    ngx_http_free_request(r, 0);
     ngx_http_close_connection(c);
   }
-
+  req_reply=NULL;
+  upstream=NULL;
+  cln_added=0;
   return 0;
 }
