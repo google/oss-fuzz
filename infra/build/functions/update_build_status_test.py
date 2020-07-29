@@ -21,6 +21,7 @@ import test_utils
 import update_build_status
 
 
+# pylint: disable=too-few-public-methods
 class SpoofedGetBuild:
   """Spoofing get_builds function."""
 
@@ -28,6 +29,8 @@ class SpoofedGetBuild:
     self.builds = builds
 
   def get_build(self, cloudbuild, image_project, build_id):
+    """Mimic build object retrieval."""
+    del cloudbuild, image_project
     for build in self.builds:
       if build['build_id'] == build_id:
         return build
@@ -54,6 +57,7 @@ class TestGetBuildHistory(unittest.TestCase):
   def test_get_build_history(self, mocked_upload_log, mocked_cloud_build,
                              mocked_get_build):
     """Test for get_build_steps."""
+    del mocked_cloud_build, mocked_get_build
     mocked_upload_log.return_value = True
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'SUCCESS'}]
     spoofed_get_build = SpoofedGetBuild(builds)
@@ -76,6 +80,7 @@ class TestGetBuildHistory(unittest.TestCase):
   def test_get_build_history_missing_log(self, mocked_upload_log,
                                          mocked_cloud_build, mocked_get_build):
     """Test for missing build log file."""
+    del mocked_cloud_build, mocked_get_build
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'SUCCESS'}]
     spoofed_get_build = SpoofedGetBuild(builds)
     update_build_status.get_build = spoofed_get_build.get_build
@@ -87,6 +92,7 @@ class TestGetBuildHistory(unittest.TestCase):
                                              mocked_cloud_build,
                                              mocked_get_build):
     """Test when there is no last successful build."""
+    del mocked_cloud_build, mocked_get_build
     builds = [{'build_id': '1', 'finishTime': 'test_time', 'status': 'FAILED'}]
     spoofed_get_build = SpoofedGetBuild(builds)
     update_build_status.get_build = spoofed_get_build.get_build
@@ -111,6 +117,7 @@ class TestSortProjects(unittest.TestCase):
   """Unit tests for testing sorting functionality."""
 
   def test_sort_projects(self):
+    """Test sorting functionality."""
     projects = [{'name': '1'}, {'name': '2'}, {'name': '3'}]
     statuses = {'2': True, '3': False}
     expected_order = ['3', '2', '1']
