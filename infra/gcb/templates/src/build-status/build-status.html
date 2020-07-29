@@ -41,7 +41,7 @@ limitations under the License. -->
       data="{{routeData}}">
     </app-route>
     <style is="custom-style" include="iron-flex iron-flex-alignment">
-    <style> 
+    <style>
       .paper-item-link {
         color: inherit;
         text-decoration: none;
@@ -114,6 +114,10 @@ limitations under the License. -->
         display: inline;
       }
 
+      .buildHistory {
+        margin: 20px 0;
+      }
+
       pre {
         white-space: pre-wrap;
       }
@@ -168,17 +172,17 @@ limitations under the License. -->
           <template is="dom-if" if="[[build_history.history.length]]">
             Last Successfull build:
             <template is="dom-if" if="[[project]]">
-              <paper-button raised on-click="onLastSuccessClick" class="green">
+              <paper-button raised on-click="onRequestLog" class="green">
                 [[getLocalDate(project.finish_time)]]
               </paper-button>
             </template>
             <template is="dom-if" if="[[!project]]">
               None yet.
             </template>
-              <div style="margin: 20px 0;">
+              <div class="buildHistory">
                 Build History: <br>
                 <template is="dom-repeat" items="[[build_history.history]]" as="history">
-                  <paper-button raised on-click="onBuildHistoryClick">
+                  <paper-button raised on-click="onRequestLog">
                     <template is="dom-if" if="[[history.success]]">
                       <iron-icon class="icon-success" icon="icons:done"></iron-icon>
                     </template>
@@ -195,7 +199,7 @@ limitations under the License. -->
               <template is="dom-if" if="[[finish_time]]">
                 <a href="/log-[[build_id]].txt" target="_blank" tabindex="-1">
                   <paper-button raised>
-                    Open log in new tab
+                    Open in new tab
                     <iron-icon icon="icons:link"></iron-iron>
                   </paper-button>
                 </a>
@@ -249,7 +253,7 @@ limitations under the License. -->
           return
         }
         this.project = this.getProjectByName(this.routeData.project_name);
-        if (typeof this.project === "undefined")
+        if (!this.project)
           this.project = "";
         this.build_history = this.getHistoryByName(this.routeData.project_name);
         this.log = "";
@@ -302,22 +306,10 @@ limitations under the License. -->
         }
       }
 
-      onBuildHistoryClick(e) {
+      onRequestLog(e) {
         var ajax = this.$.logxhr;
         const id = e.model.history.build_id;
         const finishTime = e.model.history.finish_time;
-        ajax.url = "/log-" + id + ".txt";
-        ajax.generateRequest();
-        this.loading_log = true;
-        this.log = "";
-        this.finish_time = this.toLocalDate(finishTime);
-        this.build_id = id;
-      }
-
-      onLastSuccessClick(e) {
-        var ajax = this.$.logxhr;
-        const id = this.project.build_id;
-        const finishTime = this.project.finish_time;
         ajax.url = "/log-" + id + ".txt";
         ajax.generateRequest();
         this.loading_log = true;
@@ -347,14 +339,7 @@ limitations under the License. -->
 
       getLocalDate(str) {
         let date = new Date(str);
-        var day = this.pad(date.getDate());
-        var month = this.pad(date.getMonth() + 1);
-        var year = date.getFullYear();
-        var hour = this.pad(date.getHours());
-        var minutes = this.pad(date.getMinutes());
-
-        var dateStr = day + "/" + month + "/" + year + " " + hour + ":" + minutes;
-        return dateStr;
+        return date.toLocaleString()
       }
 
       isSuccessful(project) {
