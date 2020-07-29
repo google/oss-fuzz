@@ -53,4 +53,5 @@ def base_builder(event, context):
                                                      body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
   logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', build_base_images.get_logs_url(build_id, BASE_PROJECT))
+  logging.info('Logs: %s',
+               build_base_images.get_logs_url(build_id, BASE_PROJECT))
