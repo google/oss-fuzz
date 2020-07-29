@@ -65,8 +65,6 @@ class TestRequestBuilds(unittest.TestCase):
       Project(name='test-project',
               project_yaml_contents=project_yaml_contents,
               dockerfile_contents='test line').put()
-
-    with ndb.Client().context():
       build_steps = get_build_steps('test-project', image_project,
                                     base_images_project)
     self.assertEqual(build_steps, expected_build_steps)
