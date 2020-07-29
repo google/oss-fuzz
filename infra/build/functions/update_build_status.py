@@ -46,7 +46,6 @@ def get_build_history(build_ids):
                      cache_discovery=False)
 
   history = []
-  last_build_status = None
 
   for build_id in reversed(build_ids):
     project_build = cloudbuild.projects().builds().get(projectId=image_project,
@@ -54,25 +53,20 @@ def get_build_history(build_ids):
     if project_build['status'] == 'WORKING':
       continue
 
-    if not last_build_status:
-      last_build_status = project_build['status']
-
     if not builds_status.upload_log(build_id):
       log_name = 'log-{0}'.format(build_id)
       raise MissingBuildLogError('Missing build log file {0}'.format(log_name))
 
-    success = builds_status.is_build_successful(project_build)
-
     history.append({
         'build_id': build_id,
         'finish_time': project_build['finishTime'],
-        'success': success
+        'success': builds_status.is_build_successful(project_build)
     })
 
     if len(history) == MAX_BUILD_LOGS:
       break
 
-  return history, last_build_status
+  return history
 
 
 # pylint: disable=too-many-locals
@@ -87,13 +81,12 @@ def update_build_status(build_tag, status_filename):
   for project_build in BuildsHistory.query(
       BuildsHistory.build_tag == build_tag).order('project'):
 
-    history, last_build_status = get_build_history(project_build.build_ids)
-
-    if not last_build_status:
+    history = get_build_history(project_build.build_ids)
+    if not history:
       not_yet_built.append({'name': project_build.project, 'history': history})
       continue
 
-    if last_build_status == 'SUCCESS':
+    if history[0].success:
       statuses[project_build.project] = True
       successes.append({'name': project_build.project, 'history': history})
     else:
@@ -118,15 +111,16 @@ def update_build_status(build_tag, status_filename):
   for project in successes:
     last_success = ndb.Key(LastSuccessfulBuild,
                            project.name + '-' + build_tag).get()
-    if not last_success:
+
+    if last_success:
+      last_success.build_id = project.history[0].build_id
+      last_success.finish_time = project.history[0].finish_time
+    else:
       last_success = LastSuccessfulBuild(
           id=project.name + '-' + build_tag,
           project=project.name,
           build_id=project.history[0].build_id,
           finish_time=project.history[0].finish_time)
-    else:
-      last_success.build_id = project.history[0].build_id
-      last_success.finish_time = project.history[0].finish_time
 
     last_success.put()
     build_history.append(project)
@@ -193,7 +187,8 @@ def update_status(event, context):
         status_filename='status-coverage.json')
 
     for project in Project.query():
-      if project.name not in project_build_statuses or project.name not in coverage_build_statuses:
+      if (project.name not in project_build_statuses or
+          project.name not in coverage_build_statuses):
         continue
 
       update_build_badges(project.name, project_build_statuses[project.name],
