@@ -58,6 +58,8 @@ DEFAULT_SANITIZERS = ['address', 'undefined']
 LATEST_VERSION_FILENAME = 'latest.version'
 LATEST_VERSION_CONTENT_TYPE = 'text/plain'
 
+QUEUE_TTL_SECONDS = 60 * 60 * 24  # 24 hours.
+
 
 def usage():
   """Exit with code 1 and display syntax to use this file."""
@@ -399,6 +401,7 @@ def run_build(build_steps, project_name, tag):
       'options': options,
       'logsBucket': GCB_LOGS_BUCKET,
       'tags': [project_name + '-' + tag,],
+      'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
 
   credentials = GoogleCredentials.get_application_default()
