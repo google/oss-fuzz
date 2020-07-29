@@ -85,7 +85,7 @@ def update_build_status(build_tag, status_filename):
   failures = []
   not_yet_built = []
   for project_build in BuildsHistory.query(
-      BuildsHistory.build_tag == build_tag).query('project'):
+      BuildsHistory.build_tag == build_tag).order('project'):
 
     history, last_build_status = get_build_history(project_build.build_ids)
 
