@@ -30,7 +30,7 @@ mkdir -p $build
 # Build the library.
 meson --default-library=static -Dfuzzer_ldflags="$(echo $LIB_FUZZING_ENGINE)" \
       $build \
-   || (cat build/meson-logs/meson-log.txt && false)
+  || (cat build/meson-logs/meson-log.txt && false)
 
 # Build the fuzzers.
 ninja -v -j$(nproc) -C $build test/fuzzing/hb-{shape,draw,subset,set}-fuzzer

@@ -19,15 +19,15 @@ vendor_ccs:
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"
 fuzzing_engines:
- - libfuzzer
- - afl
- - honggfuzz
- - dataflow
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
- - address
- - undefined
- - memory
- - dataflow
+  - address
+  - undefined
+  - memory
+  - dataflow
 architectures:
   - x86_64
   - i386
