@@ -1,0 +1,11 @@
+homepage: "https://www.rnpgp.com/"
+language: c++
+primary_contact: "tse@ribose.com"
+auto_ccs:
+  - "tom@ritter.vg"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz

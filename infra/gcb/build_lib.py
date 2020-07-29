@@ -1,13 +1,30 @@
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
 """Utility module for Google Cloud Build scripts."""
 import base64
 import collections
 import os
-import requests
+import six.moves.urllib.parse as urlparse
 import sys
 import time
-import urllib
-import urlparse
 
+import requests
+
+import google.auth
+import googleapiclient.discovery
 from oauth2client.service_account import ServiceAccountCredentials
 
 BUILD_TIMEOUT = 12 * 60 * 60
@@ -55,16 +72,19 @@ ENGINE_INFO = {
 
 
 def get_targets_list_filename(sanitizer):
+  """Returns target list filename."""
   return TARGETS_LIST_BASENAME + '.' + sanitizer
 
 
 def get_targets_list_url(bucket, project, sanitizer):
+  """Returns target list url."""
   filename = get_targets_list_filename(sanitizer)
   url = GCS_UPLOAD_URL_FORMAT.format(bucket, project, filename)
   return url
 
 
 def _get_targets_list(project_name):
+  """Returns target list."""
   # libFuzzer ASan is the default configuration, get list of targets from it.
   url = get_targets_list_url(ENGINE_INFO['libfuzzer'].upload_bucket,
                              project_name, 'address')
@@ -80,22 +100,41 @@ def _get_targets_list(project_name):
   return response.text.split()
 
 
+# pylint: disable=no-member
 def get_signed_url(path, method='PUT', content_type=''):
+  """Returns signed url."""
   timestamp = int(time.time() + BUILD_TIMEOUT)
   blob = '{0}\n\n{1}\n{2}\n{3}'.format(method, content_type, timestamp, path)
 
-  creds = ServiceAccountCredentials.from_json_keyfile_name(
-      os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
-  client_id = creds.service_account_email
-  signature = base64.b64encode(creds.sign_blob(blob)[1])
+  service_account_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+  if service_account_path:
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
+    client_id = creds.service_account_email
+    signature = base64.b64encode(creds.sign_blob(blob)[1])
+  else:
+    credentials, project = google.auth.default()
+    iam = googleapiclient.discovery.build('iamcredentials',
+                                          'v1',
+                                          credentials=credentials,
+                                          cache_discovery=False)
+    client_id = project + '@appspot.gserviceaccount.com'
+    service_account = 'projects/-/serviceAccounts/{0}'.format(client_id)
+    response = iam.projects().serviceAccounts().signBlob(
+        name=service_account,
+        body={
+            'delegates': [],
+            'payload': base64.b64encode(blob.encode('utf-8')).decode('utf-8'),
+        }).execute()
+    signature = response['signedBlob']
+
   values = {
       'GoogleAccessId': client_id,
       'Expires': timestamp,
       'Signature': signature,
   }
-
   return ('https://storage.googleapis.com{0}?'.format(path) +
-          urllib.urlencode(values))
+          urlparse.urlencode(values))
 
 
 def download_corpora_steps(project_name):

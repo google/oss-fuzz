@@ -116,7 +116,7 @@ sanitizers (currently ["address"](https://clang.llvm.org/docs/AddressSanitizer.h
 and recommended, but is not enabled by default due to the likelihood of false positives from
 un-instrumented system dependencies. If you want to use "memory," first make sure your project's
 runtime dependencies are listed in the OSS-Fuzz
-[msan-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
+[msan-libs-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
 Then, you can opt in by adding "memory" to your list of sanitizers.
 
 If your project does not build with a particular sanitizer configuration and you need some time to fix
@@ -175,7 +175,6 @@ This configuration file defines the Docker image for your project. Your [build.s
 For most projects, the image is simple:
 ```docker
 FROM gcr.io/oss-fuzz-base/base-builder       # base image with clang toolchain
-MAINTAINER YOUR_EMAIL                        # maintainer for this file
 RUN apt-get update && apt-get install -y ... # install required packages to build your project
 RUN go get ...                               # install dependencies to build your Go project
 RUN git clone <git_url> <checkout_dir>       # checkout all sources needed to build your project
@@ -307,16 +306,28 @@ You can build your docker image and fuzz targets locally, so you can test them b
 3. If you want to test changes against a particular fuzz target, run the following command:
 
     ```bash
-    $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>
+    $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
     ```
 
-4. We recommend taking a look at your code coverage as a sanity check to make sure that your
-fuzz targets get to the code you expect. Please refer to [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/).
+4. We recommend taking a look at your code coverage as a sanity check to make
+sure that your fuzz targets get to the code you expect. This would use the
+corpus generated from the previous `run_fuzzer` step in your local corpus
+directory.
+
+    ```bash
+    $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
+    $ python infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
+    ```
+
+Please refer to
+[code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
+information on code coverage generation.
+
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
 configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
 that all system dependencies are
-[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
+[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
 <b>Make sure to test each
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 

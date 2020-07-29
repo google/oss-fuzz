@@ -1,15 +1,27 @@
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
 #!/usr/bin/python2
 """Starts and runs coverage build on Google Cloud Builder.
-
 Usage: build_and_run_coverage.py <project_dir>
 """
 
 import datetime
 import json
 import os
-import requests
 import sys
-import urlparse
 
 import build_lib
 import build_project
@@ -45,30 +57,32 @@ def skip_build(message):
 
   # Since the script should print build_id, print '0' as a special value.
   print('0')
-  exit(0)
+  # TODO: remove sys.exit call after infra migration.
+  sys.exit(0)
 
 
 def usage():
+  """Exit with code 1 and display syntax to use this file."""
   sys.stderr.write("Usage: " + sys.argv[0] + " <project_dir>\n")
-  exit(1)
+  sys.exit(1)
 
 
-def get_build_steps(project_dir):
-  project_name = os.path.basename(project_dir)
-  project_yaml = build_project.load_project_yaml(project_dir)
+# pylint: disable=too-many-locals
+def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
+                    image_project, base_images_project):
+  """Returns build steps for project."""
+  project_yaml = build_project.load_project_yaml(project_name,
+                                                 project_yaml_file,
+                                                 image_project)
   if project_yaml['disabled']:
     skip_build('Project "%s" is disabled.' % project_name)
 
-  build_script_path = os.path.join(project_dir, 'build.sh')
-  if os.path.exists(build_script_path):
-    with open(build_script_path) as fh:
-      if project_yaml['language'] not in LANGUAGES_WITH_COVERAGE_SUPPORT:
-        skip_build(('Project "{project_name}" is written in "{language}", '
-                    'coverage is not supported yet.').format(
-                        project_name=project_name,
-                        language=project_yaml['language']))
+  if project_yaml['language'] not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+    skip_build(('Project "{project_name}" is written in "{language}", '
+                'coverage is not supported yet.').format(
+                    project_name=project_name,
+                    language=project_yaml['language']))
 
-  dockerfile_path = os.path.join(project_dir, 'Dockerfile')
   name = project_yaml['name']
   image = project_yaml['image']
   language = project_yaml['language']
@@ -81,7 +95,7 @@ def get_build_steps(project_dir):
   env.append('OUT=' + out)
   env.append('FUZZING_LANGUAGE=' + language)
 
-  workdir = build_project.workdir_from_dockerfile(dockerfile_path)
+  workdir = build_project.workdir_from_dockerfile(dockerfile_lines)
   if not workdir:
     workdir = '/src'
 
@@ -132,7 +146,7 @@ def get_build_steps(project_dir):
     coverage_env.append('FULL_SUMMARY_PER_TARGET=1')
 
   build_steps.append({
-      'name': 'gcr.io/oss-fuzz-base/base-runner',
+      'name': 'gcr.io/{0}/base-runner'.format(base_images_project),
       'env': coverage_env,
       'args': [
           'bash', '-c',
@@ -191,7 +205,7 @@ def get_build_steps(project_dir):
   # Upload the fuzzer logs. Delete the old ones just in case
   upload_fuzzer_logs_url = UPLOAD_URL_FORMAT.format(project=project_name,
                                                     type='logs',
-                                                    date=report_date),
+                                                    date=report_date)
   build_steps.append(build_lib.gsutil_rm_rf_step(upload_fuzzer_logs_url))
   build_steps.append({
       'name':
@@ -244,12 +258,24 @@ def get_build_steps(project_dir):
 
 
 def main():
+  """Build and run coverage for projects."""
   if len(sys.argv) != 2:
     usage()
 
+  image_project = 'oss-fuzz'
+  base_images_project = 'oss-fuzz-base'
   project_dir = sys.argv[1].rstrip(os.path.sep)
   project_name = os.path.basename(project_dir)
-  steps = get_build_steps(project_dir)
+  dockerfile_path = os.path.join(project_dir, 'Dockerfile')
+  project_yaml_path = os.path.join(project_dir, 'project.yaml')
+
+  with open(dockerfile_path) as docker_file:
+    dockerfile_lines = docker_file.readlines()
+
+  with open(project_yaml_path) as project_yaml_file:
+    steps = get_build_steps(project_name, project_yaml_file, dockerfile_lines,
+                            image_project, base_images_project)
+
   build_project.run_build(steps, project_name, COVERAGE_BUILD_TAG)
 
 

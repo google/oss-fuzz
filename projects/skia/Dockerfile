@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER kjlubick@chromium.org
 
 # Mesa needed to build swiftshader
 RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake
@@ -74,6 +73,8 @@ RUN wget -O $SRC/skia/sksl_seed_corpus.zip https://storage.googleapis.com/skia-f
 RUN wget -O $SRC/skia/api_skdescriptor_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_skdescriptor_seed_corpus.zip
 
 RUN wget -O $SRC/skia/svg_dom_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/svg_seed_corpus.zip 
+
+RUN wget -O $SRC/skia/sksl_with_256_padding_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_with_256_padding_seed_corpus.zip
 
 COPY build.sh $SRC/
 

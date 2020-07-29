@@ -5,5 +5,10 @@ auto_ccs:
   - "david@adalogics.com"
   - "timwolla@googlemail.com"
   - "willy@1wt.eu"
+  - "tribuslukas58@gmail.com"
+  - "christopher.faulet@gmail.com"
 sanitizers:
   - address
+
+# Bug reports are public by default:
+view_restrictions: none

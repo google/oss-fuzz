@@ -28,6 +28,9 @@ DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
+# Languages from project.yaml that have code coverage support.
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
+
 
 def get_modified_buildable_projects():
   """Returns a list of all the projects modified in this commit that have a
@@ -85,7 +88,7 @@ def check_build(project, engine, sanitizer, architecture):
 
 
 def should_build(project_yaml):
-  """Is the build specified by travis enabled in the |project_yaml|?"""
+  """Return bool on if the build specified is enabled in the project.yaml."""
 
   def is_enabled(env_var, yaml_name, defaults):
     """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
@@ -112,8 +115,16 @@ def build_project(project):
   engine = os.getenv('ENGINE')
   sanitizer = os.getenv('SANITIZER')
   architecture = os.getenv('ARCHITECTURE')
+  language = project_yaml.get('language')
 
-  if not should_build(project_yaml):
+  if (sanitizer == 'coverage' and
+      language not in LANGUAGES_WITH_COVERAGE_SUPPORT):
+    print(('Project "{project}" is written in "{language}", '
+           'coverage is not supported yet.').format(project=project,
+                                                    language=language))
+    return
+
+  if sanitizer != 'coverage' and not should_build(project_yaml):
     print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
            'not enabled for this project: {3}. skipping build.').format(
                engine, sanitizer, architecture, project))
@@ -123,12 +134,12 @@ def build_project(project):
   print('Building project', project)
   build_fuzzers(project, engine, sanitizer, architecture)
 
-  if engine != 'none':
+  if engine != 'none' and sanitizer != 'coverage':
     check_build(project, engine, sanitizer, architecture)
 
 
 def main():
-  """Build modified projects on travis."""
+  """Build modified projects."""
   projects = get_modified_buildable_projects()
   failed_projects = []
   for project in projects:

@@ -42,34 +42,35 @@ fi
 # Temporary hack, see https://github.com/google/oss-fuzz/issues/383
 readonly NO_VPTR='--copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr'
 
-readonly FUZZER_TARGETS=(
-  'oak/server:wasm_node_fuzz'
-)
+readonly FUZZER_TARGETS=()
+readonly ENABLED=false
 
-bazel build \
-  --client_env=CC=${CC} \
-  --client_env=CXX=${CXX} \
-  --dynamic_mode=off \
-  --spawn_strategy=standalone \
-  --genrule_strategy=standalone \
-  ${NO_VPTR} \
-  --strip=never \
-  --linkopt=-lc++ \
-  --linkopt=-pthread \
-  --cxxopt=-std=c++11 \
-  --copt=${LIB_FUZZING_ENGINE} \
-  --linkopt=${LIB_FUZZING_ENGINE} \
-  --remote_cache=https://storage.googleapis.com/oak-bazel-cache \
-  --remote_upload_local_results=false \
-  ${EXTRA_BAZEL_FLAGS} \
-  ${FUZZER_TARGETS[@]}
+if [ "$ENABLED" = true ]; then
+  bazel build \
+    --client_env=CC=${CC} \
+    --client_env=CXX=${CXX} \
+    --dynamic_mode=off \
+    --spawn_strategy=standalone \
+    --genrule_strategy=standalone \
+    ${NO_VPTR} \
+    --strip=never \
+    --linkopt=-lc++ \
+    --linkopt=-pthread \
+    --cxxopt=-std=c++11 \
+    --copt=${LIB_FUZZING_ENGINE} \
+    --linkopt=${LIB_FUZZING_ENGINE} \
+    --remote_cache=https://storage.googleapis.com/oak-bazel-cache \
+    --remote_upload_local_results=false \
+    ${EXTRA_BAZEL_FLAGS} \
+    ${FUZZER_TARGETS[@]}
 
-for target in ${FUZZER_TARGETS}; do
-  # Replace : with /.
-  fuzzer_name="${target/:/\/}"
-  cp "./bazel-bin/${fuzzer_name}" "${OUT}/"
-done
+  for target in ${FUZZER_TARGETS}; do
+    # Replace : with /.
+    fuzzer_name="${target/:/\/}"
+    cp "./bazel-bin/${fuzzer_name}" "${OUT}/"
+  done
 
-# Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build
-# cache.
-rm -f ./bazel-*
+  # Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build
+  # cache.
+  rm -f ./bazel-*
+fi

@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER eustas@chromium.org
 RUN apt-get update && apt-get install -y cmake libtool make
 
 RUN git clone --depth 1 https://github.com/google/brotli.git

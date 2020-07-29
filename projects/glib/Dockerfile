@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER pdknsk@gmail.com
 RUN apt-get update && apt-get install -y python3-pip
 RUN pip3 install -U meson ninja
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/glib

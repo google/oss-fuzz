@@ -8,10 +8,6 @@ if(NOT DEFINED ENV{LIB_FUZZING_ENGINE})
   MYSQL_ADD_EXECUTABLE(fuzz_mysqld fuzz_mysqld.cc util_fuzz.cc onefile.cc)
   TARGET_LINK_LIBRARIES(fuzz_mysqld sql_main sql_gis binlog rpl master slave sql_dd mysys minchassis binlogevents_static ${ICU_LIBRARIES})
 
-  MYSQL_ADD_EXECUTABLE(fuzz_docommand fuzz_docommand.cc util_fuzz.cc onefile.cc)
-  TARGET_LINK_LIBRARIES(fuzz_docommand sql_main sql_gis binlog rpl master slave sql_dd mysys minchassis binlogevents_static ${ICU_LIBRARIES})
-
-
   MYSQL_ADD_EXECUTABLE(fuzz_initfile fuzz_initfile.cc util_fuzz.cc onefile.cc)
   TARGET_LINK_LIBRARIES(fuzz_initfile sql_main sql_gis binlog rpl master slave sql_dd mysys minchassis binlogevents_static ${ICU_LIBRARIES})
 else()
@@ -26,10 +22,6 @@ else()
   MYSQL_ADD_EXECUTABLE(fuzz_mysqld fuzz_mysqld.cc util_fuzz.cc)
   TARGET_LINK_LIBRARIES(fuzz_mysqld sql_main sql_gis binlog rpl master slave sql_dd mysys minchassis binlogevents_static ${ICU_LIBRARIES})
   TARGET_LINK_LIBRARIES(fuzz_mysqld $ENV{LIB_FUZZING_ENGINE})
-
-  MYSQL_ADD_EXECUTABLE(fuzz_docommand fuzz_docommand.cc util_fuzz.cc)
-  TARGET_LINK_LIBRARIES(fuzz_docommand sql_main sql_gis binlog rpl master slave sql_dd mysys minchassis binlogevents_static ${ICU_LIBRARIES})
-  TARGET_LINK_LIBRARIES(fuzz_docommand $ENV{LIB_FUZZING_ENGINE})
 
   MYSQL_ADD_EXECUTABLE(fuzz_initfile fuzz_initfile.cc util_fuzz.cc)
   TARGET_LINK_LIBRARIES(fuzz_initfile sql_main sql_gis binlog rpl master slave sql_dd mysys minchassis binlogevents_static ${ICU_LIBRARIES})

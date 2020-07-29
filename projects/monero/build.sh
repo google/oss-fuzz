@@ -19,12 +19,15 @@ export BOOST_ROOT=/src/monero/boost_1_70_0
 export OPENSSL_ROOT_DIR=/src/monero/openssl-1.1.1g
 
 cd monero
+sed -i -e 's/include(FindCcache)/# include(FindCcache)/' CMakeLists.txt
 git submodule init
 git submodule update
 mkdir -p build
 cd build
-cmake -D SANITIZE=ON -D OSSFUZZ=ON -D STATIC=ON -D BUILD_TESTS=ON -D USE_LTO=OFF -D ARCH="default" ..
-make -C tests/fuzz \
+export CXXFLAGS="$CXXFLAGS -fPIC"
+cmake -D OSSFUZZ=ON -D STATIC=ON -D BUILD_TESTS=ON -D USE_LTO=OFF -D ARCH="default" ..
+
+TESTS="\
   base58_fuzz_tests \
   block_fuzz_tests \
   transaction_fuzz_tests \
@@ -34,10 +37,20 @@ make -C tests/fuzz \
   http-client_fuzz_tests \
   levin_fuzz_tests \
   bulletproof_fuzz_tests \
-  signature_fuzz_tests \
-  transaction_fuzz_tests \
-  cold-outputs_fuzz_tests \
-  cold-transaction_fuzz_tests
+  tx-extra_fuzz_tests \
+"
+
+# only libfuzzer can run the slow to start ones
+if test "x$FUZZING_ENGINE" == 'xlibfuzzer'
+then
+  TESTS="$TESTS \
+    signature_fuzz_tests \
+    cold-outputs_fuzz_tests \
+    cold-transaction_fuzz_tests \
+  "
+fi
+
+make -C tests/fuzz $TESTS
 
 cd /src/monero/monero/build/tests/fuzz
 for fuzzer in *_fuzz_tests
@@ -45,7 +58,7 @@ do
   cp "$fuzzer" "$OUT"
   base=$(echo $fuzzer | sed -e s/_fuzz_tests//)
   cd "/src/monero/monero/tests/data/fuzz/$base"
-  rm -f "${OUT}/${base}_seed_corpus.zip"
+  rm -f "${OUT}/${fuzzer}_seed_corpus.zip"
   for f in *
   do
     h=$(sha1sum "$f" | awk '{print $1}')

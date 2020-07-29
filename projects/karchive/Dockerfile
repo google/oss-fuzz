@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER tsdgeos@gmail.com
 RUN apt-get update && apt-get install --yes cmake make autoconf automake autopoint libtool wget po4a
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git

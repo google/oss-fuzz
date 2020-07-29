@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER konstantin@soramitsu.co.jp
   
 RUN set -e; \
     apt-get update && \

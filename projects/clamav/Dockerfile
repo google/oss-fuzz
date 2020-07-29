@@ -15,9 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER clamav.fuzz@gmail.com
 RUN apt-get update && apt-get install -y \
     flex bison \
+    automake autoconf pkg-config m4 libtool \
     libssl-dev \
     libcurl4-openssl-dev
 RUN git clone --depth 1 https://github.com/Cisco-Talos/clamav-devel.git

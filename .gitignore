@@ -1,4 +1,6 @@
 .vscode/
 *.pyc
-build/
+/build/
 *~
+.DS_Store
+*.swp

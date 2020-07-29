@@ -1,3 +1,6 @@
 homepage: "https://github.com/google/draco"
 language: c++
 primary_contact: "fgalligan@google.com"
+auto_ccs:
+  - "ostava@google.com"
+  - "vytyaz@google.com"
