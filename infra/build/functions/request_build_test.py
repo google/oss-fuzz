@@ -65,9 +65,8 @@ class TestRequestBuilds(unittest.TestCase):
       Project(name='test-project',
               project_yaml_contents=project_yaml_contents,
               dockerfile_contents='test line').put()
-
-    build_steps = get_build_steps('test-project', image_project,
-                                  base_images_project)
+      build_steps = get_build_steps('test-project', image_project,
+                                    base_images_project)
     self.assertEqual(build_steps, expected_build_steps)
 
   def test_get_build_steps_no_project(self):
@@ -80,7 +79,7 @@ class TestRequestBuilds(unittest.TestCase):
     """Testing build history."""
     with ndb.Client().context():
       BuildsHistory(id='test-project-fuzzing',
-                    build_tag_suffix='fuzzing',
+                    build_tag='fuzzing',
                     project='test-project',
                     build_ids=[str(i) for i in range(1, 65)]).put()
       update_build_history('test-project', '65', '-fuzzing')

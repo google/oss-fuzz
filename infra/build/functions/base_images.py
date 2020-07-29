@@ -22,13 +22,15 @@ from googleapiclient.discovery import build
 
 import build_base_images
 
+BASE_PROJECT = 'oss-fuzz-base'
+
 
 # pylint: disable=no-member
 def base_builder(event, context):
   """Cloud function to build base images."""
   del event, context
-  credentials, project_id = google.auth.default()
-  tag_prefix = f'gcr.io/{project_id}/'
+  credentials, _ = google.auth.default()
+  tag_prefix = f'gcr.io/{BASE_PROJECT}/'
   build_body = {
       'steps':
           build_base_images.get_steps(build_base_images.BASE_IMAGES,
@@ -47,8 +49,9 @@ def base_builder(event, context):
                      'v1',
                      credentials=credentials,
                      cache_discovery=False)
-  build_info = cloudbuild.projects().builds().create(projectId=project_id,
+  build_info = cloudbuild.projects().builds().create(projectId=BASE_PROJECT,
                                                      body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
   logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s', build_base_images.get_logs_url(build_id, project_id))
+  logging.info('Logs: %s',
+               build_base_images.get_logs_url(build_id, BASE_PROJECT))

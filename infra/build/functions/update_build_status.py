@@ -58,13 +58,13 @@ def get_last_build(build_ids):
   return None
 
 
-def update_build_status(build_tag_suffix, status_filename):
+def update_build_status(build_tag, status_filename):
   """Update build statuses."""
   statuses = {}
   successes = []
   failures = []
   for project_build in BuildsHistory.query(
-      BuildsHistory.build_tag_suffix == build_tag_suffix):
+      BuildsHistory.build_tag == build_tag):
     last_build = get_last_build(project_build.build_ids)
     if not last_build:
       logging.error('Failed to get last build for project %s',
@@ -136,7 +136,8 @@ def update_status(event, context):
         status_filename='status-coverage.json')
 
     for project in Project.query():
-      if project.name not in project_build_statuses or project.name not in coverage_build_statuses:
+      if (project.name not in project_build_statuses or
+          project.name not in coverage_build_statuses):
         continue
 
       update_build_badges(project.name, project_build_statuses[project.name],
