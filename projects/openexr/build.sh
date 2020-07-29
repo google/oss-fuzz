@@ -21,7 +21,6 @@ CMAKE_SETTINGS=(
   "-D BUILD_SHARED_LIBS=OFF"         # Build static libraries only
   "-D PYILMBASE_ENABLE=OFF"          # Don't build Python support
   "-D BUILD_TESTING=OFF"             # Or tests
-  "-D OPENEXR_BUILD_UTILS=OFF"       # Or utilities
   "-D INSTALL_OPENEXR_EXAMPLES=OFF"  # Or examples
   "-D OPENEXR_LIB_SUFFIX="           # Don't append the version number to library files
   "-D ILMBASE_LIB_SUFFIX="
@@ -29,8 +28,11 @@ CMAKE_SETTINGS=(
 cmake $SRC/openexr ${CMAKE_SETTINGS[@]}
 make -j$(nproc)
 
+ar -qc $WORK/OpenEXR/libOpenexrUtils.a $(find $WORK/ -name "*.o")
+
 INCLUDES=(
   "-I $SRC/openexr/OpenEXR/IlmImf"
+  "-I $SRC/openexr/OpenEXR/exrenvmap"
   "-I $SRC/openexr/IlmBase/Imath"
   "-I $SRC/openexr/IlmBase/Iex"
   "-I $SRC/openexr/IlmBase/Half"
@@ -44,6 +46,7 @@ LIBS=(
   "$WORK/IlmBase/Half/libHalf.a"
   "$WORK/IlmBase/IlmThread/libIlmThread.a"
   "$WORK/IlmBase/Imath/libImath.a"
+  "$WORK/OpenEXR/libOpenexrUtils.a"
 )
 
 for fuzzer in $SRC/*_fuzzer.cc; do
