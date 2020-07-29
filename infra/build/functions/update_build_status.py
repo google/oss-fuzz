@@ -14,7 +14,7 @@
 #
 ################################################################################
 """Cloud function to request builds."""
-import logging
+import json
 
 import google.auth
 from googleapiclient.discovery import build
@@ -24,10 +24,12 @@ import build_and_run_coverage
 import build_project
 import builds_status
 from datastore_entities import BuildsHistory
+from datastore_entities import LastSuccessfulBuild
 from datastore_entities import Project
 
 BADGE_DIR = 'badge_images'
 DESTINATION_BADGE_DIR = 'badges'
+MAX_BUILD_LOGS = 7
 
 
 class MissingBuildLogError(Exception):
@@ -35,7 +37,7 @@ class MissingBuildLogError(Exception):
 
 
 # pylint: disable=no-member
-def get_last_build(build_ids):
+def get_build_history(build_ids):
   """Returns build object for the last finished build of project."""
   credentials, image_project = google.auth.default()
   cloudbuild = build('cloudbuild',
@@ -43,52 +45,107 @@ def get_last_build(build_ids):
                      credentials=credentials,
                      cache_discovery=False)
 
+  history = []
+  last_build_status = None
+
   for build_id in reversed(build_ids):
     project_build = cloudbuild.projects().builds().get(projectId=image_project,
                                                        id=build_id).execute()
     if project_build['status'] == 'WORKING':
       continue
 
+    if not last_build_status:
+      last_build_status = project_build['status']
+
     if not builds_status.upload_log(build_id):
       log_name = 'log-{0}'.format(build_id)
       raise MissingBuildLogError('Missing build log file {0}'.format(log_name))
 
-    return project_build
+    success = builds_status.is_build_successful(project_build)
 
-  return None
+    history.append({
+        'build_id': build_id,
+        'finish_time': project_build['finishTime'],
+        'success': success
+    })
+
+    if len(history) == MAX_BUILD_LOGS:
+      break
+
+  return history, last_build_status
 
 
+# pylint: disable=too-many-locals
 def update_build_status(build_tag, status_filename):
   """Update build statuses."""
+  build_history = []
+  last_successful_build = []
   statuses = {}
   successes = []
   failures = []
+  not_yet_built = []
   for project_build in BuildsHistory.query(
-      BuildsHistory.build_tag == build_tag):
-    last_build = get_last_build(project_build.build_ids)
-    if not last_build:
-      logging.error('Failed to get last build for project %s',
-                    project_build.project)
+      BuildsHistory.build_tag == build_tag).query('project'):
+
+    history, last_build_status = get_build_history(project_build.build_ids)
+
+    if not last_build_status:
+      not_yet_built.append({'name': project_build.project, 'history': history})
       continue
 
-    if last_build['status'] == 'SUCCESS':
+    if last_build_status == 'SUCCESS':
       statuses[project_build.project] = True
-      successes.append({
-          'name': project_build.project,
-          'build_id': last_build['id'],
-          'finish_time': last_build['finishTime'],
-          'success': True,
-      })
+      successes.append({'name': project_build.project, 'history': history})
     else:
       statuses[project_build.project] = False
-      failures.append({
-          'name': project_build.project,
-          'build_id': last_build['id'],
-          'finish_time': last_build['finishTime'],
-          'success': False,
-      })
+      failures.append({'name': project_build.project, 'history': history})
 
-  builds_status.upload_status(successes, failures, status_filename)
+  for project in failures:
+    build_history.append(project)
+    last_success = ndb.Key(LastSuccessfulBuild,
+                           project.name + '-' + build_tag).get()
+    if not last_success:
+      continue
+    last_successful_build.append({
+        'name': project.name,
+        'build_id': last_success.build_id,
+        'finish_time': last_success.finish_time
+    })
+
+  for project in not_yet_built:
+    build_history.append(project)
+
+  for project in successes:
+    last_success = ndb.Key(LastSuccessfulBuild,
+                           project.name + '-' + build_tag).get()
+    if not last_success:
+      last_success = LastSuccessfulBuild(
+          id=project.name + '-' + build_tag,
+          project=project.name,
+          build_id=project.history[0].build_id,
+          finish_time=project.history[0].finish_time)
+    else:
+      last_success.build_id = project.history[0].build_id
+      last_success.finish_time = project.history[0].finish_time
+
+    last_success.put()
+    build_history.append(project)
+    last_successful_build.append({
+        'name': project.name,
+        'build_id': last_success.build_id,
+        'finish_time': last_success.finish_time
+    })
+
+  data = {
+      'last_successful_build': last_successful_build,
+      'build_history': build_history
+  }
+  bucket = builds_status.get_storage_client().get_bucket(
+      builds_status.STATUS_BUCKET)
+  blob = bucket.blob(status_filename)
+  blob.cache_control = 'no-cache'
+  blob.upload_from_string(json.dumps(data), content_type='application/json')
+
   return statuses
 
 
@@ -136,8 +193,7 @@ def update_status(event, context):
         status_filename='status-coverage.json')
 
     for project in Project.query():
-      if (project.name not in project_build_statuses or
-          project.name not in coverage_build_statuses):
+      if project.name not in project_build_statuses or project.name not in coverage_build_statuses:
         continue
 
       update_build_badges(project.name, project_build_statuses[project.name],
