@@ -82,7 +82,7 @@ def run_build(project_name, image_project, build_steps, credentials, tag):
           'machineType': 'N1_HIGHCPU_32'
       },
       'logsBucket': build_project.GCB_LOGS_BUCKET,
-      'tags': [project_name + tag,],
+      'tags': [project_name + '-' + tag,],
       'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
 
