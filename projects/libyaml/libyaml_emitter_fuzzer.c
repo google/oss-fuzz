@@ -24,26 +24,28 @@
 #undef NDEBUG
 #endif
 
-#define BUFFER_SIZE 65536
 #define MAX_EVENTS 1024
 
-static int yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
-  yaml_emitter_t *emitter = (yaml_emitter_t *)data;
+typedef struct yaml_output_buffer {
+  unsigned char *buf;
+  size_t size;
+};
 
-  if (emitter->output.string.size - *emitter->output.string.size_written <
-      size) {
-    memcpy(emitter->output.string.buffer + *emitter->output.string.size_written,
-           buffer,
-           emitter->output.string.size - *emitter->output.string.size_written);
-    *emitter->output.string.size_written = emitter->output.string.size;
-    return 0;
+static int yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
+  struct yaml_output_buffer *out = (struct yaml_output_buffer *)data;
+  if (!out->size) {
+    out->buf = (unsigned char *)malloc(sizeof(unsigned char) * size);
+  } else {
+    out->buf = (unsigned char *)realloc(out->buf, out->size + size);
   }
 
-  size = emitter->output.string.size - *emitter->output.string.size_written;
-  memcpy(emitter->output.string.buffer + *emitter->output.string.size_written,
-         buffer, size);
-  *emitter->output.string.size_written += size;
-  return 1;
+  if (!out->buf) {
+    return 1;
+  }
+
+  memcpy(out->buf + out->size, buffer, size);
+  out->size += size;
+  return 0;
 }
 
 bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
@@ -116,7 +118,7 @@ bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
       return true;
     if ((event1->data.scalar.plain_implicit !=
          event2->data.scalar.plain_implicit) ||
-        (event2->data.scalar.quoted_implicit !=
+        (event1->data.scalar.quoted_implicit !=
          event2->data.scalar.quoted_implicit))
       return true;
     return false;
@@ -230,8 +232,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_parser_t parser;
   yaml_emitter_t emitter;
   yaml_event_t event;
-  unsigned char buffer[BUFFER_SIZE + 1];
-  size_t written = 0;
   yaml_event_t events[MAX_EVENTS];
   size_t event_number = 0;
   bool done = false;
@@ -254,11 +254,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_emitter_set_canonical(&emitter, is_canonical);
   yaml_emitter_set_unicode(&emitter, is_unicode);
 
-  yaml_emitter_set_output(&emitter, yaml_write_handler, &emitter);
-  emitter.output.string.buffer = buffer;
-  emitter.output.string.size = BUFFER_SIZE;
-  emitter.output.string.size_written = written;
-  written = 0;
+  struct yaml_output_buffer out = {/*buf=*/NULL, /*size=*/0};
+  yaml_emitter_set_output(&emitter, yaml_write_handler, &out);
 
   while (!done) {
     if (!yaml_parser_parse(&parser, &event)) {
@@ -296,7 +293,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (!yaml_parser_initialize(&parser))
       return 0;
 
-    yaml_parser_set_input_string(&parser, buffer, written);
+    if (!out.buf) {
+      yaml_parser_delete(&parser);
+      return 0;
+    }
+
+    yaml_parser_set_input_string(&parser, out.buf, out.size);
 
     while (!done) {
       if (!yaml_parser_parse(&parser, &event))
@@ -316,6 +318,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   for (int k = 0; k < event_number; k++) {
     yaml_event_delete(events + k);
+  }
+
+  if (out.buf) {
+    free(out.buf);
   }
 
   return 0;

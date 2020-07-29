@@ -14,23 +14,41 @@
 
 #include "yaml.h"
 #include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
 
-static int
-yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
-    return 0;
+typedef struct yaml_output_buffer {
+  unsigned char *buf;
+  size_t size;
+};
+
+static int yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
+  struct yaml_output_buffer *out = (struct yaml_output_buffer *)data;
+  if (!out->size) {
+    out->buf = (unsigned char *)malloc(sizeof(unsigned char) * size);
+  } else {
+    out->buf = (unsigned char *)realloc(out->buf, out->size + size);
+  }
+
+  if (!out->buf) {
+    return 1;
+  }
+
+  memcpy(out->buf + out->size, buffer, size);
+  out->size += size;
+  return 0;
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  if (size < 2) return 0;
+  if (size < 2)
+    return 0;
 
   bool done = false;
   bool is_canonical = data[0] & 1;
@@ -46,44 +64,48 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   /* Initialize the parser and emitter objects. */
 
   if (!yaml_parser_initialize(&parser))
-      goto error;
+    goto error;
 
   if (!yaml_emitter_initialize(&emitter))
-      goto error;
+    goto error;
 
   /* Set the parser parameters. */
 
   yaml_parser_set_input_string(&parser, data, size);
 
   /* Set the emitter parameters. */
-
-  yaml_emitter_set_output(&emitter, yaml_write_handler, &emitter);
+  struct yaml_output_buffer out = {/*buf=*/NULL, /*size=*/0};
+  yaml_emitter_set_output(&emitter, yaml_write_handler, &out);
 
   yaml_emitter_set_canonical(&emitter, is_canonical);
   yaml_emitter_set_unicode(&emitter, is_unicode);
 
   /* The main loop. */
 
-  while (!done)
-  {
-      /* Get the next event. */
+  while (!done) {
+    /* Get the next event. */
 
-      if (!yaml_parser_parse(&parser, &event))
-          break;
+    if (!yaml_parser_parse(&parser, &event))
+      break;
 
-      /* Check if this is the stream end. */
+    /* Check if this is the stream end. */
 
-      if (event.type == YAML_STREAM_END_EVENT) {
-          done = true;
-      }
+    if (event.type == YAML_STREAM_END_EVENT) {
+      done = true;
+    }
 
-      /* Emit the event. */
+    /* Emit the event. */
 
-      if (!yaml_emitter_emit(&emitter, &event))
-          break;
+    if (!yaml_emitter_emit(&emitter, &event))
+      break;
   }
 
 error:
+
+  if (out.buf) {
+    free(out.buf);
+  }
+
   yaml_parser_delete(&parser);
   yaml_emitter_delete(&emitter);
 
