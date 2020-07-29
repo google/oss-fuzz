@@ -98,7 +98,7 @@ def get_sanitizers(project_yaml):
     if isinstance(sanitizer, six.string_types):
       processed_sanitizers.append(sanitizer)
     elif isinstance(sanitizer, dict):
-      for key in sanitizer.iterkeys():
+      for key in sanitizer.keys():
         processed_sanitizers.append(key)
 
   return processed_sanitizers
