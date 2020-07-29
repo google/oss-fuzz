@@ -17,7 +17,8 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 #include <limits>
-#include <stdbool.h>
+
+static constexpr uint8_t kUint8Max = std::numeric_limits<uint8_t>::max();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
@@ -27,7 +28,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   astc_compressed_image image_comp;
   astcenc_profile profile;
   int out_bitness;
-  uint8_t uint8_max = std::numeric_limits<uint8_t>::max();
   FuzzedDataProvider stream(data, size);
 
   const astcenc_profile profiles[] = {ASTCENC_PRF_LDR, ASTCENC_PRF_LDR_SRGB,
@@ -39,9 +39,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   out_bitness = 8 << (profile_type / 2);
 
   // Avoid dividing by zero
-  uint8_t block_x = stream.ConsumeIntegralInRange<uint8_t>(1, uint8_max);
-  uint8_t block_y = stream.ConsumeIntegralInRange<uint8_t>(1, uint8_max);
-  uint8_t block_z = stream.ConsumeIntegralInRange<uint8_t>(1, uint8_max);
+  uint8_t block_x = stream.ConsumeIntegralInRange<uint8_t>(1, kUint8Max);
+  uint8_t block_y = stream.ConsumeIntegralInRange<uint8_t>(1, kUint8Max);
+  uint8_t block_z = stream.ConsumeIntegralInRange<uint8_t>(1, kUint8Max);
 
   // Reference file consumes 3 bytes for each, so we define a maximum value
   unsigned int dim_x =
@@ -56,7 +56,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   unsigned int zblocks = (dim_z + block_z - 1) / block_z;
 
   // Following the structure of
-  // ARM-software/astc-encoder/Source/astcenccli_toplevel.cpp:main()
+  // ARM-software/astc-encoder/Source/astcenccli_toplevel.cpp:main(), located at
+  // https://github.com/ARM-software/astc-encoder/blob/master/Source/astcenccli_toplevel.cpp
   size_t buffer_size = xblocks * yblocks * zblocks * 16;
   if (size - 19 < buffer_size)
     return 0;
@@ -79,20 +80,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
                           config) != ASTCENC_SUCCESS)
     return 0;
 
-  astcenc_swizzle default_swizzle{/*astcenc_swz r=*/ASTCENC_SWZ_R,
-                                  /*astcenc_swz g=*/ASTCENC_SWZ_G,
-                                  /*astcenc_swz b=*/ASTCENC_SWZ_B,
-                                  /*astcenc_swz a=*/ASTCENC_SWZ_A};
+  astcenc_swizzle default_swizzle{ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B,
+                                  ASTCENC_SWZ_A};
 
   // Initialize cli_config_options with default values
-  cli_config_options cli_config{/*unsigned int thread_count=*/0,
-                                /*unsigned int array_size=*/1,
-                                /*bool silent_mode=*/false,
-                                /*bool y_flip=*/false,
-                                /*int low_fstop=*/-10,
-                                /*int high_fstop=*/10,
-                                /*astcenc_swizzle swz_encode=*/default_swizzle,
-                                /*astcenc_swizzle swz_decode=*/default_swizzle};
+  cli_config_options cli_config{/*thread_count=*/0,
+                                /*array_size=*/1,
+                                /*silent_mode=*/false,
+                                /*y_flip=*/false,
+                                /*low_fstop=*/-10,
+                                /*high_fstop=*/10,
+                                /*swz_encode=*/default_swizzle,
+                                /*swz_decode=*/default_swizzle};
 
   astcenc_context *codec_context;
   if (astcenc_context_alloc(config, cli_config.thread_count, &codec_context) !=
