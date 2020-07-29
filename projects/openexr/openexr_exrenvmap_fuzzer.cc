@@ -12,21 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <makeCubeMap.h>
-#include <makeLatLongMap.h>
-#include <blurImage.h>
 #include <EnvmapImage.h>
 #include <ImfEnvmap.h>
 #include <ImfHeader.h>
+#include <blurImage.h>
+#include <makeCubeMap.h>
+#include <makeLatLongMap.h>
 
-#include <iostream>
 #include <exception>
-#include <string>
-#include <string.h>
+#include <iostream>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <string>
 #include <unistd.h>
+
+#include "fuzzer_temp_file.h"
 
 using namespace OPENEXR_IMF_NAMESPACE;
 using namespace std;
@@ -56,8 +58,9 @@ static char *buf_to_file(const char *buf, size_t size) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
-  char *file = buf_to_file((const char *)data, size);
-  if (!file) return 0;
+  char *file = fuzzer_get_tmpfile(data, size);
+  if (!file)
+    return 0;
 
   Envmap overrideInputType = NUM_ENVMAPTYPES;
   LevelMode levelMode = ONE_LEVEL;
@@ -74,25 +77,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   RgbaChannels channels;
 
   try {
-    readInputImage (file, 0, 0,
-                    overrideInputType, false,
-                    image, header, channels);
+    readInputImage(file, 0, 0, overrideInputType, false, image, header,
+                   channels);
 
-    makeCubeMap (image, header, channels,
-                 "/dev/null",
-                 tileWidth, tileHeight,
-                 levelMode, roundingMode,
-                 compression, mapWidth,
-                 filterRadius, numSamples,
-                 false);
-  } catch (IEX_NAMESPACE::InputExc& e) {
+    makeCubeMap(image, header, channels, "/dev/null", tileWidth, tileHeight,
+                levelMode, roundingMode, compression, mapWidth, filterRadius,
+                numSamples, false);
+  } catch (IEX_NAMESPACE::InputExc &e) {
     ;
-  } catch (IEX_NAMESPACE::ArgExc& e) {
+  } catch (IEX_NAMESPACE::ArgExc &e) {
     ;
   }
 
-  unlink(file);
-  free(file);
+  fuzzer_release_tmpfile(file);
 
   return 0;
 }

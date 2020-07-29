@@ -31,6 +31,7 @@ make -j$(nproc)
 ar -qc $WORK/OpenEXR/libOpenexrUtils.a $(find $WORK/ -name "*.o")
 
 INCLUDES=(
+  "-I $SRC"
   "-I $SRC/openexr/OpenEXR/IlmImf"
   "-I $SRC/openexr/OpenEXR/exrenvmap"
   "-I $SRC/openexr/IlmBase/Imath"
