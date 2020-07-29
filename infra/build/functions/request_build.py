@@ -30,14 +30,14 @@ BASE_PROJECT = 'oss-fuzz-base'
 MAX_BUILD_HISTORY_LENGTH = 64
 
 
-def update_build_history(project_name, build_id, build_tag_suffix):
+def update_build_history(project_name, build_id, build_tag):
   """Update build history of project."""
-  project_key = ndb.Key(BuildsHistory, project_name + build_tag_suffix)
+  project_key = ndb.Key(BuildsHistory, project_name + build_tag)
   project = project_key.get()
 
   if not project:
-    project = BuildsHistory(id=project_name + '-' + build_tag_suffix,
-                            build_tag_suffix=build_tag_suffix,
+    project = BuildsHistory(id=project_name + '-' + build_tag,
+                            build_tag=build_tag,
                             project=project_name,
                             build_ids=[])
 
@@ -50,14 +50,13 @@ def update_build_history(project_name, build_id, build_tag_suffix):
 
 def get_project_data(project_name):
   """Retrieve project metadata from datastore."""
-  with ndb.Client().context():
-    query = Project.query(Project.name == project_name)
-    project = query.get()
-    if not project:
-      raise RuntimeError(
-          'Project {0} not available in cloud datastore'.format(project_name))
-    project_yaml_contents = project.project_yaml_contents
-    dockerfile_lines = project.dockerfile_contents.split('\n')
+  query = Project.query(Project.name == project_name)
+  project = query.get()
+  if not project:
+    raise RuntimeError(
+        'Project {0} not available in cloud datastore'.format(project_name))
+  project_yaml_contents = project.project_yaml_contents
+  dockerfile_lines = project.dockerfile_contents.split('\n')
 
   return (project_yaml_contents, dockerfile_lines)
 
@@ -107,6 +106,8 @@ def request_build(event, context):
   else:
     raise RuntimeError('Project name missing from payload')
 
-  credentials, image_project = google.auth.default()
-  build_steps = get_build_steps(project_name, image_project, BASE_PROJECT)
-  run_build(project_name, image_project, build_steps, credentials, '-fuzzing')
+  with ndb.Client().context():
+    credentials, image_project = google.auth.default()
+    build_steps = get_build_steps(project_name, image_project, BASE_PROJECT)
+    run_build(project_name, image_project, build_steps, credentials,
+              build_project.FUZZING_BUILD_TAG)

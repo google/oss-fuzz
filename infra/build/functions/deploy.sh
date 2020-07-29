@@ -83,19 +83,19 @@ function deploy_cloud_function {
 	--trigger-topic $topic \
 	--runtime python37 \
 	--project $project \
-	--timeout 540
+	--timeout 540 \
+  --max-instances 1
 }
 
-if [ $# == 2 ]; then
+if [ $# == 1 ]; then
 	PROJECT_ID=$1
-	BASE_PROJECT_ID=$2
 else
-	echo -e "\n Usage ./deploy.sh <project-name> <base-project-name>"; exit;
+	echo -e "\n Usage ./deploy.sh <project-name>"; exit;
 fi
 
 deploy_pubsub_topic $BUILD_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $SYNC_JOB_TOPIC $PROJECT_ID
-deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $BASE_PROJECT_ID
+deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $COVERAGE_BUILD_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $UPDATE_BUILD_JOB_TOPIC $PROJECT_ID
 
@@ -106,10 +106,10 @@ deploy_scheduler $SYNC_SCHEDULER_JOB \
 				  $PROJECT_ID
 
 deploy_scheduler $BASE_IMAGE_SCHEDULER_JOB \
-				 "$BASE_IMAGE SCHEDULE" \
+				 "$BASE_IMAGE_SCHEDULE" \
 				  $BASE_IMAGE_JOB_TOPIC \
 				  "$BASE_IMAGE_MESSAGE" \
-				  $BASE_PROJECT_ID
+				  $PROJECT_ID
 
 deploy_scheduler $COVERAGE_BUILD_SCHEDULER_JOB \
 				 "$COVERAGE_BUILD_SCHEDULE" \
@@ -121,7 +121,7 @@ deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB \
 				 "$UPDATE_BUILD_JOB_SCHEDULE" \
 				 $UPDATE_BUILD_JOB_TOPIC \
 				 "$UPDATE_BUILD_MESSAGE" \
-				 $PROJECT_ID 
+				 $PROJECT_ID
 
 
 deploy_cloud_function sync \
@@ -132,7 +132,7 @@ deploy_cloud_function sync \
 deploy_cloud_function base-image-build \
 					  build_base_images \
 					  $BASE_IMAGE_JOB_TOPIC \
-					  $BASE_PROJECT_ID
+					  $PROJECT_ID
 
 deploy_cloud_function request-build \
 					  build_project \

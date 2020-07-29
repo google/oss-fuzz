@@ -36,6 +36,6 @@ class GithubCreds(ndb.Model):
 # pylint: disable=too-few-public-methods
 class BuildsHistory(ndb.Model):
   """Container for build history of projects."""
-  build_tag_suffix = ndb.StringProperty()
+  build_tag = ndb.StringProperty()
   project = ndb.StringProperty()
   build_ids = ndb.StringProperty(repeated=True)

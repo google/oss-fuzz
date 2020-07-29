@@ -43,5 +43,7 @@ def request_coverage_build(event, context):
             image_project, BASE_PROJECT)
       except SystemExit:
         continue
+
       request_build.run_build(project_name, image_project, build_steps,
-                              credentials, '-coverage')
+                              credentials,
+                              build_and_run_coverage.COVERAGE_BUILD_TAG)

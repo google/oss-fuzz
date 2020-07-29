@@ -80,7 +80,7 @@ class TestRequestBuilds(unittest.TestCase):
     """Testing build history."""
     with ndb.Client().context():
       BuildsHistory(id='test-project-fuzzing',
-                    build_tag_suffix='fuzzing',
+                    build_tag='fuzzing',
                     project='test-project',
                     build_ids=[str(i) for i in range(1, 65)]).put()
       update_build_history('test-project', '65', '-fuzzing')
