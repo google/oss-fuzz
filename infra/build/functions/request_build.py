@@ -28,6 +28,7 @@ from datastore_entities import Project
 
 BASE_PROJECT = 'oss-fuzz-base'
 MAX_BUILD_HISTORY_LENGTH = 64
+QUEUE_TTL_SECONDS = 60 * 60 * 24  # 24 hours.
 
 
 def update_build_history(project_name, build_id, build_tag):
@@ -82,6 +83,7 @@ def run_build(project_name, image_project, build_steps, credentials, tag):
       },
       'logsBucket': build_project.GCB_LOGS_BUCKET,
       'tags': [project_name + tag,],
+      'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
 
   cloudbuild = build('cloudbuild',
