@@ -42,7 +42,7 @@ class BuildsHistory(ndb.Model):
 
 
 class LastSuccessfulBuild(ndb.Model):
-  """Container for storing Last successful build of project."""
+  """Container for storing last successful build of project."""
   build_tag = ndb.StringProperty()
   project = ndb.StringProperty()
   build_id = ndb.StringProperty()
