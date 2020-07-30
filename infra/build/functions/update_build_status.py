@@ -45,31 +45,54 @@ def upload_status(data, status_filename):
   blob.upload_from_string(json.dumps(data), content_type='application/json')
 
 
-def sort_projects(projects, statuses):
+def sort_projects(projects):
   """Sort projects in order Failures, Successes, Not yet built."""
-  # if project is in statuses then it is either successful or failed.
-  # if project is not in statuses means it was not built.
-  sorted_projects = []
-  for i in range(3):
-    for project in projects:
-      name = project['name']
-      if i == 0:
-        if name in statuses and (not statuses[name]):
-          sorted_projects.append(project)
-      if i == 1:
-        if name in statuses and statuses[name]:
-          sorted_projects.append(project)
-      if i == 2:
-        if name not in statuses:
-          sorted_projects.append(project)
 
-  return sorted_projects
+  def key_func(project):
+    if not project['history']:
+      return 2  # Order projects without history last.
+
+    if project['history'][0]['success']:
+      # Successful builds come second.
+      return 1
+
+    # Build failures come first.
+    return 0
+
+  projects.sort(key=key_func)
 
 
 def get_build(cloudbuild, image_project, build_id):
   """Get build object from cloudbuild."""
   return cloudbuild.projects().builds().get(projectId=image_project,
                                             id=build_id).execute()
+
+
+def update_last_successful_build(project, build_tag):
+  """Update last successful build."""
+  last_successful_build = ndb.Key(LastSuccessfulBuild,
+                                  project['name'] + '-' + build_tag).get()
+  if not last_successful_build and 'last_successful_build' not in project:
+    return
+
+  if 'last_successful_build' not in project:
+    project['last_successful_build'] = {
+        'build_id': last_successful_build.build_id,
+        'finish_time': last_successful_build.finish_time
+    }
+  else:
+    if last_successful_build:
+      last_successful_build.build_id = project['last_successful_build'][
+          'build_id']
+      last_successful_build.finish_time = project['last_successful_build'][
+          'finish_time']
+    else:
+      last_successful_build = LastSuccessfulBuild(
+          id=project['name'] + '-' + build_tag,
+          project=project['name'],
+          build_id=project['last_successful_build']['build_id'],
+          finish_time=project['last_successful_build']['finish_time'])
+    last_successful_build.put()
 
 
 # pylint: disable=no-member
@@ -86,11 +109,11 @@ def get_build_history(build_ids):
 
   for build_id in reversed(build_ids):
     project_build = get_build(cloudbuild, image_project, build_id)
-    if project_build['status'] == 'WORKING':
+    if project_build['status'] not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
       continue
 
-    if (not last_successful_build
-       ) and builds_status.is_build_successful(project_build):
+    if (not last_successful_build and
+        builds_status.is_build_successful(project_build)):
       last_successful_build = {
           'build_id': build_id,
           'finish_time': project_build['finishTime'],
@@ -126,34 +149,13 @@ def update_build_status(build_tag, status_filename):
     project = get_build_history(project_build.build_ids)
     project['name'] = project_build.project
     projects.append(project)
-    last_successful_build = ndb.Key(LastSuccessfulBuild,
-                                    project_build.name + '-' + build_tag).get()
     if project['history']:
-      statuses[project_build.name] = project['history'][0]['success']
+      statuses[project_build.project] = project['history'][0]['success']
 
-    if not last_successful_build and 'last_successful_build' not in project:
-      continue
+    update_last_successful_build(project, build_tag)
 
-    if 'last_successful_build' not in project:
-      project['last_successful_build'] = {
-          'build_id': last_successful_build.build_id,
-          'finish_time': last_successful_build.finish_time
-      }
-    else:
-      if last_successful_build:
-        last_successful_build.build_id = project['last_successful_build'][
-            'build_id']
-        last_successful_build.finish_time = project['last_successful_build'][
-            'finish_time']
-      else:
-        last_successful_build = LastSuccessfulBuild(
-            id=project_build.name + '-' + build_tag,
-            project=project_build.name,
-            uild_id=project['last_successful_build']['build_id'],
-            finish_time=project['last_successful_build']['finish_time'])
-      last_successful_build.put()
-
-  data = {'projects': sort_projects(projects, statuses)}
+  sort_projects(projects)
+  data = {'projects': projects}
   upload_status(data, status_filename)
 
   return statuses

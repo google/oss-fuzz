@@ -167,7 +167,7 @@ limitations under the License. -->
             Select a project to see logs.
           </template>
           <template is="dom-if" if="[[build_history.length]]">
-            Last Successfull build:
+            Last Successful build:
             <template is="dom-if" if="[[last_successful_build]]">
               <paper-button raised on-click="onRequestLog" class="green">
                 [[getLocalDate(last_successful_build.finish_time)]]
