@@ -22,9 +22,9 @@
 #include <openssl/evp.h>
 #include <openssl/pkcs8.h>
 #include <openssl/x509.h>
-#include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
-#include "asn1_pdu_to_der.h"
 #include "asn1_pdu.pb.h"
+#include "asn1_pdu_to_der.h"
+#include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
 
 DEFINE_PROTO_FUZZER(const asn1_pdu::PDU& asn1) {
   asn1_pdu::ASN1PDUToDER converter;
