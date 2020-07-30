@@ -133,7 +133,7 @@ if [ "$BROKEN_TARGETS_PERCENTAGE" -gt "$ALLOWED_BROKEN_TARGETS_PERCENTAGE" ]; th
 
   # TODO: figure out how to not fail the "special" cases handled below. Those
   # are from "example" and "c-ares" projects and are too small targets to pass.
-  if [ "$(ls $OUT/do_stuff_fuzzer $OUT/ares_*_fuzzer $OUT/checksum_fuzzer $OUT/xmltest $OUT/fuzz_compression_sas_rle 2>/dev/null | wc -l)" -gt "0" ]; then
+  if [ "$(ls $OUT/do_stuff_fuzzer $OUT/ares_*_fuzzer $OUT/checksum_fuzzer $OUT/fuzz_dump $OUT/fuzz_keyring $OUT/xmltest $OUT/fuzz_compression_sas_rle 2>/dev/null | wc -l)" -gt "0" ]; then
     exit 0
   fi
 

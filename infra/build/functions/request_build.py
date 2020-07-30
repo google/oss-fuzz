@@ -28,11 +28,12 @@ from datastore_entities import Project
 
 BASE_PROJECT = 'oss-fuzz-base'
 MAX_BUILD_HISTORY_LENGTH = 64
+QUEUE_TTL_SECONDS = 60 * 60 * 24  # 24 hours.
 
 
 def update_build_history(project_name, build_id, build_tag):
   """Update build history of project."""
-  project_key = ndb.Key(BuildsHistory, project_name + build_tag)
+  project_key = ndb.Key(BuildsHistory, project_name + '-' + build_tag)
   project = project_key.get()
 
   if not project:
@@ -81,7 +82,8 @@ def run_build(project_name, image_project, build_steps, credentials, tag):
           'machineType': 'N1_HIGHCPU_32'
       },
       'logsBucket': build_project.GCB_LOGS_BUCKET,
-      'tags': [project_name + tag,],
+      'tags': [project_name + '-' + tag,],
+      'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
 
   cloudbuild = build('cloudbuild',
