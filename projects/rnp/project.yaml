@@ -3,6 +3,8 @@ language: c++
 primary_contact: "tse@ribose.com"
 auto_ccs:
   - "tom@ritter.vg"
+  - "o.nickolay@gmail.com"
+  - "daniel.wyatt@gmail.com"
 sanitizers:
   - address
   - undefined
