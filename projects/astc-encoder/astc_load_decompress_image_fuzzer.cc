@@ -17,6 +17,7 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 #include <limits>
+#include <vector>
 
 static constexpr uint8_t kUint8Max = std::numeric_limits<uint8_t>::max();
 
