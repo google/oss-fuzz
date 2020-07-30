@@ -46,7 +46,7 @@ def get_last_build(build_ids):
   for build_id in reversed(build_ids):
     project_build = cloudbuild.projects().builds().get(projectId=image_project,
                                                        id=build_id).execute()
-    if project_build['status'] == 'WORKING':
+    if project_build['status'] not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
       continue
 
     if not builds_status.upload_log(build_id):
