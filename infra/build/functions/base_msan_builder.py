@@ -33,10 +33,8 @@ def base_msan_builder(event, context):
   credentials, _ = google.auth.default()
   image = f'gcr.io/{BASE_PROJECT}/msan-libs-builder'
   build_body = {
-      'steps':
-          build_msan_libs.get_steps(image),
-      'timeout':
-          str(6 * 3600) + 's',
+      'steps': build_msan_libs.get_steps(image),
+      'timeout': str(6 * 3600) + 's',
       'options': {
           'machineType': 'N1_HIGHCPU_32'
       },
