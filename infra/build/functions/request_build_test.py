@@ -82,7 +82,7 @@ class TestRequestBuilds(unittest.TestCase):
                     build_tag='fuzzing',
                     project='test-project',
                     build_ids=[str(i) for i in range(1, 65)]).put()
-      update_build_history('test-project', '65', '-fuzzing')
+      update_build_history('test-project', '65', 'fuzzing')
       expected_build_ids = [str(i) for i in range(2, 66)]
 
       self.assertEqual(BuildsHistory.query().get().build_ids,
