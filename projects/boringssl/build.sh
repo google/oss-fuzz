@@ -36,22 +36,25 @@ fuzzerFiles=$(find $SRC/boringssl/fuzz/ -name "*.cc")
 
 find . -name "*.a"
 
-# for F in $fuzzerFiles; do
-#   fuzzerName=$(basename $F .cc)
-#   echo "Building fuzzer $fuzzerName"
-#   $CXX $CXXFLAGS -std=c++11 \
-#       -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
-#       -I $SRC/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
+for F in $fuzzerFiles; do
+  fuzzerName=$(basename $F .cc)
+  echo "Building fuzzer $fuzzerName"
+  $CXX $CXXFLAGS -std=c++11 \
+      -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
+      -I $SRC/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
 
-#   if [ -d "$SRC/boringssl/fuzz/${fuzzerName}_corpus" ]; then
-#     zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/boringssl/fuzz/${fuzzerName}_corpus/*
-#   fi
-# done
+  if [ -d "$SRC/boringssl/fuzz/${fuzzerName}_corpus" ]; then
+    zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/boringssl/fuzz/${fuzzerName}_corpus/*
+  fi
+done
 
 if [[ $CFLAGS != *sanitize=memory* ]]; then
-  rm -rf genfiles && mkdir genfiles && $SRC/LPM/external.protobuf/bin/protoc asn1_pdu.proto --cpp_out=genfiles --proto_path=$SRC/fuzzing/proto/asn1-pdu/
-
   fuzzerLPMFiles=$(find $SRC/ -maxdepth 1 -name "*.cc")
+
+  cp $SRC/fuzzing/proto/asn1/asn1-pdu/* $SRC/
+  cp $SRC/fuzzing/proto/asn1/common/* $SRC/
+
+  rm -rf genfiles && mkdir genfiles && $SRC/LPM/external.protobuf/bin/protoc asn1_pdu.proto --cpp_out=genfiles --proto_path=$SRC/
 
   for F in $fuzzerLPMFiles
   do
@@ -60,7 +63,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
     echo "Building fuzzer $fuzzerName"
     $CXX $CXXFLAGS -I genfiles -I . -I $SRC/libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include -I include $LIB_FUZZING_ENGINE \
         -I $SRC/boringssl/include \
-        $F genfiles/asn1_pdu.pb.cc $SRC/fuzzing/proto/asn1-pdu/asn1_proto_to_der.cc \
+        $F genfiles/asn1_pdu.pb.cc $SRC/asn1_pdu_to_der.cc $SRC/common.cc \
         ./ssl/libssl.a ./crypto/libcrypto.a \
         $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
         $SRC/LPM/src/libprotobuf-mutator.a \

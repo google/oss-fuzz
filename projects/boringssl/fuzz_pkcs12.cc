@@ -23,12 +23,12 @@
 #include <openssl/pkcs8.h>
 #include <openssl/x509.h>
 #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
-#include "fuzzing/proto/asn1-pdu/asn1_proto_to_der.h"
+#include "asn1_pdu_to_der.h"
 #include "asn1_pdu.pb.h"
 
 DEFINE_PROTO_FUZZER(const asn1_pdu::PDU& asn1) {
-  asn1_pdu::ASN1ProtoToDER converter;
-  std::vector<uint8_t> encoded = converter.ProtoToDER(asn1);
+  asn1_pdu::ASN1PDUToDER converter;
+  std::vector<uint8_t> encoded = converter.PDUToDER(asn1);
   const uint8_t* buf = encoded.data();
   size_t len = encoded.size();
 

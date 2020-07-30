@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y wget \
     golang binutils cmake ninja-build liblzma-dev libz-dev \
     pkg-config autoconf libtool
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
-# Use ASN.1 proto from the google/fuzzing repo.
+# Use ASN.1 pdu protobuf and converter from the google/fuzzing repo.
 RUN git clone --depth 1 https://github.com/dannyallover/fuzzing
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
