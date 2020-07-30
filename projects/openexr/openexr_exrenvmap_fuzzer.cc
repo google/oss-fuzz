@@ -58,8 +58,9 @@ static char *buf_to_file(const char *buf, size_t size) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
-  char *file = fuzzer_get_tmpfile(data, size);
-  if (!file)
+  FuzzerTemporaryFile tempFile(data, size);
+  const char *filename = tempFile.filename();
+  if (!filename)
     return 0;
 
   Envmap overrideInputType = NUM_ENVMAPTYPES;
@@ -77,7 +78,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   RgbaChannels channels;
 
   try {
-    readInputImage(file, 0, 0, overrideInputType, false, image, header,
+    readInputImage(filename, 0, 0, overrideInputType, false, image, header,
                    channels);
 
     makeCubeMap(image, header, channels, "/dev/null", tileWidth, tileHeight,
@@ -88,8 +89,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   } catch (IEX_NAMESPACE::ArgExc &e) {
     ;
   }
-
-  fuzzer_release_tmpfile(file);
 
   return 0;
 }
