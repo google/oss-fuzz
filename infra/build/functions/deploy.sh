@@ -148,3 +148,5 @@ deploy_cloud_function update-builds \
 					  builds_status \
 					  $UPDATE_BUILD_JOB_TOPIC \
 					  $PROJECT_ID
+
+gcloud datastore indexes create index.yaml --project $PROJECT_ID

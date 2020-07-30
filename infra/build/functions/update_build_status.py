@@ -14,7 +14,7 @@
 #
 ################################################################################
 """Cloud function to request builds."""
-import logging
+import json
 
 import google.auth
 from googleapiclient.discovery import build
@@ -24,18 +24,79 @@ import build_and_run_coverage
 import build_project
 import builds_status
 from datastore_entities import BuildsHistory
+from datastore_entities import LastSuccessfulBuild
 from datastore_entities import Project
 
 BADGE_DIR = 'badge_images'
 DESTINATION_BADGE_DIR = 'badges'
+MAX_BUILD_LOGS = 7
 
 
 class MissingBuildLogError(Exception):
   """Missing build log file in cloud storage."""
 
 
+def upload_status(data, status_filename):
+  """Upload json file to cloud storage."""
+  bucket = builds_status.get_storage_client().get_bucket(
+      builds_status.STATUS_BUCKET)
+  blob = bucket.blob(status_filename)
+  blob.cache_control = 'no-cache'
+  blob.upload_from_string(json.dumps(data), content_type='application/json')
+
+
+def sort_projects(projects):
+  """Sort projects in order Failures, Successes, Not yet built."""
+
+  def key_func(project):
+    if not project['history']:
+      return 2  # Order projects without history last.
+
+    if project['history'][0]['success']:
+      # Successful builds come second.
+      return 1
+
+    # Build failures come first.
+    return 0
+
+  projects.sort(key=key_func)
+
+
+def get_build(cloudbuild, image_project, build_id):
+  """Get build object from cloudbuild."""
+  return cloudbuild.projects().builds().get(projectId=image_project,
+                                            id=build_id).execute()
+
+
+def update_last_successful_build(project, build_tag):
+  """Update last successful build."""
+  last_successful_build = ndb.Key(LastSuccessfulBuild,
+                                  project['name'] + '-' + build_tag).get()
+  if not last_successful_build and 'last_successful_build' not in project:
+    return
+
+  if 'last_successful_build' not in project:
+    project['last_successful_build'] = {
+        'build_id': last_successful_build.build_id,
+        'finish_time': last_successful_build.finish_time
+    }
+  else:
+    if last_successful_build:
+      last_successful_build.build_id = project['last_successful_build'][
+          'build_id']
+      last_successful_build.finish_time = project['last_successful_build'][
+          'finish_time']
+    else:
+      last_successful_build = LastSuccessfulBuild(
+          id=project['name'] + '-' + build_tag,
+          project=project['name'],
+          build_id=project['last_successful_build']['build_id'],
+          finish_time=project['last_successful_build']['finish_time'])
+    last_successful_build.put()
+
+
 # pylint: disable=no-member
-def get_last_build(build_ids):
+def get_build_history(build_ids):
   """Returns build object for the last finished build of project."""
   credentials, image_project = google.auth.default()
   cloudbuild = build('cloudbuild',
@@ -43,52 +104,60 @@ def get_last_build(build_ids):
                      credentials=credentials,
                      cache_discovery=False)
 
+  history = []
+  last_successful_build = None
+
   for build_id in reversed(build_ids):
-    project_build = cloudbuild.projects().builds().get(projectId=image_project,
-                                                       id=build_id).execute()
+    project_build = get_build(cloudbuild, image_project, build_id)
     if project_build['status'] not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
       continue
+
+    if (not last_successful_build and
+        builds_status.is_build_successful(project_build)):
+      last_successful_build = {
+          'build_id': build_id,
+          'finish_time': project_build['finishTime'],
+      }
 
     if not builds_status.upload_log(build_id):
       log_name = 'log-{0}'.format(build_id)
       raise MissingBuildLogError('Missing build log file {0}'.format(log_name))
 
-    return project_build
+    history.append({
+        'build_id': build_id,
+        'finish_time': project_build['finishTime'],
+        'success': builds_status.is_build_successful(project_build)
+    })
 
-  return None
+    if len(history) == MAX_BUILD_LOGS:
+      break
+
+  project = {'history': history}
+  if last_successful_build:
+    project['last_successful_build'] = last_successful_build
+  return project
 
 
+# pylint: disable=too-many-locals
 def update_build_status(build_tag, status_filename):
   """Update build statuses."""
+  projects = []
   statuses = {}
-  successes = []
-  failures = []
   for project_build in BuildsHistory.query(
-      BuildsHistory.build_tag == build_tag):
-    last_build = get_last_build(project_build.build_ids)
-    if not last_build:
-      logging.error('Failed to get last build for project %s',
-                    project_build.project)
-      continue
+      BuildsHistory.build_tag == build_tag).order('project'):
 
-    if last_build['status'] == 'SUCCESS':
-      statuses[project_build.project] = True
-      successes.append({
-          'name': project_build.project,
-          'build_id': last_build['id'],
-          'finish_time': last_build['finishTime'],
-          'success': True,
-      })
-    else:
-      statuses[project_build.project] = False
-      failures.append({
-          'name': project_build.project,
-          'build_id': last_build['id'],
-          'finish_time': last_build['finishTime'],
-          'success': False,
-      })
+    project = get_build_history(project_build.build_ids)
+    project['name'] = project_build.project
+    projects.append(project)
+    if project['history']:
+      statuses[project_build.project] = project['history'][0]['success']
 
-  builds_status.upload_status(successes, failures, status_filename)
+    update_last_successful_build(project, build_tag)
+
+  sort_projects(projects)
+  data = {'projects': projects}
+  upload_status(data, status_filename)
+
   return statuses
 
 

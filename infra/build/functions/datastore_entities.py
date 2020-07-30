@@ -39,3 +39,11 @@ class BuildsHistory(ndb.Model):
   build_tag = ndb.StringProperty()
   project = ndb.StringProperty()
   build_ids = ndb.StringProperty(repeated=True)
+
+
+class LastSuccessfulBuild(ndb.Model):
+  """Container for storing last successful build of project."""
+  build_tag = ndb.StringProperty()
+  project = ndb.StringProperty()
+  build_id = ndb.StringProperty()
+  finish_time = ndb.StringProperty()
