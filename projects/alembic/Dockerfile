@@ -25,5 +25,5 @@ RUN git clone --depth 1 https://github.com/alembic/alembic
 # 2020-07-29.
 RUN git clone -b v2.4.2 --depth 1 https://github.com/AcademySoftwareFoundation/openexr
 
-COPY build.sh *.cc $SRC/
+COPY build.sh *.h *.cc $SRC/
 WORKDIR $WORK/

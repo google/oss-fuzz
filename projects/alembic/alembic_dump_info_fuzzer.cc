@@ -26,6 +26,8 @@
 #include "alembic/lib/Alembic/AbcGeom/All.h"
 #include "alembic/lib/Alembic/AbcMaterial/All.h"
 
+#include "fuzzer_temp_file.h"
+
 using Alembic::AbcCoreAbstract::PropertyHeader;
 using Alembic::AbcCoreAbstract::PropertyType;
 using Alembic::AbcCoreFactory::IFactory;
@@ -250,57 +252,12 @@ void dumpInfo(const char *file) {
   }
 }
 
-extern "C" char *buf_to_file(const uint8_t *buf, size_t size) {
-  char *pathname = strdup("/dev/shm/fuzz-XXXXXX");
-  if (pathname == nullptr) {
-    return nullptr;
-  }
-
-  int fd = mkstemp(pathname);
-  if (fd == -1) {
-    free(pathname);
-    return nullptr;
-  }
-
-  size_t pos = 0;
-  while (pos < size) {
-    int nbytes = write(fd, &buf[pos], size - pos);
-    if (nbytes <= 0) {
-      if (nbytes == -1 && errno == EINTR) {
-        continue;
-      }
-      goto err;
-    }
-    pos += nbytes;
-  }
-
-  if (close(fd) == -1) {
-    goto err;
-  }
-
-  return pathname;
-
-err:
-  unlink(pathname);
-  free((void *)pathname);
-  return nullptr;
-}
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-
-  const char *file = buf_to_file(data, size);
-  if (file == NULL) {
+  FuzzerTemporaryFile tempFile(data, size);
+  const char *filename = tempFile.filename();
+  if (!filename)
     return 0;
-  }
 
-  try {
-    dumpInfo(file);
-  } catch (const std::exception &e) {
-    ;
-  }
-
-  unlink(file);
-  free((void *)file);
-
+  dumpInfo(filename);
   return 0;
 }

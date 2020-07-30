@@ -33,15 +33,13 @@ make -j$(nproc) && make install
 
 # build alembic
 cd $WORK/build_alembic
-ALEMBIC_CMAKE_SETTINGS=(
-  "-D ALEMBIC_SHARED_LIBS=OFF"                        # Build static libs only
-)
-cmake $SRC/alembic ${ALEMBIC_CMAKE_SETTINGS[@]}
+cmake $SRC/alembic -DALEMBIC_SHARED_LIBS=OFF
 make -j$(nproc)
 
 INCLUDES=(
+  "-I $SRC"
   "-I ${SRC}/alembic/lib"
-  "-I ${WORK}/alembic/lib"
+  "-I ${WORK}/build_alembic/lib"
   "-I /usr/local/include/OpenEXR"
 )
 LIBS=("-lImath" "-lIex" "-lHalf")
@@ -51,4 +49,4 @@ for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
   $CXX $CXXFLAGS -std=c++11 ${INCLUDES[@]} \
     $fuzzer $WORK/build_alembic/lib/Alembic/libAlembic.a $LIB_FUZZING_ENGINE \
     -o $OUT/$fuzzer_basename ${LIBS[@]}
-  done
+done
