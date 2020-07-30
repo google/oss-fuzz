@@ -169,7 +169,7 @@ limitations under the License. -->
           <template is="dom-if" if="[[build_history.length]]">
             Last Successful build:
             <template is="dom-if" if="[[last_successful_build]]">
-              <paper-button raised on-click="onRequestLog" class="green">
+              <paper-button raised on-click="onLastBuildSuccessful" class="green">
                 [[getLocalDate(last_successful_build.finish_time)]]
               </paper-button>
             </template>
@@ -179,7 +179,7 @@ limitations under the License. -->
               <div class="buildHistory">
                 Build History: <br>
                 <template is="dom-repeat" items="[[build_history]]" as="history">
-                  <paper-button raised on-click="onRequestLog">
+                  <paper-button raised on-click="onBuildHistory">
                     <template is="dom-if" if="[[history.success]]">
                       <iron-icon class="icon-success" icon="icons:done"></iron-icon>
                     </template>
@@ -300,16 +300,25 @@ limitations under the License. -->
         }
       }
 
-      onRequestLog(e) {
+      requestLog() {
         var ajax = this.$.logxhr;
-        const id = e.model.history.build_id;
-        const finishTime = e.model.history.finish_time;
-        ajax.url = "/log-" + id + ".txt";
+        ajax.url = "/log-" + this.build_id + ".txt";
         ajax.generateRequest();
         this.loading_log = true;
         this.log = "";
-        this.finish_time = this.toLocalDate(finishTime);
-        this.build_id = id;
+        this.finish_time = this.toLocalDate(this.finish_time);
+      }
+
+      onLastBuildSuccessful(e) {
+        this.build_id = this.last_successful_build.build_id
+        this.finish_time = this.last_successful_build.finish_time
+        this.requestLog()
+      }
+
+      onBuildHistory(e) {
+        this.build_id = e.model.history.build_id
+        this.finish_time = e.model.history.finish_time
+        this.requestLog()
       }
 
       showLog(log) {
