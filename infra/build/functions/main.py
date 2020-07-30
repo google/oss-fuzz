@@ -20,6 +20,7 @@ import project_sync
 import request_build
 import request_coverage_build
 import update_build_status
+import base_msan_builder
 
 
 def build_project(event, context):
@@ -45,3 +46,8 @@ def coverage_build(event, context):
 def builds_status(event, context):
   """Entry point for builds status cloud function."""
   update_build_status.update_status(event, context)
+
+
+def build_msan(event, context):
+  """Entry point for base msan builder."""
+  base_msan_builder.base_msan_builder(event, context)
