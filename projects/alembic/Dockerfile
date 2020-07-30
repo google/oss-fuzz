@@ -16,14 +16,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y build-essential zlib1g-dev python make automake wget
-
-# Install cmake version 3.14
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.5/cmake-3.14.5-Linux-x86_64.sh
-RUN chmod +x cmake-3.14.5-Linux-x86_64.sh
-RUN ./cmake-3.14.5-Linux-x86_64.sh --skip-license --prefix="/usr/local"
+RUN apt-get update && apt-get install -y build-essential zlib1g-dev python make automake
 
 RUN git clone --depth 1 https://github.com/alembic/alembic
-RUN git clone --depth 1 https://github.com/AcademySoftwareFoundation/openexr
+
+# Ubuntu's libilmbase-dev package doesn't include static libraries, so we have
+# to build OpenEXR from source.  The v2.4.2 release is the most recent as of
+# 2020-07-29.
+RUN git clone -b v2.4.2 --depth 1 https://github.com/AcademySoftwareFoundation/openexr
+
 COPY build.sh *.cc $SRC/
 WORKDIR $WORK/

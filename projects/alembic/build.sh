@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-mkdir $WORK/build_openexr
-mkdir $WORK/build_alembic
+mkdir -p $WORK/build_openexr
+mkdir -p $WORK/build_alembic
 
 # build openexr for alembic
 cd $WORK/build_openexr
@@ -25,6 +25,8 @@ OPENEXR_CMAKE_SETTINGS=(
   "-D PYILMBASE_ENABLE=OFF"          # Don't build Python support
   "-D BUILD_TESTING=OFF"             # Or tests
   "-D INSTALL_OPENEXR_EXAMPLES=OFF"  # Or examples
+  "-D OPENEXR_LIB_SUFFIX="           # Don't append the version number to library files
+  "-D ILMBASE_LIB_SUFFIX="
 )
 cmake $SRC/openexr ${OPENEXR_CMAKE_SETTINGS[@]}
 make -j$(nproc) && make install
@@ -33,32 +35,20 @@ make -j$(nproc) && make install
 cd $WORK/build_alembic
 ALEMBIC_CMAKE_SETTINGS=(
   "-D ALEMBIC_SHARED_LIBS=OFF"                        # Build static libs only
-  "-D ALEMBIC_ILMBASE_LINK_STATIC=ON"                 # Link OpenEXR static libs
-  "-D ILMBASE_INCLUDE_DIR=/usr/local/include/OpenEXR" # Set include directory
-  "-D ILMBASE_ROOT=/usr/local/lib/"                   # Set library directory
 )
 cmake $SRC/alembic ${ALEMBIC_CMAKE_SETTINGS[@]}
-make -j$(nproc) && make install
+make -j$(nproc)
 
 INCLUDES=(
-  "-I $SRC/alembic"
-  "-I $WORK/build_alembic"
+  "-I ${SRC}/alembic/lib"
+  "-I ${WORK}/alembic/lib"
   "-I /usr/local/include/OpenEXR"
 )
-
-LIBS=(
-  "/usr/local/lib/libIlmImf*.a"
-  "/usr/local/lib/libIex*.a"
-  "/usr/local/lib/libHalf*.a"
-  "/usr/local/lib/libIlmThread*.a"
-  "/usr/local/lib/libImath*.a"
-  "/usr/local/lib/libIexMath*.a"
-  "$WORK/build_alembic/lib/Alembic/libAlembic.a"
-)
+LIBS=("-lImath" "-lIex" "-lHalf")
 
 for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
   fuzzer_basename=$(basename -s .cc $fuzzer)
   $CXX $CXXFLAGS -std=c++11 ${INCLUDES[@]} \
-      $fuzzer ${LIBS[@]} $LIB_FUZZING_ENGINE \
-      -o $OUT/$fuzzer_basename
-done
+    $fuzzer $WORK/build_alembic/lib/Alembic/libAlembic.a $LIB_FUZZING_ENGINE \
+    -o $OUT/$fuzzer_basename ${LIBS[@]}
+  done
