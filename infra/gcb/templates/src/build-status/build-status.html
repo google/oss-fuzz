@@ -169,24 +169,26 @@ limitations under the License. -->
           <template is="dom-if" if="[[build_history.length]]">
             Last Successful build:
             <template is="dom-if" if="[[last_successful_build]]">
-              <paper-button raised on-click="onRequestLog" class="green">
-                [[getLocalDate(last_successful_build.finish_time)]]
-              </paper-button>
+              <template is="dom-repeat" items="[[toArray(last_successful_build)]]">
+                <paper-button raised on-click="onRequestLog" class="green">
+                  [[getLocalDate(item.finish_time)]]
+                </paper-button>
+              </template>
             </template>
             <template is="dom-if" if="[[!last_successful_build]]">
               None yet.
             </template>
               <div class="buildHistory">
                 Build History: <br>
-                <template is="dom-repeat" items="[[build_history]]" as="history">
+                <template is="dom-repeat" items="[[build_history]]">
                   <paper-button raised on-click="onRequestLog">
-                    <template is="dom-if" if="[[history.success]]">
+                    <template is="dom-if" if="[[item.success]]">
                       <iron-icon class="icon-success" icon="icons:done"></iron-icon>
                     </template>
-                    <template is="dom-if" if="[[!history.success]]">
+                    <template is="dom-if" if="[[!item.success]]">
                       <iron-icon class="icon-error" icon="icons:error"></iron-icon>
                     </template>
-                    [[getLocalDate(history.finish_time)]]
+                    [[getLocalDate(item.finish_time)]]
                   </paper-button>
                 </template>
               </div>
@@ -302,8 +304,8 @@ limitations under the License. -->
 
       onRequestLog(e) {
         var ajax = this.$.logxhr;
-        const id = e.model.history.build_id;
-        const finishTime = e.model.history.finish_time;
+        const id = e.model.item.build_id;
+        const finishTime = e.model.item.finish_time;
         ajax.url = "/log-" + id + ".txt";
         ajax.generateRequest();
         this.loading_log = true;
@@ -338,6 +340,10 @@ limitations under the License. -->
 
       isSuccessful(project) {
         return (!project.history.length || project.history[0].success)
+      }
+
+      toArray(item) {
+        return [item];
       }
     }
 
