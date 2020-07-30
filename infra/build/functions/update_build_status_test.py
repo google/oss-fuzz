@@ -222,8 +222,8 @@ class TestUpdateBuildStatus(unittest.TestCase):
   @mock.patch('google.auth.default', return_value=['temp', 'temp'])
   @mock.patch('update_build_status.build', return_value='cloudbuild')
   @mock.patch('builds_status.upload_log')
-  def test_update_build_status(self, mocked_upload_log,
-                               mocked_cloud_build, mocked_google_auth):
+  def test_update_build_status(self, mocked_upload_log, mocked_cloud_build,
+                               mocked_google_auth):
     """Testing update build status as a whole."""
     del self, mocked_cloud_build, mocked_google_auth
     update_build_status.upload_status = MagicMock()
