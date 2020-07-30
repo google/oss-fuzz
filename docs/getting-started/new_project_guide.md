@@ -82,6 +82,7 @@ This configuration file stores project metadata. The following attributes are su
 - [sanitizers](#sanitizers) (optional)
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
+- [builds_per_day](#build_frequency) (optional)
 
 ### homepage
 You project's homepage.
@@ -168,6 +169,16 @@ bugs to members of your project unfamiliar with OSS-Fuzz, or if they should foll
 reproducing and fixing bugs than the standard one outlined in the reproducing guide.
 
 `help_url` example: [skia](https://github.com/google/oss-fuzz/blob/master/projects/skia/project.yaml).
+
+### builds_per_day (optional) {#build_frequency}
+The number of times the project should be built per day.
+OSS-Fuzz allows upto 4 builds per day, and builds once per day by default.
+Example:
+```yaml
+builds_per_day: 2
+```
+
+Will build the project twice per day.
 
 ## Dockerfile
 
