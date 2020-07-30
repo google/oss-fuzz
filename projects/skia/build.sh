@@ -64,7 +64,7 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 $SRC/depot_tools/gn gen out/Fuzz\
     --args='cc="'$CC'"
       cxx="'$CXX'"
-      link_pool_depth=0
+      link_pool_depth=1
       is_debug=false
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
@@ -83,7 +83,7 @@ $SRC/depot_tools/gn gen out/Fuzz\
 $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
     --args='cc="'$CC'"
       cxx="'$CXX'"
-      link_pool_depth=0
+      link_pool_depth=1
       is_debug=false
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"]
