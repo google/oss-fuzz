@@ -20,5 +20,5 @@ for project in ../../projects/*; do
     continue
   fi
 
-  ./request_build.sh $(basename $project)
+  ./request_build.sh $(basename $project) $1
 done

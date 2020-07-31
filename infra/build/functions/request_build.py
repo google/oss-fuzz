@@ -65,11 +65,9 @@ def get_project_data(project_name):
 def get_build_steps(project_name, image_project, base_images_project):
   """Retrieve build steps."""
   project_yaml_contents, dockerfile_lines = get_project_data(project_name)
-  build_steps = build_project.get_build_steps(project_name,
-                                              project_yaml_contents,
-                                              dockerfile_lines, image_project,
-                                              base_images_project)
-  return build_steps
+  return build_project.get_build_steps(project_name, project_yaml_contents,
+                                       dockerfile_lines, image_project,
+                                       base_images_project)
 
 
 # pylint: disable=no-member

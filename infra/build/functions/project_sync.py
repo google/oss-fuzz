@@ -26,12 +26,17 @@ from google.api_core import exceptions
 from google.cloud import ndb
 from google.cloud import scheduler_v1
 
+import build_and_run_coverage
+import build_project
 from datastore_entities import GithubCreds
 from datastore_entities import Project
 
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
+COVERAGE_SCHEDULE = '0 6 * * *'
+FUZZING_BUILD_TOPIC = 'request-build'
+COVERAGE_BUILD_TOPIC = 'request-coverage-build'
 
 ProjectMetadata = namedtuple(
     'ProjectMetadata', 'schedule project_yaml_contents dockerfile_contents')
@@ -41,15 +46,16 @@ class ProjectYamlError(Exception):
   """Error in project.yaml format."""
 
 
-def create_scheduler(cloud_scheduler_client, project_name, schedule):
+def create_scheduler(cloud_scheduler_client, project_name, schedule, tag,
+                     topic):
   """Creates schedulers for new projects."""
   project_id = os.environ.get('GCP_PROJECT')
   location_id = os.environ.get('FUNCTION_REGION')
   parent = cloud_scheduler_client.location_path(project_id, location_id)
   job = {
-      'name': parent + '/jobs/' + project_name + '-scheduler',
+      'name': parent + '/jobs/' + project_name + '-scheduler-' + tag,
       'pubsub_target': {
-          'topic_name': 'projects/' + project_id + '/topics/request-build',
+          'topic_name': 'projects/' + project_id + '/topics/' + topic,
           'data': project_name.encode()
       },
       'schedule': schedule
@@ -107,7 +113,11 @@ def sync_projects(cloud_scheduler_client, projects):
 
     try:
       create_scheduler(cloud_scheduler_client, project_name,
-                       projects[project_name].schedule)
+                       projects[project_name].schedule,
+                       build_project.FUZZING_BUILD_TAG, FUZZING_BUILD_TOPIC)
+      create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
+                       build_and_run_coverage.COVERAGE_BUILD_TAG,
+                       COVERAGE_BUILD_TOPIC)
       project_metadata = projects[project_name]
       Project(name=project_name,
               schedule=project_metadata.schedule,

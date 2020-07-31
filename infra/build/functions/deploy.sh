@@ -23,9 +23,6 @@ BASE_IMAGE_MESSAGE="Start base image build"
 BUILD_JOB_TOPIC=request-build
 
 COVERAGE_BUILD_JOB_TOPIC=request-coverage-build
-COVERAGE_BUILD_SCHEDULER_JOB=coverage-build-scheduler
-COVERAGE_BUILD_SCHEDULE="0 6 * * *"
-COVERAGE_BUILD_MESSAGE="Start coverage report builds"
 
 SYNC_JOB_TOPIC=schedule-project-sync
 SYNC_SCHEDULER_JOB=sync-scheduler
@@ -110,12 +107,6 @@ deploy_scheduler $BASE_IMAGE_SCHEDULER_JOB \
 				  $BASE_IMAGE_JOB_TOPIC \
 				  "$BASE_IMAGE_MESSAGE" \
 				  $PROJECT_ID
-
-deploy_scheduler $COVERAGE_BUILD_SCHEDULER_JOB \
-				 "$COVERAGE_BUILD_SCHEDULE" \
-				 $COVERAGE_BUILD_JOB_TOPIC \
-				 "$COVERAGE_BUILD_MESSAGE" \
-				 $PROJECT_ID
 
 deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB \
 				 "$UPDATE_BUILD_JOB_SCHEDULE" \
