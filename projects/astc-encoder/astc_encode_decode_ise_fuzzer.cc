@@ -13,7 +13,9 @@
 // limitations under the License.
 
 #include "astcenc_internal.h"
+
 #include <fuzzer/FuzzedDataProvider.h>
+#include <vector>
 
 static constexpr size_t kMaxOutBufSize = 64;
 
