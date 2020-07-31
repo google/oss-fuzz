@@ -42,7 +42,7 @@ def run_build(steps, images):
                      'v1',
                      credentials=credentials,
                      cache_discovery=False)
-  build_info = cloudbuild.projects().builds().create(project_id=BASE_PROJECT,
+  build_info = cloudbuild.projects().builds().create(projectId=BASE_PROJECT,
                                                      body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
   logging.info('Build ID: %s', build_id)
