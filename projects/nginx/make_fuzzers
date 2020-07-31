@@ -1,4 +1,3 @@
-sed -i 's/fuzz_without_main(/main(/g' src/core/nginx.c
 sed -i 's/main(/fuzz_without_main(/g' src/core/nginx.c
 
 FUZZ_SRCS="src/fuzz/http_request_fuzzer.c \

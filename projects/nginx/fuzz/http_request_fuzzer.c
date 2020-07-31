@@ -107,10 +107,10 @@ struct fuzzing_data {
 static struct fuzzing_data request;
 static struct fuzzing_data reply;
 
-static ngx_http_upstream_t *upstream = NULL;
-static ngx_http_request_t *req_reply = NULL;
+static ngx_http_upstream_t *upstream;
+static ngx_http_request_t *req_reply;
 static ngx_http_cleanup_t cln_new = {};
-static int cln_added = 0;
+static int cln_added;
 
 // Called when finalizing the request to upstream
 // Do not need to clean the request pool
@@ -216,7 +216,7 @@ int InitializeNginx(void) {
   ngx_crc32_table_init();
   ngx_preinit_modules();
 
-  FILE *fptr = fopen("socket_config.conf", "w");
+  FILE *fptr = fopen(config_file, "w");
   fprintf(fptr, configuration);
   fclose(fptr);
   init_cycle.conf_file.len = strlen(config_file);
@@ -236,7 +236,9 @@ int InitializeNginx(void) {
 }
 
 
-void invalid_call(void) { }
+void *invalid_call(void) {
+  return NULL;
+}
 
 
 int LLVMFuzzerInitialize(int *argc, char ***argv){
@@ -253,6 +255,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t data_len) {
   ngx_connection_t local2 = {};
   ngx_connection_t *c;
   ngx_listening_t *ls;
+
+  req_reply=NULL;
+  upstream=NULL;
+  cln_added=0;
 
   request.data = data;
   request.data_len = data_len/2;
@@ -311,8 +317,5 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t data_len) {
     ngx_http_free_request(r, 0);
     ngx_http_close_connection(c);
   }
-  req_reply=NULL;
-  upstream=NULL;
-  cln_added=0;
   return 0;
 }
