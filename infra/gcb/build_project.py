@@ -23,6 +23,7 @@ from __future__ import print_function
 
 import datetime
 import json
+import logging
 import os
 import re
 import sys
@@ -59,16 +60,6 @@ LATEST_VERSION_FILENAME = 'latest.version'
 LATEST_VERSION_CONTENT_TYPE = 'text/plain'
 
 QUEUE_TTL_SECONDS = 60 * 60 * 24  # 24 hours.
-
-
-def skip_build(message):
-  """Exit with 0 code not to mark code coverage job as failed."""
-  sys.stderr.write('%s\n' % message)
-
-  # Since the script should print build_id, print '0' as a special value.
-  print('0')
-  # TODO: remove sys.exit call after infra migration.
-  sys.exit(0)
 
 
 def usage():
@@ -144,7 +135,8 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                                    image_project)
 
   if project_yaml['disabled']:
-    skip_build('Project "%s" is disabled.' % project_name)
+    logging.info('Project "%s" is disabled.', project_name)
+    return []
 
   name = project_yaml['name']
   image = project_yaml['image']
