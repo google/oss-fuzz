@@ -51,16 +51,6 @@ UPLOAD_URL_FORMAT = 'gs://' + COVERAGE_BUCKET_NAME + '/{project}/{type}/{date}'
 LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
 
 
-def skip_build(message):
-  """Exit with 0 code not to mark code coverage job as failed."""
-  sys.stderr.write('%s\n' % message)
-
-  # Since the script should print build_id, print '0' as a special value.
-  print('0')
-  # TODO: remove sys.exit call after infra migration.
-  sys.exit(0)
-
-
 def usage():
   """Exit with code 1 and display syntax to use this file."""
   sys.stderr.write("Usage: " + sys.argv[0] + " <project_dir>\n")
@@ -75,13 +65,13 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                                                  project_yaml_file,
                                                  image_project)
   if project_yaml['disabled']:
-    skip_build('Project "%s" is disabled.' % project_name)
+    build_project.skip_build('Project "%s" is disabled.' % project_name)
 
   if project_yaml['language'] not in LANGUAGES_WITH_COVERAGE_SUPPORT:
-    skip_build(('Project "{project_name}" is written in "{language}", '
-                'coverage is not supported yet.').format(
-                    project_name=project_name,
-                    language=project_yaml['language']))
+    build_project.skip_build(
+        ('Project "{project_name}" is written in "{language}", '
+         'coverage is not supported yet.').format(
+             project_name=project_name, language=project_yaml['language']))
 
   name = project_yaml['name']
   image = project_yaml['image']
@@ -125,7 +115,8 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
 
   download_corpora_steps = build_lib.download_corpora_steps(project_name)
   if not download_corpora_steps:
-    skip_build("Skipping code coverage build for %s.\n" % project_name)
+    build_project.skip_build("Skipping code coverage build for %s.\n" %
+                             project_name)
 
   build_steps.extend(download_corpora_steps)
 

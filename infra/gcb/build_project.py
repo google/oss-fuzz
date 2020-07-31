@@ -61,6 +61,16 @@ LATEST_VERSION_CONTENT_TYPE = 'text/plain'
 QUEUE_TTL_SECONDS = 60 * 60 * 24  # 24 hours.
 
 
+def skip_build(message):
+  """Exit with 0 code not to mark code coverage job as failed."""
+  sys.stderr.write('%s\n' % message)
+
+  # Since the script should print build_id, print '0' as a special value.
+  print('0')
+  # TODO: remove sys.exit call after infra migration.
+  sys.exit(0)
+
+
 def usage():
   """Exit with code 1 and display syntax to use this file."""
   sys.stderr.write('Usage: ' + sys.argv[0] + ' <project_dir>\n')
@@ -126,12 +136,16 @@ def load_project_yaml(project_name, project_yaml_file, image_project):
   return project_yaml
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                     image_project, base_images_project):
   """Returns build steps for project."""
   project_yaml = load_project_yaml(project_name, project_yaml_file,
                                    image_project)
+
+  if project_yaml['disabled']:
+    skip_build('Project "%s" is disabled.' % project_name)
+
   name = project_yaml['name']
   image = project_yaml['image']
   language = project_yaml['language']
