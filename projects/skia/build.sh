@@ -222,3 +222,6 @@ cp out/Fuzz/skruntimeeffect $OUT/skruntimeeffect
 cp ./sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
 cp out/Fuzz/api_create_ddl $OUT/api_create_ddl
+
+cp out/Fuzz/skp $OUT/skp
+cp ./skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
