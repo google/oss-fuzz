@@ -1,0 +1,96 @@
+syntax = "proto2";
+
+package asn1_pdu;
+
+message PDU {
+  // ASN.1 TLV (X.690 (2015), 8.1.1.1).
+  required Identifier id = 1;
+  required Length len = 2;
+  required Value val = 3;
+}
+
+// See X.690 (2015), 8.1.2.3.
+message Identifier {
+  required Class id_class = 2;
+  required Encoding encoding = 1;
+  required TagNumber tag_num = 3;
+}
+
+message TagNumber {
+  optional uint32 high_tag_num = 1;
+  // Most tags will fit within the range of a single byte Identifier
+  // (meaning the tag number is within the range 0..30), so make that the
+  // default.
+  required LowTagNumber low_tag_num = 2;
+}
+
+enum LowTagNumber {
+  VAL1 = 1;
+  VAL2 = 2;
+  VAL3 = 3;
+  VAL4 = 4;
+  VAL5 = 5;
+  VAL6 = 6;
+  VAL7 = 7;
+  VAL8 = 8;
+  VAL9 = 9;
+  VAL10 = 10;
+  VAL11 = 11;
+  VAL12 = 12;
+  VAL13 = 13;
+  VAL14 = 14;
+  VAL15 = 15;
+  VAL16 = 16;
+  VAL17 = 17;
+  VAL18 = 18;
+  VAL19 = 19;
+  VAL20 = 20;
+  VAL21 = 21;
+  VAL22 = 22;
+  VAL23 = 23;
+  VAL24 = 24;
+  VAL25 = 25;
+  VAL26 = 26;
+  VAL27 = 27;
+  VAL28 = 28;
+  VAL29 = 29;
+  VAL30 = 30;
+}
+
+// See X.690 (2015), 8.1.2.2.
+enum Class {
+  Universal = 0;
+  Application = 1;
+  ContextSpecific = 2;
+  Private = 3;
+}
+
+// See X.690 (2015), 8.1.2.5.
+enum Encoding {
+  Primitive = 0;
+  Constructed = 1;
+}
+
+message Length {
+  // If |types| is absent, the encoded length will be correctly encoded
+  // according to the DER definite-form (X.690 (2015), 8.1.3-8.1.5 & 10.1).
+  oneof types {
+    // If |indefinite_form| is set, it causes the length to be encoded using the
+    // indefinite-form encoding (X.690 (2015), 8.1.3.6).
+    bool indefinite_form = 1;
+
+    // If |length_override| is set, the literal value from |length_override|
+    // will be used as the encoded length. This also accounts for 
+    // incorrectly-encoded DER lengths (e.g. non-minimal encodings).
+    bytes length_override = 2;
+  }
+}
+
+message ValueElement {
+  optional PDU pdu = 1;
+  required bytes val_bits = 2;
+}
+
+message Value {
+  repeated ValueElement val_array = 1;
+}
