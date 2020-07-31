@@ -23,6 +23,7 @@ from __future__ import print_function
 
 import datetime
 import json
+import logging
 import os
 import re
 import sys
@@ -126,12 +127,17 @@ def load_project_yaml(project_name, project_yaml_file, image_project):
   return project_yaml
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                     image_project, base_images_project):
   """Returns build steps for project."""
   project_yaml = load_project_yaml(project_name, project_yaml_file,
                                    image_project)
+
+  if project_yaml['disabled']:
+    logging.info('Project "%s" is disabled.', project_name)
+    return []
+
   name = project_yaml['name']
   image = project_yaml['image']
   language = project_yaml['language']
