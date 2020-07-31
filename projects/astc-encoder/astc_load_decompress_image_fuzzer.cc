@@ -22,9 +22,6 @@ static constexpr uint8_t kUint8Max = std::numeric_limits<uint8_t>::max();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
-  if (size < 19)
-    return 0;
-
   astc_compressed_image image_comp;
   astcenc_profile profile;
   int out_bitness;
@@ -59,9 +56,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // ARM-software/astc-encoder/Source/astcenccli_toplevel.cpp:main(), located at
   // https://github.com/ARM-software/astc-encoder/blob/master/Source/astcenccli_toplevel.cpp
   size_t buffer_size = xblocks * yblocks * zblocks * 16;
-  if (size - 19 < buffer_size)
-    return 0;
-
   std::vector<uint8_t> buffer = stream.ConsumeBytes<uint8_t>(buffer_size);
 
   image_comp.data = buffer.data();
