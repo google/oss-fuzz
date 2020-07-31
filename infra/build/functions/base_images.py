@@ -21,6 +21,7 @@ import google.auth
 from googleapiclient.discovery import build
 
 import build_base_images
+import build_msan_libs
 
 BASE_PROJECT = 'oss-fuzz-base'
 
@@ -49,7 +50,6 @@ def run_build(steps, images):
                build_base_images.get_logs_url(build_id, BASE_PROJECT))
 
 
-# pylint: disable=no-member
 def base_builder(event, context):
   """Cloud function to build base images."""
   del event, context
@@ -58,6 +58,19 @@ def base_builder(event, context):
   steps = build_base_images.get_steps(build_base_images.BASE_IMAGES, tag_prefix)
   images = [
       tag_prefix + base_image for base_image in build_base_images.BASE_IMAGES
+  ]
+
+  run_build(steps, images)
+
+
+def base_msan_builder(event, context):
+  """Cloud function to build base images."""
+  del event, context
+  image = f'gcr.io/{BASE_PROJECT}/msan-libs-builder'
+  steps = build_msan_libs.get_steps(image)
+  images = [
+      f'gcr.io/{BASE_PROJECT}/base-sanitizer-libs-builder',
+      image,
   ]
 
   run_build(steps, images)

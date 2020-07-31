@@ -16,7 +16,6 @@
 """Cloud functions for build infrastructure."""
 
 import base_images
-import base_msan_builder
 import project_sync
 import request_build
 import request_coverage_build
@@ -50,4 +49,4 @@ def builds_status(event, context):
 
 def build_msan(event, context):
   """Entry point for base msan builder."""
-  base_msan_builder.base_msan_builder(event, context)
+  base_images.base_msan_builder(event, context)
