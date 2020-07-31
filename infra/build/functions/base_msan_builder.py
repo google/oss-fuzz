@@ -14,42 +14,18 @@
 #
 ################################################################################
 """Cloud function to build base images on Google Cloud Builder."""
-
-import logging
-
-import google.auth
-from googleapiclient.discovery import build
-
-import build_base_images
+import base_images
 import build_msan_libs
 
-BASE_PROJECT = 'oss-fuzz-base'
 
-
-# pylint: disable=no-member
 def base_msan_builder(event, context):
   """Cloud function to build base images."""
   del event, context
-  credentials, _ = google.auth.default()
-  image = f'gcr.io/{BASE_PROJECT}/msan-libs-builder'
-  build_body = {
-      'steps': build_msan_libs.get_steps(image),
-      'timeout': str(6 * 3600) + 's',
-      'options': {
-          'machineType': 'N1_HIGHCPU_32'
-      },
-      'images': [
-          f'gcr.io/{BASE_PROJECT}/base-sanitizer-libs-builder',
-          image,
-      ],
-  }
-  cloudbuild = build('cloudbuild',
-                     'v1',
-                     credentials=credentials,
-                     cache_discovery=False)
-  build_info = cloudbuild.projects().builds().create(projectId=BASE_PROJECT,
-                                                     body=build_body).execute()
-  build_id = build_info['metadata']['build']['id']
-  logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s',
-               build_base_images.get_logs_url(build_id, BASE_PROJECT))
+  image = f'gcr.io/{base_images.BASE_PROJECT}/msan-libs-builder'
+  steps = build_msan_libs.get_steps(image)
+  images = [
+      f'gcr.io/{base_images.BASE_PROJECT}/base-sanitizer-libs-builder',
+      image,
+  ]
+
+  base_images.run_build(steps, images)

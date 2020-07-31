@@ -16,11 +16,11 @@
 """Cloud functions for build infrastructure."""
 
 import base_images
+import base_msan_builder
 import project_sync
 import request_build
 import request_coverage_build
 import update_build_status
-import base_msan_builder
 
 
 def build_project(event, context):
