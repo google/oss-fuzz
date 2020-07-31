@@ -20,7 +20,6 @@ import google.auth
 from google.cloud import ndb
 
 import build_and_run_coverage
-from datastore_entities import Project
 import request_build
 
 BASE_PROJECT = 'oss-fuzz-base'
