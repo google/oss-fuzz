@@ -14,4 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
-gcloud pubsub topics publish request-build --message "$1" --project oss-fuzz
+
+if [ "$2" = "fuzzing" ]; then
+  topic=request-build
+elif [ "$2" = "coverage" ]; then
+  topic=request-coverage-build
+else
+  echo "Invalid build type $2."
+  exit 1
+fi
+
+gcloud pubsub topics publish $topic --message "$1" --project oss-fuzz

@@ -69,8 +69,7 @@ class CloudSchedulerClient:
   def create_job(self, parent, job):
     """Simulate create job."""
     del parent
-    if job['name'] not in self.schedulers:
-      self.schedulers.append(job)
+    self.schedulers.append(job)
 
   # pylint: disable=no-self-use
   def job_path(self, project_id, location_id, name):
@@ -153,6 +152,27 @@ class TestDataSync(unittest.TestCase):
           'test2': '0 7 * * *'
       }, {project.name: project.schedule for project in projects_query})
 
+      self.assertCountEqual([
+          {
+              'name':
+              'projects/test-project/location/us-central1/jobs/test2-scheduler-fuzzing',
+              'pubsub_target': {
+                  'topic_name': 'projects/test-project/topics/request-build',
+                  'data': b'test2'
+              },
+              'schedule': '0 7 * * *'
+          },
+          {
+              'name':
+              'projects/test-project/location/us-central1/jobs/test2-scheduler-coverage',
+              'pubsub_target': {
+                  'topic_name': 'projects/test-project/topics/request-coverage-build',
+                  'data': b'test2'
+              },
+              'schedule': '0 6 * * *'
+          },
+      ], cloud_scheduler_client.schedulers)
+
   def test_sync_projects_delete(self):
     """Testing sync_projects() deleting."""
     cloud_scheduler_client = CloudSchedulerClient()
@@ -194,11 +214,10 @@ class TestDataSync(unittest.TestCase):
     self.assertEqual(
         get_projects(repo), {
             'test0':
-                ProjectMetadata('0 6,18 * * *', 'builds_per_day: 2',
-                                'name: test'),
+            ProjectMetadata('0 6,18 * * *', 'builds_per_day: 2', 'name: test'),
             'test1':
-                ProjectMetadata('0 6,14,22 * * *', 'builds_per_day: 3',
-                                'name: test')
+            ProjectMetadata('0 6,14,22 * * *', 'builds_per_day: 3',
+                            'name: test')
         })
 
   def test_get_projects_no_docker_file(self):
