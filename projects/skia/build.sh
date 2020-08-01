@@ -109,7 +109,8 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_polyutils android_codec image_decode_incremental \
                                    sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
                                    skdescriptor_deserialize\
-                                   svg_dom api_svg_canvas skruntimeeffect api_create_ddl
+                                   svg_dom api_svg_canvas skruntimeeffect api_create_ddl \
+                                   skp
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
