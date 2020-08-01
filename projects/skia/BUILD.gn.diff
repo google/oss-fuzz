@@ -522,3 +522,16 @@ test_app("skruntimeeffect") {
     ":skia",
   ]
 }
+
+test_app("skp") {
+  sources = [
+    "fuzz/Fuzz.cpp",
+    "fuzz/FuzzCommon.cpp",
+    "fuzz/oss_fuzz/FuzzSKP.cpp",
+  ]
+  deps = [
+    ":gpu_tool_utils",
+    ":flags",
+    ":skia",
+  ]
+}
