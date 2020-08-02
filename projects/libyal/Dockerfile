@@ -34,7 +34,7 @@ RUN git clone --depth 1 https://github.com/libyal/libscca.git libscca
 
 RUN git clone --depth 1 https://github.com/libyal/libfsapfs.git libfsapfs
 
-RUN git clone --depth 1 https://github.com/libyal/libfsapfs.git libbde
+RUN git clone --depth 1 https://github.com/libyal/libbde.git libbde
 
 RUN git clone --depth 1 https://github.com/libyal/libqcow.git libqcow
 RUN git clone --depth 1 https://github.com/libyal/libvhdi.git libvhdi
