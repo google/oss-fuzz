@@ -18,6 +18,7 @@
 ./autogen.sh
 ./configure --enable-static --disable-shared --disable-doc
 make -j$(nproc)
+ldconfig
 
 for fuzzer in $SRC/*_fuzzer.c; do
   fuzzer_basename=$(basename -s .c $fuzzer)
