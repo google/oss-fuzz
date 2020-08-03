@@ -85,8 +85,6 @@ wait
 
 # Restore OUT
 export OUT=$INITIAL_OUT
-echo "hi all"
-echo "OUT is $OUT $(ls -a $OUT)"
 mv $TMP_FUZZER_DIR/* $OUT
 
 # Sanity check in case there are no fuzz targets in the $OUT/ dir.
@@ -128,7 +126,6 @@ fi
 # Calculate the percentage of broken fuzz targets and make the finel decision.
 BROKEN_TARGETS_PERCENTAGE=$[$BROKEN_TARGETS_COUNT*100/$TOTAL_TARGETS_COUNT]
 
-echo "BTP: $BROKEN_TARGETS_PERCENTAGE ABTP: $ALLOWED_BROKEN_TARGETS_PERCENTAGE TTC $TOTAL_TARGETS_COUNT BTC: $BROKEN_TARGETS_COUNT"
 
 if [ "$BROKEN_TARGETS_PERCENTAGE" -gt "$ALLOWED_BROKEN_TARGETS_PERCENTAGE" ]; then
   echo "ERROR: $BROKEN_TARGETS_PERCENTAGE% of fuzz targets seem to be broken." \
