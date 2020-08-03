@@ -19,7 +19,7 @@
 ./configure --prefix=$SRC
 make -j$(nproc)
 
-for fuzzer in $(find $SRC -name '*_fuzzer.cc'); do
+for fuzzer in $SRC/*_fuzzer.cc do
   fuzzer_basename=$(basename -s .cc $fuzzer)
   $CXX $CXXFLAGS -std=c++11 \
       -I $SRC -I /usr/include/opus -I /usr/include/ogg \
