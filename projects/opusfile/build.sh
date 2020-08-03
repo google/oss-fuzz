@@ -16,13 +16,18 @@
 ################################################################################
 
 ./autogen.sh
-./configure --prefix=$SRC
+./configure --enable-static --disable-shared --disable-doc
 make -j$(nproc)
 
-for fuzzer in $SRC/*_fuzzer.cc; do
-  fuzzer_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS -std=c++11 \
+for fuzzer in $SRC/*_fuzzer.c; do
+  fuzzer_basename=$(basename -s .c $fuzzer)
+
+  $CC $CFLAGS -c \
       -I $SRC -I /usr/include/opus -I /usr/include/ogg \
-      $fuzzer $LIB_FUZZING_ENGINE -o $OUT/$fuzzer_basename \
+      $fuzzer -o ${fuzzer_basename}.o
+
+  $CXX $CXXFLAGS \
+      ${fuzzer_basename}.o \
+      -o $OUT/${fuzzer_basename} $LIB_FUZZING_ENGINE \
       $SRC/opusfile/.libs/libopusfile.a -lopus -logg
 done

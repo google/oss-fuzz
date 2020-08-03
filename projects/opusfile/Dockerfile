@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf automake git libogg-dev libopus-dev libssl-dev libtool make pkg-config
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/opusfile
 WORKDIR opusfile
-COPY build.sh *.cc $SRC/
+COPY build.sh *.c $SRC/

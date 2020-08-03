@@ -23,10 +23,10 @@
 
 // Opusfile fuzzing wrapper to help with automated fuzz testing. It's based on
 // https://github.com/xiph/opusfile/blob/master/examples/opusfile_example.c
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   int ret, tmp;
   OggOpusFile *of = op_open_memory(data, size, &ret);
-  if (of == nullptr)
+  if (!of)
     return 0;
 
   op_link_count(of);
@@ -69,7 +69,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         }
       }
 
-      if (tags->vendor != nullptr) {
+      if (tags->vendor) {
         tmp = tags->vendor[0];
       }
 
