@@ -89,9 +89,9 @@ void dumpMeshAttributes(const IPolyMeshSchema &schema) {
 }
 
 void dumpSubDAttributes(const ISubDSchema &schema) {
-  const size_t subdPropertyCount = schema.getNumProperties();
+  const size_t propertyCount = schema.getNumProperties();
 
-  for (size_t p = 0; p < subdPropertyCount; p++) {
+  for (size_t p = 0; p < propertyCount; p++) {
     const PropertyHeader &header = schema.getPropertyHeader(p);
     const PropertyType pType = header.getPropertyType();
     const std::string &name = header.getName();
@@ -193,16 +193,15 @@ void dumpMaterial(const IObject &node) {
   IMaterialSchema &schema = material.getSchema();
 
   std::vector<std::string> targetNames;
-  size_t targetCount = targetNames.size();
 
-  for (size_t t = 0; t < targetCount; t++) {
+  for (const std::string &target : targetNames) {
     std::vector<std::string> shaderTypes;
-    schema.getShaderTypesForTarget(targetNames[t], shaderTypes);
+    schema.getShaderTypesForTarget(target, shaderTypes);
     const size_t shaderTypeCount = shaderTypes.size();
     for (size_t s = 0; s < shaderTypeCount; s++) {
 
       ICompoundProperty parameters =
-          schema.getShaderParameters(targetNames[t], shaderTypes[s]);
+          schema.getShaderParameters(target, shaderTypes[s]);
       const size_t parameterCount = parameters.getNumProperties();
     }
   }
@@ -244,9 +243,7 @@ void dumpInfo(const char *file) {
   IFactory factory;
   IArchive archive = factory.getArchive(file);
 
-  bool fileValid = archive.valid();
-
-  if (fileValid) {
+  if (archive.valid()) {
     archive.getName();
     dumpNodes(archive.getTop());
   }
