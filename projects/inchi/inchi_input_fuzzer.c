@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <limits>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string>
 
 #include "inchi_api.h"
 
-static constexpr size_t kSizeMax = std::numeric_limits<size_t>::max();
+// Define the maximum value for size_t. We return if the fuzzing input is equal
+// to kSizeMax because appending the null-terminator to the InChI buffer would
+// cause wraparound, thereby initializing the buffer to size 0.
+static const size_t kSizeMax = (size_t)-1;
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   if (size == kSizeMax)
     return 0;
@@ -38,7 +39,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   GetINCHIKeyFromINCHI(szINCHISource, 0, 0, szINCHIKey, szXtra1, szXtra2);
 
   inchi_InputINCHI inpInChI;
-  inpInChI.szInChI = const_cast<char *>(szINCHISource);
+  inpInChI.szInChI = szINCHISource;
 
   inchi_Output out;
   GetINCHIfromINCHI(&inpInChI, &out);

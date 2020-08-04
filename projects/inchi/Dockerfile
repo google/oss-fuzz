@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y wget make unzip git
 RUN wget http://www.inchi-trust.org/download/105/INCHI-1-SRC.zip
 RUN unzip INCHI-1-SRC.zip
 WORKDIR INCHI-1-SRC
-COPY build.sh *_fuzzer.cc $SRC/
+COPY build.sh *_fuzzer.c $SRC/

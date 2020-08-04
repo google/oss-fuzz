@@ -19,12 +19,16 @@ $CC $CFLAGS -Wno-everything -DTARGET_API_LIB -DCOMPILE_ANSI_ONLY -ansi -c \
     INCHI_BASE/src/*.c INCHI_API/libinchi/src/*.c INCHI_API/libinchi/src/ixa/*.c
 ar rcs $WORK/libinchi.a *.o
 
-for fuzzer in $SRC/*_fuzzer.cc; do
-  fuzzer_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS \
+for fuzzer in $SRC/*_fuzzer.c; do
+  fuzzer_basename=$(basename -s .c $fuzzer)
+
+  $CC $CFLAGS \
       -I INCHI_BASE/src/ \
       -I INCHI_API/libinchi/src/ \
       -I INCHI_API/libinchi/src/ixa/ \
-      $fuzzer $LIB_FUZZING_ENGINE $WORK/libinchi.a \
-      -o $OUT/$fuzzer_basename
+      $fuzzer -c -o ${fuzzer_basename}.o
+
+  $CXX $CXXFLAGS \
+      ${fuzzer_basename}.o -o $OUT/$fuzzer_basename \
+      $LIB_FUZZING_ENGINE $WORK/libinchi.a
 done
