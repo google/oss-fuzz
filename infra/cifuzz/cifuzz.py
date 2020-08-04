@@ -88,8 +88,9 @@ def checkout_specified_commit(build_repo_manager, pr_ref, commit_sha):
     else:
       build_repo_manager.checkout_commit(commit_sha)
   except (RuntimeError, ValueError):
-    logging.error('Can not check out requested state %s.', pr_ref or commit_sha)
-    logging.error('Using current repo state.')
+    logging.error(
+        'Can not check out requested state %s. '
+        'Using current repo state', pr_ref or commit_sha)
 
 
 # pylint: disable=too-many-arguments
@@ -135,10 +136,15 @@ def build_fuzzers(project_name,
   project_repo_name = os.path.basename(project_builder_repo_path)
   src_in_project_builder = os.path.dirname(project_builder_repo_path)
 
-  manual_src_checkout_path = os.getenv('MANUAL_SRC_PATH')
-  if manual_src_checkout_path:
+  manual_src_path = os.getenv('MANUAL_SRC_PATH')
+  if manual_src_path:
+    if not os.path.exists(manual_src_path):
+      logging.error(
+          'MANUAL_SRC_PATH: %s does not exist. '
+          'Are you mounting it correctly?', manual_src_path)
+      return False
     # This is the path taken outside of GitHub actions.
-    git_workspace = os.path.dirname(manual_src_checkout_path)
+    git_workspace = os.path.dirname(manual_src_path)
   else:
     git_workspace = os.path.join(workspace, 'storage')
     os.makedirs(git_workspace, exist_ok=True)
@@ -148,7 +154,7 @@ def build_fuzzers(project_name,
                                                 git_workspace,
                                                 repo_name=project_repo_name)
 
-  if not manual_src_checkout_path:
+  if not manual_src_path:
     checkout_specified_commit(build_repo_manager, pr_ref, commit_sha)
 
   command = [
