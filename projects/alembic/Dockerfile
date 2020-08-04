@@ -16,7 +16,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y build-essential zlib1g-dev python make automake
+RUN apt-get update && apt-get install -y build-essential zlib1g-dev zlib1g-dev:i386 python make automake
 
 RUN git clone --depth 1 https://github.com/alembic/alembic
 
