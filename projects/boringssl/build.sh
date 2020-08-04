@@ -36,17 +36,17 @@ fuzzerFiles=$(find $SRC/boringssl/fuzz/ -name "*.cc")
 
 find . -name "*.a"
 
-# for F in $fuzzerFiles; do
-#   fuzzerName=$(basename $F .cc)
-#   echo "Building fuzzer $fuzzerName"
-#   $CXX $CXXFLAGS -std=c++11 \
-#       -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
-#       -I $SRC/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
+for F in $fuzzerFiles; do
+  fuzzerName=$(basename $F .cc)
+  echo "Building fuzzer $fuzzerName"
+  $CXX $CXXFLAGS -std=c++11 \
+      -o $OUT/${fuzzerName} $LIB_FUZZING_ENGINE $F \
+      -I $SRC/boringssl/include ./ssl/libssl.a  ./crypto/libcrypto.a
 
-#   if [ -d "$SRC/boringssl/fuzz/${fuzzerName}_corpus" ]; then
-#     zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/boringssl/fuzz/${fuzzerName}_corpus/*
-#   fi
-# done
+  if [ -d "$SRC/boringssl/fuzz/${fuzzerName}_corpus" ]; then
+    zip -j $OUT/${fuzzerName}_seed_corpus.zip $SRC/boringssl/fuzz/${fuzzerName}_corpus/*
+  fi
+done
 
 if [[ $CFLAGS != *sanitize=memory* ]]; then
   fuzzerLPMFiles=$(find $SRC/ -maxdepth 1 -name "*.cc")
