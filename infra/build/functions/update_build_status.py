@@ -212,7 +212,7 @@ def update_build_badges(project, last_build_successful,
 
 
 def upload_log(build_id):
-  """Uploads log file oss-fuzz-build-logs."""
+  """Upload log file to GCS."""
   status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
   gcb_bucket = get_storage_client().get_bucket(build_project.GCB_LOGS_BUCKET)
   log_name = 'log-{0}.txt'.format(build_id)
