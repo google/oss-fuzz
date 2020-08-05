@@ -47,6 +47,7 @@ using Alembic::AbcGeom::IPolyMesh;
 using Alembic::AbcGeom::IPolyMeshSchema;
 using Alembic::AbcGeom::ISubD;
 using Alembic::AbcGeom::ISubDSchema;
+using Alembic::AbcGeom::IGeomBaseSchema;
 using Alembic::AbcGeom::IV2fGeomParam;
 using Alembic::AbcGeom::IXform;
 using Alembic::AbcGeom::IXformSchema;
@@ -60,7 +61,8 @@ using Alembic::AbcGeom::V2fArraySamplePtr;
 using Alembic::AbcMaterial::IMaterial;
 using Alembic::AbcMaterial::IMaterialSchema;
 
-void dumpMeshAttributes(const IPolyMeshSchema &schema) {
+template<typename T> void dumpAttributes(T const& schema) {
+
   const size_t meshPropertyCount = schema.getNumProperties();
 
   for (size_t p = 0; p < meshPropertyCount; p++) {
@@ -70,62 +72,6 @@ void dumpMeshAttributes(const IPolyMeshSchema &schema) {
 
     if (name == "P") {
       schema.getNumSamples();
-    } else if (name == "N") {
-      schema.getNormalsParam().getNumSamples();
-    } else if (name == "uv" || name == "st") {
-      schema.getUVsParam().getNumSamples();
-    } else if (name == ".arbGeomParams") {
-      // additional geometry elements (color sets, additional texture
-      // coordinates)
-      const ICompoundProperty geoParam = schema.getArbGeomParams();
-      const size_t geoPropCount = geoParam.getNumProperties();
-
-      for (size_t g = 0; g < geoPropCount; g++) {
-        const PropertyHeader &headerGeo = geoParam.getPropertyHeader(g);
-        const std::string &nameGeo = headerGeo.getName();
-      }
-    }
-  }
-}
-
-void dumpSubDAttributes(const ISubDSchema &schema) {
-  const size_t propertyCount = schema.getNumProperties();
-
-  for (size_t p = 0; p < propertyCount; p++) {
-    const PropertyHeader &header = schema.getPropertyHeader(p);
-    const PropertyType pType = header.getPropertyType();
-    const std::string &name = header.getName();
-
-    if (name == "P") {
-      schema.getNumSamples();
-    } else if (name == "uv" || name == "st") {
-      schema.getUVsParam().getNumSamples();
-    } else if (name == ".arbGeomParams") {
-      // additional geometry elements (color sets, additional texture
-      // coordinates)
-      const ICompoundProperty geoParam = schema.getArbGeomParams();
-      const size_t geoPropCount = geoParam.getNumProperties();
-
-      for (size_t g = 0; g < geoPropCount; g++) {
-        const PropertyHeader &headerGeo = geoParam.getPropertyHeader(g);
-        const std::string &nameGeo = headerGeo.getName();
-      }
-    }
-  }
-}
-
-void dumpCurvesAttributes(const ICurvesSchema &schema) {
-  const size_t propertyCount = schema.getNumProperties();
-
-  for (size_t p = 0; p < propertyCount; p++) {
-    const PropertyHeader &header = schema.getPropertyHeader(p);
-    const PropertyType pType = header.getPropertyType();
-    const std::string &name = header.getName();
-
-    if (name == "P") {
-      schema.getNumSamples();
-    } else if (name == "N") {
-      schema.getNormalsParam().getNumSamples();
     } else if (name == "uv" || name == "st") {
       schema.getUVsParam().getNumSamples();
     } else if (name == ".arbGeomParams") {
@@ -148,7 +94,7 @@ void dumpPolyMesh(const IObject &node) {
   const IPolyMeshSchema &schema = mesh.getSchema();
 
   // Mesh properties
-  dumpMeshAttributes(schema);
+  dumpAttributes(schema);
 }
 
 void dumpSubD(const IObject &node) {
@@ -156,7 +102,7 @@ void dumpSubD(const IObject &node) {
   const ISubD mesh(node.getParent(), header.getName());
   const ISubDSchema &schema = mesh.getSchema();
 
-  dumpSubDAttributes(schema);
+  dumpAttributes(schema);
   schema.getSubdivisionSchemeProperty();
   schema.getFaceVaryingInterpolateBoundaryProperty();
   schema.getFaceVaryingPropagateCornersProperty();
@@ -175,7 +121,7 @@ void dumpCurves(const IObject &node) {
   const ICurves curves(node.getParent(), header.getName());
   const ICurvesSchema &schema = curves.getSchema();
 
-  dumpCurvesAttributes(schema);
+  dumpAttributes(schema);
 }
 
 void dumpXform(const IObject &node) {
