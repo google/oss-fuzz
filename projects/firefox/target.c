@@ -48,9 +48,16 @@ int main(int argc, char* argv[]) {
 
   // Temporary (or permanent?) work-arounds for fuzzing interface bugs.
   char* options = getenv("ASAN_OPTIONS");
+  const char max_alloc_size_opt[] = ":max_allocation_size_mb=2049";
   if (options) {
+    size_t optlen = strlen(options);
+    char* new_options = malloc(optlen + sizeof(max_alloc_size_opt));
+
+    memcpy(new_options, options, optlen);
+    memcpy(new_options + optlen, max_alloc_size_opt, sizeof(max_alloc_size_opt));
+
     char* ptr;
-    char* new_options = strdup(options);
+
     // https://bugzilla.mozilla.org/1477846
     ptr = strstr(new_options, "detect_stack_use_after_return=1");
     if (ptr) ptr[30] = '0';
