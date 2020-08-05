@@ -30,5 +30,5 @@ for fuzzer in $SRC/*_fuzzer.c; do
   $CXX $CXXFLAGS \
       ${fuzzer_basename}.o \
       -o $OUT/${fuzzer_basename} $LIB_FUZZING_ENGINE \
-      $SRC/opusfile/.libs/libopusfile.a -lopus -logg
+      $SRC/opusfile/.libs/libopusfile.a -l:libopus.a -l:libogg.a
 done
