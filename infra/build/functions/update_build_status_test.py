@@ -45,7 +45,7 @@ class MockGetBuild:
 
 @mock.patch('google.auth.default', return_value=['temp', 'temp'])
 @mock.patch('update_build_status.build', return_value='cloudbuild')
-@mock.patch('builds_status.upload_log')
+@mock.patch('update_build_status.upload_log')
 class TestGetBuildHistory(unittest.TestCase):
   """Unit tests for get_build_history."""
 
@@ -221,7 +221,7 @@ class TestUpdateBuildStatus(unittest.TestCase):
   # pylint: disable=no-self-use
   @mock.patch('google.auth.default', return_value=['temp', 'temp'])
   @mock.patch('update_build_status.build', return_value='cloudbuild')
-  @mock.patch('builds_status.upload_log')
+  @mock.patch('update_build_status.upload_log')
   def test_update_build_status(self, mocked_upload_log, mocked_cloud_build,
                                mocked_google_auth):
     """Testing update build status as a whole."""
