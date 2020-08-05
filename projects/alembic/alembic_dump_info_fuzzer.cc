@@ -39,6 +39,7 @@ using Alembic::AbcGeom::ICurves;
 using Alembic::AbcGeom::ICurvesSchema;
 using Alembic::AbcGeom::IFaceSet;
 using Alembic::AbcGeom::IFaceSetSchema;
+using Alembic::AbcGeom::IGeomBaseSchema;
 using Alembic::AbcGeom::IN3fGeomParam;
 using Alembic::AbcGeom::index_t;
 using Alembic::AbcGeom::Int32ArraySamplePtr;
@@ -47,7 +48,6 @@ using Alembic::AbcGeom::IPolyMesh;
 using Alembic::AbcGeom::IPolyMeshSchema;
 using Alembic::AbcGeom::ISubD;
 using Alembic::AbcGeom::ISubDSchema;
-using Alembic::AbcGeom::IGeomBaseSchema;
 using Alembic::AbcGeom::IV2fGeomParam;
 using Alembic::AbcGeom::IXform;
 using Alembic::AbcGeom::IXformSchema;
@@ -61,7 +61,7 @@ using Alembic::AbcGeom::V2fArraySamplePtr;
 using Alembic::AbcMaterial::IMaterial;
 using Alembic::AbcMaterial::IMaterialSchema;
 
-template<typename T> void dumpAttributes(T const& schema) {
+template <typename T> void dumpAttributes(T const &schema) {
 
   const size_t meshPropertyCount = schema.getNumProperties();
 
