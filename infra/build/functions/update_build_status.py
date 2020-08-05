@@ -15,31 +15,52 @@
 ################################################################################
 """Cloud function to request builds."""
 import json
+import sys
 
 import google.auth
 from googleapiclient.discovery import build
 from google.cloud import ndb
+from google.cloud import storage
 
 import build_and_run_coverage
 import build_project
-import builds_status
 from datastore_entities import BuildsHistory
 from datastore_entities import LastSuccessfulBuild
 from datastore_entities import Project
 
 BADGE_DIR = 'badge_images'
+BADGE_IMAGE_TYPES = {'svg': 'image/svg+xml', 'png': 'image/png'}
 DESTINATION_BADGE_DIR = 'badges'
 MAX_BUILD_LOGS = 7
+
+STATUS_BUCKET = 'oss-fuzz-build-logs'
+
+# pylint: disable=invalid-name
+_client = None
 
 
 class MissingBuildLogError(Exception):
   """Missing build log file in cloud storage."""
 
 
+# pylint: disable=global-statement
+def get_storage_client():
+  """Return storage client."""
+  global _client
+  if not _client:
+    _client = storage.Client()
+
+  return _client
+
+
+def is_build_successful(build_obj):
+  """Check build success."""
+  return build_obj['status'] == 'SUCCESS'
+
+
 def upload_status(data, status_filename):
   """Upload json file to cloud storage."""
-  bucket = builds_status.get_storage_client().get_bucket(
-      builds_status.STATUS_BUCKET)
+  bucket = get_storage_client().get_bucket(STATUS_BUCKET)
   blob = bucket.blob(status_filename)
   blob.cache_control = 'no-cache'
   blob.upload_from_string(json.dumps(data), content_type='application/json')
@@ -112,21 +133,20 @@ def get_build_history(build_ids):
     if project_build['status'] not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
       continue
 
-    if (not last_successful_build and
-        builds_status.is_build_successful(project_build)):
+    if (not last_successful_build and is_build_successful(project_build)):
       last_successful_build = {
           'build_id': build_id,
           'finish_time': project_build['finishTime'],
       }
 
-    if not builds_status.upload_log(build_id):
+    if not upload_log(build_id):
       log_name = 'log-{0}'.format(build_id)
       raise MissingBuildLogError('Missing build log file {0}'.format(log_name))
 
     history.append({
         'build_id': build_id,
         'finish_time': project_build['finishTime'],
-        'success': builds_status.is_build_successful(project_build)
+        'success': is_build_successful(project_build)
     })
 
     if len(history) == MAX_BUILD_LOGS:
@@ -172,7 +192,7 @@ def update_build_badges(project, last_build_successful,
 
   print("[badge] {}: {}".format(project, badge))
 
-  for extension in builds_status.BADGE_IMAGE_TYPES:
+  for extension in BADGE_IMAGE_TYPES:
     badge_name = '{badge}.{extension}'.format(badge=badge, extension=extension)
 
     # Copy blob from badge_images/badge_name to badges/project/
@@ -184,12 +204,30 @@ def update_build_badges(project, last_build_successful,
         project_name=project,
         extension=extension)
 
-    status_bucket = builds_status.get_storage_client().get_bucket(
-        builds_status.STATUS_BUCKET)
+    status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
     badge_blob = status_bucket.blob(blob_name)
     status_bucket.copy_blob(badge_blob,
                             status_bucket,
                             new_name=destination_blob_name)
+
+
+def upload_log(build_id):
+  """Upload log file to GCS."""
+  status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
+  gcb_bucket = get_storage_client().get_bucket(build_project.GCB_LOGS_BUCKET)
+  log_name = 'log-{0}.txt'.format(build_id)
+  log = gcb_bucket.blob(log_name)
+  dest_log = status_bucket.blob(log_name)
+
+  if not log.exists():
+    print('Failed to find build log {0}'.format(log_name), file=sys.stderr)
+    return False
+
+  if dest_log.exists():
+    return True
+
+  gcb_bucket.copy_blob(log, status_bucket)
+  return True
 
 
 # pylint: disable=no-member
