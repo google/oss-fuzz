@@ -60,8 +60,7 @@ def is_build_successful(build_obj):
 
 def upload_status(data, status_filename):
   """Upload json file to cloud storage."""
-  bucket = get_storage_client().get_bucket(
-      STATUS_BUCKET)
+  bucket = get_storage_client().get_bucket(STATUS_BUCKET)
   blob = bucket.blob(status_filename)
   blob.cache_control = 'no-cache'
   blob.upload_from_string(json.dumps(data), content_type='application/json')
@@ -134,8 +133,7 @@ def get_build_history(build_ids):
     if project_build['status'] not in ('SUCCESS', 'FAILURE', 'TIMEOUT'):
       continue
 
-    if (not last_successful_build and
-        is_build_successful(project_build)):
+    if (not last_successful_build and is_build_successful(project_build)):
       last_successful_build = {
           'build_id': build_id,
           'finish_time': project_build['finishTime'],
@@ -206,8 +204,7 @@ def update_build_badges(project, last_build_successful,
         project_name=project,
         extension=extension)
 
-    status_bucket = get_storage_client().get_bucket(
-        STATUS_BUCKET)
+    status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
     badge_blob = status_bucket.blob(blob_name)
     status_bucket.copy_blob(badge_blob,
                             status_bucket,

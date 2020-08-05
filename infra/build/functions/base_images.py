@@ -21,7 +21,6 @@ import logging
 import google.auth
 from googleapiclient.discovery import build
 
-
 BASE_IMAGES = [
     'base-image',
     'base-clang',
@@ -88,8 +87,7 @@ def run_build(steps, images):
                                                      body=build_body).execute()
   build_id = build_info['metadata']['build']['id']
   logging.info('Build ID: %s', build_id)
-  logging.info('Logs: %s',
-               get_logs_url(build_id, BASE_PROJECT))
+  logging.info('Logs: %s', get_logs_url(build_id, BASE_PROJECT))
 
 
 def base_builder(event, context):
@@ -98,9 +96,7 @@ def base_builder(event, context):
 
   tag_prefix = f'gcr.io/{BASE_PROJECT}/'
   steps = _get_base_image_steps(BASE_IMAGES, tag_prefix)
-  images = [
-      tag_prefix + base_image for base_image in BASE_IMAGES
-  ]
+  images = [tag_prefix + base_image for base_image in BASE_IMAGES]
 
   run_build(steps, images)
 
