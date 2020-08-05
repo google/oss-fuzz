@@ -85,10 +85,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
                  compression, mapWidth,
                  filterRadius, numSamples,
                  false);
-  } catch (IEX_NAMESPACE::InputExc& e) {
-    ;
-  } catch (IEX_NAMESPACE::ArgExc& e) {
-    ;
+  } catch (...) {
   }
 
   unlink(file);
