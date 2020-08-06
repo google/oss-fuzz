@@ -16,14 +16,14 @@
 ################################################################################
 
 # build project
-patch -R Makefile -i Makefile.patch
-make -s batchbuild -j$(nproc)
+patch Makefile Makefile.patch
+make -j$(nproc) BUILD=debug
 ar -qc libastc.a  *.o
 
 # build fuzzers
 for fuzzer in $SRC/*_fuzzer.cc; do
   $CXX $CXXFLAGS \
       -DASTCENC_SSE=0 -DASTCENC_AVX=0 -DASTCENC_POPCNT=0 -DASTCENC_VECALIGN=16 \
-      -I. -std=c++14 -stdlib=libstdc++ $fuzzer $SRC/astc-encoder/Source/libastc.a $LIB_FUZZING_ENGINE \
+      -I. -std=c++14 $fuzzer $SRC/astc-encoder/Source/libastc.a $LIB_FUZZING_ENGINE \
       -o $OUT/$(basename -s .cc $fuzzer)
 done
