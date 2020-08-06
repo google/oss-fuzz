@@ -261,15 +261,7 @@ def update_status(event, context):
     tag = build_and_run_coverage.COVERAGE_BUILD_TAG
     status_filename = COVERAGE_STATUS_FILENAME
   else:
-
-
-def builds_badges(event, context):
-  """Entry point for builds status cloud function."""
-  update_build_status.update_badges(event, context)
-    raise RuntimeError('Invalid status type ' + status_type)
-
-  with ndb.Client().context():
-    update_build_status(tag, status_filename)
+    raise RuntimeError('Invalid type ' + status_type)
 
 
 def load_status_from_gcs(filename):
