@@ -79,20 +79,6 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
-def checkout_specified_commit(build_repo_manager, pr_ref, commit_sha):
-  """Checks out the specified commit or pull request using
-  build_repo_manager."""
-  try:
-    if pr_ref:
-      build_repo_manager.checkout_pr(pr_ref)
-    else:
-      build_repo_manager.checkout_commit(commit_sha)
-  except (RuntimeError, ValueError):
-    logging.error(
-        'Can not check out requested state %s. '
-        'Using current repo state', pr_ref or commit_sha)
-
-
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-locals
 def build_fuzzers(project_name,
@@ -123,40 +109,34 @@ def build_fuzzers(project_name,
 
   logging.info("Using %s sanitizer.", sanitizer)
 
+  git_workspace = os.path.join(workspace, 'storage')
+  os.makedirs(git_workspace, exist_ok=True)
   out_dir = os.path.join(workspace, 'out')
   os.makedirs(out_dir, exist_ok=True)
 
-  # Build Fuzzers using docker run.
-  inferred_url, project_builder_repo_path = (
-      build_specified_commit.detect_main_repo(project_name,
-                                              repo_name=project_repo_name))
-  if not inferred_url or not project_builder_repo_path:
+  # Detect repo information.
+  inferred_url, oss_fuzz_repo_path = build_specified_commit.detect_main_repo(
+      project_name, repo_name=project_repo_name)
+  if not inferred_url or not oss_fuzz_repo_path:
     logging.error('Could not detect repo from project %s.', project_name)
     return False
-  project_repo_name = os.path.basename(project_builder_repo_path)
-  src_in_project_builder = os.path.dirname(project_builder_repo_path)
-
-  manual_src_path = os.getenv('MANUAL_SRC_PATH')
-  if manual_src_path:
-    if not os.path.exists(manual_src_path):
-      logging.error(
-          'MANUAL_SRC_PATH: %s does not exist. '
-          'Are you mounting it correctly?', manual_src_path)
-      return False
-    # This is the path taken outside of GitHub actions.
-    git_workspace = os.path.dirname(manual_src_path)
-  else:
-    git_workspace = os.path.join(workspace, 'storage')
-    os.makedirs(git_workspace, exist_ok=True)
+  src_in_docker = os.path.dirname(oss_fuzz_repo_path)
+  oss_fuzz_repo_name = os.path.basename(oss_fuzz_repo_path)
 
   # Checkout projects repo in the shared volume.
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
-                                                repo_name=project_repo_name)
+                                                repo_name=oss_fuzz_repo_name)
+  try:
+    if pr_ref:
+      build_repo_manager.checkout_pr(pr_ref)
+    else:
+      build_repo_manager.checkout_commit(commit_sha)
+  except (RuntimeError, ValueError):
+    logging.error('Can not check out requested state %s.', pr_ref or commit_sha)
+    logging.error('Using current repo state.')
 
-  if not manual_src_path:
-    checkout_specified_commit(build_repo_manager, pr_ref, commit_sha)
-
+  # Build Fuzzers using docker run.
   command = [
       '--cap-add',
       'SYS_PTRACE',
@@ -173,14 +153,13 @@ def build_fuzzers(project_name,
   if container:
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
     bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
-        os.path.join(src_in_project_builder, project_repo_name, '*'),
-        os.path.join(git_workspace, project_repo_name), src_in_project_builder)
+        os.path.join(src_in_docker, oss_fuzz_repo_name, '*'),
+        os.path.join(git_workspace, oss_fuzz_repo_name), src_in_docker)
   else:
     command += [
         '-e', 'OUT=' + '/out', '-v',
-        '%s:%s' % (os.path.join(git_workspace, project_repo_name),
-                   os.path.join(src_in_project_builder, project_repo_name)),
-        '-v',
+        '%s:%s' % (os.path.join(git_workspace, oss_fuzz_repo_name),
+                   os.path.join(src_in_docker, oss_fuzz_repo_name)), '-v',
         '%s:%s' % (out_dir, '/out')
     ]
     bash_command = 'compile'
@@ -196,7 +175,7 @@ def build_fuzzers(project_name,
     return False
   remove_unaffected_fuzzers(project_name, out_dir,
                             build_repo_manager.get_git_diff(),
-                            project_builder_repo_path)
+                            oss_fuzz_repo_path)
   return True
 
 
