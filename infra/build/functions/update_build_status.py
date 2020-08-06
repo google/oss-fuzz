@@ -14,6 +14,8 @@
 #
 ################################################################################
 """Cloud function to request builds."""
+import base64
+import concurrent.futures
 import json
 import sys
 
@@ -34,6 +36,9 @@ DESTINATION_BADGE_DIR = 'badges'
 MAX_BUILD_LOGS = 7
 
 STATUS_BUCKET = 'oss-fuzz-build-logs'
+
+FUZZING_STATUS_FILENAME = 'status.json'
+COVERAGE_STATUS_FILENAME = 'status-coverage.json'
 
 # pylint: disable=invalid-name
 _client = None
@@ -162,23 +167,28 @@ def get_build_history(build_ids):
 def update_build_status(build_tag, status_filename):
   """Update build statuses."""
   projects = []
-  statuses = {}
-  for project_build in BuildsHistory.query(
-      BuildsHistory.build_tag == build_tag).order('project'):
 
+  def process_project(project_build):
+    """Process a project."""
     project = get_build_history(project_build.build_ids)
     project['name'] = project_build.project
-    projects.append(project)
-    if project['history']:
-      statuses[project_build.project] = project['history'][0]['success']
+    print('Processing project', project['name'])
+    return project
 
-    update_last_successful_build(project, build_tag)
+  with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+    futures = []
+    for project_build in BuildsHistory.query(
+        BuildsHistory.build_tag == build_tag).order('project'):
+      futures.append(executor.submit(process_project, project_build))
+
+    for future in concurrent.futures.as_completed(futures):
+      project = future.result()
+      update_last_successful_build(project, build_tag)
+      projects.append(project)
 
   sort_projects(projects)
   data = {'projects': projects}
   upload_status(data, status_filename)
-
-  return statuses
 
 
 def update_build_badges(project, last_build_successful,
@@ -233,19 +243,58 @@ def upload_log(build_id):
 # pylint: disable=no-member
 def update_status(event, context):
   """Entry point for cloud function to update build statuses and badges."""
-  del event, context  #unused
+  del context
+
+  if 'data' in event:
+    status_type = base64.b64decode(event['data']).decode()
+  else:
+    raise RuntimeError('No data')
+
+  if status_type == 'badges':
+    update_badges()
+    return
+
+  if status_type == 'fuzzing':
+    tag = build_project.FUZZING_BUILD_TAG
+    status_filename = FUZZING_STATUS_FILENAME
+  elif status_type == 'coverage':
+    tag = build_and_run_coverage.COVERAGE_BUILD_TAG
+    status_filename = COVERAGE_STATUS_FILENAME
+  else:
+    raise RuntimeError('Invalid build status type ' + status_type)
 
   with ndb.Client().context():
-    project_build_statuses = update_build_status(
-        build_project.FUZZING_BUILD_TAG, status_filename='status.json')
-    coverage_build_statuses = update_build_status(
-        build_and_run_coverage.COVERAGE_BUILD_TAG,
-        status_filename='status-coverage.json')
+    update_build_status(tag, status_filename)
 
-    for project in Project.query():
-      if (project.name not in project_build_statuses or
-          project.name not in coverage_build_statuses):
-        continue
 
-      update_build_badges(project.name, project_build_statuses[project.name],
-                          coverage_build_statuses[project.name])
+def load_status_from_gcs(filename):
+  """Load statuses from bucket."""
+  status_bucket = get_storage_client().get_bucket(STATUS_BUCKET)
+  status = json.loads(status_bucket.blob(filename).download_as_string())
+  result = {}
+
+  for project in status['projects']:
+    if project['history']:
+      result[project['name']] = project['history'][0]['success']
+
+  return result
+
+
+def update_badges():
+  """Update badges."""
+  project_build_statuses = load_status_from_gcs(FUZZING_STATUS_FILENAME)
+  coverage_build_statuses = load_status_from_gcs(COVERAGE_STATUS_FILENAME)
+
+  with concurrent.futures.ThreadPoolExecutor(max_workers=32) as executor:
+    futures = []
+    with ndb.Client().context():
+      for project in Project.query():
+        if (project.name not in project_build_statuses or
+            project.name not in coverage_build_statuses):
+          continue
+
+        futures.append(
+            executor.submit(update_build_badges, project.name,
+                            project_build_statuses[project.name],
+                            coverage_build_statuses[project.name]))
+    concurrent.futures.wait(futures)
