@@ -47,11 +47,6 @@ def builds_status(event, context):
   update_build_status.update_status(event, context)
 
 
-def builds_badges(event, context):
-  """Entry point for builds status cloud function."""
-  update_build_status.update_badges(event, context)
-
-
 def build_msan(event, context):
   """Entry point for base msan builder."""
   base_images.base_msan_builder(event, context)
