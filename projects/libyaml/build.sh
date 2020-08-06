@@ -22,8 +22,8 @@ for fuzzer in $SRC/*_fuzzer.c; do
   fuzzer_basename=$(basename -s .c $fuzzer)
 
   $CC $CFLAGS \
-      -Iinclude -c $fuzzer \
-      -o $fuzzer_basename.o
+      -I $SRC -Iinclude \
+      -c $fuzzer -o $fuzzer_basename.o
 
   $CXX $CXXFLAGS \
       -std=c++11 \

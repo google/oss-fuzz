@@ -21,4 +21,4 @@ RUN git clone --depth=1 https://github.com/yaml/libyaml
 RUN zip $SRC/libyaml_seed_corpus.zip libyaml/examples/*
 
 WORKDIR libyaml
-COPY build.sh *_fuzzer.c libyaml_fuzzer.options yaml.dict $SRC/
+COPY build.sh *.h *_fuzzer.c libyaml_fuzzer.options yaml.dict $SRC/

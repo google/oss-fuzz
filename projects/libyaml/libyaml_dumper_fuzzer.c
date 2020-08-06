@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "yaml.h"
+#include "yaml_write_handler.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -25,28 +26,6 @@
 #endif
 
 #define MAX_DOCUMENTS 16
-
-typedef struct yaml_output_buffer {
-  unsigned char *buf;
-  size_t size;
-};
-
-static int yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
-  struct yaml_output_buffer *out = (struct yaml_output_buffer *)data;
-  if (!out->size) {
-    out->buf = (unsigned char *)malloc(sizeof(unsigned char) * size);
-  } else {
-    out->buf = (unsigned char *)realloc(out->buf, out->size + size);
-  }
-
-  if (!out->buf) {
-    return 1;
-  }
-
-  memcpy(out->buf + out->size, buffer, size);
-  out->size += size;
-  return 0;
-}
 
 bool nodes_equal(yaml_document_t *document1, int index1,
                  yaml_document_t *document2, int index2, int level) {
@@ -253,7 +232,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_emitter_set_canonical(&emitter, is_canonical);
   yaml_emitter_set_unicode(&emitter, is_unicode);
 
-  struct yaml_output_buffer out = {/*buf=*/NULL, /*size=*/0};
+  yaml_output_buffer_t out = {/*buf=*/NULL, /*size=*/0};
   yaml_emitter_set_output(&emitter, yaml_write_handler, &out);
   yaml_emitter_open(&emitter);
 
@@ -300,7 +279,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     if (!out.buf) {
       yaml_parser_delete(&parser);
-      return 0;
+      goto error;
     }
 
     yaml_parser_set_input_string(&parser, out.buf, out.size);
@@ -330,9 +309,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
 error:
 
-  if (out.buf) {
-    free(out.buf);
-  }
-
+  free(out.buf);
   return 0;
 }

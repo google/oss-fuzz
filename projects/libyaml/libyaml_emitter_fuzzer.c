@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "yaml.h"
+#include "yaml_write_handler.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -25,28 +26,6 @@
 #endif
 
 #define MAX_EVENTS 1024
-
-typedef struct yaml_output_buffer {
-  unsigned char *buf;
-  size_t size;
-};
-
-static int yaml_write_handler(void *data, unsigned char *buffer, size_t size) {
-  struct yaml_output_buffer *out = (struct yaml_output_buffer *)data;
-  if (!out->size) {
-    out->buf = (unsigned char *)malloc(sizeof(unsigned char) * size);
-  } else {
-    out->buf = (unsigned char *)realloc(out->buf, out->size + size);
-  }
-
-  if (!out->buf) {
-    return 1;
-  }
-
-  memcpy(out->buf + out->size, buffer, size);
-  out->size += size;
-  return 0;
-}
 
 bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
   int k;
@@ -236,7 +215,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t event_number = 0;
   bool done = false;
   int count = 0;
-  int error = 0;
   bool is_canonical = data[0] & 1;
   bool is_unicode = data[1] & 1;
   data += 2;
@@ -254,75 +232,66 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_emitter_set_canonical(&emitter, is_canonical);
   yaml_emitter_set_unicode(&emitter, is_unicode);
 
-  struct yaml_output_buffer out = {/*buf=*/NULL, /*size=*/0};
+  yaml_output_buffer_t out = {/*buf=*/NULL, /*size=*/0};
   yaml_emitter_set_output(&emitter, yaml_write_handler, &out);
 
   while (!done) {
     if (!yaml_parser_parse(&parser, &event)) {
-      error = 1;
-      break;
+      goto delete_parser;
     }
 
     done = (event.type == YAML_STREAM_END_EVENT);
     if (event_number >= MAX_EVENTS) {
       yaml_event_delete(&event);
-      error = 1;
-      break;
+      goto delete_parser;
     }
 
     if (copy_event(&events[event_number++], &event)) {
       yaml_event_delete(&event);
-      error = 1;
-      break;
+      goto delete_parser;
     }
 
     if (!yaml_emitter_emit(&emitter, &event)) {
-      error = 1;
-      break;
+      goto delete_parser;
     }
 
-    count++;
   }
 
   yaml_parser_delete(&parser);
-  yaml_emitter_delete(&emitter);
 
-  if (!error) {
-    count = 0;
-    done = false;
-    if (!yaml_parser_initialize(&parser))
-      return 0;
+  done = false;
+  if (!yaml_parser_initialize(&parser))
+    goto error;
 
-    if (!out.buf) {
-      yaml_parser_delete(&parser);
-      return 0;
-    }
+  yaml_parser_set_input_string(&parser, out.buf, out.size);
 
-    yaml_parser_set_input_string(&parser, out.buf, out.size);
+  while (!done) {
+    if (!yaml_parser_parse(&parser, &event))
+      break;
 
-    while (!done) {
-      if (!yaml_parser_parse(&parser, &event))
-        break;
-
-      done = (event.type == YAML_STREAM_END_EVENT);
-      if (events_equal(events + count, &event)) {
-        yaml_event_delete(&event);
-        break;
-      }
-
+    done = (event.type == YAML_STREAM_END_EVENT);
+    if (events_equal(events + count, &event)) {
       yaml_event_delete(&event);
-      count++;
+      break;
     }
-    yaml_parser_delete(&parser);
+
+    yaml_event_delete(&event);
+    count++;
   }
+
+delete_parser:
+
+  yaml_parser_delete(&parser);
+
+error:
+
+  yaml_emitter_delete(&emitter);
 
   for (int k = 0; k < event_number; k++) {
     yaml_event_delete(events + k);
   }
 
-  if (out.buf) {
-    free(out.buf);
-  }
+  free(out.buf);
 
   return 0;
 }
