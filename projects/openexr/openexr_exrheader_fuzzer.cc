@@ -222,9 +222,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   try {
     dumpInfo(is);
-  } catch (IEX_NAMESPACE::InputExc& e) {
-    ;
-  } catch (IEX_NAMESPACE::ArgExc& e) {
+  } catch (...) {
     ;
   }
 

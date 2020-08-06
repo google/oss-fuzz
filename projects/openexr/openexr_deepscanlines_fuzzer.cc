@@ -122,7 +122,7 @@ static void readFileSingle(IStream& is, uint64_t width, uint64_t height) {
 
   try {
     readFile(file);
-  } catch (std::exception &e) {
+  } catch (...) {
   }
 
   delete file;
@@ -145,7 +145,7 @@ static void readFileMulti(IStream& is) {
     }
     try {
       readFile(inpart);
-    } catch (std::exception &e) {
+    } catch (...) {
     }
     delete inpart;
   }
