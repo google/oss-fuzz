@@ -32,7 +32,6 @@ SYNC_MESSAGE="Start Sync"
 UPDATE_BUILD_JOB_TOPIC=builds-status
 UPDATE_BUILD_SCHEDULER_JOB=builds-status-scheduler
 UPDATE_BUILD_JOB_SCHEDULE="*/30 * * * *"
-UPDATE_BUILD_MESSAGE="Update build statuses"
 
 
 function deploy_pubsub_topic {
@@ -108,12 +107,21 @@ deploy_scheduler $BASE_IMAGE_SCHEDULER_JOB \
 				  "$BASE_IMAGE_MESSAGE" \
 				  $PROJECT_ID
 
-deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB \
+deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-fuzzing \
 				 "$UPDATE_BUILD_JOB_SCHEDULE" \
 				 $UPDATE_BUILD_JOB_TOPIC \
-				 "$UPDATE_BUILD_MESSAGE" \
+				 "fuzzing" \
 				 $PROJECT_ID
-
+deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-coverage \
+				 "$UPDATE_BUILD_JOB_SCHEDULE" \
+				 $UPDATE_BUILD_JOB_TOPIC \
+				 "coverage" \
+				 $PROJECT_ID
+deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-badges \
+				 "$UPDATE_BUILD_JOB_SCHEDULE" \
+				 $UPDATE_BUILD_JOB_TOPIC \
+				 "badges" \
+				 $PROJECT_ID
 
 deploy_cloud_function sync \
 					  sync \
