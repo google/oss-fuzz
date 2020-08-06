@@ -11,5 +11,4 @@ architectures:
 sanitizers:
   - address
   - undefined
-# util-linux is failing to compile with MSan
-# - memory
+  - memory
