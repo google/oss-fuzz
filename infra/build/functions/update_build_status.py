@@ -172,7 +172,7 @@ def update_build_status(build_tag, status_filename):
     """Process a project."""
     project = get_build_history(project_build.build_ids)
     project['name'] = project_build.project
-    print('Up to', project['name'])
+    print('Processing project', project['name'])
     return project
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
@@ -261,7 +261,12 @@ def update_status(event, context):
     tag = build_and_run_coverage.COVERAGE_BUILD_TAG
     status_filename = COVERAGE_STATUS_FILENAME
   else:
-    raise RuntimeError('Invalid type ' + status_type)
+
+
+def builds_badges(event, context):
+  """Entry point for builds status cloud function."""
+  update_build_status.update_badges(event, context)
+    raise RuntimeError('Invalid status type ' + status_type)
 
   with ndb.Client().context():
     update_build_status(tag, status_filename)
