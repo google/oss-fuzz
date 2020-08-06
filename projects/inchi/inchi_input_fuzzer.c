@@ -29,13 +29,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (size == kSizeMax)
     return 0;
 
-  char szINCHISource[size + 1];
+  char *szINCHISource = malloc(sizeof(char) * (size + 1));
   memcpy(szINCHISource, data, size);
   szINCHISource[size] = '\0'; // InChI string must be null-terminated
 
   // Buffer lengths taken from InChI API reference, located at
   // https://www.inchi-trust.org/download/104/InChI_API_Reference.pdf, page 24
-  char szINCHIKey[29], szXtra1[65], szXtra2[65];
+  char szINCHIKey[28], szXtra1[65], szXtra2[65];
   GetINCHIKeyFromINCHI(szINCHISource, 0, 0, szINCHIKey, szXtra1, szXtra2);
 
   inchi_InputINCHI inpInChI;
@@ -47,6 +47,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   inchi_OutputStruct outStruct;
   GetStructFromINCHI(&inpInChI, &outStruct);
 
+  free(szINCHISource);
   FreeINCHI(&out);
   FreeStructFromINCHI(&outStruct);
 
