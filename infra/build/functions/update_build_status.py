@@ -261,7 +261,10 @@ def update_status(event, context):
     tag = build_and_run_coverage.COVERAGE_BUILD_TAG
     status_filename = COVERAGE_STATUS_FILENAME
   else:
-    raise RuntimeError('Invalid type ' + status_type)
+    raise RuntimeError('Invalid build status type ' + status_type)
+
+  with ndb.Client().context():
+    update_build_status(tag, status_filename)
 
 
 def load_status_from_gcs(filename):
