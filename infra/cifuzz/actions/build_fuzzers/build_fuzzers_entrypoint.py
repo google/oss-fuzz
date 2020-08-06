@@ -97,7 +97,8 @@ def main():
 
   out_dir = os.path.join(workspace, 'out')
   if cifuzz.check_fuzzer_build(out_dir, sanitizer=sanitizer):
-    return 0
+    returncode = 0
+
   return returncode
 
 
