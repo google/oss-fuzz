@@ -44,8 +44,8 @@ static char *fuzzer_get_tmpfile(const uint8_t *data, size_t size) {
     abort();
   }
   const size_t bytes_written = fwrite(data, sizeof(uint8_t), size, file);
-  if (bytes_written < size) {
-    close(file_descriptor);
+  if (bytes_written != size) {
+    fclose(file);
     fprintf(stderr, "Failed to write all bytes to file (%zu out of %zu)",
             bytes_written, size);
     abort();

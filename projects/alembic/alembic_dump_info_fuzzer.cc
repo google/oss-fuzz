@@ -197,10 +197,7 @@ void dumpInfo(const char *file) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzerTemporaryFile tempFile(data, size);
-  const char *filename = tempFile.filename();
-  if (!filename)
-    return 0;
-
-  dumpInfo(filename);
+  dumpInfo(tempFile.filename());
+  
   return 0;
 }
