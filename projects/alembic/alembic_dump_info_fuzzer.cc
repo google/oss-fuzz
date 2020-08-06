@@ -139,6 +139,7 @@ void dumpMaterial(const IObject &node) {
   IMaterialSchema &schema = material.getSchema();
 
   std::vector<std::string> targetNames;
+  schema.getTargetNames(targetNames);
 
   for (const std::string &target : targetNames) {
     std::vector<std::string> shaderTypes;
@@ -198,6 +199,6 @@ void dumpInfo(const char *file) {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   FuzzerTemporaryFile tempFile(data, size);
   dumpInfo(tempFile.filename());
-  
+
   return 0;
 }
