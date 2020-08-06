@@ -6,4 +6,5 @@ fuzzing_engines:
   - libfuzzer
 language: rust
 vendor_ccs:
+- "jbauman@mozilla.com"
 - "twsmith@mozilla.com"
