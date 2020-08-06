@@ -64,6 +64,7 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 $SRC/depot_tools/gn gen out/Fuzz\
     --args='cc="'$CC'"
       cxx="'$CXX'"
+      link_pool_depth=1
       is_debug=false
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
@@ -82,6 +83,7 @@ $SRC/depot_tools/gn gen out/Fuzz\
 $SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
     --args='cc="'$CC'"
       cxx="'$CXX'"
+      link_pool_depth=1
       is_debug=false
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"]
@@ -106,8 +108,9 @@ $SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
                                    api_null_canvas api_image_filter api_pathop \
                                    api_polyutils android_codec image_decode_incremental \
                                    sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
-                                   api_skdescriptor skdescriptor_deserialize\
-                                   svg_dom api_svg_canvas skruntimeeffect api_create_ddl
+                                   skdescriptor_deserialize\
+                                   svg_dom api_svg_canvas skruntimeeffect api_create_ddl \
+                                   skp
 
 $SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
                                                    api_raster_n32_canvas \
@@ -206,12 +209,9 @@ cp ./sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
 cp out/Fuzz/sksl2pipeline $OUT/sksl2pipeline
 cp ./sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
 
-cp out/Fuzz/api_skdescriptor $OUT/api_skdescriptor
-cp ./api_skdescriptor_seed_corpus.zip $OUT/api_skdescriptor_seed_corpus.zip
-
 # Don't have any examples of an SkDescriptor atm, so some random bytes is all we have.
 cp out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
-cp ./api_skdescriptor_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
+cp ./api_polyutils_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
 cp out/Fuzz/svg_dom $OUT/svg_dom
 cp ./svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
@@ -223,3 +223,6 @@ cp out/Fuzz/skruntimeeffect $OUT/skruntimeeffect
 cp ./sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
 cp out/Fuzz/api_create_ddl $OUT/api_create_ddl
+
+cp out/Fuzz/skp $OUT/skp
+cp ./skp_seed_corpus.zip $OUT/skp_seed_corpus.zip

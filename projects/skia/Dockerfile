@@ -70,11 +70,11 @@ RUN wget -O $SRC/skia/api_polyutils_seed_corpus.zip https://storage.googleapis.c
 
 RUN wget -O $SRC/skia/sksl_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_seed_corpus.zip
 
-RUN wget -O $SRC/skia/api_skdescriptor_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_skdescriptor_seed_corpus.zip
-
-RUN wget -O $SRC/skia/svg_dom_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/svg_seed_corpus.zip 
+RUN wget -O $SRC/skia/svg_dom_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/svg_seed_corpus.zip
 
 RUN wget -O $SRC/skia/sksl_with_256_padding_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_with_256_padding_seed_corpus.zip
+
+RUN wget -O $SRC/skia/skp_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skp_seed_corpus.zip
 
 COPY build.sh $SRC/
 

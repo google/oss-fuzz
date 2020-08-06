@@ -28,6 +28,7 @@ from datastore_entities import Project
 
 BASE_PROJECT = 'oss-fuzz-base'
 MAX_BUILD_HISTORY_LENGTH = 64
+QUEUE_TTL_SECONDS = 60 * 60 * 24  # 24 hours.
 
 
 def update_build_history(project_name, build_id, build_tag):
@@ -64,11 +65,9 @@ def get_project_data(project_name):
 def get_build_steps(project_name, image_project, base_images_project):
   """Retrieve build steps."""
   project_yaml_contents, dockerfile_lines = get_project_data(project_name)
-  build_steps = build_project.get_build_steps(project_name,
-                                              project_yaml_contents,
-                                              dockerfile_lines, image_project,
-                                              base_images_project)
-  return build_steps
+  return build_project.get_build_steps(project_name, project_yaml_contents,
+                                       dockerfile_lines, image_project,
+                                       base_images_project)
 
 
 # pylint: disable=no-member
@@ -81,7 +80,8 @@ def run_build(project_name, image_project, build_steps, credentials, tag):
           'machineType': 'N1_HIGHCPU_32'
       },
       'logsBucket': build_project.GCB_LOGS_BUCKET,
-      'tags': [project_name + tag,],
+      'tags': [project_name + '-' + tag,],
+      'queueTtl': str(QUEUE_TTL_SECONDS) + 's',
   }
 
   cloudbuild = build('cloudbuild',
@@ -109,5 +109,7 @@ def request_build(event, context):
   with ndb.Client().context():
     credentials, image_project = google.auth.default()
     build_steps = get_build_steps(project_name, image_project, BASE_PROJECT)
+    if not build_steps:
+      return
     run_build(project_name, image_project, build_steps, credentials,
               build_project.FUZZING_BUILD_TAG)

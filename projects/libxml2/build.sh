@@ -23,24 +23,27 @@ fi
 
 ./autogen.sh \
     --disable-shared \
+    --without-debug \
     --without-ftp \
     --without-http \
     --without-legacy \
     --without-python
 make -j$(nproc) V=1
-make -C fuzz V=1 seed/schema.stamp seed/xml.stamp fuzz.o
-cp -r test/HTML fuzz/seed/html
 
-for fuzzer in html schema xml; do
-    make -C fuzz $fuzzer.o
+cd fuzz
+make V=1 fuzz.o
+
+for fuzzer in html regexp schema uri xml; do
+    make V=1 $fuzzer.o
     # Link with $CXX
     $CXX $CXXFLAGS \
-        fuzz/$fuzzer.o fuzz/fuzz.o \
+        $fuzzer.o fuzz.o \
         -o $OUT/$fuzzer \
         $LIB_FUZZING_ENGINE \
-        .libs/libxml2.a -Wl,-Bstatic -lz -llzma -Wl,-Bdynamic
+        ../.libs/libxml2.a -Wl,-Bstatic -lz -llzma -Wl,-Bdynamic
 
-    zip -j $OUT/${fuzzer}_seed_corpus.zip fuzz/seed/$fuzzer/*
+    [ -e seed/$fuzzer ] || make V=1 seed/$fuzzer.stamp
+    zip -j $OUT/${fuzzer}_seed_corpus.zip seed/$fuzzer/*
 done
 
-cp fuzz/*.dict fuzz/*.options $OUT/
+cp *.dict *.options $OUT/

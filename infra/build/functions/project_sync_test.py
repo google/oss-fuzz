@@ -69,8 +69,7 @@ class CloudSchedulerClient:
   def create_job(self, parent, job):
     """Simulate create job."""
     del parent
-    if job['name'] not in self.schedulers:
-      self.schedulers.append(job)
+    self.schedulers.append(job)
 
   # pylint: disable=no-self-use
   def job_path(self, project_id, location_id, name):
@@ -152,6 +151,31 @@ class TestDataSync(unittest.TestCase):
           'test1': '0 8 * * *',
           'test2': '0 7 * * *'
       }, {project.name: project.schedule for project in projects_query})
+
+      self.assertCountEqual([
+          {
+              'name':
+                  'projects/test-project/location/us-central1/jobs/test2-scheduler-fuzzing',
+              'pubsub_target': {
+                  'topic_name': 'projects/test-project/topics/request-build',
+                  'data': b'test2'
+              },
+              'schedule':
+                  '0 7 * * *'
+          },
+          {
+              'name':
+                  'projects/test-project/location/us-central1/jobs/test2-scheduler-coverage',
+              'pubsub_target': {
+                  'topic_name':
+                      'projects/test-project/topics/request-coverage-build',
+                  'data':
+                      b'test2'
+              },
+              'schedule':
+                  '0 6 * * *'
+          },
+      ], cloud_scheduler_client.schedulers)
 
   def test_sync_projects_delete(self):
     """Testing sync_projects() deleting."""

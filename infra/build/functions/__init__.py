@@ -1,4 +1,3 @@
-#!/bin/bash -ex
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +13,3 @@
 # limitations under the License.
 #
 ################################################################################
-
-for project in ../../projects/*; do
-  if [[ ! -f $project/Dockerfile ]]; then
-    continue
-  fi
-
-  ./request_build.sh $(basename $project) $1
-done
