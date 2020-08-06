@@ -34,4 +34,4 @@ RUN add-apt-repository \
 RUN apt-get update && apt-get install docker-ce docker-ce-cli containerd.io -y
 
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
-RUN git clone https://github.com/google/oss-fuzz.git ${OSS_FUZZ_ROOT}
+ADD . ${OSS_FUZZ_ROOT}
