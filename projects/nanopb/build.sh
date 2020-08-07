@@ -30,7 +30,7 @@ build/fuzztest/generate_message $(date +%s) > fuzztest_seed_corpus/rndmsg 2>/dev
 for f in fuzztest_seed_corpus/*; do
     mv $f fuzztest_seed_corpus/$(sha1sum $f | cut -f 1 -d ' ')
 done
-zip -r "$OUT/fuzztest_seed_corpus.zip" fuzztest_seed_corpus
+zip -r "$OUT/corpus.zip" fuzztest_seed_corpus
 
 # Build the fuzz testing stubs with instrumentation
 rm -rf build
@@ -49,4 +49,11 @@ scons CC="$CC" CXX="$CXX" LINK="$CXX" \
       LINKLIBS="$LIB_FUZZING_ENGINE" $FUZZERS
 
 cp $FUZZERS "$OUT"
+
+# The fuzzer test cases are closely related, so use the same seed corpus
+# for all of them.
+for fuzzer in $FUZZERS
+    do cp "$OUT/corpus.zip" "$OUT/$(basename $fuzzer)_seed_corpus.zip"
+done
+rm "$OUT/corpus.zip"
 
