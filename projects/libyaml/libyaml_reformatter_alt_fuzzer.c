@@ -68,9 +68,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     /* Check if this is the stream end. */
 
-    if (!yaml_document_get_root_node(&document)) {
-      done = true;
-    }
+    done = (!yaml_document_get_root_node(&document));
 
     /* Emit the event. */
 

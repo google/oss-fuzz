@@ -68,9 +68,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     /* Check if this is the stream end. */
 
-    if (event.type == YAML_STREAM_END_EVENT) {
-      done = true;
-    }
+    done = (event.type == YAML_STREAM_END_EVENT);
 
     /* Emit the event. */
 

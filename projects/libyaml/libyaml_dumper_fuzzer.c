@@ -287,7 +287,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         goto error;
       }
 
-      done = !yaml_document_get_root_node(&document);
+      done = (!yaml_document_get_root_node(&document));
       if (!done) {
         if (!documents_equal(documents + count, &document)) {
           yaml_parser_delete(&parser);
