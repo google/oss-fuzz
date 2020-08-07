@@ -68,7 +68,7 @@ OUR_LLVM_REVISION=e84b7a5fe230e42b8e6fe451369874a773bf1867
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
 FORCE_OUR_REVISION=0
-LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K[a-f0-9]+(?=')" scripts/update.py)
+LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K([^']+)" scripts/update.py)
 
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
