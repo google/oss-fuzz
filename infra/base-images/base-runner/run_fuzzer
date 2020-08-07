@@ -63,6 +63,28 @@ if [ -f $SEED_CORPUS ] && [ -z ${SKIP_SEED_CORPUS:-} ]; then
   unzip -d ${CORPUS_DIR}/ $SEED_CORPUS > /dev/null
 fi
 
+OPTIONS_FILE="${FUZZER}.options"
+CUSTOM_LIBFUZZER_OPTIONS=""
+
+if [ -f $OPTIONS_FILE ]; then
+  custom_asan_options=$(parse_options.py $OPTIONS_FILE asan)
+  if [ ! -z $custom_asan_options ]; then
+    export ASAN_OPTIONS="$ASAN_OPTIONS:$custom_asan_options"
+  fi
+
+  custom_msan_options=$(parse_options.py $OPTIONS_FILE msan)
+  if [ ! -z $custom_msan_options ]; then
+    export MSAN_OPTIONS="$MSAN_OPTIONS:$custom_msan_options"
+  fi
+
+  custom_ubsan_options=$(parse_options.py $OPTIONS_FILE ubsan)
+  if [ ! -z $custom_ubsan_options ]; then
+    export UBSAN_OPTIONS="$UBSAN_OPTIONS:$custom_ubsan_options"
+  fi
+
+  CUSTOM_LIBFUZZER_OPTIONS=$(parse_options.py $OPTIONS_FILE libfuzzer)
+fi
+
 if [[ "$FUZZING_ENGINE" = afl ]]; then
   # https://chromium.googlesource.com/chromium/src/+/master/third_party/afl/src/docs/env_variables.txt
   export ASAN_OPTIONS="$ASAN_OPTIONS:abort_on_error=1:symbolize=0"
@@ -89,10 +111,8 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
 else
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $* $CORPUS_DIR"
 
-  OPTIONS_FILE="${FUZZER}.options"
-  if [ -f $OPTIONS_FILE ]; then
-    OPTIONS_ARGS=$(grep "=" $OPTIONS_FILE | sed 's/\(\w*\)\W*=\W*\(.*\)/-\1=\2 /g' | tr '\n' ' ')
-    CMD_LINE="$CMD_LINE $OPTIONS_ARGS"
+  if [ ! -z $CUSTOM_LIBFUZZER_OPTIONS ]; then
+    CMD_LINE="$CMD_LINE $CUSTOM_LIBFUZZER_OPTIONS"
   fi
 
   if [[ ! "$CMD_LINE" =~ "-dict=" ]]; then
