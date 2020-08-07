@@ -67,22 +67,22 @@ OPTIONS_FILE="${FUZZER}.options"
 CUSTOM_LIBFUZZER_OPTIONS=""
 
 if [ -f $OPTIONS_FILE ]; then
-  custom_asan_options=$(parse_options $OPTIONS_FILE asan)
+  custom_asan_options=$(parse_options.py $OPTIONS_FILE asan)
   if [ ! -z $custom_asan_options ]; then
     export ASAN_OPTIONS="$ASAN_OPTIONS:$custom_asan_options"
   fi
 
-  custom_msan_options=$(parse_options $OPTIONS_FILE msan)
-  if [ ! -z $custom_asan_options ]; then
+  custom_msan_options=$(parse_options.py $OPTIONS_FILE msan)
+  if [ ! -z $custom_msan_options ]; then
     export MSAN_OPTIONS="$MSAN_OPTIONS:$custom_msan_options"
   fi
 
-  custom_ubsan_options=$(parse_options $OPTIONS_FILE ubsan)
-  if [ ! -z $custom_asan_options ]; then
+  custom_ubsan_options=$(parse_options.py $OPTIONS_FILE ubsan)
+  if [ ! -z $custom_ubsan_options ]; then
     export UBSAN_OPTIONS="$UBSAN_OPTIONS:$custom_ubsan_options"
   fi
 
-  CUSTOM_LIBFUZZER_OPTIONS=$(parse_options $OPTIONS_FILE libfuzzer)
+  CUSTOM_LIBFUZZER_OPTIONS=$(parse_options.py $OPTIONS_FILE libfuzzer)
 fi
 
 if [[ "$FUZZING_ENGINE" = afl ]]; then
