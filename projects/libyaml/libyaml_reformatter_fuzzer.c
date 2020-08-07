@@ -38,15 +38,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_parser_t parser;
   yaml_emitter_t emitter;
   yaml_event_t event;
-  FILE *f;
 
   /* Initialize the parser and emitter objects. */
 
   if (!yaml_parser_initialize(&parser))
-    goto error;
+    return 0;
 
   if (!yaml_emitter_initialize(&emitter))
-    goto error;
+    goto cleanup_parser;
 
   /* Set the parser parameters. */
 
@@ -79,12 +78,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       break;
   }
 
-error:
-
   free(out.buf);
-
-  yaml_parser_delete(&parser);
   yaml_emitter_delete(&emitter);
 
+cleanup_parser:
+
+  yaml_parser_delete(&parser);
   return 0;
 }

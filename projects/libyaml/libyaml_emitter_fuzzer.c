@@ -28,14 +28,15 @@
 #define MAX_EVENTS 1024
 
 bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
-  int k;
+  
+  const bool equal = true;
 
   if (event1->type != event2->type)
-    return true;
+    return equal;
 
   switch (event1->type) {
   case YAML_STREAM_START_EVENT:
-    return false;
+    return !equal;
 
   case YAML_DOCUMENT_START_EVENT:
     if ((event1->data.document_start.version_directive &&
@@ -48,12 +49,12 @@ bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
               event2->data.document_start.version_directive->major ||
           event1->data.document_start.version_directive->minor !=
               event2->data.document_start.version_directive->minor)))
-      return true;
+      return equal;
     if ((event1->data.document_start.tag_directives.end -
          event1->data.document_start.tag_directives.start) !=
         (event2->data.document_start.tag_directives.end -
          event2->data.document_start.tag_directives.start))
-      return true;
+      return equal;
     for (int k = 0; k < (event1->data.document_start.tag_directives.end -
                          event1->data.document_start.tag_directives.start);
          k++) {
@@ -65,12 +66,12 @@ bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
                       .prefix,
                   (char *)event2->data.document_start.tag_directives.start[k]
                       .prefix) != 0))
-        return true;
+        return equal;
     }
-    return false;
+    return !equal;
 
   case YAML_DOCUMENT_END_EVENT:
-    return false;
+    return !equal;
 
   case YAML_ALIAS_EVENT:
     return (strcmp((char *)event1->data.alias.anchor,
@@ -82,7 +83,7 @@ bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
         (event1->data.scalar.anchor && event2->data.scalar.anchor &&
          strcmp((char *)event1->data.scalar.anchor,
                 (char *)event2->data.scalar.anchor) != 0))
-      return true;
+      return equal;
     if ((event1->data.scalar.tag && !event2->data.scalar.tag &&
          strcmp((char *)event1->data.scalar.tag, "!") != 0) ||
         (!event1->data.scalar.tag && event2->data.scalar.tag &&
@@ -90,17 +91,17 @@ bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
         (event1->data.scalar.tag && event2->data.scalar.tag &&
          strcmp((char *)event1->data.scalar.tag,
                 (char *)event2->data.scalar.tag) != 0))
-      return true;
+      return equal;
     if ((event1->data.scalar.length != event2->data.scalar.length) ||
         memcmp(event1->data.scalar.value, event2->data.scalar.value,
                event1->data.scalar.length) != 0)
-      return true;
+      return equal;
     if ((event1->data.scalar.plain_implicit !=
          event2->data.scalar.plain_implicit) ||
         (event1->data.scalar.quoted_implicit !=
          event2->data.scalar.quoted_implicit))
-      return true;
-    return false;
+      return equal;
+    return !equal;
 
   case YAML_SEQUENCE_START_EVENT:
     if ((event1->data.sequence_start.anchor &&
@@ -111,17 +112,17 @@ bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
          event2->data.sequence_start.anchor &&
          strcmp((char *)event1->data.sequence_start.anchor,
                 (char *)event2->data.sequence_start.anchor) != 0))
-      return true;
+      return equal;
     if ((event1->data.sequence_start.tag && !event2->data.sequence_start.tag) ||
         (!event1->data.sequence_start.tag && event2->data.sequence_start.tag) ||
         (event1->data.sequence_start.tag && event2->data.sequence_start.tag &&
          strcmp((char *)event1->data.sequence_start.tag,
                 (char *)event2->data.sequence_start.tag) != 0))
-      return true;
+      return equal;
     if ((event1->data.sequence_start.implicit !=
          event2->data.sequence_start.implicit))
-      return true;
-    return false;
+      return equal;
+    return !equal;
 
   case YAML_MAPPING_START_EVENT:
     if ((event1->data.mapping_start.anchor &&
@@ -132,20 +133,20 @@ bool events_equal(yaml_event_t *event1, yaml_event_t *event2) {
          event2->data.mapping_start.anchor &&
          strcmp((char *)event1->data.mapping_start.anchor,
                 (char *)event2->data.mapping_start.anchor) != 0))
-      return true;
+      return equal;
     if ((event1->data.mapping_start.tag && !event2->data.mapping_start.tag) ||
         (!event1->data.mapping_start.tag && event2->data.mapping_start.tag) ||
         (event1->data.mapping_start.tag && event2->data.mapping_start.tag &&
          strcmp((char *)event1->data.mapping_start.tag,
                 (char *)event2->data.mapping_start.tag) != 0))
-      return true;
+      return equal;
     if ((event1->data.mapping_start.implicit !=
          event2->data.mapping_start.implicit))
-      return true;
-    return false;
+      return equal;
+    return !equal;
 
   default:
-    return false;
+    return !equal;
   }
 }
 

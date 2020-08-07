@@ -28,8 +28,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_parser_t parser;
   yaml_token_t token;
   bool done = false;
-  int count = 0;
-  int error = 0;
 
   if(!yaml_parser_initialize(&parser))
     return 0;
@@ -39,15 +37,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   while (!done)
   {
       if (!yaml_parser_scan(&parser, &token)) {
-          error = 1;
           break;
       }
 
       done = (token.type == YAML_STREAM_END_TOKEN);
 
       yaml_token_delete(&token);
-
-      count ++;
   }
 
   yaml_parser_delete(&parser);

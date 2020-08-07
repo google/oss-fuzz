@@ -39,7 +39,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_emitter_t emitter;
   yaml_event_t input_event;
   yaml_event_t output_event;
-  FILE *f;
 
   /* Initialize the parser and emitter objects. */
 

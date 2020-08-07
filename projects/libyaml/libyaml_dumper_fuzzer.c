@@ -29,7 +29,7 @@
 
 bool nodes_equal(yaml_document_t *document1, int index1,
                  yaml_document_t *document2, int index2, int level) {
-  bool equal = true;
+  const bool equal = true;
 
   if (level++ > 1000)
     return !equal;
@@ -42,8 +42,6 @@ bool nodes_equal(yaml_document_t *document1, int index1,
 
   if (!node2)
     return !equal;
-
-  int k;
 
   if (node1->type != node2->type)
     return !equal;
@@ -96,8 +94,8 @@ bool nodes_equal(yaml_document_t *document1, int index1,
 }
 
 bool documents_equal(yaml_document_t *document1, yaml_document_t *document2) {
-  int k;
-  bool equal = true;
+
+  const bool equal = true;
 
   if ((document1->version_directive && !document2->version_directive) ||
       (!document1->version_directive && document2->version_directive) ||
@@ -213,10 +211,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   yaml_document_t document;
   yaml_document_t documents[MAX_DOCUMENTS];
   size_t document_number = 0;
-  bool done = false;
   int count = 0;
-  int equal = 0;
-  int k;
+  bool done = false;
+  bool equal = false;
   bool is_canonical = data[0] & 1;
   bool is_unicode = data[1] & 1;
   data += 2;
@@ -246,18 +243,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (!done) {
       if (document_number >= MAX_DOCUMENTS) {
         yaml_document_delete(&document);
-        equal = 1;
+        equal = true;
         break;
       }
 
       if (!copy_document(&documents[document_number++], &document)) {
         yaml_document_delete(&document);
-        equal = 1;
+        equal = true;
         break;
       }
       if (!(yaml_emitter_dump(&emitter, &document) ||
             (yaml_emitter_flush(&emitter) && 0))) {
-        equal = 1;
+        equal = true;
         break;
       }
 
