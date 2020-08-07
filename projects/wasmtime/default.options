@@ -1,4 +1,4 @@
 [asan]
 allow_user_segv_handler=1
 handle_sigill=0
-handle_sigsegv=1
+handle_segv=1
