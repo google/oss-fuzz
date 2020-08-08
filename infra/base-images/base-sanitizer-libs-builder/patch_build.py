@@ -24,7 +24,7 @@ import subprocess
 import sys
 
 INSTRUMENTED_LIBRARIES_DIRNAME = 'instrumented_libraries'
-MSAN_LIBS_PATH = os.getenv('MSAN_LIBS_PATH', '/msan')
+SANITIZER_LIBS_PATH = None
 
 
 def IsElf(file_path):
@@ -56,12 +56,12 @@ def Ldd(binary_path):
 
 def FindLib(path):
   """Find instrumented version of lib."""
-  candidate_path = os.path.join(MSAN_LIBS_PATH, path[1:])
+  candidate_path = os.path.join(SANITIZER_LIBS_PATH, path[1:])
   if os.path.exists(candidate_path):
     return candidate_path
   
-  for lib_dir in os.listdir(MSAN_LIBS_PATH):
-    candidate_path = os.path.join(MSAN_LIBS_PATH, lib_dir, path[1:])
+  for lib_dir in os.listdir(SANITIZER_LIBS_PATH):
+    candidate_path = os.path.join(SANITIZER_LIBS_PATH, lib_dir, path[1:])
     if os.path.exists(candidate_path):
       return candidate_path
 
@@ -111,7 +111,7 @@ def PatchBinary(binary_path, instrumented_dir):
 
 
 def PatchBuild(output_directory):
-  """Patch build to use msan libs."""
+  """Patch build to use instrumented libs."""
   instrumented_dir = os.path.join(output_directory,
                                   INSTRUMENTED_LIBRARIES_DIRNAME)
   if not os.path.exists(instrumented_dir):
@@ -131,10 +131,22 @@ def PatchBuild(output_directory):
 
 
 def main():
-  parser = argparse.ArgumentParser('patch_build.py', description='MSan build patcher.')
+  global SANITIZER_LIBS_PATH
+  parser = argparse.ArgumentParser('patch_build.py',
+                                   description='Sanitizer build patcher.')
+  parser.add_argument(
+      'sanitizer', help='Sanitizer.', choices=['dataflow', 'memory'])
   parser.add_argument('output_dir', help='Output directory.')
 
   args = parser.parse_args()
+
+  if args.sanitizer == 'dataflow':
+    # TODO(mmoroz): consider using a single env variable for both.
+    SANITIZER_LIBS_PATH = os.getenv('DFSAN_LIBS_PATH', '/dfsan')
+  elif args.sanitizer == 'memory':
+    SANITIZER_LIBS_PATH = os.getenv('MSAN_LIBS_PATH', '/msan')
+  else:
+    raise Exception('Unsupported sanitizer, should not happen.')
 
   PatchBuild(os.path.abspath(args.output_dir))
 

@@ -27,7 +27,8 @@ def AddNoAsmArg(config_path):
   with open(config_path, 'w') as f:
     f.write(
         '#!/bin/sh\n'
-        '%s.real --disable-assembler "$@"\n' % config_path)
+        '%s.real --disable-assembler --disable-ld-version-script "$@"\n' %
+        config_path)
   os.chmod(config_path, 0755)
 
 

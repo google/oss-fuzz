@@ -34,9 +34,9 @@ import wrapper_utils
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGES_DIR = os.path.join(SCRIPT_DIR, 'packages')
 
-TRACK_ORIGINS_ARG = '-fsanitize-memory-track-origins='
+MSAN_TRACK_ORIGINS_ARG = '-fsanitize-memory-track-origins='
 
-INJECTED_ARGS = [
+INJECTED_ARGS = [  # TODO(mmoroz): can be different
     '-fsanitize=memory',
     '-fsanitize-recover=memory',
     '-fPIC',
@@ -48,16 +48,16 @@ class MSanBuildException(Exception):
   """Base exception."""
 
 
-def GetTrackOriginsFlag():
+def GetMSanTrackOriginsFlag():
   """Get the track origins flag."""
   if os.getenv('MSAN_NO_TRACK_ORIGINS'):
-    return TRACK_ORIGINS_ARG + '0'
+    return MSAN_TRACK_ORIGINS_ARG + '0'
 
-  return TRACK_ORIGINS_ARG + '2'
+  return MSAN_TRACK_ORIGINS_ARG + '2'
 
 
 def GetInjectedFlags():
-  return INJECTED_ARGS + [GetTrackOriginsFlag()]
+  return INJECTED_ARGS + [GetMSanTrackOriginsFlag()]
 
 
 def SetUpEnvironment(work_dir):
@@ -88,16 +88,16 @@ def SetUpEnvironment(work_dir):
   env['CC'] = os.path.join(bin_dir, 'clang')
   env['CXX'] = os.path.join(bin_dir, 'clang++')
 
-  MSAN_OPTIONS = ' '.join(GetInjectedFlags())
+  SANITIZER_FLAGS = ' '.join(GetInjectedFlags())
 
   # We don't use nostrip because some build rules incorrectly break when it is
   # passed. Instead we install our own no-op strip binaries.
   env['DEB_BUILD_OPTIONS'] = ('nocheck parallel=%d' %
                               multiprocessing.cpu_count())
-  env['DEB_CFLAGS_APPEND'] = MSAN_OPTIONS
-  env['DEB_CXXFLAGS_APPEND'] = MSAN_OPTIONS + ' -stdlib=libc++'
-  env['DEB_CPPFLAGS_APPEND'] = MSAN_OPTIONS
-  env['DEB_LDFLAGS_APPEND'] = MSAN_OPTIONS
+  env['DEB_CFLAGS_APPEND'] = SANITIZER_FLAGS
+  env['DEB_CXXFLAGS_APPEND'] = SANITIZER_FLAGS + ' -stdlib=libc++'
+  env['DEB_CPPFLAGS_APPEND'] = SANITIZER_FLAGS
+  env['DEB_LDFLAGS_APPEND'] = SANITIZER_FLAGS
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
 
   # debian/rules can set DPKG_GENSYMBOLS_CHECK_LEVEL explicitly, so override it.
@@ -131,11 +131,12 @@ def SetUpEnvironment(work_dir):
 
   # Prevent entire build from failing because of bugs/uninstrumented in tools
   # that are part of the build.
-  msan_log_dir = os.path.join(work_dir, 'msan')
-  os.mkdir(msan_log_dir)
-  msan_log_path = os.path.join(msan_log_dir, 'log')
+  sanitizer_build_log_dir = os.path.join(work_dir, 'msan')  # TODO(mmoroz)
+  os.mkdir(sanitizer_build_log_dir)
+  msan_log_path = os.path.join(sanitizer_build_log_dir, 'log')
   env['MSAN_OPTIONS'] = (
-      'halt_on_error=0:exitcode=0:report_umrs=0:log_path=' + msan_log_path)
+      'halt_on_error=0:exitcode=0:report_umrs=0:log_path=' + sanitizer_build_log_dir)
+  # TODO(mmoroz): add DFSAN_OPTIONS=warn_unimplemented=0
 
   # Increase maximum stack size to prevent tests from failing.
   limit = 128 * 1024 * 1024
@@ -328,14 +329,14 @@ def GetBuildList(package_name):
   return dependencies
 
 
-class MSanBuilder(object):
+class SanitizerLibsBuilder(object):
   """MSan builder."""
 
-  def __init__(self, debug=False, log_path=None, work_dir=None, no_track_origins=False):
+  def __init__(self, debug=False, log_path=None, work_dir=None, msan_no_track_origins=False):
     self.debug = debug
     self.log_path = log_path
     self.work_dir = work_dir
-    self.no_track_origins = no_track_origins
+    self.msan_no_track_origins = msan_no_track_origins
     self.env = None
 
   def __enter__(self):
@@ -351,7 +352,7 @@ class MSanBuilder(object):
     if self.debug and self.log_path:
       self.env['WRAPPER_DEBUG_LOG_PATH'] = self.log_path
 
-    if self.no_track_origins:
+    if self.msan_no_track_origins:
       self.env['MSAN_NO_TRACK_ORIGINS'] = '1'
 
     return self
@@ -412,12 +413,12 @@ def main():
                       help='Don\'t build dependencies.')
   parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
   parser.add_argument('--log-path', help='Log path for debugging.')
-  parser.add_argument('--no-track-origins',
+  parser.add_argument('--msan-no-track-origins',
                       action='store_true',
                       help='Build with -fsanitize-memory-track-origins=0.')
   args = parser.parse_args()
 
-  if args.no_track_origins:
+  if args.msan_no_track_origins:
     os.environ['MSAN_NO_TRACK_ORIGINS'] = '1'
 
   if not os.path.exists(args.output_dir):
@@ -445,9 +446,9 @@ def main():
   for package_name in package_names:
     print('\t', package_name)
 
-  with MSanBuilder(debug=args.debug, log_path=args.log_path,
-                   work_dir=args.work_dir,
-                   no_track_origins=args.no_track_origins) as builder:
+  with SanitizerLibsBuilder(debug=args.debug, log_path=args.log_path,
+                            work_dir=args.work_dir,
+                            msan_no_track_origins=args.msan_no_track_origins) as builder:
     for package_name in package_names:
       builder.Build(package_name, args.output_dir, args.create_subdirs)
 

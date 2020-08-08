@@ -526,7 +526,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     env += env_to_add
 
   # Copy instrumented libraries.
-  if sanitizer == 'memory':
+  if sanitizer == 'memory':  # TODO(mmoroz): add dataflow sanitizer support.
     docker_run([
         '-v',
         '%s:/work' % project_work_dir, 'gcr.io/oss-fuzz-base/msan-libs-builder',
@@ -566,14 +566,14 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     return result_code
 
   # Patch MSan builds to use instrumented shared libraries.
-  if sanitizer == 'memory':
+  if sanitizer in ['dataflow', 'memory']:
     docker_run([
         '-v',
         '%s:/out' % project_out_dir, '-v',
         '%s:/work' % project_work_dir
     ] + _env_to_docker_args(env) + [
         'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder', 'patch_build.py',
-        '/out'
+        '--output_dir=/out', '--sanitizer=%s' % sanitizer
     ])
 
   return 0
