@@ -16,7 +16,7 @@
 ################################################################################
 
 $CC $CFLAGS -I ./src -I ./src/libtom \
-    -DHAVE_STDINT_H -DHAVE_MEMALIGN -maes \
+    -DHAVE_STDINT_H -DHAVE_MEMALIGN -DSYS_BITS -maes \
     -c src/*.c src/libtom/*.c
 ar -qc $WORK/libpycryptodome.a  *.o
 
