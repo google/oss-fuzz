@@ -35,6 +35,8 @@ RUN git clone --depth 1 https://github.com/libyal/libregf.git libregf
 RUN git clone --depth 1 https://github.com/libyal/libscca.git libscca
 
 RUN git clone --depth 1 https://github.com/libyal/libfsapfs.git libfsapfs
+RUN git clone --depth 1 https://github.com/libyal/libfsext.git libfsext
+RUN git clone --depth 1 https://github.com/libyal/libfshfs.git libfshfs
 RUN git clone --depth 1 https://github.com/libyal/libfsntfs.git libfsntfs
 
 RUN git clone --depth 1 https://github.com/libyal/libbde.git libbde
