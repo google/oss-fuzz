@@ -120,7 +120,12 @@ fi
 mkdir $SRC/nettle-install/
 cd $SRC/nettle/
 bash .bootstrap
-./configure --disable-documentation --disable-openssl --prefix=`realpath ../nettle-install`
+if [[ $CFLAGS != *sanitize=memory* ]]
+then
+    ./configure --disable-documentation --disable-openssl --prefix=`realpath ../nettle-install`
+else
+    ./configure --disable-documentation --disable-openssl --disable-assembler --prefix=`realpath ../nettle-install`
+fi
 make -j$(nproc)
 make install
 if [[ $CFLAGS != *-m32* ]]
