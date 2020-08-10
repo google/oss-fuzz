@@ -15,9 +15,13 @@
 #
 ################################################################################
 
+PYCRYPTODOME_INTERNALS=(src/*.c src/libtom/*.c)
+
+# TODO(rjotwani): Find out how to get system bits from command line
 $CC $CFLAGS -I ./src -I ./src/libtom \
-    -DHAVE_STDINT_H -DHAVE_MEMALIGN -DSYS_BITS=32 -maes -msse2 -mpclmul \
-    -c src/*.c src/libtom/*.c
+    -DHAVE_STDINT_H -DHAVE_MEMALIGN -DHAVE_INTRIN_H -DSYS_BITS=32 \
+    -maes -msse2 -mpclmul \
+    -c "${PYCRYPTODOME_INTERNALS//'blake2.c'/}"
 ar -qc $WORK/libpycryptodome.a  *.o
 
 for fuzzer in $SRC/*_fuzzer.c; do
