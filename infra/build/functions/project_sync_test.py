@@ -84,7 +84,7 @@ class CloudSchedulerClient:
         self.schedulers.remove(job)
         break
 
-  def update(self, job, update_mask):
+  def update_job(self, job, update_mask):
     """Simulate update jobs."""
     for existing_job in self.schedulers:
       if existing_job == job:

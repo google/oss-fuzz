@@ -88,7 +88,7 @@ def update_scheduler(cloud_scheduler_client, project, schedule):
   }
 
   update_mask = {'schedule': schedule}
-  cloud_scheduler_client.update(job, update_mask)
+  cloud_scheduler_client.update_job(job, update_mask)
 
 
 # pylint: disable=too-many-branches
