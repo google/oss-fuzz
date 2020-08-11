@@ -1,6 +1,7 @@
 homepage: "https://freedesktop.org/wiki/Software/systemd/"
 language: c++
 primary_contact: "lennart@poettering.net"
+builds_per_day: 4
 sanitizers:
   - address
   - undefined
