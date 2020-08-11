@@ -26,11 +26,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
 
   while (stream.remaining_bytes()) {
+
     size_t num_bytes = stream.ConsumeIntegral<size_t>();
     std::vector<uint8_t> buffer = stream.ConsumeBytes<uint8_t>(num_bytes);
-    if (MD5_update(hs, buffer.data(), buffer.size())) {
+
+    if (MD5_update(hs, buffer.data(), buffer.size()))
       goto error;
-    }
+
   }
 
   uint8_t result[DIGEST_SIZE];
