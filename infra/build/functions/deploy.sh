@@ -77,9 +77,11 @@ function deploy_cloud_function {
 	gcloud functions deploy $name \
 	--entry-point $entry_point \
 	--trigger-topic $topic \
-	--runtime python37 \
+	--runtime python38 \
 	--project $project \
 	--timeout 540 \
+  --region us-central1 \
+  --set-env-vars GCP_PROJECT=$project,FUNCTION_REGION=us-central1 \
   --max-instances 1
 }
 
