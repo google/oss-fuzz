@@ -12,10 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdint.h>
-#include <stdio.h>
+#include "MD5.c"
+#include <fuzzer/FuzzedDataProvider.h>
 
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  printf("test");
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+
+  if (!size)
+    return 0;
+
+  FuzzedDataProvider stream(data, size);
+  hash_state *hs;
+  if (MD5_init(&hs))
+    return 0;
+
+  while (stream.remaining_bytes()) {
+    size_t num_bytes = stream.ConsumeIntegral<size_t>();
+    std::vector<uint8_t> buffer = stream.ConsumeBytes<uint8_t>(num_bytes);
+    if (MD5_update(hs, buffer.data(), buffer.size())) {
+      goto error;
+    }
+  }
+
+  uint8_t result[DIGEST_SIZE];
+  MD5_digest(hs, result);
+
+error:
+  MD5_destroy(hs);
   return 0;
 }

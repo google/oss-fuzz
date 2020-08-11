@@ -16,22 +16,29 @@
 ################################################################################
 
 PYCRYPTODOME_INTERNALS=(src/*.c src/libtom/*.c)
+PYCRYPTODOME_FLAGS=(
+  "-I $SRC/pycryptodome/src"
+  "-I $SRC/pycryptodome/src/libtom"
+  "-D HAVE_STDINT_H"
+  "-D HAVE_MEMALIGN"
+  "-D HAVE_INTRIN_H"
+  "-D SYS_BITS=$(getconf LONG_BIT)"
+  "-maes -msse2 -mpclmul"
+)
 
-# TODO(rjotwani): Find out how to get system bits from command line
-$CC $CFLAGS -I ./src -I ./src/libtom \
-    -DHAVE_STDINT_H -DHAVE_MEMALIGN -DHAVE_INTRIN_H \
-    -DSYS_BITS=$(getconf LONG_BIT) -maes -msse2 -mpclmul \
+$CC $CFLAGS \
+    ${PYCRYPTODOME_FLAGS[@]} \
     -c "${PYCRYPTODOME_INTERNALS//'blake2.c'/}"
 ar -qc $WORK/libpycryptodome.a  *.o
 
-for fuzzer in $SRC/*_fuzzer.c; do
-  fuzzer_basename=$(basename -s .c $fuzzer)
+for fuzzer in $SRC/*_fuzzer.cc; do
+  fuzzer_basename=$(basename -s .cc $fuzzer)
 
-  $CC $CFLAGS \
-      -I ./src -I ./src/libtom \
-      $fuzzer -c -o ${fuzzer_basename}.o
+  # $CC $CFLAGS \
+  #     ${PYCRYPTODOME_FLAGS[@]} \
+  #     -c $fuzzer -o ${fuzzer_basename}.o
 
-  $CXX $CXXFLAGS \
-      ${fuzzer_basename}.o -o $OUT/$fuzzer_basename \
+  $CXX $CXXFLAGS ${PYCRYPTODOME_FLAGS[@]} \
+      $fuzzer -o $OUT/$fuzzer_basename \
       $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a
 done
