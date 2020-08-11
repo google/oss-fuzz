@@ -131,7 +131,7 @@ function check_startup_crash {
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
     # Skip seed corpus as there is another explicit check that uses seed corpora.
-    SKIP_SEED_CORPUS=0 run_fuzzer $FUZZER_NAME -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    SKIP_SEED_CORPUS=1 run_fuzzer $FUZZER_NAME -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "Done $MIN_NUMBER_OF_RUNS runs" -c $FUZZER_OUTPUT)
   elif [[ "$FUZZING_ENGINE" = afl ]]; then
     # TODO(https://github.com/google/oss-fuzz/issues/2470): Dont use
