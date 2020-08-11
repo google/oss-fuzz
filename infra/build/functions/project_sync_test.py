@@ -155,7 +155,8 @@ class TestDataSync(unittest.TestCase):
       self.assertCountEqual([
           {
               'name':
-                  'projects/test-project/location/us-central1/jobs/test2-scheduler-fuzzing',
+                  'projects/test-project/location/us-central1/jobs/'
+                  'test2-scheduler-fuzzing',
               'pubsub_target': {
                   'topic_name': 'projects/test-project/topics/request-build',
                   'data': b'test2'
@@ -165,7 +166,8 @@ class TestDataSync(unittest.TestCase):
           },
           {
               'name':
-                  'projects/test-project/location/us-central1/jobs/test2-scheduler-coverage',
+                  'projects/test-project/location/us-central1/jobs/'
+                  'test2-scheduler-coverage',
               'pubsub_target': {
                   'topic_name':
                       'projects/test-project/topics/request-coverage-build',
