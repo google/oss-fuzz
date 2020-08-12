@@ -74,6 +74,3 @@ RUN mkdir -p /tmp/alsa-build && cd /tmp/alsa-build && \
 RUN cd $SRC && git clone https://chromium.googlesource.com/chromiumos/third_party/adhd
 WORKDIR adhd/cras
 COPY build.sh $SRC/
-
-# Copy dsp.ini.sample to /etc/cras for the fuzzer
-RUN mkdir -p /etc/cras && cp /src/adhd/cras-config/dsp.ini.sample /etc/cras
