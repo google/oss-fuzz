@@ -13,7 +13,7 @@ For projects written in C/C++, you can generate code coverage reports using
 Clang source-based code coverage. This page walks you through the basic steps.
 For more details, see [Clang's documentation].
 
-Code coverage report generation for other languages is not supported yet.
+Code coverage reports generation for other languages is not supported yet.
 
 - TOC
 {:toc}

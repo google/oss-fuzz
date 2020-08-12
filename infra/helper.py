@@ -733,7 +733,7 @@ def coverage(args):
   project_language = _get_project_language(args.project_name)
   if project_language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
     print(
-        'ERROR: Project is writte in %s, coverage for it is not supported yet.'
+        'ERROR: Project is written in %s, coverage for it is not supported yet.'
         % project_language,
         file=sys.stderr)
     return 1
@@ -744,6 +744,7 @@ def coverage(args):
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
+      'FUZZING_LANGUAGE=%s' % project_language,
       'PROJECT=%s' % args.project_name,
       'SANITIZER=coverage',
       'HTTP_PORT=%s' % args.port,
