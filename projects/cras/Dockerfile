@@ -21,6 +21,7 @@ RUN apt-get -y update && \
       libsbc-dev \
       libsndfile-dev \
       libspeexdsp-dev \
+      libsystemd-dev \
       libtool \
       libudev-dev \
       wget \
@@ -34,11 +35,14 @@ RUN cd /tmp && git clone https://github.com/ndevilla/iniparser.git && \
       chmod 644 /usr/local/include/dictionary.h /usr/local/include/iniparser.h && \
       chmod 644 /usr/local/lib/libiniparser.a && \
       chmod 755 /usr/local/lib/libiniparser.so.*
-RUN cd /usr/src/gtest && \
-      cmake . && \
-      make && \
-      chmod 644 *.a && \
-      cp *.a /usr/local/lib
+
+RUN cd /tmp && git clone https://github.com/google/googletest.git -b v1.8.x && \
+      cd googletest && \
+      mkdir build && cd build && \
+      cmake .. -DBUILD_SHARED_LIBS=ON \
+         -DINSTALL_GTEST=ON \
+         -DCMAKE_INSTALL_PREFIX:PATH=/usr && \
+      make && make install
 
 # Need to build and install alsa so there is a static lib.
 RUN mkdir -p /tmp/alsa-build && cd /tmp/alsa-build && \
@@ -55,3 +59,6 @@ RUN mkdir -p /tmp/alsa-build && cd /tmp/alsa-build && \
 RUN cd $SRC && git clone https://chromium.googlesource.com/chromiumos/third_party/adhd
 WORKDIR adhd/cras
 COPY build.sh $SRC/
+
+# Copy dsp.ini.sample to /etc/cras for the fuzzer
+RUN mkdir -p /etc/cras && cp /src/adhd/cras-config/dsp.ini.sample /etc/cras
