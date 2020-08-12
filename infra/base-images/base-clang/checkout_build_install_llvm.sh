@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+NPROC=4  # TODO(#4270): remove or increase this depending on the build status.
+
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib"
 apt-get install -y $LLVM_DEP_PACKAGES
 
@@ -108,13 +110,13 @@ esac
 
 PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
 cmake_llvm
-ninja
+ninja -j $NPROC
 
 cd $WORK/llvm-stage2
 export CC=$WORK/llvm-stage1/bin/clang
 export CXX=$WORK/llvm-stage1/bin/clang++
 cmake_llvm
-ninja
+ninja -j $NPROC
 ninja install
 rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
@@ -129,7 +131,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DCMAKE_C_FLAGS="-m32" \
     -DCMAKE_CXX_FLAGS="-m32"
 
-ninja cxx
+ninja -j $NPROC cxx
 ninja install-cxx
 rm -rf $WORK/i386
 
@@ -147,7 +149,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
     -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt"
 
-ninja cxx
+ninja -j $NPROC cxx
 ninja install-cxx
 rm -rf $WORK/msan
 
@@ -159,7 +161,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=DataFlow \
     -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
 
-ninja cxx cxxabi
+ninja -j $NPROC cxx cxxabi
 ninja install-cxx install-cxxabi
 rm -rf $WORK/dfsan
 
