@@ -31,14 +31,10 @@ $CC $CFLAGS \
     -c "${PYCRYPTODOME_INTERNALS//'blake2.c'/}"
 ar -qc $WORK/libpycryptodome.a  *.o
 
-for fuzzer in $SRC/*_fuzzer.cc; do
+# for fuzzer in $SRC/*_fuzzer.cc; do
+for fuzzer in $SRC/pcd_hash_fuzzer.cc; do
   fuzzer_basename=$(basename -s .cc $fuzzer)
-
-  # $CC $CFLAGS \
-  #     ${PYCRYPTODOME_FLAGS[@]} \
-  #     -c $fuzzer -o ${fuzzer_basename}.o
-
-  $CXX $CXXFLAGS ${PYCRYPTODOME_FLAGS[@]} \
+  $CXX $CXXFLAGS ${PYCRYPTODOME_FLAGS[@]} -D HASHTYPE=MD5 \
       $fuzzer -o $OUT/$fuzzer_basename \
       $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a
 done
