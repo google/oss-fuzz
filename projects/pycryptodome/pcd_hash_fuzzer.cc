@@ -20,6 +20,10 @@
 #error Macro HASHTYPE must be defined.
 #endif
 
+#ifndef FNAME
+#error Macro FNAME must be defined.
+#endif
+
 #define CONCAT_TYPE(x) _PASTE2(HASHTYPE, x)
 
 #define init CONCAT_TYPE(_init)
@@ -27,17 +31,13 @@
 #define digest CONCAT_TYPE(_digest)
 #define destroy CONCAT_TYPE(_destroy)
 
-#define str(x) #x
-#define xstr(x) str(x)
-// #define HASHTYPE_STR xstr(HASHTYPE)
+#define STR(x) #x
+#define INCLUDE(x) STR(x)
 
-static std::string to_include = xstr(HASHTYPE);
-to_include.append(".c");
-
-#include to_include
+#include INCLUDE(FNAME)
 
 #ifndef DIGEST_SIZE
-#define DIGEST_SIZE CONCAT_TYPE(_DIGEST_SIZE)
+#error Macro DIGEST_SIZE must be defined.
 #endif
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -59,7 +59,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   uint8_t result[DIGEST_SIZE];
-  digest(hs, result);
+  digest(hs, result
+#ifdef DIGEST_THIRD_PARAM
+         ,
+         DIGEST_SIZE
+#endif
+  );
 
 error:
   destroy(hs);

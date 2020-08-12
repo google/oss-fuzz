@@ -15,8 +15,8 @@
 #
 ################################################################################
 
-PYCRYPTODOME_INTERNALS=(src/*.c src/libtom/*.c)
-PYCRYPTODOME_FLAGS=(
+PCD_INTERNALS=(src/*.c src/libtom/*.c)
+PCD_FLAGS=(
   "-I $SRC/pycryptodome/src"
   "-I $SRC/pycryptodome/src/libtom"
   "-D HAVE_STDINT_H"
@@ -27,14 +27,47 @@ PYCRYPTODOME_FLAGS=(
 )
 
 $CC $CFLAGS \
-    ${PYCRYPTODOME_FLAGS[@]} \
-    -c "${PYCRYPTODOME_INTERNALS//'blake2.c'/}"
+    ${PCD_FLAGS[@]} \
+    -c "${PCD_INTERNALS//'blake2.c'/}"
 ar -qc $WORK/libpycryptodome.a  *.o
 
-# for fuzzer in $SRC/*_fuzzer.cc; do
-for fuzzer in $SRC/pcd_hash_fuzzer.cc; do
-  fuzzer_basename=$(basename -s .cc $fuzzer)
-  $CXX $CXXFLAGS ${PYCRYPTODOME_FLAGS[@]} -D HASHTYPE=MD5 \
-      $fuzzer -o $OUT/$fuzzer_basename \
-      $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a
+PCD_HASH_FUNCTION_PREFIXES=(
+  "md2"
+  "md4"
+  "MD5"
+  "ripemd160"
+  "SHA224"
+  "SHA256"
+  "SHA384"
+  # "keccak"
+)
+
+PCD_HASH_FNAMES=(
+  "MD2.c"
+  "MD4.c"
+  "MD5.c"
+  "RIPEMD160.c"
+  "SHA224.c"
+  "SHA256.c"
+  "SHA384.c"
+)
+
+PCD_HASH_DIGEST_SETTINGS=(
+  "-D DIGEST_SIZE=16"
+  "-D DIGEST_SIZE=16"
+  ""
+  "-D DIGEST_SIZE=RIPEMD160_DIGEST_SIZE"
+  "-D DIGEST_THIRD_PARAM"
+  "-D DIGEST_THIRD_PARAM"
+  "-D DIGEST_THIRD_PARAM"
+)
+
+for i in {0..6}; do
+  $CXX $CXXFLAGS ${PCD_FLAGS[@]} \
+      -D HASHTYPE=${PCD_HASH_FUNCTION_PREFIXES[$i]} \
+      -D FNAME=${PCD_HASH_FNAMES[$i]} \
+      ${PCD_HASH_DIGEST_SETTINGS[$i]} \
+      $SRC/pcd_hash_fuzzer.cc \
+      $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a \
+      -o $OUT/${PCD_HASH_FUNCTION_PREFIXES[$i]}_fuzzer
 done
