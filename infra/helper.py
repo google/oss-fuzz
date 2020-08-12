@@ -58,6 +58,9 @@ CORPUS_BACKUP_URL_FORMAT = (
 
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
+# Languages from project.yaml that have code coverage support.
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
+
 
 def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-many-statements
   """Get subcommand from program arguments and do it."""
@@ -727,12 +730,21 @@ def coverage(args):
   if not check_project_exists(args.project_name):
     return 1
 
+  project_language = _get_project_language(args.project_name)
+  if project_language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+    print(
+        'ERROR: Project is written in %s, coverage for it is not supported yet.'
+        % project_language,
+        file=sys.stderr)
+    return 1
+
   if not args.no_corpus_download and not args.corpus_dir:
     if not download_corpora(args):
       return 1
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
+      'FUZZING_LANGUAGE=%s' % project_language,
       'PROJECT=%s' % args.project_name,
       'SANITIZER=coverage',
       'HTTP_PORT=%s' % args.port,
