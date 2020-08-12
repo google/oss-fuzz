@@ -3,6 +3,7 @@ language: c
 primary_contact: "security-officer@isc.org"
 auto_ccs:
   - "ondrej@sury.org"
+  - "michal@isc.org"
 sanitizers:
   - address
   - memory:
