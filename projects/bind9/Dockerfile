@@ -29,6 +29,6 @@ RUN apt-get -y install		\
 	libuv1-dev		\
 	pkg-config		\
 	zip
-RUN git clone --depth 1 --branch ondrej/oss-fuzz https://gitlab.isc.org/isc-projects/bind9.git
+RUN git clone --depth 1 https://gitlab.isc.org/isc-projects/bind9.git
 WORKDIR bind9
 COPY build.sh $SRC/
