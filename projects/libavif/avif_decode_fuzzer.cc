@@ -17,19 +17,18 @@
 #include "avif/avif.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-  static avifRGBFormat rgbFormats[] = {
-      AVIF_RGB_FORMAT_RGB, AVIF_RGB_FORMAT_RGBA, AVIF_RGB_FORMAT_ARGB,
-      AVIF_RGB_FORMAT_BGR, AVIF_RGB_FORMAT_BGRA, AVIF_RGB_FORMAT_ABGR};
+  static avifRGBFormat rgbFormats[] = {AVIF_RGB_FORMAT_RGB,
+                                       AVIF_RGB_FORMAT_RGBA};
   static size_t rgbFormatsCount = sizeof(rgbFormats) / sizeof(rgbFormats[0]);
 
   static avifChromaUpsampling upsamplings[] = {AVIF_CHROMA_UPSAMPLING_BILINEAR,
                                                AVIF_CHROMA_UPSAMPLING_NEAREST};
   static size_t upsamplingsCount = sizeof(upsamplings) / sizeof(upsamplings[0]);
 
-  static uint32_t rgbDepths[] = {8, 10, 12, 16};
+  static uint32_t rgbDepths[] = {8, 10};
   static size_t rgbDepthsCount = sizeof(rgbDepths) / sizeof(rgbDepths[0]);
 
-  static uint32_t yuvDepths[] = {8, 10, 12};
+  static uint32_t yuvDepths[] = {8, 10};
   static size_t yuvDepthsCount = sizeof(yuvDepths) / sizeof(yuvDepths[0]);
 
   avifROData raw;
