@@ -2,8 +2,12 @@ homepage: "https://gitlab.isc.org/isc-projects/bind9"
 language: c
 primary_contact: "security-officer@isc.org"
 auto_ccs:
-  - "ondrej@sury.org"
+  - "ondrej@isc.org"
   - "michal@isc.org"
+  - "marka@isc.org"
+  - "wpk@isc.org"
+  - "matthijs@isc.org"
+  - "dfronza@isc.org
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
