@@ -14,7 +14,6 @@
 
 #include "common.h"
 #include <fuzzer/FuzzedDataProvider.h>
-#include <string>
 
 #ifndef HASHTYPE
 #error Macro HASHTYPE must be defined.
@@ -59,11 +58,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   uint8_t result[DIGEST_SIZE];
-  digest(hs, result
-#ifdef DIGEST_THIRD_PARAM
-         , DIGEST_SIZE
+
+#ifndef DIGEST_THIRD_PARAM
+  digest(hs, result);
+#else
+  digest(hs, result, DIGEST_SIZE);
 #endif
-  );
 
 error:
   destroy(hs);

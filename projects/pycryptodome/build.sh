@@ -46,3 +46,7 @@ for ((i = 0; i < ${#PCD_HASH_OPTIONS[@]}; i++)); do
       $SRC/pcd_hash_fuzzer.cc ${PCD_HASH_OPTIONS[i]} \
       $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a
 done
+
+$CXX $CXXFLAGS ${PCD_FLAGS[@]} \
+    $SRC/pcd_aes_fuzzer.cc -o $OUT/aes_fuzzer \
+    $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a
