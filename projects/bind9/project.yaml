@@ -8,9 +8,6 @@ auto_ccs:
   - "wpk@isc.org"
   - "matthijs@isc.org"
   - "dfronza@isc.org"
-fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
 sanitizers:
   - address
   - memory:

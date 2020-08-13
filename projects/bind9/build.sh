@@ -18,8 +18,9 @@
 # build the project
 autoreconf -fi
 ./configure --disable-shared --enable-static --enable-developer --without-cmocka --without-zlib --disable-linux-caps --prefix="$WORK" --enable-fuzzing=ossfuzz
-make -j"$(nproc)" all
-(cd fuzz && TESTS='' make -e -j"$(nproc)" check)
+(cd libltdl && make -j"$(nproc)" all V=1)
+(cd lib/isc && make -j"$(nproc)" all V=1)
+(cd lib/dns && make -j"$(nproc)" all V=1)
 
 LIBISC_CFLAGS="-Ilib/isc/unix/include -Ilib/isc/pthreads/include -Ilib/isc/include"
 LIBDNS_CFLAGS="-Ilib/dns/include"
@@ -30,6 +31,7 @@ for fuzzer in fuzz/*.c; do
     output=$(basename "${fuzzer%.c}")
     [ "$output" = "main" ] && continue
     # We need to try little bit harder to link everything statically
+    (cd fuzz && make -j"$(nproc)" "${output}.o" V=1)
     ${CXX} ${CXXFLAGS} \
 	   -o "${OUT}/${output}_fuzzer" \
 	   "fuzz/${output}.o" \
