@@ -7,7 +7,7 @@ auto_ccs:
   - "marka@isc.org"
   - "wpk@isc.org"
   - "matthijs@isc.org"
-  - "dfronza@isc.org
+  - "dfronza@isc.org"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
