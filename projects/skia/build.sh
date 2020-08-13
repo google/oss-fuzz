@@ -172,7 +172,7 @@ cp out/Fuzz/skottie_json $OUT/skottie_json
 cp $SRC/skia-artifacts/skottie_json_seed_corpus.zip $OUT/skottie_json_seed_corpus.zip
 
 cp out/Fuzz/skjson $OUT/skjson
-cp json.dict $OUT/skjson.dict
+cp $SRC/skia-artifacts/json.dict $OUT/skjson.dict
 cp $SRC/skia-artifacts/skjson_seed_corpus.zip $OUT/skjson_seed_corpus.zip
 
 cp out/Fuzz_mem_constraints/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
