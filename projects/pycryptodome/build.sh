@@ -31,43 +31,18 @@ $CC $CFLAGS \
     -c "${PCD_INTERNALS//'blake2.c'/}"
 ar -qc $WORK/libpycryptodome.a  *.o
 
-PCD_HASH_FUNCTION_PREFIXES=(
-  "md2"
-  "md4"
-  "MD5"
-  "ripemd160"
-  "SHA224"
-  "SHA256"
-  "SHA384"
-  # "keccak"
+PCD_HASH_OPTIONS=(
+  "-D HASHTYPE=md2 -D FNAME=MD2.c -D DIGEST_SIZE=16 -o $OUT/md2_fuzzer"
+  "-D HASHTYPE=md4 -D FNAME=MD4.c -D DIGEST_SIZE=16 -o $OUT/md4_fuzzer"
+  "-D HASHTYPE=MD5 -D FNAME=MD5.c -o $OUT/md5_fuzzer"
+  "-D HASHTYPE=ripemd160 -D FNAME=RIPEMD160.c -D DIGEST_SIZE=RIPEMD160_DIGEST_SIZE -o $OUT/ripemd160_fuzzer"
+  "-D HASHTYPE=SHA224 -D FNAME=SHA224.c -D DIGEST_THIRD_PARAM -o $OUT/sha224_fuzzer"
+  "-D HASHTYPE=SHA256 -D FNAME=SHA256.c -D DIGEST_THIRD_PARAM -o $OUT/sha256_fuzzer"
+  "-D HASHTYPE=SHA384 -D FNAME=SHA384.c -D DIGEST_THIRD_PARAM -o $OUT/sha384_fuzzer"
 )
 
-PCD_HASH_FNAMES=(
-  "MD2.c"
-  "MD4.c"
-  "MD5.c"
-  "RIPEMD160.c"
-  "SHA224.c"
-  "SHA256.c"
-  "SHA384.c"
-)
-
-PCD_HASH_DIGEST_SETTINGS=(
-  "-D DIGEST_SIZE=16"
-  "-D DIGEST_SIZE=16"
-  ""
-  "-D DIGEST_SIZE=RIPEMD160_DIGEST_SIZE"
-  "-D DIGEST_THIRD_PARAM"
-  "-D DIGEST_THIRD_PARAM"
-  "-D DIGEST_THIRD_PARAM"
-)
-
-for i in {0..6}; do
+for ((i = 0; i < ${#PCD_HASH_OPTIONS[@]}; i++)); do
   $CXX $CXXFLAGS ${PCD_FLAGS[@]} \
-      -D HASHTYPE=${PCD_HASH_FUNCTION_PREFIXES[$i]} \
-      -D FNAME=${PCD_HASH_FNAMES[$i]} \
-      ${PCD_HASH_DIGEST_SETTINGS[$i]} \
-      $SRC/pcd_hash_fuzzer.cc \
-      $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a \
-      -o $OUT/${PCD_HASH_FUNCTION_PREFIXES[$i]}_fuzzer
+      $SRC/pcd_hash_fuzzer.cc ${PCD_HASH_OPTIONS[i]} \
+      $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a
 done

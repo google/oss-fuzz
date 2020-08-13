@@ -61,8 +61,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   uint8_t result[DIGEST_SIZE];
   digest(hs, result
 #ifdef DIGEST_THIRD_PARAM
-         ,
-         DIGEST_SIZE
+         , DIGEST_SIZE
 #endif
   );
 
