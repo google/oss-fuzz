@@ -34,56 +34,60 @@ WORKDIR $SRC/skia/third_party/externals/swiftshader/
 # TODO(metzman): Come up with a better long term solution, such as downloading
 # prebuilt libraries, than pinning swiftshader to a known working revision.
 RUN git checkout 45510ad8a77862c1ce2e33f0efed41544f5f048b
+
+# Make a directory for fuzzing artifacts so that we don't add things to
+# $SRC/skia that will get lost by CIFuzz.
+RUN mkdir $SRC/skia-artifacts
+
+RUN wget -O $SRC/skia-artifacts/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/region_set_path_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/region_set_path_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/textblob_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/textblob_deserialize_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/path_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/path_deserialize_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/image_decode_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_decode_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/animated_image_decode_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/animated_image_decode_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/api_draw_functions_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_draw_functions_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/api_gradients_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_gradients_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/api_image_filter_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_image_filter_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/api_path_measure_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_path_measure_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/api_pathop_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_pathop_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/canvas_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/canvas_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/encoder_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/encoder_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/skottie_json_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skottie_json_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/skjson_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skjson_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/api_polyutils_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_polyutils_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/sksl_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/svg_dom_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/svg_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/sksl_with_256_padding_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_with_256_padding_seed_corpus.zip
+
+RUN wget -O $SRC/skia-artifacts/skp_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skp_seed_corpus.zip
+
+COPY image_filter_deserialize_width.options $SRC/skia-artifacts/image_filter_deserialize_width.options
+
+COPY json.dict $SRC/skia-artifacts/json.dict
+
 WORKDIR $SRC/skia
-
-RUN wget -O $SRC/skia/image_filter_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_filter_deserialize_seed_corpus.zip
-
-RUN wget -O $SRC/skia/region_set_path_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/region_set_path_seed_corpus.zip
-
-RUN wget -O $SRC/skia/textblob_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/textblob_deserialize_seed_corpus.zip
-
-RUN wget -O $SRC/skia/path_deserialize_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/path_deserialize_seed_corpus.zip
-
-RUN wget -O $SRC/skia/image_decode_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/image_decode_seed_corpus.zip
-
-RUN wget -O $SRC/skia/animated_image_decode_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/animated_image_decode_seed_corpus.zip
-
-RUN wget -O $SRC/skia/api_draw_functions_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_draw_functions_seed_corpus.zip
-
-RUN wget -O $SRC/skia/api_gradients_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_gradients_seed_corpus.zip
-
-RUN wget -O $SRC/skia/api_image_filter_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_image_filter_seed_corpus.zip
-
-RUN wget -O $SRC/skia/api_path_measure_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_path_measure_seed_corpus.zip
-
-RUN wget -O $SRC/skia/api_pathop_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_pathop_seed_corpus.zip
-
-RUN wget -O $SRC/skia/canvas_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/canvas_seed_corpus.zip
-
-RUN wget -O $SRC/skia/encoder_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/encoder_seed_corpus.zip
-
-RUN wget -O $SRC/skia/skottie_json_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skottie_json_seed_corpus.zip
-
-RUN wget -O $SRC/skia/skjson_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skjson_seed_corpus.zip
-
-RUN wget -O $SRC/skia/api_polyutils_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/api_polyutils_seed_corpus.zip
-
-RUN wget -O $SRC/skia/sksl_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_seed_corpus.zip
-
-RUN wget -O $SRC/skia/svg_dom_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/svg_seed_corpus.zip
-
-RUN wget -O $SRC/skia/sksl_with_256_padding_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/sksl_with_256_padding_seed_corpus.zip
-
-RUN wget -O $SRC/skia/skp_seed_corpus.zip https://storage.googleapis.com/skia-fuzzer/oss-fuzz/skp_seed_corpus.zip
-
 COPY build.sh $SRC/
 
 COPY skia.diff $SRC/skia/skia.diff
 RUN git apply skia.diff
-
-COPY image_filter_deserialize_width.options $SRC/skia/image_filter_deserialize_width.options
-
-COPY json.dict $SRC/skia/json.dict
 
 COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
 RUN cat BUILD.gn.diff >> BUILD.gn
