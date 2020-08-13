@@ -3,7 +3,9 @@ primary_contact: "mgregan@mozilla.com"
 sanitizers:
   - address
 fuzzing_engines:
+  - afl
   - libfuzzer
+  - honggfuzz
 language: rust
 vendor_ccs:
 - "jbauman@mozilla.com"
