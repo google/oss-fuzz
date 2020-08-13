@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-NPROC=4  # TODO(#4270): remove or increase this depending on the build status.
+NPROC=16  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
 
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib"
 apt-get install -y $LLVM_DEP_PACKAGES
