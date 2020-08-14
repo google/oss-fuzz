@@ -3,7 +3,7 @@ language: c++
 primary_contact: "sigmavirus24@gmail.com"
 auto_ccs:
   - "alex.gaynor@gmail.com"
-  - "post@tinita.de"
+  - "perlpunks@googlemail.com"
   - "ingy@ingy.net"
 fuzzing_engines:
   - libfuzzer
