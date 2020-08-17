@@ -21,6 +21,8 @@ if [ "$SANITIZER" = undefined ]; then
     export CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
 fi
 
+export V=1
+
 ./autogen.sh \
     --disable-shared \
     --without-debug \
@@ -28,13 +30,14 @@ fi
     --without-http \
     --without-legacy \
     --without-python
-make -j$(nproc) V=1
+make -j$(nproc)
 
 cd fuzz
-make V=1 fuzz.o
+make clean-corpus
+make fuzz.o
 
-for fuzzer in html regexp schema uri xml; do
-    make V=1 $fuzzer.o
+for fuzzer in html regexp schema uri xml xpath; do
+    make $fuzzer.o
     # Link with $CXX
     $CXX $CXXFLAGS \
         $fuzzer.o fuzz.o \
@@ -42,7 +45,7 @@ for fuzzer in html regexp schema uri xml; do
         $LIB_FUZZING_ENGINE \
         ../.libs/libxml2.a -Wl,-Bstatic -lz -llzma -Wl,-Bdynamic
 
-    [ -e seed/$fuzzer ] || make V=1 seed/$fuzzer.stamp
+    [ -e seed/$fuzzer ] || make seed/$fuzzer.stamp
     zip -j $OUT/${fuzzer}_seed_corpus.zip seed/$fuzzer/*
 done
 
