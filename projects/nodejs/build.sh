@@ -22,4 +22,5 @@ export LD="$CXX"
 ./configure --experimental-quic --with-ossfuzz
 make -j$(nproc)
 
-cp /src/node/out/Release/fuzz_url ${OUT}/
+# Copy all fuzzers to OUT folder 
+cp out/Release/fuzz_* ${OUT}/
