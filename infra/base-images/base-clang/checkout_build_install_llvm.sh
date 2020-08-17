@@ -110,7 +110,6 @@ case $(uname -m) in
 esac
 
 PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
-clang-tools-extra;libclc;libunwind;lld
 
 cmake_llvm
 ninja -j $NPROC
