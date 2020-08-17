@@ -21,10 +21,19 @@
 export PATH=$OUT:$PATH
 cd $OUT
 
+DEBUGGER=${DEBUGGER:-}
+
 FUZZER=$1
 shift
 
 CORPUS_DIR="/tmp/${FUZZER}_corpus"
+
+SANITIZER=${SANITIZER:-}
+if [ -z $SANITIZER ]; then
+  # If $SANITIZER is not specified (e.g. calling from `reproduce` command), it
+  # is not important and can be set to any value.
+  SANITIZER="default"
+fi
 
 if [[ "$RUN_FUZZER_MODE" = interactive ]]; then
   FUZZER_OUT="$OUT/${FUZZER}_${FUZZING_ENGINE}_${SANITIZER}_out"
@@ -128,6 +137,10 @@ echo $CMD_LINE
 
 # Unset OUT so the fuzz target can't rely on it.
 unset OUT
+
+if [ ! -z "$DEBUGGER" ]; then
+  CMD_LINE="$DEBUGGER $CMD_LINE"
+fi
 
 bash -c "$CMD_LINE"
 
