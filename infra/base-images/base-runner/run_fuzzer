@@ -138,7 +138,7 @@ echo $CMD_LINE
 # Unset OUT so the fuzz target can't rely on it.
 unset OUT
 
-if [ ! -z $DEBUGGER ]; then
+if [ ! -z "$DEBUGGER" ]; then
   CMD_LINE="$DEBUGGER $CMD_LINE"
 fi
 
