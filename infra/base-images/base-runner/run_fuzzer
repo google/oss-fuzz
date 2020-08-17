@@ -139,7 +139,7 @@ echo $CMD_LINE
 unset OUT
 
 if [ ! -z $DEBUGGER ]; then
-  CMD_LINE="$DEBUGER $CMD_LINE"
+  CMD_LINE="$DEBUGGER $CMD_LINE"
 fi
 
 bash -c "$CMD_LINE"
