@@ -31,3 +31,4 @@ function compile_fuzzer {
 
 compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/frames Fuzz frame_fuzzer
 compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/header Fuzz header_fuzzer
+compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/transportparameters Fuzz transportparameter_fuzzer
