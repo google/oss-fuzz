@@ -29,5 +29,9 @@ function compile_fuzzer {
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 }
 
+# Fuzz qpack
+compile_fuzzer github.com/marten-seemann/qpack/fuzzing Fuzz qpack_fuzzer
+
+# Fuzz quic-go
 compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/frames Fuzz frame_fuzzer
 compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/header Fuzz header_fuzzer

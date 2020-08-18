@@ -16,6 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+RUN go get -u -d github.com/marten-seemann/qpack/ && \
+  cd /root/go/src/github.com/marten-seemann/qpack && \
+  go build
+
 RUN go get -u -d github.com/lucas-clemente/quic-go/ && \
   cd /root/go/src/github.com/lucas-clemente/quic-go && \
   go build
