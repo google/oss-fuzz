@@ -1,3 +1,5 @@
 homepage: "https://www.inchi-trust.org/"
 language: c
-primary_contact: "" # TODO(rjotwani): Find primary contact email address
+primary_contact: "" # TODO(mtjz): Find primary contact email address
+sanitizers:
+  - address
