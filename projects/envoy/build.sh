@@ -64,9 +64,8 @@ done
 
 # Build driverless libraries.
 # Benchmark about 2 GB per CPU (14 threads for 28.8 GB RAM)
-# TODO(asraa): Remove deprecation warnings when Envoy moves to C++17
+# TODO(asraa): Remove deprecation warnings when Envoy and deps moves to C++17
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
-  --discard_analysis_cache --notrack_incremental_state --nokeep_state_after_build \
   --local_cpu_resources=HOST_CPUS*0.45 \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
@@ -74,7 +73,8 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
   --copt -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS \
   --define force_libcpp=enabled --build_tag_filters=-no_asan \
-  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
+  --cxxopt=-std=c++17 --linkopt=-lc++ \
+  --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
