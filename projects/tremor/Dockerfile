@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libogg-dev libtool pkg-config wget
-RUN git clone https://gitlab.xiph.org/xiph/ogg.git
-RUN git clone https://gitlab.xiph.org/xiph/tremor.git
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git
+RUN git clone --depth 1 https://gitlab.xiph.org/xiph/tremor.git
 RUN svn export https://github.com/mozillasecurity/fuzzdata.git/trunk/samples/vorbis decode_corpus
 WORKDIR tremor
 COPY decode_fuzzer.cc $SRC/tremor/

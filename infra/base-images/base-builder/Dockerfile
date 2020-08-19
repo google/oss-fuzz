@@ -31,13 +31,6 @@ RUN dpkg --add-architecture i386 && \
         subversion \
         zip
 
-# Install cmake.
-ENV CMAKE_VERSION 3.17.3
-RUN curl -L -O https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
-    chmod +x cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
-    ./cmake-$CMAKE_VERSION-Linux-x86_64.sh --skip-license --prefix="/usr/local" && \
-    rm cmake-$CMAKE_VERSION-Linux-x86_64.sh
-
 # Build and install latest Python 3 (3.8.3).
 ENV PYTHON_VERSION 3.8.3
 RUN export PYTHON_DEPS="\

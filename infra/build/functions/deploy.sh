@@ -23,9 +23,6 @@ BASE_IMAGE_MESSAGE="Start base image build"
 BUILD_JOB_TOPIC=request-build
 
 COVERAGE_BUILD_JOB_TOPIC=request-coverage-build
-COVERAGE_BUILD_SCHEDULER_JOB=coverage-build-scheduler
-COVERAGE_BUILD_SCHEDULE="0 6 * * *"
-COVERAGE_BUILD_MESSAGE="Start coverage report builds"
 
 SYNC_JOB_TOPIC=schedule-project-sync
 SYNC_SCHEDULER_JOB=sync-scheduler
@@ -35,7 +32,6 @@ SYNC_MESSAGE="Start Sync"
 UPDATE_BUILD_JOB_TOPIC=builds-status
 UPDATE_BUILD_SCHEDULER_JOB=builds-status-scheduler
 UPDATE_BUILD_JOB_SCHEDULE="*/30 * * * *"
-UPDATE_BUILD_MESSAGE="Update build statuses"
 
 
 function deploy_pubsub_topic {
@@ -81,21 +77,23 @@ function deploy_cloud_function {
 	gcloud functions deploy $name \
 	--entry-point $entry_point \
 	--trigger-topic $topic \
-	--runtime python37 \
+	--runtime python38 \
 	--project $project \
-	--timeout 540
+	--timeout 540 \
+  --region us-central1 \
+  --set-env-vars GCP_PROJECT=$project,FUNCTION_REGION=us-central1 \
+  --max-instances 1
 }
 
-if [ $# == 2 ]; then
+if [ $# == 1 ]; then
 	PROJECT_ID=$1
-	BASE_PROJECT_ID=$2
 else
-	echo -e "\n Usage ./deploy.sh <project-name> <base-project-name>"; exit;
+	echo -e "\n Usage ./deploy.sh <project-name>"; exit;
 fi
 
 deploy_pubsub_topic $BUILD_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $SYNC_JOB_TOPIC $PROJECT_ID
-deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $BASE_PROJECT_ID
+deploy_pubsub_topic $BASE_IMAGE_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $COVERAGE_BUILD_JOB_TOPIC $PROJECT_ID
 deploy_pubsub_topic $UPDATE_BUILD_JOB_TOPIC $PROJECT_ID
 
@@ -106,23 +104,26 @@ deploy_scheduler $SYNC_SCHEDULER_JOB \
 				  $PROJECT_ID
 
 deploy_scheduler $BASE_IMAGE_SCHEDULER_JOB \
-				 "$BASE_IMAGE SCHEDULE" \
+				 "$BASE_IMAGE_SCHEDULE" \
 				  $BASE_IMAGE_JOB_TOPIC \
 				  "$BASE_IMAGE_MESSAGE" \
-				  $BASE_PROJECT_ID
+				  $PROJECT_ID
 
-deploy_scheduler $COVERAGE_BUILD_SCHEDULER_JOB \
-				 "$COVERAGE_BUILD_SCHEDULE" \
-				 $COVERAGE_BUILD_JOB_TOPIC \
-				 "$COVERAGE_BUILD_MESSAGE" \
-				 $PROJECT_ID
-
-deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB \
+deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-fuzzing \
 				 "$UPDATE_BUILD_JOB_SCHEDULE" \
 				 $UPDATE_BUILD_JOB_TOPIC \
-				 "$UPDATE_BUILD_MESSAGE" \
-				 $PROJECT_ID 
-
+				 "fuzzing" \
+				 $PROJECT_ID
+deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-coverage \
+				 "$UPDATE_BUILD_JOB_SCHEDULE" \
+				 $UPDATE_BUILD_JOB_TOPIC \
+				 "coverage" \
+				 $PROJECT_ID
+deploy_scheduler $UPDATE_BUILD_SCHEDULER_JOB-badges \
+				 "$UPDATE_BUILD_JOB_SCHEDULE" \
+				 $UPDATE_BUILD_JOB_TOPIC \
+				 "badges" \
+				 $PROJECT_ID
 
 deploy_cloud_function sync \
 					  sync \
@@ -132,7 +133,12 @@ deploy_cloud_function sync \
 deploy_cloud_function base-image-build \
 					  build_base_images \
 					  $BASE_IMAGE_JOB_TOPIC \
-					  $BASE_PROJECT_ID
+					  $PROJECT_ID
+
+deploy_cloud_function base-msan-build \
+					  build_msan \
+					  $BASE_IMAGE_JOB_TOPIC \
+					  $PROJECT_ID
 
 deploy_cloud_function request-build \
 					  build_project \
@@ -148,3 +154,5 @@ deploy_cloud_function update-builds \
 					  builds_status \
 					  $UPDATE_BUILD_JOB_TOPIC \
 					  $PROJECT_ID
+
+gcloud datastore indexes create index.yaml --project $PROJECT_ID

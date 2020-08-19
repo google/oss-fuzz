@@ -42,9 +42,7 @@ FUZZ_TARGETS=(
 export MOZ_OBJDIR=$WORK/obj-fuzz
 export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 
-# Install dependencies.
 export SHELL=/bin/bash
-./mach bootstrap --no-interactive --application-choice browser
 
 # Skip patches for now
 rm tools/fuzzing/libfuzzer/patches/*.patch

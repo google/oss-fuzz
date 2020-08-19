@@ -21,8 +21,6 @@ parent: Reference
 * [This page](https://oss-fuzz-build-logs.storage.googleapis.com/index.html)
   gives the latest build logs for each project.
 
-* (Internal only) [Builds dashboard](https://builder.oss-fuzz.com).
-
 ## Blog posts
 
 * 2016-12-01 - Announcing OSS-Fuzz: Continuous fuzzing for open source software
