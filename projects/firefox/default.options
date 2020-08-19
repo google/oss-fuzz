@@ -3,6 +3,5 @@ detect_leaks=0
 detect_stack_use_after_return=0
 max_allocation_size_mb=2049
 [libfuzzer]
-close_fd_mask=2
-max_len=25600
+close_fd_mask=3
 rss_limit_mb=3500

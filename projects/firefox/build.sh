@@ -17,18 +17,15 @@
 
 # Case-sensitive names of internal Firefox fuzzing targets. Edit to add more.
 FUZZ_TARGETS=(
-  # WebRTC
-  SdpParser
-  StunParser
   # IPC
-  ContentParentIPC
   CompositorManagerParentIPC
+  ContentParentIPC
   ContentSecurityPolicyParser
   FeaturePolicyParser
   # Image
+  ImageBMP
   ImageGIF
   ImageICO
-  ImageBMP
   # Demuxing
   MediaADTS
   MediaFlac
@@ -36,6 +33,9 @@ FUZZ_TARGETS=(
   MediaOgg
   MediaWebM
   # MediaWAV disabled due to frequent OOMs
+  # WebRTC
+  SdpParser
+  StunParser
 )
 
 # Firefox object (build) directory and configuration file.
@@ -73,14 +73,18 @@ mkdir -p $OUT/lib
 for LIBRARY in $LIBRARIES; do cp -L $LIBRARY $OUT/lib; done
 
 # Build a wrapper binary for each target to set environment variables.
-for FUZZ_TARGET in ${FUZZ_TARGETS[@]}
+for FUZZ_TARGET in "${FUZZ_TARGETS[@]}"
 do
-  $CC $CFLAGS -O0 \
-    -DFUZZ_TARGET=$FUZZ_TARGET \
-    $SRC/target.c -o $OUT/$FUZZ_TARGET
+  $CC "$CFLAGS" -O0 \
+    -DFUZZ_TARGET="$FUZZ_TARGET" \
+    "$SRC/target.c" -o "$OUT/$FUZZ_TARGET"
+  # Copy '.options' file if it exists otherwise use 'default.options'.
+  if [ ! -f "$SRC/$FUZZ_TARGET.options" ]; then
+    cp "$SRC/default.options" "$OUT/$FUZZ_TARGET.options"
+  else
+    cp "$SRC/$FUZZ_TARGET.options" "$OUT"
+  fi
 done
-
-cp $SRC/*.options $OUT
 
 # SdpParser
 find media/webrtc -iname "*.sdp" \

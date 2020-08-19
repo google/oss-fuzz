@@ -24,7 +24,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 RUN git clone --depth 1 https://github.com/mozilla/gecko-dev mozilla-central
 RUN git clone --depth 1 https://github.com/mozillasecurity/fuzzdata
 WORKDIR mozilla-central
-COPY build.sh target.c *.options mozconfig.* $SRC/
 # Install dependencies.
 ENV SHELL /bin/bash
 RUN ./mach bootstrap --no-interactive --application-choice browser
+COPY build.sh target.c *.options mozconfig.* $SRC/
