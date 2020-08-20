@@ -16,7 +16,7 @@
 ################################################################################
 
 ./bootstrap.sh
-./configure --enable-debug --enable-dex --enable-dotnet --without-crypto
+./configure --enable-macho --enable-debug --enable-dex --enable-dotnet --without-crypto
 
 make clean
 make -j$(nproc) all
