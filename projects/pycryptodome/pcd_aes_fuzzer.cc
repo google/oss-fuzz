@@ -31,19 +31,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   std::vector<uint8_t> keyBuf = stream.ConsumeBytes<uint8_t>(keySize);
   const uint8_t *key = keyBuf.data();
 
-  void *state;
+  BlockBase *state;
   if (AES_start_operation(key, keySize, reinterpret_cast<AES_State **>(&state)))
     return 0;
 
-  std::vector<uint8_t> encData =
-      stream.ConsumeBytes<uint8_t>(stream.remaining_bytes() / 2);
-  std::vector<uint8_t> decData = stream.ConsumeRemainingBytes<uint8_t>();
+  uint8_t outEnc[size];
+  uint8_t outDec[size];
 
-  uint8_t outEnc[encData.size()];
-  uint8_t outDec[decData.size()];
-
-  AES_encrypt(reinterpret_cast<BlockBase *>(state), encData.data(), outEnc, encData.size());
-  AES_decrypt(reinterpret_cast<BlockBase *>(state), decData.data(), outDec, decData.size());
+  AES_encrypt(reinterpret_cast<BlockBase *>(state), data, outEnc, size);
+  AES_decrypt(reinterpret_cast<BlockBase *>(state), data, outDec, size);
 
   AES_stop_operation(reinterpret_cast<BlockBase *>(state));
 
