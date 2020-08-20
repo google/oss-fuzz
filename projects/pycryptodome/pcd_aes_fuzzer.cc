@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern "C" {
-  #include "AES.c"
-}
+#include "AES.c"
 #include "common.h"
 #include <fuzzer/FuzzedDataProvider.h>
 
@@ -24,21 +22,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     return 0;
 
   enum KeySize { AES128 = 16, AES192 = 24, AES256 = 32, kMaxValue = AES256 };
-
-  // enum Mode {
-  //   MODE_ECB = 1,
-  //   MODE_CBC = 2,
-  //   MODE_CFB = 3,
-  //   MODE_OFB = 5,
-  //   MODE_CTR = 6,
-  //   MODE_OPENPGP = 7,
-  //   MODE_CCM = 8,
-  //   MODE_EAX = 9,
-  //   MODE_SIV = 10,
-  //   MODE_GCM = 11,
-  //   MODE_OCB = 12,
-  //   kMaxValue = MODE_OCB
-  // };
 
   FuzzedDataProvider stream(data, size);
   const KeySize keySize = stream.ConsumeEnum<KeySize>();
@@ -50,7 +33,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   const uint8_t *key = keyBuf.data();
 
   void *state;
-  // BlockBase *state;
   if (AES_start_operation(key, keySize, reinterpret_cast<AES_State **>(&state)))
     return 0;
 
