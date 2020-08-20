@@ -1,3 +1,17 @@
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,21 +59,6 @@ int main(int argc, char* argv[]) {
   strcpy(blacklist_path, path);
   strcat(blacklist_path, "/firefox/libfuzzer.content.blacklist.txt");
   setenv("MOZ_IPC_MESSAGE_FUZZ_BLACKLIST", blacklist_path, 1);
-
-  // Temporary (or permanent?) work-arounds for fuzzing interface bugs.
-  char* options = getenv("ASAN_OPTIONS");
-  if (options) {
-    char* ptr;
-    char* new_options = strdup(options);
-    // https://bugzilla.mozilla.org/1477846
-    ptr = strstr(new_options, "detect_stack_use_after_return=1");
-    if (ptr) ptr[30] = '0';
-    // https://bugzilla.mozilla.org/1477844
-    ptr = strstr(new_options, "detect_leaks=1");
-    if (ptr) ptr[13] = '0';
-    setenv("ASAN_OPTIONS", new_options, 1);
-    free(new_options);
-  }
 
   char ff_path[PATH_MAX] = {0};
   strcpy(ff_path, path);
