@@ -73,22 +73,22 @@ def delete_scheduler(cloud_scheduler_client, project_name):
   cloud_scheduler_client.delete_job(name)
 
 
-def update_scheduler(cloud_scheduler_client, project, schedule):
+def update_scheduler(cloud_scheduler_client, project, schedule, tag):
   """Updates schedule in case schedule was changed."""
   project_id = os.environ.get('GCP_PROJECT')
   location_id = os.environ.get('FUNCTION_REGION')
   parent = cloud_scheduler_client.location_path(project_id, location_id)
   job = {
-      'name': parent + '/jobs/' + project.name + '-scheduler',
+      'name': parent + '/jobs/' + project.name + '-scheduler-' + tag,
       'pubsub_target': {
           'topic_name': 'projects/' + project_id + '/topics/request-build',
           'data': project.name.encode()
       },
-      'schedule': project.schedule
+      'schedule': schedule,
   }
 
-  update_mask = {'schedule': schedule}
-  cloud_scheduler_client.update(job, update_mask)
+  update_mask = {'paths': ['schedule']}
+  cloud_scheduler_client.update_job(job, update_mask)
 
 
 # pylint: disable=too-many-branches
@@ -138,7 +138,8 @@ def sync_projects(cloud_scheduler_client, projects):
       try:
         logging.info('Schedule changed.')
         update_scheduler(cloud_scheduler_client, project,
-                         projects[project.name].schedule)
+                         projects[project.name].schedule,
+                         build_project.FUZZING_BUILD_TAG)
         project.schedule = project_metadata.schedule
         project_changed = True
       except exceptions.GoogleAPICallError as error:

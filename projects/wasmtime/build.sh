@@ -28,8 +28,7 @@ build() {
 
   FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
 
-  for f in $PROJECT_DIR/fuzz/fuzz_targets/*.rs
-  do
+  for f in $PROJECT_DIR/fuzz/fuzz_targets/*.rs; do
       src_name=$(basename ${f%.*})
       dst_name=$fuzzer_prefix$src_name
       cp $FUZZ_TARGET_OUTPUT_DIR/$src_name $OUT/$dst_name

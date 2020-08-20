@@ -15,7 +15,9 @@
 #
 ################################################################################
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib"
+NPROC=16  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
+
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib binutils-dev"
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
@@ -50,6 +52,7 @@ function cmake_llvm {
       -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       -DLLVM_ENABLE_PROJECTS="$PROJECTS_TO_BUILD" \
+      -DLLVM_BINUTILS_INCDIR="/usr/include/" \
       $extra_args \
       $LLVM_SRC/llvm
 }
@@ -68,7 +71,7 @@ OUR_LLVM_REVISION=e84b7a5fe230e42b8e6fe451369874a773bf1867
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
 FORCE_OUR_REVISION=0
-LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K[a-f0-9]+(?=')" scripts/update.py)
+LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K([^']+)" scripts/update.py)
 
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
 
@@ -107,14 +110,15 @@ case $(uname -m) in
 esac
 
 PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
+
 cmake_llvm
-ninja
+ninja -j $NPROC
 
 cd $WORK/llvm-stage2
 export CC=$WORK/llvm-stage1/bin/clang
 export CXX=$WORK/llvm-stage1/bin/clang++
 cmake_llvm
-ninja
+ninja -j $NPROC
 ninja install
 rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
@@ -129,7 +133,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DCMAKE_C_FLAGS="-m32" \
     -DCMAKE_CXX_FLAGS="-m32"
 
-ninja cxx
+ninja -j $NPROC cxx
 ninja install-cxx
 rm -rf $WORK/i386
 
@@ -147,7 +151,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
     -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt"
 
-ninja cxx
+ninja -j $NPROC cxx
 ninja install-cxx
 rm -rf $WORK/msan
 
@@ -159,7 +163,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=DataFlow \
     -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
 
-ninja cxx cxxabi
+ninja -j $NPROC cxx cxxabi
 ninja install-cxx install-cxxabi
 rm -rf $WORK/dfsan
 

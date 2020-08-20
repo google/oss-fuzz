@@ -19,4 +19,3 @@ RUN apt-get update && apt-get install -y autoconf automake autopoint bison libto
 RUN git clone --depth 1 https://github.com/karelzak/util-linux
 WORKDIR util-linux
 COPY build.sh $SRC/
-COPY test_mount_fuzz.c $SRC/

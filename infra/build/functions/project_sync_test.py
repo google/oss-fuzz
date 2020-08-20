@@ -84,7 +84,7 @@ class CloudSchedulerClient:
         self.schedulers.remove(job)
         break
 
-  def update(self, job, update_mask):
+  def update_job(self, job, update_mask):
     """Simulate update jobs."""
     for existing_job in self.schedulers:
       if existing_job == job:
@@ -154,26 +154,24 @@ class TestDataSync(unittest.TestCase):
 
       self.assertCountEqual([
           {
-              'name':
-                  'projects/test-project/location/us-central1/jobs/test2-scheduler-fuzzing',
+              'name': 'projects/test-project/location/us-central1/jobs/'
+                      'test2-scheduler-fuzzing',
               'pubsub_target': {
                   'topic_name': 'projects/test-project/topics/request-build',
                   'data': b'test2'
               },
-              'schedule':
-                  '0 7 * * *'
+              'schedule': '0 7 * * *'
           },
           {
-              'name':
-                  'projects/test-project/location/us-central1/jobs/test2-scheduler-coverage',
+              'name': 'projects/test-project/location/us-central1/jobs/'
+                      'test2-scheduler-coverage',
               'pubsub_target': {
                   'topic_name':
                       'projects/test-project/topics/request-coverage-build',
                   'data':
                       b'test2'
               },
-              'schedule':
-                  '0 6 * * *'
+              'schedule': '0 6 * * *'
           },
       ], cloud_scheduler_client.schedulers)
 
