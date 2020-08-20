@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+patch block_common.c block_common.patch
+
 PCD_INTERNALS=(src/*.c src/libtom/*.c)
 PCD_FLAGS=(
   "-I $SRC/pycryptodome/src"

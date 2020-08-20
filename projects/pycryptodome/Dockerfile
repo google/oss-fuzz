@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 https://github.com/Legrandin/pycryptodome.git
 WORKDIR pycryptodome
-COPY build.sh *_fuzzer.cc $SRC/
+COPY build.sh block_common.patch *_fuzzer.cc $SRC/
