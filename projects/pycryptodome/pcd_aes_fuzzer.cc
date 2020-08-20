@@ -25,7 +25,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   FuzzedDataProvider stream(data, size);
   const KeySize keySize = stream.ConsumeEnum<KeySize>();
-  // const Mode m = stream.ConsumeEnum<Mode>();
   if (stream.remaining_bytes() < keySize)
     return 0;
 
