@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-
 """Generate a coverage report on local changes to an OSS-Fuzz project.
 This script starts for an empty corpus and runs fuzzers for <fuzz_time>
 seconds to generate one. It does not use the existing corpus in OSS-Fuzz,
@@ -43,6 +42,7 @@ import helper
 
 OSS_FUZZ_DIR = helper.OSS_FUZZ_DIR
 
+
 def main():
   """Get subcommands from program arguments and generate coverage report(s)."""
 
@@ -55,17 +55,21 @@ def main():
   parser.add_argument('project_name')
   parser.add_argument('fuzz_time')
 
-  parser.add_argument('--comparison', action='store_true',
+  parser.add_argument('--comparison',
+                      action='store_true',
                       help='Compare local coverage to Google\'s HEAD.')
-  parser.add_argument('--no-comparison', action='store_true',
+  parser.add_argument('--no-comparison',
+                      action='store_true',
                       help='Don\'t compare local coverage to Google\'s HEAD')
 
-  parser.add_argument('--file-output', action='store_true',
+  parser.add_argument('--file-output',
+                      action='store_true',
                       help='Flush coverage results to disk.')
-  parser.add_argument('--no-file-output', action='store_true',
+  parser.add_argument('--no-file-output',
+                      action='store_true',
                       help='Don\'t flush coverage results to disk.')
 
-  parser.set_defaults(comparison=True, file_output=False)
+  parser.set_defaults(no_comparison=False, file_output=False)
 
   args = parser.parse_args()
 
@@ -75,7 +79,7 @@ def main():
   args.fuzz_time = float(args.fuzz_time)
   setup(args)
 
-  if args.comparison:
+  if not args.no_comparison:
     os.system('git clone https://github.com/google/oss-fuzz')
     os.chdir('oss-fuzz')
     generate_coverage_report(args, 'original')
@@ -93,6 +97,7 @@ def main():
 
   return 0
 
+
 def clean_dirs(project_name):
   """Cleans directories related to coverage report generation."""
 
@@ -100,8 +105,7 @@ def clean_dirs(project_name):
       './build/out/{}'.format(project_name),
       './build/work/{}'.format(project_name),
       './build/corpus/{}'.format(project_name),
-      './coverage_reports/detailed/{}'.format(project_name),
-      './oss-fuzz'
+      './coverage_reports/detailed/{}'.format(project_name), './oss-fuzz'
   ]
 
   for directory in to_clean:
@@ -111,6 +115,7 @@ def clean_dirs(project_name):
     os.remove('./coverage_reports/{}_coverage.txt'.format(project_name))
   except FileNotFoundError:
     pass
+
 
 def setup(args):
   """Adds relevant paths for report generation to args. We add a path to the
@@ -135,6 +140,7 @@ def setup(args):
   args.out_dir = os.path.join(OSS_FUZZ_DIR, out_dir)
   args.out_file = os.path.join(OSS_FUZZ_DIR, out_file)
 
+
 def format_report(report_path, report_version, args):
   """Get coverage summary from generated JSON and append it to the result
   string. If --file-output is enabled, this result will be flushed to the
@@ -146,11 +152,10 @@ def format_report(report_path, report_version, args):
     region_data = f_data['data'][0]['totals']['regions']
 
   output_format = '{0}: {1}/{2} regions - {3}% coverage\n'
-  args.result += (output_format.format(
-      report_version,
-      region_data['covered'],
-      region_data['count'],
-      region_data['percent']))
+  args.result += (output_format.format(report_version, region_data['covered'],
+                                       region_data['count'],
+                                       region_data['percent']))
+
 
 def generate_corpus(args, fuzzer):
   """Run fuzzers for the specified time in order to generate a local corpus.
@@ -160,20 +165,24 @@ def generate_corpus(args, fuzzer):
 
   fuzzer_corpus_dir = './build/corpus/{0}/{1}'.format(args.project_name, fuzzer)
   os.mkdir(fuzzer_corpus_dir)
-  fuzz_command = ['./build/out/{0}/{1}'.format(args.project_name, fuzzer),
-                  fuzzer_corpus_dir, args.local_corpus_dir]
+  fuzz_command = [
+      './build/out/{0}/{1}'.format(args.project_name, fuzzer),
+      fuzzer_corpus_dir, args.local_corpus_dir
+  ]
 
   try:
     subprocess.run(fuzz_command, check=False, timeout=args.fuzz_time)
   except subprocess.TimeoutExpired:
     pass
 
-def generate_coverage_report(args, build_type): # pylint: disable-msg=too-many-locals
+
+def generate_coverage_report(args, build_type):
   """Generate coverage report for a given fuzzer build. We first build
   the fuzzers with ASan enabled to generate the corpus used for coverage.
   Then, we build the fuzzers a second time with the coverage sanitizer
   so we can generate the report.
   """
+  # pylint: disable-msg=too-many-locals
 
   if not os.path.isdir('./build'):
     os.mkdir('./build')
@@ -186,8 +195,9 @@ def generate_coverage_report(args, build_type): # pylint: disable-msg=too-many-l
     if not os.path.isdir(project_dir):
       os.mkdir(project_dir)
 
-  build_image_tokens = ['python3', 'infra/helper.py', 'build_image',
-                        '--pull', '{}']
+  build_image_tokens = [
+      'python3', 'infra/helper.py', 'build_image', '--pull', '{}'
+  ]
   build_image_cmd = ' '.join(build_image_tokens).format(args.project_name)
 
   build_fuzzers_tokens = ['python3', 'infra/helper.py', 'build_fuzzers', '{}']
@@ -204,12 +214,16 @@ def generate_coverage_report(args, build_type): # pylint: disable-msg=too-many-l
   for fuzzer in fuzzer_list:
     generate_corpus(args, fuzzer)
 
-  build_fuzzers_tokens = ['python3', 'infra/helper.py', 'build_fuzzers',
-                          '--sanitizer=coverage', '{}']
+  build_fuzzers_tokens = [
+      'python3', 'infra/helper.py', 'build_fuzzers', '--sanitizer=coverage',
+      '{}'
+  ]
   build_fuzzers_cmd = ' '.join(build_fuzzers_tokens).format(args.project_name)
 
-  coverage_tokens = ['python3', 'infra/helper.py', 'coverage',
-                     '--port=""', '--no-corpus-download', '{}']
+  coverage_tokens = [
+      'python3', 'infra/helper.py', 'coverage', '--port=""',
+      '--no-corpus-download', '{}'
+  ]
   coverage_cmd = ' '.join(coverage_tokens).format(args.project_name)
 
   os.system(build_fuzzers_cmd)
@@ -217,12 +231,14 @@ def generate_coverage_report(args, build_type): # pylint: disable-msg=too-many-l
 
   report_path_structure = './build/out/{}/report/linux/summary.json'
   report_path = report_path_structure.format(args.project_name)
-  detailed_out_path = '{0}/{1}_summary_{2}.json'.format(
-      args.out_dir, args.project_name, build_type)
+  detailed_out_path = '{0}/{1}_summary_{2}.json'.format(args.out_dir,
+                                                        args.project_name,
+                                                        build_type)
   open(detailed_out_path, 'w').close()
 
   shutil.copyfile(report_path, detailed_out_path)
   format_report(detailed_out_path, build_type, args)
+
 
 if __name__ == '__main__':
   sys.exit(main())
