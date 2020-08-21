@@ -15,7 +15,9 @@
 #
 ################################################################################
 
-PCD_INTERNALS=(src/*.c src/libtom/*.c)
+patch block_common.c block_common.patch
+
+PCD_INTERNALS=(./*.c ./libtom/*.c)
 PCD_FLAGS=(
   "-I $SRC/pycryptodome/src"
   "-I $SRC/pycryptodome/src/libtom"
@@ -29,7 +31,7 @@ PCD_FLAGS=(
 $CC $CFLAGS \
     ${PCD_FLAGS[@]} \
     -c "${PCD_INTERNALS//'blake2.c'/}"
-ar -qc $WORK/libpycryptodome.a  *.o
+ar -qc $WORK/libpycryptodome.a *.o
 
 PCD_HASH_OPTIONS=(
   "-D HASHTYPE=md2 -D FNAME=MD2.c -D DIGEST_SIZE=16 -o $OUT/md2_fuzzer"
@@ -46,3 +48,7 @@ for ((i = 0; i < ${#PCD_HASH_OPTIONS[@]}; i++)); do
       $SRC/pcd_hash_fuzzer.cc ${PCD_HASH_OPTIONS[i]} \
       $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a
 done
+
+$CXX $CXXFLAGS ${PCD_FLAGS[@]} \
+    $SRC/pcd_aes_fuzzer.cc -o $OUT/aes_fuzzer \
+    $LIB_FUZZING_ENGINE $WORK/libpycryptodome.a
