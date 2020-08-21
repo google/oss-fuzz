@@ -167,7 +167,7 @@ def generate_corpus(args, fuzzer):
 
   shutil.rmtree(corpus_name)
 
-def get_coverage(args, build_type):
+def get_coverage(args, build_type): # pylint: disable-msg=too-many-locals
   """Generate coverage report for a given fuzzer build."""
 
   if not os.path.isdir('./build'):
@@ -194,12 +194,19 @@ def get_coverage(args, build_type):
   for fuzzer in fuzzer_list:
     generate_corpus(args, fuzzer)
 
-  build_fuzzers_cmd = 'sudo python3 infra/helper.py build_fuzzers --sanitizer=coverage {}'
-  coverage_cmd = 'sudo python3 infra/helper.py coverage --port="" --no-corpus-download {}'
-  os.system(build_fuzzers_cmd.format(args.project_name))
-  os.system(coverage_cmd.format(args.project_name))
+  build_fuzzers_tokens = ['sudo', 'python3', 'infra/helper.py', 'build_fuzzers',
+                          '--sanitizer=coverage', '{}']
+  build_fuzzers_cmd = ' '.join(build_fuzzers_tokens).format(args.project_name)
 
-  report_path = './build/out/{}/report/linux/summary.json'.format(args.project_name)
+  coverage_tokens = ['sudo', 'python3', 'infra/helper.py', 'coverage',
+                     '--port=""', '--no-corpus-download', '{}']
+  coverage_cmd = ' '.join(coverage_tokens).format(args.project_name)
+
+  os.system(build_fuzzers_cmd)
+  os.system(coverage_cmd)
+
+  report_path_structure = './build/out/{}/report/linux/summary.json'
+  report_path = report_path_structure.format(args.project_name)
   detailed_out_path = '{0}/{1}_summary_{2}.json'.format(
       args.out_dir, args.project_name, build_type)
   detailed_out_file = open(detailed_out_path, 'w')
