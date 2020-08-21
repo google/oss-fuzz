@@ -31,7 +31,7 @@ import os
 import shutil
 import subprocess
 import sys
-from concurrent import futures
+# from concurrent import futures
 
 import helper
 
@@ -59,25 +59,32 @@ def main():
   args.port = ''
   args.engine = 'libfuzzer'
   args.architecture = 'x86_64'
-  args.e = False
+  args.e = None
   args.source_path = None
   args.corpus_dir = None
+  args.fuzz_target = None
   args.pull = True
   args.no_pull = False
   args.clean = True
   args.no_corpus_download = True
+  args.extra_args = []
+  args.fuzz_time = float(args.fuzz_time)
   args.local_corpus_dir, args.out_dir, args.out_file = setup(args.project_name)
 
   if not args.no_comparison:
     os.system('git clone https://github.com/google/oss-fuzz')
     os.chdir('oss-fuzz')
     get_coverage(args, 'original')
+    os.chdir(OSS_FUZZ_DIR)
     shutil.rmtree('oss-fuzz')
 
   os.chdir(OSS_FUZZ_DIR)
   get_coverage(args, 'modified')
 
-  print('\n{} coverage'.format(args.project_name))
+  print('\n')
+  out = open(args.out_file)
+  print(out.read())
+  out.close()
   return 0
 
 def clean_dirs(project_name):
@@ -139,53 +146,14 @@ def generate_report(report_path, report_version, out_file):
   report.close()
   out.close()
 
-def get_coverage(args, build_type):
-  """Generate coverage report for a given fuzzer build."""
-
-  project_name = args.project_name
-
-  if not os.path.isdir('./build'):
-    os.mkdir('./build')
-
-  required_directories = ['./build/out', './build/corpus']
-  for directory in required_directories:
-    if not os.path.isdir(directory):
-      os.mkdir(directory)
-    project_dir = os.path.join(directory, project_name)
-    if not os.path.isdir(project_dir):
-      os.mkdir(project_dir)
-
-  args.sanitizer = 'address'
-  helper.build_image(args)
-  helper.build_fuzzers(args)
-
-  out_dir = './build/out/{}'.format(project_name)
-  out_dir_file_list = os.listdir(out_dir)
-  fuzzer_list = [file for file in out_dir_file_list if '.' not in file]
-
-  call_generate_corpus = lambda fuzzer: generate_corpus(args, fuzzer)
-  with futures.ProcessPoolExecutor() as pool:
-    pool.map(call_generate_corpus, fuzzer_list)
-
-  args.sanitizer = 'coverage'
-  helper.build_fuzzers(args)
-  helper.coverage(args)
-
-  report_path = './build/out/{}/report/linux/summary.json'.format(project_name)
-  detailed_out_path = '{0}/{1}_summary_{2}.json'.format(
-      args.out_dir, project_name, build_type)
-  detailed_out_file = open(detailed_out_path, 'w')
-  detailed_out_file.close()
-
-  shutil.copyfile(report_path, detailed_out_path)
-  generate_report(detailed_out_path, build_type, args.out_file)
-
 def generate_corpus(args, fuzzer):
   """Run fuzzers for the specified time in order to generate a local corpus."""
 
   corpus_name = '{}_corpus'.format(fuzzer)
   os.mkdir(corpus_name)
-  fuzz_command = ['./build/out/{}'.format(fuzzer), corpus_name, args.local_corpus_dir]
+  os.mkdir('./build/corpus/{0}/{1}'.format(args.project_name, fuzzer))
+  fuzz_command = ['./build/out/{0}/{1}'.format(args.project_name, fuzzer),
+                  corpus_name, args.local_corpus_dir]
 
   try:
     subprocess.run(fuzz_command, check=False, timeout=args.fuzz_time)
@@ -194,11 +162,61 @@ def generate_corpus(args, fuzzer):
 
   for file in os.listdir(corpus_name):
     source_path = os.path.join(corpus_name, file)
-    dest_path = './build/corpus/{0}/{1}/{2}'.format(
-        args.project_name, fuzzer, file)
-    shutil.move(source_path, dest_path)
+    dest_path = './build/corpus/{0}/{1}'.format(
+        args.project_name, fuzzer)
+    shutil.copy(source_path, dest_path)
 
   shutil.rmtree(corpus_name)
+
+def get_coverage(args, build_type):
+  """Generate coverage report for a given fuzzer build."""
+
+  if not os.path.isdir('./build'):
+    os.mkdir('./build')
+
+  required_directories = ['./build/out', './build/corpus']
+  for directory in required_directories:
+    if not os.path.isdir(directory):
+      os.mkdir(directory)
+    project_dir = os.path.join(directory, args.project_name)
+    if not os.path.isdir(project_dir):
+      os.mkdir(project_dir)
+
+  # args.sanitizer = 'address'
+  # helper.build_image(args)
+  # helper.build_fuzzers(args)
+  build_image_cmd = 'sudo python3 infra/helper.py build_image --pull {}'
+  build_fuzzers_cmd = 'sudo python3 infra/helper.py build_fuzzers {}'
+  os.system(build_image_cmd.format(args.project_name))
+  os.system(build_fuzzers_cmd.format(args.project_name))
+
+  out_dir = './build/out/{}'.format(args.project_name)
+  out_dir_file_list = os.listdir(out_dir)
+  fuzzer_list = [file for file in out_dir_file_list if '.' not in file]
+
+  print('\nRunning fuzzers...')
+  # call_generate_corpus = lambda fuzzer: generate_corpus(args, fuzzer)
+  # with futures.ProcessPoolExecutor() as pool:
+  #   pool.map(call_generate_corpus, fuzzer_list)
+  for fuzzer in fuzzer_list:
+    generate_corpus(args, fuzzer)
+
+  # args.sanitizer = 'coverage'
+  # helper.build_fuzzers(args)
+  # helper.coverage(args)
+  build_fuzzers_cmd = 'sudo python3 infra/helper.py build_fuzzers --sanitizer=coverage {}'
+  coverage_cmd = 'sudo python3 infra/helper.py coverage --port="" --no-corpus-download {}'
+  os.system(build_fuzzers_cmd.format(args.project_name))
+  os.system(coverage_cmd.format(args.project_name))
+
+  report_path = './build/out/{}/report/linux/summary.json'.format(args.project_name)
+  detailed_out_path = '{0}/{1}_summary_{2}.json'.format(
+      args.out_dir, args.project_name, build_type)
+  detailed_out_file = open(detailed_out_path, 'w')
+  detailed_out_file.close()
+
+  shutil.copyfile(report_path, detailed_out_path)
+  generate_report(detailed_out_path, build_type, args.out_file)
 
 if __name__ == '__main__':
   sys.exit(main())
