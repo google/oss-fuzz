@@ -16,15 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+  gawk \
   libstdc++6 \
   python \
-  gawk \
   software-properties-common
 RUN git clone --depth 1 https://github.com/mozilla/gecko-dev mozilla-central
 RUN git clone --depth 1 https://github.com/mozillasecurity/fuzzdata
 WORKDIR mozilla-central
-COPY build.sh target.c *.options mozconfig.* $SRC/
-# Install dependencies.
+# Install OS dependencies.
+# Will be re-run in build.sh to install missing dependencies.
 ENV SHELL /bin/bash
 RUN ./mach bootstrap --no-interactive --application-choice browser
+COPY build.sh target.c *.options mozconfig.* $SRC/
