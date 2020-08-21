@@ -53,7 +53,7 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
 
   cp $SRC/fuzzing/proto/asn1-pdu/* $SRC/
 
-  rm -rf genfiles && mkdir genfiles && $SRC/LPM/external.protobuf/bin/protoc asn1_pdu.proto --cpp_out=genfiles --proto_path=$SRC/
+  rm -rf genfiles && mkdir genfiles && $SRC/LPM/external.protobuf/bin/protoc asn1_pdu.proto asn1_universal_types.proto x509_certificate.proto x509_certificate_chain.proto --cpp_out=genfiles --proto_path=$SRC/
 
   for F in $fuzzerLPMFiles
   do
@@ -62,11 +62,13 @@ if [[ $CFLAGS != *sanitize=memory* ]]; then
     echo "Building fuzzer $fuzzerName"
     $CXX $CXXFLAGS -I genfiles -I . -I $SRC/libprotobuf-mutator/ -I $SRC/LPM/external.protobuf/include -I include $LIB_FUZZING_ENGINE \
         -I $SRC/boringssl/include \
-        $F genfiles/asn1_pdu.pb.cc $SRC/asn1_pdu_to_der.cc $SRC/common.cc \
+        $F \
+        genfiles/asn1_pdu.pb.cc genfiles/asn1_universal_types.pb.cc genfiles/x509_certificate.pb.cc genfiles/x509_certificate_chain.pb.cc \
+        $SRC/common.cc $SRC/asn1_pdu_to_der.cc $SRC/asn1_universal_types_to_der.cc $SRC/x509_certificate_to_der.cc $SRC/x509_certificate_chain_to_der.cc \
         ./ssl/libssl.a ./crypto/libcrypto.a \
         $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
         $SRC/LPM/src/libprotobuf-mutator.a \
         $SRC/LPM/external.protobuf/lib/libprotobuf.a \
-        -o $OUT/"${fuzzerName}_lpm"
+        -o $OUT/cert_chain_lpm
   done
 fi
