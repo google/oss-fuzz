@@ -31,7 +31,6 @@ import os
 import shutil
 import subprocess
 import sys
-# from concurrent import futures
 
 import helper
 
@@ -182,9 +181,6 @@ def get_coverage(args, build_type):
     if not os.path.isdir(project_dir):
       os.mkdir(project_dir)
 
-  # args.sanitizer = 'address'
-  # helper.build_image(args)
-  # helper.build_fuzzers(args)
   build_image_cmd = 'sudo python3 infra/helper.py build_image --pull {}'
   build_fuzzers_cmd = 'sudo python3 infra/helper.py build_fuzzers {}'
   os.system(build_image_cmd.format(args.project_name))
@@ -195,15 +191,9 @@ def get_coverage(args, build_type):
   fuzzer_list = [file for file in out_dir_file_list if '.' not in file]
 
   print('\nRunning fuzzers...')
-  # call_generate_corpus = lambda fuzzer: generate_corpus(args, fuzzer)
-  # with futures.ProcessPoolExecutor() as pool:
-  #   pool.map(call_generate_corpus, fuzzer_list)
   for fuzzer in fuzzer_list:
     generate_corpus(args, fuzzer)
 
-  # args.sanitizer = 'coverage'
-  # helper.build_fuzzers(args)
-  # helper.coverage(args)
   build_fuzzers_cmd = 'sudo python3 infra/helper.py build_fuzzers --sanitizer=coverage {}'
   coverage_cmd = 'sudo python3 infra/helper.py coverage --port="" --no-corpus-download {}'
   os.system(build_fuzzers_cmd.format(args.project_name))
