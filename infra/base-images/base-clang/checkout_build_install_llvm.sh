@@ -17,7 +17,7 @@
 
 NPROC=16  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib"
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib binutils-dev"
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
@@ -52,6 +52,7 @@ function cmake_llvm {
       -DCMAKE_BUILD_TYPE=Release \
       -DLLVM_TARGETS_TO_BUILD="$TARGET_TO_BUILD" \
       -DLLVM_ENABLE_PROJECTS="$PROJECTS_TO_BUILD" \
+      -DLLVM_BINUTILS_INCDIR="/usr/include/" \
       $extra_args \
       $LLVM_SRC/llvm
 }
@@ -109,6 +110,7 @@ case $(uname -m) in
 esac
 
 PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
+
 cmake_llvm
 ninja -j $NPROC
 
