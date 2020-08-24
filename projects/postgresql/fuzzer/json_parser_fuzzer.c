@@ -15,6 +15,7 @@
 #include "postgres.h"
 #include "common/jsonapi.h"
 #include "mb/pg_wchar.h"
+#include "miscadmin.h"
 #include "utils/memutils.h"
 #include "utils/memdebug.h"
 
@@ -25,12 +26,19 @@ const char *progname = "progname";
 ** fuzzed input.
 */
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-	MemoryContextInit();
 	sigjmp_buf local_sigjmp_buf;
-	char *buffer = (char *) calloc(size+1, sizeof(char));
+	char *buffer;
+	JsonSemAction sem;
+	JsonLexContext *lex;
+
+	buffer = (char *) calloc(size+1, sizeof(char));
 	memcpy(buffer, data, size);
-	JsonSemAction sem = nullSemAction;
-	JsonLexContext *lex = makeJsonLexContextCstringLen(buffer, size+1, PG_UTF8, true);
+
+	MemoryContextInit();
+	set_stack_base();
+	sem = nullSemAction;
+	lex = makeJsonLexContextCstringLen(buffer, size+1, PG_UTF8, true);
+
 	if(!sigsetjmp(local_sigjmp_buf,0)){
 		error_context_stack = NULL;
 		PG_exception_stack = &local_sigjmp_buf;
