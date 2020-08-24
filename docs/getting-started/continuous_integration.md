@@ -8,9 +8,10 @@ permalink: /getting-started/continuous-integration/
 
 # Continuous Integration
 
-OSS-Fuzz offers **CIFuzz**, which will run your fuzz targets on pull requests
-for projects hosted on GitHub. This works similarly to running unittests in CI
-and allows you to find and fix bugs before they make it into your codebase.
+OSS-Fuzz offers **CIFuzz**, a GitHub action/CI job that runs your fuzz targets
+on pull requests. This works similarly to running unittests in CI. CIFuzz helps
+you to find and fix bugs before they make it into your codebase.
+Currently, CIFuzz only supports projects hosted on GitHub.
 
 ## How it works
 
@@ -20,7 +21,7 @@ If CIFuzz finds a crash, CIFuzz reports the stacktrace, makes the crashing
 input available for download and the CI test fails (red X).
 
 If your project supports [OSS-Fuzz's code coverage]({{ site.baseurl }}/advanced-topics/code-coverage),
-CIFuzz tries to only run the fuzzers affected by a pull request/commit.
+CIFuzz will only run the fuzzers affected by a pull request/commit.
 Otherwise it will divide up the allotted fuzzing time (10 minutes by default)
 among all fuzzers in the project.
 
