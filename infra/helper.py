@@ -40,7 +40,7 @@ BASE_IMAGES = [
     'gcr.io/oss-fuzz-base/base-runner',
     'gcr.io/oss-fuzz-base/base-runner-debug',
     'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
-    'gcr.io/oss-fuzz-base/msan-builder',
+    'gcr.io/oss-fuzz-base/msan-libs-builder',
 ]
 
 VALID_PROJECT_NAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
@@ -57,6 +57,9 @@ CORPUS_BACKUP_URL_FORMAT = (
     'libFuzzer/{fuzz_target}/')
 
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
+
+# Languages from project.yaml that have code coverage support.
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
 
 
 def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-many-statements
@@ -121,6 +124,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
   _add_engine_args(run_fuzzer_parser)
   _add_sanitizer_args(run_fuzzer_parser)
   _add_environment_args(run_fuzzer_parser)
+  run_fuzzer_parser.add_argument(
+      '--corpus-dir', help='directory to store corpus for the fuzz target')
   run_fuzzer_parser.add_argument('project_name', help='name of the project')
   run_fuzzer_parser.add_argument('fuzzer_name', help='name of the fuzzer')
   run_fuzzer_parser.add_argument('fuzzer_args',
@@ -524,7 +529,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   if sanitizer == 'memory':
     docker_run([
         '-v',
-        '%s:/work' % project_work_dir, 'gcr.io/oss-fuzz-base/msan-builder',
+        '%s:/work' % project_work_dir, 'gcr.io/oss-fuzz-base/msan-libs-builder',
         'bash', '-c', 'cp -r /msan /work'
     ])
     env.append('MSAN_LIBS_PATH=' + '/work/msan')
@@ -562,17 +567,14 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
   # Patch MSan builds to use instrumented shared libraries.
   if sanitizer == 'memory':
-    docker_run(
-        [
-            '-v',
-            '%s:/out' % project_out_dir, '-v',
-            '%s:/work' % project_work_dir
-        ] + _env_to_docker_args(env) + [
-            'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
-            'patch_build.py',
-            '/out'
-        ]
-    )
+    docker_run([
+        '-v',
+        '%s:/out' % project_out_dir, '-v',
+        '%s:/work' % project_work_dir
+    ] + _env_to_docker_args(env) + [
+        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder', 'patch_build.py',
+        '/out'
+    ])
 
   return 0
 
@@ -728,12 +730,21 @@ def coverage(args):
   if not check_project_exists(args.project_name):
     return 1
 
+  project_language = _get_project_language(args.project_name)
+  if project_language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+    print(
+        'ERROR: Project is written in %s, coverage for it is not supported yet.'
+        % project_language,
+        file=sys.stderr)
+    return 1
+
   if not args.no_corpus_download and not args.corpus_dir:
     if not download_corpora(args):
       return 1
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
+      'FUZZING_LANGUAGE=%s' % project_language,
       'PROJECT=%s' % args.project_name,
       'SANITIZER=coverage',
       'HTTP_PORT=%s' % args.port,
@@ -741,6 +752,12 @@ def coverage(args):
   ]
 
   run_args = _env_to_docker_args(env)
+
+  if args.port:
+    run_args.extend([
+        '-p',
+        '%s:%s' % (args.port, args.port),
+    ])
 
   if args.corpus_dir:
     if not os.path.exists(args.corpus_dir):
@@ -758,12 +775,6 @@ def coverage(args):
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
   ])
-
-  if args.port:
-    run_args.extend([
-        '-p',
-        '%s:%s' % (args.port, args.port),
-    ])
 
   run_args.append('coverage')
   if args.fuzz_target:
@@ -795,14 +806,28 @@ def run_fuzzer(args):
   if args.e:
     env += args.e
 
-  run_args = _env_to_docker_args(env) + [
+  run_args = _env_to_docker_args(env)
+
+  if args.corpus_dir:
+    if not os.path.exists(args.corpus_dir):
+      print('ERROR: the path provided in --corpus-dir argument does not exist',
+            file=sys.stderr)
+      return 1
+    corpus_dir = os.path.realpath(args.corpus_dir)
+    run_args.extend([
+        '-v',
+        '{corpus_dir}:/tmp/{fuzzer}_corpus'.format(corpus_dir=corpus_dir,
+                                                   fuzzer=args.fuzzer_name)
+    ])
+
+  run_args.extend([
       '-v',
       '%s:/out' % _get_output_dir(args.project_name),
       '-t',
       'gcr.io/oss-fuzz-base/base-runner',
       'run_fuzzer',
       args.fuzzer_name,
-  ] + args.fuzzer_args
+  ] + args.fuzzer_args)
 
   return docker_run(run_args)
 

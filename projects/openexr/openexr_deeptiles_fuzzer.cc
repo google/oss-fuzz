@@ -126,7 +126,7 @@ static void readFileSingle(IStream& is) {
 
   try {
     readFile(file);
-  } catch (std::exception &e) {
+  } catch (...) {
   }
 
   delete file;

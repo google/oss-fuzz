@@ -18,11 +18,5 @@ FROM gcr.io/oss-fuzz-base/base-clang
 RUN sed -i -r 's/#\s*deb-src/deb-src/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y python dpkg-dev patchelf python-apt zip
 
-# Take all libraries from lib/msan
-RUN cp -R /usr/msan/lib/* /usr/lib/
-
 COPY compiler_wrapper.py msan_build.py patch_build.py wrapper_utils.py /usr/local/bin/
 COPY packages /usr/local/bin/packages
-
-RUN mkdir /msan
-WORKDIR /msan

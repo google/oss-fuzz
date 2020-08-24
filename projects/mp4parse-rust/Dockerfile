@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool curl cma
 RUN git clone --depth 1 https://github.com/mozilla/mp4parse-rust mp4parse-rust
 WORKDIR mp4parse-rust
 
-COPY build.sh $SRC/
+COPY build.sh default.options $SRC/

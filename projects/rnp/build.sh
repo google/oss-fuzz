@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+ORIG_DIR=$(pwd)
+
 wget -qO- https://botan.randombit.net/releases/Botan-2.12.1.tar.xz | tar xvJ
 cd Botan-2.12.1
 ./configure.py --prefix=/usr --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
@@ -23,18 +25,30 @@ cd Botan-2.12.1
                --with-fuzzer-lib='FuzzingEngine'
 make
 make install
-cd ..
+
+cd $ORIG_DIR
+mkdir fuzzing_corpus
+
+cd rnp/src/tests/data
+find . -type f -print0 | xargs -0 -I bob -- cp bob $ORIG_DIR/fuzzing_corpus/
+
+cd $ORIG_DIR
+
+# -DENABLE_SANITIZERS=0 because oss-fuzz will add the sanitizer flags in CFLAGS
+# See https://github.com/google/oss-fuzz/pull/4189 to explain CMAKE_C_LINK_EXECUTABLE
 
 mkdir rnp-build
 cd rnp-build
 cmake \
-    -DENABLE_SANITIZERS=1 \
-    -DENABLE_FUZZING=1 \
+    -DENABLE_SANITIZERS=0 \
+    -DENABLE_FUZZERS=1 \
     -DCMAKE_C_COMPILER=$CC \
     -DCMAKE_CXX_COMPILER=$CXX \
+    -DCMAKE_C_LINK_EXECUTABLE="$CXX <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBUILD_SHARED_LIBS=on \
     -DBUILD_TESTING=off \
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
     ../rnp/
 make
 
@@ -42,6 +56,7 @@ FUZZERS="fuzz_dump fuzz_keyring"
 for f in $FUZZERS; do
     cp src/fuzzing/$f "${OUT}/"
     chrpath -r '$ORIGIN/lib' "${OUT}/$f"
+    zip -j -r "${OUT}/${f}_seed_corpus.zip" $ORIG_DIR/fuzzing_corpus/
 done
 
 mkdir -p "${OUT}/lib"

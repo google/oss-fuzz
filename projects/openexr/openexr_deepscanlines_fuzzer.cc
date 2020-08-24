@@ -113,8 +113,8 @@ static void readFile(T *inpart) {
 
 static void readFileSingle(IStream& is, uint64_t width, uint64_t height) {
   DeepScanLineInputFile *file = NULL;
-  Header header(width, height);
   try {
+    Header header(width, height);
     file = new DeepScanLineInputFile(header, &is, EXR_VERSION, 0);
   } catch (...) {
     return;
@@ -122,7 +122,7 @@ static void readFileSingle(IStream& is, uint64_t width, uint64_t height) {
 
   try {
     readFile(file);
-  } catch (std::exception &e) {
+  } catch (...) {
   }
 
   delete file;
@@ -145,7 +145,7 @@ static void readFileMulti(IStream& is) {
     }
     try {
       readFile(inpart);
-    } catch (std::exception &e) {
+    } catch (...) {
     }
     delete inpart;
   }

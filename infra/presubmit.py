@@ -82,18 +82,19 @@ class ProjectYamlChecker:
   VALID_SECTION_NAMES = [
       'architectures',
       'auto_ccs',
+      'builds_per_day',
       'coverage_extra_args',
       'disabled',
       'fuzzing_engines',
+      'help_url',
       'homepage',
+      'language',
+      'labels',  # For internal use only, hard to lint as it uses fuzzer names.
       'primary_contact',
       'sanitizers',
+      'selective_unpack',
       'vendor_ccs',
       'view_restrictions',
-      'language',
-      'help_url',
-      'labels',  # For internal use only, hard to lint as it uses fuzzer names.
-      'selective_unpack',
   ]
 
   LANGUAGES_SUPPORTED = [

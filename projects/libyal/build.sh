@@ -49,11 +49,19 @@ do
     cp ossfuzz/${FUZZ_TARGET} ${OUT}/${PROJECT}_${FUZZ_TARGET}
 
     # Download the test data if supported.
-    if test -d tests/input/public;
+    LIBYAL_TYPE_NAME=${FUZZ_TARGET/_fuzzer/};
+
+    if test -f tests/data/${LIBYAL_TYPE_NAME/}.1;
+    then
+      (cd tests/data && zip ${OUT}/${PROJECT}_${FUZZ_TARGET}_seed_corpus.zip ${LIBYAL_TYPE_NAME}.*)
+
+    elif test -d tests/input/public;
     then
       (cd tests/input/public && zip ${OUT}/${PROJECT}_${FUZZ_TARGET}_seed_corpus.zip *)
+
     else
-      (cd tests/data && zip ${OUT}/${PROJECT}_${FUZZ_TARGET}_seed_corpus.zip ${FUZZ_TARGET/_fuzzer/}.*)
+      echo "Missing test data for seed corpus."
+      exit 1
     fi
   done
 done

@@ -1,0 +1,8 @@
+language: c++
+sanitizers:
+  - address
+
+disabled: true
+
+primary_contact:
+  fake@example.com

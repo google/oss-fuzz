@@ -49,6 +49,7 @@ COPY bad_build_check \
     reproduce \
     run_fuzzer \
     run_minijail \
+    parse_options.py \
     targets_list \
     test_all \
     test_one \

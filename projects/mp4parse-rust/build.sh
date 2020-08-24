@@ -29,5 +29,6 @@ do
     FUZZ_TARGET_NAME=$(basename ${f%.*})
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
     cp $PROJECT_DIR/mp4parse_capi/fuzz/mp4.dict $OUT/$FUZZ_TARGET_NAME.dict
+    cp $SRC/default.options $OUT/$FUZZ_TARGET_NAME.options
     zip -jr $OUT/${FUZZ_TARGET_NAME}_seed_corpus.zip $PROJECT_DIR/corpus/
 done

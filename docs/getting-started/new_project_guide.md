@@ -82,6 +82,7 @@ This configuration file stores project metadata. The following attributes are su
 - [sanitizers](#sanitizers) (optional)
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
+- [builds_per_day](#build_frequency) (optional)
 
 ### homepage
 You project's homepage.
@@ -116,7 +117,7 @@ sanitizers (currently ["address"](https://clang.llvm.org/docs/AddressSanitizer.h
 and recommended, but is not enabled by default due to the likelihood of false positives from
 un-instrumented system dependencies. If you want to use "memory," first make sure your project's
 runtime dependencies are listed in the OSS-Fuzz
-[msan-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
+[msan-libs-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
 Then, you can opt in by adding "memory" to your list of sanitizers.
 
 If your project does not build with a particular sanitizer configuration and you need some time to fix
@@ -168,6 +169,16 @@ bugs to members of your project unfamiliar with OSS-Fuzz, or if they should foll
 reproducing and fixing bugs than the standard one outlined in the reproducing guide.
 
 `help_url` example: [skia](https://github.com/google/oss-fuzz/blob/master/projects/skia/project.yaml).
+
+### builds_per_day (optional) {#build_frequency}
+The number of times the project should be built per day.
+OSS-Fuzz allows upto 4 builds per day, and builds once per day by default.
+Example:
+```yaml
+builds_per_day: 2
+```
+
+Will build the project twice per day.
 
 ## Dockerfile
 
@@ -306,16 +317,28 @@ You can build your docker image and fuzz targets locally, so you can test them b
 3. If you want to test changes against a particular fuzz target, run the following command:
 
     ```bash
-    $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>
+    $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
     ```
 
-4. We recommend taking a look at your code coverage as a sanity check to make sure that your
-fuzz targets get to the code you expect. Please refer to [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/).
+4. We recommend taking a look at your code coverage as a sanity check to make
+sure that your fuzz targets get to the code you expect. This would use the
+corpus generated from the previous `run_fuzzer` step in your local corpus
+directory.
+
+    ```bash
+    $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
+    $ python infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
+    ```
+
+Please refer to
+[code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
+information on code coverage generation.
+
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
 configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
 that all system dependencies are
-[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
+[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
 <b>Make sure to test each
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 

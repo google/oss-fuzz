@@ -26,12 +26,17 @@ from google.api_core import exceptions
 from google.cloud import ndb
 from google.cloud import scheduler_v1
 
-from datastore_entities import GitAuth
+import build_and_run_coverage
+import build_project
+from datastore_entities import GithubCreds
 from datastore_entities import Project
 
 VALID_PROJECT_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
 DEFAULT_BUILDS_PER_DAY = 1
 MAX_BUILDS_PER_DAY = 4
+COVERAGE_SCHEDULE = '0 6 * * *'
+FUZZING_BUILD_TOPIC = 'request-build'
+COVERAGE_BUILD_TOPIC = 'request-coverage-build'
 
 ProjectMetadata = namedtuple(
     'ProjectMetadata', 'schedule project_yaml_contents dockerfile_contents')
@@ -41,15 +46,16 @@ class ProjectYamlError(Exception):
   """Error in project.yaml format."""
 
 
-def create_scheduler(cloud_scheduler_client, project_name, schedule):
+def create_scheduler(cloud_scheduler_client, project_name, schedule, tag,
+                     topic):
   """Creates schedulers for new projects."""
   project_id = os.environ.get('GCP_PROJECT')
   location_id = os.environ.get('FUNCTION_REGION')
   parent = cloud_scheduler_client.location_path(project_id, location_id)
   job = {
-      'name': parent + '/jobs/' + project_name + '-scheduler',
+      'name': parent + '/jobs/' + project_name + '-scheduler-' + tag,
       'pubsub_target': {
-          'topic_name': 'projects/' + project_id + '/topics/request-build',
+          'topic_name': 'projects/' + project_id + '/topics/' + topic,
           'data': project_name.encode()
       },
       'schedule': schedule
@@ -67,22 +73,22 @@ def delete_scheduler(cloud_scheduler_client, project_name):
   cloud_scheduler_client.delete_job(name)
 
 
-def update_scheduler(cloud_scheduler_client, project, schedule):
+def update_scheduler(cloud_scheduler_client, project, schedule, tag):
   """Updates schedule in case schedule was changed."""
   project_id = os.environ.get('GCP_PROJECT')
   location_id = os.environ.get('FUNCTION_REGION')
   parent = cloud_scheduler_client.location_path(project_id, location_id)
   job = {
-      'name': parent + '/jobs/' + project.name + '-scheduler',
+      'name': parent + '/jobs/' + project.name + '-scheduler-' + tag,
       'pubsub_target': {
           'topic_name': 'projects/' + project_id + '/topics/request-build',
           'data': project.name.encode()
       },
-      'schedule': project.schedule
+      'schedule': schedule,
   }
 
-  update_mask = {'schedule': schedule}
-  cloud_scheduler_client.update(job, update_mask)
+  update_mask = {'paths': ['schedule']}
+  cloud_scheduler_client.update_job(job, update_mask)
 
 
 # pylint: disable=too-many-branches
@@ -92,6 +98,7 @@ def sync_projects(cloud_scheduler_client, projects):
     if project.name in projects:
       continue
 
+    logging.info('Deleting project %s', project.name)
     try:
       delete_scheduler(cloud_scheduler_client, project.name)
       project.key.delete()
@@ -106,7 +113,11 @@ def sync_projects(cloud_scheduler_client, projects):
 
     try:
       create_scheduler(cloud_scheduler_client, project_name,
-                       projects[project_name].schedule)
+                       projects[project_name].schedule,
+                       build_project.FUZZING_BUILD_TAG, FUZZING_BUILD_TOPIC)
+      create_scheduler(cloud_scheduler_client, project_name, COVERAGE_SCHEDULE,
+                       build_and_run_coverage.COVERAGE_BUILD_TAG,
+                       COVERAGE_BUILD_TOPIC)
       project_metadata = projects[project_name]
       Project(name=project_name,
               schedule=project_metadata.schedule,
@@ -119,12 +130,16 @@ def sync_projects(cloud_scheduler_client, projects):
   for project in Project.query():
     if project.name not in projects:
       continue
+
+    logging.info('Setting up project %s', project.name)
     project_metadata = projects[project.name]
     project_changed = False
     if project.schedule != project_metadata.schedule:
       try:
+        logging.info('Schedule changed.')
         update_scheduler(cloud_scheduler_client, project,
-                         projects[project.name].schedule)
+                         projects[project.name].schedule,
+                         build_project.FUZZING_BUILD_TAG)
         project.schedule = project_metadata.schedule
         project_changed = True
       except exceptions.GoogleAPICallError as error:
@@ -197,12 +212,12 @@ def get_projects(repo):
   return projects
 
 
-def get_access_token():
-  """Retrieves Github's Access token from Cloud Datastore."""
-  token = GitAuth.query().get()
-  if token is None:
-    raise RuntimeError('No access token available')
-  return token.access_token
+def get_github_creds():
+  """Retrieves GitHub client credentials."""
+  git_creds = GithubCreds.query().get()
+  if git_creds is None:
+    raise RuntimeError('Git credentials not available.')
+  return git_creds
 
 
 def sync(event, context):
@@ -210,7 +225,8 @@ def sync(event, context):
   del event, context  #unused
 
   with ndb.Client().context():
-    github_client = Github(get_access_token())
+    git_creds = get_github_creds()
+    github_client = Github(git_creds.client_id, git_creds.client_secret)
     repo = github_client.get_repo('google/oss-fuzz')
     projects = get_projects(repo)
     cloud_scheduler_client = scheduler_v1.CloudSchedulerClient()
