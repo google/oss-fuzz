@@ -13,46 +13,151 @@
 // limitations under the License.
 
 #include "postgres.h"
-#include "parser/gramparse.h"
-#include "parser/parser.h"
-#include "parser/analyze.h"
-#include "utils/memutils.h"
-#include "utils/memdebug.h"
-#include "rewrite/rewriteHandler.h"
+
+#include "access/xlog.h"
+#include "access/xact.h"
+#include "common/username.h"
+#include "executor/spi.h"
+#include "jit/jit.h"
+#include "libpq/libpq.h"
+#include "libpq/pqsignal.h"
+#include "miscadmin.h"
 #include "optimizer/optimizer.h"
+#include "parser/analyze.h"
+#include "parser/parser.h"
+#include "storage/proc.h"
+#include "tcop/tcopprot.h"
+#include "utils/datetime.h"
+#include "utils/memutils.h"
+#include "utils/portal.h"
 #include "utils/snapmgr.h"
-#include "nodes/params.h"
-#include "nodes/plannodes.h"
-#include "nodes/pg_list.h"
+#include "utils/timeout.h"
 
-const char *progname = "progname";
+const char *progname;
+static const char *userDoption;
+static MemoryContext row_description_context = NULL;
+static StringInfoData row_description_buf;
+static const char *dbname = NULL;
+static const char *username = NULL;
 
-List *plan_queries(List *querytrees, const char *query_string, int cursorOptions,
-                 ParamListInfo boundParams) {
-     List       *stmt_list = NIL;
-     ListCell   *query_list;
- 
-     foreach(query_list, querytrees) {
-         Query      *query = lfirst_node(Query, query_list);
-         PlannedStmt *stmt;
 
-		 if (query->commandType == CMD_UTILITY) {
-             stmt = makeNode(PlannedStmt);
-             stmt->commandType = CMD_UTILITY;
-             stmt->canSetTag = query->canSetTag;
-             stmt->utilityStmt = query->utilityStmt;
-             stmt->stmt_location = query->stmt_location;
-             stmt->stmt_len = query->stmt_len;
-         } else {
-			 stmt = planner(query, query_string, cursorOptions,
-							boundParams);
-		 }
+static void
+exec_simple_query(const char *query_string)
+{
+  MemoryContext oldcontext;
+  List       *parsetree_list;
+  ListCell   *parsetree_item;
+  bool        use_implicit_block;
+
+  StartTransactionCommand();
+  oldcontext = MemoryContextSwitchTo(MessageContext);
+
+  parsetree_list = raw_parser(query_string);
+  MemoryContextSwitchTo(oldcontext);
+
+  use_implicit_block = (list_length(parsetree_list) > 1);
+
+  foreach(parsetree_item, parsetree_list)
+    {
+      RawStmt    *parsetree = lfirst_node(RawStmt, parsetree_item);
+      bool        snapshot_set = false;
+      MemoryContext per_parsetree_context = NULL;
+      List       *querytree_list,
+	*plantree_list;		
+
+      if (use_implicit_block)
+	BeginImplicitTransactionBlock();
+
+      if (analyze_requires_snapshot(parsetree))
+	{
+	  PushActiveSnapshot(GetTransactionSnapshot());
+	  snapshot_set = true;
+	}
+
+      if (lnext(parsetree_list, parsetree_item) != NULL)
+	{
+	  per_parsetree_context =
+	    AllocSetContextCreate(MessageContext,
+				  "per-parsetree message context",
+				  ALLOCSET_DEFAULT_SIZES);
+	  oldcontext = MemoryContextSwitchTo(per_parsetree_context);
+	}
+      else
+	oldcontext = MemoryContextSwitchTo(MessageContext);
+
+      querytree_list = pg_analyze_and_rewrite(parsetree, query_string,
+					      NULL, 0, NULL);
  
-		 stmt_list = lappend(stmt_list, stmt);
-     }
+      plantree_list = pg_plan_queries(querytree_list, query_string,
+				      CURSOR_OPT_PARALLEL_OK, NULL);
+
+      if (per_parsetree_context){
+	MemoryContextDelete(per_parsetree_context);
+      }
+      CommitTransactionCommand();
+    }
+}
+
+static void fuzzer_exit(){
+  if(!username)
+    pfree((void *) username);
+}
+
+
+int __attribute__((constructor)) Initialize(void) {
+  int argc = 4;
+  char *argv[4];
+  argv[0] = "tmp_install/usr/local/pgsql/bin/postgres";
+  argv[1] = "-D\"temp/data\"";
+  argv[2] = "-F";
+  argv[3] = "-k\"/tmp/pg_dbfuzz\"";
+	
+  progname = get_progname(argv[0]);
+  MemoryContextInit();
+
+  username = strdup(get_user_name_or_exit(progname));
+	 
+  InitStandaloneProcess(argv[0]);
+  SetProcessingMode(InitProcessing);
+  InitializeGUCOptions();
+  process_postgres_switches(argc, argv, PGC_POSTMASTER, &dbname);
+  dbname = "dbfuzz";
+
+  userDoption = "temp/data";
+  SelectConfigFiles(userDoption, progname);
+
+  checkDataDir();
+  ChangeToDataDir();
+  CreateDataDirLockFile(false);
+  LocalProcessControlFile(false);
+  InitializeMaxBackends();
+		 
+  BaseInit();
+  InitProcess();
+  PG_SETMASK(&UnBlockSig);
+  InitPostgres(dbname, InvalidOid, username, InvalidOid, NULL, false);
  
-     return stmt_list;
- }
+  SetProcessingMode(NormalProcessing);
+
+  BeginReportingGUCOptions();
+  process_session_preload_libraries();
+
+  MessageContext = AllocSetContextCreate(TopMemoryContext,
+					 "MessageContext",
+					 ALLOCSET_DEFAULT_SIZES);
+  row_description_context = AllocSetContextCreate(TopMemoryContext,
+						  "RowDescriptionContext",
+						  ALLOCSET_DEFAULT_SIZES);
+  MemoryContextSwitchTo(row_description_context);
+  initStringInfo(&row_description_buf);
+  MemoryContextSwitchTo(TopMemoryContext);
+
+  PgStartTime = GetCurrentTimestamp();
+  whereToSendOutput = DestNone;
+  Log_destination = 0;
+  atexit(fuzzer_exit);
+  return 0;
+}
 
 
 /*
@@ -60,64 +165,42 @@ List *plan_queries(List *querytrees, const char *query_string, int cursorOptions
 ** fuzzed input.
 */
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-	char* query_string;
-	sigjmp_buf local_sigjmp_buf;
-	List       *parsetree_list;
-	ListCell   *parsetree_item;
+  char* query_string;
+  sigjmp_buf local_sigjmp_buf;
 
-   	MemoryContextInit();
- 	query_string = (char*) calloc( (size+1), sizeof(char) );
-	memcpy(query_string, data, size);
-	MessageContext = AllocSetContextCreate(TopMemoryContext,
-                                            "MessageContext",
-                                            ALLOCSET_DEFAULT_SIZES);
+  query_string = (char*) calloc( (size+1), sizeof(char) );
+  memcpy(query_string, data, size);
 
-	if(!sigsetjmp(local_sigjmp_buf,0)){
-		MemoryContext oldcontext;
+  if (!sigsetjmp(local_sigjmp_buf, 0))
+    {
+      PG_exception_stack = &local_sigjmp_buf;
+      error_context_stack = NULL;
 
-		error_context_stack = NULL;
-		PG_exception_stack = &local_sigjmp_buf;
+      disable_all_timeouts(false);
+      QueryCancelPending = false;
+      pq_comm_reset();
+      EmitErrorReport();
 
-		oldcontext = MemoryContextSwitchTo(MessageContext);
-		parsetree_list = raw_parser(query_string);
-		MemoryContextSwitchTo(oldcontext);
-		
-		foreach(parsetree_item, parsetree_list) {
-			RawStmt    *parsetree = lfirst_node(RawStmt, parsetree_item);
-			MemoryContext per_parsetree_context = NULL;
-			List       *querytree_list;
-			Query *query;
+      AbortCurrentTransaction();
+ 
+      PortalErrorCleanup();
+      SPICleanup();
 
-			if (analyze_requires_snapshot(parsetree)){
-				PushActiveSnapshot(GetTransactionSnapshot());
-			}
-			if (lnext(parsetree_list, parsetree_item) != NULL){
-				per_parsetree_context =
-					AllocSetContextCreate(MessageContext,
-										  "per-parsetree message context",
-										  ALLOCSET_DEFAULT_SIZES);
-				MemoryContextSwitchTo(per_parsetree_context);
-			} else {
-				MemoryContextSwitchTo(MessageContext);
-			}
-			query = parse_analyze(parsetree, query_string, NULL, 0, NULL);
-			if (query->commandType == CMD_UTILITY) {
-				querytree_list = list_make1(query);
-			} else {
-				querytree_list = QueryRewrite(query);
-			}
- 			plan_queries(querytree_list, query_string, CURSOR_OPT_PARALLEL_OK, NULL);
- 			if (per_parsetree_context){
-				MemoryContextDelete(per_parsetree_context);
-			}
-		}
-	}
-	
-	free(query_string);
-	FlushErrorState();
-	MemoryContextReset(TopMemoryContext);
-	TopMemoryContext->ident = NULL;
-	TopMemoryContext->methods->delete_context(TopMemoryContext);
-	VALGRIND_DESTROY_MEMPOOL(TopMemoryContext);
-	return 0;
+      jit_reset_after_error();
+
+      MemoryContextSwitchTo(TopMemoryContext);
+      FlushErrorState();
+
+      MemoryContextSwitchTo(MessageContext);
+      MemoryContextResetAndDeleteChildren(MessageContext);
+
+      InvalidateCatalogSnapshotConditionally();
+
+      SetCurrentStatementStartTimestamp();
+
+      exec_simple_query(query_string);
+    }
+
+  free(query_string);
+  return 0;
 }
