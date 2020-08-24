@@ -77,8 +77,10 @@ static void readMulti(IStream& is) {
       int w = dw.max.x - dw.min.x + 1;
       int dx = dw.min.x;
 
-      if (w > (1 << 24)) return;
-
+      if (w > (1 << 24))
+      {
+	      throw std::logic_error("ignoring - very wide datawindow\n");
+      }
       Array<Rgba> pixels(w);
       FrameBuffer i;
       i.insert("R", Slice(HALF, (char *)&(pixels[-dx].r), sizeof(Rgba), 0));
