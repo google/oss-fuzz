@@ -25,4 +25,4 @@ WORKDIR postgresql
 RUN mkdir bld
 
 COPY fuzzer $SRC/fuzzer
-COPY build.sh sql.dict fuzzer/*.options $SRC/
+COPY build.sh $SRC/

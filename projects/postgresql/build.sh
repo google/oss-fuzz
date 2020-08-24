@@ -34,5 +34,5 @@ make
 cd src/backend/fuzzer
 make fuzzer
 cp *_fuzzer $OUT/
+cp $SRC/fuzzer/*.dict $OUT/
 cp $SRC/postgresql_fuzzer_seed_corpus.zip $OUT/
-cp $SRC/*.dict $SRC/*.options $OUT
