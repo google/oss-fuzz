@@ -3,7 +3,6 @@ language: c++
 primary_contact: "choller@mozilla.com"
 auto_ccs:
   - sledru@mozilla.com
-# test.
 fuzzing_engines:
   - none
 sanitizers:
