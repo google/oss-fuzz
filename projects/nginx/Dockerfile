@@ -16,8 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install -y libpcre3-dev zlib1g-dev
-RUN git clone https://github.com/nginx/nginx.git
+RUN apt-get update && apt-get install -y libpcre3-dev zlib1g-dev mercurial ninja-build cmake liblzma-dev libz-dev binutils libtool
+RUN hg clone http://hg.nginx.org/nginx/
+RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
+RUN git clone --depth 1 https://github.com/google/fuzzer-test-suite
+RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja)
+
 WORKDIR nginx
 COPY fuzz $SRC/fuzz
-COPY build.sh add_fuzzers.diff make_fuzzers $SRC/
+COPY build.sh add_fuzzers.diff make_fuzzers  $SRC/

@@ -14,16 +14,19 @@
 # limitations under the License.
 #
 ################################################################################
-git apply $SRC/add_fuzzers.diff
+hg import $SRC/add_fuzzers.diff --no-commit
 
-cp -r $SRC/fuzz src/.
+cp -r $SRC/fuzz src/
 cp $SRC/make_fuzzers auto/make_fuzzers
+
+cd src/fuzz
+rm -rf genfiles && mkdir genfiles && $SRC/LPM/external.protobuf/bin/protoc http_request_proto.proto --cpp_out=genfiles
+cd ../..
 
 auto/configure \
     --with-ld-opt="-Wl,--wrap=listen -Wl,--wrap=setsockopt -Wl,--wrap=bind -Wl,--wrap=shutdown -Wl,--wrap=connect" \
-    --with-http_v2_module \
-    --http-fastcgi-temp-path=$OUT/ \
-    --http-uwsgi-temp-path=$OUT/
+    --with-http_v2_module
 make -f objs/Makefile fuzzers
 
 cp objs/*_fuzzer $OUT/
+cp $SRC/fuzz/*.dict $SRC/fuzz/socket_config.conf $OUT/

@@ -1,0 +1,7 @@
+syntax = "proto2";
+// Proto description of the http request fuzzer input format
+
+message HttpProto{
+	required string request = 1;
+	required string reply = 2;
+}
