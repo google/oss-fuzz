@@ -1,50 +1,45 @@
 sed -i 's/main(/fuzz_without_main(/g' src/core/nginx.c
 
-FUZZ_SRCS="src/fuzz/http_request_fuzzer.c \
+FUZZ_SRCS="src/fuzz/http_request_fuzzer.cc \
 	   src/fuzz/wrappers.c"
 
 mkdir -p $NGX_OBJS/src/fuzz
 
-ngx_all_objs_fuzz=`echo $FUZZ_SRCS $ngx_all_srcs \
-    | sed -e "s#\([^ ]*\.\)cpp#$NGX_OBJS\/\1$ngx_objext#g" \
-          -e "s#\([^ ]*\.\)cc#$NGX_OBJS\/\1$ngx_objext#g" \
-          -e "s#\([^ ]*\.\)c#$NGX_OBJS\/\1$ngx_objext#g" \
-          -e "s#\([^ ]*\.\)S#$NGX_OBJS\/\1$ngx_objext#g"`
+ngx_all_objs_fuzz=`echo src/fuzz/wrappers.c $ngx_all_srcs \
+    | sed -e "s#\([^ ]*\.\)cc#$NGX_OBJS\/\1$ngx_objext#g" \
+          -e "s#\([^ ]*\.\)c#$NGX_OBJS\/\1$ngx_objext#g"`
 
 ngx_deps_fuzz=`echo $ngx_all_objs_fuzz $ngx_modules_obj $ngx_res $LINK_DEPS \
     | sed -e "s/  *\([^ ][^ ]*\)/$ngx_regex_cont\1/g" \
           -e "s/\//$ngx_regex_dirsep/g"`
 
-ngx_objs=`echo  $NGX_OBJS${ngx_dirsep}src/fuzz/wrappers.o $ngx_all_objs $ngx_modules_obj \
+ngx_objs=`echo objs/src/fuzz/wrappers.o $ngx_all_objs $ngx_modules_obj \
     | sed -e "s/  *\([^ ][^ ]*\)/$ngx_long_regex_cont\1/g" \
           -e "s/\//$ngx_regex_dirsep/g"`
 
-# the fuzzers
-for ngx_src in $FUZZ_SRCS
-do
-    ngx_src=`echo $ngx_src | sed -e "s/\//$ngx_regex_dirsep/g"`
-    ngx_obj=`echo $ngx_src \
-        | sed -e "s#^\(.*\.\)cpp\\$#$ngx_objs_dir\1$ngx_objext#g" \
-              -e "s#^\(.*\.\)cc\\$#$ngx_objs_dir\1$ngx_objext#g" \
-              -e "s#^\(.*\.\)c\\$#$ngx_objs_dir\1$ngx_objext#g" \
-              -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
-
-    cat << END                                                >> $NGX_MAKEFILE
-
-$ngx_obj:	\$(CORE_DEPS) \$(HTTP_DEPS)$ngx_cont$ngx_src
-	\$(CC) $ngx_compile_opt \$(CFLAGS) \$(CORE_INCS) \$(HTTP_INCS) $ngx_tab$ngx_objout$ngx_obj$ngx_tab$ngx_src$NGX_AUX
-
-END
-
-done
-
 cat << END                                                    >> $NGX_MAKEFILE
 
-fuzzers: $NGX_OBJS${ngx_dirsep}http_request_fuzzer$ngx_binext
+fuzzers: objs/http_request_fuzzer
 
-$NGX_OBJS${ngx_dirsep}http_request_fuzzer$ngx_binext: $ngx_deps_fuzz$ngx_spacer
-	 \$(CXX) \$(CXXFLAGS) $ngx_long_start$ngx_binout$NGX_OBJS${ngx_dirsep}http_request_fuzzer$ngx_binexit$ngx_long_cont$ngx_objs $NGX_OBJS${ngx_dirsep}src${ngx_dirsep}fuzz${ngx_dirsep}http_request_fuzzer.o \$(LIB_FUZZING_ENGINE) $ngx_libs$ngx_link$ngx_main_link
+objs/src/fuzz/http_request_fuzzer.o:
+	\$(CXX) \$(CXXFLAGS) -c -DLLVMFuzzerTestOneInput=FuzzNginx src/fuzz/http_request_fuzzer.cc -o objs/src/fuzz/http_request_fuzzer.o \$(CORE_INCS) \$(HTTP_INCS) -I src/fuzz/genfiles/ -I \$(SRC)/ -I \$(SRC)/libprotobuf-mutator/  -I \$(SRC)/LPM/external.protobuf/include
+
+objs/src/fuzz/wrappers.o:
+	\$(CC) $ngx_compile_opt \$(CFLAGS) -o objs/src/fuzz/wrappers.o src/fuzz/wrappers.c
+
+objs/http_request_fuzzer: $ngx_deps_fuzz
+	 \$(CXX) \$(CXXFLAGS) src/fuzz/http_request_fuzzer.cc \
+	 src/fuzz/genfiles/http_request_proto.pb.cc \
+	 -o objs/http_request_fuzzer \
+	 \$(CORE_INCS) \$(HTTP_INCS) \
+	 -I src/fuzz/genfiles/ -I \$(SRC)/ \
+	 -I \$(SRC)/libprotobuf-mutator/ \
+	 -I \$(SRC)/LPM/external.protobuf/include \
+	 \$(SRC)/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
+  	 \$(SRC)/LPM/src/libprotobuf-mutator.a \
+  	 \$(SRC)/LPM/external.protobuf/lib/libprotobuf.a \
+	 $ngx_binexit$ngx_long_cont$ngx_objs \
+   	 \$(LIB_FUZZING_ENGINE) $ngx_libs$ngx_link$ngx_main_link -lcrypt
 $ngx_long_end					    
 
 END
-
