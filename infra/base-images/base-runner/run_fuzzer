@@ -121,7 +121,7 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
 else
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"
 
-  if [ -z ${DO_NOT_USE_CORPUS:-} ]; then
+  if [ -z ${SKIP_SEED_CORPUS:-} ]; then
     CMD_LINE="$CMD_LINE $CORPUS_DIR"
   fi
 
