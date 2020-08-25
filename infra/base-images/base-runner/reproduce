@@ -29,6 +29,7 @@ fi
 
 export RUN_FUZZER_MODE="interactive"
 export FUZZING_ENGINE="libfuzzer"
+export SKIP_SEED_CORPUS="1"
 export DO_NOT_USE_CORPUS="1"
 
 run_fuzzer $FUZZER $@ $TESTCASE

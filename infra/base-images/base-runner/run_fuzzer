@@ -68,10 +68,6 @@ rm -rf $FUZZER_OUT && mkdir $FUZZER_OUT
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 
-if [ ! -z ${DO_NOT_USE_CORPUS:-} ]; then
-  SKIP_SEED_CORPUS=1
-fi
-
 if [ -f $SEED_CORPUS ] && [ -z ${SKIP_SEED_CORPUS:-} ]; then
   echo "Using seed corpus: $SEED_CORPUS"
   unzip -d ${CORPUS_DIR}/ $SEED_CORPUS > /dev/null
