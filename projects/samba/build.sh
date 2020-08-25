@@ -15,5 +15,11 @@
 #
 ################################################################################
 
+# It is critical that this script, just as Samba's GitLab CI docker
+# has LANG set to en_US.utf8
+. /etc/default/locale
+export LANG
+export LC_ALL
+
 # The real script is maintained in the Samba repo
 exec lib/fuzzing/oss-fuzz/build_samba.sh
