@@ -109,7 +109,6 @@ def should_build_coverage(project_yaml):
   return True
 
 
-
 def should_build(project_yaml):
   """Returns True on if the build specified is enabled in the project.yaml."""
 

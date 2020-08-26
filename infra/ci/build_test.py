@@ -30,39 +30,51 @@ def patch_environ(testcase_obj):
   patcher.start()
 
 
+def _set_coverage_build():
+  """Set the right environment variables for a coverage build."""
+  os.environ['SANITIZER'] = 'coverage'
+  os.environ['ENGINE'] = 'libfuzzer'
+  os.environ['ARCHITECTURE'] = 'x86_64'
+
+
 class TestShouldBuild(unittest.TestCase):
+  """Tests that should_build() works as intended."""
+
   def setUp(self):
     patch_environ(self)
-
-  def _set_coverage_build(self):
-    os.environ['SANITIZER'] = 'coverage'
-    os.environ['ENGINE'] = 'libfuzzer'
-    os.environ['ARCHITECTURE'] = 'x86_64'
 
   def test_none_engine_coverage_build(self):
     """Tests that should_build returns False for a coverage build of a
     project that specifies 'none' for fuzzing_engines."""
-    self._set_coverage_build()
-    project_yaml = {'language': 'c++', 'fuzzing_engines': ['none'], 'sanitizers': ['address']}
+    _set_coverage_build()
+    project_yaml = {
+        'language': 'c++',
+        'fuzzing_engines': ['none'],
+        'sanitizers': ['address']
+    }
     self.assertFalse(build.should_build(project_yaml))
 
   def test_unspecified_engines_coverage_build(self):
     """Tests that should_build returns True for a coverage build of a
     project that doesn't specify fuzzing_engines."""
-    self._set_coverage_build()
+    _set_coverage_build()
     project_yaml = {'language': 'c++'}
     self.assertTrue(build.should_build(project_yaml))
 
   def test_libfuzzer_coverage_build(self):
     """Tests that should_build returns True for coverage build of a project
     specifying 'libfuzzer' and for fuzzing_engines."""
-    self._set_coverage_build()
-    project_yaml = {'language': 'c++', 'fuzzing_engines': ['libfuzzer'], 'sanitizers': ['address']}
+    _set_coverage_build()
+    project_yaml = {
+        'language': 'c++',
+        'fuzzing_engines': ['libfuzzer'],
+        'sanitizers': ['address']
+    }
     self.assertTrue(build.should_build(project_yaml))
 
   def test_go_coverage_build(self):
     """Tests that should_build returns False for coverage build of a project
     specifying 'libfuzzer' and for fuzzing_engines."""
-    self._set_coverage_build()
+    _set_coverage_build()
     project_yaml = {'language': 'go'}
     self.assertFalse(build.should_build(project_yaml))
