@@ -6,6 +6,5 @@ auto_ccs:
   - twsmith@mozilla.com
 fuzzing_engines:
   - none
-# test
 sanitizers:
   - address
