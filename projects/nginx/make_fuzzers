@@ -21,9 +21,6 @@ cat << END                                                    >> $NGX_MAKEFILE
 
 fuzzers: objs/http_request_fuzzer
 
-objs/src/fuzz/http_request_fuzzer.o:
-	\$(CXX) \$(CXXFLAGS) -c -DLLVMFuzzerTestOneInput=FuzzNginx src/fuzz/http_request_fuzzer.cc -o objs/src/fuzz/http_request_fuzzer.o \$(CORE_INCS) \$(HTTP_INCS) -I src/fuzz/genfiles/ -I \$(SRC)/ -I \$(SRC)/libprotobuf-mutator/  -I \$(SRC)/LPM/external.protobuf/include
-
 objs/src/fuzz/wrappers.o:
 	\$(CC) $ngx_compile_opt \$(CFLAGS) -o objs/src/fuzz/wrappers.o src/fuzz/wrappers.c
 
