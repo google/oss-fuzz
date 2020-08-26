@@ -142,7 +142,7 @@ def build_project(project):
   sanitizer = os.getenv('SANITIZER')
   architecture = os.getenv('ARCHITECTURE')
 
-  if should_build(project_yaml):
+  if not should_build(project_yaml):
     print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
            'not enabled for this project: {3}. Skipping build.').format(
                engine, sanitizer, architecture, project))

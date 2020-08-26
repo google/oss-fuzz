@@ -78,3 +78,16 @@ class TestShouldBuild(unittest.TestCase):
     _set_coverage_build()
     project_yaml = {'language': 'go'}
     self.assertFalse(build.should_build(project_yaml))
+
+  def test_engine_project_none_build(self):
+    """Tests that should_build returns False for an engine: 'none' build when
+    the project doesn't specify engines."""
+    os.environ['SANITIZER'] = 'address'
+    os.environ['ENGINE'] = 'none'
+    os.environ['ARCHITECTURE'] = 'x86_64'
+    project_yaml = {
+        'language': 'c++',
+        'fuzzing_engines': ['libfuzzer'],
+        'sanitizers': ['address']
+    }
+    self.assertFalse(build.should_build(project_yaml))
