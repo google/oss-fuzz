@@ -95,8 +95,8 @@ def should_build_coverage(project_yaml):
   engines = project_yaml.get('fuzzing_engines', DEFAULT_ENGINES)
   engineless = 'none' in engines
   if engineless:
-    assert_message = 'Project supports engines and none: {engines}.'.format(
-        engines=engines)
+    assert_message = ('Forbidden to specify multiple engines for '
+                      '"fuzzing_engines" if "none" is specified.')
     assert len(engines) == 1, assert_message
     return False
 
