@@ -23,7 +23,7 @@ cd Botan-2.12.1
                --disable-modules=locking_allocator \
                --unsafe-fuzzer-mode --build-fuzzers=libfuzzer \
                --with-fuzzer-lib='FuzzingEngine'
-make
+make -j$(nproc)
 make install
 
 cd $ORIG_DIR
@@ -50,7 +50,7 @@ cmake \
     -DBUILD_TESTING=off \
     -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
     ../rnp/
-make
+make -j$(nproc)
 
 FUZZERS="fuzz_dump fuzz_keyring"
 for f in $FUZZERS; do
