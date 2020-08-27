@@ -17,7 +17,7 @@
 
 ORIG_DIR=$(pwd)
 
-wget -qO- https://botan.randombit.net/releases/Botan-2.12.1.tar.xz | tar xvJ
+wget -qO- https://botan.randombit.net/releases/Botan-2.12.1.tar.xz | tar xJ
 cd Botan-2.12.1
 ./configure.py --prefix=/usr --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
                --disable-modules=locking_allocator \
