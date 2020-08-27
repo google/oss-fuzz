@@ -31,5 +31,5 @@ RUN apt-get install -y \
     wget
 
 RUN git clone --depth 1 https://github.com/rnpgp/rnp.git rnp
-WORKDIR rnp/..
+WORKDIR $SRC
 COPY build.sh $SRC/
