@@ -29,6 +29,70 @@ extern "C" {
 #include "http_request_proto.pb.h"
 #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
 
+static char configuration[] =
+"error_log stderr emerg;\n"
+"events {\n"
+"    use epoll;\n"
+"    worker_connections 2;\n"
+"    multi_accept off;\n"
+"    accept_mutex off;\n"
+"}\n"
+"http {\n"
+"    server_tokens off;\n"
+"    default_type application/octet-stream;\n"
+"    map $http_upgrade $connection_upgrade {\n"
+"      default upgrade;\n"
+"      '' close;\n"
+"    }\n"
+"    error_log stderr emerg;\n"
+"    access_log off;\n"
+"    map $subdomain $nss {\n"
+"      default local_upstream;\n"
+"    }\n"
+"    upstream local_upstream {\n"
+"      server 127.0.0.1:1010 max_fails=0;\n"
+"      server 127.0.0.1:1011 max_fails=0;\n"
+"      server 127.0.0.1:1012 max_fails=0;\n"
+"      server 127.0.0.1:1013 max_fails=0;\n"
+"      server 127.0.0.1:1014 max_fails=0;\n"
+"      server 127.0.0.1:1015 max_fails=0;\n"
+"      server 127.0.0.1:1016 max_fails=0;\n"
+"      server 127.0.0.1:1017 max_fails=0;\n"
+"      server 127.0.0.1:1018 max_fails=0;\n"
+"      server 127.0.0.1:1019 max_fails=0;\n"
+"    }\n"
+"    client_max_body_size 256M;\n"
+"    client_body_temp_path /tmp/;\n"
+"    proxy_temp_path /tmp/;\n"
+"    proxy_buffer_size 24K;\n"
+"    proxy_max_temp_file_size 0;\n"
+"    proxy_buffers 8 4K;\n"
+"    proxy_busy_buffers_size 28K;\n"
+"    proxy_buffering off;\n"
+"    server {\n"
+"      listen unix:nginx.sock;\n"
+"      server_name ~^(?<subdomain>.+)\\.url.com$;\n"
+"      proxy_next_upstream off;\n"
+"      proxy_read_timeout 5m;\n"
+"      proxy_http_version 1.1;\n"
+"      proxy_set_header Host $http_host;\n"
+"      proxy_set_header X-Real-IP $remote_addr;\n"
+"      proxy_set_header X-Real-Port $remote_port;\n"
+"      location / {\n"
+"        proxy_pass http://$nss;\n"
+"        proxy_set_header Host $http_host;\n"
+"        proxy_set_header X-Real-IP $remote_addr;\n"
+"        proxy_set_header X-Real-Port $remote_port;\n"
+"        proxy_set_header Connection '';\n"
+"        chunked_transfer_encoding off;\n"
+"        proxy_buffering off;\n"
+"        proxy_cache off;\n"
+"      }\n"
+"    }\n"
+"}\n"
+"\n";
+
+
 static ngx_cycle_t *cycle;
 static ngx_log_t ngx_log;
 static ngx_open_file_t ngx_log_file;
@@ -37,7 +101,7 @@ static char arg1[] = {0, 0xA, 0};
 
 extern char **environ;
 
-static std::string config_file = "socket_config.conf";
+static const char *config_file = "http_config.conf";
 
 struct fuzzing_data {
   const uint8_t *data;
@@ -119,9 +183,7 @@ extern "C" int InitializeNginx(void) {
   ngx_debug_init();
   ngx_strerror_init();
   ngx_time_init();
-#if (NGX_PCRE)
   ngx_regex_init();
-#endif
 
   // Just output logs to stderr
   ngx_log.file = &ngx_log_file;
@@ -129,9 +191,6 @@ extern "C" int InitializeNginx(void) {
   ngx_log_file.fd = ngx_stderr;
   log = &ngx_log;
 
-#if (NGX_OPENSSL)
-  ngx_ssl_init(log);
-#endif
   ngx_memzero(&init_cycle, sizeof(ngx_cycle_t));
   init_cycle.log = log;
   ngx_cycle = &init_cycle;
@@ -156,8 +215,11 @@ extern "C" int InitializeNginx(void) {
   ngx_crc32_table_init();
   ngx_preinit_modules();
 
-  init_cycle.conf_file.len = config_file.size(); // strlen(config_file);
-  init_cycle.conf_file.data = (unsigned char *)config_file.c_str();
+  FILE *fptr = fopen(config_file, "w");
+  fprintf(fptr, "%s", configuration);
+  fclose(fptr);
+  init_cycle.conf_file.len = strlen(config_file);
+  init_cycle.conf_file.data = (unsigned char *) config_file;
 
   cycle = ngx_init_cycle(&init_cycle);
 
@@ -217,7 +279,6 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
   // Create fake free connection to feed the http handler
   ngx_cycle->free_connections = &local1;
   local1.data = &local2;
-
   ngx_cycle->free_connection_n = 2;
 
   // Initialize connection

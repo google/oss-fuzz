@@ -29,4 +29,4 @@ auto/configure \
 make -f objs/Makefile fuzzers
 
 cp objs/*_fuzzer $OUT/
-cp $SRC/fuzz/*.dict $SRC/fuzz/socket_config.conf $OUT/
+cp $SRC/fuzz/*.dict $OUT/

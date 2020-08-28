@@ -1,8 +1,5 @@
 sed -i 's/main(/fuzz_without_main(/g' src/core/nginx.c
 
-FUZZ_SRCS="src/fuzz/http_request_fuzzer.cc \
-	   src/fuzz/wrappers.c"
-
 mkdir -p $NGX_OBJS/src/fuzz
 
 ngx_all_objs_fuzz=`echo src/fuzz/wrappers.c $ngx_all_srcs \
