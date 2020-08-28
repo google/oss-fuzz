@@ -1,7 +1,7 @@
 homepage: "https://github.com/google/orbit"
 language: c++
 primary_contact: "hebecker@google.com"
-auto_ccs :
+auto_ccs:
   - "orbitprofiler-eng+fuzztests@google.com"
 
 fuzzing_engines:
