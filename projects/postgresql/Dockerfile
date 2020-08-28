@@ -19,7 +19,10 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make libreadline-dev zlib1g-dev bison flex
 
 RUN git clone git://git.postgresql.org/git/postgresql.git
+RUN zip postgresql_fuzzer_seed_corpus.zip postgresql/src/test/regress/sql/*
 
 WORKDIR postgresql
+RUN mkdir bld
+
 COPY fuzzer $SRC/fuzzer
-COPY add_fuzzers.diff build.sh $SRC/
+COPY build.sh $SRC/
