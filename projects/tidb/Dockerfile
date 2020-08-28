@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/pingcap/tidb/store
+RUN go get github.com/pingcap/tidb/tree/master/store
 COPY build.sh $SRC/
 WORKDIR $SRC/
