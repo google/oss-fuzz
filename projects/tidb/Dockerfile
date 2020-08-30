@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/pingcap/tidb/store
+ENV GO111MODULE=on
+RUN go get github.com/pingcap/tidb/store@master
 COPY build.sh $SRC/
 WORKDIR $SRC/
