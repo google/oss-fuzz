@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install --yes cmake mercurial
-RUN hg clone https://GOOGLE-AUTOFUZZ@bitbucket.org/eigen/eigen
+RUN git clone https://gitlab.com/libeigen/eigen.git
 WORKDIR eigen
 COPY build.sh *.cc $SRC/
