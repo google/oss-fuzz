@@ -75,8 +75,7 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --define ENVOY_CONFIG_ASAN=1  \
   --copt -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS \
   --define force_libcpp=enabled --build_tag_filters=-no_asan \
-  --cxxopt=-std=c++17 --linkopt=-lc++ \
-  --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
+  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
