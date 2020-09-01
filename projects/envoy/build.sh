@@ -51,6 +51,9 @@ then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
   # See issue: https://github.com/bazelbuild/bazel/issues/8777
   echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
+elif [ "$SANITIZER" = "address" ]
+then
+  echo "--copt -D__SANITIZE_ADDRESS__" "--copt -DADDRESS_SANITIZER=1"
 fi
 )"
 
@@ -64,14 +67,13 @@ done
 
 # Build driverless libraries.
 # Benchmark about 2 GB per CPU (14 threads for 28.8 GB RAM)
-# TODO(asraa): Remove deprecation warnings when Envoy moves to C++17
+# TODO(asraa): Remove deprecation warnings when Envoy and deps moves to C++17
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
-  --discard_analysis_cache --notrack_incremental_state --nokeep_state_after_build \
   --local_cpu_resources=HOST_CPUS*0.45 \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
-  --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
+  --define ENVOY_CONFIG_ASAN=1  \
   --copt -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS \
   --define force_libcpp=enabled --build_tag_filters=-no_asan \
   --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
