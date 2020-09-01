@@ -30,15 +30,11 @@ using IMATH_NAMESPACE::Box2i;
 namespace {
 
 static void readSingle(IStream& is) {
-  RgbaInputFile *in = NULL;
-  try {
-    in = new RgbaInputFile(is);
-  } catch (...) {
-    return;
-  }
+  try { 
 
-  try {
-    const Box2i &dw = in->dataWindow();
+    RgbaInputFile in(is);
+
+    const Box2i &dw = in.dataWindow();
 
     int w = dw.max.x - dw.min.x + 1;
     int dx = dw.min.x;
@@ -46,13 +42,11 @@ static void readSingle(IStream& is) {
     if (w > (1 << 24)) return;
 
     Array<Rgba> pixels(w);
-    in->setFrameBuffer(&pixels[-dx], 1, 0);
+    in.setFrameBuffer(&pixels[-dx], 1, 0);
 
-    for (int y = dw.min.y; y <= dw.max.y; ++y) in->readPixels(y);
+    for (int y = dw.min.y; y <= dw.max.y; ++y) in.readPixels(y);
   } catch (...) {
   }
-
-  delete in;
 }
 
 static void readMulti(IStream& is) {
@@ -77,8 +71,10 @@ static void readMulti(IStream& is) {
       int w = dw.max.x - dw.min.x + 1;
       int dx = dw.min.x;
 
-      if (w > (1 << 24)) return;
-
+      if (w > (1 << 24))
+      {
+	      throw std::logic_error("ignoring - very wide datawindow\n");
+      }
       Array<Rgba> pixels(w);
       FrameBuffer i;
       i.insert("R", Slice(HALF, (char *)&(pixels[-dx].r), sizeof(Rgba), 0));

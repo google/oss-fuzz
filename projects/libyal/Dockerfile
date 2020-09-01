@@ -45,8 +45,13 @@ RUN git clone --depth 1 https://github.com/libyal/libfshfs.git libfshfs
 RUN git clone --depth 1 https://github.com/libyal/libfsntfs.git libfsntfs
 
 RUN git clone --depth 1 https://github.com/libyal/libbde.git libbde
+RUN git clone --depth 1 https://github.com/libyal/libluksde.git libluksde
+RUN git clone --depth 1 https://github.com/libyal/libvsgpt.git libvsgpt
 RUN git clone --depth 1 https://github.com/libyal/libvslvm.git libvslvm
+RUN git clone --depth 1 https://github.com/libyal/libvsmbr.git libvsmbr
 
+RUN git clone --depth 1 https://github.com/libyal/libewf.git libewf
+RUN git clone --depth 1 https://github.com/libyal/libsmraw.git libsmraw
 RUN git clone --depth 1 https://github.com/libyal/libqcow.git libqcow
 RUN git clone --depth 1 https://github.com/libyal/libvhdi.git libvhdi
 RUN git clone --depth 1 https://github.com/libyal/libvmdk.git libvmdk

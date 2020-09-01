@@ -32,6 +32,7 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=object-size"
 ./buildconf
 ./configure \
     --disable-all \
+    --enable-debug-assertions \
     --enable-option-checking=fatal \
     --enable-fuzzer \
     --enable-exif \
@@ -55,7 +56,8 @@ php-fuzz-exif
 php-fuzz-mbstring
 php-fuzz-unserialize
 php-fuzz-unserializehash
-php-fuzz-parser"
+php-fuzz-parser
+php-fuzz-execute"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
 done

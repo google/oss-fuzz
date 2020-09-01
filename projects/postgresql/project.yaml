@@ -1,7 +1,7 @@
 homepage: "https://postgresql.org"
 primary_contact: "sfrost@snowman.net"
 language: c
-auto_ccs :
+auto_ccs:
   - "ouyangyunshu@google.com"
   - "frost.stephen.p@gmail.com"
 fuzzing_engines:
@@ -9,4 +9,3 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
-  - undefined

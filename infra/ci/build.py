@@ -87,8 +87,34 @@ def check_build(project, engine, sanitizer, architecture):
   ])
 
 
+def should_build_coverage(project_yaml):
+  """Returns True if a coverage build should be done based on project.yaml
+  contents."""
+  # Enable coverage builds on projects that use engines. Those that don't use
+  # engines shouldn't get coverage builds.
+  engines = project_yaml.get('fuzzing_engines', DEFAULT_ENGINES)
+  engineless = 'none' in engines
+  if engineless:
+    assert_message = ('Forbidden to specify multiple engines for '
+                      '"fuzzing_engines" if "none" is specified.')
+    assert len(engines) == 1, assert_message
+    return False
+
+  language = project_yaml.get('language')
+  if language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
+    print(('Project is written in "{language}", '
+           'coverage is not supported yet.').format(language=language))
+    return False
+
+  return True
+
+
 def should_build(project_yaml):
-  """Return bool on if the build specified is enabled in the project.yaml."""
+  """Returns True on if the build specified is enabled in the project.yaml."""
+
+  if os.getenv('SANITIZER') == 'coverage':
+    # This assumes we only do coverage builds with libFuzzer on x86_64.
+    return should_build_coverage(project_yaml)
 
   def is_enabled(env_var, yaml_name, defaults):
     """Is the value of |env_var| enabled in |project_yaml| (in the |yaml_name|
@@ -115,18 +141,10 @@ def build_project(project):
   engine = os.getenv('ENGINE')
   sanitizer = os.getenv('SANITIZER')
   architecture = os.getenv('ARCHITECTURE')
-  language = project_yaml.get('language')
 
-  if (sanitizer == 'coverage' and
-      language not in LANGUAGES_WITH_COVERAGE_SUPPORT):
-    print(('Project "{project}" is written in "{language}", '
-           'coverage is not supported yet.').format(project=project,
-                                                    language=language))
-    return
-
-  if sanitizer != 'coverage' and not should_build(project_yaml):
+  if not should_build(project_yaml):
     print(('Specified build: engine: {0}, sanitizer: {1}, architecture: {2} '
-           'not enabled for this project: {3}. skipping build.').format(
+           'not enabled for this project: {3}. Skipping build.').format(
                engine, sanitizer, architecture, project))
 
     return

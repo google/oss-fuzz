@@ -211,4 +211,4 @@ The results of CIFuzz can be found in two different places.
 
 ## Feedback/Questions/Issues
 
-Create an issue in [OSS-Fuzz](https://github.com/google/oss-fuzz/issues/new) if you have questions of any other feedback on CIFuzz.
+Create an issue in [OSS-Fuzz](https://github.com/google/oss-fuzz/issues/new) if you have questions or any other feedback on CIFuzz.

@@ -36,3 +36,14 @@ compile_fuzzer github.com/marten-seemann/qpack/fuzzing Fuzz qpack_fuzzer
 compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/frames Fuzz frame_fuzzer
 compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/header Fuzz header_fuzzer
 compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/transportparameters Fuzz transportparameter_fuzzer
+compile_fuzzer github.com/lucas-clemente/quic-go/fuzzing/tokens Fuzz token_fuzzer
+
+# generate seed corpora
+go generate $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/...
+
+zip --quiet -r $OUT/header_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/header/corpus
+zip --quiet -r $OUT/frame_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/frames/corpus
+zip --quiet -r $OUT/transportparameter_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/transportparameters/corpus
+
+# for debugging
+ls -al $OUT

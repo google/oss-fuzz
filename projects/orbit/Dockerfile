@@ -14,15 +14,18 @@
 #
 ################################################################################
 
+  #&& curl -SL https://github.com/google/orbit/archive/master.tar.gz \
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y m4 libglu1-mesa-dev mesa-common-dev \
+  libxmu-dev libxi-dev pkg-config libxxf86vm-dev patchelf
 
-RUN apt-get update && apt-get install -y make libreadline-dev zlib1g-dev bison flex
-
-RUN git clone git://git.postgresql.org/git/postgresql.git
-RUN zip postgresql_fuzzer_seed_corpus.zip postgresql/src/test/regress/sql/*
-
-WORKDIR postgresql
-RUN mkdir bld
-
-COPY fuzzer $SRC/fuzzer
+ADD https://github.com/google/orbit/archive/master.tar.gz $SRC/
+RUN mkdir -p $SRC/orbit && tar -xzf $SRC/master.tar.gz \
+  -C $SRC/orbit/ --strip-components 1; rm -f $SRC/master.tar.gz
+WORKDIR $SRC
 COPY build.sh $SRC/
+
+# That's a hack. The service needs to have a more recent kernel than what the
+# container provides. But this code is not going to be called from the fuzz-
+# tests, so we should be fine here.
+ADD https://raw.githubusercontent.com/torvalds/linux/v5.7/include/linux/perf_event.h /usr/include/linux/perf_event.h
