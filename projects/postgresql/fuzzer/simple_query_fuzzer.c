@@ -39,7 +39,8 @@ static MemoryContext row_description_context = NULL;
 static StringInfoData row_description_buf;
 static const char *dbname = NULL;
 static const char *username = NULL;
-
+extern char _binary_query_db_tar_gz_start[];
+extern char _binary_query_db_tar_gz_end[];
 
 static void
 exec_simple_query(const char *query_string)
@@ -108,10 +109,16 @@ int __attribute__((constructor)) Initialize(void) {
   int argc = 4;
   char *argv[4];
   argv[0] = "tmp_install/usr/local/pgsql/bin/postgres";
-  argv[1] = "-D\"temp/data\"";
+  argv[1] = "-D\"/tmp/query_db/data\"";
   argv[2] = "-F";
   argv[3] = "-k\"/tmp/pg_dbfuzz\"";
-	
+
+  FILE * fp; fp = fopen("/tmp/query_db.tar.gz", "w");
+  unsigned int tarsize =  (unsigned int)(_binary_query_db_tar_gz_end - _binary_query_db_tar_gz_start);
+  fwrite(_binary_query_db_tar_gz_start, 1, tarsize, fp);
+  fclose(fp);
+  system("tar -xvf /tmp/query_db.tar.gz -C /tmp/");
+  
   progname = get_progname(argv[0]);
   MemoryContextInit();
 
@@ -123,7 +130,7 @@ int __attribute__((constructor)) Initialize(void) {
   process_postgres_switches(argc, argv, PGC_POSTMASTER, &dbname);
   dbname = "dbfuzz";
 
-  userDoption = "temp/data";
+  userDoption = "/tmp/query_db/data";
   SelectConfigFiles(userDoption, progname);
 
   checkDataDir();
