@@ -1,0 +1,9 @@
+homepage: "https://github.com/erikd/libsndfile"
+primary_contact: "evpobr@gmail.com"
+language: c
+auto_ccs:
+  - "cmeister2@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
