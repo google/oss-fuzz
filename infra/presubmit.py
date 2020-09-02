@@ -82,6 +82,7 @@ class ProjectYamlChecker:
   VALID_SECTION_NAMES = [
       'architectures',
       'auto_ccs',
+      'blackbox',
       'builds_per_day',
       'coverage_extra_args',
       'disabled',
