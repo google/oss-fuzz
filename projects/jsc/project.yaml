@@ -11,3 +11,4 @@ auto_ccs:
   - "jfb@chromium.org"
   - "sbarati@apple.com"
   - "ysuzuki@apple.com"
+blackbox: true
