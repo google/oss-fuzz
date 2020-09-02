@@ -41,16 +41,14 @@ fuzzer: simple_query_fuzzer \
 
 
 simple_query_fuzzer: simple_query_fuzzer.o $(OBJS_FUZZERS)
-	ld -r -b binary -o query_db.o query_db.tar.gz
-	$(CXX) $(CFLAGS) $(call expand_subsys,$^) query_db.o  -o $@ $(LIB_FUZZING_ENGINE)
+	$(CXX) $(CFLAGS) $(call expand_subsys,$^)  -o $@ $(LIB_FUZZING_ENGINE)
 
 simple_query_fuzzer.o: simple_query_fuzzer.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^ 
 
 
 json_parser_fuzzer: json_parser_fuzzer.o $(OBJS_FUZZERS)
-	ld -r -b binary -o json_db.o json_db.tar.gz
-	$(CXX) $(CFLAGS) $(call expand_subsys,$^) json_db.o -o $@ $(LIB_FUZZING_ENGINE)
+	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE)
 
 json_parser_fuzzer.o: json_parser_fuzzer.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^

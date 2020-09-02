@@ -28,6 +28,8 @@ cp -r temp/ query_db
 cp -r temp/ json_db
 tar -czvf query_db.tar.gz query_db/
 tar -czvf json_db.tar.gz json_db/
+cp query_db.tar.gz $OUT/
+cp json_db.tar.gz $OUT/
 cd ../../..
 cp -r tmp_install $OUT/
 make clean

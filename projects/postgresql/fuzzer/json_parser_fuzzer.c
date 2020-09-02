@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+///////////////////////////////////////////////////////////////////////////////
 
 #include "postgres.h"
 
@@ -42,8 +44,6 @@ static MemoryContext row_description_context = NULL;
 static StringInfoData row_description_buf;
 static const char *dbname = NULL;
 static const char *username = NULL;
-extern char _binary_json_db_tar_gz_start[];
-extern char _binary_json_db_tar_gz_end[];
 
 static void fuzzer_exit(){
   if(!username)
@@ -59,11 +59,7 @@ int __attribute__((constructor)) Initialize(void) {
   argv[2] = "-F";
   argv[3] = "-k\"/tmp/pg_dbfuzz\"";
 
-  FILE * fp; fp = fopen("/tmp/json_db.tar.gz", "w");
-  unsigned int tarsize =  (unsigned int)(_binary_json_db_tar_gz_end - _binary_json_db_tar_gz_start);
-  fwrite(_binary_json_db_tar_gz_start, 1, tarsize, fp);
-  fclose(fp);
-  system("tar -xvf /tmp/json_db.tar.gz -C /tmp/");
+  system("tar -xvf json_db.tar.gz -C /tmp/");
   
   progname = get_progname(argv[0]);
   MemoryContextInit();
