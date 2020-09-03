@@ -48,14 +48,11 @@ static void fuzzer_exit(){
 int FuzzerInitialize(char *dbname){
   char *argv[5];
   char arg_path[50];
-  int arg_path_size;
   char path_to_db[50];
-  int path_to_db_size;
   char untar[100];
-  int untar_size;
-  arg_path_size = snprintf(arg_path, 50, "/tmp/%s/data", dbname);
-  path_to_db_size = snprintf(path_to_db, 50, "-D\"/tmp/%s/data\"", dbname);
-  untar_size = snprintf(untar, 100, "rm -rf /tmp/%s && mkdir /tmp/%s && tar -xvf data.tar.gz -C /tmp/%s", dbname, dbname, dbname);
+  snprintf(arg_path, sizeof(arg_path), "/tmp/%s/data", dbname);
+  snprintf(path_to_db, sizeof(path_to_db), "-D\"/tmp/%s/data\"", dbname);
+  snprintf(untar, sizeof(untar), "rm -rf /tmp/%s && mkdir /tmp/%s && tar -xvf data.tar.gz -C /tmp/%s", dbname, dbname, dbname);
   
   argv[0] = "tmp_install/usr/local/pgsql/bin/postgres";
   argv[1] = path_to_db;
@@ -73,8 +70,7 @@ int FuzzerInitialize(char *dbname){
   InitStandaloneProcess(argv[0]);
   SetProcessingMode(InitProcessing);
   InitializeGUCOptions();
-  process_postgres_switches(4, argv, PGC_POSTMASTER, &dbname);
-  dbname = "dbfuzz";
+  process_postgres_switches(4, argv, PGC_POSTMASTER, NULL);
 
   SelectConfigFiles(arg_path, progname);
 
@@ -87,7 +83,7 @@ int FuzzerInitialize(char *dbname){
   BaseInit();
   InitProcess();
   PG_SETMASK(&UnBlockSig);
-  InitPostgres(dbname, InvalidOid, username, InvalidOid, NULL, false);
+  InitPostgres("dbfuzz", InvalidOid, username, InvalidOid, NULL, false);
  
   SetProcessingMode(NormalProcessing);
 
