@@ -115,6 +115,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     {
       PG_exception_stack = &local_sigjmp_buf;
       error_context_stack = NULL;
+	  set_stack_base();
 
       disable_all_timeouts(false);
       QueryCancelPending = false;

@@ -40,6 +40,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 	memcpy(buffer, data, size);
 
 	MemoryContextInit();
+	set_stack_base();
 	sem = nullSemAction;
 	lex = makeJsonLexContextCstringLen(buffer, size+1, PG_UTF8, true);
 
