@@ -28,4 +28,4 @@ COPY build.sh $SRC/
 # That's a hack. The service needs to have a more recent kernel than what the
 # container provides. But this code is not going to be called from the fuzz-
 # tests, so we should be fine here.
-ADD https://raw.githubusercontent.com/torvalds/linux/v5.7/include/linux/perf_event.h /usr/include/linux/perf_event.h
+ADD https://raw.githubusercontent.com/torvalds/linux/v5.7/include/uapi/linux/perf_event.h /usr/include/linux/perf_event.h

@@ -16,7 +16,7 @@
 ################################################################################
 
 #builds project
-export PATH="/root/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 $SRC/orbit/bootstrap-orbit.sh --force-public-remotes --dont-compile --ignore-system-requirements
 
 conan profile new default --detect
