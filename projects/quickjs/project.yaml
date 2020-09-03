@@ -6,3 +6,5 @@ auto_ccs :
 
 sanitizers:
 - address
+
+blackbox: true  # also use a blackbox fuzzer for this project.

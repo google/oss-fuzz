@@ -18,3 +18,4 @@ architectures:
   - i386
 
 disabled: True
+blackbox: true
