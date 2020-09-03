@@ -24,12 +24,9 @@ CC="" CXX="" CFLAGS="" CXXFLAGS="" su fuzzuser -c ../configure
 cd src/backend/fuzzer
 su fuzzuser -c "make createdb"
 chown -R root .
-cp -r temp/ query_db
-cp -r temp/ json_db
-tar -czvf query_db.tar.gz query_db/
-tar -czvf json_db.tar.gz json_db/
-cp query_db.tar.gz $OUT/
-cp json_db.tar.gz $OUT/
+mv temp/data .
+tar -czvf data.tar.gz data/
+cp data.tar.gz $OUT/
 cd ../../..
 cp -r tmp_install $OUT/
 make clean
