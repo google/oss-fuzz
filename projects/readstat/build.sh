@@ -36,16 +36,22 @@ cp ./fuzz/dict/fuzz_format_stata_commands.dict $OUT/fuzz_format_stata_commands.d
 cp ./fuzz/dict/fuzz_format_sas_commands.dict $OUT/fuzz_format_sas_commands.dict
 
 READSTAT_FUZZERS="
+    fuzz_compression_sas_rle \
     fuzz_compression_sav \
-    fuzz_grammar_spss_format \
-    fuzz_format_sas_commands \
-    fuzz_format_spss_commands \
-    fuzz_format_stata_dictionary \
     fuzz_format_dta \
     fuzz_format_por \
-    fuzz_format_sav \
     fuzz_format_sas7bcat \
     fuzz_format_sas7bdat \
+    fuzz_format_sas_commands \
+    fuzz_format_sav \
+    fuzz_format_spss_commands \
+    fuzz_format_stata_dictionary \
+    fuzz_format_xport \
+    fuzz_grammar_dta_timestamp \
+    fuzz_grammar_por_double \
+    fuzz_grammar_sav_date \
+    fuzz_grammar_sav_time \
+    fuzz_grammar_spss_format \
     fuzz_format_xport"
 
 for fuzzer in $READSTAT_FUZZERS; do
