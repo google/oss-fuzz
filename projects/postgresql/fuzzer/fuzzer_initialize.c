@@ -46,7 +46,7 @@ static void fuzzer_exit(){
 }
 
 int FuzzerInitialize(char *dbname){
-  char *argv[4];
+  char *argv[5];
   char arg_path[50];
   int arg_path_size;
   char path_to_db[50];
@@ -61,6 +61,7 @@ int FuzzerInitialize(char *dbname){
   argv[1] = path_to_db;
   argv[2] = "-F";
   argv[3] = "-k\"/tmp/pg_dbfuzz\"";
+  argv[4] = NULL;
 
   system(untar);
   
