@@ -17,6 +17,8 @@
 # First install libjpeg
 cd libjpeg-turbo
 mkdir build && cd build
+export CFLAGS="$CFLAGS -fPIC"
+export CXXFLAGS="$CXXFLAGS -fPIC"
 cmake ..
 make
 
