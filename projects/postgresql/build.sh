@@ -24,7 +24,9 @@ CC="" CXX="" CFLAGS="" CXXFLAGS="" su fuzzuser -c ../configure
 cd src/backend/fuzzer
 su fuzzuser -c "make createdb"
 chown -R root .
-cp -r temp $OUT/
+mv temp/data .
+tar -czvf data.tar.gz data/
+cp data.tar.gz $OUT/
 cd ../../..
 cp -r tmp_install $OUT/
 make clean

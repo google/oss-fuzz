@@ -40,17 +40,11 @@ fuzzer: simple_query_fuzzer \
 	json_parser_fuzzer
 
 
-json_parser_fuzzer: json_parser_fuzzer.o $(OBJS_FUZZERS)
+simple_query_fuzzer json_parser_fuzzer: %: %.o fuzzer_initialize.o $(OBJS_FUZZERS)
 	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE)
 
-simple_query_fuzzer: simple_query_fuzzer.o $(OBJS_FUZZERS)
-	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE)
-
-json_parser_fuzzer.o: json_parser_fuzzer.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
-
-simple_query_fuzzer.o: simple_query_fuzzer.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^
+simple_query_fuzzer.o json_parser_fuzzer.o fuzzer_initialize.o: %.o: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^ 
 
 
 dbfuzz: dbfuzz.o | submake-libpgport temp-install

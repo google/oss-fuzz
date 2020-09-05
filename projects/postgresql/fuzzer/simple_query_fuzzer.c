@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+///////////////////////////////////////////////////////////////////////////////
 
 #include "postgres.h"
 
@@ -32,13 +34,6 @@
 #include "utils/portal.h"
 #include "utils/snapmgr.h"
 #include "utils/timeout.h"
-
-const char *progname;
-static const char *userDoption;
-static MemoryContext row_description_context = NULL;
-static StringInfoData row_description_buf;
-static const char *dbname = NULL;
-static const char *username = NULL;
 
 
 static void
@@ -98,64 +93,9 @@ exec_simple_query(const char *query_string)
     }
 }
 
-static void fuzzer_exit(){
-  if(!username)
-    pfree((void *) username);
-}
-
 
 int __attribute__((constructor)) Initialize(void) {
-  int argc = 4;
-  char *argv[4];
-  argv[0] = "tmp_install/usr/local/pgsql/bin/postgres";
-  argv[1] = "-D\"temp/data\"";
-  argv[2] = "-F";
-  argv[3] = "-k\"/tmp/pg_dbfuzz\"";
-	
-  progname = get_progname(argv[0]);
-  MemoryContextInit();
-
-  username = strdup(get_user_name_or_exit(progname));
-	 
-  InitStandaloneProcess(argv[0]);
-  SetProcessingMode(InitProcessing);
-  InitializeGUCOptions();
-  process_postgres_switches(argc, argv, PGC_POSTMASTER, &dbname);
-  dbname = "dbfuzz";
-
-  userDoption = "temp/data";
-  SelectConfigFiles(userDoption, progname);
-
-  checkDataDir();
-  ChangeToDataDir();
-  CreateDataDirLockFile(false);
-  LocalProcessControlFile(false);
-  InitializeMaxBackends();
-		 
-  BaseInit();
-  InitProcess();
-  PG_SETMASK(&UnBlockSig);
-  InitPostgres(dbname, InvalidOid, username, InvalidOid, NULL, false);
- 
-  SetProcessingMode(NormalProcessing);
-
-  BeginReportingGUCOptions();
-  process_session_preload_libraries();
-
-  MessageContext = AllocSetContextCreate(TopMemoryContext,
-					 "MessageContext",
-					 ALLOCSET_DEFAULT_SIZES);
-  row_description_context = AllocSetContextCreate(TopMemoryContext,
-						  "RowDescriptionContext",
-						  ALLOCSET_DEFAULT_SIZES);
-  MemoryContextSwitchTo(row_description_context);
-  initStringInfo(&row_description_buf);
-  MemoryContextSwitchTo(TopMemoryContext);
-
-  PgStartTime = GetCurrentTimestamp();
-  whereToSendOutput = DestNone;
-  Log_destination = 0;
-  atexit(fuzzer_exit);
+  FuzzerInitialize("query_db");
   return 0;
 }
 
@@ -175,6 +115,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     {
       PG_exception_stack = &local_sigjmp_buf;
       error_context_stack = NULL;
+	  set_stack_base();
 
       disable_all_timeouts(false);
       QueryCancelPending = false;

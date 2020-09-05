@@ -11,15 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+///////////////////////////////////////////////////////////////////////////////
 
 #include "postgres.h"
+
 #include "common/jsonapi.h"
 #include "mb/pg_wchar.h"
-#include "miscadmin.h"
 #include "utils/memutils.h"
 #include "utils/memdebug.h"
 
-const char *progname = "progname";
+int __attribute__((constructor)) Initialize(void) {
+  FuzzerInitialize("json_db");
+  return 0;
+}
 
 /*
 ** Main entry point.  The fuzzer invokes this function with each
