@@ -42,6 +42,12 @@ RUN hg clone \
 RUN git clone \
     --depth 1 \
     --branch master \
+    https://aomedia.googlesource.com/aom \
+    aom
+
+RUN git clone \
+    --depth 1 \
+    --branch master \
     https://github.com/strukturag/libheif.git \
     libheif
 
