@@ -55,7 +55,7 @@ FUZZERS=`find src/fuzzing -maxdepth 1 -type f -name "fuzz_*" -exec basename {} \
 printf "Detected fuzzers: \n$FUZZERS\n"
 for f in $FUZZERS; do
     cp src/fuzzing/$f "${OUT}/"
-    chrpath -r '$ORIGIN/lib' "${OUT}/$f" || echo "chrpath failed with $?, ignoring."
+    patchelf --set-rpath '$ORIGIN/lib' "${OUT}/$f" || echo "patchelf failed with $?, ignoring."
     zip -j -r "${OUT}/${f}_seed_corpus.zip" $SRC/fuzzing_corpus/
 done
 

@@ -22,7 +22,7 @@ RUN apt-get install -y \
     automake \
     libtool \
     cmake \
-    chrpath \
+    patchelf \
     libbz2-dev \
     zlib1g-dev \
     libjson-c-dev \
