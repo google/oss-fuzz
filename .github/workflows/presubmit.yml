@@ -24,3 +24,6 @@ jobs:
 
       - name: Run presubmit checks
         run: python infra/presubmit.py
+
+      - name: Run pylint
+        run: pylint .
