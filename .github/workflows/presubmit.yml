@@ -26,4 +26,4 @@ jobs:
         run: python infra/presubmit.py
 
       - name: Run pylint
-        run: pylint infra/base-images/base-sanitizer-libs-builder/*.py
+        run: pylint --disable=all --enable=python3 infra/base-images/base-sanitizer-libs-builder/*.py
