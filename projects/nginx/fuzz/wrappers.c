@@ -15,6 +15,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <grp.h>
+#include <pwd.h>
 
 int __wrap_connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
   return 0;
@@ -31,4 +33,16 @@ ssize_t __wrap_listen(int fd, void *buf, size_t bytes) { return 0; }
 int __wrap_setsockopt(int fd, int level, int optname, const void *optval,
                       socklen_t optlen) {
   return 0;
+}
+
+struct passwd *__wrap_getpwnam(const char *name){
+  struct passwd *pwd = (struct passwd *) calloc(1, sizeof(struct passwd));
+  pwd->pw_uid = 1;
+  return pwd;
+}
+
+struct group *__wrap_getgrnam(const char *name){
+  struct group *grp = (struct group *) calloc(1, sizeof(struct group));
+  grp->gr_gid = 1;
+  return grp;
 }
