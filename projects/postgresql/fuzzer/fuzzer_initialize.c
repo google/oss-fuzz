@@ -38,12 +38,7 @@
 const char *progname;
 static MemoryContext row_description_context = NULL;
 static StringInfoData row_description_buf;
-static const char *username = NULL;
-
-static void fuzzer_exit(){
-  if(username)
-    pfree((void *) username);
-}
+static const char *username = "username";
 
 int FuzzerInitialize(char *dbname){
   char *argv[5];
@@ -65,8 +60,6 @@ int FuzzerInitialize(char *dbname){
   progname = get_progname(argv[0]);
   MemoryContextInit();
 
-  username = strdup(get_user_name_or_exit(progname));
-	 
   InitStandaloneProcess(argv[0]);
   SetProcessingMode(InitProcessing);
   InitializeGUCOptions();
@@ -103,6 +96,5 @@ int FuzzerInitialize(char *dbname){
   PgStartTime = GetCurrentTimestamp();
   whereToSendOutput = DestNone;
   Log_destination = 0;
-  atexit(fuzzer_exit);
   return 0;
 }
