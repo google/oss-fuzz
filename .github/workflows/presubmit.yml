@@ -26,4 +26,4 @@ jobs:
         run: python infra/presubmit.py
 
       - name: Run pylint
-        run: pylint oss-fuzz/infra/base-images/base-sanitizer-libs-builder/*.py
+        run: pylint infra/base-images/base-sanitizer-libs-builder/*.py
