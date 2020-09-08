@@ -55,6 +55,3 @@ struct group *__wrap_getgrnam(const char *name){
   grp->gr_gid = 1;
   return grp;
 }
-
-
-
