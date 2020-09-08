@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <grp.h>
 #include <pwd.h>
 
@@ -35,6 +36,14 @@ int __wrap_setsockopt(int fd, int level, int optname, const void *optval,
   return 0;
 }
 
+int __wrap_chmod(const char *pathname, mode_t mode){
+  return 0;
+}
+
+int __wrap_chown(const char *pathname, uid_t owner, gid_t group){
+  return 0;
+}
+
 struct passwd *__wrap_getpwnam(const char *name){
   struct passwd *pwd = (struct passwd *) calloc(1, sizeof(struct passwd));
   pwd->pw_uid = 1;
@@ -46,3 +55,6 @@ struct group *__wrap_getgrnam(const char *name){
   grp->gr_gid = 1;
   return grp;
 }
+
+
+
