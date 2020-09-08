@@ -30,7 +30,6 @@ extern "C" {
 #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
 
 static char configuration[] =
-"user root;\n"
 "error_log stderr emerg;\n"
 "events {\n"
 "    use epoll;\n"

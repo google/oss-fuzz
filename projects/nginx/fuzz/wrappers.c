@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <grp.h>
 #include <pwd.h>
 
@@ -32,6 +33,14 @@ ssize_t __wrap_listen(int fd, void *buf, size_t bytes) { return 0; }
 
 int __wrap_setsockopt(int fd, int level, int optname, const void *optval,
                       socklen_t optlen) {
+  return 0;
+}
+
+int __wrap_chmod(const char *pathname, mode_t mode){
+  return 0;
+}
+
+int __wrap_chown(const char *pathname, uid_t owner, gid_t group){
   return 0;
 }
 
