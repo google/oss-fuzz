@@ -57,12 +57,11 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 	char *exe_path = (*argv)[0];
 	//dirname() can modify its argument
 	char *exe_path_copy = strdup(exe_path);
-	char path_to_binary[100];
 	char *dir = dirname(exe_path_copy);
-	snprintf(path_to_binary, sizeof(path_to_binary), "%s/tmp_install/usr/local/pgsql/bin/postgres", dir);
+	chdir(dir);
 	free(exe_path_copy);
 	
-	av[0] = path_to_binary;
+	av[0] = "tmp_install/usr/local/pgsql/bin/postgres";
 	av[1] = "--single";
 	av[2] = "-D/tmp/protocol_db/data";
 	av[3] = "-F";
