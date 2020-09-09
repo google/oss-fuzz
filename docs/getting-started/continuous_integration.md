@@ -9,7 +9,7 @@ permalink: /getting-started/continuous-integration/
 # Continuous Integration
 
 OSS-Fuzz offers **CIFuzz**, a GitHub action/CI job that runs your fuzz targets
-on pull requests. This works similarly to running unittests in CI. CIFuzz helps
+on pull requests. This works similarly to running unit tests in CI. CIFuzz helps
 you find and fix bugs before they make it into your codebase.
 Currently, CIFuzz only supports projects hosted on GitHub.
 
@@ -20,19 +20,20 @@ pull request or commit. Then CIFuzz runs the fuzzers for a short amount of time.
 If CIFuzz finds a crash, CIFuzz reports the stacktrace, makes the crashing
 input available for download and the CI test fails (red X).
 
+If CIFuzz doesn't find a crash during the allotted time, the CI test passes
+(green check). If CIFuzz finds a crash, it reports the crash only:
+* If the crash is reproducible (on the PR/commit build).
+* If the crash does not occur on older OSS-Fuzz builds. Because if it does occur
+  on older builds that means the crash was not introduced by the PR/commit
+  CIFuzz is testing.
+
 If your project supports [OSS-Fuzz's code coverage]({{ site.baseurl }}/advanced-topics/code-coverage),
 CIFuzz only runs the fuzzers affected by a pull request/commit.
 Otherwise it will divide up the allotted fuzzing time (10 minutes by default)
 among all fuzzers in the project.
 
-If CIFuzz doesn't find a crash during the allotted time, the CI test passes
-(green check). If CIFuzz finds a crash, it reports the crash only if the
-crash is reproducible. CIFuzz does not report crashes that reproduce on
-older OSS-Fuzz builds since these were not introduced by the PR/commit CIFuzz is
-testing.
-
-CIFuzz uses old/public regressions and corpora from OSS-Fuzz. This
-makes fuzzing more effective and gives you regression testing for free.
+CIFuzz uses 30 day old/public regressions and corpora from OSS-Fuzz. This makes
+fuzzing more effective and gives you regression testing for free.
 
 ## Requirements
 
