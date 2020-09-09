@@ -101,7 +101,7 @@ static char arg1[] = {0, 0xA, 0};
 
 extern char **environ;
 
-static const char *config_file = "http_config.conf";
+static const char *config_file = "/tmp/http_config.conf";
 
 struct fuzzing_data {
   const uint8_t *data;
