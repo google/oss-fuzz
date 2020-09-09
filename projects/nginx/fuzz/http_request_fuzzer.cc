@@ -307,15 +307,4 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
 
   // Will redirect to http parser
   ngx_http_init_connection(c);
-
-  // Clean-up in case of error
-  if (req_reply && upstream && upstream->cleanup) {
-    (*(upstream->cleanup))(req_reply);
-    if (!c->destroyed)
-      ngx_http_close_connection(c);
-  } else if (!c->destroyed) {
-    ngx_http_request_t *r = (ngx_http_request_t *)(c->data);
-    ngx_http_free_request(r, 0);
-    ngx_http_close_connection(c);
-  }
 }
