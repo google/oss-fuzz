@@ -37,15 +37,17 @@ OBJS_FUZZERS = $(filter-out ../main/objfiles.txt, $(OBJS))
 createdb: dbfuzz
 
 fuzzer: simple_query_fuzzer \
-	json_parser_fuzzer
-
+	json_parser_fuzzer \
+	protocol_fuzzer
 
 simple_query_fuzzer json_parser_fuzzer: %: %.o fuzzer_initialize.o $(OBJS_FUZZERS)
 	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE)
 
-simple_query_fuzzer.o json_parser_fuzzer.o fuzzer_initialize.o: %.o: %.c
+simple_query_fuzzer.o json_parser_fuzzer.o protocol_fuzzer.o fuzzer_initialize.o: %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $^ 
 
+protocol_fuzzer: %: %.o $(OBJS_FUZZERS)
+	$(CXX) $(CFLAGS) $(call expand_subsys,$^) -o $@ $(LIB_FUZZING_ENGINE) -Wl,--wrap=exit -Wl,--wrap=pq_getbyte
 
 dbfuzz: dbfuzz.o | submake-libpgport temp-install
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) $(LDFLAGS_EX) $(LIBS) -o $@ \
