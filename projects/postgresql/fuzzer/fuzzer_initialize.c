@@ -40,6 +40,11 @@ static MemoryContext row_description_context = NULL;
 static StringInfoData row_description_buf;
 static const char *username = "username";
 
+const char *__wrap_get_user_name(char **errstr){
+	*errstr = NULL;
+	return "username";
+}
+
 int FuzzerInitialize(char *dbname){
   char *argv[5];
   char arg_path[50];
@@ -49,13 +54,14 @@ int FuzzerInitialize(char *dbname){
   snprintf(path_to_db, sizeof(path_to_db), "-D\"/tmp/%s/data\"", dbname);
   snprintf(untar, sizeof(untar), "rm -rf /tmp/%s && mkdir /tmp/%s && tar -xvf data.tar.gz -C /tmp/%s", dbname, dbname, dbname);
   
-  argv[0] = "tmp_install/usr/local/pgsql/bin/postgres";
+  argv[0] = "/tmp/tmp_install/usr/local/pgsql/bin/postgres";
   argv[1] = path_to_db;
   argv[2] = "-F";
   argv[3] = "-k\"/tmp/pg_dbfuzz\"";
   argv[4] = NULL;
 
   system(untar);
+  system("cp -r tmp_install /tmp/");
   
   progname = get_progname(argv[0]);
   MemoryContextInit();
