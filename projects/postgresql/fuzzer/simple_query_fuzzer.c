@@ -35,7 +35,6 @@
 #include "utils/snapmgr.h"
 #include "utils/timeout.h"
 
-
 static void
 exec_simple_query(const char *query_string)
 {
@@ -94,9 +93,9 @@ exec_simple_query(const char *query_string)
 }
 
 
-int __attribute__((constructor)) Initialize(void) {
-  FuzzerInitialize("query_db");
-  return 0;
+int LLVMFuzzerInitialize(int *argc, char ***argv) {
+	FuzzerInitialize("query_db", argv);
+	return 0;
 }
 
 
