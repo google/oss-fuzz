@@ -46,23 +46,22 @@ int FuzzerInitialize(char *dbname, char ***argv){
   char *av[5];
   char arg_path[50];
   char path_to_db[50];
-  char path_to_binary[100];
   char untar[100];
   char *exe_path = (*argv)[0];
   //dirname() can modify its argument
   char *exe_path_copy = strdup(exe_path);
   char *dir = dirname(exe_path_copy);
+  chdir(dir);
+  free(exe_path_copy);
 
   snprintf(arg_path, sizeof(arg_path), "/tmp/%s/data", dbname);
   snprintf(path_to_db, sizeof(path_to_db), "-D\"/tmp/%s/data\"", dbname);
   snprintf(untar, sizeof(untar), "rm -rf /tmp/%s; mkdir /tmp/%s; tar -xvf data.tar.gz -C /tmp/%s", dbname, dbname, dbname);
-  snprintf(path_to_binary, sizeof(path_to_binary), "%s/tmp_install/usr/local/pgsql/bin/postgres", dir);
-  free(exe_path_copy);
 
-  av[0] = path_to_binary;
+  av[0] = "tmp_install/usr/local/pgsql/bin/postgres";
   av[1] = path_to_db;
   av[2] = "-F";
-  av[3] = "-k\"/tmp/pg_dbfuzz\"";
+  av[3] = "-k\"/tmp\"";
   av[4] = NULL;
 
   system(untar);
