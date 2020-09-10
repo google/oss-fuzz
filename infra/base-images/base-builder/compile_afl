@@ -44,9 +44,12 @@ find . -name 'afl-*' -executable -type f | xargs cp -t $OUT
 popd > /dev/null
 
 pushd $SRC/aflplusplus > /dev/null
-make clean && AFL_NO_X86=1 make
+make clean
+AFL_NO_X86=1 PYTHON_INCLUDE=/ CFLAGS= CXXFLAGS= make
+CFLAGS= CXXFLAGS= make -C examples/aflpp_driver
 mkdir -p $OUT/aflplusplus
-find . -name 'afl-*' -executable -type f | xargs cp -t $OUT/aflplusplus
+# not all important files start with afl-*, but all are in the project root
+ls afl-* *.a *.o *.so | sort -u | xargs cp -t $OUT/aflplusplus
 popd > /dev/null
 
 

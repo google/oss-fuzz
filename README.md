@@ -24,6 +24,7 @@ execution environment and reporting tool.
 
 [libFuzzer]: https://llvm.org/docs/LibFuzzer.html
 [AFL]: https://lcamtuf.coredump.cx/afl/
+[AFL++]: https://github.com/AFLplusplus/AFLplusplus
 [Honggfuzz]: https://github.com/google/honggfuzz
 [Sanitizers]: https://github.com/google/sanitizers
 [ClusterFuzz]: https://github.com/google/clusterfuzz

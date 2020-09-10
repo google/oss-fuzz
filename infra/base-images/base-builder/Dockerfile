@@ -135,7 +135,7 @@ WORKDIR $SRC
 RUN git clone -b stable https://github.com/google/AFL.git afl
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 4a51cb71fb8785325dedac693cdea4648f6e5279
+    git checkout fdb0452245672db94be0832288f1335e905a2fc8
 
 ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
 RUN mkdir honggfuzz && \
