@@ -4,6 +4,7 @@ vendor_ccs:
   - "aosmond@mozilla.com"
   - "tnikkel@mozilla.com"
   - "twsmith@mozilla.com"
+  - "information@libjpeg-turbo.org"
 sanitizers:
   - address
   - memory
