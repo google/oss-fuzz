@@ -68,7 +68,7 @@ int LLVMFuzzerInitialize(int *argc, char ***argv) {
 	av[4] = "-k\"/tmp\"";
 	av[5] = NULL;
 
-	system("rm -rf /tmp/protocol_db; mkdir /tmp/protocol_db; tar -xvf data.tar.gz -C /tmp/protocol_db");
+	system("rm -rf /tmp/protocol_db; mkdir /tmp/protocol_db; cp -r data /tmp/protocol_db");
 	system("cp -r tmp_install /tmp/");
 
 	MemoryContextInit();
