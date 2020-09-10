@@ -56,7 +56,7 @@ int FuzzerInitialize(char *dbname, char ***argv){
 
   snprintf(arg_path, sizeof(arg_path), "/tmp/%s/data", dbname);
   snprintf(path_to_db, sizeof(path_to_db), "-D\"/tmp/%s/data\"", dbname);
-  snprintf(untar, sizeof(untar), "rm -rf /tmp/%s; mkdir /tmp/%s; tar -xvf data.tar.gz -C /tmp/%s", dbname, dbname, dbname);
+  snprintf(untar, sizeof(untar), "rm -rf /tmp/%s; mkdir /tmp/%s; cp -r data /tmp/%s", dbname, dbname, dbname);
 
   av[0] = "tmp_install/usr/local/pgsql/bin/postgres";
   av[1] = path_to_db;
