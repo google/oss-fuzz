@@ -1,0 +1,27 @@
+diff --git a/Source/Makefile b/Source/Makefile
+index 459ec42..52fc8c9 100644
+--- a/Source/Makefile
++++ b/Source/Makefile
+@@ -92,21 +92,21 @@ HEADERS = \
+ 
+ BINARY = $(APP)-$(VEC)
+ 
+ OBJECTS = $(SOURCES:.cpp=-$(BINARY).o)
+ 
+ EXTERNAL_OBJECTS = $(EXTERNAL_SOURCES:.h=-$(BINARY).o)
+ 
+ # ==================================================
+ # CXXFLAGS setup (and input validation)
+ 
+-CXXFLAGS = -std=c++14 -fvisibility=hidden \
++CXXFLAGS += -std=c++14 -fvisibility=hidden \
+            -Wall -Wextra -Wpedantic -Werror -Werror=shadow -Wdouble-promotion
+ 
+ # Validate that the APP parameter is a supported value, and patch CXXFLAGS
+ ifeq ($(APP),astcenc)
+ # Nothing to set up
+ else
+ ifeq ($(APP),astcdec)
+ CXXFLAGS += -DASTCENC_DECOMPRESS_ONLY
+ else
+ $(error Unsupported app, use APP=astcenc/astcdec)
