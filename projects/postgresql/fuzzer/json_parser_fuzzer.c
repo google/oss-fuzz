@@ -21,9 +21,9 @@
 #include "utils/memutils.h"
 #include "utils/memdebug.h"
 
-int __attribute__((constructor)) Initialize(void) {
-  FuzzerInitialize("json_db");
-  return 0;
+int LLVMFuzzerInitialize(int *argc, char ***argv) {
+	FuzzerInitialize("json_db", argv);
+	return 0;
 }
 
 /*
