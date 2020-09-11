@@ -24,6 +24,6 @@ ar -qc libastc.a  *.o
 for fuzzer in $SRC/*_fuzzer.cc; do
   $CXX $CXXFLAGS \
       -DASTCENC_SSE=0 -DASTCENC_AVX=0 -DASTCENC_POPCNT=0 -DASTCENC_VECALIGN=16 \
-      -I. -std=c++14 $fuzzer $SRC/astc-encoder/Source/libastc.a $LIB_FUZZING_ENGINE \
+      -I. -std=c++14 $fuzzer $LIB_FUZZING_ENGINE $SRC/astc-encoder/Source/libastc.a \
       -o $OUT/$(basename -s .cc $fuzzer)
 done
