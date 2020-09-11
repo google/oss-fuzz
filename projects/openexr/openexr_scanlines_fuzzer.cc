@@ -97,10 +97,15 @@ static void readMulti(IStream& is) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   const std::string s(reinterpret_cast<const char*>(data), size);
-  StdISStream is;
-  is.str(s);
-
-  readSingle(is);
-  readMulti(is);
+  {
+    StdISStream is;
+    is.str(s);
+    readSingle(is);
+  }
+  {  
+    StdISStream is;
+    is.str(s);
+    readMulti(is);
+  }
   return 0;
 }
