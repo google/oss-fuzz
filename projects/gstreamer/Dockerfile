@@ -23,8 +23,8 @@ RUN sed -i '/^#\sdeb-src /s/^#//' "/etc/apt/sources.list" && \
    apt-get update && \
    apt-get install -y build-essential pkg-config bison flex gettext \
     libffi-dev liblzma-dev libvorbis-dev libtheora-dev libogg-dev zlib1g-dev \
-    ninja-build python3-pip && \
-   pip3 install meson==0.53.2
+    python3-pip && \
+   pip3 install meson==0.55.1 ninja==1.10.0.post2
 
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
 
