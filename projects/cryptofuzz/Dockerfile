@@ -51,7 +51,10 @@ RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
 RUN git clone --depth 1 https://git.lysator.liu.se/nettle/nettle
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.0.tar.gz
+RUN git clone --depth 1 https://github.com/indutny/bn.js.git
+RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
+RUN git clone --depth 1 https://github.com/guidovranken/libfuzzer-js.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
 
-COPY build.sh $SRC/
+COPY build.sh xxd.c $SRC/
