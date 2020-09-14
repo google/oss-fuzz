@@ -85,9 +85,3 @@ COPY json.dict $SRC/skia_data/json.dict
 WORKDIR $SRC/skia
 
 COPY build.sh $SRC/
-
-COPY skia.diff $SRC/skia/skia.diff
-RUN git apply skia.diff
-
-COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
-RUN cat BUILD.gn.diff >> BUILD.gn
