@@ -3,6 +3,7 @@ primary_contact: "evpobr@gmail.com"
 language: c
 auto_ccs:
   - "cmeister2@gmail.com"
+  - "erik.de.castro.lopo@gmail.com"
 sanitizers:
   - address
   - undefined
