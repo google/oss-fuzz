@@ -18,6 +18,9 @@
 # TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
 # https://github.com/google/oss-fuzz/issues/2336
 
+# Compile xxd
+$CC $SRC/xxd.c -o /usr/bin/xxd
+
 export LINK_FLAGS=""
 export INCLUDE_PATH_FLAGS=""
 
@@ -58,6 +61,28 @@ export CXXFLAGS="$CXXFLAGS -I $SRC/cryptofuzz/fuzzing-headers/include"
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
+fi
+
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *-m32* ]]
+then
+    # Compile libfuzzer-js (required for all JavaScript libraries)
+    export LIBFUZZER_A_PATH="$LIB_FUZZING_ENGINE"
+    cd $SRC/libfuzzer-js/
+    make
+    export LIBFUZZER_JS_PATH=$(realpath .)
+    export LINK_FLAGS="$LINK_FLAGS $LIBFUZZER_JS_PATH/js.o $LIBFUZZER_JS_PATH/quickjs/libquickjs.a"
+
+    # Compile bn.js module
+    export BN_JS_PATH="$SRC/bn.js/lib/bn.js"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BN_JS"
+    cd $SRC/cryptofuzz/modules/bn.js/
+    make
+
+    # Compile bignumber.js module
+    export BIGNUMBER_JS_PATH="$SRC/bignumber.js/bignumber.js"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BIGNUMBER_JS"
+    cd $SRC/cryptofuzz/modules/bignumber.js/
+    make
 fi
 
 # Compile NSS
