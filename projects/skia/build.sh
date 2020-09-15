@@ -50,7 +50,7 @@ DISABLE="-Wno-zero-as-null-pointer-constant -Wno-unused-template
          -Wno-cast-qual"
 # Disable UBSan vptr since target built with -fno-rtti.
 export CFLAGS="$CFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
-export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr "-DIS_FUZZING_WITH_LIBFUZZER""
+export CXXFLAGS="$CXXFLAGS $DISABLE -I$SWIFTSHADER_INCLUDE_PATH -DGR_EGL_TRY_GLES3_THEN_GLES2 -fno-sanitize=vptr"
 export LDFLAGS="$LIB_FUZZING_ENGINE $CXXFLAGS -L$SWIFTSHADER_LIB_PATH"
 
 # This splits a space separated list into a quoted, comma separated list for gn.
@@ -60,7 +60,6 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
 # Even though GPU is "enabled" for all these builds, none really
 # uses the gpu except for api_mock_gpu_canvas
-
 $SRC/depot_tools/gn gen out/Fuzz\
     --args='cc="'$CC'"
       cxx="'$CXX'"
@@ -69,6 +68,7 @@ $SRC/depot_tools/gn gen out/Fuzz\
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
       extra_ldflags=["'"$LDFLAGS_ARR"'"]
+      skia_build_fuzzers=true
       skia_enable_fontmgr_custom_directory=false
       skia_enable_fontmgr_custom_embedded=false
       skia_enable_fontmgr_custom_empty=true
@@ -78,43 +78,43 @@ $SRC/depot_tools/gn gen out/Fuzz\
       skia_use_fontconfig=false
       skia_use_freetype=true
       skia_use_system_freetype2=false
-      skia_use_wuffs=true'
+      skia_use_wuffs=true
+      skia_use_libfuzzer_defaults=false'
 
-$SRC/depot_tools/gn gen out/Fuzz_mem_constraints\
-    --args='cc="'$CC'"
-      cxx="'$CXX'"
-      link_pool_depth=1
-      is_debug=false
-      extra_cflags_c=["'"$CFLAGS_ARR"'"]
-      extra_cflags_cc=["'"$CXXFLAGS_ARR"'","-DIS_FUZZING"]
-      extra_ldflags=["'"$LDFLAGS_ARR"'"]
-      skia_enable_fontmgr_custom_directory=false
-      skia_enable_fontmgr_custom_embedded=false
-      skia_enable_fontmgr_custom_empty=true
-      skia_enable_gpu=true
-      skia_enable_skottie=true
-      skia_use_egl=true
-      skia_use_fontconfig=false
-      skia_use_freetype=true
-      skia_use_system_freetype2=false
-      skia_use_wuffs=true'
-
-$SRC/depot_tools/ninja -C out/Fuzz region_deserialize region_set_path \
-                                   path_deserialize image_decode \
-                                   animated_image_decode api_draw_functions \
-                                   api_gradients api_path_measure png_encoder \
-                                   jpeg_encoder webp_encoder skottie_json \
-                                   textblob_deserialize skjson \
-                                   api_null_canvas api_image_filter api_pathop \
-                                   api_polyutils android_codec image_decode_incremental \
-                                   sksl2glsl sksl2spirv sksl2metal sksl2pipeline \
-                                   skdescriptor_deserialize\
-                                   svg_dom api_svg_canvas skruntimeeffect api_create_ddl \
-                                   skp
-
-$SRC/depot_tools/ninja -C out/Fuzz_mem_constraints image_filter_deserialize \
-                                                   api_raster_n32_canvas \
-                                                   api_mock_gpu_canvas
+$SRC/depot_tools/ninja -C out/Fuzz \
+  android_codec \
+  animated_image_decode \
+  api_create_ddl \
+  api_draw_functions \
+  api_gradients \
+  api_image_filter \
+  api_mock_gpu_canvas \
+  api_null_canvas \
+  api_path_measure \
+  api_pathop \
+  api_polyutils \
+  api_raster_n32_canvas \
+  api_svg_canvas \
+  image_decode \
+  image_decode_incremental \
+  image_filter_deserialize \
+  jpeg_encoder \
+  path_deserialize \
+  png_encoder \
+  region_deserialize \
+  region_set_path \
+  skdescriptor_deserialize \
+  skjson \
+  skottie_json \
+  skp \
+  skruntimeeffect \
+  sksl2glsl \
+  sksl2metal \
+  sksl2pipeline \
+  sksl2spirv \
+  svg_dom \
+  textblob_deserialize \
+  webp_encoder
 
 rm -rf $OUT/data
 mkdir $OUT/data
@@ -136,7 +136,7 @@ cp ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
 cp out/Fuzz/animated_image_decode $OUT/animated_image_decode
 cp ../skia_data/animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpus.zip
 
-cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize
+cp out/Fuzz/image_filter_deserialize $OUT/image_filter_deserialize
 cp ../skia_data/image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
 
 # Only create the width version of image_filter_deserialize if building with
@@ -144,7 +144,7 @@ cp ../skia_data/image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deser
 if [ "$FUZZING_ENGINE" == "libfuzzer" ]
 then
   # Use the same binary as image_filter_deserialize.
-  cp out/Fuzz_mem_constraints/image_filter_deserialize $OUT/image_filter_deserialize_width
+  cp out/Fuzz/image_filter_deserialize $OUT/image_filter_deserialize_width
   cp ../skia_data/image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
   # Use the same seed corpus as image_filter_deserialize.
   cp ../skia_data/image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_width_seed_corpus.zip
@@ -178,10 +178,10 @@ cp out/Fuzz/skjson $OUT/skjson
 cp ../skia_data/json.dict $OUT/skjson.dict
 cp ../skia_data/skjson_seed_corpus.zip $OUT/skjson_seed_corpus.zip
 
-cp out/Fuzz_mem_constraints/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
+cp out/Fuzz/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
 cp ../skia_data/canvas_seed_corpus.zip $OUT/api_mock_gpu_canvas_seed_corpus.zip
 
-cp out/Fuzz_mem_constraints/api_raster_n32_canvas $OUT/api_raster_n32_canvas
+cp out/Fuzz/api_raster_n32_canvas $OUT/api_raster_n32_canvas
 cp ../skia_data/canvas_seed_corpus.zip $OUT/api_raster_n32_canvas_seed_corpus.zip
 
 cp out/Fuzz/api_image_filter $OUT/api_image_filter
@@ -212,9 +212,7 @@ cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
 cp out/Fuzz/sksl2pipeline $OUT/sksl2pipeline
 cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
 
-# Don't have any examples of an SkDescriptor atm, so some random bytes is all we have.
 cp out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
-cp ../skia_data/api_polyutils_seed_corpus.zip $OUT/skdescriptor_deserialize_seed_corpus.zip
 
 cp out/Fuzz/svg_dom $OUT/svg_dom
 cp ../skia_data/svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
