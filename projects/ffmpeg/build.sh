@@ -193,6 +193,11 @@ rm `find fate-suite -name '*.pcm'`
 
 zip -r $OUT/${fuzzer_name}_seed_corpus.zip fate-suite
 
+# Build fuzzer for demuxer fed at IO level
+fuzzer_name=ffmpeg_IO_DEMUXER_fuzzer
+make tools/target_io_dem_fuzzer
+mv tools/target_io_dem_fuzzer $OUT/${fuzzer_name}
+
 # Find relevant corpus in test samples and archive them for every fuzzer.
 #cd $SRC
 #python group_seed_corpus.py $TEST_SAMPLES_PATH $OUT/
