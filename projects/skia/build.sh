@@ -60,7 +60,6 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
 # Even though GPU is "enabled" for all these builds, none really
 # uses the gpu except for api_mock_gpu_canvas
-
 $SRC/depot_tools/gn gen out/Fuzz\
     --args='cc="'$CC'"
       cxx="'$CXX'"
