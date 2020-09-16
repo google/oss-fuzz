@@ -15,6 +15,9 @@
 #include <EnvmapImage.h>
 #include <ImfEnvmap.h>
 #include <ImfHeader.h>
+#include <ImfStdIO.h>
+#include <ImfMultiPartInputFile.h>
+
 #include <blurImage.h>
 #include <makeCubeMap.h>
 #include <makeLatLongMap.h>
@@ -58,6 +61,27 @@ static char *buf_to_file(const char *buf, size_t size) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
+  //
+  // confirm file will take less than 2GiB to store entire image in memory
+  //
+  try {
+    StdISStream is;
+    std::string s(reinterpret_cast<const char*>(data), size);
+    is.str(s);
+    MultiPartInputFile inputFile(is);
+    Imath::Box2i dataWindow = inputFile.header(0).dataWindow();
+    ssize_t area = (static_cast<ssize_t>(dataWindow.max.x) + 1 - static_cast<ssize_t>(dataWindow.min.x) )
+	         *(static_cast<ssize_t>(dataWindow.max.y) + 1 - static_cast<ssize_t>(dataWindow.min.y) );
+
+    if (area*8ll > 2048ll*1024ll*1024ll )
+    {
+	return 0;
+    }
+
+  }
+  catch (...) {
+     return 0;
+  }
   FuzzerTemporaryFile tempFile(data, size);
   const char *filename = tempFile.filename();
   if (!filename)
