@@ -4,6 +4,7 @@ language: c
 auto_ccs:
   - "ouyangyunshu@google.com"
   - "frost.stephen.p@gmail.com"
+  - "aseering@google.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
