@@ -81,23 +81,25 @@ static void readMulti(IStream& is) {
       {
 	      throw std::logic_error("ignoring - very wide datawindow\n");
       }
-      
-      // always try to read RGBA even if not present in file
-      Array<Rgba> pixels(w);
+ 
       FrameBuffer i;
-      i.insert("R", Slice(HALF, (char *)&(pixels[-dx].r), sizeof(Rgba), 0));
-      i.insert("G", Slice(HALF, (char *)&(pixels[-dx].g), sizeof(Rgba), 0));
-      i.insert("B", Slice(HALF, (char *)&(pixels[-dx].b), sizeof(Rgba), 0));
-      i.insert("A", Slice(HALF, (char *)&(pixels[-dx].a), sizeof(Rgba), 0));
-
-
+      //
       // read all channels present (later channels will overwrite earlier ones)
       vector<half> otherChannels(w);
       const ChannelList& channelList = in->header().channels();
       for (ChannelList::ConstIterator c = channelList.begin() ; c != channelList.end() ; ++c )
       {
 	      i.insert(c.name(),Slice(HALF, (char*)&otherChannels[0] , sizeof(half) , 0 ));
-      }
+      }     
+
+      // always try to read RGBA even if not present in file
+      Array<Rgba> pixels(w);
+      i.insert("R", Slice(HALF, (char *)&(pixels[-dx].r), sizeof(Rgba), 0));
+      i.insert("G", Slice(HALF, (char *)&(pixels[-dx].g), sizeof(Rgba), 0));
+      i.insert("B", Slice(HALF, (char *)&(pixels[-dx].b), sizeof(Rgba), 0));
+      i.insert("A", Slice(HALF, (char *)&(pixels[-dx].a), sizeof(Rgba), 0));
+
+
 
 
       in->setFrameBuffer(i);
