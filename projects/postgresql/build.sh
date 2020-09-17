@@ -15,6 +15,7 @@
 #
 ################################################################################
 cp -r $SRC/fuzzer src/backend/
+git apply ../add_fuzzers.diff
 
 useradd fuzzuser
 chown -R fuzzuser .
