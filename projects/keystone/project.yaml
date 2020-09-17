@@ -3,7 +3,7 @@ language: c++
 primary_contact: "keystone.engine@gmail.com"
 auto_ccs :
   - "p.antoine@catenacyber.fr"
-
+  - "stalkr@stalkr.net"
 sanitizers:
   - address
   - memory
