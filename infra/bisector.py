@@ -179,6 +179,9 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
     if not repo_url or not repo_path:
       raise ValueError('Main git repo can not be determined.')
 
+    if old_commit == new_commit:
+      raise BisectError('old_commit is the same as new_commit', repo_url)
+
     # Copy /src from the built Docker container to ensure all dependencies
     # exist. This will be mounted when running them.
     host_src_dir = build_specified_commit.copy_src_from_docker(
