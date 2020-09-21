@@ -89,7 +89,7 @@ static void readMulti(IStream& is) {
       const ChannelList& channelList = in->header().channels();
       for (ChannelList::ConstIterator c = channelList.begin() ; c != channelList.end() ; ++c )
       {
-	      i.insert(c.name(),Slice(HALF, (char*)&otherChannels[0] , sizeof(half) , 0 ));
+	      i.insert(c.name(),Slice(HALF, (char*)&otherChannels[-dx] , sizeof(half) , 0 ));
       }     
 
       // always try to read RGBA even if not present in file
