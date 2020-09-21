@@ -15,9 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make cmake
+RUN apt-get update && apt-get install -y make cmake libboost-all-dev
 RUN git clone --depth 1 https://github.com/libressl-portable/portable.git libressl
 RUN git clone --depth 1 https://github.com/libressl-portable/fuzz.git libressl.fuzzers
+RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
 WORKDIR libressl
 RUN ./update.sh
 COPY build.sh *.options $SRC/
