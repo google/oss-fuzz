@@ -58,9 +58,11 @@ export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
 export CXXFLAGS_ARR=`echo $CXXFLAGS | sed -e "s/\s/\",\"/g"`
 export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
+$SRC/skia/bin/fetch-gn
+
 # Even though GPU is "enabled" for all these builds, none really
 # uses the gpu except for api_mock_gpu_canvas
-$SRC/depot_tools/gn gen out/Fuzz\
+$SRC/skia/bin/gn gen out/Fuzz\
     --args='cc="'$CC'"
       cxx="'$CXX'"
       link_pool_depth=1
