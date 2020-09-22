@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+if [[ $CFLAGS != *sanitize=dataflow* ]]
+then
+    NEW_SRC=$SRC/wolf-ssl-ssh-fuzzers/oss-fuzz/projects/wolf-ssl-ssh/
+    cp -R $SRC/wolfssl/ $NEW_SRC
+    cp -R $SRC/wolfssh/ $NEW_SRC
+    cp -R $SRC/fuzzing-headers/ $NEW_SRC
+    OSS_FUZZ_BUILD=1 SRC="$NEW_SRC" $NEW_SRC/build.sh
+fi
+
 # target_dir determined by Dockerfile
 target_dir="$SRC/fuzz-targets"
 
