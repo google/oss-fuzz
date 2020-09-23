@@ -36,7 +36,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   raw.size = Size;
 
   avifDecoder *decoder = avifDecoderCreate();
-  avifResult result = avifDecoderParse(decoder, &raw);
+  avifResult result = avifDecoderSetIOMemory(decoder, &raw);
+  if (result == AVIF_RESULT_OK) {
+    result = avifDecoderParse(decoder);
+  }
   if (result == AVIF_RESULT_OK) {
     for (int loop = 0; loop < 2; ++loop) {
       while (avifDecoderNextImage(decoder) == AVIF_RESULT_OK) {
