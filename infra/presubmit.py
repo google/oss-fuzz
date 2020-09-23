@@ -91,6 +91,7 @@ class ProjectYamlChecker:
       'homepage',
       'language',
       'labels',  # For internal use only, hard to lint as it uses fuzzer names.
+      'main_repo',
       'primary_contact',
       'sanitizers',
       'selective_unpack',
