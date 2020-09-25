@@ -27,3 +27,7 @@ for fuzzer in $SRC/*_fuzzer.cc; do
       -I. -std=c++14 $fuzzer $LIB_FUZZING_ENGINE $SRC/astc-encoder/Source/libastc.a \
       -o $OUT/$(basename -s .cc $fuzzer)
 done
+
+# Temporarily disable one fuzz target as requested in
+# https://github.com/google/oss-fuzz/issues/4481.
+rm $OUT/astc_encode_decode_ise_fuzzer
