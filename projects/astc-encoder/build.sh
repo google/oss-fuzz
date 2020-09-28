@@ -17,11 +17,3 @@
 
 # build project and project-hosted fuzzers
 $SRC/astc-encoder/Source/Fuzzers/build.sh
-
-# build oss-fuzz-hosted fuzzers
-for fuzzer in $SRC/*_fuzzer.cc; do
-  $CXX $CXXFLAGS \
-      -DASTCENC_SSE=0 -DASTCENC_AVX=0 -DASTCENC_POPCNT=0 -DASTCENC_VECALIGN=16 \
-      -I. -std=c++14 $fuzzer $LIB_FUZZING_ENGINE $SRC/astc-encoder/Source/libastcenc.a \
-      -o $OUT/$(basename -s .cc $fuzzer)
-done
