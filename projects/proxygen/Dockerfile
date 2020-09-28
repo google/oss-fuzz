@@ -140,7 +140,6 @@ RUN apt-get install -y \
     pkg-config \
     libssl-dev \
     libcap-dev \
-    gperf \
     libevent-dev \
     libtool \
     libjemalloc-dev \
