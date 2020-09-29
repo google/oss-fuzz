@@ -1,6 +1,9 @@
 homepage: "https://c-ares.haxx.se/"
 language: c++
 primary_contact: "drysdale@google.com"
+auto_ccs:
+  - "daniel.haxx@gmail.com"
+  - "brad@brad-house.com"
 fuzzing_engines:
   - afl
   - libfuzzer
