@@ -45,7 +45,6 @@ make install
 cd ..
 
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
-rustup component add rust-src --toolchain nightly
 
 # build project
 cd suricata
