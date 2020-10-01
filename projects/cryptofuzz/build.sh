@@ -83,6 +83,11 @@ then
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BIGNUMBER_JS"
     cd $SRC/cryptofuzz/modules/bignumber.js/
     make
+
+    export CRYPTO_JS_PATH="$SRC/crypto-js/"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTO_JS"
+    cd $SRC/cryptofuzz/modules/crypto-js/
+    make
 fi
 
 # Compile NSS
