@@ -54,6 +54,7 @@ RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.0.ta
 RUN git clone --depth 1 https://github.com/indutny/bn.js.git
 RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
 RUN git clone --depth 1 https://github.com/guidovranken/libfuzzer-js.git
+RUN git clone --depth 1 https://github.com/brix/crypto-js.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
 
