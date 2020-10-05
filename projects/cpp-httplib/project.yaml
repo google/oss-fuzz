@@ -1,0 +1,13 @@
+homepage: "https://github.com/yhirose/cpp-httplib"
+language: c++
+primary_contact: "omkarjadhav@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - dataflow
+  - memory
+  - undefined
+architectures:
+  - x86_64
+  - i386
