@@ -3,8 +3,6 @@ language: c++
 primary_contact: "yuji.hirose.bug@gmail.com"
 auto_ccs :
   - "omkarjadhav@google.com"
-fuzzing_engines:
-  - libfuzzer
 sanitizers:
   - address
   - dataflow
