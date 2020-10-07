@@ -109,6 +109,16 @@ then
     make -B
 fi
 
+# Compile Monocypher
+cd $SRC/Monocypher/
+make CC="$CC" CFLAGS="$CFLAGS"
+export LIBMONOCYPHER_A_PATH=$(realpath lib/libmonocypher.a)
+export MONOCYPHER_INCLUDE_PATH=$(realpath src/)
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MONOCYPHER"
+
+# Compile Cryptofuzz monocypher module
+cd $SRC/cryptofuzz/modules/monocypher
+make -B
 
 # Compile libtomcrypt
 cd $SRC/libtomcrypt
