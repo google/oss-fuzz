@@ -16,7 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    build-essential libbz2-dev ninja-build zlib1g-dev wget python python-dev liblzma-dev
+    build-essential libbz2-dev ninja-build zlib1g-dev wget python python-dev \
+    liblzma-dev uuid-dev pkg-config openjdk-8-jdk unzip
 
 RUN git clone --recursive https://github.com/ethereum/solidity.git solidity
 RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
@@ -56,5 +57,23 @@ RUN cd $SRC/evmone; \
     cmake .. -G Ninja -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="/usr"; \
     ninja; \
     ninja install;
+
+# Antlr4 Runtime
+RUN set -ex; \
+    cd /usr/src; \
+    wget https://www.antlr.org/download/antlr4-cpp-runtime-4.8-source.zip; \
+    rm -rf antlr4-runtime && mkdir antlr4-runtime; \
+    unzip antlr4-cpp-runtime-4.8-source.zip -d antlr4-runtime; \
+    cd antlr4-runtime && mkdir build && cd build; \
+    cmake .. -DWITH_LIBCXX=On -DCMAKE_BUILD_TYPE=Release -DWITH_DEMO=False; \
+    make -j; \
+    DESTDIR=run make install; \
+    # Manually copy needed library and includes since install script
+    # does not respect -DCMAKE_INSTALL_DIR and there is no option
+    # to disable shared library build/installation
+    cp -Rf run/usr/local/include/antlr4-runtime /usr/include; \
+    cp -f run/usr/local/lib/libantlr4-runtime.a /usr/lib; \
+    rm -rf /usr/src/antlr4-cpp-runtime-4.8-source.zip; \
+    rm -rf /usr/src/antlr4-runtime
 
 COPY build.sh $SRC/
