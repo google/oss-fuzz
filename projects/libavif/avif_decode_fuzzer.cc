@@ -31,12 +31,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   static uint32_t yuvDepths[] = {8, 10};
   static size_t yuvDepthsCount = sizeof(yuvDepths) / sizeof(yuvDepths[0]);
 
-  avifROData raw;
-  raw.data = Data;
-  raw.size = Size;
-
   avifDecoder *decoder = avifDecoderCreate();
-  avifResult result = avifDecoderSetIOMemory(decoder, &raw);
+  avifResult result = avifDecoderSetIOMemory(decoder, Data, Size);
   if (result == AVIF_RESULT_OK) {
     result = avifDecoderParse(decoder);
   }
