@@ -396,6 +396,8 @@ def download_url(url, file_name, num_retries=3):
       pass
     time.sleep(sleep_time)
 
+  logging.error('Failed to download %s, %d times.', url, num_retries)
+
   return False
 
 

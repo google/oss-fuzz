@@ -319,6 +319,7 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
                                          'not/a/dir', 'example')
     self.assertIsNone(test_target.download_oss_fuzz_build())
 
+
 class DownloadUrlTest(unittest.TestCase):
   """Test that download_url works."""
   URL = 'example.com/file'
@@ -331,7 +332,6 @@ class DownloadUrlTest(unittest.TestCase):
     self.assertTrue(fuzz_target.download_url(self.URL, self.FILE_PATH))
     self.assertEqual(1, mocked_urlretrieve.call_count)
 
-
   @unittest.mock.patch('time.sleep')
   @unittest.mock.patch('logging.error')
   @unittest.mock.patch('urllib.request.urlretrieve',
@@ -343,7 +343,6 @@ class DownloadUrlTest(unittest.TestCase):
     mocked_error.assert_called_with('Unable to download from: %s.', self.URL)
     self.assertEqual(1, mocked_urlretrieve.call_count)
 
-
   @unittest.mock.patch('time.sleep')
   @unittest.mock.patch('logging.error')
   @unittest.mock.patch('urllib.request.urlretrieve',
@@ -354,6 +353,8 @@ class DownloadUrlTest(unittest.TestCase):
     self.assertFalse(fuzz_target.download_url(self.URL, self.FILE_PATH))
     self.assertEqual(3, mocked_urlretrieve.call_count)
     self.assertEqual(3, mocked_sleep.call_count)
+    mocked_error.assert_called_with('Failed to download %s, %d times.',
+                                    self.URL, 3)
 
 
 class DownloadAndUnpackZipUnitTests(unittest.TestCase):
