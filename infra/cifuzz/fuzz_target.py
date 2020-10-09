@@ -372,7 +372,7 @@ def download_url(url, filename, num_retries=3):
   """Downloads the file located at |url|, using HTTP to |filename|.
 
   Args:
-    zip_url: A url to a file to download.
+    url: A url to a file to download.
     filename: The path the file should be downloaded to.
     num_retries: The number of times to retry the download on
        ConnectionResetError.
