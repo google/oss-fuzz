@@ -368,12 +368,12 @@ class FuzzTarget:
     return download_and_unpack_zip(corpus_url, corpus_dir)
 
 
-def download_url(url, file_name, num_retries=3):
-  """Downloads the file located at |url|, using HTTP to |file_name|.
+def download_url(url, filename, num_retries=3):
+  """Downloads the file located at |url|, using HTTP to |filename|.
 
   Args:
-    zip_url: A url to the zip file to be downloaded and unpacked.
-    out_dir: The path where the zip file should be extracted to.
+    zip_url: A url to a file to download.
+    filename: The path the file should be downloaded to.
     num_retries: The number of times to retry the download on
        ConnectionResetError.
 
@@ -384,7 +384,7 @@ def download_url(url, file_name, num_retries=3):
 
   for _ in range(num_retries):
     try:
-      urllib.request.urlretrieve(url, file_name)
+      urllib.request.urlretrieve(url, filename)
       return True
     except urllib.error.HTTPError:
       # In these cases, retrying probably wont work since the error probably
