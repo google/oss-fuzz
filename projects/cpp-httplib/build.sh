@@ -16,7 +16,7 @@
 ################################################################################
 
 # build fuzz targets specified  in test/Makefile
-cd test && make -j$(nproc) server_fuzzer
+cd test/fuzzing && make -j$(nproc) server_fuzzer
 
 # Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'          # Copy fuzz-target.
