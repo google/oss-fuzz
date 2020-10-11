@@ -25,7 +25,7 @@ RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
 RUN git clone --depth 1 https://github.com/webmproject/libwebp
 RUN git clone --depth 1 https://github.com/madler/zlib
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
-RUN git clone --depth 1 https://git.savannah.nongnu.org/r/freetype/freetype2
+RUN git clone https://git.savannah.nongnu.org/r/freetype/freetype2.git/
 RUN git clone --depth 1 https://github.com/xz-mirror/xz
 RUN git clone --depth 1 https://github.com/libraw/libraw
 RUN git clone --depth 1 https://github.com/pnggroup/libpng
