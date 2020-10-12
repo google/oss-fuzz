@@ -14,16 +14,16 @@ jobs:
           git fetch origin master --depth 1
           git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
 
-      - name: Setup python environment
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
+      #- name: Setup python environment
+      #  uses: actions/setup-python@v2
+      #  with:
+      #    python-version: 3.8
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r infra/ci/requirements.txt
-          pip install -r infra/build/functions/requirements.txt
+          python3 -m pip install --upgrade pip setuptools
+          python3 -m pip install -r infra/ci/requirements.txt
+          python3 -m pip install -r infra/build/functions/requirements.txt
 
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
@@ -33,6 +33,6 @@ jobs:
           gcloud info
 
       - name: Run infra tests
-        run: python infra/presubmit.py infra-tests
+        run: python3 infra/presubmit.py infra-tests
 
 
