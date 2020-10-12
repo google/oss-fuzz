@@ -6,7 +6,6 @@ auto_ccs :
 sanitizers:
   - address
   - dataflow
-  - memory
   - undefined
 architectures:
   - x86_64
