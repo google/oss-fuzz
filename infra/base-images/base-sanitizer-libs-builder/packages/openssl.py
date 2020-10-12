@@ -14,29 +14,31 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""
+openssl.py
+"""
 import os
 import shutil
 
 import package
 
 
-def AddNoAsmArg(config_path):
+def add_no_asm_arg(config_path):
   """Add --no-asm to config scripts."""
   shutil.move(config_path, config_path + '.real')
-  with open(config_path, 'w') as f:
-    f.write(
-        '#!/bin/sh\n'
-        '%s.real no-asm "$@"\n' % config_path)
-  os.chmod(config_path, 0755)
+  with open(config_path, 'w') as out_file:
+    out_file.write('#!/bin/sh\n' '%s.real no-asm "$@"\n' % config_path)
+  os.chmod(config_path, 0o755)
 
 
-class Package(package.Package):
+class Package(package.Package):  # pylint: disable=too-few-public-methods
   """openssl package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('openssl', apt_version)
 
-  def PreBuild(self, source_directory, env, custom_bin_dir):
-    AddNoAsmArg(os.path.join(source_directory, 'Configure'))
-    AddNoAsmArg(os.path.join(source_directory, 'config'))
+  # pylint: disable=no-self-use,unused-argument
+  def pre_build(self, source_directory, env, custom_bin_dir):
+    """ pre_build() """
+    add_no_asm_arg(os.path.join(source_directory, 'Configure'))
+    add_no_asm_arg(os.path.join(source_directory, 'config'))
