@@ -15,10 +15,10 @@
 #
 ################################################################################
 
-# build fuzz targets specified  in test/Makefile
+# Build fuzz targets specified  in test/Makefile.
 cd test/fuzzing && make -j$(nproc) server_fuzzer
 
-# Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT
+# Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT.
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'          # Copy fuzz-target.
 find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'     # Copy dictionaries.
-find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';' # Copy seed corpora
+find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';' # Copy seed corpora.

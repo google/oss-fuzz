@@ -17,16 +17,16 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 
-#Install brotli
+# Install brotli.
 RUN apt-get install -y libbrotli-dev
 
-#Install zlib
+# Install zlib.
 RUN apt-get update && apt-get install -y zlib1g-dev
 
 # Install openssl 1.1.1
 RUN curl -o openssl-1.1.1f.tar.gz https://www.openssl.org/source/openssl-1.1.1f.tar.gz && \
     tar xzvf  openssl-1.1.1f.tar.gz
-RUN  cd openssl-1.1.1f && ./config && make && make install_sw
+RUN cd openssl-1.1.1f && ./config && make && make install_sw
 
 # TODO use remote repo instead of forked one.
 RUN git clone -b http-oss-fuzz https://github.com/omjego/cpp-httplib.git cpp-httplib
