@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+"""
+compiler_wrapper.py wraps the compiler.
+"""
 
 from __future__ import print_function
 import os
@@ -27,22 +30,22 @@ GCC_ONLY_ARGS = [
 ]
 
 
-def InvokedAsGcc():
+def invoked_as_gcc():
   """Return whether or not we're pretending to be GCC."""
   return sys.argv[0].endswith('gcc') or sys.argv[0].endswith('g++')
 
 
-def Is32Bit(args):
+def is_32_bit(args):
   """Return whether or not we're 32-bit."""
-  M32_BIT_ARGS = [
+  m32_bit_args = [
       '-m32',
       '-mx32',
   ]
 
-  return any(arg in M32_BIT_ARGS for arg in args)
+  return any(arg in m32_bit_args for arg in args)
 
 
-def FilterWlArg(arg):
+def filter_wl_arg(arg):
   """Remove -z,defs and equivalents from a single -Wl option."""
   parts = arg.split(',')[1:]
 
@@ -55,7 +58,7 @@ def FilterWlArg(arg):
 
     if part == '--no-undefined':
       continue
-      
+
     filtered.append(part)
 
   if filtered:
@@ -65,29 +68,29 @@ def FilterWlArg(arg):
   return None
 
 
-def _RemoveLastMatching(l, find):
-  for i in xrange(len(l) - 1, -1, -1):
-    if l[i] == find:
-      del l[i]
+def _remove_last_matching(lst, find):
+  for i in range(len(lst) - 1, -1, -1):
+    if lst[i] == find:
+      del lst[i]
       return
 
   raise IndexError('Not found')
 
 
-def RemoveZDefs(args):
+def remove_zdefs(args):
   """Remove unsupported -Wl,-z,defs linker option."""
   filtered = []
 
   for arg in args:
     if arg == '-Wl,defs':
-      _RemoveLastMatching(filtered, '-Wl,-z')
+      _remove_last_matching(filtered, '-Wl,-z')
       continue
 
     if arg == '-Wl,--no-undefined':
       continue
 
     if arg.startswith('-Wl,'):
-      arg = FilterWlArg(arg)
+      arg = filter_wl_arg(arg)
       if not arg:
         continue
 
@@ -96,11 +99,11 @@ def RemoveZDefs(args):
   return filtered
 
 
-def GetCompilerArgs(args, is_cxx):
+def get_compiler_args(args, is_cxx):
   """Generate compiler args."""
   compiler_args = args[1:]
 
-  if Is32Bit(args):
+  if is_32_bit(args):
     # 32 bit builds not supported.
     compiler_args.extend([
         '-fno-sanitize=memory',
@@ -109,7 +112,7 @@ def GetCompilerArgs(args, is_cxx):
 
     return compiler_args
 
-  compiler_args = RemoveZDefs(compiler_args)
+  compiler_args = remove_zdefs(compiler_args)
   compiler_args.extend([
       # FORTIFY_SOURCE is not supported by sanitizers.
       '-U_FORTIFY_SOURCE',
@@ -122,10 +125,10 @@ def GetCompilerArgs(args, is_cxx):
       '-fno-lto',
   ])
 
-  if InvokedAsGcc():
+  if invoked_as_gcc():
     compiler_args.extend([
-      # For better compatibility with flags passed via -Wa,...
-      '-fno-integrated-as',
+        # For better compatibility with flags passed via -Wa,...
+        '-fno-integrated-as',
     ])
 
   if '-fsanitize=memory' not in args:
@@ -138,35 +141,36 @@ def GetCompilerArgs(args, is_cxx):
   return compiler_args
 
 
-def FindRealClang():
+def find_real_clang():
   """Return path to real clang."""
   return os.environ['REAL_CLANG_PATH']
 
 
-def FallbackToGcc(args):
+def fallback_to_gcc(args):
   """Check whether if we should fall back to GCC."""
-  if not InvokedAsGcc():
+  if not invoked_as_gcc():
     return False
 
   return any(arg in GCC_ONLY_ARGS for arg in args[1:])
 
 
 def main(args):
-  if FallbackToGcc(args):
-    sys.exit(subprocess.call(['/usr/bin/' + os.path.basename(args[0])] +
-                             args[1:]))
+  """main() function does the bulk of the work."""
+  if fallback_to_gcc(args):
+    sys.exit(
+        subprocess.call(['/usr/bin/' + os.path.basename(args[0])] + args[1:]))
 
   is_cxx = args[0].endswith('++')
-  real_clang = FindRealClang()
+  real_clang = find_real_clang()
 
   if is_cxx:
     real_clang += '++'
 
-  args = [real_clang] + GetCompilerArgs(args, is_cxx)
+  args = [real_clang] + get_compiler_args(args, is_cxx)
   debug_log_path = os.getenv('WRAPPER_DEBUG_LOG_PATH')
   if debug_log_path:
-    with open(debug_log_path, 'a') as f:
-      f.write(str(args) + '\n')
+    with open(debug_log_path, 'a') as append_file:
+      append_file.write(str(args) + '\n')
 
   sys.exit(subprocess.call(args))
 
