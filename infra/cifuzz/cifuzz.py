@@ -55,15 +55,15 @@ STACKTRACE_TOOL_MARKERS = [
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
 # Used to get the end of the stack trace.
 STACKTRACE_END_MARKERS = [
-    'ABORTING',
-    'END MEMORY TOOL REPORT',
-    'End of process memory map.',
-    'END_KASAN_OUTPUT',
-    'SUMMARY:',
-    'Shadow byte and word',
-    '[end of stack trace]',
-    '\nExiting',
-    'minidump has been written',
+    b'ABORTING',
+    b'END MEMORY TOOL REPORT',
+    b'End of process memory map.',
+    b'END_KASAN_OUTPUT',
+    b'SUMMARY:',
+    b'Shadow byte and word',
+    b'[end of stack trace]',
+    b'\nExiting',
+    b'minidump has been written',
 ]
 
 #  Default fuzz configuration.
