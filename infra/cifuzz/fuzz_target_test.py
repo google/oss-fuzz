@@ -135,6 +135,12 @@ class GetTestCaseUnitTest(unittest.TestCase):
     self.assertIsNone(self.test_target.get_test_case(''))
     self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
 
+  def test_encoding(self):
+    """Tests that get_test_case accepts bytes and returns a string."""
+    fuzzer_output = b'\x8fTest unit written to ./crash-1'
+    result = self.test_target.get_test_case(fuzzer_output)
+    self.assertTrue(isinstance(result, str))
+
 
 class DownloadLatestCorpusUnitTest(unittest.TestCase):
   """Test parse_fuzzer_output function in the cifuzz module."""
