@@ -39,4 +39,4 @@ cmake .. \
 
 cmake --build .
 
-cp bin/fuzzer_* $OUT
+cp bin/*fuzzer $OUT
