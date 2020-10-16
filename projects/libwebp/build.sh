@@ -53,8 +53,9 @@ webp_cxx_fuzzers=(
 )
 
 for fuzzer in "${webp_c_fuzzers[@]}"; do
-  $CC $CFLAGS -Isrc -I. $LIB_FUZZING_ENGINE \
-    tests/fuzzer/${fuzzer}.c -o $OUT/${fuzzer} \
+  $CC $CFLAGS -Isrc -I. tests/fuzzer/${fuzzer}.c -c -o tests/fuzzer/${fuzzer}.o
+  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
+    tests/fuzzer/${fuzzer}.o -o $OUT/${fuzzer} \
     "${webp_libs[@]}"
 done
 
