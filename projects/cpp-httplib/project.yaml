@@ -3,6 +3,8 @@ language: c++
 primary_contact: "yuji.hirose.bug@gmail.com"
 auto_ccs :
   - "cpp-httplib-oss-fuzz@googlegroups.com"
+  - "omkarjadhav@google.com"
+  - "sungsk@google.com"
 sanitizers:
   - address
   - dataflow
