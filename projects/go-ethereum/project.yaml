@@ -1,0 +1,11 @@
+homepage: "https://github.com/ethereum/go-ethereum"
+primary_contact: "peter@ethereum.org"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "fjl@ethereum.org"
+  - "martin.swende@ethereum.org"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
