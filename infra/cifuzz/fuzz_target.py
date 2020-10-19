@@ -145,7 +145,7 @@ class FuzzTarget:
                                stderr=subprocess.PIPE)
 
     try:
-      _, err = process.communicate(timeout=self.duration + BUFFER_TIME)
+      _, stderr = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
       return None, None
@@ -158,13 +158,12 @@ class FuzzTarget:
 
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
-    err_str = err.decode('ascii')
-    test_case = self.get_test_case(err_str)
+    test_case = self.get_test_case(stderr)
     if not test_case:
-      logging.error('No test case found in stack trace: %s.', err_str)
+      logging.error(b'No test case found in stack trace: %s.', stderr)
       return None, None
     if self.is_crash_reportable(test_case):
-      return test_case, err_str
+      return test_case, stderr
     return None, None
 
   def is_reproducible(self, test_case, target_path):
@@ -282,18 +281,18 @@ class FuzzTarget:
     logging.info('The crash is reproducible without the current pull request.')
     return False
 
-  def get_test_case(self, error_string):
+  def get_test_case(self, error_bytes):
     """Gets the file from a fuzzer run stack trace.
 
     Args:
-      error_string: The stack trace string containing the error.
+      error_bytes: The bytes containing the output from the fuzzer.
 
     Returns:
-      The error test case or None if not found.
+      The path to the test case or None if not found.
     """
-    match = re.search(r'\bTest unit written to \.\/([^\s]+)', error_string)
+    match = re.search(rb'\bTest unit written to \.\/([^\s]+)', error_bytes)
     if match:
-      return os.path.join(self.out_dir, match.group(1))
+      return os.path.join(self.out_dir, match.group(1).decode('utf-8'))
     return None
 
   def get_lastest_build_version(self):

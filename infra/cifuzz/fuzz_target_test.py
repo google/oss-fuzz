@@ -125,7 +125,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
     test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   'test_files',
                                   'example_crash_fuzzer_output.txt')
-    with open(test_case_path, 'r') as test_fuzz_output:
+    with open(test_case_path, 'rb') as test_fuzz_output:
       parsed_test_case = self.test_target.get_test_case(test_fuzz_output.read())
     self.assertEqual(
         parsed_test_case,
@@ -133,8 +133,14 @@ class GetTestCaseUnitTest(unittest.TestCase):
 
   def test_invalid_error_string(self):
     """Tests that get_test_case returns None with a bad error string."""
-    self.assertIsNone(self.test_target.get_test_case(''))
-    self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
+    self.assertIsNone(self.test_target.get_test_case(b''))
+    self.assertIsNone(self.test_target.get_test_case(b' Example crash string.'))
+
+  def test_encoding(self):
+    """Tests that get_test_case accepts bytes and returns a string."""
+    fuzzer_output = b'\x8fTest unit written to ./crash-1'
+    result = self.test_target.get_test_case(fuzzer_output)
+    self.assertTrue(isinstance(result, str))
 
 
 class DownloadLatestCorpusUnitTest(unittest.TestCase):
