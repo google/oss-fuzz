@@ -143,46 +143,60 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         ))
 
 
-class RunMemoryFuzzerIntegrationTest(unittest.TestCase):
-  """Integration test for build_fuzzers with an MSAN build."""
+def remove_test_files(out_parent_dir, allowlist):
+  """Removes test files from |out_parent_dir| that are not in |allowlist|, a
+  list of files with paths relative to the out directory."""
+  out_dir = os.path.join(out_parent_dir, 'out')
+  allowlist = set(allowlist)
+  for rel_out_path in os.listdir(out_dir):
+    if rel_out_path in allowlist:
+      continue
+    path_to_remove = os.path.join(out_dir, rel_out_path)
+    if os.path.isdir(out_path):
+        shutil.rmtree(out_path)
+    else:
+      os.remove(out_path)
+
+
+class RunFuzzerIntegrationTestMixin:
+  """Mixin for integration test classes that runbuild_fuzzers on builds of a
+  specific sanitizer."""
+  # These must be defined by children.
+  FUZZER_DIR = None
+  FUZZER = None
 
   def tearDown(self):
     """Removes any existing crashes and test files."""
-    # TODO(metzman): Combine the next three tearDown methods.
-    out_dir = os.path.join(MEMORY_FUZZER_DIR, 'out')
-    for out_file in os.listdir(out_dir):
-      out_path = os.path.join(out_dir, out_file)
-      if out_file == MEMORY_FUZZER:  # pylint: disable=consider-using-in
-        continue
-      if os.path.isdir(out_path):
-        shutil.rmtree(out_path)
-      else:
-        os.remove(out_path)
+    remove_test_files(self.FUZZER_DIR, self.FUZZER)
 
-  def test_run_with_memory_sanitizer(self):
-    """Tests run_fuzzers with a valid MSAN build."""
+  def _test_run_with_sanitizer(self, fuzzer_dir, sanitizer):
+    """Calls run_fuzzers on fuzzer_dir and |sanitizer| and asserts
+    the run succeeded and that no bug was found."""
     run_success, bug_found = cifuzz.run_fuzzers(10,
-                                                MEMORY_FUZZER_DIR,
+                                                fuzzer_dir,
                                                 'curl',
-                                                sanitizer='memory')
+                                                sanitizer=sanitizer)
     self.assertTrue(run_success)
     self.assertFalse(bug_found)
 
 
-class RunUndefinedFuzzerIntegrationTest(unittest.TestCase):
+
+class RunMemoryFuzzerIntegrationTest(
+    unittest.TestCase, RunFuzzerIntegrationTestMixin):
+  """Integration test for build_fuzzers with an MSAN build."""
+
+  def test_run_with_memory_sanitizer(self):
+    """Tests run_fuzzers with a valid MSAN build."""
+    self._test_run_with_sanitizer(self.FUZZER_DIR, 'memory')
+
+
+class RunUndefinedFuzzerIntegrationTest(
+    unittest.TestCase, RunFuzzerIntegrationTestMixin):
   """Integration test for build_fuzzers with an UBSAN build."""
 
   def tearDown(self):
     """Remove any existing crashes and test files."""
-    out_dir = os.path.join(UNDEFINED_FUZZER_DIR, 'out')
-    for out_file in os.listdir(out_dir):
-      out_path = os.path.join(out_dir, out_file)
-      if out_file == UNDEFINED_FUZZER:  # pylint: disable=consider-using-in
-        continue
-      if os.path.isdir(out_path):
-        shutil.rmtree(out_path)
-      else:
-        os.remove(out_path)
+    remove_test_files(UNDEFINED_FUZZER_DIR, UNDEFINED_FUZZER)
 
   def test_run_with_undefined_sanitizer(self):
     """Tests run_fuzzers with a valid UBSAN build."""
@@ -199,18 +213,10 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
 
   def tearDown(self):
     """Removes any existing crashes and test files."""
-    out_dir = os.path.join(TEST_FILES_PATH, 'out')
     files_to_keep = [
         'undefined', 'memory', EXAMPLE_CRASH_FUZZER, EXAMPLE_NOCRASH_FUZZER
     ]
-    for out_file in os.listdir(out_dir):
-      out_path = os.path.join(out_dir, out_file)
-      if out_file in files_to_keep:
-        continue
-      if os.path.isdir(out_path):
-        shutil.rmtree(out_path)
-      else:
-        os.remove(out_path)
+    remove_test_files(TEST_FILES_PATH, files_to_keep)
 
   def test_new_bug_found(self):
     """Tests run_fuzzers with a valid ASAN build."""
@@ -282,9 +288,9 @@ class ParseOutputTest(unittest.TestCase):
       self.assertCountEqual(os.listdir(tmp_dir), result_files)
 
       # Compare the bug summaries.
-      with open(os.path.join(tmp_dir, 'bug_summary.txt'), 'r') as bug_summary:
+      with open(os.path.join(tmp_dir, 'bug_summary.txt')) as bug_summary:
         detected_summary = bug_summary.read()
-      with open(os.path.join(test_summary_path), 'r') as bug_summary:
+      with open(test_summary_path) as bug_summary:
         real_summary = bug_summary.read()
       self.assertEqual(detected_summary, real_summary)
 
@@ -316,8 +322,8 @@ class CheckFuzzerBuildTest(unittest.TestCase):
   def test_allow_broken_fuzz_targets_percentage(self, mocked_docker_run):
     """Tests that ALLOWED_BROKEN_TARGETS_PERCENTAGE is set when running
     docker if it is set in the environment."""
-    test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
     mocked_docker_run.return_value = 0
+    test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
     cifuzz.check_fuzzer_build(test_fuzzer_dir)
     self.assertIn('-e ALLOWED_BROKEN_TARGETS_PERCENTAGE=0',
                   ' '.join(mocked_docker_run.call_args[0][0]))
@@ -333,11 +339,11 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
 
   def setUp(self):
     with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
-              'r') as file:
-      self.proj_cov_report_example = json.loads(file.read())
+              'r') as file_handle:
+      self.proj_cov_report_example = json.loads(file_handle.read())
     with open(os.path.join(TEST_FILES_PATH, self.example_fuzzer_cov_json),
-              'r') as file:
-      self.fuzzer_cov_report_example = json.loads(file.read())
+              'r') as file_handle:
+      self.fuzzer_cov_report_example = json.loads(file_handle.read())
 
   def test_valid_target(self):
     """Tests that covered files can be retrieved from a coverage report."""
@@ -380,8 +386,8 @@ class GetTargetCoverageReportTest(unittest.TestCase):
 
   def setUp(self):
     with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
-              'r') as file:
-      self.example_cov = json.loads(file.read())
+              'r') as file_handle:
+      self.example_cov = json.loads(file_handle.read())
 
   def test_valid_target(self):
     """Tests that a target's coverage report can be downloaded and parsed."""

@@ -401,7 +401,7 @@ def download_url(url, filename, num_retries=3):
 
 
 def download_and_unpack_zip(url, out_dir):
-  """Downloads and unpacks a zip file from an http url.
+  """Downloads and unpacks a zip file from an HTTP URL.
 
   Args:
     url: A url to the zip file to be downloaded and unpacked.
@@ -431,7 +431,7 @@ def download_and_unpack_zip(url, out_dir):
 
 
 def url_join(*url_parts):
-  """Joins URLs together using the posix join method.
+  """Joins URLs together using the POSIX join method.
 
   Args:
     url_parts: Sections of a URL to be joined.

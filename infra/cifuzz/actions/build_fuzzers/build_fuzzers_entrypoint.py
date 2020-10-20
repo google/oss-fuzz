@@ -82,18 +82,19 @@ def main():
     return returncode
 
   if event == 'pull_request':
-    with open(os.environ.get('GITHUB_EVENT_PATH'), encoding='utf-8') as file:
+    event_path = os.environ.get('GITHUB_EVENT_PATH')
+    with open(event_path, encoding='utf-8') as file_handle:
       event = json.load(file)
-      pr_ref = 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
-      if not cifuzz.build_fuzzers(oss_fuzz_project_name,
-                                  github_repo_name,
-                                  workspace,
-                                  pr_ref=pr_ref,
-                                  sanitizer=sanitizer):
-        logging.error(
-            'Error building fuzzers for project %s with pull request %s.',
-            oss_fuzz_project_name, pr_ref)
-        return returncode
+    pr_ref = 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
+    if not cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                github_repo_name,
+                                workspace,
+                                pr_ref=pr_ref,
+                                sanitizer=sanitizer):
+      logging.error(
+          'Error building fuzzers for project %s with pull request %s.',
+          oss_fuzz_project_name, pr_ref)
+      return returncode
 
   out_dir = os.path.join(workspace, 'out')
   if cifuzz.check_fuzzer_build(out_dir, sanitizer=sanitizer):

@@ -32,9 +32,9 @@ def main():
   This is the entrypoint for the run_fuzzers github action.
   This action can be added to any OSS-Fuzz project's workflow that uses Github.
 
-  NOTE: libfuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
+  NOTE: libFuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
   directory in order for this action to be used. This action will only fuzz the
-  binary's that are located in that directory. It is reccomended that you add
+  binaries that are located in that directory. It is recommended that you add
   the build_fuzzers action preceding this one.
 
   NOTE: Any crash report will be in the filepath:
@@ -82,7 +82,7 @@ def main():
                                              oss_fuzz_project_name,
                                              sanitizer=sanitizer)
   if not run_status:
-    logging.error('Error occured while running in workspace %s.', workspace)
+    logging.error('Error occurred while running in workspace %s.', workspace)
     return returncode
   if bug_found:
     logging.info('Bug found.')
