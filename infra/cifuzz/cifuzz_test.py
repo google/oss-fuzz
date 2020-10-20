@@ -441,7 +441,7 @@ EXAMPLE_FILE_CHANGED = 'test.txt'
 
 
 class RemoveUnaffectedFuzzersTest(unittest.TestCase):
-  """Tests remove_unaffected_fuzzer."""
+  """Tests remove_unaffected_fuzzers."""
 
   TEST_FUZZER_1 = os.path.join(TEST_FILES_PATH, 'out', 'example_crash_fuzzer')
   TEST_FUZZER_2 = os.path.join(TEST_FILES_PATH, 'out', 'example_nocrash_fuzzer')
@@ -458,7 +458,7 @@ class RemoveUnaffectedFuzzersTest(unittest.TestCase):
       ([None, None], 2),
 
       # Tests that multiple fuzzers are kept if multiple fuzzers are affected.
-      ([EXAMPLE_FILE_CHANGED, EXAMPLE_FILE_CHANGED], 2),
+      ([[EXAMPLE_FILE_CHANGED], [EXAMPLE_FILE_CHANGED]], 2),
       ])
   # yapf: enable
   def test_remove_unaffected_fuzzers(self, side_effect, expected_dir_len):
