@@ -183,6 +183,8 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
 class RunMemoryFuzzerIntegrationTest(unittest.TestCase,
                                      RunFuzzerIntegrationTestMixin):
   """Integration test for build_fuzzers with an MSAN build."""
+  FUZZER_DIR = MEMORY_FUZZER_DIR
+  FUZZER = MEMORY_FUZZER
 
   def test_run_with_memory_sanitizer(self):
     """Tests run_fuzzers with a valid MSAN build."""
@@ -192,20 +194,12 @@ class RunMemoryFuzzerIntegrationTest(unittest.TestCase,
 class RunUndefinedFuzzerIntegrationTest(unittest.TestCase,
                                         RunFuzzerIntegrationTestMixin):
   """Integration test for build_fuzzers with an UBSAN build."""
-
-  def tearDown(self):
-    """Remove any existing crashes and test files."""
-    remove_test_files(UNDEFINED_FUZZER_DIR, UNDEFINED_FUZZER)
+  FUZZER_DIR = UNDEFINED_FUZZER_DIR
+  FUZZER = UNDEFINED_FUZZER
 
   def test_run_with_undefined_sanitizer(self):
-    """Tests run_fuzzers with a valid UBSAN build."""
-    run_success, bug_found = cifuzz.run_fuzzers(10,
-                                                UNDEFINED_FUZZER_DIR,
-                                                'curl',
-                                                sanitizer='undefined')
-    self.assertTrue(run_success)
-    self.assertFalse(bug_found)
-
+    """Tests run_fuzzers with a valid MSAN build."""
+    self._test_run_with_sanitizer(self.FUZZER_DIR, 'undefined')
 
 class RunAddressFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers with an ASAN build."""
