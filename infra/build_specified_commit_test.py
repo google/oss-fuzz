@@ -72,8 +72,14 @@ class BuildImageIntegrationTests(unittest.TestCase):
 
   def test_detect_main_repo_from_commit(self):
     """Test the detect main repo function from build specific commit module."""
-    for example_repo in test_repos.TEST_REPOS:
+    # TODO(metzman): Fix these tests so they don't randomly break because of
+    # changes in the outside world.
+    test_repos_list = [repo for repo in test_repos.TEST_REPOS
+                       if repo.project_name != 'usrsctp']
+    for example_repo in test_repos_list:
       if example_repo.new_commit:
+        # TODO(metzman): This function calls _build_image_with_retries which
+        # has a long delay (30 seconds). Figure out how to make this quicker.
         repo_origin, repo_name = build_specified_commit.detect_main_repo(
             example_repo.project_name, commit=example_repo.new_commit)
         self.assertEqual(repo_origin, example_repo.git_url)
