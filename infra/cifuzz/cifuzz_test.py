@@ -23,6 +23,8 @@ import tempfile
 import unittest
 from unittest import mock
 
+import parameterized
+
 # pylint: disable=wrong-import-position
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(INFRA_DIR)
@@ -200,6 +202,7 @@ class RunUndefinedFuzzerIntegrationTest(unittest.TestCase,
   def test_run_with_undefined_sanitizer(self):
     """Tests run_fuzzers with a valid MSAN build."""
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'undefined')
+
 
 class RunAddressFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers with an ASAN build."""
@@ -433,66 +436,42 @@ class GetLatestCoverageReportTest(unittest.TestCase):
     self.assertIsNone(cifuzz.get_latest_cov_report_info(''))
 
 
-class KeepAffectedFuzzersTest(unittest.TestCase):
-  """Tests keep_affected_fuzzer."""
+EXAMPLE_FILE_CHANGED = 'test.txt'
 
-  test_fuzzer_1 = os.path.join(TEST_FILES_PATH, 'out', 'example_crash_fuzzer')
-  test_fuzzer_2 = os.path.join(TEST_FILES_PATH, 'out', 'example_nocrash_fuzzer')
-  example_file_changed = 'test.txt'
 
-  def test_keeping_fuzzer_w_no_coverage(self):
-    """Tests that a specific fuzzer is kept if it is deemed affected."""
-    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch.object(
-        cifuzz, 'get_latest_cov_report_info', return_value=1):
-      shutil.copy(self.test_fuzzer_1, tmp_dir)
-      shutil.copy(self.test_fuzzer_2, tmp_dir)
+class RemoveUnaffectedFuzzersTest(unittest.TestCase):
+  """Tests remove_unaffected_fuzzer."""
+
+  TEST_FUZZER_1 = os.path.join(TEST_FILES_PATH, 'out', 'example_crash_fuzzer')
+  TEST_FUZZER_2 = os.path.join(TEST_FILES_PATH, 'out', 'example_nocrash_fuzzer')
+
+  # yapf: disable
+  @parameterized.parameterized.expand([
+      # Tests a specific affected fuzzers is kept.
+      ([[EXAMPLE_FILE_CHANGED], None], 2,),
+
+      # Tests specific affected fuzzer is kept.
+      ([[EXAMPLE_FILE_CHANGED], ['not/a/real/file']], 1),
+
+      # Tests all fuzzers are kept if none are deemed affected.
+      ([None, None], 2),
+
+      # Tests that multiple fuzzers are kept if multiple fuzzers are affected.
+      ([EXAMPLE_FILE_CHANGED, EXAMPLE_FILE_CHANGED], 2),
+      ])
+  # yapf: enable
+  def test_remove_unaffected_fuzzers(self, side_effect, expected_dir_len):
+    """Tests that remove_unaffected_fuzzers has the intended effect."""
+    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
+        'cifuzz.get_latest_cov_report_info', return_value=1):
       with mock.patch.object(cifuzz,
-                             'get_files_covered_by_target',
-                             side_effect=[[self.example_file_changed], None]):
+                             'get_files_covered_by_target') as mocked_get_files:
+        mocked_get_files.side_effect = side_effect
+        shutil.copy(self.TEST_FUZZER_1, tmp_dir)
+        shutil.copy(self.TEST_FUZZER_2, tmp_dir)
         cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                         [self.example_file_changed], '')
-        self.assertEqual(2, len(os.listdir(tmp_dir)))
-
-  def test_keeping_specific_fuzzer(self):
-    """Tests that a specific fuzzer is kept if it is deemed affected."""
-    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch.object(
-        cifuzz, 'get_latest_cov_report_info', return_value=1):
-      shutil.copy(self.test_fuzzer_1, tmp_dir)
-      shutil.copy(self.test_fuzzer_2, tmp_dir)
-      with mock.patch.object(cifuzz,
-                             'get_files_covered_by_target',
-                             side_effect=[[self.example_file_changed],
-                                          ['not/a/real/file']]):
-        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                         [self.example_file_changed], '')
-        self.assertEqual(1, len(os.listdir(tmp_dir)))
-
-  def test_no_fuzzers_kept_fuzzer(self):
-    """Tests that if there is no affected then all fuzzers are kept."""
-    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch.object(
-        cifuzz, 'get_latest_cov_report_info', return_value=1):
-      shutil.copy(self.test_fuzzer_1, tmp_dir)
-      shutil.copy(self.test_fuzzer_2, tmp_dir)
-      with mock.patch.object(cifuzz,
-                             'get_files_covered_by_target',
-                             side_effect=[None, None]):
-        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                         [self.example_file_changed], '')
-        self.assertEqual(2, len(os.listdir(tmp_dir)))
-
-  def test_both_fuzzers_kept_fuzzer(self):
-    """Tests that if both fuzzers are affected then both fuzzers are kept."""
-    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch.object(
-        cifuzz, 'get_latest_cov_report_info', return_value=1):
-      shutil.copy(self.test_fuzzer_1, tmp_dir)
-      shutil.copy(self.test_fuzzer_2, tmp_dir)
-      with mock.patch.object(
-          cifuzz,
-          'get_files_covered_by_target',
-          side_effect=[self.example_file_changed, self.example_file_changed]):
-        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                         [self.example_file_changed], '')
-        self.assertEqual(2, len(os.listdir(tmp_dir)))
+                                         [EXAMPLE_FILE_CHANGED], '')
+        self.assertEqual(expected_dir_len, len(os.listdir(tmp_dir)))
 
 
 @unittest.skip('Test is too long to be run with presubmit.')
