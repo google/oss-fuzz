@@ -23,7 +23,7 @@ import urllib.error
 import parameterized
 from pyfakefs import fake_filesystem_unittest
 
-# Pylint has issue importing utils which is why error suppression is required.
+# Pylint has an issue importing utils which is why error suppression is needed.
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fuzz_target

@@ -16,8 +16,7 @@ import logging
 import os
 import sys
 
-# pylint: disable=wrong-import-position
-# pylint: disable=import-error
+# pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.join(os.environ['OSS_FUZZ_ROOT'], 'infra', 'cifuzz'))
 import cifuzz
 
@@ -50,7 +49,7 @@ def main():
     SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
-    0 on success or 1 on Failure.
+    0 on success or 1 on failure.
   """
   fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
   workspace = os.environ.get('GITHUB_WORKSPACE')
