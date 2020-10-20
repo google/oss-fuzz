@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test the functionality of the cifuzz module's functions:
+"""Tests the functionality of the cifuzz module's functions:
 1. Building fuzzers.
 2. Running fuzzers.
 """
 import json
 import os
-import pickle
 import shutil
 import sys
 import tempfile
@@ -64,10 +63,10 @@ UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
 
 class BuildFuzzersIntegrationTest(unittest.TestCase):
-  """Test build_fuzzers function in the utils module."""
+  """Integration tests for build_fuzzers."""
 
   def test_valid_commit(self):
-    """Test building fuzzers with valid inputs."""
+    """Tests building fuzzers with valid inputs."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
@@ -81,7 +80,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
   def test_valid_pull_request(self):
-    """Test building fuzzers with valid pull request."""
+    """Tests building fuzzers with valid pull request."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
@@ -94,7 +93,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
   def test_invalid_pull_request(self):
-    """Test building fuzzers with invalid pull request."""
+    """Tests building fuzzers with invalid pull request."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
@@ -105,7 +104,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                                pr_ref='ref-1/merge'))
 
   def test_invalid_project_name(self):
-    """Test building fuzzers with invalid project name."""
+    """Tests building fuzzers with invalid project name."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.assertFalse(
           cifuzz.build_fuzzers(
@@ -115,7 +114,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
 
   def test_invalid_repo_name(self):
-    """Test building fuzzers with invalid repo name."""
+    """Tests building fuzzers with invalid repo name."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.assertFalse(
           cifuzz.build_fuzzers(
@@ -125,7 +124,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
 
   def test_invalid_commit_sha(self):
-    """Test building fuzzers with invalid commit SHA."""
+    """Tests building fuzzers with invalid commit SHA."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       with self.assertRaises(AssertionError):
         cifuzz.build_fuzzers(EXAMPLE_PROJECT,
@@ -134,7 +133,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                              commit_sha='')
 
   def test_invalid_workspace(self):
-    """Test building fuzzers with invalid workspace."""
+    """Tests building fuzzers with invalid workspace."""
     self.assertFalse(
         cifuzz.build_fuzzers(
             EXAMPLE_PROJECT,
@@ -145,15 +144,15 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
 
 class RunMemoryFuzzerIntegrationTest(unittest.TestCase):
-  """Test build_fuzzers function in the cifuzz module."""
+  """Integration test for build_fuzzers with an MSAN build."""
 
   def tearDown(self):
-    """Remove any existing crashes and test files."""
+    """Removes any existing crashes and test files."""
+    # TODO(metzman): Combine the next three tearDown methods.
     out_dir = os.path.join(MEMORY_FUZZER_DIR, 'out')
     for out_file in os.listdir(out_dir):
       out_path = os.path.join(out_dir, out_file)
-      #pylint: disable=consider-using-in
-      if out_file == MEMORY_FUZZER:
+      if out_file == MEMORY_FUZZER:  # pylint: disable=consider-using-in
         continue
       if os.path.isdir(out_path):
         shutil.rmtree(out_path)
@@ -161,7 +160,7 @@ class RunMemoryFuzzerIntegrationTest(unittest.TestCase):
         os.remove(out_path)
 
   def test_run_with_memory_sanitizer(self):
-    """Test run_fuzzers with a valid build."""
+    """Tests run_fuzzers with a valid MSAN build."""
     run_success, bug_found = cifuzz.run_fuzzers(10,
                                                 MEMORY_FUZZER_DIR,
                                                 'curl',
@@ -171,15 +170,14 @@ class RunMemoryFuzzerIntegrationTest(unittest.TestCase):
 
 
 class RunUndefinedFuzzerIntegrationTest(unittest.TestCase):
-  """Test build_fuzzers function in the cifuzz module."""
+  """Integration test for build_fuzzers with an UBSAN build."""
 
   def tearDown(self):
     """Remove any existing crashes and test files."""
     out_dir = os.path.join(UNDEFINED_FUZZER_DIR, 'out')
     for out_file in os.listdir(out_dir):
       out_path = os.path.join(out_dir, out_file)
-      #pylint: disable=consider-using-in
-      if out_file == UNDEFINED_FUZZER:
+      if out_file == UNDEFINED_FUZZER:  # pylint: disable=consider-using-in
         continue
       if os.path.isdir(out_path):
         shutil.rmtree(out_path)
@@ -187,7 +185,7 @@ class RunUndefinedFuzzerIntegrationTest(unittest.TestCase):
         os.remove(out_path)
 
   def test_run_with_undefined_sanitizer(self):
-    """Test run_fuzzers with a valid build."""
+    """Tests run_fuzzers with a valid UBSAN build."""
     run_success, bug_found = cifuzz.run_fuzzers(10,
                                                 UNDEFINED_FUZZER_DIR,
                                                 'curl',
@@ -197,10 +195,10 @@ class RunUndefinedFuzzerIntegrationTest(unittest.TestCase):
 
 
 class RunAddressFuzzersIntegrationTest(unittest.TestCase):
-  """Test build_fuzzers function in the cifuzz module."""
+  """Integration tests for build_fuzzers with an ASAN build."""
 
   def tearDown(self):
-    """Remove any existing crashes and test files."""
+    """Removes any existing crashes and test files."""
     out_dir = os.path.join(TEST_FILES_PATH, 'out')
     files_to_keep = [
         'undefined', 'memory', EXAMPLE_CRASH_FUZZER, EXAMPLE_NOCRASH_FUZZER
@@ -215,7 +213,7 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
         os.remove(out_path)
 
   def test_new_bug_found(self):
-    """Test run_fuzzers with a valid build."""
+    """Tests run_fuzzers with a valid ASAN build."""
     # Set the first return value to True, then the second to False to
     # emulate a bug existing in the current PR but not on the downloaded
     # OSS-Fuzz build.
@@ -231,7 +229,7 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
       self.assertTrue(bug_found)
 
   def test_old_bug_found(self):
-    """Test run_fuzzers with a bug found in OSS-Fuzz before."""
+    """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
                            side_effect=[True, True]):
@@ -244,7 +242,7 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
       self.assertFalse(bug_found)
 
   def test_invalid_build(self):
-    """Test run_fuzzers with an invalid build."""
+    """Tests run_fuzzers with an invalid ASAN build."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
@@ -269,8 +267,8 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
     self.assertFalse(bug_found)
 
 
-class ParseOutputUnitTest(unittest.TestCase):
-  """Test parse_fuzzer_output function in the cifuzz module."""
+class ParseOutputTest(unittest.TestCase):
+  """Tests parse_fuzzer_output."""
 
   def test_parse_valid_output(self):
     """Checks that the parse fuzzer output can correctly parse output."""
@@ -297,7 +295,7 @@ class ParseOutputUnitTest(unittest.TestCase):
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
 
 
-class CheckFuzzerBuildUnitTest(unittest.TestCase):
+class CheckFuzzerBuildTest(unittest.TestCase):
   """Tests the check_fuzzer_build function in the cifuzz module."""
 
   def test_correct_fuzzer_build(self):
@@ -325,8 +323,8 @@ class CheckFuzzerBuildUnitTest(unittest.TestCase):
                   ' '.join(mocked_docker_run.call_args[0][0]))
 
 
-class GetFilesCoveredByTargetUnitTest(unittest.TestCase):
-  """Test to get the files covered by a fuzz target in the cifuzz module."""
+class GetFilesCoveredByTargetTest(unittest.TestCase):
+  """Tests get_files_covered_by_target."""
 
   example_cov_json = 'example_curl_cov.json'
   example_fuzzer_cov_json = 'example_curl_fuzzer_cov.json'
@@ -352,11 +350,11 @@ class GetFilesCoveredByTargetUnitTest(unittest.TestCase):
 
     with open(os.path.join(TEST_FILES_PATH, 'example_curl_file_list'),
               'rb') as file_handle:
-      true_files_list = pickle.load(file_handle)
+      true_files_list = json.load(file_handle)
     self.assertCountEqual(file_list, true_files_list)
 
   def test_invalid_target(self):
-    """Test asserts an invalid fuzzer returns None."""
+    """Tests passing invalid fuzz target returns None."""
     self.assertIsNone(
         cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
                                            'not-a-fuzzer', '/src/curl'))
@@ -365,7 +363,7 @@ class GetFilesCoveredByTargetUnitTest(unittest.TestCase):
                                            '/src/curl'))
 
   def test_invalid_project_build_dir(self):
-    """Test asserts an invalid build dir returns None."""
+    """Tests passing an invalid build directory returns None."""
     self.assertIsNone(
         cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
                                            self.example_fuzzer, '/no/pe'))
@@ -374,8 +372,8 @@ class GetFilesCoveredByTargetUnitTest(unittest.TestCase):
                                            self.example_fuzzer, ''))
 
 
-class GetTargetCoverageReporUnitTest(unittest.TestCase):
-  """Test get_target_coverage_report function in the cifuzz module."""
+class GetTargetCoverageReportTest(unittest.TestCase):
+  """Tests get_target_coverage_report."""
 
   example_cov_json = 'example_curl_cov.json'
   example_fuzzer = 'curl_fuzzer'
@@ -383,34 +381,35 @@ class GetTargetCoverageReporUnitTest(unittest.TestCase):
   def setUp(self):
     with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
               'r') as file:
-      self.cov_exmp = json.loads(file.read())
+      self.example_cov = json.loads(file.read())
 
   def test_valid_target(self):
-    """Test a target's coverage report can be downloaded and parsed."""
+    """Tests that a target's coverage report can be downloaded and parsed."""
     with mock.patch.object(cifuzz, 'get_json_from_url',
                            return_value='{}') as mock_get_json:
-      cifuzz.get_target_coverage_report(self.cov_exmp, self.example_fuzzer)
+      cifuzz.get_target_coverage_report(self.example_cov, self.example_fuzzer)
       (url,), _ = mock_get_json.call_args
       self.assertEqual(
           'https://storage.googleapis.com/oss-fuzz-coverage/'
           'curl/fuzzer_stats/20200226/curl_fuzzer.json', url)
 
   def test_invalid_target(self):
-    """Test an invalid target coverage report will be None."""
+    """Tests that passing an invalid target coverage report returns None."""
     self.assertIsNone(
-        cifuzz.get_target_coverage_report(self.cov_exmp, 'not-valid-target'))
-    self.assertIsNone(cifuzz.get_target_coverage_report(self.cov_exmp, ''))
+        cifuzz.get_target_coverage_report(self.example_cov, 'not-valid-target'))
+    self.assertIsNone(cifuzz.get_target_coverage_report(self.example_cov, ''))
 
   def test_invalid_project_json(self):
-    """Test a project json coverage report will be None."""
+    """Tests that passing an invalid project json coverage report returns
+    None."""
     self.assertIsNone(
         cifuzz.get_target_coverage_report('not-a-proj', self.example_fuzzer))
     self.assertIsNone(cifuzz.get_target_coverage_report('',
                                                         self.example_fuzzer))
 
 
-class GetLatestCoverageReportUnitTest(unittest.TestCase):
-  """Test get_latest_cov_report_info function in the cifuzz module."""
+class GetLatestCoverageReportTest(unittest.TestCase):
+  """Tests get_latest_cov_report_info."""
 
   test_project = 'curl'
 
@@ -418,7 +417,7 @@ class GetLatestCoverageReportUnitTest(unittest.TestCase):
     """Tests that a project's coverage report can be downloaded and parsed.
 
     NOTE: This test relies on the test_project repo's coverage report.
-    Example was not used because it has no coverage reports.
+    The "example" project was not used because it has no coverage reports.
     """
     with mock.patch.object(cifuzz, 'get_json_from_url',
                            return_value='{}') as mock_fun:
@@ -430,13 +429,13 @@ class GetLatestCoverageReportUnitTest(unittest.TestCase):
           'latest_report_info/curl.json', url)
 
   def test_get_invalid_project(self):
-    """Tests a project's coverage report will return None if bad project."""
+    """Tests that passing a bad project returns None."""
     self.assertIsNone(cifuzz.get_latest_cov_report_info('not-a-proj'))
     self.assertIsNone(cifuzz.get_latest_cov_report_info(''))
 
 
-class KeepAffectedFuzzersUnitTest(unittest.TestCase):
-  """Test the keep_affected_fuzzer method in the CIFuzz module."""
+class KeepAffectedFuzzersTest(unittest.TestCase):
+  """Tests keep_affected_fuzzer."""
 
   test_fuzzer_1 = os.path.join(TEST_FILES_PATH, 'out', 'example_crash_fuzzer')
   test_fuzzer_2 = os.path.join(TEST_FILES_PATH, 'out', 'example_nocrash_fuzzer')
@@ -499,11 +498,11 @@ class KeepAffectedFuzzersUnitTest(unittest.TestCase):
 
 @unittest.skip('Test is too long to be run with presubmit.')
 class BuildSantizerIntegrationTest(unittest.TestCase):
-  """Integration tests for the build_fuzzers function in the cifuzz module.
-    Note: This test relies on the curl project being an OSS-Fuzz project."""
+  """Integration tests for the build_fuzzers.
+    Note: This test relies on "curl" being an OSS-Fuzz project."""
 
   def test_valid_project_curl_memory(self):
-    """Test if sanitizers can be detected from project.yaml"""
+    """Tests that MSAN can be detected from project.yaml"""
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.assertTrue(
           cifuzz.build_fuzzers('curl',
@@ -513,7 +512,7 @@ class BuildSantizerIntegrationTest(unittest.TestCase):
                                sanitizer='memory'))
 
   def test_valid_project_curl_undefined(self):
-    """Test if sanitizers can be detected from project.yaml"""
+    """Test that UBSAN can be detected from project.yaml"""
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.assertTrue(
           cifuzz.build_fuzzers('curl',

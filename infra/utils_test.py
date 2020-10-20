@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test the functionality of the utils module's functions"""
+"""Tests the functionality of the utils module's functions"""
 
 import os
 import tempfile
@@ -26,11 +26,11 @@ TEST_OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             'cifuzz', 'test_files', 'out')
 
 
-class IsFuzzTargetLocalUnitTest(unittest.TestCase):
-  """Test is_fuzz_target_local function in the utils module."""
+class IsFuzzTargetLocalTest(unittest.TestCase):
+  """Tests the is_fuzz_target_local function."""
 
   def test_invalid_filepath(self):
-    """Test the function with an invalid file path."""
+    """Tests the function with an invalid file path."""
     is_local = utils.is_fuzz_target_local('not/a/real/file')
     self.assertFalse(is_local)
     is_local = utils.is_fuzz_target_local('')
@@ -48,8 +48,8 @@ class IsFuzzTargetLocalUnitTest(unittest.TestCase):
     self.assertFalse(is_local)
 
 
-class GetFuzzTargetsUnitTest(unittest.TestCase):
-  """Test get_fuzz_targets function in the utils module."""
+class GetFuzzTargetsTest(unittest.TestCase):
+  """Tests the get_fuzz_targets function."""
 
   def test_valid_filepath(self):
     """Tests that fuzz targets can be retrieved once the fuzzers are built."""
@@ -70,8 +70,8 @@ class GetFuzzTargetsUnitTest(unittest.TestCase):
     self.assertFalse(fuzz_targets)
 
 
-class ExecuteUnitTest(unittest.TestCase):
-  """Test execute function in the utils module."""
+class ExecuteTest(unittest.TestCase):
+  """Tests the execute function."""
 
   def test_valid_command(self):
     """Tests that execute can produce valid output."""
