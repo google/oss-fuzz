@@ -21,7 +21,7 @@ import sys
 sys.path.append(os.path.join(os.environ['OSS_FUZZ_ROOT'], 'infra', 'cifuzz'))
 import cifuzz
 
-# TODO: Turn default logging to INFO when CIFuzz is stable
+# TODO: Turn default logging to INFO when CIFuzz is stable.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
