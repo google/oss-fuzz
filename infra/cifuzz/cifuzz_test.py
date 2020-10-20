@@ -350,7 +350,8 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
       file_list = cifuzz.get_files_covered_by_target(
           self.proj_cov_report_example, self.example_fuzzer, '/src/curl')
 
-    example_curl_file_list = os.path.join(TEST_FILES_PATH, 'example_curl_file_list')
+    example_curl_file_list = os.path.join(TEST_FILES_PATH,
+                                          'example_curl_file_list')
     with open(example_curl_file_list) as file_handle:
       true_files_list = json.load(file_handle)
     self.assertCountEqual(file_list, true_files_list)

@@ -74,8 +74,9 @@ class BuildImageIntegrationTests(unittest.TestCase):
     """Test the detect main repo function from build specific commit module."""
     # TODO(metzman): Fix these tests so they don't randomly break because of
     # changes in the outside world.
-    test_repos_list = [repo for repo in test_repos.TEST_REPOS
-                       if repo.project_name != 'usrsctp']
+    test_repos_list = [
+        repo for repo in test_repos.TEST_REPOS if repo.project_name != 'usrsctp'
+    ]
     for example_repo in test_repos_list:
       if example_repo.new_commit:
         # TODO(metzman): This function calls _build_image_with_retries which
