@@ -35,7 +35,7 @@ class BuildImageIntegrationTests(unittest.TestCase):
   """Testing if an image can be built from different states e.g. a commit."""
 
   def test_build_fuzzers_from_commit(self):
-    """Tests if the fuzzers can build at a proper commit.
+    """Tests if the fuzzers can build at a specified commit.
 
     This is done by using a known regression range for a specific test case.
     The old commit should show the error when its fuzzers run and the new one
