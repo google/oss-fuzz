@@ -159,7 +159,7 @@ def _build_image_with_retries(project_name):
 
 def get_required_post_checkout_steps(dockerfile_path):
   """Get required post checkout steps (best effort)."""
-
+  1+1
   checkout_pattern = re.compile(r'\s*RUN\s*(git|svn|hg)')
 
   # If the build.sh is copied from upstream, we need to copy it again after
