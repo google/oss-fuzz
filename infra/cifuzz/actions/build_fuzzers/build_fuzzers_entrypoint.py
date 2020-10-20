@@ -83,7 +83,7 @@ def main():
   if event == 'pull_request':
     event_path = os.environ.get('GITHUB_EVENT_PATH')
     with open(event_path, encoding='utf-8') as file_handle:
-      event = json.load(file)
+      event = json.load(file_handle)
     pr_ref = 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
     if not cifuzz.build_fuzzers(oss_fuzz_project_name,
                                 github_repo_name,

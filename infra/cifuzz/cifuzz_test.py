@@ -152,13 +152,13 @@ def remove_test_files(out_parent_dir, allowlist):
     if rel_out_path in allowlist:
       continue
     path_to_remove = os.path.join(out_dir, rel_out_path)
-    if os.path.isdir(out_path):
-        shutil.rmtree(out_path)
+    if os.path.isdir(path_to_remove):
+      shutil.rmtree(path_to_remove)
     else:
-      os.remove(out_path)
+      os.remove(path_to_remove)
 
 
-class RunFuzzerIntegrationTestMixin:
+class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,invalid-name
   """Mixin for integration test classes that runbuild_fuzzers on builds of a
   specific sanitizer."""
   # These must be defined by children.
@@ -180,9 +180,8 @@ class RunFuzzerIntegrationTestMixin:
     self.assertFalse(bug_found)
 
 
-
-class RunMemoryFuzzerIntegrationTest(
-    unittest.TestCase, RunFuzzerIntegrationTestMixin):
+class RunMemoryFuzzerIntegrationTest(unittest.TestCase,
+                                     RunFuzzerIntegrationTestMixin):
   """Integration test for build_fuzzers with an MSAN build."""
 
   def test_run_with_memory_sanitizer(self):
@@ -190,8 +189,8 @@ class RunMemoryFuzzerIntegrationTest(
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'memory')
 
 
-class RunUndefinedFuzzerIntegrationTest(
-    unittest.TestCase, RunFuzzerIntegrationTestMixin):
+class RunUndefinedFuzzerIntegrationTest(unittest.TestCase,
+                                        RunFuzzerIntegrationTestMixin):
   """Integration test for build_fuzzers with an UBSAN build."""
 
   def tearDown(self):

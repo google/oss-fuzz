@@ -252,8 +252,7 @@ class FuzzTarget:
       return reproducible_on_pr_build
 
     if not reproducible_on_pr_build:
-      logging.info(
-          'Failed to reproduce the crash using the obtained testcase.')
+      logging.info('Failed to reproduce the crash using the obtained testcase.')
       return False
 
     oss_fuzz_build_dir = self.download_oss_fuzz_build()

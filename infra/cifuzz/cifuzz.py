@@ -92,13 +92,13 @@ def checkout_specified_commit(build_repo_manager, pr_ref, commit_sha):
         'Using current repo state', pr_ref or commit_sha)
 
 
-
-def build_fuzzers(project_name,
-                  project_repo_name,
-                  workspace,
-                  pr_ref=None,
-                  commit_sha=None,
-                  sanitizer='address'):  # pylint: disable=too-many-arguments,too-many-locals
+def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
+    project_name,
+    project_repo_name,
+    workspace,
+    pr_ref=None,
+    commit_sha=None,
+    sanitizer='address'):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
@@ -198,7 +198,11 @@ def build_fuzzers(project_name,
   return True
 
 
-def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
+def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
+    fuzz_seconds,
+    workspace,
+    project_name,
+    sanitizer='address'):
   """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
