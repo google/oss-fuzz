@@ -21,6 +21,14 @@
 # Compile xxd
 $CC $SRC/xxd.c -o /usr/bin/xxd
 
+# Install Boost headers
+cd $SRC/
+tar jxf boost_1_74_0.tar.bz2
+cd boost_1_74_0/
+CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+CFLAGS="" CXXFLAGS="" ./b2 headers
+cp -R boost/ /usr/include/
+
 export LINK_FLAGS=""
 export INCLUDE_PATH_FLAGS=""
 
