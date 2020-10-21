@@ -331,14 +331,13 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
   example_cov_json = 'example_curl_cov.json'
   example_fuzzer_cov_json = 'example_curl_fuzzer_cov.json'
   example_fuzzer = 'curl_fuzzer'
-  example_curl_file_list = 'example_curl_file_list.json'
 
   def setUp(self):
-    with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
-              'r') as file_handle:
+    with open(os.path.join(TEST_FILES_PATH, self.example_cov_json)
+              ) as file_handle:
       self.proj_cov_report_example = json.loads(file_handle.read())
-    with open(os.path.join(TEST_FILES_PATH, self.example_fuzzer_cov_json),
-              'r') as file_handle:
+    with open(os.path.join(TEST_FILES_PATH, self.example_fuzzer_cov_json)
+              ) as file_handle:
       self.fuzzer_cov_report_example = json.loads(file_handle.read())
 
   def test_valid_target(self):
@@ -350,9 +349,9 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
       file_list = cifuzz.get_files_covered_by_target(
           self.proj_cov_report_example, self.example_fuzzer, '/src/curl')
 
-    example_curl_file_list = os.path.join(TEST_FILES_PATH,
-                                          'example_curl_file_list')
-    with open(example_curl_file_list) as file_handle:
+    curl_files_list_path = os.path.join(
+        TEST_FILES_PATH, 'example_curl_file_list.json')
+    with open(curl_files_list_path) as file_handle:
       true_files_list = json.load(file_handle)
     self.assertCountEqual(file_list, true_files_list)
 
