@@ -1,5 +1,5 @@
 homepage: "https://github.com/servo"
-primary_contact: "servo-ops@mozilla.com"
+primary_contact: "oss-fuzz@servo.org"
 sanitizers:
   - address
 fuzzing_engines:
