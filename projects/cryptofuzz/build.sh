@@ -179,8 +179,10 @@ make install
 if [[ $CFLAGS != *-m32* ]]
 then
 export LIBNETTLE_A_PATH=`realpath ../nettle-install/lib/libnettle.a`
+export LIBHOGWEED_A_PATH=`realpath ../nettle-install/lib/libhogweed.a`
 else
 export LIBNETTLE_A_PATH=`realpath ../nettle-install/lib32/libnettle.a`
+export LIBHOGWEED_A_PATH=`realpath ../nettle-install/lib32/libhogweed.a`
 fi
 export NETTLE_INCLUDE_PATH=`realpath ../nettle-install/include`
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NETTLE"
