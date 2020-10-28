@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-## Copied from esp-v2
+## Copied from envoy
 
 export CFLAGS="$CFLAGS"
 export CXXFLAGS="$CXXFLAGS"
@@ -37,6 +37,7 @@ done
 for f in ${CXXFLAGS}; do
   echo "--cxxopt=${f}" "--linkopt=${f}"
 done
+
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
@@ -67,12 +68,13 @@ done
 # Build driverless libraries.
 # Benchmark about 3 GB per CPU (10 threads for 28.8 GB RAM)
 # TODO(nareddyt): Remove deprecation warnings when Envoy and deps moves to C++17
-bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=sandboxed \
+bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --local_cpu_resources=HOST_CPUS*0.32 \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
-  --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
+  --define ENVOY_CONFIG_ASAN=1 \
+  --copt -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS \
   --define force_libcpp=enabled --build_tag_filters=-no_asan \
   --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
