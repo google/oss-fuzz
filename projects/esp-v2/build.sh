@@ -74,7 +74,6 @@ bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
   --define ENVOY_CONFIG_ASAN=1 \
-  --copt -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS \
   --define force_libcpp=enabled --build_tag_filters=-no_asan \
   --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
