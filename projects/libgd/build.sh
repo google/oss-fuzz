@@ -29,7 +29,7 @@ for target in Bmp Gd Gd2 Gif Jpeg Png Tga Tiff WBMP Webp; do
     $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
       -DFUZZ_GD_FORMAT=$target \
       $SRC/parser_target.cc -o $OUT/${lowercase}_target \
-      $LIB_FUZZING_ENGINE -lgd -Wl,-Bstatic -lz -Wl,-Bdynamic
+      $LIB_FUZZING_ENGINE -lgd -ljpeg -Wl,-Bstatic -lz -Wl,-Bdynamic
 done
 
 for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
