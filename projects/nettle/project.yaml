@@ -1,5 +1,5 @@
 homepage: "https://www.lysator.liu.se/~nisse/nettle/"
-language: C++
+language: c++
 primary_contact: guidovranken@gmail.com
 auto_ccs:
     - "nisse@google.com"
