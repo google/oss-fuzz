@@ -5,3 +5,6 @@ auto_ccs:
   - vapier@gmail.com
   - tim@tim-smith.us
   - cmbecker69@gmx.de
+architectures:
+ - x86_64
+ - i386
