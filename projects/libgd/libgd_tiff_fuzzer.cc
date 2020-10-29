@@ -1,3 +1,4 @@
+/*
 # Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+*/
 #include "gd.h"
 #include<stdint.h>
 
