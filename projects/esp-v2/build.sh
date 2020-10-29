@@ -68,7 +68,7 @@ done
 # Build driverless libraries.
 # Benchmark about 3 GB per CPU (10 threads for 28.8 GB RAM)
 # TODO(nareddyt): Remove deprecation warnings when Envoy and deps moves to C++17
-bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
+bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=sandboxed \
   --local_cpu_resources=HOST_CPUS*0.32 \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
