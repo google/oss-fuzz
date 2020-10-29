@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool pkg-config libz-dev libtiff-dev
+    apt-get install -y make autoconf automake libtool pkg-config libz-dev libtiff-dev libjpeg-dev libpng-dev
 RUN git clone --depth 1 https://github.com/libgd/libgd
 ADD https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz $SRC/afl_testcases.tgz
 WORKDIR libgd
