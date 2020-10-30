@@ -122,8 +122,6 @@ cp quickjs*.h /usr/local/include/
 cp libquickjs.a /usr/local/lib/
 )
 
-mv /usr/lib/x86_64-linux-gnu/libcrypto.a /usr/lib/x86_64-linux-gnu/libcrypto_old.a
-mv /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libcrypto_old.so
 #build fuzz target
 cd ecfuzzer
 if [ "$ARCHITECTURE" = 'i386' ]; then
@@ -150,5 +148,3 @@ fi
 cmake -DDISABLE_CRYPTOPP=ON -DDISABLE_JS=ON ..
 make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec_noblocker
-mv /usr/lib/x86_64-linux-gnu/libcrypto_old.a /usr/lib/x86_64-linux-gnu/libcrypto.a
-mv /usr/lib/x86_64-linux-gnu/libcrypto_old.so /usr/lib/x86_64-linux-gnu/libcrypto.so
