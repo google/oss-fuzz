@@ -122,7 +122,6 @@ cp quickjs*.h /usr/local/include/
 cp libquickjs.a /usr/local/lib/
 )
 
-ln -s /usr/bin/nodejs /usr/bin/node
 mv /usr/lib/x86_64-linux-gnu/libcrypto.a /usr/lib/x86_64-linux-gnu/libcrypto_old.a
 mv /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libcrypto_old.so
 #build fuzz target
