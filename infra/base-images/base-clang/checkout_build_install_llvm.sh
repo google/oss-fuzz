@@ -99,7 +99,7 @@ PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
 
 export TARGET_TO_BUILD="X86;ARM;AArch64"
 cmake_llvm
-ninja -j
+ninja
 
 cd $WORK/llvm-stage2
 export CC=$WORK/llvm-stage1/bin/clang
@@ -107,7 +107,7 @@ export CXX=$WORK/llvm-stage1/bin/clang++
 
 
 cmake_llvm
-ninja -j
+ninja -j $NPROC
 ninja install
 # rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
@@ -122,7 +122,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DCMAKE_C_FLAGS="-m32" \
     -DCMAKE_CXX_FLAGS="-m32"
 
-ninja -j cxx
+ninja -j $NPROC cxx
 ninja install-cxx
 # rm -rf $WORK/i386
 
@@ -140,8 +140,8 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
     -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt"
 
-ninja -j cxx
-ninja install-cxx
+ninja cxx
+ninja -j $NPROC install-cxx
 # rm -rf $WORK/msan
 
 # DataFlowSanitizer instrumented libraries.
@@ -152,15 +152,31 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=DataFlow \
     -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
 
-ninja -j $NPROC cxx cxxabi
-ninja install-cxx install-cxxabi
+ninja -j $NPROC install-cxx install-cxxabi
 # rm -rf $WORK/dfsan
+
+
+# AARCH64
+mkdir $WORK/aarch64-cxx
+cd $WORK/aarch64-cxx
+cmake -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$AARCH64_EXTRA_CFLAGS" -DCMAKE_C_COMPILER=clang -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" -DCMAKE_C_COMPILER_TARGET=$AARCH64_TARGET_TRIPLE -DCMAKE_ASM_COMPILER_TARGET=$AARCH64_TARGET_TRIPLE -DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN=$AARCH64_TOOLCHAIN -DCMAKE_SYSROOT=$AARCH64_SYSROOT -DCMAKE_INSTALL_PREFIX=$AARCH64_SYSROOT -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" $LLVM_SRC/llvm
+make -j $NPROC install-cxx install-cxxabi
+
+mkdir $WORK/aarch64-compiler-rt
+cd $WORK/aarch64-compiler-rt
+
+cmake -G Ninja -DLIBCXX_ENABLE_SHARED=OFF -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON -DLIBCXXABI_ENABLE_SHARED=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$AARCH64_EXTRA_CFLAGS" -DCMAKE_C_COMPILER=clang -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" -DCMAKE_C_COMPILER_TARGET="$AARCH64_TARGET_TRIPLE" -DCMAKE_ASM_COMPILER_TARGET=$AARCH64_TARGET_TRIPLE -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON -DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN=$AARCH64_TOOLCHAIN -DCMAKE_SYSROOT=$AARCH64_SYSROOT -DCMAKE_INSTALL_PREFIX=/usr/local/lib/clang/12.0.0/ $LLVM_SRC/compiler-rt
+ninja -j $NPROC install
+cd $WORK
+
+rm -rf $WORK/aarch64-compiler-rt $WORK/aarch64-cxx
+
 
 # libFuzzer sources.
 cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 
 # Cleanup
-# rm -rf $LLVM_SRC
-# rm -rf $SRC/chromium_tools
-#apt-get remove --purge -y $LLVM_DEP_PACKAGES
-#apt-get autoremove -y
+rm -rf $LLVM_SRC
+rm -rf $SRC/chromium_tools
+apt-get remove --purge -y $LLVM_DEP_PACKAGES
+apt-get autoremove -y
