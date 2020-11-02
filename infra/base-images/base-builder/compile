@@ -23,7 +23,6 @@ if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
 fi
 
 if [[ $ARCHITECTURE == "aarch64" ]]; then
-     printf "yooo\n\n\n\yooooo"
     export CFLAGS="$AARCH64_EXTRA_CFLAGS $CFLAGS"
     export SANITIZER_FLAGS_undefined=$SANITIZER_FLAGS_undefined_aarch64
 fi
