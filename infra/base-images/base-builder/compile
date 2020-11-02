@@ -22,6 +22,11 @@ if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
   exit 1
 fi
 
+if [[ $ARCHITECTURE == "aarch64" ]]; then
+     printf "yooo\n\n\n\yooooo"
+    export CFLAGS="$AARCH64_EXTRA_CFLAGS $CFLAGS"
+    export SANITIZER_FLAGS_undefined=$SANITIZER_FLAGS_undefined_aarch64
+fi
 if [ -z "${SANITIZER_FLAGS-}" ]; then
   FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
   export SANITIZER_FLAGS=${!FLAGS_VAR-}
@@ -30,11 +35,6 @@ fi
 if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
     cp -R /usr/i386/lib/* /usr/lib
-fi
-if [[ $ARCHITECTURE == "aarch64" ]]; then
-    export CFLAGS="$AARCH64_EXTRA_CFLAGS $CFLAGS"
-    export CXXFLAGS_EXTRA="$AARCH64_EXTRA_CFLAGS $CXXFLAGS_EXTRA"
-    export SANITIZER_FLAGS_undefined=$SANITIZER_FLAGS_undefined_aarch64
 fi
 if [[ $FUZZING_ENGINE != "none" ]]; then
   # compile script might override environment, use . to call it.

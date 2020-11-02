@@ -298,27 +298,26 @@ function check_mixed_sanitizers {
   local FUZZER=$1
   local result=0
   local CALL_INSN=
-  if [[ $ARCHITECTURE == 'i386' ]]
+  if [[ $ARCHITECTURE == "x86_64" ]]
+  then
+    CALL_INSN="callq\s+[0-9a-f]+\s+<"
+    OBJDUMP="objdump"
+  elif [[ $ARCHITECTURE == "i386" ]]
   then
     CALL_INSN="call\s+[0-9a-f]+\s+<"
+    OBJDUMP="objdump"
+  elif [[ $ARCHITECTURE == "aarch64" ]]
+  then
+    CALL_INSN="bl\s+[0-9a-f]+\s+<"
+    OBJDUMP="aarch64-linux-gnu-objdump"
   else
-    case $(uname -m) in
-      x86_64)
-        CALL_INSN="callq\s+[0-9a-f]+\s+<"
-        ;;
-      aarch64)
-        CALL_INSN="bl\s+[0-9a-f]+\s+<"
-        ;;
-      *)
-        echo "Error: unsupported machine hardware $(uname -m)"
-        exit 1
-        ;;
-    esac
+    echo "UNSUPPORTED ARCHITECTURE"
+    exit 1
   fi
-  local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__asan" -c)
-  local DFSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__dfsan" -c)
-  local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
-  local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__ubsan" -c)
+  local ASAN_CALLS=$($OBJDUMP -dC $FUZZER | egrep "${CALL_INSN}__asan" -c)
+  local DFSAN_CALLS=$($OBJDUMP -dC $FUZZER | egrep "${CALL_INSN}__dfsan" -c)
+  local MSAN_CALLS=$($OBJDUMP -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
+  local UBSAN_CALLS=$($OBJDUMP -dC $FUZZER | egrep "${CALL_INSN}__ubsan" -c)
 
   if [[ "$SANITIZER" = address ]]; then
     check_asan_build $FUZZER $ASAN_CALLS $DFSAN_CALLS $MSAN_CALLS $UBSAN_CALLS
@@ -374,6 +373,9 @@ function check_architecture {
   elif [[ $ARCHITECTURE == "i386" ]]
   then
     echo $FILE_OUTPUT | grep "80386" > /dev/null
+  elif [[ $ARCHITECTURE == "aarch64" ]]
+  then
+    echo $FILE_OUTPUT | grep "aarch64" > /dev/null
   else
     echo "UNSUPPORTED ARCHITECTURE"
     return 1

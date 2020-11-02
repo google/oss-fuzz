@@ -29,19 +29,6 @@ RUN apt-get update && apt-get install -y wget sudo && \
 
 # Steps for ARM cross-compilation
 
-RUN apt-get install qemu-user wget xz-utils -y && \
-    cd /opt && \
-    wget https://releases.linaro.org/components/toolchain/binaries/7.5-2019.12/aarch64-linux-gnu/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz && \
-    tar xJvf gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz && \
-    rm gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz && \
-    apt-get remove --purge -y wget xz-utils
-
-ENV AARCH64_TOOLCHAIN /opt/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
-ENV AARCH64_SYSROOT="$AARCH64_TOOLCHAIN/aarch64-linux-gnu/libc"
-ENV QEMU_LD_PREFIX=$AARCH64_SYSROOT
-ENV AARCH64_EXTRA_CFLAGS="--target=aarch64-linux-gnu --gcc-toolchain=$AARCH64_TOOLCHAIN --sysroot=$AARCH64_SYSROOT"
-ENV AARCH64_TARGET_TRIPLE="aarch64-linux-gnu"
-
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.

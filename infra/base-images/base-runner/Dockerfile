@@ -31,6 +31,7 @@ RUN apt-get install -y \
     git \
     libc6-dev-i386 \
     libcap2 \
+    binutils-aarch64-linux-gnu \
     python3 \
     python3-pip \
     wget \

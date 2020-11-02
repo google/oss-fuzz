@@ -32,6 +32,9 @@ jobs:
           - engine: dataflow
             sanitizer: dataflow
             architecture: x86_64
+          - engine: libfuzzer
+            sanitizer: undefined
+            architecture: aarch64
     env:
       ENGINE: ${{ matrix.engine }}
       SANITIZER: ${{ matrix.sanitizer }}
