@@ -305,7 +305,7 @@ def _get_project_language(project_name):
   return None
 
 
-def _add_architecture_args(parser, choices=('x86_64', 'i386')):
+def _add_architecture_args(parser, choices=('x86_64', 'i386', 'aarch64')):
   """Add common architecture args."""
   parser.add_argument('--architecture', default='x86_64', choices=choices)
 
