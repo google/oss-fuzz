@@ -63,11 +63,13 @@ export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
 $SRC/skia/bin/fetch-gn
 
+set +u
 LIMITED_LINK_POOL="link_pool_depth=1"
 if [ "$CIFUZZ" = "true" ]; then
   echo "Not restricting linking because on CIFuzz"
   LIMITED_LINK_POOL=""
 fi
+set -u
 
 # Even though GPU is "enabled" for all these builds, none really
 # uses the gpu except for api_mock_gpu_canvas
