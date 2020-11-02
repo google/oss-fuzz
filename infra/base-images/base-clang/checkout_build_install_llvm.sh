@@ -18,7 +18,7 @@
 NPROC=16  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
 
 LLVM_DEP_PACKAGES="build-essential make ninja-build git python2.7 g++-multilib binutils-dev"
-#apt-get install -y $LLVM_DEP_PACKAGES
+apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
 CHECKOUT_RETRIES=10
@@ -95,86 +95,72 @@ echo "Using LLVM revision: $LLVM_REVISION"
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
 cd $WORK/llvm-stage1
 
-# # TARGET_TO_BUILD=
-# # case $(uname -m) in
-# #     x86_64)
-# #         TARGET_TO_BUILD=X86
-# #         ;;
-# #     aarch64)
-# #         TARGET_TO_BUILD=AArch64
-# #         ;;
-# #     *)
-# #         echo "Error: unsupported target $(uname -m)"
-# #         exit 1
-# #         ;;
-# # esac
-
 PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
 
 export TARGET_TO_BUILD="X86;ARM;AArch64"
 cmake_llvm
 ninja -j
 
-# cd $WORK/llvm-stage2
-# export CC=$WORK/llvm-stage1/bin/clang
-# export CXX=$WORK/llvm-stage1/bin/clang++
+cd $WORK/llvm-stage2
+export CC=$WORK/llvm-stage1/bin/clang
+export CXX=$WORK/llvm-stage1/bin/clang++
 
 
-# cmake_llvm
-# ninja -j
+cmake_llvm
+ninja -j
 ninja install
-rm -rf $WORK/llvm-stage1
+# rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
 # Use the clang we just built from now on.
 CMAKE_EXTRA_ARGS="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 
-# # 32-bit libraries.
-# mkdir -p $WORK/i386
-# cd $WORK/i386
-# cmake_llvm $CMAKE_EXTRA_ARGS \
-#     -DCMAKE_INSTALL_PREFIX=/usr/i386/ \
-#     -DCMAKE_C_FLAGS="-m32" \
-#     -DCMAKE_CXX_FLAGS="-m32"
+# 32-bit libraries.
+mkdir -p $WORK/i386
+cd $WORK/i386
+cmake_llvm $CMAKE_EXTRA_ARGS \
+    -DCMAKE_INSTALL_PREFIX=/usr/i386/ \
+    -DCMAKE_C_FLAGS="-m32" \
+    -DCMAKE_CXX_FLAGS="-m32"
 
-# ninja -j cxx
-# ninja install-cxx
+ninja -j cxx
+ninja install-cxx
 # rm -rf $WORK/i386
 
 # MemorySanitizer instrumented libraries.
-# mkdir -p $WORK/msan
-# cd $WORK/msan
+mkdir -p $WORK/msan
+cd $WORK/msan
 
 # https://github.com/google/oss-fuzz/issues/1099
 cat <<EOF > $WORK/msan/blacklist.txt
 fun:__gxx_personality_*
 EOF
 
-# cmake_llvm $CMAKE_EXTRA_ARGS \
-#     -DLLVM_USE_SANITIZER=Memory \
-#     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
-#     -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt"
+cmake_llvm $CMAKE_EXTRA_ARGS \
+    -DLLVM_USE_SANITIZER=Memory \
+    -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
+    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt"
 
-# ninja -j cxx
-# ninja install-cxx
+ninja -j cxx
+ninja install-cxx
 # rm -rf $WORK/msan
 
-# # DataFlowSanitizer instrumented libraries.
-# mkdir -p $WORK/dfsan
-# cd $WORK/dfsan
+# DataFlowSanitizer instrumented libraries.
+mkdir -p $WORK/dfsan
+cd $WORK/dfsan
 
-# cmake_llvm $CMAKE_EXTRA_ARGS \
-#     -DLLVM_USE_SANITIZER=DataFlow \
-#     -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
+cmake_llvm $CMAKE_EXTRA_ARGS \
+    -DLLVM_USE_SANITIZER=DataFlow \
+    -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
 
-# ninja -j $NPROC cxx cxxabi
-# ninja install-cxx install-cxxabi
+ninja -j $NPROC cxx cxxabi
+ninja install-cxx install-cxxabi
 # rm -rf $WORK/dfsan
 
 # libFuzzer sources.
 cp -r $LLVM_SRC/compiler-rt/lib/fuzzer $SRC/libfuzzer
 
 # Cleanup
-rm -rf $LLVM_SRC
-rm -rf $SRC/chromium_tools
-apt-get remove --purge -y $LLVM_DEP_PACKAGES
-apt-get autoremove -y
+# rm -rf $LLVM_SRC
+# rm -rf $SRC/chromium_tools
+#apt-get remove --purge -y $LLVM_DEP_PACKAGES
+#apt-get autoremove -y
