@@ -164,10 +164,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   std::vector<char> buffer = stream.ConsumeRemainingBytes<char>();
 
   const std::string s(buffer.data(), buffer.size());
-  StdISStream is;
-  is.str(s);
 
-  readFileSingle(is, width, height);
-  readFileMulti(is);
+  {
+    StdISStream is;
+    is.str(s);
+    readFileSingle(is, width, height);
+  }
+  {
+    StdISStream is;
+    is.str(s);
+    readFileMulti(is);
+  }
   return 0;
 }

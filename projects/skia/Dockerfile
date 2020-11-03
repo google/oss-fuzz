@@ -16,8 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-# Mesa needed to build swiftshader
-RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake
+# Mesa and libz/zlib needed to build swiftshader
+RUN apt-get update && apt-get install -y python wget libglu1-mesa-dev cmake lib32z1-dev zlib1g-dev
 
 RUN git clone 'https://chromium.googlesource.com/chromium/tools/depot_tools.git' --depth 1
 ENV PATH="${SRC}/depot_tools:${PATH}"
@@ -28,12 +28,6 @@ RUN git clone https://skia.googlesource.com/skia.git --depth 1
 WORKDIR skia
 
 RUN bin/sync
-
-# Setup SwiftShader
-WORKDIR $SRC/skia/third_party/externals/swiftshader/
-# TODO(metzman): Come up with a better long term solution, such as downloading
-# prebuilt libraries, than pinning swiftshader to a known working revision.
-RUN git checkout 45510ad8a77862c1ce2e33f0efed41544f5f048b
 
 # Make a directory for fuzzing artifacts that won't be clobbered by CIFuzz.
 RUN mkdir $SRC/skia_data
@@ -85,9 +79,3 @@ COPY json.dict $SRC/skia_data/json.dict
 WORKDIR $SRC/skia
 
 COPY build.sh $SRC/
-
-COPY skia.diff $SRC/skia/skia.diff
-RUN git apply skia.diff
-
-COPY BUILD.gn.diff $SRC/skia/BUILD.gn.diff
-RUN cat BUILD.gn.diff >> BUILD.gn

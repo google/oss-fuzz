@@ -30,7 +30,6 @@ extern "C" {
 #include "libprotobuf-mutator/src/libfuzzer/libfuzzer_macro.h"
 
 static char configuration[] =
-"user root;\n"
 "error_log stderr emerg;\n"
 "events {\n"
 "    use epoll;\n"
@@ -102,7 +101,7 @@ static char arg1[] = {0, 0xA, 0};
 
 extern char **environ;
 
-static const char *config_file = "http_config.conf";
+static const char *config_file = "/tmp/http_config.conf";
 
 struct fuzzing_data {
   const uint8_t *data;
@@ -308,15 +307,4 @@ DEFINE_PROTO_FUZZER(const HttpProto &input) {
 
   // Will redirect to http parser
   ngx_http_init_connection(c);
-
-  // Clean-up in case of error
-  if (req_reply && upstream && upstream->cleanup) {
-    (*(upstream->cleanup))(req_reply);
-    if (!c->destroyed)
-      ngx_http_close_connection(c);
-  } else if (!c->destroyed) {
-    ngx_http_request_t *r = (ngx_http_request_t *)(c->data);
-    ngx_http_free_request(r, 0);
-    ngx_http_close_connection(c);
-  }
 }

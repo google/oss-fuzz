@@ -18,6 +18,7 @@ import sys
 import tempfile
 import unittest
 import unittest.mock
+import urllib.error
 
 import parameterized
 from pyfakefs import fake_filesystem_unittest
@@ -124,7 +125,7 @@ class GetTestCaseUnitTest(unittest.TestCase):
     test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   'test_files',
                                   'example_crash_fuzzer_output.txt')
-    with open(test_case_path, 'r') as test_fuzz_output:
+    with open(test_case_path, 'rb') as test_fuzz_output:
       parsed_test_case = self.test_target.get_test_case(test_fuzz_output.read())
     self.assertEqual(
         parsed_test_case,
@@ -132,8 +133,14 @@ class GetTestCaseUnitTest(unittest.TestCase):
 
   def test_invalid_error_string(self):
     """Tests that get_test_case returns None with a bad error string."""
-    self.assertIsNone(self.test_target.get_test_case(''))
-    self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
+    self.assertIsNone(self.test_target.get_test_case(b''))
+    self.assertIsNone(self.test_target.get_test_case(b' Example crash string.'))
+
+  def test_encoding(self):
+    """Tests that get_test_case accepts bytes and returns a string."""
+    fuzzer_output = b'\x8fTest unit written to ./crash-1'
+    result = self.test_target.get_test_case(fuzzer_output)
+    self.assertTrue(isinstance(result, str))
 
 
 class DownloadLatestCorpusUnitTest(unittest.TestCase):
@@ -317,6 +324,43 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
     test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                          'not/a/dir', 'example')
     self.assertIsNone(test_target.download_oss_fuzz_build())
+
+
+class DownloadUrlTest(unittest.TestCase):
+  """Test that download_url works."""
+  URL = 'example.com/file'
+  FILE_PATH = '/tmp/file'
+
+  @unittest.mock.patch('time.sleep')
+  @unittest.mock.patch('urllib.request.urlretrieve', return_value=True)
+  def test_download_url_no_error(self, mocked_urlretrieve, _):
+    """Tests that download_url works when there is no error."""
+    self.assertTrue(fuzz_target.download_url(self.URL, self.FILE_PATH))
+    self.assertEqual(1, mocked_urlretrieve.call_count)
+
+  @unittest.mock.patch('time.sleep')
+  @unittest.mock.patch('logging.error')
+  @unittest.mock.patch('urllib.request.urlretrieve',
+                       side_effect=urllib.error.HTTPError(
+                           None, None, None, None, None))
+  def test_download_url_http_error(self, mocked_urlretrieve, mocked_error, _):
+    """Tests that download_url doesn't retry when there is an HTTP error."""
+    self.assertFalse(fuzz_target.download_url(self.URL, self.FILE_PATH))
+    mocked_error.assert_called_with('Unable to download from: %s.', self.URL)
+    self.assertEqual(1, mocked_urlretrieve.call_count)
+
+  @unittest.mock.patch('time.sleep')
+  @unittest.mock.patch('logging.error')
+  @unittest.mock.patch('urllib.request.urlretrieve',
+                       side_effect=ConnectionResetError)
+  def test_download_url_connection_error(self, mocked_urlretrieve, mocked_error,
+                                         mocked_sleep):
+    """Tests that download_url doesn't retry when there is an HTTP error."""
+    self.assertFalse(fuzz_target.download_url(self.URL, self.FILE_PATH))
+    self.assertEqual(3, mocked_urlretrieve.call_count)
+    self.assertEqual(3, mocked_sleep.call_count)
+    mocked_error.assert_called_with('Failed to download %s, %d times.',
+                                    self.URL, 3)
 
 
 class DownloadAndUnpackZipUnitTests(unittest.TestCase):

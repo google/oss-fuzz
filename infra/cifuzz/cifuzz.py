@@ -40,30 +40,30 @@ import utils
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
 # Used to get the beginning of the stack trace.
 STACKTRACE_TOOL_MARKERS = [
-    'AddressSanitizer',
-    'ASAN:',
-    'CFI: Most likely a control flow integrity violation;',
-    'ERROR: libFuzzer',
-    'KASAN:',
-    'LeakSanitizer',
-    'MemorySanitizer',
-    'ThreadSanitizer',
-    'UndefinedBehaviorSanitizer',
-    'UndefinedSanitizer',
+    b'AddressSanitizer',
+    b'ASAN:',
+    b'CFI: Most likely a control flow integrity violation;',
+    b'ERROR: libFuzzer',
+    b'KASAN:',
+    b'LeakSanitizer',
+    b'MemorySanitizer',
+    b'ThreadSanitizer',
+    b'UndefinedBehaviorSanitizer',
+    b'UndefinedSanitizer',
 ]
 
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
 # Used to get the end of the stack trace.
 STACKTRACE_END_MARKERS = [
-    'ABORTING',
-    'END MEMORY TOOL REPORT',
-    'End of process memory map.',
-    'END_KASAN_OUTPUT',
-    'SUMMARY:',
-    'Shadow byte and word',
-    '[end of stack trace]',
-    '\nExiting',
-    'minidump has been written',
+    b'ABORTING',
+    b'END MEMORY TOOL REPORT',
+    b'End of process memory map.',
+    b'END_KASAN_OUTPUT',
+    b'SUMMARY:',
+    b'Shadow byte and word',
+    b'[end of stack trace]',
+    b'\nExiting',
+    b'minidump has been written',
 ]
 
 #  Default fuzz configuration.
@@ -254,7 +254,7 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
     if not test_case or not stack_trace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
-      logging.info('Fuzzer %s, detected error: %s.', target.target_name,
+      logging.info(b'Fuzzer %s, detected error: %s.', target.target_name,
                    stack_trace)
       shutil.move(test_case, os.path.join(artifacts_dir, 'test_case'))
       parse_fuzzer_output(stack_trace, artifacts_dir)
@@ -512,5 +512,5 @@ def parse_fuzzer_output(fuzzer_output, out_dir):
 
   # Write sections of fuzzer output to specific files.
   summary_file_path = os.path.join(out_dir, 'bug_summary.txt')
-  with open(summary_file_path, 'a') as summary_handle:
+  with open(summary_file_path, 'ab') as summary_handle:
     summary_handle.write(summary_str)

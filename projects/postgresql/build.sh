@@ -15,6 +15,7 @@
 #
 ################################################################################
 cp -r $SRC/fuzzer src/backend/
+git apply ../add_fuzzers.diff
 
 useradd fuzzuser
 chown -R fuzzuser .
@@ -25,8 +26,7 @@ cd src/backend/fuzzer
 su fuzzuser -c "make createdb"
 chown -R root .
 mv temp/data .
-tar -czvf data.tar.gz data/
-cp data.tar.gz $OUT/
+cp -r data $OUT/
 cd ../../..
 cp -r tmp_install $OUT/
 make clean

@@ -35,35 +35,44 @@
 #include "utils/snapmgr.h"
 #include "utils/timeout.h"
 
+#include <libgen.h>
+
 const char *progname;
 static MemoryContext row_description_context = NULL;
 static StringInfoData row_description_buf;
 static const char *username = "username";
 
-int FuzzerInitialize(char *dbname){
-  char *argv[5];
+int FuzzerInitialize(char *dbname, char ***argv){
+  char *av[5];
   char arg_path[50];
   char path_to_db[50];
   char untar[100];
+  char *exe_path = (*argv)[0];
+  //dirname() can modify its argument
+  char *exe_path_copy = strdup(exe_path);
+  char *dir = dirname(exe_path_copy);
+  chdir(dir);
+  free(exe_path_copy);
+
   snprintf(arg_path, sizeof(arg_path), "/tmp/%s/data", dbname);
   snprintf(path_to_db, sizeof(path_to_db), "-D\"/tmp/%s/data\"", dbname);
-  snprintf(untar, sizeof(untar), "rm -rf /tmp/%s && mkdir /tmp/%s && tar -xvf data.tar.gz -C /tmp/%s", dbname, dbname, dbname);
-  
-  argv[0] = "tmp_install/usr/local/pgsql/bin/postgres";
-  argv[1] = path_to_db;
-  argv[2] = "-F";
-  argv[3] = "-k\"/tmp/pg_dbfuzz\"";
-  argv[4] = NULL;
+  snprintf(untar, sizeof(untar), "rm -rf /tmp/%s; mkdir /tmp/%s; cp -r data /tmp/%s", dbname, dbname, dbname);
+
+  av[0] = "tmp_install/usr/local/pgsql/bin/postgres";
+  av[1] = path_to_db;
+  av[2] = "-F";
+  av[3] = "-k\"/tmp\"";
+  av[4] = NULL;
 
   system(untar);
   
-  progname = get_progname(argv[0]);
+  progname = get_progname(av[0]);
   MemoryContextInit();
 
-  InitStandaloneProcess(argv[0]);
+  InitStandaloneProcess(av[0]);
   SetProcessingMode(InitProcessing);
   InitializeGUCOptions();
-  process_postgres_switches(4, argv, PGC_POSTMASTER, NULL);
+  process_postgres_switches(4, av, PGC_POSTMASTER, NULL);
 
   SelectConfigFiles(arg_path, progname);
 

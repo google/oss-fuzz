@@ -8,25 +8,36 @@ permalink: /getting-started/continuous-integration/
 
 # Continuous Integration
 
-OSS-Fuzz offers **CIFuzz**, which will run your fuzz targets each time a pull request
-is submitted, for projects hosted on GitHub. This allows you to detect and
-fix bugs before they make it into your codebase.
+OSS-Fuzz offers **CIFuzz**, a GitHub action/CI job that runs your fuzz targets
+on pull requests. This works similarly to running unit tests in CI. CIFuzz helps
+you find and fix bugs before they make it into your codebase.
+Currently, CIFuzz only supports projects hosted on GitHub.
 
 ## How it works
 
-CIFuzz works by checking out a repository at the head of a pull request. For projects
-that support code coverage, fuzzers coverage is compared with PR diffs to determine
-which fuzzers should be used. For projects that do not support code coverage, all
-fuzzers are run for an even length of time. If no bugs are found and the allotted
-time is up (default is 10 minutes), the CI test passes with a green check. But
-if a bug is found, the bug is checked for reproducability and against
-old OSS-Fuzz builds to prevent the reporting of pre-existing bugs. If the bug is both
-new and reproducible, it is reported and the
-stack trace as well as the test case are made available for download.
+CIFuzz builds your project's fuzzers from the source at a particular
+pull request or commit. Then CIFuzz runs the fuzzers for a short amount of time.
+If CIFuzz finds a crash, CIFuzz reports the stacktrace, makes the crashing
+input available for download and the CI test fails (red X).
+
+If CIFuzz doesn't find a crash during the allotted time, the CI test passes
+(green check). If CIFuzz finds a crash, it reports the crash only:
+* If the crash is reproducible (on the PR/commit build).
+* If the crash does not occur on older OSS-Fuzz builds. Because if it does occur
+  on older builds that means the crash was not introduced by the PR/commit
+  CIFuzz is testing.
+
+If your project supports [OSS-Fuzz's code coverage]({{ site.baseurl }}/advanced-topics/code-coverage),
+CIFuzz only runs the fuzzers affected by a pull request/commit.
+Otherwise it will divide up the allotted fuzzing time (10 minutes by default)
+among all fuzzers in the project.
+
+CIFuzz uses 30 day old/public regressions and corpora from OSS-Fuzz. This makes
+fuzzing more effective and gives you regression testing for free.
 
 ## Requirements
 
-1. Your project must be integrated in OSS-Fuzz.
+1. Your project must be integrated with OSS-Fuzz.
 1. Your project is hosted on GitHub.
 
 ## Integrating into your repository
@@ -146,7 +157,7 @@ C/C++ code residing on master and release branches:
 name: CIFuzz
 on:
   pull_request:
-    branches: 
+    branches:
       - master
       - 'releases/**'
     paths:

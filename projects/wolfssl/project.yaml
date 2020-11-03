@@ -3,10 +3,13 @@ language: c++
 primary_contact: "jacob@wolfssl.com"
 auto_ccs:
   - "david@wolfssl.com"
+  - "john@wolfssl.com"
+  - "john.safranek@gmail.com"
   - "kaleb@wolfssl.com"
   - "kaleb.himes@gmail.com"
   - "levi@wolfssl.com"
   - "testing@wolfssl.com"
+  - "guidovranken@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - afl

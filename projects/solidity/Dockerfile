@@ -16,27 +16,30 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    build-essential libbz2-dev ninja-build zlib1g-dev wget python python-dev liblzma-dev
+    build-essential libbz2-dev ninja-build zlib1g-dev wget python python-dev \
+    liblzma-dev uuid-dev pkg-config openjdk-8-jdk unzip mlton
 
 RUN git clone --recursive https://github.com/ethereum/solidity.git solidity
 RUN git clone --depth 1 https://github.com/ethereum/solidity-fuzzing-corpus.git
-RUN git clone --recursive -b boost-1.69.0 https://github.com/boostorg/boost.git \
-    boost
 RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
 RUN git clone --branch="v0.4.0" --recurse-submodules \
     https://github.com/ethereum/evmone.git
 
 # Install statically built dependencies in "/usr" directory
 # Install boost
-RUN cd $SRC/boost; \
-    ./bootstrap.sh --with-toolset=clang --prefix=/usr; \
-    ./b2 clean; \
-    ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" \
-    headers; \
-    ./b2 toolset=clang cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++" \
-    link=static variant=release runtime-link=static \
-    system regex filesystem unit_test_framework program_options \
-    install -j $(($(nproc)/2));
+RUN cd $SRC; \
+    wget -q 'https://dl.bintray.com/boostorg/release/1.73.0/source/boost_1_73_0.tar.bz2' -O boost.tar.bz2; \
+    test "$(sha256sum boost.tar.bz2)" = "4eb3b8d442b426dc35346235c8733b5ae35ba431690e38c6a8263dce9fcbb402  boost.tar.bz2"; \
+    tar -xf boost.tar.bz2; \
+    rm boost.tar.bz2; \
+    cd boost_1_73_0; \
+    CXXFLAGS="-stdlib=libc++ -pthread" LDFLAGS="-stdlib=libc++" ./bootstrap.sh --with-toolset=clang --prefix=/usr; \
+    ./b2 toolset=clang cxxflags="-stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" headers; \
+    ./b2 toolset=clang cxxflags="-stdlib=libc++ -pthread" linkflags="-stdlib=libc++ -pthread" \
+        link=static variant=release runtime-link=static \
+        system filesystem unit_test_framework program_options \
+        install -j $(($(nproc)/2)); \
+    rm -rf $SRC/boost_1_73_0
 
 # Install libprotobuf-mutator
 RUN mkdir $SRC/LPM; \

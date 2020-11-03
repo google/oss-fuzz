@@ -11,3 +11,4 @@ auto_ccs:
 sanitizers:
   - address
   - memory
+main_repo: 'git://git.ghostscript.com/ghostpdl.git'

@@ -33,6 +33,7 @@ ar -qc $WORK/OpenEXR/libOpenexrUtils.a $(find $WORK/ -name "*.o")
 INCLUDES=(
   "-I $SRC"
   "-I $SRC/openexr/OpenEXR/IlmImf"
+  "-I $SRC/openexr/OpenEXR/IlmImfUtil"
   "-I $SRC/openexr/OpenEXR/exrenvmap"
   "-I $SRC/openexr/IlmBase/Imath"
   "-I $SRC/openexr/IlmBase/Iex"
@@ -50,7 +51,7 @@ LIBS=(
   "$WORK/OpenEXR/libOpenexrUtils.a"
 )
 
-for fuzzer in $SRC/*_fuzzer.cc; do
+for fuzzer in $SRC/*_fuzzer.cc $SRC/openexr/OpenEXR/IlmImfFuzzTest/oss-fuzz/*_fuzzer.cc; do
   fuzzer_basename=$(basename -s .cc $fuzzer)
   $CXX $CXXFLAGS -std=c++11 -pthread ${INCLUDES[@]} $fuzzer $LIB_FUZZING_ENGINE ${LIBS[@]} -lz \
     -o $OUT/$fuzzer_basename

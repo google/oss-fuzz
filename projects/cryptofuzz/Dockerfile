@@ -21,7 +21,7 @@ RUN apt-get update && \
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ xenial main' && \
     apt-get update && \
-    apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake libboost-all-dev mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo
+    apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo
 
 # BoringSSL needs Go to build
 RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
@@ -51,7 +51,13 @@ RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
 RUN git clone --depth 1 https://git.lysator.liu.se/nettle/nettle
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
 RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.0.tar.gz
+RUN git clone --depth 1 https://github.com/indutny/bn.js.git
+RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
+RUN git clone --depth 1 https://github.com/guidovranken/libfuzzer-js.git
+RUN git clone --depth 1 https://github.com/brix/crypto-js.git
+RUN git clone --depth 1 https://github.com/LoupVaillant/Monocypher.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
+RUN wget https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2
 
-COPY build.sh $SRC/
+COPY build.sh xxd.c $SRC/

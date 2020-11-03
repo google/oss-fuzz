@@ -110,6 +110,24 @@ RUN wget https://github.com/fmtlib/fmt/archive/6.0.0.tar.gz && \
     sudo make install && \
     cd ../.. && \
     rm -rf fmt-6.0.0
+    
+# Build and install `gperf` (>= 3.1)
+RUN wget http://ftp.gnu.org/pub/gnu/gperf/gperf-3.1.tar.gz && \
+    rm -rf gperf-3.1 | true && \
+    tar xzvf gperf-3.1.tar.gz && \
+    cd gperf-3.1 && \
+    export CC=gcc && \
+    export CXX=g++ && \
+    export CXXFLAGS="" && \
+    export CFLAGS_TMP="$CFLAGS" && \
+    unset CFLAGS && \
+    ./configure && \
+    make -j1 V=s && \
+    sudo make install && \
+    export CFLAGS="$CFLAGS_TMP" && \
+    unset CFLAGS_TMP && \
+    cd .. && \
+    rm -rf gperf-3.1
 
 # Replicate `install-dependencies` from the proxygen `build.sh` script
 RUN apt-get install -y \
@@ -122,7 +140,6 @@ RUN apt-get install -y \
     pkg-config \
     libssl-dev \
     libcap-dev \
-    gperf \
     libevent-dev \
     libtool \
     libjemalloc-dev \

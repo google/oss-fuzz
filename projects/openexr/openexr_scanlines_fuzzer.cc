@@ -17,16 +17,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <vector>
 
 #include <ImfArray.h>
 #include <ImfInputPart.h>
 #include <ImfMultiPartInputFile.h>
+#include <ImfChannelList.h>
 #include <ImfRgbaFile.h>
 #include <ImfStdIO.h>
 
 using namespace OPENEXR_IMF_INTERNAL_NAMESPACE;
 using IMATH_NAMESPACE::Box2i;
-
+using std::vector;
+using std::max;
 namespace {
 
 static void readSingle(IStream& is) {
@@ -44,7 +47,10 @@ static void readSingle(IStream& is) {
     Array<Rgba> pixels(w);
     in.setFrameBuffer(&pixels[-dx], 1, 0);
 
-    for (int y = dw.min.y; y <= dw.max.y; ++y) in.readPixels(y);
+    // read up to 10,000 scanlines from file
+    int step = max( 1 , (dw.max.y - dw.min.y + 1) / 10000);
+    for (int y = dw.min.y; y <= dw.max.y; y+=step) in.readPixels(y);
+ 
   } catch (...) {
   }
 }
@@ -75,15 +81,31 @@ static void readMulti(IStream& is) {
       {
 	      throw std::logic_error("ignoring - very wide datawindow\n");
       }
-      Array<Rgba> pixels(w);
+ 
       FrameBuffer i;
+      //
+      // read all channels present (later channels will overwrite earlier ones)
+      vector<half> otherChannels(w);
+      const ChannelList& channelList = in->header().channels();
+      for (ChannelList::ConstIterator c = channelList.begin() ; c != channelList.end() ; ++c )
+      {
+	      i.insert(c.name(),Slice(HALF, (char*)&otherChannels[-dx] , sizeof(half) , 0 ));
+      }     
+
+      // always try to read RGBA even if not present in file
+      Array<Rgba> pixels(w);
       i.insert("R", Slice(HALF, (char *)&(pixels[-dx].r), sizeof(Rgba), 0));
       i.insert("G", Slice(HALF, (char *)&(pixels[-dx].g), sizeof(Rgba), 0));
       i.insert("B", Slice(HALF, (char *)&(pixels[-dx].b), sizeof(Rgba), 0));
       i.insert("A", Slice(HALF, (char *)&(pixels[-dx].a), sizeof(Rgba), 0));
 
+
+
+
       in->setFrameBuffer(i);
-      for (int y = dw.min.y; y <= dw.max.y; ++y) in->readPixels(y);
+      // read up to 10,000 scanlines from file
+      int step = max( 1 , (dw.max.y - dw.min.y + 1) / 10000);
+      for (int y = dw.min.y; y <= dw.max.y; y+=step) in->readPixels(y);
     } catch (...) {
     }
 
@@ -97,10 +119,15 @@ static void readMulti(IStream& is) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   const std::string s(reinterpret_cast<const char*>(data), size);
-  StdISStream is;
-  is.str(s);
-
-  readSingle(is);
-  readMulti(is);
+  {
+    StdISStream is;
+    is.str(s);
+    readSingle(is);
+  }
+  {  
+    StdISStream is;
+    is.str(s);
+    readMulti(is);
+  }
   return 0;
 }

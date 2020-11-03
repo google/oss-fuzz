@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,28 +15,10 @@
 #
 ################################################################################
 
-#create zip files with initial corpus, taken from version control.
-#for f in $(ls fuzzers/initial_corpus/) ;do
-#  zip -j -r $OUT/fuzzer_${f}_seed_corpus.zip fuzzers/initial_corpus/$f
-#done
+# Build fuzz targets specified  in test/Makefile.
+cd test/fuzzing && make -j$(nproc) server_fuzzer
 
-mkdir build
-cd build
-
-# use C++ 14 instead of 17, because even if clang is
-# bleeding edge, cmake is old in the oss fuzz image.
-
-cmake .. \
--GNinja \
--DCMAKE_BUILD_TYPE=Debug \
--DCMAKE_CXX_STANDARD=14 \
--DFMT_DOC=Off \
--DFMT_TEST=Off \
--DFMT_SAFE_DURATION_CAST=On \
--DFMT_FUZZ=On \
--DFMT_FUZZ_LINKMAIN=Off \
--DFMT_FUZZ_LDFLAGS=$LIB_FUZZING_ENGINE
-
-cmake --build .
-
-cp bin/fuzzer_* $OUT
+# Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT.
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'          # Copy fuzz-target.
+find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'     # Copy dictionaries.
+find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';' # Copy seed corpora.

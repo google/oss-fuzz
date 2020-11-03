@@ -165,12 +165,16 @@ static void readFileMulti(IStream& is) {
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   const std::string s(reinterpret_cast<const char*>(data), size);
-  StdISStream is;
-  is.str(s);
-
   Header::setMaxImageSize(10000, 10000);
-  readFileSingle(is);
-  readFileMulti(is);
-
+  {
+    StdISStream is;
+    is.str(s);
+    readFileSingle(is);
+  }
+  {
+    StdISStream is;
+    is.str(s);
+    readFileMulti(is);
+  }
   return 0;
 }

@@ -3,3 +3,6 @@ language: c++
 primary_contact: "steadmon@google.com"
 auto_ccs:
   - "git-fuzz-reports@google.com"
+  - "emilyshaffer@google.com"
+  - "jonathantanmy@google.com"
+  - "jrn@google.com"
