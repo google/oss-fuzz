@@ -27,8 +27,6 @@ RUN apt-get update && apt-get install -y wget sudo && \
     rm cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
     SUDO_FORCE_REMOVE=yes apt-get remove --purge -y wget sudo
 
-# Steps for ARM cross-compilation
-
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate
 # layes in docker file.

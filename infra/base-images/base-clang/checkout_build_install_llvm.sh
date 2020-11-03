@@ -99,7 +99,7 @@ PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
 
 export TARGET_TO_BUILD="X86;ARM;AArch64"
 cmake_llvm
-ninja
+ninja -j $NPROC
 
 cd $WORK/llvm-stage2
 export CC=$WORK/llvm-stage1/bin/clang
@@ -109,7 +109,7 @@ export CXX=$WORK/llvm-stage1/bin/clang++
 cmake_llvm
 ninja -j $NPROC
 ninja install
-# rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
+rm -rf $WORK/llvm-stage1 $WORK/llvm-stage2
 
 # Use the clang we just built from now on.
 CMAKE_EXTRA_ARGS="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
@@ -124,7 +124,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
 
 ninja -j $NPROC cxx
 ninja install-cxx
-# rm -rf $WORK/i386
+rm -rf $WORK/i386
 
 # MemorySanitizer instrumented libraries.
 mkdir -p $WORK/msan
@@ -142,7 +142,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
 
 ninja cxx
 ninja -j $NPROC install-cxx
-# rm -rf $WORK/msan
+rm -rf $WORK/msan
 
 # DataFlowSanitizer instrumented libraries.
 mkdir -p $WORK/dfsan
@@ -153,7 +153,7 @@ cmake_llvm $CMAKE_EXTRA_ARGS \
     -DCMAKE_INSTALL_PREFIX=/usr/dfsan/
 
 ninja -j $NPROC install-cxx install-cxxabi
-# rm -rf $WORK/dfsan
+rm -rf $WORK/dfsan
 
 
 # AARCH64
