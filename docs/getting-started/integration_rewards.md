@@ -12,7 +12,7 @@ We encourage you to apply for integration rewards (up to **$20,000**) once your 
 is successfully integrated with OSS-Fuzz. Please see the details in our blog post
 [here](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html).
 
-Note that the biggest rewards are issued to projects that satisfy both of the following
+Note that the top rewards are issued to projects that satisfy both of the following
 criteria:
 * The project is of a critical importance for the global infrastructure and/or widely
   used products, devices, or services.
