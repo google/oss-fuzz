@@ -11,3 +11,4 @@ sanitizers:
   - address
   - dataflow
   - undefined
+  - memory
