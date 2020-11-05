@@ -46,6 +46,8 @@ cd ..
 
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 
+#we did not put libhtp there before so that cifuzz does not remove it
+mv libhtp suricata/
 # build project
 cd suricata
 sh autogen.sh
