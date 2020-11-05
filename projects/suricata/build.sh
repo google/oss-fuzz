@@ -55,6 +55,9 @@ make
 
 cp src/fuzz_* $OUT/
 
+# dictionaries
+./src/suricata --list-keywords | grep "\- " | sed 's/- //' | awk '{print "\""$0"\""}' > $OUT/fuzz_siginit.dict
+
 # build corpuses
 # default configuration file
 zip -r $OUT/fuzz_confyamlloadstring_seed_corpus.zip suricata.yaml
