@@ -12,11 +12,18 @@ We encourage you to apply for integration rewards (up to **$20,000**) once your 
 is successfully integrated with OSS-Fuzz. Please see the details in our blog post
 [here](https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html).
 
-Note that the top rewards are issued to projects that satisfy both of the following
-criteria:
-* The project is of a critical importance for the global infrastructure and/or widely
-  used products, devices, or services.
-* The quality of the project integration with OSS-Fuzz satisfies all the considerations
-  outlined in the blog post linked above.
+Rewards are based on the quality of integration with OSS-Fuzz, which is evaluated using
+the following criteria:
+* Upstream integration of the fuzz targets and build support.
+* Performance of the fuzz targets and code coverage achieved with fuzzing.
+* Regression testing in the upstream repository using fuzz targets and OSS-Fuzz corpora.
+  Enabling [CIFuzz](https://google.github.io/oss-fuzz/getting-started/continuous-integration/)
+  is the easiest way to address this.
+* Discretion bonus to recognize outstanding work.
 
-The actual reward amounts are at the discretion of the OSS-Fuzz rewards panel.
+For each of the points above, the OSS-Fuzz rewards panel first sets up a cap of up to $5,000.
+Then, the panel decides the actual reward amount (randing from $0 up to the cap) for each
+criteria, depending on how well the criteria is satisfied.
+
+The highest cap values ($5,000) are awarded only to projects of a critical importance for the
+global infrastructure and/or widely used products, devices, or services.
