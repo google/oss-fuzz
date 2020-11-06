@@ -22,7 +22,7 @@ the following criteria:
 * Discretion bonus to recognize outstanding work.
 
 For each of the points above, the OSS-Fuzz rewards panel first sets up a cap of up to $5,000.
-Then, the panel decides the actual reward amount (randing from $0 up to the cap) for each
+Then, the panel decides the actual reward amount (ranging from $0 up to the cap) for each
 criteria, depending on how well the criteria is satisfied.
 
 The highest cap values ($5,000) are awarded only to projects of a critical importance for the
