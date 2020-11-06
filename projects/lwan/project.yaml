@@ -3,3 +3,5 @@ language: c++
 primary_contact: "leandro.pereira@gmail.com"
 sanitizers:
   - address
+  - memory
+  - undefined
