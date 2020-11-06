@@ -37,13 +37,13 @@ done
 PROFILE_FILE="$DUMPS_DIR/merged.profdata"
 SUMMARY_FILE="$REPORT_PLATFORM_DIR/summary.json"
 
-# Use path mapping, as $SRC directory from the builder is copied into $OUT/$SRC.
-PATH_EQUIVALENCE_ARGS="-path-equivalence=/,$OUT"
+# Create path symlink as $SRC directory from the builder is copied into $OUT/$SRC.
+rm -rf $SRC
+ln -s $OUT/src $SRC
 
 # It's important to use $COVERAGE_EXTRA_ARGS as the last argument, because it
 # can contain paths to source files / directories which are positional args.
-LLVM_COV_COMMON_ARGS="$PATH_EQUIVALENCE_ARGS \
-    -ignore-filename-regex=.*src/libfuzzer/.* $COVERAGE_EXTRA_ARGS"
+LLVM_COV_COMMON_ARGS="-ignore-filename-regex=.*src/libfuzzer/.* $COVERAGE_EXTRA_ARGS"
 
 # Timeout for running a single fuzz target.
 TIMEOUT=1h
@@ -164,7 +164,7 @@ llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE
 
 # Post process HTML report.
 coverage_helper -v post_process -src-root-dir=/ -summary-file=$SUMMARY_FILE \
-    -output-dir=$REPORT_ROOT_DIR $PATH_EQUIVALENCE_ARGS
+    -output-dir=$REPORT_ROOT_DIR
 
 if [[ -n $HTTP_PORT ]]; then
   # Serve the report locally.
