@@ -94,7 +94,7 @@ then
         make -j$(nproc)
 
         export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN"
-        export LIBBOTAN_A_PATH="$SRC/botan/libbotan-2.a"
+        export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
         export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
         # Compile Cryptofuzz Botan module
