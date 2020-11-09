@@ -35,41 +35,75 @@ mkdir -p $SRC/poppler/build
 pushd $SRC/poppler/build
 cmake .. \
   -DCMAKE_BUILD_TYPE=debug \
-  -DBUILD_SHARED_LIBS=OFF \
   -DFONT_CONFIGURATION=generic \
   -DENABLE_DCTDECODER=none \
   -DENABLE_LIBPNG=OFF \
   -DENABLE_ZLIB=OFF \
   -DENABLE_LIBTIFF=OFF \
   -DENABLE_LIBJPEG=OFF \
-  -DENABLE_GLIB=OFF \
+  -DENABLE_GLIB=ON \
   -DENABLE_LIBCURL=OFF \
-  -DENABLE_QT5=OFF \
+  -DENABLE_QT5=ON \
   -DENABLE_UTILS=OFF \
-  -DWITH_Cairo=OFF \
+  -DWITH_Cairo=ON \
   -DWITH_NSS3=OFF \
   -DCMAKE_INSTALL_PREFIX=$WORK
-make -j$(nproc) poppler poppler-cpp
+  #-DCMAKE_CXX_FLAGS='-fPIC'
 
-fuzz_target=pdf_fuzzer
+#make -j$(nproc) poppler poppler-cpp poppler-glib poppler-qt5
+make -j$(nproc) poppler poppler-cpp poppler-glib
 
-$CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp \
-    $SRC/fuzz/pdf_fuzzer.cc -o $OUT/$fuzz_target \
+fuzzers=$(find $SRC/poppler/cpp/tests/fuzzing/ -name "*_fuzzer.cc")
+
+for f in $fuzzers; do
+  fuzzer_name=$(basename $f .cc)
+
+  $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp \
+    $f -o $OUT/$fuzzer_name \
     $LIB_FUZZING_ENGINE \
-    $SRC/poppler/build/cpp/libpoppler-cpp.a \
-    $SRC/poppler/build/libpoppler.a \
     $WORK/lib/libfreetype.a \
     $WORK/lib/liblcms2.a \
-    $WORK/lib/libopenjp2.a
+    $WORK/lib/libopenjp2.a \
+    -L$SRC/poppler/build/ -L$SRC/poppler/build/cpp/ \
+    -lpoppler -lpoppler-cpp
+done
+
+fuzzers=$(find $SRC/poppler/glib/tests/fuzzing/ -name "*_fuzzer.cc")
+
+for f in $fuzzers; do
+  fuzzer_name=$(basename $f .cc)
+
+  $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/glib -I$SRC/poppler/build/glib \
+    -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+    -I/usr/include/cairo \
+    $f -o $OUT/$fuzzer_name \
+    $LIB_FUZZING_ENGINE \
+    -L$SRC/poppler/build -L$SRC/poppler/build/cpp -L$SRC/poppler/build/glib \
+    -lpoppler -lpoppler-cpp -lpoppler-glib \
+    -lglib-2.0 -lgobject-2.0 -lcairo -lcairo-gobject -lpangocairo-1.0
+done
+
+#fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
+
+#for f in $fuzzers; do
+  #fuzzer_name=$(basename $f .cc)
+
+  #$CXX $CXXFLAGS -std=c++11 \
+    #-I/usr/include/x86_64-linux-gnu/qt5 -I$SRC/poppler/qt5/src \
+    #$f -o $OUT/$fuzzer_name \
+    #$LIB_FUZZING_ENGINE \
+    #-L$SRC/poppler/build -L$SRC/poppler/build/cpp -L$SRC/poppler/build/qt5 \
+    #-lpoppler -lpoppler-cpp -lpoppler-qt5
+#done
 
 mv $SRC/{*.zip,*.dict} $OUT
 
-if [ ! -f "${OUT}/${fuzz_target}_seed_corpus.zip" ]; then
+if [ ! -f "${OUT}/poppler_fuzzer_seed_corpus.zip" ]; then
   echo "missing seed corpus"
   exit 1
 fi
 
-if [ ! -f "${OUT}/${fuzz_target}.dict" ]; then
+if [ ! -f "${OUT}/poppler_fuzzer.dict" ]; then
   echo "missing dictionary"
   exit 1
 fi
