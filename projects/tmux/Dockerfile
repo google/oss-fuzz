@@ -18,7 +18,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y autoconf automake bison pkg-config \
     libevent-dev ncurses-dev
 
-RUN git clone --depth 1 https://github.com/snizovtsev/tmux.git
+RUN git clone --depth 1 https://github.com/tmux/tmux.git
 RUN git clone --depth 1 https://github.com/snizovtsev/tmux-fuzzing-corpus.git
 WORKDIR tmux
 COPY build.sh $SRC/
