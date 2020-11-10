@@ -108,6 +108,18 @@ index 4956a0dc2d8..bab0aa3b504 100644
      MY_TARGET_LINK_OPTIONS(libmysql
        "LINKER:--version-script=${CMAKE_CURRENT_BINARY_DIR}/libmysql.ver")
    ENDIF() 
+diff --git a/mysys/mf_tempfile.cc b/mysys/mf_tempfile.cc
+index f4f5dffba9a..26ab2ce0917 100644
+--- a/mysys/mf_tempfile.cc
++++ b/mysys/mf_tempfile.cc
+@@ -320,6 +320,7 @@ File create_temp_file(char *to, const char *dir, const char *prefix,
+       set_my_errno(ENAMETOOLONG);
+       return file;
+     }
++    sprintf(prefix_buff, "%sXXXXXX", prefix ? prefix : "tmp.");
+     my_stpcpy(convert_dirname(to, dir, NullS), prefix_buff);
+     file = mkstemp(to);
+     file_info::RegisterFilename(file, to, file_info::OpenType::FILE_BY_MKSTEMP);
 diff --git a/mysys/my_rnd.cc b/mysys/my_rnd.cc
 index 8253e3967d4..034c71de600 100644
 --- a/mysys/my_rnd.cc
