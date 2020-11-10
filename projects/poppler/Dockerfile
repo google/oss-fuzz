@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config cmake gobject-introspection libglib2.0-dev libgtk-3-dev libgirepository1.0-dev libcairo2-dev qtbase5-dev libopenjp2-7-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool pkg-config cmake gobject-introspection libglib2.0-dev libgtk-3-dev libgirepository1.0-dev libcairo2-dev qtbase5-dev
 RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.freedesktop.org/ceyhunalp/poppler.git
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git

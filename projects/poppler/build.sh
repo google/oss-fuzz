@@ -17,18 +17,18 @@
 
 pushd $SRC/freetype2
 ./autogen.sh
-./configure --prefix="$WORK" --disable-shared PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
+./configure --prefix="$WORK" PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
 make -j$(nproc)
 make install
 
 pushd $SRC/Little-CMS
-./configure --prefix="$WORK" --disable-shared PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
+./configure --prefix="$WORK" PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
 make -j$(nproc)
 make install
 
 mkdir -p $SRC/openjpeg/build
 pushd $SRC/openjpeg/build
-cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$WORK
+cmake .. -DCMAKE_INSTALL_PREFIX=$WORK
 make -j$(nproc) install
 
 mkdir -p $SRC/poppler/build
@@ -48,7 +48,6 @@ cmake .. \
   -DWITH_Cairo=ON \
   -DWITH_NSS3=OFF \
   -DCMAKE_INSTALL_PREFIX=$WORK
-  #-DCMAKE_CXX_FLAGS='-fPIC'
 
 #make -j$(nproc) poppler poppler-cpp poppler-glib poppler-qt5
 make -j$(nproc) poppler poppler-cpp poppler-glib
@@ -61,10 +60,9 @@ for f in $fuzzers; do
   $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp \
     $f -o $OUT/$fuzzer_name \
     $LIB_FUZZING_ENGINE \
-    $WORK/lib/libfreetype.a \
-    $WORK/lib/liblcms2.a \
-    $WORK/lib/libopenjp2.a \
+    -L$WORK/lib \
     -L$SRC/poppler/build/ -L$SRC/poppler/build/cpp/ \
+    -llcms2 -lopenjp2 -lfreetype \
     -lpoppler -lpoppler-cpp
 done
 
