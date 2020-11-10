@@ -28,8 +28,6 @@ CMAKE_SETTINGS=(
 cmake $SRC/openexr ${CMAKE_SETTINGS[@]}
 make -j$(nproc)
 
-#ar -qc $WORK/OpenEXR/libOpenexrUtils.a $(find $WORK/ -name "*.o")
-
 INCLUDES=(
   "-I $SRC"
   "-I $SRC/openexr/src/lib/OpenEXR"
