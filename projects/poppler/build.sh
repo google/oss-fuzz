@@ -17,24 +17,25 @@
 
 pushd $SRC/freetype2
 ./autogen.sh
-./configure --prefix="$WORK" PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
+./configure --prefix="$WORK" --disable-shared PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
 make -j$(nproc)
 make install
 
 pushd $SRC/Little-CMS
-./configure --prefix="$WORK" PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
+./configure --prefix="$WORK" --disable-shared PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
 make -j$(nproc)
 make install
 
 mkdir -p $SRC/openjpeg/build
 pushd $SRC/openjpeg/build
-cmake .. -DCMAKE_INSTALL_PREFIX=$WORK
+cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$WORK
 make -j$(nproc) install
 
 mkdir -p $SRC/poppler/build
 pushd $SRC/poppler/build
 cmake .. \
   -DCMAKE_BUILD_TYPE=debug \
+  -DBUILD_SHARED_LIBS=OFF \
   -DFONT_CONFIGURATION=generic \
   -DENABLE_DCTDECODER=none \
   -DENABLE_LIBPNG=OFF \
@@ -49,8 +50,7 @@ cmake .. \
   -DWITH_NSS3=OFF \
   -DCMAKE_INSTALL_PREFIX=$WORK
 
-#make -j$(nproc) poppler poppler-cpp poppler-glib poppler-qt5
-make -j$(nproc) poppler poppler-cpp poppler-glib
+make -j$(nproc) poppler poppler-cpp poppler-glib poppler-qt5
 
 fuzzers=$(find $SRC/poppler/cpp/tests/fuzzing/ -name "*_fuzzer.cc")
 
@@ -60,10 +60,12 @@ for f in $fuzzers; do
   $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp \
     $f -o $OUT/$fuzzer_name \
     $LIB_FUZZING_ENGINE \
-    -L$WORK/lib \
-    -L$SRC/poppler/build/ -L$SRC/poppler/build/cpp/ \
-    -llcms2 -lopenjp2 -lfreetype \
-    -lpoppler -lpoppler-cpp
+    $SRC/poppler/build/cpp/libpoppler-cpp.a \
+    $SRC/poppler/build/libpoppler.a \
+    $WORK/lib/libfreetype.a \
+    $WORK/lib/liblcms2.a \
+    $WORK/lib/libopenjp2.a \
+    -lpng -lz
 done
 
 fuzzers=$(find $SRC/poppler/glib/tests/fuzzing/ -name "*_fuzzer.cc")
@@ -76,40 +78,34 @@ for f in $fuzzers; do
     -I/usr/include/cairo \
     $f -o $OUT/$fuzzer_name \
     $LIB_FUZZING_ENGINE \
-    -L$SRC/poppler/build -L$SRC/poppler/build/cpp -L$SRC/poppler/build/glib \
-    -lpoppler -lpoppler-cpp -lpoppler-glib \
-    -lglib-2.0 -lgobject-2.0 -lcairo -lcairo-gobject -lpangocairo-1.0
+    $SRC/poppler/build/glib/libpoppler-glib.a \
+    $SRC/poppler/build/cpp/libpoppler-cpp.a \
+    $SRC/poppler/build/libpoppler.a \
+    $WORK/lib/libfreetype.a \
+    $WORK/lib/liblcms2.a \
+    $WORK/lib/libopenjp2.a \
+    -lpng -lz \
+    -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lcairo-gobject -lpangocairo-1.0 -lcairo
 done
-
-cmake .. \
-  -DCMAKE_BUILD_TYPE=debug \
-  -DCMAKE_CXX_FLAGS='-fPIC' \
-  -DFONT_CONFIGURATION=generic \
-  -DENABLE_DCTDECODER=none \
-  -DENABLE_LIBPNG=OFF \
-  -DENABLE_ZLIB=OFF \
-  -DENABLE_LIBTIFF=OFF \
-  -DENABLE_LIBJPEG=OFF \
-  -DENABLE_GLIB=ON \
-  -DENABLE_LIBCURL=OFF \
-  -DENABLE_QT5=ON \
-  -DENABLE_UTILS=OFF \
-  -DWITH_Cairo=ON \
-  -DWITH_NSS3=OFF \
-  -DCMAKE_INSTALL_PREFIX=$WORK
-make -j$(nproc) poppler poppler-qt5
 
 fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
 
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .cc)
 
-  $CXX $CXXFLAGS -std=c++11 -fPIC \
+  $CXX $CXXFLAGS -std=c++11 \
     -I/usr/include/x86_64-linux-gnu/qt5 -I$SRC/poppler/qt5/src \
+    -fPIC \
     $f -o $OUT/$fuzzer_name \
     $LIB_FUZZING_ENGINE \
-    -L$SRC/poppler/build -L$SRC/poppler/build/cpp -L$SRC/poppler/build/qt5/src \
-    -lpoppler -lpoppler-qt5 -lQt5Gui -lQt5Core
+    $SRC/poppler/build/qt5/src/libpoppler-qt5.a \
+    $SRC/poppler/build/cpp/libpoppler-cpp.a \
+    $SRC/poppler/build/libpoppler.a \
+    $WORK/lib/libfreetype.a \
+    $WORK/lib/liblcms2.a \
+    $WORK/lib/libopenjp2.a \
+    -lpng -lz \
+    -lQt5Gui -lQt5Core -lQt5Xml
 done
 
 mv $SRC/{*.zip,*.dict} $OUT
