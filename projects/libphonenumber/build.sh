@@ -15,6 +15,17 @@
 #
 ################################################################################
 
+# For coverage build we need to remove some flags when building protobuf and icu
+if [ "$SANITIZER" = "coverage" ]
+then
+    export OCX=$CXXFLAGS
+    export OC=$CFLAGS
+    CF1=${CFLAGS//-fprofile-instr-generate/}
+    export CFLAGS=${CF1//-fcoverage-mapping/}
+    CXF1=${CXXFLAGS//-fprofile-instr-generate/}
+    export CXXFLAGS=${CXF1//-fcoverage-mapping/}
+fi
+
 # Build Protobuf
 git clone https://github.com/google/protobuf.git
 cd protobuf
@@ -45,6 +56,12 @@ ln -s libicu.a libicudata.a
 ln -s libicu.a libicuuc.a
 ln -s libicu.a libicui18n.a
 
+if [ "$SANITIZER" = "coverage" ]
+then
+    export CFLAGS=$OC
+    export CXXFLAGS=$OCX
+fi
+
 # Build libphonenumber
 cd $SRC/libphonenumber/cpp
 sed -i 's/set (BUILD_SHARED_LIB true)/set (BUILD_SHARED_LIB false)/g' CMakeLists.txt
@@ -52,10 +69,10 @@ sed -i 's/list (APPEND CMAKE_C_FLAGS "-pthread")/string (APPEND CMAKE_C_FLAGS " 
 
 mkdir build && cd build
 cmake -DUSE_BOOST=OFF -DBUILD_GEOCODER=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-      -DICU_UC_INCLUDE_DIR=/src/icu/source/comon \
-      -DICU_UC_LIB=/src/deps/lib/libicuuc.a \
-      -DICU_I18N_INCLUDE_DIR=/src/icu/source/i18n/ \
-      -DICU_I18N_LIB=/src/deps/lib/libicui18n.a  ../
+      -DICU_UC_INCLUDE_DIR=$SRC/icu/source/comon \
+      -DICU_UC_LIB=$DEPS_PATH/lib/libicuuc.a \
+      -DICU_I18N_INCLUDE_DIR=$SRC/icu/source/i18n/ \
+      -DICU_I18N_LIB=$DEPS_PATH/lib/libicui18n.a  ../
 make
 cd ../
 
