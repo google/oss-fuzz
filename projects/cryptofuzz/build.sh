@@ -128,6 +128,12 @@ export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MONOCYPHER"
 cd $SRC/cryptofuzz/modules/monocypher
 make -B
 
+# Compile Cryptofuzz trezor module
+export TREZOR_FIRMWARE_PATH=$(realpath $SRC/trezor-firmware)
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_TREZOR_FIRMWARE"
+cd $SRC/cryptofuzz/modules/trezor
+make -B
+
 # Compile libtomcrypt
 cd $SRC/libtomcrypt
 if [[ $CFLAGS != *sanitize=memory* ]]
