@@ -128,5 +128,3 @@ for f in $fuzzers; do
 done
 
 rm $OUT/poppler.dict
-
-tail -f /dev/null
