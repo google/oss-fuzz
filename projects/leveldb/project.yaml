@@ -3,3 +3,6 @@ language: c++
 primary_contact: "david@adalogics.com"
 auto_ccs :
   - "david@adalogics.com"
+sanitizers:
+  - address
+  - memory
