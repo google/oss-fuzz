@@ -81,3 +81,6 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 # gocovmerge merges coverage profiles.
 RUN go get -u github.com/wadey/gocovmerge
+# gocovsum produces a json summary.
+RUN go get -u github.com/catenacyber/gocovsum
+

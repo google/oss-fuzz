@@ -111,6 +111,7 @@ function run_fuzz_target {
   fi
 }
 
+export SYSGOPATH=$GOPATH
 export GOPATH=$OUT/$GOPATH
 # Run each fuzz target, generate raw coverage dumps.
 for fuzz_target in $FUZZ_TARGETS; do
@@ -154,8 +155,9 @@ done
 wait
 
 if [[ $FUZZING_LANGUAGE == "go" ]]; then
-  /root/go/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
+  $SYSGOPATH/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
   go tool cover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
+  $SYSGOPATH/bin/gocovsum fuzz.cov > $SUMMARY_FILE
   cp $REPORT_ROOT_DIR/index.html $REPORT_PLATFORM_DIR/index.html
   echo "Finished generating code coverage report for Go fuzz targets."
 else
