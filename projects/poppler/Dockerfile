@@ -21,8 +21,8 @@ RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git
 RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
 RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
-    zip -q $SRC/poppler_fuzzer_seed_corpus.zip pdf.js/test/pdfs/*.pdf && \
+    zip -q $SRC/poppler_seed_corpus.zip pdf.js/test/pdfs/*.pdf && \
     rm -rf pdf.js
-ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/pdf.dict $SRC/poppler_fuzzer.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/pdf.dict $SRC/poppler.dict
 WORKDIR $SRC/poppler
 COPY build.sh $SRC/

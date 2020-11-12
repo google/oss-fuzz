@@ -110,12 +110,23 @@ done
 
 mv $SRC/{*.zip,*.dict} $OUT
 
-if [ ! -f "${OUT}/poppler_fuzzer_seed_corpus.zip" ]; then
+if [ ! -f "${OUT}/poppler_seed_corpus.zip" ]; then
   echo "missing seed corpus"
   exit 1
 fi
 
-if [ ! -f "${OUT}/poppler_fuzzer.dict" ]; then
+if [ ! -f "${OUT}/poppler.dict" ]; then
   echo "missing dictionary"
   exit 1
 fi
+
+fuzzers=$(find $OUT -name "*_fuzzer")
+
+for f in $fuzzers; do
+    fuzzer_name=$(basename $f)
+    cp $OUT/poppler.dict $OUT/$fuzzer_name.dict
+done
+
+rm $OUT/poppler.dict
+
+tail -f /dev/null
