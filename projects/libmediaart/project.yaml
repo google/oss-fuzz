@@ -1,0 +1,7 @@
+homepage: https://gitlab.gnome.org/GNOME/libmediaart
+language: c
+primary_contact: jvoisin@google.com
+sanitizers:
+  - address
+  - memory
+  - undefined
