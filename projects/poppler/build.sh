@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+export LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/"
+
 pushd $SRC/freetype2
 ./autogen.sh
 ./configure --prefix="$WORK" --disable-shared PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
