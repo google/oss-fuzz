@@ -1,0 +1,5 @@
+homepage: "https://github.com/google/leveldb"
+language: c++
+primary_contact: "david@adalogics.com"
+auto_ccs :
+  - "david@adalogics.com"
