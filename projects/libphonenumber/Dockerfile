@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf automake libtool g++ cmake-curses-gui libgtest-dev libre2-dev libicu-dev libboost-dev libboost-thread-dev libboost-system-dev binutils ninja-build liblzma-dev libz-dev pkg-config wget
+RUN apt-get update && apt-get install -y autoconf automake libtool g++ cmake-curses-gui libgtest-dev libre2-dev libicu-dev libboost-dev libboost-thread-dev libboost-system-dev binutils ninja-build liblzma-dev libz-dev pkg-config wget openjdk-8-jdk
 
 WORKDIR $SRC/
 RUN git clone https://github.com/google/libphonenumber
