@@ -124,6 +124,7 @@ for fuzz_target in $FUZZ_TARGETS; do
     cd $GOPATH/src
     echo "Running go target $fuzz_target"
     export FUZZ_CORPUS_DIR="/corpus/${fuzz_target}/"
+    export FUZZ_PROFILE_NAME="$DUMPS_DIR/$fuzz_target.perf"
     bash $OUT/$fuzz_target $DUMPS_DIR/$fuzz_target.profdata &
     cd $OUT
   else
@@ -159,6 +160,11 @@ if [[ $FUZZING_LANGUAGE == "go" ]]; then
   go tool cover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
   $SYSGOPATH/bin/gocovsum fuzz.cov > $SUMMARY_FILE
   cp $REPORT_ROOT_DIR/index.html $REPORT_PLATFORM_DIR/index.html
+  $SYSGOPATH/bin/pprof-merge $DUMPS_DIR/*.perf.cpu.prof
+  mv merged.data $REPORT_ROOT_DIR/cpu.prof
+  $SYSGOPATH/bin/pprof-merge $DUMPS_DIR/*.perf.heap.prof
+  mv merged.data $REPORT_ROOT_DIR/heap.prof
+  #TODO some proxy for go tool pprof -http=127.0.0.1:8001 $DUMPS_DIR/cpu.prof
   echo "Finished generating code coverage report for Go fuzz targets."
 else
 
