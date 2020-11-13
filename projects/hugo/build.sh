@@ -26,5 +26,6 @@ function compile_fuzzer {
 
 mkdir $GOPATH/src/github.com/gohugoio
 mv $SRC/hugo $GOPATH/src/github.com/gohugoio/
+cd $GOPATH/src/github.com/gohugoio/hugo
 
 compile_fuzzer $GOPATH/src/github.com/gohugoio/hugo/tpl/transform FuzzMarkdownify fuzzmarkdownify
