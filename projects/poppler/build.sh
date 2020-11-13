@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-export LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/"
-
 pushd $SRC/freetype2
 ./autogen.sh
 ./configure --prefix="$WORK" --disable-shared PKG_CONFIG_PATH="$WORK/lib/pkgconfig"
@@ -32,6 +30,17 @@ mkdir -p $SRC/openjpeg/build
 pushd $SRC/openjpeg/build
 cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=$WORK
 make -j$(nproc) install
+
+pushd $SRC/zlib
+./configure --static --prefix="$WORK"
+make -j$(nproc) all
+make install
+
+pushd $SRC/libpng
+autoreconf -fi
+./configure --prefix="$WORK" --disable-shared --disable-dependency-tracking
+make -j$(nproc)
+make install
 
 mkdir -p $SRC/poppler/build
 pushd $SRC/poppler/build
@@ -67,7 +76,8 @@ for f in $fuzzers; do
     $WORK/lib/libfreetype.a \
     $WORK/lib/liblcms2.a \
     $WORK/lib/libopenjp2.a \
-    -lpng -lz
+    $WORK/lib/libpng.a \
+    $WORK/lib/libz.a
 done
 
 fuzzers=$(find $SRC/poppler/glib/tests/fuzzing/ -name "*_fuzzer.cc")
@@ -86,7 +96,8 @@ for f in $fuzzers; do
     $WORK/lib/libfreetype.a \
     $WORK/lib/liblcms2.a \
     $WORK/lib/libopenjp2.a \
-    -lpng -lz \
+    $WORK/lib/libpng.a \
+    $WORK/lib/libz.a \
     -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lcairo-gobject -lpangocairo-1.0 -lcairo
 done
 
@@ -106,7 +117,8 @@ for f in $fuzzers; do
     $WORK/lib/libfreetype.a \
     $WORK/lib/liblcms2.a \
     $WORK/lib/libopenjp2.a \
-    -lpng -lz \
+    $WORK/lib/libpng.a \
+    $WORK/lib/libz.a \
     -lQt5Gui -lQt5Core -lQt5Xml
 done
 
