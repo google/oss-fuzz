@@ -60,7 +60,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // perform a sequence of calls on our db instance
   int max_iter = (int)data[0];
   for(int i=0; i < max_iter && i < size; i++) {
-    #define SIZE_OF_FUNCS 7
+    #define SIZE_OF_FUNCS 8
     char c = data[i] % SIZE_OF_FUNCS;
 
     if(c == 0) {  // PUT
@@ -97,6 +97,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     else if(c == 6) { // Open and close DB
       delete db;
       status = leveldb::DB::Open(options, "/tmp/testdb", &db);
+    }
+    else if (c == 7) { 
+      std::string tmp1 = get_string(&curr_offset, &curr_size);
+      std::string tmp2 = get_string(&curr_offset, &curr_size);
+      leveldb::Slice s1 =tmp1;
+      leveldb::Slice s2 = tmp2;
+      db->CompactRange(&s1, &s2);
     }
   }
 
