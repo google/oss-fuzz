@@ -74,7 +74,7 @@ class ProjectYamlChecker:
   # to have.
   SECTIONS_AND_CONSTANTS = {
       'sanitizers': {'address', 'none', 'memory', 'undefined', 'dataflow'},
-      'architectures': {'i386', 'x86_64'},
+      'architectures': {'i386', 'x86_64', 'aarch64'},
       'fuzzing_engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow', 'none'},
   }
 
