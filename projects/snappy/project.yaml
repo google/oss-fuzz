@@ -1,6 +1,6 @@
 homepage: "https://github.com/google/snappy"
 language: c++
-primary_contact: ""
+primary_contact: "costan@google.com"
 auto_ccs:
   - "Adam@adalogics.com"
 sanitizers:
