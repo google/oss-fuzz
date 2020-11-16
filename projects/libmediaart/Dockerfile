@@ -14,10 +14,13 @@
 #
 ################################################################################
 
+#RUN echo deb http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse >> /etc/apt/sources.list
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN sed -i -e 's/xenial/focal/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y python3-pip gobject-introspection libglib2.0-dev libgtk-3-dev libgirepository1.0-dev valac gtk-doc-tools
-RUN pip3 install -U meson ninja
+RUN pip3 install meson==0.55.3 ninja
 RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.gnome.org/ceyhunalp/libmediaart.git
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
 RUN git clone --depth 1 https://github.com/mozilla/mp4parse-rust.git && \
     mv mp4parse-rust/mp4parse/tests/*mp4 $SRC/libmediaart/seed_corpus && \
     mv mp4parse-rust/mp4parse_capi/tests/*mp4 $SRC/libmediaart/seed_corpus && \
