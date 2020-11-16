@@ -30,6 +30,15 @@
     cd $SRC/cryptofuzz
     python gen_repository.py
 
+# Only test primitives which BearSSL supports
+    rm extra_options.h
+    echo -n '"' >>extra_options.h
+    echo -n '--force-module=BearSSL ' >>extra_options.h
+    echo -n '--digests=MD5,SHA1,SHA224,SHA256,SHA384,SHA512,MD5_SHA1,SHAKE128,SHAKE256 ' >>extra_options.h
+    echo -n '--ciphers=AES_128_GCM,AES_192_GCM,AES_256_GCM,AES_128_CCM,AES_192_CCM,AES_256_CCM,CHACHA20,CHACHA20_POLY1305 ' >>extra_options.h
+    echo -n '--operations=Digest,HMAC,SymmetricEncrypt,SymmetricDecrypt,KDF_HKDF,KDF_TLS1_PRF,ECC_GenerateKeyPair,ECC_PrivateToPublic,ECDSA_Verify,ECDSA_Sign' >>extra_options.h
+    echo -n '"' >>extra_options.h
+
 # Compile BearSSL
     cd $SRC/BearSSL/
     sed -i '/^CC = /d' conf/Unix.mk
