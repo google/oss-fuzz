@@ -20,24 +20,19 @@ BUILD=$WORK/build
 rm -rf $BUILD
 mkdir -p $BUILD
 
-export CFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"
-export CXXFLAGS="-O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -stdlib=libc++"
+meson $BUILD/gdk-pixbuf -Ddefault_library=static
+ninja -C $BUILD/gdk-pixbuf gdk-pixbuf/libgdk_pixbuf-2.0.a
 
-#cd $SRC/glib-2.64.0
-#CC=clang meson _build
-#ninja -C _build
-
-#cd $SRC/gdk-pixbuf
-
-#export LD_LIBRARY_PATH="$BUILD/gdk-pixbuf"
-
-CC=clang meson $BUILD
-ninja -C $BUILD
-
-#fuzzers=$(find $SRC/gdk-pixbuf/fuzzing/ -name "*_fuzzer.c")
-#for f in $fuzzers; do
-  #fuzzer_name=$(basename $f .c)
-  #ninja -C $BUILD fuzzing/$fuzzer_name
-#done
+fuzzers=$(find $SRC/gdk-pixbuf/fuzzing/ -name "*_fuzzer.c")
+for f in $fuzzers; do
+  fuzzer_name=$(basename $f .c)
+  $CC $CFLAGS -c -std=c99 \
+    -I. -I$BUILD/gdk-pixbuf -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+    $f -o $WORK/${fuzzer_name}.o
+  $CXX $CXXFLAGS $WORK/${fuzzer_name}.o -o $OUT/${fuzzer_name} \
+    $BUILD/gdk-pixbuf/gdk-pixbuf/libgdk_pixbuf-2.0.a \
+    $LIB_FUZZING_ENGINE \
+    -Wl,-Bstatic -lgio-2.0 -lgobject-2.0 -lglib-2.0
+done
 
 mv $BUILD/fuzzing/*_fuzzer $OUT/

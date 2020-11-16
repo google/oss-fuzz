@@ -15,10 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN sed -i -e 's/xenial/focal/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y python3-pip gobject-introspection libglib2.0-dev libgtk-3-dev libgirepository1.0-dev gtk-doc-tools libc6-dev
 RUN pip3 install -U meson ninja
 RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.gnome.org/ceyhunalp/gdk-pixbuf.git
-ADD https://download.gnome.org/sources/glib/2.64/glib-2.64.0.tar.xz $SRC
-RUN tar -xf $SRC/glib-2.64.0.tar.xz
 WORKDIR $SRC/gdk-pixbuf
 COPY build.sh $SRC/
