@@ -103,6 +103,11 @@ if [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$ARCH
 else
   export RUSTFLAGS="--cfg fuzzing -Cdebuginfo=1 -Cforce-frame-pointers"
 fi
+if [ "$SANITIZER" = "coverage" ]
+then
+    # link to C++ from comment in f5098035eb1a14aa966c8651d88ea3d64323823d
+    export RUSTFLAGS="$RUSTFLAGS -Zinstrument-coverage -C link-arg=-lc++"
+fi
 
 # Add Rust libfuzzer flags.
 # See https://github.com/rust-fuzz/libfuzzer/blob/master/build.rs#L12.
@@ -145,7 +150,7 @@ BUILD_CMD="bash -eux $SRC/build.sh"
 
 # We need to preserve source code files for generating a code coverage report.
 # We need exact files that were compiled, so copy both $SRC and $WORK dirs.
-COPY_SOURCES_CMD="cp -rL --parents $SRC $WORK /usr/include /usr/local/include $GOPATH $OUT"
+COPY_SOURCES_CMD="cp -rL --parents $SRC $WORK /usr/include /usr/local/include $GOPATH $OSSFUZZ_RUSTPATH $OUT"
 
 if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder

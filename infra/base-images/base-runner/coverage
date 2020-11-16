@@ -193,7 +193,7 @@ else
 
   # Generate HTML report.
   llvm-cov show -format=html -output-dir=$REPORT_ROOT_DIR \
-      -Xdemangler c++filt -Xdemangler -n $LLVM_COV_ARGS
+      -Xdemangler rcfilt $LLVM_COV_ARGS
 
   # Export coverage summary in JSON format.
   llvm-cov export -summary-only $LLVM_COV_ARGS > $SUMMARY_FILE

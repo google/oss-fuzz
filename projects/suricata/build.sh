@@ -53,7 +53,7 @@ cd suricata
 sh autogen.sh
 #run configure with right options
 ./src/tests/fuzz/oss-fuzz-configure.sh
-make
+make -j$(nproc)
 
 cp src/fuzz_* $OUT/
 
