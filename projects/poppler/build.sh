@@ -48,6 +48,7 @@ cmake .. \
   -DCMAKE_BUILD_TYPE=debug \
   -DBUILD_SHARED_LIBS=OFF \
   -DFONT_CONFIGURATION=generic \
+  -DENABLE_FUZZER=OFF \
   -DENABLE_DCTDECODER=none \
   -DENABLE_LIBPNG=OFF \
   -DENABLE_ZLIB=OFF \
@@ -98,8 +99,10 @@ for f in $fuzzers; do
     $WORK/lib/libopenjp2.a \
     $WORK/lib/libpng.a \
     $WORK/lib/libz.a \
-    -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lcairo-gobject -lpangocairo-1.0 -lcairo
+    -Wl,-Bstatic -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lcairo-gobject -lcairo
 done
+    #-L/usr/lib/gcc/x86_64-linux-gnu/5/ \
+    #-Wl,-Bstatic -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lcairo-gobject -lpangocairo-1.0 -lcairo
 
 fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
 
@@ -119,7 +122,7 @@ for f in $fuzzers; do
     $WORK/lib/libopenjp2.a \
     $WORK/lib/libpng.a \
     $WORK/lib/libz.a \
-    -lQt5Gui -lQt5Core -lQt5Xml
+    -Wl,-Bstatic -lQt5Gui -lQt5Core -lQt5Xml
 done
 
 mv $SRC/{*.zip,*.dict} $OUT
