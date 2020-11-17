@@ -21,7 +21,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 #RUN sed -i -e 's/xenial/focal/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y python3-pip gobject-introspection \
     libffi-dev libexpat1-dev pkg-config libffi-dev libexpat1-dev libgirepository1.0-dev \
-    libgdk-pixbuf2.0-dev valac gtk-doc-tools libselinux1-dev zlib1g-dev libc6-dev
+    libgdk-pixbuf2.0-dev valac gtk-doc-tools libselinux1-dev zlib1g-dev
+    #valac gtk-doc-tools libselinux1-dev zlib1g-dev
 RUN pip3 install meson==0.55.3 ninja
 RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.gnome.org/ceyhunalp/libmediaart.git
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
