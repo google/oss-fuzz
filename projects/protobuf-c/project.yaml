@@ -1,4 +1,5 @@
 homepage: "https://github.com/protobuf-c/protobuf-c"
+language: c
 primary_contact: "guidovranken@gmail.com"
 sanitizers:
  - address
