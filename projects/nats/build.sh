@@ -26,3 +26,4 @@ function compile_fuzzer {
 
 compile_fuzzer github.com/nats-io/nats-server/conf Fuzz fuzz_conf
 compile_fuzzer github.com/nats-io/nats-server/server FuzzClient fuzz_client
+
