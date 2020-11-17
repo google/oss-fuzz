@@ -29,8 +29,7 @@ import urllib.request
 
 import fuzz_target
 
-# pylint: disable=wrong-import-position
-# pylint: disable=import-error
+# pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build_specified_commit
 import helper
@@ -38,7 +37,7 @@ import repo_manager
 import utils
 
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
-# Used to get the beginning of the stack trace.
+# Used to get the beginning of the stacktrace.
 STACKTRACE_TOOL_MARKERS = [
     b'AddressSanitizer',
     b'ASAN:',
@@ -53,7 +52,7 @@ STACKTRACE_TOOL_MARKERS = [
 ]
 
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
-# Used to get the end of the stack trace.
+# Used to get the end of the stacktrace.
 STACKTRACE_END_MARKERS = [
     b'ABORTING',
     b'END MEMORY TOOL REPORT',
@@ -66,14 +65,14 @@ STACKTRACE_END_MARKERS = [
     b'minidump has been written',
 ]
 
-#  Default fuzz configuration.
+# Default fuzz configuration.
 DEFAULT_ENGINE = 'libfuzzer'
 DEFAULT_ARCHITECTURE = 'x86_64'
 
 # The path to get project's latest report json files.
 LATEST_REPORT_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
 
-# TODO: Turn default logging to WARNING when CIFuzz is stable
+# TODO(metzman): Turn default logging to WARNING when CIFuzz is stable.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -93,14 +92,13 @@ def checkout_specified_commit(build_repo_manager, pr_ref, commit_sha):
         'Using current repo state', pr_ref or commit_sha)
 
 
-# pylint: disable=too-many-arguments
-# pylint: disable=too-many-locals
-def build_fuzzers(project_name,
-                  project_repo_name,
-                  workspace,
-                  pr_ref=None,
-                  commit_sha=None,
-                  sanitizer='address'):
+def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
+    project_name,
+    project_repo_name,
+    workspace,
+    pr_ref=None,
+    commit_sha=None,
+    sanitizer='address'):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
@@ -200,7 +198,11 @@ def build_fuzzers(project_name,
   return True
 
 
-def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
+def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
+    fuzz_seconds,
+    workspace,
+    project_name,
+    sanitizer='address'):
   """Runs all fuzzers for a specific OSS-Fuzz project.
 
   Args:
@@ -225,17 +227,16 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
   os.makedirs(artifacts_dir, exist_ok=True)
   if not fuzz_seconds or fuzz_seconds < 1:
     logging.error('Fuzz_seconds argument must be greater than 1, but was: %s.',
-                  format(fuzz_seconds))
+                  fuzz_seconds)
     return False, False
 
   # Get fuzzer information.
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
-    logging.error('No fuzzers were found in out directory: %s.',
-                  format(out_dir))
+    logging.error('No fuzzers were found in out directory: %s.', out_dir)
     return False, False
 
-  # Run fuzzers for alotted time.
+  # Run fuzzers for allotted time.
   total_num_fuzzers = len(fuzzer_paths)
   fuzzers_left_to_run = total_num_fuzzers
   min_seconds_per_fuzzer = fuzz_seconds // total_num_fuzzers
@@ -249,15 +250,15 @@ def run_fuzzers(fuzz_seconds, workspace, project_name, sanitizer='address'):
                                     project_name,
                                     sanitizer=sanitizer)
     start_time = time.time()
-    test_case, stack_trace = target.fuzz()
+    testcase, stacktrace = target.fuzz()
     fuzz_seconds -= (time.time() - start_time)
-    if not test_case or not stack_trace:
+    if not testcase or not stacktrace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
       logging.info(b'Fuzzer %s, detected error: %s.', target.target_name,
-                   stack_trace)
-      shutil.move(test_case, os.path.join(artifacts_dir, 'test_case'))
-      parse_fuzzer_output(stack_trace, artifacts_dir)
+                   stacktrace)
+      shutil.move(testcase, os.path.join(artifacts_dir, 'test_case'))
+      parse_fuzzer_output(stacktrace, artifacts_dir)
       return True, True
     fuzzers_left_to_run -= 1
 
@@ -361,7 +362,7 @@ def get_target_coverage_report(latest_cov_info, target_name):
 
 def get_files_covered_by_target(latest_cov_info, target_name,
                                 oss_fuzz_repo_path):
-  """Gets a list of files covered by the specific fuzz target.
+  """Gets a list of source files covered by the specific fuzz target.
 
   Args:
     latest_cov_info: A dict containing a project's latest cov report info.
@@ -372,7 +373,7 @@ def get_files_covered_by_target(latest_cov_info, target_name,
     A list of files that the fuzzer covers or None.
   """
   if not oss_fuzz_repo_path:
-    logging.error('Project souce location in docker is not found.'
+    logging.error('Project source location in docker is not found.'
                   'Can\'t get coverage information from OSS-Fuzz.')
     return None
   target_cov = get_target_coverage_report(latest_cov_info, target_name)
@@ -456,17 +457,17 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
       try:
         os.remove(os.path.join(out_dir, fuzzer))
       except OSError as error:
-        logging.error('%s occured while removing file %s', error, fuzzer)
+        logging.error('%s occurred while removing file %s', error, fuzzer)
 
 
 def get_json_from_url(url):
-  """Gets a json object from a specified http url.
+  """Gets a json object from a specified HTTP URL.
 
   Args:
     url: The url of the json to be downloaded.
 
   Returns:
-    Json dict or None on failure.
+    A dictionary deserialized from JSON or None on failure.
   """
   try:
     response = urllib.request.urlopen(url)
@@ -474,10 +475,10 @@ def get_json_from_url(url):
     logging.error('HTTP error with url %s.', url)
     return None
   try:
-    # read().decode() fixes compatability issue with urllib response object.
+    # read().decode() fixes compatibility issue with urllib response object.
     result_json = json.loads(response.read().decode())
-  except (ValueError, TypeError, json.JSONDecodeError) as excp:
-    logging.error('Loading json from url %s failed with: %s.', url, str(excp))
+  except (ValueError, TypeError, json.JSONDecodeError) as err:
+    logging.error('Loading json from url %s failed with: %s.', url, str(err))
     return None
   return result_json
 

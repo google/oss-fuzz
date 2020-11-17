@@ -35,12 +35,13 @@ TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 
 # WARNING: These tests  are dependent upon the following repos existing and
 # the specified commits existing.
+# TODO(metzman): Fix this problem.
 TEST_REPOS = [
     ExampleRepo(project_name='usrsctp',
                 oss_repo_name='usrsctp',
                 git_repo_name='usrsctp',
                 image_location='/src',
-                git_url='https://github.com/weinrank/usrsctp',
+                git_url='https://github.com/sctplab/usrsctp',
                 old_commit='4886aaa49fb90e479226fcfc3241d74208908232',
                 new_commit='c710749b1053978179a027973a3ea3bccf20ee5c',
                 intro_commit='457d6ead58e82584d9dcb826f6739347f59ebd3a',

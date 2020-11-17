@@ -9,14 +9,14 @@
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing perepo_managerissions and
+# See the License for the specific language governing permissions and
 # limitations under the License.
 """Test the functionality of the RepoManager class."""
 
 import os
+import tempfile
 import unittest
 from unittest import mock
-import tempfile
 
 import repo_manager
 import utils
@@ -24,12 +24,8 @@ import utils
 OSS_FUZZ_REPO = 'https://github.com/google/oss-fuzz'
 
 
-class TestRepoManager(unittest.TestCase):
-  """Class to test the functionality of the RepoManager class."""
-
-
-class RepoManagerCloneUnitTest(unittest.TestCase):
-  """Class to test the functionality of clone of the RepoManager class."""
+class RepoManagerCloneTest(unittest.TestCase):
+  """Tests the cloning functionality of RepoManager."""
 
   def test_clone_valid_repo(self):
     """Tests the correct location of the git repo."""
@@ -41,7 +37,7 @@ class RepoManagerCloneUnitTest(unittest.TestCase):
       test_repo_manager.remove_repo()
 
   def test_clone_invalid_repo(self):
-    """Test that constructing RepoManager with an invalid repo will fail."""
+    """Tests that constructing RepoManager with an invalid repo will fail."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       with self.assertRaises(ValueError):
         repo_manager.RepoManager(' ', tmp_dir)
@@ -52,8 +48,8 @@ class RepoManagerCloneUnitTest(unittest.TestCase):
                                  tmp_dir)
 
 
-class RepoManagerCheckoutUnitTest(unittest.TestCase):
-  """Class to test the functionality of checkout of the RepoManager class."""
+class RepoManagerCheckoutTest(unittest.TestCase):
+  """Tests the checkout functionality of RepoManager."""
 
   def test_checkout_valid_commit(self):
     """Tests that the git checkout command works."""
@@ -76,9 +72,8 @@ class RepoManagerCheckoutUnitTest(unittest.TestCase):
         test_repo_manager.checkout_commit('not-a-valid-commit')
 
 
-class RepoManagerGetCommitListUnitTest(unittest.TestCase):
-  """Class to test the functionality of get commit list in the
-   RepoManager class."""
+class RepoManagerGetCommitListTest(unittest.TestCase):
+  """Tests the get_commit_list method of RepoManager."""
 
   def test_get_valid_commit_list(self):
     """Tests an accurate commit list can be retrieved from the repo manager."""
@@ -95,9 +90,9 @@ class RepoManagerGetCommitListUnitTest(unittest.TestCase):
       result_list = test_repo_manager.get_commit_list(new_commit, old_commit)
       self.assertListEqual(commit_list, result_list)
 
-  def test_invalid_commit_list(self):
-    """Tests that the propper Errors are thrown when invalid commits are
-    passed."""
+  def test_get_invalid_commit_list(self):
+    """Tests that the proper errors are thrown when invalid commits are
+    passed to get_commit_list."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       old_commit = '04ea24ee15bbe46a19e5da6c5f022a2ffdfbdb3b'
       new_commit = 'fa662173bfeb3ba08d2e84cefc363be11e6c8463'
@@ -107,12 +102,11 @@ class RepoManagerGetCommitListUnitTest(unittest.TestCase):
       with self.assertRaises(ValueError):
         test_repo_manager.get_commit_list(new_commit, 'fakecommit')
       with self.assertRaises(RuntimeError):
-        # pylint: disable=arguments-out-of-order
-        test_repo_manager.get_commit_list(old_commit, new_commit)
+        test_repo_manager.get_commit_list(old_commit, new_commit)  # pylint: disable=arguments-out-of-order
 
 
-class GitDiffUnitTest(unittest.TestCase):
-  """Class testing functionality of get_git_diff in the repo_manager module."""
+class GitDiffTest(unittest.TestCase):
+  """Tests get_git_diff."""
 
   def test_diff_exists(self):
     """Tests that a real diff is returned when a valid repo manager exists."""
@@ -150,8 +144,8 @@ class GitDiffUnitTest(unittest.TestCase):
       self.assertIsNone(diff)
 
 
-class CheckoutPRIntegrationTest(unittest.TestCase):
-  """Class testing functionality of checkout_pr in the repo_manager module."""
+class CheckoutPrIntegrationTest(unittest.TestCase):
+  """Does Integration tests on the checkout_pr method of RepoManager."""
 
   def test_pull_request_exists(self):
     """Tests that a diff is returned when a valid PR is checked out."""
