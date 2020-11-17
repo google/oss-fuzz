@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
+
 function compile_fuzzer {
   path=$1
   function=$2
