@@ -2,7 +2,7 @@ homepage: "https://www.tensorflow.org"
 language: c++
 primary_contact: "mihaimaruseac@google.com"
 auto_ccs:
- - "frankchn@google.com"
+ - "amitpatankar@google.com"
 sanitizers:
   - address
   - undefined
