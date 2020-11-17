@@ -33,9 +33,6 @@ COPY checkout_build_install_llvm.sh /root/
 RUN /root/checkout_build_install_llvm.sh
 RUN rm /root/checkout_build_install_llvm.sh
 
-# Install Atheris (used for Python fuzzing).
-RUN CLANG_BIN=/usr/local/bin/clang pip3 install atheris
-
 # Setup the environment.
 ENV CC "clang"
 ENV CXX "clang++"

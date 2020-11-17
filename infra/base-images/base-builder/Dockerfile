@@ -55,6 +55,9 @@ RUN export PYTHON_DEPS="\
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
+# Install Atheris for Python fuzzing.
+RUN CLANG_BIN=/usr/local/bin/clang pip3 install atheris
+
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
 RUN chmod +x $SRC/installer_linux && \
