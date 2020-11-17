@@ -1,0 +1,10 @@
+homepage: "https://github.com/google/libphonenumber/"
+primary_contact: "david@adalogics.com"
+language: c++
+auto_ccs:
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+sanitizers:
+  - address
