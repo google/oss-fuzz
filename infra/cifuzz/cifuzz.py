@@ -77,6 +77,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
 
+_IMAGE_BUILD_TRIES = 3
+_IMAGE_BUILD_RETRY_SLEEP = 30.0
+
 
 def checkout_specified_commit(build_repo_manager, pr_ref, commit_sha):
   """Checks out the specified commit or pull request using
@@ -98,6 +101,25 @@ def get_project_src_path():
   # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
   # project_src_path.
   return os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
+
+
+def build_external_project_docker_image(
+    project_name, project_src, build_integration_path):
+  dockerfile_path = os.path.join(build_integration_path, 'Dockerfile')
+  command = ['-t', f'gcr.io/oss-fuzz/{project_name}',  '-f', dockerfile_path,
+             project_src]
+  return helper.docker_build(command)
+
+def build_external_project_docker_image_with_retries(
+    project_name, project_src, build_integration_path):
+  # !!! Make retry wrapper.
+  for _ in range(_IMAGE_BUILD_TRIES):
+    result = build_external_project_docker_image(project_name, project_src, build_integration_path)
+    if result:
+      return result
+    time.sleep(_IMAGE_BUILD_RETRY_SLEEP)
+  return result
+
 
 
 def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
@@ -122,7 +144,6 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     True if build succeeded or False on failure.
   """
   # Validate inputs.
-  import ipdb; ipdb.set_trace()
   assert pr_ref or commit_sha
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
@@ -148,17 +169,20 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
   if build_integration_path:
     inferred_url = None
-    project_builder_repo_path = os.path.join('$SRC',
+    project_builder_repo_path = os.path.join('/src',
                                              os.path.basename(project_src_path))
+    if not build_external_project_docker_image_with_retries(
+        project_name, project_src_path, build_integration_path):
+      return False
   else:
-    # Build Fuzzers using docker run.
+    # detect_main_repo builds the image as a side effect.
     inferred_url, project_builder_repo_path = (
         build_specified_commit.detect_main_repo(project_name,
                                                 repo_name=project_repo_name))
 
-  if not inferred_url or not project_builder_repo_path:
-    logging.error('Could not detect repo from project %s.', project_name)
-    return False
+    if not inferred_url or not project_builder_repo_path:
+      logging.error('Could not detect repo from project %s.', project_name)
+      return False
   project_repo_name = os.path.basename(project_builder_repo_path)
   src_in_project_builder = os.path.dirname(project_builder_repo_path)
 
@@ -197,7 +221,6 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
         '%s:%s' % (out_dir, '/out')
     ]
     bash_command = 'compile'
-
   command.extend([
       'gcr.io/oss-fuzz/' + project_name,
       '/bin/bash',

@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make
 
 COPY . $SRC/external-project
 WORKDIR external-project
-COPY build.sh $SRC/
+COPY oss-fuzz/build.sh $SRC/

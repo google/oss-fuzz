@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-cd projects/example/my-api-repo
 make clean  # Not strictly necessary, since we are building in a fresh dir.
 make -j$(nproc) all    # Build the fuzz targets.
 
