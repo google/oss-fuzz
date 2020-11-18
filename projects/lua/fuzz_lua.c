@@ -128,15 +128,12 @@ static int dochunk (lua_State *L, int status) {
 
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-lua_State *L = luaL_newstate();
-if (L == NULL) {
-        printf("Could not load lua\n");
+    lua_State *L = luaL_newstate();
+    if (L == NULL) {
         return 0;
-}
+    }
+    dochunk(L, luaL_loadbuffer(L, data, size, "test"));
 
-
-dochunk(L, luaL_loadbuffer(L, data, size, "test"));
-
-lua_close(L);
-return 0;
+    lua_close(L);
+    return 0;
 }
