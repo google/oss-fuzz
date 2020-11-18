@@ -167,6 +167,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     os.makedirs(git_workspace, exist_ok=True)
 
   build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+  logging.info('build_integration_path %s, project_src_path %s.',
+               build_integration_path, project_src_path)
   if build_integration_path:
     logging.info('Building external project.')
     inferred_url = None
