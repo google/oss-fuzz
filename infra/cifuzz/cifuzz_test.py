@@ -33,6 +33,7 @@ OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
 
 import cifuzz
 import fuzz_target
+import test_helpers
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
@@ -66,6 +67,33 @@ UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
+  def setUp(self):
+    test_helpers.patch_environ(self)
+
+  def test_external_project(self):
+    """Tests building fuzzers from an external project."""
+    project_name = 'my-git-repo'
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      src = os.path.join(
+          OSS_FUZZ_DIR, 'projects', 'example')
+      dst = os.path.join(tmp_dir, project_name)
+      shutil.copytree(src, dst)
+    # project_src_path = project_src_path_dst
+    build_integration_path = os.path.join(project_src_path, 'oss-fuzz')
+    os.environ['PROJECT_SRC_PATH'] = project_src_path
+    os.environ['BUILD_INTEGRATION_PATH'] = build_integration_path
+    commit_sha = '0b95fe1039ed7c38fea1f97078316bfc1030c523'
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers(
+              project_name,
+              project_name,
+              tmp_dir,
+              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+      self.assertTrue(
+          os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
   def test_valid_commit(self):
     """Tests building fuzzers with valid inputs."""

@@ -92,6 +92,14 @@ def checkout_specified_commit(build_repo_manager, pr_ref, commit_sha):
         'Using current repo state', pr_ref or commit_sha)
 
 
+def get_project_src_path():
+  """Returns the manually checked out path of the project's source if specified
+  or None."""
+  # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
+  # project_src_path.
+  return os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
+
+
 def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     project_name,
     project_repo_name,
@@ -114,6 +122,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     True if build succeeded or False on failure.
   """
   # Validate inputs.
+  import ipdb; ipdb.set_trace()
   assert pr_ref or commit_sha
   if not os.path.exists(workspace):
     logging.error('Invalid workspace: %s.', workspace)
@@ -124,35 +133,41 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   out_dir = os.path.join(workspace, 'out')
   os.makedirs(out_dir, exist_ok=True)
 
-  # Build Fuzzers using docker run.
-  inferred_url, project_builder_repo_path = (
-      build_specified_commit.detect_main_repo(project_name,
-                                              repo_name=project_repo_name))
+  project_src_path = get_project_src_path()
+  if project_src_path:
+    if not os.path.exists(project_src_path):
+      logging.error(
+          'PROJECT_SRC_PATH: %s does not exist. '
+          'Are you mounting it correctly?', project_src_path)
+      return False
+    git_workspace = os.path.dirname(project_src_path)
+  else:
+    git_workspace = os.path.join(workspace, 'storage')
+    os.makedirs(git_workspace, exist_ok=True)
+
+  build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+  if build_integration_path:
+    inferred_url = None
+    project_builder_repo_path = os.path.join('$SRC',
+                                             os.path.basename(project_src_path))
+  else:
+    # Build Fuzzers using docker run.
+    inferred_url, project_builder_repo_path = (
+        build_specified_commit.detect_main_repo(project_name,
+                                                repo_name=project_repo_name))
+
   if not inferred_url or not project_builder_repo_path:
     logging.error('Could not detect repo from project %s.', project_name)
     return False
   project_repo_name = os.path.basename(project_builder_repo_path)
   src_in_project_builder = os.path.dirname(project_builder_repo_path)
 
-  manual_src_path = os.getenv('MANUAL_SRC_PATH')
-  if manual_src_path:
-    if not os.path.exists(manual_src_path):
-      logging.error(
-          'MANUAL_SRC_PATH: %s does not exist. '
-          'Are you mounting it correctly?', manual_src_path)
-      return False
-    # This is the path taken outside of GitHub actions.
-    git_workspace = os.path.dirname(manual_src_path)
-  else:
-    git_workspace = os.path.join(workspace, 'storage')
-    os.makedirs(git_workspace, exist_ok=True)
-
-  # Checkout projects repo in the shared volume.
+  # Checkout project's repo in the shared volume.
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
                                                 repo_name=project_repo_name)
 
-  if not manual_src_path:
+  if not project_src_path:
     checkout_specified_commit(build_repo_manager, pr_ref, commit_sha)
 
   command = [
