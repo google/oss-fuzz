@@ -150,7 +150,7 @@ fi
 
 # Compile SymCrypt
 cd $SRC/SymCrypt/
-if [[ $CFLAGS != *sanitize=undefined* ]]
+if [[ $CFLAGS != *sanitize=array-bounds* ]]
 then
     # Unittests don't build with clang and are not needed anyway
     sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
