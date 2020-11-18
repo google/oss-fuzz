@@ -20,12 +20,9 @@ cd $SRC/leveldb
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
 
-# Copy in the fuzzers
-cp $SRC/*.cc .
-
 for fuzzer in fuzz_db; do
     # Compile
-    $CXX $CXXFLAGS -c ${fuzzer}.cc -o ${fuzzer}.o \
+    $CXX $CXXFLAGS -c ../${fuzzer}.cc -o ${fuzzer}.o \
      -DLEVELDB_PLATFORM_POSIX=1 -std=c++11 \
     -I$SRC/leveldb/build/include -I$SRC/leveldb/ -I$SRC/leveldb/include
 

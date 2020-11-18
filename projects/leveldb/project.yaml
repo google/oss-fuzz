@@ -1,7 +1,8 @@
 homepage: "https://github.com/google/leveldb"
 language: c++
-primary_contact: "david@adalogics.com"
+primary_contact: "costan@google.com"
 auto_ccs :
+  - "cmumford@google.com"
   - "david@adalogics.com"
 sanitizers:
   - address

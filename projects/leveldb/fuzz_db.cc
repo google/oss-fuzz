@@ -20,31 +20,16 @@ limitations under the License.
 #include <string.h>
 #include <filesystem>
 
-// Helper function to provide random strings for the fuzzer
-std::string get_string(const uint8_t **data, size_t *remaining) {
-    if (*remaining == 0) {
-       return std::string("");   
-    }
-    uint8_t s_size = (*data)[0];
+#include <fuzzer/FuzzedDataProvider.h>
 
-    // if s_size is more than we have available, do not use s_size
-    if (s_size > *remaining) {
-       std::string s1(reinterpret_cast<const char*>(*data), *remaining);
-       *data += *remaining;
-       *remaining = 0;
-       return s1;
-    }
-
-    std::string s1(reinterpret_cast<const char*>(*data), s_size);
-    *remaining -= s_size;
-    return s1;
-}
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   // We need at least one byte
   if (size == 0) {
     return 0;
   }
+
+  FuzzedDataProvider fuzzed_data(data, size);
 
   leveldb::DB* db;
   leveldb::Options options;
@@ -61,24 +46,24 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   int max_iter = (int)data[0];
   for(int i=0; i < max_iter && i < size; i++) {
     #define SIZE_OF_FUNCS 8
-    char c = data[i] % SIZE_OF_FUNCS;
+    size_t c = fuzzed_data.ConsumeIntegral<uint8_t>() % SIZE_OF_FUNCS;
 
     if(c == 0) {  // PUT
-        std::string tmp1 = get_string(&curr_offset, &curr_size);
-        std::string tmp2 = get_string(&curr_offset, &curr_size);
+        std::string tmp1 = fuzzed_data.ConsumeRandomLengthString();
+        std::string tmp2 = fuzzed_data.ConsumeRandomLengthString();
       db->Put(leveldb::WriteOptions(), tmp1, tmp2);
     } 
     else if(c == 1) { // Get
-        std::string tmp3 = get_string(&curr_offset, &curr_size);
+        std::string tmp3 = fuzzed_data.ConsumeRandomLengthString();
       db->Get(leveldb::ReadOptions(), tmp3, &value);
     } 
     else if (c == 2) { // Delete
-      std::string tmp4 = get_string(&curr_offset, &curr_size);
+      std::string tmp4 = fuzzed_data.ConsumeRandomLengthString();
       db->Delete(leveldb::WriteOptions(), tmp4);
     }
     else if (c == 3) { // GetProperty
       std::string prop;
-      std::string tmp = get_string(&curr_offset, &curr_size);
+      std::string tmp = fuzzed_data.ConsumeRandomLengthString();
       db->GetProperty(tmp, &prop);
     }
     else if(c == 4) { // Iterator
@@ -99,8 +84,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       status = leveldb::DB::Open(options, "/tmp/testdb", &db);
     }
     else if (c == 7) { 
-      std::string tmp1 = get_string(&curr_offset, &curr_size);
-      std::string tmp2 = get_string(&curr_offset, &curr_size);
+      std::string tmp1 = fuzzed_data.ConsumeRandomLengthString();
+      std::string tmp2 =  fuzzed_data.ConsumeRandomLengthString();
       leveldb::Slice s1 =tmp1;
       leveldb::Slice s2 = tmp2;
       db->CompactRange(&s1, &s2);

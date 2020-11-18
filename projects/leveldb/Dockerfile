@@ -22,5 +22,5 @@ WORKDIR $SRC/
 
 # Copy in our files
 COPY build.sh $SRC/
-COPY *.cc $SRC/
+COPY *.cc $SRC/leveldb/
 COPY *.options $SRC/
