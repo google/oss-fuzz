@@ -167,6 +167,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     os.makedirs(git_workspace, exist_ok=True)
 
   print('hello world')
+  1/0
 
   build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
   logging.info('build_integration_path %s, project_src_path %s.',
