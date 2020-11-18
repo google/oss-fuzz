@@ -22,8 +22,10 @@ export LIBZSTD=$PWD/mklove/deps/dest/libzstd/usr/lib/libzstd.a
 export LIBZ_LIB=$PWD/mklove/deps/dest/zlib/usr/lib/libz.a
 
 cd tests
+echo $PWD
+ls -al 
 $CC -g -fPIC $CFLAGS -I../src -c ./fuzzers/fuzz_regex.c -o fuzz_regex.o
-$CC $CFLAGS $LIB_FUZZING_ENGINE -rdynamic fuzz_regex.o -o fuzzer \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -rdynamic fuzz_regex.o -o fuzzer \
     ../src/librdkafka.a -lm ${LIBZSTD} -lsasl2 -lssl -lcrypto \
     -lcrypto ${LIBZ_LIB} -ldl -lpthread -lrt
 
