@@ -168,6 +168,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
 
   build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
   if build_integration_path:
+    logging.info('Building external project.')
     inferred_url = None
     project_builder_repo_path = os.path.join('/src',
                                              os.path.basename(project_src_path))
