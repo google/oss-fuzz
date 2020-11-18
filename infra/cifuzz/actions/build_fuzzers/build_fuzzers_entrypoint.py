@@ -51,7 +51,6 @@ def main():
   Returns:
     0 on success or 1 on failure.
   """
-  1/0
   oss_fuzz_project_name = os.environ.get('OSS_FUZZ_PROJECT_NAME')
   github_repo_name = os.path.basename(os.environ.get('GITHUB_REPOSITORY'))
   commit_sha = os.environ.get('GITHUB_SHA')
