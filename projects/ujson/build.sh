@@ -15,5 +15,10 @@
 #
 ################################################################################
 
-# build and install fuzzers
-pip3 install . -t $OUT
+# Build and install the project package.
+pip3 install .
+
+# Build fuzzers in $OUT.
+for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
+  pyinstaller --distpath $OUT --onefile $fuzzer
+done
