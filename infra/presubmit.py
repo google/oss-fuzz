@@ -103,6 +103,7 @@ class ProjectYamlChecker:
       'c',
       'c++',
       'go',
+      'python',
       'rust',
   ]
 
