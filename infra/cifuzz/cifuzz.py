@@ -206,6 +206,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   project_repo_name = os.path.basename(project_builder_repo_path)
   src_in_project_builder = os.path.dirname(project_builder_repo_path)
 
+  print('workspace', os.listdir(os.environ['GITHUB_WORKSPACE']))
   # Checkout project's repo in the shared volume.
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
