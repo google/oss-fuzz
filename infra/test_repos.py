@@ -33,8 +33,8 @@ ExampleRepo = collections.namedtuple('ExampleRepo', [
 TEST_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                              'testcases')
 
-# WARNING: These tests  are dependent upon the following repos existing and
-# the specified commits existing.
+# WARNING: Tests are dependent upon the following repos existing and the
+# specified commits existing.
 # TODO(metzman): Fix this problem.
 TEST_REPOS = [
     ExampleRepo(project_name='curl',
