@@ -18,6 +18,7 @@
 FROM gcr.io/oss-fuzz-base/cifuzz-base
 
 RUN rm -rf ${OSS_FUZZ_ROOT}/infra/cifuzz
+
 # Copies your code file from  action repository to the container
 COPY actions/build_fuzzers/build_fuzzers_entrypoint.py /opt/build_fuzzers_entrypoint.py
 
