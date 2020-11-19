@@ -24,4 +24,5 @@ COPY infra/cifuzz/actions/run_fuzzers/run_fuzzers_entrypoint.py /opt/build_fuzze
 ENTRYPOINT ["python3", "/opt/run_fuzzers_entrypoint.py"]
 
 # Copy infra source code.
+RUN rm -rf ${OSS_FUZZ_ROOT}/infra
 ADD . ${OSS_FUZZ_ROOT}/infra

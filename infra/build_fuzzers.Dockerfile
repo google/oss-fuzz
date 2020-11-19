@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 ################################################################################
-# Docker image to run the CIFuzz action: build_fuzzers in.
+# Docker image to run the CIFuzz action build_fuzzers in.
 
 FROM gcr.io/oss-fuzz-base/cifuzz-base
 
@@ -23,5 +23,6 @@ COPY infra/cifuzz/actions/build_fuzzers/build_fuzzers_entrypoint.py /opt/build_f
 # Python file to execute when the docker container starts up
 ENTRYPOINT ["python3", "/opt/build_fuzzers_entrypoint.py"]
 
-# Copy infra source code.
+# Update infra source code.
+RUN rm -rf ${OSS_FUZZ_ROOT}/infra
 ADD . ${OSS_FUZZ_ROOT}/infra
