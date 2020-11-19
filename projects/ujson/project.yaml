@@ -4,5 +4,7 @@ language: python
 primary_contact: "mbarbella@google.com"
 auto_ccs:
   - "ipudney@google.com"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
   - address
