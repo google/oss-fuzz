@@ -106,8 +106,8 @@ def get_project_src_path():
 def build_external_project_docker_image(
     project_name, project_src, build_integration_path):
   dockerfile_path = os.path.join(build_integration_path, 'Dockerfile')
-  command = ['-t', f'gcr.io/oss-fuzz/{project_name}',  '-f', dockerfile_path,
-             project_src]
+  tag = 'gcr.io/oss-fuzz/{project_name}'.format(project_name=project_name)
+  command = ['-t', tag,  '-f', dockerfile_path, project_src]
   return helper.docker_build(command)
 
 def build_external_project_docker_image_with_retries(
