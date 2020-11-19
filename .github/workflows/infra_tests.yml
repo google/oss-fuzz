@@ -21,7 +21,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          which python
           sudo env "PATH=$PATH" python -m pip install --upgrade pip
           sudo env "PATH=$PATH" pip install -r infra/ci/requirements.txt
           sudo env "PATH=$PATH" pip install -r infra/build/functions/requirements.txt
