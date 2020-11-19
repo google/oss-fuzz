@@ -100,7 +100,18 @@ def get_project_src_path():
   or None."""
   # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
   # project_src_path.
-  return os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
+  path = os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
+  if path is None:
+    return path
+  return get_abs_src_path(path)
+
+
+def get_abs_src_path(src):
+  if os.path.isabs(src):
+    return src
+  workspace = os.environ['GITHUB_WORKSPACE']
+  print('GITHUB_WORKSPACE', workspace)
+  return os.path.join(workspace, src)
 
 
 def build_external_project_docker_image(
@@ -169,6 +180,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   print('hello world')
 
   build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+  if build_integration_path:
+    build_integration_path = get_abs_src_path(build_integration_path)
   logging.info('build_integration_path %s, project_src_path %s.',
                build_integration_path, project_src_path)
   if build_integration_path:
