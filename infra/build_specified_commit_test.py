@@ -42,7 +42,7 @@ class BuildImageIntegrationTests(unittest.TestCase):
     should not.
     """
     with tempfile.TemporaryDirectory() as tmp_dir:
-      test_case = test_repos.TEST_REPOS[0]
+      test_case = test_repos.TEST_REPOS[1]
       self.assertTrue(helper.build_image_impl(test_case.project_name))
       host_src_dir = build_specified_commit.copy_src_from_docker(
           test_case.project_name, tmp_dir)
