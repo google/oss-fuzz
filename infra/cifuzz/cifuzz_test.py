@@ -91,7 +91,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
               project_name,
               project_name,
               tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+              commit_sha=commit_sha))
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 

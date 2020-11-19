@@ -107,6 +107,7 @@ def get_project_src_path():
 
 
 def get_abs_src_path(src):
+  """Returns the absolute path of the source code repo."""
   if os.path.isabs(src):
     return src
   workspace = os.environ['GITHUB_WORKSPACE']
@@ -117,6 +118,8 @@ def get_abs_src_path(src):
 
 def build_external_project_docker_image(project_name, project_src,
                                         build_integration_path):
+  """Builds the project builder image for an external (non-OSS-Fuzz) project.
+  Returns True on success."""
   dockerfile_path = os.path.join(build_integration_path, 'Dockerfile')
   tag = 'gcr.io/oss-fuzz/{project_name}'.format(project_name=project_name)
   command = ['-t', tag, '-f', dockerfile_path, project_src]
@@ -125,6 +128,7 @@ def build_external_project_docker_image(project_name, project_src,
 
 def build_external_project_docker_image_with_retries(project_name, project_src,
                                                      build_integration_path):
+  """Wrapper around build_external_project_docker_image that uses retries."""
   # !!! Make retry wrapper.
   for _ in range(_IMAGE_BUILD_TRIES):
     result = build_external_project_docker_image(project_name, project_src,
@@ -136,6 +140,8 @@ def build_external_project_docker_image_with_retries(project_name, project_src,
 
 
 def fix_git_repo(repo_dir):
+  """Fixes git repos cloned by the "checkout" action so that diffing works on
+  them."""
   # !!! Move to repo_manager when done testing.
   command = [
       'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
