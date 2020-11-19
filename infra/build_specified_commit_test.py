@@ -43,7 +43,7 @@ class BuildImageIntegrationTests(unittest.TestCase):
     """
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-      test_case = test_repos.TEST_REPOS[0]
+      test_case = test_repos.TEST_REPOS[1]
       self.assertTrue(helper.build_image_impl(test_case.project_name))
       host_src_dir = build_specified_commit.copy_src_from_docker(
           test_case.project_name, tmp_dir)
@@ -74,10 +74,7 @@ class BuildImageIntegrationTests(unittest.TestCase):
     """Test the detect main repo function from build specific commit module."""
     # TODO(metzman): Fix these tests so they don't randomly break because of
     # changes in the outside world.
-    test_repos_list = [
-        repo for repo in test_repos.TEST_REPOS if repo.project_name != 'usrsctp'
-    ]
-    for example_repo in test_repos_list:
+    for example_repo in test_repos.TEST_REPOS:
       if example_repo.new_commit:
         # TODO(metzman): This function calls _build_image_with_retries which
         # has a long delay (30 seconds). Figure out how to make this quicker.
