@@ -21,18 +21,12 @@ inputs:
     description: "The path to the the project's build integration."
     required: false
 runs:
-  using: 'composite'
-  steps:
-    - id: 'say hello'
-      shell: bash
-      run: 'ls .'
-    - id: 'build'
-      using: 'docker'
-      image: 'infra/cifuzz/actions/build_fuzzers/Dockerfile'
-      env:
-        OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
-        DRY_RUN: ${{ inputs.dry-run}}
-        ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
-        SANITIZER: ${{ inputs.sanitizer }}
-        PROJECT_SRC_PATH_PATH: ${{ inputs.project-src-path }}
-        BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
+  using: 'docker'
+  image: '../../build_fuzzers.Dockerfile'
+  env:
+    OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
+    DRY_RUN: ${{ inputs.dry-run}}
+    ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
+    SANITIZER: ${{ inputs.sanitizer }}
+    PROJECT_SRC_PATH_PATH: ${{ inputs.project-src-path }}
+    BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
