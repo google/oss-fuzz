@@ -115,18 +115,20 @@ def get_abs_src_path(src):
   return abs_src_path
 
 
-def build_external_project_docker_image(
-    project_name, project_src, build_integration_path):
+def build_external_project_docker_image(project_name, project_src,
+                                        build_integration_path):
   dockerfile_path = os.path.join(build_integration_path, 'Dockerfile')
   tag = 'gcr.io/oss-fuzz/{project_name}'.format(project_name=project_name)
-  command = ['-t', tag,  '-f', dockerfile_path, project_src]
+  command = ['-t', tag, '-f', dockerfile_path, project_src]
   return helper.docker_build(command)
 
-def build_external_project_docker_image_with_retries(
-    project_name, project_src, build_integration_path):
+
+def build_external_project_docker_image_with_retries(project_name, project_src,
+                                                     build_integration_path):
   # !!! Make retry wrapper.
   for _ in range(_IMAGE_BUILD_TRIES):
-    result = build_external_project_docker_image(project_name, project_src, build_integration_path)
+    result = build_external_project_docker_image(project_name, project_src,
+                                                 build_integration_path)
     if result:
       return result
     time.sleep(_IMAGE_BUILD_RETRY_SLEEP)
@@ -135,7 +137,10 @@ def build_external_project_docker_image_with_retries(
 
 def fix_git_repo(repo_dir):
   # !!! Move to repo_manager when done testing.
-  command = ['git', 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/master']
+  command = [
+      'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
+      'refs/remotes/origin/master'
+  ]
   return utils.execute(command, location=repo_dir)
 
 
@@ -188,8 +193,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
 
   build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
   if build_integration_path:
-    build_integration_path = os.path.join(
-        project_src_path, build_integration_path)
+    build_integration_path = os.path.join(project_src_path,
+                                          build_integration_path)
     logging.info('build_integration_path %s, project_src_path %s.',
                  build_integration_path, project_src_path)
     logging.info('Building external project.')
@@ -215,8 +220,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
                                                 repo_name=project_repo_name)
-  print('workspace', project_name,
-        project_repo_name, os.listdir(os.environ['GITHUB_WORKSPACE']))
+  print('workspace', project_name, project_repo_name,
+        os.listdir(os.environ['GITHUB_WORKSPACE']))
 
   if not project_src_path:
     checkout_specified_commit(build_repo_manager, pr_ref, commit_sha)

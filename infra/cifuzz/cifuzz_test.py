@@ -67,6 +67,7 @@ UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
+
   def setUp(self):
     test_helpers.patch_environ(self)
 
@@ -360,11 +361,11 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
   example_fuzzer = 'curl_fuzzer'
 
   def setUp(self):
-    with open(os.path.join(TEST_FILES_PATH, self.example_cov_json)
-              ) as file_handle:
+    with open(os.path.join(TEST_FILES_PATH,
+                           self.example_cov_json)) as file_handle:
       self.proj_cov_report_example = json.loads(file_handle.read())
-    with open(os.path.join(TEST_FILES_PATH, self.example_fuzzer_cov_json)
-              ) as file_handle:
+    with open(os.path.join(TEST_FILES_PATH,
+                           self.example_fuzzer_cov_json)) as file_handle:
       self.fuzzer_cov_report_example = json.loads(file_handle.read())
 
   def test_valid_target(self):
@@ -376,8 +377,8 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
       file_list = cifuzz.get_files_covered_by_target(
           self.proj_cov_report_example, self.example_fuzzer, '/src/curl')
 
-    curl_files_list_path = os.path.join(
-        TEST_FILES_PATH, 'example_curl_file_list.json')
+    curl_files_list_path = os.path.join(TEST_FILES_PATH,
+                                        'example_curl_file_list.json')
     with open(curl_files_list_path) as file_handle:
       true_files_list = json.load(file_handle)
     self.assertCountEqual(file_list, true_files_list)
