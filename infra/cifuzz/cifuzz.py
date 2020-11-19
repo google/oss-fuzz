@@ -210,7 +210,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
                                                 repo_name=project_repo_name)
-  print('workspace', os.listdir(os.environ['GITHUB_WORKSPACE']))
+  print('workspace', project_name,
+        project_repo_name, os.listdir(os.environ['GITHUB_WORKSPACE']))
 
   if not project_src_path:
     checkout_specified_commit(build_repo_manager, pr_ref, commit_sha)
