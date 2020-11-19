@@ -16,5 +16,4 @@
 ################################################################################
 
 # build and install fuzzers
-# TODO(mbarbella): Don't set CFLAGS/CXXFLAGS directly.
-CFLAGS="-fsanitize=address,fuzzer-no-link" CXXFLAGS="-fsanitize=address,fuzzer-no-link" pip3 install . -t $OUT
+CFLAGS="$CFLAGS -fsanitize=fuzzer-no-link" CXXFLAGS="$CXXFLAGS -fsanitize=fuzzer-no-link" pip3 install . -t $OUT
