@@ -69,8 +69,6 @@ def TestOneInput(input_bytes):
     # that are uninteresting, such as "00". So, that is not done.
     return
 
-
-
   # Uncomment these lines to ignore the errors described in the docstring of
   # this file.
   json_data = ClearAllIntegers(json_data)

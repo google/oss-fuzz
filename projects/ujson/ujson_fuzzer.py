@@ -55,5 +55,6 @@ def main():
   atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=False)
   atheris.Fuzz()
 
+
 if __name__ == "__main__":
   main()
