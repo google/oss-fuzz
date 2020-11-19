@@ -15,11 +15,7 @@
 function compile_fuzzer {
   fuzzer=$(basename $1)
 
-  # Compile and instrument all Go files relevant to this fuzz target.
-  go-fuzz -o $fuzzer.a github.com/dvyukov/go-fuzz-corpus/$fuzzer
-
-  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/fuzzer-$fuzzer
+  compile_fuzzer "github.com/dvyukov/go-fuzz-corpus/$fuzzer" Fuzz $fuzzer
 
   # Pack the seed corpus
   zip -r $OUT/fuzzer-${fuzzer}_seed_corpus.zip \

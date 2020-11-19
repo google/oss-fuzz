@@ -15,16 +15,8 @@
 #
 ################################################################################
 
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  go-fuzz -func $function -o $fuzzer.a $path
 
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-
-compile_fuzzer github.com/nats-io/nats-server/conf Fuzz fuzz_conf
-compile_fuzzer github.com/nats-io/nats-server/server FuzzClient fuzz_client
+compile_go_fuzzer github.com/nats-io/nats-server/conf Fuzz fuzz_conf
+compile_go_fuzzer github.com/nats-io/nats-server/server FuzzClient fuzz_client
 
