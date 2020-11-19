@@ -87,11 +87,10 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
       self.assertTrue(
-          cifuzz.build_fuzzers(
-              project_name,
-              project_name,
-              tmp_dir,
-              commit_sha=commit_sha))
+          cifuzz.build_fuzzers(project_name,
+                               project_name,
+                               tmp_dir,
+                               commit_sha=commit_sha))
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
