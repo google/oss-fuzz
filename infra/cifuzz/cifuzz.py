@@ -183,7 +183,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
 
   build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
   if build_integration_path:
-    build_integration_path = get_abs_src_path(build_integration_path)
+    build_integration_path = os.path.join(
+        project_src_path, build_integration_path)
   logging.info('build_integration_path %s, project_src_path %s.',
                build_integration_path, project_src_path)
   if build_integration_path:
