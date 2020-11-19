@@ -112,7 +112,6 @@ def get_abs_src_path(src):
     return src
   workspace = os.environ['GITHUB_WORKSPACE']
   abs_src_path = os.path.join(workspace, src)
-  print('abs_src_path', abs_src_path)
   return abs_src_path
 
 
@@ -184,7 +183,6 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
 
   project_src_path = get_project_src_path()
   if project_src_path:
-    print(os.listdir(os.environ['GITHUB_WORKSPACE']))
     if not os.path.exists(project_src_path):
       logging.error(
           'PROJECT_SRC_PATH: %s does not exist. '
@@ -194,8 +192,6 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   else:
     git_workspace = os.path.join(workspace, 'storage')
     os.makedirs(git_workspace, exist_ok=True)
-
-  print('hello world')
 
   build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
   if build_integration_path:
@@ -226,9 +222,6 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   build_repo_manager = repo_manager.RepoManager(inferred_url,
                                                 git_workspace,
                                                 repo_name=project_repo_name)
-  print('workspace', project_name, project_repo_name,
-        os.listdir(os.environ['GITHUB_WORKSPACE']))
-
   if not project_src_path:
     checkout_specified_commit(build_repo_manager, pr_ref, commit_sha)
 
