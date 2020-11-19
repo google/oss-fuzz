@@ -21,6 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          which python
           sudo python -m pip install --upgrade pip
           sudo pip install -r infra/ci/requirements.txt
           sudo pip install -r infra/build/functions/requirements.txt
