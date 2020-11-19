@@ -133,6 +133,11 @@ def build_external_project_docker_image_with_retries(
   return result
 
 
+def fix_git_repo(repo_dir):
+  # !!! Move to repo_manager when done testing.
+  command = ['git', 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/master']
+  return utils.execute(command, location=repo_dir)
+
 
 def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     project_name,
@@ -185,9 +190,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   if build_integration_path:
     build_integration_path = os.path.join(
         project_src_path, build_integration_path)
-  logging.info('build_integration_path %s, project_src_path %s.',
-               build_integration_path, project_src_path)
-  if build_integration_path:
+    logging.info('build_integration_path %s, project_src_path %s.',
+                 build_integration_path, project_src_path)
     logging.info('Building external project.')
     inferred_url = None
     project_builder_repo_path = os.path.join('/src',
@@ -230,11 +234,12 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
       'FUZZING_LANGUAGE=c++',  # FIXME: Add proper support.
   ]
   container = utils.get_container_name()
+  host_repo_path = os.path.join(git_workspace, project_repo_name)
   if container:
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
     bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
         os.path.join(src_in_project_builder, project_repo_name, '*'),
-        os.path.join(git_workspace, project_repo_name), src_in_project_builder)
+        host_repo_path, src_in_project_builder)
   else:
     command += [
         '-e', 'OUT=' + '/out', '-v',
@@ -253,6 +258,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   if helper.docker_run(command):
     logging.error('Building fuzzers failed.')
     return False
+  fix_git_repo(host_repo_path)
   remove_unaffected_fuzzers(project_name, out_dir,
                             build_repo_manager.get_git_diff(),
                             project_builder_repo_path)
