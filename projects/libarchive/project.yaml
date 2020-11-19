@@ -1,5 +1,4 @@
 homepage: "https://github.com/libarchive/libarchive"
-language: c++
 primary_contact: "joerg.sonnenberger@googlemail.com"
 auto_ccs:
   - "kientzle@gmail.com"

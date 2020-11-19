@@ -16,7 +16,7 @@ inputs:
     default: 'address'
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: '../../../build_fuzzers.Dockerfile'
   env:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
     DRY_RUN: ${{ inputs.dry-run}}
