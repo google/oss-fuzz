@@ -103,6 +103,7 @@ class ProjectYamlChecker:
       'c',
       'c++',
       'go',
+      'python',
       'rust',
   ]
 
@@ -285,15 +286,15 @@ def bool_to_returncode(success):
   return 1
 
 
-def is_python(path):
+def is_nonfuzzer_python(path):
   """Returns True if |path| ends in .py."""
-  return os.path.splitext(path)[1] == '.py'
+  return os.path.splitext(path)[1] == '.py' and '/projects/' not in path
 
 
 def lint(paths):
   """Run python's linter on |paths| if it is a python file. Return False if it
   fails linting."""
-  paths = [path for path in paths if is_python(path)]
+  paths = [path for path in paths if is_nonfuzzer_python(path)]
   if not paths:
     return True
 
@@ -308,7 +309,7 @@ def yapf(paths, validate=True):
   """Do yapf on |path| if it is Python file. Only validates format if
   |validate| otherwise, formats the file. Returns False if validation
   or formatting fails."""
-  paths = [path for path in paths if is_python(path)]
+  paths = [path for path in paths if is_nonfuzzer_python(path)]
   if not paths:
     return True
 
