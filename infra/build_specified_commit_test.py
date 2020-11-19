@@ -47,7 +47,7 @@ class BuildImageIntegrationTests(unittest.TestCase):
       host_src_dir = build_specified_commit.copy_src_from_docker(
           test_case.project_name, tmp_dir)
 
-      repo_manager = repo_manager.RepoManager(
+      test_repo_manager = repo_manager.RepoManager(
           test_case.git_url, host_src_dir, repo_name=test_case.oss_repo_name)
       build_data = build_specified_commit.BuildData(
           sanitizer='address',
@@ -56,13 +56,13 @@ class BuildImageIntegrationTests(unittest.TestCase):
           project_name=test_case.project_name)
 
       build_specified_commit.build_fuzzers_from_commit(test_case.old_commit,
-                                                       repo_manager,
+                                                       test_repo_manager,
                                                        host_src_dir, build_data)
       old_error_code = helper.reproduce_impl(test_case.project_name,
                                              test_case.fuzz_target, False, [],
                                              [], test_case.test_case_path)
       build_specified_commit.build_fuzzers_from_commit(test_case.new_commit,
-                                                       repo_manager,
+                                                       test_repo_manager,
                                                        host_src_dir, build_data)
       new_error_code = helper.reproduce_impl(test_case.project_name,
                                              test_case.fuzz_target, False, [],
