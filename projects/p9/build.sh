@@ -14,16 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  # Compile and instrument all Go files relevant to this fuzz target.
-  go-fuzz -func $function -o $fuzzer.a $path
 
-  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-
-compile_fuzzer github.com/hugelgupf/p9/p9 Fuzz p9_fuzzer
+compile_go_fuzzer github.com/hugelgupf/p9/p9 Fuzz p9_fuzzer
