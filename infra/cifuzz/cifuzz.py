@@ -110,8 +110,9 @@ def get_abs_src_path(src):
   if os.path.isabs(src):
     return src
   workspace = os.environ['GITHUB_WORKSPACE']
-  print('GITHUB_WORKSPACE', workspace)
-  return os.path.join(workspace, src)
+  abs_src_path = os.path.join(workspace, src)
+  print('abs_src_path', abs_src_path)
+  return abs_src_path
 
 
 def build_external_project_docker_image(
