@@ -57,9 +57,6 @@ RUN export PYTHON_DEPS="\
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
-# Install latest atheris for python fuzzing.
-RUN pip3 install atheris
-
 # Install pyinstaller for python fuzzer packaging.
 RUN pip3 install pyinstaller==4.1
 
