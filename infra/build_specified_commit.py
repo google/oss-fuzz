@@ -399,5 +399,4 @@ def main():
 
 
 if __name__ == '__main__':
-  1 + 1
   main()
