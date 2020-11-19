@@ -16,4 +16,4 @@
 ################################################################################
 
 # build and install fuzzers
-CFLAGS="$CFLAGS -fsanitize=fuzzer-no-link" CXXFLAGS="$CXXFLAGS -fsanitize=fuzzer-no-link" pip3 install . -t $OUT
+pip3 install . -t $OUT
