@@ -20,6 +20,22 @@ function compile_fuzzer {
   function=$2
   fuzzer=$3
 
+  if [[ $SANITIZER = *coverage* ]]; then
+    cd $GOPATH/src/$path
+    fuzzed_package=`pwd | rev | cut -d'/' -f 1 | rev`
+    cp $GOPATH/ossfuzz_coverage_runner.go ./"${function,,}"_test.go
+    sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
+    sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
+    sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
+
+    echo "#/bin/sh" > $OUT/$fuzzer
+    echo "cd $path" >> $OUT/$fuzzer
+    echo "go test -run Test${function}Corpus -v -coverprofile \$1 " >> $OUT/$fuzzer
+    chmod +x $OUT/$fuzzer
+
+    cd -
+    return 0
+  fi
   # Compile and instrument all Go files relevant to this fuzz target.
   go-fuzz -func $function -o $fuzzer.a $path
 
@@ -37,4 +53,4 @@ mkdir corpus
 set +x
 cat *.rules | while read l; do echo $l > corpus/$i.rule; i=$((i+1)); done
 set -x
-zip -r $OUT/fuzz_parserule_seed_corpus.zip corpus
+zip -q -r $OUT/fuzz_parserule_seed_corpus.zip corpus
