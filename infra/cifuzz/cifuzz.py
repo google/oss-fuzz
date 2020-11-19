@@ -167,6 +167,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
 
   project_src_path = get_project_src_path()
   if project_src_path:
+    print(os.listdir(os.environ['GITHUB_WORKSPACE']))
     if not os.path.exists(project_src_path):
       logging.error(
           'PROJECT_SRC_PATH: %s does not exist. '
