@@ -41,7 +41,6 @@ class BuildImageIntegrationTests(unittest.TestCase):
     The old commit should show the error when its fuzzers run and the new one
     should not.
     """
-
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_case = test_repos.TEST_REPOS[1]
       self.assertTrue(helper.build_image_impl(test_case.project_name))
