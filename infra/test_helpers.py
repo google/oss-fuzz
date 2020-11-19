@@ -16,6 +16,7 @@
 import os
 from unittest import mock
 
+
 def patch_environ(testcase_obj, env=None):
   """Patch environment."""
   if env is None:
