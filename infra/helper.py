@@ -228,7 +228,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
 
 def build_base_images(args):
   """Builds base images."""
-  pull_images(args)
+  # TODO(jonathanmetzman): Investigate why caching fails so often and
+  # when we improve it, build base-clang as wel..
   images = [
       'base-image',
       'base-builder',
