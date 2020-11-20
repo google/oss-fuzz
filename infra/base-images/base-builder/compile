@@ -22,6 +22,21 @@ if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
   exit 1
 fi
 
+if [ "$FUZZING_LANGUAGE" = "python" ]; then
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    echo "ERROR: Python projects can be fuzzed with libFuzzer engine only."
+    exit 1
+  fi
+  if [ "$SANITIZER" != "address" ]; then
+    echo "ERROR: Python projects can be fuzzed with AddressSanitizer only."
+    exit 1
+  fi
+  if [ "$ARCHITECTURE" != "x86_64" ]; then
+    echo "ERROR: Python projects can be fuzzed on x86_64 architecture only."
+    exit 1
+  fi
+fi
+
 if [ -z "${SANITIZER_FLAGS-}" ]; then
   FLAGS_VAR="SANITIZER_FLAGS_${SANITIZER}"
   export SANITIZER_FLAGS=${!FLAGS_VAR-}
@@ -89,6 +104,10 @@ echo "CXXFLAGS=$CXXFLAGS"
 echo "---------------------------------------------------------------"
 
 BUILD_CMD="bash -eux $SRC/build.sh"
+
+if [ "$FUZZING_LANGUAGE" = "python" ]; then
+  cp $(find $(llvm-config --libdir) -name "libclang_rt.asan-x86_64.so") $OUT/
+fi
 
 # We need to preserve source code files for generating a code coverage report.
 # We need exact files that were compiled, so copy both $SRC and $WORK dirs.
