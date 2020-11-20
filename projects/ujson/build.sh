@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-# Build and install atheris (using current CFLAGS, CXXFLAGS).
-pip3 install --force-reinstall atheris
-
 # Build and install project (using current CFLAGS, CXXFLAGS).
 pip3 install .
 
