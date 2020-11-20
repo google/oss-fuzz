@@ -25,7 +25,6 @@ import sys
 import subprocess
 import yaml
 
-
 CANARY_PROJECT = 'skcms'
 
 DEFAULT_ARCHITECTURES = ['x86_64']
@@ -40,6 +39,7 @@ def get_changed_files():
   """Returns the output of a git command that discovers changed files."""
   return subprocess.check_output(['git', 'diff', '--name-only',
                                   'FETCH_HEAD']).decode()
+
 
 def get_modified_buildable_projects():
   """Returns a list of all the projects modified in this commit that have a
@@ -165,6 +165,7 @@ def build_project(project):
 
 
 class BuildModifiedProjectsResult(enum.Enum):
+  """Enum containing the return values of build_modified_projects()."""
   NONE_BUILT = 0
   BUILD_SUCCESS = 1
   BUILD_FAIL = 2
@@ -221,8 +222,8 @@ def main():
   if result == BuildModifiedProjectsResult.BUILD_FAIL:
     return 1
 
-  if (result == BuildModifiedProjectsResult.NONE_BUILT
-      and not build_canary_project()):
+  if (result == BuildModifiedProjectsResult.NONE_BUILT and
+      not build_canary_project()):
     # It's unnecessary to build the canry
     return 1
 
