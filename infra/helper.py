@@ -604,7 +604,7 @@ def check_build(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'FUZZING_LANGUAGE=' + args.fuzzing_language,
+      'FUZZING_LANGUAGE=' + fuzzing_language,
   ]
   if args.e:
     env += args.e
