@@ -33,7 +33,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
 
   # Create execution wrapper.
   echo "#/bin/bash
-  # LLVMFuzzerTestOneInput string for fuzzer detection.
+  # LLVMFuzzerTestOneInput, ELF strings for fuzzer detection.
   LD_PRELOAD=\$(dirname "\${BASH_SOURCE[0]}")/$sanitizer_runtime \$(dirname "\${BASH_SOURCE[0]}")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
