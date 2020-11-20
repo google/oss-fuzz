@@ -22,13 +22,19 @@ build() {
   shift
   fuzzer_prefix=$1
   shift
+  fuzz_targets=$1
+  shift
   PROJECT_DIR=$SRC/$project
 
   cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions "$@"
 
   FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
 
-  for f in $PROJECT_DIR/fuzz/fuzz_targets/*.rs; do
+  if [ "x$fuzz_targets" = "x" ]; then
+      fuzz_targets=$PROJECT_DIR/fuzz/fuzz_targets/*.rs
+  fi
+
+  for f in $fuzz_targets; do
       src_name=$(basename ${f%.*})
       dst_name=$fuzzer_prefix$src_name
       cp $FUZZ_TARGET_OUTPUT_DIR/$src_name $OUT/$dst_name
@@ -45,6 +51,7 @@ build() {
 
 # Build with all features to enable the binaryen-using fuzz targets, and
 # the peepmatic fuzz targets.
-build wasmtime "" --all-features
+build wasmtime "" "" --all-features
 
-build wasm-tools wasm-tools-
+build wasm-tools wasm-tools- ""
+build regalloc.rs regalloc- bt bt
