@@ -16,12 +16,11 @@ import logging
 import os
 import sys
 
-# pylint: disable=wrong-import-position
-# pylint: disable=import-error
+# pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.join(os.environ['OSS_FUZZ_ROOT'], 'infra', 'cifuzz'))
 import cifuzz
 
-# TODO: Turn default logging to INFO when CIFuzz is stable
+# TODO: Turn default logging to INFO when CIFuzz is stable.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -32,9 +31,9 @@ def main():
   This is the entrypoint for the run_fuzzers github action.
   This action can be added to any OSS-Fuzz project's workflow that uses Github.
 
-  NOTE: libfuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
+  NOTE: libFuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
   directory in order for this action to be used. This action will only fuzz the
-  binary's that are located in that directory. It is reccomended that you add
+  binaries that are located in that directory. It is recommended that you add
   the build_fuzzers action preceding this one.
 
   NOTE: Any crash report will be in the filepath:
@@ -50,7 +49,7 @@ def main():
     SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
-    0 on success or 1 on Failure.
+    0 on success or 1 on failure.
   """
   fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
   workspace = os.environ.get('GITHUB_WORKSPACE')
@@ -65,7 +64,7 @@ def main():
   if dry_run:
     # A testcase file is required in order for CIFuzz to surface bugs.
     # If the file does not exist, the action will crash attempting to upload it.
-    # The dry run needs this file because it is set to upload a test case both
+    # The dry run needs this file because it is set to upload a testcase both
     # on successful runs and on failures.
     out_dir = os.path.join(workspace, 'out', 'artifacts')
     os.makedirs(out_dir, exist_ok=True)
@@ -82,7 +81,7 @@ def main():
                                              oss_fuzz_project_name,
                                              sanitizer=sanitizer)
   if not run_status:
-    logging.error('Error occured while running in workspace %s.', workspace)
+    logging.error('Error occurred while running in workspace %s.', workspace)
     return returncode
   if bug_found:
     logging.info('Bug found.')

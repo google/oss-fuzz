@@ -21,4 +21,3 @@ sanitizers:
   - dataflow
 architectures:
   - x86_64
-  - i386

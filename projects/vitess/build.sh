@@ -14,13 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  go-fuzz -func $function -o $fuzzer.a $path
-
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-compile_fuzzer github.com/vitessio/vitess/go/vt/sqlparser Fuzz fuzz
+compile_go_fuzzer github.com/vitessio/vitess/go/vt/sqlparser Fuzz fuzz
