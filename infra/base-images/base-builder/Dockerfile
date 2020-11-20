@@ -45,6 +45,7 @@ RUN export PYTHON_DEPS="\
         libffi-dev \
         libbz2-dev \
         liblzma-dev" && \
+    unset CFLAGS CXXFLAGS && \
     apt-get install -y $PYTHON_DEPS && \
     cd /tmp/ && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
@@ -57,11 +58,8 @@ RUN export PYTHON_DEPS="\
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
-# Install latest atheris for python fuzzing.
-RUN pip3 install atheris
-
-# Install pyinstaller for python fuzzer packaging.
-RUN pip3 install pyinstaller==4.1
+# Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging.
+RUN unset CFLAGS CXXFLAGS && pip3 install -v atheris pyinstaller==4.1
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/

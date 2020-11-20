@@ -96,6 +96,14 @@ export CUSTOM_LIBFUZZER_STD_CXX=c++
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
+if [ "$FUZZING_LANGUAGE" = "python" ]; then
+  cp $(find $(llvm-config --libdir) -name "libclang_rt.asan-x86_64.so") $OUT/
+
+  # Disable leak checking as it is unsupported.
+  export CFLAGS="$CFLAGS -fno-sanitize=leak"
+  export CXXFLAGS="$CXXFLAGS -fno-sanitize=leak"
+fi
+
 echo "---------------------------------------------------------------"
 echo "CC=$CC"
 echo "CXX=$CXX"
@@ -104,10 +112,6 @@ echo "CXXFLAGS=$CXXFLAGS"
 echo "---------------------------------------------------------------"
 
 BUILD_CMD="bash -eux $SRC/build.sh"
-
-if [ "$FUZZING_LANGUAGE" = "python" ]; then
-  cp $(find $(llvm-config --libdir) -name "libclang_rt.asan-x86_64.so") $OUT/
-fi
 
 # We need to preserve source code files for generating a code coverage report.
 # We need exact files that were compiled, so copy both $SRC and $WORK dirs.
