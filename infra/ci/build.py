@@ -194,19 +194,37 @@ def build_modified_projects():
   return BuildModifiedProjectsResult.BUILD_SUCCESS
 
 
-def should_build_canary_project():
-  """Returns True if we should build the canary project."""
+def is_infra_changed():
+  """Returns True if the infra directory was changed."""
   git_output = get_changed_files()
   infra_code_regex = '.*infra/.*\n'
   return re.search(infra_code_regex, git_output) is not None
+
+
+def build_base_images():
+  """Builds base images."""
+  # TODO(jonathanmetzman): Investigate why caching fails so often and
+  # when we improve it, build base-clang as well. Also, move this function
+  # to a helper command when we can support base-clang.
+  execute_helper_command(['pull_images'])
+  images = [
+      'base-image',
+      'base-builder',
+      'base-runner',
+  ]
+  for image in images:
+    try:
+      execute_helper_command(['build_image', image, '--no-pull'])
+    except subprocess.CalledProcessError:
+      return 1
+
+  return 0
 
 
 def build_canary_project():
   """Builds a specific project when infra/ is changed to verify that infra/
   changes don't break things. Returns False if build was attempted but
   failed."""
-  if not should_build_canary_project():
-    return True
 
   try:
     build_project('skcms')
@@ -218,13 +236,19 @@ def build_canary_project():
 
 def main():
   """Build modified projects or canary project."""
+  infra_changed = is_infra_changed()
+  if infra_changed:
+    print('Pulling and building base images first.')
+    return build_base_images()
+
   result = build_modified_projects()
   if result == BuildModifiedProjectsResult.BUILD_FAIL:
     return 1
 
   # It's unnecessary to build the canary if we've built any projects already.
   no_projects_built = result == BuildModifiedProjectsResult.NONE_BUILT
-  if no_projects_built and not build_canary_project():
+  should_build_canary = no_projects_built and infra_changed
+  if should_build_canary and not build_canary_project():
     return 1
 
   return 0
