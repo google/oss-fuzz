@@ -188,6 +188,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
   _add_environment_args(shell_parser)
 
   subparsers.add_parser('pull_images', help='Pull base images.')
+  subparsers.add_parser('build_base_images', help='Pull and build base images.')
 
   args = parser.parse_args()
 
@@ -219,7 +220,23 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
     return shell(args)
   if args.command == 'pull_images':
     return pull_images(args)
+  if args.command == 'build_base_images':
+    return build_base_images(args)
 
+  return 0
+
+
+def build_base_images(args):
+  """Builds base images."""
+  pull_images(args)
+  images = [
+      'base-image',
+      'base-builder',
+      'base-runner',
+  ]
+  for image in images:
+    if not build_image_impl(image):
+      return 1
   return 0
 
 
