@@ -45,6 +45,7 @@ RUN export PYTHON_DEPS="\
         libffi-dev \
         libbz2-dev \
         liblzma-dev" && \
+    unset CFLAGS CXXFLAGS && \
     apt-get install -y $PYTHON_DEPS && \
     cd /tmp/ && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
