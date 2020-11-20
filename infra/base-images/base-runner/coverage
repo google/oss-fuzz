@@ -118,7 +118,7 @@ function run_go_fuzz_target {
   echo "Running go target $target"
   export FUZZ_CORPUS_DIR="/corpus/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
-  bash $OUT/$target $DUMPS_DIR/$target.profdata
+  bash $OUT/$target $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
   $SYSGOPATH/bin/gocovsum $DUMPS_DIR/$target.profdata > $FUZZER_STATS_DIR/$target.json
   cd $OUT
 }
