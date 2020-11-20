@@ -47,17 +47,15 @@ export OUT=$TMP_FUZZER_DIR
 
 # Main loop that iterates through all fuzz targets and runs the check.
 for FUZZER_BINARY in $(find $TMP_FUZZER_DIR -maxdepth 1 -executable -type f); do
-  if [ "$FUZZING_LANGUAGE" = "python" ]; then
-    grep "atheris.cpython" $FUZZER_BINARY > /dev/null 2>&1 || continue
-  else
+  if [ "$FUZZING_LANGUAGE" != "python" ]; then
     if file "$FUZZER_BINARY" | grep -v ELF > /dev/null 2>&1; then
       continue
     fi
+  fi
 
-    # Continue if not a fuzz target.
-    if [[ $FUZZING_ENGINE != "none" ]]; then
-      grep "LLVMFuzzerTestOneInput" $FUZZER_BINARY > /dev/null 2>&1 || continue
-    fi
+  # Continue if not a fuzz target.
+  if [[ $FUZZING_ENGINE != "none" ]]; then
+    grep "LLVMFuzzerTestOneInput" $FUZZER_BINARY > /dev/null 2>&1 || continue
   fi
 
   FUZZER=$(basename $FUZZER_BINARY)

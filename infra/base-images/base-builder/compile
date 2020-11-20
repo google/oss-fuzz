@@ -106,8 +106,7 @@ echo "---------------------------------------------------------------"
 BUILD_CMD="bash -eux $SRC/build.sh"
 
 if [ "$FUZZING_LANGUAGE" = "python" ]; then
-  mkdir -p $OUT/preload
-  cp $(find $(llvm-config --libdir) -name "libclang_rt.asan-x86_64.so") $OUT/preload
+  cp $(find $(llvm-config --libdir) -name "libclang_rt.asan-x86_64.so") $OUT/
 fi
 
 # We need to preserve source code files for generating a code coverage report.
