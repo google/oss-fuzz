@@ -75,10 +75,12 @@ In order to build a Go fuzz target, you need to call `go-fuzz`
 command first, and then link the resulting `.a` file against
 `$LIB_FUZZING_ENGINE` using the `$CXX $CXXFLAGS ...` command.
 
-An automated way to do this is now present with a `compile_go_fuzzer` script, supporting also coverage builds.
+The best way to do this is by using a `compile_go_fuzzer` script,
+as it also supports coverage builds.
 
 A usage example from go-dns project is
-```
+
+```sh
 compile_go_fuzzer github.com/miekg/dns FuzzNewRR fuzz_newrr fuzz
 ```
 
