@@ -21,19 +21,7 @@ pip3 install --force-reinstall atheris
 # Build and install project (using current CFLAGS, CXXFLAGS).
 pip3 install .
 
-# Bundle ASAN runtime lib in $OUT.
-sanitizer_runtime="libclang_rt.asan-x86_64.so"
-cp $(find $(llvm-config --libdir) -name $sanitizer_runtime) $OUT/
-
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
-  fuzzer_basename=$(basename -s .py $fuzzer)
-  fuzzer_package=${fuzzer_basename}.pkg
-  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
-
-  # Create execution wrapper.
-  echo "#/bin/bash
-  # LLVMFuzzerTestOneInput, ELF strings for fuzzer detection.
-  LD_PRELOAD=\$(dirname "\${BASH_SOURCE[0]}")/$sanitizer_runtime \$(dirname "\${BASH_SOURCE[0]}")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+  pyinstaller --distpath $OUT --onefile $fuzzer
 done

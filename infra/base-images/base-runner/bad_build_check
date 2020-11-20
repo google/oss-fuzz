@@ -424,5 +424,8 @@ fi
 # Fuzz target path.
 FUZZER=$1
 
+# Preload any libs in $OUT/preload.
+[ -d "$OUT/preload" ] && export LD_PRELOAD="$(find $OUT/preload -type f)"
+
 main $FUZZER
 exit $?
