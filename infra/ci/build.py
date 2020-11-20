@@ -222,9 +222,9 @@ def main():
   if result == BuildModifiedProjectsResult.BUILD_FAIL:
     return 1
 
-  if (result == BuildModifiedProjectsResult.NONE_BUILT and
-      not build_canary_project()):
-    # It's unnecessary to build the canry
+  # It's unnecessary to build the canary if we've built any projects already.
+  no_projects_built = result == BuildModifiedProjectsResult.NONE_BUILT
+  if no_projects_built and not build_canary_project():
     return 1
 
   return 0
