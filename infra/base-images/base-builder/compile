@@ -96,13 +96,6 @@ export CUSTOM_LIBFUZZER_STD_CXX=c++
 export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
-echo "---------------------------------------------------------------"
-echo "CC=$CC"
-echo "CXX=$CXX"
-echo "CFLAGS=$CFLAGS"
-echo "CXXFLAGS=$CXXFLAGS"
-echo "---------------------------------------------------------------"
-
 if [ "$FUZZING_LANGUAGE" = "python" ]; then
   cp $(find $(llvm-config --libdir) -name "libclang_rt.asan-x86_64.so") $OUT/
 
@@ -110,6 +103,13 @@ if [ "$FUZZING_LANGUAGE" = "python" ]; then
   export CFLAGS="$CFLAGS -fno-sanitize=leak"
   export CXXFLAGS="$CXXFLAGS -fno-sanitize=leak"
 fi
+
+echo "---------------------------------------------------------------"
+echo "CC=$CC"
+echo "CXX=$CXX"
+echo "CFLAGS=$CFLAGS"
+echo "CXXFLAGS=$CXXFLAGS"
+echo "---------------------------------------------------------------"
 
 BUILD_CMD="bash -eux $SRC/build.sh"
 
