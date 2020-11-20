@@ -214,7 +214,7 @@ def build_base_images():
   ]
   for image in images:
     try:
-      execute_helper_command(['build_image', image])
+      execute_helper_command(['build_image', image, '--no-pull'])
     except subprocess.CalledProcessError:
       return 1
 
