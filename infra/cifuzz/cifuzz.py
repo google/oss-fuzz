@@ -291,6 +291,8 @@ def check_fuzzer_build(out_dir, sanitizer='address'):
       'SANITIZER=' + sanitizer,
       '-e',
       'ARCHITECTURE=' + DEFAULT_ARCHITECTURE,
+      '-e',
+      'FUZZING_LANGUAGE=c++',  # FIXME: Add proper support.
   ]
 
   # Set ALLOWED_BROKEN_TARGETS_PERCENTAGE in docker if specified by user.

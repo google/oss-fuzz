@@ -595,10 +595,16 @@ def check_build(args):
       not _check_fuzzer_exists(args.project_name, args.fuzzer_name)):
     return 1
 
+  fuzzing_language = _get_project_language(args.project_name)
+  if fuzzing_language is None:
+    print('WARNING: language not specified in project.yaml. Defaulting to C++.')
+    fuzzing_language = 'c++'
+
   env = [
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
+      'FUZZING_LANGUAGE=' + fuzzing_language,
   ]
   if args.e:
     env += args.e
