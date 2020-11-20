@@ -58,8 +58,8 @@ REPRODUCE_ATTEMPTS = 10
 # Seconds on top of duration until a timeout error is raised.
 BUFFER_TIME = 10
 
-# Log message for is_crash_reportable if it can't check if crash repros
-# on OSS-Fuzz build.
+# Log message for is_crash_reportable if it can't check if crash reproduces on
+# an OSS-Fuzz build.
 COULD_NOT_TEST_ON_OSS_FUZZ_MESSAGE = (
     'Crash is reproducible. Could not run OSS-Fuzz build of '
     'target to determine if this pull request introduced crash. '
@@ -110,7 +110,7 @@ class FuzzTarget:
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
-      (test_case, stack trace, time in seconds) on crash or
+      (testcase, stacktrace, time in seconds) on crash or
       (None, None, time in seconds) on timeout or error.
     """
     logging.info('Fuzzer %s, started.', self.target_name)
@@ -158,19 +158,19 @@ class FuzzTarget:
 
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
-    test_case = self.get_test_case(stderr)
-    if not test_case:
-      logging.error(b'No test case found in stack trace: %s.', stderr)
+    testcase = self.get_testcase(stderr)
+    if not testcase:
+      logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return None, None
-    if self.is_crash_reportable(test_case):
-      return test_case, stderr
+    if self.is_crash_reportable(testcase):
+      return testcase, stderr
     return None, None
 
-  def is_reproducible(self, test_case, target_path):
-    """Checks if the test case reproduces.
+  def is_reproducible(self, testcase, target_path):
+    """Checks if the testcase reproduces.
 
       Args:
-        test_case: The path to the test case to be tested.
+        testcase: The path to the testcase to be tested.
         target_path: The path to the fuzz target to be tested
 
       Returns:
@@ -192,13 +192,13 @@ class FuzzTarget:
     if container:
       command += [
           '--volumes-from', container, '-e', 'OUT=' + target_dirname, '-e',
-          'TESTCASE=' + test_case
+          'TESTCASE=' + testcase
       ]
     else:
       command += [
           '-v',
           '%s:/out' % target_dirname, '-v',
-          '%s:/testcase' % test_case
+          '%s:/testcase' % testcase
       ]
 
     command += [
@@ -219,7 +219,7 @@ class FuzzTarget:
                  target_path)
     return False
 
-  def is_crash_reportable(self, test_case):
+  def is_crash_reportable(self, testcase):
     """Returns True if a crash is reportable. This means the crash is
     reproducible but not reproducible on a build from OSS-Fuzz (meaning the
     crash was introduced by this PR).
@@ -228,7 +228,7 @@ class FuzzTarget:
     by the pull request if it is reproducible.
 
     Args:
-      test_case: The path to the test_case that triggered the crash.
+      testcase: The path to the testcase that triggered the crash.
 
     Returns:
       True if the crash was introduced by the current pull request.
@@ -236,11 +236,11 @@ class FuzzTarget:
     Raises:
       ReproduceError if we can't attempt to reproduce the crash on the PR build.
     """
-    if not os.path.exists(test_case):
-      raise ReproduceError('Test case %s not found.' % test_case)
+    if not os.path.exists(testcase):
+      raise ReproduceError('Testcase %s not found.' % testcase)
 
     try:
-      reproducible_on_pr_build = self.is_reproducible(test_case,
+      reproducible_on_pr_build = self.is_reproducible(testcase,
                                                       self.target_path)
     except ReproduceError as error:
       logging.error('Could not run target when checking for reproducibility.'
@@ -252,8 +252,7 @@ class FuzzTarget:
       return reproducible_on_pr_build
 
     if not reproducible_on_pr_build:
-      logging.info(
-          'Failed to reproduce the crash using the obtained test case.')
+      logging.info('Failed to reproduce the crash using the obtained testcase.')
       return False
 
     oss_fuzz_build_dir = self.download_oss_fuzz_build()
@@ -265,7 +264,7 @@ class FuzzTarget:
     oss_fuzz_target_path = os.path.join(oss_fuzz_build_dir, self.target_name)
     try:
       reproducible_on_oss_fuzz_build = self.is_reproducible(
-          test_case, oss_fuzz_target_path)
+          testcase, oss_fuzz_target_path)
     except ReproduceError:
       # This happens if the project has OSS-Fuzz builds, but the fuzz target
       # is not in it (e.g. because the fuzz target is new).
@@ -281,21 +280,21 @@ class FuzzTarget:
     logging.info('The crash is reproducible without the current pull request.')
     return False
 
-  def get_test_case(self, error_bytes):
-    """Gets the file from a fuzzer run stack trace.
+  def get_testcase(self, error_bytes):
+    """Gets the file from a fuzzer run stacktrace.
 
     Args:
       error_bytes: The bytes containing the output from the fuzzer.
 
     Returns:
-      The path to the test case or None if not found.
+      The path to the testcase or None if not found.
     """
     match = re.search(rb'\bTest unit written to \.\/([^\s]+)', error_bytes)
     if match:
       return os.path.join(self.out_dir, match.group(1).decode('utf-8'))
     return None
 
-  def get_lastest_build_version(self):
+  def get_latest_build_version(self):
     """Gets the latest OSS-Fuzz build version for a projects' fuzzers.
 
     Returns:
@@ -332,7 +331,7 @@ class FuzzTarget:
     if os.path.exists(os.path.join(build_dir, self.target_name)):
       return build_dir
     os.makedirs(build_dir, exist_ok=True)
-    latest_build_str = self.get_lastest_build_version()
+    latest_build_str = self.get_latest_build_version()
     if not latest_build_str:
       return None
 
@@ -401,7 +400,7 @@ def download_url(url, filename, num_retries=3):
 
 
 def download_and_unpack_zip(url, out_dir):
-  """Downloads and unpacks a zip file from an http url.
+  """Downloads and unpacks a zip file from an HTTP URL.
 
   Args:
     url: A url to the zip file to be downloaded and unpacked.
@@ -431,7 +430,7 @@ def download_and_unpack_zip(url, out_dir):
 
 
 def url_join(*url_parts):
-  """Joins URLs together using the posix join method.
+  """Joins URLs together using the POSIX join method.
 
   Args:
     url_parts: Sections of a URL to be joined.

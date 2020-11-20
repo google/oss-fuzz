@@ -17,8 +17,7 @@ import logging
 import os
 import sys
 
-# pylint: disable=wrong-import-position
-# pylint: disable=import-error
+# pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.join(os.environ['OSS_FUZZ_ROOT'], 'infra', 'cifuzz'))
 import cifuzz
 
@@ -50,7 +49,7 @@ def main():
     SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
-    0 on success or 1 on Failure.
+    0 on success or 1 on failure.
   """
   oss_fuzz_project_name = os.environ.get('OSS_FUZZ_PROJECT_NAME')
   github_repo_name = os.path.basename(os.environ.get('GITHUB_REPOSITORY'))
@@ -82,18 +81,19 @@ def main():
     return returncode
 
   if event == 'pull_request':
-    with open(os.environ.get('GITHUB_EVENT_PATH'), encoding='utf-8') as file:
-      event = json.load(file)
-      pr_ref = 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
-      if not cifuzz.build_fuzzers(oss_fuzz_project_name,
-                                  github_repo_name,
-                                  workspace,
-                                  pr_ref=pr_ref,
-                                  sanitizer=sanitizer):
-        logging.error(
-            'Error building fuzzers for project %s with pull request %s.',
-            oss_fuzz_project_name, pr_ref)
-        return returncode
+    event_path = os.environ.get('GITHUB_EVENT_PATH')
+    with open(event_path, encoding='utf-8') as file_handle:
+      event = json.load(file_handle)
+    pr_ref = 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
+    if not cifuzz.build_fuzzers(oss_fuzz_project_name,
+                                github_repo_name,
+                                workspace,
+                                pr_ref=pr_ref,
+                                sanitizer=sanitizer):
+      logging.error(
+          'Error building fuzzers for project %s with pull request %s.',
+          oss_fuzz_project_name, pr_ref)
+      return returncode
 
   out_dir = os.path.join(workspace, 'out')
   if cifuzz.check_fuzzer_build(out_dir, sanitizer=sanitizer):

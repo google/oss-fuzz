@@ -1,16 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index eb0885f95e2..b30095535a8 100644
+index 3667900243c..337344e124d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -565,6 +565,7 @@ IF(WITH_JEMALLOC)
-   STRING_APPEND(CMAKE_CXX_FLAGS " -fno-builtin-realloc -fno-builtin-free")
+@@ -597,6 +597,7 @@ IF(WITH_JEMALLOC AND (WITH_TCMALLOC OR WITH_TCMALLOC_DEBUG))
+   MESSAGE(FATAL_ERROR "Specify only *one* of WITH_TCMALLOC and WITH_JEMALLOC")
  ENDIF()
  
 +OPTION(FUZZING "Fuzzing" OFF)
  OPTION(ENABLED_PROFILING "Enable profiling" ON)
  OPTION(WITHOUT_SERVER OFF)
- IF(UNIX)
-@@ -1520,6 +1521,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
+ 
+@@ -1587,6 +1588,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
    TARGET_LINK_LIBRARIES(server_unittest_library ${ICU_LIBRARIES})
  ENDIF()
  
@@ -22,7 +22,7 @@ index eb0885f95e2..b30095535a8 100644
  # It is referenced by some of the directories below, so we insert it here.
  ADD_SUBDIRECTORY(scripts)
 diff --git a/include/mysql.h b/include/mysql.h
-index 9172c3e5b86..5005f38857c 100644
+index b805bffdf88..23d2311299e 100644
 --- a/include/mysql.h
 +++ b/include/mysql.h
 @@ -262,7 +262,8 @@ enum mysql_protocol_type {
@@ -36,10 +36,10 @@ index 9172c3e5b86..5005f38857c 100644
  
  enum mysql_ssl_mode {
 diff --git a/include/mysql.h.pp b/include/mysql.h.pp
-index 2ec68913ba0..80dc99d1aaa 100644
+index ce785802ad9..4f048082335 100644
 --- a/include/mysql.h.pp
 +++ b/include/mysql.h.pp
-@@ -483,7 +483,8 @@ enum mysql_protocol_type {
+@@ -485,7 +485,8 @@ enum mysql_protocol_type {
    MYSQL_PROTOCOL_TCP,
    MYSQL_PROTOCOL_SOCKET,
    MYSQL_PROTOCOL_PIPE,
@@ -91,18 +91,35 @@ index c04e82505a7..2498ba0053c 100644
 +
  #endif /* vio_violite_h_ */
 diff --git a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
-index 605288d95e8..0c5b57f98f8 100644
+index 4956a0dc2d8..bab0aa3b504 100644
 --- a/libmysql/CMakeLists.txt
 +++ b/libmysql/CMakeLists.txt
-@@ -328,7 +328,7 @@ IF(UNIX)
+@@ -353,11 +353,11 @@ IF(UNIX)
+ 
    ADD_INSTALL_RPATH_FOR_OPENSSL(libmysql)
  
-   GET_TARGET_PROPERTY(libmysql_link_flags libmysql LINK_FLAGS)
--  IF(LINK_FLAG_NO_UNDEFINED)
-+  IF(LINK_FLAG_NO_UNDEFINED AND NOT FUZZING)
-     STRING_APPEND(libmysql_link_flags
-       " ${LINK_FLAG_NO_UNDEFINED}")
-     STRING_APPEND(libmysql_link_flags
+-  IF(LINK_FLAG_Z_DEFS)
++  IF(LINK_FLAG_Z_DEFS AND NOT FUZZING)
+     MY_TARGET_LINK_OPTIONS(libmysql "LINKER:${LINK_FLAG_Z_DEFS}")
+   ENDIF()
+ 
+-  IF(LINUX)
++  IF(LINUX AND NOT FUZZING)
+     MY_TARGET_LINK_OPTIONS(libmysql
+       "LINKER:--version-script=${CMAKE_CURRENT_BINARY_DIR}/libmysql.ver")
+   ENDIF() 
+diff --git a/mysys/mf_tempfile.cc b/mysys/mf_tempfile.cc
+index f4f5dffba9a..26ab2ce0917 100644
+--- a/mysys/mf_tempfile.cc
++++ b/mysys/mf_tempfile.cc
+@@ -320,6 +320,7 @@ File create_temp_file(char *to, const char *dir, const char *prefix,
+       set_my_errno(ENAMETOOLONG);
+       return file;
+     }
++    sprintf(prefix_buff, "%sXXXXXX", prefix ? prefix : "tmp.");
+     my_stpcpy(convert_dirname(to, dir, NullS), prefix_buff);
+     file = mkstemp(to);
+     file_info::RegisterFilename(file, to, file_info::OpenType::FILE_BY_MKSTEMP);
 diff --git a/mysys/my_rnd.cc b/mysys/my_rnd.cc
 index 8253e3967d4..034c71de600 100644
 --- a/mysys/my_rnd.cc
@@ -141,7 +158,7 @@ index 8253e3967d4..034c71de600 100644
      *failed = true;
      return 0;
 diff --git a/sql-common/client.cc b/sql-common/client.cc
-index ffb136b5b28..eca117c5ed6 100644
+index 61404be555b..721802cb60c 100644
 --- a/sql-common/client.cc
 +++ b/sql-common/client.cc
 @@ -5774,6 +5774,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
@@ -158,10 +175,10 @@ index ffb136b5b28..eca117c5ed6 100644
    if (!net->vio &&
        (!mysql->options.protocol ||
 diff --git a/sql/mysqld.cc b/sql/mysqld.cc
-index 682e8d5ae13..68935ea75de 100644
+index 519926135ed..db75dc7f5e5 100644
 --- a/sql/mysqld.cc
 +++ b/sql/mysqld.cc
-@@ -6784,7 +6784,9 @@ int mysqld_main(int argc, char **argv)
+@@ -6862,7 +6862,9 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);  // Will do exit
    }
  
@@ -171,7 +188,7 @@ index 682e8d5ae13..68935ea75de 100644
  
    size_t guardize = 0;
  #ifndef _WIN32
-@@ -7269,8 +7271,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7347,8 +7349,10 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);
  
  #ifndef _WIN32
@@ -182,7 +199,7 @@ index 682e8d5ae13..68935ea75de 100644
  #endif
  
    /* set all persistent options */
-@@ -7412,8 +7416,9 @@ int mysqld_main(int argc, char **argv)
+@@ -7393,8 +7397,9 @@ int mysqld_main(int argc, char **argv)
    }
  
    start_handle_manager();
@@ -193,7 +210,7 @@ index 682e8d5ae13..68935ea75de 100644
  
    LogEvent()
        .type(LOG_TYPE_ERROR)
-@@ -7460,6 +7465,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7441,6 +7446,10 @@ int mysqld_main(int argc, char **argv)
  
    (void)RUN_HOOK(server_state, before_handle_connection, (nullptr));
  
@@ -202,9 +219,9 @@ index 682e8d5ae13..68935ea75de 100644
 +#endif
 +
  #if defined(_WIN32)
-   setup_conn_event_handler_threads();
- #else
-@@ -10289,6 +10298,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
+   if (mysqld_socket_acceptor != nullptr)
+     mysqld_socket_acceptor->check_and_spawn_admin_connection_handler_thread();
+@@ -10281,6 +10290,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
  
    if (opt_short_log_format) opt_specialflag |= SPECIAL_SHORT_LOG_FORMAT;
  
@@ -215,10 +232,10 @@ index 682e8d5ae13..68935ea75de 100644
      LogErr(ERROR_LEVEL, ER_CONNECTION_HANDLING_OOM);
      return 1;
 diff --git a/storage/innobase/buf/buf0buf.cc b/storage/innobase/buf/buf0buf.cc
-index d4a5459a171..72101c888e1 100644
+index fba0684f322..8352dacbc03 100644
 --- a/storage/innobase/buf/buf0buf.cc
 +++ b/storage/innobase/buf/buf0buf.cc
-@@ -1484,18 +1484,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
+@@ -1487,18 +1487,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
        n = n_instances;
      }
  

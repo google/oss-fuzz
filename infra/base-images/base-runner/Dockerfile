@@ -24,6 +24,7 @@ COPY --from=base-clang /usr/local/bin/llvm-cov /usr/local/bin/
 COPY --from=base-clang /usr/local/bin/llvm-profdata /usr/local/bin/
 COPY --from=base-clang /usr/local/bin/llvm-symbolizer /usr/local/bin/
 
+RUN apt-get update
 RUN apt-get install -y \
     binutils \
     file \
@@ -64,3 +65,24 @@ ENV MSAN_OPTIONS="print_stats=1:strip_path_prefix=/workspace/:symbolize=1:dedup_
 ENV UBSAN_OPTIONS="print_stacktrace=1:print_summary=1:silence_unsigned_overflow=1:strip_path_prefix=/workspace/:symbolize=1:dedup_token_length=3"
 ENV FUZZER_ARGS="-rss_limit_mb=2560 -timeout=25"
 ENV AFL_FUZZER_ARGS="-m none"
+
+# Download and install the latest stable Go.
+ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
+RUN chmod +x $SRC/installer_linux && \
+    SHELL="bash" $SRC/installer_linux && \
+    rm $SRC/installer_linux
+
+# Set up Golang environment variables (copied from /root/.bash_profile).
+ENV GOPATH /root/go
+
+# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
+# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
+ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
+
+# gocovmerge merges coverage profiles.
+RUN go get -u github.com/wadey/gocovmerge
+# pprof-merge merges performance profiles.
+RUN go get -u github.com/rakyll/pprof-merge
+# gocovsum produces a json summary.
+RUN go get -u github.com/catenacyber/gocovsum
+
