@@ -27,8 +27,7 @@ rm -rf $WORK/*
 rm -rf $BUILD
 mkdir -p $BUILD
 
-cd $WORK
-
+pushd $WORK
 tar xvJf $SRC/glib-2.64.2.tar.xz
 cd glib-2.64.2
 meson \
@@ -42,62 +41,46 @@ meson \
     _builddir
 ninja -C _builddir
 ninja -C _builddir install
-cd ..
-
-#pushd $SRC/gdk-pixbuf
-#meson \
-    #--prefix=$PREFIX \
-    #--libdir=lib \
-    #--default-library=static \
-    #-Dintrospection=disabled \
-    #_builddir
-#ninja -C _builddir
-#ninja -C _builddir install
-#popd
+popd
 
 pushd $SRC/gdk-pixbuf
-meson --prefix=$PREFIX --libdir=lib -Ddefault_library=static -Dintrospection=disabled $BUILD/gdk-pixbuf
-ninja -C $BUILD/gdk-pixbuf gdk-pixbuf/libgdk_pixbuf-2.0.a
-
-#pushd $SRC/libmediaart
-#meson \
-    #--prefix=$PREFIX \
-    #--libdir=lib \
-    #--default-library=static \
-    #-Ddisable_tests=true \
-    #-Dintrospection=disabled \
-    #_builddir
-#ninja -C _builddir
-#ninja -C _builddir install
-#popd
+meson \
+    --prefix=$PREFIX \
+    --libdir=lib \
+    --default-library=static \
+    -Dintrospection=disabled \
+    -Dbuiltin_loaders='all' \
+    _builddir
+ninja -C _builddir
+ninja -C _builddir install
+popd
 
 pushd $SRC/libmediaart
-meson $BUILD/libmediaart -Ddefault_library=static -Ddisable_tests=true -Dintrospection=disabled
+meson \
+    -Ddefault_library=static \
+    -Ddisable_tests=true \
+    -Dintrospection=disabled \
+    $BUILD/libmediaart
 ninja -C $BUILD/libmediaart libmediaart/libmediaart-2.0.a
 
-#PREDPS_LDFLAGS="-Wl,-Bdynamic -ldl -lrt"
-PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -pthread -lrt -lpthread"
-#DEPS="glib-2.0 gio-2.0 gobject-2.0 gdk-pixbuf-2.0 libmediaart-2.0 libffi libpcre expat"
-DEPS="glib-2.0 gio-2.0 gobject-2.0 libffi libpcre expat"
+mv $SRC/{*.zip,*.dict} $OUT
+
+PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -pthread -lrt -lpthread"
+DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 gdk-pixbuf-2.0"
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
 fuzzers=$(find $SRC/libmediaart/fuzzing/ -name "*_fuzzer.c")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .c)
-  $CC $CFLAGS $BUILD_CFLAGS -c -std=c99 -I. \
-    $f -o $WORK/${fuzzer_name}.o
+  $CC $CFLAGS $BUILD_CFLAGS -I. -c $f -o $WORK/${fuzzer_name}.o
   $CXX $CXXFLAGS \
     $WORK/${fuzzer_name}.o -o $OUT/${fuzzer_name} \
-    $BUILD/libmediaart/libmediaart/libmediaart-2.0.a \
-    $BUILD/gdk-pixbuf/gdk-pixbuf/libgdk_pixbuf-2.0.a \
     $PREDEPS_LDFLAGS \
+    $BUILD/libmediaart/libmediaart/libmediaart-2.0.a \
     $BUILD_LDFLAGS \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bdynamic
+  ln -sf $OUT/libmediaart_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+  ln -sf $OUT/libmediaart_ogg.dict $OUT/${fuzzer_name}.dict
 done
-    #$PREDPS_LDFLAGS \
-    #-I. -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-    #$BUILD/libmediaart/libmediaart/libmediaart-2.0.a \
-    #$BUILD/gdk-pixbuf/gdk-pixbuf/libgdk_pixbuf-2.0.a \
-    #-Wl,-Bstatic -lz -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat -lselinux \
