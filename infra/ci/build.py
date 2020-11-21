@@ -32,7 +32,7 @@ DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
 
 
 def get_changed_files():

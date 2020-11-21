@@ -24,7 +24,13 @@ if [[ $#  -eq 4 ]]; then
 fi
 
 if [[ $SANITIZER = *coverage* ]]; then
-  cd $GOPATH/src/$path
+  if [[ $GO111MODULE = on ]]; then
+    basemod=`echo $path | cut -d/ -f1-3`
+    cd $GOPATH/pkg/mod/`go list -m $basemod | sed 's/ /@/'`
+    cd ./`echo $path | cut -d/ -f4-`
+  else
+    cd $GOPATH/src/$path
+  fi
   fuzzed_package=`pwd | rev | cut -d'/' -f 1 | rev`
   cp $GOPATH/ossfuzz_coverage_runner.go ./"${function,,}"_test.go
   sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
