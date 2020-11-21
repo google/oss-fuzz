@@ -15,7 +15,7 @@
 function compile_fuzzer {
   fuzzer=$(basename $1)
 
-  compile_fuzzer "github.com/dvyukov/go-fuzz-corpus/$fuzzer" Fuzz $fuzzer
+  compile_go_fuzzer "github.com/dvyukov/go-fuzz-corpus/$fuzzer" Fuzz $fuzzer
 
   # Pack the seed corpus
   zip -r $OUT/fuzzer-${fuzzer}_seed_corpus.zip \
