@@ -16,5 +16,4 @@
 ################################################################################
 
 
-
-compile_go_fuzzer . Fuzz fuzz_json
+compile_go_fuzzer github.com/json-iterator/go Fuzz fuzz_json
