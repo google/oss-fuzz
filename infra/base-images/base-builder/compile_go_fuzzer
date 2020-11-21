@@ -24,7 +24,7 @@ if [[ $#  -eq 4 ]]; then
 fi
 
 if [[ $SANITIZER = *coverage* ]]; then
-  if [[ $GO111MODULE = on ]]; then
+  if [[ ${GO111MODULE:-} = on ]]; then
     basemod=`echo $path | cut -d/ -f1-3`
     cd $GOPATH/pkg/mod/`go list -m $basemod | sed 's/ /@/'`
     cd ./`echo $path | cut -d/ -f4-`
