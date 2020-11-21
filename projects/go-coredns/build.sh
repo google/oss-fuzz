@@ -17,13 +17,13 @@
 
 # Same as usual except for added -tags gofuzz.
 
+cd $GOPATH/pkg/mod/`go list -m github.com/coredns/coredns | sed 's/ /@/'`
 
-cd coredns
 #make
 ls plugin/*/fuzz.go | while read target
 do
     fuzzed_plugin=`echo $target | cut -d'/' -f 2`
-    compile_go_fuzzer github.com/coredns/coredns/plugin/$fuzzed_plugin Fuzz fuzz_plugin_$fuzzed_plugin
+    compile_go_fuzzer github.com/coredns/coredns/plugin/$fuzzed_plugin Fuzz fuzz_plugin_$fuzzed_plugin gofuzz
 done
 
-compile_go_fuzzer github.com/coredns/coredns/test Fuzz fuzz_core
+compile_go_fuzzer github.com/coredns/coredns/test Fuzz fuzz_core gofuzz
