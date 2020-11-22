@@ -38,7 +38,13 @@ if [[ $SANITIZER = *coverage* ]]; then
   sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
 
   echo "#/bin/sh" > $OUT/$fuzzer
-  echo "cd $path" >> $OUT/$fuzzer
+  if [[ ${GO111MODULE:-} = on ]]; then
+    echo "export GO111MODULE=on" >> $OUT/$fuzzer
+    echo "cd ../pkg/mod/"`go list -m $basemod | sed 's/ /@/'` >> $OUT/$fuzzer
+    echo "cd ./"`echo $path | cut -d/ -f4-` >> $OUT/$fuzzer
+  else
+    echo "cd $path" >> $OUT/$fuzzer
+  fi
   echo "go test -run Test${function}Corpus -v $tags -coverprofile \$1 " >> $OUT/$fuzzer
   chmod +x $OUT/$fuzzer
 
