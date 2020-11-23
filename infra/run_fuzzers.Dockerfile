@@ -18,7 +18,7 @@
 FROM gcr.io/oss-fuzz-base/cifuzz-base
 
 # Copies your code file from  action repository to the container
-COPY infra/cifuzz/actions/run_fuzzers/run_fuzzers_entrypoint.py /opt/build_fuzzers_entrypoint.py
+COPY cifuzz/actions/run_fuzzers/run_fuzzers_entrypoint.py /opt/build_fuzzers_entrypoint.py
 
 # Python file to execute when the docker container starts up
 ENTRYPOINT ["python3", "/opt/run_fuzzers_entrypoint.py"]
