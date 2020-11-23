@@ -17,7 +17,7 @@
 
 # Same as usual except for added -tags gofuzz.
 
-cd $GOPATH/pkg/mod/`go list -m github.com/coredns/coredns | sed 's/ /@/'`
+cd $GOPATH/src/github.com/coredns/coredns
 
 #make
 ls plugin/*/fuzz.go | while read target
