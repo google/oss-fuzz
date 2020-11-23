@@ -21,5 +21,11 @@ RUN pip3 install meson==0.55.3 ninja
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
 RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.gnome.org/ceyhunalp/gdk-pixbuf.git
 
+RUN git clone --depth 1 https://github.com/glennrp/libpng.git
+RUN git clone --depth 1 https://github.com/MozillaSecurity/fuzzdata.git
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/jpeg.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/gif.dict
+
 WORKDIR $SRC/gdk-pixbuf
 COPY build.sh $SRC/
