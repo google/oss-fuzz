@@ -18,27 +18,35 @@
 
 from __future__ import print_function
 
+import enum
 import os
 import re
 import sys
 import subprocess
 import yaml
 
+CANARY_PROJECT = 'skcms'
+
 DEFAULT_ARCHITECTURES = ['x86_64']
 DEFAULT_ENGINES = ['afl', 'honggfuzz', 'libfuzzer']
 DEFAULT_SANITIZERS = ['address', 'undefined']
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
+
+
+def get_changed_files():
+  """Returns the output of a git command that discovers changed files."""
+  return subprocess.check_output(['git', 'diff', '--name-only',
+                                  'FETCH_HEAD']).decode()
 
 
 def get_modified_buildable_projects():
   """Returns a list of all the projects modified in this commit that have a
   build.sh file."""
-  output = subprocess.check_output(['git', 'diff', '--name-only',
-                                    'FETCH_HEAD']).decode()
+  git_output = get_changed_files()
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
-  modified_projects = set(re.findall(projects_regex, output))
+  modified_projects = set(re.findall(projects_regex, git_output))
   projects_dir = os.path.join(get_oss_fuzz_root(), 'projects')
   # Filter out projects without Dockerfile files since new projects and reverted
   # projects frequently don't have them. In these cases we don't want Travis's
@@ -156,9 +164,22 @@ def build_project(project):
     check_build(project, engine, sanitizer, architecture)
 
 
-def main():
-  """Build modified projects."""
+class BuildModifiedProjectsResult(enum.Enum):
+  """Enum containing the return values of build_modified_projects()."""
+  NONE_BUILT = 0
+  BUILD_SUCCESS = 1
+  BUILD_FAIL = 2
+
+
+def build_modified_projects():
+  """Build modified projects. Returns BuildModifiedProjectsResult.NONE_BUILT if
+  no builds were attempted. Returns BuildModifiedProjectsResult.BUILD_SUCCESS if
+  all attempts succeed, otherwise returns
+  BuildModifiedProjectsResult.BUILD_FAIL."""
   projects = get_modified_buildable_projects()
+  if not projects:
+    return BuildModifiedProjectsResult.NONE_BUILT
+
   failed_projects = []
   for project in projects:
     try:
@@ -168,6 +189,66 @@ def main():
 
   if failed_projects:
     print('Failed projects:', ' '.join(failed_projects))
+    return BuildModifiedProjectsResult.BUILD_FAIL
+
+  return BuildModifiedProjectsResult.BUILD_SUCCESS
+
+
+def is_infra_changed():
+  """Returns True if the infra directory was changed."""
+  git_output = get_changed_files()
+  infra_code_regex = '.*infra/.*\n'
+  return re.search(infra_code_regex, git_output) is not None
+
+
+def build_base_images():
+  """Builds base images."""
+  # TODO(jonathanmetzman): Investigate why caching fails so often and
+  # when we improve it, build base-clang as well. Also, move this function
+  # to a helper command when we can support base-clang.
+  execute_helper_command(['pull_images'])
+  images = [
+      'base-image',
+      'base-builder',
+      'base-runner',
+  ]
+  for image in images:
+    try:
+      execute_helper_command(['build_image', image, '--no-pull'])
+    except subprocess.CalledProcessError:
+      return 1
+
+  return 0
+
+
+def build_canary_project():
+  """Builds a specific project when infra/ is changed to verify that infra/
+  changes don't break things. Returns False if build was attempted but
+  failed."""
+
+  try:
+    build_project('skcms')
+  except subprocess.CalledProcessError:
+    return False
+
+  return True
+
+
+def main():
+  """Build modified projects or canary project."""
+  infra_changed = is_infra_changed()
+  if infra_changed:
+    print('Pulling and building base images first.')
+    return build_base_images()
+
+  result = build_modified_projects()
+  if result == BuildModifiedProjectsResult.BUILD_FAIL:
+    return 1
+
+  # It's unnecessary to build the canary if we've built any projects already.
+  no_projects_built = result == BuildModifiedProjectsResult.NONE_BUILT
+  should_build_canary = no_projects_built and infra_changed
+  if should_build_canary and not build_canary_project():
     return 1
 
   return 0

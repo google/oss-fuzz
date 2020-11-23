@@ -16,28 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN go get github.com/ethereum/go-ethereum
-RUN go get golang.org/x/sys/cpu
-RUN go get github.com/go-stack/stack
-RUN go get github.com/deckarep/golang-set
-RUN go get github.com/golang/snappy
-RUN go get github.com/gorilla/websocket
-RUN go get github.com/hashicorp/golang-lru
-RUN go get github.com/holiman/uint256
-RUN go get github.com/olekukonko/tablewriter
-RUN go get github.com/prometheus/tsdb/fileutil
-RUN go get github.com/shirou/gopsutil/cpu
-RUN go get github.com/steakknife/bloomfilter
-RUN go get github.com/syndtr/goleveldb/leveldb
-RUN go get github.com/syndtr/goleveldb/leveldb/errors
-RUN go get github.com/syndtr/goleveldb/leveldb/filter
-RUN go get github.com/syndtr/goleveldb/leveldb/opt
-RUN go get github.com/syndtr/goleveldb/leveldb/util
-RUN go get github.com/VictoriaMetrics/fastcache
-RUN go get github.com/aristanetworks/goarista/monotime
-RUN go get github.com/pborman/uuid
-RUN go get github.com/rjeczalik/notify
-RUN go get github.com/google/gofuzz
- 
-COPY build.sh $SRC/
+RUN (cd $SRC && git clone --single-branch --depth=1 https://github.com/ethereum/go-ethereum)
+
+RUN cp $SRC/go-ethereum/oss-fuzz.sh $SRC/build.sh
 WORKDIR $SRC/

@@ -15,16 +15,6 @@
 #
 ################################################################################
 
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-   # Instrument all Go files relevant to this fuzzer
-  go-fuzz -func $function -o $fuzzer.a $path
 
-   # Instrumented, compiled Go ($fuzzer.a) + fuzzing engine = fuzzer binary
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-
-compile_fuzzer github.com/influxdata/influxdb/jsonweb FuzzJsonWeb fuzzjsonweb
+compile_go_fuzzer github.com/influxdata/influxdb/jsonweb FuzzJsonWeb fuzzjsonweb

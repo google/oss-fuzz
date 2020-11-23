@@ -28,6 +28,7 @@ RUN dpkg --add-architecture i386 && \
         git \
         jq \
         libc6-dev-i386 \
+        patchelf \
         subversion \
         zip
 
@@ -44,16 +45,21 @@ RUN export PYTHON_DEPS="\
         libffi-dev \
         libbz2-dev \
         liblzma-dev" && \
+    unset CFLAGS CXXFLAGS && \
     apt-get install -y $PYTHON_DEPS && \
     cd /tmp/ && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
-    ./configure --enable-optimizations && \
+    ./configure --enable-optimizations --enable-shared && \
     make -j install && \
+    ldconfig && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
+
+# Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging.
+RUN unset CFLAGS CXXFLAGS && pip3 install -v atheris pyinstaller==4.1
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
@@ -143,9 +149,10 @@ RUN mkdir honggfuzz && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
+    compile_go_fuzzer precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/
+COPY ossfuzz_coverage_runner.go $GOPATH
 
 RUN precompile_honggfuzz
 
