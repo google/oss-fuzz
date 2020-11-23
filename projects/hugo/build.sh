@@ -14,18 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
-
-  go-fuzz -func $function -o $fuzzer.a $path
-
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
 
 mkdir $GOPATH/src/github.com/gohugoio
 mv $SRC/hugo $GOPATH/src/github.com/gohugoio/
 cd $GOPATH/src/github.com/gohugoio/hugo
 
-compile_fuzzer $GOPATH/src/github.com/gohugoio/hugo/tpl/transform FuzzMarkdownify fuzzmarkdownify
+compile_go_fuzzer $GOPATH/src/github.com/gohugoio/hugo/tpl/transform FuzzMarkdownify fuzzmarkdownify
