@@ -59,7 +59,12 @@ RUN export PYTHON_DEPS="\
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
 # Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging.
-RUN unset CFLAGS CXXFLAGS && pip3 install -v atheris pyinstaller==4.1
+RUN unset CFLAGS CXXFLAGS && \
+    pip3 install pyinstaller==4.1 && \
+    git clone https://github.com/google/atheris /tmp/atheris && \
+    cd /tmp/atheris && \
+    sed -i 's/l_opts = \[libfuzzer\]/l_opts = []/g' setup.py && \
+    pip3 install .
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
