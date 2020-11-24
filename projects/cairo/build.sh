@@ -43,8 +43,6 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
-#meson -Ddefault_library=static $BUILD/cairo 
-#ninja -C $BUILD/cairo src/libcairo.a
 pushd $SRC/cairo
 meson \
     --prefix=$PREFIX \
@@ -55,7 +53,6 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
-#DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 gdk-pixbuf-2.0"
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -pthread -lrt -lpthread"
 DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 cairo cairo-gobject" 
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
@@ -64,7 +61,6 @@ BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 fuzzers=$(find $SRC/cairo/fuzzing/ -name "*_fuzzer.c")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .c)
-  #$CC $CFLAGS $BUILD_CFLAGS -I. -I./src -I./boilerplate \
   $CC $CFLAGS $BUILD_CFLAGS \
     -c $f -o $WORK/${fuzzer_name}.o
   $CXX $CXXFLAGS \
@@ -73,6 +69,6 @@ for f in $fuzzers; do
     $BUILD_LDFLAGS \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bdynamic
+  ln -sf $OUT/cairo_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+  ln -sf $OUT/cairo_png.dict $OUT/${fuzzer_name}.dict
 done
-    #$BUILD/cairo/src/libcairo.a \
-    #-I. -I$BUILD/gdk-pixbuf -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \

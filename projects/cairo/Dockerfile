@@ -15,12 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-#RUN apt-get update && apt-get install -y libglib2.0-dev python3-pip gtk-doc-tools libffi-dev
 RUN apt-get update && apt-get install -y python3-pip gtk-doc-tools libffi-dev
 RUN pip3 install -U meson==0.55.3 ninja
 
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
-RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.freedesktop.org/ceyhunalp/cairo.git
+RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.freedesktop.org/ceyhunalp/cairo.git && \
+    zip -q $OUT/cairo_seed_corpus.zip $SRC/cairo/test/reference/*
+
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $OUT/cairo_png.dict
 
 WORKDIR $SRC/cairo
 COPY build.sh $SRC/
