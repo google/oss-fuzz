@@ -64,7 +64,9 @@ RUN unset CFLAGS CXXFLAGS && \
     git clone https://github.com/google/atheris /tmp/atheris && \
     cd /tmp/atheris && \
     sed -i 's/l_opts = \[libfuzzer\]/l_opts = []/g' setup.py && \
-    pip3 install .
+    pip3 install . && \
+    cd .. && \
+    rm -r /tmp/atheris
 
 # Download and install the latest stable Go.
 ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
