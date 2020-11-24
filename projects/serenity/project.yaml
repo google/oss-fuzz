@@ -1,0 +1,8 @@
+homepage: "https://github.com/SerenityOS/serenity"
+language: c++
+primary_contact: "kling@serenityos.org"
+auto_ccs:
+  - "david@adalogics.com"
+
+# Bug reports are public by default:
+view_restrictions: none
