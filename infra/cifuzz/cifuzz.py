@@ -78,7 +78,7 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 _IMAGE_BUILD_TRIES = 3
-_IMAGE_BUILD_RETRY_SLEEP = 30.0
+_IMAGE_BUILD_BACKOFF = 2
 
 
 def checkout_specified_commit(build_repo_manager, pr_ref, commit_sha):
@@ -125,23 +125,19 @@ def build_external_project_docker_image(project_name, project_src,
   return helper.docker_build(command)
 
 
-def build_external_project_docker_image_with_retries(project_name, project_src,
-                                                     build_integration_path):
+@retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF,
+            'cifuzz.cifuzz.build_external_project_docker_image')
+def build_external_project_docker_image(project_name, project_src,
+                                        build_integration_path):
   """Wrapper around build_external_project_docker_image that uses retries."""
-  # !!! Make retry wrapper.
-  for _ in range(_IMAGE_BUILD_TRIES):
-    result = build_external_project_docker_image(project_name, project_src,
-                                                 build_integration_path)
-    if result:
-      return result
-    time.sleep(_IMAGE_BUILD_RETRY_SLEEP)
-  return result
+  return build_external_project_docker_image(project_name, project_src,
+                                             build_integration_path)
 
 
 def fix_git_repo(repo_dir):
   """Fixes git repos cloned by the "checkout" action so that diffing works on
   them."""
-  # !!! Move to repo_manager when done testing.
+  # TODO(metzman): Move to repo_manager?
   command = [
       'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
       'refs/remotes/origin/master'
@@ -203,7 +199,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     inferred_url = None
     project_builder_repo_path = os.path.join('/src',
                                              os.path.basename(project_src_path))
-    if not build_external_project_docker_image_with_retries(
+    if not build_external_project_docker_image(
         project_name, project_src_path, build_integration_path):
       return False
   else:
