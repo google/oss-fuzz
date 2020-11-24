@@ -15,8 +15,11 @@
 
 import functools
 import inspect
+import logging
 import sys
 import time
+
+# pylint: disable=too-many-arguments,broad-except
 
 
 def sleep(seconds):
@@ -54,17 +57,11 @@ def wrap(retries,
       """Handle retry."""
       if (exception is None or
           isinstance(exception, exception_type)) and num_try < tries:
-        logging.log('Retrying on %s failed with %s. Retrying again.' %
-                    (function_with_type, sys.exc_info()[1]),
-                    num=num_try,
-                    total=tries)
+        logging.log('Retrying on %s failed with %s. Retrying again.',
+                    function_with_type, sys.exc_info()[1])
         sleep(get_delay(num_try, delay, backoff))
         return True
 
-      monitoring_metrics.TRY_COUNT.increment({
-          'function': function,
-          'is_succeeded': False
-      })
       logging.log_error('Retrying on %s failed with %s. Raise.' %
                         (function_with_type, sys.exc_info()[1]),
                         total=tries)
@@ -81,14 +78,9 @@ def wrap(retries,
               return result
 
             continue
-
-          monitoring_metrics.TRY_COUNT.increment({
-              'function': function,
-              'is_succeeded': True
-          })
           return result
-        except Exception as e:
-          if not handle_retry(num_try, exception=e):
+        except Exception as error:
+          if not handle_retry(num_try, exception=error):
             raise
 
     @functools.wraps(func)
@@ -103,14 +95,9 @@ def wrap(retries,
             if index >= already_yielded_element_count:
               yield result
               already_yielded_element_count += 1
-
-          monitoring_metrics.TRY_COUNT.increment({
-              'function': function,
-              'is_succeeded': True
-          })
           break
-        except Exception as e:
-          if not handle_retry(num_try, exception=e):
+        except Exception as error:
+          if not handle_retry(num_try, exception=error):
             raise
 
     if is_generator:
