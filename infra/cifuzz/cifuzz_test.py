@@ -64,6 +64,15 @@ UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 # pylint: disable=no-self-use
 
 
+class BuildFuzzersTest(unittest.TestCase):
+  """Unit tests for build_fuzzers."""
+  def test_cifuzz_env_var(self):
+    """Tests that the CIFUZZ env var is set."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      import pdb; pdb.set_trace()
+      build_fuzzers(EXAMPLE_PROJECT, EXAMPLE_PROJECT, tmp_dir, pr_ref='refs/pull/1757/merge')
+
+
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
 

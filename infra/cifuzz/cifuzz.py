@@ -165,6 +165,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
       '-e',
       'ARCHITECTURE=' + DEFAULT_ARCHITECTURE,
       '-e',
+      'CIFUZZ=True',
+      '-e',
       'FUZZING_LANGUAGE=c++',  # FIXME: Add proper support.
   ]
   container = utils.get_container_name()
@@ -291,6 +293,8 @@ def check_fuzzer_build(out_dir, sanitizer='address'):
       'SANITIZER=' + sanitizer,
       '-e',
       'ARCHITECTURE=' + DEFAULT_ARCHITECTURE,
+      '-e',
+      'CIFUZZ=True',
       '-e',
       'FUZZING_LANGUAGE=c++',  # FIXME: Add proper support.
   ]

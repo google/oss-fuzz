@@ -125,6 +125,7 @@ class FuzzTarget:
 
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=' + self.sanitizer,
+        '-e', 'CIFUZZ=True',
         '-e', 'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
         'bash', '-c'
     ]
