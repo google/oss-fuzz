@@ -30,5 +30,7 @@ RUN git clone https://github.com/unicode-org/text-rendering-tests.git && cp text
 
 RUN git clone --depth 1 https://github.com/freetype/freetype2-testing.git
 WORKDIR freetype2-testing
+# Make sure the main freetype2 repo is included in the srcmap.
+RUN git submodule update --init
 
 COPY build.sh $SRC/
