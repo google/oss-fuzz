@@ -28,10 +28,10 @@ import logging
 import re
 import shutil
 import tempfile
-import time
 
 import helper
 import repo_manager
+import retry
 import utils
 
 BuildData = collections.namedtuple(
@@ -144,7 +144,7 @@ def copy_src_from_docker(project_name, host_dir):
 
 
 @retry.wrap(_IMAGE_BUILD_TRIES, 2, 'infra.build_specified_commit')
-def _build_image(project_name):
+def _build_image_with_retries(project_name):
   """Build image with retries."""
   return helper.build_image_impl(project_name)
 
