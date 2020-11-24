@@ -17,7 +17,6 @@
 """Functions to help with wrapper scripts."""
 from __future__ import print_function
 
-import contextlib
 import os
 import subprocess
 
