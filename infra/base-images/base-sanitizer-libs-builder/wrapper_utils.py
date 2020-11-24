@@ -24,8 +24,8 @@ import subprocess
 
 def DpkgHostArchitecture():
   """Return the host architecture."""
-  return subprocess.check_output(
-      ['dpkg-architecture', '-qDEB_HOST_GNU_TYPE']).strip()
+  return subprocess.check_output(['dpkg-architecture',
+                                  '-qDEB_HOST_GNU_TYPE']).strip()
 
 
 def InstallWrapper(bin_dir, name, contents, extra_names=None):
