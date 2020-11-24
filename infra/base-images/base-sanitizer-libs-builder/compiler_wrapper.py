@@ -66,7 +66,7 @@ def FilterWlArg(arg):
 
 
 def _RemoveLastMatching(l, find):
-  for i in xrange(len(l) - 1, -1, -1):
+  for i in range(len(l) - 1, -1, -1):
     if l[i] == find:
       del l[i]
       return
