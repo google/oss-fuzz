@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Helper script to patch rpath in all binaries to point to instrumented libraries."""
 from __future__ import print_function
 import argparse
 import os
@@ -142,6 +142,7 @@ def PatchBuild(output_directory):
 
 
 def main():
+  """Patch binaries to use instrumented libraries for all their dynamic objects."""
   parser = argparse.ArgumentParser('patch_build.py',
                                    description='MSan build patcher.')
   parser.add_argument('output_dir', help='Output directory.')
