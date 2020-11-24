@@ -27,6 +27,7 @@ rm -rf $WORK/*
 rm -rf $BUILD
 mkdir -p $BUILD
 
+# Build glib
 pushd $WORK
 tar xvJf $SRC/glib-2.64.2.tar.xz
 cd glib-2.64.2
@@ -43,6 +44,7 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
+# Build gdk-pixbuf
 pushd $SRC/gdk-pixbuf
 meson \
     --prefix=$PREFIX \
@@ -56,14 +58,15 @@ ninja -C _builddir install
 popd
 
 # Create corpus and dict files
-mkdir corpus
-find $SRC/gdk-pixbuf/tests/ \( -name '*.jpeg' -o -name '*.jpg' -o -name '*.png' \) -exec cp -v '{}' ./corpus ';'
-find $SRC/libpng -name "*.png" | grep -v crashers | xargs cp -t ./corpus
+mkdir $SRC/corpus
+find $SRC/gdk-pixbuf/tests/ \( -name '*.jpeg' -o -name '*.jpg' -o -name '*.png' \) -exec cp -v '{}' $SRC/corpus ';'
+find $SRC/libpng -name "*.png" | grep -v crashers | xargs cp -t $SRC/corpus
 mv $SRC/fuzzdata/samples/gif/*.gif $SRC/corpus
 zip -q $OUT/gdk-pixbuf_seed_corpus.zip $SRC/corpus/*
 rm -rf $SRC/corpus $SRC/libpng $SRC/fuzzdata
 
-cat $SRC/*.dict > $OUT/gdk-pixbuf.dict
+# To make sure there is a new line between files
+awk 1 $SRC/*.dict > $OUT/gdk-pixbuf.dict
 
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -pthread -lrt -lpthread"
 DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 gdk-pixbuf-2.0"

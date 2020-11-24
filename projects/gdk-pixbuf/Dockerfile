@@ -23,9 +23,9 @@ RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.gnome.or
 
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
 RUN git clone --depth 1 https://github.com/MozillaSecurity/fuzzdata.git
-ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict
-ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/jpeg.dict
-ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/gif.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $SRC/png.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/jpeg.dict $SRC/jpeg.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/gif.dict $SRC/gif.dict
 
 WORKDIR $SRC/gdk-pixbuf
 COPY build.sh $SRC/
