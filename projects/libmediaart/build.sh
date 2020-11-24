@@ -71,14 +71,16 @@ BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 fuzzers=$(find $SRC/libmediaart/fuzzing/ -name "*_fuzzer.c")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .c)
-  $CC $CFLAGS $BUILD_CFLAGS -I. -c $f -o $WORK/${fuzzer_name}.o
-  $CXX $CXXFLAGS \
-    $WORK/${fuzzer_name}.o -o $OUT/${fuzzer_name} \
-    $PREDEPS_LDFLAGS \
-    $BUILD/libmediaart/libmediaart/libmediaart-2.0.a \
-    $BUILD_LDFLAGS \
-    $LIB_FUZZING_ENGINE \
-    -Wl,-Bdynamic
-  ln -sf $OUT/libmediaart_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
-  ln -sf $OUT/libmediaart_ogg.dict $OUT/${fuzzer_name}.dict
+  if [[ $fuzzer_name != "process_file_fuzzer" && $fuzzer_name != "get_file_fuzzer" ]]; then
+    $CC $CFLAGS $BUILD_CFLAGS -I. -c $f -o $WORK/${fuzzer_name}.o
+    $CXX $CXXFLAGS \
+        $WORK/${fuzzer_name}.o -o $OUT/${fuzzer_name} \
+        $PREDEPS_LDFLAGS \
+        $BUILD/libmediaart/libmediaart/libmediaart-2.0.a \
+        $BUILD_LDFLAGS \
+        $LIB_FUZZING_ENGINE \
+        -Wl,-Bdynamic
+    ln -sf $OUT/libmediaart_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+    ln -sf $OUT/libmediaart_ogg.dict $OUT/${fuzzer_name}.dict
+  fi
 done
