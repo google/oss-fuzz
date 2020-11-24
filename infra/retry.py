@@ -52,8 +52,6 @@ def wrap(retries,
 
     def handle_retry(num_try, exception=None):
       """Handle retry."""
-      from metrics import monitoring_metrics
-
       if (exception is None or
           isinstance(exception, exception_type)) and num_try < tries:
         logging.log('Retrying on %s failed with %s. Retrying again.' %
@@ -75,8 +73,6 @@ def wrap(retries,
     @functools.wraps(func)
     def _wrapper(*args, **kwargs):
       """Regular function wrapper."""
-      from metrics import monitoring_metrics
-
       for num_try in range(1, tries + 1):
         try:
           result = func(*args, **kwargs)
@@ -100,9 +96,6 @@ def wrap(retries,
       """Generator function wrapper."""
       # This argument is not applicable for generator functions.
       assert not retry_on_false
-
-      from metrics import monitoring_metrics
-
       already_yielded_element_count = 0
       for num_try in range(1, tries + 1):
         try:
