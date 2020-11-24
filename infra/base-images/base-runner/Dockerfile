@@ -79,5 +79,5 @@ ENV GOPATH /root/go
 # $GOPATH/bin is for the binaries from the dependencies installed via "go get".
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
-# gocovmerge merges coverage profiles.
+# Set up Golang coverage modules.
 RUN go get github.com/google/oss-fuzz/infra/go/coverage/...
