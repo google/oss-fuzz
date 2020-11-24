@@ -63,8 +63,6 @@ meson \
     $BUILD/libmediaart
 ninja -C $BUILD/libmediaart libmediaart/libmediaart-2.0.a
 
-mv $SRC/{*.zip,*.dict} $OUT
-
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -pthread -lrt -lpthread"
 DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 gdk-pixbuf-2.0"
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"

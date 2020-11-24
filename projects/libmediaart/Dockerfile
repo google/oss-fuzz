@@ -27,8 +27,9 @@ RUN git clone --depth 1 https://github.com/MozillaSecurity/fuzzdata.git && \
     mv fuzzdata/samples/ogg/* $SRC/libmediaart/seed_corpus && \
     mv fuzzdata/samples/mp3/* $SRC/libmediaart/seed_corpus && \
     mv fuzzdata/samples/flac/* $SRC/libmediaart/seed_corpus && \
-    zip -q $SRC/libmediaart_seed_corpus.zip $SRC/libmediaart/seed_corpus/* && \
+    zip -q $OUT/libmediaart_seed_corpus.zip $SRC/libmediaart/seed_corpus/* && \
     rm -rf fuzzdata
-ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/ogg.dict $SRC/libmediaart_ogg.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/ogg.dict $OUT/libmediaart_ogg.dict
+
 WORKDIR $SRC/libmediaart
 COPY build.sh $SRC/
