@@ -16,7 +16,7 @@ class CompilerWrapperTest(unittest.TestCase):
 
     self.assertListEqual(
         ['arg'],
-        compiler_wrapper.RemoveZDefs(['arg', '-Wl,-z,--no-undefined']))
+        compiler_wrapper.RemoveZDefs(['arg', '-Wl,--no-undefined']))
 
     self.assertListEqual(
         ['arg', '-Wl,-z,relro'],
