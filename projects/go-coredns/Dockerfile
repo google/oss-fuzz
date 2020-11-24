@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 ENV GO111MODULE=on
-RUN go get github.com/coredns/coredns
+RUN git clone --depth 1  https://github.com/coredns/coredns $GOPATH/src/github.com/coredns/coredns
 
 COPY build.sh $SRC/
 WORKDIR $SRC/

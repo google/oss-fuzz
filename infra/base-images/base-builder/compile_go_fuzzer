@@ -24,13 +24,7 @@ if [[ $#  -eq 4 ]]; then
 fi
 
 if [[ $SANITIZER = *coverage* ]]; then
-  if [[ ${GO111MODULE:-} = on ]]; then
-    basemod=`echo $path | cut -d/ -f1-3`
-    cd $GOPATH/pkg/mod/`go list -m $basemod | sed 's/ /@/'`
-    cd ./`echo $path | cut -d/ -f4-`
-  else
-    cd $GOPATH/src/$path
-  fi
+  cd $GOPATH/src/$path
   fuzzed_package=`pwd | rev | cut -d'/' -f 1 | rev`
   cp $GOPATH/ossfuzz_coverage_runner.go ./"${function,,}"_test.go
   sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
@@ -38,13 +32,7 @@ if [[ $SANITIZER = *coverage* ]]; then
   sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
 
   echo "#/bin/sh" > $OUT/$fuzzer
-  if [[ ${GO111MODULE:-} = on ]]; then
-    echo "export GO111MODULE=on" >> $OUT/$fuzzer
-    echo "cd ../pkg/mod/"`go list -m $basemod | sed 's/ /@/'` >> $OUT/$fuzzer
-    echo "cd ./"`echo $path | cut -d/ -f4-` >> $OUT/$fuzzer
-  else
-    echo "cd $path" >> $OUT/$fuzzer
-  fi
+  echo "cd $path" >> $OUT/$fuzzer
   echo "go test -run Test${function}Corpus -v $tags -coverprofile \$1 " >> $OUT/$fuzzer
   chmod +x $OUT/$fuzzer
 
