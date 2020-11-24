@@ -15,11 +15,6 @@
 #
 ################################################################################
 
-echo $CC
-echo $CXX
-which clang
-which clang++
-
 # We dont have getentropy syscall, so always return error when this is issued.
 # The result is not breaking, but rather an under-approximation of all the possible states.
 sed -i 's/int rc = getentropy(buffer, length);/int rc;\nif (buffer \&\& length) { rc = -1; } else {rc = -1; };/' serenity/AK/Random.h
@@ -31,10 +26,6 @@ echo "    add_subdirectory(Fuzzers)" >> serenity/Meta/Lagom/CMakeLists.txt
 echo "endif()" >> serenity/Meta/Lagom/CMakeLists.txt
 sed -i 's/-Wall -Wextra -Werror //' serenity/Meta/Lagom/CMakeLists.txt
 
-#sed -i 's/add_simple_fuzzer(FuzzJs)/#add_simple_fuzzer(FuzzJs)/' serenity/Meta/Lagom/Fuzzers/CMakeLists.txt
-#sed -i 's/add_executable(FuzzilliJs FuzzilliJs.cpp)/if(FALSE)\n    add_executable(FuzzilliJs FuzzilliJs.cpp)/' serenity/Meta/Lagom/Fuzzers/CMakeLists.txt
-#echo "endif()" >> serenity/Meta/Lagom/Fuzzers/CMakeLists.txt
-
 # Now build the content
 cd serenity/Meta/Lagom
 mkdir build
@@ -45,7 +36,7 @@ cmake -DBUILD_LAGOM=ON \
     -DCMAKE_CXX_COMPILER=$CXX \
     -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
     -DLINKER_FLAGS="$LIB_FUZZING_ENGINE" \
-    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
+    ..
 make
 cp Fuzzers/Fuzz* $OUT/
 
