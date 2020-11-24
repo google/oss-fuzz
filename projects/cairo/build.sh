@@ -27,6 +27,7 @@ rm -rf $WORK/*
 rm -rf $BUILD
 mkdir -p $BUILD
 
+# Build glib
 pushd $WORK
 tar xvJf $SRC/glib-2.64.2.tar.xz
 cd glib-2.64.2
@@ -43,6 +44,7 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
+# Build cairo
 pushd $SRC/cairo
 meson \
     --prefix=$PREFIX \
