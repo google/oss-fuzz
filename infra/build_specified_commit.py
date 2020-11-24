@@ -146,7 +146,7 @@ def copy_src_from_docker(project_name, host_dir):
 @retry.wrap(_IMAGE_BUILD_TRIES, 2, 'infra.build_specified_commit')
 def _build_image(project_name):
   """Build image with retries."""
-    return helper.build_image_impl(project_name)
+  return helper.build_image_impl(project_name)
 
 
 def get_required_post_checkout_steps(dockerfile_path):
