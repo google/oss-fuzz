@@ -116,6 +116,8 @@ def get_abs_src_path(src):
   return abs_src_path
 
 
+@retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF,
+            'cifuzz.cifuzz.build_external_project_docker_image')
 def build_external_project_docker_image(project_name, project_src,
                                         build_integration_path):
   """Builds the project builder image for an external (non-OSS-Fuzz) project.
@@ -124,15 +126,6 @@ def build_external_project_docker_image(project_name, project_src,
   tag = 'gcr.io/oss-fuzz/{project_name}'.format(project_name=project_name)
   command = ['-t', tag, '-f', dockerfile_path, project_src]
   return helper.docker_build(command)
-
-
-@retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF,
-            'cifuzz.cifuzz.build_external_project_docker_image')
-def build_external_project_docker_image(project_name, project_src,
-                                        build_integration_path):
-  """Wrapper around build_external_project_docker_image that uses retries."""
-  return build_external_project_docker_image(project_name, project_src,
-                                             build_integration_path)
 
 
 def fix_git_repo(repo_dir):
@@ -200,8 +193,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     inferred_url = None
     project_builder_repo_path = os.path.join('/src',
                                              os.path.basename(project_src_path))
-    if not build_external_project_docker_image(
-        project_name, project_src_path, build_integration_path):
+    if not build_external_project_docker_image(project_name, project_src_path,
+                                               build_integration_path):
       return False
   else:
     # detect_main_repo builds the image as a side effect.
