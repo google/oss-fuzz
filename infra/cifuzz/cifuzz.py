@@ -34,6 +34,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build_specified_commit
 import helper
 import repo_manager
+import retry
 import utils
 
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
