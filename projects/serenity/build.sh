@@ -34,7 +34,13 @@ echo "endif()" >> serenity/Meta/Lagom/Fuzzers/CMakeLists.txt
 cd serenity/Meta/Lagom
 mkdir build
 cd build
-cmake -DBUILD_LAGOM=ON -DENABLE_OSS_FUZZ=ON -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX  ..
+cmake -DBUILD_LAGOM=ON \
+    -DENABLE_OSS_FUZZ=ON \
+    -DCMAKE_C_COMPILER=$CC \
+    -DCMAKE_CXX_COMPILER=$CXX \
+    -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+    -DCMAKE_EXE_LINKER_FLAGS="$LIB_FUZZING_ENGINE" \
+    ..
 make
 cp Fuzzers/Fuzz* $OUT/
 
