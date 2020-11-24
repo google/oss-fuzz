@@ -14,18 +14,24 @@
 #
 ################################################################################
 
-#ADD focal.list /etc/apt/sources.list.d/focal.list
-#ADD extra_cmake_apt.pin /etc/apt/preferences
-#RUN sed -i -e 's/xenial/focal/g' /etc/apt/sources.list
-
+#qtbase5-dev patchelf
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y autoconf make libtool libglib2.0-dev libgirepository1.0-dev libcairo2-dev libgcc-5-dev qtbase5-dev
+RUN apt-get update && apt-get install -y wget autoconf automake libtool \
+    pkg-config cmake gtk-doc-tools libffi-dev zlib1g-dev libfontconfig1-dev
+RUN pip3 install meson==0.55.3 ninja
+
 RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.freedesktop.org/ceyhunalp/poppler.git
+
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git
 RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
-RUN git clone --depth 1 https://github.com/madler/zlib.git
+#RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
+RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git
+RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
+ADD http://ftp.gnome.org/pub/gnome/sources/pango/1.48/pango-1.48.0.tar.xz $SRC
+ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
+
 RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
     zip -q $SRC/poppler_seed_corpus.zip pdf.js/test/pdfs/*.pdf && \
     rm -rf pdf.js
