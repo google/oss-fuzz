@@ -29,13 +29,13 @@ def AddNoAsmArg(config_path):
   os.chmod(config_path, 0o755)
 
 
-class Package(package.Package):
+class Package(package.Package):  # pylint: disable=too-few-public-methods
   """openssl package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('openssl', apt_version)
 
-  def PreBuild(self, source_directory, env, custom_bin_dir):
+  def PreBuild(self, source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
     """Hook function to customize openssl's configuration before building."""
     AddNoAsmArg(os.path.join(source_directory, 'Configure'))
     AddNoAsmArg(os.path.join(source_directory, 'config'))
