@@ -31,8 +31,8 @@ def DpkgHostArchitecture():
 def InstallWrapper(bin_dir, name, contents, extra_names=None):
   """Install a custom wrapper script into |bin_dir|."""
   path = os.path.join(bin_dir, name)
-  with open(path, 'w') as f:
-    f.write(contents)
+  with open(path, 'w') as wrapper_file:
+    wrapper_file.write(contents)
 
   os.chmod(path, 0o755)
 

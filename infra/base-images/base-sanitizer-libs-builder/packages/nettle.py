@@ -24,8 +24,9 @@ import package
 def AddNoAsmArg(config_path):
   """Add --disable-assembler to config scripts."""
   shutil.move(config_path, config_path + '.real')
-  with open(config_path, 'w') as f:
-    f.write('#!/bin/sh\n' '%s.real --disable-assembler "$@"\n' % config_path)
+  with open(config_path, 'w') as config_file:
+    config_file.write('#!/bin/sh\n'
+                      '%s.real --disable-assembler "$@"\n' % config_path)
   os.chmod(config_path, 0o755)
 
 
