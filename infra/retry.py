@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Retry decorator. We separate this part out into its
-  own file because we want to avoid importing too many modules; now it can be
-  used in more places. Copied from FuzzBench/ClusterFuzz source code."""
+"""Retry decorator. Copied from ClusterFuzz source."""
 
 import functools
 import inspect
@@ -22,91 +20,110 @@ import time
 
 
 def sleep(seconds):
-    """Invoke time.sleep."""
-    time.sleep(seconds)
+  """Invoke time.sleep. This is to avoid the flakiness of time.sleep. See:
+    crbug.com/770375"""
+  time.sleep(seconds)
 
 
 def get_delay(num_try, delay, backoff):
-    """Compute backoff delay."""
-    return delay * (backoff**(num_try - 1))
+  """Compute backoff delay."""
+  return delay * (backoff**(num_try - 1))
 
 
-def wrap(  # pylint: disable=too-many-arguments
-        retries,
-        delay,
-        function,
-        backoff=2,
-        exception_type=Exception,
-        log_retries=True,
-        retry_on_false=False):
-    """Retry decorator for a function."""
-    assert delay > 0
-    assert backoff >= 1
-    assert retries >= 0
+def wrap(retries,
+         delay,
+         function,
+         backoff=2,
+         exception_type=Exception,
+         retry_on_false=False):
+  """Retry decorator for a function."""
 
-    def decorator(func):
-        """Decorator for the given function."""
-        tries = retries + 1
-        is_generator = inspect.isgeneratorfunction(func)
-        function_with_type = function
-        if is_generator:
-            function_with_type += ' (generator)'
+  assert delay > 0
+  assert backoff >= 1
+  assert retries >= 0
 
-        def handle_retry(num_try, exception=None):
-            """Handle retry."""
+  def decorator(func):
+    """Decorator for the given function."""
+    tries = retries + 1
+    is_generator = inspect.isgeneratorfunction(func)
+    function_with_type = function
+    if is_generator:
+      function_with_type += ' (generator)'
 
-            if (exception is None or
-                    isinstance(exception, exception_type)) and num_try < tries:
-                logging.info(
-                    'Retrying on %s failed with %s. Retrying again.',
-                    function_with_type,
-                    sys.exc_info()[1])
-                sleep(get_delay(num_try, delay, backoff))
-                return True
+    def handle_retry(num_try, exception=None):
+      """Handle retry."""
+      from metrics import monitoring_metrics
 
-            logging.error('Retrying on %s failed with %s. Raise.',
-                          function_with_type,
-                          sys.exc_info()[1])
-            return False
+      if (exception is None or
+          isinstance(exception, exception_type)) and num_try < tries:
+        logging.log(
+            'Retrying on %s failed with %s. Retrying again.' %
+            (function_with_type, sys.exc_info()[1]),
+            num=num_try,
+            total=tries)
+        sleep(get_delay(num_try, delay, backoff))
+        return True
 
-        @functools.wraps(func)
-        def _wrapper(*args, **kwargs):
-            """Regular function wrapper."""
+      monitoring_metrics.TRY_COUNT.increment({
+          'function': function,
+          'is_succeeded': False
+      })
+      logging.log_error(
+          'Retrying on %s failed with %s. Raise.' % (function_with_type,
+                                                     sys.exc_info()[1]),
+          total=tries)
+      return False
 
-            for num_try in range(1, tries + 1):
-                try:
-                    result = func(*args, **kwargs)
-                    if retry_on_false and not result:
-                        if not handle_retry(num_try):
-                            return result
+    @functools.wraps(func)
+    def _wrapper(*args, **kwargs):
+      """Regular function wrapper."""
+      from metrics import monitoring_metrics
 
-                        continue
+      for num_try in range(1, tries + 1):
+        try:
+          result = func(*args, **kwargs)
+          if retry_on_false and not result:
+            if not handle_retry(num_try):
+              return result
 
-                    return result
-                except Exception as error:  # pylint: disable=broad-except
-                    if not handle_retry(num_try, exception=error):
-                        raise
+            continue
 
-        @functools.wraps(func)
-        def _generator_wrapper(*args, **kwargs):
-            """Generator function wrapper."""
-            # This argument is not applicable for generator functions.
-            assert not retry_on_false
+          monitoring_metrics.TRY_COUNT.increment({
+              'function': function,
+              'is_succeeded': True
+          })
+          return result
+        except Exception as e:
+          if not handle_retry(num_try, exception=e):
+            raise
 
-            already_yielded_element_count = 0
-            for num_try in range(1, tries + 1):
-                try:
-                    for index, result in enumerate(func(*args, **kwargs)):
-                        if index >= already_yielded_element_count:
-                            yield result
-                            already_yielded_element_count += 1
-                    break
-                except Exception as error:  # pylint: disable=broad-except
-                    if not handle_retry(num_try, exception=error):
-                        raise
+    @functools.wraps(func)
+    def _generator_wrapper(*args, **kwargs):
+      """Generator function wrapper."""
+      # This argument is not applicable for generator functions.
+      assert not retry_on_false
 
-        if is_generator:
-            return _generator_wrapper
-        return _wrapper
+      from metrics import monitoring_metrics
 
-    return decorator
+      already_yielded_element_count = 0
+      for num_try in range(1, tries + 1):
+        try:
+          for index, result in enumerate(func(*args, **kwargs)):
+            if index >= already_yielded_element_count:
+              yield result
+              already_yielded_element_count += 1
+
+          monitoring_metrics.TRY_COUNT.increment({
+              'function': function,
+              'is_succeeded': True
+          })
+          break
+        except Exception as e:
+          if not handle_retry(num_try, exception=e):
+            raise
+
+    if is_generator:
+      return _generator_wrapper
+    return _wrapper
+
+  return decorator
