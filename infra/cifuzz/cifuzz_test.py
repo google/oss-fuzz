@@ -65,6 +65,36 @@ UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 # pylint: disable=no-self-use
 
 
+class BuildFuzzersTest(unittest.TestCase):
+  """Unit tests for build_fuzzers."""
+
+  @mock.patch('build_specified_commit.detect_main_repo',
+              return_value=('example.com', '/path'))
+  @mock.patch('repo_manager.RepoManager', return_value=None)
+  @mock.patch('cifuzz.checkout_specified_commit')
+  @mock.patch('helper.docker_run')
+  def test_cifuzz_env_var(self, mocked_docker_run, _, __, ___):
+    """Tests that the CIFUZZ env var is set."""
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      cifuzz.build_fuzzers(EXAMPLE_PROJECT,
+                           EXAMPLE_PROJECT,
+                           tmp_dir,
+                           pr_ref='refs/pull/1757/merge')
+    docker_run_command = mocked_docker_run.call_args_list[0][0][0]
+
+    def command_has_env_var_arg(command, env_var_arg):
+      for idx, element in enumerate(command):
+        if idx == 0:
+          continue
+
+        if element == env_var_arg and command[idx - 1] == '-e':
+          return True
+      return False
+
+    self.assertTrue(command_has_env_var_arg(docker_run_command, 'CIFUZZ=True'))
+
+
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
 

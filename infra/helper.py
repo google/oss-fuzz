@@ -59,7 +59,7 @@ CORPUS_BACKUP_URL_FORMAT = (
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
 
 
 def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-many-statements
@@ -595,10 +595,16 @@ def check_build(args):
       not _check_fuzzer_exists(args.project_name, args.fuzzer_name)):
     return 1
 
+  fuzzing_language = _get_project_language(args.project_name)
+  if fuzzing_language is None:
+    print('WARNING: language not specified in project.yaml. Defaulting to C++.')
+    fuzzing_language = 'c++'
+
   env = [
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
+      'FUZZING_LANGUAGE=' + fuzzing_language,
   ]
   if args.e:
     env += args.e

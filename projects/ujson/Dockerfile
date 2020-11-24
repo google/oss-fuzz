@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2019 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,15 @@
 # limitations under the License.
 #
 ################################################################################
-# Docker image to run CIFuzz in.
 
-FROM gcr.io/oss-fuzz-base/cifuzz-base
+FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN rm -rf ${OSS_FUZZ_ROOT}/infra/cifuzz
 
-# Copies your code file from  action repository to the container
-COPY actions/build_fuzzers/build_fuzzers_entrypoint.py /opt/build_fuzzers_entrypoint.py
+RUN git clone \
+	--depth 1 \
+	--branch master \
+	https://github.com/ultrajson/ultrajson.git
 
-ADD . ${OSS_FUZZ_ROOT}/infra/cifuzz
+WORKDIR ultrajson
 
-# Python file to execute when the docker container starts up
-ENTRYPOINT ["python3", "/opt/build_fuzzers_entrypoint.py"]
+COPY build.sh json_differential_fuzzer.py ujson_fuzzer.py $SRC/

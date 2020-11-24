@@ -1,4 +1,6 @@
-# Copyright 2020 Google LLC
+#!/bin/bash -eu
+# Copyright 2020 Google Inc.
+# Copyright 2020 Luca Boccassi <bluca@debian.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +15,20 @@
 # limitations under the License.
 #
 ################################################################################
-# Docker image to run CIFuzz run fuzzers action in.
 
-FROM gcr.io/oss-fuzz-base/cifuzz-base
+cd $SRC/leveldb
+mkdir -p build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
 
-# Copies your code file from  action repository to the container
-COPY run_fuzzers_entrypoint.py /opt/run_fuzzers_entrypoint.py
+for fuzzer in fuzz_db; do
+    # Compile
+    $CXX $CXXFLAGS -c ../${fuzzer}.cc -o ${fuzzer}.o \
+     -DLEVELDB_PLATFORM_POSIX=1 -std=c++11 \
+    -I$SRC/leveldb/build/include -I$SRC/leveldb/ -I$SRC/leveldb/include
 
-# Python file to execute when the docker container starts up
-ENTRYPOINT ["python3", "/opt/run_fuzzers_entrypoint.py"]
+    # Link
+    $CXX $LIB_FUZZING_ENGINE $CXXFLAGS ${fuzzer}.o -o $OUT/${fuzzer} libleveldb.a
+done
+
+# Copy options to out
+cp $SRC/*options $OUT/
