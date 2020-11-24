@@ -36,7 +36,11 @@ class CompilerWrapperTest(unittest.TestCase):
 
     self.assertListEqual(['arg', 'arg2'],
                          compiler_wrapper.RemoveZDefs(
-                             ['arg', '-Wl,-z', 'arg2', '-Wl,--no-undefined']))
+                             ['arg', 'arg2', '-Wl,--no-undefined']))
+
+    self.assertListEqual(['arg', 'arg2'],
+                         compiler_wrapper.RemoveZDefs(
+                             ['arg', '-Wl,-z', 'arg2', '-Wl,defs']))
 
 
 if __name__ == '__main__':
