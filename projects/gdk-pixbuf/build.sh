@@ -55,9 +55,9 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
+# Create corpus and dict files
 mkdir corpus
-find $SRC/gdk-pixbuf/tests/ \( -name '*.jpeg' -o -name '*.jpg' -o -name '*.png' \)
--exec cp -v '{}' ./corpus ';'
+find $SRC/gdk-pixbuf/tests/ \( -name '*.jpeg' -o -name '*.jpg' -o -name '*.png' \) -exec cp -v '{}' ./corpus ';'
 find $SRC/libpng -name "*.png" | grep -v crashers | xargs cp -t ./corpus
 mv $SRC/fuzzdata/samples/gif/*.gif $SRC/corpus
 zip -q $OUT/gdk-pixbuf_seed_corpus.zip $SRC/corpus/*
