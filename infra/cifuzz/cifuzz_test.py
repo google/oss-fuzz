@@ -105,10 +105,6 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     """Tests building fuzzers from an external project."""
     project_name = 'external-project'
     project_src_path = os.path.join(TEST_FILES_PATH, project_name)
-    # with tempfile.TemporaryDirectory() as tmp_dir:
-    # project_src_path = os.path.join(tmp_dir, project_name)
-    # shutil.copytree(project_src_path_src, project_src_path)
-    # project_src_path = project_src_path_dst
     build_integration_path = os.path.join(project_src_path, 'oss-fuzz')
     os.environ['PROJECT_SRC_PATH'] = project_src_path
     os.environ['BUILD_INTEGRATION_PATH'] = build_integration_path
