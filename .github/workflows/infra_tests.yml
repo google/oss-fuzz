@@ -24,7 +24,6 @@ jobs:
           sudo env "PATH=$PATH" python -m pip install --upgrade pip
           sudo env "PATH=$PATH" pip install -r infra/ci/requirements.txt
           sudo env "PATH=$PATH" pip install -r infra/build/functions/requirements.txt
-          sudo apt-get install python3-apt
 
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
@@ -34,6 +33,6 @@ jobs:
           sudo env "PATH=$PATH" gcloud info
 
       - name: Run infra tests
-        run: sudo env "PATH=$PATH" "PYTHONPATH=/usr/lib/python${{ matrix.python-version }}/dist-packages:/usr/lib/python3/dist-packages:$PYTHONPATH" python infra/presubmit.py infra-tests
+        run: sudo env "PATH=$PATH" python infra/presubmit.py infra-tests
 
 
