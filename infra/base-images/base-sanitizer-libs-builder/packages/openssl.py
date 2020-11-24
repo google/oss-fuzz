@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Custom configure options for openssl."""
 import os
 import shutil
 
@@ -36,5 +36,6 @@ class Package(package.Package):
     super(Package, self).__init__('openssl', apt_version)
 
   def PreBuild(self, source_directory, env, custom_bin_dir):
+    """Hook function to customize openssl's configuration before building."""
     AddNoAsmArg(os.path.join(source_directory, 'Configure'))
     AddNoAsmArg(os.path.join(source_directory, 'config'))
