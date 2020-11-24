@@ -34,7 +34,7 @@ def InstallWrapper(bin_dir, name, contents, extra_names=None):
   with open(path, 'w') as f:
     f.write(contents)
 
-  os.chmod(path, 0755)
+  os.chmod(path, 0o755)
 
   if extra_names:
     CreateSymlinks(path, bin_dir, extra_names)

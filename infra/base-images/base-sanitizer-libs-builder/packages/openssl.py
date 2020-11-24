@@ -28,7 +28,7 @@ def AddNoAsmArg(config_path):
     f.write(
         '#!/bin/sh\n'
         '%s.real no-asm "$@"\n' % config_path)
-  os.chmod(config_path, 0755)
+  os.chmod(config_path, 0o755)
 
 
 class Package(package.Package):
