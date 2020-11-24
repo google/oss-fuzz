@@ -17,8 +17,6 @@
 
 FROM gcr.io/oss-fuzz-base/cifuzz-base
 
-RUN rm -rf ${OSS_FUZZ_ROOT}/infra/cifuzz
-
 COPY actions/build_fuzzers/build_fuzzers_entrypoint.py /opt/build_fuzzers_entrypoint.py
 
 # Python file to execute when the docker container starts up
