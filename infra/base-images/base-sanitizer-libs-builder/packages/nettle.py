@@ -21,7 +21,7 @@ import shutil
 import package
 
 
-def AddNoAsmArg(config_path):
+def add_no_asm_arg(config_path):
   """Add --disable-assembler to config scripts."""
   shutil.move(config_path, config_path + '.real')
   with open(config_path, 'w') as config_file:
@@ -36,6 +36,6 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
   def __init__(self, apt_version):
     super(Package, self).__init__('nettle', apt_version)
 
-  def PreBuild(self, source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
+  def PreBuild(self, source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use,invalid-name
     """Hook function to customize nettle's configuration before building."""
-    AddNoAsmArg(os.path.join(source_directory, 'configure'))
+    add_no_asm_arg(os.path.join(source_directory, 'configure'))

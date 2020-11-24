@@ -21,7 +21,7 @@ import shutil
 import package
 
 
-def AddNoAsmArg(config_path):
+def add_no_asm_arg(config_path):
   """Add --no-asm to config scripts."""
   shutil.move(config_path, config_path + '.real')
   with open(config_path, 'w') as config_file:
@@ -35,7 +35,7 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
   def __init__(self, apt_version):
     super(Package, self).__init__('openssl', apt_version)
 
-  def PreBuild(self, source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
+  def PreBuild(self, source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use,invalid-name
     """Hook function to customize openssl's configuration before building."""
-    AddNoAsmArg(os.path.join(source_directory, 'Configure'))
-    AddNoAsmArg(os.path.join(source_directory, 'config'))
+    add_no_asm_arg(os.path.join(source_directory, 'Configure'))
+    add_no_asm_arg(os.path.join(source_directory, 'config'))
