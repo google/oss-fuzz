@@ -25,6 +25,14 @@ import sys
 
 INSTRUMENTED_LIBRARIES_DIRNAME = 'instrumented_libraries'
 MSAN_LIBS_PATH = os.getenv('MSAN_LIBS_PATH', '/msan')
+INTERCEPTED_LIBRARIES = {
+  '/lib/x86_64-linux-gnu/libm.so.6',
+  '/lib/x86_64-linux-gnu/libpthread.so.0',
+  '/lib/x86_64-linux-gnu/librt.so.1',
+  '/lib/x86_64-linux-gnu/libdl.so.2',
+  '/lib/x86_64-linux-gnu/libgcc_s.so.1',
+  '/lib/x86_64-linux-gnu/libc.so.6',
+}
 
 
 def IsElf(file_path):
@@ -78,8 +86,9 @@ def PatchBinary(binary_path, instrumented_dir):
 
     instrumented_path = FindLib(path)
     if not instrumented_path:
-      print('WARNING: Instrumented library not found for', path,
-            file=sys.stderr)
+      if path not in INTERCEPTED_LIBRARIES:
+        print('WARNING: Instrumented library not found for', path,
+              file=sys.stderr)
       continue
 
     target_path = os.path.join(instrumented_dir, path[1:])
