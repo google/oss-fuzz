@@ -81,7 +81,7 @@ def PatchBinary(binary_path, instrumented_dir):
   """Patch binary to link to instrumented libs."""
   extra_rpaths = set()
 
-  for name, path in Ldd(binary_path):
+  for _name, path in ldd(binary_path):
     if not os.path.isabs(path):
       continue
 
