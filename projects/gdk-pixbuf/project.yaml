@@ -3,5 +3,4 @@ language: c
 primary_contact: jvoisin@google.com
 sanitizers:
   - address
-  - memory
   - undefined
