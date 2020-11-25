@@ -138,7 +138,8 @@ def fix_git_repo_for_diff(repo_dir):
   return utils.execute(command, location=repo_dir)
 
 
-def get_git_workspace(project_src_path):
+def get_git_workspace(project_src_path, workspace):
+  """Returns a path to the git workspace."""
   if project_src_path:
     if not os.path.exists(project_src_path):
       logging.error(
@@ -184,7 +185,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   os.makedirs(out_dir, exist_ok=True)
 
   project_src_path = get_project_src_path()
-  git_workspace = get_git_workspace(project_src_path)
+  git_workspace = get_git_workspace(project_src_path, workspace)
   if git_workspace is None:
     return False
 
@@ -246,7 +247,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   if helper.docker_run(command):
     logging.error('Building fuzzers failed.')
     return False
-  fix_git_repo(host_repo_path)
+  fix_git_repo_for_diff(host_repo_path)
   remove_unaffected_fuzzers(project_name, out_dir,
                             build_repo_manager.get_git_diff(),
                             project_builder_repo_path)
@@ -321,6 +322,7 @@ def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
 
 
 def get_common_docker_args(sanitizer):
+  """Returns a list of common docker arguments."""
   return [
       '--cap-add',
       'SYS_PTRACE',
@@ -335,6 +337,7 @@ def get_common_docker_args(sanitizer):
       '-e',
       'FUZZING_LANGUAGE=c++',  # FIXME: Add proper support.
   ]
+
 
 def check_fuzzer_build(out_dir, sanitizer='address'):
   """Checks the integrity of the built fuzzers.
