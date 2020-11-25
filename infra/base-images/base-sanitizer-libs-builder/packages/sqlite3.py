@@ -26,7 +26,7 @@ class Package(package.Package):
   def __init__(self, apt_version):
     super(Package, self).__init__('sqlite3', apt_version)
 
-  def PreBuild(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, source_directory, env, custom_bin_dir):
     os.system(
         'sed -i "s/package ifneeded sqlite3//" %s/debian/rules' %
         source_directory)

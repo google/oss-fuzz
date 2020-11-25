@@ -30,7 +30,7 @@ class Package(package.Package):
   def __init__(self, apt_version):
     super(Package, self).__init__('systemd', apt_version)
 
-  def PreBuild(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, source_directory, env, custom_bin_dir):
     # Hide msan symbols from nm. the systemd build system uses this to find
     # undefined symbols and errors out if it does.
     nm_wrapper = (

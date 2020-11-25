@@ -368,8 +368,8 @@ class MSanBuilder(object):
     else:
       pkg = GetPackage(package_name)
 
-      pkg.InstallBuildDeps()
-      source_directory = pkg.DownloadSource(self.work_dir)
+      pkg.install_build_deps()
+      source_directory = pkg.download_source(self.work_dir)
       print('Source downloaded to', source_directory)
 
       # custom bin directory for custom build scripts to write wrappers.
@@ -378,7 +378,7 @@ class MSanBuilder(object):
       env = self.env.copy()
       env['PATH'] = custom_bin_dir + ':' + env['PATH']
 
-      pkg.Build(source_directory, env, custom_bin_dir)
+      pkg.build(source_directory, env, custom_bin_dir)
       shutil.rmtree(custom_bin_dir, ignore_errors=True)
 
       deb_paths = FindPackageDebs(package_name, self.work_dir)

@@ -28,7 +28,7 @@ class Package(package.Package):
   def __init__(self, apt_version):
     super(Package, self).__init__('gnutls28', apt_version)
 
-  def PreBuild(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, source_directory, env, custom_bin_dir):
     configure_wrapper = (
         '#!/bin/bash\n'
         '/usr/bin/dh_auto_configure "$@" --disable-hardware-acceleration')

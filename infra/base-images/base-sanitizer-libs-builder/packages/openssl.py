@@ -35,7 +35,7 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
   def __init__(self, apt_version):
     super(Package, self).__init__('openssl', apt_version)
 
-  def PreBuild(self, source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use,invalid-name
+  def pre_build(self, source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
     """Hook function to customize openssl's configuration before building."""
     add_no_asm_arg(os.path.join(source_directory, 'Configure'))
     add_no_asm_arg(os.path.join(source_directory, 'config'))

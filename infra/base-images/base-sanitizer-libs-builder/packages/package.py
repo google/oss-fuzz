@@ -23,7 +23,7 @@ import apt
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-def ApplyPatch(source_directory, patch_name):
+def apply_patch(source_directory, patch_name):
   """Apply custom patch."""
   subprocess.check_call(['patch', '-p1', '-i',
                          os.path.join(SCRIPT_DIR, patch_name)],
@@ -41,19 +41,19 @@ class Package(object):
     self.name = name
     self.apt_version = apt_version
 
-  def PreBuild(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, source_directory, env, custom_bin_dir):
     return
 
-  def PostBuild(self, source_directory, env, custom_bin_dir):
+  def post_build(self, source_directory, env, custom_bin_dir):
     return
 
-  def PreDownload(self, download_directory):
+  def pre_download(self, download_directory):
     return
 
-  def PostDownload(self, source_directory):
+  def post_download(self, source_directory):
     return
 
-  def InstallBuildDeps(self):
+  def install_build_deps(self):
     """Install build dependencies for a package."""
     subprocess.check_call(['apt-get', 'update'])
     subprocess.check_call(['apt-get', 'build-dep', '-y', self.name])
@@ -62,21 +62,21 @@ class Package(object):
     self.apt_version = (
         apt.Cache()[self.apt_version.package.name].candidate)
 
-  def DownloadSource(self, download_directory):
+  def download_source(self, download_directory):
     """Download the source for a package."""
-    self.PreDownload(download_directory)
+    self.pre_download(download_directory)
 
     source_directory = self.apt_version.fetch_source(download_directory)
 
-    self.PostDownload(source_directory)
+    self.post_download(source_directory)
     return source_directory
 
-  def Build(self, source_directory, env, custom_bin_dir):
+  def build(self, source_directory, env, custom_bin_dir):
     """Build .deb packages."""
-    self.PreBuild(source_directory, env, custom_bin_dir)
+    self.pre_build(source_directory, env, custom_bin_dir)
     subprocess.check_call(
         ['dpkg-buildpackage', '-us', '-uc', '-B'],
         cwd=source_directory, env=env)
-    self.PostBuild(source_directory, env, custom_bin_dir)
+    self.post_build(source_directory, env, custom_bin_dir)
 
 
