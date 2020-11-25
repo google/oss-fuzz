@@ -71,7 +71,7 @@ def SetUpEnvironment(work_dir):
   bin_dir = os.path.join(work_dir, 'bin')
   os.mkdir(bin_dir)
 
-  dpkg_host_architecture = wrapper_utils.DpkgHostArchitecture()
+  dpkg_host_architecture = wrapper_utils.dpkg_host_architecture()
   wrapper_utils.CreateSymlinks(
       compiler_wrapper_path, bin_dir, [
           'clang',
@@ -106,13 +106,13 @@ def SetUpEnvironment(work_dir):
         'export DPKG_GENSYMBOLS_CHECK_LEVEL=0\n'
         '/usr/bin/dpkg-gensymbols "$@"\n')
 
-  wrapper_utils.InstallWrapper(bin_dir, 'dpkg-gensymbols',
-                               gen_symbols_wrapper)
+  wrapper_utils.install_wrapper(bin_dir, 'dpkg-gensymbols',
+                                gen_symbols_wrapper)
 
   # Install no-op strip binaries.
   no_op_strip = ('#!/bin/sh\n'
                  'exit 0\n')
-  wrapper_utils.InstallWrapper(
+  wrapper_utils.install_wrapper(
       bin_dir, 'strip', no_op_strip,
       [dpkg_host_architecture + '-strip'])
 
@@ -126,8 +126,8 @@ def SetUpEnvironment(work_dir):
       '  exit 0\n'
       'fi\n'
       '/usr/bin/make "$@"\n')
-  wrapper_utils.InstallWrapper(bin_dir, 'make',
-                               make_wrapper)
+  wrapper_utils.install_wrapper(bin_dir, 'make',
+                                make_wrapper)
 
   # Prevent entire build from failing because of bugs/uninstrumented in tools
   # that are part of the build.

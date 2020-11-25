@@ -21,13 +21,13 @@ import os
 import subprocess
 
 
-def DpkgHostArchitecture():  # pylint: disable=invalid-name
+def dpkg_host_architecture():
   """Return the host architecture."""
   return subprocess.check_output(['dpkg-architecture',
                                   '-qDEB_HOST_GNU_TYPE']).strip()
 
 
-def InstallWrapper(bin_dir, name, contents, extra_names=None):  # pylint: disable=invalid-name
+def install_wrapper(bin_dir, name, contents, extra_names=None):
   """Install a custom wrapper script into |bin_dir|."""
   path = os.path.join(bin_dir, name)
   with open(path, 'w') as wrapper_file:

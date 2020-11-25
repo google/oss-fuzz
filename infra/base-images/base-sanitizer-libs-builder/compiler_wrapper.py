@@ -74,7 +74,7 @@ def _remove_last_matching(args, find):
   raise IndexError('Not found')
 
 
-def RemoveZDefs(args):  # pylint: disable=invalid-name
+def remove_z_defs(args):
   """Remove unsupported -Wl,-z,defs linker option."""
   filtered = []
 
@@ -109,7 +109,7 @@ def get_compiler_args(args, is_cxx):
 
     return compiler_args
 
-  compiler_args = RemoveZDefs(compiler_args)
+  compiler_args = remove_z_defs(compiler_args)
   compiler_args.extend([
       # FORTIFY_SOURCE is not supported by sanitizers.
       '-U_FORTIFY_SOURCE',

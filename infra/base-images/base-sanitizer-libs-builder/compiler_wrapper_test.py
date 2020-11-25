@@ -27,35 +27,36 @@ class CompilerWrapperTest(unittest.TestCase):
   """Tests for compiler_wrapper."""
 
   def test_filter_z_defs(self):
-    """Reference tests for RemoveZDefs."""
+    """Reference tests for remove_z_defs."""
     self.assertListEqual(['arg'],
-                         compiler_wrapper.RemoveZDefs(['arg', '-Wl,-z,defs']))
+                         compiler_wrapper.remove_z_defs(['arg', '-Wl,-z,defs']))
 
     self.assertListEqual(['arg'],
-                         compiler_wrapper.RemoveZDefs(
+                         compiler_wrapper.remove_z_defs(
                              ['arg', '-Wl,--no-undefined']))
 
     self.assertListEqual(['arg', '-Wl,-z,relro'],
-                         compiler_wrapper.RemoveZDefs(['arg', '-Wl,-z,relro']))
+                         compiler_wrapper.remove_z_defs(['arg',
+                                                         '-Wl,-z,relro']))
 
     self.assertListEqual(['arg', '-Wl,-soname,lib.so.1,-z,relro'],
-                         compiler_wrapper.RemoveZDefs(
+                         compiler_wrapper.remove_z_defs(
                              ['arg', '-Wl,-soname,lib.so.1,-z,defs,-z,relro']))
 
     self.assertListEqual(['arg', '-Wl,-z,relro'],
-                         compiler_wrapper.RemoveZDefs(
+                         compiler_wrapper.remove_z_defs(
                              ['arg', '-Wl,-z,relro,-z,defs']))
 
     self.assertListEqual(['arg'],
-                         compiler_wrapper.RemoveZDefs(
+                         compiler_wrapper.remove_z_defs(
                              ['arg', '-Wl,-z', '-Wl,defs']))
 
     self.assertListEqual(['arg', 'arg2'],
-                         compiler_wrapper.RemoveZDefs(
+                         compiler_wrapper.remove_z_defs(
                              ['arg', 'arg2', '-Wl,--no-undefined']))
 
     self.assertListEqual(['arg', 'arg2'],
-                         compiler_wrapper.RemoveZDefs(
+                         compiler_wrapper.remove_z_defs(
                              ['arg', '-Wl,-z', 'arg2', '-Wl,defs']))
 
 

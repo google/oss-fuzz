@@ -39,4 +39,4 @@ class Package(package.Package):
         'exit ${PIPESTATUS[0]}\n')
 
     wrapper_utils.InstallWrapper(custom_bin_dir, 'nm', nm_wrapper,
-                                 [wrapper_utils.DpkgHostArchitecture() + '-nm'])
+                                 [wrapper_utils.dpkg_host_architecture() + '-nm'])
