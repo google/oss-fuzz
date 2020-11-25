@@ -328,7 +328,7 @@ def get_build_list(package_name):
   return dependencies
 
 
-class MSanBuilder(object):
+class MSanBuilder:
   """MSan builder."""
 
   def __init__(self, debug=False, log_path=None, work_dir=None, no_track_origins=False):

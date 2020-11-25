@@ -34,7 +34,7 @@ class PackageException(Exception):
   """Base package exception."""
 
 
-class Package(object):
+class Package:
   """Base package."""
 
   def __init__(self, name, apt_version):
