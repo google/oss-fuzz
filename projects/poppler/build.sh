@@ -27,9 +27,7 @@ rm -rf $WORK/*
 rm -rf $BUILD
 mkdir -p $BUILD
 
-pushd $WORK
-tar xvJf $SRC/glib-2.64.2.tar.xz
-cd glib-2.64.2
+pushd $SRC/glib-2.64.2
 meson \
     --prefix=$PREFIX \
     --libdir=lib \
@@ -75,9 +73,7 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
-pushd $WORK
-tar xvJf $SRC/pango-1.48.0.tar.xz
-cd pango-1.48.0 
+pushd $SRC/pango-1.48.0
 meson \
     -Ddefault_library=static \
     --prefix=$PREFIX \
@@ -86,21 +82,18 @@ meson \
 sed -i -e 's/ -Werror=implicit-fallthrough//g' _builddir/build.ninja
 ninja -C _builddir
 ninja -C _builddir install
+popd
 
-pushd $SRC/qtbase
-sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s/QMAKE_LFLAGS      += -stdlib=libc++/QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS/g" mkspecs/linux-clang-libc++/qmake.conf
-# make qmake compile faster
-sed -i -e "s/MAKE\")/MAKE\" -j$(nproc))/g" configure
-# add QT_NO_WARNING_OUTPUT to make the output a bit cleaner by not containing lots of QBuffer::seek: Invalid pos
-sed -i -e "s/DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH/DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH QT_NO_WARNING_OUTPUT/g" src/corelib/corelib.pro
-./configure --prefix="$PREFIX" --glib=no --libpng=qt -opensource -confirm-license -static -no-opengl -no-icu -platform linux-clang-libc++ -v
-cd src
-../bin/qmake -o Makefile src.pro
-make sub-corelib sub-gui sub-xml -j$(nproc)
+pushd $SRC/qt
+sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
+sed -i -e "s/QMAKE_LFLAGS      += -stdlib=libc++/QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
+MAKEFLAGS=-j$(nproc) $SRC/qt/configure -qt-libmd4c -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -no-glib -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS
+make -j$(nproc) > /dev/null
 make install
+popd
 
 export PKG_CONFIG="`which pkg-config`"
+
 mkdir -p $SRC/poppler/build
 pushd $SRC/poppler/build
 cmake .. \
@@ -120,9 +113,8 @@ cmake .. \
   -DENABLE_UTILS=OFF \
   -DWITH_Cairo=ON \
   -DWITH_NSS3=OFF \
-  -DCMAKE_INSTALL_PREFIX=$PREFIX
-  #-DQt5Core_DIR=$SRC/qtbase/lib/cmake/Qt5Core/
-  #-DCMAKE_INSTALL_PREFIX=$WORK
+  -DCMAKE_INSTALL_PREFIX=$PREFIX \
+  -DCMAKE_PREFIX_PATH=$PREFIX
 
 export PKG_CONFIG="`which pkg-config` --static"
 make -j$(nproc) poppler poppler-cpp poppler-glib poppler-qt5
@@ -133,7 +125,6 @@ BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
 fuzzers=$(find $SRC/poppler/cpp/tests/fuzzing/ -name "*_fuzzer.cc")
-
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .cc)
 
@@ -147,14 +138,8 @@ for f in $fuzzers; do
     $LIB_FUZZING_ENGINE \
     -Wl,-Bdynamic
 done
-    #$WORK/lib/libfreetype.a \
-    #$WORK/lib/liblcms2.a \
-    #$WORK/lib/libopenjp2.a \
-    #$WORK/lib/libpng.a \
-    #$WORK/lib/libz.a
 
 fuzzers=$(find $SRC/poppler/glib/tests/fuzzing/ -name "*_fuzzer.cc")
-
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .cc)
 
@@ -169,36 +154,18 @@ for f in $fuzzers; do
     $LIB_FUZZING_ENGINE \
     -Wl,-Bdynamic
 done
-    #-I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-    #-I/usr/include/cairo \
-    #$WORK/lib/libfreetype.a \
-    #$WORK/lib/liblcms2.a \
-    #$WORK/lib/libopenjp2.a \
-    #$WORK/lib/libpng.a \
-    #$WORK/lib/libz.a \
-    #$SRC/pango-1.48.0/_build/pango/libpango-1.0.a \
-    #-Wl,-Bstatic -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lcairo-gobject -lcairo \
 
-#PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -lz -pthread -lrt -lpthread -lQt5Core -lQt5Gui -lQt5Xml"
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -lz -pthread -lrt -lpthread"
-#DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 lcms2 libopenjp2 libpng" 
 DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 lcms2 libopenjp2 libpng Qt5Core Qt5Gui Qt5Xml"
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
-QT_LDFLAGS="-lQt5Core -lQt5Gui -lQt5Xml"
-
-#mkdir -p $OUT/lib
-#cp /usr/lib/x86_64-linux-gnu/libQt5Core.so.5 $OUT/lib
-#cp /usr/lib/x86_64-linux-gnu/libQt5Gui.so.5 $OUT/lib
-#cp /usr/lib/x86_64-linux-gnu/libQt5Xml.so.5 $OUT/lib
 
 fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
-
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .cc)
 
   $CXX $CXXFLAGS -std=c++11 -fPIC \
-    -I/usr/include/x86_64-linux-gnu/qt5 -I$SRC/poppler/qt5/src \
+    -I$SRC/poppler/qt5/src \
     $BUILD_CFLAGS \
     $f -o $OUT/$fuzzer_name \
     $PREDEPS_LDFLAGS \
@@ -209,16 +176,6 @@ for f in $fuzzers; do
     $LIB_FUZZING_ENGINE \
     -Wl,-Bdynamic
 done
-
-#-Wl,-rpath,'$ORIGIN/lib' $QT_LDFLAGS \
-#find $OUT -type f -executable -name "qt_*" -exec patchelf --set-rpath '$ORIGIN/lib' {} \;
-
-    #$WORK/lib/libfreetype.a \
-    #$WORK/lib/liblcms2.a \
-    #$WORK/lib/libopenjp2.a \
-    #$WORK/lib/libpng.a \
-    #$WORK/lib/libz.a \
-    #-Wl,-Bstatic -lQt5Gui -lQt5Core -lQt5Xml
 
 mv $SRC/{*.zip,*.dict} $OUT
 
@@ -233,10 +190,8 @@ if [ ! -f "${OUT}/poppler.dict" ]; then
 fi
 
 fuzzers=$(find $OUT -name "*_fuzzer")
-
 for f in $fuzzers; do
-    fuzzer_name=$(basename $f)
-    cp $OUT/poppler.dict $OUT/$fuzzer_name.dict
+  fuzzer_name=$(basename $f)
+  ln -sf $OUT/poppler_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+  ln -sf $OUT/poppler.dict $OUT/${fuzzer_name}.dict
 done
-
-rm $OUT/poppler.dict
