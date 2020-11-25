@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-import os
-import shutil
-
 import package
 import wrapper_utils
 
