@@ -111,6 +111,8 @@ def get_abs_src_path(src):
   """Returns the absolute path of the source code repo."""
   if os.path.isabs(src):
     return src
+  # If |src| is not absolute, assume we are running in GitHub actions.
+  # TODO(metzman): Don't make this assumption.
   workspace = os.environ['GITHUB_WORKSPACE']
   return os.path.join(workspace, src)
 
@@ -136,6 +138,19 @@ def fix_git_repo_for_diff(repo_dir):
   return utils.execute(command, location=repo_dir)
 
 
+def get_git_workspace(project_src_path):
+  if project_src_path:
+    if not os.path.exists(project_src_path):
+      logging.error(
+          'PROJECT_SRC_PATH: %s does not exist. '
+          'Are you mounting it correctly?', project_src_path)
+      return None
+    return os.path.dirname(project_src_path)
+  git_workspace = os.path.join(workspace, 'storage')
+  os.makedirs(git_workspace, exist_ok=True)
+  return git_workspace
+
+
 def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     project_name,
     project_repo_name,
@@ -159,26 +174,19 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   """
   # Validate inputs.
   assert pr_ref or commit_sha
-  if not os.path.exists(workspace):
-    logging.error('Invalid workspace: %s.', workspace)
-    return False
 
   logging.info("Using %s sanitizer.", sanitizer)
 
+  if not os.path.exists(workspace):
+    logging.error('Invalid workspace: %s.', workspace)
+    return False
   out_dir = os.path.join(workspace, 'out')
   os.makedirs(out_dir, exist_ok=True)
 
   project_src_path = get_project_src_path()
-  if project_src_path:
-    if not os.path.exists(project_src_path):
-      logging.error(
-          'PROJECT_SRC_PATH: %s does not exist. '
-          'Are you mounting it correctly?', project_src_path)
-      return False
-    git_workspace = os.path.dirname(project_src_path)
-  else:
-    git_workspace = os.path.join(workspace, 'storage')
-    os.makedirs(git_workspace, exist_ok=True)
+  git_workspace = get_git_workspace(project_src_path)
+  if git_workspace is None:
+    return False
 
   build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
   if build_integration_path:
@@ -212,20 +220,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   if not project_src_path:
     checkout_specified_commit(build_repo_manager, pr_ref, commit_sha)
 
-  command = [
-      '--cap-add',
-      'SYS_PTRACE',
-      '-e',
-      'FUZZING_ENGINE=' + DEFAULT_ENGINE,
-      '-e',
-      'SANITIZER=' + sanitizer,
-      '-e',
-      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE,
-      '-e',
-      'CIFUZZ=True',
-      '-e',
-      'FUZZING_LANGUAGE=c++',  # FIXME: Add proper support.
-  ]
+  command = get_common_docker_args(sanitizer)
   container = utils.get_container_name()
   host_repo_path = os.path.join(git_workspace, project_repo_name)
   if container:
@@ -325,6 +320,22 @@ def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   return True, False
 
 
+def get_common_docker_args(sanitizer):
+  return [
+      '--cap-add',
+      'SYS_PTRACE',
+      '-e',
+      'FUZZING_ENGINE=' + DEFAULT_ENGINE,
+      '-e',
+      'SANITIZER=' + sanitizer,
+      '-e',
+      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE,
+      '-e',
+      'CIFUZZ=True',
+      '-e',
+      'FUZZING_LANGUAGE=c++',  # FIXME: Add proper support.
+  ]
+
 def check_fuzzer_build(out_dir, sanitizer='address'):
   """Checks the integrity of the built fuzzers.
 
@@ -342,20 +353,7 @@ def check_fuzzer_build(out_dir, sanitizer='address'):
     logging.error('No fuzzers found in out directory: %s.', out_dir)
     return False
 
-  command = [
-      '--cap-add',
-      'SYS_PTRACE',
-      '-e',
-      'FUZZING_ENGINE=' + DEFAULT_ENGINE,
-      '-e',
-      'SANITIZER=' + sanitizer,
-      '-e',
-      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE,
-      '-e',
-      'CIFUZZ=True',
-      '-e',
-      'FUZZING_LANGUAGE=c++',  # FIXME: Add proper support.
-  ]
+  command = get_common_docker_args(sanitizer)
 
   # Set ALLOWED_BROKEN_TARGETS_PERCENTAGE in docker if specified by user.
   allowed_broken_targets_percentage = os.getenv(
