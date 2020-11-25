@@ -57,8 +57,6 @@ def main():
   event = os.environ.get('GITHUB_EVENT_NAME')
   workspace = os.environ.get('GITHUB_WORKSPACE')
   sanitizer = os.environ.get('SANITIZER').lower()
-  print('os.environ')
-  print(os.environ)
 
   # Check if failures should not be reported.
   dry_run = (os.environ.get('DRY_RUN').lower() == 'true')

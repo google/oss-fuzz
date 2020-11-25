@@ -15,7 +15,7 @@ inputs:
     description: 'The sanitizer to build the fuzzers with.'
     default: 'address'
   project-src-path:
-    description: "The path to the checkout of the project's source code."
+    description: "The path to the project's source code checkout."
     required: false
   build-integration-path:
     description: "The path to the the project's build integration."

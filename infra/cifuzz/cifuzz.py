@@ -112,8 +112,7 @@ def get_abs_src_path(src):
   if os.path.isabs(src):
     return src
   workspace = os.environ['GITHUB_WORKSPACE']
-  abs_src_path = os.path.join(workspace, src)
-  return abs_src_path
+  return os.path.join(workspace, src)
 
 
 @retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF,
@@ -128,10 +127,9 @@ def build_external_project_docker_image(project_name, project_src,
   return helper.docker_build(command)
 
 
-def fix_git_repo(repo_dir):
+def fix_git_repo_for_diff(repo_dir):
   """Fixes git repos cloned by the "checkout" action so that diffing works on
   them."""
-  # TODO(metzman): Move to repo_manager?
   command = [
       'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
       'refs/remotes/origin/master'
