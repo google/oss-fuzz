@@ -85,13 +85,18 @@ ninja -C _builddir install
 popd
 
 pushd $SRC/qt
+# Add the flags to Qt build, borrowed from qt
 sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
 sed -i -e "s/QMAKE_LFLAGS      += -stdlib=libc++/QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
+# remove -fno-rtti which conflicts with -fsanitize=vptr when building with sanitizer undefined
+sed -i -e "s/QMAKE_CXXFLAGS_RTTI_OFF    = -fno-rtti/QMAKE_CXXFLAGS_RTTI_OFF    = /g" qtbase/mkspecs/common/gcc-base.conf
 MAKEFLAGS=-j$(nproc) $SRC/qt/configure -qt-libmd4c -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -no-glib -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS
 make -j$(nproc) > /dev/null
 make install
 popd
 
+# Poppler complains when PKG_CONFIG is set to `which pkg-config --static` so
+# temporarily removing it
 export PKG_CONFIG="`which pkg-config`"
 
 mkdir -p $SRC/poppler/build
