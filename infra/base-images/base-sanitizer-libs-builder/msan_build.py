@@ -43,6 +43,24 @@ INJECTED_ARGS = [
     '-fno-omit-frame-pointer',
 ]
 
+C_OR_CXX_DEPS = [
+    'libc++1',
+    'libc6',
+    'libc++abi1',
+    'libgcc1',
+    'libstdc++6',
+]
+
+BLACKLISTED_PACKAGES = [
+    'libcapnp-0.5.3',  # fails to compile on newer clang.
+    'libllvm5.0',
+    'libmircore1',
+    'libmircommon7',
+    'libmirclient9',
+    'libmirprotobuf3',
+    'multiarch-support',
+]
+
 
 class MSanBuildException(Exception):
   """Base exception."""
@@ -88,16 +106,16 @@ def set_up_environment(work_dir):
   env['CC'] = os.path.join(bin_dir, 'clang')
   env['CXX'] = os.path.join(bin_dir, 'clang++')
 
-  MSAN_OPTIONS = ' '.join(get_injected_flags())
+  msan_options = ' '.join(get_injected_flags())
 
   # We don't use nostrip because some build rules incorrectly break when it is
   # passed. Instead we install our own no-op strip binaries.
   env['DEB_BUILD_OPTIONS'] = ('nocheck parallel=%d' %
                               multiprocessing.cpu_count())
-  env['DEB_CFLAGS_APPEND'] = MSAN_OPTIONS
-  env['DEB_CXXFLAGS_APPEND'] = MSAN_OPTIONS + ' -stdlib=libc++'
-  env['DEB_CPPFLAGS_APPEND'] = MSAN_OPTIONS
-  env['DEB_LDFLAGS_APPEND'] = MSAN_OPTIONS
+  env['DEB_CFLAGS_APPEND'] = msan_options
+  env['DEB_CXXFLAGS_APPEND'] = msan_options + ' -stdlib=libc++'
+  env['DEB_CPPFLAGS_APPEND'] = msan_options
+  env['DEB_LDFLAGS_APPEND'] = msan_options
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
 
   # debian/rules can set DPKG_GENSYMBOLS_CHECK_LEVEL explicitly, so override it.
@@ -275,24 +293,6 @@ def patch_rpath(path, output_directory):
 
 def _collect_dependencies(apt_cache, pkg, cache, dependencies):
   """Collect dependencies that need to be built."""
-  C_OR_CXX_DEPS = [
-      'libc++1',
-      'libc6',
-      'libc++abi1',
-      'libgcc1',
-      'libstdc++6',
-  ]
-
-  BLACKLISTED_PACKAGES = [
-      'libcapnp-0.5.3',  # fails to compile on newer clang.
-      'libllvm5.0',
-      'libmircore1',
-      'libmircommon7',
-      'libmirclient9',
-      'libmirprotobuf3',
-      'multiarch-support',
-  ]
-
   if pkg.name in BLACKLISTED_PACKAGES:
     return False
 
