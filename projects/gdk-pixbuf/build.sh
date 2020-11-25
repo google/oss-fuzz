@@ -28,9 +28,7 @@ rm -rf $BUILD
 mkdir -p $BUILD
 
 # Build glib
-pushd $WORK
-tar xvJf $SRC/glib-2.64.2.tar.xz
-cd glib-2.64.2
+pushd $SRC/glib-2.64.2
 meson \
     --prefix=$PREFIX \
     --libdir=lib \
