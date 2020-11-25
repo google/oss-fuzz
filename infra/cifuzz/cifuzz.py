@@ -115,8 +115,7 @@ def get_abs_src_path(src):
   return os.path.join(workspace, src)
 
 
-@retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF,
-            'cifuzz.cifuzz.build_external_project_docker_image')
+@retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF)
 def build_external_project_docker_image(project_name, project_src,
                                         build_integration_path):
   """Builds the project builder image for an external (non-OSS-Fuzz) project.
