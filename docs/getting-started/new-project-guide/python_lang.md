@@ -70,10 +70,11 @@ explaining why each step is necessary and when they can be omitted.
 # for projects with C extensions so that they're built with the proper flags.
 pip3 install .
 
-# Build fuzzers in $OUT. These could be detected in other ways.
+# Build fuzzers into $OUT. These could be detected in other ways.
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
   fuzzer_package=${fuzzer_basename}.pkg
+
   # To avoid issues with Python version conflicts, or changes in environment
   # over time on the OSS-Fuzz bots, we use pyinstaller to create a standalone
   # package. Though not necessarily required for reproducing issues, this is
