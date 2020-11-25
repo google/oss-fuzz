@@ -28,8 +28,6 @@ rm -rf $BUILD
 mkdir -p $BUILD
 
 # Build glib
-#pushd $WORK
-#tar xvJf $SRC/glib-2.64.2.tar.xz
 pushd $SRC/glib-2.64.2
 meson \
     --prefix=$PREFIX \
@@ -44,6 +42,12 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
+pushd $SRC/freetype2
+./autogen.sh
+./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+make -j$(nproc)
+make install
+
 # Build cairo
 pushd $SRC/cairo
 meson \
@@ -56,11 +60,11 @@ ninja -C _builddir install
 popd
 
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -pthread -lrt -lpthread"
-DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 cairo cairo-gobject" 
+DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 cairo cairo-gobject" 
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
-fuzzers=$(find $SRC/cairo/fuzzing/ -name "*_fuzzer.c")
+fuzzers=$(find $SRC/fuzz/ -name "*_fuzzer.c")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .c)
   $CC $CFLAGS $BUILD_CFLAGS \
