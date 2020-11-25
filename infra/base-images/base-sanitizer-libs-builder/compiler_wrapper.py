@@ -130,7 +130,7 @@ def get_compiler_args(args, is_cxx):
 
   if '-fsanitize=memory' not in args:
     # If MSan flags weren't added for some reason, add them here.
-    compiler_args.extend(msan_build.GetInjectedFlags())
+    compiler_args.extend(msan_build.get_injected_flags())
 
   if is_cxx:
     compiler_args.append('-stdlib=libc++')

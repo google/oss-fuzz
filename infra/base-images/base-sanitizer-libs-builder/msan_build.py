@@ -48,7 +48,7 @@ class MSanBuildException(Exception):
   """Base exception."""
 
 
-def GetTrackOriginsFlag():
+def get_track_origins_flag():
   """Get the track origins flag."""
   if os.getenv('MSAN_NO_TRACK_ORIGINS'):
     return TRACK_ORIGINS_ARG + '0'
@@ -56,11 +56,11 @@ def GetTrackOriginsFlag():
   return TRACK_ORIGINS_ARG + '2'
 
 
-def GetInjectedFlags():
-  return INJECTED_ARGS + [GetTrackOriginsFlag()]
+def get_injected_flags():
+  return INJECTED_ARGS + [get_track_origins_flag()]
 
 
-def SetUpEnvironment(work_dir):
+def set_up_environment(work_dir):
   """Set up build environment."""
   env = {}
   env['REAL_CLANG_PATH'] = subprocess.check_output(['which', 'clang']).strip()
@@ -88,7 +88,7 @@ def SetUpEnvironment(work_dir):
   env['CC'] = os.path.join(bin_dir, 'clang')
   env['CXX'] = os.path.join(bin_dir, 'clang++')
 
-  MSAN_OPTIONS = ' '.join(GetInjectedFlags())
+  MSAN_OPTIONS = ' '.join(get_injected_flags())
 
   # We don't use nostrip because some build rules incorrectly break when it is
   # passed. Instead we install our own no-op strip binaries.
@@ -143,7 +143,7 @@ def SetUpEnvironment(work_dir):
   return env
 
 
-def FindPackageDebs(package_name, work_directory):
+def find_package_debs(package_name, work_directory):
   """Find package debs."""
   deb_paths = []
   cache = apt.Cache()
@@ -176,7 +176,7 @@ def FindPackageDebs(package_name, work_directory):
   return deb_paths
 
 
-def ExtractLibraries(deb_paths, work_directory, output_directory):
+def extract_libraries(deb_paths, work_directory, output_directory):
   """Extract libraries from .deb packages."""
   extract_directory = os.path.join(work_directory, 'extracted')
   if os.path.exists(extract_directory):
@@ -225,7 +225,7 @@ def ExtractLibraries(deb_paths, work_directory, output_directory):
   return extracted
 
 
-def GetPackage(package_name):
+def get_package(package_name):
   apt_cache = apt.Cache()
   version = apt_cache[package_name].candidate
   source_name = version.source_name
@@ -241,7 +241,7 @@ def GetPackage(package_name):
   return module.Package(version)
 
 
-def PatchRpath(path, output_directory):
+def patch_rpath(path, output_directory):
   """Patch rpath to be relative to $ORIGIN."""
   try:
     rpaths = subprocess.check_output(
@@ -273,7 +273,7 @@ def PatchRpath(path, output_directory):
        processed_rpath, path])
 
 
-def _CollectDependencies(apt_cache, pkg, cache, dependencies):
+def _collect_dependencies(apt_cache, pkg, cache, dependencies):
   """Collect dependencies that need to be built."""
   C_OR_CXX_DEPS = [
       'libc++1',
@@ -309,8 +309,8 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
     if dependency.name in cache:
       is_c_or_cxx |= cache[dependency.name]
     else:
-      is_c_or_cxx |= _CollectDependencies(apt_cache, apt_cache[dependency.name],
-                                          cache, dependencies)
+      is_c_or_cxx |= _collect_dependencies(apt_cache, apt_cache[dependency.name],
+                                           cache, dependencies)
   if is_c_or_cxx:
     dependencies.append(pkg.name)
 
@@ -318,13 +318,13 @@ def _CollectDependencies(apt_cache, pkg, cache, dependencies):
   return is_c_or_cxx
 
 
-def GetBuildList(package_name):
+def get_build_list(package_name):
   """Get list of packages that need to be built including dependencies."""
   apt_cache = apt.Cache()
   pkg = apt_cache[package_name]
 
   dependencies = []
-  _CollectDependencies(apt_cache, pkg, {}, dependencies)
+  _collect_dependencies(apt_cache, pkg, {}, dependencies)
   return dependencies
 
 
@@ -346,7 +346,7 @@ class MSanBuilder(object):
       shutil.rmtree(self.work_dir, ignore_errors=True)
 
     os.makedirs(self.work_dir)
-    self.env = SetUpEnvironment(self.work_dir)
+    self.env = set_up_environment(self.work_dir)
 
     if self.debug and self.log_path:
       self.env['WRAPPER_DEBUG_LOG_PATH'] = self.log_path
@@ -360,13 +360,13 @@ class MSanBuilder(object):
     if not self.debug:
       shutil.rmtree(self.work_dir, ignore_errors=True)
 
-  def Build(self, package_name, output_directory, create_subdirs=False):
+  def build(self, package_name, output_directory, create_subdirs=False):
     """Build the package and write results into the output directory."""
-    deb_paths = FindPackageDebs(package_name, self.work_dir)
+    deb_paths = find_package_debs(package_name, self.work_dir)
     if deb_paths:
       print('Source package already built for', package_name)
     else:
-      pkg = GetPackage(package_name)
+      pkg = get_package(package_name)
 
       pkg.install_build_deps()
       source_directory = pkg.download_source(self.work_dir)
@@ -381,7 +381,7 @@ class MSanBuilder(object):
       pkg.build(source_directory, env, custom_bin_dir)
       shutil.rmtree(custom_bin_dir, ignore_errors=True)
 
-      deb_paths = FindPackageDebs(package_name, self.work_dir)
+      deb_paths = find_package_debs(package_name, self.work_dir)
 
     if not deb_paths:
       raise MSanBuildException('Failed to find .deb packages.')
@@ -393,11 +393,11 @@ class MSanBuilder(object):
     else:
       extract_directory = output_directory
 
-    extracted_paths = ExtractLibraries(deb_paths, self.work_dir,
-                                       extract_directory)
+    extracted_paths = extract_libraries(deb_paths, self.work_dir,
+                                        extract_directory)
     for extracted_path in extracted_paths:
       if not os.path.islink(extracted_path):
-        PatchRpath(extracted_path, extract_directory)
+        patch_rpath(extracted_path, extract_directory)
 
 
 def main():
@@ -431,7 +431,7 @@ def main():
 
     # Get list of packages to build, including all dependencies.
     for package_name in args.package_names:
-      for dep in GetBuildList(package_name):
+      for dep in get_build_list(package_name):
         if dep in all_packages:
           continue
 
@@ -449,7 +449,7 @@ def main():
                    work_dir=args.work_dir,
                    no_track_origins=args.no_track_origins) as builder:
     for package_name in package_names:
-      builder.Build(package_name, args.output_dir, args.create_subdirs)
+      builder.build(package_name, args.output_dir, args.create_subdirs)
 
 
 if __name__ == '__main__':
