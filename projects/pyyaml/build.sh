@@ -25,8 +25,13 @@ for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
   # Create execution wrapper.
+  # The documentation specifies we need to have LD_PRELOAD set (https://google.github.io/oss-fuzz/getting-started/new-project-guide/python-lang/#buildsh)
+  # as follows:
+  #LD_PRELOAD=\$(dirname "\$0")/libclang_rt.asan-x86_64.so \$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
+  # However, in my experience this is only needed when fuzzing native libraries, and,
+  # in fact causes an error to occur with fuzzing pure python modules.
   echo "#/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
-LD_PRELOAD=\$(dirname "\$0")/libclang_rt.asan-x86_64.so \$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
+\$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
