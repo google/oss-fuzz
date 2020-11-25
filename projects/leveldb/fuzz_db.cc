@@ -78,6 +78,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       snapshot_options.snapshot = db->GetSnapshot();
       leveldb::Iterator* it = db->NewIterator(snapshot_options);
       db->ReleaseSnapshot(snapshot_options.snapshot);
+      delete it;
     } 
     else if(c == 6) { // Open and close DB
       delete db;
