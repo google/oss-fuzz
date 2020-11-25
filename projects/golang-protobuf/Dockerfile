@@ -20,6 +20,6 @@ ENV GO111MODULE="on"
 ENV GOFUZZ111MODULE="on"
 
 RUN go get google.golang.org/protobuf/proto
-RUN git clone https://go.googlesource.com/protobuf $SRC/protobuf
+RUN git clone https://go.googlesource.com/protobuf $GOPATH/src/google.golang.org/protobuf
 COPY build.sh $SRC/
-WORKDIR $SRC/protobuf
+WORKDIR $GOPATH/src/google.golang.org/protobuf
