@@ -128,6 +128,17 @@ export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MONOCYPHER"
 cd $SRC/cryptofuzz/modules/monocypher
 make -B
 
+# Rename blake2b_* functions to avoid symbol collisions with other libraries
+cd $SRC/trezor-firmware/crypto
+sed -i "s/\<blake2b_\([A-Za-z_]\)/trezor_blake2b_\1/g" *.c *.h
+sed -i 's/\<blake2b(/trezor_blake2b(/g' *.c *.h
+
+# Compile Cryptofuzz trezor module
+export TREZOR_FIRMWARE_PATH=$(realpath $SRC/trezor-firmware)
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_TREZOR_FIRMWARE"
+cd $SRC/cryptofuzz/modules/trezor
+make -B
+
 # Compile libtomcrypt
 cd $SRC/libtomcrypt
 if [[ $CFLAGS != *sanitize=memory* ]]
@@ -144,7 +155,7 @@ fi
 
 # Compile SymCrypt
 cd $SRC/SymCrypt/
-if [[ $CFLAGS != *sanitize=undefined* ]]
+if [[ $CFLAGS != *sanitize=array-bounds* ]]
 then
     # Unittests don't build with clang and are not needed anyway
     sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
@@ -442,7 +453,7 @@ cd $SRC/wolfssl
 export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K"
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
