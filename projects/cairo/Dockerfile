@@ -21,9 +21,9 @@ RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
 RUN tar xvJf $SRC/glib-2.64.2.tar.xz
 RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git && \
-    zip -q $OUT/cairo_seed_corpus.zip $SRC/cairo/test/reference/*
+    zip -q $SRC/cairo_seed_corpus.zip $SRC/cairo/test/reference/*
 
-ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $OUT/cairo_png.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $SRC/cairo.dict
 
 WORKDIR $SRC/cairo
 COPY targets $SRC/fuzz

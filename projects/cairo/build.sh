@@ -59,6 +59,18 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
+mv $SRC/{*.zip,*.dict} $OUT
+
+if [ ! -f "${OUT}/cairo_seed_corpus.zip" ]; then
+  echo "missing seed corpus"
+  exit 1
+fi
+
+if [ ! -f "${OUT}/cairo.dict" ]; then
+  echo "missing dictionary"
+  exit 1
+fi
+
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -pthread -lrt -lpthread"
 DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 cairo cairo-gobject" 
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
@@ -75,6 +87,6 @@ for f in $fuzzers; do
     $BUILD_LDFLAGS \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bdynamic
-  ln -sf $OUT/cairo_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
-  ln -sf $OUT/cairo_png.dict $OUT/${fuzzer_name}.dict
+  ln -sf $SRC/cairo_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+  ln -sf $SRC/cairo.dict $OUT/${fuzzer_name}.dict
 done
