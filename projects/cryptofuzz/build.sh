@@ -128,6 +128,11 @@ export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MONOCYPHER"
 cd $SRC/cryptofuzz/modules/monocypher
 make -B
 
+# Rename blake2b_* functions to avoid symbol collisions with other libraries
+cd $SRC/trezor-firmware/crypto
+sed -i "s/\<blake2b_\([A-Za-z_]\)/trezor_blake2b_\1/g" *.c *.h
+sed -i 's/\<blake2b(/trezor_blake2b(/g' *.c *.h
+
 # Compile Cryptofuzz trezor module
 export TREZOR_FIRMWARE_PATH=$(realpath $SRC/trezor-firmware)
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_TREZOR_FIRMWARE"
