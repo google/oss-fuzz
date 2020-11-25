@@ -19,7 +19,7 @@ import yaml.reader
 
 def TestOneInput(data):
     if len(data) < 1:
-        return 0
+        return 
     try:
         stream = yaml.reader.Reader(data)
         while stream.peek() != u'\0':
