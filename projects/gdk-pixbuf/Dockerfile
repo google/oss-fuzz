@@ -17,7 +17,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y python3-pip gtk-doc-tools libffi-dev
 RUN pip3 install meson==0.55.3 ninja
 
-RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.gnome.org/ceyhunalp/gdk-pixbuf.git
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
 RUN tar xvJf $SRC/glib-2.64.2.tar.xz 
 
@@ -28,4 +28,5 @@ ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/jpeg.di
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/gif.dict $SRC/gif.dict
 
 WORKDIR $SRC/gdk-pixbuf
+COPY targets $SRC/fuzz
 COPY build.sh $SRC/

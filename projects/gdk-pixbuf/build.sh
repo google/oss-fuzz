@@ -71,7 +71,7 @@ DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 gdk-pixbuf-2.0"
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
-fuzzers=$(find $SRC/gdk-pixbuf/fuzzing/ -name "*_fuzzer.c")
+fuzzers=$(find $SRC/fuzz/ -name "*_fuzzer.c")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .c)
   $CC $CFLAGS $BUILD_CFLAGS -c $f -o $WORK/${fuzzer_name}.o
