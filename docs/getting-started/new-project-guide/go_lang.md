@@ -69,6 +69,13 @@ your Dockerfile.
 RUN go get github.com/ianlancetaylor/demangle
 ```
 
+In the case you are using modules, the best practice is to `git clone` the repository into the expected `$GOPATH/src` directory.
+
+A usage example from go-coredns project is
+```dockerfile
+RUN git clone --depth 1  https://github.com/coredns/coredns $GOPATH/src/github.com/coredns/coredns
+```
+
 ### build.sh
 
 In order to build a Go fuzz target, you need to call `go-fuzz`
