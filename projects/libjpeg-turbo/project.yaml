@@ -1,10 +1,11 @@
 homepage: "https://github.com/libjpeg-turbo/libjpeg-turbo"
 language: c++
+primary_contact:
+  - "drc@virtualgl.org"
 vendor_ccs:
   - "aosmond@mozilla.com"
   - "tnikkel@mozilla.com"
   - "twsmith@mozilla.com"
-  - "information@libjpeg-turbo.org"
 sanitizers:
   - address
   - memory
