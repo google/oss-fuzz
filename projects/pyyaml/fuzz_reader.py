@@ -24,9 +24,7 @@ def TestOneInput(data):
         stream = yaml.reader.Reader(data)
         while stream.peek() != u'\0':
             stream.forward()
-        # del stream
     except yaml.reader.ReaderError:
-    #    del stream
         None
 
     return 
