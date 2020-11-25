@@ -13,13 +13,13 @@
 # limitations under the License.
 #
 ################################################################################
-
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y python3-pip pkg-config \
     valac gtk-doc-tools libffi-dev libexpat1-dev
 RUN pip3 install meson==0.55.3 ninja
 
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
+RUN tar xvJf $SRC/glib-2.64.2.tar.xz
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
 RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.gnome.org/ceyhunalp/libmediaart.git
 
@@ -27,9 +27,9 @@ RUN git clone --depth 1 https://github.com/MozillaSecurity/fuzzdata.git && \
     mv fuzzdata/samples/ogg/* $SRC/libmediaart/seed_corpus && \
     mv fuzzdata/samples/mp3/* $SRC/libmediaart/seed_corpus && \
     mv fuzzdata/samples/flac/* $SRC/libmediaart/seed_corpus && \
-    zip -q $OUT/libmediaart_seed_corpus.zip $SRC/libmediaart/seed_corpus/* && \
+    zip -q $SRC/libmediaart_seed_corpus.zip $SRC/libmediaart/seed_corpus/* && \
     rm -rf fuzzdata
-ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/ogg.dict $OUT/libmediaart_ogg.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/ogg.dict $SRC/libmediaart.dict
 
 WORKDIR $SRC/libmediaart
 COPY build.sh $SRC/

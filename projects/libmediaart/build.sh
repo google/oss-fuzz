@@ -28,9 +28,7 @@ rm -rf $BUILD
 mkdir -p $BUILD
 
 # Build glib
-pushd $WORK
-tar xvJf $SRC/glib-2.64.2.tar.xz
-cd glib-2.64.2
+pushd $SRC/glib-2.64.2
 meson \
     --prefix=$PREFIX \
     --libdir=lib \
@@ -66,6 +64,18 @@ meson \
     $BUILD/libmediaart
 ninja -C $BUILD/libmediaart libmediaart/libmediaart-2.0.a
 
+mv $SRC/{*.zip,*.dict} $OUT
+
+if [ ! -f "${OUT}/libmediaart_seed_corpus.zip" ]; then
+  echo "missing seed corpus"
+  exit 1
+fi
+
+if [ ! -f "${OUT}/libmediaart.dict" ]; then
+  echo "missing dictionary"
+  exit 1
+fi
+
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -pthread -lrt -lpthread"
 DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 gdk-pixbuf-2.0"
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
@@ -83,7 +93,7 @@ for f in $fuzzers; do
         $BUILD_LDFLAGS \
         $LIB_FUZZING_ENGINE \
         -Wl,-Bdynamic
-    ln -sf $OUT/libmediaart_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
-    ln -sf $OUT/libmediaart_ogg.dict $OUT/${fuzzer_name}.dict
+    ln -sf $SRC/libmediaart_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
+    ln -sf $SRC/libmediaart.dict $OUT/${fuzzer_name}.dict
   fi
 done
