@@ -33,7 +33,7 @@ INTERCEPTED_LIBRARIES = {
     '/lib/x86_64-linux-gnu/libgcc_s.so.1',
     '/lib/x86_64-linux-gnu/libc.so.6',
 }
-OUTPUT_PATTERN = re.compile(r'\s*([^\s]+)\s*=>\s*([^\s]+)')
+LDD_OUTPUT_PATTERN = re.compile(r'\s*([^\s]+)\s*=>\s*([^\s]+)')
 
 
 def is_elf(file_path):
@@ -54,7 +54,7 @@ def ldd(binary_path):
   libs = []
 
   for line in output.splitlines():
-    match = OUTPUT_PATTERN.match(line)
+    match = LDD_OUTPUT_PATTERN.match(line)
     if not match:
       continue
 
