@@ -95,6 +95,7 @@ Programming language the project is written in. Values you can specify include:
 * `c++`
 * [`go`]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)
 * [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
+* [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
