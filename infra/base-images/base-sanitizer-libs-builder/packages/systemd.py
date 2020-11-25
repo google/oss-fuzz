@@ -24,13 +24,13 @@ import package
 import wrapper_utils
 
 
-class Package(package.Package):
+class Package(package.Package):  # pylint: disable=too-few-public-methods
   """systemd package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('systemd', apt_version)
 
-  def pre_build(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, _source_directory, _env, custom_bin_dir):  # pylint: disable=no-self-use
     # Hide msan symbols from nm. the systemd build system uses this to find
     # undefined symbols and errors out if it does.
     nm_wrapper = (

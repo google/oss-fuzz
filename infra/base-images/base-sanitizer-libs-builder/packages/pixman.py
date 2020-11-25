@@ -27,14 +27,14 @@ class Package(package.Package):
   def __init__(self, apt_version):
     super(Package, self).__init__('pixman', apt_version)
 
-  def post_download(self, source_directory):
+  def post_download(self, source_directory):  # pylint: disable=no-self-use
     # Incorrect checking of GCC vector extension availability.
     os.system(
       'sed s/support_for_gcc_vector_extensions=yes/'
       'support_for_gcc_vector_extensions=no/ -i %s/configure.ac' %
       source_directory)
 
-  def pre_build(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, _source_directory, env, _custom_bin_dir):  # pylint: disable=no-self-use
     blacklist_flag = ' -fsanitize-blacklist=' + os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         'pixman_blacklist.txt')

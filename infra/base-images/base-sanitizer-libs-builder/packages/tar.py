@@ -18,11 +18,11 @@
 import package
 
 
-class Package(package.Package):
+class Package(package.Package):  # pylint: disable=too-few-public-methods
   """tar package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('tar', apt_version)
 
-  def pre_build(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, _source_directory, env, _custom_bin_dir):  # pylint: disable=no-self-use
     env['FORCE_UNSAFE_CONFIGURE'] = '1'

@@ -22,13 +22,13 @@ import package
 import wrapper_utils
 
 
-class Package(package.Package):
+class Package(package.Package):  # pylint: disable=too-few-public-methods
   """gnutls28 package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('gnutls28', apt_version)
 
-  def pre_build(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, _source_directory, _env, custom_bin_dir):  # pylint: disable=no-self-use
     configure_wrapper = (
         '#!/bin/bash\n'
         '/usr/bin/dh_auto_configure "$@" --disable-hardware-acceleration')

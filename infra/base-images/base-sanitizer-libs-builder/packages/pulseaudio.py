@@ -23,13 +23,13 @@ import subprocess
 import package
 
 
-class Package(package.Package):
+class Package(package.Package):  # pylint: disable=too-few-public-methods
   """PulseAudio package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('pulseaudio', apt_version)
 
-  def post_download(self, source_directory):
+  def post_download(self, source_directory):  # pylint: disable=no-self-use
     """Remove blacklisted patches."""
     # Fix *droid* patches.
     bad_patch_path = os.path.join(

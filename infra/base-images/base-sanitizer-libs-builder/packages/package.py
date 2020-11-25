@@ -41,16 +41,16 @@ class Package:
     self.name = name
     self.apt_version = apt_version
 
-  def pre_build(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, _source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
     return
 
-  def post_build(self, source_directory, env, custom_bin_dir):
+  def post_build(self, _source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
     return
 
-  def pre_download(self, download_directory):
+  def pre_download(self, _download_directory):  # pylint: disable=no-self-use
     return
 
-  def post_download(self, source_directory):
+  def post_download(self, _source_directory):  # pylint: disable=no-self-use
     return
 
   def install_build_deps(self):
