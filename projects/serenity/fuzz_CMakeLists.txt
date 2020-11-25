@@ -21,7 +21,7 @@ add_simple_fuzzer(FuzzGemini)
 add_simple_fuzzer(FuzzGIFLoader)
 add_simple_fuzzer(FuzzJPGLoader)
 add_simple_fuzzer(FuzzPPMLoader)
-#add_simple_fuzzer(FuzzJs)
+add_simple_fuzzer(FuzzJs)
 add_simple_fuzzer(FuzzMarkdown)
 
 if (NOT ENABLE_OSS_FUZZ)
