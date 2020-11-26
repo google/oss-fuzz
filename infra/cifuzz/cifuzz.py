@@ -148,15 +148,14 @@ def get_git_workspace(project_src_path):
       return None
     return os.path.dirname(project_src_path)
 
-
   return git_workspace
 
 
 def check_project_src_path(project_src_path):
   if not os.path.exists(project_src_path):
-      raise BuildError(
-          'PROJECT_SRC_PATH: %s does not exist. '
-          'Are you mounting it correctly?', project_src_path)
+    raise BuildError(
+        'PROJECT_SRC_PATH: %s does not exist. '
+        'Are you mounting it correctly?', project_src_path)
 
 
 class BuildError:
@@ -164,7 +163,13 @@ class BuildError:
 
 
 class Builder:
-  def __init__(self, project_name, project_repo_name, workspace, sanitizer, host_repo_path=None):
+
+  def __init__(self,
+               project_name,
+               project_repo_name,
+               workspace,
+               sanitizer,
+               host_repo_path=None):
     self.project_name = project_name
     self.project_repo_name = project_repo_name
     self.workspace = workspace
@@ -177,10 +182,8 @@ class Builder:
     self.image_repo_path = None
     self.repo_manager = None
 
-
   def build_image_and_checkout_src(self):
     raise NotImplementedError()
-
 
   def build_fuzzers(self):
     image_src_path = os.path.dirname(self.image_repo_path)
@@ -198,8 +201,7 @@ class Builder:
       command.extend([
           '-e', 'OUT=' + '/out', '-v',
           '%s:%s' % (os.path.join(git_workspace, project_repo_name),
-                     os.path.join(image_src_path, project_repo_name)),
-          '-v',
+                     os.path.join(image_src_path, project_repo_name)), '-v',
           '%s:%s' % (out_dir, '/out')
       ])
       bash_command = 'compile'
@@ -227,10 +229,14 @@ class Builder:
 
 
 class ExternalGithubBuilder(Builder):
-  def __init__(self, project_name, project_repo_name, workspace,
-               sanitizer, project_src_path, build_integration_path):
 
-    super().__init__(project_name, project_repo_name, workspace, sanitizer,
+  def __init__(self, project_name, project_repo_name, workspace, sanitizer,
+               project_src_path, build_integration_path):
+
+    super().__init__(project_name,
+                     project_repo_name,
+                     workspace,
+                     sanitizer,
                      host_repo_path=project_src_path)
     check_project_src_path(self.host_repo_path)
     self.build_integration_path = os.path.join(self.host_repo_path,
@@ -240,16 +246,16 @@ class ExternalGithubBuilder(Builder):
 
   def build_image_and_checkout_src(self):
     logging.info('Building external project.')
-    if not build_external_project_docker_image(self.project_name,
-                                               self.host_repo_path,
-                                               self.build_integration_path):
-      raise BuildError() # !!!
+    if not build_external_project_docker_image(
+        self.project_name, self.host_repo_path, self.build_integration_path):
+      raise BuildError('Failed to build external project.')
     self.repo_manager = repo_manager.RepoManager(self.host_repo_path)
 
 
 class InternalGithubBuilder(Builder):
-  def __init__(self, project_name, project_repo_name, workspace,
-               sanitizer, commit_sha, pr_ref):
+
+  def __init__(self, project_name, project_repo_name, workspace, sanitizer,
+               commit_sha, pr_ref):
     # Validate inputs.
     assert pr_ref or commit_sha
 
@@ -263,21 +269,18 @@ class InternalGithubBuilder(Builder):
     # detect_main_repo builds the image as a side effect.
     inferred_url, self.image_repo_path = (
         build_specified_commit.detect_main_repo(
-            self.project_name,
-            repo_name=self.project_repo_name))
+            self.project_name, repo_name=self.project_repo_name))
 
     if not inferred_url or not self.image_repo_path:
-      logging.error('Could not detect repo from project %s.', self.project_name)
-      raise BuildError() # !!!
+      raise BuildError('Could not detect repo from project %s.' %
+                       self.project_name)
 
     git_workspace = os.path.join(self.workspace, 'storage')
     os.makedirs(git_workspace, exist_ok=True)
 
     # Checkout project's repo in the shared volume.
     self.repo_manager = clone_repo_and_get_manager(
-      self.inferred_url,
-      git_workspace,
-      repo_name=self.project_repo_name)
+        self.inferred_url, git_workspace, repo_name=self.project_repo_name)
 
   self.host_repo_path = self.repo_manager.repo_dir
 
@@ -285,51 +288,49 @@ class InternalGithubBuilder(Builder):
 
 
 class InternalGenericCiBuilder(Builder):
-  def __init__(self, project_name, project_repo_name, workspace,
-               sanitizer,
+
+  def __init__(self, project_name, project_repo_name, workspace, sanitizer,
                project_src_path):
-    super().__init__(project_name, project_repo_name, workspace, sanitizer,
+    super().__init__(project_name,
+                     project_repo_name,
+                     workspace,
+                     sanitizer,
                      host_repo_path=project_src_path)
     check_project_src_path(self.host_repo_path)
-
 
   def build_image_and_checkout_src(self):
     logging.info('Building OSS-Fuzz project.')
     # detect_main_repo builds the image as a side effect.
-    _, self.image_repo_path = (
-        build_specified_commit.detect_main_repo(
-            self.project_name,
-            repo_name=self.project_repo_name))
+    _, self.image_repo_path = (build_specified_commit.detect_main_repo(
+        self.project_name, repo_name=self.project_repo_name))
 
     if not self.image_repo_path:
-      logging.error('Could not detect repo from project %s.', self.project_name)
-      raise Exception() # !!!
+      raise BuildError('Could not detect repo from project %s.' %
+                       self.project_name)
 
     # Checkout project's repo in the shared volume.
     self.repo_manager = repo_manager.RepoManager(self.host_repo_path)
 
 
-def get_builder(
-    project_name,
-    project_repo_name,
-    workspace,
-    sanitizer='address'
-    pr_ref=None,
-    commit_sha=None,
-    project_src_path=None,
-    build_integration_path=None):
+def get_builder(project_name,
+                project_repo_name,
+                workspace,
+                sanitizer='address',
+                pr_ref=None,
+                commit_sha=None,
+                project_src_path=None,
+                build_integration_path=None):
   if build_integration_path and project_src_path:
-    return ExternalGithubBuilder(
-        project_name, project_repo_name, workspace,
-        sanitizer, project_src_path, build_integration_path)
+    return ExternalGithubBuilder(project_name, project_repo_name, workspace,
+                                 sanitizer, project_src_path,
+                                 build_integration_path)
 
   if project_src_path:
-    return InternalGenericCiBuilder(
-        project_name, project_repo_name, workspace, sanitizer, project_src_path)
+    return InternalGenericCiBuilder(project_name, project_repo_name, workspace,
+                                    sanitizer, project_src_path)
 
-  return InternalGithubBuilder(
-      project_name, project_repo_name, workspace, sanitizer, commit_sha, pr_ref)
-
+  return InternalGithubBuilder(project_name, project_repo_name, workspace,
+                               sanitizer, commit_sha, pr_ref)
 
 
 def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals

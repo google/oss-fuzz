@@ -206,22 +206,23 @@ class RepoManager:
 
 
 def clone_repo_and_get_manager(self, repo_url, base_dir, repo_name=None):
-    """Clones a repo and constructs a repo manager class.
+  """Clones a repo and constructs a repo manager class.
 
     Args:
       repo_url: The github url needed to clone.
       base_dir: The full file-path where the git repo is located.
       repo_name: The name of the directory the repo is cloned to.
     """
-    if repo_name is None:
-      repo_name = os.path.basename(self.repo_url).replace('.git', '')
-    repo_dir = os.path.join(base_dir, repo_name)
-    manager = RepoManager(repo_dir)
+  if repo_name is None:
+    repo_name = os.path.basename(self.repo_url).replace('.git', '')
+  repo_dir = os.path.join(base_dir, repo_name)
+  manager = RepoManager(repo_dir)
 
-    if not os.path.exists(self.repo_dir):
-      _clone(repo_url, base_dir, repo_name)
+  if not os.path.exists(self.repo_dir):
+    _clone(repo_url, base_dir, repo_name)
 
-    return manager
+  return manager
+
 
 def _clone(repo_url, base_dir, repo_name):
   """Creates a clone of the repo in the specified directory.
