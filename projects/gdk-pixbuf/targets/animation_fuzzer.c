@@ -39,7 +39,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     pixbuf = gdk_pixbuf_animation_get_static_image(anim);
     if (pixbuf != NULL) {
-        pixbuf = gdk_pixbuf_rotate_simple(pixbuf, 180);
+        unsigned int rot_amount = ((unsigned int) data[0]) % 4;
+        pixbuf = gdk_pixbuf_rotate_simple(pixbuf, rot_amount * 90);
         gdk_pixbuf_set_option(pixbuf, buf, buf);
         gdk_pixbuf_get_pixels(pixbuf);
         gdk_pixbuf_get_width(pixbuf);
