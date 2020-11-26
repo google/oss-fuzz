@@ -200,7 +200,7 @@ class RepoManager:
       raise RuntimeError('Error checking out commit %s' % commit)
 
   def remove_repo(self):
-    """Attempts to remove the git repo. """
+    """Removes the git repo from disk."""
     if os.path.isdir(self.repo_dir):
       shutil.rmtree(self.repo_dir)
 
