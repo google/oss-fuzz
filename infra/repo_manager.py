@@ -230,6 +230,6 @@ def _clone(repo_url, base_dir, repo_name):
      Raises:
        ValueError: when the repo is not able to be cloned.
   """
-  utils.execute(['git', 'clone', repo_url, repo_name], location=base_dir)
-  if not manager._is_git_repo():
-    raise ValueError('%s is not a git repo' % repo_url)
+  utils.execute(['git', 'clone', repo_url, repo_name],
+                location=base_dir,
+                check_result=True)

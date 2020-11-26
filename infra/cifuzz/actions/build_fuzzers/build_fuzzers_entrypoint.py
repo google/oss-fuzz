@@ -27,6 +27,13 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
+def get_pr_ref(event_path):
+  """Returns the PR ref from |event_path|."""
+  with open(event_path, encoding='utf-8') as file_handle:
+    event = json.load(file_handle)
+    return 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
+
+
 def main():
   """Build OSS-Fuzz project's fuzzers for CI tools.
   This script is used to kick off the Github Actions CI tool. It is the
@@ -57,43 +64,41 @@ def main():
   event = os.environ.get('GITHUB_EVENT_NAME')
   workspace = os.environ.get('GITHUB_WORKSPACE')
   sanitizer = os.environ.get('SANITIZER').lower()
+  project_src_path = os.environ.get('PROJECT_SRC_PATH')
+  build_integration_path = os.environ.get('BUILD_INTEGRATION_PATH')
 
   # Check if failures should not be reported.
-  dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
-
-  # The default return code when an error occurs.
-  returncode = 1
+  dry_run = os.environ.get('DRY_RUN').lower() == 'true'
   if dry_run:
     # Sets the default return code on error to success.
     returncode = 0
+  else:
+    # The default return code when an error occurs.
+    returncode = 1
 
   if not workspace:
-    logging.error('This script needs to be run in the Github action context.')
-    return returncode
-
-  if event == 'push' and not cifuzz.build_fuzzers(oss_fuzz_project_name,
-                                                  github_repo_name,
-                                                  workspace,
-                                                  commit_sha=commit_sha,
-                                                  sanitizer=sanitizer):
-    logging.error('Error building fuzzers for project %s with commit %s.',
-                  oss_fuzz_project_name, commit_sha)
+    logging.error('This script needs to be run within Github actions.')
     return returncode
 
   if event == 'pull_request':
     event_path = os.environ.get('GITHUB_EVENT_PATH')
-    with open(event_path, encoding='utf-8') as file_handle:
-      event = json.load(file_handle)
-    pr_ref = 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
-    if not cifuzz.build_fuzzers(oss_fuzz_project_name,
-                                github_repo_name,
-                                workspace,
-                                pr_ref=pr_ref,
-                                sanitizer=sanitizer):
-      logging.error(
-          'Error building fuzzers for project %s with pull request %s.',
-          oss_fuzz_project_name, pr_ref)
-      return returncode
+    pr_ref = get_pr_ref(event_path)
+  else:
+    pr_ref = None
+
+  # !!! log info.
+  if not cifuzz.build_fuzzers(oss_fuzz_project_name,
+                              github_repo_name,
+                              workspace,
+                              commit_sha=commit_sha,
+                              pr_ref=pr_ref,
+                              sanitizer=sanitizer,
+                              project_src_path=project_src_path,
+                              build_integration_path=build_integration_path):
+    logging.error(
+        'Error building fuzzers for project %s (commit: %s, pr_ref: %s).',
+        oss_fuzz_project_name, commit_sha, pr_ref)
+    return returncode
 
   out_dir = os.path.join(workspace, 'out')
   if cifuzz.check_fuzzer_build(out_dir, sanitizer=sanitizer):

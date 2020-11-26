@@ -82,14 +82,14 @@ _IMAGE_BUILD_TRIES = 3
 _IMAGE_BUILD_BACKOFF = 2
 
 
-def checkout_specified_commit(repo_manager, pr_ref, commit_sha):
+def checkout_specified_commit(repo_manager_obj, pr_ref, commit_sha):
   """Checks out the specified commit or pull request using
-  repo_manager."""
+  |repo_manager_obj|."""
   try:
     if pr_ref:
-      repo_manager.checkout_pr(pr_ref)
+      repo_manager_obj.checkout_pr(pr_ref)
     else:
-      repo_manager.checkout_commit(commit_sha)
+      repo_manager_obj.checkout_commit(commit_sha)
   except (RuntimeError, ValueError):
     logging.error(
         'Can not check out requested state %s. '
@@ -138,31 +138,22 @@ def fix_git_repo_for_diff(repo_dir):
   return utils.execute(command, location=repo_dir)
 
 
-def get_git_workspace(project_src_path):
-  """Returns a path to the git workspace."""
-  if project_src_path:
-    if not os.path.exists(project_src_path):
-      logging.error(
-          'PROJECT_SRC_PATH: %s does not exist. '
-          'Are you mounting it correctly?', project_src_path)
-      return None
-    return os.path.dirname(project_src_path)
-
-  return git_workspace
-
-
 def check_project_src_path(project_src_path):
+  """Checks that |project_src_path| exists."""
   if not os.path.exists(project_src_path):
-    raise BuildError(
-        'PROJECT_SRC_PATH: %s does not exist. '
-        'Are you mounting it correctly?', project_src_path)
+    raise BuildError(('PROJECT_SRC_PATH: %s does not exist. '
+                      'Are you mounting it correctly?') % project_src_path)
 
 
-class BuildError:
-  pass
+class BuildError(Exception):
+  """Errors related to building fuzzers."""
 
 
-class Builder:
+# pylint: disable=too-many-arguments
+
+
+class BaseBuilder:  # pylint: disable=too-many-instance-attributes
+  """Base class for fuzzer builders."""
 
   def __init__(self,
                project_name,
@@ -174,24 +165,29 @@ class Builder:
     self.project_repo_name = project_repo_name
     self.workspace = workspace
     if not os.path.exists(workspace):
-      raise BuildError('Invalid workspace: %s.', workspace)
+      raise BuildError('Invalid workspace: %s.' % workspace)
     self.out_dir = os.path.join(workspace, 'out')
-    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(self.out_dir, exist_ok=True)
     self.sanitizer = sanitizer
     self.host_repo_path = host_repo_path
     self.image_repo_path = None
     self.repo_manager = None
 
   def build_image_and_checkout_src(self):
-    raise NotImplementedError()
+    """Builds the project builder image and checkout source code for the patch
+    we want to fuzz (if necessary).
+    Must be implemented by child classes."""
+    raise NotImplementedError('Child class must implement method')
 
   def build_fuzzers(self):
+    """Moves the source code we want to fuzz into the project builder and builds
+    the fuzzers from that source code."""
     image_src_path = os.path.dirname(self.image_repo_path)
-    command = get_common_docker_args(sanitizer)
+    command = get_common_docker_args(self.sanitizer)
     container = utils.get_container_name()
 
     if container:
-      command.extend(['-e', 'OUT=' + out_dir, '--volumes-from', container])
+      command.extend(['-e', 'OUT=' + self.out_dir, '--volumes-from', container])
       rm_path = os.path.join(self.image_repo_path, '*')
 
       bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
@@ -200,35 +196,39 @@ class Builder:
       # TODO(metzman): Figure out if we can eliminate this branch.
       command.extend([
           '-e', 'OUT=' + '/out', '-v',
-          '%s:%s' % (os.path.join(git_workspace, project_repo_name),
-                     os.path.join(image_src_path, project_repo_name)), '-v',
-          '%s:%s' % (out_dir, '/out')
+          '%s:%s' % (self.host_repo_path, self.image_repo_path), '-v',
+          '%s:%s' % (self.out_dir, '/out')
       ])
       bash_command = 'compile'
 
     command.extend([
-        'gcr.io/oss-fuzz/' + project_name,
+        'gcr.io/oss-fuzz/' + self.project_name,
         '/bin/bash',
         '-c',
     ])
     command.append(bash_command)
-    logging.info("Building with %s sanitizer.", sanitizer)
+    logging.info("Building with %s sanitizer.", self.sanitizer)
     if helper.docker_run(command):
       raise BuildError('Building fuzzers failed.')
 
   def build(self):
+    """Builds the image, checkouts the source (if needed), builds the fuzzers
+    and then removes the unaffectted fuzzers."""
     self.build_image_and_checkout_src()
     self.build_fuzzers()
     self.remove_unaffected_fuzzers()
 
   def remove_unaffected_fuzzers(self):
+    """Removes the fuzzers unaffected by the patch."""
+
     fix_git_repo_for_diff(self.host_repo_path)
     remove_unaffected_fuzzers(self.project_name, self.out_dir,
                               self.repo_manager.get_git_diff(),
                               self.image_repo_path)
 
 
-class ExternalGithubBuilder(Builder):
+class ExternalGithubBuilder(BaseBuilder):
+  """Class for building non-OSS-Fuzz projects on GitHub Actions."""
 
   def __init__(self, project_name, project_repo_name, workspace, sanitizer,
                project_src_path, build_integration_path):
@@ -245,6 +245,9 @@ class ExternalGithubBuilder(Builder):
                  self.build_integration_path, self.host_repo_path)
 
   def build_image_and_checkout_src(self):
+    """Builds the project builder image for a non-OSS-Fuzz project. Sets the
+    repo manager. Does not checkout source code since external projects are
+    expected to bring their own source code to CIFuzz."""
     logging.info('Building external project.')
     if not build_external_project_docker_image(
         self.project_name, self.host_repo_path, self.build_integration_path):
@@ -252,7 +255,8 @@ class ExternalGithubBuilder(Builder):
     self.repo_manager = repo_manager.RepoManager(self.host_repo_path)
 
 
-class InternalGithubBuilder(Builder):
+class InternalGithubBuilder(BaseBuilder):
+  """Class for building OSS-Fuzz projects on GitHub actions."""
 
   def __init__(self, project_name, project_repo_name, workspace, sanitizer,
                commit_sha, pr_ref):
@@ -265,6 +269,9 @@ class InternalGithubBuilder(Builder):
     self.pr_ref = pr_ref
 
   def build_image_and_checkout_src(self):
+    """Builds the project builder image for a non-OSS-Fuzz project. Sets the
+    repo manager and host_repo_path. Checks out source code of project with
+    patch under test."""
     logging.info('Building OSS-Fuzz project.')
     # detect_main_repo builds the image as a side effect.
     inferred_url, self.image_repo_path = (
@@ -279,15 +286,17 @@ class InternalGithubBuilder(Builder):
     os.makedirs(git_workspace, exist_ok=True)
 
     # Checkout project's repo in the shared volume.
-    self.repo_manager = clone_repo_and_get_manager(
+    self.repo_manager = repo_manager.clone_repo_and_get_manager(
         self.inferred_url, git_workspace, repo_name=self.project_repo_name)
 
-  self.host_repo_path = self.repo_manager.repo_dir
+    self.host_repo_path = self.repo_manager.repo_dir
 
-  checkout_specified_commit(self.repo_manager, self.pr_ref, self.commit_sha)
+    checkout_specified_commit(self.repo_manager, self.pr_ref, self.commit_sha)
 
 
-class InternalGenericCiBuilder(Builder):
+class InternalGenericCiBuilder(BaseBuilder):
+  """Class for building fuzzers for an OSS-Fuzz project using on a platform
+  other than GitHub actions."""
 
   def __init__(self, project_name, project_repo_name, workspace, sanitizer,
                project_src_path):
@@ -299,6 +308,9 @@ class InternalGenericCiBuilder(Builder):
     check_project_src_path(self.host_repo_path)
 
   def build_image_and_checkout_src(self):
+    """Builds the project builder image for a non-OSS-Fuzz project. Sets the
+    repo manager. Does not checkout source code since external projects are
+    expected to bring their own source code to CIFuzz."""
     logging.info('Building OSS-Fuzz project.')
     # detect_main_repo builds the image as a side effect.
     _, self.image_repo_path = (build_specified_commit.detect_main_repo(
@@ -312,20 +324,22 @@ class InternalGenericCiBuilder(Builder):
     self.repo_manager = repo_manager.RepoManager(self.host_repo_path)
 
 
-def get_builder(project_name,
-                project_repo_name,
-                workspace,
-                sanitizer='address',
-                pr_ref=None,
-                commit_sha=None,
-                project_src_path=None,
-                build_integration_path=None):
+def get_builder(project_name, project_repo_name, workspace, pr_ref, commit_sha,
+                sanitizer, project_src_path, build_integration_path):
+  """Determines what kind of build is being requested using the arguments
+  provided and instantiates and returns the correct builder object."""
   if build_integration_path and project_src_path:
+    # Non-OSS-Fuzz projects must bring their own source and their own build
+    # integration (which is relative to that source).
     return ExternalGithubBuilder(project_name, project_repo_name, workspace,
                                  sanitizer, project_src_path,
                                  build_integration_path)
 
   if project_src_path:
+    # Builds of OSS-Fuzz projects not hosted on Github must bring their own
+    # source since the checkout logic CIFuzz implements is github-specific.
+    # TODO(metzman): Consider moving Github-actions builds of OSS-Fuzz projects
+    # to this system to reduce implementation complexity.
     return InternalGenericCiBuilder(project_name, project_repo_name, workspace,
                                     sanitizer, project_src_path)
 
@@ -339,7 +353,9 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     workspace,
     pr_ref=None,
     commit_sha=None,
-    sanitizer='address'):
+    sanitizer='address',
+    project_src_path=None,
+    build_integration_path=None):
   """Builds all of the fuzzers for a specific OSS-Fuzz project.
 
   Args:
@@ -354,6 +370,13 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   Returns:
     True if build succeeded or False on failure.
   """
+  try:
+    builder = get_builder(project_name, project_repo_name, workspace, pr_ref,
+                          commit_sha, sanitizer, project_src_path,
+                          build_integration_path)
+    return builder.build()
+  except BuildError:
+    return False
 
 
 def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
