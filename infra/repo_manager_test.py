@@ -26,6 +26,7 @@ import utils
 
 OSS_FUZZ_REPO_URL = 'https://github.com/google/oss-fuzz'
 
+
 @contextlib.contextmanager
 def get_oss_fuzz_repo():
   """Clones a temporary copy of the OSS-Fuzz repo. Returns the path to the

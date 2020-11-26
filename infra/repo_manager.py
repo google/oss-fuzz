@@ -205,7 +205,7 @@ class RepoManager:
       shutil.rmtree(self.repo_dir)
 
 
-def clone_repo_and_get_manager(self, repo_url, base_dir, repo_name=None):
+def clone_repo_and_get_manager(repo_url, base_dir, repo_name=None):
   """Clones a repo and constructs a repo manager class.
 
     Args:
@@ -214,11 +214,11 @@ def clone_repo_and_get_manager(self, repo_url, base_dir, repo_name=None):
       repo_name: The name of the directory the repo is cloned to.
     """
   if repo_name is None:
-    repo_name = os.path.basename(self.repo_url).replace('.git', '')
+    repo_name = os.path.basename(repo_url).replace('.git', '')
   repo_dir = os.path.join(base_dir, repo_name)
   manager = RepoManager(repo_dir)
 
-  if not os.path.exists(self.repo_dir):
+  if not os.path.exists(repo_dir):
     _clone(repo_url, base_dir, repo_name)
 
   return manager

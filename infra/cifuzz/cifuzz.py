@@ -266,7 +266,7 @@ class InternalGithubBuilder(BaseBuilder):
 
     # Checkout project's repo in the shared volume.
     self.repo_manager = repo_manager.clone_repo_and_get_manager(
-        self.inferred_url, git_workspace, repo_name=self.project_repo_name)
+        inferred_url, git_workspace, repo_name=self.project_repo_name)
 
     self.host_repo_path = self.repo_manager.repo_dir
 
