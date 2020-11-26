@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Custom options for libgcrypt20."""
 import package
 import wrapper_utils
 
@@ -26,6 +26,7 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
     super(Package, self).__init__('libgcrypt20', apt_version)
 
   def pre_build(self, _source_directory, _env, custom_bin_dir):  # pylint: disable=no-self-use
+    """Pre-build configuration for libgcrypt20."""
     configure_wrapper = ('#!/bin/bash\n'
                          '/usr/bin/dh_auto_configure "$@" --disable-asm')
 

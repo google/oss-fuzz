@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Script to build libraries with MemorySanitizer instrumentation."""
 from __future__ import print_function
 import argparse
 import imp
@@ -75,6 +75,7 @@ def get_track_origins_flag():
 
 
 def get_injected_flags():
+  """Get the additional command line arguments."""
   return INJECTED_ARGS + [get_track_origins_flag()]
 
 
@@ -237,6 +238,7 @@ def extract_libraries(deb_paths, work_directory, output_directory):
 
 
 def get_package(package_name):
+  """Factory for Package objects."""
   apt_cache = apt.Cache()
   version = apt_cache[package_name].candidate
   source_name = version.source_name
@@ -397,6 +399,7 @@ class MSanBuilder:
 
 
 def main():
+  """Builds packages with MemorySanitizer instrumentation."""
   parser = argparse.ArgumentParser('msan_build.py', description='MSan builder.')
   parser.add_argument('package_names', nargs='+', help='Name of the packages.')
   parser.add_argument('output_dir', help='Output directory.')

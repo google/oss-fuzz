@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Custom options for PulseAudio."""
 from __future__ import print_function
 import os
 

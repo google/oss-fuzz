@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Base class and utility functions for all libraries that require customized build processes."""
 import os
 import subprocess
 
@@ -43,15 +43,19 @@ class Package:
     self.apt_version = apt_version
 
   def pre_build(self, _source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
+    """Default no-op pre-build hook function."""
     return
 
   def post_build(self, _source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
+    """Default no-op post-build hook function."""
     return
 
   def pre_download(self, _download_directory):  # pylint: disable=no-self-use
+    """Default no-op pre-download hook function."""
     return
 
   def post_download(self, _source_directory):  # pylint: disable=no-self-use
+    """Default no-op post-download hook function."""
     return
 
   def install_build_deps(self):

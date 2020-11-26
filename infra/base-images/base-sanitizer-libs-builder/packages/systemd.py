@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Custom options for systemd."""
 from __future__ import print_function
 
 import package
@@ -28,6 +28,7 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
     super(Package, self).__init__('systemd', apt_version)
 
   def pre_build(self, _source_directory, _env, custom_bin_dir):  # pylint: disable=no-self-use
+    """Pre-build installation of a wrapper script for systemd."""
     # Hide msan symbols from nm. the systemd build system uses this to find
     # undefined symbols and errors out if it does.
     nm_wrapper = ('#!/bin/bash\n'

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Custom options for sqlite3."""
 import os
 
 import package
@@ -27,5 +27,6 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
     super(Package, self).__init__('sqlite3', apt_version)
 
   def pre_build(self, source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
+    """Pre-build configuration for sqlite3."""
     os.system('sed -i "s/package ifneeded sqlite3//" %s/debian/rules' %
               source_directory)

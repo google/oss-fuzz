@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Custom options for pixman."""
 import os
 
 import package
@@ -27,12 +27,13 @@ class Package(package.Package):
     super(Package, self).__init__('pixman', apt_version)
 
   def post_download(self, source_directory):  # pylint: disable=no-self-use
-    # Incorrect checking of GCC vector extension availability.
+    """Workaround for incorrect checking of GCC vector extension availability."""
     os.system('sed s/support_for_gcc_vector_extensions=yes/'
               'support_for_gcc_vector_extensions=no/ -i %s/configure.ac' %
               source_directory)
 
   def pre_build(self, _source_directory, env, _custom_bin_dir):  # pylint: disable=no-self-use
+    """Pre-build configuration for pixman."""
     blacklist_flag = ' -fsanitize-blacklist=' + os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'pixman_blacklist.txt')
     env['DEB_CXXFLAGS_APPEND'] += blacklist_flag
