@@ -1,6 +1,8 @@
 homepage: https://gitlab.gnome.org/GNOME/gdk-pixbuf/
 language: c
-primary_contact: jvoisin@google.com
+primary_contact: security-tps@google.com
 sanitizers:
   - address
   - undefined
+auto_ccs:
+  - jvoisin@google.com
