@@ -106,8 +106,6 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     project_name = 'external-project'
     project_src_path = os.path.join(TEST_FILES_PATH, project_name)
     build_integration_path = os.path.join(project_src_path, 'oss-fuzz')
-    os.environ['PROJECT_SRC_PATH'] = project_src_path
-    os.environ['BUILD_INTEGRATION_PATH'] = build_integration_path
     commit_sha = '0b95fe1039ed7c38fea1f97078316bfc1030c523'
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
@@ -116,7 +114,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           cifuzz.build_fuzzers(project_name,
                                project_name,
                                tmp_dir,
-                               commit_sha=commit_sha))
+                               project_src_path=project_src_path,
+                               build_integration_path=build_integration_path))
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
