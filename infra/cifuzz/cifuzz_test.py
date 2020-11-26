@@ -373,7 +373,7 @@ class CheckFuzzerBuildTest(unittest.TestCase):
     mocked_docker_run.return_value = 0
     test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
     cifuzz.check_fuzzer_build(test_fuzzer_dir,
-                              allowed_broken_targets_percentage=0)
+                              allowed_broken_targets_percentage='0')
     self.assertIn('-e ALLOWED_BROKEN_TARGETS_PERCENTAGE=0',
                   ' '.join(mocked_docker_run.call_args[0][0]))
 
