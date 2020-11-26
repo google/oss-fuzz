@@ -82,14 +82,14 @@ _IMAGE_BUILD_TRIES = 3
 _IMAGE_BUILD_BACKOFF = 2
 
 
-def checkout_specified_commit(build_repo_manager, pr_ref, commit_sha):
+def checkout_specified_commit(repo_manager, pr_ref, commit_sha):
   """Checks out the specified commit or pull request using
-  build_repo_manager."""
+  repo_manager."""
   try:
     if pr_ref:
-      build_repo_manager.checkout_pr(pr_ref)
+      repo_manager.checkout_pr(pr_ref)
     else:
-      build_repo_manager.checkout_commit(commit_sha)
+      repo_manager.checkout_commit(commit_sha)
   except (RuntimeError, ValueError):
     logging.error(
         'Can not check out requested state %s. '
@@ -138,7 +138,7 @@ def fix_git_repo_for_diff(repo_dir):
   return utils.execute(command, location=repo_dir)
 
 
-def get_git_workspace(project_src_path, workspace):
+def get_git_workspace(project_src_path):
   """Returns a path to the git workspace."""
   if project_src_path:
     if not os.path.exists(project_src_path):
@@ -147,9 +147,189 @@ def get_git_workspace(project_src_path, workspace):
           'Are you mounting it correctly?', project_src_path)
       return None
     return os.path.dirname(project_src_path)
-  git_workspace = os.path.join(workspace, 'storage')
-  os.makedirs(git_workspace, exist_ok=True)
+
+
   return git_workspace
+
+
+def check_project_src_path(project_src_path):
+  if not os.path.exists(project_src_path):
+      raise BuildError(
+          'PROJECT_SRC_PATH: %s does not exist. '
+          'Are you mounting it correctly?', project_src_path)
+
+
+class BuildError:
+  pass
+
+
+class Builder:
+  def __init__(self, project_name, project_repo_name, workspace, sanitizer, host_repo_path=None):
+    self.project_name = project_name
+    self.project_repo_name = project_repo_name
+    self.workspace = workspace
+    if not os.path.exists(workspace):
+      raise BuildError('Invalid workspace: %s.', workspace)
+    self.out_dir = os.path.join(workspace, 'out')
+    os.makedirs(out_dir, exist_ok=True)
+    self.sanitizer = sanitizer
+    self.host_repo_path = host_repo_path
+    self.image_repo_path = None
+    self.repo_manager = None
+
+
+  def build_image_and_checkout_src(self):
+    raise NotImplementedError()
+
+
+  def build_fuzzers(self):
+    image_src_path = os.path.dirname(self.image_repo_path)
+    command = get_common_docker_args(sanitizer)
+    container = utils.get_container_name()
+
+    if container:
+      command.extend(['-e', 'OUT=' + out_dir, '--volumes-from', container])
+      rm_path = os.path.join(self.image_repo_path, '*')
+
+      bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
+          rm_path, self.host_repo_path, image_src_path)
+    else:
+      # TODO(metzman): Figure out if we can eliminate this branch.
+      command.extend([
+          '-e', 'OUT=' + '/out', '-v',
+          '%s:%s' % (os.path.join(git_workspace, project_repo_name),
+                     os.path.join(image_src_path, project_repo_name)),
+          '-v',
+          '%s:%s' % (out_dir, '/out')
+      ])
+      bash_command = 'compile'
+
+    command.extend([
+        'gcr.io/oss-fuzz/' + project_name,
+        '/bin/bash',
+        '-c',
+    ])
+    command.append(bash_command)
+    logging.info("Building with %s sanitizer.", sanitizer)
+    if helper.docker_run(command):
+      raise BuildError('Building fuzzers failed.')
+
+  def build(self):
+    self.build_image_and_checkout_src()
+    self.build_fuzzers()
+    self.remove_unaffected_fuzzers()
+
+  def remove_unaffected_fuzzers(self):
+    fix_git_repo_for_diff(self.host_repo_path)
+    remove_unaffected_fuzzers(self.project_name, self.out_dir,
+                              self.repo_manager.get_git_diff(),
+                              self.image_repo_path)
+
+
+class ExternalGithubBuilder(Builder):
+  def __init__(self, project_name, project_repo_name, workspace,
+               sanitizer, project_src_path, build_integration_path):
+
+    super().__init__(project_name, project_repo_name, workspace, sanitizer,
+                     host_repo_path=project_src_path)
+    check_project_src_path(self.host_repo_path)
+    self.build_integration_path = os.path.join(self.host_repo_path,
+                                               build_integration_path)
+    logging.info('build_integration_path %s, project_src_path %s.',
+                 self.build_integration_path, self.host_repo_path)
+
+  def build_image_and_checkout_src(self):
+    logging.info('Building external project.')
+    if not build_external_project_docker_image(self.project_name,
+                                               self.host_repo_path,
+                                               self.build_integration_path):
+      raise BuildError() # !!!
+    self.repo_manager = repo_manager.RepoManager(self.host_repo_path)
+
+
+class InternalGithubBuilder(Builder):
+  def __init__(self, project_name, project_repo_name, workspace,
+               sanitizer, commit_sha, pr_ref):
+    # Validate inputs.
+    assert pr_ref or commit_sha
+
+    super().__init__(project_name, project_repo_name, workspace, sanitizer)
+
+    self.commit_sha = commit_sha
+    self.pr_ref = pr_ref
+
+  def build_image_and_checkout_src(self):
+    logging.info('Building OSS-Fuzz project.')
+    # detect_main_repo builds the image as a side effect.
+    inferred_url, self.image_repo_path = (
+        build_specified_commit.detect_main_repo(
+            self.project_name,
+            repo_name=self.project_repo_name))
+
+    if not inferred_url or not self.image_repo_path:
+      logging.error('Could not detect repo from project %s.', self.project_name)
+      raise BuildError() # !!!
+
+    git_workspace = os.path.join(self.workspace, 'storage')
+    os.makedirs(git_workspace, exist_ok=True)
+
+    # Checkout project's repo in the shared volume.
+    self.repo_manager = clone_repo_and_get_manager(
+      self.inferred_url,
+      git_workspace,
+      repo_name=self.project_repo_name)
+
+  self.host_repo_path = self.repo_manager.repo_dir
+
+  checkout_specified_commit(self.repo_manager, self.pr_ref, self.commit_sha)
+
+
+class InternalGenericCiBuilder(Builder):
+  def __init__(self, project_name, project_repo_name, workspace,
+               sanitizer,
+               project_src_path):
+    super().__init__(project_name, project_repo_name, workspace, sanitizer,
+                     host_repo_path=project_src_path)
+    check_project_src_path(self.host_repo_path)
+
+
+  def build_image_and_checkout_src(self):
+    logging.info('Building OSS-Fuzz project.')
+    # detect_main_repo builds the image as a side effect.
+    _, self.image_repo_path = (
+        build_specified_commit.detect_main_repo(
+            self.project_name,
+            repo_name=self.project_repo_name))
+
+    if not self.image_repo_path:
+      logging.error('Could not detect repo from project %s.', self.project_name)
+      raise Exception() # !!!
+
+    # Checkout project's repo in the shared volume.
+    self.repo_manager = repo_manager.RepoManager(self.host_repo_path)
+
+
+def get_builder(
+    project_name,
+    project_repo_name,
+    workspace,
+    sanitizer='address'
+    pr_ref=None,
+    commit_sha=None,
+    project_src_path=None,
+    build_integration_path=None):
+  if build_integration_path and project_src_path:
+    return ExternalGithubBuilder(
+        project_name, project_repo_name, workspace,
+        sanitizer, project_src_path, build_integration_path)
+
+  if project_src_path:
+    return InternalGenericCiBuilder(
+        project_name, project_repo_name, workspace, sanitizer, project_src_path)
+
+  return InternalGithubBuilder(
+      project_name, project_repo_name, workspace, sanitizer, commit_sha, pr_ref)
+
 
 
 def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
@@ -173,85 +353,6 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   Returns:
     True if build succeeded or False on failure.
   """
-  # Validate inputs.
-  assert pr_ref or commit_sha
-
-  logging.info("Using %s sanitizer.", sanitizer)
-
-  if not os.path.exists(workspace):
-    logging.error('Invalid workspace: %s.', workspace)
-    return False
-  out_dir = os.path.join(workspace, 'out')
-  os.makedirs(out_dir, exist_ok=True)
-
-  project_src_path = get_project_src_path()
-  git_workspace = get_git_workspace(project_src_path, workspace)
-  if git_workspace is None:
-    return False
-
-  build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
-  if build_integration_path:
-    build_integration_path = os.path.join(project_src_path,
-                                          build_integration_path)
-    logging.info('build_integration_path %s, project_src_path %s.',
-                 build_integration_path, project_src_path)
-    logging.info('Building external project.')
-    inferred_url = None
-    project_builder_repo_path = os.path.join('/src',
-                                             os.path.basename(project_src_path))
-    if not build_external_project_docker_image(project_name, project_src_path,
-                                               build_integration_path):
-      return False
-  else:
-    # detect_main_repo builds the image as a side effect.
-    inferred_url, project_builder_repo_path = (
-        build_specified_commit.detect_main_repo(project_name,
-                                                repo_name=project_repo_name))
-
-    if not inferred_url or not project_builder_repo_path:
-      logging.error('Could not detect repo from project %s.', project_name)
-      return False
-  project_repo_name = os.path.basename(project_builder_repo_path)
-  src_in_project_builder = os.path.dirname(project_builder_repo_path)
-
-  # Checkout project's repo in the shared volume.
-  build_repo_manager = repo_manager.RepoManager(inferred_url,
-                                                git_workspace,
-                                                repo_name=project_repo_name)
-  if not project_src_path:
-    checkout_specified_commit(build_repo_manager, pr_ref, commit_sha)
-
-  command = get_common_docker_args(sanitizer)
-  container = utils.get_container_name()
-  host_repo_path = os.path.join(git_workspace, project_repo_name)
-  if container:
-    command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
-    bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
-        os.path.join(src_in_project_builder, project_repo_name, '*'),
-        host_repo_path, src_in_project_builder)
-  else:
-    command += [
-        '-e', 'OUT=' + '/out', '-v',
-        '%s:%s' % (os.path.join(git_workspace, project_repo_name),
-                   os.path.join(src_in_project_builder, project_repo_name)),
-        '-v',
-        '%s:%s' % (out_dir, '/out')
-    ]
-    bash_command = 'compile'
-  command.extend([
-      'gcr.io/oss-fuzz/' + project_name,
-      '/bin/bash',
-      '-c',
-  ])
-  command.append(bash_command)
-  if helper.docker_run(command):
-    logging.error('Building fuzzers failed.')
-    return False
-  fix_git_repo_for_diff(host_repo_path)
-  remove_unaffected_fuzzers(project_name, out_dir,
-                            build_repo_manager.get_git_diff(),
-                            project_builder_repo_path)
-  return True
 
 
 def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
