@@ -61,8 +61,8 @@ def TestOneInput(input_bytes):
   original = fdp.ConsumeUnicode(sys.maxsize)
 
   try:
-    json_data = json.loads(original)
     ujson_data = ujson.loads(original)
+    json_data = json.loads(original)
   except Exception as e:
     # It would be interesting to enforce that if one of the libraries throws an
     # exception, the other does too. However, uJSON accepts many invalid inputs

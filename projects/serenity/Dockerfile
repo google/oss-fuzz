@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake build-essential libbz2-dev libc6-dev libffi-dev libfreetype6-dev libgdbm-dev libjpeg-turbo8-dev liblcms2-dev libncursesw5-dev libreadline-dev libsqlite3-dev libssl-dev libtiff5-dev libtool libwebp-dev make python python-dev python-setuptools tk-dev wget zlib1g-dev libwebp-dev
-RUN wget https://github.com/python/cpython/archive/v3.8.1.tar.gz
-RUN git clone --depth 1 https://github.com/python-pillow/Pillow.git pillow
-RUN git clone --depth 1 https://github.com/guidovranken/oss-fuzz-fuzzers
-WORKDIR pillow
+RUN apt-get update && apt-get install -y build-essential cmake curl libmpfr-dev libmpc-dev libgmp-dev e2fsprogs
+RUN git clone https://github.com/SerenityOS/serenity
+WORKDIR $SRC
 COPY build.sh $SRC/
+COPY fuzz_CMakeLists.txt $SRC/serenity/Meta/Lagom/Fuzzers/CMakeLists.txt

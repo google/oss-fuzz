@@ -36,10 +36,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   options.create_if_missing = true;
   leveldb::Status status = leveldb::DB::Open(options, "/tmp/testdb", &db);
 
-  // for random string generation
-  const uint8_t *curr_offset = data; 
-  size_t curr_size = size;
-
   std::string value;
 
   // perform a sequence of calls on our db instance
@@ -78,6 +74,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
       snapshot_options.snapshot = db->GetSnapshot();
       leveldb::Iterator* it = db->NewIterator(snapshot_options);
       db->ReleaseSnapshot(snapshot_options.snapshot);
+      delete it;
     } 
     else if(c == 6) { // Open and close DB
       delete db;

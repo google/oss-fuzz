@@ -298,6 +298,12 @@ function check_mixed_sanitizers {
   local FUZZER=$1
   local result=0
   local CALL_INSN=
+
+  if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
+    # Sanitizer runtime is loaded via LD_PRELOAD, so this check does not apply.
+    return 0
+  fi
+
   if [[ $ARCHITECTURE == 'i386' ]]
   then
     CALL_INSN="call\s+[0-9a-f]+\s+<"
@@ -367,6 +373,11 @@ function check_seed_corpus {
 function check_architecture {
   local FUZZER=$1
   local FUZZER_NAME=$(basename $FUZZER)
+
+  if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
+    FUZZER=${FUZZER}.pkg
+  fi
+
   FILE_OUTPUT=$(file $FUZZER)
   if [[ $ARCHITECTURE == "x86_64" ]]
   then
