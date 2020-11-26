@@ -25,9 +25,10 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 def apply_patch(source_directory, patch_name):
   """Apply custom patch."""
-  subprocess.check_call(['patch', '-p1', '-i',
-                         os.path.join(SCRIPT_DIR, patch_name)],
-                        cwd=source_directory)
+  subprocess.check_call(
+      ['patch', '-p1', '-i',
+       os.path.join(SCRIPT_DIR, patch_name)],
+      cwd=source_directory)
 
 
 class PackageException(Exception):
@@ -59,8 +60,7 @@ class Package:
     subprocess.check_call(['apt-get', 'build-dep', '-y', self.name])
 
     # Reload package after update.
-    self.apt_version = (
-        apt.Cache()[self.apt_version.package.name].candidate)
+    self.apt_version = apt.Cache()[self.apt_version.package.name].candidate
 
   def download_source(self, download_directory):
     """Download the source for a package."""
@@ -74,9 +74,7 @@ class Package:
   def build(self, source_directory, env, custom_bin_dir):
     """Build .deb packages."""
     self.pre_build(source_directory, env, custom_bin_dir)
-    subprocess.check_call(
-        ['dpkg-buildpackage', '-us', '-uc', '-B'],
-        cwd=source_directory, env=env)
+    subprocess.check_call(['dpkg-buildpackage', '-us', '-uc', '-B'],
+                          cwd=source_directory,
+                          env=env)
     self.post_build(source_directory, env, custom_bin_dir)
-
-

@@ -30,10 +30,10 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
   def pre_build(self, _source_directory, _env, custom_bin_dir):  # pylint: disable=no-self-use
     # Hide msan symbols from nm. the systemd build system uses this to find
     # undefined symbols and errors out if it does.
-    nm_wrapper = (
-        '#!/bin/bash\n'
-        '/usr/bin/nm "$@" | grep -E -v "U (__msan|memset)"\n'
-        'exit ${PIPESTATUS[0]}\n')
+    nm_wrapper = ('#!/bin/bash\n'
+                  '/usr/bin/nm "$@" | grep -E -v "U (__msan|memset)"\n'
+                  'exit ${PIPESTATUS[0]}\n')
 
-    wrapper_utils.InstallWrapper(custom_bin_dir, 'nm', nm_wrapper,
-                                 [wrapper_utils.dpkg_host_architecture() + '-nm'])
+    wrapper_utils.InstallWrapper(
+        custom_bin_dir, 'nm', nm_wrapper,
+        [wrapper_utils.dpkg_host_architecture() + '-nm'])

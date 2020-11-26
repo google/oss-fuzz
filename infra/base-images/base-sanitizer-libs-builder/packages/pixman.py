@@ -28,14 +28,12 @@ class Package(package.Package):
 
   def post_download(self, source_directory):  # pylint: disable=no-self-use
     # Incorrect checking of GCC vector extension availability.
-    os.system(
-      'sed s/support_for_gcc_vector_extensions=yes/'
-      'support_for_gcc_vector_extensions=no/ -i %s/configure.ac' %
-      source_directory)
+    os.system('sed s/support_for_gcc_vector_extensions=yes/'
+              'support_for_gcc_vector_extensions=no/ -i %s/configure.ac' %
+              source_directory)
 
   def pre_build(self, _source_directory, env, _custom_bin_dir):  # pylint: disable=no-self-use
     blacklist_flag = ' -fsanitize-blacklist=' + os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        'pixman_blacklist.txt')
+        os.path.dirname(os.path.abspath(__file__)), 'pixman_blacklist.txt')
     env['DEB_CXXFLAGS_APPEND'] += blacklist_flag
     env['DEB_CFLAGS_APPEND'] += blacklist_flag

@@ -26,9 +26,8 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
     super(Package, self).__init__('libgcrypt20', apt_version)
 
   def pre_build(self, _source_directory, _env, custom_bin_dir):  # pylint: disable=no-self-use
-    configure_wrapper = (
-        '#!/bin/bash\n'
-        '/usr/bin/dh_auto_configure "$@" --disable-asm')
+    configure_wrapper = ('#!/bin/bash\n'
+                         '/usr/bin/dh_auto_configure "$@" --disable-asm')
 
-    wrapper_utils.InstallWrapper(
-        custom_bin_dir, 'dh_auto_configure', configure_wrapper)
+    wrapper_utils.InstallWrapper(custom_bin_dir, 'dh_auto_configure',
+                                 configure_wrapper)
