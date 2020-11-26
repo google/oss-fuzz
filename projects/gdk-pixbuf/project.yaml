@@ -4,5 +4,3 @@ primary_contact: security-tps@google.com
 sanitizers:
   - address
   - undefined
-auto_ccs:
-  - jvoisin@google.com

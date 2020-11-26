@@ -55,16 +55,7 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
-# Create corpus and dict files
-mkdir $SRC/corpus
-find $SRC/gdk-pixbuf/tests/ \( -name '*.jpeg' -o -name '*.jpg' -o -name '*.png' \) -exec cp -v '{}' $SRC/corpus ';'
-find $SRC/libpng -name "*.png" | grep -v crashers | xargs cp -t $SRC/corpus
-mv $SRC/fuzzdata/samples/gif/*.gif $SRC/corpus
-zip -q $OUT/gdk-pixbuf_seed_corpus.zip $SRC/corpus/*
-rm -rf $SRC/corpus $SRC/libpng $SRC/fuzzdata
-
-# To make sure there is a new line between files
-awk 1 $SRC/*.dict > $OUT/gdk-pixbuf.dict
+mv $SRC/{*.zip,*.dict} $OUT
 
 if [ ! -f "${OUT}/gdk-pixbuf_seed_corpus.zip" ]; then
   echo "missing seed corpus"

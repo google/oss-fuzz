@@ -55,7 +55,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             G_MAXUINT32,
             G_MAXUINT32/2);
 
-    char *buf = (char *) malloc(size + 1);
+    char *buf = (char *) calloc(size + 1, sizeof(char));
     memcpy(buf, data, size);
     buf[size] = '\0';
 
