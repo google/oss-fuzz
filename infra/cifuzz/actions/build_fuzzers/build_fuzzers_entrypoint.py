@@ -34,6 +34,22 @@ def get_pr_ref(event_path):
     return 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
 
 
+def get_project_src_path(workspace):
+  """Returns the manually checked out path of the project's source if specified
+  or None."""
+  # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
+  # project_src_path.
+  path = os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
+  if path is None:
+    return path
+  if os.path.isabs(path):
+    return path
+
+  # If |src| is not absolute, assume we are running in GitHub actions.
+  # TODO(metzman): Don't make this assumption.
+  return os.path.join(workspace, path)
+
+
 def main():
   """Build OSS-Fuzz project's fuzzers for CI tools.
   This script is used to kick off the Github Actions CI tool. It is the
@@ -58,17 +74,19 @@ def main():
   Returns:
     0 on success or 1 on failure.
   """
-  oss_fuzz_project_name = os.environ.get('OSS_FUZZ_PROJECT_NAME')
-  github_repo_name = os.path.basename(os.environ.get('GITHUB_REPOSITORY'))
-  commit_sha = os.environ.get('GITHUB_SHA')
-  event = os.environ.get('GITHUB_EVENT_NAME')
-  workspace = os.environ.get('GITHUB_WORKSPACE')
-  sanitizer = os.environ.get('SANITIZER').lower()
-  project_src_path = os.environ.get('PROJECT_SRC_PATH')
-  build_integration_path = os.environ.get('BUILD_INTEGRATION_PATH')
+  oss_fuzz_project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
+  github_repo_name = os.path.basename(os.getenv('GITHUB_REPOSITORY'))
+  commit_sha = os.getenv('GITHUB_SHA')
+  event = os.getenv('GITHUB_EVENT_NAME')
+  workspace = os.getenv('GITHUB_WORKSPACE')
+  sanitizer = os.getenv('SANITIZER').lower()
+  project_src_path = get_project_src_path(workspace)
+  build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+  allowed_broken_targets_percentage = os.getenv(
+      'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
 
   # Check if failures should not be reported.
-  dry_run = os.environ.get('DRY_RUN').lower() == 'true'
+  dry_run = os.getenv('DRY_RUN').lower() == 'true'
   if dry_run:
     # Sets the default return code on error to success.
     returncode = 0
@@ -81,7 +99,7 @@ def main():
     return returncode
 
   if event == 'pull_request':
-    event_path = os.environ.get('GITHUB_EVENT_PATH')
+    event_path = os.getenv('GITHUB_EVENT_PATH')
     pr_ref = get_pr_ref(event_path)
   else:
     pr_ref = None
@@ -101,7 +119,10 @@ def main():
     return returncode
 
   out_dir = os.path.join(workspace, 'out')
-  if cifuzz.check_fuzzer_build(out_dir, sanitizer=sanitizer):
+  if cifuzz.check_fuzzer_build(
+      out_dir,
+      sanitizer=sanitizer,
+      allowed_broken_targets_percentage=allowed_broken_targets_percentage):
     returncode = 0
 
   return returncode

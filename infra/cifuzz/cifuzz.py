@@ -96,27 +96,6 @@ def checkout_specified_commit(repo_manager_obj, pr_ref, commit_sha):
         'Using current repo state', pr_ref or commit_sha)
 
 
-def get_project_src_path():
-  """Returns the manually checked out path of the project's source if specified
-  or None."""
-  # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
-  # project_src_path.
-  path = os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
-  if path is None:
-    return path
-  return get_abs_src_path(path)
-
-
-def get_abs_src_path(src):
-  """Returns the absolute path of the source code repo."""
-  if os.path.isabs(src):
-    return src
-  # If |src| is not absolute, assume we are running in GitHub actions.
-  # TODO(metzman): Don't make this assumption.
-  workspace = os.environ['GITHUB_WORKSPACE']
-  return os.path.join(workspace, src)
-
-
 @retry.wrap(_IMAGE_BUILD_TRIES, _IMAGE_BUILD_BACKOFF)
 def build_external_project_docker_image(project_name, project_src,
                                         build_integration_path):
@@ -464,7 +443,9 @@ def get_common_docker_args(sanitizer):
   ]
 
 
-def check_fuzzer_build(out_dir, sanitizer='address'):
+def check_fuzzer_build(out_dir,
+                       sanitizer='address',
+                       allowed_broken_targets_percentage=None):
   """Checks the integrity of the built fuzzers.
 
   Args:
@@ -483,9 +464,6 @@ def check_fuzzer_build(out_dir, sanitizer='address'):
 
   command = get_common_docker_args(sanitizer)
 
-  # Set ALLOWED_BROKEN_TARGETS_PERCENTAGE in docker if specified by user.
-  allowed_broken_targets_percentage = os.getenv(
-      'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
   if allowed_broken_targets_percentage is not None:
     command += [
         '-e',
