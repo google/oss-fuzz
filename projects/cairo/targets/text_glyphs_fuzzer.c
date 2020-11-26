@@ -15,21 +15,17 @@
 #include <cairo.h>
 #include "fuzzer_temp_file.h"
 
+const int glyph_range = 9;
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    if (size < glyph_range) {
+        return 0;
+    }
     cairo_t *cr;
     cairo_surface_t *surface;
     cairo_status_t status;
     cairo_text_extents_t extents;
     cairo_text_cluster_t cluster;
-
-    // Taken from test/text-glyph-range.c
-    long int index[] = {
-        0, /* 'no matching glyph' */
-        0xffff, /* kATSDeletedGlyphCode */
-        0x1ffff, /* out of range */
-        -1L, /* out of range */
-        70, 68, 76, 85, 82 /* 'cairo' */
-    };
 
     char *tmpfile = fuzzer_get_tmpfile(data, size);
     surface = cairo_image_surface_create_from_png(tmpfile);
@@ -39,7 +35,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         return 0;
     }
 
-    char *buf = (char *) malloc(size + 1);
+    char *buf = (char *) calloc(size + 1, sizeof(char));
     memcpy(buf, data, size);
     buf[size] = '\0';
 
@@ -47,10 +43,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cairo_text_extents(cr, buf, &extents);
     cluster.num_bytes = size;
     cluster.num_glyphs = 1;
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < glyph_range; i++) {
         // Taken from test/text-glyph-range.c
         cairo_glyph_t glyph = {
-            index[i], 10 * i, 25
+            (long int)data[i], 10 * i, 25
         };
         cairo_show_text_glyphs(cr, buf, size, &glyph, 1, &cluster, 1, 0);
     }
