@@ -35,7 +35,7 @@ RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus.git && \
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $SRC/png.dict
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/jpeg.dict $SRC/jpeg.dict
 RUN awk 1 $SRC/*.dict > $SRC/libmediaart.dict && \
-    rm -f png.dict jpeg.dict
+    rm -f $SRC/png.dict $SRC/jpeg.dict
 
 WORKDIR $SRC/libmediaart
 COPY build.sh $SRC/
