@@ -201,7 +201,6 @@ def extract_libraries(deb_paths, work_directory, output_directory):
   for deb_path in deb_paths:
     subprocess.check_call(['dpkg-deb', '-x', deb_path, extract_directory])
 
-  extracted = []
   for root, _, filenames in os.walk(extract_directory):
     if 'libx32' in root or 'lib32' in root:
       continue
@@ -220,7 +219,7 @@ def extract_libraries(deb_paths, work_directory, output_directory):
         os.makedirs(target_dir)
 
       target_file_path = os.path.join(output_directory, rel_file_path)
-      extracted.append(target_file_path)
+      yield target_file_path
 
       if os.path.lexists(target_file_path):
         os.remove(target_file_path)
@@ -235,8 +234,6 @@ def extract_libraries(deb_paths, work_directory, output_directory):
         os.symlink(link_path, target_file_path)
       else:
         shutil.copy2(file_path, target_file_path)
-
-  return extracted
 
 
 def get_package(package_name):
@@ -392,8 +389,8 @@ class MSanBuilder:
     else:
       extract_directory = output_directory
 
-    extracted_paths = extract_libraries(deb_paths, self.work_dir,
-                                        extract_directory)
+    extracted_paths = list(
+        extract_libraries(deb_paths, self.work_dir, extract_directory))
     for extracted_path in extracted_paths:
       if not os.path.islink(extracted_path):
         patch_rpath(extracted_path, extract_directory)
