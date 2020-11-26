@@ -23,13 +23,19 @@ RUN tar xvJf $SRC/glib-2.64.2.tar.xz
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
 RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.gnome.org/ceyhunalp/libmediaart.git
 
-RUN git clone --depth 1 https://github.com/MozillaSecurity/fuzzdata.git && \
-    mv fuzzdata/samples/ogg/* $SRC/libmediaart/seed_corpus && \
-    mv fuzzdata/samples/mp3/* $SRC/libmediaart/seed_corpus && \
-    mv fuzzdata/samples/flac/* $SRC/libmediaart/seed_corpus && \
-    zip -q $SRC/libmediaart_seed_corpus.zip $SRC/libmediaart/seed_corpus/* && \
-    rm -rf fuzzdata
-ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/ogg.dict $SRC/libmediaart.dict
+RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus.git && \
+    git clone --depth 1 https://github.com/MozillaSecurity/fuzzdata.git && \
+    mkdir corpus && \
+    mv go-fuzz-corpus/jpeg/corpus/* corpus/ && \
+    mv go-fuzz-corpus/png/corpus/* corpus/ && \
+    mv fuzzdata/samples/jpg/* corpus/ && \
+    mv fuzzdata/samples/png/common/* corpus/ && \
+    zip -q $SRC/libmediaart_seed_corpus.zip corpus/* && \
+    rm -rf fuzzdata go-fuzz-corpus corpus
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/png.dict $SRC/png.dict
+ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/jpeg.dict $SRC/jpeg.dict
+RUN awk 1 $SRC/*.dict > $SRC/libmediaart.dict && \
+    rm -f png.dict jpeg.dict
 
 WORKDIR $SRC/libmediaart
 COPY build.sh $SRC/
