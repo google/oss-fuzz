@@ -70,7 +70,7 @@ class BuildFuzzersTest(unittest.TestCase):
 
   @mock.patch('build_specified_commit.detect_main_repo',
               return_value=('example.com', '/path'))
-  @mock.patch('repo_manager.RepoManager', return_value=None)
+  @mock.patch('repo_manager._clone', return_value=None)
   @mock.patch('cifuzz.checkout_specified_commit')
   @mock.patch('helper.docker_run')
   def test_cifuzz_env_var(self, mocked_docker_run, _, __, ___):
