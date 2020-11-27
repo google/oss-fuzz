@@ -84,16 +84,16 @@ make install
 #ninja -C _builddir install
 #popd
 
-pushd $SRC/qt
-# Add the flags to Qt build, borrowed from qt
-sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
-sed -i -e "s/QMAKE_LFLAGS      += -stdlib=libc++/QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
-# remove -fno-rtti which conflicts with -fsanitize=vptr when building with sanitizer undefined
-sed -i -e "s/QMAKE_CXXFLAGS_RTTI_OFF    = -fno-rtti/QMAKE_CXXFLAGS_RTTI_OFF    = /g" qtbase/mkspecs/common/gcc-base.conf
-MAKEFLAGS=-j$(nproc) $SRC/qt/configure -qt-libmd4c -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -no-glib -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS
-make -j$(nproc) > /dev/null
-make install
-popd
+#pushd $SRC/qt
+## Add the flags to Qt build, borrowed from qt
+#sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
+#sed -i -e "s/QMAKE_LFLAGS      += -stdlib=libc++/QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
+## remove -fno-rtti which conflicts with -fsanitize=vptr when building with sanitizer undefined
+#sed -i -e "s/QMAKE_CXXFLAGS_RTTI_OFF    = -fno-rtti/QMAKE_CXXFLAGS_RTTI_OFF    = /g" qtbase/mkspecs/common/gcc-base.conf
+#MAKEFLAGS=-j$(nproc) $SRC/qt/configure -qt-libmd4c -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -no-glib -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS
+#make -j$(nproc) > /dev/null
+#make install
+#popd
 
 
 patch $SRC/poppler/cpp/tests/fuzzing/doc_fuzzer.cc < df.patch
@@ -118,7 +118,7 @@ cmake .. \
   -DENABLE_LIBJPEG=OFF \
   -DENABLE_GLIB=OFF \
   -DENABLE_LIBCURL=OFF \
-  -DENABLE_QT5=ON \
+  -DENABLE_QT5=OFF \
   -DENABLE_UTILS=OFF \
   -DWITH_Cairo=OFF \
   -DWITH_NSS3=OFF \
@@ -127,7 +127,8 @@ cmake .. \
 
 export PKG_CONFIG="`which pkg-config` --static"
 #make -j$(nproc) poppler poppler-cpp poppler-glib poppler-qt5
-make -j$(nproc) poppler poppler-cpp poppler-qt5
+#make -j$(nproc) poppler poppler-cpp poppler-qt5
+make -j$(nproc) poppler poppler-cpp
 
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -lz -pthread -lrt -lpthread"
 #DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 lcms2 libopenjp2 libpng cairo cairo-gobject pango"
@@ -168,28 +169,28 @@ done
     #-Wl,-Bdynamic
 #done
 
-PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -lz -pthread -lrt -lpthread"
-DEPS="freetype2 lcms2 libopenjp2 libpng Qt5Core Qt5Gui Qt5Xml"
-BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
-BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
+#PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -lz -pthread -lrt -lpthread"
+#DEPS="freetype2 lcms2 libopenjp2 libpng Qt5Core Qt5Gui Qt5Xml"
+#BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
+#BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
-#fuzzers=$(find $SRC/qt5-fuzzers/ -name "*_fuzzer.cc")
-fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
-for f in $fuzzers; do
-  fuzzer_name=$(basename $f .cc)
+##fuzzers=$(find $SRC/qt5-fuzzers/ -name "*_fuzzer.cc")
+#fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
+#for f in $fuzzers; do
+  #fuzzer_name=$(basename $f .cc)
 
-  $CXX $CXXFLAGS -std=c++11 -fPIC \
-    -I$SRC/poppler/qt5/src \
-    $BUILD_CFLAGS \
-    $f -o $OUT/$fuzzer_name \
-    $PREDEPS_LDFLAGS \
-    $SRC/poppler/build/qt5/src/libpoppler-qt5.a \
-    $SRC/poppler/build/cpp/libpoppler-cpp.a \
-    $SRC/poppler/build/libpoppler.a \
-    $BUILD_LDFLAGS \
-    $LIB_FUZZING_ENGINE \
-    -Wl,-Bdynamic
-done
+  #$CXX $CXXFLAGS -std=c++11 -fPIC \
+    #-I$SRC/poppler/qt5/src \
+    #$BUILD_CFLAGS \
+    #$f -o $OUT/$fuzzer_name \
+    #$PREDEPS_LDFLAGS \
+    #$SRC/poppler/build/qt5/src/libpoppler-qt5.a \
+    #$SRC/poppler/build/cpp/libpoppler-cpp.a \
+    #$SRC/poppler/build/libpoppler.a \
+    #$BUILD_LDFLAGS \
+    #$LIB_FUZZING_ENGINE \
+    #-Wl,-Bdynamic
+#done
 
 mv $SRC/{*.zip,*.dict} $OUT
 
