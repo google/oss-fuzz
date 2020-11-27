@@ -20,6 +20,11 @@ set -o pipefail
 set -o errexit
 set -x
 
+# Compile Kops fuzzer
+compile_go_fuzzer k8s.io/kops/tests/fuzz FuzzWriteToken fuzz_write_token
+
+mv $SRC/kubernetes $GOPATH/src/k8s.io/
+
 function compile_fuzzer {
   local pkg=$1
   local function=$2
@@ -28,6 +33,7 @@ function compile_fuzzer {
   compile_go_fuzzer "k8s.io/kubernetes/test/fuzz/${pkg}" $function $fuzzer
 }
 
+# Compile Kubernetes fuzzers
 compile_fuzzer "yaml" "FuzzDurationStrict"
 compile_fuzzer "yaml" "FuzzMicroTimeStrict"
 compile_fuzzer "yaml" "FuzzSigYaml"

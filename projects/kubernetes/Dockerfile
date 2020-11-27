@@ -17,8 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN go get github.com/ianlancetaylor/demangle
-RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git $GOPATH/src/k8s.io/kubernetes
+RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git
 
-WORKDIR $GOPATH/src/k8s.io/kubernetes
+RUN go get k8s.io/kops
+WORKDIR $SRC/
 
-COPY build.sh $SRC/build.sh
+COPY build.sh $SRC/
