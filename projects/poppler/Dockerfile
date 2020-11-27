@@ -22,15 +22,6 @@ RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git
 RUN git clone --depth 1 https://github.com/uclouvain/openjpeg
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
-#RUN git clone --depth 1 https://gitlab.freedesktop.org/cairo/cairo.git
-#RUN git clone --branch 5.15 --depth 1 --shallow-submodules \
-        #--recurse-submodules=qtbase \
-        #--recurse-submodules=qtsvg \
-        #git://code.qt.io/qt/qt5.git qt
-#ADD http://ftp.gnome.org/pub/gnome/sources/pango/1.48/pango-1.48.0.tar.xz $SRC
-#RUN tar xvJf $SRC/pango-1.48.0.tar.xz
-#ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
-#RUN tar xvJf $SRC/glib-2.64.2.tar.xz
 RUN git clone --depth 1 https://gitlab.freedesktop.org/poppler/poppler.git
 
 RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
@@ -39,7 +30,4 @@ RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
 ADD https://raw.githubusercontent.com/google/fuzzing/master/dictionaries/pdf.dict $SRC/poppler.dict
 
 WORKDIR $SRC/poppler
-COPY targets/cpp $SRC/cpp-fuzzers
-COPY targets/glib $SRC/glib-fuzzers
-COPY targets/qt5 $SRC/qt5-fuzzers
 COPY build.sh *.patch $SRC/

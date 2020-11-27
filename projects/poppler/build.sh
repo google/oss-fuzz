@@ -27,20 +27,6 @@ rm -rf $WORK/*
 rm -rf $BUILD
 mkdir -p $BUILD
 
-#pushd $SRC/glib-2.64.2
-#meson \
-    #--prefix=$PREFIX \
-    #--libdir=lib \
-    #--default-library=static \
-    #-Db_lundef=false \
-    #-Doss_fuzz=enabled \
-    #-Dlibmount=disabled \
-    #-Dinternal_pcre=true \
-    #_builddir
-#ninja -C _builddir
-#ninja -C _builddir install
-#popd
-
 pushd $SRC/freetype2
 ./autogen.sh
 ./configure --prefix="$PREFIX" --disable-shared PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
@@ -63,42 +49,10 @@ autoreconf -fi
 make -j$(nproc)
 make install
 
-#pushd $SRC/cairo
-#meson \
-    #--prefix=$PREFIX \
-    #--libdir=lib \
-    #--default-library=static \
-    #_builddir
-#ninja -C _builddir
-#ninja -C _builddir install
-#popd
-
-#pushd $SRC/pango-1.48.0
-#meson \
-    #-Ddefault_library=static \
-    #--prefix=$PREFIX \
-    #--libdir=lib \
-    #_builddir
-#sed -i -e 's/ -Werror=implicit-fallthrough//g' _builddir/build.ninja
-#ninja -C _builddir
-#ninja -C _builddir install
-#popd
-
-#pushd $SRC/qt
-## Add the flags to Qt build, borrowed from qt
-#sed -i -e "s/QMAKE_CXXFLAGS    += -stdlib=libc++/QMAKE_CXXFLAGS    += -stdlib=libc++  $CXXFLAGS\nQMAKE_CFLAGS += $CFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
-#sed -i -e "s/QMAKE_LFLAGS      += -stdlib=libc++/QMAKE_LFLAGS      += -stdlib=libc++ -lpthread $CXXFLAGS/g" qtbase/mkspecs/linux-clang-libc++/qmake.conf
-## remove -fno-rtti which conflicts with -fsanitize=vptr when building with sanitizer undefined
-#sed -i -e "s/QMAKE_CXXFLAGS_RTTI_OFF    = -fno-rtti/QMAKE_CXXFLAGS_RTTI_OFF    = /g" qtbase/mkspecs/common/gcc-base.conf
-#MAKEFLAGS=-j$(nproc) $SRC/qt/configure -qt-libmd4c -platform linux-clang-libc++ -static -opensource -confirm-license -no-opengl -no-glib -nomake tests -nomake examples -prefix $PREFIX -D QT_NO_DEPRECATED_WARNINGS
-#make -j$(nproc) > /dev/null
-#make install
-#popd
-
-
 patch $SRC/poppler/cpp/tests/fuzzing/doc_fuzzer.cc < $SRC/df.patch
 patch $SRC/poppler/cpp/tests/fuzzing/page_label_fuzzer.cc < $SRC/plf.patch
 patch $SRC/poppler/cpp/tests/fuzzing/page_search_fuzzer.cc < $SRC/psf.patch
+
 # Poppler complains when PKG_CONFIG is set to `which pkg-config --static` so
 # temporarily removing it
 export PKG_CONFIG="`which pkg-config`"
@@ -126,17 +80,13 @@ cmake .. \
   -DCMAKE_PREFIX_PATH=$PREFIX
 
 export PKG_CONFIG="`which pkg-config` --static"
-#make -j$(nproc) poppler poppler-cpp poppler-glib poppler-qt5
-#make -j$(nproc) poppler poppler-cpp poppler-qt5
 make -j$(nproc) poppler poppler-cpp
 
 PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -lz -pthread -lrt -lpthread"
-#DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 lcms2 libopenjp2 libpng cairo cairo-gobject pango"
 DEPS="freetype2 lcms2 libopenjp2 libpng"
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
-#fuzzers=$(find $SRC/cpp-fuzzers/ -name "*_fuzzer.cc")
 fuzzers=$(find $SRC/poppler/cpp/tests/fuzzing/ -name "*_fuzzer.cc")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .cc)
@@ -151,46 +101,6 @@ for f in $fuzzers; do
     $LIB_FUZZING_ENGINE \
     -Wl,-Bdynamic
 done
-
-#fuzzers=$(find $SRC/glib-fuzzers/ -name "*_fuzzer.cc")
-#fuzzers=$(find $SRC/poppler/glib/tests/fuzzing/ -name "*_fuzzer.cc")
-#for f in $fuzzers; do
-  #fuzzer_name=$(basename $f .cc)
-
-  #$CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/glib -I$SRC/poppler/build/glib \
-    #$BUILD_CFLAGS \
-    #$f -o $OUT/$fuzzer_name \
-    #$PREDEPS_LDFLAGS \
-    #$SRC/poppler/build/glib/libpoppler-glib.a \
-    #$SRC/poppler/build/cpp/libpoppler-cpp.a \
-    #$SRC/poppler/build/libpoppler.a \
-    #$BUILD_LDFLAGS \
-    #$LIB_FUZZING_ENGINE \
-    #-Wl,-Bdynamic
-#done
-
-#PREDEPS_LDFLAGS="-Wl,-Bdynamic -ldl -lm -lc -lz -pthread -lrt -lpthread"
-#DEPS="freetype2 lcms2 libopenjp2 libpng Qt5Core Qt5Gui Qt5Xml"
-#BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
-#BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
-
-##fuzzers=$(find $SRC/qt5-fuzzers/ -name "*_fuzzer.cc")
-#fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
-#for f in $fuzzers; do
-  #fuzzer_name=$(basename $f .cc)
-
-  #$CXX $CXXFLAGS -std=c++11 -fPIC \
-    #-I$SRC/poppler/qt5/src \
-    #$BUILD_CFLAGS \
-    #$f -o $OUT/$fuzzer_name \
-    #$PREDEPS_LDFLAGS \
-    #$SRC/poppler/build/qt5/src/libpoppler-qt5.a \
-    #$SRC/poppler/build/cpp/libpoppler-cpp.a \
-    #$SRC/poppler/build/libpoppler.a \
-    #$BUILD_LDFLAGS \
-    #$LIB_FUZZING_ENGINE \
-    #-Wl,-Bdynamic
-#done
 
 mv $SRC/{*.zip,*.dict} $OUT
 
