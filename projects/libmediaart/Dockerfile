@@ -21,7 +21,7 @@ RUN pip3 install meson==0.55.3 ninja
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
 RUN tar xvJf $SRC/glib-2.64.2.tar.xz
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/gdk-pixbuf.git
-RUN git clone --depth 1 --single-branch --branch fuzzing https://gitlab.gnome.org/ceyhunalp/libmediaart.git
+RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libmediaart.git
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus.git && \
     git clone --depth 1 https://github.com/MozillaSecurity/fuzzdata.git && \
@@ -38,4 +38,5 @@ RUN awk 1 $SRC/*.dict > $SRC/libmediaart.dict && \
     rm -f $SRC/png.dict $SRC/jpeg.dict
 
 WORKDIR $SRC/libmediaart
-COPY build.sh $SRC/
+COPY targets $SRC/fuzzers
+COPY build.sh *.patch $SRC/

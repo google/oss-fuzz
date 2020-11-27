@@ -55,6 +55,15 @@ ninja -C _builddir
 ninja -C _builddir install
 popd
 
+# For building statically, libmediaart requires a gobject-introspection version
+# that is not available in apt. This patch adds a meson build option to disable
+# gobject-introspection. 
+patch $SRC/libmediaart/meson_options.txt $SRC/options.patch
+# This patch enables us to build the libmediaart library statically as the meson
+# file in the original repo explicitly uses "shared_library" for the target.
+# The patch also uses the meson option from the previous patch to optionally
+# disable gobject-introspection.
+patch $SRC/libmediaart/libmediaart/meson.build $SRC/meson-build.patch
 # Build libmediaart
 pushd $SRC/libmediaart
 meson \
@@ -81,10 +90,9 @@ DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 gdk-pixbuf-2.0"
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
-fuzzers=$(find $SRC/libmediaart/fuzzing/ -name "*_fuzzer.c")
+fuzzers=$(find $SRC/fuzzers -name "*_fuzzer.c")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .c)
-  if [[ $fuzzer_name != "process_file_fuzzer" && $fuzzer_name != "get_file_fuzzer" ]]; then
     $CC $CFLAGS $BUILD_CFLAGS -I. -c $f -o $WORK/${fuzzer_name}.o
     $CXX $CXXFLAGS \
         $WORK/${fuzzer_name}.o -o $OUT/${fuzzer_name} \
@@ -95,5 +103,4 @@ for f in $fuzzers; do
         -Wl,-Bdynamic
     ln -sf $SRC/libmediaart_seed_corpus.zip $OUT/${fuzzer_name}_seed_corpus.zip
     ln -sf $SRC/libmediaart.dict $OUT/${fuzzer_name}.dict
-  fi
 done
