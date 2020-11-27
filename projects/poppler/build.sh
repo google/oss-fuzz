@@ -129,7 +129,7 @@ DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 lcms2 libopenjp2 libpng
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
-fuzzers=$(find $SRC/poppler/cpp/tests/fuzzing/ -name "*_fuzzer.cc")
+fuzzers=$(find $SRC/cpp-fuzzers/ -name "*_fuzzer.cc")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .cc)
 
@@ -144,7 +144,7 @@ for f in $fuzzers; do
     -Wl,-Bdynamic
 done
 
-fuzzers=$(find $SRC/poppler/glib/tests/fuzzing/ -name "*_fuzzer.cc")
+fuzzers=$(find $SRC/glib-fuzzers/ -name "*_fuzzer.cc")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .cc)
 
@@ -165,7 +165,7 @@ DEPS="gmodule-2.0 glib-2.0 gio-2.0 gobject-2.0 freetype2 lcms2 libopenjp2 libpng
 BUILD_CFLAGS="$CFLAGS `pkg-config --static --cflags $DEPS`"
 BUILD_LDFLAGS="-Wl,-static `pkg-config --static --libs $DEPS`"
 
-fuzzers=$(find $SRC/poppler/qt5/tests/fuzzing/ -name "*_fuzzer.cc")
+fuzzers=$(find $SRC/qt5-fuzzers/ -name "*_fuzzer.cc")
 for f in $fuzzers; do
   fuzzer_name=$(basename $f .cc)
 
