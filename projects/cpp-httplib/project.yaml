@@ -6,7 +6,9 @@ auto_ccs :
   - "omkarjadhav@google.com"
   - "hlivingstone@google.com"
   - "kalaskar@google.com"
+  - "ankitlohia@google.com"
 sanitizers:
   - address
   - dataflow
   - undefined
+  - memory

@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool curl cma
 
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasm-tools wasm-tools
 
+RUN git clone --depth 1 https://github.com/bytecodealliance/regalloc.rs regalloc.rs
+
 RUN git clone --depth 1 https://github.com/bytecodealliance/wasmtime wasmtime
 WORKDIR wasmtime
 RUN git submodule update --init --recursive

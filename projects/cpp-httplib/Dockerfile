@@ -23,11 +23,6 @@ RUN apt-get install -y libbrotli-dev
 # Install zlib.
 RUN apt-get update && apt-get install -y zlib1g-dev
 
-# Install openssl 1.1.1
-RUN curl -o openssl-1.1.1f.tar.gz https://www.openssl.org/source/openssl-1.1.1f.tar.gz && \
-    tar xzvf  openssl-1.1.1f.tar.gz
-RUN cd openssl-1.1.1f && ./config && make && make install_sw
-
 RUN git clone --depth 1 https://github.com/yhirose/cpp-httplib.git cpp-httplib
 
 WORKDIR cpp-httplib

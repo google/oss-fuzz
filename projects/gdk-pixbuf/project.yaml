@@ -1,0 +1,6 @@
+homepage: https://gitlab.gnome.org/GNOME/gdk-pixbuf/
+language: c
+primary_contact: security-tps@google.com
+sanitizers:
+  - address
+  - undefined
