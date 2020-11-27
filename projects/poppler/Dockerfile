@@ -42,4 +42,4 @@ WORKDIR $SRC/poppler
 COPY targets/cpp $SRC/cpp-fuzzers
 COPY targets/glib $SRC/glib-fuzzers
 COPY targets/qt5 $SRC/qt5-fuzzers
-COPY build.sh $SRC/
+COPY build.sh *.patch $SRC/

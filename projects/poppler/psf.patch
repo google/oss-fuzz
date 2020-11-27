@@ -1,0 +1,11 @@
+--- page_search_fuzzer.cc	2020-11-27 20:58:29.789869975 +0000
++++ psf.cc	2020-11-27 21:11:17.709931998 +0000
+@@ -18,7 +18,7 @@
+ #include <poppler-page.h>
+ #include <poppler-page-renderer.h>
+ 
+-#include "FuzzedDataProvider.h"
++#include <fuzzer/FuzzedDataProvider.h>
+ 
+ const size_t input_size = 32;
+ 

@@ -1,0 +1,11 @@
+--- page_label_fuzzer.cc	2020-11-27 20:58:24.661442158 +0000
++++ plf.cc	2020-11-27 21:11:51.272731964 +0000
+@@ -18,7 +18,7 @@
+ #include <poppler-page.h>
+ #include <poppler-page-renderer.h>
+ 
+-#include "FuzzedDataProvider.h"
++#include <fuzzer/FuzzedDataProvider.h>
+ 
+ const size_t input_size = 32;
+ 

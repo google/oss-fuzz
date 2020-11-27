@@ -1,0 +1,11 @@
+--- doc_fuzzer.cc	2020-11-27 20:58:13.832538810 +0000
++++ df.cc	2020-11-27 21:11:52.056797377 +0000
+@@ -16,7 +16,7 @@
+ #include <poppler-document.h>
+ #include <poppler-global.h>
+ 
+-#include "FuzzedDataProvider.h"
++#include <fuzzer/FuzzedDataProvider.h>
+ 
+ const size_t input_size = 32;
+ const size_t count = 6;

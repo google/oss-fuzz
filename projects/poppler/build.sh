@@ -95,6 +95,10 @@ make -j$(nproc) > /dev/null
 make install
 popd
 
+
+patch $SRC/poppler/cpp/tests/fuzzing/doc_fuzzer.cc < df.patch
+patch $SRC/poppler/cpp/tests/fuzzing/page_label_fuzzer.cc < plf.patch
+patch $SRC/poppler/cpp/tests/fuzzing/page_search_fuzzer.cc < psf.patch
 # Poppler complains when PKG_CONFIG is set to `which pkg-config --static` so
 # temporarily removing it
 export PKG_CONFIG="`which pkg-config`"
