@@ -1,0 +1,9 @@
+homepage: "https://github.com/yuin/goldmark"
+primary_contact: ""
+auto_ccs :
+  - "m.aldofirmansyah@gmail.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
