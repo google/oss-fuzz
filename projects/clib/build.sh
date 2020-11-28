@@ -1,4 +1,4 @@
-#/bin/bash -eu
+#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,22 @@
 #
 ################################################################################
 
+cd clib
+make -j$(nproc)
 
-mkdir -p $GOPATH/src/github.com/gravitational
-cd $GOPATH/src/github.com/gravitational
-git clone https://github.com/gravitational/teleport.git
+sed 's/int main(int argc/int main2(int argc/g' -i ./src/clib-search.c
+sed 's/int main(int argc/int main2(int argc/g' -i ./src/clib-configure.c
 
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz
+find . -name "*.o" -exec ar rcs fuzz_lib.a {} \;
+
+$CC $CFLAGS -Wno-unused-function -U__STRICT_ANSI__  \
+	-DHAVE_PTHREADS=1 -pthread -o fuzz_manifest.o \
+	-c fuzz_manifest.c -I./asprintf -I./deps/ \
+	-I./deps/asprintf
+
+$CC $CFLAGS $LIB_FUZZING_ENGINE fuzz_manifest.o \
+	-o $OUT/fuzz_manifest src/common/clib-package.c \
+	src/common/clib-cache.c src/clib-configure.c \
+	-I./deps/asprintf -I./deps -I./asprintf \
+	fuzz_lib.a -L/usr/lib/x86_64-linux-gnu -lcurl
+
