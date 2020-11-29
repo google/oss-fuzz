@@ -1,0 +1,95 @@
+diff --git a/s2n.mk b/s2n.mk
+index 7bcca875..6d5e8a70 100644
+--- a/s2n.mk
++++ b/s2n.mk
+@@ -51,19 +51,6 @@ DEFAULT_CFLAGS += -pedantic -Wall -Werror -Wimplicit -Wunused -Wcomment -Wchar-s
+ COVERAGE_CFLAGS = -fprofile-arcs -ftest-coverage
+ COVERAGE_LDFLAGS = --coverage
+ 
+-FUZZ_CFLAGS = -fsanitize-coverage=trace-pc-guard -fsanitize=address,undefined,leak
+-
+-# Define FUZZ_COVERAGE - to be used for generating coverage reports on fuzz tests
+-#                !!! NOT COMPATIBLE WITH S2N_COVERAGE !!!
+-ifeq ($(FUZZ_COVERAGE), true)
+-	FUZZ_CFLAGS += -fprofile-instr-generate -fcoverage-mapping
+-else
+-	ifeq ($(S2N_COVERAGE), true)
+-		DEFAULT_CFLAGS += ${COVERAGE_CFLAGS}
+-		LIBS += ${COVERAGE_LDFLAGS}
+-	endif
+-endif
+-
+ ifdef FUZZ_TIMEOUT_SEC
+ 	DEFAULT_CFLAGS += -DS2N_FUZZ_TESTING=1
+ endif
+@@ -142,7 +129,7 @@ ifeq ($(S2N_UNSAFE_FUZZING_MODE),1)
+ 
+     # Turn on debugging and fuzzing flags when S2N_UNSAFE_FUZZING_MODE is enabled to give detailed stack traces in case
+     # an error occurs while fuzzing.
+-    CFLAGS += ${DEFAULT_CFLAGS} ${DEBUG_CFLAGS} ${FUZZ_CFLAGS}
++    CFLAGS += ${DEFAULT_CFLAGS} ${DEBUG_CFLAGS} 
+ 
+     # Filter out the visibility settings if we are fuzzing
+     CFLAGS := $(filter-out -fvisibility=hidden,$(CFLAGS))
+diff --git a/tests/fuzz/Makefile b/tests/fuzz/Makefile
+index 0658600c..e6a7e2b2 100644
+--- a/tests/fuzz/Makefile
++++ b/tests/fuzz/Makefile
+@@ -19,11 +19,6 @@ TESTS=$(SRCS:.c=)
+ CRYPTO_LDFLAGS = -L$(LIBCRYPTO_ROOT)/lib
+ SHELL:=/bin/bash
+ 
+-
+-ifndef LIBFUZZER_ROOT
+-    export LIBFUZZER_ROOT = $(shell echo "../../fuzz_dependencies")
+-endif
+-
+ ifndef FUZZ_TIMEOUT_SEC
+     export FUZZ_TIMEOUT_SEC=120
+ endif
+@@ -33,7 +28,7 @@ ifndef FUZZ_TESTS
+ endif
+ 
+ .PHONY : all
+-all : run_tests
++all : $(FUZZ_TESTS) ld-preload
+ 
+ include ../../s2n.mk
+ 
+@@ -41,35 +36,18 @@ CRUFT += $(wildcard *_test) $(wildcard fuzz-*.log) $(wildcard *_test_output.txt)
+ 
+ CFLAGS += -Wno-unreachable-code -O0 -I$(LIBCRYPTO_ROOT)/include/ -I../
+ LIBS += -L../testlib/ -ltests2n -L../../lib/ -ls2n
+-LDFLAGS += $(LIBFUZZER_ROOT)/lib/libFuzzer.a -lstdc++
++LDFLAGS += $(LIB_FUZZING_ENGINE) -lstdc++
+ LDFLAGS += ${CRYPTO_LDFLAGS} ${LIBS} ${CRYPTO_LIBS} -lm -ldl -lrt -pthread
+ 
+ DYLD_LIBRARY_PATH="../../lib/:../testlib/:$(LIBCRYPTO_ROOT)/lib:$$DYLD_LIBRARY_PATH"
+ LD_LIBRARY_PATH="../../lib/:../testlib/:$(LIBCRYPTO_ROOT)/lib:$$LD_LIBRARY_PATH"
+ 
+-ifdef AFL_FUZZ
+-    ifneq ($(FUZZ_COVERAGE), true)
+-        CFLAGS += $(LIBFUZZER_ROOT)/FuzzingEngine.a
+-    endif
+-endif
+-
+-
+ ld-preload :
+ 	${MAKE} -C LD_PRELOAD
+ 
+ $(TESTS)::
+ 	@${CC} ${CFLAGS} $@.c -o $@  ${LDFLAGS}
+ 
+-run_tests:: $(FUZZ_TESTS) ld-preload
+-	{ set -e; \
+-	for test_name in ${FUZZ_TESTS} ; do \
+-	export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}; \
+-	export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}; \
+-	export LIBCRYPTO_ROOT=${LIBCRYPTO_ROOT}; \
+-	./runFuzzTest.sh $${test_name} ${FUZZ_TIMEOUT_SEC}; done; \
+-	}
+-	./calcTotalCov.sh
+-
+ .PHONY : clean
+ clean: decruft
+ 	${MAKE} -C LD_PRELOAD decruft

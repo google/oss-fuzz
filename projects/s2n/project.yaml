@@ -1,0 +1,12 @@
+homepage: "https://github.com/awslabs/s2n"
+language: c
+primary_contact: "aweibel@amazon.com"
+auto_cc:
+  - "soco@amazon.com"
+  - "colm@apache.org"
+  - "aws-security@amazon.com"
+fuzzing_engines:
+  - libfuzzer
+architectures:
+  - x86_64
+  - i386
