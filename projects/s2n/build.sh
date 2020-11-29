@@ -34,12 +34,6 @@ export LIBCRYPTO_ROOT=${WORK}
 export S2N_ROOT=${SRC}/s2n
 git apply ../libfuzzer_engine.diff
 
-# Rename *_test.c to *_test.cc, we do this because clang++-12 doesnt support file with C extension
-FUZZERS=`ls tests/fuzz/*_test.c`
-for f in $FUZZERS; do
-  cp $f ${f}c
-done
-
 make fuzz -j$(nproc)
 cp tests/fuzz/*.c ${OUT}/
 cp tests/fuzz/*_test ${OUT}

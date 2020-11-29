@@ -7,5 +7,7 @@ auto_ccs:
   - "aws-security@amazon.com"
 fuzzing_engines:
   - libfuzzer
+  - afl
+  - honggfuzz
 architectures:
   - x86_64
