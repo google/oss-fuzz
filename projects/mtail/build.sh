@@ -15,12 +15,6 @@
 #
 ################################################################################
 
-# We've used git checkout, not go get to fetch the source so set up the GOPATH to find our source.
-export GOPATH=$GOPATH:/
-
-# go-fuzz-build doesn't like modules until https://github.com/dvyukov/go-fuzz/issues/195 is fixed
-# fetch and vendor all the dependencies so go-fuzz-build can find them
-make GO111MODULE=off --debug install_deps
-go mod vendor
-
-make GO111MODULE=off --debug $OUT/vm-fuzzer.dict $OUT/vm-fuzzer_seed_corpus.zip $OUT/vm-fuzzer
+compile_go_fuzzer github.com/google/mtail/internal/vm Fuzz vm-fuzzer
+# Make the dictionary and seed corpus.
+make --debug $OUT/vm-fuzzer.dict $OUT/vm-fuzzer_seed_corpus.zip
