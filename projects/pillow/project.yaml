@@ -1,0 +1,7 @@
+homepage: "https://github.com/python-pillow/Pillow"
+language: python
+primary_contact: "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
