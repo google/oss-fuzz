@@ -31,7 +31,7 @@ if [[ $SANITIZER = *coverage* ]]; then
   sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
   sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
 
-  echo "#/bin/sh" > $OUT/$fuzzer
+  echo "#!/bin/sh" > $OUT/$fuzzer
   echo "cd $path" >> $OUT/$fuzzer
   echo "go test -run Test${function}Corpus -v $tags -coverprofile \$1 " >> $OUT/$fuzzer
   chmod +x $OUT/$fuzzer

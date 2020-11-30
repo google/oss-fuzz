@@ -85,7 +85,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   # preloaded, so this is also done here to ensure compatibility and simplify
   # test case reproduction. Since this helper script is what OSS-Fuzz will
   # actually execute, it is also always required.
-  echo "#/bin/sh
+  echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 LD_PRELOAD=\$(dirname "\$0")/libclang_rt.asan-x86_64.so \$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
