@@ -22,7 +22,7 @@ primary_contact: "<primary_contact_email>"
 """
 
 DOCKER_TEMPLATE = """\
-# Copyright %(year)d Google Inc.
+# Copyright %(year)d Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ COPY build.sh $SRC/
 
 BUILD_TEMPLATE = """\
 #!/bin/bash -eu
-# Copyright %(year)d Google Inc.
+# Copyright %(year)d Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
