@@ -27,8 +27,8 @@ if [ "$FUZZING_LANGUAGE" = "python" ]; then
     echo "ERROR: Python projects can be fuzzed with libFuzzer engine only."
     exit 1
   fi
-  if [ "$SANITIZER" != "address" ]; then
-    echo "ERROR: Python projects can be fuzzed with AddressSanitizer only."
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "undefined" ]; then
+    echo "ERROR: Python projects can be fuzzed with AddressSanitizer and UndefinedBehaviorSanitizer only."
     exit 1
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
