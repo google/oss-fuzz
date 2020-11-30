@@ -42,14 +42,16 @@ The `language` attribute must be specified.
 language: python
 ```
 
-The only supported fuzzing engine and sanitizer are `libfuzzer` and `address`,
-respectively.
+The only supported fuzzing engine is libFuzzer (`libfuzzer`). The supported
+sanitizers are AddressSanitizer (`address`) and
+UndefinedBehaviorSanitizer (`undefined`). These must be explicitly specified.
 
 ```yaml
-sanitizers:
-  - address
 fuzzing_engines:
   - libfuzzer
+sanitizers:
+  - address
+  - undefined
 ```
 
 ### Dockerfile
