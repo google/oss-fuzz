@@ -147,7 +147,8 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (L == NULL) {
         return 0;
     }
-    dochunk(L, luaL_loadbuffer(L, data, size, "test"));
+    const char *mode = luaL_optstring(L, 3, "bt");
+    dochunk(L, luaL_loadbufferx(L, data, size, "test", mode));
 
     lua_close(L);
     return 0;
