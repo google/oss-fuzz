@@ -15,10 +15,6 @@
 #
 ################################################################################
 
-
-mkdir -p $GOPATH/src/github.com/gravitational
-cd $GOPATH/src/github.com/gravitational
-git clone https://github.com/gravitational/teleport.git
-
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz
+compile_go_fuzzer github.com/gravitational/telegraf/testutil/fuzzing FuzzCsvParser fuzz_csv_parser
+compile_go_fuzzer github.com/gravitational/telegraf/testutil/fuzzing FuzzCsvParseLine fuzz_csv_parse_Line
+compile_go_fuzzer github.com/gravitational/telegraf/testutil/fuzzing FuzzJSONParse fuzz_json_parse
