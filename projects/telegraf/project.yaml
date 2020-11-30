@@ -1,4 +1,4 @@
-homepage: "https://github.com/gravitational/telegraf"
+homepage: "https://github.com/influxdata/telegraf"
 primary_contact: ""
 auto_ccs :
   - "adam@adalogics.com"
