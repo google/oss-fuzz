@@ -7,7 +7,7 @@ nav_order: 3
 permalink: /getting-started/new-project-guide/python-lang/
 ---
 
-# Integrating a Rust project
+# Integrating a Python project
 {: .no_toc}
 
 - TOC
