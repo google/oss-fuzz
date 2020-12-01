@@ -120,10 +120,12 @@ def fix_git_repo_for_diff(repo_dir):
 def check_project_src_path(project_src_path):
   """Returns True if |project_src_path| exists."""
   if not os.path.exists(project_src_path):
-    logging.error('PROJECT_SRC_PATH: %s does not exist. '
-                  'Are you mounting it correctly?', project_src_path)
+    logging.error(
+        'PROJECT_SRC_PATH: %s does not exist. '
+        'Are you mounting it correctly?', project_src_path)
     return False
   return True
+
 
 # pylint: disable=too-many-arguments
 
@@ -191,9 +193,10 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
     and then removes the unaffectted fuzzers. Returns True on success."""
-    methods = [self.build_image_and_checkout_src,
-               self.build_fuzzers,
-               self.remove_unaffected_fuzzers]
+    methods = [
+        self.build_image_and_checkout_src, self.build_fuzzers,
+        self.remove_unaffected_fuzzers
+    ]
     for method in methods:
       if not method():
         return False
@@ -263,8 +266,7 @@ class InternalGithubBuilder(BaseBuilder):
             self.project_name, repo_name=self.project_repo_name))
 
     if not inferred_url or not self.image_repo_path:
-      logging.error('Could not detect repo from project %s.',
-                    self.project_name)
+      logging.error('Could not detect repo from project %s.', self.project_name)
       return False
 
     git_workspace = os.path.join(self.workspace, 'storage')
@@ -363,8 +365,8 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
 
   # Get the builder and then build the fuzzers.
   builder = get_builder(project_name, project_repo_name, workspace, pr_ref,
-                          commit_sha, sanitizer, project_src_path,
-                          build_integration_path)
+                        commit_sha, sanitizer, project_src_path,
+                        build_integration_path)
   return builder.build()
 
 

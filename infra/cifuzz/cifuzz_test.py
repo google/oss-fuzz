@@ -106,7 +106,6 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     project_name = 'external-project'
     project_src_path = os.path.join(TEST_FILES_PATH, project_name)
     build_integration_path = os.path.join(project_src_path, 'oss-fuzz')
-    commit_sha = '0b95fe1039ed7c38fea1f97078316bfc1030c523'
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
