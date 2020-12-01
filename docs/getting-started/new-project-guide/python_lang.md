@@ -72,6 +72,10 @@ explaining why each step is necessary and when they can be omitted.
 # for projects with C extensions so that they're built with the proper flags.
 pip3 install .
 
+# Copy common libraries needed for stack symbolization.
+cp $(python3 -c "import atheris; print(atheris.path())") $OUT
+cp $(ldd `which python3` | grep libpython | cut -f3 -d' ') $OUT
+
 # Build fuzzers into $OUT. These could be detected in other ways.
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
