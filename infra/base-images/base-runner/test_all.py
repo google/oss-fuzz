@@ -132,7 +132,7 @@ def test_all(pool, out, initial_out):
   broken_targets_percentage = 100 * broken_targets_count / total_targets_count
   for broken_target, result in broken_targets:
     print(broken_target)
-    sys.stdout.buffer.write(result.stdout + result.stderr + '\n')
+    sys.stdout.buffer.write(result.stdout + result.stderr + b'\n')
 
   allowed_broken_targets_percentage = int(
       os.getenv('ALLOWED_BROKEN_TARGETS_PERCENTAGE', '10'))
