@@ -24,8 +24,6 @@ import subprocess
 import stat
 import sys
 
-VALID_TARGETS_DIR = '/tmp/valid_fuzz_targets'
-BROKEN_TARGETS_DIR = '/tmp/broken_fuzz_targets'
 TMP_FUZZER_DIR = '/tmp/not-out'
 
 EXECUTABLE = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
@@ -113,8 +111,6 @@ def test_all(pool, out, initial_out):
   # TODO(metzman): Refactor so that we can conver test_one to python.
   # Use a fake OUT directory to catch path hardcoding that breaks on
   # ClusterFuzz.
-  recreate_directory(VALID_TARGETS_DIR)
-  recreate_directory(BROKEN_TARGETS_DIR)
   recreate_directory(TMP_FUZZER_DIR)
   try:
     # Set this so that run_fuzzer which is called by bad_build_check works
