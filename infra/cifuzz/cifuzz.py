@@ -280,6 +280,7 @@ class InternalGithubBuilder(BaseBuilder):
     self.host_repo_path = self.repo_manager.repo_dir
 
     checkout_specified_commit(self.repo_manager, self.pr_ref, self.commit_sha)
+    print('self.host_repo_path', os.listdir(self.host_repo_path))
     return True
 
 
