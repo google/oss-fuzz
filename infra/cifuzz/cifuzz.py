@@ -266,6 +266,7 @@ class InternalGithubBuilder(BaseBuilder):
             self.project_name, repo_name=self.project_repo_name))
 
     print('self.image_repo_path', self.image_repo_path)
+    logging.info('self.image_repo_path ' + self.image_repo_path)
     if not inferred_url or not self.image_repo_path:
       logging.error('Could not detect repo from project %s.', self.project_name)
       return False
@@ -280,7 +281,8 @@ class InternalGithubBuilder(BaseBuilder):
     self.host_repo_path = self.repo_manager.repo_dir
 
     checkout_specified_commit(self.repo_manager, self.pr_ref, self.commit_sha)
-    print('self.host_repo_path', os.listdir(self.host_repo_path))
+    print('self.host_repo_path', str(os.listdir(self.host_repo_path)))
+    logging.info('self.host_repo_path ' +str(os.listdir(self.host_repo_path)))
     return True
 
 
