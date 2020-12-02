@@ -265,7 +265,6 @@ class InternalGithubBuilder(BaseBuilder):
         build_specified_commit.detect_main_repo(
             self.project_name, repo_name=self.project_repo_name))
 
-    print('self.image_repo_path', self.image_repo_path)
     logging.info('self.image_repo_path ' + self.image_repo_path)
     if not inferred_url or not self.image_repo_path:
       logging.error('Could not detect repo from project %s.', self.project_name)
@@ -281,7 +280,6 @@ class InternalGithubBuilder(BaseBuilder):
     self.host_repo_path = self.repo_manager.repo_dir
 
     checkout_specified_commit(self.repo_manager, self.pr_ref, self.commit_sha)
-    print('self.host_repo_path', str(os.listdir(self.host_repo_path)))
     logging.info('self.host_repo_path ' +str(os.listdir(self.host_repo_path)))
     return True
 
@@ -321,7 +319,6 @@ def get_builder(project_name, project_repo_name, workspace, pr_ref, commit_sha,
                 sanitizer, project_src_path, build_integration_path):
   """Determines what kind of build is being requested using the arguments
   provided and instantiates and returns the correct builder object."""
-  print('YOOOO')
   if build_integration_path and project_src_path:
     # Non-OSS-Fuzz projects must bring their own source and their own build
     # integration (which is relative to that source).
@@ -334,7 +331,6 @@ def get_builder(project_name, project_repo_name, workspace, pr_ref, commit_sha,
     # source since the checkout logic CIFuzz implements is github-specific.
     # TODO(metzman): Consider moving Github-actions builds of OSS-Fuzz projects
     # to this system to reduce implementation complexity.
-    print('project_src_path', project_src_path)
     return InternalGenericCiBuilder(project_name, project_repo_name, workspace,
                                     sanitizer, project_src_path)
 

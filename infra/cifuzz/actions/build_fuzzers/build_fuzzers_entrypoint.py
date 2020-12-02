@@ -41,9 +41,10 @@ def get_project_src_path(workspace):
   # project_src_path.
   path = os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
   if not path:
-    print('no project_src_path')
+    logging.debug('No PROJECT_SRC_PATH.')
     return path
-  print('initial project_src_path', path)
+
+  logging.debug('PROJECT_SRC_PATH set.')
   if os.path.isabs(path):
     return path
 
