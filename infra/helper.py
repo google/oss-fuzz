@@ -618,7 +618,7 @@ def check_build(args):
   if args.fuzzer_name:
     run_args += ['test_one', os.path.join('/out', args.fuzzer_name)]
   else:
-    run_args.append('test_all')
+    run_args.append('test_all.py')
 
   exit_code = docker_run(run_args)
   if exit_code == 0:

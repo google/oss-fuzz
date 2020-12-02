@@ -40,22 +40,6 @@ RUN apt-get install -y \
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage
 RUN pip3 install -r /opt/code_coverage/requirements.txt
 
-COPY bad_build_check \
-    collect_dft \
-    coverage \
-    coverage_helper \
-    dataflow_tracer.py \
-    download_corpus \
-    minijail0 \
-    reproduce \
-    run_fuzzer \
-    run_minijail \
-    parse_options.py \
-    targets_list \
-    test_all \
-    test_one \
-    /usr/local/bin/
-
 # Default environment options for various sanitizers.
 # Note that these match the settings used in ClusterFuzz and
 # shouldn't be changed unless a corresponding change is made on
@@ -81,3 +65,20 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 # Set up Golang coverage modules.
 RUN go get github.com/google/oss-fuzz/infra/go/coverage/...
+
+# Do this last to make developing these files easier/faster due to caching.
+COPY bad_build_check \
+    collect_dft \
+    coverage \
+    coverage_helper \
+    dataflow_tracer.py \
+    download_corpus \
+    minijail0 \
+    reproduce \
+    run_fuzzer \
+    run_minijail \
+    parse_options.py \
+    targets_list \
+    test_all.py \
+    test_one \
+    /usr/local/bin/
