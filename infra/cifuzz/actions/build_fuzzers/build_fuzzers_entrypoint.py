@@ -40,8 +40,10 @@ def get_project_src_path(workspace):
   # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
   # project_src_path.
   path = os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
-  if path is None:
+  if not path:
+    print('no project_src_path')
     return path
+  print('initial project_src_path', path)
   if os.path.isabs(path):
     return path
 
