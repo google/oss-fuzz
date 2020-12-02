@@ -14,33 +14,32 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Functions to help with wrapper scripts."""
 from __future__ import print_function
 
-import contextlib
 import os
 import subprocess
 
 
-def DpkgHostArchitecture():
+def dpkg_host_architecture():
   """Return the host architecture."""
-  return subprocess.check_output(
-      ['dpkg-architecture', '-qDEB_HOST_GNU_TYPE']).strip()
+  return subprocess.check_output(['dpkg-architecture',
+                                  '-qDEB_HOST_GNU_TYPE']).strip()
 
 
-def InstallWrapper(bin_dir, name, contents, extra_names=None):
+def install_wrapper(bin_dir, name, contents, extra_names=None):
   """Install a custom wrapper script into |bin_dir|."""
   path = os.path.join(bin_dir, name)
-  with open(path, 'w') as f:
-    f.write(contents)
+  with open(path, 'w') as wrapper_file:
+    wrapper_file.write(contents)
 
-  os.chmod(path, 0755)
+  os.chmod(path, 0o755)
 
   if extra_names:
-    CreateSymlinks(path, bin_dir, extra_names)
+    create_symlinks(path, bin_dir, extra_names)
 
 
-def CreateSymlinks(original_path, bin_dir, extra_names):
+def create_symlinks(original_path, bin_dir, extra_names):
   """Create symlinks."""
   for extra_name in extra_names:
     extra_path = os.path.join(bin_dir, extra_name)

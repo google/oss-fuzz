@@ -14,24 +14,22 @@
 # limitations under the License.
 #
 ################################################################################
-
-import os
-import shutil
-
+"""Custom options for gnutls28."""
 import package
 import wrapper_utils
 
 
-class Package(package.Package):
+class Package(package.Package):  # pylint: disable=too-few-public-methods
   """gnutls28 package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('gnutls28', apt_version)
 
-  def PreBuild(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, _source_directory, _env, custom_bin_dir):  # pylint: disable=no-self-use
+    """Pre-build configuration for gnutls28."""
     configure_wrapper = (
         '#!/bin/bash\n'
         '/usr/bin/dh_auto_configure "$@" --disable-hardware-acceleration')
 
-    wrapper_utils.InstallWrapper(
-        custom_bin_dir, 'dh_auto_configure', configure_wrapper)
+    wrapper_utils.InstallWrapper(custom_bin_dir, 'dh_auto_configure',
+                                 configure_wrapper)
