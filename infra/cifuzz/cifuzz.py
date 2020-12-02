@@ -319,6 +319,7 @@ def get_builder(project_name, project_repo_name, workspace, pr_ref, commit_sha,
                 sanitizer, project_src_path, build_integration_path):
   """Determines what kind of build is being requested using the arguments
   provided and instantiates and returns the correct builder object."""
+  print('YOOOO')
   if build_integration_path and project_src_path:
     # Non-OSS-Fuzz projects must bring their own source and their own build
     # integration (which is relative to that source).
