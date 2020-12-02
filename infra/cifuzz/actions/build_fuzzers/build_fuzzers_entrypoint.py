@@ -107,7 +107,6 @@ def main():
   else:
     pr_ref = None
 
-  # !!! log info.
   if not cifuzz.build_fuzzers(oss_fuzz_project_name,
                               github_repo_name,
                               workspace,
