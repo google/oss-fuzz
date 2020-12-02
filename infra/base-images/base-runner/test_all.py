@@ -74,7 +74,6 @@ def do_bad_build_check(fuzz_target):
   Subprocess.ProcessResult."""
   print('INFO: performing bad build checks for', fuzz_target)
   command = ['bad_build_check', fuzz_target]
-  print(command)
   return subprocess.run(command,
                         stderr=subprocess.PIPE,
                         stdout=subprocess.PIPE,
@@ -122,7 +121,6 @@ def test_all(pool, out, initial_out):
     # properly.
     move_directory_contents(initial_out, out)
     fuzz_targets = find_fuzz_targets(out)
-    print(fuzz_targets)
     bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
   finally:
     move_directory_contents(out, initial_out)
@@ -138,7 +136,7 @@ def test_all(pool, out, initial_out):
   broken_targets_percentage = 100 * broken_targets_count / total_targets_count
   for broken_target, result in broken_targets:
     print(broken_target)
-    sys.stdout.buffer.write(result.stdout + result.stderr)
+    sys.stdout.buffer.write(result.stdout + result.stderr + '\n')
 
   allowed_broken_targets_percentage = int(
       os.getenv('ALLOWED_BROKEN_TARGETS_PERCENTAGE', '10'))
