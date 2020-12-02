@@ -259,7 +259,7 @@ class InternalGithubBuilder(BaseBuilder):
     """Builds the project builder image for a non-OSS-Fuzz project. Sets the
     repo manager and host_repo_path. Checks out source code of project with
     patch under test. Returns True on success."""
-    logging.info('Building OSS-Fuzz project.')
+    logging.info('Building OSS-Fuzz project on Github Actions.')
     # detect_main_repo builds the image as a side effect.
     inferred_url, self.image_repo_path = (
         build_specified_commit.detect_main_repo(
