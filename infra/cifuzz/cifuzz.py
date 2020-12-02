@@ -334,6 +334,7 @@ def get_builder(project_name, project_repo_name, workspace, pr_ref, commit_sha,
     # source since the checkout logic CIFuzz implements is github-specific.
     # TODO(metzman): Consider moving Github-actions builds of OSS-Fuzz projects
     # to this system to reduce implementation complexity.
+    print('project_src_path', project_src_path)
     return InternalGenericCiBuilder(project_name, project_repo_name, workspace,
                                     sanitizer, project_src_path)
 
