@@ -1,5 +1,5 @@
 homepage: "https://github.com/istio/istio"
-primary_contact: ""
+primary_contact: "istio-security-vulnerability-reports@googlegroups.com"
 auto_ccs :
   - "adam@adalogics.com"
   - "howardjohn@google.com"
