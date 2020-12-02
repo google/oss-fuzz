@@ -265,6 +265,7 @@ class InternalGithubBuilder(BaseBuilder):
         build_specified_commit.detect_main_repo(
             self.project_name, repo_name=self.project_repo_name))
 
+    print('self.image_repo_path', self.image_repo_path)
     if not inferred_url or not self.image_repo_path:
       logging.error('Could not detect repo from project %s.', self.project_name)
       return False
