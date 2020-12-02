@@ -1,0 +1,6 @@
+{
+  "name": "build-status",
+  "short_name": "build-status",
+  "start_url": "/",
+  "display": "standalone"
+}
