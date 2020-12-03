@@ -187,7 +187,7 @@ def get_allowed_broken_targets_percentage():
   """Returns the value of the environment value
   'ALLOWED_BROKEN_TARGETS_PERCENTAGE' as an int or returns a reasonable
   default."""
-  return int(os.getenv('ALLOWED_BROKEN_TARGETS_PERCENTAGE', '10'))
+  return int(os.getenv('ALLOWED_BROKEN_TARGETS_PERCENTAGE') or '10')
 
 
 def main():
