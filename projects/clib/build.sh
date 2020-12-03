@@ -25,7 +25,7 @@ find . -name "*.o" -exec ar rcs fuzz_lib.a {} \;
 
 $CC $CFLAGS -Wno-unused-function -U__STRICT_ANSI__  \
 	-DHAVE_PTHREADS=1 -pthread -o fuzz_manifest.o \
-	-c fuzz_manifest.c -I./asprintf -I./deps/ \
+	-c test/fuzzing/fuzz_manifest.c -I./asprintf -I./deps/ \
 	-I./deps/asprintf
 
 $CC $CFLAGS $LIB_FUZZING_ENGINE fuzz_manifest.o \
