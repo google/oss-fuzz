@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/grafana/loki/fuzz FuzzParseExpr fuzz_parse_expr
+compile_go_fuzzer github.com/grafana/loki/pkg/logql FuzzParseExpr fuzz_parse_expr
