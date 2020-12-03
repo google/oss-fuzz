@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Copyright 2017 Google Inc.
+#!/bin/bash -eu
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
-"""Custom options for boost1.58."""
-import package
 
+sed "s/CFLAGS=/CFLAGS+=/g" -i $SRC/lua/makefile
+sed "s/MYLDFLAGS=/MYLDFLAGS=${CFLAGS} /g" -i $SRC/lua/makefile
+sed "s/CC= gcc/CC= ${CC}/g" -i $SRC/lua/makefile
 
-class Package(package.Package):  # pylint: disable=too-few-public-methods
-  """boost1.58 package."""
-
-  def __init__(self, apt_version):
-    super(Package, self).__init__('boost1.58', apt_version)
-
-  def pre_build(self, _source_directory, env, _custom_bin_dir):  # pylint: disable=no-self-use
-    """Pre-build configuration for boost1.58."""
-    # Otherwise py_nonblocking.cpp fails to build.
-    env['DEB_CXXFLAGS_APPEND'] += ' -std=c++98'
+cd $SRC/lua
+make
+cp ../fuzz_lua.c .
+$CC $CFLAGS -c fuzz_lua.c -o fuzz_lua.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_lua.o -o $OUT/fuzz_lua ./liblua.a

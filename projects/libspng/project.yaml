@@ -9,5 +9,3 @@ architectures:
 sanitizers:
   - address
   - undefined
-  - memory
-  

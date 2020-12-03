@@ -25,6 +25,13 @@ jobs:
           sudo env "PATH=$PATH" pip install -r infra/ci/requirements.txt
           sudo env "PATH=$PATH" pip install -r infra/build/functions/requirements.txt
 
+      - name: Install python-apt
+        run: |
+          git clone https://salsa.debian.org/apt-team/python-apt.git -b 1.6.5ubuntu0.3 --depth 1 /tmp/python-apt
+          cd /tmp/python-apt
+          sudo env "PATH=$PATH" apt build-dep ./
+          sudo env "PATH=$PATH" python setup.py install
+
       - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: '298.0.0'

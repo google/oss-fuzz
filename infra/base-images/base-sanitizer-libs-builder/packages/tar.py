@@ -14,15 +14,16 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Custom options for tar."""
 import package
 
 
-class Package(package.Package):
+class Package(package.Package):  # pylint: disable=too-few-public-methods
   """tar package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('tar', apt_version)
 
-  def PreBuild(self, source_directory, env, custom_bin_dir):
+  def pre_build(self, _source_directory, env, _custom_bin_dir):  # pylint: disable=no-self-use
+    """Pre-build configuration for tar."""
     env['FORCE_UNSAFE_CONFIGURE'] = '1'

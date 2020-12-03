@@ -7,7 +7,7 @@ nav_order: 3
 permalink: /getting-started/new-project-guide/python-lang/
 ---
 
-# Integrating a Rust project
+# Integrating a Python project
 {: .no_toc}
 
 - TOC
@@ -42,14 +42,16 @@ The `language` attribute must be specified.
 language: python
 ```
 
-The only supported fuzzing engine and sanitizer are `libfuzzer` and `address`,
-respectively.
+The only supported fuzzing engine is libFuzzer (`libfuzzer`). The supported
+sanitizers are AddressSanitizer (`address`) and
+UndefinedBehaviorSanitizer (`undefined`). These must be explicitly specified.
 
 ```yaml
-sanitizers:
-  - address
 fuzzing_engines:
   - libfuzzer
+sanitizers:
+  - address
+  - undefined
 ```
 
 ### Dockerfile
@@ -91,7 +93,7 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 LD_PRELOAD=\$(dirname "\$0")/libclang_rt.asan-x86_64.so \
-ASAN_OPTIONS=\$ASAN_OPTIONS:detect_leaks=0 \
+ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:detect_leaks=0 \
 \$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done

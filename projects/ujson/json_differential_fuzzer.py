@@ -71,8 +71,8 @@ def TestOneInput(input_bytes):
 
   # Uncomment these lines to ignore the errors described in the docstring of
   # this file.
-  json_data = ClearAllIntegers(json_data)
-  ujson_data = ClearAllIntegers(ujson_data)
+  # json_data = ClearAllIntegers(json_data)
+  # ujson_data = ClearAllIntegers(ujson_data)
 
   json_dumped = json.dumps(json_data)
   ujson_dumped = json.dumps(ujson_data)
