@@ -1,6 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2020 Google Inc.
-# Copyright 2020 Luca Boccassi <bluca@debian.org>
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,11 +15,14 @@
 #
 ################################################################################
 
-cd $SRC/rocksdb
-make static_lib -j$(nproc)
+cd $SRC/LPM
+export PKG_CONFIG_PATH=$PWD:$PWD/external.protobuf/lib/pkgconfig/
+export PATH=$PWD/external.protobuf/bin:$PATH
 
-# Copy options out
-cp $SRC/*options $OUT/
+cd $SRC/rocksdb/fuzz
+export FUZZ_ENV=ossfuzz
+export CC=$CXX
+make db_fuzzer
+make sst_file_writer_fuzzer
 
-$CXX $CXXFLAGS -c ./db/fuzz_db.cc -o fuzz_db.o -I./include
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_db.o -o $OUT/fuzz_db ./librocksdb.a -lpthread -lrt -ldl  -ldl -lpthread
+cp *_fuzzer $OUT/

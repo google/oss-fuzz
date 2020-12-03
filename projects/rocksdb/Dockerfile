@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool gettext pkg-config build-essential
+RUN apt-get update && apt-get install -y make autoconf automake libtool gettext pkg-config build-essential zlib1g-dev libbz2-dev cmake ninja-build liblzma-dev libtool autoconf
 RUN git clone --depth 1 https://github.com/facebook/rocksdb
 
 WORKDIR $SRC/
+
+RUN git clone --depth 1 https://github.com/google/libprotobuf-mutator.git
+RUN (mkdir LPM && cd LPM && cmake ../libprotobuf-mutator -GNinja -DLIB_PROTO_MUTATOR_DOWNLOAD_PROTOBUF=ON -DLIB_PROTO_MUTATOR_TESTING=OFF -DCMAKE_BUILD_TYPE=Release && ninja && ninja install)
+
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/
