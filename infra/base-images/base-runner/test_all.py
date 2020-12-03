@@ -35,7 +35,7 @@ IGNORED_TARGETS = [
     r'fuzz_compression_sas_rle', r'ares_*_fuzzer'
 ]
 
-IGNORED_TARGETS_RE = re.compile(r'|'.join(IGNORED_TARGETS))
+IGNORED_TARGETS_RE = re.compile('^' + r'$|^'.join(IGNORED_TARGETS) + '$')
 
 
 def recreate_directory(directory):
