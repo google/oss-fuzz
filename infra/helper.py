@@ -61,6 +61,12 @@ PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 # Languages from project.yaml that have code coverage support.
 LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
 
+# not all the world is docker
+if os.path.exists('/bin/podman'):
+  CONTAINER_ENGINE = 'podman'
+else:
+  CONTAINER_ENGINE = 'docker'
+
 
 def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-many-statements
   """Get subcommand from program arguments and do it."""
@@ -239,7 +245,7 @@ def check_project_exists(project_name):
 
 def _check_fuzzer_exists(project_name, fuzzer_name):
   """Checks if a fuzzer exists."""
-  command = ['docker', 'run', '--rm']
+  command = [CONTAINER_ENGINE, 'run', '--rm']
   command.extend(['-v', '%s:/out' % _get_output_dir(project_name)])
   command.append('ubuntu:16.04')
 
@@ -405,7 +411,10 @@ def _workdir_from_dockerfile(project_name):
 
 def docker_run(run_args, print_output=True):
   """Call `docker run`."""
-  command = ['docker', 'run', '--rm', '--privileged']
+  command = [CONTAINER_ENGINE, 'run', '--rm']
+
+  if CONTAINER_ENGINE != 'podman':
+    command.append('--privileged')
 
   # Support environments with a TTY.
   if sys.stdin.isatty():
@@ -428,7 +437,7 @@ def docker_run(run_args, print_output=True):
 
 def docker_build(build_args, pull=False):
   """Call `docker build`."""
-  command = ['docker', 'build']
+  command = [CONTAINER_ENGINE, 'build']
   if pull:
     command.append('--pull')
 
@@ -446,7 +455,7 @@ def docker_build(build_args, pull=False):
 
 def docker_pull(image):
   """Call `docker pull`."""
-  command = ['docker', 'pull', image]
+  command = [CONTAINER_ENGINE, 'pull', image]
   print('Running:', _get_command_string(command))
 
   try:
