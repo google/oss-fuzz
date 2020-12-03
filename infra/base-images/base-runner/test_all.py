@@ -53,6 +53,14 @@ def move_directory_contents(src_directory, dst_directory):
     shutil.move(src_path, dst_directory)
 
 
+def is_elf(filepath):
+  """Returns True if |filepath| is an ELF file."""
+  result = subprocess.run(['file', filepath],
+                          stdout=subprocess.PIPE,
+                          check=False)
+  return b'ELF' in result.stdout
+
+
 def find_fuzz_targets(directory, fuzzing_language):
   """Returns paths to fuzz targets in |directory|."""
   # TODO(https://github.com/google/oss-fuzz/issues/4585): Use libClusterFuzz for
@@ -70,8 +78,8 @@ def find_fuzz_targets(directory, fuzzing_language):
       binary_contents = file_handle.read()
       if b'LLVMFuzzerTestOneInput' not in binary_contents:
         continue
-      if fuzzing_language != 'python' and b'ELF' not in binary_contents:
-        continue
+    if fuzzing_language != 'python' and not is_elf(path):
+      continue
     fuzz_targets.append(path)
   return fuzz_targets
 
