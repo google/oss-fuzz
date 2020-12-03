@@ -856,6 +856,17 @@ def run_fuzzer(args):
   return docker_run(run_args)
 
 
+def fix_selinux_context(path):
+  """Changes SELinux type of given file or directory to make it accessible for container engine"""
+  try:
+    subprocess.check_call(['chcon', path, '-t', 'container_file_t'])
+  except subprocess.CalledProcessError as error:
+    print(
+        'Failed to change SELinux context of %s. It might not be accessible to container'
+        % path)
+    print(error)
+
+
 def reproduce(args):
   """Reproduce a specific test case from a specific project."""
   return reproduce_impl(args.project_name, args.fuzzer_name, args.valgrind,
@@ -891,6 +902,11 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
 
   if env_to_add:
     env += env_to_add
+
+  # for podman, we need to make sure the mounted testcase has proper SELinux context
+  # to be accessible by the container
+  if CONTAINER_ENGINE == 'podman':
+    fix_selinux_context(testcase_path)
 
   run_args = _env_to_docker_args(env) + [
       '-v',
