@@ -30,6 +30,7 @@ TMP_FUZZER_DIR = '/tmp/not-out'
 EXECUTABLE = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
 
 IGNORED_TARGETS = [
+    r'do_stuff_fuzzer',
     r'checksum_fuzzer', r'fuzz_dump', r'fuzz_keyring', r'xmltest',
     r'fuzz_compression_sas_rle', r'ares_*_fuzzer'
 ]
@@ -101,7 +102,6 @@ def get_broken_fuzz_targets(bad_build_results, fuzz_targets):
 def has_ignored_targets(out_dir):
   """Returns True if |out_dir| has any fuzz targets we are supposed to ignore
   bad build checks of."""
-  print('YOOO')
   out_files = set(os.listdir(out_dir))
   for filename in out_files:
     if re.match(IGNORED_TARGETS_RE, filename):
@@ -152,7 +152,7 @@ def test_all(out, fuzzing_language, allowed_broken_targets_percentage):
   if not broken_targets_count:
     return True
 
-  print('Broken fuzz targets ', broken_targets_count)
+  print('Broken fuzz targets', broken_targets_count)
   total_targets_count = len(fuzz_targets)
   broken_targets_percentage = 100 * broken_targets_count / total_targets_count
   for broken_target, result in broken_targets:
@@ -165,6 +165,7 @@ def test_all(out, fuzzing_language, allowed_broken_targets_percentage):
           'broken. See the list above for a detailed information.'.format(
               broken_targets_percentage=broken_targets_percentage))
     if has_ignored_targets(out):
+      print('Build check automatically passing because of ignored targets.')
       return True
     return False
   print('{total_targets_count} fuzzers total, {broken_targets_count} '
