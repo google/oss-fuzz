@@ -5,6 +5,7 @@ auto_ccs:
   - "alex@alexcrichton.com"
   - "till@tillschneidereit.net"
   - "ydelendik@mozilla.com"
+  - "cfallin@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:

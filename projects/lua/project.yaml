@@ -1,0 +1,6 @@
+homepage: "https://github.com/lua/lua"
+language: c
+primary_contact: "roberto@inf.puc-rio.br"
+auto_ccs:
+  - "fuzz@llua.org"
+  - "david@adalogics.com"

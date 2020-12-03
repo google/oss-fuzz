@@ -14,28 +14,28 @@
 # limitations under the License.
 #
 ################################################################################
-
+"""Custom configure options for nettle."""
 import os
 import shutil
 
 import package
 
 
-def AddNoAsmArg(config_path):
+def add_no_asm_arg(config_path):
   """Add --disable-assembler to config scripts."""
   shutil.move(config_path, config_path + '.real')
-  with open(config_path, 'w') as f:
-    f.write(
-        '#!/bin/sh\n'
-        '%s.real --disable-assembler "$@"\n' % config_path)
-  os.chmod(config_path, 0755)
+  with open(config_path, 'w') as config_file:
+    config_file.write('#!/bin/sh\n'
+                      '%s.real --disable-assembler "$@"\n' % config_path)
+  os.chmod(config_path, 0o755)
 
 
-class Package(package.Package):
+class Package(package.Package):  # pylint: disable=too-few-public-methods
   """nettle package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('nettle', apt_version)
 
-  def PreBuild(self, source_directory, env, custom_bin_dir):
-    AddNoAsmArg(os.path.join(source_directory, 'configure'))
+  def pre_build(self, source_directory, _env, _custom_bin_dir):  # pylint: disable=no-self-use
+    """Hook function to customize nettle's configuration before building."""
+    add_no_asm_arg(os.path.join(source_directory, 'configure'))
