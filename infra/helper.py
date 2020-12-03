@@ -73,6 +73,10 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
   os.chdir(OSS_FUZZ_DIR)
   if not os.path.exists(BUILD_DIR):
     os.mkdir(BUILD_DIR)
+    if CONTAINER_ENGINE == 'podman':
+      # we do not need to do it for the rest of the files under this path
+      # as the context is inherited from the parent directory
+      fix_selinux_context(BUILD_DIR)
 
   parser = argparse.ArgumentParser('helper.py', description='oss-fuzz helpers')
   subparsers = parser.add_subparsers(dest='command')
