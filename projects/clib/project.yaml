@@ -4,7 +4,7 @@ primary_contact: "joseph.werle@gmail.com"
 auto_ccs:
   - "Adam@adalogics.com"
   - "isty001@gmail.com"
-engines:
+fuzzing_engines:
   - libfuzzer
   - honggfuzz
 sanitizers:
