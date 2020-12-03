@@ -907,12 +907,15 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
   if env_to_add:
     env += env_to_add
 
+  run_args = _env_to_docker_args(env)
+
   # for podman, we need to make sure the mounted testcase has proper SELinux context
   # to be accessible by the container
   if CONTAINER_ENGINE == 'podman':
     fix_selinux_context(testcase_path)
+    run_args += ['--cap-add', 'SYS_PTRACE']
 
-  run_args = _env_to_docker_args(env) + [
+  run_args += [
       '-v',
       '%s:/out' % _get_output_dir(project_name),
       '-v',
