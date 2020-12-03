@@ -30,9 +30,8 @@ TMP_FUZZER_DIR = '/tmp/not-out'
 EXECUTABLE = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
 
 IGNORED_TARGETS = [
-    r'do_stuff_fuzzer',
-    r'checksum_fuzzer', r'fuzz_dump', r'fuzz_keyring', r'xmltest',
-    r'fuzz_compression_sas_rle', r'ares_*_fuzzer'
+    r'do_stuff_fuzzer', r'checksum_fuzzer', r'fuzz_dump', r'fuzz_keyring',
+    r'xmltest', r'fuzz_compression_sas_rle', r'ares_*_fuzzer'
 ]
 
 IGNORED_TARGETS_RE = re.compile('^' + r'$|^'.join(IGNORED_TARGETS) + '$')
