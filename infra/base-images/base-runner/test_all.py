@@ -29,6 +29,13 @@ TMP_FUZZER_DIR = '/tmp/not-out'
 
 EXECUTABLE = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
 
+IGNORED_TARGETS = [
+    r'checksum_fuzzer', r'fuzz_dump', r'fuzz_keyring', r'xmltest',
+    r'fuzz_compression_sas_rle', r'ares_*_fuzzer'
+]
+
+IGNORED_TARGETS_RE = re.compile(r'|'.join(IGNORED_TARGETS))
+
 
 def recreate_directory(directory):
   """Creates |directory|. If it already exists than deletes it first before
@@ -94,16 +101,10 @@ def get_broken_fuzz_targets(bad_build_results, fuzz_targets):
 def has_ignored_targets(out_dir):
   """Returns True if |out_dir| has any fuzz targets we are supposed to ignore
   bad build checks of."""
+  print('YOOO')
   out_files = set(os.listdir(out_dir))
-  ignored_targets = {
-      'do_stuff_fuzzer'
-      'checksum_fuzzer', 'fuzz_dump', 'fuzz_keyring', 'xmltest',
-      'fuzz_compression_sas_rle'
-  }
-  if out_files.intersection(ignored_targets):
-    return True
   for filename in out_files:
-    if re.match(r'ares_*_fuzzer', filename):
+    if re.match(IGNORED_TARGETS_RE, filename):
       return True
   return False
 
@@ -118,6 +119,7 @@ def use_different_out_dir():
   # ClusterFuzz.
   out = os.getenv('OUT')
   initial_out = out
+  recreate_directory(TMP_FUZZER_DIR)
   out = TMP_FUZZER_DIR
   # Set this so that run_fuzzer which is called by bad_build_check works
   # properly.
@@ -128,7 +130,9 @@ def use_different_out_dir():
   try:
     yield out
   finally:
-    move_directory_contents(initial_out, out)
+    move_directory_contents(out, initial_out)
+    shutil.rmtree(out)
+    os.environ['OUT'] = initial_out
 
 
 def test_all_outside_out(fuzzing_language, allowed_broken_targets_percentage):
@@ -140,7 +144,6 @@ def test_all_outside_out(fuzzing_language, allowed_broken_targets_percentage):
 def test_all(out, fuzzing_language, allowed_broken_targets_percentage):
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
-  recreate_directory(TMP_FUZZER_DIR)
   fuzz_targets = find_fuzz_targets(out, fuzzing_language)
   pool = multiprocessing.Pool()
   bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
