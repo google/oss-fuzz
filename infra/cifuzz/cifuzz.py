@@ -314,7 +314,7 @@ def check_fuzzer_build(out_dir, sanitizer='address'):
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
   else:
     command += ['-v', '%s:/out' % out_dir]
-  command.extend(['-t', 'gcr.io/oss-fuzz-base/base-runner', 'test_all'])
+  command.extend(['-t', 'gcr.io/oss-fuzz-base/base-runner', 'test_all.py'])
   exit_code = helper.docker_run(command)
   if exit_code:
     logging.error('Check fuzzer build failed.')
