@@ -15,10 +15,9 @@
 #
 ################################################################################
 
+mkdir $GOPATH/src/code.gitea.io
+mv $SRC/gitea $GOPATH/src/code.gitea.io/
+cd $GOPATH/src/code.gitea.io/gitea && go get ./...
 
-mkdir -p $GOPATH/src/github.com/gravitational
-cd $GOPATH/src/github.com/gravitational
-git clone https://github.com/gravitational/teleport.git
-
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz
+compile_go_fuzzer code.gitea.io/gitea/fuzz FuzzMarkdownRenderRaw fuzz_markdown_render_raw
+compile_go_fuzzer code.gitea.io/gitea/fuzz FuzzMarkupPostProcess fuzz_markup_post_process
