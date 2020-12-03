@@ -16,6 +16,7 @@
 ################################################################################
 """Does bad_build_check on all fuzz targets in $OUT."""
 
+import contextlib
 import multiprocessing
 import os
 import re
@@ -106,11 +107,13 @@ def has_ignored_targets(out_dir):
       return True
   return False
 
+
 @contextlib.contextmanager
-def move_out_to_tmp_dir():
+def use_different_out_dir():
   """Context manager that moves OUT to TMP_FUZZER_DIR. This is useful for
   catching hardcoding. Note that this sets the environment variable OUT and
-  therefore must be run before multiprocessing.Pool is created."""
+  therefore must be run before multiprocessing.Pool is created. Resets OUT at
+  the end."""
   # Use a fake OUT directory to catch path hardcoding that breaks on
   # ClusterFuzz.
   out = os.getenv('OUT')
@@ -123,28 +126,22 @@ def move_out_to_tmp_dir():
   # directory itself because it is a mount.
   move_directory_contents(initial_out, out)
   try:
-    yield
+    yield out
   finally:
     move_directory_contents(initial_out, out)
 
 
-def test_all_outside_out(
-    fuzzing_language, allowed_broken_targets_percentage):
-  """Wrapper around test_all that changes OUT, passes it a
-  multiprocessing.Pool and returns the result or False on failure."""
-  with move_out_to_tmp_dir():
-    return test_all(
-        out, fuzzing_language, allowed_broken_targets_percentage)
-  finally:
-
-  return False
+def test_all_outside_out(fuzzing_language, allowed_broken_targets_percentage):
+  """Wrapper around test_all that changes OUT and returns the result."""
+  with use_different_out_dir() as out:
+    return test_all(out, fuzzing_language, allowed_broken_targets_percentage)
 
 
 def test_all(out, fuzzing_language, allowed_broken_targets_percentage):
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
   recreate_directory(TMP_FUZZER_DIR)
-  fuzz_targets = find_fuzz_targets(out)
+  fuzz_targets = find_fuzz_targets(out, fuzzing_language)
   pool = multiprocessing.Pool()
   bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
   broken_targets = get_broken_fuzz_targets(bad_build_results, fuzz_targets)
@@ -188,8 +185,8 @@ def main():
   # Set these environment variables here so that stdout
   fuzzing_language = os.getenv('FUZZING_LANGUAGE')
   allowed_broken_targets_percentage = get_allowed_broken_targets_percentage()
-  if not test_all_outside_out(
-      fuzzing_language, allowed_broken_targets_percentage):
+  if not test_all_outside_out(fuzzing_language,
+                              allowed_broken_targets_percentage):
     return 1
   return 0
 
