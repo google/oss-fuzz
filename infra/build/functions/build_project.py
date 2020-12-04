@@ -266,7 +266,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                       env,
                   'args': [
                       'bash', '-c',
-                      'test_all || (echo "{0}" && false)'.format(failure_msg)
+                      'test_all.py || (echo "{0}" && false)'.format(failure_msg)
                   ],
               })
 
