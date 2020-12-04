@@ -20,9 +20,11 @@ set -o pipefail
 set -o errexit
 set -x
 
-# Compile Kops fuzzer
-compile_go_fuzzer k8s.io/kops/tests/fuzz FuzzWriteToken fuzz_write_token
+# Compile kOps fuzzers
+$GOPATH/src/k8s.io/kops/tests/fuzz/build.sh
 
+
+# Compile Kubernetes fuzzers
 mv $SRC/kubernetes $GOPATH/src/k8s.io/
 
 function compile_fuzzer {
