@@ -18,8 +18,8 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN go get github.com/ianlancetaylor/demangle
 RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git
-RUN git clone https://github.com/google/AFL
-RUN git clone https://github.com/dvyukov/go-fuzz-corpus
+RUN git clone --depth 1 https://github.com/google/AFL
+RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
 RUN go get k8s.io/kops
 WORKDIR $SRC/
 
