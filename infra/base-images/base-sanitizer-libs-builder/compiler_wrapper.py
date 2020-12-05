@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Wrapper script to call clang or GCC with modified arguments."""
+
 from __future__ import print_function
 import os
 import subprocess
@@ -26,23 +26,23 @@ GCC_ONLY_ARGS = [
     '-aux-info',
 ]
 
-M32_BIT_ARGS = [
-    '-m32',
-    '-mx32',
-]
 
-
-def invoked_as_gcc():
+def InvokedAsGcc():
   """Return whether or not we're pretending to be GCC."""
   return sys.argv[0].endswith('gcc') or sys.argv[0].endswith('g++')
 
 
-def is_32_bit(args):
+def Is32Bit(args):
   """Return whether or not we're 32-bit."""
+  M32_BIT_ARGS = [
+      '-m32',
+      '-mx32',
+  ]
+
   return any(arg in M32_BIT_ARGS for arg in args)
 
 
-def filter_wl_arg(arg):
+def FilterWlArg(arg):
   """Remove -z,defs and equivalents from a single -Wl option."""
   parts = arg.split(',')[1:]
 
@@ -55,7 +55,7 @@ def filter_wl_arg(arg):
 
     if part == '--no-undefined':
       continue
-
+      
     filtered.append(part)
 
   if filtered:
@@ -65,29 +65,29 @@ def filter_wl_arg(arg):
   return None
 
 
-def _remove_last_matching(args, find):
-  for i in range(len(args) - 1, -1, -1):
-    if args[i] == find:
-      del args[i]
+def _RemoveLastMatching(l, find):
+  for i in xrange(len(l) - 1, -1, -1):
+    if l[i] == find:
+      del l[i]
       return
 
   raise IndexError('Not found')
 
 
-def remove_z_defs(args):
+def RemoveZDefs(args):
   """Remove unsupported -Wl,-z,defs linker option."""
   filtered = []
 
   for arg in args:
     if arg == '-Wl,defs':
-      _remove_last_matching(filtered, '-Wl,-z')
+      _RemoveLastMatching(filtered, '-Wl,-z')
       continue
 
     if arg == '-Wl,--no-undefined':
       continue
 
     if arg.startswith('-Wl,'):
-      arg = filter_wl_arg(arg)
+      arg = FilterWlArg(arg)
       if not arg:
         continue
 
@@ -96,11 +96,11 @@ def remove_z_defs(args):
   return filtered
 
 
-def get_compiler_args(args, is_cxx):
+def GetCompilerArgs(args, is_cxx):
   """Generate compiler args."""
   compiler_args = args[1:]
 
-  if is_32_bit(args):
+  if Is32Bit(args):
     # 32 bit builds not supported.
     compiler_args.extend([
         '-fno-sanitize=memory',
@@ -109,7 +109,7 @@ def get_compiler_args(args, is_cxx):
 
     return compiler_args
 
-  compiler_args = remove_z_defs(compiler_args)
+  compiler_args = RemoveZDefs(compiler_args)
   compiler_args.extend([
       # FORTIFY_SOURCE is not supported by sanitizers.
       '-U_FORTIFY_SOURCE',
@@ -122,15 +122,15 @@ def get_compiler_args(args, is_cxx):
       '-fno-lto',
   ])
 
-  if invoked_as_gcc():
+  if InvokedAsGcc():
     compiler_args.extend([
-        # For better compatibility with flags passed via -Wa,...
-        '-fno-integrated-as',
+      # For better compatibility with flags passed via -Wa,...
+      '-fno-integrated-as',
     ])
 
   if '-fsanitize=memory' not in args:
     # If MSan flags weren't added for some reason, add them here.
-    compiler_args.extend(msan_build.get_injected_flags())
+    compiler_args.extend(msan_build.GetInjectedFlags())
 
   if is_cxx:
     compiler_args.append('-stdlib=libc++')
@@ -138,36 +138,35 @@ def get_compiler_args(args, is_cxx):
   return compiler_args
 
 
-def find_real_clang():
+def FindRealClang():
   """Return path to real clang."""
   return os.environ['REAL_CLANG_PATH']
 
 
-def fallback_to_gcc(args):
+def FallbackToGcc(args):
   """Check whether if we should fall back to GCC."""
-  if not invoked_as_gcc():
+  if not InvokedAsGcc():
     return False
 
   return any(arg in GCC_ONLY_ARGS for arg in args[1:])
 
 
 def main(args):
-  """Modify arguments and call the real compiler."""
-  if fallback_to_gcc(args):
-    sys.exit(
-        subprocess.call(['/usr/bin/' + os.path.basename(args[0])] + args[1:]))
+  if FallbackToGcc(args):
+    sys.exit(subprocess.call(['/usr/bin/' + os.path.basename(args[0])] +
+                             args[1:]))
 
   is_cxx = args[0].endswith('++')
-  real_clang = find_real_clang()
+  real_clang = FindRealClang()
 
   if is_cxx:
     real_clang += '++'
 
-  args = [real_clang] + get_compiler_args(args, is_cxx)
+  args = [real_clang] + GetCompilerArgs(args, is_cxx)
   debug_log_path = os.getenv('WRAPPER_DEBUG_LOG_PATH')
   if debug_log_path:
-    with open(debug_log_path, 'a') as log_file:
-      log_file.write(str(args) + '\n')
+    with open(debug_log_path, 'a') as f:
+      f.write(str(args) + '\n')
 
   sys.exit(subprocess.call(args))
 

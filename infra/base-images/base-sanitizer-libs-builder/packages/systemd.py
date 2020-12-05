@@ -14,27 +14,29 @@
 # limitations under the License.
 #
 ################################################################################
-"""Custom options for systemd."""
+
 from __future__ import print_function
+import glob
+import os
+import subprocess
 
 import package
 import wrapper_utils
 
 
-class Package(package.Package):  # pylint: disable=too-few-public-methods
+class Package(package.Package):
   """systemd package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('systemd', apt_version)
 
-  def pre_build(self, _source_directory, _env, custom_bin_dir):  # pylint: disable=no-self-use
-    """Pre-build installation of a wrapper script for systemd."""
+  def PreBuild(self, source_directory, env, custom_bin_dir):
     # Hide msan symbols from nm. the systemd build system uses this to find
     # undefined symbols and errors out if it does.
-    nm_wrapper = ('#!/bin/bash\n'
-                  '/usr/bin/nm "$@" | grep -E -v "U (__msan|memset)"\n'
-                  'exit ${PIPESTATUS[0]}\n')
+    nm_wrapper = (
+        '#!/bin/bash\n'
+        '/usr/bin/nm "$@" | grep -E -v "U (__msan|memset)"\n'
+        'exit ${PIPESTATUS[0]}\n')
 
-    wrapper_utils.install_wrapper(
-        custom_bin_dir, 'nm', nm_wrapper,
-        [wrapper_utils.dpkg_host_architecture() + '-nm'])
+    wrapper_utils.InstallWrapper(custom_bin_dir, 'nm', nm_wrapper,
+                                 [wrapper_utils.DpkgHostArchitecture() + '-nm'])
