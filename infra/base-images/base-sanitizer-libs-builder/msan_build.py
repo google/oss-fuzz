@@ -91,7 +91,7 @@ def set_up_environment(work_dir):
   os.mkdir(bin_dir)
 
   dpkg_host_architecture = wrapper_utils.dpkg_host_architecture()
-  wrapper_utils.CreateSymlinks(
+  wrapper_utils.create_symlinks(
       compiler_wrapper_path,
       bin_dir,
       [
@@ -150,7 +150,8 @@ def set_up_environment(work_dir):
   msan_log_dir = os.path.join(work_dir, 'msan')
   os.mkdir(msan_log_dir)
   msan_log_path = os.path.join(msan_log_dir, 'log')
-  env['MSAN_OPTIONS'] = 'halt_on_error=0:exitcode=0:report_umrs=0:log_path=' + msan_log_path
+  env['MSAN_OPTIONS'] = ('halt_on_error=0:exitcode=0:report_umrs=0:log_path=' +
+                         msan_log_path)
 
   # Increase maximum stack size to prevent tests from failing.
   limit = 128 * 1024 * 1024

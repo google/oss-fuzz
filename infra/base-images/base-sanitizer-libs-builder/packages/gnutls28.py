@@ -31,5 +31,5 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
         '#!/bin/bash\n'
         '/usr/bin/dh_auto_configure "$@" --disable-hardware-acceleration')
 
-    wrapper_utils.InstallWrapper(custom_bin_dir, 'dh_auto_configure',
-                                 configure_wrapper)
+    wrapper_utils.install_wrapper(custom_bin_dir, 'dh_auto_configure',
+                                  configure_wrapper)

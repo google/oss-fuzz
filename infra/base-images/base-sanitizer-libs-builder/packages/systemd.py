@@ -35,6 +35,6 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
                   '/usr/bin/nm "$@" | grep -E -v "U (__msan|memset)"\n'
                   'exit ${PIPESTATUS[0]}\n')
 
-    wrapper_utils.InstallWrapper(
+    wrapper_utils.install_wrapper(
         custom_bin_dir, 'nm', nm_wrapper,
         [wrapper_utils.dpkg_host_architecture() + '-nm'])
