@@ -15,19 +15,20 @@
 #
 ################################################################################
 cd Pillow
-
 make || true
 
-BUILD_DIR=build/temp.linux-x86_64-3.8/src
+bp="$(find ./build -name '_imagingtk.o')"
+BUILD_DIR="${bp/_imagingtk.o/}"
 rm ${BUILD_DIR}/_imagingmath.o
 rm ${BUILD_DIR}/_imagingtk.o
 rm ${BUILD_DIR}/_imagingmorph.o
 
+TS="$(find ./src/PIL/ -name '_imaging.*.so')"
 $CXX -pthread -shared $CXXFLAGS $LIB_FUZZING_ENGINE ${BUILD_DIR}/*.o ${BUILD_DIR}/libImaging/*.o \
     -L/usr/local/lib -L/lib/x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu \
     -L/usr/lib/x86_64-linux-gnu/libfakeroot -L/usr/lib -L/lib \
     -L/usr/local/lib -ljpeg -lz \
-    -o /src/Pillow/src/PIL/_imaging.cpython-38-x86_64-linux-gnu.so -stdlib=libc++
+    -o ${TS} -stdlib=libc++
 
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
@@ -36,8 +37,10 @@ for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
   pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
   # Create execution wrapper.
-  echo "#/bin/sh
+  echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
-LD_PRELOAD=\$(dirname "\$0")/libclang_rt.asan-x86_64.so \$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
+LD_PRELOAD=\$(dirname "\$0")/libclang_rt.asan-x86_64.so \
+ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:detect_leaks=0 \
+\$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
