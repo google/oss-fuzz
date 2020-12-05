@@ -14,16 +14,15 @@
 # limitations under the License.
 #
 ################################################################################
-"""Custom options for mesa."""
+
 import package
 
 
-class Package(package.Package):  # pylint: disable=too-few-public-methods
+class Package(package.Package):
   """mesa package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('mesa', apt_version)
 
-  def pre_build(self, _source_directory, env, _custom_bin_dir):  # pylint: disable=no-self-use
-    """Pre-build configuration for mesa."""
+  def PreBuild(self, source_directory, env, custom_bin_dir):
     env['DEB_CXXFLAGS_APPEND'] += ' -std=c++11'

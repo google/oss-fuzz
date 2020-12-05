@@ -20,5 +20,3 @@ docker build -t gcr.io/oss-fuzz-base/base-clang "$@" infra/base-images/base-clan
 docker build -t gcr.io/oss-fuzz-base/base-builder -t gcr.io/oss-fuzz/base-libfuzzer "$@" infra/base-images/base-builder
 docker build -t gcr.io/oss-fuzz-base/base-runner "$@" infra/base-images/base-runner
 docker build -t gcr.io/oss-fuzz-base/base-runner-debug "$@" infra/base-images/base-runner-debug
-docker build -t gcr.io/oss-fuzz-base/base-sanitizer-libs-builder "$@" infra/base-images/base-sanitizer-libs-builder
-docker build -t gcr.io/oss-fuzz-base/msan-libs-builder "$@" infra/base-images/msan-libs-builder
