@@ -15,15 +15,17 @@
 #include <cstdint>
 #include <string>
 
+#define exprtk_enable_runtime_checks
 #include "exprtk.hpp"
 
 
 template <typename T>
 void run(const std::string& expression_string)
 {
-   typedef exprtk::symbol_table<T> symbol_table_t;
-   typedef exprtk::expression<T>     expression_t;
-   typedef exprtk::parser<T>             parser_t;
+   typedef exprtk::symbol_table<T>          symbol_table_t;
+   typedef exprtk::expression<T>              expression_t;
+   typedef exprtk::parser<T>                      parser_t;
+   typedef exprtk::loop_runtime_check loop_runtime_check_t;
 
    T x = T(1.2345);
    T y = T(2.2345);
@@ -40,10 +42,24 @@ void run(const std::string& expression_string)
    expression_t expression;
    expression.register_symbol_table(symbol_table);
 
+   loop_runtime_check_t loop_runtime_check;
+   loop_runtime_check.loop_set = loop_runtime_check_t::e_all_loops;
+   loop_runtime_check.max_loop_iterations = 100000000;
+
    parser_t parser;
+
+   parser.register_loop_runtime_check(loop_runtime_check);
+
    if (parser.compile(expression_string, expression))
    {
-      expression.value();
+      try
+      {
+         expression.value();
+      }
+      catch (std::runtime_error& rte)
+      {}
+
+      parser.clear_loop_runtime_check();
    }
 }
 
