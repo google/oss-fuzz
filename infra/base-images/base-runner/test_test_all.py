@@ -30,10 +30,11 @@ class TestTestAll(unittest.TestCase):
     outdir = '/out'
     fuzzing_language = 'c++'
     allowed_broken_targets_percentage = 0
-    self.assertFalse(test_all.test_all(
-        outdir, fuzzing_language, allowed_broken_targets_percentage))
+    self.assertFalse(
+        test_all.test_all(outdir, fuzzing_language,
+                          allowed_broken_targets_percentage))
     mocked_print.assert_called_with('ERROR: No fuzz targets found.')
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
