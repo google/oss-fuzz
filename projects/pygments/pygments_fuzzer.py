@@ -23,10 +23,10 @@ import pygments.lexers
 
 def TestOneInput(input_bytes):
   try:
-    lexer = pygments.lexers.guess_lexer(str(data))
+    lexer = pygments.lexers.guess_lexer(str(input_bytes))
   except ValueError:
     return
-  pygments.highlight(str(data), lexer, pygments.formatters.HtmlFormatter())
+  pygments.highlight(str(input_bytes), lexer, pygments.formatters.HtmlFormatter())
 
 
 def main():
