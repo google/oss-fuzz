@@ -14,17 +14,16 @@
 # limitations under the License.
 #
 ################################################################################
-"""Custom options for boost1.58."""
+
 import package
 
 
-class Package(package.Package):  # pylint: disable=too-few-public-methods
+class Package(package.Package):
   """boost1.58 package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('boost1.58', apt_version)
 
-  def pre_build(self, _source_directory, env, _custom_bin_dir):  # pylint: disable=no-self-use
-    """Pre-build configuration for boost1.58."""
+  def PreBuild(self, source_directory, env, custom_bin_dir):
     # Otherwise py_nonblocking.cpp fails to build.
     env['DEB_CXXFLAGS_APPEND'] += ' -std=c++98'

@@ -14,20 +14,22 @@
 # limitations under the License.
 #
 ################################################################################
-"""Custom options for PulseAudio."""
+
 from __future__ import print_function
+import glob
 import os
+import subprocess
 
 import package
 
 
-class Package(package.Package):  # pylint: disable=too-few-public-methods
+class Package(package.Package):
   """PulseAudio package."""
 
   def __init__(self, apt_version):
     super(Package, self).__init__('pulseaudio', apt_version)
 
-  def post_download(self, source_directory):  # pylint: disable=no-self-use
+  def PostDownload(self, source_directory):
     """Remove blacklisted patches."""
     # Fix *droid* patches.
     bad_patch_path = os.path.join(
@@ -37,4 +39,4 @@ class Package(package.Package):  # pylint: disable=too-few-public-methods
       return
 
     print('Applying custom patches.')
-    package.apply_patch(source_directory, 'pulseaudio_fix_android.patch')
+    package.ApplyPatch(source_directory, 'pulseaudio_fix_android.patch')

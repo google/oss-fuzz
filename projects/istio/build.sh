@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Copyright 2017 Google Inc.
+#/bin/bash -eu
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +15,6 @@
 #
 ################################################################################
 
-import os
 
-import package
-
-
-class Package(package.Package):
-  """sqlite3 package."""
-
-  def __init__(self, apt_version):
-    super(Package, self).__init__('sqlite3', apt_version)
-
-  def PreBuild(self, source_directory, env, custom_bin_dir):
-    os.system(
-        'sed -i "s/package ifneeded sqlite3//" %s/debian/rules' %
-        source_directory)
+compile_go_fuzzer istio.io/istio/tests/fuzz FuzzParseInputs fuzz_parse_inputs
+compile_go_fuzzer istio.io/istio/tests/fuzz FuzzParseAndBuildSchema fuzz_parse_and_build_schema
