@@ -1,7 +1,8 @@
 homepage: "https://github.com/grafana/loki"
-primary_contact: ""
+primary_contact: "cyril.tovena@grafana.com"
 auto_ccs :
   - "adam@adalogics.com"
+  - "edward.welch@grafana.com"
 language: go
 fuzzing_engines:
   - libfuzzer
