@@ -324,7 +324,7 @@ class DownloadOSSFuzzBuildDirIntegrationTest(unittest.TestCase):
       invalid_dir = os.path.join(tmp_dir, 'not/a/dir')
       test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                            invalid_dir, 'example')
-    self.assertIsNone(test_target.download_oss_fuzz_build())
+      self.assertIsNone(test_target.download_oss_fuzz_build())
 
 
 class DownloadUrlTest(unittest.TestCase):
