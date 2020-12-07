@@ -14,6 +14,12 @@ inputs:
   sanitizer:
     description: 'The sanitizer to build the fuzzers with.'
     default: 'address'
+  project-src-path:
+    description: "The path to the project's source code checkout."
+    required: false
+  build-integration-path:
+    description: "The path to the the project's build integration."
+    required: false
 runs:
   using: 'docker'
   image: '../../../build_fuzzers.Dockerfile'
@@ -22,3 +28,5 @@ runs:
     DRY_RUN: ${{ inputs.dry-run}}
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
     SANITIZER: ${{ inputs.sanitizer }}
+    PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
+    BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}

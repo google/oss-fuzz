@@ -143,8 +143,7 @@ def copy_src_from_docker(project_name, host_dir):
   return src_dir
 
 
-@retry.wrap(_IMAGE_BUILD_TRIES, 2,
-            'infra.build_specified_commit._build_image_with_retries')
+@retry.wrap(_IMAGE_BUILD_TRIES, 2)
 def _build_image_with_retries(project_name):
   """Build image with retries."""
   return helper.build_image_impl(project_name)
@@ -246,7 +245,18 @@ def build_fuzzers_from_commit(commit,
                                                       check_result=True)
     oss_fuzz_commit = oss_fuzz_commit.strip()
     if not oss_fuzz_commit:
-      logging.warning('No suitable earlier OSS-Fuzz commit found.')
+      logging.info(
+          'Could not find first OSS-Fuzz commit prior to upstream commit. '
+          'Falling back to oldest integration commit.')
+
+      # Find the oldest commit.
+      oss_fuzz_commit, _, _ = oss_fuzz_repo_manager.git(
+          ['log', '--reverse', '--format=%H', projects_dir], check_result=True)
+
+      oss_fuzz_commit = oss_fuzz_commit.splitlines()[0].strip()
+
+    if not oss_fuzz_commit:
+      logging.error('Failed to get oldest integration commit.')
       break
 
     logging.info('Build failed. Retrying on earlier OSS-Fuzz commit %s.',
