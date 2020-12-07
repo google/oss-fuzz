@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,5 +14,4 @@
 # limitations under the License.
 #
 cd $SRC/mongoose/test
-cp $SRC/fuzz.c .
-clang -fsanitize=fuzzer,address fuzz.c ../mongoose.c  -g -I../ -o $OUT/fuzz
+$CC $CFLAGS $LIB_FUZZING_ENGINE fuzz.c ../mongoose.c  -g -I../ -o $OUT/fuzz
