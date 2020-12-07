@@ -14,4 +14,7 @@
 # limitations under the License.
 #
 cd $SRC/mongoose/test
-$CC $CFLAGS $LIB_FUZZING_ENGINE fuzz.c ../mongoose.c  -g -I../ -o $OUT/fuzz
+$CC $CFLAGS -c fuzz.c -g -I../ -o fuzz.o
+$CC $CFLAGS -c ../mongoose.c -g -I../ -o mongoose.o
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz.o mongoose.o -o $OUT/fuzz
