@@ -1,4 +1,5 @@
-# Copyright 2020 Google LLC
+#!/bin/bash -eu
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,25 +15,10 @@
 #
 ################################################################################
 
-FROM ubuntu:16.04
+make clean  # Not strictly necessary, since we are building in a fresh dir.
+make -j$(nproc) all    # Build the fuzz targets.
 
-RUN apt-get update && apt-get install -y git \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg2 \
-    software-properties-common \
-    python3
-
-
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && apt-key fingerprint 0EBFCD88
-RUN add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   xenial \
-   stable"
-
-RUN apt-get update && apt-get install docker-ce docker-ce-cli containerd.io -y
-
-ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
-ADD . ${OSS_FUZZ_ROOT}
-RUN rm -rf ${OSS_FUZZ_ROOT}/infra
+# Copy the fuzzer executables, zip-ed corpora, option and dictionary files to $OUT
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'     # If you have dictionaries.
+find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'  # If you have custom options.

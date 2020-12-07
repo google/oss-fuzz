@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-# Docker image to run the CIFuzz action run_fuzzers in.
+"""Contains convenient helpers for writing tests."""
 
-FROM gcr.io/oss-fuzz-base/cifuzz-base
+import os
+from unittest import mock
 
-COPY cifuzz/actions/run_fuzzers/run_fuzzers_entrypoint.py /opt/run_fuzzers_entrypoint.py
 
-# Python file to execute when the docker container starts up
-ENTRYPOINT ["python3", "/opt/run_fuzzers_entrypoint.py"]
+def patch_environ(testcase_obj, env=None):
+  """Patch environment."""
+  if env is None:
+    env = {}
 
-# Copy infra source code.
-ADD . ${OSS_FUZZ_ROOT}/infra
+  patcher = mock.patch.dict(os.environ, env)
+  testcase_obj.addCleanup(patcher.stop)
+  patcher.start()

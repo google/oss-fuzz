@@ -44,20 +44,19 @@ class DetectRepoIntegrationTest(unittest.TestCase):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
       # Construct example repo's to check for commits.
-      for example_repo in test_repos.TEST_REPOS:
-        repo_manager.RepoManager(example_repo.git_url, tmp_dir)
-        self.check_with_repo(example_repo.git_url,
-                             example_repo.git_repo_name,
+      for test_repo in test_repos.TEST_REPOS:
+        repo_manager.clone_repo_and_get_manager(test_repo.git_url, tmp_dir)
+        self.check_with_repo(test_repo.git_url,
+                             test_repo.git_repo_name,
                              tmp_dir,
-                             commit=example_repo.old_commit)
+                             commit=test_repo.old_commit)
 
   def test_infer_main_repo_from_name(self):
     """Tests that the main project repo can be inferred from a repo name."""
-
     with tempfile.TemporaryDirectory() as tmp_dir:
-      for example_repo in test_repos.TEST_REPOS:
-        repo_manager.RepoManager(example_repo.git_url, tmp_dir)
-        self.check_with_repo(example_repo.git_url, example_repo.git_repo_name,
+      for test_repo in test_repos.TEST_REPOS:
+        repo_manager.clone_repo_and_get_manager(test_repo.git_url, tmp_dir)
+        self.check_with_repo(test_repo.git_url, test_repo.git_repo_name,
                              tmp_dir)
 
   def check_with_repo(self, repo_origin, repo_name, tmp_dir, commit=None):

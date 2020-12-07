@@ -35,7 +35,6 @@ def get_delay(num_try, delay, backoff):
 
 def wrap(retries,
          delay,
-         function,
          backoff=2,
          exception_type=Exception,
          retry_on_false=False):
@@ -49,7 +48,7 @@ def wrap(retries,
     """Decorator for the given function."""
     tries = retries + 1
     is_generator = inspect.isgeneratorfunction(func)
-    function_with_type = function
+    function_with_type = func.__qualname__
     if is_generator:
       function_with_type += ' (generator)'
 
