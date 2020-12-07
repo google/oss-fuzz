@@ -16,7 +16,6 @@
 import os
 import tempfile
 import unittest
-from unittest import mock
 
 import utils
 import helper
@@ -110,24 +109,6 @@ class ExecuteTest(unittest.TestCase):
                                            location=tmp_dir,
                                            check_result=True)
 
-
-class PrintTest(unittest.TestCase):
-  """Tests for utils.print."""
-
-  @mock.patch('sys.stdout.buffer.write')
-  def test_string(self, mocked_write):
-    """Tests that utils.print can print a regular string."""
-    # Should execute without raising any exceptions.
-    utils.print('hello')
-    mocked_write.assert_called_with('hello\n')
-
-
-  @mock.patch('sys.stdout.buffer.write')
-  def test_binary_string(self, mocked_write):
-    """Tests that utils.print can print a binary string."""
-    # Should execute without raising any exceptions.
-    utils.print(b'hello')
-    mocked_write.assert_called_with(b'hello\n')
 
 if __name__ == '__main__':
   unittest.main()
