@@ -192,7 +192,7 @@ def build_fuzzers_from_commit(commit,
   Returns:
     0 on successful build or error code on failure.
   """
-  oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+  oss_fuzz_repo_manager = repo_manager.RepoManager(helper.OSS_FUZZ_DIR)
   num_retry = 1
 
   def cleanup():
@@ -385,7 +385,7 @@ def main():
 
   with tempfile.TemporaryDirectory() as tmp_dir:
     host_src_dir = copy_src_from_docker(args.project_name, tmp_dir)
-    build_repo_manager = repo_manager.BaseRepoManager(
+    build_repo_manager = repo_manager.RepoManager(
         os.path.join(host_src_dir, os.path.basename(repo_path)))
     base_builder_repo = load_base_builder_repo()
 
