@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-"""Helper script to patch rpath in all binaries to point to instrumented libraries."""
+
 from __future__ import print_function
 import argparse
 import os
@@ -25,36 +25,27 @@ import sys
 
 INSTRUMENTED_LIBRARIES_DIRNAME = 'instrumented_libraries'
 MSAN_LIBS_PATH = os.getenv('MSAN_LIBS_PATH', '/msan')
-INTERCEPTED_LIBRARIES = {
-    '/lib/x86_64-linux-gnu/libm.so.6',
-    '/lib/x86_64-linux-gnu/libpthread.so.0',
-    '/lib/x86_64-linux-gnu/librt.so.1',
-    '/lib/x86_64-linux-gnu/libdl.so.2',
-    '/lib/x86_64-linux-gnu/libgcc_s.so.1',
-    '/lib/x86_64-linux-gnu/libc.so.6',
-}
-LDD_OUTPUT_PATTERN = re.compile(r'\s*([^\s]+)\s*=>\s*([^\s]+)')
 
 
-def is_elf(file_path):
+def IsElf(file_path):
   """Whether if the file is an elf file."""
-  with open(file_path) as elf_file:
-    return elf_file.read(4) == '\x7fELF'
+  with open(file_path) as f:
+    return f.read(4) == '\x7fELF'
 
 
-def ldd(binary_path):
+def Ldd(binary_path):
   """Run ldd on a file."""
   try:
-    output = subprocess.check_output(['ldd', binary_path],
-                                     stderr=subprocess.STDOUT)
+    output = subprocess.check_output(['ldd', binary_path], stderr=subprocess.STDOUT)
   except subprocess.CalledProcessError:
     print('Failed to call ldd on', binary_path, file=sys.stderr)
     return []
 
   libs = []
 
+  OUTPUT_PATTERN = re.compile(r'\s*([^\s]+)\s*=>\s*([^\s]+)')
   for line in output.splitlines():
-    match = LDD_OUTPUT_PATTERN.match(line)
+    match = OUTPUT_PATTERN.match(line)
     if not match:
       continue
 
@@ -63,12 +54,12 @@ def ldd(binary_path):
   return libs
 
 
-def find_lib(path):
+def FindLib(path):
   """Find instrumented version of lib."""
   candidate_path = os.path.join(MSAN_LIBS_PATH, path[1:])
   if os.path.exists(candidate_path):
     return candidate_path
-
+  
   for lib_dir in os.listdir(MSAN_LIBS_PATH):
     candidate_path = os.path.join(MSAN_LIBS_PATH, lib_dir, path[1:])
     if os.path.exists(candidate_path):
@@ -77,20 +68,18 @@ def find_lib(path):
   return None
 
 
-def patch_binary(binary_path, instrumented_dir):
+def PatchBinary(binary_path, instrumented_dir):
   """Patch binary to link to instrumented libs."""
   extra_rpaths = set()
 
-  for _name, path in ldd(binary_path):
+  for name, path in Ldd(binary_path):
     if not os.path.isabs(path):
       continue
 
-    instrumented_path = find_lib(path)
+    instrumented_path = FindLib(path)
     if not instrumented_path:
-      if path not in INTERCEPTED_LIBRARIES:
-        print('WARNING: Instrumented library not found for',
-              path,
-              file=sys.stderr)
+      print('WARNING: Instrumented library not found for', path,
+            file=sys.stderr)
       continue
 
     target_path = os.path.join(instrumented_dir, path[1:])
@@ -116,12 +105,12 @@ def patch_binary(binary_path, instrumented_dir):
   print('Patching rpath for', binary_path, 'from', existing_rpaths, 'to',
         processed_rpaths)
 
-  subprocess.check_call([
-      'patchelf', '--force-rpath', '--set-rpath', processed_rpaths, binary_path
-  ])
+  subprocess.check_call(
+      ['patchelf', '--force-rpath', '--set-rpath',
+       processed_rpaths, binary_path])
 
 
-def patch_build(output_directory):
+def PatchBuild(output_directory):
   """Patch build to use msan libs."""
   instrumented_dir = os.path.join(output_directory,
                                   INSTRUMENTED_LIBRARIES_DIRNAME)
@@ -135,21 +124,19 @@ def patch_build(output_directory):
       if os.path.islink(file_path):
         continue
 
-      if not is_elf(file_path):
+      if not IsElf(file_path):
         continue
 
-      patch_binary(file_path, instrumented_dir)
+      PatchBinary(file_path, instrumented_dir)
 
 
 def main():
-  """Patch binaries to use instrumented libraries for all their dynamic objects."""
-  parser = argparse.ArgumentParser('patch_build.py',
-                                   description='MSan build patcher.')
+  parser = argparse.ArgumentParser('patch_build.py', description='MSan build patcher.')
   parser.add_argument('output_dir', help='Output directory.')
 
   args = parser.parse_args()
 
-  patch_build(os.path.abspath(args.output_dir))
+  PatchBuild(os.path.abspath(args.output_dir))
 
 
 if __name__ == '__main__':

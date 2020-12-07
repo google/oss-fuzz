@@ -246,7 +246,18 @@ def build_fuzzers_from_commit(commit,
                                                       check_result=True)
     oss_fuzz_commit = oss_fuzz_commit.strip()
     if not oss_fuzz_commit:
-      logging.warning('No suitable earlier OSS-Fuzz commit found.')
+      logging.info(
+          'Could not find first OSS-Fuzz commit prior to upstream commit. '
+          'Falling back to oldest integration commit.')
+
+      # Find the oldest commit.
+      oss_fuzz_commit, _, _ = oss_fuzz_repo_manager.git(
+          ['log', '--reverse', '--format=%H', projects_dir], check_result=True)
+
+      oss_fuzz_commit = oss_fuzz_commit.splitlines()[0].strip()
+
+    if not oss_fuzz_commit:
+      logging.error('Failed to get oldest integration commit.')
       break
 
     logging.info('Build failed. Retrying on earlier OSS-Fuzz commit %s.',
