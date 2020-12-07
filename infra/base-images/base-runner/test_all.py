@@ -152,6 +152,10 @@ def test_all(out, fuzzing_language, allowed_broken_targets_percentage):
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
   fuzz_targets = find_fuzz_targets(out, fuzzing_language)
+  if not fuzz_targets:
+    print('ERROR: No fuzz targets found.')
+    return False
+
   pool = multiprocessing.Pool()
   bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
   broken_targets = get_broken_fuzz_targets(bad_build_results, fuzz_targets)
