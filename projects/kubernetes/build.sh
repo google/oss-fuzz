@@ -20,6 +20,13 @@ set -o pipefail
 set -o errexit
 set -x
 
+# Compile kOps fuzzers
+$GOPATH/src/k8s.io/kops/tests/fuzz/build.sh
+
+
+# Compile Kubernetes fuzzers
+mv $SRC/kubernetes $GOPATH/src/k8s.io/
+
 function compile_fuzzer {
   local pkg=$1
   local function=$2
