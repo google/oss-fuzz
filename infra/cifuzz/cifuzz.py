@@ -427,8 +427,8 @@ def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     if not testcase or not stacktrace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
-      logging.info(b'Fuzzer %s, detected error: %s.', target.target_name,
-                   stacktrace)
+      utils.binary_print(b'Fuzzer %s, detected error: %s.' %
+                         (target.target_name.encode(), stacktrace))
       shutil.move(testcase, os.path.join(artifacts_dir, 'test_case'))
       parse_fuzzer_output(stacktrace, artifacts_dir)
       return True, True
