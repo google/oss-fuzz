@@ -15,7 +15,8 @@
 #
 ################################################################################
 cd Pillow
-make || true
+make install-req
+python3 setup.py develop
 
 bp="$(find ./build -name '_imagingtk.o')"
 BUILD_DIR="${bp/_imagingtk.o/}"
