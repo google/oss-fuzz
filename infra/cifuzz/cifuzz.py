@@ -215,9 +215,7 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
         'gcr.io/oss-fuzz-base/msan-libs-builder', '--volumes-from', container,
         'bash', '-c', 'cp -r /msan {work_dir}'.format(work_dir=self.work_dir)
     ])
-    return [
-        '-e', 'MSAN_LIBS_PATH={work_dir}'.format(work_dir=self.work_dir)
-    ]
+    return ['-e', 'MSAN_LIBS_PATH={work_dir}'.format(work_dir=self.work_dir)]
 
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
