@@ -195,7 +195,6 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
       return False
     return True
 
-
   def handle_msan(self):
     """Copies MSAN libs to |msan_libs_dir| and returns docker arguments to use
     that directory for MSAN libs."""
@@ -204,16 +203,15 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     msan_volume_arg = '{msan_libs_path}:{msan_libs_path}'.format(
         msan_libs_path=self.MSAN_LIBS_PATH)
     helper.docker_run([
-        '-v',
-        msan_volume_arg,
-        'gcr.io/oss-fuzz-base/msan-libs-builder',
-        'bash', '-c', 'cp -r /msan {msan_libs_path}'.format(
+        '-v', msan_volume_arg, 'gcr.io/oss-fuzz-base/msan-libs-builder', 'bash',
+        '-c', 'cp -r /msan {msan_libs_path}'.format(
             msan_libs_path=self.MSAN_LIBS_PATH)
     ])
 
-    return ['-v', msan_volume_arg, '-e',
-            'MSAN_LIBS_PATH={msan_libs_path}'.format(
-                msan_libs_path=self.MSAN_LIBS_PATH)]
+    return [
+        '-v', msan_volume_arg, '-e', 'MSAN_LIBS_PATH={msan_libs_path}'.format(
+            msan_libs_path=self.MSAN_LIBS_PATH)
+    ]
 
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
