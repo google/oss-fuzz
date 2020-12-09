@@ -1,0 +1,10 @@
+homepage: "https://github.com/python-pillow/Pillow"
+language: python
+primary_contact: "security@python-pillow.org"
+auto_ccs:
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined

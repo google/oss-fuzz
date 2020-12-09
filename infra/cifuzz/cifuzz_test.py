@@ -95,6 +95,39 @@ class BuildFuzzersTest(unittest.TestCase):
     self.assertTrue(command_has_env_var_arg(docker_run_command, 'CIFUZZ=True'))
 
 
+class InternalGithubBuilderTest(unittest.TestCase):
+  """Tests for building OSS-Fuzz projects on GitHub actions."""
+  PROJECT_NAME = 'myproject'
+  PROJECT_REPO_NAME = 'myproject'
+  SANITIZER = 'address'
+  COMMIT_SHA = 'fake'
+  PR_REF = 'fake'
+
+  def _create_builder(self, tmp_dir):
+    """Creates an InternalGithubBuilder and returns it."""
+    return cifuzz.InternalGithubBuilder(self.PROJECT_NAME,
+                                        self.PROJECT_REPO_NAME, tmp_dir,
+                                        self.SANITIZER, self.COMMIT_SHA,
+                                        self.PR_REF)
+
+  @mock.patch('repo_manager._clone', side_effect=None)
+  @mock.patch('cifuzz.checkout_specified_commit', side_effect=None)
+  def test_correct_host_repo_path(self, _, __):
+    """Tests that the correct self.host_repo_path is set by
+    build_image_and_checkout_src. Specifically, we want the name of the
+    directory the repo is in to match the name used in the docker
+    image/container, so that it will replace the host's copy properly."""
+    image_repo_path = '/src/repo_dir'
+    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
+        'build_specified_commit.detect_main_repo',
+        return_value=('inferred_url', image_repo_path)):
+      builder = self._create_builder(tmp_dir)
+      builder.build_image_and_checkout_src()
+
+    self.assertEqual(os.path.basename(builder.host_repo_path),
+                     os.path.basename(image_repo_path))
+
+
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
 
