@@ -93,6 +93,7 @@ class ProjectYamlChecker:
       'labels',  # For internal use only, hard to lint as it uses fuzzer names.
       'main_repo',
       'primary_contact',
+      'run_tests',
       'sanitizers',
       'selective_unpack',
       'vendor_ccs',
