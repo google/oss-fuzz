@@ -202,8 +202,9 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     """Post-build step for MSAN builds. Patches the build to use MSAN
     libraries."""
     helper.docker_run([
-        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder', '--volumes-from',
-        container, '-e', 'WORK={work_dir}'.format(work_dir=self.work_dir),
+        '--volumes-from', container, '-e',
+        'WORK={work_dir}'.format(work_dir=self.work_dir),
+        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder'
         'patch_build.py', '/out'
     ])
 
@@ -212,10 +213,13 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     returns docker arguments to use that directory for MSAN libs."""
     logging.info('Copying MSAN libs.')
     helper.docker_run([
-        'gcr.io/oss-fuzz-base/msan-libs-builder', '--volumes-from', container,
+        '--volumes-from', container, 'gcr.io/oss-fuzz-base/msan-libs-builder',
         'bash', '-c', 'cp -r /msan {work_dir}'.format(work_dir=self.work_dir)
     ])
-    return ['-e', 'MSAN_LIBS_PATH={work_dir}'.format(work_dir=self.work_dir)]
+    return [
+        '-e', 'MSAN_LIBS_PATH={msan_libs_path}'.format(
+            msan_libs_path=os.path.join(self.work_dir, 'msan'))
+    ]
 
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
