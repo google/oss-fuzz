@@ -279,7 +279,6 @@ class InternalGithubBuilder(BaseBuilder):
     self.repo_manager = repo_manager.clone_repo_and_get_manager(
         inferred_url, git_workspace, repo_name=image_repo_name)
 
-    print('self.host_repo_path', self.host_repo_path)
     self.host_repo_path = self.repo_manager.repo_dir
 
     checkout_specified_commit(self.repo_manager, self.pr_ref, self.commit_sha)

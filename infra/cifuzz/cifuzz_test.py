@@ -105,8 +105,10 @@ class InternalGithubBuilderTest(unittest.TestCase):
 
   def _create_builder(self, tmp_dir):
     """Creates an InternalGithubBuilder and returns it."""
-    return cifuzz.InternalGithubBuilder(self.PROJECT_NAME, self.PROJECT_REPO_NAME, tmp_dir, self.SANITIZER, self.COMMIT_SHA, self.PR_REF)
-
+    return cifuzz.InternalGithubBuilder(self.PROJECT_NAME,
+                                        self.PROJECT_REPO_NAME, tmp_dir,
+                                        self.SANITIZER, self.COMMIT_SHA,
+                                        self.PR_REF)
 
   @mock.patch('repo_manager._clone', side_effect=None)
   @mock.patch('cifuzz.checkout_specified_commit', side_effect=None)
@@ -117,8 +119,8 @@ class InternalGithubBuilderTest(unittest.TestCase):
     image/container, so that it will replace the host's copy properly."""
     image_repo_path = '/src/repo_dir'
     with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
-        'build_specified_commit.detect_main_repo', return_value=(
-            'inferred_url', image_repo_path)):
+        'build_specified_commit.detect_main_repo',
+        return_value=('inferred_url', image_repo_path)):
       builder = self._create_builder(tmp_dir)
       builder.build_image_and_checkout_src()
 
