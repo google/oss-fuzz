@@ -272,9 +272,12 @@ class InternalGithubBuilder(BaseBuilder):
     git_workspace = os.path.join(self.workspace, 'storage')
     os.makedirs(git_workspace, exist_ok=True)
 
+    # Use the same name used in the docker image so we can overwrite it.
+    image_repo_name = os.path.basename(self.image_repo_path)
+
     # Checkout project's repo in the shared volume.
     self.repo_manager = repo_manager.clone_repo_and_get_manager(
-        inferred_url, git_workspace, repo_name=self.project_repo_name)
+        inferred_url, git_workspace, repo_name=image_repo_name)
 
     self.host_repo_path = self.repo_manager.repo_dir
 
@@ -349,7 +352,7 @@ def build_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
 
   Args:
     project_name: The name of the OSS-Fuzz project being built.
-    project_repo_name: The name of the projects repo.
+    project_repo_name: The name of the project's repo.
     workspace: The location in a shared volume to store a git repo and build
       artifacts.
     pr_ref: The pull request reference to be built.
