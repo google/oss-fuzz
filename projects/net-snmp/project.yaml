@@ -6,3 +6,4 @@ auto_ccs:
    - "fenner@gmail.com"
    - "bvanassche@acm.org"
    - "magfr@lysator.liu.se"
+main_repo: 'git://git.code.sf.net/p/net-snmp/code'

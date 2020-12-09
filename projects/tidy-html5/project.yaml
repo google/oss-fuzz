@@ -17,3 +17,4 @@ sanitizers:
 labels:
   tidy_fuzzer:
     - sundew
+main_repo: 'https://github.com/htacg/tidy-html5.git'
