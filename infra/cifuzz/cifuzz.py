@@ -198,15 +198,12 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
       self.handle_msan_postbuild(container)
     return True
 
-
   def handle_msan_postbuild(self, container):
     """Post-build step for MSAN builds. Patches the build to use MSAN
     libraries."""
     helper.docker_run([
-        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
-        '--volumes-from', container,
-        'patch_build.py',
-        '/out'
+        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder', '--volumes-from',
+        container, 'patch_build.py', '/out'
     ])
 
   def handle_msan_prebuild(self, container):
@@ -215,11 +212,10 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     logging.info('Copying MSAN libs.')
     helper.docker_run([
         'gcr.io/oss-fuzz-base/msan-libs-builder', '--volumes-from', container,
-        'bash',
-        '-c', 'cp -r /msan {work_path}'.format(work_path=self.work_path)
+        'bash', '-c', 'cp -r /msan {work_path}'.format(work_path=self.work_path)
     ])
     return [
-        '-e', 'MSAN_LIBS_PATH={work_path}'.format(self.work_path=self.work_path)
+        '-e', 'MSAN_LIBS_PATH={work_path}'.format(work_path=self.work_path)
     ]
 
   def build(self):
