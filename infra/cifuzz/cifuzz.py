@@ -133,7 +133,7 @@ def check_project_src_path(project_src_path):
 class BaseBuilder:  # pylint: disable=too-many-instance-attributes
   """Base class for fuzzer builders."""
 
-  MSAN_LIBS_DIR = os.path.join('/tmp', 'msan')
+  MSAN_LIBS_PATH = os.path.join('/tmp', 'msan')
 
   def __init__(self,
                project_name,
@@ -179,7 +179,7 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
       ])
       bash_command = 'compile'
 
-    if self.sanitizer == 'msan':
+    if self.sanitizer == 'memory':
       command.extend(self.handle_msan())
 
     command.extend([
@@ -200,13 +200,20 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     """Copies MSAN libs to |msan_libs_dir| and returns docker arguments to use
     that directory for MSAN libs."""
     logging.info('Copying MSAN libs.')
-    os.makedirs(self.MSAN_LIBS_DIR, exist_ok=True)
+    os.makedirs(self.MSAN_LIBS_PATH, exist_ok=True)
+    msan_volume_arg = '{msan_libs_path}:{msan_libs_path}'.format(
+        msan_libs_path=self.MSAN_LIBS_PATH)
     helper.docker_run([
-        '-v', '{0}:{0}'.format(self.MSAN_LIBS_DIR),
+        '-v',
+        msan_volume_arg,
         'gcr.io/oss-fuzz-base/msan-libs-builder',
-        'bash', '-c', 'cp -r /msan {0}'.format(self.MSAN_LIBS_DIR)])
+        'bash', '-c', 'cp -r /msan {msan_libs_path}'.format(
+            msan_libs_path=self.MSAN_LIBS_PATH)
+    ])
 
-    return ['-e', 'MSAN_LIBS_PATH={libs_path}'.format(self.MSAN_LIBS_DIR)]
+    return ['-v', msan_volume_arg, '-e',
+            'MSAN_LIBS_PATH={msan_libs_path}'.format(
+                msan_libs_path=self.MSAN_LIBS_PATH)]
 
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
