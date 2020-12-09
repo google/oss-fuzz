@@ -133,6 +133,8 @@ def check_project_src_path(project_src_path):
 class BaseBuilder:  # pylint: disable=too-many-instance-attributes
   """Base class for fuzzer builders."""
 
+  MSAN_LIBS_DIR = os.path.join('/tmp', 'msan')
+
   def __init__(self,
                project_name,
                project_repo_name,
@@ -177,6 +179,9 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
       ])
       bash_command = 'compile'
 
+    if self.sanitizer == 'msan':
+      command.extend(self.handle_msan())
+
     command.extend([
         'gcr.io/oss-fuzz/' + self.project_name,
         '/bin/bash',
@@ -189,6 +194,19 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
       logging.error('Building fuzzers failed.')
       return False
     return True
+
+
+  def handle_msan(self):
+    """Copies MSAN libs to |msan_libs_dir| and returns docker arguments to use
+    that directory for MSAN libs."""
+    logging.info('Copying MSAN libs.')
+    os.makedirs(self.MSAN_LIBS_DIR, exist_ok=True)
+    helper.docker_run([
+        '-v', '{0}:{0}'.format(self.MSAN_LIBS_DIR),
+        'gcr.io/oss-fuzz-base/msan-libs-builder',
+        'bash', '-c', 'cp -r /msan {0}'.format(self.MSAN_LIBS_DIR)])
+
+    return ['-e', 'MSAN_LIBS_PATH={libs_path}'.format(self.MSAN_LIBS_DIR)]
 
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
