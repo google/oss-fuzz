@@ -204,8 +204,8 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     helper.docker_run([
         '--volumes-from', container, '-e',
         'WORK={work_dir}'.format(work_dir=self.work_dir),
-        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder',
-        'patch_build.py', '/out'
+        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder', 'patch_build.py',
+        '/out'
     ])
 
   def handle_msan_prebuild(self, container):
