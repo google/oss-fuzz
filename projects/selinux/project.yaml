@@ -7,3 +7,4 @@ sanitizers:
   - memory
 auto_ccs:
   - evverx@gmail.com
+  - nicolas.iooss.ossfuzz@gmail.com
