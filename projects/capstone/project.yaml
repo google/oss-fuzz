@@ -14,3 +14,4 @@ sanitizers:
   - memory
   - undefined
   - dataflow
+main_repo: 'https://github.com/aquynh/capstone.git'

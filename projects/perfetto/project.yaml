@@ -22,3 +22,4 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
+main_repo: 'https://android.googlesource.com/platform/external/perfetto/'
