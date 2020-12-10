@@ -60,4 +60,15 @@ RUN cd $SRC/evmone; \
     ninja; \
     ninja install;
 
+# libabicoder
+RUN set -ex; \
+    cd /usr/src; \
+    git clone https://github.com/ekpyron/Yul-Isabelle; \
+    cd Yul-Isabelle; \
+    cd libabicoder; \
+    CXX=clang++ CXXFLAGS="-stdlib=libc++ -pthread" make; \
+    cp libabicoder.a /usr/lib; \
+    cp abicoder.hpp /usr/include; \
+    rm -rf /usr/src/Yul-Isabelle
+
 COPY build.sh $SRC/
