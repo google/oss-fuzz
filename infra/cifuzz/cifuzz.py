@@ -144,6 +144,8 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     self.workspace = workspace
     self.out_dir = os.path.join(workspace, 'out')
     os.makedirs(self.out_dir, exist_ok=True)
+    self.work_dir = os.path.join(workspace, 'work')
+    os.makedirs(self.work_dir, exist_ok=True)
     self.sanitizer = sanitizer
     self.host_repo_path = host_repo_path
     self.image_repo_path = None
@@ -177,6 +179,9 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
       ])
       bash_command = 'compile'
 
+    if self.sanitizer == 'memory':
+      command.extend(self.handle_msan_prebuild(container))
+
     command.extend([
         'gcr.io/oss-fuzz/' + self.project_name,
         '/bin/bash',
@@ -188,7 +193,33 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
       # docker_run returns nonzero on failure.
       logging.error('Building fuzzers failed.')
       return False
+
+    if self.sanitizer == 'memory':
+      self.handle_msan_postbuild(container)
     return True
+
+  def handle_msan_postbuild(self, container):
+    """Post-build step for MSAN builds. Patches the build to use MSAN
+    libraries."""
+    helper.docker_run([
+        '--volumes-from', container, '-e',
+        'WORK={work_dir}'.format(work_dir=self.work_dir),
+        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder', 'patch_build.py',
+        '/out'
+    ])
+
+  def handle_msan_prebuild(self, container):
+    """Pre-build step for MSAN builds. Copies MSAN libs to |msan_libs_dir| and
+    returns docker arguments to use that directory for MSAN libs."""
+    logging.info('Copying MSAN libs.')
+    helper.docker_run([
+        '--volumes-from', container, 'gcr.io/oss-fuzz-base/msan-libs-builder',
+        'bash', '-c', 'cp -r /msan {work_dir}'.format(work_dir=self.work_dir)
+    ])
+    return [
+        '-e', 'MSAN_LIBS_PATH={msan_libs_path}'.format(
+            msan_libs_path=os.path.join(self.work_dir, 'msan'))
+    ]
 
   def build(self):
     """Builds the image, checkouts the source (if needed), builds the fuzzers
@@ -430,7 +461,7 @@ def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     if not testcase or not stacktrace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:
-      utils.binary_print(b'Fuzzer %s, detected error: %s' %
+      utils.binary_print(b'Fuzzer %s, detected error:\n%s' %
                          (target.target_name.encode(), stacktrace))
       shutil.move(testcase, os.path.join(artifacts_dir, 'test_case'))
       parse_fuzzer_output(stacktrace, artifacts_dir)
