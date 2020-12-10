@@ -11,3 +11,4 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
 language: rust
+main_repo: 'https://github.com/bytecodealliance/wasmtime'
