@@ -9,3 +9,4 @@ sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://github.com/dnp3/opendnp3.git'
