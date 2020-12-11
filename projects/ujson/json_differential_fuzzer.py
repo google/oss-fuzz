@@ -37,7 +37,7 @@ values that are too big or too small is techincally fine; however,
 misinterpreting them is not.
 """
 
-import atheris
+import atheris_no_libfuzzer as atheris
 import json
 import ujson
 import sys
