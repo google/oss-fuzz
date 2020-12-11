@@ -1,4 +1,5 @@
 homepage: "https://pygments.org/"
+main_repo: "https://github.com/pygments/pygments"
 language: python
 primary_contact: "security-tps@google.com"
 auto_ccs:
