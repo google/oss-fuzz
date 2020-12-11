@@ -25,17 +25,15 @@ PROJECT=osquery
 
 pushd "${SRC}/${PROJECT}"
 
-# Prefer shared libs
-sed -i 's/CMAKE_LINK_SEARCH_START_STATIC ON/CMAKE_LINK_SEARCH_START_STATIC OFF/g' cmake/flags.cmake
-sed -i 's/CMAKE_LINK_SEARCH_END_STATIC ON/CMAKE_LINK_SEARCH_END_STATIC OFF/g' cmake/flags.cmake
-
 mkdir build && pushd build
 
 cmake \
   -DOSQUERY_VERSION:string=0.0.0-fuzz \
   -DOSQUERY_ENABLE_ADDRESS_SANITIZER:BOOL=ON \
   -DOSQUERY_ENABLE_FUZZER_SANITIZERS:BOOL=ON \
+  -DOSQUERY_IGNORE_CMAKE_MAX_VERSION_CHECK:BOOL=ON \
   ..
+
 cmake \
   "-DCMAKE_EXE_LINKER_FLAGS=${LIB_FUZZING_ENGINE} -Wl,-rpath,'\$ORIGIN/lib'" \
   ..
