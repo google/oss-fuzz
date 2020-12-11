@@ -19,4 +19,5 @@ RUN apt-get update && apt-get install -y cmake
 
 RUN git clone --depth 1 https://github.com/ninja-build/ninja
 WORKDIR ninja
-COPY $SRC/ninja/misc/build.sh $SRC/
+RUN mv $SRC/ninja/misc/oss-fuzz/build.sh $SRC/
+RUN mv $SRC/ninja/misc/oss-fuzz/sample_ninja_build $SRC/
