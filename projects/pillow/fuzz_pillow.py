@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import atheris
+import atheris_no_libfuzzer as atheris
 import sys
 import os
 import io

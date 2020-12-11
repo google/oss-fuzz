@@ -102,12 +102,12 @@ if [ "$FUZZING_LANGUAGE" = "python" ]; then
   if [ "$SANITIZER" = "address" ]; then
     cp $sanitizer_with_fuzzer_lib_dir/asan_with_fuzzer.so $sanitizer_with_fuzzer_output_lib
   elif [ "$SANITIZER" = "undefined" ]; then
-    cp $sanitizer_with_fuzzer_lib_dir/ubsan_cxx_with_fuzzer.so $sanitizer_with_fuzzer_output_lib
+    cp $sanitizer_with_fuzzer_lib_dir/ubsan_with_fuzzer.so $sanitizer_with_fuzzer_output_lib
   fi
 
   # Disable leak checking as it is unsupported.
-  export CFLAGS="$CFLAGS -fno-sanitize=leak"
-  export CXXFLAGS="$CXXFLAGS -fno-sanitize=leak"
+  export CFLAGS="$CFLAGS -fno-sanitize=function,leak,vptr,"
+  export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,leak,vptr"
 fi
 
 echo "---------------------------------------------------------------"
