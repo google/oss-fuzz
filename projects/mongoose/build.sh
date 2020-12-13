@@ -13,8 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-cd $SRC/mongoose/test
-$CC $CFLAGS -c fuzz.c -g -I../ -o fuzz.o
-$CC $CFLAGS -c ../mongoose.c -g -I../ -o mongoose.o
-
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz.o mongoose.o -o $OUT/fuzz
+cd $SRC/mongoose
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -DMG_ENABLE_LINES -DMG_ENABLE_LOG=0 mongoose.c -I. test/fuzz.c -o $OUT/fuzz
