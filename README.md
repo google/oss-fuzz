@@ -12,11 +12,12 @@ community.
 [thousands]: https://bugs.chromium.org/p/chromium/issues/list?q=label%3AStability-LibFuzzer%2CStability-AFL%20-status%3ADuplicate%2CWontFix&can=1
 [guided in-process fuzzing of Chrome components]: https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html
 
-In cooperation with the [Core Infrastructure Initiative], OSS-Fuzz aims to make
-common open source software more secure and stable by combining modern fuzzing
-techniques with scalable, distributed execution.
+In cooperation with the [Core Infrastructure Initiative] and the [OpenSSF], OSS-Fuzz
+aims to make common open source software more secure and stable by combining modern
+fuzzing techniques with scalable, distributed execution.
 
 [Core Infrastructure Initiative]: https://www.coreinfrastructure.org/
+[OpenSSF]: https://www.openssf.org/
 
 We support the [libFuzzer], [AFL], and [Honggfuzz] fuzzing engines in
 combination with [Sanitizers], as well as [ClusterFuzz], a distributed fuzzer
@@ -52,7 +53,11 @@ projects.
 * 2016-12-01 - [Announcing OSS-Fuzz: Continuous fuzzing for open source software]
 * 2017-05-08 - [OSS-Fuzz: Five months later, and rewarding projects]
 * 2018-11-06 - [A New Chapter for OSS-Fuzz]
+* 2020-10-09 - [Fuzzing internships for Open Source Software]
+* 2020-12-07 - [Improving open source security during the Google summer internship program]
 
 [Announcing OSS-Fuzz: Continuous fuzzing for open source software]: https://opensource.googleblog.com/2016/12/announcing-oss-fuzz-continuous-fuzzing.html
 [OSS-Fuzz: Five months later, and rewarding projects]: https://opensource.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html
 [A New Chapter for OSS-Fuzz]: https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html
+[Fuzzing internships for Open Source Software]: https://security.googleblog.com/2020/10/fuzzing-internships-for-open-source.html
+[Improving open source security during the Google summer internship program]: https://security.googleblog.com/2020/12/improving-open-source-security-during.html
