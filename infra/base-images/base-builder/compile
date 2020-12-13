@@ -110,6 +110,9 @@ if [ "$FUZZING_LANGUAGE" = "python" ]; then
   export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,leak,vptr"
 fi
 
+# Copy latest llvm-symbolizer in $OUT for stack symbolization.
+cp $(which llvm-symbolizer) $OUT/
+
 echo "---------------------------------------------------------------"
 echo "CC=$CC"
 echo "CXX=$CXX"
