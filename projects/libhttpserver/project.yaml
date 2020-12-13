@@ -1,4 +1,5 @@
 homepage: "https://github.com/etr/libhttpserver"
+main_repo: "https://github.com/etr/libhttpserver"
 language: c++
 primary_contact: "electrictwister2000@gmail.com"
 auto_ccs:
