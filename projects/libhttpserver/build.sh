@@ -31,4 +31,5 @@ make install
 
 cd ../test/fuzz
 $CXX $CXXFLAGS -std=c++11 basic_fuzzer.cc -o $OUT/basic_fuzzer $LIB_FUZZING_ENGINE /usr/local/lib/libhttpserver.a /usr/local/lib/libmicrohttpd.a -lgnutls
+$CXX $CXXFLAGS -std=c++11 ip_representation.cc -o $OUT/ip_representation $LIB_FUZZING_ENGINE /usr/local/lib/libhttpserver.a /usr/local/lib/libmicrohttpd.a -lgnutls
 cp *.zip $OUT
