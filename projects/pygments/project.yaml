@@ -1,7 +1,7 @@
 homepage: "https://pygments.org/"
 main_repo: "https://github.com/pygments/pygments"
 language: python
-primary_contact: "security-tps@google.com"
+primary_contact: "pygments-reports@fire.fundersclub.com"
 auto_ccs:
   - "jvoisin@google.com"
   - "ipudney@google.com"
