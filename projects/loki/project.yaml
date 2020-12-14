@@ -3,6 +3,7 @@ primary_contact: "cyril.tovena@grafana.com"
 auto_ccs :
   - "adam@adalogics.com"
   - "edward.welch@grafana.com"
+  - "michel.hollands@grafana.com"
 language: go
 fuzzing_engines:
   - libfuzzer
