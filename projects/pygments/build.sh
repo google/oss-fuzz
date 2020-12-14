@@ -31,3 +31,5 @@ ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:detect_leaks=0 \
 \$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
+
+zip -j $OUT/files_fuzzer_seed_corpus.zip tests/examplefiles/*
