@@ -2,4 +2,4 @@ homepage: "https://github.com/mongodb/mongo-c-driver"
 language: c++
 primary_contact: "mongo-c-driver-ossfuzz@mongodb.com"
 auto_ccs:
-  - "david@adalogics.com"
+ - "david@adalogics.com"
