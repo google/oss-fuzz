@@ -1,6 +1,6 @@
 homepage: "https://github.com/python-pillow/Pillow"
 language: python
-primary_contact: "security@python-pillow.org"
+primary_contact: "security@tidelift.com"
 auto_ccs:
   - "david@adalogics.com"
   - "esoroos@gmail.com"
