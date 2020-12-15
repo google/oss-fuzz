@@ -18,11 +18,10 @@ mkdir cmake-build && cd cmake-build
 cmake -DENABLE_MONGOC=OFF -DENABLE_BSON_AUTO=ON -DENABLE_STATIC=ON ../ 
 make
 
-cp $SRC/fuzz_* .
 $CC $CFLAGS -I./src \
     -I./src/libbson/src -I./src/libbson/src/bson -I./src/common \
     -I../src/libbson/src -I../src/libbson/src/bson -I../src/common \
-    -c fuzz_test_libbson.c -o fuzz_test_libbson.o
+    -c ../src/libbson/fuzz/fuzz_test_libbson.c -o fuzz_test_libbson.o
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_test_libbson.o \
     ./src/libbson/libbson-static-1.0.a -o $OUT/fuzz-libbson

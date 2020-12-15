@@ -20,4 +20,3 @@ RUN git clone --recursive --depth 1 https://github.com/mongodb/mongo-c-driver
 WORKDIR $SRC/mongo-c-driver
 
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/
