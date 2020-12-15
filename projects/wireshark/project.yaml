@@ -14,4 +14,4 @@ fuzzing_engines:
   - libfuzzer
   - honggfuzz
   - afl
-main_repo: 'https://code.wireshark.org/review/wireshark'
+main_repo: 'https://gitlab.com/wireshark/wireshark'
