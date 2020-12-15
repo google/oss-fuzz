@@ -3,6 +3,7 @@ language: python
 primary_contact: "security@python-pillow.org"
 auto_ccs:
   - "david@adalogics.com"
+  - "esoroos@gmail.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
