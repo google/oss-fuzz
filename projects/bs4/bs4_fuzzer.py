@@ -48,6 +48,8 @@ def TestOneInput(data):
     soup = BeautifulSoup(data[1:], features=parsers[idx])
   except HTMLParseError:
     return
+  except ValueError:
+    return
 
   list(soup.find_all(True))
   soup.prettify()
