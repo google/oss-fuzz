@@ -8,5 +8,4 @@ auto_ccs:
   - "mhl@fb.com"
 sanitizers:
   - "address"
-  - "memory"
 main_repo: 'https://github.com/facebook/rocksdb'
