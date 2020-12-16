@@ -6,4 +6,6 @@ vendor_ccs:
 auto_ccs:
   - "david@adalogics.com"
   - "mhl@fb.com"
+sanitizers:
+  - "address"
 main_repo: 'https://github.com/facebook/rocksdb'

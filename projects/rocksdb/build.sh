@@ -18,10 +18,13 @@ cd $SRC/LPM
 export PKG_CONFIG_PATH=$PWD:$PWD/external.protobuf/lib/pkgconfig/
 export PATH=$PWD/external.protobuf/bin:$PATH
 
-cd $SRC/rocksdb/fuzz
+cd $SRC/rocksdb
 export FUZZ_ENV=ossfuzz
 export CC=$CXX
+make static_lib
+
+cd fuzz
 make db_fuzzer
-make sst_file_writer_fuzzer
+make db_map_fuzzer
 
 cp *_fuzzer $OUT/
