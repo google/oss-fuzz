@@ -1,0 +1,12 @@
+homepage: "https://www.crummy.com/software/BeautifulSoup/"
+main_repo: "https://code.launchpad.net/~leonardr/beautifulsoup/bs4"
+language: python
+primary_contact: "security-tps@google.com"
+auto_ccs:
+  - "jvoisin@google.com"
+  - "ipudney@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
