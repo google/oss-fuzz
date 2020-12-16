@@ -19,4 +19,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
   pkg-config cmake libcurlpp-dev libcurl4-openssl-dev
 RUN git clone --depth 1 https://github.com/tristanpenman/valijson
 WORKDIR valijson
-COPY $SRC/valijson/tests/fuzzing/oss-fuzz-build.sh $SRC/build.sh
+RUN cp $SRC/valijson/tests/fuzzing/oss-fuzz-build.sh $SRC/build.sh
