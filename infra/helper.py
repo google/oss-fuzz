@@ -277,18 +277,33 @@ def get_dockerfile_path(project_name):
 
 
 def _get_corpus_dir(project_name=''):
-  """Returns path to /corpus directory for the given project (if specified)."""
-  return os.path.join(BUILD_DIR, 'corpus', project_name)
+  """Creates and returns path to /corpus directory for the given project (if
+  specified)."""
+  directory = os.path.join(BUILD_DIR, 'corpus', project_name)
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
+  return directory
 
 
 def _get_output_dir(project_name=''):
-  """Returns path to /out directory for the given project (if specified)."""
-  return os.path.join(BUILD_DIR, 'out', project_name)
+  """Creates and returns path to /out directory for the given project (if
+  specified)."""
+  directory = os.path.join(BUILD_DIR, 'out', project_name)
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
+  return directory
 
 
 def _get_work_dir(project_name=''):
-  """Returns path to /work directory for the given project (if specified)."""
-  return os.path.join(BUILD_DIR, 'work', project_name)
+  """Creates and returns path to /work directory for the given project (if
+  specified)."""
+  directory = os.path.join(BUILD_DIR, 'work', project_name)
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
+  return directory
 
 
 def _get_project_language(project_name):
@@ -618,7 +633,7 @@ def check_build(args):
   if args.fuzzer_name:
     run_args += ['test_one', os.path.join('/out', args.fuzzer_name)]
   else:
-    run_args.append('test_all')
+    run_args.append('test_all.py')
 
   exit_code = docker_run(run_args)
   if exit_code == 0:

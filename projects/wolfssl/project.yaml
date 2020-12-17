@@ -21,3 +21,4 @@ sanitizers:
      experimental: True
   - undefined
   - dataflow
+main_repo: 'https://github.com/wolfssl/wolfssl'

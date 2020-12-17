@@ -15,28 +15,18 @@
 #
 ################################################################################
 
-# We dont have getentropy syscall, so always return error when this is issued.
-# The result is not breaking, but rather an under-approximation of all the possible states.
-sed -i 's/int rc = getentropy(buffer, length);/int rc;\nif (buffer \&\& length) { rc = -1; } else {rc = -1; };/' serenity/AK/Random.h
-
-sed -i 's/if (BUILD_LAGOM)/if (BUILD_LAGOM)\n    add_library(Lagom $<TARGET_OBJECTS:LagomCore> ${LAGOM_MORE_SOURCES})\nendif()\nif(FALSE)/' serenity/Meta/Lagom/CMakeLists.txt
-
-echo "if (ENABLE_OSS_FUZZ)" >> serenity/Meta/Lagom/CMakeLists.txt
-echo "    add_subdirectory(Fuzzers)" >> serenity/Meta/Lagom/CMakeLists.txt
-echo "endif()" >> serenity/Meta/Lagom/CMakeLists.txt
-sed -i 's/-Wall -Wextra -Werror //' serenity/Meta/Lagom/CMakeLists.txt
-
 # Now build the content
 cd serenity/Meta/Lagom
 mkdir build
 cd build
-cmake -DBUILD_LAGOM=ON \
+cmake -GNinja \
+    -DBUILD_LAGOM=ON \
     -DENABLE_OSS_FUZZ=ON \
     -DCMAKE_C_COMPILER=$CC \
     -DCMAKE_CXX_COMPILER=$CXX \
-    -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+    -DCMAKE_CXX_FLAGS="$CXXFLAGS -DOSS_FUZZ=ON" \
     -DLINKER_FLAGS="$LIB_FUZZING_ENGINE" \
     ..
-make
+ninja
 cp Fuzzers/Fuzz* $OUT/
 

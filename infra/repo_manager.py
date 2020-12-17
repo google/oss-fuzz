@@ -29,8 +29,8 @@ import shutil
 import utils
 
 
-class BaseRepoManager:
-  """Base repo manager."""
+class RepoManager:
+  """Repo manager."""
 
   def __init__(self, repo_dir):
     self.repo_dir = repo_dir
@@ -200,51 +200,36 @@ class BaseRepoManager:
       raise RuntimeError('Error checking out commit %s' % commit)
 
   def remove_repo(self):
-    """Attempts to remove the git repo. """
+    """Removes the git repo from disk."""
     if os.path.isdir(self.repo_dir):
       shutil.rmtree(self.repo_dir)
 
 
-class RepoManager(BaseRepoManager):
-  """Class to manage git repos from python.
-
-  Attributes:
-    repo_url: The location of the git repo.
-    base_dir: The location of where the repo clone is stored locally.
-    repo_name: The name of the GitHub project.
-    repo_dir: The location of the main repo.
-  """
-
-  def __init__(self, repo_url, base_dir, repo_name=None):
-    """Constructs a repo manager class.
+def clone_repo_and_get_manager(repo_url, base_dir, repo_name=None):
+  """Clones a repo and constructs a repo manager class.
 
     Args:
       repo_url: The github url needed to clone.
       base_dir: The full file-path where the git repo is located.
       repo_name: The name of the directory the repo is cloned to.
     """
-    self.repo_url = repo_url
-    self.base_dir = base_dir
-    if repo_name:
-      self.repo_name = repo_name
-    else:
-      self.repo_name = os.path.basename(self.repo_url).replace('.git', '')
-    repo_dir = os.path.join(self.base_dir, self.repo_name)
-    super(RepoManager, self).__init__(repo_dir)
+  if repo_name is None:
+    repo_name = os.path.basename(repo_url).replace('.git', '')
+  repo_dir = os.path.join(base_dir, repo_name)
+  manager = RepoManager(repo_dir)
 
-    if not os.path.exists(self.repo_dir):
-      self._clone()
+  if not os.path.exists(repo_dir):
+    _clone(repo_url, base_dir, repo_name)
 
-  def _clone(self):
-    """Creates a clone of the repo in the specified directory.
+  return manager
 
-      Raises:
-        ValueError: when the repo is not able to be cloned.
-    """
-    if not os.path.exists(self.base_dir):
-      os.makedirs(self.base_dir)
-    self.remove_repo()
-    out, _, _ = utils.execute(['git', 'clone', self.repo_url, self.repo_name],
-                              location=self.base_dir)
-    if not self._is_git_repo():
-      raise ValueError('%s is not a git repo' % self.repo_url)
+
+def _clone(repo_url, base_dir, repo_name):
+  """Creates a clone of the repo in the specified directory.
+
+     Raises:
+       ValueError: when the repo is not able to be cloned.
+  """
+  utils.execute(['git', 'clone', repo_url, repo_name],
+                location=base_dir,
+                check_result=True)

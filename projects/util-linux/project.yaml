@@ -14,3 +14,4 @@ sanitizers:
   - address
   - undefined
   - memory
+main_repo: 'https://github.com/karelzak/util-linux'

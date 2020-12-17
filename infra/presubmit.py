@@ -93,6 +93,7 @@ class ProjectYamlChecker:
       'labels',  # For internal use only, hard to lint as it uses fuzzer names.
       'main_repo',
       'primary_contact',
+      'run_tests',
       'sanitizers',
       'selective_unpack',
       'vendor_ccs',
@@ -109,7 +110,7 @@ class ProjectYamlChecker:
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
   # primary contact is probably a mistake.
-  REQUIRED_SECTIONS = ['primary_contact']
+  REQUIRED_SECTIONS = ['primary_contact', 'main_repo']
 
   def __init__(self, filename):
     self.filename = filename

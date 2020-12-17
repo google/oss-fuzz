@@ -1,7 +1,7 @@
 Package: *
-Pin: release n=eoan
+Pin: release n=focal
 Pin-Priority: 1
 
 Package: nasm
-Pin: release n=eoan
+Pin: release n=focal
 Pin-Priority: 555

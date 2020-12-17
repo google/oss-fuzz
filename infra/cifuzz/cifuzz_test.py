@@ -33,6 +33,7 @@ OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
 
 import cifuzz
 import fuzz_target
+import test_helpers
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
@@ -69,7 +70,7 @@ class BuildFuzzersTest(unittest.TestCase):
 
   @mock.patch('build_specified_commit.detect_main_repo',
               return_value=('example.com', '/path'))
-  @mock.patch('repo_manager.RepoManager', return_value=None)
+  @mock.patch('repo_manager._clone', return_value=None)
   @mock.patch('cifuzz.checkout_specified_commit')
   @mock.patch('helper.docker_run')
   def test_cifuzz_env_var(self, mocked_docker_run, _, __, ___):
@@ -94,8 +95,61 @@ class BuildFuzzersTest(unittest.TestCase):
     self.assertTrue(command_has_env_var_arg(docker_run_command, 'CIFUZZ=True'))
 
 
+class InternalGithubBuilderTest(unittest.TestCase):
+  """Tests for building OSS-Fuzz projects on GitHub actions."""
+  PROJECT_NAME = 'myproject'
+  PROJECT_REPO_NAME = 'myproject'
+  SANITIZER = 'address'
+  COMMIT_SHA = 'fake'
+  PR_REF = 'fake'
+
+  def _create_builder(self, tmp_dir):
+    """Creates an InternalGithubBuilder and returns it."""
+    return cifuzz.InternalGithubBuilder(self.PROJECT_NAME,
+                                        self.PROJECT_REPO_NAME, tmp_dir,
+                                        self.SANITIZER, self.COMMIT_SHA,
+                                        self.PR_REF)
+
+  @mock.patch('repo_manager._clone', side_effect=None)
+  @mock.patch('cifuzz.checkout_specified_commit', side_effect=None)
+  def test_correct_host_repo_path(self, _, __):
+    """Tests that the correct self.host_repo_path is set by
+    build_image_and_checkout_src. Specifically, we want the name of the
+    directory the repo is in to match the name used in the docker
+    image/container, so that it will replace the host's copy properly."""
+    image_repo_path = '/src/repo_dir'
+    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
+        'build_specified_commit.detect_main_repo',
+        return_value=('inferred_url', image_repo_path)):
+      builder = self._create_builder(tmp_dir)
+      builder.build_image_and_checkout_src()
+
+    self.assertEqual(os.path.basename(builder.host_repo_path),
+                     os.path.basename(image_repo_path))
+
+
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
+
+  def setUp(self):
+    test_helpers.patch_environ(self)
+
+  def test_external_project(self):
+    """Tests building fuzzers from an external project."""
+    project_name = 'external-project'
+    project_src_path = os.path.join(TEST_FILES_PATH, project_name)
+    build_integration_path = os.path.join(project_src_path, 'oss-fuzz')
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      self.assertTrue(
+          cifuzz.build_fuzzers(project_name,
+                               project_name,
+                               tmp_dir,
+                               project_src_path=project_src_path,
+                               build_integration_path=build_integration_path))
+      self.assertTrue(
+          os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
   def test_valid_commit(self):
     """Tests building fuzzers with valid inputs."""
@@ -343,14 +397,14 @@ class CheckFuzzerBuildTest(unittest.TestCase):
     """Checks a directory that exists but does not have fuzzers is False."""
     self.assertFalse(cifuzz.check_fuzzer_build(TEST_FILES_PATH))
 
-  @mock.patch.dict(os.environ, {'ALLOWED_BROKEN_TARGETS_PERCENTAGE': '0'})
   @mock.patch('helper.docker_run')
   def test_allow_broken_fuzz_targets_percentage(self, mocked_docker_run):
     """Tests that ALLOWED_BROKEN_TARGETS_PERCENTAGE is set when running
-    docker if it is set in the environment."""
+    docker if passed to check_fuzzer_build."""
     mocked_docker_run.return_value = 0
     test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
-    cifuzz.check_fuzzer_build(test_fuzzer_dir)
+    cifuzz.check_fuzzer_build(test_fuzzer_dir,
+                              allowed_broken_targets_percentage='0')
     self.assertIn('-e ALLOWED_BROKEN_TARGETS_PERCENTAGE=0',
                   ' '.join(mocked_docker_run.call_args[0][0]))
 

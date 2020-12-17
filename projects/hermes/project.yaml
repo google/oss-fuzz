@@ -12,3 +12,4 @@ fuzzing_engines:
 sanitizers:
   - address
   - undefined
+main_repo: 'https://github.com/facebook/hermes.git'

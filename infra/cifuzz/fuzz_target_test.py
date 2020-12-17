@@ -320,9 +320,11 @@ class DownloadOSSFuzzBuildDirIntegrationTest(unittest.TestCase):
 
   def test_invalid_build_dir(self):
     """Tests the download returns None when out_dir doesn't exist."""
-    test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
-                                         'not/a/dir', 'example')
-    self.assertIsNone(test_target.download_oss_fuzz_build())
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      invalid_dir = os.path.join(tmp_dir, 'not/a/dir')
+      test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+                                           invalid_dir, 'example')
+      self.assertIsNone(test_target.download_oss_fuzz_build())
 
 
 class DownloadUrlTest(unittest.TestCase):

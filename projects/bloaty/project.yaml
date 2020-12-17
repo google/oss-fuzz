@@ -4,3 +4,4 @@ primary_contact: "jhaberman@gmail.com"
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/google/bloaty.git'

@@ -3,3 +3,7 @@ primary_contact: "cujomalainey@chromium.org"
 language: c
 auto_ccs:
   - "ranjani.sridharan@intel.corp-partner.google.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+main_repo: "https://github.com/thesofproject/sof"

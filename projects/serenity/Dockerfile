@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y build-essential cmake curl libmpfr-dev libmpc-dev libgmp-dev e2fsprogs
+RUN apt-get update && apt-get install -y build-essential cmake curl e2fsprogs libmpfr-dev libmpc-dev libgmp-dev ninja-build
 RUN git clone https://github.com/SerenityOS/serenity
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_CMakeLists.txt $SRC/serenity/Meta/Lagom/Fuzzers/CMakeLists.txt
