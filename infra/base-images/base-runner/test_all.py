@@ -74,12 +74,13 @@ def find_fuzz_targets(directory, fuzzing_language):
       continue
     if not os.stat(path).st_mode & EXECUTABLE:
       continue
-    with open(path, 'rb') as file_handle:
-      binary_contents = file_handle.read()
-      if b'LLVMFuzzerTestOneInput' not in binary_contents:
-        continue
     if fuzzing_language != 'python' and not is_elf(path):
       continue
+    if os.getenv('FUZZING_ENGINE') != 'none':
+      with open(path, 'rb') as file_handle:
+        binary_contents = file_handle.read()
+        if b'LLVMFuzzerTestOneInput' not in binary_contents:
+          continue
     fuzz_targets.append(path)
   return fuzz_targets
 
