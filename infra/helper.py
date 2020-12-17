@@ -664,7 +664,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
 
-  if not fuzz_target.startswith(project_name):
+  if not fuzz_target.startswith(project_name + '_'):
     fuzz_target = '%s_%s' % (project_name, fuzz_target)
 
   corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project_name,
