@@ -2,12 +2,12 @@ homepage: https://webkit.org/
 language: c++
 primary_contact: "ddkilzer@apple.com"
 auto_ccs:
-- "mark.lam@apple.com"
-- "akilsrin@apple.com"
-- "ddkilzer@apple.com"
-- "jfb@chromium.org"
-- "sbarati@apple.com"
-- "ysuzuki@apple.com"
+  - "mark.lam@apple.com"
+  - "akilsrin@apple.com"
+  - "ddkilzer@apple.com"
+  - "jfb@chromium.org"
+  - "sbarati@apple.com"
+  - "ysuzuki@apple.com"
 fuzzing_engines:
   - none
 sanitizers:
