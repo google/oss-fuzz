@@ -22,11 +22,14 @@ import pygments.lexers
 
 
 def TestOneInput(input_bytes):
+  fdp = atheris.FuzzedDataProvider(input_bytes)
+  data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)
+
   try:
-    lexer = pygments.lexers.guess_lexer(str(input_bytes))
+    lexer = pygments.lexers.guess_lexer(data)
   except ValueError:
     return
-  pygments.highlight(str(input_bytes), lexer, pygments.formatters.HtmlFormatter())
+  pygments.highlight(data, lexer, pygments.formatters.HtmlFormatter())
 
 
 def main():
