@@ -366,6 +366,7 @@ class ParseOutputTest(unittest.TestCase):
       cifuzz.parse_fuzzer_output(b'not a valid output_string', tmp_dir)
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
 
+
 class CheckFuzzerBuildTest(unittest.TestCase):
   """Tests the check_fuzzer_build function in the cifuzz module."""
 
