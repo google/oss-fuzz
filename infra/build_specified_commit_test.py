@@ -50,7 +50,7 @@ class BuildImageIntegrationTest(unittest.TestCase):
       host_src_dir = build_specified_commit.copy_src_from_docker(
           test_case.project_name, tmp_dir)
 
-      test_repo_manager = repo_manager.clone_and_get_manager(
+      test_repo_manager = repo_manager.clone_repo_and_get_manager(
           test_case.git_url, host_src_dir, test_case.oss_repo_name)
       build_data = build_specified_commit.BuildData(
           sanitizer='address',
