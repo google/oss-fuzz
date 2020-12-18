@@ -51,8 +51,10 @@ def move_directory_contents(src_directory, dst_directory):
   # permissions that can mess up CheckFuzzerBuildTest in cifuzz_test.py and
   # other cases where one is calling test_all on files not in OSS-Fuzz's real
   # out directory.
-  src_files = os.path.join(src_directory, '*')
-  subprocess.check_call(['mv', src_files, dst_directory], check=True)
+  src_contents = [os.path.join(src_directory, filename)
+                  for filename in os.listdir(src_directory)]
+  command = ['mv'] + src_contents + [dst_directory]
+  subprocess.check_call(command)
 
 def is_elf(filepath):
   """Returns True if |filepath| is an ELF file."""
