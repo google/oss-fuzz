@@ -36,6 +36,8 @@ import test_repos
 # pylint: enable=wrong-import-position
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class DetectRepoIntegrationTest(unittest.TestCase):
   """Class to test the functionality of the detect_repo module."""
 

@@ -31,8 +31,10 @@ import test_repos
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
-class BuildImageIntegrationTests(unittest.TestCase):
-  """Testing if an image can be built from different states e.g. a commit."""
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
+class BuildImageIntegrationTest(unittest.TestCase):
+  """Tests if an image can be built from different states e.g. a commit."""
 
   @unittest.skip('Test is failing (spuriously?).')
   def test_build_fuzzers_from_commit(self):
@@ -48,8 +50,8 @@ class BuildImageIntegrationTests(unittest.TestCase):
       host_src_dir = build_specified_commit.copy_src_from_docker(
           test_case.project_name, tmp_dir)
 
-      test_repo_manager = repo_manager.RepoManager(
-          test_case.git_url, host_src_dir, repo_name=test_case.oss_repo_name)
+      test_repo_manager = repo_manager.clone_and_get_manager(
+          test_case.git_url, host_src_dir, test_case.oss_repo_name)
       build_data = build_specified_commit.BuildData(
           sanitizer='address',
           architecture='x86_64',

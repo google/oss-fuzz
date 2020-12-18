@@ -37,11 +37,13 @@ def get_oss_fuzz_repo():
     yield os.path.join(tmp_dir, repo_name)
 
 
-class CloneIntegrationTest(unittest.TestCase):
+class CloneTest(unittest.TestCase):
   """Tests the _clone function."""
 
-  def test_clone_valid_repo(self):
-    """Tests the correct location of the git repo."""
+  @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                   'INTEGRATION_TESTS=1 not set')
+  def test_clone_valid_repo_integration(self):
+    """Integration test that tests the correct location of the git repo."""
     with get_oss_fuzz_repo() as oss_fuzz_repo:
       git_path = os.path.join(oss_fuzz_repo, '.git')
       self.assertTrue(os.path.isdir(git_path))
@@ -54,6 +56,8 @@ class CloneIntegrationTest(unittest.TestCase):
                             'oss-fuzz')
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class RepoManagerCheckoutTest(unittest.TestCase):
   """Tests the checkout functionality of RepoManager."""
 
@@ -77,6 +81,8 @@ class RepoManagerCheckoutTest(unittest.TestCase):
         repo_man.checkout_commit('not-a-valid-commit')
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class RepoManagerGetCommitListTest(unittest.TestCase):
   """Tests the get_commit_list method of RepoManager."""
 
@@ -110,6 +116,8 @@ class RepoManagerGetCommitListTest(unittest.TestCase):
         repo_man.get_commit_list(old_commit, new_commit)  # pylint: disable=arguments-out-of-order
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class GitDiffTest(unittest.TestCase):
   """Tests get_git_diff."""
 
@@ -149,6 +157,8 @@ class GitDiffTest(unittest.TestCase):
       self.assertIsNone(diff)
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class CheckoutPrIntegrationTest(unittest.TestCase):
   """Does Integration tests on the checkout_pr method of RepoManager."""
 
