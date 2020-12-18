@@ -109,8 +109,9 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
   _add_architecture_args(check_build_parser)
-  _add_engine_args(check_build_parser,
-                   choices=['libfuzzer', 'afl', 'honggfuzz', 'dataflow'])
+  _add_engine_args(
+      check_build_parser,
+      choices=['libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none'])
   _add_sanitizer_args(check_build_parser,
                       choices=['address', 'memory', 'undefined', 'dataflow'])
   _add_environment_args(check_build_parser)
