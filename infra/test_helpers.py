@@ -13,7 +13,10 @@
 # limitations under the License.
 """Contains convenient helpers for writing tests."""
 
+import contextlib
 import os
+import shutil
+import tempfile
 from unittest import mock
 
 
@@ -25,3 +28,11 @@ def patch_environ(testcase_obj, env=None):
   patcher = mock.patch.dict(os.environ, env)
   testcase_obj.addCleanup(patcher.stop)
   patcher.start()
+
+
+@contextlib.contextmanager
+def temp_dir_copy(directory):
+  temp_copy_path = os.path.join(temp_dir, os.path.basename(directory))
+  with tempfile.TemporaryDirectory() as temp_dir:
+    shutil.copytree(directory, temp_copy_path)
+    yield temp_copy_path
