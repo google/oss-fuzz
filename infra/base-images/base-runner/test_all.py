@@ -47,11 +47,12 @@ def recreate_directory(directory):
 
 def move_directory_contents(src_directory, dst_directory):
   """Moves contents of |src_directory| to |dst_directory|."""
-  src_files = os.listdir(src_directory)
-  for filename in src_files:
-    src_path = os.path.join(src_directory, filename)
-    shutil.move(src_path, dst_directory)
-
+  # Use mv because mv preserves file permissions. If we don't preserve file
+  # permissions that can mess up CheckFuzzerBuildTest in cifuzz_test.py and
+  # other cases where one is calling test_all on files not in OSS-Fuzz's real
+  # out directory.
+  src_files = os.path.join(src_directory, '*')
+  subprocess.check_call(['mv', src_files, dst_directory], check=True)
 
 def is_elf(filepath):
   """Returns True if |filepath| is an ELF file."""
