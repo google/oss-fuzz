@@ -260,7 +260,7 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
     the run succeeded and that no bug was found."""
     with test_helpers.temp_dir_copy(fuzzer_dir) as fuzzer_dir_copy:
       run_success, bug_found = cifuzz.run_fuzzers(10,
-                                                  fuzzer_dir,
+                                                  fuzzer_dir_copy,
                                                   'curl',
                                                   sanitizer=sanitizer)
     self.assertTrue(run_success)
