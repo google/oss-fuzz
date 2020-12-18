@@ -128,6 +128,8 @@ class InternalGithubBuilderTest(unittest.TestCase):
                      os.path.basename(image_repo_path))
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
 
@@ -229,21 +231,6 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         ))
 
 
-def remove_test_files(out_parent_dir, allowlist):
-  """Removes test files from |out_parent_dir| that are not in |allowlist|, a
-  list of files with paths relative to the out directory."""
-  out_dir = os.path.join(out_parent_dir, 'out')
-  allowlist = set(allowlist)
-  for rel_out_path in os.listdir(out_dir):
-    if rel_out_path in allowlist:
-      continue
-    path_to_remove = os.path.join(out_dir, rel_out_path)
-    if os.path.isdir(path_to_remove):
-      shutil.rmtree(path_to_remove)
-    else:
-      os.remove(path_to_remove)
-
-
 class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,invalid-name
   """Mixin for integration test classes that runbuild_fuzzers on builds of a
   specific sanitizer."""
@@ -251,53 +238,50 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
   FUZZER_DIR = None
   FUZZER = None
 
-  def tearDown(self):
-    """Removes any existing crashes and test files."""
-    remove_test_files(self.FUZZER_DIR, self.FUZZER)
-
   def _test_run_with_sanitizer(self, fuzzer_dir, sanitizer):
     """Calls run_fuzzers on fuzzer_dir and |sanitizer| and asserts
     the run succeeded and that no bug was found."""
-    run_success, bug_found = cifuzz.run_fuzzers(10,
-                                                fuzzer_dir,
-                                                'curl',
-                                                sanitizer=sanitizer)
+    with test_helpers.temp_dir_copy(fuzzer_dir) as fuzzer_dir_copy:
+      run_success, bug_found = cifuzz.run_fuzzers(10,
+                                                  fuzzer_dir_copy,
+                                                  'curl',
+                                                  sanitizer=sanitizer)
     self.assertTrue(run_success)
     self.assertFalse(bug_found)
 
 
-class RunMemoryFuzzerIntegrationTest(unittest.TestCase,
-                                     RunFuzzerIntegrationTestMixin):
+class RunMemoryFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
+                                     unittest.TestCase):
   """Integration test for build_fuzzers with an MSAN build."""
   FUZZER_DIR = MEMORY_FUZZER_DIR
   FUZZER = MEMORY_FUZZER
 
+  @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                   'INTEGRATION_TESTS=1 not set')
   def test_run_with_memory_sanitizer(self):
     """Tests run_fuzzers with a valid MSAN build."""
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'memory')
 
 
-class RunUndefinedFuzzerIntegrationTest(unittest.TestCase,
-                                        RunFuzzerIntegrationTestMixin):
+class RunUndefinedFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
+                                        unittest.TestCase):
   """Integration test for build_fuzzers with an UBSAN build."""
   FUZZER_DIR = UNDEFINED_FUZZER_DIR
   FUZZER = UNDEFINED_FUZZER
 
+  @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                   'INTEGRATION_TESTS=1 not set')
   def test_run_with_undefined_sanitizer(self):
-    """Tests run_fuzzers with a valid MSAN build."""
+    """Tests run_fuzzers with a valid UBSAN build."""
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'undefined')
 
 
-class RunAddressFuzzersIntegrationTest(unittest.TestCase):
+class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
+                                       unittest.TestCase):
   """Integration tests for build_fuzzers with an ASAN build."""
 
-  def tearDown(self):
-    """Removes any existing crashes and test files."""
-    files_to_keep = [
-        'undefined', 'memory', EXAMPLE_CRASH_FUZZER, EXAMPLE_NOCRASH_FUZZER
-    ]
-    remove_test_files(TEST_FILES_PATH, files_to_keep)
-
+  @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                   'INTEGRATION_TESTS=1 not set')
   def test_new_bug_found(self):
     """Tests run_fuzzers with a valid ASAN build."""
     # Set the first return value to True, then the second to False to
@@ -314,6 +298,8 @@ class RunAddressFuzzersIntegrationTest(unittest.TestCase):
       self.assertTrue(run_success)
       self.assertTrue(bug_found)
 
+  @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                   'INTEGRATION_TESTS=1 not set')
   def test_old_bug_found(self):
     """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
     with mock.patch.object(fuzz_target.FuzzTarget,
@@ -409,6 +395,8 @@ class CheckFuzzerBuildTest(unittest.TestCase):
                   ' '.join(mocked_docker_run.call_args[0][0]))
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class GetFilesCoveredByTargetTest(unittest.TestCase):
   """Tests get_files_covered_by_target."""
 
