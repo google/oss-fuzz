@@ -258,10 +258,11 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
   def _test_run_with_sanitizer(self, fuzzer_dir, sanitizer):
     """Calls run_fuzzers on fuzzer_dir and |sanitizer| and asserts
     the run succeeded and that no bug was found."""
-    run_success, bug_found = cifuzz.run_fuzzers(10,
-                                                fuzzer_dir,
-                                                'curl',
-                                                sanitizer=sanitizer)
+    with test_helpers.temp_dir_copy(fuzzer_dir) as fuzzer_dir_copy:
+      run_success, bug_found = cifuzz.run_fuzzers(10,
+                                                  fuzzer_dir,
+                                                  'curl',
+                                                  sanitizer=sanitizer)
     self.assertTrue(run_success)
     self.assertFalse(bug_found)
 
