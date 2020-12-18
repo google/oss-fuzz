@@ -44,7 +44,7 @@ void run(const std::string& expression_string)
 
    loop_runtime_check_t loop_runtime_check;
    loop_runtime_check.loop_set = loop_runtime_check_t::e_all_loops;
-   loop_runtime_check.max_loop_iterations = 100000000;
+   loop_runtime_check.max_loop_iterations = 1000000;
 
    parser_t parser;
 
