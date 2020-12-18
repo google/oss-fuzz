@@ -354,8 +354,7 @@ def run_tests():
 def get_all_files():
   """Returns a list of absolute paths of files in this repo."""
   get_all_files_command = ['git', 'ls-files']
-  output = subprocess.check_output(
-      get_all_files_command).decode().splitlines()
+  output = subprocess.check_output(get_all_files_command).decode().splitlines()
   return [os.path.abspath(path) for path in output if os.path.isfile(path)]
 
 
