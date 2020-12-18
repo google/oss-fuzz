@@ -30,9 +30,10 @@ import test_repos
 # Necessary because __file__ changes with os.chdir
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
-
-class BuildImageIntegrationTests(unittest.TestCase):
-  """Testing if an image can be built from different states e.g. a commit."""
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
+class BuildImageIntegrationTest(unittest.TestCase):
+  """Tests if an image can be built from different states e.g. a commit."""
 
   @unittest.skip('Test is failing (spuriously?).')
   def test_build_fuzzers_from_commit(self):
