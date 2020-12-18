@@ -372,7 +372,6 @@ def main():
   args = parser.parse_args()
 
   if args.all_files:
-    print('all')
     relevant_files = get_all_files()
   else:
     relevant_files = get_changed_files()
@@ -393,7 +392,8 @@ def main():
     return bool_to_returncode(success)
 
   if args.command == 'infra-tests':
-    return bool_to_returncode(run_tests())
+    success = run_tests()
+    return bool_to_returncode(success)
 
   # Do all the checks (but no tests).
   success = do_checks(relevant_files)
