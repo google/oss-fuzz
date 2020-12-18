@@ -32,6 +32,7 @@ def patch_environ(testcase_obj, env=None):
 
 @contextlib.contextmanager
 def temp_dir_copy(directory):
+  """Context manager that yields a temporary copy of |directory|."""
   with tempfile.TemporaryDirectory() as temp_dir:
     temp_copy_path = os.path.join(temp_dir, os.path.basename(directory))
     shutil.copytree(directory, temp_copy_path)

@@ -229,31 +229,12 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         ))
 
 
-def remove_test_files(out_parent_dir, allowlist):
-  """Removes test files from |out_parent_dir| that are not in |allowlist|, a
-  list of files with paths relative to the out directory."""
-  out_dir = os.path.join(out_parent_dir, 'out')
-  allowlist = set(allowlist)
-  for rel_out_path in os.listdir(out_dir):
-    if rel_out_path in allowlist:
-      continue
-    path_to_remove = os.path.join(out_dir, rel_out_path)
-    if os.path.isdir(path_to_remove):
-      shutil.rmtree(path_to_remove)
-    else:
-      os.remove(path_to_remove)
-
-
 class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,invalid-name
   """Mixin for integration test classes that runbuild_fuzzers on builds of a
   specific sanitizer."""
   # These must be defined by children.
   FUZZER_DIR = None
   FUZZER = None
-
-  def tearDown(self):
-    """Removes any existing crashes and test files."""
-    remove_test_files(self.FUZZER_DIR, [self.FUZZER])
 
   def _test_run_with_sanitizer(self, fuzzer_dir, sanitizer):
     """Calls run_fuzzers on fuzzer_dir and |sanitizer| and asserts
@@ -286,20 +267,12 @@ class RunUndefinedFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
 
   def test_run_with_undefined_sanitizer(self):
     """Tests run_fuzzers with a valid UBSAN build."""
-    import pdb; pdb.set_trace()
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'undefined')
 
 
 class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                        unittest.TestCase):
   """Integration tests for build_fuzzers with an ASAN build."""
-
-  def tearDown(self):
-    """Removes any existing crashes and test files."""
-    files_to_keep = [
-        'undefined', 'memory', EXAMPLE_CRASH_FUZZER, EXAMPLE_NOCRASH_FUZZER
-    ]
-    remove_test_files(TEST_FILES_PATH, files_to_keep)
 
   def test_new_bug_found(self):
     """Tests run_fuzzers with a valid ASAN build."""
