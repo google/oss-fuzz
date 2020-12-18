@@ -35,6 +35,7 @@ import repo_manager
 import test_repos
 # pylint: enable=wrong-import-position
 
+
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')
 class DetectRepoIntegrationTest(unittest.TestCase):

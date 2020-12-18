@@ -41,7 +41,7 @@ class CloneTest(unittest.TestCase):
   """Tests the _clone function."""
 
   @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
-                 'INTEGRATION_TESTS=1 not set')
+                   'INTEGRATION_TESTS=1 not set')
   def test_clone_valid_repo_integration(self):
     """Integration test that tests the correct location of the git repo."""
     with get_oss_fuzz_repo() as oss_fuzz_repo:
@@ -79,6 +79,7 @@ class RepoManagerCheckoutTest(unittest.TestCase):
         repo_man.checkout_commit('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
       with self.assertRaises(ValueError):
         repo_man.checkout_commit('not-a-valid-commit')
+
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')
@@ -154,6 +155,7 @@ class GitDiffTest(unittest.TestCase):
       repo_man = repo_manager.RepoManager(oss_fuzz_repo)
       diff = repo_man.get_git_diff()
       self.assertIsNone(diff)
+
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')

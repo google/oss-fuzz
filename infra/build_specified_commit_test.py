@@ -30,6 +30,7 @@ import test_repos
 # Necessary because __file__ changes with os.chdir
 TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
+
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')
 class BuildImageIntegrationTest(unittest.TestCase):
