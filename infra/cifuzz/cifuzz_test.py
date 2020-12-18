@@ -267,8 +267,8 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
     self.assertFalse(bug_found)
 
 
-class RunMemoryFuzzerIntegrationTest(unittest.TestCase,
-                                     RunFuzzerIntegrationTestMixin):
+class RunMemoryFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
+                                     unittest.TestCase):
   """Integration test for build_fuzzers with an MSAN build."""
   FUZZER_DIR = MEMORY_FUZZER_DIR
   FUZZER = MEMORY_FUZZER
@@ -280,7 +280,6 @@ class RunMemoryFuzzerIntegrationTest(unittest.TestCase,
 
 class RunUndefinedFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
                                         unittest.TestCase):
-
   """Integration test for build_fuzzers with an UBSAN build."""
   FUZZER_DIR = UNDEFINED_FUZZER_DIR
   FUZZER = UNDEFINED_FUZZER
@@ -291,7 +290,8 @@ class RunUndefinedFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'undefined')
 
 
-class RunAddressFuzzersIntegrationTest(unittest.TestCase):
+class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
+                                       unittest.TestCase):
   """Integration tests for build_fuzzers with an ASAN build."""
 
   def tearDown(self):
