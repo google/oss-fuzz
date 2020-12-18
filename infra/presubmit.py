@@ -372,6 +372,7 @@ def main():
   args = parser.parse_args()
 
   if args.all_files:
+    print('all')
     relevant_files = get_all_files()
   else:
     relevant_files = get_changed_files()
