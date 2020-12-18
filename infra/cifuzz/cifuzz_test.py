@@ -366,35 +366,36 @@ class ParseOutputTest(unittest.TestCase):
       cifuzz.parse_fuzzer_output(b'not a valid output_string', tmp_dir)
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
 
-# TODO(metzman): Fix, this test seems to be messing up permissions.
-# class CheckFuzzerBuildTest(unittest.TestCase):
-#   """Tests the check_fuzzer_build function in the cifuzz module."""
+class CheckFuzzerBuildTest(unittest.TestCase):
+  """Tests the check_fuzzer_build function in the cifuzz module."""
 
-#   def test_correct_fuzzer_build(self):
-#     """Checks check_fuzzer_build function returns True for valid fuzzers."""
-#     test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
-#     self.assertTrue(cifuzz.check_fuzzer_build(test_fuzzer_dir))
+  def test_correct_fuzzer_build(self):
+    """Checks check_fuzzer_build function returns True for valid fuzzers."""
+    test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
+    self.assertTrue(cifuzz.check_fuzzer_build(test_fuzzer_dir))
 
-#   def test_not_a_valid_fuzz_path(self):
-#     """Tests that False is returned when a bad path is given."""
-#     self.assertFalse(cifuzz.check_fuzzer_build('not/a/valid/path'))
+  def test_not_a_valid_fuzz_path(self):
+    """Tests that False is returned when a bad path is given."""
+    self.assertFalse(cifuzz.check_fuzzer_build('not/a/valid/path'))
 
-#   def test_not_a_valid_fuzzer(self):
-#     """Checks a directory that exists but does not have fuzzers is False."""
-#     self.assertFalse(cifuzz.check_fuzzer_build(TEST_FILES_PATH))
+  def test_not_a_valid_fuzzer(self):
+    """Checks a directory that exists but does not have fuzzers is False."""
+    self.assertFalse(cifuzz.check_fuzzer_build(TEST_FILES_PATH))
 
-#   @mock.patch('helper.docker_run')
-#   def test_allow_broken_fuzz_targets_percentage(self, mocked_docker_run):
-#     """Tests that ALLOWED_BROKEN_TARGETS_PERCENTAGE is set when running
-#     docker if passed to check_fuzzer_build."""
-#     mocked_docker_run.return_value = 0
-#     test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
-#     cifuzz.check_fuzzer_build(test_fuzzer_dir,
-#                               allowed_broken_targets_percentage='0')
-#     self.assertIn('-e ALLOWED_BROKEN_TARGETS_PERCENTAGE=0',
-#                   ' '.join(mocked_docker_run.call_args[0][0]))
+  @mock.patch('helper.docker_run')
+  def test_allow_broken_fuzz_targets_percentage(self, mocked_docker_run):
+    """Tests that ALLOWED_BROKEN_TARGETS_PERCENTAGE is set when running
+    docker if passed to check_fuzzer_build."""
+    mocked_docker_run.return_value = 0
+    test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
+    cifuzz.check_fuzzer_build(test_fuzzer_dir,
+                              allowed_broken_targets_percentage='0')
+    self.assertIn('-e ALLOWED_BROKEN_TARGETS_PERCENTAGE=0',
+                  ' '.join(mocked_docker_run.call_args[0][0]))
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class GetFilesCoveredByTargetTest(unittest.TestCase):
   """Tests get_files_covered_by_target."""
 
