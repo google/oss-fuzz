@@ -74,6 +74,8 @@ def find_fuzz_targets(directory, fuzzing_language):
   fuzz_targets = []
   for filename in os.listdir(directory):
     path = os.path.join(directory, filename)
+    if filename == 'llvm-symbolizer':
+      continue
     if filename.startswith('afl-'):
       continue
     if not os.path.isfile(path):
