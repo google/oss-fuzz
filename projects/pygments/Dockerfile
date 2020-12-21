@@ -23,4 +23,39 @@ RUN git clone \
 
 WORKDIR pygments
 
+RUN git clone --depth 1 https://github.com/google/fuzzing
+RUN cat fuzzing/dictionaries/aff.dict \
+        fuzzing/dictionaries/bash.dict \
+        fuzzing/dictionaries/creole.dict \
+        fuzzing/dictionaries/css.dict \
+        fuzzing/dictionaries/graphviz.dict \
+        fuzzing/dictionaries/fbs.dict \
+        fuzzing/dictionaries/html.dict \
+        fuzzing/dictionaries/jinja2.dict \
+        fuzzing/dictionaries/js.dict \
+        fuzzing/dictionaries/json.dict \
+        fuzzing/dictionaries/lua.dict \
+        fuzzing/dictionaries/markdown.dict \
+        fuzzing/dictionaries/mathml.dict \
+        fuzzing/dictionaries/pdf.dict \
+        fuzzing/dictionaries/protobuf.dict \
+        fuzzing/dictionaries/ps.dict \
+        fuzzing/dictionaries/regexp.dict \
+        fuzzing/dictionaries/rst.dict \
+        fuzzing/dictionaries/rtf.dict \
+        fuzzing/dictionaries/sql.dict \
+        fuzzing/dictionaries/svg.dict \
+        fuzzing/dictionaries/tex.dict \
+        fuzzing/dictionaries/toml.dict \
+        fuzzing/dictionaries/utf8.dict \
+        fuzzing/dictionaries/vcf.dict \
+        fuzzing/dictionaries/wkt.dict \
+        fuzzing/dictionaries/x86.dict \
+        fuzzing/dictionaries/xml.dict \
+        fuzzing/dictionaries/xpath.dict \
+        fuzzing/dictionaries/xslt.dict \
+        fuzzing/dictionaries/yaml.dict \
+        fuzzing/dictionaries/yara.dict \
+      > $OUT/pygments_fuzzer.dict
+
 COPY build.sh pygments_fuzzer.py $SRC/
