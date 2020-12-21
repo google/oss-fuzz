@@ -1,0 +1,9 @@
+homepage: "https://github.com/igraph/igraph"
+main_repo: "https://github.com/igraph/igraph"
+language: c
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
