@@ -16,16 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN cd $GOPATH/src && \
-  mkdir -p github.com/ethereum && \
-  cd github.com/ethereum && \
-  git clone --depth=1 --single-branch  https://github.com/ethereum/go-ethereum && \
-  cd go-ethereum && go mod download
-
+RUN git clone --single-branch --depth=1 https://github.com/ethereum/go-ethereum $GOPATH/src/github.com/ethereum/go-ethereum 
 RUN cp $GOPATH/src/github.com/ethereum/go-ethereum/oss-fuzz.sh $SRC/build.sh
 # Enable this for easier local testing / repro
 #ADD build.sh $SRC/build.sh
 
-RUN cp $SRC/go-ethereum/oss-fuzz.sh $SRC/build.sh
 WORKDIR $SRC/
 
