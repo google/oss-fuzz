@@ -21,11 +21,12 @@ community.
 [thousands]: https://bugs.chromium.org/p/chromium/issues/list?q=label%3AStability-LibFuzzer%2CStability-AFL%20-status%3ADuplicate%2CWontFix&can=1
 [guided in-process fuzzing of Chrome components]: https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html
 
-In cooperation with the [Core Infrastructure Initiative], OSS-Fuzz aims to make
-common open source software more secure and stable by combining modern fuzzing
-techniques with scalable, distributed execution.
+In cooperation with the [Core Infrastructure Initiative] and the [OpenSSF],
+OSS-Fuzz aims to make common open source software more secure and stable by
+combining modern fuzzing techniques with scalable, distributed execution.
 
 [Core Infrastructure Initiative]: https://www.coreinfrastructure.org/
+[OpenSSF]: https://www.openssf.org/
 
 We support the [libFuzzer], [AFL], and [Honggfuzz] fuzzing engines in
 combination with [Sanitizers], as well as [ClusterFuzz], a distributed fuzzer
@@ -37,8 +38,9 @@ execution environment and reporting tool.
 [Sanitizers]: https://github.com/google/sanitizers
 [ClusterFuzz]: https://github.com/google/clusterfuzz
 
-Currently, OSS-Fuzz supports C/C++, Rust, and Go code. Other languages supported
-by [LLVM] may work too. OSS-Fuzz supports fuzzing x86_64 and i386 builds.
+Currently, OSS-Fuzz supports C/C++, Rust, Go and Python code. Other languages
+supported by [LLVM] may work too. OSS-Fuzz supports fuzzing x86_64 and i386
+builds.
 
 [LLVM]: https://llvm.org
 
@@ -54,8 +56,9 @@ other resources are listed on the [useful links] page.
 [useful links]: {{ site.baseurl }}/reference/useful-links/#tutorials
 
 ## Trophies
-As of June 2020, OSS-Fuzz has found over [20,000] bugs in [300] open source
+As of January 2021, OSS-Fuzz has found over [25,000] bugs in [375] open source
 projects.
 
-[20,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
-[300]: https://github.com/google/oss-fuzz/tree/master/projects
+[25,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
+[375]: https://github.com/google/oss-fuzz/tree/master/projects
+
