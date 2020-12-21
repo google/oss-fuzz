@@ -18,10 +18,6 @@ FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt install -y bzr python-lxml python-html5lib
 RUN pip3 install 2to3 soupsieve html5lib lxml
-RUN bzr branch lp:beautifulsoup
-WORKDIR beautifulsoup
-# Beautifulsoup is written in python2, with a script to atomatically convert it to python3.
-RUN yes | ./convert-py3k
-WORKDIR py3k
+RUN pip3 install bzr+lp:beautifulsoup
 
 COPY build.sh bs4_fuzzer.py $SRC/
