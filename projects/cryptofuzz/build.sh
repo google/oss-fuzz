@@ -256,7 +256,8 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     make libcryptopp.a -j$(nproc) >/dev/null 2>&1
 else
-    CXXFLAGS="$CXXFLAGS -DCRYPTOPP_DISABLE_ASM=1" make libcryptopp.a -j$(nproc) >/dev/null 2>&1
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOPP_DISABLE_ASM=1"
+    make libcryptopp.a -j$(nproc) >/dev/null 2>&1
 fi
 
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
