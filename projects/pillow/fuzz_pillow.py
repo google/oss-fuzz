@@ -19,12 +19,14 @@ import sys
 import os
 import io
 import warnings
-from PIL import Image, ImageFile
+from PIL import Image, ImageFile, ImageFilter
 
 def TestOneInput(data):
     try:
-        im = Image.open(io.BytesIO(data))
-        im.save(io.BytesIO(), "BMP")
+        with Image.open(io.BytesIO(data)) as im:
+          im.rotate(45)
+          im.filter(ImageFilter.DETAIL)
+          im.save(io.BytesIO(), "BMP")
     except Exception:
         # We're catching all exceptions because Pillow's exceptions are
         # directly inheriting from Exception.
