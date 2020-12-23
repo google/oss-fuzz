@@ -15,7 +15,18 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get install -y libjpeg-dev zlib1g-dev libpng-dev
+RUN apt-get install -y libjpeg-dev \
+							         libffi-dev \
+                       libfreetype6-dev \
+                       libfribidi-dev \
+                       libharfbuzz-dev \
+                       libopenjp2-7-dev \
+											 libpng-dev \
+											 libxcb1-dev \
+                       python3-tk \
+                       tcl8.6-dev \
+                       tk8.6-dev \
+                       zlib1g-dev 
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow
 WORKDIR $SRC
 COPY build.sh $SRC/
