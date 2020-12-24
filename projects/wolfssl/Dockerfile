@@ -16,11 +16,13 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN apt-get update && apt-get install -y make autoconf automake libtool zip
+RUN apt-get update && apt-get install -y make autoconf automake libtool zip wget python
 RUN git clone https://github.com/wolfssl/wolfssl --depth 1 $SRC/wolfssl
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssh.git
 RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git
 RUN git clone --depth 1 https://github.com/guidovranken/wolf-ssl-ssh-fuzzers
+RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+RUN wget https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2
 RUN git clone https://github.com/wolfssl/oss-fuzz-targets --depth 1 $SRC/fuzz-targets
 
 WORKDIR wolfssl
