@@ -22,6 +22,7 @@ make -j$(nproc)
 
 # Package seed corpus
 zip -j $OUT/decompress_fuzzer_seed_corpus.zip compat/*.cdata
+zip -j $OUT/decompress_frame_fuzzer_seed_corpus.zip tests/fuzz/corpus/*
 
 # Copy the fuzzer executables, zip-ed corpora, and dictionary files to $OUT
 find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
