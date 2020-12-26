@@ -95,22 +95,25 @@ then
     OSS_FUZZ_BUILD=1 SRC="$NEW_SRC" $NEW_SRC/build.sh
 fi
 
-cd $SRC/wolfssl
+if [[ $CFLAGS != *-m32* ]]
+then
+    cd $SRC/wolfssl
 
-# target_dir determined by Dockerfile
-target_dir="$SRC/fuzz-targets"
+    # target_dir determined by Dockerfile
+    target_dir="$SRC/fuzz-targets"
 
-# build wolfssl
-./autogen.sh
-./configure --enable-static --disable-shared --prefix=/usr CC="clang"
-make -j "$(nproc)" all
-make install
+    # build wolfssl
+    ./autogen.sh
+    ./configure --enable-static --disable-shared --prefix=/usr CC="clang"
+    make -j "$(nproc)" all
+    make install
 
-# put linker arguments into the environment, appending to any existing ones
-export LDFLAGS="${LDFLAGS-""}"
-export LDLIBS="${LDLIBS-""} -lwolfssl $LIB_FUZZING_ENGINE"
+    # put linker arguments into the environment, appending to any existing ones
+    export LDFLAGS="${LDFLAGS-""}"
+    export LDLIBS="${LDLIBS-""} -lwolfssl $LIB_FUZZING_ENGINE"
 
-# make and export targets to $OUT; environment overridding internal variables
-cd "${target_dir}"
-make -e all
-make -e export prefix="$OUT"
+    # make and export targets to $OUT; environment overridding internal variables
+    cd "${target_dir}"
+    make -e all
+    make -e export prefix="$OUT"
+fi

@@ -21,4 +21,7 @@ sanitizers:
      experimental: True
   - undefined
   - dataflow
+architectures:
+  - x86_64
+  - i386
 main_repo: 'https://github.com/wolfssl/wolfssl'
