@@ -1,7 +1,7 @@
 homepage: "https://github.com/zeux/meshoptimizer"
 main_repo: "https://github.com/zeux/meshoptimizer"
 language: c++
-primary_contact: ""
+primary_contact: "arseny.kapoulkine@gmail.com"
 auto_ccs:
   - "Adam@adalogics.com"
 sanitizers:
