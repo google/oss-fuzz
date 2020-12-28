@@ -15,5 +15,10 @@
 #
 ################################################################################
 
+mkdir build && cd build
+cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
+make -j$(nproc)
 
-make ossfuzz -j$(nproc)
+cd ..
+find . -name "*.o" -exec ar rcs fuzz_lib.a {} \;
+$CXX $CXXFLAGS tools/codecfuzz.cpp -o $OUT/codecfuzzer $LIB_FUZZING_ENGINE fuzz_lib.a
