@@ -17,14 +17,16 @@
 
 # Build Jerryscript
 python tools/build.py \
-        --linker-flag '${CC} ${CFLAGS}' \
-        --compile-flag '${CC} ${CFLAGS}' \
+        --linker-flag '${CXX} ${CXXFLAGS}' \
+        --compile-flag '${CXX} ${CXXFLAGS}' \
         --lto 'OFF' \
         --libfuzzer 'OFF'
 cd $SRC/jerryscript
 
+
 # Build fuzzer
-$CC $CFLAGS \
+sed 's/int LLVMFuzzerTestOneInput/extern "C" int LLVMFuzzerTestOneInput/g' -i jerry-main/libfuzzer.c
+$CXX $CXXFLAGS \
         -I/src/jerryscript/jerry-core/include \
         -I/src/jerryscript/jerry-libm/include \
         -I/src/jerryscript/jerry-port/default/include \
@@ -32,7 +34,7 @@ $CC $CFLAGS \
         -o libfuzzer.o
 
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
         libfuzzer.o -o $OUT/jerry_fuzzer \
         ./build/lib/libjerry-core.a \
         ./build/lib/libjerry-port-default.a \
