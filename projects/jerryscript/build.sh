@@ -15,10 +15,26 @@
 #
 ################################################################################
 
+# Build Jerryscript
 python tools/build.py \
-	--linker-flag '${LIB_FUZZING_ENGINE} ${CC} ${CFLAGS}' \
-	--compile-flag '${CC} ${CFLAGS}' \
-	--lto 'OFF' \
-	--libfuzzer 'ON'
+        --linker-flag '${CC} ${CFLAGS}' \
+        --compile-flag '${CC} ${CFLAGS}' \
+        --lto 'OFF' \
+        --libfuzzer 'OFF'
+cd $SRC/jerryscript
 
-mv ./build/bin/jerry-libfuzzer $OUT/
+# Build fuzzer
+$CC $CFLAGS \
+        -I/src/jerryscript/jerry-core/include \
+        -I/src/jerryscript/jerry-libm/include \
+        -I/src/jerryscript/jerry-port/default/include \
+        -c ./jerry-main/libfuzzer.c \
+        -o libfuzzer.o
+
+
+$CC $CFLAGS $LIB_FUZZING_ENGINE \
+        libfuzzer.o -o $OUT/jerry_fuzzer \
+        ./build/lib/libjerry-core.a \
+        ./build/lib/libjerry-port-default.a \
+        ./build/lib/libjerry-core.a \
+        ./build/lib/libjerry-libm.a
