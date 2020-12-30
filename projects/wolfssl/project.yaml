@@ -9,6 +9,7 @@ auto_ccs:
   - "kaleb.himes@gmail.com"
   - "levi@wolfssl.com"
   - "testing@wolfssl.com"
+  - "dgarske80@gmail.com"
   - "guidovranken@gmail.com"
 fuzzing_engines:
   - libfuzzer
