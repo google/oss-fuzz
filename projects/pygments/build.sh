@@ -27,8 +27,9 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   # Create execution wrapper.
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
-ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:detect_leaks=0 \
-\$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
+this_dir=\$(dirname \"\$0\")
+ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
+\$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
 
