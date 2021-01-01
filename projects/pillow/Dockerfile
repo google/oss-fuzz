@@ -17,6 +17,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get install -y libjpeg-dev zlib1g-dev libpng-dev
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow
-WORKDIR $SRC
+
 COPY build.sh $SRC/
 COPY fuzz_* $SRC/Pillow
+
+WORKDIR $SRC/Pillow
+
