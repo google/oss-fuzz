@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-cd Pillow
 make install-req
 python3 setup.py develop
 
