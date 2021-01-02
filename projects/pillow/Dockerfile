@@ -48,9 +48,10 @@ RUN apt-get install -y \
       tk8.6-dev \
       zlib1g-dev 
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow
+# install extra test images for a better starting corpus
+RUN cd Pillow && depends/install_extra_test_images.sh
 
 COPY build.sh $SRC/
 COPY fuzz_* $SRC/Pillow
 
 WORKDIR $SRC/Pillow
-
