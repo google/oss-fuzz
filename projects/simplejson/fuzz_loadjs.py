@@ -24,10 +24,7 @@ def TestOneInput(data):
   original = fdp.ConsumeUnicode(sys.maxsize)
   try:
     simplejson.loads(original)
-  except (simplejson.JSONDecodeError,
-          simplejson.JSONDecodeError,
-          ValueError,
-          RecursionError):
+  except simplejson.JSONDecodeError:
     None
   return
 
