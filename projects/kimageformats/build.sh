@@ -67,7 +67,8 @@ make -j$(nproc)
 
 cd $SRC
 cd kimageformats
-HANDLER_TYPES="QAVIFHandler avif
+HANDLER_TYPES="ANIHandler ani
+        QAVIFHandler avif
         KraHandler kra
         OraHandler ora
         PCXHandler pcx
