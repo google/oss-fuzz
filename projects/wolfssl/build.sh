@@ -35,6 +35,40 @@ then
     OLD_CXXFLAGS="$CXXFLAGS"
 
     # Configure Cryptofuzz
+    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-openssl-api/
+    cd $SRC/cryptofuzz-openssl-api/
+    python gen_repository.py
+    rm extra_options.h
+    echo -n '"' >>extra_options.h
+    echo -n '--force-module=wolfCrypt-OpenSSL ' >>extra_options.h
+    echo -n '"' >>extra_options.h
+
+    # Build OpenSSL API fuzzer
+    cp -R $SRC/wolfssl/ $SRC/wolfssl-openssl-api/
+    cd $SRC/wolfssl-openssl-api/
+    autoreconf -ivf
+    CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K"
+    if [[ $CFLAGS = *-m32* ]]
+    then
+        ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-opensslall --enable-opensslextra --disable-fastmath
+    else
+        ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-opensslall --enable-opensslextra
+    fi
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT_OPENSSL"
+    export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-openssl-api/src/.libs/libwolfssl.a"
+    export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-openssl-api/"
+    cd $SRC/cryptofuzz-openssl-api/modules/wolfcrypt-openssl
+    make -j$(nproc)
+    cd $SRC/cryptofuzz-openssl-api/
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
+    cp cryptofuzz $OUT/cryptofuzz-openssl-api
+    CFLAGS="$OLD_CFLAGS"
+    CXXFLAGS="$OLD_CXXFLAGS"
+    unset WOLFCRYPT_LIBWOLFSSL_A_PATH
+    unset WOLFCRYPT_INCLUDE_PATH
+
+    # Configure Cryptofuzz
     cd $SRC/cryptofuzz/
     python gen_repository.py
     rm extra_options.h
@@ -51,7 +85,6 @@ then
     autoreconf -ivf
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-sp-math-all
-    sed -i 's/-Werror//g' Makefile # Workaround for https://github.com/wolfSSL/wolfssl/issues/3589
     make -j$(nproc)
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-sp-math-all/src/.libs/libwolfssl.a"
