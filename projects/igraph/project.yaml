@@ -4,6 +4,7 @@ language: c
 primary_contact: "szhorvat@gmail.com"
 auto_ccs:
   - "Adam@adalogics.com"
+  - "ntamas@gmail.com"
 sanitizers:
   - address
   - undefined
