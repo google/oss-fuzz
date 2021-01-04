@@ -20,7 +20,7 @@
   Usage:
     python infra/helper.py build_image kimageformats
     python infra/helper.py build_fuzzers --sanitizer undefined|address|memory kimageformats
-    python infra/helper.py run_fuzzer kimageformats kimgio_[avif|kra|ora|pcx|pic|psd|ras|rgb|tga|xcf]_fuzzer
+    python infra/helper.py run_fuzzer kimageformats kimgio_[ani|avif|kra|ora|pcx|pic|psd|ras|rgb|tga|xcf]_fuzzer
 */
 
 
@@ -28,6 +28,7 @@
 #include <QCoreApplication>
 #include <QImage>
 
+#include "ani_p.h"
 #include "avif_p.h"
 #include "kra.h"
 #include "ora.h"
