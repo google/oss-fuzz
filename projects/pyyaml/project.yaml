@@ -1,5 +1,5 @@
 homepage: "https://github.com/yaml/pyyaml"
-language: "python"
+language: python
 primary_contact: "pyyaml@yaml.com"
 auto_ccs:
   - "david@adalogics.com"
