@@ -32,3 +32,5 @@ ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm
 \$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
+
+ls -la $OUT/
