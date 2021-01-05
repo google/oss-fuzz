@@ -5,5 +5,4 @@ auto_ccs:
  - "shawn.t.rutledge@gmail.com"
 architectures:
  - x86_64
- - i386
 main_repo: 'git://code.qt.io/qt/qt5.git'
