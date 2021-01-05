@@ -2,6 +2,7 @@ homepage: "https://github.com/nats-io/nats-server"
 primary_contact: "security@nats.io"
 auto_ccs :
   - "adam@adalogics.com"
+  - "mh@synadia.com"
 language: go
 fuzzing_engines:
   - libfuzzer
