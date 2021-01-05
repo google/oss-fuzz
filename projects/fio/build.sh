@@ -17,7 +17,7 @@
 
 # build project
 cd fio
-export LDFLAGS="$CFLAGS"
+export LDFLAGS="$CXXFLAGS"
 ./configure
 make -j$(nproc)
 cp t/fuzz/fuzz_parseini $OUT/
