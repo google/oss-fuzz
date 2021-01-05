@@ -1,5 +1,4 @@
-#/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2018 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +14,10 @@
 #
 ################################################################################
 
-
-mkdir -p $GOPATH/src/github.com/gravitational
-cd $GOPATH/src/github.com/gravitational
-git clone https://github.com/gravitational/teleport.git
-
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool \
+  pkg-config cmake libssl-dev
+RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake CMake
+RUN git clone --depth 1 https://github.com/strongcourage/fuzzing-corpus
+WORKDIR CMake
+RUN cp $SRC/CMake/Tests/Fuzzing/oss_fuzz_build.sh $SRC/build.sh
