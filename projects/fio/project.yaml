@@ -1,7 +1,7 @@
 homepage: "http://git.kernel.dk/fio.git"
 language: c++
 primary_contact: "axboe@kernel.dk"
-auto_ccs :
+auto_ccs:
 - "p.antoine@catenacyber.fr"
 
 sanitizers:
