@@ -33,7 +33,9 @@ if [[ $SANITIZER = *coverage* ]]; then
 
   echo "#!/bin/sh" > $OUT/$fuzzer
   echo "cd $path" >> $OUT/$fuzzer
-  echo "go test -run Test${function}Corpus -v $tags -coverprofile \$1 " >> $OUT/$fuzzer
+  # The fuzzer may be in a subdirectory, but we want the coverage report for the whole repository
+  fuzzed_repo=`echo $path | cut -d/ -f-3`
+  echo "go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -coverprofile \$1 " >> $OUT/$fuzzer
   chmod +x $OUT/$fuzzer
 
   cd -
