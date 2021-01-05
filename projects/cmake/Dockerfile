@@ -20,4 +20,4 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
 RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake CMake
 RUN git clone --depth 1 https://github.com/strongcourage/fuzzing-corpus
 WORKDIR CMake
-RUN cp $SRC/CMake/Tests/Fuzzing/oss_fuzz_build.sh $SRC/build.sh
+COPY build.sh $SRC/
