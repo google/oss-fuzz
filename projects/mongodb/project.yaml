@@ -1,0 +1,6 @@
+homepage: "https://www.mongodb.com/"
+language: c++
+primary_contact: "mongo-c-driver-ossfuzz@mongodb.com"
+auto_ccs:
+ - "david@adalogics.com"
+main_repo: "https://github.com/mongodb"
