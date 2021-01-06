@@ -1,8 +1,9 @@
-homepage: "https://python-pillow.org/"
-language: c++
-primary_contact: "guidovranken@gmail.com"
+homepage: ""
+main_repo: ""
+language: python
+primary_contact: ""
 auto_ccs:
- - "security@python-pillow.org"
+ - "Adam@adalogics.com"
 sanitizers:
  - address
  - undefined
