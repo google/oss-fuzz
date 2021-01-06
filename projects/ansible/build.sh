@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-
-# Because Pillow's "./setup.py build_ext --inplace" does not work with custom CC and CFLAGS,
-# it is necessary to build in the following manner:
-#
-# Build CPython without instrumentation/sanitization
-# Build Pillow in a virtualenv based on uninstrumented and unsanitized CPython. Log the build steps to build.sh
-# Build CPython with instrumentation/sanitization
-# Rewrite build.sh to compile Pillow based on CPython with instrumentation/sanitization
-#
-# Why not build Pillow directly with a virtualenv based on instrumented CPython?
-# Because the virtualenv will inherit CC and CFLAGS of the instrumented CPython, and that will fail.
 
 
 pip3 uninstall ansible
