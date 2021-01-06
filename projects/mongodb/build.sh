@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,14 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update
-RUN git clone --recursive --depth 1 https://github.com/mongodb/mongo-c-driver
-WORKDIR $SRC/mongo-c-driver
+mkdir cmake-build && cd cmake-build
+cmake -DENABLE_MONGOC=OFF -DENABLE_BSON_AUTO=ON -DENABLE_STATIC=ON ../ 
+make
 
-COPY build.sh $SRC/
+$CC $CFLAGS -I./src \
+    -I./src/libbson/src -I./src/libbson/src/bson -I./src/common \
+    -I../src/libbson/src -I../src/libbson/src/bson -I../src/common \
+    -c ../src/libbson/fuzz/fuzz_test_libbson.c -o fuzz_test_libbson.o
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_test_libbson.o \
+    ./src/libbson/libbson-static-1.0.a -o $OUT/fuzz-libbson
