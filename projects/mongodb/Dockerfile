@@ -15,8 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update
+RUN apt-get update && apt-get install -y libssl-dev libcurl4-openssl-dev python3-dev liblzma-dev scons
 RUN git clone --recursive --depth 1 https://github.com/mongodb/mongo-c-driver
+RUN git clone https://github.com/mongodb/libmongocrypt
+
+
 WORKDIR $SRC/mongo-c-driver
 
 COPY build.sh $SRC/
