@@ -52,7 +52,6 @@ RUN ln -s /usr/local/bin/python3 /usr/local/bin/python \
 RUN cd Pillow && depends/install_extra_test_images.sh
 
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/Pillow
 
 # pillow runtime dependencies
 RUN apt-get install -y \
