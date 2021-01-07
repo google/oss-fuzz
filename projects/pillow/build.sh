@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 ################################################################################
-#make install-req
+
 python3 setup.py build --build-base=/tmp/build install
 
 bp="$(find /tmp/build -name '_imaging.o')"
