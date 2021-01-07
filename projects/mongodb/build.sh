@@ -56,6 +56,8 @@ elif [ $SANITIZER == "undefined" ]; then
 #elif [ $SANITIZER == "coverage" ]; then
 fi
 
-python3 src/third_party/scons-3.1.2/scons.py CC=clang CXX=clang++ --libc++ --disable-warnings-as-errors --sanitize=fuzzer${SAN} LLVM_SYMBOLIZER=llvm-symbolizer  --allocator=system VERBOSE=on ./src/mongo/bson/
-
+python3 src/third_party/scons-3.1.2/scons.py CC=$CC CXX=$CXX --libc++ --disable-warnings-as-errors --sanitize=fuzzer${SAN} LLVM_SYMBOLIZER=llvm-symbolizer  --allocator=system VERBOSE=on ./src/mongo/bson/
 mv ./build/opt/mongo/bson/bson_validate_fuzzer $OUT/bson_validate_fuzzer
+
+#python3 src/third_party/scons-3.1.2/scons.py CC=clang CXX=clang++ --libc++ --disable-warnings-as-errors --sanitize=fuzzer${SAN} LLVM_SYMBOLIZER=llvm-symbolizer  --allocator=system VERBOSE=on ./src/mongo/db
+#mv ./build/opt/mongo/db/op_msg_fuzzer
