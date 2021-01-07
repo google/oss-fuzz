@@ -29,8 +29,8 @@ fi;
 TS="$(find /usr/local/lib/python3.* -name '_imaging.*.so')"
 $CXX -pthread -shared $CXXFLAGS $LIB_FUZZING_ENGINE ${BUILD_DIR}/*.o ${BUILD_DIR}/libImaging/*.o \
     -L/usr/local/lib -L/lib/x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu \
-    -L/usr/lib/x86_64-linux-gnu/libfakeroot -L/usr/lib -L/lib \
-    -L/usr/local/lib -ljpeg -lz -lxcb -lfreetype -lopenjp2 -ltiff -llcms2 -lwebp -lwebpmux \
+    -L/usr/lib/x86_64-linux-gnu/libfakeroot -L/usr/lib -L/lib -L/usr/local/lib \
+    -ljpeg -lz -lxcb -lfreetype -lopenjp2 -ltiff -llcms2 -lwebp -lwebpmux -lwebpdemux \
     -o ${TS} -stdlib=libc++
 
 # Build fuzzers in $OUT.
