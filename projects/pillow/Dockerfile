@@ -28,30 +28,37 @@ RUN cat fuzzing/dictionaries/bmp.dict \
         fuzzing/dictionaries/tiff.dict \
         fuzzing/dictionaries/webp.dict \
       > $OUT/fuzz_pillow.dict
+
+# library build dependencies
 RUN apt-get install -y \
-      libfreetype6-dev \
-      libfribidi-dev \
-      libharfbuzz-dev \
-      libjpeg-dev \
-      liblcms2-dev \
-      libopenjp2-7-dev \
-      libpng-dev \
-      libtiff-dev \
-      libwebp-dev \
-      libx11-xcb-dev \
-      libxcb-render0-dev \
-      libxcb-xfixes0-dev \
-      libxcb1-dev \
-      libz-dev \
-      python3-tk \
-      tcl8.6-dev \
-      tk8.6-dev \
+      libxau-dev \
+      pkg-config \
+      rsync \
       zlib1g-dev 
+
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow
+RUN git clone --depth 1 https://github.com/python-pillow/pillow-wheels
+
+COPY build_depends.sh $SRC
+
+RUN ln -s /usr/local/bin/python3 /usr/local/bin/python \
+    && ln -s /bin/true /usr/local/bin/yum_install \
+    && ln -s /bin/true /usr/local/bin/yum \
+    && cd $SRC/pillow-wheels \
+    && git submodule update --init multibuild \
+    && bash $SRC/build_depends.sh
+
 # install extra test images for a better starting corpus
 RUN cd Pillow && depends/install_extra_test_images.sh
 
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/Pillow
+
+# pillow runtime dependencies
+RUN apt-get install -y \
+      libfribidi-dev \
+      libharfbuzz-dev \
+      python3-tk \
+      tcl8.6-dev \
+      tk8.6-dev 
 
 WORKDIR $SRC/Pillow
