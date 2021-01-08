@@ -7,7 +7,6 @@ RUN apt-get update && apt-get -y install \
 RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v1.7.4/bazelisk-linux-amd64
 RUN chmod +x /usr/local/bin/bazel
 
-# RUN git clone https://github.com/bazelbuild/rules_fuzzing.git -b oss-fuzz-support
-COPY local_rules_fuzzing $SRC/rules_fuzzing/
+RUN git clone https://github.com/bazelbuild/rules_fuzzing.git
 WORKDIR $SRC/rules_fuzzing/
 COPY build.sh $SRC/
