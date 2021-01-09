@@ -16,9 +16,43 @@
 ################################################################################
 
 
-pip3 uninstall ansible
+# Change config = ConfigManager()
+# to
+# config = ConfigManager("/tmp/base.yml")
+# 
+# The init function of ConfigManager is executed when
+# a package that uses the ConfigManager is imported.
+# We therefore create /tmp/base.yml at fuzz-time.
+sed 's/config = ConfigManager()/config = ConfigManager(defs_file="\/tmp\/base.yml")/g' -i /src/ansible/lib/ansible/constants.py
+
+# Change 'with open(to_bytes(metadata_path))'
+# to
+# 'with open("/tmp/ansible_builtint_runtime.yml")'
+sed 's/to_bytes(metadata_path)/"\/tmp\/ansible_builtin_runtime.yml"/g' -i /src/ansible/lib/ansible/utils/collection_loader/_collection_finder.py
+
+# Change 'args_parser.parse()'
+# to
+# args_parser.parse(skip_action_validation=True)
+sed 's/args_parser.parse()/args_parser.parse(skip_action_validation=True)/g' -i /src/ansible/lib/ansible/playbook/task.py
+
+# Convert the base.yml to a python file
+# with a variable to write our own base.yml at fuzz-time
+export CONFIG_PATH=$SRC/ansible/lib/ansible/config
+cp $CONFIG_PATH/base.yml $CONFIG_PATH/base_yml.py
+sed -i '3s/^/base_yaml="""/' $CONFIG_PATH/base_yml.py
+sed -i '2059s/$/"""/' $CONFIG_PATH/base_yml.py
+
+# Convert the ansible_builtin_runtime.yml to a python file
+# with a variable to write our own base.yml at fuzz-time
+cp $CONFIG_PATH/ansible_builtin_runtime.yml $CONFIG_PATH/ansible_builtin_runtime_yml.py
+sed -i '3s/^/builtin_runtime_yaml="""/' $CONFIG_PATH/ansible_builtin_runtime_yml.py
+sed -i '9678s/$/"""/' $CONFIG_PATH/ansible_builtin_runtime_yml.py
+
 pip3 install .
 pip3 freeze
+
+
+# Build fuzzers
 
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)

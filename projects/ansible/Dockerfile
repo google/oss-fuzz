@@ -17,5 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake build-essential 
 RUN git clone --depth 1 https://github.com/ansible/ansible
+RUN git clone --depth=1 https://github.com/yaml/libyaml
+#RUN zip $OUT/load_list_of_tasks_fuzzer_seed_corpus.zip $SRC/libyaml/examples/*
 WORKDIR ansible
-COPY build.sh split_args_fuzzer.py $SRC/
+COPY build.sh split_args_fuzzer.py load_list_of_tasks_fuzzer.py $SRC/
