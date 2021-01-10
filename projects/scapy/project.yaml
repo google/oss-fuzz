@@ -1,7 +1,7 @@
 homepage: "https://scapy.net"
 main_repo: "https://github.com/secdev/scapy"
 language: python
-primary_contact: "guillaume@valadon.net"
+primary_contact: "guedou@gmail.com"
 auto_ccs:
   - "jvoisin@google.com"
   - "ipudney@google.com"
