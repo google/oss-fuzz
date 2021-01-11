@@ -3,6 +3,7 @@ language: python
 primary_contact: "pyyaml@yaml.com"
 auto_ccs:
   - "david@adalogics.com"
+  - "p.antoine@catenacyber.fr"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
