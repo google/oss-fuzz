@@ -1,0 +1,12 @@
+homepage: "https://palletsprojects.com/p/jinja/"
+main_repo: "https://github.com/pallets/jinja.git"
+language: python
+primary_contact: "armin.ronacher@active-4.com"
+auto_ccs:
+  - "markus@unterwaditzer.net"
+  - "p.antoine@catenacyber.fr"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
