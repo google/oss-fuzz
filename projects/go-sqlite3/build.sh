@@ -15,10 +15,7 @@
 #
 ################################################################################
 
-# TODO move in upstream repo
 cd $GOPATH/src/github.com/mattn/go-sqlite3
-mkdir _example/fuzz/
-cp $SRC/fuzz_*.go _example/fuzz/
 
 compile_go_fuzzer github.com/mattn/go-sqlite3/_example/fuzz FuzzOpenExec fuzz_open_exec
 
