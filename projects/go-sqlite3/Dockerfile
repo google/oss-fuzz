@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 # TODO use upstream repo
 # RUN go get -t github.com/mattn/go-sqlite3
-RUN git clone --branch fuzz --depth 1 github.com/catenacyber/go-sqlite3 $GOPATH/src/github.com/mattn/go-sqlite3
+RUN git clone --branch fuzz --depth 1 http://github.com/catenacyber/go-sqlite3 $GOPATH/src/github.com/mattn/go-sqlite3
 
 COPY build.sh fuzz*.go $SRC/
 WORKDIR $SRC/
