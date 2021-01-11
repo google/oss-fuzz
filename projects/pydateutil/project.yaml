@@ -1,0 +1,10 @@
+homepage: "https://dateutil.readthedocs.io/en/stable/"
+language: python
+primary_contact: "paul@ganssle.io"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: "https://github.com/dateutil/dateutil"
