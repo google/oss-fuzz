@@ -1,0 +1,11 @@
+homepage: "https://pyyaml.org"
+main_repo: "https://github.com/yaml/pyyaml"
+language: python
+primary_contact: "ingy@ingy.net"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
