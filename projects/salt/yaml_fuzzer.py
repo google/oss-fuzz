@@ -1,5 +1,6 @@
-#/bin/bash -eu
-# Copyright 2020 Google Inc.
+#!/usr/bin/python3
+
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,13 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
+import atheris
+import sys
+import salt.renderers.yaml as yaml
 
-mkdir -p $GOPATH/src/github.com/gravitational
-cd $GOPATH/src/github.com/gravitational
-git clone https://github.com/gravitational/teleport.git
+def TestOneInput(data):
+    try:
+        fdp = atheris.FuzzedDataProvider(data)
+        string = fdp.ConsumeUnicode(sys.maxsize)
+        result = yaml.render(string) 
+    except Exception:
+        return
+    return
 
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz
+def main():
+    atheris.Setup(sys.argv, TestOneInput, enable_python_coverage=True)
+    atheris.Fuzz()
+
+if __name__ == "__main__":
+    main()
+
