@@ -22,7 +22,7 @@ make clean
 
 make
 
-zip $OUT/fuzz_mdb_seed_corpus.zip test/data/*.mdb test/data/*.accdb
+zip $OUT/fuzz_mdb_seed_corpus.zip ../mdbtestdata/data/*.mdb ../mdbtestdata/data/*.accdb
 
 cd src/fuzz
 make fuzz_mdb
