@@ -20,8 +20,10 @@ import dateutil.parser
 
 
 def TestOneInput(input_bytes):
+  fdp = atheris.FuzzedDataProvider(input_bytes)
+  data = fdp.ConsumeUnicode(atheris.ALL_REMAINING)
   try:
-    dateutil.parser.parse(input_bytes.decode("utf-8", "ignore"))
+    dateutil.parser.parse(data)
   except dateutil.parser.ParserError:
     pass
 
