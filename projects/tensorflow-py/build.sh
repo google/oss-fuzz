@@ -20,7 +20,7 @@
 python3 -m pip install tensorflow
 
 # Rename to avoid the following: https://github.com/tensorflow/tensorflow/issues/40182
-mv tensorflow/tensorflow tensorflow/tensorflow_src
+mv $SRC/tensorflow/tensorflow $SRC/tensorflow/tensorflow_src
 # Build fuzzers into $OUT. These could be detected in other ways.
 for fuzzer in $(find $SRC -name '*_fuzz.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
@@ -46,4 +46,4 @@ ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm
   chmod u+x $OUT/$fuzzer_basename
 done
 
-mv tensorflow/tensorflow_src tensorflow/tensorflow
+mv $SRC/tensorflow/tensorflow_src $SRC/tensorflow/tensorflow
