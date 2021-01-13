@@ -16,7 +16,6 @@
 ################################################################################
 
 # build project
-cd fio
 export LDFLAGS="$CXXFLAGS"
 ./configure
 make -j$(nproc)
