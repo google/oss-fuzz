@@ -30,7 +30,8 @@ RUN cat fuzzing/dictionaries/bmp.dict \
       > $OUT/fuzz_pillow.dict
 
 # library build dependencies
-RUN apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y \
       libxau-dev \
       pkg-config \
       rsync \
