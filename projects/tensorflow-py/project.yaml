@@ -3,8 +3,9 @@ language: python
 primary_contact: "amitpatankar@google.com"
 auto_ccs:
  - "mihaimaruseac@google.com"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
   - address
   - undefined
-  - memory
 main_repo: 'https://github.com/tensorflow/tensorflow'
