@@ -168,7 +168,9 @@ class RepoManager:
     """Gets the current git repository history."""
     shallow_file = os.path.join(self.repo_dir, '.git', 'shallow')
     if os.path.exists(shallow_file):
-      self.git(['fetch', '--unshallow'], check_result=True)
+      _, err, err_code = self.git(['fetch', '--unshallow'], check_result=False)
+      if err_code:
+        logging.error('Unshallow returned non-zero code: %s', err)
 
   def checkout_pr(self, pr_ref):
     """Checks out a remote pull request.
