@@ -274,7 +274,8 @@ def build_fuzzers_from_commit(commit,
 
     # Rebuild image and re-copy src dir since things in /src could have changed.
     if not _build_image_with_retries(build_data.project_name):
-      raise RuntimeError('Failed to rebuild image.')
+      logging.error('Failed to rebuild image.')
+      return False
 
     cleanup()
 
