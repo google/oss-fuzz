@@ -23,6 +23,7 @@ RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y \
         binutils-dev \
+        build-essential \
         curl \
         git \
         jq \
