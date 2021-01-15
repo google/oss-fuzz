@@ -60,4 +60,30 @@ RUN cd $SRC/evmone; \
     ninja; \
     ninja install;
 
+# gmp
+RUN cd $SRC; \
+    # Replace system installed libgmp static library
+    # with sanitized version
+    rm -f /usr/lib/x86_64-linux-gnu/libgmp.a; \
+    wget -q 'https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz' -O gmp.tar.xz; \
+    test "$(sha256sum gmp.tar.xz)" = "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2  gmp.tar.xz"; \
+    tar -xf gmp.tar.xz; \
+    cd gmp-6.2.1; \
+    ./configure --prefix=/usr --enable-shared=no --enable-static=yes; \
+    make -j; \
+    make install; \
+    rm -rf $SRC/gmp-6.2.1; \
+    rm -f $SRC/gmp.tar.xz
+
+# libabicoder
+RUN set -ex; \
+    cd /usr/src; \
+    git clone https://github.com/ekpyron/Yul-Isabelle; \
+    cd Yul-Isabelle; \
+    cd libabicoder; \
+    CXX=clang++ CXXFLAGS="-stdlib=libc++ -pthread" make; \
+    cp libabicoder.a /usr/lib; \
+    cp abicoder.hpp /usr/include; \
+    rm -rf /usr/src/Yul-Isabelle
+
 COPY build.sh $SRC/

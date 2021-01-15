@@ -10,3 +10,4 @@ sanitizers:
   - address
   - undefined
   - dataflow
+main_repo: 'https://github.com/openthread/openthread'

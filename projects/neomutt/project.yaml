@@ -4,3 +4,4 @@ primary_contact: "joseph.bisch@gmail.com"
 auto_ccs:
   - "richard.russon@gmail.com"
   - "pietro.cerutti@gmail.com"
+main_repo: 'https://github.com/neomutt/neomutt'

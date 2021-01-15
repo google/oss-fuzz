@@ -93,6 +93,7 @@ class ProjectYamlChecker:
       'labels',  # For internal use only, hard to lint as it uses fuzzer names.
       'main_repo',
       'primary_contact',
+      'run_tests',
       'sanitizers',
       'selective_unpack',
       'vendor_ccs',
@@ -109,7 +110,7 @@ class ProjectYamlChecker:
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
   # primary contact is probably a mistake.
-  REQUIRED_SECTIONS = ['primary_contact']
+  REQUIRED_SECTIONS = ['primary_contact', 'main_repo']
 
   def __init__(self, filename):
     self.filename = filename
@@ -350,6 +351,13 @@ def run_tests():
   return not result.failures and not result.errors
 
 
+def get_all_files():
+  """Returns a list of absolute paths of files in this repo."""
+  get_all_files_command = ['git', 'ls-files']
+  output = subprocess.check_output(get_all_files_command).decode().splitlines()
+  return [os.path.abspath(path) for path in output if os.path.isfile(path)]
+
+
 def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
@@ -357,30 +365,38 @@ def main():
   parser.add_argument('command',
                       choices=['format', 'lint', 'license', 'infra-tests'],
                       nargs='?')
+  parser.add_argument('--all-files',
+                      action='store_true',
+                      help='Run presubmit check(s) on all files',
+                      default=False)
   args = parser.parse_args()
 
-  changed_files = get_changed_files()
+  if args.all_files:
+    relevant_files = get_all_files()
+  else:
+    relevant_files = get_changed_files()
 
   os.chdir(_SRC_ROOT)
 
   # Do one specific check if the user asked for it.
   if args.command == 'format':
-    success = yapf(changed_files, False)
+    success = yapf(relevant_files, False)
     return bool_to_returncode(success)
 
   if args.command == 'lint':
-    success = lint(changed_files)
+    success = lint(relevant_files)
     return bool_to_returncode(success)
 
   if args.command == 'license':
-    success = check_license(changed_files)
+    success = check_license(relevant_files)
     return bool_to_returncode(success)
 
   if args.command == 'infra-tests':
-    return bool_to_returncode(run_tests())
+    success = run_tests()
+    return bool_to_returncode(success)
 
   # Do all the checks (but no tests).
-  success = do_checks(changed_files)
+  success = do_checks(relevant_files)
 
   return bool_to_returncode(success)
 

@@ -33,6 +33,6 @@ jobs:
           sudo env "PATH=$PATH" gcloud info
 
       - name: Run infra tests
-        run: sudo env "PATH=$PATH" python infra/presubmit.py infra-tests
+        run: sudo env "PATH=$PATH" INTEGRATION_TESTS=1 python infra/presubmit.py infra-tests
 
 

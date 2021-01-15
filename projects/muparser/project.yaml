@@ -8,3 +8,4 @@ fuzzing_engines:
 sanitizers:
     - address
     - undefined
+main_repo: 'https://github.com/beltoforion/muparser.git'

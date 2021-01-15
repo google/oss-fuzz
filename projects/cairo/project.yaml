@@ -4,3 +4,4 @@ primary_contact: security-tps@google.com
 sanitizers:
   - address
   - undefined
+main_repo: 'https://gitlab.freedesktop.org/cairo/cairo.git'

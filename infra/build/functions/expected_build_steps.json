@@ -65,7 +65,7 @@
     "args": [
       "bash",
       "-c",
-      "test_all || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine libfuzzer --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine libfuzzer --architecture x86_64 test-project\n********************************************************************************\" && false)"
     ]
   },
   {
@@ -162,7 +162,7 @@
     "args": [
       "bash",
       "-c",
-      "test_all || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine afl --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine afl --architecture x86_64 test-project\n********************************************************************************\" && false)"
     ]
   },
   {
@@ -259,7 +259,7 @@
     "args": [
       "bash",
       "-c",
-      "test_all || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine honggfuzz --architecture x86_64 test-project\n********************************************************************************\" && false)"
+      "test_all.py || (echo \"********************************************************************************\nBuild checks failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer address --engine honggfuzz --architecture x86_64 test-project\npython infra/helper.py check_build --sanitizer address --engine honggfuzz --architecture x86_64 test-project\n********************************************************************************\" && false)"
     ]
   },
   {

@@ -27,8 +27,8 @@ if [ "$FUZZING_LANGUAGE" = "python" ]; then
     echo "ERROR: Python projects can be fuzzed with libFuzzer engine only."
     exit 1
   fi
-  if [ "$SANITIZER" != "address" ]; then
-    echo "ERROR: Python projects can be fuzzed with AddressSanitizer only."
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "undefined" ]; then
+    echo "ERROR: Python projects can be fuzzed with AddressSanitizer and UndefinedBehaviorSanitizer only."
     exit 1
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
@@ -97,12 +97,21 @@ export CFLAGS="$CFLAGS $SANITIZER_FLAGS $COVERAGE_FLAGS"
 export CXXFLAGS="$CFLAGS $CXXFLAGS_EXTRA"
 
 if [ "$FUZZING_LANGUAGE" = "python" ]; then
-  cp $(find $(llvm-config --libdir) -name "libclang_rt.asan-x86_64.so") $OUT/
+  sanitizer_with_fuzzer_lib_dir=`python3 -c "import atheris; import os; print(os.path.dirname(atheris.path()))"`
+  sanitizer_with_fuzzer_output_lib=$OUT/sanitizer_with_fuzzer.so
+  if [ "$SANITIZER" = "address" ]; then
+    cp $sanitizer_with_fuzzer_lib_dir/asan_with_fuzzer.so $sanitizer_with_fuzzer_output_lib
+  elif [ "$SANITIZER" = "undefined" ]; then
+    cp $sanitizer_with_fuzzer_lib_dir/ubsan_with_fuzzer.so $sanitizer_with_fuzzer_output_lib
+  fi
 
   # Disable leak checking as it is unsupported.
-  export CFLAGS="$CFLAGS -fno-sanitize=leak"
-  export CXXFLAGS="$CXXFLAGS -fno-sanitize=leak"
+  export CFLAGS="$CFLAGS -fno-sanitize=function,leak,vptr,"
+  export CXXFLAGS="$CXXFLAGS -fno-sanitize=function,leak,vptr"
 fi
+
+# Copy latest llvm-symbolizer in $OUT for stack symbolization.
+cp $(which llvm-symbolizer) $OUT/
 
 echo "---------------------------------------------------------------"
 echo "CC=$CC"

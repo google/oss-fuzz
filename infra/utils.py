@@ -18,6 +18,7 @@ import os
 import re
 import stat
 import subprocess
+import sys
 
 import helper
 
@@ -127,3 +128,13 @@ def is_fuzz_target_local(file_path):
 
   with open(file_path, 'rb') as file_handle:
     return file_handle.read().find(FUZZ_TARGET_SEARCH_STRING.encode()) != -1
+
+
+def binary_print(string):
+  """Print that can print a binary string."""
+  if isinstance(string, bytes):
+    string += b'\n'
+  else:
+    string += '\n'
+  sys.stdout.buffer.write(string)
+  sys.stdout.flush()
