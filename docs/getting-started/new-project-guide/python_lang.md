@@ -123,8 +123,10 @@ or valid Python source code.
 
 To use Hypothesis in OSS-Fuzz, install it in your Dockerfile with
 
-    RUN pip3 install hypothesis
+```shell
+RUN pip3 install hypothesis
+```
 
-See [the `ujson` structured fuzzer](https://github.com/google/oss-fuzz/blob/master/projects/ujson)
+See [the `ujson` structured fuzzer](https://github.com/google/oss-fuzz/blob/master/projects/ujson/hypothesis_structured_fuzzer.py)
 for an example "polyglot" which can either be run with `pytest` as a standard test function,
 or run with OSS-Fuzz as a fuzz harness.
