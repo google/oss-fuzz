@@ -3,6 +3,7 @@ language: c++
 primary_contact: "axboe@kernel.dk"
 auto_ccs:
   - "p.antoine@catenacyber.fr"
+  - "sitsofe@gmail.com"
 sanitizers:
   - address
   - undefined
