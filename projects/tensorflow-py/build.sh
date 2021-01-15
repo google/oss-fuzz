@@ -18,8 +18,9 @@
 python3 -m pip install tensorflow
 python3 -m pip install numpy
 
-# Remove source code to avoid the following: https://github.com/tensorflow/tensorflow/issues/40182
-rm -rf $SRC/tensorflow/tensorflow
+# Rename to avoid the following: https://github.com/tensorflow/tensorflow/issues/40182
+mv $SRC/tensorflow/tensorflow $SRC/tensorflow/tensorflow_src
+
 # Build fuzzers into $OUT. These could be detected in other ways.
 
 for fuzzer in $(find $SRC -name '*_fuzz.py'); do
@@ -28,13 +29,10 @@ for fuzzer in $(find $SRC -name '*_fuzz.py'); do
 
   pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
-  # Add shared objects to the $OUT directory to avoid the numpy dependency graph shared object
-  # not found circle.
   cp /usr/local/lib/python3.8/site-packages/numpy.libs/libz-eb09ad1d.so.1.2.3 $OUT
   cp /usr/local/lib/python3.8/site-packages/numpy.libs/libquadmath-2d0c479f.so.0.0.0 $OUT
   cp /usr/local/lib/python3.8/site-packages/numpy.libs/libgfortran-2e0d59d6.so.5.0.0 $OUT
   cp /usr/local/lib/python3.8/site-packages/numpy.libs/libopenblasp-r0-09e95953.3.13.so $OUT
-
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
@@ -43,3 +41,5 @@ ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm
 \$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
+
+mv $SRC/tensorflow/tensorflow_src $SRC/tensorflow/tensorflow
