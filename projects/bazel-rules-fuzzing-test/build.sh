@@ -20,9 +20,10 @@ declare -r QUERY='
     let all_fuzz_tests = attr(tags, "fuzz-test", "//...") in
     $all_fuzz_tests - attr(tags, "no-oss-fuzz", $all_fuzz_tests)
 '
-declare -r OSS_FUZZ_TESTS="$(bazel query "${QUERY}" | sed 's/$/_oss_fuzz/')"
+declare -r PACKAGE_SUFFIX="_oss_fuzz"
+declare -r OSS_FUZZ_TESTS="$(bazel query "${QUERY}" | sed "s/$/${PACKAGE_SUFFIX}/")"
 
 bazel build -c opt --config=oss-fuzz --linkopt=-lc++ ${OSS_FUZZ_TESTS[*]}
-for oss_fuzz_archive in $(find bazel-bin/ -name '*_oss_fuzz.tar'); do
+for oss_fuzz_archive in $(find bazel-bin/ -name "*${PACKAGE_SUFFIX}.tar"); do
     tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
 done
