@@ -29,6 +29,7 @@ RUN dpkg --add-architecture i386 && \
         jq \
         libc6-dev-i386 \
         patchelf \
+        python \
         subversion \
         zip
 
@@ -86,6 +87,10 @@ RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
 RUN cargo install cargo-fuzz
 # Needed to recompile rust std library for MSAN
 RUN rustup component add rust-src --toolchain nightly
+
+# Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
+ENV BAZELISK_VERSION 1.7.4
+RUN curl https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
