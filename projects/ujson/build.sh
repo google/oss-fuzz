@@ -18,6 +18,9 @@
 # Build and install project (using current CFLAGS, CXXFLAGS).
 pip3 install .
 
+# Install Hypothesis for the structured fuzz harness
+pip3 install hypothesis
+
 # Build fuzzers in $OUT.
 for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
