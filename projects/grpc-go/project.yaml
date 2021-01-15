@@ -1,6 +1,7 @@
 homepage: "https://grpc.io/"
 primary_contact: "menghanl@google.com"
 auto_ccs:
+  - "dfawley@google.com"
   - "p.antoine@catenacyber.fr"
 language: go
 fuzzing_engines:
