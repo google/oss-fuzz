@@ -1,8 +1,5 @@
 homepage: "https://github.com/bazelbuild/rules_fuzzing"
 language: c++
-
-# This is a test project.
-disabled: true
 primary_contact: "test@example.com"
 
 fuzzing_engines:
@@ -16,3 +13,6 @@ sanitizers:
   - undefined
   - memory
   - dataflow
+
+# This is a test project.
+disabled: true
