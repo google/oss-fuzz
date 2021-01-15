@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN pip3 install hypothesis
 RUN git clone --depth 1 https://github.com/dateutil/dateutil
 WORKDIR $SRC
 COPY build.sh fuzz_*.py $SRC/
