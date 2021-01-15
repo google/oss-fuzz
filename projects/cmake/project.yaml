@@ -1,7 +1,7 @@
 homepage: "https://gitlab.kitware.com/cmake/cmake"
 main_repo: "https://gitlab.kitware.com/cmake/cmake"
 language: c
-primary_contact: ""
+primary_contact: "brad.king@kitware.com"
 auto_ccs:
   - "Adam@adalogics.com"
 sanitizers:
