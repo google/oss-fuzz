@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-python3 -m pip install tensorflow
+python3 -m pip install tf-nightly-cpu
 python3 -m pip install numpy
 
 # Rename to avoid the following: https://github.com/tensorflow/tensorflow/issues/40182
