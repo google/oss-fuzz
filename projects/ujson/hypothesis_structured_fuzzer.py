@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Copyright 2020 Zac Hatfield-Dodds
+# Copyright 2021 Zac Hatfield-Dodds
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,9 +64,9 @@ def test_ujson_roundtrip(obj, kwargs):
 
 
 if __name__ == "__main__":
-    # Replay, deduplicate, and minimize any failures from previous runs:
-    test_ujson_roundtrip()
-
-    # If that passed, we use Atheris to provide the inputs to our test:
+    # Running `pytest hypothesis_structured_fuzzer.py` will replay, deduplicate,
+    # and minimize any failures discovered by earlier runs or by OSS-Fuzz, or
+    # briefly search for new failures if none are known.
+    # Or, when running via OSS-Fuzz, we'll execute it via the fuzzing hook:
     atheris.Setup(sys.argv, test_ujson_roundtrip.hypothesis.fuzz_one_input)
     atheris.Fuzz()
