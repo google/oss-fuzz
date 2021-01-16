@@ -24,4 +24,4 @@ echo $SRC/assimp/lib
 # build the fuzzer
 $CXX $CXXFLAGS -std=c++11 -I$SRC/assimp/include \
 	fuzz/assimp_fuzzer.cc -o $OUT/assimp_fuzzer \
-	$LIB_FUZZING_ENGINE $SRC/assimp/lib/libassimp.a $SRC/assimp/lib/libIrrXML.a $SRC/assimp/lib/libzlibstatic.a
+	$LIB_FUZZING_ENGINE $SRC/assimp/lib/libassimp.a $SRC/assimp/lib/libzlibstatic.a
