@@ -21,3 +21,4 @@ RUN git clone --depth=1 https://github.com/yaml/libyaml
 #RUN zip $OUT/load_list_of_tasks_fuzzer_seed_corpus.zip $SRC/libyaml/examples/*
 WORKDIR ansible
 COPY build.sh split_args_fuzzer.py load_list_of_tasks_fuzzer.py $SRC/
+COPY config_files/ansible_builtin_runtime_yml.py config_files/base_yml.py $SRC/
