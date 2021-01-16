@@ -35,19 +35,9 @@ sed 's/to_bytes(metadata_path)/"\/tmp\/ansible_builtin_runtime.yml"/g' -i /src/a
 # args_parser.parse(skip_action_validation=True)
 sed 's/args_parser.parse()/args_parser.parse(skip_action_validation=True)/g' -i /src/ansible/lib/ansible/playbook/task.py
 
-# Convert the base.yml to a python file
-# with a variable to write our own base.yml at fuzz-time
+# Move over config files
 export CONFIG_PATH=$SRC/ansible/lib/ansible/config
-#cp $CONFIG_PATH/base.yml $CONFIG_PATH/base_yml.py
-#sed -i '3s/^/base_yaml="""/' $CONFIG_PATH/base_yml.py
-#sed -i '2059s/$/"""/' $CONFIG_PATH/base_yml.py
 cp $SRC/base_yml.py $CONFIG_PATH/
-
-# Convert the ansible_builtin_runtime.yml to a python file
-# with a variable to write our own base.yml at fuzz-time
-#cp $CONFIG_PATH/ansible_builtin_runtime.yml $CONFIG_PATH/ansible_builtin_runtime_yml.py
-#sed -i '3s/^/builtin_runtime_yaml="""/' $CONFIG_PATH/ansible_builtin_runtime_yml.py
-#sed -i '9678s/$/"""/' $CONFIG_PATH/ansible_builtin_runtime_yml.py
 cp $SRC/ansible_builtin_runtime_yml.py $CONFIG_PATH/
 
 pip3 install .
