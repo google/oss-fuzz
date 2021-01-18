@@ -26,6 +26,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     cairo_surface_t *surface;
     cairo_status_t status;
 
+    if (size == 0) {
+        return 0;
+    }
+
     char *tmpfile = fuzzer_get_tmpfile(data, size);
     surface = cairo_pdf_surface_create(tmpfile, width_in_points, height_in_points);
     status = cairo_surface_status(surface);
