@@ -661,7 +661,7 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
     return
 
   logging.info('Using affected fuzzers: %s.', affected_fuzzers)
-  unaffected_fuzzers = fuzzer_paths - affected_fuzzers
+  unaffected_fuzzers = set(fuzzer_paths) - affected_fuzzers
   logging.info('Removing unaffected fuzzers: %s.', unaffected_fuzzers)
   # Remove all the fuzzers that are not affected.
   for fuzzer_path in unaffected_fuzzers:
@@ -673,7 +673,7 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
 
 def get_affected_fuzzers(fuzzer_paths, files_changed, cov_report_info,
                          oss_fuzz_repo_path):
-  """Returns a list of names of affected fuzzers."""
+  """Returns a list of paths of affected fuzzers."""
   affected_fuzzers = set()
   for fuzzer_path in fuzzer_paths:
     fuzzer_name = os.path.basename(fuzzer_path)
@@ -687,7 +687,7 @@ def get_affected_fuzzers(fuzzer_paths, files_changed, cov_report_info,
     logging.info('Fuzzer %s is affected by:\n%s', fuzzer_name, covered_files)
     for file in files_changed:
       if file in covered_files:
-        affected_fuzzers.add(fuzzer_name)
+        affected_fuzzers.add(fuzzer_path)
 
   return affected_fuzzers
 
