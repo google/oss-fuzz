@@ -1,6 +1,6 @@
 homepage: "https://github.com/lz4/lz4"
 language: python
-primary_contact: "david@adalogics.com"
+primary_contact: "jonathan.underwood@gmail.com"
 auto_ccs:
   - "david@adalogics.com"
 fuzzing_engines:

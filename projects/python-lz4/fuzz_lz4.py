@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +18,9 @@ import atheris
 import lz4.frame
 
 def TestOneInput(data):
-    # First try a clean data compression and decompression
     c =lz4.frame.compress(data)
     d = lz4.frame.decompress(c)
-
     assert(data == d)
-
     return
 
 def main():
