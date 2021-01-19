@@ -961,6 +961,10 @@ def shell(args):
   if args.e:
     env += args.e
 
+  project_language = _get_project_language(args.project_name)
+  if project_language:
+    env.append('FUZZING_LANGUAGE=' + project_language)
+
   if is_base_image(args.project_name):
     image_project = 'oss-fuzz-base'
     out_dir = _get_output_dir()
