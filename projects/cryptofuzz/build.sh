@@ -23,7 +23,7 @@ $CC $SRC/xxd.c -o /usr/bin/xxd
 
 # Copy the upstream checkout of xxHash over the old version
 rm -rf $SRC/cryptofuzz/modules/reference/xxHash/
-cp -R $SRC/xxHash $SRC/cryptofuzz/modules/reference/
+cp -R $SRC/xxHash/ $SRC/cryptofuzz/modules/reference/
 
 # Install Boost headers
 cd $SRC/
