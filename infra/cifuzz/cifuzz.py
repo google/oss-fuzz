@@ -668,7 +668,7 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
     try:
       os.remove(fuzzer_path)
     except OSError as error:
-      logging.error('%s occurred while removing file %s', error, fuzzer)
+      logging.error('%s occurred while removing file %s', error, fuzzer_path)
 
 
 def get_affected_fuzzers(fuzzer_paths, files_changed, cov_report_info,
