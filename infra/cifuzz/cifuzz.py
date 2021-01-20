@@ -221,8 +221,8 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
   def remove_unaffected_fuzzers(self):
     """Removes the fuzzers unaffected by the patch."""
     fix_git_repo_for_diff(self.host_repo_path)
-    remove_unaffected_fuzzers(self.project_name, self.out_dir,
-                              self.repo_manager.get_git_diff(),
+    changed_files = self.repo_manager.get_git_diff()
+    remove_unaffected_fuzzers(self.project_name, self.out_dir, changed_files,
                               self.image_repo_path)
     return True
 
@@ -525,47 +525,67 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
     out_dir: The location of the fuzzer binaries.
     files_changed: A list of files changed compared to HEAD.
     oss_fuzz_repo_path: The location of the OSS-Fuzz repo in the docker image.
+
+  This function will not delete fuzzers unless it knows that the fuzzer is
+  unaffected. For example, this means that fuzzers which don't have coverage
+  data on will not be deleted.
   """
   if not files_changed:
+    # Don't remove any fuzzers if there is no difference from HEAD.
     logging.info('No files changed compared to HEAD.')
     return
+
+  logging.info('Files changed in PR: %s', files_changed)
+
   fuzzer_paths = utils.get_fuzz_targets(out_dir)
   if not fuzzer_paths:
+    # Nothing to remove.
     logging.error('No fuzzers found in out dir.')
     return
 
   coverage_getter = coverage.OSSFuzzCoveragGetter(project_name,
                                                   oss_fuzz_repo_path)
-  affected_fuzzers = []
-  logging.info('Files changed in PR:\n%s', '\n'.join(files_changed))
-  for fuzzer in fuzzer_paths:
-    fuzzer_name = os.path.basename(fuzzer)
-    covered_files = coverage_getter.get_files_covered_by_target(fuzzer_name)
-    if not covered_files:
-      # Assume a fuzzer is affected if we can't get its coverage from OSS-Fuzz.
-      affected_fuzzers.append(fuzzer_name)
-      continue
-    logging.info('Fuzzer %s has affected files:\n%s', fuzzer_name,
-                 '\n'.join(covered_files))
-    for file in files_changed:
-      if file in covered_files:
-        affected_fuzzers.append(fuzzer_name)
+  if not cov_report_info:
+    # Don't remove any fuzzers unless we have data.
+    logging.error('Could not download latest coverage report.')
+    return
+
+  affected_fuzzers = get_affected_fuzzers(
+      coverage_getter, fuzzer_paths, files_changed)
 
   if not affected_fuzzers:
     logging.info('No affected fuzzers detected, keeping all as fallback.')
     return
-  logging.info('Using affected fuzzers.\n %s fuzzers affected by pull request',
-               ' '.join(affected_fuzzers))
 
-  all_fuzzer_names = map(os.path.basename, fuzzer_paths)
-
+  logging.info('Using affected fuzzers: %s.', affected_fuzzers)
+  unaffected_fuzzers = set(fuzzer_paths) - affected_fuzzers
+  logging.info('Removing unaffected fuzzers: %s.', unaffected_fuzzers)
   # Remove all the fuzzers that are not affected.
-  for fuzzer in all_fuzzer_names:
-    if fuzzer not in affected_fuzzers:
-      try:
-        os.remove(os.path.join(out_dir, fuzzer))
-      except OSError as error:
-        logging.error('%s occurred while removing file %s', error, fuzzer)
+  for fuzzer_path in unaffected_fuzzers:
+    try:
+      os.remove(fuzzer_path)
+    except OSError as error:
+      logging.error('%s occurred while removing file %s', error, fuzzer_path)
+
+
+def get_affected_fuzzers(coverage_getter, fuzzer_paths, files_changed):
+  """Returns a list of paths of affected fuzzers."""
+  affected_fuzzers = set()
+  for fuzzer_path in fuzzer_paths:
+    fuzzer_name = os.path.basename(fuzzer_path)
+    covered_files = coverage_getter.get_files_covered_by_target(fuzzer_name)
+
+    if not covered_files:
+      # Assume a fuzzer is affected if we can't get its coverage from OSS-Fuzz.
+      affected_fuzzers.add(fuzzer_path)
+      continue
+
+    logging.info('Fuzzer %s is affected by: %s', fuzzer_name, covered_files)
+    for file in files_changed:
+      if file in covered_files:
+        affected_fuzzers.add(fuzzer_path)
+
+  return affected_fuzzers
 
 
 def parse_fuzzer_output(fuzzer_output, out_dir):

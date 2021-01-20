@@ -59,7 +59,8 @@ class BaseBuilderRepo:
     if index > 0:
       return self.digests[index - 1]
 
-    raise ValueError('Failed to find suitable base-builder.')
+    logging.error('Failed to find suitable base-builder.')
+    return None
 
 
 def _replace_gitdir(src_dir, file_path):
@@ -269,12 +270,16 @@ def build_fuzzers_from_commit(commit,
     # Also use the closest base-builder we can find.
     if base_builder_repo:
       base_builder_digest = base_builder_repo.find_digest(commit_date)
+      if not base_builder_digest:
+        return False
+
       logging.info('Using base-builder with digest %s.', base_builder_digest)
       _replace_base_builder_digest(dockerfile_path, base_builder_digest)
 
     # Rebuild image and re-copy src dir since things in /src could have changed.
     if not _build_image_with_retries(build_data.project_name):
-      raise RuntimeError('Failed to rebuild image.')
+      logging.error('Failed to rebuild image.')
+      return False
 
     cleanup()
 

@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,14 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER evmaus@google.com
-RUN apt-get update && apt-get -y install make autoconf automake libtool wget openjdk-8-jdk python libunwind-dev tzdata
+# build project
+export LDFLAGS="$CXXFLAGS"
+./configure
+make -j$(nproc)
+cp t/fuzz/fuzz_parseini $OUT/
 
-# Install Bazelisk
-RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64
-RUN chmod +x /usr/local/bin/bazel
-
-RUN git clone https://github.com/googleinterns/cloud-spanner-emulator-fuzzing.git fuzz
-WORKDIR fuzz
-COPY build.sh $SRC/
+# builds corpus
+zip -r $OUT/fuzz_parseini_seed_corpus.zip examples

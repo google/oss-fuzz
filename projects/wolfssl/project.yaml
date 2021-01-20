@@ -18,8 +18,7 @@ fuzzing_engines:
   - dataflow
 sanitizers:
   - address
-  - memory:
-     experimental: True
+  - memory
   - undefined
   - dataflow
 architectures:

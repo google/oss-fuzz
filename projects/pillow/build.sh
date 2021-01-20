@@ -14,20 +14,23 @@
 # limitations under the License.
 #
 ################################################################################
-make install-req
-python3 setup.py develop
 
-bp="$(find ./build -name '_imagingtk.o')"
-BUILD_DIR="${bp/_imagingtk.o/}"
-rm ${BUILD_DIR}/_imagingmath.o
-rm ${BUILD_DIR}/_imagingtk.o
-rm ${BUILD_DIR}/_imagingmorph.o
+python3 setup.py build --build-base=/tmp/build install
 
-TS="$(find ./src/PIL/ -name '_imaging.*.so')"
+bp="$(find /tmp/build -name '_imaging.o')"
+BUILD_DIR="${bp/_imaging.o/}"
+if [ -d "$BUILD_DIR" ]; then
+    find $BUILD_DIR -name _imagingmath.o -delete
+    find $BUILD_DIR -name _imagingtk.o -delete
+    find $BUILD_DIR -name _imagingmorph.o -delete
+fi;
+
+# Relink with fuzzing engine
+TS="$(find /usr/local/lib/python3.* -name '_imaging.*.so')"
 $CXX -pthread -shared $CXXFLAGS $LIB_FUZZING_ENGINE ${BUILD_DIR}/*.o ${BUILD_DIR}/libImaging/*.o \
     -L/usr/local/lib -L/lib/x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu \
-    -L/usr/lib/x86_64-linux-gnu/libfakeroot -L/usr/lib -L/lib \
-    -L/usr/local/lib -ljpeg -lz -lxcb -lfreetype -lopenjp2 -ltiff -llcms2 -lwebp -lwebpmux \
+    -L/usr/lib/x86_64-linux-gnu/libfakeroot -L/usr/lib -L/lib -L/usr/local/lib \
+    -ljpeg -lz -lxcb -lfreetype -lopenjp2 -ltiff -llcms2 -lwebp -lwebpmux -lwebpdemux \
     -o ${TS} -stdlib=libc++
 
 # Build fuzzers in $OUT.

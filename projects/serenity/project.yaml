@@ -7,6 +7,8 @@ auto_ccs:
   - "ali.mpfard@gmail.com"
   - "luke.wilde@live.co.uk"
   - "bugaevc@serenityos.org"
+  - "b.gianfo@gmail.com"
+  - "~awesomekling/serenityos-dev@lists.sr.ht"
 
 # Bug reports are public by default:
 view_restrictions: none

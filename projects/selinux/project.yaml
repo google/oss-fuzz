@@ -8,4 +8,6 @@ sanitizers:
 auto_ccs:
   - evverx@gmail.com
   - nicolas.iooss.ossfuzz@gmail.com
+  - omosnacek@gmail.com
+  - jwcart2@gmail.com
 main_repo: 'https://github.com/SELinuxProject/selinux'
