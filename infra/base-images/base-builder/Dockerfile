@@ -83,7 +83,7 @@ RUN go get -u github.com/mdempsky/go114-fuzz-build && \
 ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup
 ENV PATH=$PATH:/rust/bin
-RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=minimal
 RUN cargo install cargo-fuzz
 # Needed to recompile rust std library for MSAN
 RUN rustup component add rust-src --toolchain nightly
