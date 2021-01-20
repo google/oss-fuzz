@@ -16,8 +16,7 @@
 ################################################################################
 
 # Now build the content
-cd serenity/Meta/Lagom
-mkdir build
+mkdir -p build
 cd build
 cmake -GNinja \
     -DBUILD_LAGOM=ON \
