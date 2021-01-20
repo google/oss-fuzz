@@ -144,7 +144,8 @@ if [ "$FUZZING_ENGINE" != 'afl' ]; then
     rm -Rf *
 fi
 
-#another target without cryptopp neither javascript
-cmake -DDISABLE_CRYPTOPP=ON -DDISABLE_JS=ON ..
+#another target without javascript
+cmake -DDISABLE_JS=ON ..
 make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec_noblocker
+cp fuzz_ec.dict $OUT/fuzz_ec_noblocker.dict
