@@ -163,4 +163,9 @@ def gs_url_to_https(url):
 
 def remove_prefix(string, prefix):
   """Returns |string| without the leading substring |prefix|."""
-  return string[len(prefix):]
+  # Match behavior of removeprefix from python3.9:
+  # https://www.python.org/dev/peps/pep-0616/
+  if string.startswith(prefix):
+    return string[len(prefix):]
+
+  return string
