@@ -684,7 +684,7 @@ def get_affected_fuzzers(fuzzer_paths, files_changed, cov_report_info,
       affected_fuzzers.add(fuzzer_path)
       continue
 
-    logging.info('Fuzzer %s is affected by:\n%s', fuzzer_name, covered_files)
+    logging.info('Fuzzer %s is affected by: %s', fuzzer_name, covered_files)
     for file in files_changed:
       if file in covered_files:
         affected_fuzzers.add(fuzzer_path)
