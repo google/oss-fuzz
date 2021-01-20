@@ -19,15 +19,19 @@
 import argparse
 import pathlib
 import os
+import re
 import subprocess
 import sys
 import unittest
 import yaml
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEST_DIR_BLOCKLIST = {
-    os.path.join(_SRC_ROOT, 'infra/base-images/base-sanitizer-libs-builder')
-}
+TEST_BLOCKLIST = [
+    re.compile(r'.*\/infra\/base-images\/base-sanitizer-libs-builder'),
+    # TODO(https://github.com/google/oss-fuzz/issues/5025): Reenable these
+    # tests.
+    re.compile(r'.*\/infra\/build(\/?).*'),
+]
 
 
 def _is_project_file(actual_path, expected_filename):
@@ -331,16 +335,26 @@ def get_changed_files():
   ]
 
 
+def is_test_dir_blocklisted(directory):
+  for blocklisted_regex in TEST_BLOCKLIST:
+    if blocklisted_regex.search(directory):
+      return True
+  return False
+
 def run_tests(relevant_files):
   """Run all unit tests in directories that are different from HEAD."""
   changed_dirs = set()
   for file_path in relevant_files:
     directory = os.path.dirname(file_path)
-    if directory in TEST_DIR_BLOCKLIST:
-      continue
-    if not directory.endswith('build'):
+    if is_test_dir_blocklisted(directory):
       continue
     changed_dirs.add(directory)
+
+  for d in changed_dirs:
+    if 'functions' in directory:
+      import ipdb; ipdb.set_trace()
+      pass
+
 
   # TODO(metzman): This approach for running tests is flawed since tests can
   # fail even if their directory isn't changed. Figure out if it is needed (to
@@ -351,6 +365,7 @@ def run_tests(relevant_files):
                                                      pattern='*_test.py'))
   suite = unittest.TestSuite(suite_list)
   result = unittest.TextTestRunner().run(suite)
+
   return not result.failures and not result.errors
 
 
