@@ -33,6 +33,7 @@ EXAMPLE_FILE_CHANGED = 'test.txt'
 TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'test_files')
 
+
 class RemoveUnaffectedFuzzTargets(unittest.TestCase):
   """Tests remove_unaffected_fuzzers."""
 
@@ -65,8 +66,7 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
         shutil.copy(self.TEST_FUZZER_1, tmp_dir)
         shutil.copy(self.TEST_FUZZER_2, tmp_dir)
         affected_fuzz_targets.remove_unaffected_fuzz_targets(
-            EXAMPLE_PROJECT, tmp_dir,
-            [EXAMPLE_FILE_CHANGED], '')
+            EXAMPLE_PROJECT, tmp_dir, [EXAMPLE_FILE_CHANGED], '')
         self.assertEqual(expected_dir_len, len(os.listdir(tmp_dir)))
 
 
