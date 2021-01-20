@@ -90,8 +90,7 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
 
   def setUp(self):
     example_cov_json = 'example_curl_cov.json'
-    with open(os.path.join(TEST_FILES_PATH,
-                           example_cov_json)) as file_handle:
+    with open(os.path.join(TEST_FILES_PATH, example_cov_json)) as file_handle:
       self.cov_report = json.loads(file_handle.read())
 
     with mock.patch('coverage._get_latest_cov_report_info',
@@ -106,7 +105,6 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
     """Tests that covered files can be retrieved from a coverage report."""
     with mock.patch('coverage.OssFuzzCoverageGetter.get_target_coverage_report',
                     return_value=self.fuzzer_cov_report):
-      import ipdb; ipdb.set_trace()
       file_list = self.coverage_getter.get_files_covered_by_target(
           self.EXAMPLE_FUZZER)
 
