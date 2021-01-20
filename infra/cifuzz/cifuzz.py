@@ -27,7 +27,6 @@ import time
 import affected_fuzz_targets
 import fuzz_target
 
-
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build_specified_commit
@@ -233,9 +232,9 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     """Removes the fuzzers unaffected by the patch."""
     fix_git_repo_for_diff(self.host_repo_path)
     changed_files = self.repo_manager.get_git_diff()
-    affected_fuzz_targets.remove_unaffected_fuzzers(
-        self.project_name, self.out_dir, changed_files,
-        self.image_repo_path)
+    affected_fuzz_targets.remove_unaffected_fuzzers(self.project_name,
+                                                    self.out_dir, changed_files,
+                                                    self.image_repo_path)
     return True
 
 

@@ -19,6 +19,7 @@ import sys
 
 import coverage
 
+# pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
@@ -39,7 +40,7 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
   """
   if not files_changed:
     # Don't remove any fuzz targets if there is no difference from HEAD.
-    logging.info('No files changed.')
+    logging.info('No files changed compared to HEAD.')
     return
 
   logging.info('Files changed in PR: %s', files_changed)
@@ -50,15 +51,15 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
     logging.error('No fuzz targets found in out dir.')
     return
 
-  coverage_getter = coverage.OSSFuzzCoveragGetter(project_name,
-                                                  repo_path)
+  coverage_getter = coverage.OSSFuzzCoveragGetter(project_name, repo_path)
   if coverage_getter.fuzzer_stats_url:
     # Don't remove any fuzz targets unless we have data.
     logging.error('Could not download latest coverage report.')
     return
 
-  affected_fuzz_targets = get_affected_fuzz_targets(
-      coverage_getter, fuzz_target_paths, files_changed)
+  affected_fuzz_targets = get_affected_fuzz_targets(coverage_getter,
+                                                    fuzz_target_paths,
+                                                    files_changed)
 
   if not affected_fuzz_targets:
     logging.info('No affected fuzz targets detected, keeping all as fallback.')
@@ -73,8 +74,8 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
     try:
       os.remove(fuzz_target_path)
     except OSError as error:
-      logging.error('%s occurred while removing file %s',
-                    error, fuzz_target_path)
+      logging.error('%s occurred while removing file %s', error,
+                    fuzz_target_path)
 
 
 def is_fuzz_target_affected(coverage_getter, fuzz_target_path, files_changed):
@@ -89,8 +90,7 @@ def is_fuzz_target_affected(coverage_getter, fuzz_target_path, files_changed):
                  fuzz_target)
     return True
 
-  logging.info('Fuzz target %s is affected by: %s',
-               fuzz_target, covered_files)
+  logging.info('Fuzz target %s is affected by: %s', fuzz_target, covered_files)
   for filename in files_changed:
     if filename in covered_files:
       logging.info('Fuzz target %s is affected by changed file: %s',
@@ -101,13 +101,13 @@ def is_fuzz_target_affected(coverage_getter, fuzz_target_path, files_changed):
   return False
 
 
-def get_affected_fuzz_targets(
-    coverage_getter, fuzz_target_paths, files_changed):
+def get_affected_fuzz_targets(coverage_getter, fuzz_target_paths,
+                              files_changed):
   """Returns a list of paths of affected targets."""
   affected_fuzz_targets = set()
   for fuzz_target_path in fuzz_target_paths:
-    if is_fuzz_target_affected(
-        coverage_getter, fuzz_target_path, files_changed):
+    if is_fuzz_target_affected(coverage_getter, fuzz_target_path,
+                               files_changed):
       affected_fuzz_targets.add(fuzz_target_path)
 
   return affected_fuzz_targets
