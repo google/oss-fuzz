@@ -15,6 +15,7 @@
 
 import logging
 import os
+import posixpath
 import re
 import stat
 import subprocess
@@ -25,6 +26,9 @@ import helper
 ALLOWED_FUZZ_TARGET_EXTENSIONS = ['', '.exe']
 FUZZ_TARGET_SEARCH_STRING = 'LLVMFuzzerTestOneInput'
 VALID_TARGET_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
+
+# Location of google cloud storage for latest OSS-Fuzz builds.
+GCS_BASE_URL = 'https://storage.googleapis.com/'
 
 
 def chdir_to_root():
@@ -138,3 +142,20 @@ def binary_print(string):
     string += '\n'
   sys.stdout.buffer.write(string)
   sys.stdout.flush()
+
+
+def url_join(*url_parts):
+  """Joins URLs together using the POSIX join method.
+
+  Args:
+    url_parts: Sections of a URL to be joined.
+
+  Returns:
+    Joined URL.
+  """
+  return posixpath.join(*url_parts)
+
+
+def gs_url_to_https(url):
+  url = url.replace('gs://', '')
+  return url_join(GCS_BASE_URL, url)
