@@ -292,16 +292,11 @@ def is_nonfuzzer_python(path):
   return os.path.splitext(path)[1] == '.py' and '/projects/' not in path
 
 
-def lint(paths):
+def lint():
   """Run python's linter on |paths| if it is a python file. Return False if it
   fails linting."""
-  paths = [path for path in paths if is_nonfuzzer_python(path)]
-  if not paths:
-    return True
 
-  command = ['python3', '-m', 'pylint', '-j', '0']
-  command.extend(paths)
-
+  command = ['python3', '-m', 'pylint', '-j', '0', 'infra']
   returncode = subprocess.run(command, check=False).returncode
   return returncode == 0
 
@@ -333,10 +328,10 @@ def get_changed_files():
   ]
 
 
-def run_tests():
+def run_tests(relevant_files):
   """Run all unit tests in directories that are different from HEAD."""
   changed_dirs = set()
-  for file in get_changed_files():
+  for file in relevant_files:
     changed_dirs.add(os.path.dirname(file))
 
   # TODO(metzman): This approach for running tests is flawed since tests can
@@ -384,7 +379,7 @@ def main():
     return bool_to_returncode(success)
 
   if args.command == 'lint':
-    success = lint(relevant_files)
+    success = lint()
     return bool_to_returncode(success)
 
   if args.command == 'license':
@@ -392,7 +387,7 @@ def main():
     return bool_to_returncode(success)
 
   if args.command == 'infra-tests':
-    success = run_tests()
+    success = run_tests(relevant_files)
     return bool_to_returncode(success)
 
   # Do all the checks (but no tests).

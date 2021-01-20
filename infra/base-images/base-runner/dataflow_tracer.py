@@ -26,9 +26,9 @@ import sys
 
 # These can be controlled by the runner in order to change the values without
 # rebuilding OSS-Fuzz base images.
-FILE_SIZE_LIMIT = int(os.getenv('DFT_FILE_SIZE_LIMIT', 32 * 1024))
-MIN_TIMEOUT = float(os.getenv('DFT_MIN_TIMEOUT', 1.0))
-TIMEOUT_RANGE = float(os.getenv('DFT_TIMEOUT_RANGE', 3.0))
+FILE_SIZE_LIMIT = int(os.environ.get('DFT_FILE_SIZE_LIMIT', 32 * 1024))
+MIN_TIMEOUT = float(os.environ.get('DFT_MIN_TIMEOUT', 1.0))
+TIMEOUT_RANGE = float(os.enviro.get('DFT_TIMEOUT_RANGE', 3.0))
 
 DFSAN_OPTIONS = 'fast16labels=1:warn_unimplemented=0'
 
@@ -39,15 +39,15 @@ def _error(msg):
 
 def _list_dir(dirpath):
   for root, _, files in os.walk(dirpath):
-    for f in files:
-      yield os.path.join(root, f)
+    for filename in files:
+      yield os.path.join(root, filename)
 
 
 def _sha1(filepath):
-  h = hashlib.sha1()
-  with open(filepath, 'rb') as f:
-    h.update(f.read())
-  return h.hexdigest()
+  digest = hashlib.sha1()
+  with open(filepath, 'rb') as file_handle:
+    digest.update(file_handle.read())
+  return digest.hexdigest()
 
 
 def _run(cmd, timeout=None):
@@ -56,15 +56,16 @@ def _run(cmd, timeout=None):
     result = subprocess.run(cmd,
                             timeout=timeout,
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                            stderr=subprocess.PIPE,
+                            check=False)
     if result.returncode:
       _error('{command} finished with non-zero code: {code}'.format(
           command=str(cmd), code=result.returncode))
 
   except subprocess.TimeoutExpired:
     raise
-  except Exception as e:
-    _error('Exception: ' + str(e))
+  except Exception as error:  # pylint: disable=broad-except
+    _error('Exception: ' + str(error))
 
   return result
 
@@ -77,6 +78,7 @@ def _timeout(size):
 
 
 def collect_traces(binary, corpus_dir, dft_dir):
+  """Collects traces and returns stats summarizing them."""
   stats = {
       'total': 0,
       'traced': 0,
@@ -86,43 +88,46 @@ def collect_traces(binary, corpus_dir, dft_dir):
   }
 
   files_and_sizes = {}
-  for f in _list_dir(corpus_dir):
+  for filename in _list_dir(corpus_dir):
     stats['total'] += 1
-    size = os.path.getsize(f)
+    size = os.path.getsize(filename)
     if size > FILE_SIZE_LIMIT:
       stats['long'] += 1
-      print('Skipping large file ({size}b): {path}'.format(size=size, path=f))
+      print('Skipping large file ({size}b): {path}'.format(size=size,
+                                                           path=filename))
       continue
-    files_and_sizes[f] = size
+    files_and_sizes[filename] = size
 
-  for f in sorted(files_and_sizes, key=files_and_sizes.get):
-    output_path = os.path.join(dft_dir, _sha1(f))
+  for filename in sorted(files_and_sizes, key=files_and_sizes.get):
+    output_path = os.path.join(dft_dir, _sha1(filename))
     try:
-      result = _run([binary, f, output_path], timeout=_timeout(size))
+      result = _run([binary, filename, output_path], timeout=_timeout(size))
       if result.returncode:
         stats['failed'] += 1
       else:
         stats['traced'] += 1
 
-    except subprocess.TimeoutExpired as e:
-      _error('Slow input: ' + str(e))
+    except subprocess.TimeoutExpired as error:
+      _error('Slow input: ' + str(error))
       stats['slow'] += 1
 
   return stats
 
 
 def dump_functions(binary, dft_dir):
+  """Dumps functions to functions.txt. Returns True on success."""
   result = _run([binary])
   if not result or result.returncode:
     return False
 
-  with open(os.path.join(dft_dir, 'functions.txt'), 'wb') as f:
-    f.write(result.stdout)
+  with open(os.path.join(dft_dir, 'functions.txt'), 'wb') as file_handle:
+    file_handle.write(result.stdout)
 
   return True
 
 
 def main():
+  """Collect dataflow traces."""
   if len(sys.argv) < 4:
     _error('Usage: {0} <binary> <corpus_dir> <dft_dir>'.format(sys.argv[0]))
     sys.exit(1)
@@ -138,13 +143,13 @@ def main():
     sys.exit(1)
 
   stats = collect_traces(binary, corpus_dir, dft_dir)
-  for k, v in stats.items():
-    print('{0}: {1}'.format(k, v))
+  for key, value in stats.items():
+    print('{0}: {1}'.format(key, value))
 
   # Checksum that we didn't lose track of any of the inputs.
-  assert stats['total'] * 2 == sum(v for v in stats.values())
+  assert stats['total'] * 2 == sum(value for value in stats.values())
   sys.exit(0)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()
