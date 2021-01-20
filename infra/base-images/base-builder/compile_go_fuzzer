@@ -25,7 +25,7 @@ fi
 
 if [[ $SANITIZER = *coverage* ]]; then
   cd $GOPATH/src/$path
-  fuzzed_package=`go list -f '{{.Name}}'`
+  fuzzed_package=`go list $tags -f '{{.Name}}'`
   cp $GOPATH/ossfuzz_coverage_runner.go ./"${function,,}"_test.go
   sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
   sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
