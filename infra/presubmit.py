@@ -17,6 +17,7 @@
 """Check code for common issues before submitting."""
 
 import argparse
+import pathlib
 import os
 import subprocess
 import sys
@@ -24,6 +25,9 @@ import unittest
 import yaml
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEST_DIR_BLOCKLIST = {
+    os.path.join(_SRC_ROOT, 'infra/base-images/base-sanitizer-libs-builder')
+}
 
 
 def _is_project_file(actual_path, expected_filename):
@@ -330,8 +334,13 @@ def get_changed_files():
 def run_tests(relevant_files):
   """Run all unit tests in directories that are different from HEAD."""
   changed_dirs = set()
-  for file in relevant_files:
-    changed_dirs.add(os.path.dirname(file))
+  for file_path in relevant_files:
+    directory = os.path.dirname(file_path)
+    if directory in TEST_DIR_BLOCKLIST:
+      continue
+    if not directory.endswith('build'):
+      continue
+    changed_dirs.add(directory)
 
   # TODO(metzman): This approach for running tests is flawed since tests can
   # fail even if their directory isn't changed. Figure out if it is needed (to
