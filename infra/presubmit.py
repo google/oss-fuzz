@@ -17,7 +17,6 @@
 """Check code for common issues before submitting."""
 
 import argparse
-import pathlib
 import os
 import re
 import subprocess
@@ -336,25 +335,22 @@ def get_changed_files():
 
 
 def is_test_dir_blocklisted(directory):
+  """Returns True if |directory| is blocklisted."""
   for blocklisted_regex in TEST_BLOCKLIST:
     if blocklisted_regex.search(directory):
       return True
   return False
 
-def run_tests(relevant_files):
-  """Run all unit tests in directories that are different from HEAD."""
+
+def run_tests(_=None):
+  """Run all unit tests."""
   changed_dirs = set()
-  for file_path in relevant_files:
+  all_files = get_all_files()
+  for file_path in all_files:
     directory = os.path.dirname(file_path)
     if is_test_dir_blocklisted(directory):
       continue
     changed_dirs.add(directory)
-
-  for d in changed_dirs:
-    if 'functions' in directory:
-      import ipdb; ipdb.set_trace()
-      pass
-
 
   # TODO(metzman): This approach for running tests is flawed since tests can
   # fail even if their directory isn't changed. Figure out if it is needed (to
