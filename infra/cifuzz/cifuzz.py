@@ -102,16 +102,6 @@ def build_external_project_docker_image(project_name, project_src,
   return helper.docker_build(command)
 
 
-def fix_git_repo_for_diff(repo_dir):
-  """Fixes git repos cloned by the "checkout" action so that diffing works on
-  them."""
-  command = [
-      'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
-      'refs/remotes/origin/master'
-  ]
-  return utils.execute(command, location=repo_dir)
-
-
 def check_project_src_path(project_src_path):
   """Returns True if |project_src_path| exists."""
   if not os.path.exists(project_src_path):
