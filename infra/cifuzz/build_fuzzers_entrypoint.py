@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Builds and runs specific OSS-Fuzz project's fuzzers for CI tools."""
+"""Builds a specific OSS-Fuzz project's fuzzers for CI tools."""
 import json
 import logging
 import os

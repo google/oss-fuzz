@@ -17,10 +17,10 @@
 
 FROM gcr.io/oss-fuzz-base/cifuzz-base
 
-COPY cifuzz/actions/build_fuzzers/build_fuzzers_entrypoint.py /opt/build_fuzzers_entrypoint.py
-
 # Python file to execute when the docker container starts up
-ENTRYPOINT ["python3", "/opt/build_fuzzers_entrypoint.py"]
+# We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,
+# just expand to '/opt/oss-fuzz'.
+ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/build_fuzzers_entrypoint.py"]
 
 # Update infra source code.
 ADD . ${OSS_FUZZ_ROOT}/infra
