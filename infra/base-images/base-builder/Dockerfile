@@ -29,7 +29,6 @@ RUN dpkg --add-architecture i386 && \
         jq \
         libc6-dev-i386 \
         patchelf \
-        python \
         subversion \
         zip
 
@@ -55,6 +54,7 @@ RUN export PYTHON_DEPS="\
     ./configure --enable-optimizations --enable-shared && \
     make -j install && \
     ldconfig && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
