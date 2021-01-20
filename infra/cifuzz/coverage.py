@@ -27,7 +27,7 @@ import utils
 LATEST_REPORT_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
 
 
-class OSSFuzzCoverageGetter:
+class OssFuzzCoverageGetter:
   """Gets coverage data for a project from OSS-Fuzz."""
 
   def __init__(self, project_name, repo_path):

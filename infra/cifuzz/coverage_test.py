@@ -17,7 +17,7 @@ from unittest import mock
 
 import coverage
 
-
+# pylint: disable=protected-access
 
 class GetFuzzerStatsDirUrlTest(unittest.TestCase):
   """Tests _get_fuzzer_stats_dir_url."""

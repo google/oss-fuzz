@@ -51,8 +51,8 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
     logging.error('No fuzz targets found in out dir.')
     return
 
-  coverage_getter = coverage.OSSFuzzCoveragGetter(project_name, repo_path)
-  if coverage_getter.fuzzer_stats_url:
+  coverage_getter = coverage.OssFuzzCoverageGetter(project_name, repo_path)
+  if not coverage_getter.fuzzer_stats_url:
     # Don't remove any fuzz targets unless we have data.
     logging.error('Could not download latest coverage report.')
     return
