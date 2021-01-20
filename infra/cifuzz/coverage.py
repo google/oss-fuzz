@@ -31,6 +31,8 @@ class OssFuzzCoverageGetter:
   """Gets coverage data for a project from OSS-Fuzz."""
 
   def __init__(self, project_name, repo_path):
+    """Constructor for OssFuzzCoverageGetter. Callers should check that
+    fuzzer_stats_url is initialized."""
     self.project_name = project_name
     self.repo_path = _normalize_repo_path(repo_path)
     self.fuzzer_stats_url = _get_fuzzer_stats_dir_url(self.project_name)
@@ -39,12 +41,14 @@ class OssFuzzCoverageGetter:
     """Get the coverage report for a specific fuzz target.
 
     Args:
-      latest_cov_info: A dict containing a project's latest cov report info.
-      target_name: The name of the fuzz target whose coverage is requested.
+      target: The name of the fuzz target whose coverage is requested.
 
     Returns:
-      The targets coverage json dict or None on failure.
+      The target's coverage json dict or None on failure.
     """
+    if not self.fuzzer_stats_url:
+      return None
+
     target_url = utils.url_join(self.fuzzer_stats_url, target + '.json')
     return get_json_from_url(target_url)
 
@@ -52,16 +56,13 @@ class OssFuzzCoverageGetter:
     """Gets a list of source files covered by the specific fuzz target.
 
     Args:
-      latest_cov_info: A dict containing a project's latest cov report info.
-      target_name: The name of the fuzz target whose coverage is requested.
-      oss_fuzz_repo_path: The location of the repo in the docker image.
+      target: The name of the fuzz target whose coverage is requested.
 
     Returns:
       A list of files that the fuzz targets covers or None.
     """
     target_cov = self.get_target_coverage_report(target)
     if not target_cov:
-      logging.error('No coverage data for %s', target)
       return None
 
     coverage_per_file = get_coverage_per_file(target_cov)
@@ -73,12 +74,15 @@ class OssFuzzCoverageGetter:
     for file_cov in coverage_per_file:
       norm_file_path = os.path.normpath(file_cov['filename'])
       if not norm_file_path.startswith(self.repo_path):
+        # Exclude files outside of the main repo.
         continue
 
       if not is_file_covered(file_cov):
         # Don't consider a file affected if code in it is never executed.
         continue
 
+      # TODO(metzman): It's weird to me that we access file_cov['filename']
+      # again and not norm_file_path, figure out if this makes sense.
       relative_path = utils.remove_prefix(file_cov['filename'], self.repo_path)
       affected_file_list.append(relative_path)
 
@@ -111,7 +115,7 @@ def _get_latest_cov_report_info(project_name):
                                           LATEST_REPORT_INFO_PATH,
                                           project_name + '.json')
   latest_cov_info = get_json_from_url(latest_report_info_url)
-  if latest_cov_info is None:
+  if not latest_cov_info is None:
     logging.error('Could not get the coverage report json from url: %s.',
                   latest_report_info_url)
     return None
@@ -128,9 +132,14 @@ def _get_fuzzer_stats_dir_url(project_name):
     The projects coverage report info in json dict or None on failure.
   """
   latest_cov_info = _get_latest_cov_report_info(project_name)
-  # !!! Make sure functionally the same as before.
-  if latest_cov_info is None or 'fuzzer_stats_dir' not in latest_cov_info:
+
+  if not latest_cov_info:
     return None
+
+  if 'fuzzer_stats_dir' not in latest_cov_info:
+    logging.error('fuzzer_stats_dir not in latest coverage info.')
+    return None
+
   fuzzer_stats_dir_gs_url = latest_cov_info['fuzzer_stats_dir']
   fuzzer_stats_dir_url = utils.gs_url_to_https(fuzzer_stats_dir_gs_url)
   return fuzzer_stats_dir_url

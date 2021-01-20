@@ -54,7 +54,7 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
   coverage_getter = coverage.OssFuzzCoverageGetter(project_name, repo_path)
   if not coverage_getter.fuzzer_stats_url:
     # Don't remove any fuzz targets unless we have data.
-    logging.error('Could not download latest coverage report.')
+    logging.error('Could not find latest coverage report.')
     return
 
   affected_fuzz_targets = get_affected_fuzz_targets(coverage_getter,
@@ -86,6 +86,8 @@ def is_fuzz_target_affected(coverage_getter, fuzz_target_path, files_changed):
   if not covered_files:
     # Assume a fuzz target is affected if we can't get its coverage from
     # OSS-Fuzz.
+    # TODO(metzman): Figure out what we should do if covered_files is [].
+    # Should we act as if we couldn't get the coverage?
     logging.info('Could not get coverage for %s. Treating as affected.',
                  fuzz_target)
     return True
