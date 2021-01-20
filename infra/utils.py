@@ -157,5 +157,5 @@ def url_join(*url_parts):
 
 
 def gs_url_to_https(url):
-  url = url.replace('gs://', '')
-  return url_join(GCS_BASE_URL, url)
+  """Converts |url| from a GCS URL (beginning with 'gs://') to an HTTPS one."""
+  return url.replace('gs://', GCS_BASE_URL)

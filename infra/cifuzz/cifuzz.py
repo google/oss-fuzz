@@ -23,8 +23,6 @@ import os
 import shutil
 import sys
 import time
-import urllib.error
-import urllib.request
 
 import fuzz_target
 import coverage
@@ -546,8 +544,8 @@ def remove_unaffected_fuzzers(project_name, out_dir, files_changed,
     logging.error('No fuzzers found in out dir.')
     return
 
-  coverage_getter = coverage.OSSFuzzCoveragGetter(
-      project_name, oss_fuzz_repo_path)
+  coverage_getter = coverage.OSSFuzzCoveragGetter(project_name,
+                                                  oss_fuzz_repo_path)
   affected_fuzzers = []
   logging.info('Files changed in PR:\n%s', '\n'.join(files_changed))
   for fuzzer in fuzzer_paths:

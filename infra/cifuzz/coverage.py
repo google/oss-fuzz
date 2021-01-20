@@ -13,6 +13,7 @@
 # limitations under the License.
 """Module for determining coverage of fuzzers."""
 import logging
+import os
 import sys
 import json
 import urllib.error
@@ -25,7 +26,10 @@ import utils
 # The path to get project's latest report json file.
 LATEST_REPORT_INFO_PATH = 'oss-fuzz-coverage/latest_report_info/'
 
+
 class OSSFuzzCoverageGetter:
+  """Gets coverage data for a project from OSS-Fuzz."""
+
   def __init__(self, project_name, repo_path):
     self.project_name = project_name
     self.repo_path = _normalize_repo_path(repo_path)
@@ -57,8 +61,8 @@ class OSSFuzzCoverageGetter:
     """
     target_cov = self.get_target_coverage_report(target)
     if not target_cov:
-        logging.error('No coverage data for %s', target)
-        return None
+      logging.error('No coverage data for %s', target)
+      return None
 
     coverage_per_file = target_cov['data'][0]['files']
     if not coverage_per_file:
@@ -88,7 +92,6 @@ def _normalize_repo_path(repo_path):
   return repo_path
 
 
-
 def _get_fuzzer_stats_dir_url(project_name):
   """Gets latest coverage report info for a specific OSS-Fuzz project from GCS.
 
@@ -108,7 +111,7 @@ def _get_fuzzer_stats_dir_url(project_name):
     return None
 
   fuzzer_stats_dir_gs_url = latest_cov_info['fuzzer_stats_dir']
-  latest_cov_info_json = utils.gs_url_to_https(fuzzer_stats_dir_gs_url)
+  fuzzer_stats_dir_url = utils.gs_url_to_https(fuzzer_stats_dir_gs_url)
   return fuzzer_stats_dir_url
 
 
