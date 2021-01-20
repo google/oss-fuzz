@@ -152,6 +152,7 @@ ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
 RUN mkdir honggfuzz && \
     cd honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
+    rm -rf examples && \
     rm -rf $SRC/oss-fuzz.tar.gz
 
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
