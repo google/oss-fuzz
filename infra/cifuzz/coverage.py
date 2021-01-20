@@ -106,6 +106,7 @@ def _get_latest_cov_report_info(project_name):
     return None
   return latest_cov_info
 
+
 def _get_fuzzer_stats_dir_url(project_name):
   """Gets latest coverage report info for a specific OSS-Fuzz project from GCS.
 
