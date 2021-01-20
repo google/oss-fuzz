@@ -233,9 +233,7 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     fix_git_repo_for_diff(self.host_repo_path)
     changed_files = self.repo_manager.get_git_diff()
     affected_fuzz_targets.remove_unaffected_fuzz_targets(
-        self.project_name,
-        self.out_dir, changed_files,
-        self.image_repo_path)
+        self.project_name, self.out_dir, changed_files, self.image_repo_path)
     return True
 
 
