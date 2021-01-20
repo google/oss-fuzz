@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module for determining coverage of fuzzers."""
+"""Module for determining coverage of fuzz targets."""
 import logging
 import os
 import sys
@@ -57,7 +57,7 @@ class OSSFuzzCoverageGetter:
       oss_fuzz_repo_path: The location of the repo in the docker image.
 
     Returns:
-      A list of files that the fuzzer covers or None.
+      A list of files that the fuzz targets covers or None.
     """
     target_cov = self.get_target_coverage_report(target)
     if not target_cov:
@@ -85,7 +85,8 @@ class OSSFuzzCoverageGetter:
 
 
 def _normalize_repo_path(repo_path):
-  # Make sure cases like /src/curl and /src/curl/ are both handled.
+  """Normalizes and returns |repo_path| to make sure cases like /src/curl and
+  /src/curl/ are both handled."""
   repo_path = os.path.normpath(repo_path)
   if not repo_path.endswith('/'):
     repo_path += '/'
@@ -129,6 +130,7 @@ def get_json_from_url(url):
   except urllib.error.HTTPError:
     logging.error('HTTP error with url %s.', url)
     return None
+
   try:
     # read().decode() fixes compatibility issue with urllib response object.
     result_json = json.loads(response.read().decode())
