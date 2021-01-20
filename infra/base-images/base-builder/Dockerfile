@@ -54,6 +54,7 @@ RUN export PYTHON_DEPS="\
     ./configure --enable-optimizations --enable-shared && \
     make -j install && \
     ldconfig && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
@@ -86,6 +87,11 @@ RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
 RUN cargo install cargo-fuzz
 # Needed to recompile rust std library for MSAN
 RUN rustup component add rust-src --toolchain nightly
+
+# Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
+ENV BAZELISK_VERSION 1.7.4
+RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel && \
+    chmod +x /usr/local/bin/bazel
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
