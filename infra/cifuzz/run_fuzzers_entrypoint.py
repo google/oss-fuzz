@@ -16,8 +16,6 @@ import logging
 import os
 import sys
 
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.join(os.environ['OSS_FUZZ_ROOT'], 'infra', 'cifuzz'))
 import cifuzz
 
 # TODO: Turn default logging to INFO when CIFuzz is stable.
