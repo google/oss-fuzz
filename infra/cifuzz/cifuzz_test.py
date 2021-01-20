@@ -23,8 +23,6 @@ import tempfile
 import unittest
 from unittest import mock
 
-import parameterized
-
 # pylint: disable=wrong-import-position
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(INFRA_DIR)
@@ -480,44 +478,6 @@ class GetTargetCoverageReportTest(unittest.TestCase):
         cifuzz.get_target_coverage_report('not-a-proj', self.example_fuzzer))
     self.assertIsNone(cifuzz.get_target_coverage_report('',
                                                         self.example_fuzzer))
-
-
-EXAMPLE_FILE_CHANGED = 'test.txt'
-
-
-class RemoveUnaffectedFuzzersTest(unittest.TestCase):
-  """Tests remove_unaffected_fuzzers."""
-
-  TEST_FUZZER_1 = os.path.join(TEST_FILES_PATH, 'out', 'example_crash_fuzzer')
-  TEST_FUZZER_2 = os.path.join(TEST_FILES_PATH, 'out', 'example_nocrash_fuzzer')
-
-  # yapf: disable
-  @parameterized.parameterized.expand([
-      # Tests a specific affected fuzzers is kept.
-      ([[EXAMPLE_FILE_CHANGED], None], 2,),
-
-      # Tests specific affected fuzzer is kept.
-      ([[EXAMPLE_FILE_CHANGED], ['not/a/real/file']], 1),
-
-      # Tests all fuzzers are kept if none are deemed affected.
-      ([None, None], 2),
-
-      # Tests that multiple fuzzers are kept if multiple fuzzers are affected.
-      ([[EXAMPLE_FILE_CHANGED], [EXAMPLE_FILE_CHANGED]], 2),
-      ])
-  # yapf: enable
-  def test_remove_unaffected_fuzzers(self, side_effect, expected_dir_len):
-    """Tests that remove_unaffected_fuzzers has the intended effect."""
-    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
-        'cifuzz.get_latest_cov_report_info', return_value=1):
-      with mock.patch.object(cifuzz,
-                             'get_files_covered_by_target') as mocked_get_files:
-        mocked_get_files.side_effect = side_effect
-        shutil.copy(self.TEST_FUZZER_1, tmp_dir)
-        shutil.copy(self.TEST_FUZZER_2, tmp_dir)
-        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                         [EXAMPLE_FILE_CHANGED], '')
-        self.assertEqual(expected_dir_len, len(os.listdir(tmp_dir)))
 
 
 @unittest.skip('Test is too long to be run with presubmit.')

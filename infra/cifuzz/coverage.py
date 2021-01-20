@@ -93,6 +93,19 @@ def _normalize_repo_path(repo_path):
   return repo_path
 
 
+def _get_latest_cov_report_info(project_name):
+  """Gets and returns a dictionary containing the latest coverage report info
+  for |project|."""
+  latest_report_info_url = utils.url_join(utils.GCS_BASE_URL,
+                                          LATEST_REPORT_INFO_PATH,
+                                          project_name + '.json')
+  latest_cov_info = get_json_from_url(latest_report_info_url)
+  if latest_cov_info is None:
+    logging.error('Could not get the coverage report json from url: %s.',
+                  latest_report_info_url)
+    return None
+  return latest_cov_info
+
 def _get_fuzzer_stats_dir_url(project_name):
   """Gets latest coverage report info for a specific OSS-Fuzz project from GCS.
 
@@ -102,15 +115,10 @@ def _get_fuzzer_stats_dir_url(project_name):
   Returns:
     The projects coverage report info in json dict or None on failure.
   """
-  latest_report_info_url = utils.url_join(utils.GCS_BASE_URL,
-                                          LATEST_REPORT_INFO_PATH,
-                                          project_name + '.json')
-  latest_cov_info = get_json_from_url(latest_report_info_url)
-  if not latest_cov_info:
-    logging.error('Could not get the coverage report json from url: %s.',
-                  latest_report_info_url)
+  latest_cov_info = _get_latest_cov_report_info(project_name)
+  # !!! Make sure functionally the same as before.
+  if latest_cov_info is None or 'fuzzer_stats_dir' not in latest_cov_info:
     return None
-
   fuzzer_stats_dir_gs_url = latest_cov_info['fuzzer_stats_dir']
   fuzzer_stats_dir_url = utils.gs_url_to_https(fuzzer_stats_dir_gs_url)
   return fuzzer_stats_dir_url
