@@ -79,7 +79,7 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
 
 
 def is_fuzz_target_affected(coverage_getter, fuzz_target_path, files_changed):
-  """Returns True if a fuzz target (|fuzz_target_path| is affected by
+  """Returns True if a fuzz target (|fuzz_target_path|) is affected by
   |files_changed|."""
   fuzz_target = os.path.basename(fuzz_target_path)
   covered_files = coverage_getter.get_files_covered_by_target(fuzz_target)
