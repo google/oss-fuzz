@@ -239,7 +239,8 @@ def main():
   infra_changed = is_infra_changed()
   if infra_changed:
     print('Pulling and building base images first.')
-    return build_base_images()
+    if build_base_images():
+      return 1
 
   result = build_modified_projects()
   if result == BuildModifiedProjectsResult.BUILD_FAIL:
