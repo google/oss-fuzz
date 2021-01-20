@@ -293,8 +293,7 @@ def is_nonfuzzer_python(path):
 
 
 def lint():
-  """Run python's linter on |paths| if it is a python file. Return False if it
-  fails linting."""
+  """Run python's linter on infra. Return False if it fails linting."""
 
   command = ['python3', '-m', 'pylint', '-j', '0', 'infra']
   returncode = subprocess.run(command, check=False).returncode
