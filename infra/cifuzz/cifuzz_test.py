@@ -482,32 +482,6 @@ class GetTargetCoverageReportTest(unittest.TestCase):
                                                         self.example_fuzzer))
 
 
-class GetLatestCoverageReportTest(unittest.TestCase):
-  """Tests get_latest_cov_report_info."""
-
-  test_project = 'curl'
-
-  def test_get_valid_project(self):
-    """Tests that a project's coverage report can be downloaded and parsed.
-
-    NOTE: This test relies on the test_project repo's coverage report.
-    The "example" project was not used because it has no coverage reports.
-    """
-    with mock.patch.object(cifuzz, 'get_json_from_url',
-                           return_value='{}') as mock_fun:
-
-      cifuzz.get_latest_cov_report_info(self.test_project)
-      (url,), _ = mock_fun.call_args
-      self.assertEqual(
-          'https://storage.googleapis.com/oss-fuzz-coverage/'
-          'latest_report_info/curl.json', url)
-
-  def test_get_invalid_project(self):
-    """Tests that passing a bad project returns None."""
-    self.assertIsNone(cifuzz.get_latest_cov_report_info('not-a-proj'))
-    self.assertIsNone(cifuzz.get_latest_cov_report_info(''))
-
-
 EXAMPLE_FILE_CHANGED = 'test.txt'
 
 

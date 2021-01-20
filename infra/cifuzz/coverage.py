@@ -102,7 +102,7 @@ def _get_fuzzer_stats_dir_url(project_name):
   Returns:
     The projects coverage report info in json dict or None on failure.
   """
-  latest_report_info_url = utils.url_join(utils.GCS_DOMAIN_NAME,
+  latest_report_info_url = utils.url_join(utils.GCS_BASE_URL,
                                           LATEST_REPORT_INFO_PATH,
                                           project_name + '.json')
   latest_cov_info = get_json_from_url(latest_report_info_url)
