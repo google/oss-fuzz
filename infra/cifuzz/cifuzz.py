@@ -77,16 +77,6 @@ _IMAGE_BUILD_TRIES = 3
 _IMAGE_BUILD_BACKOFF = 2
 
 
-def fix_git_repo_for_diff(repo_dir):
-  """Fixes git repos cloned by the "checkout" action so that diffing works on
-  them."""
-  command = [
-      'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
-      'refs/remotes/origin/master'
-  ]
-  return utils.execute(command, location=repo_dir)
-
-
 def checkout_specified_commit(repo_manager_obj, pr_ref, commit_sha):
   """Checks out the specified commit or pull request using
   |repo_manager_obj|."""
@@ -110,6 +100,16 @@ def build_external_project_docker_image(project_name, project_src,
   tag = 'gcr.io/oss-fuzz/{project_name}'.format(project_name=project_name)
   command = ['-t', tag, '-f', dockerfile_path, project_src]
   return helper.docker_build(command)
+
+
+def fix_git_repo_for_diff(repo_dir):
+  """Fixes git repos cloned by the "checkout" action so that diffing works on
+  them."""
+  command = [
+      'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
+      'refs/remotes/origin/master'
+  ]
+  return utils.execute(command, location=repo_dir)
 
 
 def check_project_src_path(project_src_path):
