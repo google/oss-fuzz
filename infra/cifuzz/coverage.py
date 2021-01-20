@@ -64,24 +64,35 @@ class OssFuzzCoverageGetter:
       logging.error('No coverage data for %s', target)
       return None
 
-    coverage_per_file = target_cov['data'][0]['files']
+    coverage_per_file = get_coverage_per_file(target_cov)
     if not coverage_per_file:
       logging.info('No files found in coverage report.')
       return None
 
     affected_file_list = []
-    for file in coverage_per_file:
-      norm_file_path = os.path.normpath(file['filename'])
+    for file_cov in coverage_per_file:
+      norm_file_path = os.path.normpath(file_cov['filename'])
       if not norm_file_path.startswith(self.repo_path):
         continue
-      if not file['summary']['regions']['count']:
+
+      if not is_file_covered(file_cov):
         # Don't consider a file affected if code in it is never executed.
         continue
 
-      relative_path = file['filename'].replace(self.repo_path, '')
+      relative_path = utils.remove_prefix(file_cov['filename'], self.repo_path)
       affected_file_list.append(relative_path)
 
     return affected_file_list
+
+
+def is_file_covered(file_cov):
+  """Returns whether the file is covered."""
+  return file_cov['summary']['regions']['covered']
+
+
+def get_coverage_per_file(target_cov):
+  """Returns the coverage per file within |target_cov|."""
+  return target_cov['data'][0]['files']
 
 
 def _normalize_repo_path(repo_path):

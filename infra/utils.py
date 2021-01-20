@@ -158,4 +158,9 @@ def url_join(*url_parts):
 
 def gs_url_to_https(url):
   """Converts |url| from a GCS URL (beginning with 'gs://') to an HTTPS one."""
-  return url.replace('gs://', GCS_BASE_URL)
+  return url_join(GCS_BASE_URL, remove_prefix(url, 'gs://'))
+
+
+def remove_prefix(string, prefix):
+  """Returns |string| without the leading substring |prefix|."""
+  return string[len(prefix):]

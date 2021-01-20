@@ -115,5 +115,34 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
     self.assertCountEqual(file_list, true_files_list)
 
 
+class IsFileCoveredTest(unittest.TestCase):
+  """Tests for is_file_covered."""
+  def test_is_file_covered_covered(self):
+    """Tests that is_file_covered returns True for a covered file."""
+    file_coverage = {
+        'filename': '/src/systemd/src/basic/locale-util.c',
+        'summary': {
+            'regions': {
+                'count': 204, 'covered': 200, 'notcovered': 200,
+                'percent': 98.03
+            }
+        }
+    }
+    self.assertTrue(coverage.is_file_covered(file_coverage))
+
+  def test_is_file_covered_covered(self):
+    """Tests that is_file_covered returns False for a noncovered file."""
+    file_coverage = {
+        'filename': '/src/systemd/src/basic/locale-util.c',
+        'summary': {
+            'regions': {
+                'count': 204, 'covered': 0, 'notcovered': 0,
+                'percent': 0
+            }
+        }
+    }
+    self.assertFalse(coverage.is_file_covered(file_coverage))
+
+
 if __name__ == '__main__':
   unittest.main()
