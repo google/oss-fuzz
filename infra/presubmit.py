@@ -292,7 +292,7 @@ def is_nonfuzzer_python(path):
   return os.path.splitext(path)[1] == '.py' and '/projects/' not in path
 
 
-def lint():
+def lint(_=None):
   """Run python's linter on infra. Return False if it fails linting."""
 
   command = ['python3', '-m', 'pylint', '-j', '0', 'infra']
