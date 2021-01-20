@@ -48,7 +48,7 @@ fi
 # Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
 # supported fuzzers are in `//tensorflow/security/fuzzing`.
 # Ignore the identity and AttrValues fuzzer in opensource.
-declare -r FUZZERS=$(bazel query 'tests(//tensorflow/security/fuzzing/...)' | grep -v identity | grep -v AttrValues | grep -v bfloat16 | grep -v constant)
+declare -r FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...))' | grep -v identity | grep -v AttrValues | grep -v bfloat16)
 
 # Build the fuzzer targets.
 # Pass in `--config=libc++` to link against libc++.
