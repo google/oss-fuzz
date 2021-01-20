@@ -109,7 +109,7 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
     curl_files_list_path = os.path.join(TEST_FILES_PATH,
                                         'example_curl_file_list.json')
     with open(curl_files_list_path) as file_handle:
-      expected_file_list = json.load(file_handle)
+      expected_file_list = json.loads(file_handle.read())
     self.assertCountEqual(file_list, expected_file_list)
 
   def test_invalid_target(self):
