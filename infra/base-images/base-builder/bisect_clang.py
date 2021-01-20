@@ -112,7 +112,7 @@ class GitRepo:
 
 
 class BisectError(Exception):
-  pass
+  """Error that was encountered during bisection."""
 
 
 def get_clang_build_env():
@@ -140,8 +140,8 @@ def clone_with_retries(repo, local_path, num_retries=10):
   for _ in range(num_retries):
     if os.path.isdir(local_path):
       shutil.rmtree(local_path)
-    retcode, _, _ = execute(
-        ['git', 'clone', repo, local_path], expect_zero=False)
+    retcode, _, _ = execute(['git', 'clone', repo, local_path],
+                            expect_zero=False)
     if retcode == 0:
       return
   raise Exception('Could not checkout %s.' % repo)
@@ -162,17 +162,16 @@ def prepare_build(llvm_project_path):
   llvm_build_dir = os.path.join(os.getenv('WORK'), 'llvm-build')
   if not os.path.exists(llvm_build_dir):
     os.mkdir(llvm_build_dir)
-  execute(
-      [
-          'cmake', '-G', 'Ninja', '-DLIBCXX_ENABLE_SHARED=OFF',
-          '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON',
-          '-DLIBCXXABI_ENABLE_SHARED=OFF', '-DCMAKE_BUILD_TYPE=Release',
-          '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;clang',
-          '-DLLVM_TARGETS_TO_BUILD=' + get_clang_target_arch(),
-          os.path.join(llvm_project_path, 'llvm')
-      ],
-      env=get_clang_build_env(),
-      cwd=llvm_build_dir)
+  execute([
+      'cmake', '-G', 'Ninja', '-DLIBCXX_ENABLE_SHARED=OFF',
+      '-DLIBCXX_ENABLE_STATIC_ABI_LIBRARY=ON', '-DLIBCXXABI_ENABLE_SHARED=OFF',
+      '-DCMAKE_BUILD_TYPE=Release',
+      '-DLLVM_ENABLE_PROJECTS=libcxx;libcxxabi;compiler-rt;clang',
+      '-DLLVM_TARGETS_TO_BUILD=' + get_clang_target_arch(),
+      os.path.join(llvm_project_path, 'llvm')
+  ],
+          env=get_clang_build_env(),
+          cwd=llvm_build_dir)
   return llvm_build_dir
 
 
@@ -201,12 +200,14 @@ def find_culprit_commit(test_command, good_commit, bad_commit):
 
 
 def main():
+  # pylint: disable=line-too-long
   """Finds the culprit LLVM commit that introduced a clang regression.
   Can be tested using this command in a libsodium shell:
   python3 bisect_clang.py "cd /src/libsodium; make clean; cd -; compile && /out/secret_key_auth_fuzzer -runs=100" \
                           f7e52fbdb5a7af8ea0808e98458b497125a5eca1 \
                           8288453f6aac05080b751b680455349e09d49825
   """
+  # pylint: enable=line-too-long
   # TODO(metzman): Sanity check CFLAGS for things like
   # -fsanitize=fuzzer-no-link.
   # TODO(metzman): Allow test_command to be optional and for just build.sh to be
