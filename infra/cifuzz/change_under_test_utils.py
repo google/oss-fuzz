@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for determining the code change CIFuzz needs to fuzz."""
+import logging
 import os
 import sys
 
@@ -36,12 +37,17 @@ class ChangeUnderTest:
     """Returns the changed files that need to be tested."""
     if self.config.platform == self.config.Platform.INTERNAL_GENERIC_CI:
       self.fix_git_repo_for_diff()  # TODO(metzman): Look into removing this.
+      logging.info('Diffing against "origin...".')
       return self.repo_manager.get_git_diff('origin...')
 
     # On GitHub.
     if self.is_pr:
+      logging.info('Diffing against "%s".', self.config.base_ref)
       return self.repo_manager.get_git_diff(self.config.base_ref)
-    return self.repo_manager.get_git_diff(self.config.commit_sha + '^1')
+
+    base = self.config.commit_sha + '^1'
+    logging.info('Diffing against "%s".', base)
+    return self.repo_manager.get_git_diff(base)
 
   def fix_git_repo_for_diff(self):
     """Fixes git repos cloned by the "checkout" action so that diffing works on
