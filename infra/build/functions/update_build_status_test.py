@@ -27,7 +27,7 @@ sys.path.append(os.path.dirname(__file__))
 
 from datastore_entities import BuildsHistory
 from datastore_entities import LastSuccessfulBuild
-from build.functions import test_utils
+from infra.build.functions import test_utils
 import update_build_status
 
 
