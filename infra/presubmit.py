@@ -26,7 +26,7 @@ import yaml
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_BLOCKLIST = [
-    # Test fails with error: `ModuleNotFoundError: No module named 'apt'`.
+    # Test errors with error: "ModuleNotFoundError: No module named 'apt'".
     re.compile(r'.*\/infra\/base-images\/base-sanitizer-libs-builder'),
     # TODO(https://github.com/google/oss-fuzz/issues/5025): Reenable these
     # tests.
@@ -345,20 +345,17 @@ def is_test_dir_blocklisted(directory):
 
 def run_tests(_=None):
   """Run all unit tests."""
-  changed_dirs = set()
+  relevant_dirs = set()
   all_files = get_all_files()
   for file_path in all_files:
     directory = os.path.dirname(file_path)
     if is_test_dir_blocklisted(directory):
       continue
-    changed_dirs.add(directory)
+    relevant_dirs.add(directory)
 
-  # TODO(metzman): This approach for running tests is flawed since tests can
-  # fail even if their directory isn't changed. Figure out if it is needed (to
-  # save time) and remove it if it isn't.
   suite_list = []
-  for change_dir in changed_dirs:
-    suite_list.append(unittest.TestLoader().discover(change_dir,
+  for relevant_dir in relevant_dirs:
+    suite_list.append(unittest.TestLoader().discover(relevant_dir,
                                                      pattern='*_test.py'))
   suite = unittest.TestSuite(suite_list)
   result = unittest.TextTestRunner().run(suite)
