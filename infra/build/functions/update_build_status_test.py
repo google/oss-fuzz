@@ -30,6 +30,8 @@ from datastore_entities import LastSuccessfulBuild
 import test_utils
 import update_build_status
 
+# pylint: disable=no-member
+
 
 # pylint: disable=too-few-public-methods
 class MockGetBuild:

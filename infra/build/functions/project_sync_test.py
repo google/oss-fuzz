@@ -32,6 +32,8 @@ from project_sync import ProjectMetadata
 from project_sync import sync_projects
 import test_utils
 
+# pylint: disable=no-member
+
 
 # pylint: disable=too-few-public-methods
 class Repository:
