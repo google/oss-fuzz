@@ -143,7 +143,7 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
 
     if container:
       docker_args.extend(
-          self._get_docker_build_fuzzers_args_container(self.out_dir,
+          _get_docker_build_fuzzers_args_container(self.out_dir,
                                                         container))
     else:
       docker_args.extend(

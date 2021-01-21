@@ -442,7 +442,7 @@ class BuildSantizerIntegrationTest(unittest.TestCase):
           cifuzz.build_fuzzers(self._create_config(tmp_dir, sanitizer)))
 
 
-class GetDockerBuildFuzzersArgsContainerTest:
+class GetDockerBuildFuzzersArgsContainerTest(unittest.TestCase):
   """Tests that _get_docker_build_fuzzers_args_container works as intended."""
 
   def test_get_docker_build_fuzzers_args_container(self):
@@ -453,7 +453,7 @@ class GetDockerBuildFuzzersArgsContainerTest:
     self.assertEqual(result, ['-e', 'OUT=/my/out', '--volumes-from', container])
 
 
-class GetDockerBuildFuzzersArgsNotContainerTest:
+class GetDockerBuildFuzzersArgsNotContainerTest(unittest.TestCase):
   """Tests that _get_docker_build_fuzzers_args_not_container works as
   intended."""
 
@@ -471,7 +471,7 @@ class GetDockerBuildFuzzersArgsNotContainerTest:
     self.assertEqual(result, expected_result)
 
 
-class GetDockerBuildFuzzersArgsMsanTest:
+class GetDockerBuildFuzzersArgsMsanTest(unittest.TestCase):
   """Tests that _get_docker_build_fuzzers_args_msan works as intended."""
 
   def test_get_docker_build_fuzzers_args_msan(self):
