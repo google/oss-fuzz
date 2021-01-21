@@ -15,6 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN pip3 install hypothesis
+
 RUN git clone --depth=1 https://github.com/Julian/jsonschema
 
 COPY fuzz_* $SRC/
