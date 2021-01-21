@@ -144,7 +144,7 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
 
     if container:
       command.extend(['-e', 'OUT=' + self.out_dir, '--volumes-from', container])
-      rm_path = os.path.join(self.config.image_repo_path, '*')
+      rm_path = os.path.join(self.image_repo_path, '*')
 
       bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
           rm_path, self.host_repo_path, image_src_path)
