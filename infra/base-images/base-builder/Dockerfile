@@ -47,7 +47,7 @@ RUN export PYTHON_DEPS="\
         liblzma-dev" && \
     unset CFLAGS CXXFLAGS && \
     apt-get install -y $PYTHON_DEPS && \
-    cd /tmp/ && \
+    cd /tmp && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
@@ -63,10 +63,11 @@ RUN export PYTHON_DEPS="\
 RUN unset CFLAGS CXXFLAGS && pip3 install -v atheris pyinstaller==4.1
 
 # Download and install the latest stable Go.
-ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
-RUN chmod +x $SRC/installer_linux && \
-    SHELL="bash" $SRC/installer_linux && \
-    rm $SRC/installer_linux
+RUN cd /tmp && \
+    curl -O https://storage.googleapis.com/golang/getgo/installer_linux && \
+    chmod +x ./installer_linux && \
+    SHELL="bash" ./installer_linux && \
+    rm -rf ./installer_linux
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
 ENV GOPATH /root/go
@@ -148,12 +149,12 @@ WORKDIR $SRC
 
 RUN git clone -b stable https://github.com/google/AFL.git afl
 
-ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
-RUN mkdir honggfuzz && \
+RUN cd $SRC && \
+    curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
+    mkdir honggfuzz && \
     cd honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
-    rm -rf examples && \
-    rm -rf $SRC/oss-fuzz.tar.gz
+    rm -rf examples $SRC/oss-fuzz.tar.gz
 
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     compile_go_fuzzer precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
