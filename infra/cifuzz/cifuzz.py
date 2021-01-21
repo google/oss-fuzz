@@ -135,36 +135,42 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     Must be implemented by child classes."""
     raise NotImplementedError('Child class must implement method')
 
-  def _get_commands_for_container(self, docker_command):
+  def _get_commands_container(self, container):
     """Returns the bash command and partial docker command for use in a
     container."""
     # !!! Test
-    docker_command = docker_command[:]
-    docker_command.extend(
-        ['-e', 'OUT=' + self.out_dir, '--volumes-from', container])
+    command = get_common_docker_args(self.config.sanitizer)
+    command.extend(['-e', 'OUT=' + self.out_dir, '--volumes-from', container])
     rm_path = os.path.join(self.image_repo_path, '*')
 
+    image_src_path = os.path.dirname(self.image_repo_path)
     bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
         rm_path, self.host_repo_path, image_src_path)
-    return docker_command, bash_command
+    return command, bash_command
+
+  def _get_commands_not_container(self):
+    """Returns the bash command and partial docker command for use outside a
+    container."""
+    # !!! Test
+    command = get_common_docker_args(self.config.sanitizer)
+    # TODO(metzman): Figure out if we can eliminate this branch.
+    command.extend([
+        '-e', 'OUT=' + '/out', '-v',
+        '%s:%s' % (self.host_repo_path, self.image_repo_path), '-v',
+        '%s:%s' % (self.out_dir, '/out')
+    ])
+    bash_command = 'compile'
+    return command, bash_command
 
   def build_fuzzers(self):
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
-    image_src_path = os.path.dirname(self.image_repo_path)
-    command = get_common_docker_args(self.config.sanitizer)
     container = utils.get_container_name()
 
     if container:
-      docker_command, bash_command = self._get_commands_for_container(command)
+      command, bash_command = self._get_commands_container(container)
     else:
-      # TODO(metzman): Figure out if we can eliminate this branch.
-      command.extend([
-          '-e', 'OUT=' + '/out', '-v',
-          '%s:%s' % (self.host_repo_path, self.image_repo_path), '-v',
-          '%s:%s' % (self.out_dir, '/out')
-      ])
-      bash_command = 'compile'
+      command, bash_command = self.get_commands_not_container()
 
     if self.config.sanitizer == 'memory':
       command.extend(self.handle_msan_prebuild(container))

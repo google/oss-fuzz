@@ -23,7 +23,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import test_helpers
 
+# pylint: disable=no-self-use
+
+
 class ConfigTest(unittest.TestCase):
+  """Tests for Config."""
+
   def setUp(self):
     test_helpers.patch_environ(self)
 
