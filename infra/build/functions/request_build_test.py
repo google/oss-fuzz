@@ -31,7 +31,7 @@ from datastore_entities import Project
 from request_build import get_build_steps
 from request_build import get_project_data
 from request_build import update_build_history
-from infra.build.functions import test_utils
+import test_utils
 
 
 class TestRequestBuilds(unittest.TestCase):

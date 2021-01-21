@@ -28,7 +28,7 @@ sys.path.append(os.path.dirname(__file__))
 
 from datastore_entities import Project
 from build_and_run_coverage import get_build_steps
-from infra.build.functions import test_utils
+import test_utils
 
 
 class TestRequestCoverageBuilds(unittest.TestCase):
