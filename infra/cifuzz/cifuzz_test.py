@@ -21,6 +21,8 @@ import tempfile
 import unittest
 from unittest import mock
 
+import parameterized
+
 # pylint: disable=wrong-import-position
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(INFRA_DIR)
@@ -28,6 +30,7 @@ sys.path.append(INFRA_DIR)
 OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
 
 import cifuzz
+import config_utils
 import fuzz_target
 import test_helpers
 
@@ -61,6 +64,22 @@ UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 # pylint: disable=no-self-use
 
 
+def create_config(**kwargs):
+  """Creates a config object and then sets every attribute that is a key in
+  |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
+  attribute of Config."""
+  with mock.patch('os.path.basename', return_value=None), mock.patch(
+      'config_utils.get_project_src_path',
+      return_value=None), mock.patch('config_utils._is_dry_run',
+                                     return_value=True):
+    config = config_utils.Config()
+
+  for key, value in kwargs.items():
+    assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
+    setattr(config, key, value)
+  return config
+
+
 class BuildFuzzersTest(unittest.TestCase):
   """Unit tests for build_fuzzers."""
 
@@ -73,10 +92,11 @@ class BuildFuzzersTest(unittest.TestCase):
     """Tests that the CIFUZZ env var is set."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-      cifuzz.build_fuzzers(EXAMPLE_PROJECT,
-                           EXAMPLE_PROJECT,
-                           tmp_dir,
-                           pr_ref='refs/pull/1757/merge')
+      cifuzz.build_fuzzers(
+          create_config(project_name=EXAMPLE_PROJECT,
+                        project_repo_name=EXAMPLE_PROJECT,
+                        workspace=tmp_dir,
+                        pr_ref='refs/pull/1757/merge'))
     docker_run_command = mocked_docker_run.call_args_list[0][0][0]
 
     def command_has_env_var_arg(command, env_var_arg):
@@ -101,10 +121,13 @@ class InternalGithubBuilderTest(unittest.TestCase):
 
   def _create_builder(self, tmp_dir):
     """Creates an InternalGithubBuilder and returns it."""
-    return cifuzz.InternalGithubBuilder(self.PROJECT_NAME,
-                                        self.PROJECT_REPO_NAME, tmp_dir,
-                                        self.SANITIZER, self.COMMIT_SHA,
-                                        self.PR_REF)
+    config = create_config(project_name=self.PROJECT_NAME,
+                           project_repo_name=self.PROJECT_REPO_NAME,
+                           workspace=tmp_dir,
+                           sanitizer=self.SANITIZER,
+                           commit_sha=self.COMMIT_SHA,
+                           pr_ref=self.PR_REF)
+    return cifuzz.InternalGithubBuilder(config)
 
   @mock.patch('repo_manager._clone', side_effect=None)
   @mock.patch('cifuzz.checkout_specified_commit', side_effect=None)
@@ -140,12 +163,13 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(project_name,
-                               project_name,
-                               tmp_dir,
-                               project_src_path=project_src_path,
-                               build_integration_path=build_integration_path))
+      config = create_config(project_name=project_name,
+                             project_repo_name=project_name,
+                             workspace=tmp_dir,
+                             project_src_path=project_src_path,
+                             build_integration_path=build_integration_path,
+                             commit_sha='HEAD')
+      self.assertTrue(cifuzz.build_fuzzers(config))
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
@@ -154,12 +178,13 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(
-              EXAMPLE_PROJECT,
-              'oss-fuzz',
-              tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+      config = create_config(
+          project_name=EXAMPLE_PROJECT,
+          project_repo_name='oss-fuzz',
+          workspace=tmp_dir,
+          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+      self.assertTrue(cifuzz.build_fuzzers(config))
+
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
@@ -168,11 +193,13 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(EXAMPLE_PROJECT,
-                               'oss-fuzz',
-                               tmp_dir,
-                               pr_ref='refs/pull/1757/merge'))
+      # TODO(metzman): What happens when this branch closes?
+      config = create_config(project_name=EXAMPLE_PROJECT,
+                             project_repo_name='oss-fuzz',
+                             workspace=tmp_dir,
+                             pr_ref='refs/pull/1757/merge',
+                             base_ref='master')
+      self.assertTrue(cifuzz.build_fuzzers(config))
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
@@ -181,50 +208,51 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      self.assertTrue(
-          cifuzz.build_fuzzers(EXAMPLE_PROJECT,
-                               'oss-fuzz',
-                               tmp_dir,
-                               pr_ref='ref-1/merge'))
+      config = create_config(project_name=EXAMPLE_PROJECT,
+                             project_repo_name='oss-fuzz',
+                             workspace=tmp_dir,
+                             pr_ref='ref-1/merge',
+                             base_ref='master')
+      self.assertTrue(cifuzz.build_fuzzers(config))
 
   def test_invalid_project_name(self):
     """Tests building fuzzers with invalid project name."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertFalse(
-          cifuzz.build_fuzzers(
-              'not_a_valid_project',
-              'oss-fuzz',
-              tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+      config = create_config(
+          project_name='not_a_valid_project',
+          project_repo_name='oss-fuzz',
+          workspace=tmp_dir,
+          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+      self.assertFalse(cifuzz.build_fuzzers(config))
 
   def test_invalid_repo_name(self):
     """Tests building fuzzers with invalid repo name."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertFalse(
-          cifuzz.build_fuzzers(
-              EXAMPLE_PROJECT,
-              'not-real-repo',
-              tmp_dir,
-              commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523'))
+      config = create_config(
+          project_name=EXAMPLE_PROJECT,
+          project_repo_name='not-real-repo',
+          workspace=tmp_dir,
+          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+      self.assertFalse(cifuzz.build_fuzzers(config))
 
   def test_invalid_commit_sha(self):
     """Tests building fuzzers with invalid commit SHA."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      with self.assertRaises(AssertionError):
-        cifuzz.build_fuzzers(EXAMPLE_PROJECT,
-                             'oss-fuzz',
-                             tmp_dir,
+      config = create_config(project_name=EXAMPLE_PROJECT,
+                             project_repo_name='oss-fuzz',
+                             workspace=tmp_dir,
                              commit_sha='')
+      with self.assertRaises(AssertionError):
+        cifuzz.build_fuzzers(config)
 
   def test_invalid_workspace(self):
     """Tests building fuzzers with invalid workspace."""
-    self.assertFalse(
-        cifuzz.build_fuzzers(
-            EXAMPLE_PROJECT,
-            'oss-fuzz',
-            'not/a/dir',
-            commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
-        ))
+    config = create_config(
+        project_name=EXAMPLE_PROJECT,
+        project_repo_name='oss-fuzz',
+        workspace='not/a/dir',
+        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+    self.assertFalse(cifuzz.build_fuzzers(config))
 
 
 class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,invalid-name
@@ -395,26 +423,23 @@ class CheckFuzzerBuildTest(unittest.TestCase):
 class BuildSantizerIntegrationTest(unittest.TestCase):
   """Integration tests for the build_fuzzers.
     Note: This test relies on "curl" being an OSS-Fuzz project."""
+  PROJECT_NAME = 'curl'
+  PR_REF = 'fake_pr'
 
-  def test_valid_project_curl_memory(self):
+  @classmethod
+  def _create_config(cls, tmp_dir, sanitizer):
+    return create_config(project_name=cls.PROJECT_NAME,
+                         project_repo_name=cls.PROJECT_NAME,
+                         workspace=tmp_dir,
+                         pr_ref=cls.PR_REF,
+                         sanitizer=sanitizer)
+
+  @parameterized.parameterized.expand([('memory',), ('undefined',)])
+  def test_valid_project_curl(self, sanitizer):
     """Tests that MSAN can be detected from project.yaml"""
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.assertTrue(
-          cifuzz.build_fuzzers('curl',
-                               'curl',
-                               tmp_dir,
-                               pr_ref='fake_pr',
-                               sanitizer='memory'))
-
-  def test_valid_project_curl_undefined(self):
-    """Test that UBSAN can be detected from project.yaml"""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      self.assertTrue(
-          cifuzz.build_fuzzers('curl',
-                               'curl',
-                               tmp_dir,
-                               pr_ref='fake_pr',
-                               sanitizer='undefined'))
+          cifuzz.build_fuzzers(self._create_config(tmp_dir, sanitizer)))
 
 
 if __name__ == '__main__':
