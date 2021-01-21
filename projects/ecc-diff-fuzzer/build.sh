@@ -133,6 +133,7 @@ fi
 zip -r fuzz_ec_seed_corpus.zip corpus/
 cp fuzz_ec_seed_corpus.zip $OUT/
 cp fuzz_ec.dict $OUT/
+cp fuzz_ec.dict $OUT/fuzz_ec_noblocker.dict
 
 mkdir build
 cd build
@@ -144,7 +145,7 @@ if [ "$FUZZING_ENGINE" != 'afl' ]; then
     rm -Rf *
 fi
 
-#another target without cryptopp neither javascript
-cmake -DDISABLE_CRYPTOPP=ON -DDISABLE_JS=ON ..
+#another target without javascript
+cmake -DDISABLE_JS=ON ..
 make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec_noblocker
