@@ -17,10 +17,14 @@
 import json
 import datetime
 import os
+import sys
 import unittest
 from unittest import mock
 
 from google.cloud import ndb
+
+sys.path.append(os.path.dirname(__file__))
+# pylint: disable=wrong-import-position
 
 from datastore_entities import Project
 from build_and_run_coverage import get_build_steps
