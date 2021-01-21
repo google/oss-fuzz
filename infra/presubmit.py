@@ -18,12 +18,20 @@
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import unittest
 import yaml
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEST_BLOCKLIST = [
+    # Test errors with error: "ModuleNotFoundError: No module named 'apt'".
+    re.compile(r'.*\/infra\/base-images\/base-sanitizer-libs-builder'),
+    # TODO(https://github.com/google/oss-fuzz/issues/5025): Reenable these
+    # tests.
+    re.compile(r'.*\/infra\/build(\/?).*'),
+]
 
 
 def _is_project_file(actual_path, expected_filename):
@@ -327,21 +335,31 @@ def get_changed_files():
   ]
 
 
-def run_tests(relevant_files):
-  """Run all unit tests in directories that are different from HEAD."""
-  changed_dirs = set()
-  for file in relevant_files:
-    changed_dirs.add(os.path.dirname(file))
+def is_test_dir_blocklisted(directory):
+  """Returns True if |directory| is blocklisted."""
+  for blocklisted_regex in TEST_BLOCKLIST:
+    if blocklisted_regex.search(directory):
+      return True
+  return False
 
-  # TODO(metzman): This approach for running tests is flawed since tests can
-  # fail even if their directory isn't changed. Figure out if it is needed (to
-  # save time) and remove it if it isn't.
+
+def run_tests(_=None):
+  """Run all unit tests."""
+  relevant_dirs = set()
+  all_files = get_all_files()
+  for file_path in all_files:
+    directory = os.path.dirname(file_path)
+    if is_test_dir_blocklisted(directory):
+      continue
+    relevant_dirs.add(directory)
+
   suite_list = []
-  for change_dir in changed_dirs:
-    suite_list.append(unittest.TestLoader().discover(change_dir,
+  for relevant_dir in relevant_dirs:
+    suite_list.append(unittest.TestLoader().discover(relevant_dir,
                                                      pattern='*_test.py'))
   suite = unittest.TestSuite(suite_list)
   result = unittest.TextTestRunner().run(suite)
+
   return not result.failures and not result.errors
 
 
