@@ -28,9 +28,6 @@ _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_BLOCKLIST = [
     # Test errors with error: "ModuleNotFoundError: No module named 'apt'".
     re.compile(r'.*\/infra\/base-images\/base-sanitizer-libs-builder'),
-    # TODO(https://github.com/google/oss-fuzz/issues/5025): Reenable these
-    # tests.
-    re.compile(r'.*\/infra\/build(\/?).*'),
 ]
 
 
