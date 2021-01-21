@@ -61,7 +61,7 @@ MEMORY_FUZZER = 'curl_fuzzer_memory'
 UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'undefined')
 UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
-# pylint: disable=no-self-use
+# pylint: disable=no-self-use,protected-access,too-few-public-methods
 
 
 def create_config(**kwargs):
@@ -440,6 +440,46 @@ class BuildSantizerIntegrationTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.assertTrue(
           cifuzz.build_fuzzers(self._create_config(tmp_dir, sanitizer)))
+
+
+class GetDockerBuildFuzzersArgsContainerTest:
+  """Tests that _get_docker_build_fuzzers_args_container works as intended."""
+
+  def test_get_docker_build_fuzzers_args_container(self):
+    """Tests that _get_docker_build_fuzzers_args_container works as intended."""
+    out_dir = '/my/out'
+    container = 'my-container'
+    result = cifuzz._get_docker_build_fuzzers_args_container(out_dir, container)
+    self.assertEqual(result, ['-e', 'OUT=/my/out', '--volumes-from', container])
+
+
+class GetDockerBuildFuzzersArgsNotContainerTest:
+  """Tests that _get_docker_build_fuzzers_args_not_container works as
+  intended."""
+
+  def test_get_docker_build_fuzzers_args_no_container(self):
+    """Tests that _get_docker_build_fuzzers_args_not_container works
+    as intended."""
+    host_out_dir = '/cifuzz/out'
+    host_repo_path = '/host/repo'
+    result = cifuzz._get_docker_build_fuzzers_args_not_container(
+        host_out_dir, host_repo_path)
+    expected_result = [
+        '-e', 'OUT=/out', '-v', '/cifuzz/out:/out', '-v',
+        '/host/repo:/host:repo'
+    ]
+    self.assertEqual(result, expected_result)
+
+
+class GetDockerBuildFuzzersArgsMsanTest:
+  """Tests that _get_docker_build_fuzzers_args_msan works as intended."""
+
+  def test_get_docker_build_fuzzers_args_msan(self):
+    """Tests that _get_docker_build_fuzzers_args_msan works as intended."""
+    work_dir = '/work_dir'
+    result = cifuzz._get_docker_build_fuzzers_args_msan(work_dir)
+    expected_result = ['-e', 'MSAN_LIBS_PATH=/work_dir/msan']
+    self.assertEqual(result, expected_result)
 
 
 if __name__ == '__main__':

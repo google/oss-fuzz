@@ -138,22 +138,23 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
   def build_fuzzers(self):
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
-    command = get_common_docker_args(self.config.sanitizer)
+    docker_args = get_common_docker_args(self.config.sanitizer)
     container = utils.get_container_name()
 
     if container:
-      command.extend(
-          self._get_docker_build_args_container(self.out_dir, container))
+      docker_args.extend(
+          self._get_docker_build_fuzzers_args_container(self.out_dir,
+                                                        container))
     else:
-      command.extend(
-          _get_docker_build_args_not_container(self.out_dir,
-                                               self.host_repo_path))
+      docker_args.extend(
+          _get_docker_build_fuzzers_args_not_container(self.out_dir,
+                                                       self.host_repo_path))
 
     if self.config.sanitizer == 'memory':
-      command.extend(_get_docker_build_args_msan(self.work_dir))
+      docker_args.extend(_get_docker_build_fuzzers_args_msan(self.work_dir))
       self.handle_msan_prebuild(container)
 
-    command.extend([
+    docker_args.extend([
         'gcr.io/oss-fuzz/' + self.config.project_name,
         '/bin/bash',
         '-c',
@@ -162,9 +163,9 @@ class BaseBuilder:  # pylint: disable=too-many-instance-attributes
     image_src_path = os.path.dirname(self.image_repo_path)
     bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
         rm_path, self.host_repo_path, image_src_path)
-    command.append(bash_command)
+    docker_args.append(bash_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
-    if helper.docker_run(command):
+    if helper.docker_run(docker_args):
       # docker_run returns nonzero on failure.
       logging.error('Building fuzzers failed.')
       return False
@@ -515,16 +516,16 @@ def parse_fuzzer_output(fuzzer_output, out_dir):
     summary_handle.write(summary_str)
 
 
-def _get_docker_build_args_container(cifuzz_out_dir, container):
+def _get_docker_build_fuzzers_args_container(host_out_dir, container):
   """Returns arguments to the docker build arguments that are needed to use
-  |cifuzz_out_dir| when the host of the OSS-Fuzz builder container is another
+  |host_out_dir| when the host of the OSS-Fuzz builder container is another
   container."""
-  return ['-e', 'OUT=' + cifuzz_out_dir, '--volumes-from', container]
+  return ['-e', 'OUT=' + host_out_dir, '--volumes-from', container]
 
 
-def _get_docker_build_args_not_container(cifuzz_out_dir, host_repo_path):
+def _get_docker_build_fuzzers_args_not_container(host_out_dir, host_repo_path):
   """Returns arguments to the docker build arguments that are needed to use
-  |cifuzz_out_dir| when the host of the OSS-Fuzz builder container is not
+  |host_out_dir| when the host of the OSS-Fuzz builder container is not
   another container."""
   # !!! Test
   image_out_dir = '/out'
@@ -532,13 +533,13 @@ def _get_docker_build_args_not_container(cifuzz_out_dir, host_repo_path):
       '-e',
       'OUT=' + image_out_dir,
       '-v',
-      '%s:%s' % (cifuzz_out_dir, image_out_dir),
+      '%s:%s' % (host_out_dir, image_out_dir),
       '-v',
       '%s:%s' % (host_repo_path, host_repo_path),
   ]
 
 
-def _get_docker_build_args_msan(work_dir):
+def _get_docker_build_fuzzers_args_msan(work_dir):
   """Returns arguments to the docker build command that are needed to use
   MSAN."""
   # TODO(metzman): MSAN is broken, fix.
