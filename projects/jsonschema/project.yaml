@@ -1,6 +1,6 @@
 homepage: "https://github.com/Julian/jsonschema"
 language: python
-primary_contact: "david@adalogics.com"
+primary_contact: "Julian+Security@GrayVines.com"
 auto_ccs:
   - "david@adalogics.com"
 fuzzing_engines:
