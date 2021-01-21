@@ -15,15 +15,11 @@
 1. Building fuzzers.
 2. Running fuzzers.
 """
-import json
 import os
-import shutil
 import sys
 import tempfile
 import unittest
 from unittest import mock
-
-import parameterized
 
 # pylint: disable=wrong-import-position
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -393,157 +389,6 @@ class CheckFuzzerBuildTest(unittest.TestCase):
                               allowed_broken_targets_percentage='0')
     self.assertIn('-e ALLOWED_BROKEN_TARGETS_PERCENTAGE=0',
                   ' '.join(mocked_docker_run.call_args[0][0]))
-
-
-@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
-                 'INTEGRATION_TESTS=1 not set')
-class GetFilesCoveredByTargetTest(unittest.TestCase):
-  """Tests get_files_covered_by_target."""
-
-  example_cov_json = 'example_curl_cov.json'
-  example_fuzzer_cov_json = 'example_curl_fuzzer_cov.json'
-  example_fuzzer = 'curl_fuzzer'
-
-  def setUp(self):
-    with open(os.path.join(TEST_FILES_PATH,
-                           self.example_cov_json)) as file_handle:
-      self.proj_cov_report_example = json.loads(file_handle.read())
-    with open(os.path.join(TEST_FILES_PATH,
-                           self.example_fuzzer_cov_json)) as file_handle:
-      self.fuzzer_cov_report_example = json.loads(file_handle.read())
-
-  def test_valid_target(self):
-    """Tests that covered files can be retrieved from a coverage report."""
-
-    with mock.patch.object(cifuzz,
-                           'get_target_coverage_report',
-                           return_value=self.fuzzer_cov_report_example):
-      file_list = cifuzz.get_files_covered_by_target(
-          self.proj_cov_report_example, self.example_fuzzer, '/src/curl')
-
-    curl_files_list_path = os.path.join(TEST_FILES_PATH,
-                                        'example_curl_file_list.json')
-    with open(curl_files_list_path) as file_handle:
-      true_files_list = json.load(file_handle)
-    self.assertCountEqual(file_list, true_files_list)
-
-  def test_invalid_target(self):
-    """Tests passing invalid fuzz target returns None."""
-    self.assertIsNone(
-        cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
-                                           'not-a-fuzzer', '/src/curl'))
-    self.assertIsNone(
-        cifuzz.get_files_covered_by_target(self.proj_cov_report_example, '',
-                                           '/src/curl'))
-
-  def test_invalid_project_build_dir(self):
-    """Tests passing an invalid build directory returns None."""
-    self.assertIsNone(
-        cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
-                                           self.example_fuzzer, '/no/pe'))
-    self.assertIsNone(
-        cifuzz.get_files_covered_by_target(self.proj_cov_report_example,
-                                           self.example_fuzzer, ''))
-
-
-class GetTargetCoverageReportTest(unittest.TestCase):
-  """Tests get_target_coverage_report."""
-
-  example_cov_json = 'example_curl_cov.json'
-  example_fuzzer = 'curl_fuzzer'
-
-  def setUp(self):
-    with open(os.path.join(TEST_FILES_PATH, self.example_cov_json),
-              'r') as file_handle:
-      self.example_cov = json.loads(file_handle.read())
-
-  def test_valid_target(self):
-    """Tests that a target's coverage report can be downloaded and parsed."""
-    with mock.patch.object(cifuzz, 'get_json_from_url',
-                           return_value='{}') as mock_get_json:
-      cifuzz.get_target_coverage_report(self.example_cov, self.example_fuzzer)
-      (url,), _ = mock_get_json.call_args
-      self.assertEqual(
-          'https://storage.googleapis.com/oss-fuzz-coverage/'
-          'curl/fuzzer_stats/20200226/curl_fuzzer.json', url)
-
-  def test_invalid_target(self):
-    """Tests that passing an invalid target coverage report returns None."""
-    self.assertIsNone(
-        cifuzz.get_target_coverage_report(self.example_cov, 'not-valid-target'))
-    self.assertIsNone(cifuzz.get_target_coverage_report(self.example_cov, ''))
-
-  def test_invalid_project_json(self):
-    """Tests that passing an invalid project json coverage report returns
-    None."""
-    self.assertIsNone(
-        cifuzz.get_target_coverage_report('not-a-proj', self.example_fuzzer))
-    self.assertIsNone(cifuzz.get_target_coverage_report('',
-                                                        self.example_fuzzer))
-
-
-class GetLatestCoverageReportTest(unittest.TestCase):
-  """Tests get_latest_cov_report_info."""
-
-  test_project = 'curl'
-
-  def test_get_valid_project(self):
-    """Tests that a project's coverage report can be downloaded and parsed.
-
-    NOTE: This test relies on the test_project repo's coverage report.
-    The "example" project was not used because it has no coverage reports.
-    """
-    with mock.patch.object(cifuzz, 'get_json_from_url',
-                           return_value='{}') as mock_fun:
-
-      cifuzz.get_latest_cov_report_info(self.test_project)
-      (url,), _ = mock_fun.call_args
-      self.assertEqual(
-          'https://storage.googleapis.com/oss-fuzz-coverage/'
-          'latest_report_info/curl.json', url)
-
-  def test_get_invalid_project(self):
-    """Tests that passing a bad project returns None."""
-    self.assertIsNone(cifuzz.get_latest_cov_report_info('not-a-proj'))
-    self.assertIsNone(cifuzz.get_latest_cov_report_info(''))
-
-
-EXAMPLE_FILE_CHANGED = 'test.txt'
-
-
-class RemoveUnaffectedFuzzersTest(unittest.TestCase):
-  """Tests remove_unaffected_fuzzers."""
-
-  TEST_FUZZER_1 = os.path.join(TEST_FILES_PATH, 'out', 'example_crash_fuzzer')
-  TEST_FUZZER_2 = os.path.join(TEST_FILES_PATH, 'out', 'example_nocrash_fuzzer')
-
-  # yapf: disable
-  @parameterized.parameterized.expand([
-      # Tests a specific affected fuzzers is kept.
-      ([[EXAMPLE_FILE_CHANGED], None], 2,),
-
-      # Tests specific affected fuzzer is kept.
-      ([[EXAMPLE_FILE_CHANGED], ['not/a/real/file']], 1),
-
-      # Tests all fuzzers are kept if none are deemed affected.
-      ([None, None], 2),
-
-      # Tests that multiple fuzzers are kept if multiple fuzzers are affected.
-      ([[EXAMPLE_FILE_CHANGED], [EXAMPLE_FILE_CHANGED]], 2),
-      ])
-  # yapf: enable
-  def test_remove_unaffected_fuzzers(self, side_effect, expected_dir_len):
-    """Tests that remove_unaffected_fuzzers has the intended effect."""
-    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
-        'cifuzz.get_latest_cov_report_info', return_value=1):
-      with mock.patch.object(cifuzz,
-                             'get_files_covered_by_target') as mocked_get_files:
-        mocked_get_files.side_effect = side_effect
-        shutil.copy(self.TEST_FUZZER_1, tmp_dir)
-        shutil.copy(self.TEST_FUZZER_2, tmp_dir)
-        cifuzz.remove_unaffected_fuzzers(EXAMPLE_PROJECT, tmp_dir,
-                                         [EXAMPLE_FILE_CHANGED], '')
-        self.assertEqual(expected_dir_len, len(os.listdir(tmp_dir)))
 
 
 @unittest.skip('Test is too long to be run with presubmit.')
