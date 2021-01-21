@@ -50,7 +50,7 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
-    self.base_ref = os.getenv('BASE_REF')
+    self.base_ref = os.getenv('GITHUB_BASE_REF')
 
   @property
   def platform(self):
