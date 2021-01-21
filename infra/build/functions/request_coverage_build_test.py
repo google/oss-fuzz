@@ -24,7 +24,7 @@ from google.cloud import ndb
 
 from datastore_entities import Project
 from build_and_run_coverage import get_build_steps
-import test_utils
+from build.functions import test_utils
 
 
 class TestRequestCoverageBuilds(unittest.TestCase):

@@ -25,7 +25,7 @@ from project_sync import get_github_creds
 from project_sync import get_projects
 from project_sync import ProjectMetadata
 from project_sync import sync_projects
-import test_utils
+from build.functions import test_utils
 
 
 # pylint: disable=too-few-public-methods
