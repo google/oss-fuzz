@@ -16,11 +16,10 @@
 ################################################################################
 
 pip3 install six 
-
 python3 setup.py install
 
 # Build fuzzers in $OUT.
-for fuzzer in $(find $SRC -name 'fuzz_*.py'); do
+for fuzzer in $(find ./tests/ -name 'fuzz_*.py'); do
   fuzzer_basename=$(basename -s .py $fuzzer)
   fuzzer_package=${fuzzer_basename}.pkg
   pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
