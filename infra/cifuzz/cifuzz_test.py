@@ -466,7 +466,7 @@ class GetDockerBuildFuzzersArgsNotContainerTest(unittest.TestCase):
         host_out_dir, host_repo_path)
     expected_result = [
         '-e', 'OUT=/out', '-v', '/cifuzz/out:/out', '-v',
-        '/host/repo:/host:repo'
+        '/host/repo:/host/repo'
     ]
     self.assertEqual(result, expected_result)
 
