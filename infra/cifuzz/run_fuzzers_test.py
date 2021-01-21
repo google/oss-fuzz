@@ -40,6 +40,7 @@ MEMORY_FUZZER = 'curl_fuzzer_memory'
 UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'undefined')
 UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
+
 class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,invalid-name
   """Mixin for integration test classes that runbuild_fuzzers on builds of a
   specific sanitizer."""
@@ -99,8 +100,8 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
                            side_effect=[True, False]):
-      run_success, bug_found = run_fuzzers.run_fuzzers(
-          10, TEST_FILES_PATH, EXAMPLE_PROJECT)
+      run_success, bug_found = run_fuzzers.run_fuzzers(10, TEST_FILES_PATH,
+                                                       EXAMPLE_PROJECT)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
@@ -127,8 +128,8 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = run_fuzzers.run_fuzzers(
-          10, tmp_dir, EXAMPLE_PROJECT)
+      run_success, bug_found = run_fuzzers.run_fuzzers(10, tmp_dir,
+                                                       EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -137,15 +138,15 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = run_fuzzers.run_fuzzers(
-          0, tmp_dir, EXAMPLE_PROJECT)
+      run_success, bug_found = run_fuzzers.run_fuzzers(0, tmp_dir,
+                                                       EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
   def test_invalid_out_dir(self):
     """Tests run_fuzzers with an invalid out directory."""
-    run_success, bug_found = run_fuzzers.run_fuzzers(
-        10, 'not/a/valid/path', EXAMPLE_PROJECT)
+    run_success, bug_found = run_fuzzers.run_fuzzers(10, 'not/a/valid/path',
+                                                     EXAMPLE_PROJECT)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
