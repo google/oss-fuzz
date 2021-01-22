@@ -45,11 +45,10 @@ class ChangeUnderTest:
       base = self.config.base_ref
     else:
       # Commit fuzzing.
-      commit = self.config.base_commit
+      base = self.config.base_commit
 
     logging.info('Diffing against "%s".', base)
-    return self.repo_manager.get_git_diff(bse)
-
+    return self.repo_manager.get_git_diff(base)
 
   def fix_git_repo_for_diff(self):
     """Fixes git repos cloned by the "checkout" action so that diffing works on
