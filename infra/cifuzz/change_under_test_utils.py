@@ -45,9 +45,13 @@ class ChangeUnderTest:
       logging.info('Diffing against "%s".', self.config.base_ref)
       return self.repo_manager.get_git_diff(self.config.base_ref)
 
-    base = self.config.commit_sha + '^1'
-    logging.info('Diffing against "%s".', base)
-    return self.repo_manager.get_git_diff(base)
+    # Commit fuzzing.
+    # TODO(https://github.com/google/oss-fuzz/issues/5010): Figure out what to
+    # do here.
+    logging.info('Commit fuzzing. '
+                 'Pretending no files changed so all fuzzers run. '
+                 'See https://github.com/google/oss-fuzz/issues/5010')
+    return []
 
   def fix_git_repo_for_diff(self):
     """Fixes git repos cloned by the "checkout" action so that diffing works on
