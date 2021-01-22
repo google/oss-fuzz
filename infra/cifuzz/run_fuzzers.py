@@ -25,35 +25,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import utils
 
-# From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
-# Used to get the beginning of the stacktrace.
-STACKTRACE_TOOL_MARKERS = [
-    b'AddressSanitizer',
-    b'ASAN:',
-    b'CFI: Most likely a control flow integrity violation;',
-    b'ERROR: libFuzzer',
-    b'KASAN:',
-    b'LeakSanitizer',
-    b'MemorySanitizer',
-    b'ThreadSanitizer',
-    b'UndefinedBehaviorSanitizer',
-    b'UndefinedSanitizer',
-]
-
-# From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
-# Used to get the end of the stacktrace.
-STACKTRACE_END_MARKERS = [
-    b'ABORTING',
-    b'END MEMORY TOOL REPORT',
-    b'End of process memory map.',
-    b'END_KASAN_OUTPUT',
-    b'SUMMARY:',
-    b'Shadow byte and word',
-    b'[end of stack trace]',
-    b'\nExiting',
-    b'minidump has been written',
-]
-
 
 def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     fuzz_seconds,
@@ -115,42 +86,8 @@ def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
       utils.binary_print(b'Fuzzer %s, detected error:\n%s' %
                          (target.target_name.encode(), stacktrace))
       shutil.move(testcase, os.path.join(artifacts_dir, 'test_case'))
-      parse_fuzzer_output(stacktrace, artifacts_dir)
+      stack_parser.parse_fuzzer_output(stacktrace, artifacts_dir)
       return True, True
     fuzzers_left_to_run -= 1
 
   return True, False
-
-
-def parse_fuzzer_output(fuzzer_output, out_dir):
-  """Parses the fuzzer output from a fuzz target binary.
-
-  Args:
-    fuzzer_output: A fuzz target binary output string to be parsed.
-    out_dir: The location to store the parsed output files.
-  """
-  # Get index of key file points.
-  for marker in STACKTRACE_TOOL_MARKERS:
-    marker_index = fuzzer_output.find(marker)
-    if marker_index:
-      begin_summary = marker_index
-      break
-
-  end_summary = -1
-  for marker in STACKTRACE_END_MARKERS:
-    marker_index = fuzzer_output.find(marker)
-    if marker_index:
-      end_summary = marker_index + len(marker)
-      break
-
-  if begin_summary is None or end_summary is None:
-    return
-
-  summary_str = fuzzer_output[begin_summary:end_summary]
-  if not summary_str:
-    return
-
-  # Write sections of fuzzer output to specific files.
-  summary_file_path = os.path.join(out_dir, 'bug_summary.txt')
-  with open(summary_file_path, 'ab') as summary_handle:
-    summary_handle.write(summary_str)
