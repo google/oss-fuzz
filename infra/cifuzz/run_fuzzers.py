@@ -19,6 +19,7 @@ import sys
 import time
 
 import fuzz_target
+import stack_parser
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
