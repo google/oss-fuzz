@@ -23,7 +23,9 @@ declare -r QUERY='
 declare -r PACKAGE_SUFFIX="_oss_fuzz"
 declare -r OSS_FUZZ_TESTS="$(bazel query "${QUERY}" | sed "s/$/${PACKAGE_SUFFIX}/")"
 
-bazel build -c opt --config=oss-fuzz --linkopt=-lc++ ${OSS_FUZZ_TESTS[*]}
+bazel build -c opt --config=oss-fuzz --linkopt=-lc++ \
+    --action_env=CC="${CC}" --action_env=CXX="${CXX}" \
+    ${OSS_FUZZ_TESTS[*]}
 for oss_fuzz_archive in $(find bazel-bin/ -name "*${PACKAGE_SUFFIX}.tar"); do
     tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
 done
