@@ -68,7 +68,7 @@ def main():
   if not cifuzz.build_fuzzers(config):
     logging.error(
         'Error building fuzzers for project %s (commit: %s, pr_ref: %s).',
-        config.oss_fuzz_project_name, config.commit_sha, config.pr_ref)
+        config.project_name, config.commit_sha, config.pr_ref)
     return returncode
 
   out_dir = os.path.join(config.workspace, 'out')
