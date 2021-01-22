@@ -11,20 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for running fuzzers."""
+"""Tests for stack_parser."""
 import os
-import sys
 import tempfile
 import unittest
-from unittest import mock
 
-# pylint: disable=wrong-import-position
-INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(INFRA_DIR)
-
-import fuzz_target
-import run_fuzzers
-import test_helpers
+import stack_parser
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
@@ -61,3 +53,7 @@ class ParseOutputTest(unittest.TestCase):
     with tempfile.TemporaryDirectory() as tmp_dir:
       stack_parser.parse_fuzzer_output(b'not a valid output_string', tmp_dir)
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
+
+
+if __name__ == '__main__':
+  unittest.main()

@@ -151,29 +151,5 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     self.assertFalse(bug_found)
 
 
-class ParseOutputTest(unittest.TestCase):
-  """Tests parse_fuzzer_output."""
-
-  def test_parse_valid_output(self):
-    """Checks that the parse fuzzer output can correctly parse output."""
-    test_output_path = os.path.join(TEST_FILES_PATH,
-                                    'example_crash_fuzzer_output.txt')
-    test_summary_path = os.path.join(TEST_FILES_PATH, 'bug_summary_example.txt')
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      with open(test_output_path, 'rb') as test_fuzz_output:
-        run_fuzzers.parse_fuzzer_output(test_fuzz_output.read(), tmp_dir)
-      result_files = ['bug_summary.txt']
-      self.assertCountEqual(os.listdir(tmp_dir), result_files)
-
-      # Compare the bug summaries.
-      with open(os.path.join(tmp_dir, 'bug_summary.txt')) as bug_summary:
-        detected_summary = bug_summary.read()
-      with open(test_summary_path) as bug_summary:
-        real_summary = bug_summary.read()
-      self.assertEqual(detected_summary, real_summary)
-
-  def test_parse_invalid_output(self):
-    """Checks that no files are created when an invalid input was given."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      run_fuzzers.parse_fuzzer_output(b'not a valid output_string', tmp_dir)
-      self.assertEqual(len(os.listdir(tmp_dir)), 0)
+if __name__ == '__main__':
+  unittest.main()
