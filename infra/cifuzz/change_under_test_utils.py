@@ -35,23 +35,21 @@ class ChangeUnderTest:
 
   def diff(self):
     """Returns the changed files that need to be tested."""
+    base = None
     if self.config.platform == self.config.Platform.INTERNAL_GENERIC_CI:
+      # TODO(metzman): Enforce something like Github's API for external users.
       self.fix_git_repo_for_diff()  # TODO(metzman): Look into removing this.
-      logging.info('Diffing against "origin...".')
-      return self.repo_manager.get_git_diff('origin...')
+      base = 'origin...'
+    elif self.is_pr:
+      # On GitHub.
+      base = self.config.base_ref
+    else:
+      # Commit fuzzing.
+      commit = self.config.base_commit
 
-    # On GitHub.
-    if self.is_pr:
-      logging.info('Diffing against "%s".', self.config.base_ref)
-      return self.repo_manager.get_git_diff(self.config.base_ref)
+    logging.info('Diffing against "%s".', base)
+    return self.repo_manager.get_git_diff(bse)
 
-    # Commit fuzzing.
-    # TODO(https://github.com/google/oss-fuzz/issues/5010): Figure out what to
-    # do here.
-    logging.info('Commit fuzzing. '
-                 'Pretending no files changed so all fuzzers run. '
-                 'See https://github.com/google/oss-fuzz/issues/5010')
-    return []
 
   def fix_git_repo_for_diff(self):
     """Fixes git repos cloned by the "checkout" action so that diffing works on

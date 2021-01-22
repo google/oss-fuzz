@@ -35,15 +35,19 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     self.project_repo_name = os.path.basename(os.getenv('GITHUB_REPOSITORY'))
     self.commit_sha = os.getenv('GITHUB_SHA')
 
-    event = os.getenv('GITHUB_EVENT_NAME')
-    with open(os.getenv('GITHUB_EVENT_PATH'), encoding='utf-8') as fh:
-      logging.info('event %s' + fh.read())
-    1/0
     if event == 'pull_request':
-      event_path = os.getenv('GITHUB_EVENT_PATH')
-      self.pr_ref = get_pr_ref(event_path)
+      self.pr_ref = os.getenv('GITHUB_REF')
     else:
       self.pr_ref = None
+
+    # TODO(metzman): We check event name before calling get_before_commit,
+    # because external users (skia) are using it. Change this.
+    event_name = os.getenv('GITHUB_EVENT_NAME')
+
+    if event == 'push' and event_name:
+      self.base_commit = get_before_commit(event_name)
+    else:
+      self.base_commit = None
 
     self.workspace = os.getenv('GITHUB_WORKSPACE')
     self.project_src_path = get_project_src_path(self.workspace)
@@ -70,11 +74,11 @@ def _is_dry_run():
   return os.getenv('DRY_RUN').lower() == 'true'
 
 
-def get_pr_ref(event_path):
+def get_before_commit(event_path):
   """Returns the PR ref from |event_path|."""
   with open(event_path, encoding='utf-8') as file_handle:
     event = json.load(file_handle)
-    return 'refs/pull/{0}/merge'.format(event['pull_request']['number'])
+  return event['before']
 
 
 def get_project_src_path(workspace):
