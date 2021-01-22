@@ -29,6 +29,7 @@ TEST_BLOCKLIST = [
     # Test errors with error: "ModuleNotFoundError: No module named 'apt'".
     re.compile(r'.*\/infra\/base-images\/base-sanitizer-libs-builder'),
     # FIXME: Reenable these tests.
+    re.compile(r'.*\/infra\/build(\/?).*'),
 ]
 
 
