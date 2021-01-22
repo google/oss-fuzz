@@ -43,7 +43,7 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
 
     # TODO(metzman): We check event name before calling get_before_commit,
     # because external users (skia) are using it. Change this.
-    event_name = os.getenv('GITHUB_EVENT_NAME')
+    event_name = os.getenv('GITHUB_EVENT_PATH')
 
     if event == 'push' and event_name:
       self.base_commit = get_before_commit(event_name)
