@@ -33,6 +33,8 @@ from request_build import get_project_data
 from request_build import update_build_history
 import test_utils
 
+# pylint: disable=no-member
+
 
 class TestRequestBuilds(unittest.TestCase):
   """Unit tests for sync."""

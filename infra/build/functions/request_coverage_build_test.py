@@ -30,6 +30,8 @@ from datastore_entities import Project
 from build_and_run_coverage import get_build_steps
 import test_utils
 
+# pylint: disable=no-member
+
 
 class TestRequestCoverageBuilds(unittest.TestCase):
   """Unit tests for sync."""
