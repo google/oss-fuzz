@@ -79,6 +79,7 @@ then
     echo -n '"' >>extra_options.h
 
     # Build Botan
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
     cd $SRC/botan
     if [[ $CFLAGS != *-m32* ]]
     then
