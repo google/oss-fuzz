@@ -36,6 +36,9 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     self.commit_sha = os.getenv('GITHUB_SHA')
 
     event = os.getenv('GITHUB_EVENT_NAME')
+    with open(os.getenv('GITHUB_EVENT_PATH'), encoding='utf-8') as fh:
+      logging.info('event %s' + fh.read())
+    1/0
     if event == 'pull_request':
       event_path = os.getenv('GITHUB_EVENT_PATH')
       self.pr_ref = get_pr_ref(event_path)
