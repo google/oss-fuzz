@@ -40,12 +40,15 @@ class ChangeUnderTest:
       # TODO(metzman): Enforce something like Github's API for external users.
       self.fix_git_repo_for_diff()  # TODO(metzman): Look into removing this.
       base = 'origin...'
+      logging.info('external')
     elif self.is_pr:
       # On GitHub.
       base = self.config.base_ref
+      logging.info('gh pr')
     else:
       # Commit fuzzing.
       base = self.config.base_commit
+      logging.info('gh commit')
 
     logging.info('Diffing against "%s".', base)
     return self.repo_manager.get_git_diff(base)
