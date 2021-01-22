@@ -78,6 +78,19 @@ then
     echo -n '--operations=BignumCalc,DH_GenerateKeyPair,DH_Derive,ECC_GenerateKeyPair,ECC_PrivateToPublic,ECC_ValidatePubkey,ECDSA_Verify,ECDSA_Sign' >>extra_options.h
     echo -n '"' >>extra_options.h
 
+    # Build Botan
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
+    cd $SRC/botan
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
+    else
+        ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
+    fi
+    make -j$(nproc)
+    export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
+    export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
+
     # Build sp-math-all fuzzer
     cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-sp-math-all/
     cp -R $SRC/wolfssl/ $SRC/wolfssl-sp-math-all/
@@ -86,10 +99,12 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-sp-math-all
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-sp-math-all/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-sp-math-all/"
     cd $SRC/cryptofuzz-sp-math-all/modules/wolfcrypt
+    make -j$(nproc)
+    cd $SRC/cryptofuzz-sp-math-all/modules/botan
     make -j$(nproc)
     cd $SRC/cryptofuzz-sp-math-all/
     LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
@@ -107,10 +122,12 @@ then
     CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
     ./configure $WOLFCRYPT_CONFIGURE_PARAMS --disable-fastmath
     make -j$(nproc)
-    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
     export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-disable-fastmath/src/.libs/libwolfssl.a"
     export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-disable-fastmath/"
     cd $SRC/cryptofuzz-disable-fastmath/modules/wolfcrypt
+    make -j$(nproc)
+    cd $SRC/cryptofuzz-disable-fastmath/modules/botan
     make -j$(nproc)
     cd $SRC/cryptofuzz-disable-fastmath/
     LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
