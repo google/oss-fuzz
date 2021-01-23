@@ -52,14 +52,19 @@ void run(const std::string& expression_string)
 
    if (parser.compile(expression_string, expression))
    {
-      try
-      {
-         expression.value();
-      }
-      catch (std::runtime_error& rte)
-      {}
+      const std::size_t max_expression_size = 64 * 1024;
 
-      parser.clear_loop_runtime_check();
+      if (expression_string.size() <= max_expression_size)
+      {
+         try
+         {
+            expression.value();
+         }
+         catch (std::runtime_error& rte)
+         {}
+
+         parser.clear_loop_runtime_check();
+      }
    }
 }
 
