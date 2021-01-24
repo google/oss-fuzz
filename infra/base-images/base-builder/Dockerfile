@@ -148,6 +148,7 @@ RUN mkdir $PRECOMPILED_DIR
 WORKDIR $SRC
 
 RUN git clone -b stable https://github.com/google/AFL.git afl
+RUN git clone -b stable https://github.com/AFLplusplus/AFLplusplus.git aflplusplus
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
