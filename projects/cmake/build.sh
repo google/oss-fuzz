@@ -22,10 +22,10 @@ mkdir build-dir && cd build-dir
 
 # Build fuzzers.
 cd ../Tests/Fuzzing
-$CXX $CXXFLAGS 	-I../../Source \
-		-I../../build-dir/Source \
-		-c xml_parser_fuzzer.cc \
-		-o xml_parser_fuzzer.o 
+$CXX $CXXFLAGS -I../../Source \
+	-I../../build-dir/Source \
+	-c xml_parser_fuzzer.cc \
+	-o xml_parser_fuzzer.o 
 
 
 export cmexpat_dir="${SRC}/CMake/build-dir/Utilities/cmexpat/CMakeFiles/cmexpat.dir/lib"
