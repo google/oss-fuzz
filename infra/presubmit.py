@@ -199,7 +199,7 @@ class ProjectYamlChecker:
     if auto_ccs:
       email_addresses.extend(auto_ccs)
 
-    # Sanity check them.
+    # Check that email addresses seem normal.
     for email_address in email_addresses:
       if '@' not in email_address or '.' not in email_address:
         self.error(email_address + ' is an invalid email address.')

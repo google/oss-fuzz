@@ -64,7 +64,7 @@ class GitRepo:
   def test_commit(self, test_command):
     """Build LLVM at the currently checkedout commit, then run |test_command|.
     If returncode is 0 run 'git bisect good' otherwise return 'git bisect bad'.
-    Return None if bisect didn't terminate yet. Return the culprit commit if it
+    Return None if bisect didn't finish yet. Return the culprit commit if it
     does."""
     build_clang(self.repo_dir)
     retcode, _, _ = execute(test_command, shell=True, expect_zero=False)
@@ -208,8 +208,7 @@ def main():
                           8288453f6aac05080b751b680455349e09d49825
   """
   # pylint: enable=line-too-long
-  # TODO(metzman): Sanity check CFLAGS for things like
-  # -fsanitize=fuzzer-no-link.
+  # TODO(metzman): Check CFLAGS for things like -fsanitize=fuzzer-no-link.
   # TODO(metzman): Allow test_command to be optional and for just build.sh to be
   # used instead.
   test_command = sys.argv[1]
