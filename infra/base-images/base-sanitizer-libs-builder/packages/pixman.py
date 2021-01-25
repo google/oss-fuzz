@@ -35,8 +35,8 @@ class Package(package.Package):
       source_directory)
 
   def PreBuild(self, source_directory, env, custom_bin_dir):
-    blacklist_flag = ' -fsanitize-blacklist=' + os.path.join(
+    blocklist_flag = ' -fsanitize-blacklist=' + os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        'pixman_blacklist.txt')
-    env['DEB_CXXFLAGS_APPEND'] += blacklist_flag
-    env['DEB_CFLAGS_APPEND'] += blacklist_flag
+        'pixman_blocklist.txt')
+    env['DEB_CXXFLAGS_APPEND'] += blocklist_flag
+    env['DEB_CFLAGS_APPEND'] += blocklist_flag
