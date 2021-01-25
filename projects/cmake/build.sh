@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
 #
 ################################################################################
 
-# Build CMake
+# Build CMake.
 mkdir build-dir && cd build-dir
 ../bootstrap && make -j$(nproc)
 
 
-# Build fuzzers
+# Build fuzzers.
 cd ../Tests/Fuzzing
 $CXX $CXXFLAGS 	-I../../Source \
 		-I../../build-dir/Source \
