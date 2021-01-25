@@ -64,7 +64,7 @@ function run_fuzz_target {
   local profdata_file="$DUMPS_DIR/$target.profdata"
   local corpus_real="/corpus/${target}"
 
-  # -merge=1 requires an output directory, create a dummy dir for that.
+  # -merge=1 requires an output directory, create a new, empty dir for that.
   local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
   rm -rf $corpus_dummy && mkdir -p $corpus_dummy
 

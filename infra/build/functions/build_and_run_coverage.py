@@ -162,7 +162,7 @@ def get_build_steps(project_name, project_yaml_file, dockerfile_lines,
                                                type='reports',
                                                date=report_date)
 
-  # Delete the existing report as gsutil cannot overwrite it in a sane way due
+  # Delete the existing report as gsutil cannot overwrite it in a useful way due
   # to the lack of `-T` option (it creates a subdir in the destination dir).
   build_steps.append(build_lib.gsutil_rm_rf_step(upload_report_url))
   build_steps.append({
