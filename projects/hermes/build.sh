@@ -26,6 +26,6 @@ else
 fi
 
 ./utils/build/configure.py "${OUT}/build" --build-system "Ninja" ${CONFIGURE_FLAGS} \
-                           --cmake-flags="-DHERMES_USE_STATIC_ICU=ON -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_FUZZING=ON"
+                           --cmake-flags="-DHERMES_USE_STATIC_ICU=ON -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON"
 cmake --build "$OUT/build"  --parallel --target fuzzer-jsi-entry
 cp "${OUT}/build/bin/fuzzer-jsi-entry" "${OUT}"
