@@ -40,7 +40,7 @@ unset CXXFLAGS
 unset CFLAGS
 
 make clean
-AFL_NO_X86=1 make
+AFL_NO_X86=1 PYTHON_INCLUDE=/ make
 make -C utils/aflpp_driver
 
 CFLAGS=$INITIAL_CFLAGS
