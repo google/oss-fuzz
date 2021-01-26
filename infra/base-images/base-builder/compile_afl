@@ -29,8 +29,8 @@ ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
 popd > /dev/null
 rm -rf $WORK/afl
 
-# Build and copy afl tools necessary for fuzzing.
-pushd $SRC/afl > /dev/null
+# Build and copy afl++ tools necessary for fuzzing.
+pushd $SRC/aflplusplus > /dev/null
 
 # Unset CFLAGS and CXXFLAGS while building AFL since we don't want to slow it
 # down with sanitizers.
@@ -38,11 +38,17 @@ INITIAL_CXXFLAGS=$CXXFLAGS
 INITIAL_CFLAGS=$CFLAGS
 unset CXXFLAGS
 unset CFLAGS
-make clean && AFL_NO_X86=1 make
+
+make clean
+AFL_NO_X86=1 PYTHON_INCLUDE=/ make
+make -C utils/aflpp_driver
+
 CFLAGS=$INITIAL_CFLAGS
 CXXFLAGS=$INITIAL_CXXFLAGS
 
-find . -name 'afl-*' -executable -type f | xargs cp -t $OUT
+# Some important projects include libraries, copy those even when they don't
+# start with "afl-". Use "sort -u" to avoid a warning about duplicates.
+ls afl-* *.a *.o *.so | sort -u | xargs cp -t $OUT
 popd > /dev/null
 
 echo " done."

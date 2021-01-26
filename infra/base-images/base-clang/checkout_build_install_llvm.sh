@@ -142,14 +142,14 @@ mkdir -p $WORK/msan
 cd $WORK/msan
 
 # https://github.com/google/oss-fuzz/issues/1099
-cat <<EOF > $WORK/msan/blacklist.txt
+cat <<EOF > $WORK/msan/blocklist.txt
 fun:__gxx_personality_*
 EOF
 
 cmake_llvm $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=Memory \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
-    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt"
+    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blocklist.txt"
 
 ninja -j $NPROC cxx
 ninja install-cxx

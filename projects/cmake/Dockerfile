@@ -1,5 +1,4 @@
-#!/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +14,10 @@
 #
 ################################################################################
 
-if [ "${SANITIZER}" = address ]
-then
-    CONFIGURE_FLAGS="--enable-asan"
-elif [ "${SANITIZER}" = undefined ]
-then
-    CONFIGURE_FLAGS="--enable-ubsan"
-else
-    CONFIGURE_FLAGS=""
-fi
-
-./utils/build/configure.py "${OUT}/build" --build-system "Ninja" ${CONFIGURE_FLAGS} \
-                           --cmake-flags="-DHERMES_USE_STATIC_ICU=ON -DHERMES_FUZZING_FLAG=${LIB_FUZZING_ENGINE} -DHERMES_ENABLE_LIBFUZZER=ON"
-cmake --build "$OUT/build"  --parallel --target fuzzer-jsi-entry
-cp "${OUT}/build/bin/fuzzer-jsi-entry" "${OUT}"
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool \
+  pkg-config libssl-dev
+RUN git clone --depth 1 https://gitlab.kitware.com/cmake/cmake CMake
+RUN git clone --depth 1 https://github.com/strongcourage/fuzzing-corpus
+WORKDIR CMake
+COPY build.sh $SRC/
