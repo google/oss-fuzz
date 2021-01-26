@@ -18,6 +18,7 @@ import logging
 import os
 import sys
 
+import continuous_integration
 import affected_fuzz_targets
 import change_under_test_utils
 
@@ -52,25 +53,27 @@ def check_project_src_path(project_src_path):
 class Builder:  # pylint: disable=too-many-instance-attributes
   """Class for fuzzer builders."""
 
-  def __init__(self, config, ci):
+  def __init__(self, config, ci_system):
     self.config = config
-    self.ci = ci
+    self.ci_system = ci_system
     self.out_dir = os.path.join(config.workspace, 'out')
     os.makedirs(self.out_dir, exist_ok=True)
     self.work_dir = os.path.join(config.workspace, 'work')
     os.makedirs(self.work_dir, exist_ok=True)
     self.image_repo_path = None
+    self.host_repo_path = None
     self.repo_manager = None
 
   def build_image_and_checkout_src(self):
     """Builds the project builder image and checkout source code for the patch
     we want to fuzz (if necessary). Returns True on success.
     Must be implemented by child classes."""
-    result = self.ci.prepare_for_fuzzer_build()
+    result = self.ci_system.prepare_for_fuzzer_build()
     if not result.success:
       return False
     self.image_repo_path = result.image_repo_path
     self.repo_manager = result.repo_manager
+    self.host_repo_path = self.repo_manager.repo_dir
     return True
 
   def build_fuzzers(self):
@@ -175,8 +178,8 @@ def build_fuzzers(config):
     return False
 
   # Get the builder and then build the fuzzers.
-  ci = continuous_integration.get_ci(config)
-  builder = Builder(ci)
+  ci_system = continuous_integration.get_ci(config)
+  builder = Builder(config, ci_system)
   return builder.build()
 
 

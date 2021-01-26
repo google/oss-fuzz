@@ -25,12 +25,15 @@ import helper
 import repo_manager
 import retry
 
+# pylint: disable=too-few-public-methods
+
 BuildPreparationResult = collections.namedtuple(
-    'BuildPreparationResult',
-    ['success', 'image_repo_path', 'repo_manager'])
+    'BuildPreparationResult', ['success', 'image_repo_path', 'repo_manager'])
 
 
 class BaseCi:
+  """Class representing common CI functionality."""
+
   def __init__(self, config):
     self.config = config
 
@@ -69,13 +72,15 @@ def checkout_specified_commit(repo_manager_obj, pr_ref, commit_sha):
 
 class InternalGithub(BaseCi):
   """Class representing CI for an OSS-Fuzz project on Github Actions."""
+
   def prepare_for_fuzzer_build(self):
+    """Builds the fuzzer builder image, checks out the pull request/commit and
+    returns the BuildPreparationResult."""
     logging.info('Building OSS-Fuzz project on Github Actions.')
     assert self.config.pr_ref or self.config.commit_sha
     # detect_main_repo builds the image as a side effect.
-    inferred_url, image_repo_path = (
-        build_specified_commit.detect_main_repo(
-            self.config.project_name, repo_name=self.config.project_repo_name))
+    inferred_url, image_repo_path = (build_specified_commit.detect_main_repo(
+        self.config.project_name, repo_name=self.config.project_repo_name))
 
     if not inferred_url or not image_repo_path:
       logging.error('Could not detect repo from project %s.',
@@ -89,10 +94,11 @@ class InternalGithub(BaseCi):
     image_repo_name = os.path.basename(image_repo_path)
 
     # Checkout project's repo in the shared volume.
-    repo_manager = repo_manager.clone_repo_and_get_manager(
-        inferred_url, git_workspace, repo_name=image_repo_name)
+    manager = repo_manager.clone_repo_and_get_manager(inferred_url,
+                                                      git_workspace,
+                                                      repo_name=image_repo_name)
 
-    checkout_specified_commit(repo_manager, self.config.pr_ref,
+    checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 
     return BuildPreparationResult(True, image_repo_path, manager)
@@ -101,6 +107,7 @@ class InternalGithub(BaseCi):
 class InternalGeneric(BaseCi):
   """Class representing CI for an OSS-Fuzz project on a CI other than Github
   actions."""
+
   def prepare_for_fuzzer_build(self):
     """Builds the project builder image for an OSS-Fuzz project outside of
     GitHub actions. Returns the repo_manager. Does not checkout source code
@@ -119,6 +126,7 @@ class InternalGeneric(BaseCi):
     manager = repo_manager.RepoManager(self.config.project_src_path)
     return BuildPreparationResult(True, image_repo_path, manager)
 
+
 _IMAGE_BUILD_TRIES = 3
 _IMAGE_BUILD_BACKOFF = 2
 
@@ -136,6 +144,7 @@ def build_external_project_docker_image(project_name, project_src,
 
 class ExternalGithub(BaseCi):
   """Class representing CI for a non-OSS-Fuzz project on Github Actions."""
+
   def prepare_for_fuzzer_build(self):
     """Builds the project builder image for a non-OSS-Fuzz project on GitHub
     actions. Sets the repo manager. Does not checkout source code since external
@@ -143,12 +152,12 @@ class ExternalGithub(BaseCi):
     on success."""
     logging.info('Building external project.')
     build_integration_path = os.path.join(self.config.project_src_path,
-                                          config.build_integration_path)
+                                          self.config.build_integration_path)
     if not build_external_project_docker_image(self.config.project_name,
                                                self.config.project_src_path,
                                                build_integration_path):
       logging.error('Failed to build external project.')
       return BuildPreparationResult(False, None, None)
-    self.repo_manager = repo_manager.RepoManager(self.config.project_src_path)
-    image_repo_path = os.path.join('/src', config.project_repo_name)
-    return BuildPreparationResult(False, image_repo_path, repo_manager)
+    manager = repo_manager.RepoManager(self.config.project_src_path)
+    image_repo_path = os.path.join('/src', self.config.project_repo_name)
+    return BuildPreparationResult(False, image_repo_path, manager)

@@ -28,6 +28,7 @@ OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
 
 import cifuzz
 import config_utils
+import continuous_integration
 import test_helpers
 
 # NOTE: This integration test relies on
@@ -101,7 +102,7 @@ class BuildFuzzersTest(unittest.TestCase):
     self.assertTrue(command_has_env_var_arg(docker_run_command, 'CIFUZZ=True'))
 
 
-class InternalGithubBuilderTest(unittest.TestCase):
+class InternalGithubBuildTest(unittest.TestCase):
   """Tests for building OSS-Fuzz projects on GitHub actions."""
   PROJECT_NAME = 'myproject'
   PROJECT_REPO_NAME = 'myproject'
@@ -117,10 +118,12 @@ class InternalGithubBuilderTest(unittest.TestCase):
                            sanitizer=self.SANITIZER,
                            commit_sha=self.COMMIT_SHA,
                            pr_ref=self.PR_REF)
-    return cifuzz.InternalGithubBuilder(config)
+    ci_system = continuous_integration.get_ci(config)
+    return cifuzz.Builder(config, ci_system)
 
   @mock.patch('repo_manager._clone', side_effect=None)
-  @mock.patch('cifuzz.checkout_specified_commit', side_effect=None)
+  @mock.patch('continous_integration.checkout_specified_commit',
+              side_effect=None)
   def test_correct_host_repo_path(self, _, __):
     """Tests that the correct self.host_repo_path is set by
     build_image_and_checkout_src. Specifically, we want the name of the
