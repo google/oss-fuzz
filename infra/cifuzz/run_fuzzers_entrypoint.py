@@ -16,7 +16,7 @@ import logging
 import os
 import sys
 
-import cifuzz
+import run_fuzzers
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
@@ -77,10 +77,10 @@ def main():
     logging.error('This script needs to be run in the Github action context.')
     return returncode
   # Run the specified project's fuzzers from the build.
-  run_status, bug_found = cifuzz.run_fuzzers(fuzz_seconds,
-                                             workspace,
-                                             oss_fuzz_project_name,
-                                             sanitizer=sanitizer)
+  run_status, bug_found = run_fuzzers.run_fuzzers(fuzz_seconds,
+                                                  workspace,
+                                                  oss_fuzz_project_name,
+                                                  sanitizer=sanitizer)
   if not run_status:
     logging.error('Error occurred while running in workspace %s.', workspace)
     return returncode
