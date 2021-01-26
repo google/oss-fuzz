@@ -28,12 +28,12 @@ combining modern fuzzing techniques with scalable, distributed execution.
 [Core Infrastructure Initiative]: https://www.coreinfrastructure.org/
 [OpenSSF]: https://www.openssf.org/
 
-We support the [libFuzzer], [AFL], and [Honggfuzz] fuzzing engines in
+We support the [libFuzzer], [AFL++], and [Honggfuzz] fuzzing engines in
 combination with [Sanitizers], as well as [ClusterFuzz], a distributed fuzzer
 execution environment and reporting tool.
 
 [libFuzzer]: https://llvm.org/docs/LibFuzzer.html
-[AFL]: https://lcamtuf.coredump.cx/afl/
+[AFL++]: https://github.com/AFLplusplus/AFLplusplus
 [Honggfuzz]: https://github.com/google/honggfuzz
 [Sanitizers]: https://github.com/google/sanitizers
 [ClusterFuzz]: https://github.com/google/clusterfuzz

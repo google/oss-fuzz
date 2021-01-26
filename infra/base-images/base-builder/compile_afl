@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-echo -n "Compiling afl to $LIB_FUZZING_ENGINE ..."
+echo "Compiling afl driver to $LIB_FUZZING_ENGINE"
 
 # afl needs its special coverage flags
 export COVERAGE_FLAGS="-fsanitize-coverage=trace-pc-guard"
@@ -28,6 +28,8 @@ $CXX $CXXFLAGS -std=c++11 -O2 -c $SRC/libfuzzer/afl/*.cpp -I$SRC/libfuzzer
 ar r $LIB_FUZZING_ENGINE $WORK/afl/*.o
 popd > /dev/null
 rm -rf $WORK/afl
+
+echo "Compiling afl++"
 
 # Build and copy afl++ tools necessary for fuzzing.
 pushd $SRC/aflplusplus > /dev/null
