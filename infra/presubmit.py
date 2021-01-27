@@ -325,6 +325,7 @@ def get_changed_files():
   """Return a list of absolute paths of files changed in this git branch."""
   main_branch = subprocess.check_output(
       ['git', 'rev-parse', '--abbrev-ref', 'origin/HEAD']).strip().decode()
+  print(subprocess.call(['git', 'merge-base', 'HEAD', main_branch]))
   branch_commit_hash = subprocess.check_output(
       ['git', 'merge-base', 'HEAD', main_branch]).strip().decode()
 
@@ -342,8 +343,7 @@ def get_changed_files():
       if not os.path.isfile(file_path):
         continue
       changed_files.add(file_path)
-  print('Changed files:\n{changed_files}'.format(
-      changed_files='\n'.join(changed_files)))
+  print('Changed files: {changed_files}'.format(changed_files=changed_files))
   return [os.path.abspath(f) for f in changed_files]
 
 
