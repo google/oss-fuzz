@@ -323,13 +323,28 @@ def yapf(paths, validate=True):
 
 def get_changed_files():
   """Return a list of absolute paths of files changed in this git branch."""
-  # FIXME: This doesn't work if branch is behind master.
-  diff_command = ['git', 'diff', '--name-only', 'FETCH_HEAD']
-  return [
-      os.path.abspath(path)
-      for path in subprocess.check_output(diff_command).decode().splitlines()
-      if os.path.isfile(path)
+  main_branch = subprocess.check_output(
+      ['git', 'rev-parse', '--abbrev-ref', 'origin/HEAD']).strip().decode()
+  branch_commit_hash = subprocess.check_output(
+      ['git', 'merge-base', 'FETCH_HEAD', main_branch]).strip().decode()
+
+  diff_commands = [
+      # Return list of modified files in the commits on this branch.
+      ['git', 'diff', '--name-only', branch_commit_hash + '..'],
+      # Return list of modified files from uncommitted changes.
+      ['git', 'diff', '--name-only']
   ]
+
+  changed_files = set()
+  for command in diff_commands:
+    file_paths = subprocess.check_output(command).decode().splitlines()
+    for file_path in file_paths:
+      if not os.path.isfile(file_path):
+        continue
+      changed_files.add(file_path)
+  print('Changed files: {changed_files}'.format(
+      changed_files=' '.join(changed_files)))
+  return [os.path.abspath(f) for f in changed_files]
 
 
 def is_test_dir_blocklisted(directory):
