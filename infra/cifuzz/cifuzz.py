@@ -177,6 +177,7 @@ def build_fuzzers(config):
 
   # Get the builder and then build the fuzzers.
   ci_system = continuous_integration.get_ci(config)
+  logging.info('ci_system: %s.', ci_system)
   builder = Builder(config, ci_system)
   return builder.build()
 

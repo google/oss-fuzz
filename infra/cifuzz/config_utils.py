@@ -68,6 +68,7 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
 
     event = os.getenv('GITHUB_EVENT')
     self.is_github = bool(event)
+    logging.debug('Is github: %s.', self.is_github)
     self.pr_ref = _get_pr_ref(event)
 
     self.git_url = None
