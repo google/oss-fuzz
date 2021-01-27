@@ -36,8 +36,8 @@ echo "OrbitProfiler:CXXFLAGS=\$BASE_CFLAGS $CXXFLAGS" >> ~/.conan/profiles/defau
 # echo "llvm:CFLAGS=\$BASE_CFLAGS $CFLAGS" >> ~/.conan/profiles/default
 # echo "llvm:CXXFLAGS=\$BASE_CXXFLAGS $CXXFLAGS" >> ~/.conan/profiles/default
 
-# For unclear reasons the $CFLAGS and $CXXFLAGS contains "-fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link"
-# when this script is called. Since llvm currently cannot be build with address sanatizers, 
+# The $CFLAGS and $CXXFLAGS contains "-fsanitize=address -fsanitize-address-use-after-scope -fsanitize=fuzzer-no-link"
+# when this script is called. Since llvm currently cannot be build with address sanitizers, 
 # the flags are set manually here.
 echo "llvm:CFLAGS=\$BASE_CFLAGS -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION" >> ~/.conan/profiles/default
 echo "llvm:CXXFLAGS=\$BASE_CXXFLAGS -O1 -fno-omit-frame-pointer -gline-tables-only -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -stdlib=libc++" >> ~/.conan/profiles/default
@@ -57,6 +57,6 @@ function copy_fuzzer {
   done
 }
 
-find $SRC/build_default/bin -name \*Fuzzer | while read fuzzer; do
+find $SRC/orbit/build_default/bin -name \*Fuzzer | while read fuzzer; do
   copy_fuzzer "$fuzzer"
 done

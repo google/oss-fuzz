@@ -14,7 +14,6 @@
 #
 ################################################################################
 
-  #&& curl -SL https://github.com/google/orbit/archive/main.tar.gz \
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y m4 libglu1-mesa-dev mesa-common-dev \
   libxmu-dev libxi-dev pkg-config libxxf86vm-dev patchelf
@@ -22,7 +21,7 @@ RUN apt-get update && apt-get install -y m4 libglu1-mesa-dev mesa-common-dev \
 ADD https://github.com/google/orbit/archive/main.tar.gz $SRC/
 RUN mkdir -p $SRC/orbit && tar -xzf $SRC/main.tar.gz \
   -C $SRC/orbit/ --strip-components 1; rm -f $SRC/main.tar.gz
-WORKDIR $SRC
+WORKDIR $SRC/orbit
 COPY build.sh $SRC/
 
 # That's a hack. The service needs to have a more recent kernel than what the
