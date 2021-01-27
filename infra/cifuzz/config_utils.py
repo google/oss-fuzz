@@ -66,7 +66,7 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     self.project_repo_name = _get_project_repo_name()
     self.commit_sha = os.getenv('GITHUB_SHA')
 
-    event = os.getenv('GITHUB_EVENT')
+    event = os.getenv('GITHUB_EVENT_NAME')
     self.is_github = bool(event)
     logging.debug('Is github: %s.', self.is_github)
     self.pr_ref = _get_pr_ref(event)
