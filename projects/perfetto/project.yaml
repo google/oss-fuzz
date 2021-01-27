@@ -20,6 +20,7 @@ vendor_ccs:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+  - afl
 sanitizers:
   - address
 main_repo: 'https://android.googlesource.com/platform/external/perfetto/'
