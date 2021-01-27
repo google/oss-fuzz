@@ -153,7 +153,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     """Tests building fuzzers from an external project on Github."""
     project_name = 'external-project'
     build_integration_path = 'fuzzer-build-integration'
-    git_url = 'git@github.com:jonathanmetzman/cifuzz-external-example.git'
+    git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
