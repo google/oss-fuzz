@@ -166,6 +166,9 @@ class RepoManager:
       commits.append(oldest_commit)
     return commits
 
+  def fetch_branch(self, branch):
+    return self.git(['fetch', 'origin', '{branch}:{branch}'.format(branch)])
+
   def fetch_unshallow(self):
     """Gets the current git repository history."""
     shallow_file = os.path.join(self.repo_dir, '.git', 'shallow')
