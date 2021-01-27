@@ -1,8 +1,6 @@
 homepage: "https://tmux.github.io/"
 language: c
 primary_contact: nicholas.marriott@gmail.com
-auto_ccs:
-  - security@openbsd.org
 sanitizers:
   - address
   - undefined
