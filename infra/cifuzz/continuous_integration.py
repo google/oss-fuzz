@@ -37,6 +37,14 @@ class BaseCi:
   def __init__(self, config):
     self.config = config
 
+  def get_diff_base(self):
+    raise NotImplementedError('Children must implement this method.')
+
+  def get_change_under_test(self, repo_manager_obj):
+    """Returns the changed files that need to be tested."""
+    base = self.get_diff_base()
+    return repo_manager_obj.get_git_diff(base)
+
 
 def get_ci(config):
   """Determines what kind of CI is being used and returns the object
