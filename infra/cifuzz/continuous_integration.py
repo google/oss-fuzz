@@ -39,7 +39,7 @@ def fix_git_repo_for_diff(repo_manager_obj):
       'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
       'refs/remotes/origin/master'
   ]
-  return utils.execute(command, location=repo_manager_obj)
+  return utils.execute(command, location=repo_manager_obj.repo_dir)
 
 
 class BaseCi:

@@ -117,7 +117,8 @@ class InternalGithubBuildTest(unittest.TestCase):
                            workspace=tmp_dir,
                            sanitizer=self.SANITIZER,
                            commit_sha=self.COMMIT_SHA,
-                           pr_ref=self.PR_REF)
+                           pr_ref=self.PR_REF,
+                           is_github=True)
     ci_system = continuous_integration.get_ci(config)
     return cifuzz.Builder(config, ci_system)
 
@@ -148,19 +149,21 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   def setUp(self):
     test_helpers.patch_environ(self)
 
-  def test_external_project(self):
-    """Tests building fuzzers from an external project."""
+  def test_external_github_project(self):
+    """Tests building fuzzers from an external project on Github."""
     project_name = 'external-project'
-    project_src_path = os.path.join(TEST_FILES_PATH, project_name)
-    build_integration_path = os.path.join(project_src_path, 'oss-fuzz')
+    build_integration_path = 'fuzzer-build-integration'
+    git_url = 'git@github.com:jonathanmetzman/cifuzz-external-example.git'
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
+      # This test is dependant on the state of
+      # github.com/jonathanmetzman/cifuzz-external-example.
       config = create_config(project_name=project_name,
                              project_repo_name=project_name,
                              workspace=tmp_dir,
-                             project_src_path=project_src_path,
                              build_integration_path=build_integration_path,
+                             git_url=git_url,
                              commit_sha='HEAD',
                              base_commit='HEAD^1')
       self.assertTrue(cifuzz.build_fuzzers(config))
@@ -177,7 +180,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           project_repo_name='oss-fuzz',
           workspace=tmp_dir,
           commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
-          base_commit='da0746452433dc18bae699e355a9821285d863c8')
+          base_commit='da0746452433dc18bae699e355a9821285d863c8',
+          is_github=True)
       self.assertTrue(cifuzz.build_fuzzers(config))
 
       self.assertTrue(
@@ -193,7 +197,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                              project_repo_name='oss-fuzz',
                              workspace=tmp_dir,
                              pr_ref='refs/pull/1757/merge',
-                             base_ref='master')
+                             base_ref='master',
+                             is_github=True)
       self.assertTrue(cifuzz.build_fuzzers(config))
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
@@ -207,7 +212,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                              project_repo_name='oss-fuzz',
                              workspace=tmp_dir,
                              pr_ref='ref-1/merge',
-                             base_ref='master')
+                             base_ref='master',
+                             is_github=True)
       self.assertTrue(cifuzz.build_fuzzers(config))
 
   def test_invalid_project_name(self):
@@ -236,7 +242,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
       config = create_config(project_name=EXAMPLE_PROJECT,
                              project_repo_name='oss-fuzz',
                              workspace=tmp_dir,
-                             commit_sha='')
+                             commit_sha='',
+                             is_github=True)
       with self.assertRaises(AssertionError):
         cifuzz.build_fuzzers(config)
 
