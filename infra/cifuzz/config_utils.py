@@ -18,6 +18,26 @@ import enum
 import os
 import json
 
+def _get_project_repo_name():
+  return os.path.basename(os.getenv('GITHUB_REPOSITORY'))
+
+
+def _get_pr_ref(event):
+  if event == 'pull_request':
+    return os.getenv('GITHUB_REF')
+  return None
+
+def _get_base_commit(event):
+  # TODO(metzman): We check event name before calling get_before_commit,
+  # because external users (skia) are using it. Change this.
+  event_path = os.getenv('GITHUB_EVENT_PATH')
+  if event == 'push' and event_path:
+    return get_before_commit(event_path)
+  return None
+
+
+def _get_sanitizer():
+  return os.getenv('SANITIZER', 'address').lower()
 
 class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attributes
   """Object containing constant configuration for CIFuzz."""
@@ -32,33 +52,24 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
     self.project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
-    self.project_repo_name = os.path.basename(os.getenv('GITHUB_REPOSITORY'))
+    self.project_repo_name = _get_project_repo_name()
     self.commit_sha = os.getenv('GITHUB_SHA')
 
     event = os.getenv('GITHUB_EVENT')
-    if event == 'pull_request':
-      self.pr_ref = os.getenv('GITHUB_REF')
-    else:
-      self.pr_ref = None
-
-    # TODO(metzman): We check event name before calling get_before_commit,
-    # because external users (skia) are using it. Change this.
-    event_path = os.getenv('GITHUB_EVENT_PATH')
-
-    if event == 'push' and event_path:
-      self.base_commit = get_before_commit(event_path)
-    else:
-      self.base_commit = None
+    self.pr_ref = _get_pr_ref(event)
+    self.base_commit = _get_base_commit(event)
+    self.base_ref = os.getenv('GITHUB_BASE_REF')
 
     self.workspace = os.getenv('GITHUB_WORKSPACE')
     self.project_src_path = get_project_src_path(self.workspace)
-    self.sanitizer = os.getenv('SANITIZER', 'address').lower()
+
+    self.sanitizer = _get_sanitizer()
     self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
-    self.base_ref = os.getenv('GITHUB_BASE_REF')
+
 
   @property
   def platform(self):
@@ -86,7 +97,7 @@ def get_project_src_path(workspace):
   """Returns the manually checked out path of the project's source if specified
   or None."""
   # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
-  # project_src_path.
+  # PROJECT_SRC_PATH.
   path = os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
   if not path:
     logging.debug('No PROJECT_SRC_PATH.')

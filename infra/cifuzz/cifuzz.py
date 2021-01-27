@@ -149,7 +149,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def remove_unaffected_fuzz_targets(self):
     """Removes the fuzzers unaffected by the patch."""
     change_under_test = change_under_test_utils.ChangeUnderTest(
-        self.config, self.repo_manager)
+        self.ci_system, self.repo_manager)
     changed_files = change_under_test.diff()
     affected_fuzz_targets.remove_unaffected_fuzz_targets(
         self.config.project_name, self.out_dir, changed_files,

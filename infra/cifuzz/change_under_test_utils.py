@@ -24,40 +24,12 @@ import utils
 class ChangeUnderTest:
   """An object representing the code change that CIFuzz should test."""
 
-  def __init__(self, config, repo_manager_obj):
-    self.config = config
+  def __init__(self, ci_system, repo_manager_obj):
+    self.ci_system = ci_system
     self.repo_manager = repo_manager_obj
-
-  @property
-  def is_pr(self):
-    """Returns True if fuzzing a PR."""
-    return bool(self.config.pr_ref)
 
   def diff(self):
     """Returns the changed files that need to be tested."""
-    base = None
-    if self.config.platform == self.config.Platform.INTERNAL_GENERIC_CI:
-      # TODO(metzman): Enforce something like Github's API for external users.
-      self.fix_git_repo_for_diff()  # TODO(metzman): Look into removing this.
-      base = 'origin...'
-      logging.info('external')
-    elif self.is_pr:
-      # On GitHub.
-      base = self.config.base_ref
-      logging.info('gh pr')
-    else:
-      # Commit fuzzing.
-      base = self.config.base_commit
-      logging.info('gh commit')
-
+    base = self.ci_system.get_diff_base()
     logging.info('Diffing against "%s".', base)
     return self.repo_manager.get_git_diff(base)
-
-  def fix_git_repo_for_diff(self):
-    """Fixes git repos cloned by the "checkout" action so that diffing works on
-    them."""
-    command = [
-        'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
-        'refs/remotes/origin/master'
-    ]
-    return utils.execute(command, location=self.repo_manager.repo_dir)

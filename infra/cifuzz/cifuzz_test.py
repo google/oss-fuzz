@@ -161,7 +161,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                              workspace=tmp_dir,
                              project_src_path=project_src_path,
                              build_integration_path=build_integration_path,
-                             commit_sha='HEAD')
+                             commit_sha='HEAD',
+                             base_commit='HEAD^1')
       self.assertTrue(cifuzz.build_fuzzers(config))
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
@@ -175,7 +176,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           project_name=EXAMPLE_PROJECT,
           project_repo_name='oss-fuzz',
           workspace=tmp_dir,
-          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
+          base_commit='da0746452433dc18bae699e355a9821285d863c8')
       self.assertTrue(cifuzz.build_fuzzers(config))
 
       self.assertTrue(
