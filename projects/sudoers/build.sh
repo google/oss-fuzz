@@ -17,8 +17,10 @@
 
 if [ $SANITIZER == "address" ]; then
     export LDFLAGS="-fsanitize=address"
-elif [ $SANITIZER == "address" ]; then
+elif [ $SANITIZER == "undefined" ]; then
     export LDFLAGS="-fsanitize=undefined"
+elif [ $SANITIZER == "coverage" ]; then
+    export LDFLAGS="$CFLAGS"
 fi
 
 ./configure --enable-static-sudoers --enable-static --disable-shared-libutil
@@ -33,5 +35,5 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE .libs/tmp_fuzz -o $OUT/fuzz_iolog_json_parse 
 # Fuzz libsudoers parsing
 cd ../../plugins/sudoers
 $CC $CFLAGS -c -I../../include -I../.. -I.  $SRC/fuzz_sudoers_parse.c  -fPIC -DPIC -o fuzz_sudoers_parse.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE  fuzz_sudoers_parse.o -o $OUT/fuzz_sudoers_parse \
-    ./.libs/libparsesudoers.a ./.libs/sudoers.a  net_ifs.o parse_ldif.o ldap_util.o
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_sudoers_parse.o -o $OUT/fuzz_sudoers_parse \
+    ./.libs/libparsesudoers.a ./.libs/sudoers.a  net_ifs.o parse_ldif.o ldap_util.o -lcrypt
