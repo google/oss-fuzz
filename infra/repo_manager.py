@@ -167,7 +167,9 @@ class RepoManager:
     return commits
 
   def fetch_branch(self, branch):
-    return self.git(['fetch', 'origin', '{branch}:{branch}'.format(branch)])
+    """Fetches a remote branch from origin."""
+    return self.git(
+        ['fetch', 'origin', '{branch}:{branch}'.format(branch=branch)])
 
   def fetch_unshallow(self):
     """Gets the current git repository history."""
