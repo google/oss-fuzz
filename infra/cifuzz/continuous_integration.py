@@ -57,6 +57,7 @@ class BaseCi:
     """Returns the changed files that need to be tested."""
     base = self.get_diff_base()
     fix_git_repo_for_diff(repo_manager_obj)
+    logging.info('Diffing against %s.', base)
     return repo_manager_obj.get_git_diff(base)
 
 
@@ -98,7 +99,7 @@ class GithubCiMixin:
   def get_diff_base(self):
     """Returns the base to diff against with git to get the change under
     test."""
-    if self.config.pr_ref:
+    if self.config.base_ref:
       return self.config.base_ref
     return self.config.base_commit
 
