@@ -93,7 +93,8 @@ class RepoManager:
       A list of changed file paths or None on Error.
     """
     self.fetch_unshallow()
-    command = ['diff', '--name-only', base]
+    # Add '--' so that git knows we aren't talking about files.
+    command = ['diff', '--name-only', base, '--']
     out, err_msg, err_code = self.git(command)
     if err_code:
       logging.error('Git diff failed with error message %s.', err_msg)
