@@ -54,8 +54,12 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     with open(event_path, encoding='utf-8') as file_handle:
       event_data = json.load(file_handle)
     if event == 'push':
-      logging.debug('Getting base_commit')
       self.base_commit = event_data['before']
+      logging.debug('base_commit: %s', self.base_commit)
+    else:
+      self.pr_ref = 'refs/pull/{0}/merge'.format(
+          event['pull_request']['number'])
+      logging.debug('pr_ref: %s', self.pr_ref)
 
     self.git_url = event_data['repository']['git_url']
 
@@ -69,8 +73,8 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     event = os.getenv('GITHUB_EVENT_NAME')
     self.is_github = bool(event)
     logging.debug('Is github: %s.', self.is_github)
-    self.pr_ref = _get_pr_ref(event)
 
+    self.pr_ref = None
     self.git_url = None
     self.base_commit = None
     self._get_config_from_event_path(event)
