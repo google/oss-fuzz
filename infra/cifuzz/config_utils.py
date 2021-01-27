@@ -54,6 +54,7 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     with open(event_path, encoding='utf-8') as file_handle:
       event_data = json.load(file_handle)
     if event == 'push':
+      logging.debug('Getting base_commit')
       self.base_commit = event_data['before']
 
     self.git_url = event_data['repository']['git_url']
@@ -73,9 +74,7 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     self.base_commit = None
     self._get_config_from_event_path(event)
 
-    self.base_commit = None
     self.base_ref = os.getenv('GITHUB_BASE_REF')
-
     self.workspace = os.getenv('GITHUB_WORKSPACE')
     self.project_src_path = get_project_src_path(self.workspace)
 

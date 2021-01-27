@@ -100,7 +100,9 @@ class GithubCiMixin:
     """Returns the base to diff against with git to get the change under
     test."""
     if self.config.base_ref:
+      logging.debug('Diffing against base_ref: %s.', self.config.base_ref)
       return self.config.base_ref
+    logging.debug('Diffing against base_commit: %s.', self.config.base_commit)
     return self.config.base_commit
 
 
