@@ -131,7 +131,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     helper.docker_run([
         '--volumes-from', container, 'gcr.io/oss-fuzz-base/msan-libs-builder',
         'bash', '-c',
-        'cp -r /msan {work_dir}'.format(work_dir=self.config.work_dir)
+        'cp -r /msan {work_dir}'.format(work_dir=self.work_dir)
     ])
 
   def build(self):
