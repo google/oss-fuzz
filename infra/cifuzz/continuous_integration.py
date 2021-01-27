@@ -139,7 +139,6 @@ class InternalGithub(GithubCiMixin, BaseCi):
     manager = repo_manager.clone_repo_and_get_manager(inferred_url,
                                                       git_workspace,
                                                       repo_name=image_repo_name)
-    logging.info('!!!manager.repo_dir %s', manager.repo_dir)
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 

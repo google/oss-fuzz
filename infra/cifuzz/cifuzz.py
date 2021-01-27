@@ -73,7 +73,6 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     self.image_repo_path = result.image_repo_path
     self.repo_manager = result.repo_manager
     self.host_repo_path = self.repo_manager.repo_dir
-    logging.info('!!!host_repo_path %s', self.host_repo_path)
     return True
 
   def build_fuzzers(self):
@@ -252,7 +251,6 @@ def _get_docker_build_fuzzers_args_not_container(host_out_dir, host_repo_path):
   """Returns arguments to the docker build arguments that are needed to use
   |host_out_dir| when the host of the OSS-Fuzz builder container is not
   another container."""
-  # !!! Test
   image_out_dir = '/out'
   return [
       '-e',
