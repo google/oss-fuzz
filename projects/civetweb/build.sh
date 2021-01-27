@@ -15,7 +15,6 @@
 #
 ################################################################################
 sed -i 's/CFLAGS += -g -fsanitize=address,fuzzer,undefined/#CFLAGS += -g -fsanitize=address,fuzzer,undefined/' ./Makefile
-sed -i 's/8080/3001/' ./fuzztest/fuzzmain.c
 export LDFLAGS="${LIB_FUZZING_ENGINE} ${CFLAGS}"
 
 chmod +x ./fuzztest/build.sh
