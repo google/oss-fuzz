@@ -20,7 +20,6 @@ import sys
 
 import continuous_integration
 import affected_fuzz_targets
-import change_under_test_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

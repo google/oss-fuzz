@@ -18,6 +18,7 @@ import enum
 import os
 import json
 
+
 def _get_project_repo_name():
   return os.path.basename(os.getenv('GITHUB_REPOSITORY'))
 
@@ -27,17 +28,15 @@ def _get_pr_ref(event):
     return os.getenv('GITHUB_REF')
   return None
 
-def _get_base_commit(event):
-  # TODO(metzman): We check event name before calling get_before_commit,
-  # because external users (skia) are using it. Change this.
-  event_path = os.getenv('GITHUB_EVENT_PATH')
-  if event == 'push' and event_path:
-    return get_before_commit(event_path)
-  return None
-
 
 def _get_sanitizer():
   return os.getenv('SANITIZER', 'address').lower()
+
+
+def _get_project_name():
+  # TODO(metzman): Remove OSS-Fuzz reference.
+  return os.getenv('OSS_FUZZ_PROJECT_NAME')
+
 
 class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attributes
   """Object containing constant configuration for CIFuzz."""
@@ -48,16 +47,33 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     INTERNAL_GITHUB = 1  # OSS-Fuzz on GitHub actions.
     INTERNAL_GENERIC_CI = 2  # OSS-Fuzz on any CI.
 
+  def _get_config_from_event_path(self, event):
+    event_path = os.getenv('GITHUB_EVENT_PATH')
+    if not event_path:
+      return
+    with open(event_path, encoding='utf-8') as file_handle:
+      event_data = json.load(file_handle)
+    if event == 'push':
+      self.base_commit = event_data['before']
+
+    self.git_url = event_data['repository']['git_url']
+
   def __init__(self):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
-    self.project_name = os.getenv('OSS_FUZZ_PROJECT_NAME')
+    self.project_name = _get_project_name()
     self.project_repo_name = _get_project_repo_name()
     self.commit_sha = os.getenv('GITHUB_SHA')
 
     event = os.getenv('GITHUB_EVENT')
+    self.is_github = bool(event)
     self.pr_ref = _get_pr_ref(event)
-    self.base_commit = _get_base_commit(event)
+
+    self.git_url = None
+    self.base_commit = None
+    self._get_config_from_event_path(event)
+
+    self.base_commit = None
     self.base_ref = os.getenv('GITHUB_BASE_REF')
 
     self.workspace = os.getenv('GITHUB_WORKSPACE')
@@ -70,27 +86,19 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
 
-
   @property
   def platform(self):
     """Returns the platform CIFuzz is runnning on."""
-    if self.build_integration_path and self.project_src_path:
+    if self.build_integration_path:
       return self.Platform.EXTERNAL_GITHUB
-    if self.project_src_path:
-      return self.Platform.INTERNAL_GENERIC_CI
-    return self.Platform.INTERNAL_GITHUB
+    if self.is_github:
+      return self.Platform.INTERNAL_GITHUB
+    return self.Platform.INTERNAL_GENERIC_CI
 
 
 def _is_dry_run():
   """Returns True if configured to do a dry run."""
   return os.getenv('DRY_RUN').lower() == 'true'
-
-
-def get_before_commit(event_path):
-  """Returns the PR ref from |event_path|."""
-  with open(event_path, encoding='utf-8') as file_handle:
-    event = json.load(file_handle)
-  return event['before']
 
 
 def get_project_src_path(workspace):

@@ -24,11 +24,22 @@ import build_specified_commit
 import helper
 import repo_manager
 import retry
+import utils
 
 # pylint: disable=too-few-public-methods
 
 BuildPreparationResult = collections.namedtuple(
     'BuildPreparationResult', ['success', 'image_repo_path', 'repo_manager'])
+
+
+def fix_git_repo_for_diff(repo_manager_obj):
+  """Fixes git repos cloned by the "checkout" action so that diffing works on
+  them."""
+  command = [
+      'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
+      'refs/remotes/origin/master'
+  ]
+  return utils.execute(command, location=repo_manager_obj)
 
 
 class BaseCi:
@@ -38,11 +49,14 @@ class BaseCi:
     self.config = config
 
   def get_diff_base(self):
+    """Returns the base to diff against with git to get the change under
+    test."""
     raise NotImplementedError('Children must implement this method.')
 
   def get_change_under_test(self, repo_manager_obj):
     """Returns the changed files that need to be tested."""
     base = self.get_diff_base()
+    fix_git_repo_for_diff(repo_manager_obj)
     return repo_manager_obj.get_git_diff(base)
 
 
@@ -77,14 +91,19 @@ def checkout_specified_commit(repo_manager_obj, pr_ref, commit_sha):
         'Can not check out requested state %s. '
         'Using current repo state', pr_ref or commit_sha)
 
-class GithubCi:
+
+class GithubCiMixin:
+  """Mixin for Github based CI systems."""
+
   def get_diff_base(self):
+    """Returns the base to diff against with git to get the change under
+    test."""
     if self.config.pr_ref:
       return self.config.base_ref
     return self.config.base_commit
 
 
-class InternalGithub(BaseCi, GithubCi):
+class InternalGithub(GithubCiMixin, BaseCi):
   """Class representing CI for an OSS-Fuzz project on Github Actions."""
 
   def prepare_for_fuzzer_build(self):
@@ -140,19 +159,8 @@ class InternalGeneric(BaseCi):
     manager = repo_manager.RepoManager(self.config.project_src_path)
     return BuildPreparationResult(True, image_repo_path, manager)
 
-  def fix_git_repo_for_diff(self):
-    """Fixes git repos cloned by the "checkout" action so that diffing works on
-    them."""
-    command = [
-        'git', 'symbolic-ref', 'refs/remotes/origin/HEAD',
-        'refs/remotes/origin/master'
-    ]
-    return utils.execute(command, location=self.repo_manager.repo_dir)
-
   def get_diff_base(self):
-    self.fix_git_repo_for_diff()  # TODO(metzman): Look into removing this.
     return 'origin...'
-
 
 
 _IMAGE_BUILD_TRIES = 3
@@ -170,7 +178,7 @@ def build_external_project_docker_image(project_name, project_src,
   return helper.docker_build(command)
 
 
-class ExternalGithub(BaseCi, GithubCi):
+class ExternalGithub(GithubCiMixin, BaseCi):
   """Class representing CI for a non-OSS-Fuzz project on Github Actions."""
 
   def prepare_for_fuzzer_build(self):
@@ -179,13 +187,22 @@ class ExternalGithub(BaseCi, GithubCi):
     projects are expected to bring their own source code to CIFuzz. Returns True
     on success."""
     logging.info('Building external project.')
-    build_integration_path = os.path.join(self.config.project_src_path,
+    git_workspace = os.path.join(self.config.workspace, 'storage')
+    os.makedirs(git_workspace, exist_ok=True)
+    manager = repo_manager.clone_repo_and_get_manager(
+        self.config.git_url,
+        git_workspace,
+        repo_name=self.config.project_repo_name)
+
+    build_integration_path = os.path.join(manager.repo_dir,
                                           self.config.build_integration_path)
-    if not build_external_project_docker_image(self.config.project_name,
-                                               self.config.project_src_path,
-                                               build_integration_path):
+    if not build_external_project_docker_image(
+        self.config.project_name, manager.repo_dir, build_integration_path):
       logging.error('Failed to build external project.')
       return BuildPreparationResult(False, None, None)
-    manager = repo_manager.RepoManager(self.config.project_src_path)
+
+    checkout_specified_commit(manager, self.config.pr_ref,
+                              self.config.commit_sha)
+
     image_repo_path = os.path.join('/src', self.config.project_repo_name)
     return BuildPreparationResult(True, image_repo_path, manager)
