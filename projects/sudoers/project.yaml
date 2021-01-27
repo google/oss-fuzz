@@ -1,5 +1,5 @@
 homepage: "https://github.com/sudo-project"
-primary_contact: "david@adalogics.com"
+primary_contact: "sudo@sudo.ws"
 language: c
 auto_ccs :
   - "david@adalogics.com"
