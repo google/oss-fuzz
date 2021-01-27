@@ -58,7 +58,7 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
       logging.debug('base_commit: %s', self.base_commit)
     else:
       self.pr_ref = 'refs/pull/{0}/merge'.format(
-          event['pull_request']['number'])
+          event_data['pull_request']['number'])
       logging.debug('pr_ref: %s', self.pr_ref)
 
     self.git_url = event_data['repository']['git_url']
