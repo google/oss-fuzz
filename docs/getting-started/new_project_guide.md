@@ -322,7 +322,7 @@ You can build your docker image and fuzz targets locally, so you can test them b
 3. If you want to test changes against a particular fuzz target, run the following command:
 
     ```bash
-    $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
+    $ python infra/helper.py run_fuzzer --corpus-dir=<path-to-temp-corpus-dir> $PROJECT_NAME <fuzz_target>
     ```
 
 4. We recommend taking a look at your code coverage as a test to ensure that
