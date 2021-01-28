@@ -23,4 +23,5 @@ fuzzing_engines:
   - afl
 sanitizers:
   - address
+  - undefined
 main_repo: 'https://android.googlesource.com/platform/external/perfetto/'
