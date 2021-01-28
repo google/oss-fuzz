@@ -63,7 +63,7 @@ def create_config(**kwargs):
       'config_utils.get_project_src_path',
       return_value=None), mock.patch('config_utils._is_dry_run',
                                      return_value=True):
-    config = config_utils.Config()
+    config = config_utils.BuildFuzzersConfig()
 
   for key, value in kwargs.items():
     assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key

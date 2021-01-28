@@ -52,7 +52,7 @@ def main():
   Returns:
     0 on success or 1 on failure.
   """
-  config = config_utils.Config()
+  config = config_utils.BuildFuzzersConfig()
 
   if config.dry_run:
     # Sets the default return code on error to success.

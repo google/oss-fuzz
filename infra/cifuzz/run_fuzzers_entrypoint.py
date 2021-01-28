@@ -13,9 +13,9 @@
 # limitations under the License.
 """Runs specific OSS-Fuzz project's fuzzers for CI tools."""
 import logging
-import os
 import sys
 
+import config_utils
 import run_fuzzers
 
 # pylint: disable=c-extension-no-member
@@ -52,41 +52,26 @@ def main():
   Returns:
     0 on success or 1 on failure.
   """
-  fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
-  workspace = os.environ.get('GITHUB_WORKSPACE')
-  oss_fuzz_project_name = os.environ.get('OSS_FUZZ_PROJECT_NAME')
-  sanitizer = os.environ.get('SANITIZER').lower()
-
-  # Check if failures should not be reported.
-  dry_run = (os.environ.get('DRY_RUN').lower() == 'true')
-
+  config = config_utils.RunFuzzersConfig()
   # The default return code when an error occurs.
   returncode = 1
-  if dry_run:
-    # A testcase file is required in order for CIFuzz to surface bugs.
-    # If the file does not exist, the action will crash attempting to upload it.
-    # The dry run needs this file because it is set to upload a testcase both
-    # on successful runs and on failures.
-    out_dir = os.path.join(workspace, 'out', 'artifacts')
-    os.makedirs(out_dir, exist_ok=True)
-
+  if config.dry_run:
     # Sets the default return code on error to success.
     returncode = 0
 
-  if not workspace:
-    logging.error('This script needs to be run in the Github action context.')
+  if not config.workspace:
+    logging.error('This script needs to be run within Github actions.')
     return returncode
+
   # Run the specified project's fuzzers from the build.
-  run_status, bug_found = run_fuzzers.run_fuzzers(fuzz_seconds,
-                                                  workspace,
-                                                  oss_fuzz_project_name,
-                                                  sanitizer=sanitizer)
+  run_status, bug_found = run_fuzzers.run_fuzzers(config)
   if not run_status:
-    logging.error('Error occurred while running in workspace %s.', workspace)
+    logging.error('Error occurred while running in workspace %s.',
+                  config.workspace)
     return returncode
   if bug_found:
     logging.info('Bug found.')
-    if not dry_run:
+    if not config.dry_run:
       # Return 2 when a bug was found by a fuzzer causing the CI to fail.
       return 2
   return 0
