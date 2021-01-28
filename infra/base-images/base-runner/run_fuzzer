@@ -26,7 +26,7 @@ DEBUGGER=${DEBUGGER:-}
 FUZZER=$1
 shift
 
-CORPUS_DIR="/tmp/${FUZZER}_corpus"
+CORPUS_DIR=${CORPUS_DIR:-"/tmp/${FUZZER}_corpus"}
 
 SANITIZER=${SANITIZER:-}
 if [ -z $SANITIZER ]; then
@@ -63,8 +63,8 @@ function get_dictionary() {
   fi
 }
 
-rm -rf $CORPUS_DIR && mkdir $CORPUS_DIR
-rm -rf $FUZZER_OUT && mkdir $FUZZER_OUT
+rm -rf $CORPUS_DIR && mkdir -p $CORPUS_DIR
+rm -rf $FUZZER_OUT && mkdir -p $FUZZER_OUT
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 
