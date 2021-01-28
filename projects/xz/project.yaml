@@ -13,3 +13,4 @@ sanitizers:
   - dataflow
   - memory
   - undefined
+main_repo: 'https://git.tukaani.org/xz.git'

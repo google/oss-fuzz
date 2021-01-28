@@ -20,3 +20,4 @@ sanitizers:
   - dataflow
   - memory
   - undefined
+main_repo: 'https://github.com/facebook/zstd'

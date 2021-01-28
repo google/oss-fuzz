@@ -17,7 +17,7 @@
 
 NPROC=16  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib binutils-dev"
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev"
 apt-get install -y $LLVM_DEP_PACKAGES
 
 # Checkout
@@ -66,7 +66,7 @@ cd clang
 LLVM_SRC=$SRC/llvm-project
 
 # For manual bumping.
-OUR_LLVM_REVISION=llvmorg-12-init-5627-gf086e85e
+OUR_LLVM_REVISION=1185d3f43d2186fa9291fe7779abf48d9b962ef4
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
@@ -142,14 +142,14 @@ mkdir -p $WORK/msan
 cd $WORK/msan
 
 # https://github.com/google/oss-fuzz/issues/1099
-cat <<EOF > $WORK/msan/blacklist.txt
+cat <<EOF > $WORK/msan/blocklist.txt
 fun:__gxx_personality_*
 EOF
 
 cmake_llvm $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=Memory \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
-    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt"
+    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blocklist.txt"
 
 ninja -j $NPROC cxx
 ninja install-cxx

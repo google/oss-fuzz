@@ -49,7 +49,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
   """Tests the is_reproducible method in the fuzz_target.FuzzTarget class."""
 
   def setUp(self):
-    """Sets up dummy fuzz target to test is_reproducible method."""
+    """Sets up example fuzz target to test is_reproducible method."""
     self.fuzz_target_path = '/example/path'
     self.testcase_path = '/testcase'
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path,
@@ -115,7 +115,7 @@ class GetTestCaseTest(unittest.TestCase):
   """Tests get_testcase."""
 
   def setUp(self):
-    """Sets up dummy fuzz target to test get_testcase method."""
+    """Sets up example fuzz target to test get_testcase method."""
     self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
                                               '/example/outdir')
 
@@ -180,7 +180,7 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
   """Tests the is_crash_reportable method of FuzzTarget."""
 
   def setUp(self):
-    """Sets up dummy fuzz target to test is_crash_reportable method."""
+    """Sets up example fuzz target to test is_crash_reportable method."""
     self.fuzz_target_path = '/example/do_stuff_fuzzer'
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path, 100,
                                               '/example/outdir', 'example')
@@ -320,9 +320,11 @@ class DownloadOSSFuzzBuildDirIntegrationTest(unittest.TestCase):
 
   def test_invalid_build_dir(self):
     """Tests the download returns None when out_dir doesn't exist."""
-    test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
-                                         'not/a/dir', 'example')
-    self.assertIsNone(test_target.download_oss_fuzz_build())
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      invalid_dir = os.path.join(tmp_dir, 'not/a/dir')
+      test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+                                           invalid_dir, 'example')
+      self.assertIsNone(test_target.download_oss_fuzz_build())
 
 
 class DownloadUrlTest(unittest.TestCase):

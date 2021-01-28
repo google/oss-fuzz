@@ -57,6 +57,7 @@ RUN git clone --depth 1 https://github.com/guidovranken/libfuzzer-js.git
 RUN git clone --depth 1 https://github.com/brix/crypto-js.git
 RUN git clone --depth 1 https://github.com/LoupVaillant/Monocypher.git
 RUN git clone --depth 1 https://github.com/trezor/trezor-firmware.git
+RUN git clone --depth 1 https://github.com/Cyan4973/xxHash.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
 RUN wget https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2

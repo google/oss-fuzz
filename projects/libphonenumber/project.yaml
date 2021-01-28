@@ -8,3 +8,4 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
   - address
+main_repo: 'https://github.com/google/libphonenumber'

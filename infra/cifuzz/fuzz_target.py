@@ -14,7 +14,6 @@
 """A module to handle running a fuzz target for a specified amount of time."""
 import logging
 import os
-import posixpath
 import re
 import stat
 import subprocess
@@ -25,8 +24,7 @@ import urllib.error
 import urllib.request
 import zipfile
 
-# pylint: disable=wrong-import-position
-# pylint: disable=import-error
+# pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
@@ -36,9 +34,6 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
-
-# Location of google cloud storage for latest OSS-Fuzz builds.
-GCS_BASE_URL = 'https://storage.googleapis.com/'
 
 # Location of cluster fuzz builds on GCS.
 CLUSTERFUZZ_BUILDS = 'clusterfuzz-builds'
@@ -305,8 +300,8 @@ class FuzzTarget:
 
     version = VERSION_STRING.format(project_name=self.project_name,
                                     sanitizer=self.sanitizer)
-    version_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS, self.project_name,
-                           version)
+    version_url = utils.url_join(utils.GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
+                                 self.project_name, version)
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
@@ -335,8 +330,8 @@ class FuzzTarget:
     if not latest_build_str:
       return None
 
-    oss_fuzz_build_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
-                                  self.project_name, latest_build_str)
+    oss_fuzz_build_url = utils.url_join(utils.GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
+                                        self.project_name, latest_build_str)
     return download_and_unpack_zip(oss_fuzz_build_url, build_dir)
 
   def download_latest_corpus(self):
@@ -358,8 +353,8 @@ class FuzzTarget:
     if not self.target_name.startswith(qualified_name_prefix):
       project_qualified_fuzz_target_name = qualified_name_prefix + \
       self.target_name
-    corpus_url = url_join(
-        GCS_BASE_URL,
+    corpus_url = utils.url_join(
+        utils.GCS_BASE_URL,
         '{0}-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'.format(
             self.project_name), project_qualified_fuzz_target_name,
         CORPUS_ZIP_NAME)
@@ -427,15 +422,3 @@ def download_and_unpack_zip(url, out_dir):
       logging.error('Error unpacking zip from %s. Bad Zipfile.', url)
       return None
   return out_dir
-
-
-def url_join(*url_parts):
-  """Joins URLs together using the POSIX join method.
-
-  Args:
-    url_parts: Sections of a URL to be joined.
-
-  Returns:
-    Joined URL.
-  """
-  return posixpath.join(*url_parts)

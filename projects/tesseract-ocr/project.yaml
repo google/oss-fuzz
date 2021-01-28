@@ -4,3 +4,4 @@ primary_contact: "stjoweil@googlemail.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+main_repo: 'https://github.com/tesseract-ocr/tesseract'
