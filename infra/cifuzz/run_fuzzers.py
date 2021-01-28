@@ -44,7 +44,7 @@ def run_fuzzers(config):  # pylint: disable=too-many-locals
   logging.info('Using %s sanitizer.', config.sanitizer)
 
   out_dir = os.path.join(config.workspace, 'out')
-  artifacts_dir = os.path.join(config.out_dir, 'artifacts')
+  artifacts_dir = os.path.join(out_dir, 'artifacts')
   os.makedirs(artifacts_dir, exist_ok=True)
 
   if not config.fuzz_seconds or config.fuzz_seconds < 1:
