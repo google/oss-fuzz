@@ -18,84 +18,8 @@
 cd $GOPATH/src/github.com/filecoin-project/lotus
 make
 
-#mkdir fuzzing && cd fuzzing
-#cp $GOPATH/src/github.com/filecoin-project/fuzzing-lotus/oss-fuzz/cbor/cbor_fuzzer.go .
-#go clean -modcache
-
-# Build first batch of fuzzers
 compile_go_fuzzer github.com/filecoin-project/lotus/chain/types FuzzMessage fuzz_message gofuzz
 compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzBlockMsg fuzz_block_msg
 compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzBlockMsgStructural fuzz_block_msg_structural
 compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzBlockHeader fuzz_block_header
 compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzNodesForHeight fuzz_nodes_for_height
-
-# Build next batch of fuzzers
-declare -a arr=(
-	"FuzzHelloMessageRaw" 
-	"FuzzLatencyMessageRaw" 
-	"FuzzVoucherInfoRaw" 
-	"FuzzChannelInfoRaw" 
-	"FuzzPaymentInfoRaw" 
-	"FuzzSealedRefRaw" 
-	"FuzzSealedRefsRaw" 
-	"FuzzSealTicketRaw" 
-	"FuzzSealSeedRaw" 
-	"FuzzActorRaw" 
-	"FuzzTipSetRaw" 
-	"FuzzSignedMessageRaw" 
-	"FuzzMsgMetaRaw" 
-	"FuzzMessageReceiptRaw" 
-	"FuzzDealProposalRaw" 
-	"FuzzAddressRaw" 
-	"FuzzDeferredRaw" 
-	"FuzzKVRaw" 
-	"FuzzNodeRaw" 
-	"FuzzPointerRaw" 
-	"FuzzNodeAmtRaw" 
-	"FuzzRootAmtRaw" 
-	"FuzzTestEventRaw" 
-	"FuzzTestStateRaw" 
-	"FuzzMarketWithdrawBalanceParamsRaw" 
-	"FuzzPublishStorageDealsParamsRaw" 
-	"FuzzComputeDataCommitmentParamsRaw" 
-	"FuzzOnMinerSectorsTerminateParamsRaw" 
-	"FuzzCreateMinerParamsRaw" 
-	"FuzzEnrollCronEventParamsRaw" 
-	"FuzzMinerConstructorParamsRaw" 
-	"FuzzSubmitWindowedPoStParamsRaw" 
-	"FuzzTerminateSectorsParamsRaw" 
-	"FuzzChangePeerIDParamsRaw" 
-	"FuzzProveCommitSectorParamsRaw" 
-	"FuzzChangeWorkerAddressParamsRaw" 
-	"FuzzExtendSectorExpirationParamsRaw" 
-	"FuzzDeclareFaultsParamsRaw" 
-	"FuzzDeclareFaultsRecoveredParamsRaw" 
-	"FuzzReportConsensusFaultParamsRaw" 
-	"FuzzCheckSectorProvenParamsRaw" 
-	"FuzzMinerWithdrawBalanceParamsRaw" 
-	"FuzzInitConstructorParamsRaw" 
-	"FuzzExecParamsRaw" 
-	"FuzzAddVerifierParamsRaw" 
-	"FuzzAddVerifiedClientParamsRaw" 
-	"FuzzUseBytesParamsRaw" 
-	"FuzzRestoreBytesParamsRaw" 
-	"FuzzCronConstructorParamsRaw" 
-	"FuzzMultiSigConstructorParamsRaw" 
-	"FuzzProposeParamsRaw" 
-	"FuzzAddSignerParamsRaw" 
-	"FuzzRemoveSignerParamsRaw" 
-	"FuzzTxnIDParamsRaw" 
-	"FuzzChangeNumApprovalsThresholdParamsRaw" 
-	"FuzzSwapSignerParamsRaw" 
-	"FuzzPaychConstructorParamsRaw" 
-	"FuzzUpdateChannelStateParamsRaw" 
-	"FuzzModVerifyParamsRaw" 
-	"FuzzPaymentVerifyParamsRaw" 
-	"FuzzAwardBlockRewardParamsRaw"
-)
-
-for i in "${arr[@]}"
-do
-   echo "$i"
-   compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/oss-fuzz "$i" "$i"
-done
