@@ -56,10 +56,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     // main entry point for the fuzzer
     FILE *fd = fopen(filename, "rb");
-    if (fd != NULL) {
-        init_parser(filename, false, true);
-        sudoers_parse_ldif(&parsed_policy, fd, NULL, true);
+    if (fd == NULL) {
+        return 0;
     }
+
+    
+    init_parser(filename, false, true);
+    sudoers_parse_ldif(&parsed_policy, fd, NULL, true);
+    
     remove(filename);
     return 0;
 }
