@@ -59,7 +59,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (fd == NULL) {
         return 0;
     }
-
     
     init_parser(filename, false, true);
     sudoers_parse_ldif(&parsed_policy, fd, NULL, true);
