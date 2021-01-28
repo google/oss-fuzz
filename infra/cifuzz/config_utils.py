@@ -38,6 +38,30 @@ def _get_project_name():
   return os.getenv('OSS_FUZZ_PROJECT_NAME')
 
 
+def _is_dry_run():
+  """Returns True if configured to do a dry run."""
+  return os.getenv('DRY_RUN').lower() == 'true'
+
+
+def get_project_src_path(workspace):
+  """Returns the manually checked out path of the project's source if specified
+  or None."""
+  # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
+  # PROJECT_SRC_PATH.
+  path = os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
+  if not path:
+    logging.debug('No PROJECT_SRC_PATH.')
+    return path
+
+  logging.debug('PROJECT_SRC_PATH set.')
+  if os.path.isabs(path):
+    return path
+
+  # If |src| is not absolute, assume we are running in GitHub actions.
+  # TODO(metzman): Don't make this assumption.
+  return os.path.join(workspace, path)
+
+
 class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attributes
   """Object containing constant configuration for CIFuzz."""
 
@@ -66,6 +90,8 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
   def __init__(self):
     """Get the configuration from CIFuzz from the environment. These variables
     are set by GitHub or the user."""
+    # TODO(metzman): Some of this config is very CI-specific. Move it into the
+    # CI class.
     self.project_name = _get_project_name()
     self.project_repo_name = _get_project_repo_name()
     self.commit_sha = os.getenv('GITHUB_SHA')
@@ -98,27 +124,3 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     if self.is_github:
       return self.Platform.INTERNAL_GITHUB
     return self.Platform.INTERNAL_GENERIC_CI
-
-
-def _is_dry_run():
-  """Returns True if configured to do a dry run."""
-  return os.getenv('DRY_RUN').lower() == 'true'
-
-
-def get_project_src_path(workspace):
-  """Returns the manually checked out path of the project's source if specified
-  or None."""
-  # TODO(metzman): Get rid of MANUAL_SRC_PATH when Skia switches to
-  # PROJECT_SRC_PATH.
-  path = os.getenv('PROJECT_SRC_PATH', os.getenv('MANUAL_SRC_PATH'))
-  if not path:
-    logging.debug('No PROJECT_SRC_PATH.')
-    return path
-
-  logging.debug('PROJECT_SRC_PATH set.')
-  if os.path.isabs(path):
-    return path
-
-  # If |src| is not absolute, assume we are running in GitHub actions.
-  # TODO(metzman): Don't make this assumption.
-  return os.path.join(workspace, path)

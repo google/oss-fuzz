@@ -53,7 +53,7 @@ class BaseCi:
     test."""
     raise NotImplementedError('Children must implement this method.')
 
-  def get_change_under_test(self, repo_manager_obj):
+  def get_changed_code_under_test(self, repo_manager_obj):
     """Returns the changed files that need to be tested."""
     base = self.get_diff_base()
     fix_git_repo_for_diff(repo_manager_obj)
@@ -105,7 +105,7 @@ class GithubCiMixin:
     logging.debug('Diffing against base_commit: %s.', self.config.base_commit)
     return self.config.base_commit
 
-  def get_change_under_test(self, repo_manager_obj):
+  def get_changed_code_under_test(self, repo_manager_obj):
     """Returns the changed files that need to be tested."""
     if self.config.base_ref:
       repo_manager_obj.fetch_branch(self.config.base_ref)

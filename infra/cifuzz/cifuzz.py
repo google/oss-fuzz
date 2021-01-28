@@ -18,8 +18,8 @@ import logging
 import os
 import sys
 
-import continuous_integration
 import affected_fuzz_targets
+import continuous_integration
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -146,7 +146,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
 
   def remove_unaffected_fuzz_targets(self):
     """Removes the fuzzers unaffected by the patch."""
-    changed_files = self.ci_system.get_change_under_test(self.repo_manager)
+    changed_files = self.ci_system.get_changed_code_under_test(
+        self.repo_manager)
     affected_fuzz_targets.remove_unaffected_fuzz_targets(
         self.config.project_name, self.out_dir, changed_files,
         self.image_repo_path)
