@@ -1,0 +1,35 @@
+cargo-features = ['named-profiles']
+
+[package]
+name = "compiler-builtins-fuzz"
+version = "0.0.0"
+authors = ["Philippe Antoine <p.antoine@catenacyber.fr>"]
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.3"
+
+[dependencies.compiler_builtins]
+path = ".."
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "fuzz_f32"
+path = "harnesses/fuzz_f32.rs"
+
+[profile.release]
+opt-level = 3
+debug = true
+
+[profile.debug]
+inherits = "release"
+
+[profile.test]
+inherits = "release"

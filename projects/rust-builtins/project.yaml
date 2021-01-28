@@ -1,0 +1,9 @@
+homepage: "https://github.com/rust-lang/compiler-builtins"
+primary_contact: "aaronkutch@att.net"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
