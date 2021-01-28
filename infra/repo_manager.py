@@ -86,14 +86,16 @@ class RepoManager:
                          check_result=True)
     return datetime.datetime.fromtimestamp(int(out), tz=datetime.timezone.utc)
 
-  def get_git_diff(self):
+  def get_git_diff(self, base='origin...'):
     """Gets a list of files that have changed from the repo head.
 
     Returns:
       A list of changed file paths or None on Error.
     """
     self.fetch_unshallow()
-    out, err_msg, err_code = self.git(['diff', '--name-only', 'origin...'])
+    # Add '--' so that git knows we aren't talking about files.
+    command = ['diff', '--name-only', base, '--']
+    out, err_msg, err_code = self.git(command)
     if err_code:
       logging.error('Git diff failed with error message %s.', err_msg)
       return None
@@ -163,6 +165,11 @@ class RepoManager:
     if oldest_commit:
       commits.append(oldest_commit)
     return commits
+
+  def fetch_branch(self, branch):
+    """Fetches a remote branch from origin."""
+    return self.git(
+        ['fetch', 'origin', '{branch}:{branch}'.format(branch=branch)])
 
   def fetch_unshallow(self):
     """Gets the current git repository history."""
