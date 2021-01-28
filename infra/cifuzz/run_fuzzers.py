@@ -27,12 +27,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
 
-def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
-    fuzz_seconds,
-    workspace,
-    project_name,
-    sanitizer='address'):
-  """Runs all fuzzers for a specific OSS-Fuzz project.
+def run_fuzzers(config):  # pylint: disable=too-many-locals
+  """Runs fuzzers for a specific OSS-Fuzz project.
 
   Args:
     fuzz_seconds: The total time allotted for fuzzing.
@@ -45,18 +41,15 @@ def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
     (True if run was successful, True if bug was found).
   """
   # Validate inputs.
-  if not os.path.exists(workspace):
-    logging.error('Invalid workspace: %s.', workspace)
-    return False, False
+  logging.info('Using %s sanitizer.', config.sanitizer)
 
-  logging.info('Using %s sanitizer.', sanitizer)
-
-  out_dir = os.path.join(workspace, 'out')
+  out_dir = os.path.join(config.workspace, 'out')
   artifacts_dir = os.path.join(out_dir, 'artifacts')
   os.makedirs(artifacts_dir, exist_ok=True)
-  if not fuzz_seconds or fuzz_seconds < 1:
+
+  if not config.fuzz_seconds or config.fuzz_seconds < 1:
     logging.error('Fuzz_seconds argument must be greater than 1, but was: %s.',
-                  fuzz_seconds)
+                  config.fuzz_seconds)
     return False, False
 
   # Get fuzzer information.
@@ -68,19 +61,19 @@ def run_fuzzers(  # pylint: disable=too-many-arguments,too-many-locals
   # Run fuzzers for allotted time.
   total_num_fuzzers = len(fuzzer_paths)
   fuzzers_left_to_run = total_num_fuzzers
-  min_seconds_per_fuzzer = fuzz_seconds // total_num_fuzzers
+  min_seconds_per_fuzzer = config.fuzz_seconds // total_num_fuzzers
   for fuzzer_path in fuzzer_paths:
-    run_seconds = max(fuzz_seconds // fuzzers_left_to_run,
+    run_seconds = max(config.fuzz_seconds // fuzzers_left_to_run,
                       min_seconds_per_fuzzer)
 
     target = fuzz_target.FuzzTarget(fuzzer_path,
                                     run_seconds,
                                     out_dir,
-                                    project_name,
-                                    sanitizer=sanitizer)
+                                    config.project_name,
+                                    sanitizer=config.sanitizer)
     start_time = time.time()
     testcase, stacktrace = target.fuzz()
-    fuzz_seconds -= (time.time() - start_time)
+    config.fuzz_seconds -= (time.time() - start_time)
     if not testcase or not stacktrace:
       logging.info('Fuzzer %s, finished running.', target.target_name)
     else:

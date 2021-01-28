@@ -18,12 +18,14 @@ import tempfile
 import unittest
 from unittest import mock
 
+import config_utils
+import fuzz_target
+import run_fuzzers
+
 # pylint: disable=wrong-import-position
 INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(INFRA_DIR)
 
-import fuzz_target
-import run_fuzzers
 import test_helpers
 
 # NOTE: This integration test relies on
@@ -41,6 +43,22 @@ UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'undefined')
 UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
 
+def create_config(**kwargs):
+  """Creates a config object and then sets every attribute that is a key in
+  |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
+  attribute of Config."""
+  with mock.patch('os.path.basename', return_value=None), mock.patch(
+      'config_utils.get_project_src_path',
+      return_value=None), mock.patch('config_utils._is_dry_run',
+                                     return_value=True):
+    config = config_utils.RunFuzzersConfig()
+
+  for key, value in kwargs.items():
+    assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
+    setattr(config, key, value)
+  return config
+
+
 class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,invalid-name
   """Mixin for integration test classes that runbuild_fuzzers on builds of a
   specific sanitizer."""
@@ -52,10 +70,11 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
     """Calls run_fuzzers on fuzzer_dir and |sanitizer| and asserts
     the run succeeded and that no bug was found."""
     with test_helpers.temp_dir_copy(fuzzer_dir) as fuzzer_dir_copy:
-      run_success, bug_found = run_fuzzers.run_fuzzers(10,
-                                                       fuzzer_dir_copy,
-                                                       'curl',
-                                                       sanitizer=sanitizer)
+      config = create_config(fuzz_seconds=10,
+                             workspace=fuzzer_dir_copy,
+                             project_name='curl',
+                             sanitizer=sanitizer)
+      run_success, bug_found = run_fuzzers.run_fuzzers(config)
     self.assertTrue(run_success)
     self.assertFalse(bug_found)
 
@@ -100,8 +119,10 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
                            side_effect=[True, False]):
-      run_success, bug_found = run_fuzzers.run_fuzzers(10, TEST_FILES_PATH,
-                                                       EXAMPLE_PROJECT)
+      config = create_config(fuzz_seconds=10,
+                             workspace=TEST_FILES_PATH,
+                             project_name=EXAMPLE_PROJECT)
+      run_success, bug_found = run_fuzzers.run_fuzzers(config)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
@@ -112,11 +133,16 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                    'INTEGRATION_TESTS=1 not set')
   def test_old_bug_found(self):
     """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
+    config = create_config(fuzz_seconds=10,
+                           workspace=TEST_FILES_PATH,
+                           project_name=EXAMPLE_PROJECT)
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
                            side_effect=[True, True]):
-      run_success, bug_found = run_fuzzers.run_fuzzers(10, TEST_FILES_PATH,
-                                                       EXAMPLE_PROJECT)
+      config = create_config(fuzz_seconds=10,
+                             workspace=TEST_FILES_PATH,
+                             project_name=EXAMPLE_PROJECT)
+      run_success, bug_found = run_fuzzers.run_fuzzers(config)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
@@ -128,8 +154,10 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = run_fuzzers.run_fuzzers(10, tmp_dir,
-                                                       EXAMPLE_PROJECT)
+      config = create_config(fuzz_seconds=10,
+                             workspace=tmp_dir,
+                             project_name=EXAMPLE_PROJECT)
+      run_success, bug_found = run_fuzzers.run_fuzzers(config)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
@@ -138,15 +166,19 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      run_success, bug_found = run_fuzzers.run_fuzzers(0, tmp_dir,
-                                                       EXAMPLE_PROJECT)
+      config = create_config(fuzz_seconds=0,
+                             workspace=tmp_dir,
+                             project_name=EXAMPLE_PROJECT)
+      run_success, bug_found = run_fuzzers.run_fuzzers(config)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
   def test_invalid_out_dir(self):
     """Tests run_fuzzers with an invalid out directory."""
-    run_success, bug_found = run_fuzzers.run_fuzzers(10, 'not/a/valid/path',
-                                                     EXAMPLE_PROJECT)
+    config = create_config(fuzz_seconds=10,
+                           workspace='not/a/valid/path',
+                           project_name=EXAMPLE_PROJECT)
+    run_success, bug_found = run_fuzzers.run_fuzzers(config)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 

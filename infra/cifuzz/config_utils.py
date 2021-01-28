@@ -62,7 +62,10 @@ def get_project_src_path(workspace):
   return os.path.join(workspace, path)
 
 
-class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attributes
+# pylint: disable=too-few-public-methods,too-many-instance-attributes
+
+
+class BaseConfig:
   """Object containing constant configuration for CIFuzz."""
 
   class Platform(enum.Enum):
@@ -70,6 +73,38 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     EXTERNAL_GITHUB = 0  # Non-OSS-Fuzz on GitHub actions.
     INTERNAL_GITHUB = 1  # OSS-Fuzz on GitHub actions.
     INTERNAL_GENERIC_CI = 2  # OSS-Fuzz on any CI.
+
+  def __init__(self):
+    self.workspace = os.getenv('GITHUB_WORKSPACE')
+    self.project_name = _get_project_name()
+    # Check if failures should not be reported.
+    self.dry_run = _is_dry_run()
+    self.sanitizer = _get_sanitizer()
+    self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+    event_path = os.getenv('GITHUB_EVENT_PATH')
+    self.is_github = bool(event_path)
+    logging.debug('Is github: %s.', self.is_github)
+
+  @property
+  def platform(self):
+    """Returns the platform CIFuzz is runnning on."""
+    if self.build_integration_path:
+      return self.Platform.EXTERNAL_GITHUB
+    if self.is_github:
+      return self.Platform.INTERNAL_GITHUB
+    return self.Platform.INTERNAL_GENERIC_CI
+
+
+class RunFuzzersConfig(BaseConfig):
+  """Class containing constant configuration for running fuzzers in CIFuzz."""
+
+  def __init__(self):
+    super().__init__()
+    self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
+
+
+class BuildFuzzersConfig(BaseConfig):
+  """Class containing constant configuration for building fuzzers in CIFuzz."""
 
   def _get_config_from_event_path(self, event):
     event_path = os.getenv('GITHUB_EVENT_PATH')
@@ -92,13 +127,10 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     are set by GitHub or the user."""
     # TODO(metzman): Some of this config is very CI-specific. Move it into the
     # CI class.
-    self.project_name = _get_project_name()
+    super().__init__()
     self.project_repo_name = _get_project_repo_name()
     self.commit_sha = os.getenv('GITHUB_SHA')
-
     event = os.getenv('GITHUB_EVENT_NAME')
-    self.is_github = bool(event)
-    logging.debug('Is github: %s.', self.is_github)
 
     self.pr_ref = None
     self.git_url = None
@@ -106,21 +138,10 @@ class Config:  # pylint: disable=too-few-public-methods,too-many-instance-attrib
     self._get_config_from_event_path(event)
 
     self.base_ref = os.getenv('GITHUB_BASE_REF')
-    self.workspace = os.getenv('GITHUB_WORKSPACE')
     self.project_src_path = get_project_src_path(self.workspace)
 
-    self.sanitizer = _get_sanitizer()
-    self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
-    # Check if failures should not be reported.
-    self.dry_run = _is_dry_run()
 
-  @property
-  def platform(self):
-    """Returns the platform CIFuzz is runnning on."""
-    if self.build_integration_path:
-      return self.Platform.EXTERNAL_GITHUB
-    if self.is_github:
-      return self.Platform.INTERNAL_GITHUB
-    return self.Platform.INTERNAL_GENERIC_CI
+    self.keep_unaffected_fuzz_targets = bool(
+        os.getenv('KEEP_UNAFFECTED_FUZZERS', 'False'))

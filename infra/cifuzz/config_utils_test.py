@@ -26,14 +26,14 @@ import test_helpers
 # pylint: disable=no-self-use
 
 
-class ConfigTest(unittest.TestCase):
-  """Tests for Config."""
+class BuildFuzzersConfigTest(unittest.TestCase):
+  """Tests for BuildFuzzersConfig."""
 
   def setUp(self):
     test_helpers.patch_environ(self)
 
   def _create_config(self):
-    return config_utils.Config()
+    return config_utils.BuildFuzzersConfig()
 
   def test_base_ref(self):
     """Tests that base_ref is set properly."""
