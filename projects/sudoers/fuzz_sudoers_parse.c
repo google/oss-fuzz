@@ -39,30 +39,27 @@ limitations under the License.
 #include "cvtsudoers.h"
 #include <gram.h>
 
-
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     if (size < 5) {
         return 0;
     }
 
     char filename[256];
-    sprintf(filename, "/tmp/libfuzzer.%d", getpid());
+    sprintf(filename, "/tmp/fuzz-sudoers.XXXXXX");
 
-    FILE *fp = fopen(filename, "wb");
-    if (!fp) {
+    int fp = mkstemp(filename);
+    if (fp < 0) {
         return 0;
     }
-    fwrite(data, size, 1, fp);
-    fclose(fp);
+    write(fp, data, size);
+    close(fp);
 
     // main entry point for the fuzzer
-    fp = fopen(filename, "rb");
-    init_parser(filename, false, true);
-    sudoers_parse_ldif(&parsed_policy, fp, NULL, true);
-
-    //fclose(fp);
-    unlink(filename);
-
+    FILE *fd = fopen(filename, "rb");
+    if (fd != NULL) {
+        init_parser(filename, false, true);
+        sudoers_parse_ldif(&parsed_policy, fd, NULL, true);
+    }
+    remove(filename);
     return 0;
 }
-

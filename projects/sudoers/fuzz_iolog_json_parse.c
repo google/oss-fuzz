@@ -43,8 +43,6 @@ limitations under the License.
 
 #include "iolog_json.h"
 
-
-
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     char filename[256];
     sprintf(filename, "/tmp/fuzz-iolog.XXXXXX", getpid());
@@ -68,7 +66,5 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     fclose(fd);
 
     remove(filename);
-
     return 0;
 }
-
