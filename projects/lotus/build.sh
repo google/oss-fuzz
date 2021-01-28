@@ -23,7 +23,7 @@ make
 #go clean -modcache
 
 # Build first batch of fuzzers
-compile_go_fuzzer github.com/filecoin-project/lotus/chain/types FuzzMessage fuzz_message
+compile_go_fuzzer github.com/filecoin-project/lotus/chain/types FuzzMessage fuzz_message gofuzz
 compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzBlockMsg fuzz_block_msg
 compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzBlockMsgStructural fuzz_block_msg_structural
 compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzBlockHeader fuzz_block_header
