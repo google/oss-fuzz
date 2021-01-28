@@ -19,5 +19,5 @@ RUN git clone --depth 1 https://github.com/rust-lang/compiler-builtins
 WORKDIR $SRC/compiler-builtins
 
 COPY build.sh $SRC
-COPY Cargo.toml $SRC/compiler-builtins/fuzz
-COPY fuzz*.rs $SRC/compiler-builtins/fuzz/harnesses
+COPY Cargo.toml $SRC/compiler-builtins/fuzz/
+COPY fuzz*.rs $SRC/compiler-builtins/fuzz/harnesses/

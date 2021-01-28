@@ -7,3 +7,4 @@ fuzzing_engines:
 language: rust
 auto_ccs:
   - "p.antoine@catenacyber.fr"
+main_repo: "https://github.com/rust-lang/compiler-builtins"
