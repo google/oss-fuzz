@@ -41,6 +41,10 @@ limitations under the License.
 
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    if (size < 5) {
+        return 0;
+    }
+
     char filename[256];
     sprintf(filename, "/tmp/libfuzzer.%d", getpid());
 
