@@ -109,7 +109,7 @@ class GithubCiMixin:
     """Returns the changed files that need to be tested."""
     if self.config.base_ref:
       repo_manager_obj.fetch_branch(self.config.base_ref)
-    return super().get_change_under_test(repo_manager_obj)
+    return super().get_changed_code_under_test(repo_manager_obj)
 
 
 class InternalGithub(GithubCiMixin, BaseCi):
