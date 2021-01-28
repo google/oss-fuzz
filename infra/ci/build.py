@@ -37,10 +37,8 @@ LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
 
 def get_changed_files_output():
   """Returns the output of a git command that discovers changed files."""
-  main_branch = subprocess.check_output(
-      ['git', 'rev-parse', '--abbrev-ref', 'origin/HEAD']).strip().decode()
   branch_commit_hash = subprocess.check_output(
-      ['git', 'merge-base', 'FETCH_HEAD', main_branch]).strip().decode()
+      ['git', 'merge-base', 'FETCH_HEAD', 'origin/HEAD']).strip().decode()
 
   return subprocess.check_output(
       ['git', 'diff', '--name-only', branch_commit_hash + '..']).decode()
