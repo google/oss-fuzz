@@ -43,27 +43,28 @@ limitations under the License.
 
 #include "iolog_json.h"
 
-
-
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     char filename[256];
-    sprintf(filename, "/tmp/libfuzzer.%d", getpid());
-
-    FILE *fp = fopen(filename, "wb");
-    if (!fp) {
+    sprintf(filename, "/tmp/fuzz-iolog.XXXXXX", getpid());
+  
+    int fp = mkstemp(filename);
+    if (fp < 0) {
         return 0;
     }
-    fwrite(data, size, 1, fp);
-    fclose(fp);
+    write(fp, data, size);
+    close(fp);
 
-    fp = fopen(filename, "rb");
-    struct json_object root;
-    if (iolog_parse_json(fp, "libfuzzer_input.txt", &root)) {
-        free_json_items(&root.items);
+    FILE *fd = fopen(filename,"rb");
+    if (fd == -1) {
+        return 0;
     }
 
-    unlink(filename);
+    struct json_object root;
+    if (iolog_parse_json(fd, filename, &root)) {
+        free_json_items(&root.items);
+    }
+    fclose(fd);
 
+    remove(filename);
     return 0;
 }
-
