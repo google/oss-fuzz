@@ -76,7 +76,7 @@ class FuzzTarget:
     project_name: The name of the relevant OSS-Fuzz project.
   """
 
-  #pylint: disable=too-many-arguments
+  # pylint: disable=too-many-arguments
   def __init__(self,
                target_path,
                duration,
@@ -94,9 +94,12 @@ class FuzzTarget:
       out_dir: The location of where the output from crashes should be stored.
       project_name: The name of the relevant OSS-Fuzz project.
     """
-    self.target_name = os.path.basename(target_path)
-    self.duration = int(duration)
+    # TODO(metzman): Get rid of sanitizer defaulting to address. config_utils
+    # implements this functionality. Also look into why project_name defaults to
+    # None. Maybe accept config and get those values from there.
     self.target_path = target_path
+    self.target_name = os.path.basename(self.target_path)
+    self.duration = int(duration)
     self.out_dir = out_dir
     self.project_name = project_name
     self.sanitizer = sanitizer
@@ -108,6 +111,7 @@ class FuzzTarget:
       (testcase, stacktrace, time in seconds) on crash or
       (None, None, time in seconds) on timeout or error.
     """
+    # TODO(metzman): Change return value to a FuzzResult object.
     logging.info('Fuzzer %s, started.', self.target_name)
     docker_container = utils.get_container_name()
     command = ['docker', 'run', '--rm', '--privileged']
