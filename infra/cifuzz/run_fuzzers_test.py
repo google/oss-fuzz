@@ -19,6 +19,7 @@ import unittest
 from unittest import mock
 
 import parameterized
+from pyfakefs import fake_filesystem_unittest
 
 import config_utils
 import fuzz_target
@@ -113,10 +114,7 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
   """Tests BaseFuzzTargetRunner."""
 
   def _create_runner(self, **kwargs):  # pylint: disable=no-self-use
-    defaults = {
-        'fuzz_seconds': FUZZ_SECONDS,
-        'project_name': EXAMPLE_PROJECT
-    }
+    defaults = {'fuzz_seconds': FUZZ_SECONDS, 'project_name': EXAMPLE_PROJECT}
     for default_key, default_value in defaults.items():
       if default_key not in kwargs:
         kwargs[default_key] = default_value
@@ -134,7 +132,7 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
   def test_initialize_invalid_fuzz_seconds(self, fuzz_seconds):
     """Tests initialize fails with an invalid fuzz seconds."""
     expected_error_args = ('Fuzz_seconds argument must be greater than 1, '
-                            'but was: %s.', fuzz_seconds)
+                           'but was: %s.', fuzz_seconds)
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
@@ -161,8 +159,9 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
       artifacts_path = os.path.join(out_path, 'artifacts')
       with open(artifacts_path, 'w') as artifacts_handle:
         artifacts_handle.write('fake')
-      expected_error_args = ('Artifacts path: %s is not an empty directory.',
-                             artifacts_path)
+      expected_error_args = (
+          'Artifacts path: %s exists and is not an empty directory.',
+          artifacts_path)
       self._test_initialize_fail(expected_error_args, workspace=tmp_dir)
 
   def test_initialize_bad_artifacts(self):
@@ -175,7 +174,8 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
       with open(artifact_path, 'w') as artifact_handle:
         artifact_handle.write('fake')
       expected_error_args = (
-          'Artifacts path: %s is not an empty directory.', artifacts_path)
+          'Artifacts path: %s exists and is not an empty directory.',
+          artifacts_path)
       self._test_initialize_fail(expected_error_args, workspace=tmp_dir)
 
   @mock.patch('utils.get_fuzz_targets')
@@ -207,16 +207,14 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
       mocked_log_error.assert_not_called()
       self.assertTrue(os.path.isdir(os.path.join(out_path, 'artifacts')))
 
-
   def test_initialize_no_fuzz_targets(self):
     """Tests initialize with no fuzz targets."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.makedirs(out_path)
       expected_error_args = ('No fuzz targets were found in out directory: %s.',
-                             out_dir)
+                             out_path)
       self._test_initialize_fail(expected_error_args, workspace=tmp_dir)
-
 
   def test_get_fuzz_target_artifact(self):
     """Tests that get_fuzz_target_artifact works as intended."""
@@ -227,9 +225,93 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
     target = mock.MagicMock()
     target_name = 'target_name'
     target.target_name = target_name
-    fuzz_target_artifact = runner.get_fuzz_target_artifact(target, artifact_name)
+    fuzz_target_artifact = runner.get_fuzz_target_artifact(
+        target, artifact_name)
     expected_fuzz_target_artifact = 'artifacts-dir/target_name-artifact-name'
     self.assertEqual(fuzz_target_artifact, expected_fuzz_target_artifact)
+
+
+class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
+  """Tests that CiFuzzTargetRunner works as intended."""
+
+  def setUp(self):
+    self.setUpPyfakefs()
+
+  @mock.patch('run_fuzzers.CiFuzzTargetRunner.run_fuzz_target')
+  @mock.patch('run_fuzzers.CiFuzzTargetRunner.create_fuzz_target_obj')
+  def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
+                                  mocked_run_fuzz_target):
+    """Tests that run_fuzz_targets quits on the first crash it finds."""
+    workspace = 'workspace'
+    out_path = os.path.join(workspace, 'out')
+    self.fs.create_dir(out_path)
+    config = _create_config(fuzz_seconds=FUZZ_SECONDS,
+                            workspace=workspace,
+                            project_name=EXAMPLE_PROJECT)
+    runner = run_fuzzers.CiFuzzTargetRunner(config)
+
+    with mock.patch('utils.get_fuzz_targets') as mocked_get_fuzz_targets:
+      mocked_get_fuzz_targets.return_value = ['target1', 'target2']
+      runner.initialize()
+    testcase = os.path.join(workspace, 'testcase')
+    self.fs.create_file(testcase)
+    stacktrace = b'stacktrace'
+    mocked_run_fuzz_target.return_value = (testcase, stacktrace)
+    magic_mock = mock.MagicMock()
+    magic_mock.target_name = 'target1'
+    mocked_create_fuzz_target_obj.return_value = magic_mock
+    self.assertTrue(runner.run_fuzz_targets())
+    self.assertIn('target1-testcase', os.listdir(runner.artifacts_dir))
+    self.assertEqual(mocked_run_fuzz_target.call_count, 1)
+
+
+class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
+  """Tests that CiFuzzTargetRunner works as intended."""
+
+  def setUp(self):
+    self.setUpPyfakefs()
+
+  @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
+  @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
+  def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
+                                  mocked_run_fuzz_target):
+    """Tests that run_fuzz_targets quits on the first crash it finds."""
+    workspace = 'workspace'
+    out_path = os.path.join(workspace, 'out')
+    self.fs.create_dir(out_path)
+    config = _create_config(fuzz_seconds=FUZZ_SECONDS,
+                            workspace=workspace,
+                            project_name=EXAMPLE_PROJECT)
+    runner = run_fuzzers.BatchFuzzTargetRunner(config)
+
+    with mock.patch('utils.get_fuzz_targets') as mocked_get_fuzz_targets:
+      mocked_get_fuzz_targets.return_value = ['target1', 'target2']
+      runner.initialize()
+    testcase1 = os.path.join(workspace, 'testcase1')
+    testcase2 = os.path.join(workspace, 'testcase2')
+    self.fs.create_file(testcase1)
+    self.fs.create_file(testcase2)
+    stacktrace = b'stacktrace'
+    call_count = 0
+
+    def mock_run_fuzz_target(_):
+      nonlocal call_count
+      if call_count == 0:
+        testcase = testcase1
+      elif call_count == 1:
+        testcase = testcase2
+      assert call_count != 2
+      call_count += 1
+      return testcase, stacktrace
+
+    mocked_run_fuzz_target.side_effect = mock_run_fuzz_target
+    magic_mock = mock.MagicMock()
+    magic_mock.target_name = 'target1'
+    mocked_create_fuzz_target_obj.return_value = magic_mock
+    self.assertTrue(runner.run_fuzz_targets())
+    self.assertIn('target1-testcase', os.listdir(runner.artifacts_dir))
+    self.assertEqual(mocked_run_fuzz_target.call_count, 2)
+
 
 class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                        unittest.TestCase):

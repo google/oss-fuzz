@@ -63,7 +63,7 @@ class BaseFuzzTargetRunner:
       os.mkdir(self.artifacts_dir)
     elif (not os.path.isdir(self.artifacts_dir) or
           os.listdir(self.artifacts_dir)):
-      logging.error('Artifacts path: %s is not an empty directory.',
+      logging.error('Artifacts path: %s exists and is not an empty directory.',
                     self.artifacts_dir)
       return False
 
@@ -93,6 +93,14 @@ class BaseFuzzTargetRunner:
     artifact_name = target.target_name + '-' + artifact_name
     return os.path.join(self.artifacts_dir, artifact_name)
 
+  def create_fuzz_target_obj(self, target_path, run_seconds):
+    """Returns a fuzz target object."""
+    return fuzz_target.FuzzTarget(target_path,
+                                  run_seconds,
+                                  self.out_dir,
+                                  self.config.project_name,
+                                  sanitizer=self.config.sanitizer)
+
   def run_fuzz_targets(self):
     """Runs fuzz targets. Returns True if a bug was found."""
     fuzzers_left_to_run = len(self.fuzz_target_paths)
@@ -106,11 +114,7 @@ class BaseFuzzTargetRunner:
       run_seconds = max(fuzz_seconds // fuzzers_left_to_run,
                         min_seconds_per_fuzzer)
 
-      target = fuzz_target.FuzzTarget(target_path,
-                                      run_seconds,
-                                      self.out_dir,
-                                      self.config.project_name,
-                                      sanitizer=self.config.sanitizer)
+      target = self.create_fuzz_target_obj(target_path, run_seconds)
       start_time = time.time()
       testcase, stacktrace = self.run_fuzz_target(target)
       fuzz_seconds -= time.time() - start_time
