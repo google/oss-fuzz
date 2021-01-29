@@ -1,0 +1,10 @@
+homepage: "https://godoc.org/inet.af/netaddr"
+main_repo: "https://godoc.org/inet.af/netaddr"
+primary_contact: ""
+auto_ccs :
+  - "Adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
