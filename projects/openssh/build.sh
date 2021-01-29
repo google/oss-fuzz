@@ -58,6 +58,10 @@ $CXX $CXXFLAGS -std=c++11 $EXTRA_CFLAGS -I. -L. -Lopenbsd-compat -g \
 	regress/misc/fuzz-harness/sshsigopt_fuzz.cc -o $OUT/sshsigopt_fuzz \
 	sshsig.o -lssh -lopenbsd-compat $COMMON $STATIC_CRYPTO \
 	$LIB_FUZZING_ENGINE
+$CXX $CXXFLAGS -std=c++11 $EXTRA_CFLAGS -I. -L. -Lopenbsd-compat -g \
+	regress/misc/fuzz-harness/kex_fuzz.cc -o $OUT/kex_fuzz \
+	-lssh -lopenbsd-compat -lz $COMMON $STATIC_CRYPTO \
+	$LIB_FUZZING_ENGINE
 
 # Prepare seed corpora
 CASES="$SRC/openssh-fuzz-cases"
@@ -67,3 +71,4 @@ CASES="$SRC/openssh-fuzz-cases"
 (set -e ; cd ${CASES}/authopt ; zip -r $OUT/authopt_fuzz_seed_corpus.zip .)
 (set -e ; cd ${CASES}/sshsig ; zip -r $OUT/sshsig_fuzz_seed_corpus.zip .)
 (set -e ; cd ${CASES}/sshsigopt ; zip -r $OUT/sshsigopt_fuzz_seed_corpus.zip .)
+(set -e ; cd ${CASES}/kex ; zip -r $OUT/kex_fuzz_seed_corpus.zip .)
