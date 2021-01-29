@@ -15,6 +15,10 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
+  run-fuzzers-mode:
+    description: 'The mode to run the fuzzers with.'
+    required: false
+    default: 'ci'
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
