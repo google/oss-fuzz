@@ -43,7 +43,7 @@ STACKTRACE_END_MARKERS = [
 ]
 
 
-def save_fuzzer_output(fuzzer_output, file_path):
+def parse_fuzzer_output(fuzzer_output, file_path):
   """Parses the fuzzer output from a fuzz target binary.
 
   Args:
