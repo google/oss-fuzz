@@ -43,12 +43,12 @@ STACKTRACE_END_MARKERS = [
 ]
 
 
-def parse_fuzzer_output(fuzzer_output, file_path):
+def parse_fuzzer_output(fuzzer_output, parsed_output_file_path):
   """Parses the fuzzer output from a fuzz target binary.
 
   Args:
     fuzzer_output: A fuzz target binary output string to be parsed.
-    file_path: The location to store the parsed output file.
+    parsed_output_file_path: The location to store the parsed output.
   """
   # Get index of key file points.
   for marker in STACKTRACE_TOOL_MARKERS:
@@ -72,5 +72,5 @@ def parse_fuzzer_output(fuzzer_output, file_path):
     return
 
   # Write sections of fuzzer output to specific files.
-  with open(file_path, 'ab') as summary_handle:
+  with open(parsed_output_file_path, 'ab') as summary_handle:
     summary_handle.write(summary_str)

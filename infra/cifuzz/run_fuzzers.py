@@ -112,16 +112,24 @@ class BaseFuzzTargetRunner:
     min_seconds_per_fuzzer = fuzz_seconds // fuzzers_left_to_run
     bug_found = False
     for target_path in self.fuzz_target_paths:
+      # By doing this, we can ensure that every fuzz target runs for at least
+      # min_seconds_per_fuzzer, but that other fuzzers will have longer to run
+      # if one ends early.
       run_seconds = max(fuzz_seconds // fuzzers_left_to_run,
                         min_seconds_per_fuzzer)
 
       target = self.create_fuzz_target_obj(target_path, run_seconds)
       start_time = time.time()
       testcase, stacktrace = self.run_fuzz_target(target)
+
+      # It's OK if this goes negative since we take max when determining
+      # run_seconds.
       fuzz_seconds -= time.time() - start_time
+
       fuzzers_left_to_run -= 1
       if not testcase or not stacktrace:
-        logging.info('Fuzzer %s, finished running.', target.target_name)
+        logging.info('Fuzzer %s finished running without crashes.',
+                     target.target_name)
         continue
 
       # We found a bug in the fuzz target.
