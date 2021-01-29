@@ -27,8 +27,7 @@ $CC $CFLAGS -I$SRC/utf8proc \
     $SRC/utf8proc/test/fuzzer.c \
     -o $OUT/utf8proc_fuzzer \
     $LIB_FUZZING_ENGINE $SRC/utf8proc/build/libutf8proc.a
-	
-This conversation was marked as resolved by randy408
+
 
 find $SRC/utf8proc/test -name "*.txt" | \
      xargs zip $OUT/utf8proc_fuzzer_seed_corpus.zip
