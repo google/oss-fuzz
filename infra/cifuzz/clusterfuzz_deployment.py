@@ -12,12 +12,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for interacting with the "ClusterFuzz deployment."""
+import logging
+import os
+import sys
+import tempfile
+import time
+import urllib.error
+import urllib.request
+import zipfile
+
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import utils
+
 
 class BaseClusterFuzzDeployment:
   """Base class for ClusterFuzz deployments."""
 
   def __init__(self, config):
     self.config = config
+
+  def download_latest_build(self, target_name, out_dir):
+    """Downloads the latest build from ClusterFuzz.
+
+    Returns:
+      A path to where the OSS-Fuzz build was stored, or None if it wasn't.
+    """
+    raise NotImplementedError('Child class must implement method.')
+
+  def download_corpus(self, target_name, out_dir):
+    """Downloads the corpus for |target_name| from ClusterFuzz to |out_dir|.
+
+    Returns:
+      A path to where the OSS-Fuzz build was stored, or None if it wasn't.
+    """
+    raise NotImplementedError('Child class must implement method.')
+
+
+class ClusterFuzzLite(BaseClusterFuzzDeployment):
+  """Class representing a deployment of ClusterFuzzLite."""
+
+  def download_latest_build(self, target_name, out_dir):
+    return None
+
+  def download_corpus(self, target_name, out_dir):
+    return None
+
 
 class OSSFuzz(BaseClusterFuzzDeployment):
   """The OSS-Fuzz ClusterFuzz deployment."""
@@ -37,8 +77,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     Returns:
       A string with the latest build version or None.
     """
-    version_file = VERSION_STRING.format(project_name=self.config.project_name,
-                                    sanitizer=self.config.sanitizer)
+    version_file = self.VERSION_STRING.format(
+        project_name=self.config.project_name, sanitizer=self.config.sanitizer)
     version_url = utils.url_join(utils.GCS_BASE_URL, self.CLUSTERFUZZ_BUILDS,
                                  self.config.project_name, version_file)
     try:
@@ -49,11 +89,11 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       return None
     return response.read().decode()
 
-  def download_oss_fuzz_build(self, target_name, out_dir):
+  def download_latest_build(self, target_name, out_dir):
     """Downloads the latest OSS-Fuzz build from GCS.
 
     Returns:
-      A path to where the OSS-Fuzz build is located, or None.
+      A path to where the OSS-Fuzz build was stored, or None if it wasn't.
     """
     # !!! This shouldn't be fuzz target specific.
     # !!! Why end with project_name?
@@ -68,16 +108,17 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     if not latest_build_name:
       return None
 
-    oss_fuzz_build_url = utils.url_join(utils.GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
-                                        self.project_name, latest_build_name)
+    oss_fuzz_build_url = utils.url_join(utils.GCS_BASE_URL,
+                                        self.CLUSTERFUZZ_BUILDS,
+                                        self.config.project_name,
+                                        latest_build_name)
     if download_and_unpack_zip(oss_fuzz_build_url, build_dir):
       return build_dir
 
     return None
 
-
-  def download_latest_corpus(self, target_name, out_dir):
-    """Downloads the latest OSS-Fuzz corpus for the target from google cloud.
+  def download_corpus(self, target_name, out_dir):
+    """Downloads the latest OSS-Fuzz corpus for the target.
 
     Returns:
       The local path to to corpus or None if download failed.
@@ -89,8 +130,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     qualified_name_prefix = '%s_' % self.config.project_name
 
     if not target_name.startswith(qualified_name_prefix):
-      project_qualified_fuzz_target_name = (qualified_name_prefix +
-                                            target_name)
+      project_qualified_fuzz_target_name = (qualified_name_prefix + target_name)
 
     corpus_url = utils.url_join(
         utils.GCS_BASE_URL,
@@ -102,7 +142,6 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       return corpus_dir
 
     return None
-
 
 
 def download_url(url, filename, num_retries=3):
@@ -168,3 +207,11 @@ def download_and_unpack_zip(url, extract_directory):
       return False
 
   return True
+
+
+def get_clusterfuzz_deployment(config):
+  """Returns object reprsenting deployment of ClusterFuzz used by |config|."""
+  if (config.platform == config.Platform.INTERNAL_GENERIC_CI or
+      config.platform == config.Platform.INTERNAL_GITHUB):
+    return OSSFuzz(config)
+  return ClusterFuzzLite(config)

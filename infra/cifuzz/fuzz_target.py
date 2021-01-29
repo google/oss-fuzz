@@ -18,11 +18,6 @@ import re
 import stat
 import subprocess
 import sys
-import tempfile
-import time
-import urllib.error
-import urllib.request
-import zipfile
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -40,7 +35,6 @@ REPRODUCE_ATTEMPTS = 10
 
 # Seconds on top of duration until a timeout error is raised.
 BUFFER_TIME = 10
-
 
 # Log message if we can't check if crash reproduces on an recent build.
 COULD_NOT_TEST_ON_RECENT_MESSAGE = (
@@ -63,10 +57,8 @@ class FuzzTarget:
     out_dir: The location of where output artifacts are stored.
   """
 
-  def __init__(self,
-               target_path,
-               duration,
-               out_dir,
+  # pylint: disable=too-many-arguments
+  def __init__(self, target_path, duration, out_dir, clusterfuzz_deployment,
                config):
     """Represents a single fuzz target.
 
@@ -74,12 +66,15 @@ class FuzzTarget:
       target_path: The location of the fuzz target binary.
       duration: The length of time  in seconds the target should run.
       out_dir: The location of where the output from crashes should be stored.
+      clusterfuzz_deployment: The object representing the ClusterFuzz
+          deployment.
       config: The config of this project.
     """
     self.target_path = target_path
     self.target_name = os.path.basename(self.target_path)
     self.duration = int(duration)
     self.out_dir = out_dir
+    self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
 
   def fuzz(self):
@@ -102,9 +97,9 @@ class FuzzTarget:
 
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
-        'SANITIZER=' + self.config.sanitizer,
-        '-e', 'CIFUZZ=True', '-e', 'RUN_FUZZER_MODE=interactive',
-        'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c'
+        'SANITIZER=' + self.config.sanitizer, '-e', 'CIFUZZ=True', '-e',
+        'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
+        'bash', '-c'
     ]
 
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
@@ -112,7 +107,7 @@ class FuzzTarget:
         options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
 
     # If corpus can be downloaded use it for fuzzing.
-    latest_corpus_path = self.clusterfuzz_deployment.download_latest_corpus(
+    latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name, self.out_dir)
     if latest_corpus_path:
       run_fuzzer_command = run_fuzzer_command + ' ' + latest_corpus_path
@@ -216,8 +211,8 @@ class FuzzTarget:
       raise ReproduceError('Testcase %s not found.' % testcase)
 
     try:
-      reproducible_on_code_change = self.is_reproducible(testcase,
-                                                      self.target_path)
+      reproducible_on_code_change = self.is_reproducible(
+          testcase, self.target_path)
     except ReproduceError as error:
       logging.error('Could not run target when checking for reproducibility.'
                     'Please file an issue:'
@@ -228,16 +223,15 @@ class FuzzTarget:
       logging.info('Failed to reproduce the crash using the obtained testcase.')
       return False
 
-    clusterfuzz_build_dir = (
-        self.clusterfuzz_deployment.download_most_recent_build())
+    clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build()
     if not clusterfuzz_build_dir:
       # Crash is reproducible on PR build and we can't test on a recent
       # ClusterFuzz/OSS-Fuzz build.
       logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
       return True
 
-    clusterfuzz_target_path = os.path.join(
-        clusterfuzz_build_dir, self.target_name)
+    clusterfuzz_target_path = os.path.join(clusterfuzz_build_dir,
+                                           self.target_name)
     try:
       reproducible_on_clusterfuzz_build = self.is_reproducible(
           testcase, clusterfuzz_target_path)
