@@ -409,6 +409,18 @@ if (size < kMinInputLength || size > kMaxInputLength)
   return 0;
 ```
 
+## Bazel projects
+
+If your project uses the [Bazel](https://bazel.build/) build system, we
+recommend using the [`rules_fuzzing`](https://github.com/bazelbuild/rules_fuzzing)
+extension library for defining fuzz tests. `rules_fuzzing` provides support for
+specifying corpora and dictionaries as part of the fuzz test definition, and has
+out-of-the-box support for packaging all the fuzz test artifacts in the OSS-Fuzz
+format.
+
+Take a look at the [`bazel-rules-fuzzing-test`](https://github.com/google/oss-fuzz/tree/master/projects/bazel-rules-fuzzing-test)
+project for an example Bazel integration.
+
 ## Checking in to the OSS-Fuzz repository
 
 Once you've tested your fuzzing files locally, fork OSS-Fuzz, commit, and push to the fork. Then
