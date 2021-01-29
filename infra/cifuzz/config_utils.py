@@ -120,7 +120,7 @@ class BuildFuzzersConfig(BaseConfig):
           event_data['pull_request']['number'])
       logging.debug('pr_ref: %s', self.pr_ref)
 
-    self.git_url = event_data['repository']['git_url']
+    self.git_url = event_data['repository']['ssh_url']
 
   def __init__(self):
     """Get the configuration from CIFuzz from the environment. These variables
