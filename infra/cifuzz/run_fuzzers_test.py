@@ -23,7 +23,6 @@ import parameterized
 from pyfakefs import fake_filesystem_unittest
 
 import config_utils
-import fuzz_target
 import run_fuzzers
 
 # pylint: disable=wrong-import-position

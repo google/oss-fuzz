@@ -105,8 +105,9 @@ class RunFuzzersConfig(BaseConfig):
     self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
     self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE', 'ci').lower()
     if self.run_fuzzers_mode not in self.RUN_FUZZERS_MODES:
-      raise Exception('Invalid RUN_FUZZERS_MODE not one of allowed choices.',
-                      self.run_fuzzers_mode, self.RUN_FUZZERS_MODES)
+      raise Exception(
+          ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
+           self.run_fuzzers_mode, self.RUN_FUZZERS_MODES))
 
 
 class BuildFuzzersConfig(BaseConfig):
