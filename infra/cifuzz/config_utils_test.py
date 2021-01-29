@@ -45,4 +45,8 @@ class BuildFuzzersConfigTest(unittest.TestCase):
   def test_keep_unaffected_defaults_to_false(self):
     """Tests that keep_unaffected_fuzz_targets defaults to false."""
     config = self._create_config()
-    self.assertIsNone(config.keep_unaffected_fuzz_targets)
+    self.assertFalse(config.keep_unaffected_fuzz_targets)
+
+
+if __name__ == '__main__':
+  unittest.main()
