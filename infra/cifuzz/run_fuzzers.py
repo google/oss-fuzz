@@ -55,14 +55,16 @@ class BaseFuzzTargetRunner:
 
     self.out_dir = os.path.join(self.config.workspace, 'out')
     if not os.path.exists(self.out_dir):
-      logging.error('Out dir %s does not exist. ', self.out_dir)
+      logging.error('Out directory: %s does not exist.', self.out_dir)
       return False
 
     self.artifacts_dir = os.path.join(self.out_dir, 'artifacts')
     if not os.path.exists(self.artifacts_dir):
       os.mkdir(self.artifacts_dir)
-    elif not os.isdir(self.artifacts_dir):
-      logging.error('Artifacts path: %s is not a directory.', self.artifacts_dir)
+    elif (not os.path.isdir(self.artifacts_dir) or
+          os.listdir(self.artifacts_dir)):
+      logging.error('Artifacts path: %s is not an empty directory.',
+                    self.artifacts_dir)
       return False
 
     self.fuzz_target_paths = utils.get_fuzz_targets(self.out_dir)
@@ -98,7 +100,7 @@ class BaseFuzzTargetRunner:
     # Make a copy since we will mutate it.
     fuzz_seconds = self.config.fuzz_seconds
 
-    min_seconds_per_fuzzer = fuzz_seconds // total_num_fuzzers
+    min_seconds_per_fuzzer = fuzz_seconds // fuzzers_left_to_run
     bug_found = False
     for target_path in self.fuzz_target_paths:
       run_seconds = max(fuzz_seconds // fuzzers_left_to_run,
