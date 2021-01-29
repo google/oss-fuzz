@@ -1,5 +1,5 @@
 homepage: "https://godoc.org/inet.af/netaddr"
-main_repo: "https://godoc.org/inet.af/netaddr"
+main_repo: "https://github.com/inetaf/netaddr"
 primary_contact: ""
 auto_ccs :
   - "Adam@adalogics.com"
