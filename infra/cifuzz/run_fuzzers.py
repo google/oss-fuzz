@@ -68,6 +68,7 @@ class BaseFuzzTargetRunner:
       return False
 
     self.fuzz_target_paths = utils.get_fuzz_targets(self.out_dir)
+    logging.info('Fuzz targets: %s', self.fuzz_target_paths)
     if not self.fuzz_target_paths:
       logging.error('No fuzz targets were found in out directory: %s.',
                     self.out_dir)
@@ -160,6 +161,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
 def get_fuzz_target_runner(config):
   """Returns a fuzz target runner object based on the run_fuzzers_mode of
   |config|."""
+  logging.info('RUN_FUZZERS_MODE is: %s', config.run_fuzzers_mode)
   if config.run_fuzzers_mode == 'batch':
     return BatchFuzzTargetRunner(config)
   return CiFuzzTargetRunner(config)
