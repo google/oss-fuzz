@@ -40,7 +40,7 @@ def _get_project_name():
 
 def _is_dry_run():
   """Returns True if configured to do a dry run."""
-  return os.getenv('DRY_RUN').lower() == 'true'
+  return os.getenv('DRY_RUN', '').lower() == 'true'
 
 
 def get_project_src_path(workspace):
