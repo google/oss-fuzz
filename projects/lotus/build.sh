@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-cd $GOPATH/src/github.com/filecoin-project/lotus
 make
 
 compile_go_fuzzer github.com/filecoin-project/lotus/chain/types FuzzMessage fuzz_message gofuzz
