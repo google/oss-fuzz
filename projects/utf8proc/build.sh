@@ -16,3 +16,5 @@
 ################################################################################
 # Run the OSS-Fuzz script in the project
 $SRC/utf8proc/test/ossfuzz.sh
+
+cp $SRC/utf8proc/build/fuzzer $OUT/utf8proc_fuzzer
