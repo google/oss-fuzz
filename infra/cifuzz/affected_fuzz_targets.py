@@ -38,6 +38,7 @@ def remove_unaffected_fuzz_targets(project_name, out_dir, files_changed,
   targets are unaffected. For example, this means that fuzz targets which don't
   have coverage data on will not be deleted.
   """
+  # TODO(metzman): Make this use clusterfuzz deployment.
   if not files_changed:
     # Don't remove any fuzz targets if there is no difference from HEAD.
     logging.info('No files changed compared to HEAD.')

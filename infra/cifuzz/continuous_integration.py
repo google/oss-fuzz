@@ -48,6 +48,11 @@ class BaseCi:
   def __init__(self, config):
     self.config = config
 
+  def prepare_for_fuzzer_build(self):
+    """Builds the fuzzer builder image and gets the source code we need to
+    fuzz."""
+    raise NotImplementedError('Children must implement this method.')
+
   def get_diff_base(self):
     """Returns the base to diff against with git to get the change under
     test."""

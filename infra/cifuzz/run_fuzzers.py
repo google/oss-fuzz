@@ -96,11 +96,8 @@ class BaseFuzzTargetRunner:
 
   def create_fuzz_target_obj(self, target_path, run_seconds):
     """Returns a fuzz target object."""
-    return fuzz_target.FuzzTarget(target_path,
-                                  run_seconds,
-                                  self.out_dir,
-                                  self.config.project_name,
-                                  sanitizer=self.config.sanitizer)
+    return fuzz_target.FuzzTarget(
+        target_path, run_seconds, self.out_dir, self.config)
 
   def run_fuzz_targets(self):
     """Runs fuzz targets. Returns True if a bug was found."""
