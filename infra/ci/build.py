@@ -35,21 +35,16 @@ DEFAULT_SANITIZERS = ['address', 'undefined']
 LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
 
 
-def get_changed_files_output():
+def get_changed_files():
   """Returns the output of a git command that discovers changed files."""
-  main_branch = subprocess.check_output(
-      ['git', 'rev-parse', '--abbrev-ref', 'origin/HEAD']).strip().decode()
-  branch_commit_hash = subprocess.check_output(
-      ['git', 'merge-base', 'FETCH_HEAD', main_branch]).strip().decode()
-
-  return subprocess.check_output(
-      ['git', 'diff', '--name-only', branch_commit_hash + '..']).decode()
+  return subprocess.check_output(['git', 'diff', '--name-only',
+                                  'FETCH_HEAD']).decode()
 
 
 def get_modified_buildable_projects():
   """Returns a list of all the projects modified in this commit that have a
   build.sh file."""
-  git_output = get_changed_files_output()
+  git_output = get_changed_files()
   projects_regex = '.*projects/(?P<name>.*)/.*\n'
   modified_projects = set(re.findall(projects_regex, git_output))
   projects_dir = os.path.join(get_oss_fuzz_root(), 'projects')
@@ -201,7 +196,7 @@ def build_modified_projects():
 
 def is_infra_changed():
   """Returns True if the infra directory was changed."""
-  git_output = get_changed_files_output()
+  git_output = get_changed_files()
   infra_code_regex = '.*infra/.*\n'
   return re.search(infra_code_regex, git_output) is not None
 
