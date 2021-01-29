@@ -143,5 +143,7 @@ class BuildFuzzersConfig(BaseConfig):
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
 
+    # TODO(metzman): Use better system for interpreting env vars. What if env
+    # var is set to '0'?
     self.keep_unaffected_fuzz_targets = bool(
-        os.getenv('KEEP_UNAFFECTED_FUZZERS', 'False'))
+        os.getenv('KEEP_UNAFFECTED_FUZZERS'))
