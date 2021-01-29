@@ -27,3 +27,4 @@ runs:
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
+    RUN_FUZZERS_MODE: ${{ inputs.run-fuzzers-mode }}

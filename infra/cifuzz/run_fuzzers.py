@@ -137,6 +137,7 @@ class BaseFuzzTargetRunner:
 
       bug_found = True
       if self.quit_on_bug_found:
+        logging.info('Bug found. Stopping fuzzing.')
         return bug_found
 
     return bug_found
