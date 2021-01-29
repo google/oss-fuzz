@@ -197,7 +197,7 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
   @mock.patch('logging.error')
   def test_initialize_no_artifacts(self, mocked_log_error,
                                    mocked_get_fuzz_targets):
-    """Tests initialize with a no artifacts dir (the expected setting)."""
+    """Tests initialize with no artifacts dir (the expected setting)."""
     mocked_get_fuzz_targets.return_value = ['fuzz-target']
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
@@ -207,6 +207,29 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
       mocked_log_error.assert_not_called()
       self.assertTrue(os.path.isdir(os.path.join(out_path, 'artifacts')))
 
+
+  def test_initialize_no_fuzz_targets(self):
+    """Tests initialize with no fuzz targets."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.makedirs(out_path)
+      expected_error_args = ('No fuzz targets were found in out directory: %s.',
+                             out_dir)
+      self._test_initialize_fail(expected_error_args, workspace=tmp_dir)
+
+
+  def test_get_fuzz_target_artifact(self):
+    """Tests that get_fuzz_target_artifact works as intended."""
+    runner = self._create_runner()
+    artifacts_dir = 'artifacts-dir'
+    runner.artifacts_dir = artifacts_dir
+    artifact_name = 'artifact-name'
+    target = mock.MagicMock()
+    target_name = 'target_name'
+    target.target_name = target_name
+    fuzz_target_artifact = runner.get_fuzz_target_artifact(target, artifact_name)
+    expected_fuzz_target_artifact = 'artifacts-dir/target_name-artifact-name'
+    self.assertEqual(fuzz_target_artifact, expected_fuzz_target_artifact)
 
 class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                        unittest.TestCase):
