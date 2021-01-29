@@ -46,10 +46,7 @@ class BaseFuzzTargetRunner:
 
     logging.info('Using %s sanitizer.', self.config.sanitizer)
 
-    if not os.path.exists(self.config.workspace):
-      logging.error('Invalid workspace: %s.', self.config.workspace)
-      return False
-
+    # TODO(metzman) Add a check to ensure we aren't over time limit.
     if not self.config.fuzz_seconds or self.config.fuzz_seconds < 1:
       logging.error(
           'Fuzz_seconds argument must be greater than 1, but was: %s.',
@@ -57,9 +54,16 @@ class BaseFuzzTargetRunner:
       return False
 
     self.out_dir = os.path.join(self.config.workspace, 'out')
+    if not os.path.exists(self.out_dir):
+      logging.error('Out dir %s does not exist. ', self.out_dir)
+      return False
+
     self.artifacts_dir = os.path.join(self.out_dir, 'artifacts')
     if not os.path.exists(self.artifacts_dir):
       os.mkdir(self.artifacts_dir)
+    elif not os.isdir(self.artifacts_dir):
+      logging.error('Artifacts path: %s is not a directory.', self.artifacts_dir)
+      return False
 
     self.fuzz_target_paths = utils.get_fuzz_targets(self.out_dir)
     if not self.fuzz_target_paths:
@@ -89,10 +93,11 @@ class BaseFuzzTargetRunner:
 
   def run_fuzz_targets(self):
     """Runs fuzz targets. Returns True if a bug was found."""
-    total_num_fuzzers = len(self.fuzz_target_paths)
-    fuzzers_left_to_run = total_num_fuzzers
+    fuzzers_left_to_run = len(self.fuzz_target_paths)
+
     # Make a copy since we will mutate it.
     fuzz_seconds = self.config.fuzz_seconds
+
     min_seconds_per_fuzzer = fuzz_seconds // total_num_fuzzers
     bug_found = False
     for target_path in self.fuzz_target_paths:
@@ -124,7 +129,7 @@ class BaseFuzzTargetRunner:
       stack_parser.parse_fuzzer_output(stacktrace, bug_summary_artifact)
 
       bug_found = True
-      if self.quit_on_bug_found():
+      if self.quit_on_bug_found:
         return bug_found
 
     return bug_found

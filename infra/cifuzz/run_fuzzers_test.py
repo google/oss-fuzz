@@ -42,8 +42,10 @@ MEMORY_FUZZER = 'curl_fuzzer_memory'
 UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'undefined')
 UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
+FUZZ_SECONDS = 10
 
-def create_config(**kwargs):
+
+def _create_config(**kwargs):
   """Creates a config object and then sets every attribute that is a key in
   |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
   attribute of Config."""
@@ -70,7 +72,7 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
     """Calls run_fuzzers on fuzzer_dir and |sanitizer| and asserts
     the run succeeded and that no bug was found."""
     with test_helpers.temp_dir_copy(fuzzer_dir) as fuzzer_dir_copy:
-      config = create_config(fuzz_seconds=10,
+      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                              workspace=fuzzer_dir_copy,
                              project_name='curl',
                              sanitizer=sanitizer)
@@ -105,6 +107,88 @@ class RunUndefinedFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'undefined')
 
 
+class BaseFuzzTargetRunnerTest(unittest.TestCase):
+  """Tests BaseFuzzTargetRunner."""
+  def _create_runner(self, **kwargs):
+    defaults = {
+        'fuzz_seconds': self.FUZZ_SECONDS,
+        'project_name': EXAMPLE_PROJECT
+    }
+    for default_key, default_value in defaults.items():
+      if default_key not kwargs:
+        kwargs[default_key] = default_value
+
+    config = _create_config(**kwargs)
+    return run_fuzzers.BaseFuzzTargetRunner(config)
+
+  def _test_initialize_fail(self, expected_log_error, **create_runner_kwargs):
+    with mock.patch('logging.error') as mocked_error:
+      runner = self._create_runner(**create_runner_kwargs)
+      self.assertFalse(runner.initialize())
+      mocked_error.assert_called_with(expected_log_error)
+
+  @parameterized.parameterized.expand([(0,), (None,), (-1,)])
+  def test_initialize_invalid_fuzz_seconds(self, fuzz_seconds):
+    """Tests initialize fails with an invalid fuzz seconds."""
+    expected_log_message = (
+        'Fuzz_seconds argument must be greater than 1, '
+        'but was: %s.' % fuzz_seconds)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      with mock.patch('utils.get_fuzz_targets') as mocked_get_fuzz_targets:
+        mocked_get_fuzz_targets.return_value = [
+            os.path.join(out_path, 'fuzz_target')]
+        self._test_initialize_fail(
+            expected_log_message, fuzz_seconds=fuzz_seconds, workspace=tmp_dir)
+
+  def test_initialize_no_out_dir(self):
+    """Tests initialize fails with no out dir."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      expected_error_message = 'Out dir %s does not exist. ' % out_path
+      self._test_initialize_fail(expected_error_message, workspace=tmp_dir)
+
+  def test_initialize_bad_artifacts(self):
+    """Tests initialize with a file artifacts path."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.mkdir(out_path)
+      artifacts_path = os.path.join(out_path, 'artifacts')
+      with open(artifacts_path, 'w'):
+        artifacts_path.write('fake')
+      expected_error_message = (
+          'Artifacts path %s is not a directory. ' % artifacts_path)
+      self._test_initialize_fail(expected_error_message, workspace=tmp_dir)
+
+  @mock.patch('utils.get_fuzz_targets')
+  @mock.patch('logging.error')
+  def test_initialize_empty_artifacts(self, mocked_log_error, mocked_get_fuzz_targets):
+    """Tests initialize with an empty artifacts dir."""
+    mocked_get_fuzz_targets.return_value = ['fuzz-target']
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      artifacts_path = os.path.join(out_path, 'artifacts')
+      os.makedirs(artifacts_path)
+      runner = self._create_runner(workspace=tmp_dir)
+      self.assertTrue(runner.initialize())
+      mocked_log_error.assert_not_called()
+      self.assertTrue(os.path.isdir(artifacts_path))
+
+  @mock.patch('utils.get_fuzz_targets')
+  @mock.patch('logging.error')
+  def test_initialize_no_artifacts(self, mocked_log_error, mocked_get_fuzz_targets):
+    """Tests initialize with a no artifacts dir (the expected setting)."""
+    mocked_get_fuzz_targets.return_value = ['fuzz-target']
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      out_path = os.path.join(tmp_dir, 'out')
+      os.makedirs(out_path)
+      runner = self._create_runner(workspace=tmp_dir)
+      self.assertTrue(runner.initialize())
+      mocked_log_error.assert_not_called()
+      self.assertTrue(os.path.isdir(os.path.join(out_path, 'artifacts')))
+
+
 class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                        unittest.TestCase):
   """Integration tests for build_fuzzers with an ASAN build."""
@@ -119,7 +203,7 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
                            side_effect=[True, False]):
-      config = create_config(fuzz_seconds=10,
+      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                              workspace=TEST_FILES_PATH,
                              project_name=EXAMPLE_PROJECT)
       run_success, bug_found = run_fuzzers.run_fuzzers(config)
@@ -133,13 +217,13 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                    'INTEGRATION_TESTS=1 not set')
   def test_old_bug_found(self):
     """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
-    config = create_config(fuzz_seconds=10,
+    config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                            workspace=TEST_FILES_PATH,
                            project_name=EXAMPLE_PROJECT)
     with mock.patch.object(fuzz_target.FuzzTarget,
                            'is_reproducible',
                            side_effect=[True, True]):
-      config = create_config(fuzz_seconds=10,
+      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                              workspace=TEST_FILES_PATH,
                              project_name=EXAMPLE_PROJECT)
       run_success, bug_found = run_fuzzers.run_fuzzers(config)
@@ -154,31 +238,10 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      config = create_config(fuzz_seconds=10,
-                             workspace=tmp_dir,
-                             project_name=EXAMPLE_PROJECT)
+      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
+                              workspace=tmp_dir,
+                              project_name=EXAMPLE_PROJECT)
       run_success, bug_found = run_fuzzers.run_fuzzers(config)
-    self.assertFalse(run_success)
-    self.assertFalse(bug_found)
-
-  def test_invalid_fuzz_seconds(self):
-    """Tests run_fuzzers with an invalid fuzz seconds."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      config = create_config(fuzz_seconds=0,
-                             workspace=tmp_dir,
-                             project_name=EXAMPLE_PROJECT)
-      run_success, bug_found = run_fuzzers.run_fuzzers(config)
-    self.assertFalse(run_success)
-    self.assertFalse(bug_found)
-
-  def test_invalid_out_dir(self):
-    """Tests run_fuzzers with an invalid out directory."""
-    config = create_config(fuzz_seconds=10,
-                           workspace='not/a/valid/path',
-                           project_name=EXAMPLE_PROJECT)
-    run_success, bug_found = run_fuzzers.run_fuzzers(config)
     self.assertFalse(run_success)
     self.assertFalse(bug_found)
 
