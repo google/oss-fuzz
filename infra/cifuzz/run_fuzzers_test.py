@@ -14,6 +14,7 @@
 """Tests for running fuzzers."""
 import os
 import sys
+import shutil
 import tempfile
 import unittest
 from unittest import mock
@@ -324,18 +325,20 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     # Set the first return value to True, then the second to False to
     # emulate a bug existing in the current PR but not on the downloaded
     # OSS-Fuzz build.
-    with mock.patch.object(fuzz_target.FuzzTarget,
-                           'is_reproducible',
-                           side_effect=[True, False]):
-      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                              workspace=TEST_FILES_PATH,
-                              project_name=EXAMPLE_PROJECT)
-      run_success, bug_found = run_fuzzers.run_fuzzers(config)
-      build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
-      self.assertTrue(os.path.exists(build_dir))
-      self.assertNotEqual(0, len(os.listdir(build_dir)))
-      self.assertTrue(run_success)
-      self.assertTrue(bug_found)
+    with mock.patch('fuzz_target.FuzzTarget.is_reproducible',
+                    side_effect=[True, False]):
+      with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = os.path.join(tmp_dir, 'workspace')
+        shutil.copytree(TEST_FILES_PATH, workspace)
+        config = _create_config(fuzz_seconds=FUZZ_SECONDS,
+                                workspace=workspace,
+                                project_name=EXAMPLE_PROJECT)
+        run_success, bug_found = run_fuzzers.run_fuzzers(config)
+        build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
+        self.assertTrue(os.path.exists(build_dir))
+        self.assertNotEqual(0, len(os.listdir(build_dir)))
+        self.assertTrue(run_success)
+        self.assertTrue(bug_found)
 
   @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                    'INTEGRATION_TESTS=1 not set')
@@ -344,18 +347,20 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                             workspace=TEST_FILES_PATH,
                             project_name=EXAMPLE_PROJECT)
-    with mock.patch.object(fuzz_target.FuzzTarget,
-                           'is_reproducible',
-                           side_effect=[True, True]):
-      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                              workspace=TEST_FILES_PATH,
-                              project_name=EXAMPLE_PROJECT)
-      run_success, bug_found = run_fuzzers.run_fuzzers(config)
-      build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
-      self.assertTrue(os.path.exists(build_dir))
-      self.assertNotEqual(0, len(os.listdir(build_dir)))
-      self.assertTrue(run_success)
-      self.assertFalse(bug_found)
+    with mock.patch('fuzz_target.FuzzTarget.is_reproducible',
+                    side_effect=[True, True]):
+      with tempfile.TemporaryDirectory() as tmp_dir:
+        workspace = os.path.join(tmp_dir, 'workspace')
+        shutil.copytree(TEST_FILES_PATH, workspace)
+        config = _create_config(fuzz_seconds=FUZZ_SECONDS,
+                                workspace=TEST_FILES_PATH,
+                                project_name=EXAMPLE_PROJECT)
+        run_success, bug_found = run_fuzzers.run_fuzzers(config)
+        build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
+        self.assertTrue(os.path.exists(build_dir))
+        self.assertNotEqual(0, len(os.listdir(build_dir)))
+        self.assertTrue(run_success)
+        self.assertFalse(bug_found)
 
   def test_invalid_build(self):
     """Tests run_fuzzers with an invalid ASAN build."""
