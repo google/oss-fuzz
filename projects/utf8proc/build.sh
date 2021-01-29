@@ -19,7 +19,7 @@
 
 mkdir build
 cd build
-cmake .. -DUTF8PROC_ENABLE_TESTING=ON
+cmake ..
 make -j$(nproc)
 
 
