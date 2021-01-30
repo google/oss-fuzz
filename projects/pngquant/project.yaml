@@ -1,0 +1,9 @@
+homepage: "https://github.com/kornelski/pngquant"
+main_repo: "https://github.com/kornelski/pngquant"
+language: c
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined

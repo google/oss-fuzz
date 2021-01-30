@@ -1,5 +1,4 @@
-#/bin/bash -eu
-# Copyright 2020 Google Inc.
+# Copyright 2021 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +14,9 @@
 #
 ################################################################################
 
-
-mkdir -p $GOPATH/src/github.com/gravitational
-cd $GOPATH/src/github.com/gravitational
-git clone https://github.com/gravitational/teleport.git
-
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzParseProxyJump utils_fuzz
-compile_go_fuzzer github.com/gravitational/teleport/lib/fuzz FuzzNewExpression parse_fuzz
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make libpng-dev autoconf libtool
+RUN git clone --depth 1 https://github.com/kornelski/pngquant
+RUN git clone --depth 1 https://github.com/glennrp/libpng.git $SRC/pngquant/libpng
+WORKDIR $SRC/
+COPY build.sh fuzzer.c $SRC/
