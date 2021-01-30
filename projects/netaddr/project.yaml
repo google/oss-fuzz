@@ -1,7 +1,10 @@
 homepage: "https://godoc.org/inet.af/netaddr"
 main_repo: "https://github.com/inetaf/netaddr"
-primary_contact: ""
+primary_contact: "josh@tailscale.com"
 auto_ccs :
+  - "danderson@tailscale.com"
+  - "bradfitz@tailscale.com"
+  - "mdlayher@gmail.com"
   - "Adam@adalogics.com"
 language: go
 fuzzing_engines:
