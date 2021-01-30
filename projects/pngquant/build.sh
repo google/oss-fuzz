@@ -59,7 +59,6 @@ $CC $CFLAGS -c $SRC/fuzzer.c -o fuzzer.o -I. \
 
 $CC $CFLAGS fuzzer.o -I. -O3 -DNDEBUG -DUSE_SSE=1 \
 	-msse -mfpmath=sse -Wno-unknown-pragmas \
-	-I./lib -I./libpng -I/usr/include \
 	./lib/libimagequant.a ./libpng/.libs/libpng16.a \
 	-L/usr/lib/x86_64-linux-gnu -lz -lm $LIB_FUZZING_ENGINE \
 	fuzz_lib.a -o $OUT/fuzzer
