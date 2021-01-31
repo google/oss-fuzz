@@ -54,9 +54,9 @@ make install
 cd ../gcrypt
 ./autogen.sh
 if [ "$ARCHITECTURE" = 'i386' ]; then
-    ./configure -host=i386 --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+    ./configure -host=i386 --enable-static --disable-shared --disable-doc --enable-maintainer-mode
 else
-    ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+    ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode
 fi
 make -j$(nproc)
 make install
