@@ -34,10 +34,7 @@ def _create_config(**kwargs):
   """Creates a config object and then sets every attribute that is a key in
   |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
   attribute of Config."""
-  defaults = {
-      'is_github': True,
-      'project_name': EXAMPLE_PROJECT
-  }
+  defaults = {'is_github': True, 'project_name': EXAMPLE_PROJECT}
   for default_key, default_value in defaults.items():
     if default_key not in kwargs:
       kwargs[default_key] = default_value
@@ -53,9 +50,11 @@ def _create_config(**kwargs):
     setattr(config, key, value)
   return config
 
+
 def _create_deployment(**kwargs):
   config = _create_config(**kwargs)
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config)
+
 
 class DownloadCorpusTest(unittest.TestCase):
   """Tests download_corpus."""
@@ -64,9 +63,8 @@ class DownloadCorpusTest(unittest.TestCase):
     """Tests that we can download a corpus for a valid project."""
     deployment = _create_deployment()
     with tempfile.TemporaryDirectory() as tmp_dir:
-      with mock.patch(
-          'clusterfuzz_deployment.download_and_unpack_zip',
-          return_value=False) as mocked_download_and_unpack_zip:
+      with mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
+                      return_value=False) as mocked_download_and_unpack_zip:
         deployment.download_corpus(EXAMPLE_FUZZER, tmp_dir)
         (url, out_dir), _ = mocked_download_and_unpack_zip.call_args
         self.assertEqual(
@@ -80,23 +78,22 @@ class DownloadCorpusTest(unittest.TestCase):
     """Tests that when downloading fails, None is returned."""
     deployment = _create_deployment()
     with tempfile.TemporaryDirectory() as tmp_dir:
-      with mock.patch(
-          'clusterfuzz_deployment.download_and_unpack_zip',
-          return_value=False) as mocked_download_and_unpack_zip:
+      with mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
+                      return_value=False):
         corpus_path = deployment.download_corpus(EXAMPLE_FUZZER, tmp_dir)
         self.assertIsNone(corpus_path)
 
 
 class OSSFuzzTest(unittest.TestCase):
   """Tests OSSFuzz."""
+
   def test_download_latest_build(self):
     """Tests that the build directory is downloaded once and no more."""
     deployment = _create_deployment()
     with tempfile.TemporaryDirectory() as tmp_dir:
       latest_name = deployment.get_latest_build_name()
-      with mock.patch(
-          'clusterfuzz_deployment.OSSFuzz.get_latest_build_name',
-          return_value=latest_name) as mocked_get_latest_build_name:
+      with mock.patch('clusterfuzz_deployment.OSSFuzz.get_latest_build_name',
+                      return_value=latest_name) as mocked_get_latest_build_name:
         # !!! Make it unnecessary to test multiple times.
         for _ in range(2):
           latest_build_path = deployment.download_latest_build(tmp_dir)
@@ -120,31 +117,29 @@ class DownloadUrlTest(unittest.TestCase):
   @mock.patch('urllib.request.urlretrieve', return_value=True)
   def test_download_url_no_error(self, mocked_urlretrieve, _):
     """Tests that download_url works when there is no error."""
-    self.assertTrue(clusterfuzz_deployment.download_url(
-        self.URL, self.FILE_PATH))
+    self.assertTrue(
+        clusterfuzz_deployment.download_url(self.URL, self.FILE_PATH))
     self.assertEqual(1, mocked_urlretrieve.call_count)
 
   @mock.patch('time.sleep')
   @mock.patch('logging.error')
   @mock.patch('urllib.request.urlretrieve',
-                       side_effect=urllib.error.HTTPError(
-                           None, None, None, None, None))
+              side_effect=urllib.error.HTTPError(None, None, None, None, None))
   def test_download_url_http_error(self, mocked_urlretrieve, mocked_error, _):
     """Tests that download_url doesn't retry when there is an HTTP error."""
-    self.assertFalse(clusterfuzz_deployment.download_url(
-        self.URL, self.FILE_PATH))
+    self.assertFalse(
+        clusterfuzz_deployment.download_url(self.URL, self.FILE_PATH))
     mocked_error.assert_called_with('Unable to download from: %s.', self.URL)
     self.assertEqual(1, mocked_urlretrieve.call_count)
 
   @mock.patch('time.sleep')
   @mock.patch('logging.error')
-  @mock.patch('urllib.request.urlretrieve',
-                       side_effect=ConnectionResetError)
+  @mock.patch('urllib.request.urlretrieve', side_effect=ConnectionResetError)
   def test_download_url_connection_error(self, mocked_urlretrieve, mocked_error,
                                          mocked_sleep):
     """Tests that download_url doesn't retry when there is an HTTP error."""
-    self.assertFalse(clusterfuzz_deployment.download_url(
-        self.URL, self.FILE_PATH))
+    self.assertFalse(
+        clusterfuzz_deployment.download_url(self.URL, self.FILE_PATH))
     self.assertEqual(3, mocked_urlretrieve.call_count)
     self.assertEqual(3, mocked_sleep.call_count)
     mocked_error.assert_called_with('Failed to download %s, %d times.',
@@ -164,7 +159,6 @@ class DownloadAndUnpackZipTest(unittest.TestCase):
       self.assertFalse(
           clusterfuzz_deployment.download_and_unpack_zip(
               '/not/a/real/url', tmp_dir))
-
 
 
 if __name__ == '__main__':
