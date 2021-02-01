@@ -108,7 +108,7 @@ class FuzzTarget:
 
     # If corpus can be downloaded use it for fuzzing.
     latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.out_dir)
+        self.target_name, self.out_dir)
     if latest_corpus_path:
       run_fuzzer_command = run_fuzzer_command + ' ' + latest_corpus_path
     command.append(run_fuzzer_command)
@@ -224,7 +224,7 @@ class FuzzTarget:
       return False
 
     clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build(
-        self.target_name, self.out_dir)
+        self.out_dir)
     if not clusterfuzz_build_dir:
       # Crash is reproducible on PR build and we can't test on a recent
       # ClusterFuzz/OSS-Fuzz build.
