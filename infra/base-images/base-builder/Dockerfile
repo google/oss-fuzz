@@ -151,7 +151,7 @@ RUN git clone -b stable https://github.com/google/AFL.git afl
 
 RUN git clone -b stable https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout b9f469e12fde797e301845caa4b0fd44315318bd
+    git checkout 654f389e73c9fd5b7e141b33ea28ab0fdda3178f
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
