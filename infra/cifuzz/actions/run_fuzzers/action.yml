@@ -15,6 +15,14 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
+  run-fuzzers-mode:
+    description: |
+      The mode to run the fuzzers with ("ci" or "batch").
+      "ci" is for fuzzing a pull request or commit.
+      "batch" is for non-interactive fuzzing of an entire project.
+      "batch" is in alpha and should not be used in production.
+    required: false
+    default: 'ci'
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -23,3 +31,4 @@ runs:
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
+    RUN_FUZZERS_MODE: ${{ inputs.run-fuzzers-mode }}

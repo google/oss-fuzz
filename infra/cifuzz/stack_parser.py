@@ -13,8 +13,6 @@
 # limitations under the License.
 """Module for parsing stacks from fuzz targets."""
 
-import os
-
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
 # Used to get the beginning of the stacktrace.
 STACKTRACE_TOOL_MARKERS = [
@@ -45,12 +43,12 @@ STACKTRACE_END_MARKERS = [
 ]
 
 
-def parse_fuzzer_output(fuzzer_output, out_dir):
+def parse_fuzzer_output(fuzzer_output, parsed_output_file_path):
   """Parses the fuzzer output from a fuzz target binary.
 
   Args:
     fuzzer_output: A fuzz target binary output string to be parsed.
-    out_dir: The location to store the parsed output files.
+    parsed_output_file_path: The location to store the parsed output.
   """
   # Get index of key file points.
   for marker in STACKTRACE_TOOL_MARKERS:
@@ -74,6 +72,5 @@ def parse_fuzzer_output(fuzzer_output, out_dir):
     return
 
   # Write sections of fuzzer output to specific files.
-  summary_file_path = os.path.join(out_dir, 'bug_summary.txt')
-  with open(summary_file_path, 'ab') as summary_handle:
+  with open(parsed_output_file_path, 'ab') as summary_handle:
     summary_handle.write(summary_str)

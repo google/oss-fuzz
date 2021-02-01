@@ -197,10 +197,15 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     logging.info('Building external project.')
     git_workspace = os.path.join(self.config.workspace, 'storage')
     os.makedirs(git_workspace, exist_ok=True)
+    # Checkout before building, so we don't need to rely on copying the source
+    # into the image.
+    # TODO(metzman): Figure out if we want second copy at all.
     manager = repo_manager.clone_repo_and_get_manager(
         self.config.git_url,
         git_workspace,
         repo_name=self.config.project_repo_name)
+    checkout_specified_commit(manager, self.config.pr_ref,
+                              self.config.commit_sha)
 
     build_integration_path = os.path.join(manager.repo_dir,
                                           self.config.build_integration_path)
@@ -208,9 +213,6 @@ class ExternalGithub(GithubCiMixin, BaseCi):
         self.config.project_name, manager.repo_dir, build_integration_path):
       logging.error('Failed to build external project.')
       return BuildPreparationResult(False, None, None)
-
-    checkout_specified_commit(manager, self.config.pr_ref,
-                              self.config.commit_sha)
 
     image_repo_path = os.path.join('/src', self.config.project_repo_name)
     return BuildPreparationResult(True, image_repo_path, manager)

@@ -32,26 +32,31 @@ class ParseOutputTest(unittest.TestCase):
 
   def test_parse_valid_output(self):
     """Checks that the parse fuzzer output can correctly parse output."""
-    test_output_path = os.path.join(TEST_FILES_PATH,
-                                    'example_crash_fuzzer_output.txt')
-    test_summary_path = os.path.join(TEST_FILES_PATH, 'bug_summary_example.txt')
+    # Read the fuzzer output from disk.
+    fuzzer_output_path = os.path.join(TEST_FILES_PATH,
+                                      'example_crash_fuzzer_output.txt')
+    with open(fuzzer_output_path, 'rb') as fuzzer_output_handle:
+      fuzzer_output = fuzzer_output_handle.read()
     with tempfile.TemporaryDirectory() as tmp_dir:
-      with open(test_output_path, 'rb') as test_fuzz_output:
-        stack_parser.parse_fuzzer_output(test_fuzz_output.read(), tmp_dir)
-      result_files = ['bug_summary.txt']
-      self.assertCountEqual(os.listdir(tmp_dir), result_files)
+      bug_summary_filename = 'bug-summary.txt'
+      bug_summary_path = os.path.join(tmp_dir, bug_summary_filename)
+      stack_parser.parse_fuzzer_output(fuzzer_output, bug_summary_path)
+      self.assertEqual(os.listdir(tmp_dir), [bug_summary_filename])
+      with open(bug_summary_path) as bug_summary_handle:
+        bug_summary = bug_summary_handle.read()
 
-      # Compare the bug summaries.
-      with open(os.path.join(tmp_dir, 'bug_summary.txt')) as bug_summary:
-        detected_summary = bug_summary.read()
-      with open(test_summary_path) as bug_summary:
-        real_summary = bug_summary.read()
-      self.assertEqual(detected_summary, real_summary)
+    # Compare the bug to the expected one.
+    expected_bug_summary_path = os.path.join(TEST_FILES_PATH,
+                                             'bug_summary_example.txt')
+    with open(expected_bug_summary_path) as expected_bug_summary_handle:
+      expected_bug_summary = expected_bug_summary_handle.read()
+    self.assertEqual(expected_bug_summary, bug_summary)
 
   def test_parse_invalid_output(self):
     """Checks that no files are created when an invalid input was given."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      stack_parser.parse_fuzzer_output(b'not a valid output_string', tmp_dir)
+      artifact = os.path.join(tmp_dir, 'bug-summary.txt')
+      stack_parser.parse_fuzzer_output(b'not a valid output_string', artifact)
       self.assertEqual(len(os.listdir(tmp_dir)), 0)
 
 
