@@ -146,9 +146,8 @@ class DownloadAndUnpackZipTest(unittest.TestCase):
     """Tests download_and_unpack_zip returns none when a bad zip is passed."""
     with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
         'urllib.request.urlretrieve', return_value=True):
-      file_handle = open(os.path.join(tmp_dir, 'url_tmp.zip'), 'w')
-      file_handle.write('Test file.')
-      file_handle.close()
+      with open(os.path.join(tmp_dir, 'url_tmp.zip'), 'w'):
+        file_handle.write('Test file.')
       self.assertFalse(
           clusterfuzz_deployment.download_and_unpack_zip(
               '/not/a/real/url', tmp_dir))
