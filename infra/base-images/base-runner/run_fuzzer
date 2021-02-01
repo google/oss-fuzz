@@ -103,6 +103,7 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
   export AFL_SKIP_CPUFREQ=1
   export AFL_NO_AFFINITY=1
+  export AFL_MAP_SIZE=4194304
   # AFL expects at least 1 file in the input dir.
   echo input > ${CORPUS_DIR}/input
   CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* $OUT/$FUZZER"

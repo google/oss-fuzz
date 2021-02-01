@@ -1,4 +1,5 @@
-# Copyright 2020 Google Inc.
+#/bin/bash -eu
+# Copyright 2021 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y wget make unzip git
-RUN wget https://www.inchi-trust.org/download/106/INCHI-1-SRC.zip
-RUN unzip INCHI-1-SRC.zip
-WORKDIR INCHI-1-SRC
-COPY build.sh *_fuzzer.c $SRC/
+make
+
+compile_go_fuzzer github.com/filecoin-project/lotus/chain/types FuzzMessage fuzz_message gofuzz
+compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzBlockMsg fuzz_block_msg
+compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzBlockMsgStructural fuzz_block_msg_structural
+compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzBlockHeader fuzz_block_header
+compile_go_fuzzer github.com/filecoin-project/fuzzing-lotus/fuzz FuzzNodesForHeight fuzz_nodes_for_height
