@@ -1,0 +1,10 @@
+homepage: "https://www.cabextract.org.uk/libmspack/"
+main_repo: "https://github.com/kyz/libmspack"
+language: c
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
