@@ -333,11 +333,11 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                 workspace=workspace,
                                 project_name=EXAMPLE_PROJECT)
         run_success, bug_found = run_fuzzers.run_fuzzers(config)
-        build_dir = os.path.join(TEST_FILES_PATH, 'out', 'oss_fuzz_latest')
-        self.assertTrue(os.path.exists(build_dir))
-        self.assertNotEqual(0, len(os.listdir(build_dir)))
         self.assertTrue(run_success)
         self.assertTrue(bug_found)
+        build_dir = os.path.join(workspace, 'out', 'oss_fuzz_latest')
+        self.assertNotEqual(0, len(os.listdir(build_dir)))
+
 
   @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                    'INTEGRATION_TESTS=1 not set')
