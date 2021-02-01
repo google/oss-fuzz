@@ -14,11 +14,9 @@
 """Tests the functionality of the fuzz_target module."""
 
 import os
-import sys
 import tempfile
 import unittest
 from unittest import mock
-import urllib.error
 
 import parameterized
 from pyfakefs import fake_filesystem_unittest
@@ -40,14 +38,12 @@ EXECUTE_SUCCESS_RETVAL = ('', '', 0)
 # The return value of a failed call to utils.execute.
 EXECUTE_FAILURE_RETVAL = ('', '', 1)
 
+
 def _create_config(**kwargs):
   """Creates a config object and then sets every attribute that is a key in
   |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
   attribute of Config."""
-  defaults = {
-      'is_github': True,
-      'project_name': EXAMPLE_PROJECT
-  }
+  defaults = {'is_github': True, 'project_name': EXAMPLE_PROJECT}
   for default_key, default_value in defaults.items():
     if default_key not in kwargs:
       kwargs[default_key] = default_value
@@ -62,6 +58,7 @@ def _create_config(**kwargs):
     assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
     setattr(config, key, value)
   return config
+
 
 def _create_deployment(**kwargs):
   config = _create_config(**kwargs)
@@ -81,16 +78,15 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     deployment = _create_deployment()
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path,
                                               fuzz_target.REPRODUCE_ATTEMPTS,
-                                              '/example/outdir',
-                                              deployment, deployment.config)
+                                              '/example/outdir', deployment,
+                                              deployment.config)
 
   def test_reproducible(self, _):
     """Tests that is_reproducible returns True if crash is detected and that
     is_reproducible uses the correct command to reproduce a crash."""
     self._set_up_fakefs()
     all_repro = [EXECUTE_FAILURE_RETVAL] * fuzz_target.REPRODUCE_ATTEMPTS
-    with mock.patch('utils.execute',
-                             side_effect=all_repro) as mocked_execute:
+    with mock.patch('utils.execute', side_effect=all_repro) as mocked_execute:
       result = self.test_target.is_reproducible(self.testcase_path,
                                                 self.fuzz_target_path)
       mocked_execute.assert_called_once_with([
@@ -115,7 +111,7 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
     self._set_up_fakefs()
     last_time_repro = [EXECUTE_SUCCESS_RETVAL] * 9 + [EXECUTE_FAILURE_RETVAL]
     with mock.patch('utils.execute',
-                             side_effect=last_time_repro) as mocked_execute:
+                    side_effect=last_time_repro) as mocked_execute:
       self.assertTrue(
           self.test_target.is_reproducible(self.testcase_path,
                                            self.fuzz_target_path))
@@ -146,7 +142,8 @@ class GetTestCaseTest(unittest.TestCase):
     """Sets up example fuzz target to test get_testcase method."""
     deployment = _create_deployment()
     self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
-                                              '/example/outdir', deployment, deployment.config)
+                                              '/example/outdir', deployment,
+                                              deployment.config)
 
   def test_valid_error_string(self):
     """Tests that get_testcase returns the correct testcase give an error."""
@@ -179,8 +176,8 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     self.fuzz_target_path = '/example/do_stuff_fuzzer'
     deployment = _create_deployment()
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path, 100,
-                                              '/example/outdir',
-                                              deployment, deployment.config)
+                                              '/example/outdir', deployment,
+                                              deployment.config)
     self.oss_fuzz_build_path = '/oss-fuzz-build'
     self.setUpPyfakefs()
     self.fs.create_file(self.fuzz_target_path)
@@ -195,7 +192,7 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     """Tests that a new reproducible crash returns True."""
 
     with mock.patch('fuzz_target.FuzzTarget.is_reproducible',
-                             side_effect=[True, False]):
+                    side_effect=[True, False]):
       with tempfile.TemporaryDirectory() as tmp_dir:
         self.test_target.out_dir = tmp_dir
         self.assertTrue(self.test_target.is_crash_reportable(
@@ -221,16 +218,15 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
   def test_invalid_crash(self, is_reproducible_retvals):
     """Tests that a nonreportable crash causes the method to return False."""
     with mock.patch('fuzz_target.FuzzTarget.is_reproducible',
-                             side_effect=is_reproducible_retvals):
+                    side_effect=is_reproducible_retvals):
 
       with mock.patch('clusterfuzz_deployment.OSSFuzz.download_latest_build',
-                               return_value=self.oss_fuzz_build_path):
+                      return_value=self.oss_fuzz_build_path):
         self.assertFalse(
             self.test_target.is_crash_reportable(self.testcase_path))
 
   @mock.patch('logging.info')
-  @mock.patch('fuzz_target.FuzzTarget.is_reproducible',
-                       return_value=[True])
+  @mock.patch('fuzz_target.FuzzTarget.is_reproducible', return_value=[True])
   def test_reproducible_no_oss_fuzz_target(self, _, mocked_info):
     """Tests that is_crash_reportable returns True when a crash reproduces on
     the PR build but the target is not in the OSS-Fuzz build (usually because it
@@ -246,7 +242,7 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
         'fuzz_target.FuzzTarget.is_reproducible',
         side_effect=is_reproducible_side_effect) as mocked_is_reproducible:
       with mock.patch('clusterfuzz_deployment.OSSFuzz.download_latest_build',
-                               return_value=self.oss_fuzz_build_path):
+                      return_value=self.oss_fuzz_build_path):
         self.assertTrue(self.test_target.is_crash_reportable(
             self.testcase_path))
     mocked_is_reproducible.assert_any_call(self.testcase_path,
@@ -255,7 +251,6 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
         'Crash is reproducible. Could not run recent build of '
         'target to determine if this code change (pr/commit) introduced crash. '
         'Assuming this code change introduced crash.')
-
 
 
 if __name__ == '__main__':
