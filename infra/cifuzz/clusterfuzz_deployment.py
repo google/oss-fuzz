@@ -32,7 +32,7 @@ class BaseClusterFuzzDeployment:
   def __init__(self, config):
     self.config = config
 
-  def download_latest_build(self, target_name, out_dir):
+  def download_latest_build(self, out_dir):
     """Downloads the latest build from ClusterFuzz.
 
     Returns:
@@ -52,7 +52,7 @@ class BaseClusterFuzzDeployment:
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
-  def download_latest_build(self, target_name, out_dir):
+  def download_latest_build(self, out_dir):
     return None
 
   def download_corpus(self, target_name, out_dir):
