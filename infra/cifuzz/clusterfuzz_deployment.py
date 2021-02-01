@@ -53,9 +53,11 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
   def download_latest_build(self, out_dir):
+    logging.info('download_latest_build not implemented for ClusterFuzzLite.')
     return None
 
   def download_corpus(self, target_name, out_dir):
+    logging.info('download_corpus not implemented for ClusterFuzzLite.')
     return None
 
 
@@ -212,5 +214,7 @@ def get_clusterfuzz_deployment(config):
   """Returns object reprsenting deployment of ClusterFuzz used by |config|."""
   if (config.platform == config.Platform.INTERNAL_GENERIC_CI or
       config.platform == config.Platform.INTERNAL_GITHUB):
+    logging.info('Using OSS-Fuzz as ClusterFuzz deployment.')
     return OSSFuzz(config)
+  logging.info('Using ClusterFuzzLite as ClusterFuzz deployment.')
   return ClusterFuzzLite(config)
