@@ -54,11 +54,9 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def download_latest_build(self, out_dir):
     logging.info('download_latest_build not implemented for ClusterFuzzLite.')
-    return None
 
   def download_corpus(self, target_name, out_dir):
     logging.info('download_corpus not implemented for ClusterFuzzLite.')
-    return None
 
 
 class OSSFuzz(BaseClusterFuzzDeployment):
@@ -97,9 +95,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     Returns:
       A path to where the OSS-Fuzz build was stored, or None if it wasn't.
     """
-    # !!! Why end with project_name?
-    build_dir = os.path.join(out_dir, 'cifuzz-clusterfuzz-latest-build',
-                             self.config.project_name)
+    build_dir = os.path.join(out_dir, 'cifuzz-clusterfuzz-latest-build')
     if os.path.exists(build_dir):
       return build_dir
 

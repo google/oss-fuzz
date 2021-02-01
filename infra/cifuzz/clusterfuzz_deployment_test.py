@@ -56,8 +56,8 @@ def _create_deployment(**kwargs):
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config)
 
 
-class DownloadCorpusTest(unittest.TestCase):
-  """Tests download_corpus."""
+class OSSFuzzTest(unittest.TestCase):
+  """Tests OSSFuzz."""
 
   def test_download_corpus(self):
     """Tests that we can download a corpus for a valid project."""
@@ -83,21 +83,14 @@ class DownloadCorpusTest(unittest.TestCase):
         corpus_path = deployment.download_corpus(EXAMPLE_FUZZER, tmp_dir)
         self.assertIsNone(corpus_path)
 
-
-class OSSFuzzTest(unittest.TestCase):
-  """Tests OSSFuzz."""
-
   def test_download_latest_build(self):
     """Tests that the build directory is downloaded once and no more."""
     deployment = _create_deployment()
     with tempfile.TemporaryDirectory() as tmp_dir:
       latest_name = deployment.get_latest_build_name()
       with mock.patch('clusterfuzz_deployment.OSSFuzz.get_latest_build_name',
-                      return_value=latest_name) as mocked_get_latest_build_name:
-        # !!! Make it unnecessary to test multiple times.
-        for _ in range(2):
-          latest_build_path = deployment.download_latest_build(tmp_dir)
-        self.assertEqual(1, mocked_get_latest_build_name.call_count)
+                      return_value=latest_name):
+        latest_build_path = deployment.download_latest_build(tmp_dir)
         self.assertNotEqual(len(os.listdir(latest_build_path)), 0)
 
   def test_get_latest_build_name(self):
