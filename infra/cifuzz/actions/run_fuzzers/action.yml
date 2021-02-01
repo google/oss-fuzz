@@ -15,6 +15,9 @@ inputs:
   sanitizer:
     description: 'The sanitizer to run the fuzzers with.'
     default: 'address'
+  build-integration-path:
+    description: "The path to the the project's build integration."
+    required: false
   run-fuzzers-mode:
     description: |
       The mode to run the fuzzers with ("ci" or "batch").
@@ -32,3 +35,7 @@ runs:
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
     RUN_FUZZERS_MODE: ${{ inputs.run-fuzzers-mode }}
+    # TODO(metzman): Even though this param is used for building, it's needed
+    # for running because we use it to distinguish OSS-Fuzz from non-OSS-Fuzz.
+    # We should do something explicit instead.
+    BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
