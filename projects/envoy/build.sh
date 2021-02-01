@@ -66,14 +66,14 @@ do
 done
 
 # Build driverless libraries.
-# Benchmark about 2 GB per CPU (14 threads for 28.8 GB RAM)
+# Benchmark about 3 GB per CPU (10 threads for 28.8 GB RAM)
 # TODO(asraa): Remove deprecation warnings when Envoy and deps moves to C++17
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
-  --local_cpu_resources=HOST_CPUS*0.45 \
+  --local_cpu_resources=HOST_CPUS*0.32 \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
-  --define ENVOY_CONFIG_ASAN=1  \
+  --define ENVOY_CONFIG_ASAN=1  --config libc++ \
   --copt -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS \
   --define force_libcpp=enabled --build_tag_filters=-no_asan \
   --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
@@ -90,7 +90,6 @@ then
   mkdir -p "${REMAP_PATH}"
   # For .cc, we only really care about source/ today.
   rsync -av "${SRC}"/envoy/source "${REMAP_PATH}"
-  rsync -av "${SRC}"/envoy/third_party "${REMAP_PATH}"
   rsync -av "${SRC}"/envoy/test "${REMAP_PATH}"
   # Remove filesystem loop manually.
   rm -rf "${SRC}"/envoy/bazel-envoy/external/envoy

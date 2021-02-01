@@ -21,9 +21,7 @@ autoconf
 autoheader
 popd
 
-$SRC/dropbear/configure --enable-fuzz --disable-harden
-# force static zlib
-sed -i 's@-lz@/usr/lib/x86_64-linux-gnu/libz.a@' Makefile
+$SRC/dropbear/configure --enable-fuzz --disable-harden --disable-zlib
 
 make -j$(nproc) fuzz-targets FUZZLIB=$LIB_FUZZING_ENGINE
 

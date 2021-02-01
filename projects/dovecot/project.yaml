@@ -5,3 +5,6 @@ auto_ccs:
     - "david@adalogics.com"
     - "p.antoine@catenacyber.fr"
     - "cmousefi@gmail.com"
+    - "boschstephan@gmail.com"
+    - "timo.sirainen@gmail.com"
+main_repo: 'https://github.com/dovecot/core'

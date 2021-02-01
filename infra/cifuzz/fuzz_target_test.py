@@ -11,20 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Test the functionality of the fuzz_target module."""
+"""Tests the functionality of the fuzz_target module."""
 
 import os
 import sys
 import tempfile
 import unittest
 import unittest.mock
+import urllib.error
 
 import parameterized
 from pyfakefs import fake_filesystem_unittest
 
-# Pylint has issue importing utils which is why error suppression is required.
-# pylint: disable=wrong-import-position
-# pylint: disable=import-error
+# Pylint has an issue importing utils which is why error suppression is needed.
+# pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fuzz_target
 
@@ -45,11 +45,11 @@ EXECUTE_FAILURE_RETVAL = ('', '', 1)
 # TODO(metzman): Use patch from test_libs/helpers.py in clusterfuzz so that we
 # don't need to accept this as an argument in every test method.
 @unittest.mock.patch('utils.get_container_name', return_value='container')
-class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
+class IsReproducibleTest(fake_filesystem_unittest.TestCase):
   """Tests the is_reproducible method in the fuzz_target.FuzzTarget class."""
 
   def setUp(self):
-    """Sets up dummy fuzz target to test is_reproducible method."""
+    """Sets up example fuzz target to test is_reproducible method."""
     self.fuzz_target_path = '/example/path'
     self.testcase_path = '/testcase'
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path,
@@ -111,36 +111,42 @@ class IsReproducibleUnitTest(fake_filesystem_unittest.TestCase):
       self.assertFalse(result)
 
 
-class GetTestCaseUnitTest(unittest.TestCase):
-  """Test get_test_case function in the fuzz_target module."""
+class GetTestCaseTest(unittest.TestCase):
+  """Tests get_testcase."""
 
   def setUp(self):
-    """Sets up dummy fuzz target to test get_test_case method."""
+    """Sets up example fuzz target to test get_testcase method."""
     self.test_target = fuzz_target.FuzzTarget('/example/path', 10,
                                               '/example/outdir')
 
   def test_valid_error_string(self):
-    """Tests that get_test_case returns the correct test case give an error."""
-    test_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'test_files',
-                                  'example_crash_fuzzer_output.txt')
-    with open(test_case_path, 'r') as test_fuzz_output:
-      parsed_test_case = self.test_target.get_test_case(test_fuzz_output.read())
+    """Tests that get_testcase returns the correct testcase give an error."""
+    testcase_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 'test_files',
+                                 'example_crash_fuzzer_output.txt')
+    with open(testcase_path, 'rb') as test_fuzz_output:
+      parsed_testcase = self.test_target.get_testcase(test_fuzz_output.read())
     self.assertEqual(
-        parsed_test_case,
+        parsed_testcase,
         '/example/outdir/crash-ad6700613693ef977ff3a8c8f4dae239c3dde6f5')
 
   def test_invalid_error_string(self):
-    """Tests that get_test_case returns None with a bad error string."""
-    self.assertIsNone(self.test_target.get_test_case(''))
-    self.assertIsNone(self.test_target.get_test_case(' Example crash string.'))
+    """Tests that get_testcase returns None with a bad error string."""
+    self.assertIsNone(self.test_target.get_testcase(b''))
+    self.assertIsNone(self.test_target.get_testcase(b' Example crash string.'))
+
+  def test_encoding(self):
+    """Tests that get_testcase accepts bytes and returns a string."""
+    fuzzer_output = b'\x8fTest unit written to ./crash-1'
+    result = self.test_target.get_testcase(fuzzer_output)
+    self.assertTrue(isinstance(result, str))
 
 
-class DownloadLatestCorpusUnitTest(unittest.TestCase):
-  """Test parse_fuzzer_output function in the cifuzz module."""
+class DownloadLatestCorpusTest(unittest.TestCase):
+  """Tests parse_fuzzer_output."""
 
   def test_download_valid_projects_corpus(self):
-    """Tests that a vaild fuzz target returns a corpus directory."""
+    """Tests that a valid fuzz target returns a corpus directory."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('testfuzzer', 3, 'test_out')
       test_target.project_name = EXAMPLE_PROJECT
@@ -159,9 +165,9 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
                          os.path.join(tmp_dir, 'backup_corpus', EXAMPLE_FUZZER))
 
   def test_download_invalid_projects_corpus(self):
-    """Tests that a invaild fuzz target does not return None."""
+    """Tests that a invade fuzz target does not return None."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-      test_target = fuzz_target.FuzzTarget('testfuzzer', 3, tmp_dir)
+      test_target = fuzz_target.FuzzTarget('test fuzzer', 3, tmp_dir)
       corpus_path = test_target.download_latest_corpus()
       self.assertIsNone(corpus_path)
       test_target = fuzz_target.FuzzTarget('not_a_fuzzer', 3, tmp_dir,
@@ -170,11 +176,11 @@ class DownloadLatestCorpusUnitTest(unittest.TestCase):
       self.assertIsNone(corpus_path)
 
 
-class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
-  """Test is_crash_reportable method of fuzz_target.FuzzTarget."""
+class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
+  """Tests the is_crash_reportable method of FuzzTarget."""
 
   def setUp(self):
-    """Sets up dummy fuzz target to test is_crash_reportable method."""
+    """Sets up example fuzz target to test is_crash_reportable method."""
     self.fuzz_target_path = '/example/do_stuff_fuzzer'
     self.test_target = fuzz_target.FuzzTarget(self.fuzz_target_path, 100,
                                               '/example/outdir', 'example')
@@ -229,8 +235,8 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
   @unittest.mock.patch('fuzz_target.FuzzTarget.is_reproducible',
                        return_value=[True])
   def test_reproducible_no_oss_fuzz_target(self, _, mocked_info):
-    """Tests that is_crash_reportable returns True when a crash repros on the
-    PR build but the target is not in the OSS-Fuzz build (usually because it
+    """Tests that is_crash_reportable returns True when a crash reproduces on
+    the PR build but the target is not in the OSS-Fuzz build (usually because it
     is new)."""
     os.remove(self.oss_fuzz_target_path)
 
@@ -254,14 +260,14 @@ class IsCrashReportableUnitTest(fake_filesystem_unittest.TestCase):
         'Assuming this pull request introduced crash.')
 
 
-class GetLatestBuildVersionUnitTest(unittest.TestCase):
-  """Test the get_latest_build_version function in the fuzz_target module."""
+class GetLatestBuildVersionTest(unittest.TestCase):
+  """Tests the get_latest_build_version function."""
 
   def test_get_valid_project(self):
     """Tests that the latest build can be retrieved from GCS."""
     test_target = fuzz_target.FuzzTarget('/example/path', 10, '/example/outdir',
                                          'example')
-    latest_build = test_target.get_lastest_build_version()
+    latest_build = test_target.get_latest_build_version()
     self.assertIsNotNone(latest_build)
     self.assertTrue(latest_build.endswith('.zip'))
     self.assertTrue('address' in latest_build)
@@ -270,22 +276,22 @@ class GetLatestBuildVersionUnitTest(unittest.TestCase):
     """Tests that the latest build returns None when project doesn't exist."""
     test_target = fuzz_target.FuzzTarget('/example/path', 10, '/example/outdir',
                                          'not-a-proj')
-    self.assertIsNone(test_target.get_lastest_build_version())
+    self.assertIsNone(test_target.get_latest_build_version())
     test_target = fuzz_target.FuzzTarget('/example/path', 10, '/example/outdir')
-    self.assertIsNone(test_target.get_lastest_build_version())
+    self.assertIsNone(test_target.get_latest_build_version())
 
 
-class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
-  """Test the download_oss_fuzz_build in function in the fuzz_target module."""
+class DownloadOSSFuzzBuildDirIntegrationTest(unittest.TestCase):
+  """Tests download_oss_fuzz_build."""
 
   def test_single_download(self):
     """Tests that the build directory was only downloaded once."""
     with tempfile.TemporaryDirectory() as tmp_dir:
       test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
                                            tmp_dir, 'example')
-      latest_version = test_target.get_lastest_build_version()
+      latest_version = test_target.get_latest_build_version()
       with unittest.mock.patch(
-          'fuzz_target.FuzzTarget.get_lastest_build_version',
+          'fuzz_target.FuzzTarget.get_latest_build_version',
           return_value=latest_version) as mocked_get_latest_build_version:
         for _ in range(5):
           oss_fuzz_build_path = test_target.download_oss_fuzz_build()
@@ -314,13 +320,52 @@ class DownloadOSSFuzzBuildDirIntegrationTests(unittest.TestCase):
 
   def test_invalid_build_dir(self):
     """Tests the download returns None when out_dir doesn't exist."""
-    test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
-                                         'not/a/dir', 'example')
-    self.assertIsNone(test_target.download_oss_fuzz_build())
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      invalid_dir = os.path.join(tmp_dir, 'not/a/dir')
+      test_target = fuzz_target.FuzzTarget('/example/do_stuff_fuzzer', 10,
+                                           invalid_dir, 'example')
+      self.assertIsNone(test_target.download_oss_fuzz_build())
 
 
-class DownloadAndUnpackZipUnitTests(unittest.TestCase):
-  """Test the download and unpack functionality in the fuzz_target module."""
+class DownloadUrlTest(unittest.TestCase):
+  """Tests that download_url works."""
+  URL = 'example.com/file'
+  FILE_PATH = '/tmp/file'
+
+  @unittest.mock.patch('time.sleep')
+  @unittest.mock.patch('urllib.request.urlretrieve', return_value=True)
+  def test_download_url_no_error(self, mocked_urlretrieve, _):
+    """Tests that download_url works when there is no error."""
+    self.assertTrue(fuzz_target.download_url(self.URL, self.FILE_PATH))
+    self.assertEqual(1, mocked_urlretrieve.call_count)
+
+  @unittest.mock.patch('time.sleep')
+  @unittest.mock.patch('logging.error')
+  @unittest.mock.patch('urllib.request.urlretrieve',
+                       side_effect=urllib.error.HTTPError(
+                           None, None, None, None, None))
+  def test_download_url_http_error(self, mocked_urlretrieve, mocked_error, _):
+    """Tests that download_url doesn't retry when there is an HTTP error."""
+    self.assertFalse(fuzz_target.download_url(self.URL, self.FILE_PATH))
+    mocked_error.assert_called_with('Unable to download from: %s.', self.URL)
+    self.assertEqual(1, mocked_urlretrieve.call_count)
+
+  @unittest.mock.patch('time.sleep')
+  @unittest.mock.patch('logging.error')
+  @unittest.mock.patch('urllib.request.urlretrieve',
+                       side_effect=ConnectionResetError)
+  def test_download_url_connection_error(self, mocked_urlretrieve, mocked_error,
+                                         mocked_sleep):
+    """Tests that download_url doesn't retry when there is an HTTP error."""
+    self.assertFalse(fuzz_target.download_url(self.URL, self.FILE_PATH))
+    self.assertEqual(3, mocked_urlretrieve.call_count)
+    self.assertEqual(3, mocked_sleep.call_count)
+    mocked_error.assert_called_with('Failed to download %s, %d times.',
+                                    self.URL, 3)
+
+
+class DownloadAndUnpackZipTest(unittest.TestCase):
+  """Tests download_and_unpack_zip."""
 
   def test_bad_zip_download(self):
     """Tests download_and_unpack_zip returns none when a bad zip is passed."""

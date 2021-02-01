@@ -4,6 +4,7 @@ primary_contact: "unicorn.emu@gmail.com"
 auto_ccs:
   - "p.antoine@catenacyber.fr"
   - "ch980501427@gmail.com"
+  - "stalkr@stalkr.net"
 fuzzing_engines:
   - libfuzzer
   - afl
@@ -14,3 +15,4 @@ sanitizers:
   - undefined
   - memory
   - dataflow
+main_repo: 'https://github.com/unicorn-engine/unicorn.git'

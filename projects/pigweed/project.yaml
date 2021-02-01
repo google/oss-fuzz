@@ -6,3 +6,4 @@ auto_ccs:
  - "mohrr@google.com"
 sanitizers:
 - address
+main_repo: 'https://pigweed.googlesource.com/pigweed/pigweed'

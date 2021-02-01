@@ -16,7 +16,6 @@
 ################################################################################
 
 # build quickjs
-cd quickjs
 # Makefile should not override CFLAGS
 sed -i -e 's/CFLAGS=/CFLAGS+=/' Makefile
 CONFIG_CLANG=y make libquickjs.a

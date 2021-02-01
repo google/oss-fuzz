@@ -31,10 +31,11 @@ auto_ccs:
     - "matthias.st.pierre@gmail.com"
     - "kaleb.himes@gmail.com"
     - "polubelovam@gmail.com"
+    - "mbed-tls-security@lists.trustedfirmware.org"
 sanitizers:
  - address
  - undefined
  - memory
 architectures:
  - x86_64
- - i386
+main_repo: 'https://github.com/guidovranken/cryptofuzz'

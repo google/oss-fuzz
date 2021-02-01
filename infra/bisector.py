@@ -179,12 +179,15 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
     if not repo_url or not repo_path:
       raise ValueError('Main git repo can not be determined.')
 
+    if old_commit == new_commit:
+      raise BisectError('old_commit is the same as new_commit', repo_url)
+
     # Copy /src from the built Docker container to ensure all dependencies
     # exist. This will be mounted when running them.
     host_src_dir = build_specified_commit.copy_src_from_docker(
         build_data.project_name, tmp_dir)
 
-    bisect_repo_manager = repo_manager.BaseRepoManager(
+    bisect_repo_manager = repo_manager.RepoManager(
         os.path.join(host_src_dir, os.path.basename(repo_path)))
     commit_list = bisect_repo_manager.get_commit_list(new_commit, old_commit)
 
@@ -296,7 +299,7 @@ def bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
                    fuzz_target, build_data)
   finally:
     # Clean up projects/ as _bisect may have modified it.
-    oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+    oss_fuzz_repo_manager = repo_manager.RepoManager(helper.OSS_FUZZ_DIR)
     oss_fuzz_repo_manager.git(['reset', 'projects'])
     oss_fuzz_repo_manager.git(['checkout', 'projects'])
     oss_fuzz_repo_manager.git(['clean', '-fxd', 'projects'])

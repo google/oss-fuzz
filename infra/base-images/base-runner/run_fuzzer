@@ -26,7 +26,7 @@ DEBUGGER=${DEBUGGER:-}
 FUZZER=$1
 shift
 
-CORPUS_DIR="/tmp/${FUZZER}_corpus"
+CORPUS_DIR=${CORPUS_DIR:-"/tmp/${FUZZER}_corpus"}
 
 SANITIZER=${SANITIZER:-}
 if [ -z $SANITIZER ]; then
@@ -63,8 +63,8 @@ function get_dictionary() {
   fi
 }
 
-rm -rf $CORPUS_DIR && mkdir $CORPUS_DIR
-rm -rf $FUZZER_OUT && mkdir $FUZZER_OUT
+rm -rf $CORPUS_DIR && mkdir -p $CORPUS_DIR
+rm -rf $FUZZER_OUT && mkdir -p $FUZZER_OUT
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
 
@@ -103,6 +103,7 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
   export AFL_SKIP_CPUFREQ=1
   export AFL_NO_AFFINITY=1
+  export AFL_MAP_SIZE=4194304
   # AFL expects at least 1 file in the input dir.
   echo input > ${CORPUS_DIR}/input
   CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* $OUT/$FUZZER"

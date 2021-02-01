@@ -17,11 +17,9 @@ export ORIG_CFLAGS=${CFLAGS}
 cd haproxy
 
 # Fix some things in the Makefile where there are no options available
-sed 's/LD = $(CC)/LD = ${CXX}/g' -i Makefile
-sed 's/CC = gcc/#CC = gcc/g' -i Makefile
 sed 's/CFLAGS = $(ARCH_FLAGS) $(CPU_CFLAGS) $(DEBUG_CFLAGS) $(SPEC_CFLAGS)/CFLAGS = $(ARCH_FLAGS) $(CPU_CFLAGS) $(DEBUG_CFLAGS) $(SPEC_CFLAGS) ${ORIG_CFLAGS}/g' -i Makefile
 sed 's/LDFLAGS = $(ARCH_FLAGS) -g/LDFLAGS = $(ARCH_FLAGS) -g ${CXXFLAGS}/g' -i Makefile
-make TARGET=generic
+make TARGET=generic CC=${CC} LD=${CXX} 
 
 # Make a copy of the main file since it has many global functions we need to declare
 # We dont want the main function but we need the rest of the stuff in haproxy.c

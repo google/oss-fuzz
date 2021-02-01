@@ -14,18 +14,17 @@
 """A module to handle running a fuzz target for a specified amount of time."""
 import logging
 import os
-import posixpath
 import re
 import stat
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.error
 import urllib.request
 import zipfile
 
-# pylint: disable=wrong-import-position
-# pylint: disable=import-error
+# pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
@@ -35,9 +34,6 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
-
-# Location of google cloud storage for latest OSS-Fuzz builds.
-GCS_BASE_URL = 'https://storage.googleapis.com/'
 
 # Location of cluster fuzz builds on GCS.
 CLUSTERFUZZ_BUILDS = 'clusterfuzz-builds'
@@ -57,8 +53,8 @@ REPRODUCE_ATTEMPTS = 10
 # Seconds on top of duration until a timeout error is raised.
 BUFFER_TIME = 10
 
-# Log message for is_crash_reportable if it can't check if crash repros
-# on OSS-Fuzz build.
+# Log message for is_crash_reportable if it can't check if crash reproduces on
+# an OSS-Fuzz build.
 COULD_NOT_TEST_ON_OSS_FUZZ_MESSAGE = (
     'Crash is reproducible. Could not run OSS-Fuzz build of '
     'target to determine if this pull request introduced crash. '
@@ -109,7 +105,7 @@ class FuzzTarget:
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
-      (test_case, stack trace, time in seconds) on crash or
+      (testcase, stacktrace, time in seconds) on crash or
       (None, None, time in seconds) on timeout or error.
     """
     logging.info('Fuzzer %s, started.', self.target_name)
@@ -124,8 +120,8 @@ class FuzzTarget:
 
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'SANITIZER=' + self.sanitizer,
-        '-e', 'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
-        'bash', '-c'
+        '-e', 'CIFUZZ=True', '-e', 'RUN_FUZZER_MODE=interactive',
+        'gcr.io/oss-fuzz-base/base-runner', 'bash', '-c'
     ]
 
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
@@ -144,7 +140,7 @@ class FuzzTarget:
                                stderr=subprocess.PIPE)
 
     try:
-      _, err = process.communicate(timeout=self.duration + BUFFER_TIME)
+      _, stderr = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
       return None, None
@@ -157,20 +153,19 @@ class FuzzTarget:
 
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
-    err_str = err.decode('ascii')
-    test_case = self.get_test_case(err_str)
-    if not test_case:
-      logging.error('No test case found in stack trace: %s.', err_str)
+    testcase = self.get_testcase(stderr)
+    if not testcase:
+      logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return None, None
-    if self.is_crash_reportable(test_case):
-      return test_case, err_str
+    if self.is_crash_reportable(testcase):
+      return testcase, stderr
     return None, None
 
-  def is_reproducible(self, test_case, target_path):
-    """Checks if the test case reproduces.
+  def is_reproducible(self, testcase, target_path):
+    """Checks if the testcase reproduces.
 
       Args:
-        test_case: The path to the test case to be tested.
+        testcase: The path to the testcase to be tested.
         target_path: The path to the fuzz target to be tested
 
       Returns:
@@ -192,13 +187,13 @@ class FuzzTarget:
     if container:
       command += [
           '--volumes-from', container, '-e', 'OUT=' + target_dirname, '-e',
-          'TESTCASE=' + test_case
+          'TESTCASE=' + testcase
       ]
     else:
       command += [
           '-v',
           '%s:/out' % target_dirname, '-v',
-          '%s:/testcase' % test_case
+          '%s:/testcase' % testcase
       ]
 
     command += [
@@ -219,7 +214,7 @@ class FuzzTarget:
                  target_path)
     return False
 
-  def is_crash_reportable(self, test_case):
+  def is_crash_reportable(self, testcase):
     """Returns True if a crash is reportable. This means the crash is
     reproducible but not reproducible on a build from OSS-Fuzz (meaning the
     crash was introduced by this PR).
@@ -228,7 +223,7 @@ class FuzzTarget:
     by the pull request if it is reproducible.
 
     Args:
-      test_case: The path to the test_case that triggered the crash.
+      testcase: The path to the testcase that triggered the crash.
 
     Returns:
       True if the crash was introduced by the current pull request.
@@ -236,11 +231,11 @@ class FuzzTarget:
     Raises:
       ReproduceError if we can't attempt to reproduce the crash on the PR build.
     """
-    if not os.path.exists(test_case):
-      raise ReproduceError('Test case %s not found.' % test_case)
+    if not os.path.exists(testcase):
+      raise ReproduceError('Testcase %s not found.' % testcase)
 
     try:
-      reproducible_on_pr_build = self.is_reproducible(test_case,
+      reproducible_on_pr_build = self.is_reproducible(testcase,
                                                       self.target_path)
     except ReproduceError as error:
       logging.error('Could not run target when checking for reproducibility.'
@@ -252,8 +247,7 @@ class FuzzTarget:
       return reproducible_on_pr_build
 
     if not reproducible_on_pr_build:
-      logging.info(
-          'Failed to reproduce the crash using the obtained test case.')
+      logging.info('Failed to reproduce the crash using the obtained testcase.')
       return False
 
     oss_fuzz_build_dir = self.download_oss_fuzz_build()
@@ -265,7 +259,7 @@ class FuzzTarget:
     oss_fuzz_target_path = os.path.join(oss_fuzz_build_dir, self.target_name)
     try:
       reproducible_on_oss_fuzz_build = self.is_reproducible(
-          test_case, oss_fuzz_target_path)
+          testcase, oss_fuzz_target_path)
     except ReproduceError:
       # This happens if the project has OSS-Fuzz builds, but the fuzz target
       # is not in it (e.g. because the fuzz target is new).
@@ -281,21 +275,21 @@ class FuzzTarget:
     logging.info('The crash is reproducible without the current pull request.')
     return False
 
-  def get_test_case(self, error_string):
-    """Gets the file from a fuzzer run stack trace.
+  def get_testcase(self, error_bytes):
+    """Gets the file from a fuzzer run stacktrace.
 
     Args:
-      error_string: The stack trace string containing the error.
+      error_bytes: The bytes containing the output from the fuzzer.
 
     Returns:
-      The error test case or None if not found.
+      The path to the testcase or None if not found.
     """
-    match = re.search(r'\bTest unit written to \.\/([^\s]+)', error_string)
+    match = re.search(rb'\bTest unit written to \.\/([^\s]+)', error_bytes)
     if match:
-      return os.path.join(self.out_dir, match.group(1))
+      return os.path.join(self.out_dir, match.group(1).decode('utf-8'))
     return None
 
-  def get_lastest_build_version(self):
+  def get_latest_build_version(self):
     """Gets the latest OSS-Fuzz build version for a projects' fuzzers.
 
     Returns:
@@ -306,8 +300,8 @@ class FuzzTarget:
 
     version = VERSION_STRING.format(project_name=self.project_name,
                                     sanitizer=self.sanitizer)
-    version_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS, self.project_name,
-                           version)
+    version_url = utils.url_join(utils.GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
+                                 self.project_name, version)
     try:
       response = urllib.request.urlopen(version_url)
     except urllib.error.HTTPError:
@@ -332,12 +326,12 @@ class FuzzTarget:
     if os.path.exists(os.path.join(build_dir, self.target_name)):
       return build_dir
     os.makedirs(build_dir, exist_ok=True)
-    latest_build_str = self.get_lastest_build_version()
+    latest_build_str = self.get_latest_build_version()
     if not latest_build_str:
       return None
 
-    oss_fuzz_build_url = url_join(GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
-                                  self.project_name, latest_build_str)
+    oss_fuzz_build_url = utils.url_join(utils.GCS_BASE_URL, CLUSTERFUZZ_BUILDS,
+                                        self.project_name, latest_build_str)
     return download_and_unpack_zip(oss_fuzz_build_url, build_dir)
 
   def download_latest_corpus(self):
@@ -359,19 +353,52 @@ class FuzzTarget:
     if not self.target_name.startswith(qualified_name_prefix):
       project_qualified_fuzz_target_name = qualified_name_prefix + \
       self.target_name
-    corpus_url = url_join(
-        GCS_BASE_URL,
+    corpus_url = utils.url_join(
+        utils.GCS_BASE_URL,
         '{0}-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'.format(
             self.project_name), project_qualified_fuzz_target_name,
         CORPUS_ZIP_NAME)
     return download_and_unpack_zip(corpus_url, corpus_dir)
 
 
-def download_and_unpack_zip(http_url, out_dir):
-  """Downloads and unpacks a zip file from an http url.
+def download_url(url, filename, num_retries=3):
+  """Downloads the file located at |url|, using HTTP to |filename|.
 
   Args:
-    http_url: A url to the zip file to be downloaded and unpacked.
+    url: A url to a file to download.
+    filename: The path the file should be downloaded to.
+    num_retries: The number of times to retry the download on
+       ConnectionResetError.
+
+  Returns:
+    True on success.
+  """
+  sleep_time = 1
+
+  for _ in range(num_retries):
+    try:
+      urllib.request.urlretrieve(url, filename)
+      return True
+    except urllib.error.HTTPError:
+      # In these cases, retrying probably wont work since the error probably
+      # means there is nothing at the URL to download.
+      logging.error('Unable to download from: %s.', url)
+      return False
+    except ConnectionResetError:
+      # These errors are more likely to be transient. Retry.
+      pass
+    time.sleep(sleep_time)
+
+  logging.error('Failed to download %s, %d times.', url, num_retries)
+
+  return False
+
+
+def download_and_unpack_zip(url, out_dir):
+  """Downloads and unpacks a zip file from an HTTP URL.
+
+  Args:
+    url: A url to the zip file to be downloaded and unpacked.
     out_dir: The path where the zip file should be extracted to.
 
   Returns:
@@ -384,28 +411,14 @@ def download_and_unpack_zip(http_url, out_dir):
   # Gives the temporary zip file a unique identifier in the case that
   # that download_and_unpack_zip is done in parallel.
   with tempfile.NamedTemporaryFile(suffix='.zip') as tmp_file:
-    try:
-      urllib.request.urlretrieve(http_url, tmp_file.name)
-    except urllib.error.HTTPError:
-      logging.error('Unable to download build from: %s.', http_url)
+    result = download_url(url, tmp_file.name)
+    if not result:
       return None
 
     try:
       with zipfile.ZipFile(tmp_file.name, 'r') as zip_file:
         zip_file.extractall(out_dir)
     except zipfile.BadZipFile:
-      logging.error('Error unpacking zip from %s. Bad Zipfile.', http_url)
+      logging.error('Error unpacking zip from %s. Bad Zipfile.', url)
       return None
   return out_dir
-
-
-def url_join(*url_parts):
-  """Joins URLs together using the posix join method.
-
-  Args:
-    url_parts: Sections of a URL to be joined.
-
-  Returns:
-    Joined URL.
-  """
-  return posixpath.join(*url_parts)

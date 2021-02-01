@@ -7,7 +7,10 @@ auto_ccs:
   - "pkusunyifeng@gmail.com"
   - "bshas3@gmail.com"
   - "cpp.code.lv@gmail.com"
+  - "u9012063@gmail.com"
+  - "ilya.maximets@gmail.com"
 sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://github.com/openvswitch/ovs.git'
