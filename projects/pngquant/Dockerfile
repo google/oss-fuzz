@@ -20,4 +20,3 @@ RUN git clone --depth 1 https://github.com/kornelski/pngquant
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git $SRC/pngquant/libpng
 WORKDIR $SRC/
 RUN mv $SRC/pngquant/test/oss_fuzz_build.sh $SRC/build.sh
-RUN mv $SRC/pngquant/test/fuzzer.c $SRC/fuzzer.c
