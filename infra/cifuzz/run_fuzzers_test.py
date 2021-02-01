@@ -338,7 +338,6 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
         build_dir = os.path.join(workspace, 'out', 'oss_fuzz_latest')
         self.assertNotEqual(0, len(os.listdir(build_dir)))
 
-
   @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                    'INTEGRATION_TESTS=1 not set')
   def test_old_bug_found(self):
