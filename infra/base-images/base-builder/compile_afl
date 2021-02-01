@@ -50,7 +50,7 @@ CXXFLAGS=$INITIAL_CXXFLAGS
 
 # Some important projects include libraries, copy those even when they don't
 # start with "afl-". Use "sort -u" to avoid a warning about duplicates.
-ls afl-* *.a *.o *.so | sort -u | xargs cp -t $OUT
+ls afl-* *.txt *.a *.o *.so | sort -u | xargs cp -t $OUT
 popd > /dev/null
 
 echo " done."
