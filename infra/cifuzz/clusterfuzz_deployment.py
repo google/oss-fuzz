@@ -89,17 +89,16 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       return None
     return response.read().decode()
 
-  def download_latest_build(self, target_name, out_dir):
+  def download_latest_build(self, out_dir):
     """Downloads the latest OSS-Fuzz build from GCS.
 
     Returns:
       A path to where the OSS-Fuzz build was stored, or None if it wasn't.
     """
-    # !!! This shouldn't be fuzz target specific.
     # !!! Why end with project_name?
     build_dir = os.path.join(out_dir, 'cifuzz-clusterfuzz-latest-build',
                              self.config.project_name)
-    if os.path.exists(os.path.join(build_dir, target_name)):
+    if os.path.exists(build_dir):
       return build_dir
 
     os.makedirs(build_dir, exist_ok=True)

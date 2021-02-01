@@ -108,7 +108,7 @@ class FuzzTarget:
 
     # If corpus can be downloaded use it for fuzzing.
     latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name, self.out_dir)
+        self.out_dir)
     if latest_corpus_path:
       run_fuzzer_command = run_fuzzer_command + ' ' + latest_corpus_path
     command.append(run_fuzzer_command)
