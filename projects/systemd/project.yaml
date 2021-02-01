@@ -1,11 +1,14 @@
 homepage: "https://freedesktop.org/wiki/Software/systemd/"
-language: c++
+language: c
 primary_contact: "lennart@poettering.net"
 builds_per_day: 4
 sanitizers:
   - address
   - undefined
   - memory
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
 auto_ccs:
   - jonathan@titanous.com
   - zbyszek@in.waw.pl
