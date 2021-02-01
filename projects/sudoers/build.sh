@@ -15,25 +15,33 @@
 #
 ################################################################################
 
-if [ $SANITIZER == "address" ]; then
-    export LDFLAGS="-fsanitize=address"
-elif [ $SANITIZER == "undefined" ]; then
-    export LDFLAGS="-fsanitize=undefined"
-elif [ $SANITIZER == "coverage" ]; then
-    export LDFLAGS="$CFLAGS"
+# Debugging
+env
+
+# Move ASAN-specific flags into ASAN_CFLAGS and ASAN_LDFLAGS
+# That way they don't affect configure but will get used when building.
+if [ $SANITIZER == "coverage" ]; then
+    export ASAN_CFLAGS="$COVERAGE_FLAGS"
+    export ASAN_LDFLAGS="$COVERAGE_FLAGS"
+    CFLAGS="`echo \"$CFLAGS\" | sed \"s/ $COVERAGE_FLAGS//\"`"
+else
+    export ASAN_CFLAGS="$SANITIZER_FLAGS"
+    export ASAN_LDFLAGS="$SANITIZER_FLAGS"
+    CFLAGS="`echo \"$CFLAGS\" | sed \"s/ $SANITIZER_FLAGS//\"`"
 fi
 
+# Build sudo with static libs for simpler fuzzing
 ./configure --enable-static-sudoers --enable-static --disable-shared-libutil
 make
 
 # Fuzz json parser
 cd lib/iolog/
-$CC $CFLAGS -c -I../../include -I../.. -I. $SRC/fuzz_iolog_json_parse.c  -fPIC -DPIC -o .libs/tmp_fuzz
+$CC $CFLAGS $ASAN_CFLAGS -c -I../../include -I../.. -I. $SRC/fuzz_iolog_json_parse.c  -fPIC -DPIC -o .libs/tmp_fuzz
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE .libs/tmp_fuzz -o $OUT/fuzz_iolog_json_parse \
     .libs/libsudo_iolog.a ../eventlog/.libs/libsudo_eventlog.a ../util/.libs/libsudo_util.a
 
 # Fuzz libsudoers parsing
 cd ../../plugins/sudoers
-$CC $CFLAGS -c -I../../include -I../.. -I.  $SRC/fuzz_sudoers_parse.c  -fPIC -DPIC -o fuzz_sudoers_parse.o
+$CC $CFLAGS $ASAN_CFLAGS -c -I../../include -I../.. -I.  $SRC/fuzz_sudoers_parse.c  -fPIC -DPIC -o fuzz_sudoers_parse.o
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_sudoers_parse.o -o $OUT/fuzz_sudoers_parse \
     ./.libs/libparsesudoers.a ./.libs/sudoers.a  net_ifs.o parse_ldif.o ldap_util.o -lcrypt
