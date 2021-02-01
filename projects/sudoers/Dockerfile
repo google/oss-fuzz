@@ -19,4 +19,3 @@ RUN git clone https://github.com/sudo-project/sudo
 
 WORKDIR $SRC/sudo
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/
