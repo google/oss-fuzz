@@ -15,25 +15,70 @@
 #
 ################################################################################
 
-if [ $SANITIZER == "address" ]; then
-    export LDFLAGS="-fsanitize=address"
-elif [ $SANITIZER == "undefined" ]; then
-    export LDFLAGS="-fsanitize=undefined"
-elif [ $SANITIZER == "coverage" ]; then
-    export LDFLAGS="$CFLAGS"
+# Debugging
+env
+
+# Move ASAN-specific flags into ASAN_CFLAGS and ASAN_LDFLAGS
+# That way they don't affect configure but will get used when building.
+if [ $SANITIZER == "coverage" ]; then
+    export ASAN_CFLAGS="$COVERAGE_FLAGS"
+    export ASAN_LDFLAGS="$COVERAGE_FLAGS"
+    CFLAGS="`echo \"$CFLAGS\" | sed \"s/ $COVERAGE_FLAGS//\"`"
+else
+    export ASAN_CFLAGS="$SANITIZER_FLAGS"
+    export ASAN_LDFLAGS="$SANITIZER_FLAGS"
+    CFLAGS="`echo \"$CFLAGS\" | sed \"s/ $SANITIZER_FLAGS//\"`"
 fi
 
-./configure --enable-static-sudoers --enable-static --disable-shared-libutil
-make
+# Build sudo with static libs for simpler fuzzing
+./configure --enable-static-sudoers --enable-static --disable-shared-libutil \
+    --disable-leaks --enable-warnings --enable-werror
+make -j$(nproc)
 
-# Fuzz json parser
-cd lib/iolog/
-$CC $CFLAGS -c -I../../include -I../.. -I. $SRC/fuzz_iolog_json_parse.c  -fPIC -DPIC -o .libs/tmp_fuzz
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE .libs/tmp_fuzz -o $OUT/fuzz_iolog_json_parse \
-    .libs/libsudo_iolog.a ../eventlog/.libs/libsudo_eventlog.a ../util/.libs/libsudo_util.a
+# Fuzz I/O log JSON parser
+cd lib/iolog
+$CC $CFLAGS $ASAN_CFLAGS -c -I../../include -I../.. -I. \
+    regress/fuzz/fuzz_iolog_json.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_iolog_json \
+    fuzz_iolog_json.o .libs/libsudo_iolog.a \
+    ../eventlog/.libs/libsudo_eventlog.a ../util/.libs/libsudo_util.a
 
-# Fuzz libsudoers parsing
+# Corpus for fuzzing I/O log JSON parser
+mkdir $WORK/corpus
+for f in `find regress/iolog_json -name '*.in'`; do
+    cp $f $WORK/corpus/`sha1sum $f | cut -d' ' -f1`
+done
+zip -j $OUT/fuzz_iolog_json_seed_corpus.zip $WORK/corpus/*
+rm -rf $WORK/corpus
+
+# Fuzz sudoers parser
 cd ../../plugins/sudoers
-$CC $CFLAGS -c -I../../include -I../.. -I.  $SRC/fuzz_sudoers_parse.c  -fPIC -DPIC -o fuzz_sudoers_parse.o
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz_sudoers_parse.o -o $OUT/fuzz_sudoers_parse \
-    ./.libs/libparsesudoers.a ./.libs/sudoers.a  net_ifs.o parse_ldif.o ldap_util.o -lcrypt
+$CC $CFLAGS $ASAN_CFLAGS -c -I../../include -I../.. -I. \
+    regress/fuzz/fuzz_sudoers.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_sudoers \
+    fuzz_sudoers.o locale.o stubs.o sudo_printf.o \
+    .libs/libparsesudoers.a ../../lib/util/.libs/libsudo_util.a
+
+# Corpus for fuzzing sudoers parser
+mkdir $WORK/corpus
+for f in sudoers `find regress/sudoers -name '*.in'`; do
+    cp $f $WORK/corpus/`sha1sum $f | cut -d' ' -f1`
+done
+zip -j $OUT/fuzz_sudoers_seed_corpus.zip $WORK/corpus/*
+rm -rf $WORK/corpus
+
+# Fuzz sudoers LDIF parser (used by cvtsudoers)
+cd ../../plugins/sudoers
+$CC $CFLAGS $ASAN_CFLAGS -c -I../../include -I../.. -I. \
+    regress/fuzz/fuzz_sudoers_ldif.c
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_sudoers_ldif \
+    fuzz_sudoers_ldif.o parse_ldif.o ldap_util.o fmtsudoers.o locale.o stubs.o \
+    sudo_printf.o .libs/libparsesudoers.a ../../lib/util/.libs/libsudo_util.a
+
+# Corpus for fuzzing sudoers LDIF parser
+mkdir $WORK/corpus
+for f in `find regress/sudoers -name '*.ldif.ok' \! -size 0`; do
+    cp $f $WORK/corpus/`sha1sum $f | cut -d' ' -f1`
+done
+zip -j $OUT/fuzz_sudoers_ldif_seed_corpus.zip $WORK/corpus/*
+rm -rf $WORK/corpus
