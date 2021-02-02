@@ -80,12 +80,11 @@ fi
 
 # Rust does not support sanitizers and coverage flags via CFLAGS/CXXFLAGS, so
 # use RUSTFLAGS.
-# FIXME: Support code coverage once support is in.
-# See https://github.com/rust-lang/rust/issues/34701.
-if [ "$SANITIZER" != "undefined" ] && [ "$SANITIZER" != "coverage" ] && [ "$ARCHITECTURE" != 'i386' ]; then
-  export RUSTFLAGS="--cfg fuzzing -Zsanitizer=${SANITIZER} -Cdebuginfo=1 -Cforce-frame-pointers"
-else
-  export RUSTFLAGS="--cfg fuzzing -Cdebuginfo=1 -Cforce-frame-pointers"
+export RUSTFLAGS="--cfg fuzzing -Cdebuginfo=1 -Cforce-frame-pointers"
+if [ "$SANITIZER" = "coverage" ]; then
+  export RUSTFLAGS="${RUSTFLAGS} -Zinstrument-coverage"
+elif [ "$SANITIZER" != "undefined" ] && [ "$ARCHITECTURE" != 'i386' ]; then
+  export RUSTFLAGS="${RUSTFLAGS} -Zsanitizer=${SANITIZER}"
 fi
 
 # Add Rust libfuzzer flags.
