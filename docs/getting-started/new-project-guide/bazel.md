@@ -3,7 +3,7 @@ layout: default
 title: Integrating a Bazel project
 parent: Setting up a new project
 grand_parent: Getting started
-nav_order: 1
+nav_order: 4
 permalink: /getting-started/new-project-guide/bazel/
 ---
 
