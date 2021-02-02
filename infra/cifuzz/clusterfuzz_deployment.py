@@ -29,6 +29,9 @@ import utils
 class BaseClusterFuzzDeployment:
   """Base class for ClusterFuzz deployments."""
 
+  CORPUS_DIR_NAME = 'cifuzz-corpus'
+  BUILD_DIR_NAME = 'cifuzz-latest-build'
+
   def __init__(self, config):
     self.config = config
 
@@ -95,7 +98,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     Returns:
       A path to where the OSS-Fuzz build was stored, or None if it wasn't.
     """
-    build_dir = os.path.join(out_dir, 'cifuzz-clusterfuzz-latest-build')
+    build_dir = os.path.join(out_dir, self.BUILD_DIR_NAME)
     if os.path.exists(build_dir):
       return build_dir
 
@@ -120,14 +123,14 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     Returns:
       The local path to to corpus or None if download failed.
     """
-    corpus_dir = os.path.join(out_dir, 'cifuzz-corpus', target_name)
+    corpus_dir = os.path.join(out_dir, self.CORPUS_DIR_NAME, target_name)
     os.makedirs(corpus_dir, exist_ok=True)
     # TODO(metzman): Clean up this code.
     project_qualified_fuzz_target_name = target_name
-    qualified_name_prefix = '%s_' % self.config.project_name
+    qualified_name_prefix = self.config.project_name + '_'
 
     if not target_name.startswith(qualified_name_prefix):
-      project_qualified_fuzz_target_name = (qualified_name_prefix + target_name)
+      project_qualified_fuzz_target_name = qualified_name_prefix + target_name
 
     corpus_url = utils.url_join(
         utils.GCS_BASE_URL,
@@ -141,7 +144,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     return None
 
 
-def download_url(url, filename, num_retries=3):
+def download_url(url, filename, num_attempts=3):
   """Downloads the file located at |url|, using HTTP to |filename|.
 
   Args:
@@ -156,7 +159,7 @@ def download_url(url, filename, num_retries=3):
   sleep_time = 1
 
   # TODO(metzman): Use retry.wrap here.
-  for _ in range(num_retries):
+  for _ in range(num_attempts):
     try:
       urllib.request.urlretrieve(url, filename)
       return True
@@ -170,7 +173,7 @@ def download_url(url, filename, num_retries=3):
       pass
     time.sleep(sleep_time)
 
-  logging.error('Failed to download %s, %d times.', url, num_retries)
+  logging.error('Failed to download %s, %d times.', url, num_attempts)
 
   return False
 
@@ -192,8 +195,7 @@ def download_and_unpack_zip(url, extract_directory):
   # Gives the temporary zip file a unique identifier in the case that
   # that download_and_unpack_zip is done in parallel.
   with tempfile.NamedTemporaryFile(suffix='.zip') as tmp_file:
-    result = download_url(url, tmp_file.name)
-    if not result:
+    if not download_url(url, tmp_file.name):
       return False
 
     try:

@@ -19,6 +19,8 @@ import unittest
 from unittest import mock
 import urllib.error
 
+from pyfakefs import fake_filesystem_unittest
+
 import clusterfuzz_deployment
 import config_utils
 
@@ -139,18 +141,20 @@ class DownloadUrlTest(unittest.TestCase):
                                     self.URL, 3)
 
 
-class DownloadAndUnpackZipTest(unittest.TestCase):
+class DownloadAndUnpackZipTest(fake_filesystem_unittest.TestCase):
   """Tests download_and_unpack_zip."""
+
+  def setUp(self):
+    self.setUpPyfakefs()
 
   def test_bad_zip_download(self):
     """Tests download_and_unpack_zip returns none when a bad zip is passed."""
-    with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
-        'urllib.request.urlretrieve', return_value=True):
-      with open(os.path.join(tmp_dir, 'url_tmp.zip'), 'w'):
+    with open('/url_tmp.zip', 'w') as file_handle:
         file_handle.write('Test file.')
+    with mock.patch('urllib.request.urlretrieve', return_value=True):
       self.assertFalse(
           clusterfuzz_deployment.download_and_unpack_zip(
-              '/not/a/real/url', tmp_dir))
+              '/not/a/real/url', '/extract-directory'))
 
 
 if __name__ == '__main__':
