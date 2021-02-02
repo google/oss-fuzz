@@ -20,7 +20,8 @@
 cd ${SRC}/libcbor
 patch -l -p0 < ${SRC}/libfido2/fuzz/README
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${WORK} -DSANITIZE=OFF ..
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_INSTALL_PREFIX=${WORK} -DSANITIZE=OFF ..
 make -j$(nproc) VERBOSE=1
 make install
 
