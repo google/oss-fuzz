@@ -150,7 +150,7 @@ class DownloadAndUnpackZipTest(fake_filesystem_unittest.TestCase):
   def test_bad_zip_download(self):
     """Tests download_and_unpack_zip returns none when a bad zip is passed."""
     with open('/url_tmp.zip', 'w') as file_handle:
-        file_handle.write('Test file.')
+      file_handle.write('Test file.')
     with mock.patch('urllib.request.urlretrieve', return_value=True):
       self.assertFalse(
           clusterfuzz_deployment.download_and_unpack_zip(
