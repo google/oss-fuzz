@@ -28,11 +28,8 @@ unset CXXFLAGS
 unset CFLAGS
 make clean
 AFL_NO_X86=1 PYTHON_INCLUDE=/ make
-# ensure no coverage or fuzzer sanitizers are set
-CFLAGS=$(echo " $INITIAL_CFLAGS"|sed 's/-fsanitize=fuzz[a-z-]*//'|sed 's/-fsanitize-coverage=[a-z-]*//')
-CXXFLAGS=$(echo " $INITIAL_CXXFLAGS"|sed 's/-fsanitize=fuzz[a-z-]*//'|sed 's/-fsanitize-coverage=[a-z-]*//')
-export CFLAGS
-export CXXFLAGS
+CFLAGS=$INITIAL_CFLAGS
+CXXFLAGS=$INITIAL_CXXFLAGS
 
 # Build afl++ driver with existing CFLAGS, CXXFLAGS.
 make -C utils/aflpp_driver
