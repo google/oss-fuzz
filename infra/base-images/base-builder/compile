@@ -73,8 +73,8 @@ then
   export COVERAGE_FLAGS="${!COVERAGE_FLAGS_VAR}"
 fi
 
- # Don't need coverage instrumentation for engine-less builds.
-if [ $FUZZING_ENGINE = "none" ]; then
+ # Don't need coverage instrumentation for engine-less, afl++ builds.
+if [ $FUZZING_ENGINE = "none" ] || [ $FUZZING_ENGINE = "afl" ]; then
   export COVERAGE_FLAGS=
 fi
 
