@@ -20,10 +20,6 @@ echo "Compiling afl++"
 # Build and copy afl++ tools necessary for fuzzing.
 pushd $SRC/aflplusplus > /dev/null
 
-# this fixes dictionary links to vanilla afl
-cd "$SRC" && test '!' -e afl && ln -s aflpluspus afl
-cd "$SRC/aflplusplus"
-
 # Unset CFLAGS and CXXFLAGS while building AFL since we don't want to slow it
 # down with sanitizers.
 INITIAL_CXXFLAGS=$CXXFLAGS
