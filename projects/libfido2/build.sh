@@ -37,6 +37,12 @@ fi
 make -j$(nproc) LDCMD="${CXX} ${CXXFLAGS}"
 make install_sw
 
+# Build zlib, taken from oss-fuzz/projects/zlib.sh
+cd ${SRC}/zlib
+./configure --prefix=${WORK}
+make -j$(nproc) all
+make install
+
 # Building libfido2 with ${LIB_FUZZING_ENGINE} and chosen sanitizer
 cd ${SRC}/libfido2
 mkdir build && cd build
