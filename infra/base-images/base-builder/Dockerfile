@@ -59,8 +59,10 @@ RUN export PYTHON_DEPS="\
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
-# Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging.
-RUN unset CFLAGS CXXFLAGS && pip3 install -v atheris pyinstaller==4.1
+# Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
+# six for Bazel rules.
+RUN unset CFLAGS CXXFLAGS && pip3 install -v \
+    atheris pyinstaller==4.1 six==1.15.0
 
 # Download and install the latest stable Go.
 RUN cd /tmp && \
