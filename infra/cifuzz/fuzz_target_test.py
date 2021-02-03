@@ -187,16 +187,14 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     self.testcase_path = '/testcase'
     self.fs.create_file(self.testcase_path, contents='')
 
+  @mock.patch('fuzz_target.FuzzTarget.is_reproducible',
+              side_effect=[True, False])
   @mock.patch('logging.info')
-  def test_new_reproducible_crash(self, mocked_info):
+  def test_new_reproducible_crash(self, mocked_info, _):
     """Tests that a new reproducible crash returns True."""
-
-    with mock.patch('fuzz_target.FuzzTarget.is_reproducible',
-                    side_effect=[True, False]):
-      with tempfile.TemporaryDirectory() as tmp_dir:
-        self.test_target.out_dir = tmp_dir
-        self.assertTrue(self.test_target.is_crash_reportable(
-            self.testcase_path))
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      self.test_target.out_dir = tmp_dir
+      self.assertTrue(self.test_target.is_crash_reportable(self.testcase_path))
     mocked_info.assert_called_with(
         'The crash is reproducible. The crash doesn\'t reproduce '
         'on old builds. This code change probably introduced the '
@@ -219,7 +217,6 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     """Tests that a nonreportable crash causes the method to return False."""
     with mock.patch('fuzz_target.FuzzTarget.is_reproducible',
                     side_effect=is_reproducible_retvals):
-
       with mock.patch('clusterfuzz_deployment.OSSFuzz.download_latest_build',
                       return_value=self.oss_fuzz_build_path):
         self.assertFalse(
