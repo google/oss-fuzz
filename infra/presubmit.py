@@ -384,9 +384,9 @@ def main():
   """Check changes on a branch for common issues before submitting."""
   # Get program arguments.
   parser = argparse.ArgumentParser(description='Presubmit script for oss-fuzz.')
-  parser.add_argument('command',
+  parser.add_argument('commands',
                       choices=['format', 'lint', 'license', 'infra-tests'],
-                      nargs='?')
+                      nargs='*')
   parser.add_argument('--all-files',
                       action='store_true',
                       help='Run presubmit check(s) on all files',
@@ -400,26 +400,23 @@ def main():
 
   os.chdir(_SRC_ROOT)
 
-  # Do one specific check if the user asked for it.
-  if args.command == 'format':
-    success = yapf(relevant_files, False)
-    return bool_to_returncode(success)
+  if not args.commands:
+    # Do all checks if none specified.
+    return bool_to_returncode(do_checks(relevant_files))
 
-  if args.command == 'lint':
-    success = lint()
-    return bool_to_returncode(success)
-
-  if args.command == 'license':
-    success = check_license(relevant_files)
-    return bool_to_returncode(success)
-
-  if args.command == 'infra-tests':
-    success = run_tests(relevant_files)
-    return bool_to_returncode(success)
-
-  # Do all the checks (but no tests).
-  success = do_checks(relevant_files)
-
+  success = True
+  # Do specific checks user asked for.
+  for command in args.commands:
+    current_success = True
+    if command == 'format':
+      current_success = yapf(relevant_files, False)
+    elif command == 'lint':
+      current_success = lint()
+    elif command == 'license':
+      current_success = check_license(relevant_files)
+    elif command == 'infra-tests':
+      current_success = run_tests(relevant_files)
+    success = current_success and success
   return bool_to_returncode(success)
 
 
