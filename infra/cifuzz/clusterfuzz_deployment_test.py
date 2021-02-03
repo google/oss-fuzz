@@ -80,7 +80,6 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
     call_args, _ = mocked_download_and_unpack_zip.call_args
     self.assertEqual(call_args, (expected_url, expected_corpus_dir))
 
-
   @mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
               return_value=False)
   def test_download_fail(self, _):

@@ -241,7 +241,8 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   @mock.patch('run_fuzzers.CiFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.CiFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
-                                  mocked_run_fuzz_target, mocked_get_fuzz_targets):
+                                  mocked_run_fuzz_target,
+                                  mocked_get_fuzz_targets):
     """Tests that run_fuzz_targets quits on the first crash it finds."""
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'out')
@@ -275,7 +276,8 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
-                                  mocked_run_fuzz_target, mocked_get_fuzz_targets):
+                                  mocked_run_fuzz_target,
+                                  mocked_get_fuzz_targets):
     """Tests that run_fuzz_targets quits on the first crash it finds."""
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'out')
