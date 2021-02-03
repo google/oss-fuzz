@@ -50,9 +50,9 @@ python $SRC/filter_cipd.py \
       pigweed/third_party/kythe
 
 # Pigweed checks that it can find these as part of a "sanity check".
-mkdir -p "$PW_ROOT/.cipd/pigweed/bin"
+mkdir -p "$PW_ROOT/.environment/cipd/pigweed/bin"
 for b in arm-none-eabi-gcc bazel bloaty ; do
-  x="$PW_ROOT/.cipd/pigweed/bin/$b"
+  x="$PW_ROOT/.environment/cipd/pigweed/bin/$b"
   if [[ ! -x $x ]] ; then
     ln -s "$(which false)" "$x"
   fi
@@ -70,13 +70,12 @@ EXTRA_CXXFLAGS="-Wno-unused-command-line-argument"
 EXTRA_CXXFLAGS+=" -fno-sanitize=vptr"
 
 # Build!
-CXXFLAGS="$CXXFLAGS $EXTRA_CXXFLAGS" \
+CXXFLAGS="$CXXFLAGS $EXTRA_CXXFLAGS" LDFLAGS="$CXXFLAGS" \
   gn gen "$BUILDROOT" \
     --root="$PW_ROOT" \
-    --args="oss_fuzz_enabled=true
-            pw_target_toolchain=\"//pw_toolchain:host_clang_og\"
-            pw_sanitizer=\"$SANITIZER\""
-ninja -C "$BUILDROOT"
+    --args="pw_toolchain_OSS_FUZZ_ENABLED=true
+            pw_toolchain_SANITIZERS=[\"$SANITIZER\"]"
+ninja -C "$BUILDROOT" fuzzers
 
 # Use build-generated metadata to identify available fuzzers
 python "$SRC/extract_pw_fuzzers.py" --buildroot "$BUILDROOT" --out "$OUT/"

@@ -33,7 +33,8 @@ def main():
   print('  buildroot: ' + args.buildroot)
   print('        out: ' + args.out)
 
-  testinfo = os.path.join(args.buildroot, 'obj',
+  testinfo = os.path.join(args.buildroot, 'host_clang_fuzz',
+                          'obj',
                           'pw_module_tests.testinfo.json')
   tests = []
   with open(testinfo) as json_file:
