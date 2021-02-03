@@ -14,7 +14,6 @@
 """Tests for clusterfuzz_deployment.py"""
 
 import os
-import tempfile
 import unittest
 from unittest import mock
 import urllib.error
@@ -58,42 +57,44 @@ def _create_deployment(**kwargs):
   return clusterfuzz_deployment.get_clusterfuzz_deployment(config)
 
 
-class OSSFuzzTest(unittest.TestCase):
+class OSSFuzzTest(fake_filesystem_unittest.TestCase):
   """Tests OSSFuzz."""
+
+  OUT_DIR = '/out'
+
+  def setUp(self):
+    self.setUpPyfakefs()
 
   @mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
               return_value=False)
   def test_download_corpus(self, mocked_download_and_unpack_zip):
     """Tests that we can download a corpus for a valid project."""
     deployment = _create_deployment()
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      deployment.download_corpus(EXAMPLE_FUZZER, tmp_dir)
-      (url, out_dir), _ = mocked_download_and_unpack_zip.call_args
-      self.assertEqual(
-          url, 'https://storage.googleapis.com/example-backup.'
-          'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
-          'example_crash_fuzzer/public.zip')
-      self.assertEqual(out_dir,
-                       os.path.join(tmp_dir, 'cifuzz-corpus', EXAMPLE_FUZZER))
+    deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
+    expected_corpus_dir = os.path.join(self.OUT_DIR, 'cifuzz-corpus',
+                                       EXAMPLE_FUZZER)
+    expected_url = ('https://storage.googleapis.com/example-backup.'
+                    'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
+                    'example_crash_fuzzer/public.zip')
+    call_args, _ = mocked_download_and_unpack_zip.call_args
+    self.assertEqual(call_args, (expected_url, expected_corpus_dir))
 
   @mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
               return_value=False)
   def test_download_fail(self, _):
     """Tests that when downloading fails, None is returned."""
     deployment = _create_deployment()
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      corpus_path = deployment.download_corpus(EXAMPLE_FUZZER, tmp_dir)
-      self.assertIsNone(corpus_path)
+    corpus_path = deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
+    self.assertIsNone(corpus_path)
 
   def test_download_latest_build(self):
     """Tests that the build directory is downloaded once and no more."""
     deployment = _create_deployment()
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      latest_name = deployment.get_latest_build_name()
-      with mock.patch('clusterfuzz_deployment.OSSFuzz.get_latest_build_name',
-                      return_value=latest_name):
-        latest_build_path = deployment.download_latest_build(tmp_dir)
-        self.assertNotEqual(len(os.listdir(latest_build_path)), 0)
+    latest_name = deployment.get_latest_build_name()
+    with mock.patch('clusterfuzz_deployment.OSSFuzz.get_latest_build_name',
+                    return_value=latest_name):
+      latest_build_path = deployment.download_latest_build(self.OUT_DIR)
+      self.assertNotEqual(len(os.listdir(latest_build_path)), 0)
 
   def test_get_latest_build_name(self):
     """Tests that the latest build name can be retrieved from GCS."""
