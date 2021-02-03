@@ -45,7 +45,7 @@ def main():
       continue
     fuzzer = test['test_name']
     objdir = test['test_directory']
-    module = os.path.basename(objdir)
+    module = os.path.basename(os.path.dirname(objdir))
     if module == 'pw_fuzzer':
       # Skip examples
       continue
