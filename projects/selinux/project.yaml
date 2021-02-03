@@ -1,6 +1,7 @@
 homepage: "https://github.com/SELinuxProject/selinux"
 language: c
 primary_contact: "nicolas.iooss_ossfuzzselinux@m4x.org"
+builds_per_day: 4
 sanitizers:
   - address
   - undefined
