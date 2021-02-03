@@ -37,6 +37,13 @@ make -j$(nproc)
 make install
 cd ..
 
+cd fuzzpcap
+mkdir build
+cd build
+cmake ..
+make install
+cd ../..
+
 cd libyaml
 ./bootstrap
 ./configure --disable-shared
@@ -102,3 +109,13 @@ cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; cat $t/*.pcap >>
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_seed_corpus.zip corpus
+rm -Rf corpus
+mkdir corpus
+set +x
+ls | grep -v corpus | while read t; do
+cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+echo -ne '\0' >> corpus/$i; python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+done
+set -x
+zip -q -r $OUT/fuzz_sigpcap_aware_seed_corpus.zip corpus
+echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware.dict
