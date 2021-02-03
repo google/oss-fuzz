@@ -64,13 +64,14 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
+    self.deployment = _create_deployment()
 
   @mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
-              return_value=False)
+              return_value=True)
   def test_download_corpus(self, mocked_download_and_unpack_zip):
     """Tests that we can download a corpus for a valid project."""
-    deployment = _create_deployment()
-    deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
+    result = self.deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
+    self.assertIsNotNone(result)
     expected_corpus_dir = os.path.join(self.OUT_DIR, 'cifuzz-corpus',
                                        EXAMPLE_FUZZER)
     expected_url = ('https://storage.googleapis.com/example-backup.'
@@ -79,27 +80,17 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
     call_args, _ = mocked_download_and_unpack_zip.call_args
     self.assertEqual(call_args, (expected_url, expected_corpus_dir))
 
+
   @mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
               return_value=False)
   def test_download_fail(self, _):
     """Tests that when downloading fails, None is returned."""
-    deployment = _create_deployment()
-    corpus_path = deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
+    corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
     self.assertIsNone(corpus_path)
-
-  def test_download_latest_build(self):
-    """Tests that the build directory is downloaded once and no more."""
-    deployment = _create_deployment()
-    latest_name = deployment.get_latest_build_name()
-    with mock.patch('clusterfuzz_deployment.OSSFuzz.get_latest_build_name',
-                    return_value=latest_name):
-      latest_build_path = deployment.download_latest_build(self.OUT_DIR)
-      self.assertNotEqual(len(os.listdir(latest_build_path)), 0)
 
   def test_get_latest_build_name(self):
     """Tests that the latest build name can be retrieved from GCS."""
-    deployment = _create_deployment()
-    latest_build_name = deployment.get_latest_build_name()
+    latest_build_name = self.deployment.get_latest_build_name()
     self.assertTrue(latest_build_name.endswith('.zip'))
     self.assertTrue('address' in latest_build_name)
 
