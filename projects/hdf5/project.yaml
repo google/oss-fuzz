@@ -1,0 +1,10 @@
+homepage: ""
+main_repo: ""
+language: c
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
