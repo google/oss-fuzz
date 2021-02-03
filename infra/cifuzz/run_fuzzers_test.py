@@ -237,10 +237,11 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
 
+  @mock.patch('utils.get_fuzz_targets')
   @mock.patch('run_fuzzers.CiFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.CiFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
-                                  mocked_run_fuzz_target):
+                                  mocked_run_fuzz_target, mocked_get_fuzz_targets):
     """Tests that run_fuzz_targets quits on the first crash it finds."""
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'out')
@@ -250,9 +251,8 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
                             project_name=EXAMPLE_PROJECT)
     runner = run_fuzzers.CiFuzzTargetRunner(config)
 
-    with mock.patch('utils.get_fuzz_targets') as mocked_get_fuzz_targets:
-      mocked_get_fuzz_targets.return_value = ['target1', 'target2']
-      runner.initialize()
+    mocked_get_fuzz_targets.return_value = ['target1', 'target2']
+    runner.initialize()
     testcase = os.path.join(workspace, 'testcase')
     self.fs.create_file(testcase)
     stacktrace = b'stacktrace'
@@ -271,10 +271,11 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
 
+  @mock.patch('utils.get_fuzz_targets')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
-                                  mocked_run_fuzz_target):
+                                  mocked_run_fuzz_target, mocked_get_fuzz_targets):
     """Tests that run_fuzz_targets quits on the first crash it finds."""
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'out')
@@ -284,9 +285,8 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
                             project_name=EXAMPLE_PROJECT)
     runner = run_fuzzers.BatchFuzzTargetRunner(config)
 
-    with mock.patch('utils.get_fuzz_targets') as mocked_get_fuzz_targets:
-      mocked_get_fuzz_targets.return_value = ['target1', 'target2']
-      runner.initialize()
+    mocked_get_fuzz_targets.return_value = ['target1', 'target2']
+    runner.initialize()
     testcase1 = os.path.join(workspace, 'testcase1')
     testcase2 = os.path.join(workspace, 'testcase2')
     self.fs.create_file(testcase1)
