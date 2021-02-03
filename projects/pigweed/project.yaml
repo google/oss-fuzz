@@ -2,8 +2,19 @@ homepage: "https://pigweed.googlesource.com/pigweed/"
 language: c++
 primary_contact: "keir@google.com"
 auto_ccs:
- - "frolv@google.com"
- - "mohrr@google.com"
+  - "alizhang@google.com"
+  - "amontanez@google.com"
+  - "davidrogers@google.com"
+  - "ewout@google.com"
+  - "frolv@google.com"
+  - "hepler@google.com"
+  - "keir@google.com"
+  - "moch@google.com"
+  - "mohrr@google.com"
+  - "prashanthsw@google.com"
+  - "rginda@google.com"
+  - "tonymd@google.com"
+  - "vivlam@google.com"
 sanitizers:
-- address
+  - address
 main_repo: 'https://pigweed.googlesource.com/pigweed/pigweed'
