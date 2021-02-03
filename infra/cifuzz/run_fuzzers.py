@@ -18,6 +18,7 @@ import shutil
 import sys
 import time
 
+import clusterfuzz_deployment
 import fuzz_target
 import stack_parser
 
@@ -32,6 +33,8 @@ class BaseFuzzTargetRunner:
 
   def __init__(self, config):
     self.config = config
+    self.clusterfuzz_deployment = (
+        clusterfuzz_deployment.get_clusterfuzz_deployment(self.config))
     # Set by the initialize method.
     self.out_dir = None
     self.fuzz_target_paths = None
@@ -96,11 +99,8 @@ class BaseFuzzTargetRunner:
 
   def create_fuzz_target_obj(self, target_path, run_seconds):
     """Returns a fuzz target object."""
-    return fuzz_target.FuzzTarget(target_path,
-                                  run_seconds,
-                                  self.out_dir,
-                                  self.config.project_name,
-                                  sanitizer=self.config.sanitizer)
+    return fuzz_target.FuzzTarget(target_path, run_seconds, self.out_dir,
+                                  self.clusterfuzz_deployment, self.config)
 
   def run_fuzz_targets(self):
     """Runs fuzz targets. Returns True if a bug was found."""
