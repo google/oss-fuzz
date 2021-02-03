@@ -61,29 +61,29 @@ def _create_deployment(**kwargs):
 class OSSFuzzTest(unittest.TestCase):
   """Tests OSSFuzz."""
 
-  def test_download_corpus(self):
+  @mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
+              return_value=False)
+  def test_download_corpus(self, mocked_download_and_unpack_zip):
     """Tests that we can download a corpus for a valid project."""
     deployment = _create_deployment()
     with tempfile.TemporaryDirectory() as tmp_dir:
-      with mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
-                      return_value=False) as mocked_download_and_unpack_zip:
-        deployment.download_corpus(EXAMPLE_FUZZER, tmp_dir)
-        (url, out_dir), _ = mocked_download_and_unpack_zip.call_args
-        self.assertEqual(
-            url, 'https://storage.googleapis.com/example-backup.'
-            'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
-            'example_crash_fuzzer/public.zip')
-        self.assertEqual(out_dir,
-                         os.path.join(tmp_dir, 'cifuzz-corpus', EXAMPLE_FUZZER))
+      deployment.download_corpus(EXAMPLE_FUZZER, tmp_dir)
+      (url, out_dir), _ = mocked_download_and_unpack_zip.call_args
+      self.assertEqual(
+          url, 'https://storage.googleapis.com/example-backup.'
+          'clusterfuzz-external.appspot.com/corpus/libFuzzer/'
+          'example_crash_fuzzer/public.zip')
+      self.assertEqual(out_dir,
+                       os.path.join(tmp_dir, 'cifuzz-corpus', EXAMPLE_FUZZER))
 
-  def test_download_fail(self):
+  @mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
+              return_value=False)
+  def test_download_fail(self, _):
     """Tests that when downloading fails, None is returned."""
     deployment = _create_deployment()
     with tempfile.TemporaryDirectory() as tmp_dir:
-      with mock.patch('clusterfuzz_deployment.download_and_unpack_zip',
-                      return_value=False):
-        corpus_path = deployment.download_corpus(EXAMPLE_FUZZER, tmp_dir)
-        self.assertIsNone(corpus_path)
+      corpus_path = deployment.download_corpus(EXAMPLE_FUZZER, tmp_dir)
+      self.assertIsNone(corpus_path)
 
   def test_download_latest_build(self):
     """Tests that the build directory is downloaded once and no more."""
@@ -147,14 +147,13 @@ class DownloadAndUnpackZipTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
 
-  def test_bad_zip_download(self):
+  @mock.patch('urllib.request.urlretrieve', return_value=True)
+  def test_bad_zip_download(self, _):
     """Tests download_and_unpack_zip returns none when a bad zip is passed."""
-    with open('/url_tmp.zip', 'w') as file_handle:
-      file_handle.write('Test file.')
-    with mock.patch('urllib.request.urlretrieve', return_value=True):
-      self.assertFalse(
-          clusterfuzz_deployment.download_and_unpack_zip(
-              '/not/a/real/url', '/extract-directory'))
+    self.fs.create_file('/url_tmp.zip', contents='Test file.')
+    self.assertFalse(
+        clusterfuzz_deployment.download_and_unpack_zip('/not/a/real/url',
+                                                       '/extract-directory'))
 
 
 if __name__ == '__main__':
