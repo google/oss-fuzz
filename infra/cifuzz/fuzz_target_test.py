@@ -217,9 +217,8 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     """Tests that a nonreportable crash causes the method to return False."""
     with mock.patch('fuzz_target.FuzzTarget.is_reproducible',
                     side_effect=is_reproducible_retvals):
-
       with mock.patch('clusterfuzz_deployment.OSSFuzz.download_latest_build',
-                      return_value=self.oss_fuzz_build_path):
+                 return_value=self.oss_fuzz_build_path):
         self.assertFalse(
             self.test_target.is_crash_reportable(self.testcase_path))
 

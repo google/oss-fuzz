@@ -342,25 +342,25 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
 
   @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                    'INTEGRATION_TESTS=1 not set')
-  def test_old_bug_found(self):
+  @mock.patch('fuzz_target.FuzzTarget.is_reproducible',
+              side_effect=[True, True])
+  def test_old_bug_found(self, _):
     """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
     config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                             workspace=TEST_FILES_PATH,
                             project_name=EXAMPLE_PROJECT)
-    with mock.patch('fuzz_target.FuzzTarget.is_reproducible',
-                    side_effect=[True, True]):
-      with tempfile.TemporaryDirectory() as tmp_dir:
-        workspace = os.path.join(tmp_dir, 'workspace')
-        shutil.copytree(TEST_FILES_PATH, workspace)
-        config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                                workspace=TEST_FILES_PATH,
-                                project_name=EXAMPLE_PROJECT)
-        run_success, bug_found = run_fuzzers.run_fuzzers(config)
-        build_dir = os.path.join(TEST_FILES_PATH, 'out', self.BUILD_DIR_NAME)
-        self.assertTrue(os.path.exists(build_dir))
-        self.assertNotEqual(0, len(os.listdir(build_dir)))
-        self.assertTrue(run_success)
-        self.assertFalse(bug_found)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+      workspace = os.path.join(tmp_dir, 'workspace')
+      shutil.copytree(TEST_FILES_PATH, workspace)
+      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
+                              workspace=TEST_FILES_PATH,
+                              project_name=EXAMPLE_PROJECT)
+      run_success, bug_found = run_fuzzers.run_fuzzers(config)
+      build_dir = os.path.join(TEST_FILES_PATH, 'out', self.BUILD_DIR_NAME)
+      self.assertTrue(os.path.exists(build_dir))
+      self.assertNotEqual(0, len(os.listdir(build_dir)))
+      self.assertTrue(run_success)
+      self.assertFalse(bug_found)
 
   def test_invalid_build(self):
     """Tests run_fuzzers with an invalid ASAN build."""
