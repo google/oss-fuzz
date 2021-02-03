@@ -23,6 +23,7 @@ import parameterized
 from pyfakefs import fake_filesystem_unittest
 
 import config_utils
+import fuzz_target
 import run_fuzzers
 
 # pylint: disable=wrong-import-position
@@ -80,7 +81,7 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
                               project_name='curl',
                               sanitizer=sanitizer)
       result = run_fuzzers.run_fuzzers(config)
-    self.assertEquals(result == run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
+    self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
 
 
 class RunMemoryFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
@@ -335,7 +336,7 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                 workspace=workspace,
                                 project_name=EXAMPLE_PROJECT)
         result = run_fuzzers.run_fuzzers(config)
-        self.assertEquals(result == run_fuzzers.RunFuzzersResult.BUG_FOUND)
+        self.assertEqual(result, run_fuzzers.RunFuzzersResult.BUG_FOUND)
         build_dir = os.path.join(workspace, 'out', self.BUILD_DIR_NAME)
         self.assertNotEqual(0, len(os.listdir(build_dir)))
 
@@ -355,7 +356,7 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                 workspace=TEST_FILES_PATH,
                                 project_name=EXAMPLE_PROJECT)
         result = run_fuzzers.run_fuzzers(config)
-        self.assertEquals(result == run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
+        self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
         build_dir = os.path.join(TEST_FILES_PATH, 'out', self.BUILD_DIR_NAME)
         self.assertTrue(os.path.exists(build_dir))
         self.assertNotEqual(0, len(os.listdir(build_dir)))
@@ -369,7 +370,7 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                               workspace=tmp_dir,
                               project_name=EXAMPLE_PROJECT)
       result = run_fuzzers.run_fuzzers(config)
-    self.assertEquals(result == run_fuzzers.RunFuzzersResult.ERROR)
+    self.assertEqual(result, run_fuzzers.RunFuzzersResult.ERROR)
 
 
 if __name__ == '__main__':
