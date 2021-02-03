@@ -18,7 +18,7 @@
 # Instrument mruby
 (
 cd $SRC/mruby
-export LD=clang
+export LD=$CC
 export LDFLAGS="$CFLAGS"
 rake -m
 
