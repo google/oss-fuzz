@@ -30,7 +30,6 @@ import utils
 DEFAULT_ENGINE = 'libfuzzer'
 DEFAULT_ARCHITECTURE = 'x86_64'
 
-# TODO(metzman): Turn default logging to WARNING when CIFuzz is stable.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
