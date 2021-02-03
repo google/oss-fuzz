@@ -29,7 +29,7 @@ then
   echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
 elif [ "$SANITIZER" = "address" ]
 then
-  echo "--copt -D__SANITIZE_ADDRESS__" "--copt -DADDRESS_SANITIZER=1"
+  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
 fi
 )"
 
