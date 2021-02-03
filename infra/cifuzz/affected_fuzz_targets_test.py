@@ -62,14 +62,14 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
     # being set, which doesn't work properly in fakefs.
     with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
         'coverage.OssFuzzCoverageGetter.get_files_covered_by_target'
-    ) as mocked_get_files, mock.patch('coverage._get_fuzzer_stats_dir_url',
-                                      return_value=1):
-      mocked_get_files.side_effect = side_effect
-      shutil.copy(self.TEST_FUZZER_1, tmp_dir)
-      shutil.copy(self.TEST_FUZZER_2, tmp_dir)
-      affected_fuzz_targets.remove_unaffected_fuzz_targets(
-          EXAMPLE_PROJECT, tmp_dir, [EXAMPLE_FILE_CHANGED], '')
-      self.assertEqual(expected_dir_len, len(os.listdir(tmp_dir)))
+    ) as mocked_get_files:
+      with mock.patch('coverage._get_fuzzer_stats_dir_url', return_value=1):
+        mocked_get_files.side_effect = side_effect
+        shutil.copy(self.TEST_FUZZER_1, tmp_dir)
+        shutil.copy(self.TEST_FUZZER_2, tmp_dir)
+        affected_fuzz_targets.remove_unaffected_fuzz_targets(
+            EXAMPLE_PROJECT, tmp_dir, [EXAMPLE_FILE_CHANGED], '')
+        self.assertEqual(expected_dir_len, len(os.listdir(tmp_dir)))
 
 
 if __name__ == '__main__':
