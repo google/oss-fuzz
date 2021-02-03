@@ -1,6 +1,6 @@
-homepage: "https://github.com/imageio/imageio"
+homepage: "https://imageio.github.io"
 language: python
-primary_contact: "david@adalogics.com"
+primary_contact: "almar.klein@gmail.com"
 auto_ccs:
   - "david@adalogics.com"
 fuzzing_engines:
