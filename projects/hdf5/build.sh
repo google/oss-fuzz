@@ -62,3 +62,6 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
     h5repack_fuzz_lib.a build-dir/bin/libhdf5_test.a \
     build-dir/bin/libhdf5_tools.a \
     build-dir/bin/libhdf5.a
+
+
+mv $SRC/repack_fuzzer.options $OUT/

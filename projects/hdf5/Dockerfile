@@ -20,4 +20,3 @@ RUN apt-get update && apt-get install -y make autoconf automake libtool \
 RUN git clone --depth 1 https://github.com/HDFGroup/hdf5
 WORKDIR hdf5
 COPY build.sh repack_fuzzer.c repack_fuzzer.options $SRC/
-RUN mv $SRC/repack_fuzzer.options $OUT/
