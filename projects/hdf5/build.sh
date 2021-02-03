@@ -53,11 +53,11 @@ $CXX $CXXFLAGS \
     -I/src/hdf5/src \
     -I/src/hdf5/build-dir/src \
     -I./tools/src/h5repack \
-    -o h5repack_fuzzer.o -c repack_fuzzer.c
+    -o repack_fuzzer.o -c repack_fuzzer.c
 
 
 $CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
-    h5repack_fuzzer.o -o $OUT/h5repack_fuzzer -lz \
+    repack_fuzzer.o -o $OUT/repack_fuzzer -lz \
     build-dir/src/CMakeFiles/hdf5-static.dir/H5Zdeflate.c.o \
     h5repack_fuzz_lib.a build-dir/bin/libhdf5_test.a \
     build-dir/bin/libhdf5_tools.a \
