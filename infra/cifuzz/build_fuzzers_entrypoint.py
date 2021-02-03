@@ -72,10 +72,13 @@ def main():
     return returncode
 
   out_dir = os.path.join(config.workspace, 'out')
-  if build_fuzzers.check_fuzzer_build(out_dir,
-                                      sanitizer=config.sanitizer,
-                                      allowed_broken_targets_percentage=config.
-                                      allowed_broken_targets_percentage):
+  # yapf: disable
+  if build_fuzzers.check_fuzzer_build(
+      out_dir,
+      sanitizer=config.sanitizer,
+      allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
+  ):
+    # yapf: enable
     returncode = 0
 
   return returncode
