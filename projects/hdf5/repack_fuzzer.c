@@ -56,4 +56,4 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
     h5tools_close();
     return 0;
 }
-~
+
