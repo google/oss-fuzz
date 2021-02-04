@@ -347,11 +347,9 @@ def run_build_tests():
                                      pattern='*_test.py'),
   ]
   suite = unittest.TestSuite(suite_list)
+  print('Running build tests.')
   result = unittest.TextTestRunner().run(suite)
-  success = not result.failures and not result.errors
-  if not success:
-    print('Build tests failed.')
-  return success
+  return result.failures and not result.errors
 
 
 def run_nonbuild_tests(parallel):
@@ -370,12 +368,14 @@ def run_nonbuild_tests(parallel):
   # pass directories to pytest.
   command = [
       'pytest',
+      # Test errors with error: "ModuleNotFoundError: No module named 'apt'.
       '--ignore-glob=infra/base-images/base-sanitizer-libs-builder/*',
       '--ignore-glob=infra/build/*',
   ]
   if parallel:
     command.extend(['-n', 'auto'])
   command += list(relevant_dirs)
+  print('Running non-build tests.')
   return subprocess.run(command, check=False).returncode == 0
 
 
