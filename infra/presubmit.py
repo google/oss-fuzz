@@ -18,17 +18,12 @@
 
 import argparse
 import os
-import re
 import subprocess
 import sys
 import unittest
 import yaml
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEST_BLOCKLIST = [
-    # Test errors with error: "ModuleNotFoundError: No module named 'apt'".
-    re.compile(r'.*\/infra\/base-images\/base-sanitizer-libs-builder'),
-]
 
 
 def _is_project_file(actual_path, expected_filename):
@@ -345,18 +340,11 @@ def get_changed_files():
   return [os.path.abspath(f) for f in changed_files]
 
 
-def is_test_dir_blocklisted(directory):
-  """Returns True if |directory| is blocklisted."""
-  for blocklisted_regex in TEST_BLOCKLIST:
-    if blocklisted_regex.search(directory):
-      return True
-  return False
-
-
 def run_build_tests():
   """Runs build tests because they can't be run in parallel."""
   suite_list = [
-      unittest.TestLoader().discover('infra/build', pattern='*_test.py')
+      unittest.TestLoader().discover(os.path.join(_SRC_ROOT, 'infra', 'build'),
+                                     pattern='*_test.py'),
   ]
   suite = unittest.TestSuite(suite_list)
   result = unittest.TextTestRunner().run(suite)
@@ -370,15 +358,18 @@ def run_nonbuild_tests_parallel():
   """Run all tests but build tests in parallel. The reason why we exclude build
   tests is because they use an emulator that prevents them from being used in
   parallel."""
+  # We look for all project directories because otherwise pytest won't run tests
+  # that are not in valid modules (e.g. "base-images").
   relevant_dirs = set()
   all_files = get_all_files()
   for file_path in all_files:
     directory = os.path.dirname(file_path)
-    if is_test_dir_blocklisted(directory):
-      continue
     relevant_dirs.add(directory)
+
+  # Use ignore-glob because ignore doesn't seem to work properly with the way we
+  # pass directories to pytest.
   command = [
-      'pytest', '--ignore=infra/base-images/base-sanitizer-libs-builder',
+      'pytest', '--ignore-glob=infra/base-images/base-sanitizer-libs-builder/*',
       '--ignore-glob=infra/build/*', '-n', 'auto'
   ] + list(relevant_dirs)
   return subprocess.run(command, check=False).returncode == 0
