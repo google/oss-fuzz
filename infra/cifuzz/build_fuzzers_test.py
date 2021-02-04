@@ -253,7 +253,7 @@ class CheckFuzzerBuildTest(unittest.TestCase):
 
   def setUp(self):
     self.tmp_dir_obj = tempfile.TemporaryDirectory()
-    self.test_files_path = os.path.join(self.tmp_dir.name, 'test_files')
+    self.test_files_path = os.path.join(self.tmp_dir_obj.name, 'test_files')
     shutil.copytree(TEST_FILES_PATH, self.test_files_path)
 
   def tearDown(self):
