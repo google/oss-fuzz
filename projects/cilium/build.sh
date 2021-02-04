@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2021 Google LLC.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +15,4 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN git clone --depth 1 https://github.com/google/AFL
-RUN mv AFL/dictionaries/json.dict $OUT/fuzz.dict
-
-RUN git clone https://github.com/dvyukov/go-fuzz-corpus
-RUN zip $OUT/fuzz_seed_corpus.zip go-fuzz-corpus/json/corpus/*
-
-RUN go get github.com/cilium/cilium/pkg/labels/...
-#RUN cp $GOPATH/src/github.com/cilium/cilium/test/fuzzing/oss-fuzz-build.sh $SRC/build.sh
-COPY build.sh $SRC/
-WORKDIR $SRC
+compile_go_fuzzer github.com/cilium/cilium/test/fuzzing Fuzz fuzz gofuzz
