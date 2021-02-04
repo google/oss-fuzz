@@ -13,84 +13,139 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "leveldb/db.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <string.h>
+
+#include <cstdint>
+#include <cstddef>
 #include <filesystem>
+#include <memory>
+#include <string>
+
+#include "leveldb/db.h"
+#include "leveldb/iterator.h"
+#include "leveldb/options.h"
+#include "leveldb/status.h"
 
 #include <fuzzer/FuzzedDataProvider.h>
 
+namespace {
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  // We need at least one byte
-  if (size == 0) {
-    return 0;
+// Deletes the database directory when going out of scope.
+class AutoDbDeleter {
+ public:
+  static constexpr char kDbPath[] = "/tmp/testdb";
+
+  AutoDbDeleter() = default;
+
+  AutoDbDeleter(const AutoDbDeleter&) = delete;
+  AutoDbDeleter& operator=(const AutoDbDeleter&) = delete;
+
+  ~AutoDbDeleter() {
+    std::__fs::filesystem::remove_all(kDbPath);
   }
+};
 
-  FuzzedDataProvider fuzzed_data(data, size);
+// static
+constexpr char AutoDbDeleter::kDbPath[];
 
-  leveldb::DB* db;
+// Returns nullptr (a falsey unique_ptr) if opening fails.
+std::unique_ptr<leveldb::DB> OpenDB() {
   leveldb::Options options;
   options.create_if_missing = true;
-  leveldb::Status status = leveldb::DB::Open(options, "/tmp/testdb", &db);
 
-  std::string value;
+  leveldb::DB* db_ptr;
+  leveldb::Status status =
+      leveldb::DB::Open(options, AutoDbDeleter::kDbPath, &db_ptr);
+  if (!status.ok())
+    return nullptr;
 
-  // perform a sequence of calls on our db instance
-  int max_iter = (int)data[0];
-  for(int i=0; i < max_iter && i < size; i++) {
-    #define SIZE_OF_FUNCS 8
-    size_t c = fuzzed_data.ConsumeIntegral<uint8_t>() % SIZE_OF_FUNCS;
+  return std::unique_ptr<leveldb::DB>(db_ptr);
+}
 
-    if(c == 0) {  // PUT
-        std::string tmp1 = fuzzed_data.ConsumeRandomLengthString();
-        std::string tmp2 = fuzzed_data.ConsumeRandomLengthString();
-      db->Put(leveldb::WriteOptions(), tmp1, tmp2);
-    } 
-    else if(c == 1) { // Get
-        std::string tmp3 = fuzzed_data.ConsumeRandomLengthString();
-      db->Get(leveldb::ReadOptions(), tmp3, &value);
-    } 
-    else if (c == 2) { // Delete
-      std::string tmp4 = fuzzed_data.ConsumeRandomLengthString();
-      db->Delete(leveldb::WriteOptions(), tmp4);
+enum class FuzzOp {
+  kPut = 0,
+  kGet = 1,
+  kDelete = 2,
+  kGetProperty = 3,
+  kIterate = 4,
+  kGetReleaseSnapshot = 5,
+  kReopenDb = 6,
+  kCompactRange = 7,
+  // Add new values here.
+
+  // When adding new values, update to the last value above.
+  kMaxValue = kCompactRange,
+};
+
+}  // namespace
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+  // Must occur before `db` so the deletion doesn't happen while the DB is open.
+  AutoDbDeleter db_deleter;
+
+  std::unique_ptr<leveldb::DB> db = OpenDB();
+  if (!db.get())
+    return 0;
+
+  // Perform a sequence of operations on the database.
+  FuzzedDataProvider fuzzed_data(data, size);
+  while (fuzzed_data.remaining_bytes() != 0) {
+    FuzzOp fuzz_op = fuzzed_data.ConsumeEnum<FuzzOp>();
+
+    switch (fuzz_op) {
+    case FuzzOp::kPut: {
+      std::string key = fuzzed_data.ConsumeRandomLengthString();
+      std::string value = fuzzed_data.ConsumeRandomLengthString();
+      db->Put(leveldb::WriteOptions(), key, value);
+      break;
     }
-    else if (c == 3) { // GetProperty
-      std::string prop;
-      std::string tmp = fuzzed_data.ConsumeRandomLengthString();
-      db->GetProperty(tmp, &prop);
+    case FuzzOp::kGet: {
+      std::string key = fuzzed_data.ConsumeRandomLengthString();
+      std::string value;
+      db->Get(leveldb::ReadOptions(), key, &value);
+      break;
     }
-    else if(c == 4) { // Iterator
-      leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
-      for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    case FuzzOp::kDelete: {
+      std::string key = fuzzed_data.ConsumeRandomLengthString();
+      db->Delete(leveldb::WriteOptions(), key);
+      break;
+    }
+    case FuzzOp::kGetProperty: {
+      std::string name = fuzzed_data.ConsumeRandomLengthString();
+      std::string value;
+      db->GetProperty(name, &value);
+      break;
+    }
+    case FuzzOp::kIterate: {
+      std::unique_ptr<leveldb::Iterator> it(
+          db->NewIterator(leveldb::ReadOptions()));
+      for (it->SeekToFirst(); it->Valid(); it->Next())
         continue;
-      }
-      delete it;
-    } 
-    else if(c == 5) { // GetSnapshot and Release Snapshot
+    }
+    case FuzzOp::kGetReleaseSnapshot: {
       leveldb::ReadOptions snapshot_options;
       snapshot_options.snapshot = db->GetSnapshot();
-      leveldb::Iterator* it = db->NewIterator(snapshot_options);
+      std::unique_ptr<leveldb::Iterator> it(db->NewIterator(snapshot_options));
       db->ReleaseSnapshot(snapshot_options.snapshot);
-      delete it;
-    } 
-    else if(c == 6) { // Open and close DB
-      delete db;
-      status = leveldb::DB::Open(options, "/tmp/testdb", &db);
     }
-    else if (c == 7) { 
-      std::string tmp1 = fuzzed_data.ConsumeRandomLengthString();
-      std::string tmp2 =  fuzzed_data.ConsumeRandomLengthString();
-      leveldb::Slice s1 =tmp1;
-      leveldb::Slice s2 = tmp2;
-      db->CompactRange(&s1, &s2);
+    case FuzzOp::kReopenDb: {
+      // The database must be closed before attempting to reopen it. Otherwise,
+      // the open will fail due to exclusive locking.
+      db.reset();
+      db = OpenDB();
+      if (!db)
+        return 0;  // Reopening the database failed.
+      break;
+    }
+    case FuzzOp::kCompactRange: {
+      std::string begin_key = fuzzed_data.ConsumeRandomLengthString();
+      std::string end_key =  fuzzed_data.ConsumeRandomLengthString();
+      leveldb::Slice begin_slice(begin_key);
+      leveldb::Slice end_slice(end_key);
+      db->CompactRange(&begin_slice, &end_slice);
+      break;
+    }
     }
   }
 
-  // Cleanup DB
-  delete db;
-  std::__fs::filesystem::remove_all("/tmp/testdb");
   return 0;
 }

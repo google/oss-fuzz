@@ -8,3 +8,4 @@ sanitizers:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+builds_per_day: 4

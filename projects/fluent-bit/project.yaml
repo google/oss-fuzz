@@ -7,3 +7,4 @@ fuzzing_engines:
 auto_ccs:
   - "david@adalogics.com"
   - "wppttt@amazon.com"
+main_repo: 'https://github.com/fluent/fluent-bit/'

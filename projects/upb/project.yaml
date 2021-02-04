@@ -1,0 +1,11 @@
+homepage: "https://github.com/protocolbuffers/upb"
+language: c++
+primary_contact: "haberman@google.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- memory
+- undefined
+main_repo: 'https://github.com/protocolbuffers/upb.git'

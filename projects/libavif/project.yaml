@@ -3,3 +3,4 @@ language: c++
 primary_contact: "joedrago@gmail.com"
 auto_ccs:
   - "wtc@google.com"
+main_repo: 'https://github.com/AOMediaCodec/libavif.git'

@@ -5,3 +5,4 @@ auto_ccs:
  - "chriswwolfe@gmail.com"
 architectures:
   - x86_64
+main_repo: 'https://github.com/jedisct1/libsodium.git'
