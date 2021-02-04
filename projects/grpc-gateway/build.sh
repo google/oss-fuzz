@@ -15,5 +15,8 @@
 #
 ################################################################################
 
+mkdir $GOPATH/src/github.com/grpc-ecosystem
+mv $SRC/grpc-gateway $GOPATH/src/github.com/grpc-ecosystem/
+cd $GOPATH/src/github.com/grpc-ecosystem/grpc-gateway && go get ./...
 
-compile_go_fuzzer github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/httprule Fuzz fuzz
+compile_go_fuzzer github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule Fuzz fuzz
