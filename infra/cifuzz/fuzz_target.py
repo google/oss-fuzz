@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """A module to handle running a fuzz target for a specified amount of time."""
+import collections
 import logging
 import os
 import re
@@ -23,7 +24,6 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
 
-# TODO: Turn default logging to WARNING when CIFuzz is stable.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -41,6 +41,8 @@ COULD_NOT_TEST_ON_RECENT_MESSAGE = (
     'Crash is reproducible. Could not run recent build of '
     'target to determine if this code change (pr/commit) introduced crash. '
     'Assuming this code change introduced crash.')
+
+FuzzResult = collections.namedtuple('FuzzResult', ['testcase', 'stacktrace'])
 
 
 class ReproduceError(Exception):
@@ -81,10 +83,8 @@ class FuzzTarget:
     """Starts the fuzz target run for the length of time specified by duration.
 
     Returns:
-      (testcase, stacktrace, time in seconds) on crash or
-      (None, None, time in seconds) on timeout or error.
+      FuzzResult namedtuple with stacktrace and testcase if applicable.
     """
-    # TODO(metzman): Change return value to a FuzzResult object.
     logging.info('Fuzzer %s, started.', self.target_name)
     docker_container = utils.get_container_name()
     command = ['docker', 'run', '--rm', '--privileged']
@@ -122,23 +122,23 @@ class FuzzTarget:
       _, stderr = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
-      return None, None
+      return FuzzResult(None, None)
 
     # Libfuzzer timeout was reached.
     if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
-      return None, None
+      return FuzzResult(None, None)
 
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     testcase = self.get_testcase(stderr)
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
-      return None, None
+      return FuzzResult(None, None)
     if self.is_crash_reportable(testcase):
-      return testcase, stderr
-    return None, None
+      return FuzzResult(testcase, stderr)
+    return FuzzResult(None, None)
 
   def is_reproducible(self, testcase, target_path):
     """Checks if the testcase reproduces.

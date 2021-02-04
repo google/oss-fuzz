@@ -158,7 +158,7 @@ def download_url(url, filename, num_attempts=3):
   """
   sleep_time = 1
 
-  # TODO(metzman): Use retry.wrap here.
+  # Don't use retry wrapper since we don't want this to raise any exceptions.
   for _ in range(num_attempts):
     try:
       urllib.request.urlretrieve(url, filename)

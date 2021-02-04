@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for running fuzzers."""
+import enum
 import logging
 import os
 import shutil
@@ -26,6 +27,13 @@ import stack_parser
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import utils
+
+
+class RunFuzzersResult(enum.Enum):
+  """Enum result from running fuzzers."""
+  ERROR = 0
+  BUG_FOUND = 1
+  NO_BUG_FOUND = 2
 
 
 class BaseFuzzTargetRunner:
@@ -120,28 +128,29 @@ class BaseFuzzTargetRunner:
 
       target = self.create_fuzz_target_obj(target_path, run_seconds)
       start_time = time.time()
-      testcase, stacktrace = self.run_fuzz_target(target)
+      result = self.run_fuzz_target(target)
 
       # It's OK if this goes negative since we take max when determining
       # run_seconds.
       fuzz_seconds -= time.time() - start_time
 
       fuzzers_left_to_run -= 1
-      if not testcase or not stacktrace:
+      if not result.testcase or not result.stacktrace:
         logging.info('Fuzzer %s finished running without crashes.',
                      target.target_name)
         continue
 
       # We found a bug in the fuzz target.
       utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
-                         (target.target_name.encode(), stacktrace))
+                         (target.target_name.encode(), result.stacktrace))
 
       # TODO(metzman): Do this with filestore.
-      testcase_artifact = self.get_fuzz_target_artifact(target, 'testcase')
-      shutil.move(testcase, testcase_artifact)
-      bug_summary_artifact = self.get_fuzz_target_artifact(
+      testcase_artifact_path = self.get_fuzz_target_artifact(target, 'testcase')
+      shutil.move(result.testcase, testcase_artifact_path)
+      bug_summary_artifact_path = self.get_fuzz_target_artifact(
           target, 'bug-summary.txt')
-      stack_parser.parse_fuzzer_output(stacktrace, bug_summary_artifact)
+      stack_parser.parse_fuzzer_output(result.stacktrace,
+                                       bug_summary_artifact_path)
 
       bug_found = True
       if self.quit_on_bug_found:
@@ -183,19 +192,17 @@ def run_fuzzers(config):  # pylint: disable=too-many-locals
     config: A RunFuzzTargetsConfig.
 
   Returns:
-    (True if no (internal) errors fuzzing, True if bug found fuzzing).
+    A RunFuzzersResult enum value indicating what happened during fuzzing.
   """
   fuzz_target_runner = get_fuzz_target_runner(config)
-  # TODO(metzman): Multiple return bools is confusing. Change to one enum
-  # return value.
   if not fuzz_target_runner.initialize():
     # We didn't fuzz at all because of internal (CIFuzz) errors. And we didn't
     # find any bugs.
-    return False, False
+    return RunFuzzersResult.ERROR
 
   if not fuzz_target_runner.run_fuzz_targets():
     # We fuzzed successfully, but didn't find any bugs (in the fuzz target).
-    return True, False
+    return RunFuzzersResult.NO_BUG_FOUND
 
   # We fuzzed successfully and found bug(s) in the fuzz targets.
-  return True, True
+  return RunFuzzersResult.BUG_FOUND

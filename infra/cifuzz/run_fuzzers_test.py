@@ -23,6 +23,7 @@ import parameterized
 from pyfakefs import fake_filesystem_unittest
 
 import config_utils
+import fuzz_target
 import run_fuzzers
 
 # pylint: disable=wrong-import-position
@@ -79,9 +80,8 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
                               workspace=fuzzer_dir_copy,
                               project_name='curl',
                               sanitizer=sanitizer)
-      run_success, bug_found = run_fuzzers.run_fuzzers(config)
-    self.assertTrue(run_success)
-    self.assertFalse(bug_found)
+      result = run_fuzzers.run_fuzzers(config)
+    self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
 
 
 class RunMemoryFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
@@ -257,7 +257,8 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     testcase = os.path.join(workspace, 'testcase')
     self.fs.create_file(testcase)
     stacktrace = b'stacktrace'
-    mocked_run_fuzz_target.return_value = (testcase, stacktrace)
+    mocked_run_fuzz_target.return_value = fuzz_target.FuzzResult(
+        testcase, stacktrace)
     magic_mock = mock.MagicMock()
     magic_mock.target_name = 'target1'
     mocked_create_fuzz_target_obj.return_value = magic_mock
@@ -304,7 +305,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
         testcase = testcase2
       assert call_count != 2
       call_count += 1
-      return testcase, stacktrace
+      return fuzz_target.FuzzResult(testcase, stacktrace)
 
     mocked_run_fuzz_target.side_effect = mock_run_fuzz_target
     magic_mock = mock.MagicMock()
@@ -336,9 +337,8 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
         config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                                 workspace=workspace,
                                 project_name=EXAMPLE_PROJECT)
-        run_success, bug_found = run_fuzzers.run_fuzzers(config)
-        self.assertTrue(run_success)
-        self.assertTrue(bug_found)
+        result = run_fuzzers.run_fuzzers(config)
+        self.assertEqual(result, run_fuzzers.RunFuzzersResult.BUG_FOUND)
         build_dir = os.path.join(workspace, 'out', self.BUILD_DIR_NAME)
         self.assertNotEqual(0, len(os.listdir(build_dir)))
 
@@ -357,12 +357,11 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
       config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                               workspace=TEST_FILES_PATH,
                               project_name=EXAMPLE_PROJECT)
-      run_success, bug_found = run_fuzzers.run_fuzzers(config)
+      result = run_fuzzers.run_fuzzers(config)
+      self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
       build_dir = os.path.join(TEST_FILES_PATH, 'out', self.BUILD_DIR_NAME)
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
-      self.assertTrue(run_success)
-      self.assertFalse(bug_found)
 
   def test_invalid_build(self):
     """Tests run_fuzzers with an invalid ASAN build."""
@@ -372,9 +371,8 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
       config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                               workspace=tmp_dir,
                               project_name=EXAMPLE_PROJECT)
-      run_success, bug_found = run_fuzzers.run_fuzzers(config)
-    self.assertFalse(run_success)
-    self.assertFalse(bug_found)
+      result = run_fuzzers.run_fuzzers(config)
+    self.assertEqual(result, run_fuzzers.RunFuzzersResult.ERROR)
 
 
 if __name__ == '__main__':
