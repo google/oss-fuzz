@@ -16,7 +16,7 @@
 ################################################################################
 
 ./autogen.sh
-./configure --enable-static --disable-shared --disable-doc
+./configure --enable-static --disable-shared --disable-doc --enable-assertions
 make -j$(nproc)
 ldconfig
 

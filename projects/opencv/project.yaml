@@ -19,3 +19,4 @@ labels:
     - sundew
   imread_fuzzer:
     - sundew
+main_repo: 'https://github.com/opencv/opencv.git'

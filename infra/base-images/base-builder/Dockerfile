@@ -28,6 +28,7 @@ RUN dpkg --add-architecture i386 && \
         git \
         jq \
         libc6-dev-i386 \
+        patchelf \
         subversion \
         zip
 
@@ -44,22 +45,31 @@ RUN export PYTHON_DEPS="\
         libffi-dev \
         libbz2-dev \
         liblzma-dev" && \
+    unset CFLAGS CXXFLAGS && \
     apt-get install -y $PYTHON_DEPS && \
-    cd /tmp/ && \
+    cd /tmp && \
     curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
     tar -xvf Python-$PYTHON_VERSION.tar.xz && \
     cd Python-$PYTHON_VERSION && \
-    ./configure --enable-optimizations && \
+    ./configure --enable-optimizations --enable-shared && \
     make -j install && \
+    ldconfig && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
+# Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
+# six for Bazel rules.
+RUN unset CFLAGS CXXFLAGS && pip3 install -v \
+    atheris pyinstaller==4.1 six==1.15.0
+
 # Download and install the latest stable Go.
-ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
-RUN chmod +x $SRC/installer_linux && \
-    SHELL="bash" $SRC/installer_linux && \
-    rm $SRC/installer_linux
+RUN cd /tmp && \
+    curl -O https://storage.googleapis.com/golang/getgo/installer_linux && \
+    chmod +x ./installer_linux && \
+    SHELL="bash" ./installer_linux && \
+    rm -rf ./installer_linux
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
 ENV GOPATH /root/go
@@ -76,8 +86,15 @@ RUN go get -u github.com/mdempsky/go114-fuzz-build && \
 ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup
 ENV PATH=$PATH:/rust/bin
-RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=minimal
 RUN cargo install cargo-fuzz
+# Needed to recompile rust std library for MSAN
+RUN rustup component add rust-src --toolchain nightly
+
+# Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
+ENV BAZELISK_VERSION 1.7.4
+RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel && \
+    chmod +x /usr/local/bin/bazel
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
@@ -132,18 +149,22 @@ RUN mkdir $PRECOMPILED_DIR
 
 WORKDIR $SRC
 
-RUN git clone -b stable https://github.com/google/AFL.git afl
+RUN git clone -b stable https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
+    cd aflplusplus && \
+    git checkout 1f71b85426f837ebcae8381897d44a3a67c73a4f
 
-ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
-RUN mkdir honggfuzz && \
+RUN cd $SRC && \
+    curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
+    mkdir honggfuzz && \
     cd honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
-    rm -rf $SRC/oss-fuzz.tar.gz
+    rm -rf examples $SRC/oss-fuzz.tar.gz
 
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
+    compile_go_fuzzer precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/
+COPY ossfuzz_coverage_runner.go $GOPATH
 
 RUN precompile_honggfuzz
 

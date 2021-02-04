@@ -14,15 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  go-fuzz -func $function -o $fuzzer.a $path
+# Insert empty main function
+sed -i '23 i\func main(){}'\\n $SRC/tidb/plugin/conn_ip_example/conn_ip_example.go
 
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-compile_fuzzer github.com/pingcap/tidb/types FuzzMarshalJSON fuzzMarshalJSON
-compile_fuzzer github.com/pingcap/tidb/types FuzzNewBitLiteral fuzzNewBitLiteral
-compile_fuzzer github.com/pingcap/tidb/types FuzzNewHexLiteral fuzzNewHexLiteral
+mkdir $GOPATH/src/github.com/pingcap
+mv $SRC/tidb $GOPATH/src/github.com/pingcap/
+cd $GOPATH/src/github.com/pingcap/tidb && go get ./...
+
+compile_go_fuzzer github.com/pingcap/tidb/types FuzzMarshalJSON fuzzMarshalJSON
+compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewBitLiteral fuzzNewBitLiteral
+compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewHexLiteral fuzzNewHexLiteral

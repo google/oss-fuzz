@@ -1,13 +1,12 @@
-homepage: "https://python-pillow.org/"
-language: c++
-primary_contact: "guidovranken@gmail.com"
+homepage: "https://github.com/python-pillow/Pillow"
+language: python
+primary_contact: "security@tidelift.com"
 auto_ccs:
- - "security@python-pillow.org"
-sanitizers:
- - address
- - undefined
-architectures:
- - x86_64
+  - "david@adalogics.com"
+  - "esoroos@gmail.com"
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/python-pillow/Pillow'

@@ -8,3 +8,4 @@ auto_ccs:
   - "gorbachev@soramitsu.co.jp"
 sanitizers:
   - address
+main_repo: 'https://github.com/hyperledger/iroha.git'

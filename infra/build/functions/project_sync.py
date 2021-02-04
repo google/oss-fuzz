@@ -64,12 +64,12 @@ def create_scheduler(cloud_scheduler_client, project_name, schedule, tag,
   cloud_scheduler_client.create_job(parent, job)
 
 
-def delete_scheduler(cloud_scheduler_client, project_name):
+def delete_scheduler(cloud_scheduler_client, project_name, tag):
   """Deletes schedulers for projects that were removed."""
   project_id = os.environ.get('GCP_PROJECT')
   location_id = os.environ.get('FUNCTION_REGION')
   name = cloud_scheduler_client.job_path(project_id, location_id,
-                                         project_name + '-scheduler')
+                                         project_name + '-scheduler-' + tag)
   cloud_scheduler_client.delete_job(name)
 
 
@@ -91,20 +91,30 @@ def update_scheduler(cloud_scheduler_client, project, schedule, tag):
   cloud_scheduler_client.update_job(job, update_mask)
 
 
+def delete_project(cloud_scheduler_client, project):
+  """Delete the given project."""
+  logging.info('Deleting project %s', project.name)
+  for tag in (build_project.FUZZING_BUILD_TAG,
+              build_and_run_coverage.COVERAGE_BUILD_TAG):
+    try:
+      delete_scheduler(cloud_scheduler_client, project.name, tag)
+    except exceptions.NotFound:
+      # Already deleted.
+      continue
+    except exceptions.GoogleAPICallError as error:
+      logging.error('Scheduler deletion for %s failed with %s', project.name,
+                    error)
+      return
+
+  project.key.delete()
+
+
 # pylint: disable=too-many-branches
 def sync_projects(cloud_scheduler_client, projects):
   """Sync projects with cloud datastore."""
   for project in Project.query():
-    if project.name in projects:
-      continue
-
-    logging.info('Deleting project %s', project.name)
-    try:
-      delete_scheduler(cloud_scheduler_client, project.name)
-      project.key.delete()
-    except exceptions.GoogleAPICallError as error:
-      logging.error('Scheduler deletion for %s failed with %s', project.name,
-                    error)
+    if project.name not in projects:
+      delete_project(cloud_scheduler_client, project)
 
   existing_projects = {project.name for project in Project.query()}
   for project_name in projects:

@@ -59,7 +59,7 @@ CORPUS_BACKUP_URL_FORMAT = (
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
 
 
 def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-many-statements
@@ -109,8 +109,9 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
   check_build_parser = subparsers.add_parser(
       'check_build', help='Checks that fuzzers execute without errors.')
   _add_architecture_args(check_build_parser)
-  _add_engine_args(check_build_parser,
-                   choices=['libfuzzer', 'afl', 'honggfuzz', 'dataflow'])
+  _add_engine_args(
+      check_build_parser,
+      choices=['libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none'])
   _add_sanitizer_args(check_build_parser,
                       choices=['address', 'memory', 'undefined', 'dataflow'])
   _add_environment_args(check_build_parser)
@@ -277,18 +278,33 @@ def get_dockerfile_path(project_name):
 
 
 def _get_corpus_dir(project_name=''):
-  """Returns path to /corpus directory for the given project (if specified)."""
-  return os.path.join(BUILD_DIR, 'corpus', project_name)
+  """Creates and returns path to /corpus directory for the given project (if
+  specified)."""
+  directory = os.path.join(BUILD_DIR, 'corpus', project_name)
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
+  return directory
 
 
 def _get_output_dir(project_name=''):
-  """Returns path to /out directory for the given project (if specified)."""
-  return os.path.join(BUILD_DIR, 'out', project_name)
+  """Creates and returns path to /out directory for the given project (if
+  specified)."""
+  directory = os.path.join(BUILD_DIR, 'out', project_name)
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
+  return directory
 
 
 def _get_work_dir(project_name=''):
-  """Returns path to /work directory for the given project (if specified)."""
-  return os.path.join(BUILD_DIR, 'work', project_name)
+  """Creates and returns path to /work directory for the given project (if
+  specified)."""
+  directory = os.path.join(BUILD_DIR, 'work', project_name)
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
+  return directory
 
 
 def _get_project_language(project_name):
@@ -595,10 +611,16 @@ def check_build(args):
       not _check_fuzzer_exists(args.project_name, args.fuzzer_name)):
     return 1
 
+  fuzzing_language = _get_project_language(args.project_name)
+  if fuzzing_language is None:
+    print('WARNING: language not specified in project.yaml. Defaulting to C++.')
+    fuzzing_language = 'c++'
+
   env = [
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
+      'FUZZING_LANGUAGE=' + fuzzing_language,
   ]
   if args.e:
     env += args.e
@@ -612,7 +634,7 @@ def check_build(args):
   if args.fuzzer_name:
     run_args += ['test_one', os.path.join('/out', args.fuzzer_name)]
   else:
-    run_args.append('test_all')
+    run_args.append('test_all.py')
 
   exit_code = docker_run(run_args)
   if exit_code == 0:
@@ -643,7 +665,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
   if not os.path.exists(corpus_dir):
     os.makedirs(corpus_dir)
 
-  if not fuzz_target.startswith(project_name):
+  if not fuzz_target.startswith(project_name + '_'):
     fuzz_target = '%s_%s' % (project_name, fuzz_target)
 
   corpus_backup_url = CORPUS_BACKUP_URL_FORMAT.format(project_name=project_name,
@@ -934,6 +956,7 @@ def shell(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
+      'FUZZING_LANGUAGE=' + _get_project_language(args.project_name),
   ]
 
   if args.e:

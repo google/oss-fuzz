@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 ################################################################################
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  go-fuzz -func $function -o $fuzzer.a $path
+mkdir $GOPATH/src/github.com/grpc-ecosystem
+mv $SRC/grpc-gateway $GOPATH/src/github.com/grpc-ecosystem/
+cd $GOPATH/src/github.com/grpc-ecosystem/grpc-gateway && go get ./...
 
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-
-compile_fuzzer github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/httprule Fuzz fuzz
+if [ "$SANITIZER" = "coverage" ]
+then
+	compile_go_fuzzer github.com/grpc-ecosystem/grpc-gateway/internal/httprule Fuzz fuzz gofuzz
+else
+	compile_go_fuzzer github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule Fuzz fuzz gofuzz
+fi

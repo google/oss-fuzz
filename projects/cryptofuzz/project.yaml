@@ -38,4 +38,4 @@ sanitizers:
  - memory
 architectures:
  - x86_64
- - i386
+main_repo: 'https://github.com/guidovranken/cryptofuzz'

@@ -1,0 +1,10 @@
+homepage: "http://git.kernel.dk/fio.git"
+language: c++
+primary_contact: "axboe@kernel.dk"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+  - "sitsofe@gmail.com"
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/axboe/fio.git'

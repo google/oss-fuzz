@@ -46,6 +46,8 @@ cd ..
 
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
 
+#we did not put libhtp there before so that cifuzz does not remove it
+mv libhtp suricata/
 # build project
 cd suricata
 sh autogen.sh
@@ -54,6 +56,9 @@ sh autogen.sh
 make
 
 cp src/fuzz_* $OUT/
+
+# dictionaries
+./src/suricata --list-keywords | grep "\- " | sed 's/- //' | awk '{print "\""$0"\""}' > $OUT/fuzz_siginit.dict
 
 # build corpuses
 # default configuration file
