@@ -369,7 +369,8 @@ def run_nonbuild_tests(parallel):
   # Use ignore-glob because ignore doesn't seem to work properly with the way we
   # pass directories to pytest.
   command = [
-      'pytest', '--ignore-glob=infra/base-images/base-sanitizer-libs-builder/*',
+      'pytest',
+      '--ignore-glob=infra/base-images/base-sanitizer-libs-builder/*',
       '--ignore-glob=infra/build/*',
   ]
   if parallel:
