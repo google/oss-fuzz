@@ -107,6 +107,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   api_pathop \
   api_polyutils \
   api_raster_n32_canvas \
+  api_skparagraph \
   api_svg_canvas \
   image_decode \
   image_decode_incremental \
@@ -240,3 +241,5 @@ cp out/Fuzz/api_create_ddl $OUT/api_create_ddl
 
 cp out/Fuzz/skp $OUT/skp
 cp ../skia_data/skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
+
+cp out/Fuzz/api_skparagraph $OUT/api_skparagraph
