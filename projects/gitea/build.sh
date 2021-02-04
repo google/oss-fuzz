@@ -19,5 +19,5 @@ mkdir $GOPATH/src/code.gitea.io
 mv $SRC/gitea $GOPATH/src/code.gitea.io/
 cd $GOPATH/src/code.gitea.io/gitea && go get ./...
 
-compile_go_fuzzer code.gitea.io/gitea/tools FuzzMarkdownRenderRaw fuzz_markdown_render_raw
-compile_go_fuzzer code.gitea.io/gitea/tools FuzzMarkupPostProcess fuzz_markup_post_process
+compile_go_fuzzer code.gitea.io/gitea/tools FuzzMarkdownRenderRaw fuzz_markdown_render_raw gofuzz
+compile_go_fuzzer code.gitea.io/gitea/tools FuzzMarkupPostProcess fuzz_markup_post_process gofuzz
