@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests the functionality of the cifuzz module."""
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -260,9 +261,17 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 class CheckFuzzerBuildTest(unittest.TestCase):
   """Tests the check_fuzzer_build function in the cifuzz module."""
 
+  def setUp(self):
+    self.test_dir = tempfile.TemporaryDirectory()
+    self.test_files_path = os.path.join(self.test_dir.name, 'test_files')
+    shutil.copytree(TEST_FILES_PATH, self.test_files_path)
+
+  def tearDown(self):
+    self.test_dir.cleanup()
+
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
-    test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
+    test_fuzzer_dir = os.path.join(self.test_files_path, 'out')
     self.assertTrue(build_fuzzers.check_fuzzer_build(test_fuzzer_dir))
 
   def test_not_a_valid_fuzz_path(self):
@@ -271,7 +280,7 @@ class CheckFuzzerBuildTest(unittest.TestCase):
 
   def test_not_a_valid_fuzzer(self):
     """Checks a directory that exists but does not have fuzzers is False."""
-    self.assertFalse(build_fuzzers.check_fuzzer_build(TEST_FILES_PATH))
+    self.assertFalse(build_fuzzers.check_fuzzer_build(self.test_files_path))
 
   @mock.patch('helper.docker_run')
   def test_allow_broken_fuzz_targets_percentage(self, mocked_docker_run):
