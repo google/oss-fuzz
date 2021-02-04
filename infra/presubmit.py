@@ -349,7 +349,7 @@ def run_build_tests():
   suite = unittest.TestSuite(suite_list)
   print('Running build tests.')
   result = unittest.TextTestRunner().run(suite)
-  return result.failures and not result.errors
+  return not result.failures and not result.errors
 
 
 def run_nonbuild_tests(parallel):
