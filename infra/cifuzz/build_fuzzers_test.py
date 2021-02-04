@@ -148,112 +148,102 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   """Integration tests for build_fuzzers."""
 
   def setUp(self):
+    self.tmp_dir_obj = tempfile.TemporaryDirectory()
+    self.workspace = self.tmp_dir_obj.name
+    self.out_dir = os.path.join(self.workspace, 'out')
     test_helpers.patch_environ(self)
+
+  def tearDown(self):
+    self.tmp_dir_obj.cleanup()
 
   def test_external_github_project(self):
     """Tests building fuzzers from an external project on Github."""
     project_name = 'external-project'
     build_integration_path = 'fuzzer-build-integration'
     git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      # This test is dependant on the state of
-      # github.com/jonathanmetzman/cifuzz-external-example.
-      config = create_config(project_name=project_name,
-                             project_repo_name=project_name,
-                             workspace=tmp_dir,
-                             build_integration_path=build_integration_path,
-                             git_url=git_url,
-                             commit_sha='HEAD',
-                             base_commit='HEAD^1')
-      self.assertTrue(build_fuzzers.build_fuzzers(config))
-      self.assertTrue(
-          os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
+    # This test is dependant on the state of
+    # github.com/jonathanmetzman/cifuzz-external-example.
+    config = create_config(project_name=project_name,
+                           project_repo_name=project_name,
+                           workspace=self.workspace,
+                           build_integration_path=build_integration_path,
+                           git_url=git_url,
+                           commit_sha='HEAD',
+                           base_commit='HEAD^1')
+    self.assertTrue(build_fuzzers.build_fuzzers(config))
+    self.assertTrue(
+        os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
 
   def test_valid_commit(self):
     """Tests building fuzzers with valid inputs."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      config = create_config(
-          project_name=EXAMPLE_PROJECT,
-          project_repo_name='oss-fuzz',
-          workspace=tmp_dir,
-          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
-          base_commit='da0746452433dc18bae699e355a9821285d863c8',
-          is_github=True)
-      self.assertTrue(build_fuzzers.build_fuzzers(config))
-
-      self.assertTrue(
-          os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
+    config = create_config(
+        project_name=EXAMPLE_PROJECT,
+        project_repo_name='oss-fuzz',
+        workspace=self.workspace,
+        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
+        base_commit='da0746452433dc18bae699e355a9821285d863c8',
+        is_github=True)
+    self.assertTrue(build_fuzzers.build_fuzzers(config))
+    self.assertTrue(
+        os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
 
   def test_valid_pull_request(self):
     """Tests building fuzzers with valid pull request."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      # TODO(metzman): What happens when this branch closes?
-      config = create_config(project_name=EXAMPLE_PROJECT,
-                             project_repo_name='oss-fuzz',
-                             workspace=tmp_dir,
-                             pr_ref='refs/pull/1757/merge',
-                             base_ref='master',
-                             is_github=True)
-      self.assertTrue(build_fuzzers.build_fuzzers(config))
-      self.assertTrue(
-          os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
+    # TODO(metzman): What happens when this branch closes?
+    config = create_config(project_name=EXAMPLE_PROJECT,
+                           project_repo_name='oss-fuzz',
+                           workspace=self.workspace,
+                           pr_ref='refs/pull/1757/merge',
+                           base_ref='master',
+                           is_github=True)
+    self.assertTrue(build_fuzzers.build_fuzzers(config))
+    self.assertTrue(
+        os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
 
   def test_invalid_pull_request(self):
     """Tests building fuzzers with invalid pull request."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      out_path = os.path.join(tmp_dir, 'out')
-      os.mkdir(out_path)
-      config = create_config(project_name=EXAMPLE_PROJECT,
-                             project_repo_name='oss-fuzz',
-                             workspace=tmp_dir,
-                             pr_ref='ref-1/merge',
-                             base_ref='master',
-                             is_github=True)
-      self.assertTrue(build_fuzzers.build_fuzzers(config))
+    config = create_config(project_name=EXAMPLE_PROJECT,
+                           project_repo_name='oss-fuzz',
+                           workspace=self.workspace,
+                           pr_ref='ref-1/merge',
+                           base_ref='master',
+                           is_github=True)
+    self.assertTrue(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_project_name(self):
     """Tests building fuzzers with invalid project name."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      config = create_config(
-          project_name='not_a_valid_project',
-          project_repo_name='oss-fuzz',
-          workspace=tmp_dir,
-          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
-      self.assertFalse(build_fuzzers.build_fuzzers(config))
+    config = create_config(
+        project_name='not_a_valid_project',
+        project_repo_name='oss-fuzz',
+        workspace=self.workspace,
+        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+    self.assertFalse(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_repo_name(self):
     """Tests building fuzzers with invalid repo name."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      config = create_config(
-          project_name=EXAMPLE_PROJECT,
-          project_repo_name='not-real-repo',
-          workspace=tmp_dir,
-          commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
-      self.assertFalse(build_fuzzers.build_fuzzers(config))
+    config = create_config(
+        project_name=EXAMPLE_PROJECT,
+        project_repo_name='not-real-repo',
+        workspace=self.workspace,
+        commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
+    self.assertFalse(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_commit_sha(self):
     """Tests building fuzzers with invalid commit SHA."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-      config = create_config(project_name=EXAMPLE_PROJECT,
-                             project_repo_name='oss-fuzz',
-                             workspace=tmp_dir,
-                             commit_sha='',
-                             is_github=True)
-      with self.assertRaises(AssertionError):
-        build_fuzzers.build_fuzzers(config)
+    config = create_config(project_name=EXAMPLE_PROJECT,
+                           project_repo_name='oss-fuzz',
+                           workspace=self.workspace,
+                           commit_sha='',
+                           is_github=True)
+    with self.assertRaises(AssertionError):
+      build_fuzzers.build_fuzzers(config)
 
   def test_invalid_workspace(self):
     """Tests building fuzzers with invalid workspace."""
     config = create_config(
         project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
-        workspace='not/a/dir',
+        workspace=os.path.join(self.workspace, 'not', 'a', 'dir'),
         commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
     self.assertFalse(build_fuzzers.build_fuzzers(config))
 
@@ -262,12 +252,12 @@ class CheckFuzzerBuildTest(unittest.TestCase):
   """Tests the check_fuzzer_build function in the cifuzz module."""
 
   def setUp(self):
-    self.test_dir = tempfile.TemporaryDirectory()
-    self.test_files_path = os.path.join(self.test_dir.name, 'test_files')
+    self.tmp_dir_obj = tempfile.TemporaryDirectory()
+    self.test_files_path = os.path.join(self.tmp_dir_obj.name, 'test_files')
     shutil.copytree(TEST_FILES_PATH, self.test_files_path)
 
   def tearDown(self):
-    self.test_dir.cleanup()
+    self.tmp_dir_obj.cleanup()
 
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
