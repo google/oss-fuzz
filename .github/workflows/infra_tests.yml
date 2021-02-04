@@ -32,6 +32,6 @@ jobs:
           sudo env "PATH=$PATH" gcloud components install beta cloud-datastore-emulator
 
       - name: Run infra tests
-        run: sudo env "PATH=$PATH" INTEGRATION_TESTS=1 python infra/presubmit.py infra-tests
+        run: sudo env "PATH=$PATH" INTEGRATION_TESTS=1 python infra/presubmit.py infra-tests -p
 
 

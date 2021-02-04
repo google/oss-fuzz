@@ -354,10 +354,10 @@ def run_build_tests():
   return success
 
 
-def run_nonbuild_tests_parallel():
-  """Run all tests but build tests in parallel. The reason why we exclude build
-  tests is because they use an emulator that prevents them from being used in
-  parallel."""
+def run_nonbuild_tests(parallel):
+  """Run all tests but build tests. Do it in parallel if |parallel|. The reason
+  why we exclude build tests is because they use an emulator that prevents them
+  from being used in parallel."""
   # We look for all project directories because otherwise pytest won't run tests
   # that are not in valid modules (e.g. "base-images").
   relevant_dirs = set()
@@ -370,14 +370,17 @@ def run_nonbuild_tests_parallel():
   # pass directories to pytest.
   command = [
       'pytest', '--ignore-glob=infra/base-images/base-sanitizer-libs-builder/*',
-      '--ignore-glob=infra/build/*', '-n', 'auto'
-  ] + list(relevant_dirs)
+      '--ignore-glob=infra/build/*',
+  ]
+  if parallel:
+    command.extend(['-n', 'auto'])
+  command += list(relevant_dirs)
   return subprocess.run(command, check=False).returncode == 0
 
 
-def run_tests(_=None):
+def run_tests(_=None, parallel=False):
   """Runs all unit tests."""
-  success = run_nonbuild_tests_parallel()
+  success = run_nonbuild_tests(parallel)
   return success and run_build_tests()
 
 
@@ -395,9 +398,15 @@ def main():
   parser.add_argument('command',
                       choices=['format', 'lint', 'license', 'infra-tests'],
                       nargs='?')
-  parser.add_argument('--all-files',
+  parser.add_argument('-a',
+                      '--all-files',
                       action='store_true',
                       help='Run presubmit check(s) on all files',
+                      default=False)
+  parser.add_argument('-p',
+                      '--parallel',
+                      action='store_true',
+                      help='Run tests in parallel.',
                       default=False)
   args = parser.parse_args()
 
@@ -422,7 +431,7 @@ def main():
     return bool_to_returncode(success)
 
   if args.command == 'infra-tests':
-    success = run_tests(relevant_files)
+    success = run_tests(relevant_files, parallel=args.parallel)
     return bool_to_returncode(success)
 
   # Do all the checks (but no tests).
