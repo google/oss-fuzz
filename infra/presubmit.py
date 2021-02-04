@@ -354,8 +354,10 @@ def is_test_dir_blocklisted(directory):
 
 
 def run_build_tests():
-  suite_list = [unittest.TestLoader().discover('infra/build',
-                                               pattern='*_test.py')]
+  """Runs build tests because they can't be run in parallel."""
+  suite_list = [
+      unittest.TestLoader().discover('infra/build', pattern='*_test.py')
+  ]
   suite = unittest.TestSuite(suite_list)
   result = unittest.TextTestRunner().run(suite)
   success = not result.failures and not result.errors
@@ -374,20 +376,18 @@ def run_nonbuild_tests_parallel():
     directory = os.path.dirname(file_path)
     if is_test_dir_blocklisted(directory):
       continue
-    # if 'infra' not in file_path: continue
-    # if 'base-images' == directory:
-    #   continue
     relevant_dirs.add(directory)
-  # TODO(fix ci import failure.)!!!
-  command = ['pytest', '--ignore=infra/base-images/base-sanitizer-libs-builder', '--ignore-glob=infra/build/*', '-n', 'auto'] + list(relevant_dirs)
-  print(command)
-
+  command = [
+      'pytest', '--ignore=infra/base-images/base-sanitizer-libs-builder',
+      '--ignore-glob=infra/build/*', '-n', 'auto'
+  ] + list(relevant_dirs)
   return subprocess.run(command, check=False).returncode == 0
+
 
 def run_tests(_=None):
   """Runs all unit tests."""
   success = run_nonbuild_tests_parallel()
-  return success # and run_build_tests()
+  return success and run_build_tests()
 
 
 def get_all_files():
