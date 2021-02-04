@@ -33,7 +33,7 @@ export CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR"
 cd $SRC/relic/
 mkdir build/
 cd build/
-cmake .. -DCOMP="$CFLAGS" -DQUIET=on -DRAND=CALL -DSHLIB=off -DSTBIN=off -DTESTS=0 -DBENCH=0
+cmake .. -DCOMP="$CFLAGS" -DQUIET=on -DRAND=CALL -DSHLIB=off -DSTBIN=off -DTESTS=0 -DBENCH=0 -DALLOC=DYNAMIC
 make -j$(nproc)
 cd ../..
 export RELIC_PATH=$(realpath relic)
