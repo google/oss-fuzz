@@ -12,3 +12,4 @@ sanitizers:
   - dataflow
   - undefined
   - memory
+main_repo: 'https://github.com/yhirose/cpp-httplib.git'

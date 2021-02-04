@@ -21,5 +21,6 @@ cd build
 cmake -DOSS_FUZZ:BOOL=ON -G "Unix Makefiles" ../tests/fuzzer
 make
 
+cp ../tests/fuzzer/*.dict $OUT/
+cp *.bfbs $OUT/
 cp *_fuzzer $OUT/
-

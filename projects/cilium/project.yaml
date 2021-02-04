@@ -1,0 +1,11 @@
+homepage: "https://cilium.io"
+language: go
+primary_contact: "security@cilium.io"
+auto_ccs:
+- "tom@isovalent.com"
+- "natalia@isovalent.com"
+- "adam@adalogics.com"
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address

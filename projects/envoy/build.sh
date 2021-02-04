@@ -15,37 +15,13 @@
 #
 ################################################################################
 
-export CFLAGS="$CFLAGS"
-export CXXFLAGS="$CXXFLAGS"
+declare -r FUZZ_TARGET_QUERY='
+  let all_fuzz_tests = attr(tags, "fuzz_target", "...") in
+  $all_fuzz_tests - attr(tags, "no_fuzz", $all_fuzz_tests)
+'
+declare -r OSS_FUZZ_TARGETS="$(bazel query "${FUZZ_TARGET_QUERY}" | sed 's/$/_oss_fuzz/')"
 
-declare -r FUZZER_TARGETS=$(bazel query "attr('tags', 'fuzz_target', "...") except attr('tags', 'no_fuzz', '...')")
-
-FUZZER_DICTIONARIES="\
-"
-
-# Copy $CFLAGS and $CXXFLAGS into Bazel command-line flags, for both
-# compilation and linking.
-#
-# Some flags, such as `-stdlib=libc++`, generate warnings if used on a C source
-# file. Since the build runs with `-Werror` this will cause it to break, so we
-# use `--conlyopt` and `--cxxopt` instead of `--copt`.
-#
-# NOTE: We ignore -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION. All envoy fuzz
-# targets link this flag through their build target rule. Passing this in via CLI
-# will pass this to genrules that build unit tests that rely on production
-# behavior. Ignore this flag so these unit tests don't fail by using a modified
-# RE2 library.
-# TODO(asraa): Figure out how to work around this better.
-CFLAGS=${CFLAGS//"-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"/}
-CXXFLAGS=${CXXFLAGS//"-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION"/}
 declare -r EXTRA_BAZEL_FLAGS="$(
-for f in ${CFLAGS}; do
-  echo "--conlyopt=${f}" "--linkopt=${f}"
-done
-for f in ${CXXFLAGS}; do
-  echo "--cxxopt=${f}" "--linkopt=${f}"
-done
-
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
@@ -53,31 +29,24 @@ then
   echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
 elif [ "$SANITIZER" = "address" ]
 then
-  echo "--copt -D__SANITIZE_ADDRESS__" "--copt -DADDRESS_SANITIZER=1"
+  echo "--copt=-D__SANITIZE_ADDRESS__" "--copt=-DADDRESS_SANITIZER=1" "--linkopt=-fsanitize=address"
 fi
 )"
 
-declare BAZEL_BUILD_TARGETS=""
-declare BAZEL_CORPUS_TARGETS=""
-for t in ${FUZZER_TARGETS}
-do
-  BAZEL_BUILD_TARGETS+="${t}_driverless "
-  BAZEL_CORPUS_TARGETS+="${t}_corpus_tar "
-done
+# The Envoy build configuration may clobber CFLAGS/CXXFLAGS, so we use separate
+# environment variables that are understood by rules_fuzzing.
+export FUZZING_CFLAGS="$CFLAGS"
+export FUZZING_CXXFLAGS="$CXXFLAGS"
 
-# Build driverless libraries.
 # Benchmark about 3 GB per CPU (10 threads for 28.8 GB RAM)
 # TODO(asraa): Remove deprecation warnings when Envoy and deps moves to C++17
-bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=standalone \
+bazel build --verbose_failures --dynamic_mode=off \
+  --spawn_strategy=standalone --genrule_strategy=standalone \
   --local_cpu_resources=HOST_CPUS*0.32 \
-  --genrule_strategy=standalone --strip=never \
-  --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
-  --define tcmalloc=disabled --define signal_trace=disabled \
-  --define ENVOY_CONFIG_ASAN=1  --config libc++ \
-  --copt -D_LIBCPP_DISABLE_DEPRECATION_WARNINGS \
-  --define force_libcpp=enabled --build_tag_filters=-no_asan \
-  --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
-  ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
+  --//source/extensions/wasm_runtime/v8:enabled=false \
+  --build_tag_filters=-no_asan --config=oss-fuzz \
+  ${EXTRA_BAZEL_FLAGS} \
+  ${OSS_FUZZ_TARGETS[*]}
 
 # Profiling with coverage requires that we resolve+copy all Bazel symlinks and
 # also remap everything under proc/self/cwd to correspond to Bazel build paths.
@@ -106,38 +75,8 @@ then
   rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
 fi
 
-# Copy out test driverless binaries from bazel-bin/.
-for t in ${FUZZER_TARGETS}
-do
-  TARGET_PATH=${t/://}
-  TARGET_BASE="$(expr "$TARGET_PATH" : '.*/\(.*\)_fuzz_test')"
-  TARGET_DRIVERLESS=bazel-bin/"${TARGET_PATH:2}"_driverless
-  echo "Copying fuzzer $t"
-  cp "${TARGET_DRIVERLESS}" "${OUT}"/"${TARGET_BASE}"_fuzz_test
-done
-
-# Zip up related test corpuses.
-# TODO(htuch): just use the .tar directly when
-# https://github.com/google/oss-fuzz/issues/1918 is fixed.
-CORPUS_UNTAR_PATH="${PWD}"/_tmp_corpus
-for t in ${FUZZER_TARGETS}
-do
-  echo "Extracting and zipping fuzzer $t corpus"
-  TARGET_PATH=${t/://}
-  rm -rf "${CORPUS_UNTAR_PATH}"
-  mkdir -p "${CORPUS_UNTAR_PATH}"
-  tar -C "${CORPUS_UNTAR_PATH}" -xvf bazel-bin/"${TARGET_PATH:2}"_corpus_tar.tar
-  TARGET_BASE="$(expr "$TARGET_PATH" : '.*/\(.*\)_fuzz_test')"
-  # There may be *.dict files in this folder that need to be moved into the OUT dir.
-  find "${CORPUS_UNTAR_PATH}" -type f -name *.dict -exec mv -n {} "${OUT}"/ \;
-  zip "${OUT}/${TARGET_BASE}"_fuzz_test_seed_corpus.zip \
-    "${CORPUS_UNTAR_PATH}"/*
-done
-rm -rf "${CORPUS_UNTAR_PATH}"
-
-# Copy dictionaries and options files to $OUT/
-for d in $FUZZER_DICTIONARIES; do
-  cp "$d" "${OUT}"/
+for oss_fuzz_archive in $(find bazel-bin/ -name '*_oss_fuzz.tar'); do
+    tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
 done
 
 # Cleanup bazel- symlinks to avoid oss-fuzz trying to copy out of the build

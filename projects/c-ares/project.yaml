@@ -15,3 +15,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/c-ares/c-ares.git'

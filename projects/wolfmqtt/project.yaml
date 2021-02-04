@@ -1,0 +1,18 @@
+homepage: "https://www.wolfssl.com/products/wolfmqtt/"
+language: c
+primary_contact: "guidovranken@gmail.com"
+main_repo: "https://github.com/wolfSSL/wolfMQTT"
+auto_ccs:
+    - "eric@wolfssl.com"
+    - "embhorn@gmail.com"
+    - "david@wolfssl.com"
+    - "dgarske80@gmail.com"
+    - "kaleb@wolfssl.com"
+    - "kaleb.himes@gmail.com"
+sanitizers:
+ - address
+ - undefined
+ - memory
+architectures:
+  - x86_64
+  - i386
