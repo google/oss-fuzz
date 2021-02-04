@@ -7,3 +7,4 @@ sanitizers:
   - address
   - undefined
   - memory
+main_repo: 'https://github.com/open-source-parsers/jsoncpp'

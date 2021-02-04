@@ -59,7 +59,8 @@ class BaseBuilderRepo:
     if index > 0:
       return self.digests[index - 1]
 
-    raise ValueError('Failed to find suitable base-builder.')
+    logging.error('Failed to find suitable base-builder.')
+    return None
 
 
 def _replace_gitdir(src_dir, file_path):
@@ -143,8 +144,7 @@ def copy_src_from_docker(project_name, host_dir):
   return src_dir
 
 
-@retry.wrap(_IMAGE_BUILD_TRIES, 2,
-            'infra.build_specified_commit._build_image_with_retries')
+@retry.wrap(_IMAGE_BUILD_TRIES, 2)
 def _build_image_with_retries(project_name):
   """Build image with retries."""
   return helper.build_image_impl(project_name)
@@ -193,7 +193,7 @@ def build_fuzzers_from_commit(commit,
   Returns:
     0 on successful build or error code on failure.
   """
-  oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+  oss_fuzz_repo_manager = repo_manager.RepoManager(helper.OSS_FUZZ_DIR)
   num_retry = 1
 
   def cleanup():
@@ -246,7 +246,18 @@ def build_fuzzers_from_commit(commit,
                                                       check_result=True)
     oss_fuzz_commit = oss_fuzz_commit.strip()
     if not oss_fuzz_commit:
-      logging.warning('No suitable earlier OSS-Fuzz commit found.')
+      logging.info(
+          'Could not find first OSS-Fuzz commit prior to upstream commit. '
+          'Falling back to oldest integration commit.')
+
+      # Find the oldest commit.
+      oss_fuzz_commit, _, _ = oss_fuzz_repo_manager.git(
+          ['log', '--reverse', '--format=%H', projects_dir], check_result=True)
+
+      oss_fuzz_commit = oss_fuzz_commit.splitlines()[0].strip()
+
+    if not oss_fuzz_commit:
+      logging.error('Failed to get oldest integration commit.')
       break
 
     logging.info('Build failed. Retrying on earlier OSS-Fuzz commit %s.',
@@ -259,12 +270,16 @@ def build_fuzzers_from_commit(commit,
     # Also use the closest base-builder we can find.
     if base_builder_repo:
       base_builder_digest = base_builder_repo.find_digest(commit_date)
+      if not base_builder_digest:
+        return False
+
       logging.info('Using base-builder with digest %s.', base_builder_digest)
       _replace_base_builder_digest(dockerfile_path, base_builder_digest)
 
     # Rebuild image and re-copy src dir since things in /src could have changed.
     if not _build_image_with_retries(build_data.project_name):
-      raise RuntimeError('Failed to rebuild image.')
+      logging.error('Failed to rebuild image.')
+      return False
 
     cleanup()
 
@@ -375,7 +390,7 @@ def main():
 
   with tempfile.TemporaryDirectory() as tmp_dir:
     host_src_dir = copy_src_from_docker(args.project_name, tmp_dir)
-    build_repo_manager = repo_manager.BaseRepoManager(
+    build_repo_manager = repo_manager.RepoManager(
         os.path.join(host_src_dir, os.path.basename(repo_path)))
     base_builder_repo = load_base_builder_repo()
 

@@ -16,7 +16,8 @@
 ################################################################################
 
 cd $SRC/snappy
-mkdir build
-cd build && cmake -DSNAPPY_FUZZING_BUILD=ON -DSNAPPY_BUILD_TESTS=OFF ../ && make
+mkdir -p build && cd build
+cmake -DSNAPPY_FUZZING_BUILD=ON -DSNAPPY_BUILD_TESTS=0 \
+    -DSNAPPY_BUILD_BENCHMARKS=0 ../ && cmake --build .
 
 cp *_fuzzer $OUT/

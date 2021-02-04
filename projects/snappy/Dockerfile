@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext pkg-config build-essential
-RUN git clone https://github.com/google/snappy
+RUN git clone --recurse-submodules https://github.com/google/snappy
 
 WORKDIR $SRC/
 COPY build.sh $SRC/

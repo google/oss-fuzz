@@ -6,3 +6,4 @@ language: c
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+main_repo: 'https://github.com/vstakhov/libucl'

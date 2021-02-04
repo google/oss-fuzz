@@ -25,8 +25,11 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
   # Create execution wrapper.
-  echo "#/bin/sh
+  echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
-LD_PRELOAD=\$(dirname "\$0")/libclang_rt.asan-x86_64.so \$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
+this_dir=\$(dirname \"\$0\")
+LD_PRELOAD=\$this_dir/sanitizer_with_fuzzer.so \
+ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
+\$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done

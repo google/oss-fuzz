@@ -37,10 +37,11 @@ def patch_environ(testcase_obj):
   patcher.start()
 
 
-class BisectClangTestMixin:
+class BisectClangTestMixin:  # pylint: disable=too-few-public-methods
   """Useful mixin for bisect_clang unittests."""
 
-  def setUp(self):
+  def setUp(self):  # pylint: disable=invalid-name
+    """Initialization method for unittests."""
     patch_environ(self)
     os.environ['SRC'] = '/src'
     os.environ['WORK'] = '/work'
@@ -68,8 +69,9 @@ class GetClangBuildEnvTest(BisectClangTestMixin, unittest.TestCase):
 
 
 def read_test_data(filename):
-  with open(os.path.join(FILE_DIRECTORY, 'test_data', filename)) as f:
-    return f.read()
+  """Returns data from |filename| in the test_data directory."""
+  with open(os.path.join(FILE_DIRECTORY, 'test_data', filename)) as file_handle:
+    return file_handle.read()
 
 
 class SearchBisectOutputTest(BisectClangTestMixin, unittest.TestCase):
@@ -126,6 +128,7 @@ def create_mock_popen(
 
 
 def mock_prepare_build(llvm_project_path):  # pylint: disable=unused-argument
+  """Mocked prepare_build function."""
   return '/work/llvm-build'
 
 
@@ -224,8 +227,8 @@ class GitRepoTest(BisectClangTestMixin, unittest.TestCase):
     with mock.patch('subprocess.Popen', create_mock_popen()) as mock_popen:
       self.git.bisect_start(self.good_commit, self.bad_commit,
                             self.test_command)
-      self.assertEqual(
-          get_git_command('bisect', 'start'), mock_popen.commands[0])
+      self.assertEqual(get_git_command('bisect', 'start'),
+                       mock_popen.commands[0])
       mock_test_start_commit.assert_has_calls([
           mock.call('bad_commit', 'bad', 'testcommand'),
           mock.call('good_commit', 'good', 'testcommand')
