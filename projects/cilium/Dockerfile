@@ -23,6 +23,5 @@ RUN git clone https://github.com/dvyukov/go-fuzz-corpus
 RUN zip $OUT/fuzz_seed_corpus.zip go-fuzz-corpus/json/corpus/*
 
 RUN go get github.com/cilium/cilium/pkg/labels/...
-#RUN cp $GOPATH/src/github.com/cilium/cilium/test/fuzzing/oss-fuzz-build.sh $SRC/build.sh
-COPY build.sh $SRC/
+RUN cp $GOPATH/src/github.com/cilium/cilium/test/fuzzing/oss-fuzz-build.sh $SRC/build.sh
 WORKDIR $SRC
