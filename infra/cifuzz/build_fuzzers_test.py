@@ -26,7 +26,7 @@ sys.path.append(INFRA_DIR)
 
 OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
 
-import cifuzz
+import build_fuzzers
 import config_utils
 import continuous_integration
 import test_helpers
@@ -83,7 +83,7 @@ class BuildFuzzersTest(unittest.TestCase):
     """Tests that the CIFUZZ env var is set."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-      cifuzz.build_fuzzers(
+      build_fuzzers.build_fuzzers(
           create_config(project_name=EXAMPLE_PROJECT,
                         project_repo_name=EXAMPLE_PROJECT,
                         workspace=tmp_dir,
@@ -120,7 +120,7 @@ class InternalGithubBuildTest(unittest.TestCase):
                            pr_ref=self.PR_REF,
                            is_github=True)
     ci_system = continuous_integration.get_ci(config)
-    return cifuzz.Builder(config, ci_system)
+    return build_fuzzers.Builder(config, ci_system)
 
   @mock.patch('repo_manager._clone', side_effect=None)
   @mock.patch('continuous_integration.checkout_specified_commit',
@@ -166,7 +166,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                              git_url=git_url,
                              commit_sha='HEAD',
                              base_commit='HEAD^1')
-      self.assertTrue(cifuzz.build_fuzzers(config))
+      self.assertTrue(build_fuzzers.build_fuzzers(config))
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
@@ -182,7 +182,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
           base_commit='da0746452433dc18bae699e355a9821285d863c8',
           is_github=True)
-      self.assertTrue(cifuzz.build_fuzzers(config))
+      self.assertTrue(build_fuzzers.build_fuzzers(config))
 
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
@@ -199,7 +199,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                              pr_ref='refs/pull/1757/merge',
                              base_ref='master',
                              is_github=True)
-      self.assertTrue(cifuzz.build_fuzzers(config))
+      self.assertTrue(build_fuzzers.build_fuzzers(config))
       self.assertTrue(
           os.path.exists(os.path.join(out_path, EXAMPLE_BUILD_FUZZER)))
 
@@ -214,7 +214,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                              pr_ref='ref-1/merge',
                              base_ref='master',
                              is_github=True)
-      self.assertTrue(cifuzz.build_fuzzers(config))
+      self.assertTrue(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_project_name(self):
     """Tests building fuzzers with invalid project name."""
@@ -224,7 +224,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           project_repo_name='oss-fuzz',
           workspace=tmp_dir,
           commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
-      self.assertFalse(cifuzz.build_fuzzers(config))
+      self.assertFalse(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_repo_name(self):
     """Tests building fuzzers with invalid repo name."""
@@ -234,7 +234,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
           project_repo_name='not-real-repo',
           workspace=tmp_dir,
           commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
-      self.assertFalse(cifuzz.build_fuzzers(config))
+      self.assertFalse(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_commit_sha(self):
     """Tests building fuzzers with invalid commit SHA."""
@@ -245,7 +245,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                              commit_sha='',
                              is_github=True)
       with self.assertRaises(AssertionError):
-        cifuzz.build_fuzzers(config)
+        build_fuzzers.build_fuzzers(config)
 
   def test_invalid_workspace(self):
     """Tests building fuzzers with invalid workspace."""
@@ -254,7 +254,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         project_repo_name='oss-fuzz',
         workspace='not/a/dir',
         commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523')
-    self.assertFalse(cifuzz.build_fuzzers(config))
+    self.assertFalse(build_fuzzers.build_fuzzers(config))
 
 
 class CheckFuzzerBuildTest(unittest.TestCase):
@@ -263,15 +263,15 @@ class CheckFuzzerBuildTest(unittest.TestCase):
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
     test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
-    self.assertTrue(cifuzz.check_fuzzer_build(test_fuzzer_dir))
+    self.assertTrue(build_fuzzers.check_fuzzer_build(test_fuzzer_dir))
 
   def test_not_a_valid_fuzz_path(self):
     """Tests that False is returned when a bad path is given."""
-    self.assertFalse(cifuzz.check_fuzzer_build('not/a/valid/path'))
+    self.assertFalse(build_fuzzers.check_fuzzer_build('not/a/valid/path'))
 
   def test_not_a_valid_fuzzer(self):
     """Checks a directory that exists but does not have fuzzers is False."""
-    self.assertFalse(cifuzz.check_fuzzer_build(TEST_FILES_PATH))
+    self.assertFalse(build_fuzzers.check_fuzzer_build(TEST_FILES_PATH))
 
   @mock.patch('helper.docker_run')
   def test_allow_broken_fuzz_targets_percentage(self, mocked_docker_run):
@@ -279,8 +279,8 @@ class CheckFuzzerBuildTest(unittest.TestCase):
     docker if passed to check_fuzzer_build."""
     mocked_docker_run.return_value = 0
     test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
-    cifuzz.check_fuzzer_build(test_fuzzer_dir,
-                              allowed_broken_targets_percentage='0')
+    build_fuzzers.check_fuzzer_build(test_fuzzer_dir,
+                                     allowed_broken_targets_percentage='0')
     self.assertIn('-e ALLOWED_BROKEN_TARGETS_PERCENTAGE=0',
                   ' '.join(mocked_docker_run.call_args[0][0]))
 
@@ -305,7 +305,7 @@ class BuildSantizerIntegrationTest(unittest.TestCase):
     """Tests that MSAN can be detected from project.yaml"""
     with tempfile.TemporaryDirectory() as tmp_dir:
       self.assertTrue(
-          cifuzz.build_fuzzers(self._create_config(tmp_dir, sanitizer)))
+          build_fuzzers.build_fuzzers(self._create_config(tmp_dir, sanitizer)))
 
 
 class GetDockerBuildFuzzersArgsContainerTest(unittest.TestCase):
@@ -315,7 +315,8 @@ class GetDockerBuildFuzzersArgsContainerTest(unittest.TestCase):
     """Tests that _get_docker_build_fuzzers_args_container works as intended."""
     out_dir = '/my/out'
     container = 'my-container'
-    result = cifuzz._get_docker_build_fuzzers_args_container(out_dir, container)
+    result = build_fuzzers._get_docker_build_fuzzers_args_container(
+        out_dir, container)
     self.assertEqual(result, ['-e', 'OUT=/my/out', '--volumes-from', container])
 
 
@@ -328,7 +329,7 @@ class GetDockerBuildFuzzersArgsNotContainerTest(unittest.TestCase):
     as intended."""
     host_out_dir = '/cifuzz/out'
     host_repo_path = '/host/repo'
-    result = cifuzz._get_docker_build_fuzzers_args_not_container(
+    result = build_fuzzers._get_docker_build_fuzzers_args_not_container(
         host_out_dir, host_repo_path)
     expected_result = [
         '-e', 'OUT=/out', '-v', '/cifuzz/out:/out', '-v',
@@ -343,7 +344,7 @@ class GetDockerBuildFuzzersArgsMsanTest(unittest.TestCase):
   def test_get_docker_build_fuzzers_args_msan(self):
     """Tests that _get_docker_build_fuzzers_args_msan works as intended."""
     work_dir = '/work_dir'
-    result = cifuzz._get_docker_build_fuzzers_args_msan(work_dir)
+    result = build_fuzzers._get_docker_build_fuzzers_args_msan(work_dir)
     expected_result = ['-e', 'MSAN_LIBS_PATH=/work_dir/msan']
     self.assertEqual(result, expected_result)
 

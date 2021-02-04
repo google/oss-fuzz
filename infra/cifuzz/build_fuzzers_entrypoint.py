@@ -16,8 +16,8 @@ import logging
 import os
 import sys
 
+import build_fuzzers
 import config_utils
-import cifuzz
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
@@ -65,17 +65,20 @@ def main():
     logging.error('This script needs to be run within Github actions.')
     return returncode
 
-  if not cifuzz.build_fuzzers(config):
+  if not build_fuzzers.build_fuzzers(config):
     logging.error(
         'Error building fuzzers for project %s (commit: %s, pr_ref: %s).',
         config.project_name, config.commit_sha, config.pr_ref)
     return returncode
 
   out_dir = os.path.join(config.workspace, 'out')
-  if cifuzz.check_fuzzer_build(out_dir,
-                               sanitizer=config.sanitizer,
-                               allowed_broken_targets_percentage=config.
-                               allowed_broken_targets_percentage):
+  # yapf: disable
+  if build_fuzzers.check_fuzzer_build(
+      out_dir,
+      sanitizer=config.sanitizer,
+      allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
+  ):
+    # yapf: enable
     returncode = 0
 
   return returncode
