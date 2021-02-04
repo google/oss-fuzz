@@ -353,24 +353,28 @@ def is_test_dir_blocklisted(directory):
   return False
 
 
-def run_tests(_=None):
-  """Run all unit tests."""
-  relevant_dirs = set()
-  all_files = get_all_files()
-  for file_path in all_files:
-    directory = os.path.dirname(file_path)
-    if is_test_dir_blocklisted(directory):
-      continue
-    relevant_dirs.add(directory)
-
-  suite_list = []
-  for relevant_dir in relevant_dirs:
-    suite_list.append(unittest.TestLoader().discover(relevant_dir,
-                                                     pattern='*_test.py'))
+def run_build_tests():
+  suite_list = [unittest.TestLoader().discover('infra/build',
+                                               pattern='*_test.py')]
   suite = unittest.TestSuite(suite_list)
   result = unittest.TextTestRunner().run(suite)
+  success = not result.failures and not result.errors
+  if not success:
+    print('Build tests failed.')
+  return success
 
-  return not result.failures and not result.errors
+
+def run_nonbuild_tests_parallel():
+  """Run all tests but build tests in parallel. The reason why we exclude build
+  tests is because they use an emulator that prevents them from being used in
+  parallel."""
+  command = ['pytest', '--ignore=infra/build', '-n', 'auto']
+  return subprocess.run(command, check=False).returncode == 0
+
+def run_tests(_=None):
+  """Runs all unit tests."""
+  success = run_nonbuild_tests_parallel()
+  return success and run_build_tests()
 
 
 def get_all_files():
