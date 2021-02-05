@@ -17,7 +17,7 @@
 
 # Compile latest Go
 cd go/src
-./make.bash
+CC=clang CFLAGS="" ./make.bash
 cd $SRC
 
 # Remove previous Go install (used for bootstrapping)

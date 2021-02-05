@@ -48,7 +48,7 @@ fi
 
 export GO111MODULE=off
 cd $SRC/go/src
-./make.bash
+CC=clang CFLAGS="" ./make.bash
 export GOROOT=$(realpath $SRC/go)
 export GOPATH=$GOROOT/packages
 mkdir $GOPATH
