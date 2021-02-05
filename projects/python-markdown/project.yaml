@@ -1,0 +1,11 @@
+homepage: "https://python-markdown.github.io"
+main_repo: "https://github.com/Python-Markdown/markdown.git"
+language: python
+primary_contact: "waylan@gmail.com"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
