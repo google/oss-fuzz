@@ -18,17 +18,12 @@
 
 import argparse
 import os
-import re
 import subprocess
 import sys
 import unittest
 import yaml
 
 _SRC_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEST_BLOCKLIST = [
-    # Test errors with error: "ModuleNotFoundError: No module named 'apt'".
-    re.compile(r'.*\/infra\/base-images\/base-sanitizer-libs-builder'),
-]
 
 
 def _is_project_file(actual_path, expected_filename):
@@ -345,32 +340,49 @@ def get_changed_files():
   return [os.path.abspath(f) for f in changed_files]
 
 
-def is_test_dir_blocklisted(directory):
-  """Returns True if |directory| is blocklisted."""
-  for blocklisted_regex in TEST_BLOCKLIST:
-    if blocklisted_regex.search(directory):
-      return True
-  return False
+def run_build_tests():
+  """Runs build tests because they can't be run in parallel."""
+  suite_list = [
+      unittest.TestLoader().discover(os.path.join(_SRC_ROOT, 'infra', 'build'),
+                                     pattern='*_test.py'),
+  ]
+  suite = unittest.TestSuite(suite_list)
+  print('Running build tests.')
+  result = unittest.TextTestRunner().run(suite)
+  return not result.failures and not result.errors
 
 
-def run_tests(_=None):
-  """Run all unit tests."""
+def run_nonbuild_tests(parallel):
+  """Run all tests but build tests. Do it in parallel if |parallel|. The reason
+  why we exclude build tests is because they use an emulator that prevents them
+  from being used in parallel."""
+  # We look for all project directories because otherwise pytest won't run tests
+  # that are not in valid modules (e.g. "base-images").
   relevant_dirs = set()
   all_files = get_all_files()
   for file_path in all_files:
     directory = os.path.dirname(file_path)
-    if is_test_dir_blocklisted(directory):
-      continue
     relevant_dirs.add(directory)
 
-  suite_list = []
-  for relevant_dir in relevant_dirs:
-    suite_list.append(unittest.TestLoader().discover(relevant_dir,
-                                                     pattern='*_test.py'))
-  suite = unittest.TestSuite(suite_list)
-  result = unittest.TextTestRunner().run(suite)
+  # Use ignore-glob because ignore doesn't seem to work properly with the way we
+  # pass directories to pytest.
+  command = [
+      'pytest',
+      # Test errors with error: "ModuleNotFoundError: No module named 'apt'.
+      '--ignore-glob=infra/base-images/base-sanitizer-libs-builder/*',
+      '--ignore-glob=infra/build/*',
+  ]
+  if parallel:
+    command.extend(['-n', 'auto'])
+  command += list(relevant_dirs)
+  print('Running non-build tests.')
+  return subprocess.run(command, check=False).returncode == 0
 
-  return not result.failures and not result.errors
+
+def run_tests(_=None, parallel=False):
+  """Runs all unit tests."""
+  success = run_nonbuild_tests(parallel)
+  return success and run_build_tests()
 
 
 def get_all_files():
@@ -387,9 +399,15 @@ def main():
   parser.add_argument('command',
                       choices=['format', 'lint', 'license', 'infra-tests'],
                       nargs='?')
-  parser.add_argument('--all-files',
+  parser.add_argument('-a',
+                      '--all-files',
                       action='store_true',
                       help='Run presubmit check(s) on all files',
+                      default=False)
+  parser.add_argument('-p',
+                      '--parallel',
+                      action='store_true',
+                      help='Run tests in parallel.',
                       default=False)
   args = parser.parse_args()
 
@@ -414,7 +432,7 @@ def main():
     return bool_to_returncode(success)
 
   if args.command == 'infra-tests':
-    success = run_tests(relevant_files)
+    success = run_tests(relevant_files, parallel=args.parallel)
     return bool_to_returncode(success)
 
   # Do all the checks (but no tests).
