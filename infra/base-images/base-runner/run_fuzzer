@@ -96,18 +96,22 @@ if [ -f $OPTIONS_FILE ]; then
 fi
 
 if [[ "$FUZZING_ENGINE" = afl ]]; then
-  # https://chromium.googlesource.com/chromium/src/+/master/third_party/afl/src/docs/env_variables.txt
+
+  # Set afl++ environment options.
   export ASAN_OPTIONS="$ASAN_OPTIONS:abort_on_error=1:symbolize=0"
   export MSAN_OPTIONS="$MSAN_OPTIONS:exit_code=86:symbolize=0"
   export UBSAN_OPTIONS="$UBSAN_OPTIONS:symbolize=0"
   export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1
   export AFL_SKIP_CPUFREQ=1
   export AFL_NO_AFFINITY=1
+  export AFL_FAST_CAL=1
   export AFL_MAP_SIZE=4194304
   # AFL expects at least 1 file in the input dir.
   echo input > ${CORPUS_DIR}/input
   CMD_LINE="$OUT/afl-fuzz $AFL_FUZZER_ARGS -i $CORPUS_DIR -o $FUZZER_OUT $(get_dictionary) $* $OUT/$FUZZER"
+
 elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
+
   # Honggfuzz expects at least 1 file in the input dir.
   echo input > $CORPUS_DIR/input
   # --exit_upon_crash: exit whith a first crash seen
@@ -119,7 +123,9 @@ elif [[ "$FUZZING_ENGINE" = honggfuzz ]]; then
   # -f: location of the initial (and destination) file corpus
   # -n: number of fuzzing threads (and processes)
   CMD_LINE="$OUT/honggfuzz -n 1 --exit_upon_crash -R /tmp/${FUZZER}_honggfuzz.report -W $FUZZER_OUT -v -z -P -f \"$CORPUS_DIR\" $(get_dictionary) $* -- \"$OUT/$FUZZER\""
+
 else
+
   CMD_LINE="$OUT/$FUZZER $FUZZER_ARGS $*"
 
   if [ -z ${SKIP_SEED_CORPUS:-} ]; then
@@ -137,6 +143,7 @@ else
   fi
 
   CMD_LINE="$CMD_LINE < /dev/null"
+
 fi
 
 echo $CMD_LINE
