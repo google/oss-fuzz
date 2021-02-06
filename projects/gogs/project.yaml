@@ -1,0 +1,9 @@
+homepage: ""
+primary_contact: ""
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
