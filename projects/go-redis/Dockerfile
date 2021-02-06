@@ -18,3 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN go get github.com/go-redis/redis
 COPY build.sh $SRC/
 WORKDIR $SRC
+

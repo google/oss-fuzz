@@ -1,6 +1,6 @@
 homepage: "https://github.com/go-redis/redis"
 main_repo: "https://github.com/go-redis/redis"
-primary_contact: ""
+primary_contact: "vladimir.webdev@gmail.com"
 auto_ccs :
   - "adam@adalogics.com"
 language: go
