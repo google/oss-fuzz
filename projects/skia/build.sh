@@ -15,6 +15,12 @@
 #
 ################################################################################
 
+# afl++ CMPLOG test:
+test "$FUZZING_ENGINE" = "afl" && {
+  export AFL_LLVM_CMPLOG=1
+  touch $OUT/afl_cmplog.txt
+}
+
 # Build SwiftShader
 pushd third_party/externals/swiftshader/
 export SWIFTSHADER_INCLUDE_PATH=$PWD/include

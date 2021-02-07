@@ -16,6 +16,12 @@
 #
 ################################################################################
 
+# afl++ CMPLOG test:
+test "$FUZZING_ENGINE" = "afl" && {
+  export AFL_LLVM_CMPLOG=1
+  touch $OUT/afl_cmplog.txt
+}
+
 if [ "$SANITIZER" = undefined ]; then
     export CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
     export CXXFLAGS="$CXXFLAGS -fsanitize=unsigned-integer-overflow -fno-sanitize-recover=unsigned-integer-overflow"
