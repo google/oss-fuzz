@@ -114,6 +114,29 @@ then
     unset WOLFCRYPT_LIBWOLFSSL_A_PATH
     unset WOLFCRYPT_INCLUDE_PATH
 
+    # Build sp-math-all 8bit fuzzer
+    cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-sp-math-all-8bit/
+    cp -R $SRC/wolfssl/ $SRC/wolfssl-sp-math-all-8bit/
+    cd $SRC/wolfssl-sp-math-all-8bit/
+    autoreconf -ivf
+    CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP -DSP_WORD_SIZE=8"
+    ./configure $WOLFCRYPT_CONFIGURE_PARAMS --enable-sp-math-all
+    make -j$(nproc)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -DCRYPTOFUZZ_WOLFCRYPT -DCRYPTOFUZZ_BOTAN"
+    export WOLFCRYPT_LIBWOLFSSL_A_PATH="$SRC/wolfssl-sp-math-all-8bit/src/.libs/libwolfssl.a"
+    export WOLFCRYPT_INCLUDE_PATH="$SRC/wolfssl-sp-math-all-8bit/"
+    cd $SRC/cryptofuzz-sp-math-all-8bit/modules/wolfcrypt
+    make -j$(nproc)
+    cd $SRC/cryptofuzz-sp-math-all-8bit/modules/botan
+    make -j$(nproc)
+    cd $SRC/cryptofuzz-sp-math-all-8bit/
+    LIBFUZZER_LINK="$LIB_FUZZING_ENGINE" make -B -j$(nproc)
+    cp cryptofuzz $OUT/cryptofuzz-sp-math-all-8bit
+    CFLAGS="$OLD_CFLAGS"
+    CXXFLAGS="$OLD_CXXFLAGS"
+    unset WOLFCRYPT_LIBWOLFSSL_A_PATH
+    unset WOLFCRYPT_INCLUDE_PATH
+
     # Build sp-math fuzzer
     cp -R $SRC/cryptofuzz/ $SRC/cryptofuzz-sp-math/
     cp -R $SRC/wolfssl/ $SRC/wolfssl-sp-math/
