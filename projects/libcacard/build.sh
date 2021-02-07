@@ -16,7 +16,7 @@
 ################################################################################
 
 # afl++ CMPLOG test:
-test -n "$AFL_MAP_SIZE" && {
+test "$FUZZING_ENGINE" = "afl" && {
   export AFL_LLVM_CMPLOG=1
   touch $OUT/afl_cmplog.txt
 }
