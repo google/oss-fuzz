@@ -24,3 +24,7 @@ ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/build_fuzzers_entrypoint.py"]
 
 # Update infra source code.
 ADD . ${OSS_FUZZ_ROOT}/infra
+
+RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - && \
+    apt-get install nodejs npm -y \
+    && npm install @actions/artifact

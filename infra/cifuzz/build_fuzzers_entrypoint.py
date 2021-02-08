@@ -53,7 +53,15 @@ def main():
     0 on success or 1 on failure.
   """
   config = config_utils.BuildFuzzersConfig()
+  from filestore import github_actions
+  fs = github_actions.GithubActionsFilestore()
+  d = '/tmp/artifact-directory-upload'
+  os.mkdir(d)
+  with open(os.path.join(d, 'hello'), 'w') as fp:
+    fp.write('hi')
 
+  fs.upload_directory('artifact', d)
+  1/0
   if config.dry_run:
     # Sets the default return code on error to success.
     returncode = 0
