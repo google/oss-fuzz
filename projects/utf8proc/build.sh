@@ -15,19 +15,4 @@
 #
 ################################################################################
 # Run the OSS-Fuzz script in the project
-#$SRC/utf8proc/test/ossfuzz.sh #broken, for now
-
-mkdir build
-cd build
-cmake ..
-make -j$(nproc)
-
-
-$CC $CFLAGS -I$SRC/utf8proc \
-    $SRC/utf8proc/test/fuzzer.c \
-    -o $OUT/utf8proc_fuzzer \
-    $LIB_FUZZING_ENGINE $SRC/utf8proc/build/libutf8proc.a
-
-
-find $SRC/utf8proc/test -name "*.txt" | \
-     xargs zip $OUT/utf8proc_fuzzer_seed_corpus.zip
+$SRC/utf8proc/test/ossfuzz.sh
