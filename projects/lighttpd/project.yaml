@@ -1,5 +1,5 @@
 homepage: "https://www.lighttpd.net/"
-primary_contact: "david@adalogics.com"
+primary_contact: "lighttpd.fuzz@gmail.com"
 language: c
 auto_ccs :
   - "david@adalogics.com"
