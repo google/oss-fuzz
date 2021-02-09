@@ -14,8 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseMetric fuzzParseMetric
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseOpenMetric fuzzParseOpenMetric
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseMetricSelector fuzzParseMetricSelector
-compile_go_fuzzer github.com/prometheus/prometheus/promql FuzzParseExpr fuzzParseExpr
+$SRC/scripts/oss-fuzz.sh
