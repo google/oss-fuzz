@@ -44,7 +44,6 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         'rootDirectory': directory
     }
     with tempfile.NamedTemporaryFile(mode='w+') as temp_file:
-      import pdb; pdb.set_trace()
       json.dump(json_obj, temp_file)
       temp_file.flush()
       command = [self.NODE_BIN, self.UPLOAD_SCRIPT, temp_file.name]
