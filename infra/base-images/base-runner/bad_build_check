@@ -301,6 +301,12 @@ function check_mixed_sanitizers {
   local result=0
   local CALL_INSN=
 
+  if [ "${FUZZING_LANGUAGE:-}" = "jvm" ]; then
+    # Sanitizer runtime is linked into the Jazzer driver, so this check does not
+    # apply.
+    return 0
+  fi
+
   if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
     # Sanitizer runtime is loaded via LD_PRELOAD, so this check does not apply.
     return 0
@@ -375,6 +381,12 @@ function check_seed_corpus {
 function check_architecture {
   local FUZZER=$1
   local FUZZER_NAME=$(basename $FUZZER)
+
+  if [ "${FUZZING_LANGUAGE:-}" = "jvm" ]; then
+    # The native dependencies of a JVM project are not packaged, but loaded
+    # dynamically at runtime and thus cannot be checked here.
+    return 0;
+  fi
 
   if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
     FUZZER=${FUZZER}.pkg
