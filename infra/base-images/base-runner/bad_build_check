@@ -312,7 +312,7 @@ function check_mixed_sanitizers {
   else
     case $(uname -m) in
       x86_64)
-        CALL_INSN="callq\s+[0-9a-f]+\s+<"
+        CALL_INSN="callq?\s+[0-9a-f]+\s+<"
         ;;
       aarch64)
         CALL_INSN="bl\s+[0-9a-f]+\s+<"
