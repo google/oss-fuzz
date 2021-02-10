@@ -16,7 +16,7 @@ import os
 import sys
 import tempfile
 
-import filestore
+from cifuzz import filestore
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -40,11 +40,12 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
     json_obj = {
         'artifactName': name,
-        'file': file_paths,
+        'files': file_paths,
         'rootDirectory': directory
     }
     with tempfile.NamedTemporaryFile(mode='w+') as temp_file:
+      import pdb; pdb.set_trace()
       json.dump(json_obj, temp_file)
-      temp_file.close()
+      temp_file.flush()
       command = [self.NODE_BIN, self.UPLOAD_SCRIPT, temp_file.name]
       return utils.execute(command, check_result=True)
