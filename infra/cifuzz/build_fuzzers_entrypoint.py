@@ -60,7 +60,7 @@ def main():
   with open(os.path.join(d, 'hello'), 'w') as fp:
     fp.write('hi')
 
-  fs.upload_directory('artifact', d)
+  fs.upload_corpus('artifact', d)
   1 / 0
   if config.dry_run:
     # Sets the default return code on error to success.
