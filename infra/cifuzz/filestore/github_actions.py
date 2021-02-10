@@ -11,16 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Implementation of a filestore using Github actions artifacts."""
 import os
 
-import filestore
+from cifuzz import filestore
 from github_actions_toolkit.artifact import artifact_client
 
 DIRECTORY = os.path.dirname(__file__)
 
-class GithubActionsFilestore(BaseFilestore):
 
-  def upload_directory(self, name, directory):
+class GithubActionsFilestore(filestore.BaseFilestore):
+  """Implementation of BaseFilestore using Github actions artifacts."""
+
+  def upload_corpus(self, name, directory):  # pylint: disable=no-self-use
+    """Uploads the corpus located at |directory| to |name|."""
     directory = os.path.abspath(directory)
 
     # Get file paths.
@@ -32,3 +36,7 @@ class GithubActionsFilestore(BaseFilestore):
     # !!! Zip?
 
     return artifact_client.upload_artifact(name, file_paths, directory)
+
+  def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
+    # TODO(metzman): Implement this.
+    pass

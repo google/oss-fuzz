@@ -13,6 +13,18 @@
 # limitations under the License.
 """Module for a generic filestore."""
 
+
+# pylint: disable=unused-argument,no-self-use
 class BaseFilestore:
+  """Base class for a filestore."""
+
   def __init__(self):
     pass
+
+  def upload_corpus(self, name, directory):
+    """Uploads the corpus located at |directory| to |name|."""
+    NotImplementedError('Child class must implement method.')
+
+  def download_corpus(self, name, dst_directory):
+    """Downloads the corpus located at |name| to |dst_directory|."""
+    NotImplementedError('Child class must implement method.')
