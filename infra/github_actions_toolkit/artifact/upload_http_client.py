@@ -71,7 +71,7 @@ def upload_chunk(resource_url, file_path, total_file_size):
                                 headers=upload_headers)
         logging.debug('upload_chunk response: %s', response.text)
       return True
-    except Exception as err:
+    except Exception as err:  # pylint: disable=broad-except
       import pdb
       pdb.set_trace()
       pass
@@ -130,9 +130,9 @@ def create_artifact_in_file_container(artifact_name, options):
   for _ in range(utils.MAX_API_ATTEMPTS):
     try:
       response = _do_post_request(artifact_url, data, headers)
-      r = response.read()
-      print('create_artifact_in_file_container response:', r)
-      return json.loads(r)
+      response_data = response.read()
+      print('create_artifact_in_file_container response:', response_data)
+      return json.loads(response_data)
     except urllib.error.HTTPError as http_error:
       code = http_error.getcode()
       if code == http_client.HTTPCode.BAD_REQUEST:
@@ -157,7 +157,7 @@ def _do_post_request(url, data, headers=None):
   return _do_upload_http_request(url, data, headers, method='POST')
 
 
-def _do_post_request(url, data, headers=None):
+def _do_patch_request(url, data, headers=None):
   """Do a PATCH request to |url|."""
   return _do_upload_http_request(url, data, headers, method='PATCH')
 
@@ -170,7 +170,7 @@ def _do_upload_http_request(url, data, headers, method):
   post_request = urllib.request.Request(url,
                                         data=data.encode(),
                                         headers=headers,
-                                        method='POST')
+                                        method=method)
   # !!! test error handling.
   logging.debug('Did request %s', post_request)
   return urllib.request.urlopen(post_request)
