@@ -92,7 +92,7 @@ def patch_artifact_size(size, artifact_name):
   for _ in range(utils.MAX_API_ATTEMPTS):
     # !!! Create better method for handling.
     try:
-      do_post_request(resource_url, data, headers)
+      _do_patch_request(resource_url, data, headers)
       logging.debug('Artifact "%s" successfully uploaded. Size: %d bytes',
                     artifact_name, size)
       break
@@ -130,7 +130,7 @@ def create_artifact_in_file_container(artifact_name, options):
   headers = utils.get_upload_headers('application/json')
   for _ in range(utils.MAX_API_ATTEMPTS):
     try:
-      response = do_post_request(artifact_url, data, headers)
+      response = _do_post_request(artifact_url, data, headers)
       r = response.read()
       print('create_artifact_in_file_container response:', r)
       return json.loads(r)
@@ -153,14 +153,25 @@ def create_artifact_in_file_container(artifact_name, options):
   raise Exception('Can\'t retry creating artifact in file container again')
 
 
-def do_post_request(url, data, headers=None):
+def _do_post_request(url, data, headers=None):
   """Do a POST request to |url|."""
+  _do_upload_http_request(url, data, headers, method='POST')
+
+
+def _do_post_request(url, data, headers=None):
+  """Do a PATCH request to |url|."""
+  _do_upload_http_request(url, data, headers, method='PATCH')
+
+
+def _do_upload_http_request(url, data, headers, method):
+  """Does an HTTP request that uploads |data| to |url| with |headers| using
+  |method|."""
   if headers is None:
     headers = {}
   post_request = urllib.request.Request(
       url, data=data.encode(), headers=headers, method='POST')
   # !!! test error handling.
-  logging.debug('post request %s', post_request)
+  logging.debug('Did request %s', post_request)
   return urllib.request.urlopen(post_request)
 
 
