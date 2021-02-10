@@ -15,7 +15,7 @@
 ################################################################################
 # Docker image to run the CIFuzz action run_fuzzers in.
 
-FROM gcr.io/oss-fuzz-base/cifuzz-base
+FROM gcr.io/oss-fuzz-base/cifuzz-base2
 
 # Python file to execute when the docker container starts up.
 # We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,
@@ -24,3 +24,5 @@ ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/run_fuzzers_entrypoint.py"]
 
 # Copy infra source code.
 ADD . ${OSS_FUZZ_ROOT}/infra
+
+RUN python3 -m pip install -r cifuzz/requirements.txt
