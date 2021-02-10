@@ -8,7 +8,4 @@ auto_ccs:
   - "andreas.schwier@cardcontact.de"
   - "deengert@gmail.com"
   - "jakuje@gmail.com"
-fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
 main_repo: 'https://github.com/OpenSC/OpenSC'
