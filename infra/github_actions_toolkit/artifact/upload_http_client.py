@@ -21,6 +21,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import requests
+
 from github_actions_toolkit.artifact import config_variables
 from github_actions_toolkit.artifact import utils
 from github_actions_toolkit import http_client
@@ -32,8 +34,9 @@ def upload_file(parameters):
   does."""
   # !!!
   # Skip gzip as it is unneeded for now.
-  total_file_size = os.path.getsize(parameters['file'].absolute_path)
-  if not upload_chunk(parameters['resourceUrl'], stream, total_file_size,
+  total_file_size = os.path.getsize(parameters['file'].absolute_file_path)
+  if not upload_chunk(parameters['resourceUrl'],
+                      parameters['file'].absolute_file_path,
                       total_file_size):
     return {
         'isSuccess': False,
@@ -47,7 +50,7 @@ def upload_file(parameters):
   }
 
 
-def upload_chunk(resource_url, stream, upload_file_size, total_file_size):
+def upload_chunk(resource_url, file_path, total_file_size):
   """Based on uploadChunk. Differences from upstream are because:
   1. HTTP client index since we don't need it to do HTTP uploads like typescript
   code.
@@ -62,14 +65,24 @@ def upload_chunk(resource_url, stream, upload_file_size, total_file_size):
                                             content_length=total_file_size,
                                             content_range=content_range)
   for _ in range(utils.MAX_API_ATTEMPTS):
-    pass
-    # !!!
+    try:
+      with open(file_path, 'rb') as file_handle:
+        requests.put(resource_url, data=file_handle, headers=upload_headers)
+      return True
+    except Exception as err:
+      import pdb
+      pdb.set_trace()
+      pass
+
+    time.sleep(utils.SLEEP_TIME)
+
+  return False
 
 
 def patch_artifact_size(size, artifact_name):
   """upload-http-client.js"""
   resource_url = utils.get_artifact_url()
-  resource_url = _add_url_params(resource_url, {'artifactName', artifact_name})
+  resource_url = _add_url_params(resource_url, {'artifactName': artifact_name})
   logging.debug('resource_url is %s.', resource_url)
   parameters = {'Size': size}
   data = json.dumps(parameters)
@@ -129,15 +142,14 @@ def create_artifact_in_file_container(artifact_name, options):
 
     time.sleep(utils.SLEEP_TIME)
 
-  raise Exception('Can\'t retry creating artifact in file container again.')
+  raise Exception('Can\'t retry creating artifact in file container again')
 
 
 def do_post_request(url, data, headers=None):
   """Do a POST request to |url|."""
   if headers is None:
     headers = {}
-  post_request = urllib.request.Request(
-      url, urllib.parse.urlencode(data), headers)
+  post_request = urllib.request.Request(url, data.encode(), headers)
   # !!! test error handling.
   return urllib.request.urlopen(post_request)
 
@@ -180,18 +192,18 @@ def upload_artifact_to_file_container(upload_url, files_to_upload, options):
     return {
         'uploadSize': upload_file_size,
         'totalSize': total_file_size,
-        'failedItemsToReport': failed_items_to_report
+        'failedItems': failed_items_to_report
     }
 
 
 def _add_url_params(url, params):
   """Returns |url| with the specified query |params| added."""
+  # Parse URL into mutable format.
   # It's OK we use _asdict(), this is actually a public method.
-  url_parts = urllib.parse.urlparse(
-      url)._asdict()  # Parse URL into mutable format.
+  url_parts = urllib.parse.urlparse(url)._asdict()
 
   # Update URL.
-  query = urllib.parse.parse_qs(url_parts['query'])
+  query = dict(urllib.parse.parse_qsl(url_parts['query']))
   query.update(params)
   url_parts['query'] = urllib.parse.urlencode(query)
 

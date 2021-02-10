@@ -106,10 +106,10 @@ def get_upload_headers(  # pylint: disable=too-many-arguments
   if is_gzip:
     assert uncompressed_length is not None
     request_options['Content-Encoding'] = 'gzip'
-    request_options['x-tfs-filelength'] = uncompressed_length
+    request_options['x-tfs-filelength'] = str(uncompressed_length)
 
   if content_length:
-    request_options['Content-Length'] = content_length
+    request_options['Content-Length'] = str(content_length)
 
   if content_range:
     request_options['Content-Range'] = content_range
@@ -128,7 +128,7 @@ def get_artifact_url():
   work_flow_run_id = config_variables.get_work_flow_run_id()
   api_version = get_api_version()
   return (('{runtime_url}_apis/pipelines/workflows/{work_flow_run_id}/artifacts'
-           '?api-versions={api_version}').format(
+           '?api-version={api_version}').format(
                runtime_url=runtime_url,
                work_flow_run_id=work_flow_run_id,
                api_version=api_version))

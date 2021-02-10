@@ -34,23 +34,24 @@ def upload_artifact(name, files, root_directory, options=None):
   if len(upload_spec) == 0:
     raise Exception('No files to upload.')
 
-  response = upload_http_client.create_artifact_in_file_container(
-      name, options)
-  if response['fileContainerResourceUrl']:
+  response = upload_http_client.create_artifact_in_file_container(name, options)
+  file_container_resource_url = response.get('fileContainerResourceUrl')
+  if not file_container_resource_url:
     logging.debug('create_artifact_in_file_container response: %s.', response)
-    raise Exception('GitHub artifacts API didn\'t provide upload URL.')
+    # !!!
+    # raise Exception('GitHub artifacts API didn\'t provide upload URL.')
+    file_container_resource_url = 'https://httpbin.org/anything/fileContainerResourceUrl/'
 
-  logging.debug('Upload resource URL: %s',
-                response['fileContainerResourceUrl'])
+  logging.debug('Upload resource URL: %s', file_container_resource_url)
   upload_result = upload_http_client.upload_artifact_to_file_container(
-      response['fileContainerResourceUrl'], upload_spec, options)
+      file_container_resource_url, upload_spec, options)
   # Update artifact size when done.
   # Uncompressed size used in UI when downloading a zip of the artifact.
   upload_http_client.patch_artifact_size(upload_result['totalSize'], name)
   logging.info(
       'Uploaded artifact: %s, size is: %s bytes, '
       '%d items failed to upload.', name, upload_result['uploadSize'],
-      upload_result['failedItems']['length'])
+      len(upload_result['failedItems']))
   upload_response['artifactItems'] = [
       spec.absolute_file_path for spec in upload_spec
   ]
