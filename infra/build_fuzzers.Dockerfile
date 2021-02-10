@@ -23,10 +23,13 @@ FROM gcr.io/oss-fuzz-base/cifuzz-base
 ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/build_fuzzers_entrypoint.py"]
 
 WORKDIR ${OSS_FUZZ_ROOT}/infra
-RUN apt-get update && \
-    apt-get install -y python3-pip --no-install-recommends
+
+COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/bin/python3 /usr/local/bin/python3
+COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/libpython3* /usr/local/lib/
+COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/python3.8 /usr/local/lib/python3.8
 
 # Update infra source code.
 ADD . ${OSS_FUZZ_ROOT}/infra
 
-RUN python3 -m pip install -r cifuzz/requirements.txt
+# Finish python install by updating ld path and install deps.
+RUN ldconfig && python3 -m pip install -r cifuzz/requirements.txt
