@@ -103,9 +103,10 @@ def patch_artifact_size(size, artifact_name):
     except ConnectionResetError:
       pass
 
+    logging.debug('!!! failed to patch.')
     time.sleep(utils.SLEEP_TIME)
-    logging.debug('Artifact "%s" successfully uploaded. Size: %d bytes',
-                  artifact_name, size)
+  logging.debug('Artifact "%s" successfully uploaded. Size: %d bytes',
+                artifact_name, size)
 
 
 def create_artifact_in_file_container(artifact_name, options):
