@@ -1,7 +1,7 @@
 const fs = require('fs');
 
-let json_filename = process.argv[1];
-let fileData = fs.readFileSync(filename);
+let jsonFilename = process.argv[1];
+let fileData = fs.readFileSync(jsonFilename);
 let jsonData = JSON.parse(fileData);
 
 const artifact = require('@actions/artifact');
