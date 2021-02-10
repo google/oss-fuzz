@@ -36,8 +36,7 @@ def upload_file(parameters):
   # Skip gzip as it is unneeded for now.
   total_file_size = os.path.getsize(parameters['file'].absolute_file_path)
   if not upload_chunk(parameters['resourceUrl'],
-                      parameters['file'].absolute_file_path,
-                      total_file_size):
+                      parameters['file'].absolute_file_path, total_file_size):
     return {
         'isSuccess': False,
         'successfulUploadSize': 0,
@@ -67,8 +66,9 @@ def upload_chunk(resource_url, file_path, total_file_size):
   for _ in range(utils.MAX_API_ATTEMPTS):
     try:
       with open(file_path, 'rb') as file_handle:
-        response = requests.put(
-            resource_url, data=file_handle, headers=upload_headers)
+        response = requests.put(resource_url,
+                                data=file_handle,
+                                headers=upload_headers)
         logging.debug('upload_chunk response: %s', response.text)
       return True
     except Exception as err:
@@ -109,7 +109,6 @@ def patch_artifact_size(size, artifact_name):
 
     logging.debug('!!! failed to patch.')
     time.sleep(utils.SLEEP_TIME)
-
 
 
 def create_artifact_in_file_container(artifact_name, options):
@@ -155,12 +154,12 @@ def create_artifact_in_file_container(artifact_name, options):
 
 def _do_post_request(url, data, headers=None):
   """Do a POST request to |url|."""
-  _do_upload_http_request(url, data, headers, method='POST')
+  return _do_upload_http_request(url, data, headers, method='POST')
 
 
 def _do_post_request(url, data, headers=None):
   """Do a PATCH request to |url|."""
-  _do_upload_http_request(url, data, headers, method='PATCH')
+  return _do_upload_http_request(url, data, headers, method='PATCH')
 
 
 def _do_upload_http_request(url, data, headers, method):
@@ -168,8 +167,10 @@ def _do_upload_http_request(url, data, headers, method):
   |method|."""
   if headers is None:
     headers = {}
-  post_request = urllib.request.Request(
-      url, data=data.encode(), headers=headers, method='POST')
+  post_request = urllib.request.Request(url,
+                                        data=data.encode(),
+                                        headers=headers,
+                                        method='POST')
   # !!! test error handling.
   logging.debug('Did request %s', post_request)
   return urllib.request.urlopen(post_request)

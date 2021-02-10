@@ -85,9 +85,7 @@ def get_content_range(start, end, total):
 def _get_http_request_headers():
   auth_token = config_variables.get_runtime_token()
   authorization = 'Bearer {auth_token}'.format(auth_token=auth_token)
-  return {
-      'Authorization': authorization
-  }
+  return {'Authorization': authorization}
 
 
 def get_upload_headers(  # pylint: disable=too-many-arguments
