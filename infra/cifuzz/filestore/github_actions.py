@@ -43,7 +43,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         'file': file_paths,
         'rootDirectory': directory
     }
-    with tempfile.NamedTemporaryFile() as temp_file:
+    with tempfile.NamedTemporaryFile(mode='w+') as temp_file:
       json.dump(json_obj, temp_file)
       temp_file.close()
       command = [self.NODE_BIN, self.UPLOAD_SCRIPT, temp_file.name]
