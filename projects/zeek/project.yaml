@@ -10,9 +10,6 @@ auto_ccs:
   - "justin@corelight.com"
   - "vern@corelight.com"
   - "vlad@es.net"
-fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
 sanitizers:
   - address
 main_repo: 'https://github.com/zeek/zeek'
