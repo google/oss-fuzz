@@ -99,6 +99,7 @@ def patch_artifact_size(size, artifact_name):
       if code == http_client.HTTPCode.BAD_REQUEST:
         logging.error('Artifact "%s" not found.', artifact_name)
         raise
+      logging.error('Other error: %s', http_error)
 
     except ConnectionResetError:
       pass
@@ -161,7 +162,7 @@ def do_post_request(url, data, headers=None):
 
 def upload_artifact_to_file_container(upload_url, files_to_upload, options):
   """upload-http-client.js."""
-  logging.debug('concurrency: %d, and chunk size: %d.',
+  logging.debug('File concurrency: %d, and chunk size: %d.',
                 config_variables.UPLOAD_FILE_CONCURRENCY,
                 config_variables.UPLOAD_CHUNK_SIZE)
   # By default, file uploads will continue if there is an error unless specified
