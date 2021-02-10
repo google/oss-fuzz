@@ -98,7 +98,7 @@ def patch_artifact_size(size, artifact_name):
       break
     except urllib.error.HTTPError as http_error:
       code = http_error.getcode()
-      if code == http_client.HTTPCode.BAD_REQUEST:
+      if code == http_client.HTTPCode.NOT_FOUND:
         logging.error('Artifact "%s" not found.', artifact_name)
         raise
 
