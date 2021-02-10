@@ -127,8 +127,9 @@ def create_artifact_in_file_container(artifact_name, options):
   for _ in range(utils.MAX_API_ATTEMPTS):
     try:
       response = do_post_request(artifact_url, data, headers)
-      response_data = json.loads(response.read())
-      return response_data
+      r = response.read()
+      print('create_artifact_in_file_container response:', r)
+      return json.loads(r)
     except urllib.error.HTTPError as http_error:
       code = http_error.getcode()
       if code == http_client.HTTPCode.BAD_REQUEST:
