@@ -14,10 +14,12 @@
 #
 ################################################################################
 
-#export ASAN_OPTIONS=detect_leaks=0
+cp $SRC/ucl_add_string_fuzzer.options $OUT/
 
 cd libucl 
 ./autogen.sh && ./configure
 make
 
-$CC tests/fuzzers/ucl_add_string_fuzzer.c -DHAVE_CONFIG_H -I./src -I./include src/.libs/libucl.a -I./  $CFLAGS $LIB_FUZZING_ENGINE -o $OUT/ucl_add_string_fuzzer
+$CC $CFLAGS $LIB_FUZZING_ENGINE tests/fuzzers/ucl_add_string_fuzzer.c \
+    -DHAVE_CONFIG_H -I./src -I./include src/.libs/libucl.a -I./ \
+    -o $OUT/ucl_add_string_fuzzer
