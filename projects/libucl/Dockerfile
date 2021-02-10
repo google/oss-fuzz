@@ -21,4 +21,4 @@ RUN git clone https://github.com/vstakhov/libucl
 WORKDIR $SRC
 
 COPY build.sh $SRC/
-COPY *.options $OUT/
+COPY ucl_add_string_fuzzer.options $OUT/ucl_add_string_fuzzer.options

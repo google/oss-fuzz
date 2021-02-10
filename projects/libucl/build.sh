@@ -14,7 +14,7 @@
 #
 ################################################################################
 
-export ASAN_OPTIONS=detect_leaks=0
+#export ASAN_OPTIONS=detect_leaks=0
 
 cd libucl 
 ./autogen.sh && ./configure
