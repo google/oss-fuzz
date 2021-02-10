@@ -13,6 +13,7 @@
 # limitations under the License.
 import json
 import os
+import sys
 import tempfile
 
 import filestore
@@ -23,7 +24,8 @@ import utils
 
 DIRECTORY = os.path.dirname(__file__)
 
-class GithubActionsFilestore(BaseFilestore):
+
+class GithubActionsFilestore(filestore.BaseFilestore):
 
   NODE_BIN = 'nodejs'
   UPLOAD_SCRIPT = os.path.join(DIRECTORY, 'github_actions_js', 'upload.js')

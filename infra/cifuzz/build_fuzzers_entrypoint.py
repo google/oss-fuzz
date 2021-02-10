@@ -61,7 +61,7 @@ def main():
     fp.write('hi')
 
   fs.upload_directory('artifact', d)
-  1/0
+  1 / 0
   if config.dry_run:
     # Sets the default return code on error to success.
     returncode = 0

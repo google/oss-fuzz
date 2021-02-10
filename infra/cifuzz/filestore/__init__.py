@@ -13,6 +13,8 @@
 # limitations under the License.
 """Tools for a generic filestore."""
 
+
 class BaseFilestore:
+
   def __init__(self):
     pass
