@@ -68,6 +68,17 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 # Set up Golang coverage modules.
 RUN go get github.com/google/oss-fuzz/infra/go/coverage/...
 
+# Install OpenJDK 15 and trim its size by removing unused components.
+ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
+ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
+ENV PATH=$PATH:$JAVA_HOME/bin
+ADD https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz /tmp
+RUN cd /tmp && \
+    mkdir -p $JAVA_HOME && \
+    tar -xzv --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
+    rm -f openjdk-15.0.2_linux-x64_bin.tar.gz && \
+    rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
+
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
     collect_dft \
