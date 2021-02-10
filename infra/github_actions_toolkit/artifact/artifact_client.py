@@ -32,14 +32,15 @@ def upload_artifact(name, files, root_directory, options=None):
       'failedItems': []
   }
   if len(upload_spec) == 0:
-    raise Exception('No files to upload.')
+    raise Exception('No files to upload')
 
   response = upload_http_client.create_artifact_in_file_container(name, options)
   file_container_resource_url = response.get('fileContainerResourceUrl')
   if not file_container_resource_url:
     logging.debug('create_artifact_in_file_container response: %s.', response)
-    raise Exception('GitHub artifacts API didn\'t provide upload URL')
+    # !!! dbg code
     file_container_resource_url = 'https://httpbin.org/anything/fileContainerResourceUrl/'
+    #raise Exception('GitHub artifacts API didn\'t provide upload URL')
 
   logging.debug('Upload resource URL: %s', file_container_resource_url)
   upload_result = upload_http_client.upload_artifact_to_file_container(
