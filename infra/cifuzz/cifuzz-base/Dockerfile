@@ -33,6 +33,11 @@ RUN add-apt-repository \
 
 RUN apt-get update && apt-get install docker-ce docker-ce-cli containerd.io -y
 
+COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/bin/python3 /usr/local/bin/python3
+COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/libpython3* /usr/local/lib/
+COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/python3.8 /usr/local/lib/python3.8
+RUN ldconfig
+
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
 ADD . ${OSS_FUZZ_ROOT}
 RUN rm -rf ${OSS_FUZZ_ROOT}/infra
