@@ -157,8 +157,10 @@ def do_post_request(url, data, headers=None):
   """Do a POST request to |url|."""
   if headers is None:
     headers = {}
-  post_request = urllib.request.Request(url, data.encode(), headers)
+  post_request = urllib.request.Request(
+      url, data=data.encode(), headers=headers, method='POST')
   # !!! test error handling.
+  logging.debug('post request %s', post_request)
   return urllib.request.urlopen(post_request)
 
 
