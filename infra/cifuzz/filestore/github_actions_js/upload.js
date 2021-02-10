@@ -1,4 +1,4 @@
-filename = process.argv[1];
+let filename = process.argv[1];
 const fs = require('fs');
 let fileData = fs.readFileSync(filename);
 let jsonData = JSON.parse(fileData);
