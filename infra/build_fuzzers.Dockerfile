@@ -22,11 +22,11 @@ FROM gcr.io/oss-fuzz-base/cifuzz-base
 # just expand to '/opt/oss-fuzz'.
 ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/build_fuzzers_entrypoint.py"]
 
-# !!! Needs to be done before node install
 WORKDIR ${OSS_FUZZ_ROOT}/infra
-RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - && \
-    apt-get install nodejs -y && \
-    npm install @actions/artifact
+RUN apt-get update && \
+    apt-get install -y python3-pip --no-install-recommends
 
 # Update infra source code.
 ADD . ${OSS_FUZZ_ROOT}/infra
+
+RUN python3 -m pip install -r cifuzz/requirements.txt

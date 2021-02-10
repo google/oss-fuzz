@@ -67,7 +67,9 @@ def upload_chunk(resource_url, file_path, total_file_size):
   for _ in range(utils.MAX_API_ATTEMPTS):
     try:
       with open(file_path, 'rb') as file_handle:
-        requests.put(resource_url, data=file_handle, headers=upload_headers)
+        response = requests.put(
+            resource_url, data=file_handle, headers=upload_headers)
+        logging.debug('upload_chunk response: %s', response.text)
       return True
     except Exception as err:
       import pdb
@@ -125,7 +127,8 @@ def create_artifact_in_file_container(artifact_name, options):
   for _ in range(utils.MAX_API_ATTEMPTS):
     try:
       response = do_post_request(artifact_url, data, headers)
-      return json.loads(response.read())
+      response_data = json.loads(response.read())
+      return response_data
     except urllib.error.HTTPError as http_error:
       code = http_error.getcode()
       if code == http_client.HTTPCode.BAD_REQUEST:
@@ -188,12 +191,12 @@ def upload_artifact_to_file_container(upload_url, files_to_upload, options):
         logging.error('Stopping artifact upload due to error.')
         # !!! What do I do here?
 
-    logging.info('Total size of files uploaded is %s bytes.', upload_file_size)
-    return {
-        'uploadSize': upload_file_size,
-        'totalSize': total_file_size,
-        'failedItems': failed_items_to_report
-    }
+  logging.info('Total size of files uploaded is %s bytes.', upload_file_size)
+  return {
+      'uploadSize': upload_file_size,
+      'totalSize': total_file_size,
+      'failedItems': failed_items_to_report
+  }
 
 
 def _add_url_params(url, params):
