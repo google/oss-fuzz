@@ -18,4 +18,3 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/redis/hiredis
 WORKDIR hiredis
 COPY build.sh $SRC/
-COPY format_command_fuzzer.options $OUT/
