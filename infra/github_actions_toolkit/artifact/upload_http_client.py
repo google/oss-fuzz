@@ -93,21 +93,23 @@ def patch_artifact_size(size, artifact_name):
     # !!! Create better method for handling.
     try:
       do_post_request(resource_url, data, headers)
+      logging.debug('Artifact "%s" successfully uploaded. Size: %d bytes',
+                    artifact_name, size)
       break
     except urllib.error.HTTPError as http_error:
       code = http_error.getcode()
       if code == http_client.HTTPCode.BAD_REQUEST:
         logging.error('Artifact "%s" not found.', artifact_name)
         raise
-      logging.error('Other error: %s', http_error)
+
+      logging.error('Other error: %s', http_error.file.read())
 
     except ConnectionResetError:
       pass
 
     logging.debug('!!! failed to patch.')
     time.sleep(utils.SLEEP_TIME)
-  logging.debug('Artifact "%s" successfully uploaded. Size: %d bytes',
-                artifact_name, size)
+
 
 
 def create_artifact_in_file_container(artifact_name, options):
