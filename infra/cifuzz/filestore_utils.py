@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """External filestore interface. Cannot be depended on by filestore code."""
-import cifuzz.filestore.github_actions
+import filestore.github_actions
+
 
 def get_filestore(config):
   """Returns the correct filestore based on the platform in |config|.
   Raises an exception if there is no correct filestore for the platform."""
   # TODO(metzman): Force specificying of filestore.
   if config.platform == config.Platform.EXTERNAL_GITHUB:
-    return cifuzz.filestore.github_actions.GithubActionsFilestore()
+    return filestore.github_actions.GithubActionsFilestore()
   raise Exception('Filestore doesn\'t support platform.')
