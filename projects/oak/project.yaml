@@ -12,3 +12,4 @@ auto_ccs:
   - "mks@google.com"
 fuzzing_engines:
   - libfuzzer
+main_repo: 'https://github.com/project-oak/oak'

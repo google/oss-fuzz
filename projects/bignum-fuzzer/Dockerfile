@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y software-properties-common python-softw
 RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
 RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
 
-RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.4.2.tar.gz
+RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.0.tar.gz
 RUN git clone --recursive https://github.com/golang/go
 RUN git clone --depth 1 https://github.com/guidovranken/bignum-fuzzer
 RUN git clone --depth 1 https://github.com/openssl/openssl

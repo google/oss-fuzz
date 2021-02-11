@@ -1,0 +1,10 @@
+homepage: "https://github.com/ninja-build/ninja"
+language: c++
+primary_contact: "jhasse@gmail.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/ninja-build/ninja"

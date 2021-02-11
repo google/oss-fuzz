@@ -15,3 +15,4 @@ sanitizers:
   - memory
   - undefined
   - dataflow
+main_repo: 'https://github.com/the-tcpdump-group/libpcap.git'

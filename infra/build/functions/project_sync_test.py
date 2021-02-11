@@ -16,9 +16,14 @@
 """Unit tests for Cloud Function sync, which syncs the list of github projects
 and uploads them to the Cloud Datastore."""
 
+import os
+import sys
 import unittest
 
 from google.cloud import ndb
+
+sys.path.append(os.path.dirname(__file__))
+# pylint: disable=wrong-import-position
 
 from datastore_entities import Project
 from project_sync import get_github_creds
@@ -26,6 +31,8 @@ from project_sync import get_projects
 from project_sync import ProjectMetadata
 from project_sync import sync_projects
 import test_utils
+
+# pylint: disable=no-member
 
 
 # pylint: disable=too-few-public-methods

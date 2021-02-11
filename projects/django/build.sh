@@ -45,8 +45,8 @@ export CPYTHON_INSTALL_PATH=$SRC/cpython-install
 rm -rf $CPYTHON_INSTALL_PATH
 mkdir $CPYTHON_INSTALL_PATH
 
-tar zxf v3.8.0b2.tar.gz
-cd cpython-3.8.0b2/
+tar zxf v3.8.7.tar.gz
+cd cpython-3.8.7/
 cp $SRC/django-fuzzers/python_coverage.h Python/
 
 # Patch the interpreter to record code coverage

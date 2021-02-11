@@ -16,6 +16,7 @@
 import os
 import tempfile
 import unittest
+from unittest import mock
 
 import utils
 import helper
@@ -108,6 +109,26 @@ class ExecuteTest(unittest.TestCase):
         out, err, err_code = utils.execute(['ls', 'notarealdir'],
                                            location=tmp_dir,
                                            check_result=True)
+
+
+class BinaryPrintTest(unittest.TestCase):
+  """Tests for utils.binary_print."""
+
+  @unittest.skip('Causes spurious failures because of side-effects.')
+  def test_string(self):  # pylint: disable=no-self-use
+    """Tests that utils.binary_print can print a regular string."""
+    # Should execute without raising any exceptions.
+    with mock.patch('sys.stdout.buffer.write') as mocked_write:
+      utils.binary_print('hello')
+      mocked_write.assert_called_with('hello\n')
+
+  @unittest.skip('Causes spurious failures because of side-effects.')
+  def test_binary_string(self):  # pylint: disable=no-self-use
+    """Tests that utils.binary_print can print a bianry string."""
+    # Should execute without raising any exceptions.
+    with mock.patch('sys.stdout.buffer.write') as mocked_write:
+      utils.binary_print(b'hello')
+      mocked_write.assert_called_with(b'hello\n')
 
 
 if __name__ == '__main__':
