@@ -38,5 +38,6 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     return artifact_client.upload_artifact(name, file_paths, directory)
 
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
+    """Downloads the corpus located at |name| to |dst_directory|."""
     # TODO(metzman): Implement this.
     pass
