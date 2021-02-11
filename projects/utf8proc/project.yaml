@@ -3,12 +3,5 @@ language: c
 primary_contact: "stevenj@alum.mit.edu"
 auto_ccs:
   - "randy440088@gmail.com"
-sanitizers:
-  - address
-  - memory
-  - undefined
-fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
 main_repo: 'https://github.com/JuliaStrings/utf8proc'
 
