@@ -75,6 +75,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def download_corpus(self, target_name, parent_dir):
     logging.info('download_corpus not implemented for ClusterFuzzLite.')
+    return self.get_corpus_dir(target_name, parent_dir)
 
   def _get_corpus_name(self, target_name):  # pylint: disable=no-self-use
     """Returns the name of the corpus artifact."""
@@ -172,10 +173,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
             self.config.project_name), project_qualified_fuzz_target_name,
         self.CORPUS_ZIP_NAME)
 
-    if download_and_unpack_zip(corpus_url, corpus_dir):
-      return corpus_dir
-
-    return None
+    download_and_unpack_zip(corpus_url, corpus_dir)
+    return corpus_dir
 
 
 def download_url(url, filename, num_attempts=3):
