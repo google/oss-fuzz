@@ -23,8 +23,8 @@ export GEN_FUZZ=1
 
 ./bootstrap
 ./configure \
-  CC=clang \
-  CXX=clang++ \
+  CC=$CC \
+  CXX=$CXX \
   --enable-debug \
   --with-fuzzing=ossfuzz \
   --enable-tcti-fuzzing \

@@ -30,7 +30,7 @@ class Package(package.Package):
     super(Package, self).__init__('pulseaudio', apt_version)
 
   def PostDownload(self, source_directory):
-    """Remove blacklisted patches."""
+    """Remove blocklisted patches."""
     # Fix *droid* patches.
     bad_patch_path = os.path.join(
         source_directory, 'debian', 'patches',

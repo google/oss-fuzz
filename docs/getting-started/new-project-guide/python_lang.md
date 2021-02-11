@@ -7,7 +7,7 @@ nav_order: 3
 permalink: /getting-started/new-project-guide/python-lang/
 ---
 
-# Integrating a Rust project
+# Integrating a Python project
 {: .no_toc}
 
 - TOC
@@ -32,7 +32,8 @@ docker images.
 ### Example project
 
 We recommending viewing [ujson](https://github.com/google/oss-fuzz/tree/master/projects/ujson) as an
-example of a simple Python fuzzing project.
+example of a simple Python fuzzing project, with both plain-Atheris and
+Atheris + Hypothesis harnesses.
 
 ### project.yaml
 
@@ -42,14 +43,16 @@ The `language` attribute must be specified.
 language: python
 ```
 
-The only supported fuzzing engine and sanitizer are `libfuzzer` and `address`,
-respectively.
+The only supported fuzzing engine is libFuzzer (`libfuzzer`). The supported
+sanitizers are AddressSanitizer (`address`) and
+UndefinedBehaviorSanitizer (`undefined`). These must be explicitly specified.
 
 ```yaml
-sanitizers:
-  - address
 fuzzing_engines:
   - libfuzzer
+sanitizers:
+  - address
+  - undefined
 ```
 
 ### Dockerfile
@@ -85,9 +88,45 @@ for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
   # preloaded, so this is also done here to ensure compatibility and simplify
   # test case reproduction. Since this helper script is what OSS-Fuzz will
   # actually execute, it is also always required.
-  echo "#/bin/sh
+  # NOTE: If you are fuzzing python-only code and do not have native C/C++
+  # extensions, then remove the LD_PRELOAD line below as preloading sanitizer
+  # library is not required and can lead to unexpected startup crashes.
+  echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
-LD_PRELOAD=\$(dirname "\$0")/libclang_rt.asan-x86_64.so \$(dirname "\$0")/$fuzzer_package \$@" > $OUT/$fuzzer_basename
+this_dir=\$(dirname \"\$0\")
+LD_PRELOAD=\$this_dir/sanitizer_with_fuzzer.so \
+ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
+\$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
 ```
+
+## Hypothesis
+
+Using [Hypothesis](https://hypothesis.readthedocs.io/), the Python library for
+[property-based testing](https://hypothesis.works/articles/what-is-property-based-testing/),
+makes it really easy to generate complex inputs - whether in traditional test suites
+or [by using test functions as fuzz harnesses](https://hypothesis.readthedocs.io/en/latest/details.html#use-with-external-fuzzers).
+
+> Property based testing is the construction of tests such that, when these tests are fuzzed,
+  failures in the test reveal problems with the system under test that could not have been
+  revealed by direct fuzzing of that system.
+
+You also get integrated test-case reduction for free - meaning that it's trivial to
+report a canonical minimal example for each distinct failure discovered while fuzzing!
+
+See [here for the core "strategies"](https://hypothesis.readthedocs.io/en/latest/data.html),
+for arbitrary data, [here for Numpy + Pandas support](https://hypothesis.readthedocs.io/en/latest/numpy.html),
+or [here for a variety of third-party extensions](https://hypothesis.readthedocs.io/en/latest/strategies.html)
+supporting everything from protobufs, to jsonschemas, to networkx graphs or geojson
+or valid Python source code.
+
+To use Hypothesis in OSS-Fuzz, install it in your Dockerfile with
+
+```shell
+RUN pip3 install hypothesis
+```
+
+See [the `ujson` structured fuzzer](https://github.com/google/oss-fuzz/blob/master/projects/ujson/hypothesis_structured_fuzzer.py)
+for an example "polyglot" which can either be run with `pytest` as a standard test function,
+or run with OSS-Fuzz as a fuzz harness.

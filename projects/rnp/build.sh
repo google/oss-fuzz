@@ -17,8 +17,8 @@
 
 cd $SRC
 
-wget -qO- https://botan.randombit.net/releases/Botan-2.12.1.tar.xz | tar xJ
-cd Botan-2.12.1
+wget -qO- https://botan.randombit.net/releases/Botan-2.16.0.tar.xz | tar xJ
+cd Botan-2.16.0
 ./configure.py --prefix=/usr --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
                --disable-modules=locking_allocator \
                --unsafe-fuzzer-mode --build-fuzzers=libfuzzer \
@@ -61,5 +61,5 @@ done
 
 mkdir -p "${OUT}/lib"
 cp src/lib/librnp-0.so.0 "${OUT}/lib/"
-cp /usr/lib/libbotan-2.so.12 "${OUT}/lib/"
+cp /usr/lib/libbotan-2.so.16 "${OUT}/lib/"
 cp /lib/x86_64-linux-gnu/libjson-c.so.2 "${OUT}/lib/"
