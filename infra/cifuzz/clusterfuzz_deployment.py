@@ -83,6 +83,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def upload_corpus(self, target_name, corpus_dir):
     """Upload the corpus produced by |target_name| in |corpus_dir|."""
+    logging.info('Uploading corpus for %s', target_name)
     name = self._get_corpus_name(target_name)
     # !!! What to do about failures.
     try:
