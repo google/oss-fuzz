@@ -20,3 +20,5 @@ export LDFLAGS="${LIB_FUZZING_ENGINE} ${CFLAGS}"
 chmod +x ./fuzztest/build.sh
 ./fuzztest/build.sh
 mv civetweb_fuzz3 $OUT/
+mv civetweb_fuzz2 $OUT/
+mv civetweb_fuzz1 $OUT/
