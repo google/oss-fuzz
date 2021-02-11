@@ -87,11 +87,9 @@ class BaseFuzzTargetRunner:
 
     return True
 
-  def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
+  def run_fuzz_target(self, fuzz_target_obj):
     """Fuzzes with |fuzz_target_obj| and returns the result."""
-    # TODO(metzman): Make children implement this so that the batch runner can
-    # do things differently.
-    return fuzz_target_obj.fuzz()
+    raise NotImplementedError('Child class must implement method')
 
   @property
   def quit_on_bug_found(self):
@@ -132,6 +130,7 @@ class BaseFuzzTargetRunner:
       target = self.create_fuzz_target_obj(target_path, run_seconds)
       start_time = time.time()
       result = self.run_fuzz_target(target)
+      shutil.rmtree(result.corpus_path)
 
       # It's OK if this goes negative since we take max when determining
       # run_seconds.
@@ -170,6 +169,10 @@ class CiFuzzTargetRunner(BaseFuzzTargetRunner):
   def quit_on_bug_found(self):
     return True
 
+  def run_fuzz_target(self, fuzz_target_obj):
+    """Fuzzes with |fuzz_target_obj| and returns the result."""
+    return fuzz_target_obj.fuzz()
+
 
 class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
   """Runner for fuzz targets used in batch fuzzing context."""
@@ -177,6 +180,13 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
   @property
   def quit_on_bug_found(self):
     return False
+
+  def run_fuzz_target(self, fuzz_target_obj):
+    """Fuzzes with |fuzz_target_obj| and returns the result."""
+    result = fuzz_target_obj.fuzz()
+    self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
+                                              result.corpus_path)
+    return result
 
 
 def get_fuzz_target_runner(config):

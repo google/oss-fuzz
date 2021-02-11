@@ -21,6 +21,8 @@ import urllib.error
 import urllib.request
 import zipfile
 
+import filestore_utils
+
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
@@ -28,14 +30,13 @@ import utils
 
 class BaseClusterFuzzDeployment:
   """Base class for ClusterFuzz deployments."""
-
   CORPUS_DIR_NAME = 'cifuzz-corpus'
   BUILD_DIR_NAME = 'cifuzz-latest-build'
 
   def __init__(self, config):
     self.config = config
 
-  def download_latest_build(self, out_dir):
+  def download_latest_build(self, parent_dir):
     """Downloads the latest build from ClusterFuzz.
 
     Returns:
@@ -43,23 +44,51 @@ class BaseClusterFuzzDeployment:
     """
     raise NotImplementedError('Child class must implement method.')
 
-  def download_corpus(self, target_name, out_dir):
-    """Downloads the corpus for |target_name| from ClusterFuzz to |out_dir|.
+  def download_corpus(self, target_name, parent_dir):
+    """Downloads the corpus for |target_name| from ClusterFuzz to a subdirectory
+    of |parent_dir|.
 
     Returns:
       A path to where the OSS-Fuzz build was stored, or None if it wasn't.
     """
     raise NotImplementedError('Child class must implement method.')
 
+  def get_corpus_dir(self, target_name, parent_dir):
+    """Returns the path to the corpus dir for |target_name| within
+    |parent_dir|."""
+    return os.path.join(parent_dir, self.CORPUS_DIR_NAME, target_name)
+
+  def get_build_dir(self, parent_dir):
+    """Returns the path to the build dir for within |parent_dir|."""
+    return os.path.join(parent_dir, self.BUILD_DIR_NAME)
+
 
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
-  def download_latest_build(self, out_dir):
+  def __init__(self, config):
+    super().__init__(config)
+    self.filestore = filestore_utils.get_filestore(self.config)
+
+  def download_latest_build(self, parent_dir):
     logging.info('download_latest_build not implemented for ClusterFuzzLite.')
 
-  def download_corpus(self, target_name, out_dir):
+  def download_corpus(self, target_name, parent_dir):
     logging.info('download_corpus not implemented for ClusterFuzzLite.')
+
+  def _get_corpus_name(self, target_name):  # pylint: disable=no-self-use
+    """Returns the name of the corpus artifact."""
+    return 'corpus-{target_name}'.format(target_name=target_name)
+
+  def upload_corpus(self, target_name, corpus_dir):
+    """Upload the corpus produced by |target_name| in |corpus_dir|."""
+    name = self._get_corpus_name(target_name)
+    # !!! What to do about failures.
+    try:
+      self.filestore.upload_corpus(name, corpus_dir)
+    except Exception as error:  # pylint: disable=broad-except
+      logging.error('Failed to upload corpus for target: %s. Error: %s.',
+                    target_name, error)
 
 
 class OSSFuzz(BaseClusterFuzzDeployment):
@@ -92,14 +121,19 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       return None
     return response.read().decode()
 
-  def download_latest_build(self, out_dir):
+  def download_latest_build(self, parent_dir):
     """Downloads the latest OSS-Fuzz build from GCS.
 
     Returns:
       A path to where the OSS-Fuzz build was stored, or None if it wasn't.
     """
-    build_dir = os.path.join(out_dir, self.BUILD_DIR_NAME)
+    build_dir = self.get_build_dir(parent_dir)
     if os.path.exists(build_dir):
+      # This path is necessary because download_latest_build can be called
+      # multiple times.That is the case because it is called only when we need
+      # to see if a bug is novel, i.e. until we want to check a bug is novel we
+      # don't want to waste time calling this, but therefore this method can be
+      # called if multiple bugs are found.
       return build_dir
 
     os.makedirs(build_dir, exist_ok=True)
@@ -117,13 +151,13 @@ class OSSFuzz(BaseClusterFuzzDeployment):
 
     return None
 
-  def download_corpus(self, target_name, out_dir):
+  def download_corpus(self, target_name, parent_dir):
     """Downloads the latest OSS-Fuzz corpus for the target.
 
     Returns:
       The local path to to corpus or None if download failed.
     """
-    corpus_dir = os.path.join(out_dir, self.CORPUS_DIR_NAME, target_name)
+    corpus_dir = self.get_corpus_dir(target_name, parent_dir)
     os.makedirs(corpus_dir, exist_ok=True)
     # TODO(metzman): Clean up this code.
     project_qualified_fuzz_target_name = target_name
@@ -183,7 +217,7 @@ def download_and_unpack_zip(url, extract_directory):
 
   Args:
     url: A url to the zip file to be downloaded and unpacked.
-    out_dir: The path where the zip file should be extracted to.
+    extract_directory: The path where the zip file should be extracted to.
 
   Returns:
     True on success.

@@ -41,7 +41,7 @@ def upload_artifact(name, files, root_directory, options=None):
     # !!! dbg code
     file_container_resource_url = (
         'https://httpbin.org/anything/fileContainerResourceUrl/')
-    #raise Exception('GitHub artifacts API didn\'t provide upload URL')
+    raise Exception('GitHub artifacts API didn\'t provide upload URL')
 
   logging.debug('Upload resource URL: %s', file_container_resource_url)
   upload_result = upload_http_client.upload_artifact_to_file_container(

@@ -27,5 +27,4 @@ WORKDIR ${OSS_FUZZ_ROOT}/infra
 # Update infra source code.
 ADD . ${OSS_FUZZ_ROOT}/infra
 
-# Finish python install by updating ld path and install deps.
 RUN python3 -m pip install -r cifuzz/requirements.txt

@@ -42,7 +42,8 @@ COULD_NOT_TEST_ON_RECENT_MESSAGE = (
     'target to determine if this code change (pr/commit) introduced crash. '
     'Assuming this code change introduced crash.')
 
-FuzzResult = collections.namedtuple('FuzzResult', ['testcase', 'stacktrace'])
+FuzzResult = collections.namedtuple('FuzzResult',
+                                    ['testcase', 'stacktrace', 'corpus_path'])
 
 
 class ReproduceError(Exception):
@@ -95,6 +96,13 @@ class FuzzTarget:
     else:
       command += ['-v', '%s:%s' % (self.out_dir, '/out')]
 
+    # If corpus can be downloaded use it for fuzzing.
+    # !!! Move corpus download to outside of fuzz_target.
+    corpus_path = self.clusterfuzz_deployment.download_corpus(
+        self.target_name, self.out_dir)
+    if corpus_path:
+      command += ['-e', 'CORPUS_DIR=' + corpus_path]
+
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'SANITIZER=' + self.config.sanitizer, '-e', 'CIFUZZ=True', '-e',
@@ -105,15 +113,9 @@ class FuzzTarget:
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
         fuzz_target=self.target_name,
         options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
-
-    # If corpus can be downloaded use it for fuzzing.
-    latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name, self.out_dir)
-    if latest_corpus_path:
-      run_fuzzer_command = run_fuzzer_command + ' ' + latest_corpus_path
     command.append(run_fuzzer_command)
-
     logging.info('Running command: %s', ' '.join(command))
+
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -122,23 +124,23 @@ class FuzzTarget:
       _, stderr = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
-      return FuzzResult(None, None)
+      return FuzzResult(None, None, corpus_path)
 
     # Libfuzzer timeout was reached.
     if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
-      return FuzzResult(None, None)
+      return FuzzResult(None, None, corpus_path)
 
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     testcase = self.get_testcase(stderr)
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
-      return FuzzResult(None, None)
+      return FuzzResult(None, None, corpus_path)
     if self.is_crash_reportable(testcase):
-      return FuzzResult(testcase, stderr)
-    return FuzzResult(None, None)
+      return FuzzResult(testcase, stderr, corpus_path)
+    return FuzzResult(None, None, corpus_path)
 
   def is_reproducible(self, testcase, target_path):
     """Checks if the testcase reproduces.
