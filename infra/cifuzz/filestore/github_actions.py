@@ -14,7 +14,7 @@
 """Implementation of a filestore using Github actions artifacts."""
 import os
 
-from cifuzz import filestore
+import filestore
 from github_actions_toolkit.artifact import artifact_client
 
 DIRECTORY = os.path.dirname(__file__)
