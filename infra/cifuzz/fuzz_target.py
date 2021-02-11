@@ -100,8 +100,7 @@ class FuzzTarget:
     # !!! Move corpus download to outside of fuzz_target.
     corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name, self.out_dir)
-    if corpus_path:
-      command += ['-e', 'CORPUS_DIR=' + corpus_path]
+    command += ['-e', 'CORPUS_DIR=' + corpus_path]
 
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
