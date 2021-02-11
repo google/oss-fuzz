@@ -22,7 +22,9 @@ FROM gcr.io/oss-fuzz-base/cifuzz-base2
 # just expand to '/opt/oss-fuzz'.
 ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/run_fuzzers_entrypoint.py"]
 
+WORKDIR ${OSS_FUZZ_ROOT}/infra
+
 # Copy infra source code.
 ADD . ${OSS_FUZZ_ROOT}/infra
 
-RUN python3 -m pip install -r cifuzz/requirements.txt
+RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
