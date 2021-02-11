@@ -22,7 +22,7 @@ $CXX $CXXFLAGS -std=c++11 -I. -DINTENTIONAL_STARTUP_CRASH \
     $LIB_FUZZING_ENGINE ./libz.a
 
 
-# The latest two examples won't for for coverage build, bail out.
+# The latest two examples won't work for coverage build, bail out.
 if [[ $SANITIZER = *coverage* ]]; then
   exit 0
 fi
