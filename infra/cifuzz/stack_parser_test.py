@@ -35,7 +35,7 @@ class ParseOutputTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
-    self.maxDiff = None
+    self.maxDiff = None  # pylint: disable=invalid-name
 
   @parameterized.parameterized.expand([('example_crash_fuzzer_output.txt',
                                         'example_crash_fuzzer_bug_summary.txt'),
