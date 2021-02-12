@@ -19,6 +19,7 @@ PROJECT_YAML_TEMPLATE = """\
 homepage: "<your_project_homepage>"
 language: <programming_language>  # Example values: c, c++, go, rust.
 primary_contact: "<primary_contact_email>"
+main_repo: "https://path/to/main/repo.git"
 """
 
 DOCKER_TEMPLATE = """\

@@ -44,7 +44,7 @@ void run(const std::string& expression_string)
 
    loop_runtime_check_t loop_runtime_check;
    loop_runtime_check.loop_set = loop_runtime_check_t::e_all_loops;
-   loop_runtime_check.max_loop_iterations = 100000000;
+   loop_runtime_check.max_loop_iterations = 1000000;
 
    parser_t parser;
 
@@ -52,14 +52,19 @@ void run(const std::string& expression_string)
 
    if (parser.compile(expression_string, expression))
    {
-      try
-      {
-         expression.value();
-      }
-      catch (std::runtime_error& rte)
-      {}
+      const std::size_t max_expression_size = 64 * 1024;
 
-      parser.clear_loop_runtime_check();
+      if (expression_string.size() <= max_expression_size)
+      {
+         try
+         {
+            expression.value();
+         }
+         catch (std::runtime_error& rte)
+         {}
+
+         parser.clear_loop_runtime_check();
+      }
    }
 }
 

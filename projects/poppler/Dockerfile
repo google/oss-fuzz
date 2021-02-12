@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y wget autoconf automake libtool pkg-config cmake gperf
-RUN pip3 install meson==0.55.3 ninja
+RUN pip3 install meson ninja
 
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 git://git.sv.nongnu.org/freetype/freetype2.git

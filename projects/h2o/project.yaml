@@ -9,3 +9,4 @@ auto_ccs:
   - "kazuhooku@gmail.com"
   - "i.nagata110@gmail.com"
   - "security@fastly.com"
+main_repo: 'https://github.com/h2o/h2o'

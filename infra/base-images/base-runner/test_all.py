@@ -47,10 +47,16 @@ def recreate_directory(directory):
 
 def move_directory_contents(src_directory, dst_directory):
   """Moves contents of |src_directory| to |dst_directory|."""
-  src_files = os.listdir(src_directory)
-  for filename in src_files:
-    src_path = os.path.join(src_directory, filename)
-    shutil.move(src_path, dst_directory)
+  # Use mv because mv preserves file permissions. If we don't preserve file
+  # permissions that can mess up CheckFuzzerBuildTest in cifuzz_test.py and
+  # other cases where one is calling test_all on files not in OSS-Fuzz's real
+  # out directory.
+  src_contents = [
+      os.path.join(src_directory, filename)
+      for filename in os.listdir(src_directory)
+  ]
+  command = ['mv'] + src_contents + [dst_directory]
+  subprocess.check_call(command)
 
 
 def is_elf(filepath):
@@ -68,18 +74,21 @@ def find_fuzz_targets(directory, fuzzing_language):
   fuzz_targets = []
   for filename in os.listdir(directory):
     path = os.path.join(directory, filename)
+    if filename == 'llvm-symbolizer':
+      continue
     if filename.startswith('afl-'):
       continue
     if not os.path.isfile(path):
       continue
     if not os.stat(path).st_mode & EXECUTABLE:
       continue
-    with open(path, 'rb') as file_handle:
-      binary_contents = file_handle.read()
-      if b'LLVMFuzzerTestOneInput' not in binary_contents:
-        continue
     if fuzzing_language != 'python' and not is_elf(path):
       continue
+    if os.getenv('FUZZING_ENGINE') != 'none':
+      with open(path, 'rb') as file_handle:
+        binary_contents = file_handle.read()
+        if b'LLVMFuzzerTestOneInput' not in binary_contents:
+          continue
     fuzz_targets.append(path)
   return fuzz_targets
 
