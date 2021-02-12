@@ -3,5 +3,9 @@ language: c
 primary_contact: "stevenj@alum.mit.edu"
 auto_ccs:
   - "randy440088@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined 
 main_repo: 'https://github.com/JuliaStrings/utf8proc'
 
