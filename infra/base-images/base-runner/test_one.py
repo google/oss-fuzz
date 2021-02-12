@@ -20,13 +20,17 @@ import sys
 
 import test_all
 
+
 def test_one(fuzz_target):
+  """Does bad_build_check on one fuzz target. Returns True on success."""
   with test_all.use_different_out_dir():
     fuzz_target_path = os.path.join(os.environ['OUT'], fuzz_target)
     return test_all.do_bad_build_check(fuzz_target_path).returncode == 0
 
+
 def main():
-  """Does bad_build_check on one fuzz target."""
+  """Does bad_build_check on one fuzz target. Returns 1 on failure, 0 on
+  success."""
   print(sys.argv)
   if len(sys.argv) != 2:
     print('Usage: %d <fuzz_target>', sys.argv[0])
@@ -34,6 +38,7 @@ def main():
 
   fuzz_target_binary = sys.argv[1]
   return 0 if test_one(fuzz_target_binary) else 1
+
 
 if __name__ == '__main__':
   sys.exit(main())
