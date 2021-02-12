@@ -381,8 +381,9 @@ def run_nonbuild_tests(parallel):
 
 def run_tests(_=None, parallel=False):
   """Runs all unit tests."""
-  success = run_nonbuild_tests(parallel)
-  return success and run_build_tests()
+  nonbuild_success = run_nonbuild_tests(parallel)
+  build_success = run_build_tests()
+  return nonbuild_success and build_success
 
 
 def get_all_files():
