@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y ninja-build
+RUN apt-get update && apt-get install -y ninja-build libc6-dev:i386
 RUN git clone --branch dev --depth 1 --shallow-submodules \
         --recurse-submodules=qtbase \
         --recurse-submodules=qtsvg \
