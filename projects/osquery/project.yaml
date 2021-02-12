@@ -15,4 +15,5 @@ sanitizers:
  - address
 fuzzing_engines:
  - libfuzzer
+ - afl
 main_repo: 'https://github.com/osquery/osquery'

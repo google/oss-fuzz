@@ -17,7 +17,7 @@
 
 sed "s/CFLAGS=/CFLAGS+=/g" -i $SRC/lua/makefile
 sed "s/MYLDFLAGS=/MYLDFLAGS=${CFLAGS} /g" -i $SRC/lua/makefile
-sed "s/CC= gcc/CC= ${CC}/g" -i $SRC/lua/makefile
+sed "s|CC= gcc|CC= ${CC}|g" -i $SRC/lua/makefile
 
 cd $SRC/lua
 make

@@ -30,7 +30,6 @@ import utils
 DEFAULT_ENGINE = 'libfuzzer'
 DEFAULT_ARCHITECTURE = 'x86_64'
 
-# TODO(metzman): Turn default logging to WARNING when CIFuzz is stable.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -147,7 +146,10 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def remove_unaffected_fuzz_targets(self):
     """Removes the fuzzers unaffected by the patch."""
     if self.config.keep_unaffected_fuzz_targets:
+      logging.info('Not removing unaffected fuzz targets.')
       return True
+
+    logging.info('Removing unaffected fuzz targets.')
     changed_files = self.ci_system.get_changed_code_under_test(
         self.repo_manager)
     affected_fuzz_targets.remove_unaffected_fuzz_targets(

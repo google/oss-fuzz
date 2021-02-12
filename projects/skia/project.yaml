@@ -9,6 +9,7 @@ auto_ccs:
   - "brianosman@google.com"
   - "johnstiles@google.com"
   - "ethannicholas@google.com"
+  - "westont@google.com"
 vendor_ccs:
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"

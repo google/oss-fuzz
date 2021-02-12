@@ -2,7 +2,7 @@ homepage: "https://github.com/prometheus/prometheus"
 primary_contact: "prometheus-team@googlegroups.com"
 auto_ccs :
   - "julius.volz@gmail.com"
-  - "brian.brazil@robustperception.io"
+  - "beorn@grafana.com"
   - "roidelapluie@prometheus.io"
   - "richih@richih.org"
 language: go

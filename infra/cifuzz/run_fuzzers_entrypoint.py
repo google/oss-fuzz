@@ -21,7 +21,6 @@ import run_fuzzers
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
 
-# TODO: Turn default logging to INFO when CIFuzz is stable.
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -64,12 +63,12 @@ def main():
     return returncode
 
   # Run the specified project's fuzzers from the build.
-  run_status, bug_found = run_fuzzers.run_fuzzers(config)
-  if not run_status:
+  result = run_fuzzers.run_fuzzers(config)
+  if result == run_fuzzers.RunFuzzersResult.ERROR:
     logging.error('Error occurred while running in workspace %s.',
                   config.workspace)
     return returncode
-  if bug_found:
+  if result == run_fuzzers.RunFuzzersResult.BUG_FOUND:
     logging.info('Bug found.')
     if not config.dry_run:
       # Return 2 when a bug was found by a fuzzer causing the CI to fail.

@@ -59,8 +59,10 @@ RUN export PYTHON_DEPS="\
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
     apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
 
-# Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging.
-RUN unset CFLAGS CXXFLAGS && pip3 install -v atheris pyinstaller==4.1
+# Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
+# six for Bazel rules.
+RUN unset CFLAGS CXXFLAGS && pip3 install -v \
+    atheris pyinstaller==4.1 six==1.15.0
 
 # Download and install the latest stable Go.
 RUN cd /tmp && \
@@ -147,11 +149,10 @@ RUN mkdir $PRECOMPILED_DIR
 
 WORKDIR $SRC
 
-RUN git clone -b stable https://github.com/google/AFL.git afl
-
-RUN git clone -b stable https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
+# TODO: switch to -b stable once we can.
+RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 068bef5eab942df0a133c92522f2ab81b28ac636
+    git checkout aeb7d7048371cd91ab9280c3958f1c35e5d5e758
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \

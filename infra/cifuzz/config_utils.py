@@ -20,7 +20,7 @@ import json
 
 
 def _get_project_repo_name():
-  return os.path.basename(os.getenv('GITHUB_REPOSITORY'))
+  return os.path.basename(os.getenv('GITHUB_REPOSITORY', ''))
 
 
 def _get_pr_ref(event):
@@ -40,7 +40,7 @@ def _get_project_name():
 
 def _is_dry_run():
   """Returns True if configured to do a dry run."""
-  return os.getenv('DRY_RUN').lower() == 'true'
+  return os.getenv('DRY_RUN', 'false').lower() == 'true'
 
 
 def get_project_src_path(workspace):
@@ -98,9 +98,16 @@ class BaseConfig:
 class RunFuzzersConfig(BaseConfig):
   """Class containing constant configuration for running fuzzers in CIFuzz."""
 
+  RUN_FUZZERS_MODES = {'batch', 'ci'}
+
   def __init__(self):
     super().__init__()
     self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
+    self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE', 'ci').lower()
+    if self.run_fuzzers_mode not in self.RUN_FUZZERS_MODES:
+      raise Exception(
+          ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
+           self.run_fuzzers_mode, self.RUN_FUZZERS_MODES))
 
 
 class BuildFuzzersConfig(BaseConfig):
@@ -120,7 +127,7 @@ class BuildFuzzersConfig(BaseConfig):
           event_data['pull_request']['number'])
       logging.debug('pr_ref: %s', self.pr_ref)
 
-    self.git_url = event_data['repository']['git_url']
+    self.git_url = event_data['repository']['html_url']
 
   def __init__(self):
     """Get the configuration from CIFuzz from the environment. These variables
@@ -143,5 +150,7 @@ class BuildFuzzersConfig(BaseConfig):
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
 
+    # TODO(metzman): Use better system for interpreting env vars. What if env
+    # var is set to '0'?
     self.keep_unaffected_fuzz_targets = bool(
-        os.getenv('KEEP_UNAFFECTED_FUZZERS', 'False'))
+        os.getenv('KEEP_UNAFFECTED_FUZZERS'))

@@ -3,7 +3,4 @@ primary_contact: "vsevolod@highsecure.ru"
 auto_ccs:
   - "adam@adalogics.com"
 language: c
-fuzzing_engines:
-  - libfuzzer
-  - honggfuzz
 main_repo: 'https://github.com/vstakhov/libucl'

@@ -1,4 +1,4 @@
-#/bin/bash -eu
+#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,13 @@
 # limitations under the License.
 #
 ################################################################################
+
+# Insert empty main function
+sed -i '23 i\func main(){}'\\n $SRC/tidb/plugin/conn_ip_example/conn_ip_example.go
+
+mkdir $GOPATH/src/github.com/pingcap
+mv $SRC/tidb $GOPATH/src/github.com/pingcap/
+cd $GOPATH/src/github.com/pingcap/tidb && go get ./...
 
 compile_go_fuzzer github.com/pingcap/tidb/types FuzzMarshalJSON fuzzMarshalJSON
 compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewBitLiteral fuzzNewBitLiteral
