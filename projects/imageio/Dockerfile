@@ -18,5 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone https://github.com/imageio/imageio
 
 COPY build.sh $SRC/
-
 WORKDIR $SRC/imageio
