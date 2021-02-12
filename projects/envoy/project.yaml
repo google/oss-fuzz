@@ -15,5 +15,6 @@ auto_ccs:
   - "skerner@google.com"
   - "rdsmith@google.com"
   - "chaoqinli16@gmail.com"
+  - "yanjunxiang@gmail.com"
 coverage_extra_args: -ignore-filename-regex=.*\.cache.*envoy_deps_cache.*
 main_repo: 'https://github.com/envoyproxy/envoy.git'
