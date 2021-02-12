@@ -1,0 +1,11 @@
+homepage: "https://imageio.github.io"
+language: python
+primary_contact: "almar.klein@gmail.com"
+auto_ccs:
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/imageio/imageio'

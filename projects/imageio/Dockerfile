@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y ninja-build libc6-dev:i386
-RUN git clone --branch dev --depth 1 --shallow-submodules \
-        --recurse-submodules=qtbase \
-        --recurse-submodules=qtsvg \
-        git://code.qt.io/qt/qt5.git qt
-RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
-RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
+RUN git clone https://github.com/imageio/imageio
+
+COPY build.sh $SRC/
+WORKDIR $SRC/imageio
