@@ -63,8 +63,7 @@ def parse_fuzzer_output(fuzzer_output, parsed_output_file_path):
   if begin_stack is None:
     logging.error(
         b'Could not find a begin stack marker (%s) in fuzzer output:\n%s',
-        STACKTRACE_TOOL_MARKERS,
-        fuzzer_output)
+        STACKTRACE_TOOL_MARKERS, fuzzer_output)
     return
 
   end_stack = None
@@ -77,8 +76,7 @@ def parse_fuzzer_output(fuzzer_output, parsed_output_file_path):
   if end_stack is None:
     logging.error(
         b'Could not find an end stack marker (%s) in fuzzer output:\n%s',
-        STACKTRACE_END_MARKERS,
-        fuzzer_output)
+        STACKTRACE_END_MARKERS, fuzzer_output)
     return
 
   summary_str = fuzzer_output[begin_stack:end_stack]

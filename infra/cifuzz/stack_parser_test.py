@@ -37,9 +37,10 @@ class ParseOutputTest(fake_filesystem_unittest.TestCase):
     self.setUpPyfakefs()
     self.maxDiff = None
 
-  @parameterized.parameterized.expand([
-      ('example_crash_fuzzer_output.txt', 'example_crash_fuzzer_bug_summary.txt'),
-      ('msan_crash_fuzzer_output.txt', 'msan_crash_fuzzer_bug_summary.txt')])
+  @parameterized.parameterized.expand([('example_crash_fuzzer_output.txt',
+                                        'example_crash_fuzzer_bug_summary.txt'),
+                                       ('msan_crash_fuzzer_output.txt',
+                                        'msan_crash_fuzzer_bug_summary.txt')])
   def test_parse_valid_output(self, fuzzer_output_file, bug_summary_file):
     """Checks that the parse fuzzer output can correctly parse output."""
     # Read the fuzzer output from disk.
