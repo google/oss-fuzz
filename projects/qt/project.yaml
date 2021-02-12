@@ -5,4 +5,8 @@ auto_ccs:
  - "shawn.t.rutledge@gmail.com"
 architectures:
  - x86_64
+fuzzing_engines:
+  - dataflow
+  - honggfuzz
+  - libfuzzer
 main_repo: 'git://code.qt.io/qt/qt5.git'
