@@ -43,7 +43,7 @@ setup_fake_random(const unsigned char * seed, const size_t seed_size) {
   int fake_random_set = randombytes_set_implementation(&fake_random);
   assert(fake_random_set == 0);
 
-  assert(randombytes_implementation_name() == "fake_random");
+  assert(strcmp(randombytes_implementation_name(), "fake_random") == 0);
   int initialized = sodium_init();
   assert(initialized >= 0);
 }

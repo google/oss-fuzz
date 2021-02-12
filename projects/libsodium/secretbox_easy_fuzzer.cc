@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdlib.h>
 #include <sodium.h>
 
 #include "fake_random.h"
@@ -17,12 +18,16 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   randombytes_buf(nonce, sizeof nonce);
 
   size_t ciphertext_len = crypto_secretbox_MACBYTES + size;
-  unsigned char ciphertext[ciphertext_len];
+  unsigned char *ciphertext = (unsigned char *) malloc(ciphertext_len);
 
   crypto_secretbox_easy(ciphertext, data, size, nonce, key);
 
-  unsigned char decrypted[size];
-  crypto_secretbox_open_easy(decrypted, ciphertext, ciphertext_len, nonce, key);
+  unsigned char *decrypted = (unsigned char *) malloc(size);
+  int err = crypto_secretbox_open_easy(decrypted, ciphertext, ciphertext_len, nonce, key);
+  assert(err == 0);
+
+  free((void *) ciphertext);
+  free((void *) decrypted);
 
   return 0;
 }
