@@ -82,5 +82,5 @@ COPY bad_build_check \
     parse_options.py \
     targets_list \
     test_all.py \
-    test_one \
+    test_one.py \
     /usr/local/bin/

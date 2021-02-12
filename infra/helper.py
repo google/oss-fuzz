@@ -632,7 +632,7 @@ def check_build(args):
   ]
 
   if args.fuzzer_name:
-    run_args += ['test_one', os.path.join('/out', args.fuzzer_name)]
+    run_args += ['test_one.py', args.fuzzer_name]
   else:
     run_args.append('test_all.py')
 
