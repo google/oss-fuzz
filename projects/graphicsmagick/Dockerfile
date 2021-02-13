@@ -16,9 +16,9 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y mercurial automake autopoint cmake libtool nasm pkg-config po4a
-RUN hg clone --time -b default http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick || \
-    hg clone --time -b default http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick || \
-    hg clone --time -b default http://hg.code.sf.net/p/graphicsmagick/code graphicsmagick
+RUN hg clone --time -b default https://hg.osdn.net/view/graphicsmagick/GM graphicsmagick || \
+    hg clone --time -b default https://hg.osdn.net/view/graphicsmagick/GM graphicsmagick || \
+    hg clone --time -b default https://hg.osdn.net/view/graphicsmagick/GM graphicsmagick
 
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff
 RUN git clone --depth 1 https://github.com/webmproject/libwebp
