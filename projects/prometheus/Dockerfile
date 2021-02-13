@@ -15,7 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/prometheus/prometheus/cmd/...
+ENV GO111MODULE=on
+RUN git clone https://github.com/prometheus/prometheus $GOPATH/src/github.com/prometheus/prometheus
 COPY build.sh $SRC/
-RUN mkdir $SRC/prometheus/
-WORKDIR $SRC/prometheus/
+# Required to avoid 'working directory is not part of a module' error.
+WORKDIR $GOPATH/src/github.com/prometheus/prometheus
