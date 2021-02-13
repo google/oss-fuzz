@@ -23,14 +23,9 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y software-properties-common python-software-properties make autoconf automake libtool build-essential cmake mercurial gyp ninja-build zlib1g-dev libsqlite3-dev bison flex texinfo
 
-# BoringSSL needs Go to build
-RUN add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
-RUN ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
-
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz-corpora
 RUN git clone --depth 1 https://github.com/openssl/openssl
-
 RUN git clone --depth 1 https://boringssl.googlesource.com/boringssl
 RUN git clone --depth 1 https://github.com/libressl-portable/portable libressl
 RUN cd $SRC/libressl && ./update.sh
@@ -39,7 +34,6 @@ RUN git clone --depth 1 git://git.gnupg.org/libgcrypt.git
 RUN wget https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.36.tar.bz2
 RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star evercrypt
 RUN git clone --depth 1 https://github.com/google/cityhash.git
-RUN git clone --depth 1 https://github.com/golang/go
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
 RUN git clone --depth 1 https://github.com/ARMmbed/mbedtls.git

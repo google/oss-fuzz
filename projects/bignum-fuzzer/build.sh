@@ -15,17 +15,6 @@
 #
 ################################################################################
 
-# Compile latest Go
-cd go/src
-./make.bash
-cd $SRC
-
-# Remove previous Go install (used for bootstrapping)
-apt-get remove golang-1.9-go -y
-rm /usr/bin/go
-
-export PATH=`realpath $SRC/go/bin`:$PATH
-
 # Install Rust nightly
 #curl https://sh.rustup.rs -sSf | sh -s -- -y
 #source $HOME/.cargo/env
