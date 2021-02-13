@@ -67,6 +67,7 @@ export ASAN_OPTIONS="detect_leaks=0:symbolize=0"
 # AFL compile option roulette. It is OK if they all happen together.
 
 # 40% chance to perform CMPLOG
+rm -f "$OUT/afl_cmplog.txt"
 test $(($RANDOM % 10)) -lt 4 && {
   export AFL_LLVM_CMPLOG=1
   # We need to notify afl-fuzz to activate CMPLOG
