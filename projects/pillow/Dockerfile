@@ -54,12 +54,10 @@ RUN cd Pillow && depends/install_extra_test_images.sh
 
 COPY build.sh $SRC/
 
-# pillow runtime dependencies
+# pillow optional runtime dependencies
 RUN apt-get install -y \
-      libfribidi-dev \
-      libharfbuzz-dev \
-      python3-tk \
-      tcl8.6-dev \
-      tk8.6-dev 
+     python3-tk \
+     tcl8.6-dev \
+     tk8.6-dev 
 
 WORKDIR $SRC/Pillow
