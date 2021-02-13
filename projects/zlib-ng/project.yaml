@@ -1,4 +1,4 @@
-homepage: "https://github.com/Dead2/zlib-ng"
+homepage: "https://github.com/zlib-ng/zlib-ng"
 language: c++
 primary_contact: "zlib-ng@circlestorm.org"
 auto_ccs:
