@@ -22,7 +22,7 @@
 # If enabled this provides a safe work around if afl-clang-fast ever break:
 env | grep -qw LLVM_MODE_WORKAROUND || {
   # needed until llvm 13 works:
-  LLVM_MODE_WORKAROUND="yes"
+  LLVM_MODE_WORKAROUND="no"
 }
 
 # If a dictionary should be generated based on comparisons at compile time:
