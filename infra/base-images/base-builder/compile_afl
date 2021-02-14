@@ -20,13 +20,13 @@
 # The variables need to be set to "1" here - or before running this script.
 
 # If enabled this provides a safe work around if afl-clang-fast ever break:
-env | grep -qw LLVM_MODE_WORKAROUND || {
+env | grep -qw AFL_LLVM_MODE_WORKAROUND || {
   # needed until llvm 13 works:
   AFL_LLVM_MODE_WORKAROUND=0
 }
 
 # If a dictionary should be generated based on comparisons at compile time:
-env | grep -qw WANT_DICTIONARY || {
+env | grep -qw AFL_ENABLE_DICTIONARY || {
   AFL_ENABLE_DICTIONARY=1
 }
 
@@ -82,7 +82,7 @@ test $(($RANDOM % 10)) -lt 1 && {
 }
 
 # In case afl-clang-fast ever breaks, this is a workaround:
-test "$LLVM_MODE_WORKAROUND" = "1" && {
+test "$AFL_LLVM_MODE_WORKAROUND" = "1" && {
   export CC=clang
   export CXX=clang++
   WORKAROUND_FLAGS=-fsanitize-coverage=trace-pc-guard
