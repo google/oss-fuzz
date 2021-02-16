@@ -31,7 +31,6 @@ def test_one(fuzz_target):
 def main():
   """Does bad_build_check on one fuzz target. Returns 1 on failure, 0 on
   success."""
-  print(sys.argv)
   if len(sys.argv) != 2:
     print('Usage: %d <fuzz_target>', sys.argv[0])
     return 1
