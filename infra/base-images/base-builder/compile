@@ -113,6 +113,11 @@ fi
 # Copy latest llvm-symbolizer in $OUT for stack symbolization.
 cp $(which llvm-symbolizer) $OUT/
 
+# Copy Jazzer to $OUT if needed.
+if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+  cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $(which jazzer_driver_asan) $OUT/
+fi
+
 echo "---------------------------------------------------------------"
 echo "CC=$CC"
 echo "CXX=$CXX"
