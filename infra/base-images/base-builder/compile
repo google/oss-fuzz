@@ -22,6 +22,21 @@ if [ "$SANITIZER" = "dataflow" ] && [ "$FUZZING_ENGINE" != "dataflow" ]; then
   exit 1
 fi
 
+if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
+  if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
+    echo "ERROR: JVM projects can be fuzzed with libFuzzer engine only."
+    exit 1
+  fi
+  if [ "$SANITIZER" != "address" ]; then
+    echo "ERROR: JVM projects can be fuzzed with AddressSanitizer only."
+    exit 1
+  fi
+  if [ "$ARCHITECTURE" != "x86_64" ]; then
+    echo "ERROR: JVM projects can be fuzzed on x86_64 architecture only."
+    exit 1
+  fi
+fi
+
 if [ "$FUZZING_LANGUAGE" = "python" ]; then
   if [ "$FUZZING_ENGINE" != "libfuzzer" ]; then
     echo "ERROR: Python projects can be fuzzed with libFuzzer engine only."
@@ -46,7 +61,8 @@ if [[ $ARCHITECTURE == "i386" ]]; then
     export CFLAGS="-m32 $CFLAGS"
     cp -R /usr/i386/lib/* /usr/lib
 fi
-if [[ $FUZZING_ENGINE != "none" ]]; then
+# JVM projects are fuzzed with Jazzer, which has libFuzzer built in.
+if [[ $FUZZING_ENGINE != "none" ]] && [[ $FUZZING_LANGUAGE != "jvm" ]]; then
   # compile script might override environment, use . to call it.
   . compile_${FUZZING_ENGINE}
 fi

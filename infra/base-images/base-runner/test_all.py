@@ -78,11 +78,16 @@ def find_fuzz_targets(directory, fuzzing_language):
       continue
     if filename.startswith('afl-'):
       continue
+    if filename.startswith('jazzer_'):
+      continue
     if not os.path.isfile(path):
       continue
     if not os.stat(path).st_mode & EXECUTABLE:
       continue
-    if fuzzing_language != 'python' and not is_elf(path):
+    # Fuzz targets are expected to be ELF binaries for languages other than
+    # Python and Java.
+    if (fuzzing_language != 'python' and fuzzing_language != 'jvm' and
+        not is_elf(path)):
       continue
     if os.getenv('FUZZING_ENGINE') != 'none':
       with open(path, 'rb') as file_handle:

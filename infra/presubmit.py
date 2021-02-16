@@ -104,6 +104,7 @@ class ProjectYamlChecker:
       'c',
       'c++',
       'go',
+      'jvm',
       'python',
       'rust',
   ]
