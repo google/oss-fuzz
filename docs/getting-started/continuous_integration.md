@@ -39,6 +39,7 @@ fuzzing more effective and gives you regression testing for free.
 
 1. Your project must be integrated with OSS-Fuzz.
 1. Your project is hosted on GitHub.
+1. Your project is written in C or C++.
 
 ## Integrating into your repository
 
