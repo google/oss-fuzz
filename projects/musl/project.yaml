@@ -2,6 +2,10 @@ homepage: "https://musl.libc.org/"
 language: c
 primary_contact: "jeremiah@gowdy.me"
 main_repo: "git://git.musl-libc.org/musl"
+sanitizers:
+  - address
+  - memory
+  - undefined
 architectures:
  - x86_64
  - i386
