@@ -15,6 +15,22 @@
 #
 ################################################################################
 
+# afl++ configuration options.
+# The 'env|grep' setup ensures we do not trigger the linter.
+# The variables need to be set to "1" here - or before running this script.
+
+# If enabled this provides a safe work around if afl-clang-fast ever break:
+env | grep -qw AFL_LLVM_MODE_WORKAROUND || {
+  # needed until llvm 13 works:
+  AFL_LLVM_MODE_WORKAROUND=0
+}
+
+# If a dictionary should be generated based on comparisons at compile time:
+env | grep -qw AFL_ENABLE_DICTIONARY || {
+  AFL_ENABLE_DICTIONARY=1
+}
+
+# Start compiling afl++.
 echo "Compiling afl++"
 
 # Build and copy afl++ tools necessary for fuzzing.
@@ -22,24 +38,23 @@ pushd $SRC/aflplusplus > /dev/null
 
 # Unset CFLAGS and CXXFLAGS while building AFL since we don't want to slow it
 # down with sanitizers.
-INITIAL_CXXFLAGS=$CXXFLAGS
-INITIAL_CFLAGS=$CFLAGS
+SAVE_CXXFLAGS=$CXXFLAGS
+SAVE_CFLAGS=$CFLAGS
 unset CXXFLAGS
 unset CFLAGS
+export AFL_IGNORE_UNKNOWN_ENVS=1
 make clean
 AFL_NO_X86=1 PYTHON_INCLUDE=/ make
-CFLAGS=$INITIAL_CFLAGS
-CXXFLAGS=$INITIAL_CXXFLAGS
+CFLAGS=$SAVE_CFLAGS
+CXXFLAGS=$SAVE_CXXFLAGS
 
 # Build afl++ driver with existing CFLAGS, CXXFLAGS.
 make -C utils/aflpp_driver
-cp libAFLDriver.a $LIB_FUZZING_ENGINE
+cp -f libAFLDriver.a $LIB_FUZZING_ENGINE
 
 # Some important projects include libraries, copy those even when they don't
 # start with "afl-". Use "sort -u" to avoid a warning about duplicates.
 ls afl-* *.txt *.a *.o *.so | sort -u | xargs cp -t $OUT
-popd > /dev/null
-
 export CC="$SRC/aflplusplus/afl-clang-fast"
 export CXX="$SRC/aflplusplus/afl-clang-fast++"
 
@@ -50,8 +65,46 @@ export AFL_QUIET=1
 export AFL_MAP_SIZE=4194304
 # No leak errors during builds.
 export ASAN_OPTIONS="detect_leaks=0:symbolize=0"
-#
-# Placeholder for the upcoming afl++ build options roulette
-#
+
+# AFL compile option roulette. It is OK if they all happen together.
+
+# 40% chance to perform CMPLOG
+rm -f "$OUT/afl_cmplog.txt"
+test $(($RANDOM % 10)) -lt 4 && {
+  export AFL_LLVM_CMPLOG=1
+  # We need to notify afl-fuzz to activate CMPLOG
+  touch "$OUT/afl_cmplog.txt"
+}
+
+# 10% chance to perform LAF_INTEL
+test $(($RANDOM % 10)) -lt 1 && {
+  export AFL_LLVM_LAF_ALL=1
+}
+
+# In case afl-clang-fast ever breaks, this is a workaround:
+test "$AFL_LLVM_MODE_WORKAROUND" = "1" && {
+  export CC=clang
+  export CXX=clang++
+  WORKAROUND_FLAGS=-fsanitize-coverage=trace-pc-guard
+  # We can still do CMPLOG light:
+  test -e "$OUT/afl_cmplog.txt" && {
+    WORKAROUND_FLAGS="$WORKAROUND_FLAGS",trace-cmp
+  }
+  export CFLAGS="$CFLAGS $WORKAROUND_FLAGS"
+  export CXXFLAGS="$CXXFLAGS $WORKAROUND_FLAGS"
+  # We need to create a new fuzzer lib however.
+  ar ru libAFLDrivernew.a afl-compiler-rt.o utils/aflpp_driver/aflpp_driver.o
+  cp -f libAFLDrivernew.a $LIB_FUZZING_ENGINE
+}
+
+# If the targets whishes a dictionary - then create one.
+test "$AFL_ENABLE_DICTIONARY" = "1" && {
+  export AFL_LLVM_DICT2FILE="$OUT/afl++.dict"
+}
+
+# Provide a way to document the afl++ options used in this build:
+env | grep AFL_ > "$OUT/afl_options.txt"
+
+popd > /dev/null
 
 echo " done."

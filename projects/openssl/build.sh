@@ -15,12 +15,6 @@
 #
 ################################################################################
 
-# afl++ CMPLOG test:
-test "$FUZZING_ENGINE" = "afl" && {
-  export AFL_LLVM_CMPLOG=1
-  touch $OUT/afl_cmplog.txt
-}
-
 CONFIGURE_FLAGS=""
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
