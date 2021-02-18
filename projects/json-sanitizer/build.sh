@@ -36,7 +36,7 @@ ALL_JARS="$PROJECT_JARS $FUZZER_JARS"
 BUILD_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "$OUT/%s:"):$JAZZER_API_PATH
 
 # All jars and class files lie in the same directory as the fuzzer at runtime.
-RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "%s:"):.
+RUNTIME_CLASSPATH=$(echo $ALL_JARS | xargs printf -- "\$this_dir/%s:"):.:\$this_dir
 
 for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
   fuzzer_basename=$(basename -s .java $fuzzer)
@@ -49,9 +49,9 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java'); do
 this_dir=\$(dirname \"\$0\")
 LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\" \
 \$this_dir/jazzer_driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
-                         --cp=$RUNTIME_CLASSPATH \
-                         --target_class=$fuzzer_basename \
-                         --jvm_args=\"-Xmx2048m\" \
-                         \$@" > $OUT/$fuzzer_basename
+--cp=$RUNTIME_CLASSPATH \
+--target_class=$fuzzer_basename \
+--jvm_args=\"-Xmx2048m\" \
+\$@" > $OUT/$fuzzer_basename
   chmod u+x $OUT/$fuzzer_basename
 done
