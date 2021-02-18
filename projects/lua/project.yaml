@@ -2,6 +2,6 @@ homepage: "https://github.com/lua/lua"
 language: c
 primary_contact: "roberto@inf.puc-rio.br"
 auto_ccs:
-  - "fuzz@llua.org"
+  - "fuzz@lua.org"
   - "david@adalogics.com"
 main_repo: 'https://github.com/lua/lua'
