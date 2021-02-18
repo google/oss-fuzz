@@ -95,6 +95,10 @@ class BuildImageIntegrationTest(unittest.TestCase):
   def test_detect_main_repo_from_name(self):
     """Test the detect main repo function from build specific commit module."""
     for example_repo in test_repos.TEST_REPOS:
+      if example_repo.project_name == 'gonids':
+        # It's unclear how this test ever passed, but we can't infer the repo
+        # because gonids doesn't really check it out, it uses "go get".
+        continue
       repo_origin, repo_name = build_specified_commit.detect_main_repo(
           example_repo.project_name, repo_name=example_repo.git_repo_name)
       self.assertEqual(repo_origin, example_repo.git_url)
