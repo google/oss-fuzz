@@ -47,7 +47,7 @@ fi
 
 # Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
 # supported fuzzers are in `//tensorflow/security/fuzzing`.
-# Ignore the identity and AttrValues fuzzer in opensource.
+# Ignore fuzzers tagged with `no_oss` in opensource.
 declare -r FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))')
 
 # Build the fuzzer targets.
