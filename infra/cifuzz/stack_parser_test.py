@@ -14,7 +14,9 @@
 """Tests for stack_parser."""
 import os
 import unittest
+from unittest import mock
 
+import parameterized
 from pyfakefs import fake_filesystem_unittest
 
 import stack_parser
@@ -33,33 +35,42 @@ class ParseOutputTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     self.setUpPyfakefs()
+    self.maxDiff = None  # pylint: disable=invalid-name
 
-  def test_parse_valid_output(self):
+  @parameterized.parameterized.expand([('example_crash_fuzzer_output.txt',
+                                        'example_crash_fuzzer_bug_summary.txt'),
+                                       ('msan_crash_fuzzer_output.txt',
+                                        'msan_crash_fuzzer_bug_summary.txt')])
+  def test_parse_valid_output(self, fuzzer_output_file, bug_summary_file):
     """Checks that the parse fuzzer output can correctly parse output."""
     # Read the fuzzer output from disk.
-    fuzzer_output_path = os.path.join(TEST_FILES_PATH,
-                                      'example_crash_fuzzer_output.txt')
+    fuzzer_output_path = os.path.join(TEST_FILES_PATH, fuzzer_output_file)
     self.fs.add_real_file(fuzzer_output_path)
     with open(fuzzer_output_path, 'rb') as fuzzer_output_handle:
       fuzzer_output = fuzzer_output_handle.read()
     bug_summary_path = '/bug-summary.txt'
-    stack_parser.parse_fuzzer_output(fuzzer_output, bug_summary_path)
+    with mock.patch('logging.info') as mocked_info:
+      stack_parser.parse_fuzzer_output(fuzzer_output, bug_summary_path)
+      mocked_info.assert_not_called()
+
     with open(bug_summary_path) as bug_summary_handle:
       bug_summary = bug_summary_handle.read()
 
     # Compare the bug to the expected one.
-    expected_bug_summary_path = os.path.join(TEST_FILES_PATH,
-                                             'bug_summary_example.txt')
+    expected_bug_summary_path = os.path.join(TEST_FILES_PATH, bug_summary_file)
     self.fs.add_real_file(expected_bug_summary_path)
     with open(expected_bug_summary_path) as expected_bug_summary_handle:
       expected_bug_summary = expected_bug_summary_handle.read()
+
     self.assertEqual(expected_bug_summary, bug_summary)
 
   def test_parse_invalid_output(self):
     """Checks that no files are created when an invalid input was given."""
     artifact_path = '/bug-summary.txt'
-    stack_parser.parse_fuzzer_output(b'not a valid output_string',
-                                     artifact_path)
+    with mock.patch('logging.error') as mocked_error:
+      stack_parser.parse_fuzzer_output(b'not a valid output_string',
+                                       artifact_path)
+      assert mocked_error.call_count
     self.assertFalse(os.path.exists(artifact_path))
 
 

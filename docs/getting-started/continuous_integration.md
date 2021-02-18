@@ -214,9 +214,9 @@ The results of CIFuzz can be found in two different places.
     1. When a crash is found by CIFuzz the Upload Artifact event is triggered.
     1. This will cause a pop up in the right hand corner, allowing
     you to download a zip file called `artifacts`.
-    1. `artifacts` contains two files:
-        * `test_case` - a test case that can be used to reproduce the crash.
-        * `bug_summary` - the stack trace and summary of the crash.
+    1. `artifacts` contains two files for each crash:
+        * A test case that can be used to reproduce the crash.
+        * The sanitizer stack trace of the crash.
 
 ![Finding uploaded artifacts](../images/artifacts.png)
 

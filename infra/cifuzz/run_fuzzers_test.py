@@ -227,7 +227,8 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
     target.target_name = target_name
     fuzz_target_artifact = runner.get_fuzz_target_artifact(
         target, artifact_name)
-    expected_fuzz_target_artifact = 'artifacts-dir/target_name-artifact-name'
+    expected_fuzz_target_artifact = (
+        'artifacts-dir/target_name-address-artifact-name')
     self.assertEqual(fuzz_target_artifact, expected_fuzz_target_artifact)
 
 
@@ -263,7 +264,7 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     magic_mock.target_name = 'target1'
     mocked_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
-    self.assertIn('target1-testcase', os.listdir(runner.artifacts_dir))
+    self.assertIn('target1-address-testcase', os.listdir(runner.artifacts_dir))
     self.assertEqual(mocked_run_fuzz_target.call_count, 1)
 
 
@@ -312,7 +313,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     magic_mock.target_name = 'target1'
     mocked_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
-    self.assertIn('target1-testcase', os.listdir(runner.artifacts_dir))
+    self.assertIn('target1-address-testcase', os.listdir(runner.artifacts_dir))
     self.assertEqual(mocked_run_fuzz_target.call_count, 2)
 
 

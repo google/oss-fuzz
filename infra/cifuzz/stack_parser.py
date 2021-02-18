@@ -13,6 +13,8 @@
 # limitations under the License.
 """Module for parsing stacks from fuzz targets."""
 
+import logging
+
 # From clusterfuzz: src/python/crash_analysis/crash_analyzer.py
 # Used to get the beginning of the stacktrace.
 STACKTRACE_TOOL_MARKERS = [
@@ -51,25 +53,33 @@ def parse_fuzzer_output(fuzzer_output, parsed_output_file_path):
     parsed_output_file_path: The location to store the parsed output.
   """
   # Get index of key file points.
+  begin_stack = None
   for marker in STACKTRACE_TOOL_MARKERS:
     marker_index = fuzzer_output.find(marker)
-    if marker_index:
+    if marker_index != -1:
       begin_stack = marker_index
       break
 
-  end_stack = -1
+  if begin_stack is None:
+    logging.error(
+        b'Could not find a begin stack marker (%s) in fuzzer output:\n%s',
+        STACKTRACE_TOOL_MARKERS, fuzzer_output)
+    return
+
+  end_stack = None
   for marker in STACKTRACE_END_MARKERS:
     marker_index = fuzzer_output.find(marker)
-    if marker_index:
+    if marker_index != -1:
       end_stack = marker_index + len(marker)
       break
 
-  if begin_stack is None or end_stack is None:
+  if end_stack is None:
+    logging.error(
+        b'Could not find an end stack marker (%s) in fuzzer output:\n%s',
+        STACKTRACE_END_MARKERS, fuzzer_output)
     return
 
   summary_str = fuzzer_output[begin_stack:end_stack]
-  if not summary_str:
-    return
 
   # Write sections of fuzzer output to specific files.
   with open(parsed_output_file_path, 'ab') as summary_handle:
