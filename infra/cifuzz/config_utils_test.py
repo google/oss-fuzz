@@ -13,9 +13,9 @@
 # limitations under the License.
 """Module for getting the configuration CIFuzz needs to run."""
 import os
-import sys
 import unittest
 
+import config_utils
 import test_helpers
 
 # pylint: disable=no-self-use
