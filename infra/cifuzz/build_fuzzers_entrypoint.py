@@ -75,7 +75,8 @@ def main():
   # yapf: disable
   if build_fuzzers.check_fuzzer_build(
       out_dir,
-      sanitizer=config.sanitizer,
+      config.sanitizer,
+      config.language,
       allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
   ):
     # yapf: enable

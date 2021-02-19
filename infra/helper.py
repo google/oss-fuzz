@@ -307,7 +307,7 @@ def _get_work_dir(project_name=''):
   return directory
 
 
-def _get_project_language(project_name):
+def get_project_language(project_name):
   """Returns project language."""
   project_yaml_path = os.path.join(OSS_FUZZ_DIR, 'projects', project_name,
                                    'project.yaml')
@@ -507,7 +507,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
   project_out_dir = _get_output_dir(project_name)
   project_work_dir = _get_work_dir(project_name)
-  project_language = _get_project_language(project_name)
+  project_language = get_project_language(project_name)
   if not project_language:
     print('WARNING: language not specified in project.yaml. Build may fail.')
 
@@ -611,7 +611,7 @@ def check_build(args):
       not _check_fuzzer_exists(args.project_name, args.fuzzer_name)):
     return 1
 
-  fuzzing_language = _get_project_language(args.project_name)
+  fuzzing_language = get_project_language(args.project_name)
   if fuzzing_language is None:
     print('WARNING: language not specified in project.yaml. Defaulting to C++.')
     fuzzing_language = 'c++'
@@ -752,7 +752,7 @@ def coverage(args):
   if not check_project_exists(args.project_name):
     return 1
 
-  project_language = _get_project_language(args.project_name)
+  project_language = get_project_language(args.project_name)
   if project_language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
     print(
         'ERROR: Project is written in %s, coverage for it is not supported yet.'
@@ -956,7 +956,7 @@ def shell(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'FUZZING_LANGUAGE=' + _get_project_language(args.project_name),
+      'FUZZING_LANGUAGE=' + get_project_language(args.project_name),
   ]
 
   if args.e:
