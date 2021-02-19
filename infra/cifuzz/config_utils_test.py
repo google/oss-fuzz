@@ -31,13 +31,26 @@ import test_helpers
 
 class BaseConfigTest(fake_filesystem_unittest.TestCase):
   """Tests for BaseConfig."""
-  PROJECT_NAME = 'fake-project'
 
   def setUp(self):
     test_helpers.patch_environ(self)
 
   def _create_config(self):
     return config_utils.BuildFuzzersConfig()
+
+  def test_language_default(self):
+    """Tests that the correct default language is set."""
+    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
+    config = self._create_config()
+    self.assertEqual(config.language, 'c++')
+
+  def test_language(self):
+    """Tests that the correct language is set."""
+    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
+    language = 'python'
+    os.environ['LANGUAGE'] = language
+    config = self._create_config()
+    self.assertEqual(config.language, language)
 
 
 class BuildFuzzersConfigTest(unittest.TestCase):
@@ -60,20 +73,6 @@ class BuildFuzzersConfigTest(unittest.TestCase):
     """Tests that keep_unaffected_fuzz_targets defaults to false."""
     config = self._create_config()
     self.assertFalse(config.keep_unaffected_fuzz_targets)
-
-  def test_language_default(self):
-    """Tests that the correct default language is set."""
-    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
-    config = self._create_config()
-    self.assertEqual(config.language, 'c++')
-
-  def test_language(self):
-    """Tests that the correct language is set."""
-    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
-    language = 'python'
-    os.environ['LANGUAGE'] = language
-    config = self._create_config()
-    self.assertEqual(config.language, language)
 
 
 if __name__ == '__main__':

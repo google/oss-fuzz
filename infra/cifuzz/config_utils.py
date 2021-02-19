@@ -94,6 +94,7 @@ class BaseConfig:
     self.dry_run = _is_dry_run()
     self.sanitizer = _get_sanitizer()
     self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+    self.language = _get_language()
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
     logging.debug('Is github: %s.', self.is_github)
@@ -153,7 +154,6 @@ class BuildFuzzersConfig(BaseConfig):
     # TODO(metzman): Some of this config is very CI-specific. Move it into the
     # CI class.
     super().__init__()
-    self.language = _get_language()
     self.project_repo_name = _get_project_repo_name()
     self.commit_sha = os.getenv('GITHUB_SHA')
     event = os.getenv('GITHUB_EVENT_NAME')
