@@ -23,9 +23,14 @@ if [[ $#  -eq 4 ]]; then
   tags="-tags $4"
 fi
 
+cd $GOPATH/src/$path || true
+# project was downloaded with go get if go list fails
+go list $path || cd $GOPATH/pkg/mod/ && cd `echo $path | cut -d/ -f1-3 | awk '{print $1"*"}'`
+# project does not have go.mod if go list fails again
+go list $path || go mod init $path
+
 if [[ $SANITIZER = *coverage* ]]; then
-  cd $GOPATH/src/$path
-  fuzzed_package=`go list $tags -f '{{.Name}}'`
+  fuzzed_package=`go list $tags -f '{{.Name}}' $path`
   cp $GOPATH/ossfuzz_coverage_runner.go ./"${function,,}"_test.go
   sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
   sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
