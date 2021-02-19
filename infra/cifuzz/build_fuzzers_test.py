@@ -266,16 +266,20 @@ class CheckFuzzerBuildTest(unittest.TestCase):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
     test_fuzzer_dir = os.path.join(self.test_files_path, 'out')
     self.assertTrue(
-        build_fuzzers.check_fuzzer_build(test_fuzzer_dir, self.SANITIZER, self.LANGUAGE))
+        build_fuzzers.check_fuzzer_build(test_fuzzer_dir, self.SANITIZER,
+                                         self.LANGUAGE))
 
   def test_not_a_valid_fuzz_path(self):
     """Tests that False is returned when a bad path is given."""
-    self.assertFalse(build_fuzzers.check_fuzzer_build('not/a/valid/path',
-                                                      self.SANITIZER, self.LANGUAGE))
+    self.assertFalse(
+        build_fuzzers.check_fuzzer_build('not/a/valid/path', self.SANITIZER,
+                                         self.LANGUAGE))
 
   def test_not_a_valid_fuzzer(self):
     """Checks a directory that exists but does not have fuzzers is False."""
-    self.assertFalse(build_fuzzers.check_fuzzer_build(self.test_files_path, self.SANITIZER, self.LANGUAGE))
+    self.assertFalse(
+        build_fuzzers.check_fuzzer_build(self.test_files_path, self.SANITIZER,
+                                         self.LANGUAGE))
 
   @mock.patch('helper.docker_run')
   def test_allow_broken_fuzz_targets_percentage(self, mocked_docker_run):

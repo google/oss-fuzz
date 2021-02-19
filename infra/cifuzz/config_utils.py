@@ -16,12 +16,7 @@
 import logging
 import enum
 import os
-import sys
 import json
-
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import helper
 
 
 def _get_project_repo_name():
@@ -67,13 +62,24 @@ def get_project_src_path(workspace):
   return os.path.join(workspace, path)
 
 
+DEFAULT_LANGUAGE = 'c++'
+
+
+def _get_language():
+  """Returns the project language."""
+  # Get language from environment. We took this approach because the convenience
+  # given to OSS-Fuzz users by not making them specify the language again (and
+  # getting it from the project.yaml) is outweighed by the complexity in
+  # implementing this. A lot of the complexity comes from our unittests not
+  # setting a proper projet at this point.
+  return os.getenv('LANGUAGE', DEFAULT_LANGUAGE)
+
+
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
 
 
 class BaseConfig:
   """Object containing constant configuration for CIFuzz."""
-
-  DEFAULT_LANGUAGE = 'c++'
 
   class Platform(enum.Enum):
     """Enum representing the different platforms CIFuzz runs on."""
@@ -88,28 +94,14 @@ class BaseConfig:
     self.dry_run = _is_dry_run()
     self.sanitizer = _get_sanitizer()
     self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
-    self.is_internal = not self.build_integration_path
-    self.language = self._get_language()
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
     logging.debug('Is github: %s.', self.is_github)
 
-  def _get_language(self):
-    """Returns the project language."""
-    # If we are an internal project get it from the project.yaml. Otherwise get
-    # it from the environment. We took this approach because:
-    # 1. We want to make things as easy as possible for OSS-Fuzz users.
-    # 2. We don't want to introduce a project.yaml for external users, they
-    # should do all config through env vars.
-    # 3. Introducing a project.yaml for external would mean that this config
-    # can only be obtained after cloning the repo which is annoying.
-    if self.is_internal:
-      try:
-        return helper.get_project_language(self.project_name)
-      except (FileNotFoundError, TypeError):
-        # Catch TypeError because many tests wont set a project_name.
-        return self.DEFAULT_LANGUAGE
-    return os.getenv('LANGUAGE', self.DEFAULT_LANGUAGE)
+  @property
+  def is_internal(self):
+    """Returns True if this is an OSS-Fuzz project."""
+    return not self.build_integration_path
 
   @property
   def platform(self):
@@ -161,6 +153,7 @@ class BuildFuzzersConfig(BaseConfig):
     # TODO(metzman): Some of this config is very CI-specific. Move it into the
     # CI class.
     super().__init__()
+    self.language = _get_language()
     self.project_repo_name = _get_project_repo_name()
     self.commit_sha = os.getenv('GITHUB_SHA')
     event = os.getenv('GITHUB_EVENT_NAME')

@@ -35,39 +35,9 @@ class BaseConfigTest(fake_filesystem_unittest.TestCase):
 
   def setUp(self):
     test_helpers.patch_environ(self)
-    os.environ['OSS_FUZZ_PROJECT_NAME'] = self.PROJECT_NAME
 
   def _create_config(self):
     return config_utils.BuildFuzzersConfig()
-
-  def test_language_internal_default(self):
-    """Tests that the correct default language is set for internal projects."""
-    os.environ['LANGUAGE'] = 'python'  # Make sure we don't use this.
-    config = self._create_config()
-    self.assertEqual(config.language, 'c++')
-
-  def test_language_external_default(self):
-    """Tests that the correct default language is set for internal projects."""
-    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
-    config = self._create_config()
-    self.assertEqual(config.language, 'c++')
-
-  def test_language_internal(self):
-    """Tests that the correct language is set for internal projects."""
-    self.setUpPyfakefs()
-    project_yaml = os.path.join(os.path.dirname(INFRA_DIR), 'projects',
-                                self.PROJECT_NAME, 'project.yaml')
-    self.fs.create_file(project_yaml, contents='language: go')
-    config = self._create_config()
-    self.assertEqual(config.language, 'go')
-
-  def test_language_external(self):
-    """Tests that the correct language is set for external projects."""
-    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
-    language = 'python'
-    os.environ['LANGUAGE'] = language
-    config = self._create_config()
-    self.assertEqual(config.language, language)
 
 
 class BuildFuzzersConfigTest(unittest.TestCase):
@@ -90,6 +60,20 @@ class BuildFuzzersConfigTest(unittest.TestCase):
     """Tests that keep_unaffected_fuzz_targets defaults to false."""
     config = self._create_config()
     self.assertFalse(config.keep_unaffected_fuzz_targets)
+
+  def test_language_default(self):
+    """Tests that the correct default language is set."""
+    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
+    config = self._create_config()
+    self.assertEqual(config.language, 'c++')
+
+  def test_language(self):
+    """Tests that the correct language is set."""
+    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
+    language = 'python'
+    os.environ['LANGUAGE'] = language
+    config = self._create_config()
+    self.assertEqual(config.language, language)
 
 
 if __name__ == '__main__':

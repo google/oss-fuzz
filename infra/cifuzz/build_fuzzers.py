@@ -77,8 +77,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def build_fuzzers(self):
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
-    docker_args = get_common_docker_args(
-        self.config.sanitizer, self.config.language)
+    docker_args = get_common_docker_args(self.config.sanitizer,
+                                         self.config.language)
     container = utils.get_container_name()
 
     if container:
