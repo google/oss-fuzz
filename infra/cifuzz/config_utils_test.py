@@ -16,12 +16,6 @@ import os
 import sys
 import unittest
 
-import config_utils
-
-# pylint: disable=wrong-import-position,import-error
-INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(INFRA_DIR)
-
 import test_helpers
 
 # pylint: disable=no-self-use
