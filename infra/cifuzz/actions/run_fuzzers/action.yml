@@ -5,6 +5,10 @@ inputs:
   oss-fuzz-project-name:
     description: 'The OSS-Fuzz project name.'
     required: true
+  language:
+    description: 'Programming language project is written in.'
+    required: false
+    default: 'c++'
   fuzz-seconds:
     description: 'The total time allotted for fuzzing in seconds.'
     required: true
@@ -31,6 +35,7 @@ runs:
   image: '../../../run_fuzzers.Dockerfile'
   env:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
+    LANGUAGE: ${{ inputs.language }}
     FUZZ_SECONDS: ${{ inputs.fuzz-seconds }}
     DRY_RUN: ${{ inputs.dry-run}}
     SANITIZER: ${{ inputs.sanitizer }}
