@@ -16,8 +16,6 @@ import os
 import sys
 import unittest
 
-from pyfakefs import fake_filesystem_unittest
-
 import config_utils
 
 # pylint: disable=wrong-import-position,import-error
@@ -29,7 +27,7 @@ import test_helpers
 # pylint: disable=no-self-use
 
 
-class BaseConfigTest(fake_filesystem_unittest.TestCase):
+class BaseConfigTest(unittest.TestCase):
   """Tests for BaseConfig."""
 
   def setUp(self):
