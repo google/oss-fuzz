@@ -62,6 +62,19 @@ def get_project_src_path(workspace):
   return os.path.join(workspace, path)
 
 
+DEFAULT_LANGUAGE = 'c++'
+
+
+def _get_language():
+  """Returns the project language."""
+  # Get language from environment. We took this approach because the convenience
+  # given to OSS-Fuzz users by not making them specify the language again (and
+  # getting it from the project.yaml) is outweighed by the complexity in
+  # implementing this. A lot of the complexity comes from our unittests not
+  # setting a proper projet at this point.
+  return os.getenv('LANGUAGE', DEFAULT_LANGUAGE)
+
+
 # pylint: disable=too-few-public-methods,too-many-instance-attributes
 
 
@@ -81,14 +94,20 @@ class BaseConfig:
     self.dry_run = _is_dry_run()
     self.sanitizer = _get_sanitizer()
     self.build_integration_path = os.getenv('BUILD_INTEGRATION_PATH')
+    self.language = _get_language()
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
     logging.debug('Is github: %s.', self.is_github)
 
   @property
+  def is_internal(self):
+    """Returns True if this is an OSS-Fuzz project."""
+    return not self.build_integration_path
+
+  @property
   def platform(self):
     """Returns the platform CIFuzz is runnning on."""
-    if self.build_integration_path:
+    if not self.is_internal:
       return self.Platform.EXTERNAL_GITHUB
     if self.is_github:
       return self.Platform.INTERNAL_GITHUB

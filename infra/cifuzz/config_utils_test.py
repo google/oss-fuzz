@@ -13,17 +13,36 @@
 # limitations under the License.
 """Module for getting the configuration CIFuzz needs to run."""
 import os
-import sys
 import unittest
 
 import config_utils
-
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import test_helpers
 
 # pylint: disable=no-self-use
+
+
+class BaseConfigTest(unittest.TestCase):
+  """Tests for BaseConfig."""
+
+  def setUp(self):
+    test_helpers.patch_environ(self)
+
+  def _create_config(self):
+    return config_utils.BuildFuzzersConfig()
+
+  def test_language_default(self):
+    """Tests that the correct default language is set."""
+    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
+    config = self._create_config()
+    self.assertEqual(config.language, 'c++')
+
+  def test_language(self):
+    """Tests that the correct language is set."""
+    os.environ['BUILD_INTEGRATION_PATH'] = '/path'
+    language = 'python'
+    os.environ['LANGUAGE'] = language
+    config = self._create_config()
+    self.assertEqual(config.language, language)
 
 
 class BuildFuzzersConfigTest(unittest.TestCase):

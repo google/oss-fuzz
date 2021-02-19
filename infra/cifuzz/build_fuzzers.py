@@ -77,7 +77,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def build_fuzzers(self):
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
-    docker_args = get_common_docker_args(self.config.sanitizer)
+    docker_args = get_common_docker_args(self.config.sanitizer,
+                                         self.config.language)
     container = utils.get_container_name()
 
     if container:
@@ -185,7 +186,7 @@ def build_fuzzers(config):
   return builder.build()
 
 
-def get_common_docker_args(sanitizer):
+def get_common_docker_args(sanitizer, language):
   """Returns a list of common docker arguments."""
   return [
       '--cap-add',
@@ -199,12 +200,13 @@ def get_common_docker_args(sanitizer):
       '-e',
       'CIFUZZ=True',
       '-e',
-      'FUZZING_LANGUAGE=c++',  # FIXME: Add proper support.
+      'FUZZING_LANGUAGE=' + language,
   ]
 
 
 def check_fuzzer_build(out_dir,
-                       sanitizer='address',
+                       sanitizer,
+                       language,
                        allowed_broken_targets_percentage=None):
   """Checks the integrity of the built fuzzers.
 
@@ -222,7 +224,7 @@ def check_fuzzer_build(out_dir,
     logging.error('No fuzzers found in out directory: %s.', out_dir)
     return False
 
-  command = get_common_docker_args(sanitizer)
+  command = get_common_docker_args(sanitizer, language)
 
   if allowed_broken_targets_percentage is not None:
     command += [

@@ -251,6 +251,9 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 class CheckFuzzerBuildTest(unittest.TestCase):
   """Tests the check_fuzzer_build function in the cifuzz module."""
 
+  SANITIZER = 'address'
+  LANGUAGE = 'c++'
+
   def setUp(self):
     self.tmp_dir_obj = tempfile.TemporaryDirectory()
     self.test_files_path = os.path.join(self.tmp_dir_obj.name, 'test_files')
@@ -262,15 +265,21 @@ class CheckFuzzerBuildTest(unittest.TestCase):
   def test_correct_fuzzer_build(self):
     """Checks check_fuzzer_build function returns True for valid fuzzers."""
     test_fuzzer_dir = os.path.join(self.test_files_path, 'out')
-    self.assertTrue(build_fuzzers.check_fuzzer_build(test_fuzzer_dir))
+    self.assertTrue(
+        build_fuzzers.check_fuzzer_build(test_fuzzer_dir, self.SANITIZER,
+                                         self.LANGUAGE))
 
   def test_not_a_valid_fuzz_path(self):
     """Tests that False is returned when a bad path is given."""
-    self.assertFalse(build_fuzzers.check_fuzzer_build('not/a/valid/path'))
+    self.assertFalse(
+        build_fuzzers.check_fuzzer_build('not/a/valid/path', self.SANITIZER,
+                                         self.LANGUAGE))
 
   def test_not_a_valid_fuzzer(self):
     """Checks a directory that exists but does not have fuzzers is False."""
-    self.assertFalse(build_fuzzers.check_fuzzer_build(self.test_files_path))
+    self.assertFalse(
+        build_fuzzers.check_fuzzer_build(self.test_files_path, self.SANITIZER,
+                                         self.LANGUAGE))
 
   @mock.patch('helper.docker_run')
   def test_allow_broken_fuzz_targets_percentage(self, mocked_docker_run):
@@ -279,6 +288,8 @@ class CheckFuzzerBuildTest(unittest.TestCase):
     mocked_docker_run.return_value = 0
     test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
     build_fuzzers.check_fuzzer_build(test_fuzzer_dir,
+                                     self.SANITIZER,
+                                     self.LANGUAGE,
                                      allowed_broken_targets_percentage='0')
     self.assertIn('-e ALLOWED_BROKEN_TARGETS_PERCENTAGE=0',
                   ' '.join(mocked_docker_run.call_args[0][0]))

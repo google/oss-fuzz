@@ -5,6 +5,10 @@ inputs:
   oss-fuzz-project-name:
     description: 'Name of the corresponding OSS-Fuzz project.'
     required: true
+  language:
+    description: 'Programming language project is written in.'
+    required: false
+    default: 'c++'
   dry-run:
     description: 'If set, run the action without actually reporting a failure.'
     default: false
@@ -25,6 +29,7 @@ runs:
   image: '../../../build_fuzzers.Dockerfile'
   env:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
+    LANGUAGE: ${{ inputs.language }}
     DRY_RUN: ${{ inputs.dry-run}}
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
     SANITIZER: ${{ inputs.sanitizer }}
