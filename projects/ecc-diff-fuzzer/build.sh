@@ -93,12 +93,15 @@ cd libecc
 #botan
 (
 cd botan
+#help it find libstdc++
+cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libstdc++.so
+export LDFLAGS=$CXXFLAGS
 if [ "$ARCHITECTURE" = 'i386' ]; then
     ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
-               --disable-shared --disable-modules=locking_allocator --cpu x86_32
+               --disable-shared --disable-modules=locking_allocator --disable-shared-library --cpu x86_32
 else
     ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
-               --disable-shared --disable-modules=locking_allocator
+               --disable-shared --disable-modules=locking_allocator --disable-shared-library
 fi
 make -j$(nproc)
 make install
