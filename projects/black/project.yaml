@@ -1,0 +1,9 @@
+homepage: "https://black.readthedocs.io"
+main_repo: 'https://github.com/psf/black'
+language: python
+primary_contact: "zac.hatfield.dodds@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
