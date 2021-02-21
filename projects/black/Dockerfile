@@ -28,5 +28,6 @@ WORKDIR black
 # and https://github.com/psf/black/blob/master/fuzz.py
 RUN pip3 install -r test_requirements.txt
 RUN pip3 install hypothesmith
+RUN pip3 install 'lark-parser < 0.10.0'
 
 COPY build.sh $SRC/
