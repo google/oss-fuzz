@@ -25,7 +25,7 @@ fi
 
 cd $GOPATH/src/$path || true
 # project was downloaded with go get if go list fails
-go list $path || cd $GOPATH/pkg/mod/ && cd `echo $path | cut -d/ -f1-3 | awk '{print $1"*"}'`
+go list $path || (cd $GOPATH/pkg/mod/ && cd `echo $path | cut -d/ -f1-3 | awk '{print $1"*"}'`)
 # project does not have go.mod if go list fails again
 go list $path || go mod init $path
 
