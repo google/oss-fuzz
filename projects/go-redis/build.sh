@@ -12,5 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
- 
-compile_go_fuzzer github.com/go-redis/redis/fuzz Fuzz fuzz gofuzz
+
+#github.com/go-redis/redis/fuzz is not a module, so needs local build
+compile_go_fuzzer ./fuzz Fuzz fuzz gofuzz
