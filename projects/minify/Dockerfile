@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get -u github.com/tdewolff/minify
+RUN go get -u github.com/tdewolff/minify/v2
 COPY build.sh $SRC/
 WORKDIR $SRC/
