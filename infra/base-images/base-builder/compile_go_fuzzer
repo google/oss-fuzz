@@ -24,6 +24,8 @@ if [[ $#  -eq 4 ]]; then
 fi
 
 cd $GOPATH/src/$path || true
+# in the case we are in the right directory, with go.mod but no go.sum
+go mod tidy || true
 # project was downloaded with go get if go list fails
 go list $tags $path || (cd $GOPATH/pkg/mod/ && cd `echo $path | cut -d/ -f1-3 | awk '{print $1"*"}'`)
 # project does not have go.mod if go list fails again
@@ -42,8 +44,6 @@ if [[ $SANITIZER = *coverage* ]]; then
   fuzzed_repo=`echo $path | cut -d/ -f-3`
   echo "go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -coverprofile \$1 " >> $OUT/$fuzzer
   chmod +x $OUT/$fuzzer
-
-  cd -
 else
   # Compile and instrument all Go files relevant to this fuzz target.
   echo "Running go-fuzz $tags -func $function -o $fuzzer.a $path"
