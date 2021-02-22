@@ -20,7 +20,7 @@ mkdir build && cd build
 cmake ../
 make
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE ../fuzz/fuzz_decode.c -o $OUT/fuzz_decode ./src/libiec61850.a \
+$CC $CFLAGS $LIB_FUZZING_ENGINE ../fuzz/fuzz_mms_decode.c -o $OUT/fuzz_mms_decode ./src/libiec61850.a \
 	-I../src/iec61850/inc -I../src/mms/inc -I../src/common/inc \
 	-I../hal/inc -I../src/logging ./hal/libhal.a
 
