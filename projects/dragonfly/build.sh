@@ -15,8 +15,5 @@
 #
 ################################################################################
 
-mkdir $GOPATH/src/github.com/dragonflyoss
-cp -r $SRC/Dragonfly $GOPATH/src/github.com/dragonflyoss/
-
 compile_go_fuzzer github.com/dragonflyoss/Dragonfly/dfget/core/uploader FuzzParseParams uploader_fuzz
 compile_go_fuzzer github.com/dragonflyoss/Dragonfly/supernode/daemon/mgr/cdn Fuzz cdn_fuzz
