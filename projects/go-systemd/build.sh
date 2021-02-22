@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Disable coverage build due to temporary breakages
+if [[ $SANITIZER = *coverage* ]]; then
+	exit 0
+fi
 
 mv $SRC/fuzz.go $SRC/go-systemd/unit/
 compile_go_fuzzer ./unit EscapeFuzz escape_fuzz
