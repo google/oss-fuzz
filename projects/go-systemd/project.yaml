@@ -1,0 +1,10 @@
+homepage: "https://github.com/coreos/go-systemd"
+main_repo: "https://github.com/coreos/go-systemd"
+primary_contact: ""
+auto_ccs :
+  - "Adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
