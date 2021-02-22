@@ -3,4 +3,7 @@ primary_contact: "david@adalogics.com"
 language: c
 auto_ccs :
   - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz 
 main_repo: 'https://github.com/LibreDWG/libredwg'
