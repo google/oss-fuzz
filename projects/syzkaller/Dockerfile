@@ -16,11 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN go get -u -d github.com/google/syzkaller/prog
+RUN git clone --depth 1 https://github.com/google/syzkaller/
 
-# Dependency for one of the fuzz targets.
-# Note: this should not be necessary because this package is in syzkaller/vendor.
-RUN go get github.com/ianlancetaylor/demangle
-
-WORKDIR /root/go/src/github.com/google/syzkaller
+WORKDIR $SRC/syzkaller
 COPY build.sh $SRC/
