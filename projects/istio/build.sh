@@ -15,5 +15,8 @@
 #
 ################################################################################
 
+cd $SRC
+cd istio
+
 compile_go_fuzzer ./tests/fuzz FuzzParseInputs fuzz_parse_inputs
 compile_go_fuzzer ./tests/fuzz FuzzParseAndBuildSchema fuzz_parse_and_build_schema
