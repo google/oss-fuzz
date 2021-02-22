@@ -20,7 +20,7 @@ RUN go get github.com/ianlancetaylor/demangle
 RUN git clone --depth 1 https://github.com/kubernetes/kubernetes.git
 RUN git clone --depth 1 https://github.com/google/AFL
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
-RUN go get k8s.io/kops
+RUN git clone --depth 1 https://github.com/kubernetes/kops
 WORKDIR $SRC/
 
 COPY build.sh $SRC/

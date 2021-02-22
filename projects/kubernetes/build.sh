@@ -21,11 +21,13 @@ set -o errexit
 set -x
 
 # Compile kOps fuzzers
-$GOPATH/src/k8s.io/kops/tests/fuzz/build.sh
-
+(
+cd kops
+./tests/fuzz/build.sh
+)
 
 # Compile Kubernetes fuzzers
-mv $SRC/kubernetes $GOPATH/src/k8s.io/
+cd $SRC/kubernetes
 
 function compile_fuzzer {
   local pkg=$1
