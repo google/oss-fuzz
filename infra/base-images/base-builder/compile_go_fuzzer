@@ -23,6 +23,8 @@ if [[ $#  -eq 4 ]]; then
   tags="-tags $4"
 fi
 
+# makes directory change temporary
+(
 cd $GOPATH/src/$path || true
 # in the case we are in the right directory, with go.mod but no go.sum
 go mod tidy || true
@@ -52,3 +54,4 @@ else
   # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 fi
+)
