@@ -17,4 +17,5 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone https://github.com/istio/istio
 COPY build.sh $SRC/
+ENV OLDPWD $SRC/istio
 WORKDIR $SRC/istio
