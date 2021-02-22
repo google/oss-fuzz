@@ -9,3 +9,4 @@ vendor_ccs:
 - "bvandyk@mozilla.com"
 - "jbauman@mozilla.com"
 - "twsmith@mozilla.com"
+main_repo: 'https://github.com/mozilla/mp4parse-rust'

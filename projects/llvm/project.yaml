@@ -26,3 +26,4 @@ fuzzing_engines:
 
 # Bug reports are public by default:
 view_restrictions: none
+main_repo: 'https://github.com/llvm/llvm-project.git'

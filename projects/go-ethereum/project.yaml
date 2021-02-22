@@ -9,3 +9,4 @@ fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
+main_repo: 'https://github.com/ethereum/go-ethereum'

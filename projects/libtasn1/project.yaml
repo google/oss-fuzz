@@ -16,3 +16,4 @@ sanitizers:
   - memory
   - undefined
   - dataflow
+main_repo: 'https://gitlab.com/gnutls/libtasn1.git'

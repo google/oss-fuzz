@@ -15,7 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/andybalholm/cascadia
+RUN git clone https://github.com/andybalholm/cascadia
 
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/cascadia
+# no idea why this is needed
+RUN go mod download golang.org/x/net

@@ -25,6 +25,7 @@ CFLAGS="${CFLAGS} -pthread" CXXFLAGS="${CXXFLAGS} -pthread" \
                 --disable-auxtools \
                 --disable-broker-tests
 
+
 cd build
 ninja install
 

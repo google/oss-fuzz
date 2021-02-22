@@ -16,7 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev patchelf wget
+    libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev patchelf wget \
+    libattr1 libattr1-dev libcap-ng-dev
 # Ninja in the apt repos is too old. Get it directly from github
 RUN wget https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip \
     && unzip ninja-linux.zip \

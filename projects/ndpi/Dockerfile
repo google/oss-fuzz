@@ -15,7 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake autogen pkg-config libtool flex bison libjson-c-dev
+RUN apt-get update && apt-get install -y make autoconf automake autogen pkg-config libtool flex bison cmake
+RUN git clone --depth 1 https://github.com/json-c/json-c.git json-c
 RUN git clone --depth 1 https://github.com/ntop/nDPI.git ndpi
 ADD https://www.tcpdump.org/release/libpcap-1.9.1.tar.gz libpcap-1.9.1.tar.gz
 COPY build.sh $SRC/

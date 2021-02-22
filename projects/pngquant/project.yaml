@@ -1,0 +1,12 @@
+homepage: "https://pngquant.org"
+main_repo: "https://github.com/kornelski/pngquant"
+language: c
+primary_contact: "ossfuzz@pngquant.org"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz

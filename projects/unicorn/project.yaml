@@ -15,3 +15,4 @@ sanitizers:
   - undefined
   - memory
   - dataflow
+main_repo: 'https://github.com/unicorn-engine/unicorn.git'
