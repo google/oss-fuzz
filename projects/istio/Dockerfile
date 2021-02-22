@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/istio/istio/pilot/pkg/config/kube/crd/...
+RUN git clone https://github.com/istio/istio
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/istio
