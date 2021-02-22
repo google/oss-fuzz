@@ -192,7 +192,6 @@ For most projects, the image is simple:
 ```docker
 FROM gcr.io/oss-fuzz-base/base-builder       # base image with clang toolchain
 RUN apt-get update && apt-get install -y ... # install required packages to build your project
-RUN go get ...                               # install dependencies to build your Go project
 RUN git clone <git_url> <checkout_dir>       # checkout all sources needed to build your project
 WORKDIR <checkout_dir>                       # current directory for the build script
 COPY build.sh fuzzer.cc $SRC/                # copy build script and other fuzzer files in src dir

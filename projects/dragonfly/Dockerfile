@@ -30,4 +30,4 @@ RUN go get	github.com/go-openapi/swag \
 		github.com/willf/bitset
 RUN git clone https://github.com/dragonflyoss/Dragonfly
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/Dragonfly

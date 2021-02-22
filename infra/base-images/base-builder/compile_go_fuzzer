@@ -23,11 +23,13 @@ if [[ $#  -eq 4 ]]; then
   tags="-tags $4"
 fi
 
+# makes directory change temporary
+(
 cd $GOPATH/src/$path || true
 # in the case we are in the right directory, with go.mod but no go.sum
 go mod tidy || true
 # project was downloaded with go get if go list fails
-go list $tags $path || (cd $GOPATH/pkg/mod/ && cd `echo $path | cut -d/ -f1-3 | awk '{print $1"*"}'`)
+go list $tags $path || { cd $GOPATH/pkg/mod/ && cd `echo $path | cut -d/ -f1-3 | awk '{print $1"@*"}'`; }
 # project does not have go.mod if go list fails again
 go list $tags $path || go mod init $path
 
@@ -52,3 +54,4 @@ else
   # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
   $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
 fi
+)

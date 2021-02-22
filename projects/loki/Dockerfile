@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/grafana/loki/pkg/logql/...
+RUN git clone --depth 1 https://github.com/grafana/loki/
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/loki

@@ -18,7 +18,7 @@
 
 
 
-ls $GOPATH/src/github.com/valyala/fasthttp/fuzzit | while read target
+ls fuzzit/ | while read target
 do
     compile_go_fuzzer github.com/valyala/fasthttp/fuzzit/$target Fuzz fuzz_$target gofuzz
 done

@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-$GOPATH/src/github.com/tdewolff/minify/tests/oss-fuzz-build.sh
+./tests/oss-fuzz-build.sh

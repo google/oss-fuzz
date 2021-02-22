@@ -18,4 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 ENV GO111MODULE on
 RUN git clone https://github.com/grpc-ecosystem/grpc-gateway
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/grpc-gateway

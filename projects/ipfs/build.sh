@@ -15,8 +15,6 @@
 #
 ################################################################################
 
-cd $GOPATH/src/github.com/ipfs/go-datastore/fuzz
-
 function compile_ds_fuzzer {
   fuzzer=$1
 

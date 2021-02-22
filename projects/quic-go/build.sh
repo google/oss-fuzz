@@ -30,7 +30,7 @@ compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/tokens Fuzz token_fu
 compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/handshake Fuzz handshake_fuzzer
 
 # generate seed corpora
-go generate $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/...
+cd quic-go && go generate fuzzing/...
 
 zip --quiet -r $OUT/header_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/header/corpus
 zip --quiet -r $OUT/frame_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/frames/corpus
