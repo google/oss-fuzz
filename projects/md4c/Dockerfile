@@ -20,4 +20,3 @@ RUN git clone https://github.com/mity/md4c
 
 WORKDIR $SRC/md4c
 COPY build.sh $SRC/
-COPY fuzz-mdhtml.c $SRC/fuzz-mdhtml.c
