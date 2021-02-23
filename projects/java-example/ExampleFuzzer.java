@@ -22,13 +22,12 @@ public class ExampleFuzzer {
     // Optional initialization to be run before the first call to fuzzerTestOneInput.
   }
 
-  public static boolean fuzzerTestOneInput(FuzzedDataProvider data) {
+  public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     String input = data.consumeRemainingAsString();
     long random = 123123132;
     if (input.startsWith("magicstring" + random) && input.length() > 30
         && input.charAt(25) == 'C') {
-      return true;
+      throw new IllegalStateException("Not reached");
     }
-    return false;
   }
 }
