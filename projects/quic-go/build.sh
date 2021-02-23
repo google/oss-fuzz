@@ -17,11 +17,14 @@
 
 set -ex
 
-
-
+(
+cd qpack
 # Fuzz qpack
 compile_go_fuzzer github.com/marten-seemann/qpack/fuzzing Fuzz qpack_fuzzer
+)
 
+(
+cd quic-go
 # Fuzz quic-go
 compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/frames Fuzz frame_fuzzer
 compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/header Fuzz header_fuzzer
@@ -30,12 +33,13 @@ compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/tokens Fuzz token_fu
 compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/handshake Fuzz handshake_fuzzer
 
 # generate seed corpora
-cd quic-go && go generate fuzzing/...
+go generate fuzzing/...
 
 zip --quiet -r $OUT/header_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/header/corpus
 zip --quiet -r $OUT/frame_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/frames/corpus
 zip --quiet -r $OUT/transportparameter_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/transportparameters/corpus
 zip --quiet -r $OUT/handshake_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/handshake/corpus
+)
 
 # for debugging
 ls -al $OUT
