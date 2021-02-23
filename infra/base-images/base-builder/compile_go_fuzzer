@@ -31,7 +31,7 @@ go mod tidy || true
 # project was downloaded with go get if go list fails
 go list $tags $path || { cd $GOPATH/pkg/mod/ && cd `echo $path | cut -d/ -f1-3 | awk '{print $1"@*"}'`; }
 # project does not have go.mod if go list fails again
-go list $tags $path || go mod init $path
+go list $tags $path || { go mod init $path && go mod tidy ;}
 
 if [[ $SANITIZER = *coverage* ]]; then
   fuzzed_package=`go list $tags -f '{{.Name}}' $path`

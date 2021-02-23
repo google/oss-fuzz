@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/radondb/radon
+RUN go get github.com/radondb/radon/src/fuzz/sqlparser@master
 COPY build.sh $SRC/
-WORKDIR $SRC/radon
+WORKDIR $SRC/
