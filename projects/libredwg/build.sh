@@ -20,8 +20,8 @@ sh ./autogen.sh
 ./configure --disable-shared
 make
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_decode.c -o $OUT/fuzz_decode \
+$CC $CFLAGS $LIB_FUZZING_ENGINE ./test/fuzz/fuzz_dwg_decode.c -o $OUT/fuzz_dwg_decode \
     src/.libs/libredwg.a -I./include -I./src
 
 
-cp $SRC/fuzz_decode.options $OUT/fuzz_decode.options
+cp $SRC/fuzz_dwg_decode.options $OUT/fuzz_dwg_decode.options
