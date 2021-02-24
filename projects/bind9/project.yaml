@@ -2,6 +2,7 @@ homepage: "https://gitlab.isc.org/isc-projects/bind9"
 language: c
 primary_contact: "bind9-dev@isc.org"
 auto_ccs:
+  - "artem@isc.org"
   - "dfronza@isc.org"
   - "each@isc.org"
   - "marka@isc.org"
@@ -9,7 +10,7 @@ auto_ccs:
   - "michal@isc.org"
   - "mnowak@isc.org"
   - "ondrej@isc.org"
-  - "wpk@isc.org"
+  - "pspacek@isc.org"
 sanitizers:
   - address
   - memory:
