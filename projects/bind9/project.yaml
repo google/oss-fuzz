@@ -9,7 +9,6 @@ auto_ccs:
   - "michal@isc.org"
   - "mnowak@isc.org"
   - "ondrej@isc.org"
-  - "wpk@isc.org"
 sanitizers:
   - address
   - memory:
