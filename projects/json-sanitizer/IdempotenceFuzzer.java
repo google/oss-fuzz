@@ -19,7 +19,7 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.google.json.JsonSanitizer;
 
 public class IdempotenceFuzzer {
-  public static boolean fuzzerTestOneInput(FuzzedDataProvider data) {
+  public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     String input = data.consumeRemainingAsString();
     String output1;
     try {
@@ -27,15 +27,14 @@ public class IdempotenceFuzzer {
     } catch (ArrayIndexOutOfBoundsException e) {
       // ArrayIndexOutOfBoundsException is expected if nesting depth is
       // exceeded.
-      return false;
+      return;
     }
     String output2 = JsonSanitizer.sanitize(output1, 10);
     if (!output1.equals(output2)) {
       System.err.println("input  : " + input);
       System.err.println("output1: " + output1);
       System.err.println("output2: " + output2);
-      return true;
+      throw new IllegalStateException("Non-idempotence detected");
     }
-    return false;
   }
 }

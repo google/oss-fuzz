@@ -19,7 +19,7 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.google.json.JsonSanitizer;
 
 public class DenylistFuzzer {
-  public static boolean fuzzerTestOneInput(FuzzedDataProvider data) {
+  public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     String input = data.consumeRemainingAsString();
     String output;
     try {
@@ -27,15 +27,14 @@ public class DenylistFuzzer {
     } catch (ArrayIndexOutOfBoundsException e) {
       // ArrayIndexOutOfBoundsException is expected if nesting depth is
       // exceeded.
-      return false;
+      return;
     }
     // See https://github.com/OWASP/json-sanitizer#output.
     if (output.contains("</script") || output.contains("<script")
         || output.contains("<!--") || output.contains("]]>")) {
       System.err.println("input : " + input);
       System.err.println("output: " + output);
-      return true;
+      throw new IllegalStateException("Output contains forbidden substring");
     }
-    return false;
   }
 }

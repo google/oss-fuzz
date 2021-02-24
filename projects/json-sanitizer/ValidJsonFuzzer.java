@@ -23,7 +23,7 @@ import com.google.json.JsonSanitizer;
 public class ValidJsonFuzzer {
   private static Gson gson = new Gson();
 
-  public static boolean fuzzerTestOneInput(FuzzedDataProvider data) {
+  public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     String input = data.consumeRemainingAsString();
     String output;
     try {
@@ -31,7 +31,7 @@ public class ValidJsonFuzzer {
     } catch (ArrayIndexOutOfBoundsException e) {
       // ArrayIndexOutOfBoundsException is expected if nesting depth is
       // exceeded.
-      return false;
+      return;
     }
     try {
       gson.fromJson(output, JsonElement.class);
@@ -40,6 +40,5 @@ public class ValidJsonFuzzer {
       System.err.println("output : " + output);
       throw e;
     }
-    return false;
   }
 }
