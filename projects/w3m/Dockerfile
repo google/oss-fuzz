@@ -20,4 +20,3 @@ RUN git clone https://github.com/tats/w3m
 
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/

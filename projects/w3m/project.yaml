@@ -1,5 +1,5 @@
 homepage: "https://github.com/tats/w3m"
-primary_contact: "david@adalogics.com"
+primary_contact: "tats@debian.org"
 language: c
 auto_ccs :
   - "david@adalogics.com"
