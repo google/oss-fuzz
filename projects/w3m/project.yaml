@@ -1,4 +1,4 @@
-homepage: "https://github.com/tats/w3m"
+homepage: "https://tracker.debian.org/pkg/w3m"
 primary_contact: "tats@debian.org"
 language: c
 auto_ccs :
