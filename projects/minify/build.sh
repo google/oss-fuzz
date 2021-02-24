@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-./tests/oss-fuzz-build.sh
+./minify/tests/oss-fuzz-build.sh
