@@ -32,6 +32,10 @@ compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/transportparameters 
 compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/tokens Fuzz token_fuzzer
 compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/handshake Fuzz handshake_fuzzer
 
+if [ $SANITIZER == "coverage" ]; then
+    # no need for corpuses if coverage
+    exit 0
+fi
 # generate seed corpora
 go generate ./fuzzing/...
 
