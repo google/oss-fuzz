@@ -35,10 +35,10 @@ compile_go_fuzzer github.com/lucas-clemente/quic-go/fuzzing/handshake Fuzz hands
 # generate seed corpora
 go generate fuzzing/...
 
-zip --quiet -r $OUT/header_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/header/corpus
-zip --quiet -r $OUT/frame_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/frames/corpus
-zip --quiet -r $OUT/transportparameter_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/transportparameters/corpus
-zip --quiet -r $OUT/handshake_fuzzer_seed_corpus.zip $GOPATH/src/github.com/lucas-clemente/quic-go/fuzzing/handshake/corpus
+zip --quiet -r $OUT/header_fuzzer_seed_corpus.zip fuzzing/header/corpus
+zip --quiet -r $OUT/frame_fuzzer_seed_corpus.zip fuzzing/frames/corpus
+zip --quiet -r $OUT/transportparameter_fuzzer_seed_corpus.zip fuzzing/transportparameters/corpus
+zip --quiet -r $OUT/handshake_fuzzer_seed_corpus.zip fuzzing/handshake/corpus
 )
 
 # for debugging
