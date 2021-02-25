@@ -1,5 +1,5 @@
 homepage: "https://github.com/CESNET/libyang"
-primary_contact: "david@adalogics.com"
+primary_contact: "mvasko@cesnet.cz"
 language: c
 auto_ccs :
   - "david@adalogics.com"

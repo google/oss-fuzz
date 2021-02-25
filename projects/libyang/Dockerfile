@@ -15,10 +15,15 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y libpcre3 libpcre3-dev
+RUN apt-get update && apt-get install -y autoconf automake libtool subversion
 RUN git clone https://github.com/CESNET/libyang
+
+RUN svn co svn://vcs.exim.org/pcre2/code/trunk pcre2 && \
+    cd pcre2 && \
+    ./autogen.sh && \
+    ./configure && \
+    make && \
+    make install
 
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/
-COPY CMakeLists.txt $SRC/libyang/CMakeLists.txt
