@@ -20,4 +20,4 @@ RUN git clone https://github.com/LibreDWG/libredwg
 
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_dwg_decode.options $SRC/
+COPY llvmfuzz.options $SRC/

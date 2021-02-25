@@ -17,11 +17,10 @@
 
 cd libredwg
 sh ./autogen.sh
-./configure --disable-shared
+./configure --disable-shared --disable-bindings
 make
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE ./test/fuzz/fuzz_dwg_decode.c -o $OUT/fuzz_dwg_decode \
+$CC $CFLAGS $LIB_FUZZING_ENGINE examples/llvmfuzz.c -o $OUT/llvmfuzz \
     src/.libs/libredwg.a -I./include -I./src
 
-
-cp $SRC/fuzz_dwg_decode.options $OUT/fuzz_dwg_decode.options
+cp $SRC/llvmfuzz.options $OUT/llvmfuzz.options
