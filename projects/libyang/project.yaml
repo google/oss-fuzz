@@ -3,6 +3,7 @@ main_repo: 'https://github.com/CESNET/libyang'
 primary_contact: "mvasko@cesnet.cz"
 language: c
 auto_ccs :
+  - "mv6606@gmail.com"
   - "david@adalogics.com"
 sanitizers:
   - address
