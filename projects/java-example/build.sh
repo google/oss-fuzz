@@ -36,11 +36,12 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java' -or -name '*FuzzerNative.java'); 
     driver=jazzer_driver
   fi
 
+  cp default.options $OUT/"$fuzzer_basename".options
   # Create execution wrapper.
   echo "#!/bin/sh
 # LLVMFuzzerTestOneInput for fuzzer detection.
 this_dir=\$(dirname \"\$0\")
-LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":. \
+LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
 ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
 \$this_dir/$driver --agent_path=\$this_dir/jazzer_agent_deploy.jar \
 --cp=$RUNTIME_CLASSPATH \
