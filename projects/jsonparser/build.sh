@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-$GOPATH/src/github.com/buger/jsonparser/oss-fuzz-build.sh
+./oss-fuzz-build.sh

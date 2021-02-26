@@ -17,4 +17,4 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone https://github.com/go-gitea/gitea
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/gitea

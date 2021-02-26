@@ -19,5 +19,3 @@ RUN git clone https://github.com/andybalholm/cascadia
 
 COPY build.sh $SRC/
 WORKDIR $SRC/cascadia
-# no idea why this is needed
-RUN go mod download golang.org/x/net

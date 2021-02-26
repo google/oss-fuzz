@@ -31,7 +31,7 @@ docker images.
 
 ### Example project
 
-We recommending viewing [ujson](https://github.com/google/oss-fuzz/tree/master/projects/ujson) as an
+We recommend viewing [ujson](https://github.com/google/oss-fuzz/tree/master/projects/ujson) as an
 example of a simple Python fuzzing project, with both plain-Atheris and
 Atheris + Hypothesis harnesses.
 
@@ -112,14 +112,17 @@ or [by using test functions as fuzz harnesses](https://hypothesis.readthedocs.io
   failures in the test reveal problems with the system under test that could not have been
   revealed by direct fuzzing of that system.
 
-You also get integrated test-case reduction for free - meaning that it's trivial to
-report a canonical minimal example for each distinct failure discovered while fuzzing!
+We recommend using the [`hypothesis write`](https://hypothesis.readthedocs.io/en/latest/ghostwriter.html)
+command to generate a starter fuzz harness.  This "ghostwritten" code may be usable as-is,
+or provide a useful template for writing more specific tests.
 
 See [here for the core "strategies"](https://hypothesis.readthedocs.io/en/latest/data.html),
 for arbitrary data, [here for Numpy + Pandas support](https://hypothesis.readthedocs.io/en/latest/numpy.html),
 or [here for a variety of third-party extensions](https://hypothesis.readthedocs.io/en/latest/strategies.html)
 supporting everything from protobufs, to jsonschemas, to networkx graphs or geojson
 or valid Python source code.
+Hypothesis' integrated test-case reduction also makes it trivial to report a canonical minimal
+example for each distinct failure discovered while fuzzing - just run the test function!
 
 To use Hypothesis in OSS-Fuzz, install it in your Dockerfile with
 

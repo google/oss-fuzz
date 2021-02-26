@@ -15,8 +15,5 @@
 #
 ################################################################################
 
-mkdir $GOPATH/src/github.com/gohugoio
-mv $SRC/hugo $GOPATH/src/github.com/gohugoio/
-cd $GOPATH/src/github.com/gohugoio/hugo
 
 compile_go_fuzzer github.com/gohugoio/hugo/tpl/transform FuzzMarkdownify fuzzmarkdownify

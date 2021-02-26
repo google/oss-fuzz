@@ -18,6 +18,9 @@
 
 
 make descriptions
+
+go mod tidy && go mod vendor
+
 compile_go_fuzzer github.com/google/syzkaller/pkg/compiler Fuzz compiler_fuzzer
 compile_go_fuzzer github.com/google/syzkaller/prog/test FuzzDeserialize prog_deserialize_fuzzer
 compile_go_fuzzer github.com/google/syzkaller/prog/test FuzzParseLog prog_parselog_fuzzer

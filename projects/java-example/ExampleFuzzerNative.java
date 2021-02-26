@@ -21,14 +21,13 @@ public class ExampleFuzzerNative {
     System.loadLibrary("native");
   }
 
-  public static boolean fuzzerTestOneInput(FuzzedDataProvider data) {
+  public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     int val = data.consumeInt();
     String stringData = data.consumeRemainingAsString();
     if (val == 17759716 && stringData.length() > 10 && stringData.contains("jazzer")) {
       // call native function which contains a crash
       parse(stringData);
     }
-    return false;
   }
 
   private static native boolean parse(String bytes);

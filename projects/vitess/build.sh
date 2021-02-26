@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/vitessio/vitess/go/vt/sqlparser Fuzz fuzz
+compile_go_fuzzer ./go/vt/sqlparser Fuzz fuzz
