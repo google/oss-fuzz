@@ -20,5 +20,5 @@ def get_filestore(config):
   Raises an exception if there is no correct filestore for the platform."""
   # TODO(metzman): Force specificying of filestore.
   if config.platform == config.Platform.EXTERNAL_GITHUB:
-    return filestore.github_actions.GithubActionsFilestore()
+    return filestore.github_actions.GithubActionsFilestore(config)
   raise Exception('Filestore doesn\'t support platform.')

@@ -20,7 +20,9 @@ import json
 
 
 def _get_project_repo_name():
-  return os.path.basename(os.getenv('GITHUB_REPOSITORY', ''))
+  # Includes owner and repo name.
+  github_repository = os.getenv('GITHUB_REPOSITORY', '')
+  return os.path.dirname(github_repository), os.path.basename(github_repository)
 
 
 def _get_pr_ref(event):
@@ -154,7 +156,8 @@ class BuildFuzzersConfig(BaseConfig):
     # TODO(metzman): Some of this config is very CI-specific. Move it into the
     # CI class.
     super().__init__()
-    self.project_repo_name = _get_project_repo_name()
+    self.project_repo_owner, self.project_repo_name = (
+        _get_project_repo_name_and_owner())
     self.commit_sha = os.getenv('GITHUB_SHA')
     event = os.getenv('GITHUB_EVENT_NAME')
 

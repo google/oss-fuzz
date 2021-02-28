@@ -82,7 +82,7 @@ def get_content_range(start, end, total):
   return 'bytes {start}-{end}/{total}'.format(start=start, end=end, total=total)
 
 
-def _get_http_request_headers():
+def get_http_request_headers():
   auth_token = config_variables.get_runtime_token()
   authorization = 'Bearer {auth_token}'.format(auth_token=auth_token)
   return {'Authorization': authorization}

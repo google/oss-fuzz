@@ -18,8 +18,8 @@
 class BaseFilestore:
   """Base class for a filestore."""
 
-  def __init__(self):
-    pass
+  def __init__(self, config):
+    self.config = config
 
   def upload_corpus(self, name, directory):
     """Uploads the corpus located at |directory| to |name|."""

@@ -14,6 +14,8 @@
 """Implementation of a filestore using Github actions artifacts."""
 import os
 
+import requests
+
 import filestore
 from github_actions_toolkit.artifact import artifact_client
 
@@ -22,6 +24,10 @@ DIRECTORY = os.path.dirname(__file__)
 
 class GithubActionsFilestore(filestore.BaseFilestore):
   """Implementation of BaseFilestore using Github actions artifacts."""
+  def __init__(self, config):
+    super().__init(config)
+    self.github_repos
+
 
   def upload_corpus(self, name, directory):  # pylint: disable=no-self-use
     """Uploads the corpus located at |directory| to |name|."""
@@ -37,7 +43,12 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
     return artifact_client.upload_artifact(name, file_paths, directory)
 
+
+  def _list_artifacts(self):
+
+
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
-    # TODO(metzman): Implement this.
-    pass
+    options = {'createArtifactFolder': False}
+    download_response = artifact_client.download_artifact(
+        name, dst_directory, options)
