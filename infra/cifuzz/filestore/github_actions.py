@@ -25,7 +25,6 @@ sys.path.append(p)
 import http_utils
 import filestore
 from github_actions_toolkit.artifact import artifact_client
-from github_actions_toolkit.artifact import utils as artifact_utils
 
 ARTIFACTS_LIST_API_URL_UNFORMATTED = (
     'https://api.github.com/repos/{repo_owner}/{repo_name}/actions/artifacts')
@@ -51,7 +50,6 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     super().__init__(config)
     authorization = 'Bearer: {token}'.format(token=self.config.github_token)
     self.http_headers = {'Authorization': authorization}
-
 
   def upload_corpus(self, name, directory):  # pylint: disable=no-self-use
     """Uploads the corpus located at |directory| to |name|."""
