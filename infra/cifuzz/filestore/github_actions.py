@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Implementation of a filestore using Github actions artifacts."""
+import json
 import os
 import logging
 import sys
@@ -24,6 +25,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import http_utils
 import filestore
 from github_actions_toolkit.artifact import artifact_client
+from github_actions_toolkit.artifact import utils as artifact_utils
 
 ARTIFACTS_LIST_API_URL_UNFORMATTED = (
     'https://api.github.com/repos/{repo_owner}/{repo_name}/actions/artifacts')
@@ -80,8 +82,17 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     logging.debug('listed artifacts: %s', artifacts)
     corpus_artifact = _find_corpus_artifact(name, artifacts)
     logging.debug('corpus artifact: %s', corpus_artifact)
+
+    # !!!
+    run_id = 608709580
+    worklow_artifacts = list_workflow_artifacts(run_id)
+    logging.info()
     url = corpus_artifact['archive_download_url']
     logging.debug('corpus artifact url: %s', url)
     return http_utils.download_and_unpack_zip(url,
                                               dst_directory,
                                               headers=self.http_headers)
+
+def list_workflow_artifacts(run_id):
+  url = get_artifact_url(work_flow_run_id=run_id)
+  return json.loads(requests.get(url).content)

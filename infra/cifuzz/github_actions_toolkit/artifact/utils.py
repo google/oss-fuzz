@@ -130,10 +130,11 @@ def get_api_version():
   return '6.0-preview'
 
 
-def get_artifact_url():
+def get_artifact_url(work_flow_run_id=None):
   """utils.js"""
+  if work_flow_run_id is None:
+    work_flow_run_id = config_variables.get_work_flow_run_id()
   runtime_url = config_variables.get_runtime_url()
-  work_flow_run_id = config_variables.get_work_flow_run_id()
   api_version = get_api_version()
   return (('{runtime_url}_apis/pipelines/workflows/{work_flow_run_id}/artifacts'
            '?api-version={api_version}').format(
