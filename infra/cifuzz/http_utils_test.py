@@ -15,7 +15,6 @@
 
 import unittest
 from unittest import mock
-import urllib.error
 
 from pyfakefs import fake_filesystem_unittest
 
@@ -43,18 +42,19 @@ class DownloadUrlTest(unittest.TestCase):
   def test_download_url_http_error(self, mocked_get, mocked_error, _):
     """Tests that download_url doesn't retry when there is an HTTP error."""
     self.assertFalse(http_utils.download_url(self.URL, self.FILE_PATH))
-    mocked_error.assert_called_with('Unable to download from: %s. Code: %d.', self.URL, 404)
+    mocked_error.assert_called_with('Unable to download from: %s. Code: %d.',
+                                    self.URL, 404)
     self.assertEqual(1, mocked_get.call_count)
 
   @mock.patch('time.sleep')
   @mock.patch('logging.error')
   @mock.patch('requests.get', side_effect=ConnectionResetError)
-  def test_download_url_connection_error(self, mocked_get, mocked_error,
-                                         mocked_sleep):
+  def test_download_url_connection_error(self, mocked_get, mocked_sleep):
     """Tests that download_url doesn't retry when there is an HTTP error."""
     self.assertFalse(http_utils.download_url(self.URL, self.FILE_PATH))
     self.assertEqual(3, mocked_get.call_count)
     self.assertEqual(2, mocked_sleep.call_count)
+
 
 class DownloadAndUnpackZipTest(fake_filesystem_unittest.TestCase):
   """Tests download_and_unpack_zip."""

@@ -181,6 +181,11 @@ def build_fuzzers(config):
 
   # Get the builder and then build the fuzzers.
   ci_system = continuous_integration.get_ci(config)
+  # !!!
+  import clusterfuzz_deployment
+  cfl = clusterfuzz_deployment.ClusterFuzzLite(config)
+  print('download', cfl.download_corpus('do_stuff_fuzzer', '/tmp/corpus'))
+
   logging.info('ci_system: %s.', ci_system)
   builder = Builder(config, ci_system)
   return builder.build()

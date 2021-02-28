@@ -62,8 +62,7 @@ def wrap(retries,
         sleep(get_delay(num_try, delay, backoff))
         return True
 
-      logging.error('Retrying on %s failed with %s. Raise.',
-                    function_with_type,
+      logging.error('Retrying on %s failed with %s. Raise.', function_with_type,
                     sys.exc_info()[1])
       return False
 

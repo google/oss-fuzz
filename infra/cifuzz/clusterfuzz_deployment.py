@@ -15,11 +15,8 @@
 import logging
 import os
 import sys
-import tempfile
-import time
 import urllib.error
 import urllib.request
-import zipfile
 
 import filestore_utils
 import http_utils

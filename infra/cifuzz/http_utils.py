@@ -24,7 +24,6 @@ import requests
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import retry
 
-
 _DOWNLOAD_URL_RETRIES = 2
 _DOWNLOAD_URL_BACKOFF = 1
 
@@ -68,12 +67,12 @@ def download_url(*args, **kwargs):
   exceptions."""
   try:
     return _download_url(*args, **kwargs)
-  except Exception:  # pylint: disable=broad-exception
+  except Exception:  # pylint: disable=broad-except
     return False
 
 
 @retry.wrap(_DOWNLOAD_URL_RETRIES, _DOWNLOAD_URL_BACKOFF)
-def _download_url(url, filename, num_attempts=3, headers=None):
+def _download_url(url, filename, headers=None):
   """Downloads the file located at |url|, using HTTP to |filename|.
 
   Args:
@@ -91,8 +90,7 @@ def _download_url(url, filename, num_attempts=3, headers=None):
   request = requests.get(url, headers=headers)
 
   if request.status_code != 200:
-    logging.error('Unable to download from: %s. Code: %d.',
-                  url,
+    logging.error('Unable to download from: %s. Code: %d.', url,
                   request.status_code)
     return False
 

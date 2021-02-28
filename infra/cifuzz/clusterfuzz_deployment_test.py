@@ -16,7 +16,6 @@
 import os
 import unittest
 from unittest import mock
-import urllib.error
 
 from pyfakefs import fake_filesystem_unittest
 
