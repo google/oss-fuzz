@@ -13,6 +13,7 @@
 # limitations under the License.
 """Implementation of a filestore using Github actions artifacts."""
 import os
+import logging
 import sys
 
 import requests
