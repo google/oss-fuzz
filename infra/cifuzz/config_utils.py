@@ -103,6 +103,8 @@ class BaseConfig:
     self.is_github = bool(event_path)
     logging.debug('Is github: %s.', self.is_github)
 
+    self.github_token = os.environ.get('GITHUB_TOKEN')
+
   @property
   def is_internal(self):
     """Returns True if this is an OSS-Fuzz project."""
@@ -176,5 +178,3 @@ class BuildFuzzersConfig(BaseConfig):
     # var is set to '0'?
     self.keep_unaffected_fuzz_targets = bool(
         os.getenv('KEEP_UNAFFECTED_FUZZERS'))
-
-    self.github_token = os.environ.get('GITHUB_TOKEN')
