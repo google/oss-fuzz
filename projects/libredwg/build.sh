@@ -17,7 +17,8 @@
 
 cd libredwg
 sh ./autogen.sh
-./configure --disable-shared --disable-bindings
+# enable-release to skip unstable preR13. bindings are not fuzzed.
+./configure --disable-shared --disable-bindings --enable-release
 make
 
 $CC $CFLAGS $LIB_FUZZING_ENGINE examples/llvmfuzz.c -o $OUT/llvmfuzz \
