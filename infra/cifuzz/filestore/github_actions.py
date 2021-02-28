@@ -49,7 +49,9 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def __init__(self, config):
     super().__init__(config)
-    self.http_headers = artifact_utils.get_http_request_headers()
+    authorization = 'Bearer: {token}'.format(token=self.config.github_token)
+    self.http_headers = {'Authorization': authorization}
+
 
   def upload_corpus(self, name, directory):  # pylint: disable=no-self-use
     """Uploads the corpus located at |directory| to |name|."""

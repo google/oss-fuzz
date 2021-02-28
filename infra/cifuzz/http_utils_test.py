@@ -47,7 +47,6 @@ class DownloadUrlTest(unittest.TestCase):
     self.assertEqual(1, mocked_get.call_count)
 
   @mock.patch('time.sleep')
-  @mock.patch('logging.error')
   @mock.patch('requests.get', side_effect=ConnectionResetError)
   def test_download_url_connection_error(self, mocked_get, mocked_sleep):
     """Tests that download_url doesn't retry when there is an HTTP error."""
