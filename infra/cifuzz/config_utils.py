@@ -127,7 +127,6 @@ class RunFuzzersConfig(BaseConfig):
     super().__init__()
     self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
     self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE', 'ci').lower()
-    self.github_token = os.environ.get('GITHUB_TOKEN')
     if self.run_fuzzers_mode not in self.RUN_FUZZERS_MODES:
       raise Exception(
           ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
@@ -177,3 +176,5 @@ class BuildFuzzersConfig(BaseConfig):
     # var is set to '0'?
     self.keep_unaffected_fuzz_targets = bool(
         os.getenv('KEEP_UNAFFECTED_FUZZERS'))
+
+    self.github_token = os.environ.get('GITHUB_TOKEN')
