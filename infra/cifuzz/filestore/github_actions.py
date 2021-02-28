@@ -86,7 +86,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     # !!!
     run_id = 608709580
     work_flow_artifacts = list_work_flow_artifacts(run_id)
-    logging.info('worflow_artifacts %s', work_flow_artifacts)
+    logging.info('work_flow_artifacts %s', work_flow_artifacts)
     url = corpus_artifact['archive_download_url']
     logging.debug('corpus artifact url: %s', url)
     return http_utils.download_and_unpack_zip(url,
@@ -94,5 +94,6 @@ class GithubActionsFilestore(filestore.BaseFilestore):
                                               headers=self.http_headers)
 
 def list_work_flow_artifacts(run_id):
+  headers = artifact_utils.get_http_request_headers()
   url = artifact_utils.get_artifact_url(work_flow_run_id=run_id)
-  return json.loads(requests.get(url).content)
+  return json.loads(requests.get(url, headers=headers).content)
