@@ -79,7 +79,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     os.makedirs(corpus_dir, exist_ok=True)
     corpus_name = self._get_corpus_name(target_name)
     try:
-      self.filestore.download_corpus(corpus_name, corpus_dir)
+      return self.filestore.download_corpus(corpus_name, corpus_dir)
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to download corpus for target: %s. Error: %s.',
                     target_name, error)
