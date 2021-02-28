@@ -21,7 +21,6 @@ import requests
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import retry
 import http_utils
 import filestore
 from github_actions_toolkit.artifact import artifact_client
@@ -65,7 +64,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
     return artifact_client.upload_artifact(name, file_paths, directory)
 
-  @retry.wrap(3, 1)
+  # !!!
+  # @retry.wrap(3, 1)
   def _list_artifacts(self):
     url = _get_artifacts_list_api_url(self.config.project_repo_owner,
                                       self.config.project_repo_name)
