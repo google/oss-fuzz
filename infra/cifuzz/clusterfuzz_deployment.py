@@ -73,6 +73,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def download_corpus(self, target_name, parent_dir):
     corpus_dir = self.get_corpus_dir(target_name, parent_dir)
+    logging.debug('ClusterFuzzLite: downloading corpus for %s to %s.',
+                  target_name, parent_dir)
     os.makedirs(corpus_dir, exist_ok=True)
     corpus_name = self._get_corpus_name(target_name)
     try:
@@ -81,7 +83,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       print('!!! error', err)
       logging.error('Failed to download corpus for target: %s. Error: %s.',
                     target_name, str(err))
-    return corpus_name
+    return corpus_dir
 
   def _get_corpus_name(self, target_name):  # pylint: disable=no-self-use
     """Returns the name of the corpus artifact."""
