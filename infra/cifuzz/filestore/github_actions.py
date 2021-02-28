@@ -68,7 +68,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def _list_artifacts(self):
     url = _get_artifacts_list_api_url(self.config.project_repo_owner,
                                       self.config.project_repo_name)
-    request = requests.get(url, headers=self.http_headers)
+    request = requests.get(url)
     request_json = request.json()
     return request_json['artifacts']
 
