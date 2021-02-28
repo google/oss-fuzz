@@ -14,11 +14,19 @@
 """Utility module for HTTP."""
 import logging
 import os
+import sys
 import tempfile
-import time
-import urllib.error
-import urllib.request
 import zipfile
+
+import requests
+
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import retry
+
+
+_DOWNLOAD_URL_RETRIES = 2
+_DOWNLOAD_URL_BACKOFF = 1
 
 
 def download_and_unpack_zip(url, extract_directory, headers=None):
@@ -55,41 +63,40 @@ def download_and_unpack_zip(url, extract_directory, headers=None):
   return True
 
 
-def download_url(url, filename, num_attempts=3, headers=None):
+def download_url(*args, **kwargs):
+  """Wrapper around _download_url that returns False if _download_url
+  exceptions."""
+  try:
+    return _download_url(*args, **kwargs)
+  except Exception:  # pylint: disable=broad-exception
+    return False
+
+
+@retry.wrap(_DOWNLOAD_URL_RETRIES, _DOWNLOAD_URL_BACKOFF)
+def _download_url(url, filename, num_attempts=3, headers=None):
   """Downloads the file located at |url|, using HTTP to |filename|.
 
   Args:
     url: A url to a file to download.
     filename: The path the file should be downloaded to.
-    num_retries: The number of times to retry the download on
-       ConnectionResetError.
     headers: (Optional) HTTP headers to send with the download request.
 
   Returns:
     True on success.
   """
-  sleep_time = 1
+  logging.info('yo')
   if headers is None:
     headers = {}
 
-  # Don't use retry wrapper since we don't waont this to raise any exceptions.
-  for _ in range(num_attempts):
-    # TODO(jonathanmetzman): This is ugly. Switch this module to Python
-    # requests. I waited to do this because error handling won't be the same and
-    # rewriting tests isn't something I want to spend time on right now.
-    try:
-      urllib.request.urlretrieve(url, filename)
-      return True
-    except urllib.error.HTTPError:
-      # In these cases, retrying probably wont work since the error probably
-      # means there is nothing at the URL to download.
-      logging.error('Unable to download from: %s.', url)
-      return False
-    except ConnectionResetError:
-      # These errors are more likely to be transient. Retry.
-      pass
-    time.sleep(sleep_time)
+  request = requests.get(url, headers=headers)
 
-  logging.error('Failed to download %s, %d times.', url, num_attempts)
+  if request.status_code != 200:
+    logging.error('Unable to download from: %s. Code: %d.',
+                  url,
+                  request.status_code)
+    return False
 
-  return False
+  with open(filename, 'wb') as file_handle:
+    file_handle.write(request.content)
+
+  return True

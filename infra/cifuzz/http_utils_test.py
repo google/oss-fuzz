@@ -21,14 +21,16 @@ from pyfakefs import fake_filesystem_unittest
 
 import http_utils
 
+mocked_get_response = mock.MagicMock(status_code=200, content=b'')
+
 
 class DownloadUrlTest(unittest.TestCase):
   """Tests that download_url works."""
-  URL = 'example.com/file'
+  URL = 'https://example.com/file'
   FILE_PATH = '/tmp/file'
 
   @mock.patch('time.sleep')
-  @mock.patch('urllib.request.urlretrieve', return_value=True)
+  @mock.patch('requests.get', return_value=mocked_get_response)
   def test_download_url_no_error(self, mocked_urlretrieve, _):
     """Tests that download_url works when there is no error."""
     self.assertTrue(http_utils.download_url(self.URL, self.FILE_PATH))
@@ -36,26 +38,23 @@ class DownloadUrlTest(unittest.TestCase):
 
   @mock.patch('time.sleep')
   @mock.patch('logging.error')
-  @mock.patch('urllib.request.urlretrieve',
-              side_effect=urllib.error.HTTPError(None, None, None, None, None))
-  def test_download_url_http_error(self, mocked_urlretrieve, mocked_error, _):
+  @mock.patch('requests.get',
+              return_value=mock.MagicMock(status_code=404, content=b''))
+  def test_download_url_http_error(self, mocked_get, mocked_error, _):
     """Tests that download_url doesn't retry when there is an HTTP error."""
     self.assertFalse(http_utils.download_url(self.URL, self.FILE_PATH))
-    mocked_error.assert_called_with('Unable to download from: %s.', self.URL)
-    self.assertEqual(1, mocked_urlretrieve.call_count)
+    mocked_error.assert_called_with('Unable to download from: %s. Code: %d.', self.URL, 404)
+    self.assertEqual(1, mocked_get.call_count)
 
   @mock.patch('time.sleep')
   @mock.patch('logging.error')
-  @mock.patch('urllib.request.urlretrieve', side_effect=ConnectionResetError)
-  def test_download_url_connection_error(self, mocked_urlretrieve, mocked_error,
+  @mock.patch('requests.get', side_effect=ConnectionResetError)
+  def test_download_url_connection_error(self, mocked_get, mocked_error,
                                          mocked_sleep):
     """Tests that download_url doesn't retry when there is an HTTP error."""
     self.assertFalse(http_utils.download_url(self.URL, self.FILE_PATH))
-    self.assertEqual(3, mocked_urlretrieve.call_count)
-    self.assertEqual(3, mocked_sleep.call_count)
-    mocked_error.assert_called_with('Failed to download %s, %d times.',
-                                    self.URL, 3)
-
+    self.assertEqual(3, mocked_get.call_count)
+    self.assertEqual(2, mocked_sleep.call_count)
 
 class DownloadAndUnpackZipTest(fake_filesystem_unittest.TestCase):
   """Tests download_and_unpack_zip."""
@@ -63,7 +62,7 @@ class DownloadAndUnpackZipTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
 
-  @mock.patch('urllib.request.urlretrieve', return_value=True)
+  @mock.patch('requests.get', return_value=mocked_get_response)
   def test_bad_zip_download(self, _):
     """Tests download_and_unpack_zip returns none when a bad zip is passed."""
     self.fs.create_file('/url_tmp.zip', contents='Test file.')
