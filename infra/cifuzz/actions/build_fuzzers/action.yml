@@ -24,6 +24,9 @@ inputs:
   build-integration-path:
     description: "The path to the the project's build integration."
     required: false
+  github_token: # !!!
+    description: "Token for GitHub API."
+    required: false
 runs:
   using: 'docker'
   image: '../../../build_fuzzers.Dockerfile'
@@ -35,3 +38,4 @@ runs:
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
