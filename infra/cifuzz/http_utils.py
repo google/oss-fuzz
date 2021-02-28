@@ -24,7 +24,7 @@ import requests
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import retry
 
-_DOWNLOAD_URL_RETRIES = 2
+_DOWNLOAD_URL_ATTEMPTS = 3
 _DOWNLOAD_URL_BACKOFF = 1
 
 
@@ -71,7 +71,7 @@ def download_url(*args, **kwargs):
     return False
 
 
-@retry.wrap(_DOWNLOAD_URL_RETRIES, _DOWNLOAD_URL_BACKOFF)
+@retry.wrap(_DOWNLOAD_URL_ATTEMPTS, _DOWNLOAD_URL_BACKOFF)
 def _download_url(url, filename, headers=None):
   """Downloads the file located at |url|, using HTTP to |filename|.
 
@@ -90,8 +90,8 @@ def _download_url(url, filename, headers=None):
   request = requests.get(url, headers=headers)
 
   if request.status_code != 200:
-    logging.error('Unable to download from: %s. Code: %d.', url,
-                  request.status_code)
+    logging.error('Unable to download from: %s. Code: %d. Content: %s', url,
+                  request.status_code, request.content)
     return False
 
   with open(filename, 'wb') as file_handle:

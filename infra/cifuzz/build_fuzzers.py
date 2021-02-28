@@ -183,7 +183,7 @@ def build_fuzzers(config):
   ci_system = continuous_integration.get_ci(config)
   # !!!
   import clusterfuzz_deployment
-  logging.info('!!! Download')
+  logging.info('!!! Download. gh token set %s', bool(config.github_token))
   cfl = clusterfuzz_deployment.ClusterFuzzLite(config)
   print('download', cfl.download_corpus('do_stuff_fuzzer', '/tmp/corpus'))
 
