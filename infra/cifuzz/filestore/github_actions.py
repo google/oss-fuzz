@@ -74,9 +74,13 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
+    logging.debug('listing artifact')
     artifacts = self._list_artifacts()
+    logging.debug('listed artifacts: %s', artifacts)
     corpus_artifact = _find_corpus_artifact(name, artifacts)
+    logging.debug('corpus artifact: %s', corpus_artifact)
     url = corpus_artifact['archive_download_url']
+    logging.debug('corpus artifact url: %s', url)
     return http_utils.download_and_unpack_zip(url,
                                               dst_directory,
                                               headers=self.http_headers)
