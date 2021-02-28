@@ -59,6 +59,3 @@ def upload_artifact(name, files, root_directory, options=None):
   upload_response['size'] = upload_result['uploadSize']
   upload_response['failedItems'] = upload_result['failedItems']
   return upload_response
-
-
-def download_artifact(artifact_name, path, options):

@@ -19,7 +19,7 @@ import os
 import json
 
 
-def _get_project_repo_name():
+def _get_project_repo_owner_and_name():
   # Includes owner and repo name.
   github_repository = os.getenv('GITHUB_REPOSITORY', '')
   return os.path.dirname(github_repository), os.path.basename(github_repository)
@@ -92,6 +92,8 @@ class BaseConfig:
   def __init__(self):
     self.workspace = os.getenv('GITHUB_WORKSPACE')
     self.project_name = _get_project_name()
+    self.project_repo_owner, self.project_repo_name = (
+        _get_project_repo_owner_and_name())
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
     self.sanitizer = _get_sanitizer()
@@ -156,8 +158,6 @@ class BuildFuzzersConfig(BaseConfig):
     # TODO(metzman): Some of this config is very CI-specific. Move it into the
     # CI class.
     super().__init__()
-    self.project_repo_owner, self.project_repo_name = (
-        _get_project_repo_name_and_owner())
     self.commit_sha = os.getenv('GITHUB_SHA')
     event = os.getenv('GITHUB_EVENT_NAME')
 

@@ -83,6 +83,8 @@ def get_content_range(start, end, total):
 
 
 def get_http_request_headers():
+  """Returns commonly needed headers for HTTP requests to Github actions
+  APIs."""
   auth_token = config_variables.get_runtime_token()
   authorization = 'Bearer {auth_token}'.format(auth_token=auth_token)
   return {'Authorization': authorization}
@@ -96,7 +98,7 @@ def get_upload_headers(  # pylint: disable=too-many-arguments
     content_length=None,
     content_range=None):
   """utils.js"""
-  request_options = _get_http_request_headers()
+  request_options = get_http_request_headers()
   api_version = get_api_version()
   request_options['Accept'] = (
       'application/json;api-version={api_version}'.format(
