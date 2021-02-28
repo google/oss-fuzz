@@ -113,7 +113,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
       check_build_parser,
       choices=['libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none'])
   _add_sanitizer_args(check_build_parser,
-                      choices=['address', 'memory', 'undefined', 'dataflow'])
+                      choices=['address', 'memory', 'undefined', 'dataflow', 'thread'])
   _add_environment_args(check_build_parser)
   check_build_parser.add_argument('project_name', help='name of the project')
   check_build_parser.add_argument('fuzzer_name',
@@ -335,7 +335,7 @@ def _add_engine_args(parser,
 
 def _add_sanitizer_args(parser,
                         choices=('address', 'memory', 'undefined', 'coverage',
-                                 'dataflow')):
+                                 'dataflow', 'thread')):
   """Add common sanitizer args."""
   parser.add_argument(
       '--sanitizer',
