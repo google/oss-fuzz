@@ -94,7 +94,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
                                               headers=self.http_headers)
 
 def list_work_flow_artifacts(run_id):
-  logging.debug('Workflow proper %s', json.loads(requests.get(artifact_utils.get_artifact_url(), headers=headers).content))
+  logging.debug('Workflow proper %s', json.loads(requests.get(artifact_utils.get_artifact_url()).content))
   headers = artifact_utils.get_http_request_headers()
   url = artifact_utils.get_artifact_url(work_flow_run_id=run_id)
   return json.loads(requests.get(url, headers=headers).content)
