@@ -47,4 +47,4 @@ runs:
     # for running because we use it to distinguish OSS-Fuzz from non-OSS-Fuzz.
     # We should do something explicit instead.
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}

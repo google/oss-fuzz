@@ -38,4 +38,4 @@ runs:
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
