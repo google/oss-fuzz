@@ -186,6 +186,7 @@ def build_fuzzers(config):
   logging.info('!!! Download. gh token set %s', bool(config.github_token))
   cfl = clusterfuzz_deployment.ClusterFuzzLite(config)
   print('download', cfl.download_corpus('do_stuff_fuzzer', '/tmp/corpus'))
+  1/0
 
   logging.info('ci_system: %s.', ci_system)
   builder = Builder(config, ci_system)
