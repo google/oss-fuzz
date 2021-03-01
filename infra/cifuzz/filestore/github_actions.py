@@ -80,6 +80,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
     logging.debug('listing artifact')
+    logging.debug('self.config.github_token', self.config.github_token)
     artifacts = self._list_artifacts()
     logging.debug('listed artifacts: %s', artifacts)
     corpus_artifact = _find_corpus_artifact(name, artifacts)
