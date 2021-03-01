@@ -196,7 +196,11 @@ def build_fuzzers(config):
   target_name = 'mytarget-' + os.environ.get('GITHUB_RUN_ID')
   cfl.upload_corpus(target_name, fakecorpus)
 
-  print('download', cfl.download_corpus('do_stuff_fuzzer', '/tmp/corpus'))
+  dst_dir = '/tmp/corpus'
+  os.mkdir(dst_dir)
+  print('pre download', os.listdir(dst_dir))
+  print('download', cfl.download_corpus('do_stuff_fuzzer', dst_dir))
+  print('download result', os.listdir(dst_dir))
   1/0
   logging.info('ci_system: %s.', ci_system)
   builder = Builder(config, ci_system)
