@@ -37,7 +37,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         'Accept': 'application/vnd.github.v3+json'
     }
 
-  def upload_build(self, build_name, build_dir):
+  def upload_build(self, build_name, build_dir):  # pylint: disable=no-self-use
     build_dir = os.path.abspath(build_dir)
 
     # !!! Merge with upload_corpus. and zip.
