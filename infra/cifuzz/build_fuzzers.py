@@ -194,7 +194,7 @@ def build_fuzzers(config):
     with open(path, 'w') as file_handle:
       file_handle.write('A' * x)
   target_name = 'mytarget-' + os.environ.get('GITHUB_RUN_ID')
-  cfl.upload(target_name, fakecorpus)
+  cfl.upload_corpus(target_name, fakecorpus)
 
   print('download', cfl.download_corpus('do_stuff_fuzzer', '/tmp/corpus'))
   1/0
