@@ -49,7 +49,7 @@ def download_and_unpack_zip(url, extract_directory, headers=None):
   # Gives the temporary zip file a unique identifier in the case that
   # that download_and_unpack_zip is done in parallel.
   with tempfile.NamedTemporaryFile(suffix='.zip') as tmp_file:
-    if not download_url(url, tmp_file.name):
+    if not download_url(url, tmp_file.name, headers=headers):
       return False
 
     try:
