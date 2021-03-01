@@ -84,6 +84,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     corpus_artifact = _find_corpus_artifact(name, artifacts)
     logging.debug('corpus artifact: %s', corpus_artifact)
 
+    print('GITHUB_TOKEN', os.getenv('GITHUB_TOKEN'))
     # !!!
     run_id = 608709580
     work_flow_artifacts = list_work_flow_artifacts(run_id)
