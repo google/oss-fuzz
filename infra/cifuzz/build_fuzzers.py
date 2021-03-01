@@ -193,7 +193,7 @@ def build_fuzzers(config):
     path = os.path.join(fakebuild, str(x))
     with open(path, 'w') as file_handle:
       file_handle.write('A' * x)
-  cfl.upload_latest_build(target_name, fakebuild)
+  cfl.upload_latest_build(fakebuild)
 
   dst_dir = '/tmp/latest-build'
   os.mkdir(dst_dir)
