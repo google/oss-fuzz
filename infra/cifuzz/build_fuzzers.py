@@ -189,7 +189,7 @@ def build_fuzzers(config):
     path = os.path.join(fakecorpus, str(x))
     with open(path, 'w') as file_handle:
       file_handle.write('A' * x)
-  target_name = 'mytarget-' + os.environ('GITHUB_RUN_ID')
+  target_name = 'mytarget-' + os.environ.get('GITHUB_RUN_ID')
   cfl.upload(target_name, fakecorpus)
 
   logging.info('!!! Download. gh token set %s', bool(config.github_token))
