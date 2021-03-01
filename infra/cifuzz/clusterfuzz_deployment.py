@@ -181,9 +181,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
             self.config.project_name), project_qualified_fuzz_target_name,
         self.CORPUS_ZIP_NAME)
 
-    if http_utils.download_and_unpack_zip(corpus_url, corpus_dir):
-      return corpus_dir
-    return None
+    http_utils.download_and_unpack_zip(corpus_url, corpus_dir)
+    return corpus_dir
 
 
 def get_clusterfuzz_deployment(config):
