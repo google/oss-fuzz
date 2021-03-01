@@ -83,7 +83,6 @@ def _download_url(url, filename, headers=None):
   Returns:
     True on success.
   """
-  logging.info('yo')
   if headers is None:
     headers = {}
 

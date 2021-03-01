@@ -60,17 +60,9 @@ class GithubActionsFilestore(filestore.BaseFilestore):
       logging.error('Failed to get artifacts.')
       return dst_directory
     corpus_artifact = github_api.find_corpus_artifact(name, artifacts)
-    logging.debug('corpus artifact: %s', corpus_artifact)
+    logging.debug('Corpus artifact: %s.', corpus_artifact)
     url = corpus_artifact['archive_download_url']
-    logging.debug('corpus artifact url: %s', url)
-    # import time
-    # import base64
-    # t = self.config.github_token.replace('a', '-').encode()
-    # for _ in range(60 * 60):
-    #   logging.debug('self.config.github_token %s',
-    #                 base64.b64encode(t))
-    #   time.sleep(1)
-
+    logging.debug('Corpus artifact url: %s.', url)
     return http_utils.download_and_unpack_zip(url,
                                               dst_directory,
                                               headers=self.http_headers)
