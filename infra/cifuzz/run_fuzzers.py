@@ -206,12 +206,11 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     # TODO(metzman): Don't pollute self.out_dir like this.
 
     # !!! One source of truth for these.
-    for directory in [
+    for dir_name in [
         self.clusterfuzz_deployment.CORPUS_DIR_NAME,
         self.clusterfuzz_deployment.BUILD_DIR_NAME
     ]:
-      path = os.path.join(self.out_dir,
-                          self.clusterfuzz_deployment.BUILD_DIR_NAME)
+      path = os.path.join(self.out_dir, dir_name)
       if os.path.exists(path):
         shutil.rmtree(path)
 

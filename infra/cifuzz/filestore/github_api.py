@@ -75,11 +75,11 @@ def _get_items(url, headers):
     page_counter += 1
 
 
-def find_corpus_artifact(corpus_name, artifacts):
-  """Find the artifact with the name |corpus_name| in |artifacts."""
+def find_artifact(artifact_name, artifacts):
+  """Find the artifact with the name |artifact_name| in |artifacts|."""
   for artifact in artifacts:
     # TODO(metzman): Handle multiple by making sure we download the latest.
-    if artifact['name'] == corpus_name and not artifact['expired']:
+    if artifact['name'] == artifact_name and not artifact['expired']:
       return artifact
   return None
 

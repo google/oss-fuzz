@@ -189,7 +189,7 @@ def build_fuzzers(config):
   # !!! !!!
   fakebuild = '/tmp/fakebuild'
   os.mkdir(fakebuild)
-  for x in range(10):
+  for x in range(10, 20):
     path = os.path.join(fakebuild, str(x))
     with open(path, 'w') as file_handle:
       file_handle.write('A' * x)
@@ -198,9 +198,9 @@ def build_fuzzers(config):
   dst_dir = '/tmp/latest-build'
   os.mkdir(dst_dir)
   print('pre download ', os.listdir(dst_dir))
-  corpus_dir = cfl.download_corpus('do_stuff_fuzzer_2', dst_dir)
-  print('download', corpus_dir)
-  print('download result', os.listdir(corpus_dir))
+  build_dir = os.path.join(cfl.download_latest(dst_dir), 'clusterfuzz-builds')
+  print('download', build_dir)
+  print('download result', os.listdir(build_dir))
   1 / 0
   logging.info('ci_system: %s.', ci_system)
   builder = Builder(config, ci_system)

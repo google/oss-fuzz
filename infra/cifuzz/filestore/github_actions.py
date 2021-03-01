@@ -72,16 +72,29 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
     logging.debug('listing artifact')
-    artifacts = github_api.list_artifacts(self.config.project_repo_owner,
-                                          self.config.project_repo_name,
-                                          self.http_headers)
+    artifacts = self._list_artifacts()
     if not artifacts:
       logging.error('Failed to get artifacts.')
       return dst_directory
-    corpus_artifact = github_api.find_corpus_artifact(name, artifacts)
+    corpus_artifact = github_api.find_artifact(name, artifacts)
     logging.debug('Corpus artifact: %s.', corpus_artifact)
     url = corpus_artifact['archive_download_url']
     logging.debug('Corpus artifact url: %s.', url)
     return http_utils.download_and_unpack_zip(url,
                                               dst_directory,
+                                              headers=self.http_headers)
+
+  def _list_artifacts(self):
+    return github_api.list_artifacts(self.config.project_repo_owner,
+                                          self.config.project_repo_name,
+                                          self.http_headers)
+
+  def download_latest_build(self, build_dir):
+    build_artifact_name = self._get_build_name()
+    artifacts = self._list_artifacts()
+    build_artifact = github_api.find_artifact(build_artifact_name, artifacts)
+    url = build_artifact['archive_download_url']
+    logging.debug('Build artifact url: %s.', url)
+    return http_utils.download_and_unpack_zip(url,
+                                              build_dir,
                                               headers=self.http_headers)
