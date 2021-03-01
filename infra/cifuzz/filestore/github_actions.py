@@ -93,7 +93,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     logging.debug('corpus artifact url: %s', url)
     import time
     import base64
-    while _ in range(15 * 60):
+    for _ in range(15 * 60):
       logging.debug('self.config.github_token %s', base64.b64encode(self.config.github_token))
       time.sleep(1)
 
