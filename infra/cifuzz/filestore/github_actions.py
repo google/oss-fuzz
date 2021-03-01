@@ -49,7 +49,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def __init__(self, config):
     super().__init__(config)
-    authorization = 'token {token}'.format(token=self.config.github_token)
+    authorization = 'Bearer {token}'.format(token=self.config.github_token)
     self.http_headers = {'Authorization': authorization,
                          'Accept': 'application/vnd.github.v3+json'}
 
