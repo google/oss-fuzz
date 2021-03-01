@@ -86,9 +86,6 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     corpus_artifact = _find_corpus_artifact(name, artifacts)
     logging.debug('corpus artifact: %s', corpus_artifact)
     # !!!
-    run_id = 608709580
-    work_flow_artifacts = list_work_flow_artifacts(run_id)
-    logging.info('work_flow_artifacts %s', work_flow_artifacts)
     url = corpus_artifact['archive_download_url']
     logging.debug('corpus artifact url: %s', url)
     # import time
