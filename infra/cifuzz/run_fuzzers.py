@@ -214,7 +214,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
       if os.path.exists(path):
         shutil.rmtree(path)
 
-    self.clusterfuzz_deployment.upload_build(self.out_dir)
+    self.clusterfuzz_deployment.upload_latest_build(self.out_dir)
     return result
 
 
