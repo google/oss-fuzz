@@ -193,7 +193,7 @@ def build_fuzzers(config):
     path = os.path.join(fakecorpus, str(x))
     with open(path, 'w') as file_handle:
       file_handle.write('A' * x)
-  target_name = 'do_stuff_fuzzer_2-' + os.environ.get('GITHUB_RUN_ID')
+  target_name = 'do_stuff_fuzzer_2'
   cfl.upload_corpus(target_name, fakecorpus)
 
   dst_dir = '/tmp/corpus'
