@@ -78,7 +78,7 @@ def _get_items(url, headers):
 def find_corpus_artifact(corpus_name, artifacts):
   """Find the artifact with the name |corpus_name| in |artifacts."""
   for artifact in artifacts:
-    # !!! Deal with multiple.
+    # TODO(metzman): Handle multiple by making sure we download the latest.
     if artifact['name'] == corpus_name and not artifact['expired']:
       return artifact
   return None

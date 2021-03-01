@@ -97,7 +97,6 @@ class FuzzTarget:
       command += ['-v', '%s:%s' % (self.out_dir, '/out')]
 
     # If corpus can be downloaded use it for fuzzing.
-    # !!! Move corpus download to outside of fuzz_target.
     corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name, self.out_dir)
     command += ['-e', 'CORPUS_DIR=' + corpus_path]

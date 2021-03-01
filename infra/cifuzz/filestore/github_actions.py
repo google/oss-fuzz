@@ -46,7 +46,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
       for file_path in curr_file_paths:
         file_paths.append(os.path.join(root, file_path))
 
-    # !!! Zip it to make uploads faster (need to deal with double zip problem).
+    # TODO(metzman): Zip corpus before upload to make faster.
+    # Note that we will have to avoid double zipping.
 
     return artifact_client.upload_artifact(name, file_paths, directory)
 

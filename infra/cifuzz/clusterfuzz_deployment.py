@@ -93,7 +93,6 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     """Upload the corpus produced by |target_name| in |corpus_dir|."""
     logging.info('Uploading corpus for %s', target_name)
     name = self._get_corpus_name(target_name)
-    # !!! What to do about failures.
     try:
       self.filestore.upload_corpus(name, corpus_dir)
     except Exception as error:  # pylint: disable=broad-except

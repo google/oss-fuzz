@@ -32,7 +32,6 @@ def upload_file(parameters):
   """Based on uploadFileAsync. Note that this doesn't take
   index because we don't need it to do HTTP requests like the typescript code
   does."""
-  # !!!
   # Skip gzip as it is unneeded for now.
   total_file_size = os.path.getsize(parameters['file'].absolute_file_path)
   if not upload_chunk(parameters['resourceUrl'],
@@ -107,7 +106,6 @@ def patch_artifact_size(size, artifact_name):
     except ConnectionResetError:
       pass
 
-    logging.debug('!!! failed to patch.')
     time.sleep(utils.SLEEP_TIME)
 
 
@@ -171,7 +169,6 @@ def _do_upload_http_request(url, data, headers, method):
                                         data=data.encode(),
                                         headers=headers,
                                         method=method)
-  # !!! test error handling.
   logging.debug('Did request %s', post_request)
   return urllib.request.urlopen(post_request)
 
@@ -208,7 +205,6 @@ def upload_artifact_to_file_container(upload_url, files_to_upload, options):
       failed_items_to_report.append(file_to_upload)
       if not continue_on_error:
         logging.error('Stopping artifact upload due to error.')
-        # !!! What do I do here?
 
   logging.info('Total size of files uploaded is %s bytes.', upload_file_size)
   return {
