@@ -27,13 +27,14 @@ ARTIFACTS_LIST_API_URL_UNFORMATTED = (
 
 _MAX_ITEMS_PER_PAGE = 100
 
-
 _GET_ATTEMPTS = 3
 _GET_BACKOFF = 1
+
 
 def _get_artifacts_list_api_url(repo_owner, repo_name):
   return ARTIFACTS_LIST_API_URL_UNFORMATTED.format(repo_owner=repo_owner,
                                                    repo_name=repo_name)
+
 
 @retry.wrap(_GET_ATTEMPTS, _GET_BACKOFF)
 def _do_get_request(*args, **kwargs):

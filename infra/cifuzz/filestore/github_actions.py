@@ -22,7 +22,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import http_utils
 import filestore
 from github_actions_toolkit.artifact import artifact_client
-import github_api
+from filestore import github_api
 
 
 class GithubActionsFilestore(filestore.BaseFilestore):
@@ -31,8 +31,10 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def __init__(self, config):
     super().__init__(config)
     authorization = 'token {token}'.format(token=self.config.github_token)
-    self.http_headers = {'Authorization': authorization,
-                         'Accept': 'application/vnd.github.v3+json'}
+    self.http_headers = {
+        'Authorization': authorization,
+        'Accept': 'application/vnd.github.v3+json'
+    }
 
   def upload_corpus(self, name, directory):  # pylint: disable=no-self-use
     """Uploads the corpus located at |directory| to |name|."""
@@ -51,8 +53,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
     logging.debug('listing artifact')
-    artifacts = github_api.list_artifacts(
-        self.config.repo_owner, self.config.repo_name)
+    artifacts = github_api.list_artifacts(self.config.repo_owner,
+                                          self.config.repo_name)
     if not artifacts:
       logging.error('Failed to get artifacts.')
       return dst_directory

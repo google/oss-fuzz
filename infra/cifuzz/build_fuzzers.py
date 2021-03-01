@@ -202,7 +202,7 @@ def build_fuzzers(config):
   corpus_dir = cfl.download_corpus('do_stuff_fuzzer_2', dst_dir)
   print('download', corpus_dir)
   print('download result', os.listdir(corpus_dir))
-  1/0
+  1 / 0
   logging.info('ci_system: %s.', ci_system)
   builder = Builder(config, ci_system)
   return builder.build()
