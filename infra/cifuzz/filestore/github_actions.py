@@ -49,8 +49,9 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def __init__(self, config):
     super().__init__(config)
-    authorization = 'Bearer {token}'.format(token=self.config.github_token)
-    self.http_headers = {'Authorization': authorization}
+    authorization = 'token {token}'.format(token=self.config.github_token)
+    self.http_headers = {'Authorization': authorization,
+                         'Accept': 'application/vnd.github.v3+json'}
 
   def upload_corpus(self, name, directory):  # pylint: disable=no-self-use
     """Uploads the corpus located at |directory| to |name|."""
@@ -92,6 +93,10 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     return http_utils.download_and_unpack_zip(url,
                                               dst_directory,
                                               headers=self.http_headers)
+
+def list_workflow_run_artifacts(owner, repo, run_id):
+  url = 'https://api.github.com/repos/{owner}/{repo}/runs{run_id}/artifacts'.format(
+      owner=owner, repo=repo, run_id=run_id)
 
 def list_work_flow_artifacts(run_id):
   logging.debug('Workflow proper %s', json.loads(requests.get(artifact_utils.get_artifact_url()).content))
