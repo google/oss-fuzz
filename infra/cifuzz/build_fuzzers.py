@@ -181,6 +181,27 @@ def build_fuzzers(config):
 
   # Get the builder and then build the fuzzers.
   ci_system = continuous_integration.get_ci(config)
+  # !!!
+  import clusterfuzz_deployment
+  logging.info('!!! Download. gh token set %s', bool(config.github_token))
+  cfl = clusterfuzz_deployment.ClusterFuzzLite(config)
+
+  # !!! !!!
+  fakebuild = '/tmp/fakebuild'
+  os.mkdir(fakebuild)
+  for x in range(10):
+    path = os.path.join(fakebuild, str(x))
+    with open(path, 'w') as file_handle:
+      file_handle.write('A' * x)
+  cfl.upload_latest_build(target_name, fakebuild)
+
+  dst_dir = '/tmp/latest-build'
+  os.mkdir(dst_dir)
+  print('pre download ', os.listdir(dst_dir))
+  corpus_dir = cfl.download_corpus('do_stuff_fuzzer_2', dst_dir)
+  print('download', corpus_dir)
+  print('download result', os.listdir(corpus_dir))
+  1 / 0
   logging.info('ci_system: %s.', ci_system)
   builder = Builder(config, ci_system)
   return builder.build()

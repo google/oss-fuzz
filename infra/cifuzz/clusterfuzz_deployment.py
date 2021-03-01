@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module for interacting with the "ClusterFuzz deployment."""
+"""Module for interacting with the ClusterFuzz deployment."""
 import logging
 import os
 import sys
@@ -42,6 +42,14 @@ class BaseClusterFuzzDeployment:
     """
     raise NotImplementedError('Child class must implement method.')
 
+  def upload_latest_build(self, build_dir):
+    """Uploads the latest build to the filestore.
+
+    Returns:
+      True on success.
+    """
+    raise NotImplementedError('Child class must implement method.')
+
   def download_corpus(self, target_name, parent_dir):
     """Downloads the corpus for |target_name| from ClusterFuzz to a subdirectory
     of |parent_dir|.
@@ -69,7 +77,21 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     self.filestore = filestore_utils.get_filestore(self.config)
 
   def download_latest_build(self, parent_dir):
-    logging.info('download_latest_build not implemented for ClusterFuzzLite.')
+    build_dir = self.get_build_dir(parent_dir)
+    if os.path.exists(build_dir):
+      # This path is necessary because download_latest_build can be called
+      # multiple times.That is the case because it is called only when we need
+      # to see if a bug is novel, i.e. until we want to check a bug is novel we
+      # don't want to waste time calling this, but therefore this method can be
+      # called if multiple bugs are found.
+      return build_dir
+
+    os.makedirs(build_dir, exist_ok=True)
+
+    if self.filestore.download_latest_build(build_dir):
+      return build_dir
+
+    return None
 
   def download_corpus(self, target_name, parent_dir):
     corpus_dir = self.get_corpus_dir(target_name, parent_dir)
@@ -98,6 +120,9 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload corpus for target: %s. Error: %s.',
                     target_name, error)
+
+  def upload_latest_build(self, build_dir):
+    return self.filestore.upload_build(build_dir)
 
 
 class OSSFuzz(BaseClusterFuzzDeployment):
@@ -159,6 +184,10 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       return build_dir
 
     return None
+
+  def upload_latest_build(self, build_dir):
+    raise Exception('upload_latest_build not should not be called for '
+                    'OSSFuzz.')
 
   def download_corpus(self, target_name, parent_dir):
     """Downloads the latest OSS-Fuzz corpus for the target.

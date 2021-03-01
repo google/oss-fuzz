@@ -189,6 +189,35 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
                                               result.corpus_path)
     return result
 
+  def run_fuzz_targets(self):
+    result = super().run_fuzz_targets()
+    # 1. Test returns result.
+    # 2. Test that it uploads build.
+
+    # We want to upload the build to the filestore when we are doing batch
+    # fuzzing.
+    # There's a problem with this. We don't want to upload the build before
+    # fuzzing. Because in novelty-checking CIFuzz downloads an old build, and we
+    # don't want it to consider this build to be an old build. However, the out
+    # directory is mounted into the runnner container and is used to pass the
+    # runner corpora, old builds and for the runner to pass the host testcases.
+    # Thus, we will upload the build after fuzzing. But before we zip the out
+    # directory we will remove these extra things that are now in out.
+    # TODO(metzman): Don't pollute self.out_dir like this.
+
+    # !!! One source of truth for these.
+    for directory in [
+        self.clusterfuzz_deployment.CORPUS_DIR_NAME,
+        self.clusterfuzz_deployment.BUILD_DIR_NAME
+    ]:
+      path = os.path.join(self.out_dir,
+                          self.clusterfuzz_deployment.BUILD_DIR_NAME)
+      if os.path.exists(path):
+        shutil.rmtree(path)
+
+    self.clusterfuzz_deployment.upload_build(self.out_dir)
+    return result
+
 
 def get_fuzz_target_runner(config):
   """Returns a fuzz target runner object based on the run_fuzzers_mode of

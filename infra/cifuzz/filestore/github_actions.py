@@ -16,6 +16,7 @@ import os
 import logging
 import sys
 
+# !!! Wrong dir
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -27,6 +28,7 @@ from filestore import github_api
 
 class GithubActionsFilestore(filestore.BaseFilestore):
   """Implementation of BaseFilestore using Github actions artifacts."""
+  BASE_BUILD_NAME = 'cifuzz-build-'
 
   def __init__(self, config):
     super().__init__(config)
@@ -35,6 +37,22 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         'Authorization': authorization,
         'Accept': 'application/vnd.github.v3+json'
     }
+
+  def _get_build_name(self):
+    return self.BASE_BUILD_NAME + self.config.sanitizer
+
+  def upload_build(self, build_dir):
+    build_dir = os.path.abspath(build_dir)
+    build_name = self._get_build_name()
+
+    # !!! Merge with upload_corpus. and zip.
+    # Get file paths.
+    file_paths = []
+    for root, _, curr_file_paths in os.walk(build_dir):
+      for file_path in curr_file_paths:
+        file_paths.append(os.path.join(root, file_path))
+
+    return artifact_client.upload_artifact(build_name, file_paths, build_dir)
 
   def upload_corpus(self, name, directory):  # pylint: disable=no-self-use
     """Uploads the corpus located at |directory| to |name|."""
