@@ -51,7 +51,7 @@ def _get_items(url, headers):
   while item_num < total_num_items:
     params = {'per_page': _MAX_ITEMS_PER_PAGE, 'page': str(page_counter)}
     response = _do_get_request(url, params=params, headers=headers)
-    resp_json = response.json()
+    response_json = response.json()
 
     if not response.status_code == 200:
       # Check that request was successful.
@@ -60,14 +60,14 @@ def _get_items(url, headers):
 
     if total_num_items == float('inf'):
       # Set proper total_num_items
-      total_num_items = resp_json['total_count']
+      total_num_items = response_json['total_count']
 
     # Get the key for the items we are after.
-    keys = [key for key in resp_json.keys() if key != 'total_count']
+    keys = [key for key in response_json.keys() if key != 'total_count']
     assert len(keys) == 1, keys
     items_key = keys[0]
 
-    for item in resp_json[items_key]:
+    for item in response_json[items_key]:
       yield item
       item_num += 1
 
@@ -75,6 +75,7 @@ def _get_items(url, headers):
 
 
 def find_corpus_artifact(corpus_name, artifacts):
+  """Find the artifact with the name |corpus_name| in |artifacts."""
   for artifact in artifacts:
     # !!! Deal with multiple.
     if artifact['name'] == corpus_name and not artifact['expired']:
@@ -83,6 +84,7 @@ def find_corpus_artifact(corpus_name, artifacts):
 
 
 def list_artifacts(owner, repo, headers):
+  """Returns a generator of all the artifacts for |owner/repo|."""
   url = _get_artifacts_list_api_url(owner, repo)
   logging.debug('Getting artifacts from: %s', url)
   return _get_items(url, headers)
