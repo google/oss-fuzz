@@ -45,6 +45,9 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     file_paths = []
     for root, _, curr_file_paths in os.walk(build_dir):
       for file_path in curr_file_paths:
+        # !!!
+        if root == 'artifacts':
+          continue
         file_paths.append(os.path.join(root, file_path))
 
     return artifact_client.upload_artifact(build_name, file_paths, build_dir)
