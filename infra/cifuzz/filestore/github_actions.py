@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Implementation of a filestore using Github actions artifacts."""
-import json
 import os
 import logging
 import sys
-
-import requests
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,7 +22,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import http_utils
 import filestore
 from github_actions_toolkit.artifact import artifact_client
-from github_actions_toolkit.artifact import utils as artifact_utils
 import github_api
 
 
@@ -52,19 +48,14 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
     return artifact_client.upload_artifact(name, file_paths, directory)
 
-  # !!!
-  # @retry.wrap(3, 1)
-  def _list_artifacts(self):
-    logging.debug('Getting artifacts from: %s', url)
-    request = requests.get(url, headers=self.http_headers)
-    request_json = request.json()
-    return request_json['artifacts']
-
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
     logging.debug('listing artifact')
     artifacts = github_api.list_artifacts(
         self.config.repo_owner, self.config.repo_name)
+    if not artifacts:
+      logging.error('Failed to get artifacts.')
+      return dst_directory
     corpus_artifact = github_api.find_corpus_artifact(name, artifacts)
     logging.debug('corpus artifact: %s', corpus_artifact)
     url = corpus_artifact['archive_download_url']

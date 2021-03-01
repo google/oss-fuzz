@@ -18,6 +18,10 @@ import sys
 
 import requests
 
+# pylint: disable=wrong-import-position,import-error
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import retry
+
 ARTIFACTS_LIST_API_URL_UNFORMATTED = (
     'https://api.github.com/repos/{repo_owner}/{repo_name}/actions/artifacts')
 

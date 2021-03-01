@@ -95,6 +95,6 @@ def _download_url(url, filename, headers=None):
     return False
 
   with open(filename, 'wb') as file_handle:
-    file_handle.write(request.content)
+    file_handle.write(response.content)
 
   return True
