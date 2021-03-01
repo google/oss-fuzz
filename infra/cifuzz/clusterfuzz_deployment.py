@@ -128,7 +128,8 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
                     target_name, error)
 
   def upload_latest_build(self, build_dir):
-    return self.filestore.upload_build(build_dir)
+    build_name = self._get_build_name()
+    return self.filestore.upload_build(build_name, build_dir)
 
 
 class OSSFuzz(BaseClusterFuzzDeployment):
