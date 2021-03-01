@@ -87,11 +87,11 @@ def _download_url(url, filename, headers=None):
   if headers is None:
     headers = {}
 
-  request = requests.get(url, headers=headers)
+  response = requests.get(url, headers=headers)
 
-  if request.status_code != 200:
+  if response.status_code != 200:
     logging.error('Unable to download from: %s. Code: %d. Content: %s', url,
-                  request.status_code, request.content)
+                  response.status_code, response.content)
     return False
 
   with open(filename, 'wb') as file_handle:

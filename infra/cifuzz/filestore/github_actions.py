@@ -26,22 +26,7 @@ import http_utils
 import filestore
 from github_actions_toolkit.artifact import artifact_client
 from github_actions_toolkit.artifact import utils as artifact_utils
-
-ARTIFACTS_LIST_API_URL_UNFORMATTED = (
-    'https://api.github.com/repos/{repo_owner}/{repo_name}/actions/artifacts')
-
-
-def _get_artifacts_list_api_url(repo_owner, repo_name):
-  return ARTIFACTS_LIST_API_URL_UNFORMATTED.format(repo_owner=repo_owner,
-                                                   repo_name=repo_name)
-
-
-def _find_corpus_artifact(corpus_name, artifacts):
-  for artifact in artifacts:
-    # !!! Deal with multiple.
-    if artifact['name'] == corpus_name and not artifact['expired']:
-      return artifact
-  return None
+import github_api
 
 
 class GithubActionsFilestore(filestore.BaseFilestore):
@@ -70,18 +55,17 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   # !!!
   # @retry.wrap(3, 1)
   def _list_artifacts(self):
-    url = _get_artifacts_list_api_url(self.config.project_repo_owner,
-                                      self.config.project_repo_name)
+    logging.debug('Getting artifacts from: %s', url)
     request = requests.get(url, headers=self.http_headers)
     request_json = request.json()
-    logging.info('request: %s data: %s', request, request_json)
     return request_json['artifacts']
 
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
     logging.debug('listing artifact')
-    artifacts = self._list_artifacts()
-    corpus_artifact = _find_corpus_artifact(name, artifacts)
+    artifacts = github_api.list_artifacts(
+        self.config.repo_owner, self.config.repo_name)
+    corpus_artifact = github_api.find_corpus_artifact(name, artifacts)
     logging.debug('corpus artifact: %s', corpus_artifact)
     url = corpus_artifact['archive_download_url']
     logging.debug('corpus artifact url: %s', url)
