@@ -80,12 +80,9 @@ class GithubActionsFilestore(filestore.BaseFilestore):
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
     logging.debug('listing artifact')
-    logging.debug('self.config.github_token %s', self.config.github_token)
     artifacts = self._list_artifacts()
-    logging.debug('listed artifacts: %s', artifacts)
     corpus_artifact = _find_corpus_artifact(name, artifacts)
     logging.debug('corpus artifact: %s', corpus_artifact)
-    # !!!
     url = corpus_artifact['archive_download_url']
     logging.debug('corpus artifact url: %s', url)
     # import time
@@ -99,13 +96,3 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     return http_utils.download_and_unpack_zip(url,
                                               dst_directory,
                                               headers=self.http_headers)
-
-def list_workflow_run_artifacts(owner, repo, run_id):
-  url = 'https://api.github.com/repos/{owner}/{repo}/runs{run_id}/artifacts'.format(
-      owner=owner, repo=repo, run_id=run_id)
-
-def list_work_flow_artifacts(run_id):
-  logging.debug('Workflow proper %s', json.loads(requests.get(artifact_utils.get_artifact_url()).content))
-  headers = artifact_utils.get_http_request_headers()
-  url = artifact_utils.get_artifact_url(work_flow_run_id=run_id)
-  return json.loads(requests.get(url, headers=headers).content)
