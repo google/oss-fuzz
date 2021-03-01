@@ -73,8 +73,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     url = _get_artifacts_list_api_url(self.config.project_repo_owner,
                                       self.config.project_repo_name)
     request = requests.get(url, headers=self.http_headers)
-    logging.info('request: %s data: %s', request.data)
     request_json = request.json()
+    logging.info('request: %s data: %s', request, request_json)
     return request_json['artifacts']
 
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
