@@ -198,7 +198,7 @@ def build_fuzzers(config):
   dst_dir = '/tmp/latest-build'
   os.mkdir(dst_dir)
   print('pre download ', os.listdir(dst_dir))
-  build_dir = os.path.join(cfl.download_latest_build(dst_dir), 'clusterfuzz-builds')
+  build_dir = cfl.download_latest_build(dst_dir)
   print('download', build_dir)
   print('download result', os.listdir(build_dir))
   1 / 0
