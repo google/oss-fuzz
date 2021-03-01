@@ -28,7 +28,6 @@ from filestore import github_api
 
 class GithubActionsFilestore(filestore.BaseFilestore):
   """Implementation of BaseFilestore using Github actions artifacts."""
-  BASE_BUILD_NAME = 'cifuzz-build-'
 
   def __init__(self, config):
     super().__init__(config)
@@ -37,9 +36,6 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         'Authorization': authorization,
         'Accept': 'application/vnd.github.v3+json'
     }
-
-  def _get_build_name(self):
-    return self.BASE_BUILD_NAME + self.config.sanitizer
 
   def upload_build(self, build_dir):
     build_dir = os.path.abspath(build_dir)
@@ -73,11 +69,11 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     """Downloads the corpus located at |name| to |dst_directory|."""
     logging.debug('listing artifact')
     artifacts = self._list_artifacts()
-    if not artifacts:
-      logging.error('Failed to get artifacts.')
-      return dst_directory
     corpus_artifact = github_api.find_artifact(name, artifacts)
     logging.debug('Corpus artifact: %s.', corpus_artifact)
+    if not corpus_artifact:
+      logging.warning('Could not download corpus: %s.', name)
+      return False
     url = corpus_artifact['archive_download_url']
     logging.debug('Corpus artifact url: %s.', url)
     return http_utils.download_and_unpack_zip(url,
@@ -86,13 +82,16 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def _list_artifacts(self):
     return github_api.list_artifacts(self.config.project_repo_owner,
-                                          self.config.project_repo_name,
-                                          self.http_headers)
+                                     self.config.project_repo_name,
+                                     self.http_headers)
 
-  def download_latest_build(self, build_dir):
-    build_artifact_name = self._get_build_name()
+  def download_latest_build(self, name, build_dir):
     artifacts = self._list_artifacts()
-    build_artifact = github_api.find_artifact(build_artifact_name, artifacts)
+    build_artifact = github_api.find_artifact(name, artifacts)
+    if not build_artifact:
+      logging.warning('Could not download build: %s.', name)
+      return False
+
     url = build_artifact['archive_download_url']
     logging.debug('Build artifact url: %s.', url)
     return http_utils.download_and_unpack_zip(url,

@@ -72,6 +72,8 @@ class BaseClusterFuzzDeployment:
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
+  BASE_BUILD_NAME = 'cifuzz-build-'
+
   def __init__(self, config):
     super().__init__(config)
     self.filestore = filestore_utils.get_filestore(self.config)
@@ -87,8 +89,9 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
       return build_dir
 
     os.makedirs(build_dir, exist_ok=True)
+    build_name = self._get_build_name()
 
-    if self.filestore.download_latest_build(build_dir):
+    if self.filestore.download_latest_build(build_name, build_dir):
       return build_dir
 
     return None
@@ -106,6 +109,9 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
                     target_name, str(err))
       raise err
     return corpus_dir
+
+  def _get_build_name(self):
+    return self.BASE_BUILD_NAME + self.config.sanitizer
 
   def _get_corpus_name(self, target_name):  # pylint: disable=no-self-use
     """Returns the name of the corpus artifact."""
