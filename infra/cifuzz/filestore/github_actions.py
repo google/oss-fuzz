@@ -54,7 +54,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     """Downloads the corpus located at |name| to |dst_directory|."""
     logging.debug('listing artifact')
     artifacts = github_api.list_artifacts(self.config.project_repo_owner,
-                                          self.config.project_repo_name)
+                                          self.config.project_repo_name,
+                                          self.http_headers)
     if not artifacts:
       logging.error('Failed to get artifacts.')
       return dst_directory
