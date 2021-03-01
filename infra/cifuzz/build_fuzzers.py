@@ -183,6 +183,15 @@ def build_fuzzers(config):
   ci_system = continuous_integration.get_ci(config)
   # !!!
   import clusterfuzz_deployment
+  fakecorpus = '/tmp/fakecorpus'
+  os.mkdir(fakecorpus)
+  for x in range(10):
+    path = os.path.join(fakecorpus, str(x))
+    with open(path, 'w') as file_handle:
+      file_handle.write('A' * x)
+  target_name = 'mytarget-' + os.environ('GITHUB_RUN_ID')
+  cfl.upload(target_name, fakecorpus)
+
   logging.info('!!! Download. gh token set %s', bool(config.github_token))
   cfl = clusterfuzz_deployment.ClusterFuzzLite(config)
   print('download', cfl.download_corpus('do_stuff_fuzzer', '/tmp/corpus'))
