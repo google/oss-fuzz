@@ -46,10 +46,11 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     for root, _, curr_file_paths in os.walk(build_dir):
       for file_path in curr_file_paths:
         # !!!
-        if root == 'artifacts':
+        if os.path.dirname(root) == 'artifacts':
           continue
         file_paths.append(os.path.join(root, file_path))
 
+    logging.debug('file_paths: %s', file_paths)
     return artifact_client.upload_artifact(build_name, file_paths, build_dir)
 
   def upload_corpus(self, name, directory):  # pylint: disable=no-self-use
