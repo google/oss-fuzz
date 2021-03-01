@@ -16,4 +16,6 @@
 ################################################################################
 
 
-compile_go_fuzzer github.com/radondb/radon/src/fuzz/sqlparser Fuzz fuzz
+cd ./src/fuzz/sqlparser
+go mod init github.com/radondb/radon/src/fuzz/sqlparser
+compile_go_fuzzer . Fuzz fuzz
