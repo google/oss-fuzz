@@ -61,6 +61,8 @@ PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 # Languages from project.yaml that have code coverage support.
 LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
 
+# pylint: disable=too-many-lines
+
 
 def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-many-statements
   """Get subcommand from program arguments and do it."""
@@ -112,8 +114,9 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements,too-
   _add_engine_args(
       check_build_parser,
       choices=['libfuzzer', 'afl', 'honggfuzz', 'dataflow', 'none'])
-  _add_sanitizer_args(check_build_parser,
-                      choices=['address', 'memory', 'undefined', 'dataflow'])
+  _add_sanitizer_args(
+      check_build_parser,
+      choices=['address', 'memory', 'undefined', 'dataflow', 'thread'])
   _add_environment_args(check_build_parser)
   check_build_parser.add_argument('project_name', help='name of the project')
   check_build_parser.add_argument('fuzzer_name',
@@ -335,7 +338,7 @@ def _add_engine_args(parser,
 
 def _add_sanitizer_args(parser,
                         choices=('address', 'memory', 'undefined', 'coverage',
-                                 'dataflow')):
+                                 'dataflow', 'thread')):
   """Add common sanitizer args."""
   parser.add_argument(
       '--sanitizer',

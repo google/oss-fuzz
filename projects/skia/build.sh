@@ -38,6 +38,8 @@ elif [ $SANITIZER == "undefined" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
 elif [ $SANITIZER == "coverage" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_EMIT_COVERAGE"
+elif [ $SANITIZER == "thread" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
 else
   exit 1
 fi
