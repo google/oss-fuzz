@@ -28,7 +28,6 @@ sys.path.append(INFRA_DIR)
 OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
 
 import build_fuzzers
-import config_utils
 import continuous_integration
 import test_helpers
 
@@ -56,22 +55,6 @@ EXAMPLE_BUILD_FUZZER = 'do_stuff_fuzzer'
 # pylint: disable=no-self-use,protected-access,too-few-public-methods
 
 
-def create_config(**kwargs):
-  """Creates a config object and then sets every attribute that is a key in
-  |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
-  attribute of Config."""
-  with mock.patch('os.path.basename', return_value=None), mock.patch(
-      'config_utils.get_project_src_path',
-      return_value=None), mock.patch('config_utils._is_dry_run',
-                                     return_value=True):
-    config = config_utils.BuildFuzzersConfig()
-
-  for key, value in kwargs.items():
-    assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
-    setattr(config, key, value)
-  return config
-
-
 class BuildFuzzersTest(unittest.TestCase):
   """Unit tests for build_fuzzers."""
 
@@ -85,10 +68,10 @@ class BuildFuzzersTest(unittest.TestCase):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
       build_fuzzers.build_fuzzers(
-          create_config(project_name=EXAMPLE_PROJECT,
-                        project_repo_name=EXAMPLE_PROJECT,
-                        workspace=tmp_dir,
-                        pr_ref='refs/pull/1757/merge'))
+          test_helpers.create_build_config(project_name=EXAMPLE_PROJECT,
+                                           project_repo_name=EXAMPLE_PROJECT,
+                                           workspace=tmp_dir,
+                                           pr_ref='refs/pull/1757/merge'))
     docker_run_command = mocked_docker_run.call_args_list[0][0][0]
 
     def command_has_env_var_arg(command, env_var_arg):
@@ -113,13 +96,14 @@ class InternalGithubBuildTest(unittest.TestCase):
 
   def _create_builder(self, tmp_dir):
     """Creates an InternalGithubBuilder and returns it."""
-    config = create_config(project_name=self.PROJECT_NAME,
-                           project_repo_name=self.PROJECT_REPO_NAME,
-                           workspace=tmp_dir,
-                           sanitizer=self.SANITIZER,
-                           commit_sha=self.COMMIT_SHA,
-                           pr_ref=self.PR_REF,
-                           is_github=True)
+    config = test_helpers.create_build_config(
+        project_name=self.PROJECT_NAME,
+        project_repo_name=self.PROJECT_REPO_NAME,
+        workspace=tmp_dir,
+        sanitizer=self.SANITIZER,
+        commit_sha=self.COMMIT_SHA,
+        pr_ref=self.PR_REF,
+        is_github=True)
     ci_system = continuous_integration.get_ci(config)
     return build_fuzzers.Builder(config, ci_system)
 
@@ -163,20 +147,21 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
     git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
     # This test is dependant on the state of
     # github.com/jonathanmetzman/cifuzz-external-example.
-    config = create_config(project_name=project_name,
-                           project_repo_name=project_name,
-                           workspace=self.workspace,
-                           build_integration_path=build_integration_path,
-                           git_url=git_url,
-                           commit_sha='HEAD',
-                           base_commit='HEAD^1')
+    config = test_helpers.create_build_config(
+        project_name=project_name,
+        project_repo_name=project_name,
+        workspace=self.workspace,
+        build_integration_path=build_integration_path,
+        git_url=git_url,
+        commit_sha='HEAD',
+        base_commit='HEAD^1')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
         os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
 
   def test_valid_commit(self):
     """Tests building fuzzers with valid inputs."""
-    config = create_config(
+    config = test_helpers.create_build_config(
         project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
@@ -190,29 +175,29 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
   def test_valid_pull_request(self):
     """Tests building fuzzers with valid pull request."""
     # TODO(metzman): What happens when this branch closes?
-    config = create_config(project_name=EXAMPLE_PROJECT,
-                           project_repo_name='oss-fuzz',
-                           workspace=self.workspace,
-                           pr_ref='refs/pull/1757/merge',
-                           base_ref='master',
-                           is_github=True)
+    config = test_helpers.create_build_config(project_name=EXAMPLE_PROJECT,
+                                              project_repo_name='oss-fuzz',
+                                              workspace=self.workspace,
+                                              pr_ref='refs/pull/1757/merge',
+                                              base_ref='master',
+                                              is_github=True)
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
         os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
 
   def test_invalid_pull_request(self):
     """Tests building fuzzers with invalid pull request."""
-    config = create_config(project_name=EXAMPLE_PROJECT,
-                           project_repo_name='oss-fuzz',
-                           workspace=self.workspace,
-                           pr_ref='ref-1/merge',
-                           base_ref='master',
-                           is_github=True)
+    config = test_helpers.create_build_config(project_name=EXAMPLE_PROJECT,
+                                              project_repo_name='oss-fuzz',
+                                              workspace=self.workspace,
+                                              pr_ref='ref-1/merge',
+                                              base_ref='master',
+                                              is_github=True)
     self.assertTrue(build_fuzzers.build_fuzzers(config))
 
   def test_invalid_project_name(self):
     """Tests building fuzzers with invalid project name."""
-    config = create_config(
+    config = test_helpers.create_build_config(
         project_name='not_a_valid_project',
         project_repo_name='oss-fuzz',
         workspace=self.workspace,
@@ -221,7 +206,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_repo_name(self):
     """Tests building fuzzers with invalid repo name."""
-    config = create_config(
+    config = test_helpers.create_build_config(
         project_name=EXAMPLE_PROJECT,
         project_repo_name='not-real-repo',
         workspace=self.workspace,
@@ -230,17 +215,17 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
 
   def test_invalid_commit_sha(self):
     """Tests building fuzzers with invalid commit SHA."""
-    config = create_config(project_name=EXAMPLE_PROJECT,
-                           project_repo_name='oss-fuzz',
-                           workspace=self.workspace,
-                           commit_sha='',
-                           is_github=True)
+    config = test_helpers.create_build_config(project_name=EXAMPLE_PROJECT,
+                                              project_repo_name='oss-fuzz',
+                                              workspace=self.workspace,
+                                              commit_sha='',
+                                              is_github=True)
     with self.assertRaises(AssertionError):
       build_fuzzers.build_fuzzers(config)
 
   def test_invalid_workspace(self):
     """Tests building fuzzers with invalid workspace."""
-    config = create_config(
+    config = test_helpers.create_build_config(
         project_name=EXAMPLE_PROJECT,
         project_repo_name='oss-fuzz',
         workspace=os.path.join(self.workspace, 'not', 'a', 'dir'),
@@ -304,11 +289,11 @@ class BuildSantizerIntegrationTest(unittest.TestCase):
 
   @classmethod
   def _create_config(cls, tmp_dir, sanitizer):
-    return create_config(project_name=cls.PROJECT_NAME,
-                         project_repo_name=cls.PROJECT_NAME,
-                         workspace=tmp_dir,
-                         pr_ref=cls.PR_REF,
-                         sanitizer=sanitizer)
+    return test_helpers.create_build_config(project_name=cls.PROJECT_NAME,
+                                            project_repo_name=cls.PROJECT_NAME,
+                                            workspace=tmp_dir,
+                                            pr_ref=cls.PR_REF,
+                                            sanitizer=sanitizer)
 
   @parameterized.parameterized.expand([('memory',), ('undefined',)])
   def test_valid_project_curl(self, sanitizer):
