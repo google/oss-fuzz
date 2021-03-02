@@ -22,7 +22,7 @@ import json
 def _get_project_repo_owner_and_name():
   # Includes owner and repo name.
   github_repository = os.getenv('GITHUB_REPOSITORY', '')
-  return os.path.dirname(github_repository), os.path.basename(github_repository)
+  return os.path.split(github_repository)
 
 
 def _get_pr_ref(event):
