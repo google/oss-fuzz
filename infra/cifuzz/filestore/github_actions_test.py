@@ -17,7 +17,9 @@ import sys
 import unittest
 from unittest import mock
 
-INFRA_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# pylint: disable=wrong-import-position
+INFRA_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(INFRA_DIR)
 
 from cifuzz.filestore import github_actions
@@ -25,8 +27,10 @@ from cifuzz import test_helpers
 
 # pylint: disable=protected-access,no-self-use
 
+
 class GithubActionsFilestoreTest(unittest.TestCase):
   """Tests for GithubActionsFilestore."""
+
   def setUp(self):
     test_helpers.patch_environ(self)
     self.github_token = 'example githubtoken'
@@ -48,14 +52,13 @@ class GithubActionsFilestoreTest(unittest.TestCase):
     """Tests that _list_artifacts works as intended."""
     owner = 'exampleowner'
     repo = 'examplerepo'
-    os.environ['GITHUB_REPOSITORY'] = '{owner}/{repo}'.format(
-        owner=owner, repo=repo)
+    os.environ['GITHUB_REPOSITORY'] = '{owner}/{repo}'.format(owner=owner,
+                                                              repo=repo)
     config = test_helpers.create_run_config(github_token=self.github_token)
     filestore = github_actions.GithubActionsFilestore(config)
     filestore._list_artifacts()
-    mocked_list_artifacts.assert_called_with(
-        owner, repo, self._get_expected_http_headers())
-
+    mocked_list_artifacts.assert_called_with(owner, repo,
+                                             self._get_expected_http_headers())
 
   @mock.patch('logging.warning')
   @mock.patch(
@@ -71,7 +74,6 @@ class GithubActionsFilestoreTest(unittest.TestCase):
     build_dir = 'build-dir'
     self.assertFalse(filestore.download_latest_build(name, build_dir))
     mocked_warning.assert_called_with('Could not download build: %s.', name)
-
 
   @mock.patch('logging.warning')
   @mock.patch(
