@@ -14,16 +14,11 @@
 """Implementation of a filestore using Github actions artifacts."""
 import os
 import logging
-import sys
 
-# !!! Wrong dir
-# pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import http_utils
-import filestore
-from github_actions_toolkit.artifact import artifact_client
-from filestore import github_api
+from cifuzz import http_utils
+from cifuzz import filestore
+from cifuzz.github_actions_toolkit.artifact import artifact_client
+from cifuzz.filestore import github_api
 
 
 class GithubActionsFilestore(filestore.BaseFilestore):

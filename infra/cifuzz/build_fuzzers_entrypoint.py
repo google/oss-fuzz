@@ -16,8 +16,9 @@ import logging
 import os
 import sys
 
-import build_fuzzers
-import config_utils
+from cifuzz.filestore import github_actions
+import cifuzz.build_fuzzers
+import cifuzz.config_utils
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
