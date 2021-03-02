@@ -98,6 +98,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   android_codec \
   animated_image_decode \
   api_create_ddl \
+  api_ddl_threading \
   api_draw_functions \
   api_gradients \
   api_image_filter \
@@ -238,6 +239,8 @@ cp out/Fuzz/skruntimeeffect $OUT/skruntimeeffect
 cp ../skia_data/sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
 
 cp out/Fuzz/api_create_ddl $OUT/api_create_ddl
+
+cp out/Fuzz/api_ddl_threading $OUT/api_ddl_threading
 
 cp out/Fuzz/skp $OUT/skp
 cp ../skia_data/skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
