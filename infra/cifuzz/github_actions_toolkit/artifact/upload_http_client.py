@@ -129,7 +129,6 @@ def create_artifact_in_file_container(artifact_name, options):
     try:
       response = _do_post_request(artifact_url, data, headers)
       response_data = response.read()
-      print('create_artifact_in_file_container response:', response_data)
       return json.loads(response_data)
     except urllib.error.HTTPError as http_error:
       code = http_error.getcode()
