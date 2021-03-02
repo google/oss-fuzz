@@ -276,19 +276,24 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
 
+  @mock.patch(
+      'clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
+      return_value=True)
   @mock.patch('utils.get_fuzz_targets')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
                                   mocked_run_fuzz_target,
-                                  mocked_get_fuzz_targets):
+                                  mocked_get_fuzz_targets,
+                                  _):
     """Tests that run_fuzz_targets quits on the first crash it finds."""
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'out')
     self.fs.create_dir(out_path)
     config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                             workspace=workspace,
-                            project_name=EXAMPLE_PROJECT)
+                            project_name=EXAMPLE_PROJECT,
+                            build_integration_path='/')
     runner = run_fuzzers.BatchFuzzTargetRunner(config)
 
     mocked_get_fuzz_targets.return_value = ['target1', 'target2']

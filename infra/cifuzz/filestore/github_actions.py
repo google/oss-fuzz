@@ -32,7 +32,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         'Accept': 'application/vnd.github.v3+json'
     }
 
-  def upload_build(self, build_name, build_dir):  # pylint: disable=no-self-use
+  def upload_latest_build(self, build_name, build_dir):  # pylint: disable=no-self-use
+    """Uploads build as artifact."""
     build_dir = os.path.abspath(build_dir)
 
     # !!! Merge with upload_corpus. and zip.
@@ -84,6 +85,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
                                      self.http_headers)
 
   def download_latest_build(self, name, build_dir):
+    """Downloads latest build with name |name| to |build_dir|."""
     artifacts = self._list_artifacts()
     build_artifact = github_api.find_artifact(name, artifacts)
     if not build_artifact:
