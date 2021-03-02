@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,3 +21,4 @@ RUN git clone https://github.com/vstakhov/libucl
 WORKDIR $SRC
 
 COPY build.sh $SRC/
+COPY ucl_add_string_fuzzer.options $SRC/ucl_add_string_fuzzer.options

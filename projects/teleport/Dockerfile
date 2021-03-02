@@ -15,5 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN git clone --depth 1 https://github.com/gravitational/teleport.git
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/teleport

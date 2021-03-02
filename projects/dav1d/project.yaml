@@ -17,3 +17,4 @@ coverage_extra_args: -ignore-filename-regex=.*dump.h
 architectures:
   - i386
   - x86_64
+main_repo: 'https://code.videolan.org/videolan/dav1d.git'

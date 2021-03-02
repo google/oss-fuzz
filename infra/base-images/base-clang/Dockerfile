@@ -19,13 +19,14 @@
 FROM gcr.io/oss-fuzz-base/base-image
 
 # Install newer cmake.
-ENV CMAKE_VERSION 3.18.1
+ENV CMAKE_VERSION 3.19.2
 RUN apt-get update && apt-get install -y wget sudo && \
     wget https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
     chmod +x cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
     ./cmake-$CMAKE_VERSION-Linux-x86_64.sh --skip-license --prefix="/usr/local" && \
     rm cmake-$CMAKE_VERSION-Linux-x86_64.sh && \
-    SUDO_FORCE_REMOVE=yes apt-get remove --purge -y wget sudo
+    SUDO_FORCE_REMOVE=yes apt-get remove --purge -y wget sudo && \
+    rm -rf /usr/local/doc/cmake /usr/local/bin/cmake-gui
 
 COPY checkout_build_install_llvm.sh /root/
 # Keep all steps in the same script to decrease the number of intermediate

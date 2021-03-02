@@ -22,7 +22,7 @@ ln -s $SRC/fuzzer_corpus .
 ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
                --disable-shared --disable-modules=locking_allocator \
                --unsafe-fuzzer-mode --build-fuzzers=libfuzzer \
-               --with-fuzzer-lib='FuzzingEngine'
+               --without-os-features=getrandom,getentropy --with-fuzzer-lib='FuzzingEngine'
 
 make -j$(nproc) libs
 make -j$(nproc) fuzzers

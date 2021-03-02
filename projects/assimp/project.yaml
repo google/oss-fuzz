@@ -6,3 +6,4 @@ sanitizers:
   - memory:
      experimental: True
   - undefined
+main_repo: 'https://github.com/assimp/assimp.git'

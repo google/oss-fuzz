@@ -21,6 +21,10 @@
 # Compile xxd
 $CC $SRC/xxd.c -o /usr/bin/xxd
 
+# Copy the upstream checkout of xxHash over the old version
+rm -rf $SRC/cryptofuzz/modules/reference/xxHash/
+cp -R $SRC/xxHash/ $SRC/cryptofuzz/modules/reference/
+
 # Install Boost headers
 cd $SRC/
 tar jxf boost_1_74_0.tar.bz2
@@ -35,24 +39,6 @@ export INCLUDE_PATH_FLAGS=""
 # Generate lookup tables. This only needs to be done once.
 cd $SRC/cryptofuzz
 python gen_repository.py
-
-if [[ $CFLAGS = *-m32* ]]
-then
-    export GOARCH=386
-    export CGO_ENABLED=1
-fi
-
-export GO111MODULE=off
-cd $SRC/go/src
-./make.bash
-export GOROOT=$(realpath $SRC/go)
-export GOPATH=$GOROOT/packages
-mkdir $GOPATH
-export PATH=$GOROOT/bin:$PATH
-export PATH=$GOROOT/packages/bin:$PATH
-
-apt-get remove golang-1.9-go -y
-rm /usr/bin/go
 
 go get golang.org/x/crypto/blake2b
 go get golang.org/x/crypto/blake2s
@@ -256,7 +242,8 @@ if [[ $CFLAGS != *sanitize=memory* ]]
 then
     make libcryptopp.a -j$(nproc) >/dev/null 2>&1
 else
-    CXXFLAGS="$CXXFLAGS -DCRYPTOPP_DISABLE_ASM=1" make libcryptopp.a -j$(nproc) >/dev/null 2>&1
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOPP_DISABLE_ASM=1"
+    make libcryptopp.a -j$(nproc) >/dev/null 2>&1
 fi
 
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
@@ -450,7 +437,7 @@ fi
 # Compile wolfCrypt
 cd $SRC/wolfssl
 # Enable additional wolfCrypt features which cannot be activated through arguments to ./configure
-export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K"
+export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
 autoreconf -ivf
 
 export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt"

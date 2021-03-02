@@ -1,4 +1,4 @@
-#/bin/bash -eu
+#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-compile_go_fuzzer github.com/vitessio/vitess/go/vt/sqlparser Fuzz fuzz
+compile_go_fuzzer ./go/vt/sqlparser Fuzz fuzz

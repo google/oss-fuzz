@@ -47,8 +47,11 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 	unlink(filename);
 
 	free (dump_ctf_symtab_name);
+	dump_ctf_symtab_name = NULL;
 	free (dump_ctf_strtab_name);
+	dump_ctf_strtab_name = NULL;
 	free (dump_ctf_parent_name);
+	dump_ctf_parent_name = NULL;
 
 	return 0;
 }

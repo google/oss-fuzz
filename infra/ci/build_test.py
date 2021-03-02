@@ -16,8 +16,13 @@
 """Tests for build.py"""
 
 import os
+import sys
 import unittest
 from unittest import mock
+
+# pylint: disable=wrong-import-position
+INFRA_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(INFRA_DIR)
 
 from ci import build
 

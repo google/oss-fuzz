@@ -20,12 +20,14 @@ FROM gcr.io/oss-fuzz-base/base-clang AS base-clang
 FROM gcr.io/oss-fuzz-base/base-image
 
 # Copy the binaries needed for code coverage and crash symbolization.
-COPY --from=base-clang /usr/local/bin/llvm-cov /usr/local/bin/
-COPY --from=base-clang /usr/local/bin/llvm-profdata /usr/local/bin/
-COPY --from=base-clang /usr/local/bin/llvm-symbolizer /usr/local/bin/
+COPY --from=base-clang /usr/local/bin/llvm-cov \
+     /usr/local/bin/llvm-profdata \
+     /usr/local/bin/llvm-symbolizer \
+     /usr/local/bin/
 
-RUN apt-get update
-RUN apt-get install -y \
+# TODO(metzman): Install libc6-i386 lib32gcc1 instead of libc6-dev-i386 for
+# consistency with ClusterFuzz image and to reduce size.
+RUN apt-get update && apt-get install -y \
     binutils \
     file \
     fonts-dejavu \
@@ -37,24 +39,8 @@ RUN apt-get install -y \
     wget \
     zip
 
-RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage
-RUN pip3 install -r /opt/code_coverage/requirements.txt
-
-COPY bad_build_check \
-    collect_dft \
-    coverage \
-    coverage_helper \
-    dataflow_tracer.py \
-    download_corpus \
-    minijail0 \
-    reproduce \
-    run_fuzzer \
-    run_minijail \
-    parse_options.py \
-    targets_list \
-    test_all \
-    test_one \
-    /usr/local/bin/
+RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage && \
+    pip3 install -r /opt/code_coverage/requirements.txt
 
 # Default environment options for various sanitizers.
 # Note that these match the settings used in ClusterFuzz and
@@ -81,3 +67,31 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 # Set up Golang coverage modules.
 RUN go get github.com/google/oss-fuzz/infra/go/coverage/...
+
+# Install OpenJDK 15 and trim its size by removing unused components.
+ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
+ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
+ENV PATH=$PATH:$JAVA_HOME/bin
+ADD https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz /tmp
+RUN cd /tmp && \
+    mkdir -p $JAVA_HOME && \
+    tar -xzv --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
+    rm -f openjdk-15.0.2_linux-x64_bin.tar.gz && \
+    rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
+
+# Do this last to make developing these files easier/faster due to caching.
+COPY bad_build_check \
+    collect_dft \
+    coverage \
+    coverage_helper \
+    dataflow_tracer.py \
+    download_corpus \
+    minijail0 \
+    reproduce \
+    run_fuzzer \
+    run_minijail \
+    parse_options.py \
+    targets_list \
+    test_all.py \
+    test_one.py \
+    /usr/local/bin/
