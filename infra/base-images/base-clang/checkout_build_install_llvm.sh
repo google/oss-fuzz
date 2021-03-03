@@ -174,3 +174,15 @@ rm -rf $LLVM_SRC
 rm -rf $SRC/chromium_tools
 apt-get remove --purge -y $LLVM_DEP_PACKAGES
 apt-get autoremove -y
+
+# Delete unneeded parts of LLVM to reduce image size.
+# See https://github.com/google/oss-fuzz/issues/5170
+LLVM_TOOLS_DIR=/tmp/llvm-tools
+mkdir $LLVM_TOOLS_DIR
+mv /usr/local/bin/llvm-objcopy /usr/local/bin/llvm-symbolizer /usr/local/bin/llvm-undname /usr/local/bin/llvm-config /usr/local/bin/llvm-as /usr/local/bin/llvm-ranlib  /usr/local/bin/llvm-profdata /usr/local/bin/llvm-cov  $LLVM_TOOLS_DIR
+rm -rf /usr/local/bin/llvm-*
+mv $LLVM_TOOLS_DIR/* /usr/local/bin/
+
+rm -rf /usr/local/bin/bugpoint /usr/local/bin/llc /usr/local/bin/lli /usr/local/bin/clang-check /usr/local/bin/clang-refactor /usr/local/bin/clang-offload-wrapper /usr/local/bin/clang-offload-bundler /usr/local/bin/clang-check /usr/local/bin/clang-refactor /usr/local/bin/c-index-test /usr/local/bin/clang-rename /usr/local/bin/clang-scan-deps /usr/local/bin/clang-extdef-mapping /usr/local/bin/diagtool /usr/local/bin/sanstats
+rm -rf $LLVM_TOOLS_DIR
+rm /usr/local/lib/libclang*
