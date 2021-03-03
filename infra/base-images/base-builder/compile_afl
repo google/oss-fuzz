@@ -31,30 +31,17 @@ env | grep -qw AFL_ENABLE_DICTIONARY || {
 }
 
 # Start compiling afl++.
-echo "Compiling afl++"
+echo "Copying precompiled afl++"
 
 # Build and copy afl++ tools necessary for fuzzing.
 pushd $SRC/aflplusplus > /dev/null
 
-# Unset CFLAGS and CXXFLAGS while building AFL since we don't want to slow it
-# down with sanitizers.
-SAVE_CXXFLAGS=$CXXFLAGS
-SAVE_CFLAGS=$CFLAGS
-unset CXXFLAGS
-unset CFLAGS
-export AFL_IGNORE_UNKNOWN_ENVS=1
-make clean
-AFL_NO_X86=1 PYTHON_INCLUDE=/ make
-CFLAGS=$SAVE_CFLAGS
-CXXFLAGS=$SAVE_CXXFLAGS
-
 # Build afl++ driver with existing CFLAGS, CXXFLAGS.
-make -C utils/aflpp_driver
-cp -f libAFLDriver.a $LIB_FUZZING_ENGINE
+cp -f $PRECOMPILED_DIR/aflplusplus/libAFLDriver.a $LIB_FUZZING_ENGINE
 
 # Some important projects include libraries, copy those even when they don't
 # start with "afl-". Use "sort -u" to avoid a warning about duplicates.
-ls afl-* *.txt *.a *.o *.so | sort -u | xargs cp -t $OUT
+cp $PRECOMPILED_DIR/aflplusplus/out/* $OUT
 export CC="$SRC/aflplusplus/afl-clang-fast"
 export CXX="$SRC/aflplusplus/afl-clang-fast++"
 

@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2019 Google Inc.
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,34 +15,32 @@
 #
 ################################################################################
 
-echo -n "Precompiling honggfuzz to $PRECOMPILED_DIR..."
-export BUILD_OSSFUZZ_STATIC=true
+echo -n "Precompiling AFLplusplus to $PRECOMPILED_DIR..."
 
-PACKAGES=(
-    libunwind8-dev
-    libblocksruntime-dev
-    liblzma-dev
-    libiberty-dev
-    zlib1g-dev
-    pkg-config)
-
-apt-get install -y ${PACKAGES[@]}
-
-pushd $SRC/honggfuzz > /dev/null
-make -j clean
+pushd $SRC/aflplusplus > /dev/null
+make clean
 # These CFLAGs match honggfuzz's default, with the exception of -mtune to
 # improve portability and `-D_HF_LINUX_NO_BFD` to remove assembly instructions
 # from the filenames.
-CC=clang CFLAGS="-O3 -funroll-loops -D_HF_LINUX_NO_BFD" make -j
+echo "CC $CC CXXFLAGS $CXXFLAGS CFLAG $CFLAGS"
+unset CFLAGS
+unset CXXFLAGS
+export CXXFLAGS="-stdlib=libc++"
+export AFL_IGNORE_UNKNOWN_ENVS=1
+export AFL_LLVM_MODE_WORKAROUND=0
+export AFL_ENABLE_DICTIONARY=1
+make -j clean
+AFL_NO_X86=1 PYTHON_INCLUDE=/ make -j
+make -j -C utils/aflpp_driver
+make test
 
-# libhfuzz.a will be added by CC/CXX linker directly during linking,
-# but it's defined here to satisfy the build infrastructure
-PRECOMPILED_HONGGFUZZ_DIR=$PRECOMPILED_DIR/honggfuzz
-mkdir $PRECOMPILED_HONGGFUZZ_DIR
-ar rcs $PRECOMPILED_HONGGFUZZ_DIR/honggfuzz.a libhfuzz/*.o libhfcommon/*.o
-cp honggfuzz $PRECOMPILED_HONGGFUZZ_DIR
+PRECOMPILED_AFLPLUSPLUS_DIR=$PRECOMPILED_DIR/aflplusplus
+# Copy things into subdir "out" so we don't copy libAFLDriver.a into $OUT when
+# compile is called.
+mkdir -p $PRECOMPILED_AFLPLUSPLUS_DIR/out
+ls afl-* *.txt *.a *.o *.so | sort -u | xargs cp -t $PRECOMPILED_AFLPLUSPLUS_DIR/out
+
+cp -f libAFLDriver.a $PRECOMPILED_AFLPLUSPLUS_DIR
 popd > /dev/null
 
-apt-get remove -y --purge ${PACKAGES[@]}
-apt-get autoremove -y
 echo " done."
