@@ -38,6 +38,8 @@ elif [ $SANITIZER == "undefined" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
 elif [ $SANITIZER == "coverage" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_EMIT_COVERAGE"
+elif [ $SANITIZER == "thread" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
 else
   exit 1
 fi
@@ -98,6 +100,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   android_codec \
   animated_image_decode \
   api_create_ddl \
+  api_ddl_threading \
   api_draw_functions \
   api_gradients \
   api_image_filter \
@@ -107,6 +110,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   api_pathop \
   api_polyutils \
   api_raster_n32_canvas \
+  api_skparagraph \
   api_svg_canvas \
   image_decode \
   image_decode_incremental \
@@ -238,5 +242,9 @@ cp ../skia_data/sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_
 
 cp out/Fuzz/api_create_ddl $OUT/api_create_ddl
 
+cp out/Fuzz/api_ddl_threading $OUT/api_ddl_threading
+
 cp out/Fuzz/skp $OUT/skp
 cp ../skia_data/skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
+
+cp out/Fuzz/api_skparagraph $OUT/api_skparagraph

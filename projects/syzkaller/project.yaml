@@ -10,3 +10,4 @@ fuzzing_engines:
 sanitizers:
   - address
 view_restrictions: none
+main_repo: 'https://github.com/google/syzkaller'

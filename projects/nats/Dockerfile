@@ -15,6 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/nats-io/nats-server
+RUN git clone --depth 1 https://github.com/nats-io/nats-server
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/nats-server

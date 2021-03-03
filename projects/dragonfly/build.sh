@@ -1,4 +1,4 @@
-#/bin/bash -eu
+#!/bin/bash -eu
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-
-mkdir $GOPATH/src/github.com/dragonflyoss
-cp -r $SRC/Dragonfly $GOPATH/src/github.com/dragonflyoss/
 
 compile_go_fuzzer github.com/dragonflyoss/Dragonfly/dfget/core/uploader FuzzParseParams uploader_fuzz
 compile_go_fuzzer github.com/dragonflyoss/Dragonfly/supernode/daemon/mgr/cdn Fuzz cdn_fuzz

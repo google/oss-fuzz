@@ -16,6 +16,8 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+RUN pip3 install hypothesis
+
 RUN git clone \
 	--depth 1 \
 	--branch master \
@@ -23,4 +25,4 @@ RUN git clone \
 
 WORKDIR ultrajson
 
-COPY build.sh json_differential_fuzzer.py ujson_fuzzer.py $SRC/
+COPY build.sh json_differential_fuzzer.py ujson_fuzzer.py hypothesis_structured_fuzzer.py $SRC/

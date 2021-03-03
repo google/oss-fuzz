@@ -20,6 +20,15 @@ set -o pipefail
 set -o errexit
 set -x
 
+# Compile kOps fuzzers
+(
+cd kops
+./tests/fuzz/build.sh
+)
+
+# Compile Kubernetes fuzzers
+cd $SRC/kubernetes
+
 function compile_fuzzer {
   local pkg=$1
   local function=$2

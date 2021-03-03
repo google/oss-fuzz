@@ -7,3 +7,4 @@ auto_ccs :
 sanitizers:
   - address
   - memory
+main_repo: 'https://github.com/google/leveldb.git'

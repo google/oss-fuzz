@@ -3,6 +3,7 @@ primary_contact: "golang-fuzz@googlegroups.com"
 auto_ccs:
  - "mmoroz@chromium.org"
  - "josharian@gmail.com"
+ - "emmanuel@orijtech.com"
 language: go
 sanitizers:
  - address

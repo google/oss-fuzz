@@ -60,21 +60,16 @@ sanitizers:
 ### Dockerfile
 
 The OSS-Fuzz builder image has the latest stable release of Golang installed. In
-order to install dependencies of your project, add `RUN go get ...` command to
+order to install dependencies of your project, add `RUN git clone ...` command to
 your Dockerfile.
 [Example](https://github.com/google/oss-fuzz/blob/356f2b947670b7eb33a1f535c71bc5c87a60b0d1/projects/syzkaller/Dockerfile#L23):
 
 ```dockerfile
 # Dependency for one of the fuzz targets.
-RUN go get github.com/ianlancetaylor/demangle
+RUN git clone --depth 1 https://github.com/ianlancetaylor/demangle
 ```
 
-In the case you are using modules, the best practice is to `git clone` the repository into the expected `$GOPATH/src` directory.
-
-A usage example from go-coredns project is
-```dockerfile
-RUN git clone --depth 1  https://github.com/coredns/coredns $GOPATH/src/github.com/coredns/coredns
-```
+go-fuzz will then automatically download the dependencies based on the go.mod file
 
 ### build.sh
 
