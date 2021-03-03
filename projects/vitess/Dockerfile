@@ -16,5 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/vitessio/vitess
-RUN mv $SRC/vitess/go/test/fuzzing/oss_fuzz_build.sh $SRC/build.sh
+COPY build.sh $SRC/
 WORKDIR $SRC/vitess
