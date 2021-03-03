@@ -115,7 +115,7 @@ def _get_latest_cov_report_info(project_name):
                                           LATEST_REPORT_INFO_PATH,
                                           project_name + '.json')
   latest_cov_info = get_json_from_url(latest_report_info_url)
-  if not latest_cov_info is None:
+  if latest_cov_info is None:
     logging.error('Could not get the coverage report json from url: %s.',
                   latest_report_info_url)
     return None
