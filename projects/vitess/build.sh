@@ -15,4 +15,5 @@
 #
 ################################################################################
 
+chmod +x $SRC/vitess/go/test/fuzzing/oss_fuzz_build.sh
 $SRC/vitess/go/test/fuzzing/oss_fuzz_build.sh
