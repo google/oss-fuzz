@@ -1,8 +1,10 @@
 homepage: "https://github.com/opencontainers/umoci"
 main_repo: "https://github.com/opencontainers/umoci"
-primary_contact: ""
+primary_contact: "Adam@adalogics.com"
 auto_ccs :
-  - "adam@adalogics.com"
+  - "cyphar@cyphar.com"
+  - "tycho@tycho.pizza"
+  - "vbatts@hashbangbash.com"
 language: go
 fuzzing_engines:
   - libfuzzer
