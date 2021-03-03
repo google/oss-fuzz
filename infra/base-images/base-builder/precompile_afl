@@ -19,20 +19,18 @@ echo -n "Precompiling AFLplusplus to $PRECOMPILED_DIR..."
 
 pushd $SRC/aflplusplus > /dev/null
 make clean
-# These CFLAGs match honggfuzz's default, with the exception of -mtune to
-# improve portability and `-D_HF_LINUX_NO_BFD` to remove assembly instructions
-# from the filenames.
-echo "CC $CC CXXFLAGS $CXXFLAGS CFLAG $CFLAGS"
-unset CFLAGS
+# Unset CFLAGS and CXXFLAGS while building AFL since we don't want to slow it
+# down with sanitizers.
+SAVE_CXXFLAGS=$CXXFLAGS
+SAVE_CFLAGS=$CFLAGS
 unset CXXFLAGS
-export CXXFLAGS="-stdlib=libc++"
+unset CFLAGS
 export AFL_IGNORE_UNKNOWN_ENVS=1
 export AFL_LLVM_MODE_WORKAROUND=0
-export AFL_ENABLE_DICTIONARY=1
+export AFL_ENABLE_DICTIONARY=0
 make -j clean
 AFL_NO_X86=1 PYTHON_INCLUDE=/ make -j
 make -j -C utils/aflpp_driver
-make test
 
 PRECOMPILED_AFLPLUSPLUS_DIR=$PRECOMPILED_DIR/aflplusplus
 # Copy things into subdir "out" so we don't copy libAFLDriver.a into $OUT when
