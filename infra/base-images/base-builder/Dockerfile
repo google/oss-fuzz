@@ -131,6 +131,8 @@ ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
 ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
 
+ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
+
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
 
