@@ -212,6 +212,7 @@ def build_base_images():
   execute_helper_command(['pull_images'])
   images = [
       'base-image',
+      'base-clang',
       'base-builder',
       'base-runner',
   ]

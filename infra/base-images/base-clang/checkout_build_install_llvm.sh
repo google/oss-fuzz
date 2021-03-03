@@ -15,10 +15,10 @@
 #
 ################################################################################
 
-NPROC=16  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
+NPROC=$(expr $(nproc) / 2)  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
 
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev"
-apt-get install -y $LLVM_DEP_PACKAGES
+apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 # Checkout
 CHECKOUT_RETRIES=10
@@ -60,7 +60,7 @@ function cmake_llvm {
 # Use chromium's clang revision
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
-git clone https://chromium.googlesource.com/chromium/src/tools/clang
+git clone https://chromium.googlesource.com/chromium/src/tools/clang --depth 1
 cd clang
 
 LLVM_SRC=$SRC/llvm-project
@@ -89,11 +89,9 @@ fi
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
 
-# Build & install. We build clang in two stages because gcc can't build a
-# static version of libcxxabi
-# (see https://github.com/google/oss-fuzz/issues/2164).
+# Build & install.
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
-cd $WORK/llvm-stage1
+python3 $SRC/chromium_tools/clang/scripts/update.py --output-dir $WORK/llvm-stage1
 
 TARGET_TO_BUILD=
 case $(uname -m) in
@@ -110,9 +108,6 @@ case $(uname -m) in
 esac
 
 PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
-
-cmake_llvm
-ninja -j $NPROC
 
 cd $WORK/llvm-stage2
 export CC=$WORK/llvm-stage1/bin/clang
