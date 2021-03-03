@@ -26,9 +26,9 @@ SAVE_CFLAGS=$CFLAGS
 unset CXXFLAGS
 unset CFLAGS
 export AFL_IGNORE_UNKNOWN_ENVS=1
-make -j clean
-AFL_NO_X86=1 PYTHON_INCLUDE=/ make -j
-make -j -C utils/aflpp_driver
+make clean
+AFL_NO_X86=1 PYTHON_INCLUDE=/ make
+make -C utils/aflpp_driver
 
 popd > /dev/null
 
