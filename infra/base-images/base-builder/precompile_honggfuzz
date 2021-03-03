@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-echo -n "Precompiling honggfuzz to $PRECOMPILED_DIR..."
+echo "Precompiling honggfuzz to $PRECOMPILED_DIR..."
 export BUILD_OSSFUZZ_STATIC=true
 
 PACKAGES=(
@@ -37,12 +37,10 @@ CC=clang CFLAGS="-O3 -funroll-loops -D_HF_LINUX_NO_BFD" make -j
 
 # libhfuzz.a will be added by CC/CXX linker directly during linking,
 # but it's defined here to satisfy the build infrastructure
-PRECOMPILED_HONGGFUZZ_DIR=$PRECOMPILED_DIR/honggfuzz
-mkdir $PRECOMPILED_HONGGFUZZ_DIR
-ar rcs $PRECOMPILED_HONGGFUZZ_DIR/honggfuzz.a libhfuzz/*.o libhfcommon/*.o
-cp honggfuzz $PRECOMPILED_HONGGFUZZ_DIR
+ar rcs $PRECOMPILED_DIR/honggfuzz.a libhfuzz/*.o libhfcommon/*.o
+cp honggfuzz $PRECOMPILED_DIR
 popd > /dev/null
 
 apt-get remove -y --purge ${PACKAGES[@]}
 apt-get autoremove -y
-echo " done."
+echo "Done."
