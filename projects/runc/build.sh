@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-#apt-get install curl
 mv $SRC/id_map_fuzzer.go $SRC/runc/libcontainer/system/
 compile_go_fuzzer ./libcontainer/system Fuzz id_map_fuzzer linux
 
@@ -24,21 +23,3 @@ compile_go_fuzzer ./libcontainer/user Fuzz user_fuzzer
 
 mv $SRC/configs_fuzzer.go $SRC/runc/libcontainer/configs
 compile_go_fuzzer ./libcontainer/configs Fuzz configs_fuzzer
-
-
-
-# Integration tests trying: 
-mkdir $SRC/runc/libcontainer/integration/fuzzing
-mv $SRC/fuzz.go $SRC/runc/libcontainer/integration/fuzzing/
-#mv $SRC/fuzz_utils.go $SRC/runc/libcontainer/integration/
-mv $SRC/runc/libcontainer/integration/utils_test.go \
-	$SRC/runc/libcontainer/integration/fuzz_utils.go
-
-mv $SRC/runc/libcontainer/integration/template_test.go \
-	$SRC/runc/libcontainer/integration/template_fuzz_utils.go
-
-mv $SRC/runc/libcontainer/integration/init_test.go \
-	$SRC/runc/libcontainer/integration/fuzz_init.go
-
-
-compile_go_fuzzer ./libcontainer/integration/fuzzing Fuzz fuzz
