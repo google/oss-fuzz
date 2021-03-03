@@ -15,7 +15,13 @@
 #
 ################################################################################
 
-NPROC=$(expr $(nproc) / 2)  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
+# See issue #4270. The compiler crashes on GCB instance with 32 vCPUs, so when
+# we compile on GCB we want 16 cores. But locally we want more (so use nproc /
+# 2).
+NPROC=$(expr $(nproc) / 2)
+# On CI this means 1, which is too little in CI, so use max of NPROC or 2 (2
+# core instances on CI).
+NPROC=$((NPROC>2 ? NPROC : 2))
 
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev"
 apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
