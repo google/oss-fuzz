@@ -1,0 +1,6 @@
+homepage: "www.kamailio.org"
+main_repo: "https://github.com/kamailio/kamailio"
+primary_contact: "david@adalogics.com"
+language: c
+auto_ccs:
+  - "david@adalogics.com"
