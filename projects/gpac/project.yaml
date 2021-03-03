@@ -1,0 +1,6 @@
+homepage: "https://github.com/gpac/gpac"
+main_repo: "https://https://gpac.wp.imt.fr/"
+primary_contact: "david@adalogics.com"
+language: c
+auto_ccs :
+  - "david@adalogics.com"
