@@ -1,5 +1,6 @@
-homepage: "https://github.com/danielaparker/jsoncons"
-primary_contact: "danielaparker@gmail.com"
-language: c++
-auto_ccs :
+homepage: "https://github.com/gopro/gpmf-parser"
+main_repo: "https://github.com/gopro/gpmf-parser"
+primary_contact: "david@adalogics.com"
+language: c
+auto_ccs:
   - "david@adalogics.com"
