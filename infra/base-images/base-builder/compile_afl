@@ -19,6 +19,10 @@
 # The 'env|grep' setup ensures we do not trigger the linter.
 # The variables need to be set to "1" here - or before running this script.
 
+# AFL++ settings.
+export AFL_LLVM_MODE_WORKAROUND=0
+export AFL_ENABLE_DICTIONARY=0
+
 # Start compiling afl++.
 echo "Copying precompiled afl++"
 
@@ -39,7 +43,7 @@ export AFL_QUIET=1
 # Several targets run their own tools, so ensure its working.
 export AFL_MAP_SIZE=4194304
 # No leak errors during builds.
-export ASAN_OPTIONS="detect_leaks=0:symbolize=0"
+export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_error=1"
 
 # AFL compile option roulette. It is OK if they all happen together.
 
@@ -56,8 +60,10 @@ test $(($RANDOM % 10)) -lt 1 && {
   export AFL_LLVM_LAF_ALL=1
 }
 
-export AFL_LLVM_MODE_WORKAROUND=0
-export AFL_ENABLE_DICTIONARY=0
+# If the targets wants a dictionary - then create one.
+test "$AFL_ENABLE_DICTIONARY" = "1" && {
+  export AFL_LLVM_DICT2FILE="$OUT/afl++.dict"
+}
 
 # In case afl-clang-fast ever breaks, this is a workaround:
 test "$AFL_LLVM_MODE_WORKAROUND" = "1" && {
@@ -70,18 +76,19 @@ test "$AFL_LLVM_MODE_WORKAROUND" = "1" && {
   }
   export CFLAGS="$CFLAGS $WORKAROUND_FLAGS"
   export CXXFLAGS="$CXXFLAGS $WORKAROUND_FLAGS"
+  unset AFL_LLVM_LAF_ALL
+  unset AFL_LLVM_DICT2FILE
+  unset AFL_ENABLE_DICTIONARY
   # We need to create a new fuzzer lib however.
   ar ru libAFLDrivernew.a afl-compiler-rt.o utils/aflpp_driver/aflpp_driver.o
   cp -f libAFLDrivernew.a $LIB_FUZZING_ENGINE
 }
 
-# If the targets whishes a dictionary - then create one.
-test "$AFL_ENABLE_DICTIONARY" = "1" && {
-  export AFL_LLVM_DICT2FILE="$OUT/afl++.dict"
-}
-
 # Provide a way to document the afl++ options used in this build:
-env | grep AFL_ > "$OUT/afl_options.txt"
+echo
+echo afl++ target compilation setup:
+env | grep AFL_ | tee "$OUT/afl_options.txt"
+echo
 
 popd > /dev/null
 
