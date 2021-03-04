@@ -69,7 +69,8 @@ RUN cd /tmp && \
     curl -O https://storage.googleapis.com/golang/getgo/installer_linux && \
     chmod +x ./installer_linux && \
     SHELL="bash" ./installer_linux && \
-    rm -rf ./installer_linux
+    rm -rf ./installer_linux &&
+    rm -rf /root/.go/src /root/.go/test /root/.cache
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
 ENV GOPATH /root/go
@@ -80,7 +81,8 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 # Uses golang 1.14+ cmd/compile's native libfuzzer instrumentation.
 RUN go get -u github.com/mdempsky/go114-fuzz-build && \
-    ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
+    ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz &&
+    rm -rf /root/.cache /root/go/pkg
 
 # Install Rust and cargo-fuzz for libFuzzer instrumentation.
 ENV CARGO_HOME=/rust
