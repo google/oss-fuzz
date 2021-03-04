@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-echo "Precompiling honggfuzz to $PRECOMPILED_DIR..."
+echo "Precompiling honggfuzz"
 export BUILD_OSSFUZZ_STATIC=true
 
 PACKAGES=(
