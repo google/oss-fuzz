@@ -3,7 +3,7 @@ layout: default
 title: Integrating a Java/JVM project
 parent: Setting up a new project
 grand_parent: Getting started
-nav_order: 3
+nav_order: 4
 permalink: /getting-started/new-project-guide/jvm-lang/
 ---
 
@@ -74,14 +74,11 @@ Apart from this, you should usually not need to do more than to clone the
 project, set a `WORKDIR`, and copy any necessary files, or install any
 project-specific dependencies here as you normally would.
 
-### build.sh
+### Fuzzers
 
-For JVM projects, `build.sh` does need some more significant modifications
-over C/C++ projects. The following is an annotated example build script for a
-Java-only project. For simplicity, it expects that all fuzzers consist of a
-single Java file with a filename matching `*Fuzzer.java` and no `package`
-directive. An example fuzz target could thus consist of a file
-`ExampleFuzzer.java` with contents:
+In the simplest case, every fuzzer consists of a single Java file with a
+filename matching `*Fuzzer.java` and no `package` directive. An example fuzz
+target could thus be a file `ExampleFuzzer.java` with contents:
 
 ```java
 public class ExampleFuzzer {
@@ -94,7 +91,11 @@ public class ExampleFuzzer {
 }
 ```
 
-In this situation, `build.sh` could look as follows:
+### build.sh
+
+For JVM projects, `build.sh` does need some more significant modifications
+over C/C++ projects. The following is an annotated example build script for a
+Java-only project with single-file fuzz targets as described above:
 
 ```sh
 # Step 1: Build the project
