@@ -5,6 +5,8 @@ language: c
 auto_ccs:
   - "mv6606@gmail.com"
   - "david@adalogics.com"
+  - "warband.times@gmail.com"
+  - "juraj.vijtiuk@sartura.hr"
 sanitizers:
   - address
   - memory
