@@ -2,6 +2,7 @@ homepage: "https://github.com/vitessio/vitess"
 primary_contact: "andres@planetscale.com"
 auto_ccs :
   - "adam@adalogics.com"
+  - "team-ps-vitess@planetscale.com"
 language: go
 fuzzing_engines:
   - libfuzzer

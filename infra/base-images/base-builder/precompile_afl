@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +15,21 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+echo "Precompiling AFLplusplus"
 
-RUN pip3 install hypothesis
+pushd $SRC/aflplusplus > /dev/null
+make clean
+# Unset CFLAGS and CXXFLAGS while building AFL since we don't want to slow it
+# down with sanitizers.
+SAVE_CXXFLAGS=$CXXFLAGS
+SAVE_CFLAGS=$CFLAGS
+unset CXXFLAGS
+unset CFLAGS
+export AFL_IGNORE_UNKNOWN_ENVS=1
+make clean
+AFL_NO_X86=1 PYTHON_INCLUDE=/ make
+make -C utils/aflpp_driver
 
-RUN git clone \
-	--depth 1 \
-	--branch master \
-	https://github.com/ultrajson/ultrajson.git
+popd > /dev/null
 
-WORKDIR ultrajson
-
-COPY build.sh json_differential_fuzzer.py ujson_fuzzer.py hypothesis_structured_fuzzer.py $SRC/
+echo "Done."
