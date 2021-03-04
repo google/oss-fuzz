@@ -166,7 +166,7 @@ fuzzers=$(find $SRC/poppler/cpp/tests/fuzzing/ -name "*_fuzzer.cc")
 for f in $fuzzers; do
     fuzzer_name=$(basename $f .cc)
 
-    $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp \
+    $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp -I$SRC/poppler/build/cpp \
         $BUILD_CFLAGS \
         $f -o $OUT/$fuzzer_name \
         $PREDEPS_LDFLAGS \
@@ -213,7 +213,7 @@ for f in $fuzzers; do
     fuzzer_name=$(basename $f .cc)
 
     $CXX $CXXFLAGS -std=c++11 -fPIC \
-        -I$SRC/poppler/qt5/src \
+        -I$SRC/poppler/qt5/src -I$SRC/poppler/build/qt5/src \
         $BUILD_CFLAGS \
         $f -o $OUT/$fuzzer_name \
         $PREDEPS_LDFLAGS \
