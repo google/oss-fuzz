@@ -60,7 +60,7 @@ test $(($RANDOM % 10)) -lt 1 && {
   export AFL_LLVM_LAF_ALL=1
 }
 
-# If the targets whishes a dictionary - then create one.
+# If the targets wants a dictionary - then create one.
 test "$AFL_ENABLE_DICTIONARY" = "1" && {
   export AFL_LLVM_DICT2FILE="$OUT/afl++.dict"
 }
