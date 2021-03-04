@@ -169,9 +169,6 @@ ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 # TODO: remove after tpm2 catchup.
 ENV FUZZER_LDFLAGS ""
 
-ENV PRECOMPILED_DIR="/usr/lib/precompiled"
-RUN mkdir $PRECOMPILED_DIR
-
 WORKDIR $SRC
 
 # TODO: switch to -b stable once we can.
