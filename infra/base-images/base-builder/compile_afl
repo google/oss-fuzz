@@ -19,37 +19,12 @@
 # The 'env|grep' setup ensures we do not trigger the linter.
 # The variables need to be set to "1" here - or before running this script.
 
-# If enabled this provides a safe work around if afl-clang-fast ever break:
-env | grep -qw AFL_LLVM_MODE_WORKAROUND || {
-  # needed until llvm 13 works:
-  AFL_LLVM_MODE_WORKAROUND=0
-}
-
-# If a dictionary should be generated based on comparisons at compile time:
-env | grep -qw AFL_ENABLE_DICTIONARY || {
-  AFL_ENABLE_DICTIONARY=1
-}
-
 # Start compiling afl++.
-echo "Compiling afl++"
+echo "Copying precompiled afl++"
 
-# Build and copy afl++ tools necessary for fuzzing.
+# Copy afl++ tools necessary for fuzzing.
 pushd $SRC/aflplusplus > /dev/null
 
-# Unset CFLAGS and CXXFLAGS while building AFL since we don't want to slow it
-# down with sanitizers.
-SAVE_CXXFLAGS=$CXXFLAGS
-SAVE_CFLAGS=$CFLAGS
-unset CXXFLAGS
-unset CFLAGS
-export AFL_IGNORE_UNKNOWN_ENVS=1
-make clean
-AFL_NO_X86=1 PYTHON_INCLUDE=/ make
-CFLAGS=$SAVE_CFLAGS
-CXXFLAGS=$SAVE_CXXFLAGS
-
-# Build afl++ driver with existing CFLAGS, CXXFLAGS.
-make -C utils/aflpp_driver
 cp -f libAFLDriver.a $LIB_FUZZING_ENGINE
 
 # Some important projects include libraries, copy those even when they don't
@@ -80,6 +55,9 @@ test $(($RANDOM % 10)) -lt 4 && {
 test $(($RANDOM % 10)) -lt 1 && {
   export AFL_LLVM_LAF_ALL=1
 }
+
+export AFL_LLVM_MODE_WORKAROUND=0
+export AFL_ENABLE_DICTIONARY=0
 
 # In case afl-clang-fast ever breaks, this is a workaround:
 test "$AFL_LLVM_MODE_WORKAROUND" = "1" && {
