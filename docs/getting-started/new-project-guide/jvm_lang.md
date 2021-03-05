@@ -94,7 +94,7 @@ public class ExampleFuzzer {
 ### build.sh
 
 For JVM projects, `build.sh` does need some more significant modifications
-over C/C++ projects. The following is an annotated example build script for a
+over C/C++ projects. Below is an annotated example build script for a
 Java-only project with single-file fuzz targets as described above:
 
 ```sh
@@ -145,10 +145,14 @@ done
 
 Jazzer provides a `FuzzedDataProvider` that can simplify the task of creating a
 fuzz target by translating the raw input bytes received from the fuzzer into
-useful primitive Java types. On OSS-Fuzz, the required library is available in
-the base docker images under the path `$JAZZER_API_PATH`, which is added to the
-classpath by the example build script shown above.
-Locally, the library can be obtained from
+useful primitive Java types. Its functionality is similar to
+`FuzzedDataProviders` available in other languages, such as
+[Python](https://github.com/google/atheris#fuzzeddataprovider) and
+[C++](https://github.com/google/fuzzing/blob/master/docs/split-inputs.md).
+
+On OSS-Fuzz, the required library is available in the base docker images under
+the path `$JAZZER_API_PATH`, which is added to the classpath by the example
+build script shown above. Locally, the library can be obtained from
 [Maven Central](https://search.maven.org/search?q=g:com.code-intelligence%20a:jazzer-api).
 
 A fuzz target using the `FuzzedDataProvider` would look as follows:
