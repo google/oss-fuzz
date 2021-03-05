@@ -1,7 +1,7 @@
 homepage: "https://github.com/opencontainers/runc"
 main_repo: "https://github.com/opencontainers/runc"
 primary_contact: "cyphar@cyphar.com"
-auto_ccs :
+auto_ccs:
   - "adam@adalogics.com"
   - "michael@docker.com"
   - "mpatel@redhat.com"
