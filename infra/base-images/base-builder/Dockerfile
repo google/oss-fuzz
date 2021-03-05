@@ -176,7 +176,7 @@ WORKDIR $SRC
 # TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 79d75d8e42e5adf64e149ab6e1fe197cb1d4f303
+    git checkout 41ad23041b98917e9c38873f5b296ab98e59e460
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
@@ -186,7 +186,7 @@ RUN cd $SRC && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
 COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    compile_go_fuzzer precompile_honggfuzz precompile_afl srcmap \
+    compile_go_fuzzer precompile_honggfuzz precompile_afl debug_afl srcmap \
     write_labels.py /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/
