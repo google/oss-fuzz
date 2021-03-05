@@ -1,0 +1,16 @@
+homepage: "https://github.com/opencontainers/runc"
+main_repo: "https://github.com/opencontainers/runc"
+primary_contact: "cyphar@cyphar.com"
+auto_ccs:
+  - "adam@adalogics.com"
+  - "michael@docker.com"
+  - "mpatel@redhat.com"
+  - "dqminh89@gmail.com"
+  - "h.huangqiang@huawei.com"
+  - "akihiro.suda.cz@hco.ntt.co.jp"
+  - "kolyshkin@gmail.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
