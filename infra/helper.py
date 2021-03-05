@@ -959,8 +959,10 @@ def shell(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'FUZZING_LANGUAGE=' + _get_project_language(args.project_name),
   ]
+
+  if args.project_name != 'base-runner-debug':
+    env.append('FUZZING_LANGUAGE=' + _get_project_language(args.project_name))
 
   if args.e:
     env += args.e
