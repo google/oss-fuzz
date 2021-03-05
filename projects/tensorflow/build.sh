@@ -92,7 +92,11 @@ then
   ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/core/protobuf ${REMAP_PATH}
 
   # Sync external dependencies. We don't need to include `bazel-tensorflow`.
+  # Also, remove `external/org_tensorflow` which is a copy of the entire source
+  # code that Bazel creates. Not removing this would cause `rsync` to expand a
+  # symlink that ends up pointing to itself!
   pushd bazel-tensorflow
+  unlink external/org_tensorflow
   ${RSYNC_CMD} external/ ${REMAP_PATH}
   popd
 fi
