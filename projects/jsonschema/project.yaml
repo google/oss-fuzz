@@ -1,0 +1,11 @@
+homepage: "https://github.com/Julian/jsonschema"
+language: python
+primary_contact: "Julian+Security@GrayVines.com"
+auto_ccs:
+  - "david@adalogics.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/Julian/jsonschema'
