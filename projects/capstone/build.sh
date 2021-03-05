@@ -16,7 +16,7 @@
 ################################################################################
 
 #add next branch
-for branch in master next
+for branch in v4 next
 do
     cd capstone$branch
     # build project
@@ -44,10 +44,13 @@ do
     # export other associated stuff
     cp fuzz_disasm.options $OUT/fuzz_disasm$branch.options
 
+    cd ../../build
     # build fuzz target
-    $CC $CFLAGS -I../../include/ -c fuzz_disasm.c -o fuzz_disasm.o
+    FUZZO=CMakeFiles/fuzz_disasm.dir/suite/fuzz/fuzz_disasm.c.o
+    if [ -f CMakeFiles/fuzz_disasm.dir/suite/fuzz/platform.c.o ]; then
+        FUZZO="$FUZZO CMakeFiles/fuzz_disasm.dir/suite/fuzz/platform.c.o"
+    fi
+    $CXX $CXXFLAGS $FUZZO -o $OUT/fuzz_disasm$branch libcapstone.a $LIB_FUZZING_ENGINE
 
-    $CXX $CXXFLAGS fuzz_disasm.o -o $OUT/fuzz_disasm$branch ../../build/libcapstone.a -lFuzzingEngine
-
-    cd ../../../
+    cd ../../
 done

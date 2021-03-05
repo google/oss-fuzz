@@ -15,9 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER agaynor@mozilla.com
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   autoconf2.13 \
+  libc++1 \
+  libc++abi1 \
   yasm \
   python
 

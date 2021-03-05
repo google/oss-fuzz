@@ -15,17 +15,20 @@
 #
 ################################################################################
 
-DEBUGGER=${DEBUGGER:-}
 FUZZER=$1
 shift
-TESTCASE="/testcase"
+
+if [ ! -v TESTCASE ]; then
+    TESTCASE="/testcase"
+fi
 
 if [ ! -f $TESTCASE ]; then
   echo "Error: $TESTCASE not found, use: docker run -v <path>:$TESTCASE ..."
   exit 1
 fi
 
-export PATH=$OUT:$PATH
-cd $OUT
-$DEBUGGER $OUT/$FUZZER $FUZZER_ARGS $@ $TESTCASE
+export RUN_FUZZER_MODE="interactive"
+export FUZZING_ENGINE="libfuzzer"
+export SKIP_SEED_CORPUS="1"
 
+run_fuzzer $FUZZER $@ $TESTCASE

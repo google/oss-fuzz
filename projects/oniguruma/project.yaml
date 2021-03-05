@@ -1,0 +1,8 @@
+homepage: "https://github.com/kkos/oniguruma"
+language: c
+primary_contact: "kkosako0@gmail.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://github.com/kkos/oniguruma.git'

@@ -1,5 +1,13 @@
-homepage: "http://80386.nl/projects/libteken/"
+homepage: "http://svn.freebsd.org/base/head/sys/teken/"
+language: c++
+primary_contact: "ed@nuxi.nl"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
 sanitizers:
   - address
-  - memory
   - undefined
+  - memory
+  - dataflow

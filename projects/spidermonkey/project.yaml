@@ -1,8 +1,11 @@
 homepage: "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey"
-primary_contact: "agaynor@mozilla.com"
+language: c++
+primary_contact: "choller@mozilla.com"
 auto_ccs:
-  - "choller@mozilla.com"
+  - sledru@mozilla.com
+  - twsmith@mozilla.com
 fuzzing_engines:
   - none
 sanitizers:
   - address
+blackbox: true

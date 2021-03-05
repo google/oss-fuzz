@@ -1,0 +1,13 @@
+homepage: "https://www.theora.org/"
+language: c++
+primary_contact: "guidovranken@gmail.com"
+vendor_ccs:
+ - "daede003@umn.edu"
+ - "twsmith@mozilla.com"
+sanitizers:
+ - address
+ - undefined
+ - memory
+architectures:
+ - x86_64
+ - i386

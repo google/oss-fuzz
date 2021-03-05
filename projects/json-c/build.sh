@@ -14,17 +14,17 @@
 # limitations under the License.
 #
 ################################################################################
-
-./autogen.sh
-./configure --enable-static --disable-shared
-make -j$(nproc) all
-ar rc json_c.a *.o
+mkdir json-c-build
+cd json-c-build
+cmake -DBUILD_SHARED_LIBS=OFF ..
+make -j$(nproc)
+cd ..
 
 cp $SRC/*.dict $OUT/
 
 for f in $SRC/*_fuzzer.cc; do
     fuzzer=$(basename "$f" _fuzzer.cc)
-    $CXX $CXXFLAGS -std=c++11 -I$SRC/json-c \
+    $CXX $CXXFLAGS -std=c++11 -I$SRC/json-c -I$SRC/json-c/json-c-build\
          $SRC/${fuzzer}_fuzzer.cc -o $OUT/${fuzzer}_fuzzer \
-         -lFuzzingEngine $SRC/json-c/json_c.a
+         $LIB_FUZZING_ENGINE $SRC/json-c/json-c-build/libjson-c.a
 done

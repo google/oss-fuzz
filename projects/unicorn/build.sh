@@ -25,7 +25,7 @@ ls fuzz_*.c | cut -d_ -f2-4 | cut -d. -f1 | while read target
 do
     $CC $CFLAGS -I../../include -c fuzz_$target.c -o fuzz_$target.o
 
-    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target ../../libunicorn.a -lFuzzingEngine
+    $CXX $CXXFLAGS fuzz_$target.o -o $OUT/fuzz_$target ../../libunicorn.a $LIB_FUZZING_ENGINE
 
     # TODO corpuses
     cp fuzz_emu.options $OUT/fuzz_$target.options

@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 $CC $CFLAGS -c -I./include src/nestegg.c
-$CXX $CXXFLAGS -o $OUT/fuzz -I./include nestegg.o test/fuzz.cc -lFuzzingEngine
+$CXX $CXXFLAGS -o $OUT/fuzz -I./include nestegg.o test/fuzz.cc $LIB_FUZZING_ENGINE
 
 
 mkdir corpus/

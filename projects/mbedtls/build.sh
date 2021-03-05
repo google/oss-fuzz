@@ -16,22 +16,25 @@
 ################################################################################
 
 # build project
-# TODO change when merged into master branch of official repo
-git apply ../fuzz.diff
-cmake .
+perl scripts/config.pl set MBEDTLS_PLATFORM_TIME_ALT
+mkdir build
+cd build
+cmake ..
+# build including fuzzers
 make -j$(nproc) all
+cp programs/fuzz/fuzz_* $OUT/
 
 # build corpuses
-cd tests
+cd ../programs
 cp -r ../../openssl/fuzz/corpora/crl fuzz/corpuses/
 cp -r ../../openssl/fuzz/corpora/x509 fuzz/corpuses/
 cp -r ../../boringssl/fuzz/privkey_corpus fuzz/corpuses/
 cp ../../boringssl/fuzz/cert_corpus/* fuzz/corpuses/x509/
-zip -r fuzz/fuzz_x509crl_seed_corpus.zip data_files/crl* fuzz/corpuses/crl
-zip -r fuzz/fuzz_x509crt_seed_corpus.zip data_files/*.crt data_files/dir*/*.crt  fuzz/corpuses/x509/
-zip -r fuzz/fuzz_x509csr_seed_corpus.zip data_files/*.csr data_files/*.req.*
-zip -r fuzz/fuzz_privkey_seed_corpus.zip data_files/*.key data_files/*.pem fuzz/corpuses/privkey_corpus
-zip -r fuzz/fuzz_pubkey_seed_corpus.zip data_files/*.pub data_files/*.pubkey data_files/*pub.pem
+zip -r fuzz/fuzz_x509crl_seed_corpus.zip ../tests/data_files/crl* fuzz/corpuses/crl
+zip -r fuzz/fuzz_x509crt_seed_corpus.zip ../tests/data_files/*.crt ../tests/data_files/dir*/*.crt  fuzz/corpuses/x509/
+zip -r fuzz/fuzz_x509csr_seed_corpus.zip ../tests/data_files/*.csr ../tests/data_files/*.req.*
+zip -r fuzz/fuzz_privkey_seed_corpus.zip ../tests/data_files/*.key ../tests/data_files/*.pem fuzz/corpuses/privkey_corpus
+zip -r fuzz/fuzz_pubkey_seed_corpus.zip ../tests/data_files/*.pub ../tests/data_files/*.pubkey
 zip -r fuzz/fuzz_dtlsclient_seed_corpus.zip fuzz/corpuses/dtlsclient
 zip -r fuzz/fuzz_dtlsserver_seed_corpus.zip fuzz/corpuses/dtlsserver
 zip -r fuzz/fuzz_client_seed_corpus.zip fuzz/corpuses/client
@@ -41,11 +44,3 @@ cd fuzz
 # export other associated stuff
 cp *.options $OUT/
 cp fuzz_*_seed_corpus.zip $OUT/
-
-# build fuzzers
-for target in x509crl x509crt x509csr privkey pubkey client server dtlsclient dtlsserver
-do
-    $CC $CFLAGS -I. -I ../../include -c fuzz_$target.c -o fuzz_$target.o
-
-    $CXX $CXXFLAGS -std=c++11 fuzz_$target.o -o $OUT/fuzz_$target ../../library/libmbedx509.a ../../library/libmbedtls.a ../../library/libmbedcrypto.a -lFuzzingEngine
-done

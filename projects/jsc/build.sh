@@ -21,8 +21,6 @@ mkdir $DEPS_PATH
 cd $SRC/icu/source
 ./configure --disable-shared --enable-static --disable-layoutex \
   --disable-tests --disable-samples --with-data-packaging=static --prefix=$DEPS_PATH
-# ugly hack to avoid build error
-echo '#include <locale.h>' >>i18n/digitlst.h
 make install -j$(nproc)
 
 # Ugly ugly hack to get static linking to work for icu.
@@ -36,6 +34,7 @@ ln -s libicu.a libicui18n.a
 
 export CFLAGS="$CFLAGS -DU_STATIC_IMPLEMENTATION"
 export CXXFLAGS="$CXXFLAGS -DU_STATIC_IMPLEMENTATION"
+export ICU_ROOT=$DEPS_PATH
 
 cd $SRC/WebKit
 Tools/Scripts/build-jsc \

@@ -1,4 +1,17 @@
 homepage: "https://github.com/karelzak/util-linux"
 primary_contact: "ruediger.meier@ga-group.nl"
+language: c
+builds_per_day: 4
 auto_ccs:
   - "kzak@redhat.com"
+  - "evvers@ya.ru"
+  - "evverx@gmail.com"
+  - "kerolasa@gmail.com"
+architectures:
+  - x86_64
+  - i386
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://github.com/karelzak/util-linux'

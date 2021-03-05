@@ -16,7 +16,7 @@
 ################################################################################
 
 # Build project
-cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DBUILD_FUZZ_TEST=ON
+cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DMZ_BUILD_FUZZ_TEST=ON
 make clean
 make -j$(nproc)
 

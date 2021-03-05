@@ -15,6 +15,4 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-runner
-MAINTAINER mike.aizatsky@gmail.com
-RUN apt-get install -y gdb valgrind zip
-
+RUN apt-get update && apt-get install -y gdb valgrind zip

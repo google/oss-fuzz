@@ -1,0 +1,9 @@
+homepage: "https://github.com/serde-rs/json"
+primary_contact: "dtolnay@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"

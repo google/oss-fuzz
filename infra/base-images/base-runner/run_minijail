@@ -20,9 +20,11 @@ mkdir /tmp/chroot
 
 mkdir /tmp/chroot/lib
 mkdir /tmp/chroot/lib64
+mkdir /tmp/chroot/lib32
 
 mkdir /tmp/chroot/usr
 mkdir /tmp/chroot/usr/lib
+mkdir /tmp/chroot/usr/lib32
 
 mkdir /tmp/chroot/dev
 mknod -m 666 /tmp/chroot/dev/null c 1 3
@@ -45,13 +47,13 @@ echo 'Running:'
 echo minijail0 -U -m \"0 $UID 1\" -T static \
   -c 0 -n -v -p -l -I \
   -k proc,/proc,proc,1 -P /tmp/chroot \
-  -b /lib,/lib,0 -b /lib64,/lib64,0 -b /usr/lib,/usr/lib,0 \
-  -b /tmp,/tmp,1 \
+  -b /lib,/lib,0 -b /lib64,/lib64,0 -b /lib32,/lib32,0 -b /usr/lib,/usr/lib,0 \
+  -b /usr/lib32,/usr/lib32,0 -b /tmp,/tmp,1 \
   -b $EXE_DIR,$EXE_DIR,0 $FULL_EXE_PATH $@
 
 minijail0 -U -m "0 $UID 1" -T static \
   -c 0 -n -v -p -l -I \
   -k proc,/proc,proc,1 -P /tmp/chroot \
-  -b /lib,/lib,0 -b /lib64,/lib64,0 -b /usr/lib,/usr/lib,0 \
-  -b /tmp,/tmp,1 \
+  -b /lib,/lib,0 -b /lib64,/lib64,0 -b /lib32,/lib32,0 -b /usr/lib,/usr/lib,0 \
+  -b /usr/lib32,/usr/lib32,0 -b /tmp,/tmp,1 \
   -b $EXE_DIR,$EXE_DIR,0 $FULL_EXE_PATH $@

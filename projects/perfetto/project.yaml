@@ -1,0 +1,26 @@
+homepage: "https://perfetto.dev"
+language: c++
+primary_contact: "fmayer@google.com"
+auto_ccs:
+  - "hjd@google.com"
+  - "lalitm@google.com"
+  - "perfetto-oss-fuzz@google.com"
+  - "primiano@google.com"
+  - "rsavitski@google.com"
+  - "eseckler@google.com"
+vendor_ccs:
+  - bcreasey@google.com
+  - hamzeh@google.com
+  - geuteneier@google.com
+  - hollyhall@google.com
+  - mikelogan@google.com
+  - maverickm@google.com
+  - warrenwright@google.com
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - afl
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://android.googlesource.com/platform/external/perfetto/'

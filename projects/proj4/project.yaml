@@ -1,6 +1,10 @@
-homepage: "http://proj4.org/"
+homepage: "https://proj.org/"
+language: c++
 primary_contact: "even.rouault@gmail.com"
 auto_ccs:
   - "hobu.inc@gmail.com"
   - "kristianevers@gmail.com"
   - "knudsen.thomas@gmail.com"
+architectures:
+  - x86_64
+  - i386

@@ -1,4 +1,5 @@
 homepage: "https://www.documentliberation.org"
+language: c++
 primary_contact: "dtardon@redhat.com"
 sanitizers:
   - address

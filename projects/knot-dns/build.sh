@@ -22,9 +22,9 @@
 export DEPS_PATH=$SRC/knot_deps
 export PKG_CONFIG_PATH=$DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$DEPS_PATH/include"
-export CXXFLAGS="$CPPFLAGS -std=c++11 $CXXFLAGS"
-export CFLAGS="$CPPFLAGS $CFLAGS"
 export LDFLAGS="-L$DEPS_PATH/lib"
+export GNULIB_SRCDIR=$SRC/gnulib
+export GNULIB_TOOL=$SRC/gnulib/gnulib-tool
 
 cd $SRC/libunistring
 ./autogen.sh
@@ -46,7 +46,7 @@ bash .bootstrap
 
 cd $SRC/gnutls
 touch .submodule.stamp
-make bootstrap
+./bootstrap
 GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
 LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
@@ -56,19 +56,21 @@ CFLAGS="$GNUTLS_CFLAGS" \
 make -j$(nproc)
 make install
 
+cd $SRC/lmdb/libraries/liblmdb
+make -j$(nproc)
+make install
 
 # Compile knot, install fuzzers to $OUT
 
 cd $SRC/knot-dns
+sed -i 's/-llmdb/-Wl,-Bstatic,-llmdb,-Bdynamic/' configure.ac
 autoreconf -if
-
-./configure --with-oss-fuzz=yes --disable-shared --enable-static --disable-daemon --disable-utilities --disable-documentation --disable-fastparser --disable-modules
-
+./configure --with-oss-fuzz=yes --disable-shared --enable-static --disable-daemon --disable-utilities --disable-documentation \
+    --disable-fastparser --disable-modules
 make -j$(nproc)
 cd $SRC/knot-dns/tests-fuzz
 make check
 /bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner fuzz_dname_to_str fuzz_dname_from_str "$OUT"
-
 
 # Set up fuzzing seeds
 

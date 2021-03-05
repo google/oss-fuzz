@@ -22,9 +22,19 @@ build=${WORK}/build
 rm -rf ${build}
 mkdir -p ${build}
 
+# prepare cross file for i386 compiliation
+if [ "$ARCHITECTURE" = "i386" ]; then
+	MESON_CFLAGS="'$(echo $CFLAGS | sed -e 's/ /;, ;/g' | tr \; \')'"
+	MESON_CXXFLAGS="'$(echo $CXXFLAGS | sed -e 's/ /;, ;/g' | tr \; \')'"
+	sed -e "s/CC$/'$CC'/; s/CXX$/'$CXX'/; s/CFLAGS$/[$MESON_CFLAGS]/; s/CXXFLAGS$/[$MESON_CXXFLAGS]/" < ${SRC}/linux32.meson > ${WORK}/linux32.meson
+	CROSS="--cross-file ${WORK}/linux32.meson"
+fi
+
 # build library
-meson -Dbuild_asm=false -Dbuild_tools=false -Dfuzzing_engine=oss-fuzz \
+meson -Denable_tools=false -Dfuzzing_engine=oss-fuzz \
       -Db_lundef=false -Ddefault_library=static -Dbuildtype=debugoptimized \
+      -Dlogging=false -Dfuzzer_ldflags=$LIB_FUZZING_ENGINE \
+      ${CROSS:-} \
       ${build}
 ninja -j $(nproc) -C ${build}
 
@@ -36,7 +46,7 @@ cp $SRC/dec_fuzzer_seed_corpus.zip ${WORK}/tmp/seed_corpus.zip
 (cd ${WORK}/tmp && zip -q -m -r -0 ${WORK}/tmp/seed_corpus.zip testdata)
 
 # copy fuzzers and link testdata
-for fuzzer in $(find ${build} -name 'dav1d_fuzzer*'); do
+for fuzzer in $(find ${build}/tests/libfuzzer -maxdepth 1 -type f -executable -name 'dav1d_fuzzer*'); do
 	cp "${fuzzer}" $OUT/
 	cp ${WORK}/tmp/seed_corpus.zip $OUT/$(basename "$fuzzer")_seed_corpus.zip
 done

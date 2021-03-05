@@ -1,0 +1,12 @@
+homepage: "https://libspng.org"
+language: c++
+primary_contact: "randy408@protonmail.com"
+auto_ccs:
+  - "randy440088@gmail.com"
+architectures:
+  - x86_64
+  - i386
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/randy408/libspng.git'

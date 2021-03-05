@@ -1,0 +1,16 @@
+homepage: "https://github.com/nothings/stb"
+language: c++
+primary_contact: "nothings.org@gmail.com"
+auto_ccs:
+  - "randy440088@gmail.com"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - memory
+  - dataflow
+main_repo: 'https://github.com/nothings/stb.git'

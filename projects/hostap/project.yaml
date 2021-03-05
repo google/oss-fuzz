@@ -1,0 +1,19 @@
+homepage: "https://w1.fi/cvs.html"
+language: c++
+primary_contact: "j@w1.fi"
+auto_ccs:
+   - "elver@google.com"
+fuzzing_engines:
+  - afl
+  - libfuzzer
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - memory
+  - dataflow
+architectures:
+  - x86_64
+  - i386
+main_repo: 'git://w1.fi/srv/git/hostap.git'

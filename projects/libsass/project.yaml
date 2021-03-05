@@ -1,0 +1,13 @@
+homepage: "http://libsass.org/"
+language: c++
+primary_contact: "xzyfer@gmail.com"
+
+sanitizers:
+  - address
+  - memory
+  - undefined
+
+labels:
+  data_context_fuzzer:
+    - sundew
+main_repo: 'https://github.com/sass/libsass.git'

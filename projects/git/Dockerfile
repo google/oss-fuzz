@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER steadmon@google.com
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
         cvs cvsps gettext libcgi-pm-perl libcurl4-gnutls-dev \
@@ -23,6 +22,7 @@ RUN apt-get update && \
         libio-pty-perl libmailtools-perl libpcre2-dev libpcre3-dev libsvn-perl \
         libtime-modules-perl libyaml-perl libz-dev python subversion tcl unzip \
         asciidoc docbook-xsl xmlto libssl-dev zip
-RUN git clone --depth 1 https://github.com/git/git git
+RUN git clone https://github.com/git/git git
 WORKDIR git
+RUN git checkout origin/next
 COPY build.sh $SRC/

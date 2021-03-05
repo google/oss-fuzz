@@ -1,0 +1,26 @@
+homepage: https://android.googlesource.com/platform/external/aac/
+language: c++
+primary_contact: audio-fdk@iis.fraunhofer.de
+auto_ccs:
+  - jmtrivi@google.com
+vendor_ccs:
+  - bcreasey@google.com
+  - hamzeh@google.com
+  - geuteneier@google.com
+  - hollyhall@google.com
+  - mikelogan@google.com
+  - maverickm@google.com
+  - warrenwright@google.com
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - undefined
+  - memory
+  - dataflow
+architectures:
+  - x86_64
+  - i386

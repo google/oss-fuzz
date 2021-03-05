@@ -1,12 +1,13 @@
 homepage: "https://www.mozilla.org/firefox/"
-primary_contact: "agaynor@mozilla.com"
+language: c++
+primary_contact: "choller@mozilla.com"
 auto_ccs:
-  - choller@mozilla.com
+  - twsmith@mozilla.com
+  - sledru@mozilla.com
 fuzzing_engines:
   - libfuzzer
 sanitizers:
   - address
-  - undefined
 run_tests: False
 # libraries from $OUT/firefox/dependentlibs.list
 coverage_extra_args: >

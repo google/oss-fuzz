@@ -1,9 +1,11 @@
 homepage: "http://www.xmlsoft.org/libxslt/"
+language: c++
 primary_contact: "wellnhofer@aevum.de"
-auto_ccs:
-  - "dominicc@chromium.org"
+vendor_ccs:
   - "ddkilzer@apple.com"
+  - "schenney@chromium.org"
 sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://gitlab.gnome.org/GNOME/libxslt.git'

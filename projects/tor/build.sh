@@ -22,7 +22,7 @@ mkdir -p $TOR_DEPS
 # Build libevent with proper instrumentation.
 cd ${SRC}/libevent
 sh autogen.sh
-./configure --prefix=${TOR_DEPS}
+./configure --prefix=${TOR_DEPS} --disable-openssl
 make -j$(nproc) clean
 make -j$(nproc) all
 make install
@@ -75,10 +75,12 @@ TORLIBS="$TORLIBS -Wl,-Bdynamic"
 for fuzzer in src/test/fuzz/*.a; do
     output="${fuzzer%.a}"
     output="${output##*lib}"
-    ${CXX} ${CXXFLAGS} -std=c++11 -lFuzzingEngine ${fuzzer} ${TORLIBS} -o ${OUT}/${output}
+    ${CXX} ${CXXFLAGS} -std=c++11 $LIB_FUZZING_ENGINE ${fuzzer} ${TORLIBS} -o ${OUT}/${output}
 
     corpus_dir="${SRC}/tor-fuzz-corpora/${output#oss-fuzz-}"
     if [ -d "${corpus_dir}" ]; then
-      zip -j ${OUT}/${output}_seed_corpus.zip ${corpus_dir}/*
+      set +x
+      zip -q -j ${OUT}/${output}_seed_corpus.zip ${corpus_dir}/*
+      set -x
     fi
 done

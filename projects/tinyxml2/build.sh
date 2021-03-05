@@ -18,6 +18,6 @@ make -j$(nproc) clean
 make -j$(nproc) all
 
 $CXX $CXXFLAGS -std=c++11 -Iinclude/ $SRC/xmltest.cpp -o $OUT/xmltest \
-    -lFuzzingEngine $SRC/tinyxml2/libtinyxml2.a
+    $LIB_FUZZING_ENGINE $SRC/tinyxml2/libtinyxml2.a
 
 cp $SRC/*.dict $SRC/*.options $OUT/

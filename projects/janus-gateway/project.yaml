@@ -1,0 +1,11 @@
+homepage: "https://github.com/meetecho/janus-gateway"
+language: c++
+primary_contact: "toppi.ale@gmail.com"
+auto_ccs:
+  - "lminiero@gmail.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+coverage_extra_args: -ignore-filename-regex=.*glib.* -ignore-filename-regex=.*log.c
+main_repo: 'https://github.com/meetecho/janus-gateway.git'

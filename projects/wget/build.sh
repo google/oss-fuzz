@@ -61,13 +61,14 @@ fi
 
 cd $SRC/gnutls
 touch .submodule.stamp
-make bootstrap
+./bootstrap
 GNUTLS_CFLAGS=`echo $CFLAGS|sed s/-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION//`
 LIBS="-lunistring" \
 CFLAGS="$GNUTLS_CFLAGS" \
 ./configure --with-nettle-mini --enable-gcc-warnings --enable-static --disable-shared --with-included-libtasn1 \
     --with-included-unistring --without-p11-kit --disable-doc --disable-tests --disable-tools --disable-cxx \
-    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --prefix=$WGET_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
+    --disable-maintainer-mode --disable-libdane --disable-gcc-warnings --disable-full-test-suite \
+    --prefix=$WGET_DEPS_PATH $GNUTLS_CONFIGURE_FLAGS
 make -j$(nproc)
 make install
 
@@ -79,14 +80,14 @@ cd $SRC/wget
 ./bootstrap
 
 # build and run non-networking tests
-LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
   ./configure -C
 make clean
 make -j$(nproc)
 make -j$(nproc) -C fuzz check
 
 # build for fuzzing
-LIBS="-lgnutls -lnettle -lhogweed -lidn2 -lunistring" \
+LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
   ./configure --enable-fuzzing -C
 make clean
 make -j$(nproc) -C lib

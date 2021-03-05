@@ -26,4 +26,4 @@ $CXX $CXXFLAGS \
     -o $OUT/libtsm_fuzzer \
     $SRC/libtsm_fuzzer.o \
     .libs/libtsm.a \
-    -lFuzzingEngine
+    $LIB_FUZZING_ENGINE

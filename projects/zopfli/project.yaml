@@ -1,0 +1,8 @@
+homepage: "https://github.com/google/zopfli"
+language: c++
+primary_contact: "lode@google.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/google/zopfli'

@@ -1,0 +1,7 @@
+Package: *
+Pin: release n=bionic
+Pin-Priority: 1
+
+Package: nasm
+Pin: release n=bionic
+Pin-Priority: 555

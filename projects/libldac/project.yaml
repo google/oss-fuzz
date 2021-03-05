@@ -1,0 +1,22 @@
+homepage: "https://android.googlesource.com/platform/external/libldac"
+language: c++
+primary_contact: "Chisato.Kenmochi@sony.com"
+auto_ccs:
+  - twsmith@mozilla.com
+vendor_ccs:
+  - bcreasey@google.com
+  - hamzeh@google.com
+  - geuteneier@google.com
+  - hollyhall@google.com
+  - mikelogan@google.com
+  - maverickm@google.com
+  - warrenwright@google.com
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+  - dataflow
+sanitizers:
+  - address
+  - dataflow
+main_repo: 'https://android.googlesource.com/platform/external/libldac'

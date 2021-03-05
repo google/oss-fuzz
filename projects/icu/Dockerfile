@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mike.aizatsky@gmail.com
 RUN apt-get update && apt-get install -y make
 
-RUN svn co http://source.icu-project.org/repos/icu/trunk/icu4c/ icu
-COPY build.sh *.cc *.h *.dict *.options $SRC/
+RUN git clone --depth 1 https://github.com/unicode-org/icu.git icu
+COPY build.sh $SRC/

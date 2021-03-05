@@ -1,0 +1,11 @@
+homepage: "https://github.com/zeromq/libzmq"
+language: c++
+primary_contact: "bluca@debian.org"
+auto_ccs:
+  - "luca.boccassi@gmail.com"
+  - "somdoron@gmail.com"
+  - "simon.giesecke@gmail.com"
+architectures:
+  - x86_64
+  - i386
+main_repo: 'https://github.com/zeromq/libzmq.git'

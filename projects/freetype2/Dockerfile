@@ -15,16 +15,13 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER prince.cherusker@gmail.com
 
 RUN apt-get update &&  \
     apt-get install -y \
       autoconf         \
       cmake            \
-      libpng-dev       \
       libtool          \
       pkg-config       \
-      zlib1g-dev       \
       make
 
 # Get some files for the seed corpus

@@ -1,0 +1,6 @@
+homepage: "https://thesofproject.github.io"
+primary_contact: "cujomalainey@chromium.org"
+language: c
+auto_ccs:
+  - "ranjani.sridharan@intel.corp-partner.google.com"
+main_repo: "https://github.com/thesofproject/sof"

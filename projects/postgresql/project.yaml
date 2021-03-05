@@ -1,2 +1,14 @@
 homepage: "https://postgresql.org"
+main_repo: "https://git.postgresql.org/git/postgresql"
 primary_contact: "sfrost@snowman.net"
+language: c
+auto_ccs:
+  - "ouyangyunshu@google.com"
+  - "frost.stephen.p@gmail.com"
+  - "aseering@google.com"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+  - afl
+sanitizers:
+  - address

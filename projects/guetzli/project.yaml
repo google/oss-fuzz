@@ -1,4 +1,5 @@
 homepage: "https://github.com/google/guetzli"
+language: c++
 primary_contact: "robryk@google.com"
 auto_ccs:
   - "szabadka@google.com"
@@ -6,3 +7,4 @@ sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://github.com/google/guetzli'

@@ -51,7 +51,7 @@ build_fuzzer() {
        -DTRANSFORM_${fft_transform} \
        $SRC/pffft/pffft.c $SRC/pffft/pffft_fuzzer.cc \
        -o $OUT/${fuzz_target_name} \
-       -lFuzzingEngine
+       $LIB_FUZZING_ENGINE
 }
 
 # Build fuzzers.

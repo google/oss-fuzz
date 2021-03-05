@@ -19,9 +19,6 @@
 export SHELL=/bin/bash
 ../../mach bootstrap --no-interactive --application-choice browser
 
-# Set environment for rustc.
-source $HOME/.cargo/env
-
 autoconf2.13
 
 mkdir build_DBG.OBJ
@@ -30,8 +27,7 @@ cd build_DBG.OBJ
 # Temporarily disable cranelift (see bug 1497570)
 ../configure \
     --enable-debug \
-    --enable-optimize \
-    --disable-shared-js \
+    --enable-optimize="-O2 -gline-tables-only" \
     --disable-jemalloc \
     --disable-tests \
     --enable-address-sanitizer \
@@ -40,3 +36,8 @@ cd build_DBG.OBJ
 make "-j$(nproc)"
 
 cp dist/bin/js $OUT
+
+# Copy libraries.
+mkdir -p $OUT/lib
+cp -L /usr/lib/x86_64-linux-gnu/libc++.so.1 $OUT/lib
+cp -L /usr/lib/x86_64-linux-gnu/libc++abi.so.1 $OUT/lib

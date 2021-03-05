@@ -1,0 +1,21 @@
+homepage: "https://www.graphicsfuzz.com"
+language: c++
+primary_contact: "afdx@google.com"
+auto_ccs:
+  - "paulthomson@google.com"
+  - "metzman@google.com"
+
+fuzzing_engines:
+  - none
+
+sanitizers:
+  - address
+  - memory
+  - undefined
+
+architectures:
+  - x86_64
+  - i386
+
+disabled: True
+blackbox: true

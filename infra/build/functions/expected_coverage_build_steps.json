@@ -1,0 +1,144 @@
+[
+  {
+    "args": [
+      "clone",
+      "https://github.com/google/oss-fuzz.git"
+    ],
+    "name": "gcr.io/cloud-builders/git"
+  },
+  {
+    "name": "gcr.io/cloud-builders/docker",
+    "args": [
+      "build",
+      "-t",
+      "gcr.io/oss-fuzz/test-project",
+      "."
+    ],
+    "dir": "oss-fuzz/projects/test-project"
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "args": [
+      "bash",
+      "-c",
+      "srcmap > /workspace/srcmap.json && cat /workspace/srcmap.json"
+    ],
+    "env": [
+      "OSSFUZZ_REVISION=$REVISION_ID",
+      "FUZZING_LANGUAGE=c++"
+    ]
+  },
+  {
+    "name": "gcr.io/oss-fuzz/test-project",
+    "env": [
+      "FUZZING_ENGINE=libfuzzer",
+      "SANITIZER=coverage",
+      "OUT=/workspace/out/coverage",
+      "FUZZING_LANGUAGE=c++"
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "rm -r /out && cd /src && cd /src && mkdir -p /workspace/out/coverage && compile || (echo \"********************************************************************************\nCoverage build failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer coverage test-project\n********************************************************************************\" && false)"
+    ]
+  },
+  {
+    "url": "test_download"
+  },
+  {
+    "name": "gcr.io/oss-fuzz-base/base-runner",
+    "env": [
+      "FUZZING_ENGINE=libfuzzer",
+      "SANITIZER=coverage",
+      "OUT=/workspace/out/coverage",
+      "FUZZING_LANGUAGE=c++",
+      "HTTP_PORT=",
+      "COVERAGE_EXTRA_ARGS="
+    ],
+    "args": [
+      "bash",
+      "-c",
+      "for f in /corpus/*.zip; do unzip -q $f -d ${f%%.*} || (echo \"Failed to unpack the corpus for $(basename ${f%%.*}). This usually means that corpus backup for a particular fuzz target does not exist. If a fuzz target was added in the last 24 hours, please wait one more day. Otherwise, something is wrong with the fuzz target or the infrastructure, and corpus pruning task does not finish successfully.\" && exit 1); done && coverage || (echo \"********************************************************************************\nCode coverage report generation failed.\nTo reproduce, run:\npython infra/helper.py build_image test-project\npython infra/helper.py build_fuzzers --sanitizer coverage test-project\npython infra/helper.py coverage test-project\n********************************************************************************\" && false)"
+    ],
+    "volumes": [
+      {
+        "name": "corpus",
+        "path": "/corpus"
+      }
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/gsutil",
+    "entrypoint": "sh",
+    "args": [
+      "-c",
+      "gsutil -m rm -rf gs://oss-fuzz-coverage/test-project/reports/20200101 || exit 0"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/gsutil",
+    "args": [
+      "-m",
+      "cp",
+      "-r",
+      "/workspace/out/coverage/report",
+      "gs://oss-fuzz-coverage/test-project/reports/20200101"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/gsutil",
+    "entrypoint": "sh",
+    "args": [
+      "-c",
+      "gsutil -m rm -rf gs://oss-fuzz-coverage/test-project/fuzzer_stats/20200101 || exit 0"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/gsutil",
+    "args": [
+      "-m",
+      "cp",
+      "-r",
+      "/workspace/out/coverage/fuzzer_stats",
+      "gs://oss-fuzz-coverage/test-project/fuzzer_stats/20200101"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/gsutil",
+    "entrypoint": "sh",
+    "args": [
+      "-c",
+      "gsutil -m rm -rf gs://oss-fuzz-coverage/test-project/logs/20200101 || exit 0"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/gsutil",
+    "args": [
+      "-m",
+      "cp",
+      "-r",
+      "/workspace/out/coverage/logs",
+      "gs://oss-fuzz-coverage/test-project/logs/20200101"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/gsutil",
+    "args": [
+      "cp",
+      "/workspace/srcmap.json",
+      "gs://oss-fuzz-coverage/test-project/srcmap/20200101.json"
+    ]
+  },
+  {
+    "name": "gcr.io/cloud-builders/curl",
+    "args": [
+      "-H",
+      "Content-Type: application/json",
+      "-X",
+      "PUT",
+      "-d",
+      "{\"fuzzer_stats_dir\": \"gs://oss-fuzz-coverage/test-project/fuzzer_stats/20200101\", \"html_report_url\": \"https://storage.googleapis.com/oss-fuzz-coverage/test-project/reports/20200101/linux/index.html\", \"report_date\": \"20200101\", \"report_summary_path\": \"gs://oss-fuzz-coverage/test-project/reports/20200101/linux/summary.json\"}",
+      "test_url"
+    ]
+  }
+]

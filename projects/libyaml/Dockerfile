@@ -15,11 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER alex.gaynor@gmail.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 
 RUN git clone --depth=1 https://github.com/yaml/libyaml
-RUN zip libyaml_fuzzer_seed_corpus.zip libyaml/examples/*
+RUN zip $SRC/libyaml_seed_corpus.zip libyaml/examples/*
 
 WORKDIR libyaml
-COPY build.sh libyaml_fuzzer.cc libyaml_fuzzer.options yaml.dict $SRC/
+COPY build.sh *.h *_fuzzer.c libyaml_fuzzer.options yaml.dict $SRC/

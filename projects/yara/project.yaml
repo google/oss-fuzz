@@ -1,4 +1,5 @@
 homepage: "http://virustotal.github.io/yara/"
+language: c++
 primary_contact: "vmalvarez@google.com"
 auto_ccs:
   - "vmalvarez@virustotal.com"
@@ -7,3 +8,4 @@ sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://github.com/VirusTotal/yara.git'

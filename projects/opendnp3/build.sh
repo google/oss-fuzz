@@ -16,18 +16,24 @@
 ################################################################################
 
 # build project
-cmake -DDNP3_DECODER=ON -DSTATICLIBS=ON .
+cmake -DDNP3_FUZZING=ON -DSTATICLIBS=ON .
 make -j$(nproc) all
 
 cd cpp/tests/fuzz
-# build corpus
-zip -r fuzz_dnp3_seed_corpus.zip corpus/*.dnp
-cp fuzz_dnp3_seed_corpus.zip $OUT/
-# export other associated stuff
-cp *.options $OUT/
 
-# build fuzz target
-$CXX $CXXFLAGS -I. -I ../../libs/include/ -c fuzzdnp3.cpp -o fuzzdnp3.o
+TARGETS="fuzzdecoder \
+  fuzzoutstation \
+  fuzzmaster"
 
-$CXX $CXXFLAGS -std=c++14 fuzzdnp3.o -o $OUT/fuzz_dnp3 ../../../libasiodnp3.a ../../../libdnp3decode.a ../../../libasiopal.a ../../../libopendnp3.a ../../../libopenpal.a -lFuzzingEngine
+for target in $TARGETS; do
+  # build corpus
+  zip -r ${target}_seed_corpus.zip corpus/*.dnp
+  cp ${target}_seed_corpus.zip $OUT/
 
+  # export other associated stuff
+  cp fuzzdnp3.options $OUT/${target}.options
+
+  # build fuzz target
+  $CXX $CXXFLAGS -I. -I ../../libs/include/ -I ../../tests/libs/src/ -I ../../libs/src/ -c ${target}.cpp -o ${target}.o
+  $CXX $CXXFLAGS -std=c++14 ${target}.o -o $OUT/${target} ../../../libdnp3mocks.a ../../../libtestlib.a ../../../libasiodnp3.a ../../../libdnp3decode.a ../../../libasiopal.a ../../../libopendnp3.a ../../../libopenpal.a $LIB_FUZZING_ENGINE
+done

@@ -13,14 +13,17 @@
 # limitations under the License.
 #
 ################################################################################
+"""Templates for OSS-Fuzz project files."""
 
 PROJECT_YAML_TEMPLATE = """\
 homepage: "<your_project_homepage>"
+language: <programming_language>  # Example values: c, c++, go, rust.
 primary_contact: "<primary_contact_email>"
+main_repo: "https://path/to/main/repo.git"
 """
 
 DOCKER_TEMPLATE = """\
-# Copyright %(year)d Google Inc.
+# Copyright %(year)d Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +40,6 @@ DOCKER_TEMPLATE = """\
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER your@email.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN git clone --depth 1 <git_url> %(project_name)s     # or use other version control
 WORKDIR %(project_name)s
@@ -46,7 +48,7 @@ COPY build.sh $SRC/
 
 BUILD_TEMPLATE = """\
 #!/bin/bash -eu
-# Copyright %(year)d Google Inc.
+# Copyright %(year)d Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -72,5 +74,5 @@ BUILD_TEMPLATE = """\
 # e.g.
 # $CXX $CXXFLAGS -std=c++11 -Iinclude \\
 #     /path/to/name_of_fuzzer.cc -o $OUT/name_of_fuzzer \\
-#     -lFuzzingEngine /path/to/library.a
+#     $LIB_FUZZING_ENGINE /path/to/library.a
 """

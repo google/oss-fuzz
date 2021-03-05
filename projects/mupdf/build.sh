@@ -20,7 +20,7 @@ fuzz_target=pdf_fuzzer
 
 $CXX $CXXFLAGS -std=c++11 -Iinclude \
     source/fuzz/pdf_fuzzer.cc -o $OUT/$fuzz_target \
-    -lFuzzingEngine $WORK/libmupdf.a $WORK/libmupdf-third.a
+    $LIB_FUZZING_ENGINE $WORK/libmupdf.a $WORK/libmupdf-third.a
 
 mv $SRC/{*.zip,*.dict,*.options} $OUT
 

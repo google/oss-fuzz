@@ -1,0 +1,12 @@
+homepage: "https://github.com/OISF/libhtp"
+language: c++
+primary_contact: "vjulien@openinfosecfoundation.org"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+- "jish@openinfosecfoundation.org "
+
+sanitizers:
+- address
+- memory
+- undefined
+main_repo: 'https://github.com/OISF/libhtp.git'

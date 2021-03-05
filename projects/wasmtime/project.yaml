@@ -1,0 +1,14 @@
+homepage: "https://wasmtime.dev/"
+primary_contact: "jonathan.foote@gmail.com"
+auto_ccs:
+  - "fitzgen@gmail.com"
+  - "alex@alexcrichton.com"
+  - "till@tillschneidereit.net"
+  - "ydelendik@mozilla.com"
+  - "cfallin@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+main_repo: 'https://github.com/bytecodealliance/wasmtime'

@@ -1,0 +1,11 @@
+homepage: "https://racket-lang.org"
+primary_contact: "pocmatos@gmail.com"
+auto_ccs:
+  - samth@racket-lang.org
+sanitizers:
+ - undefined
+ - memory
+ - address
+architectures:
+ - x86_64
+ - i386
