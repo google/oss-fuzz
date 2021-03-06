@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y libz-dev autoconf mercurial
-RUN hg clone https://hg.ucc.asn.au/dropbear dropbear
+RUN git clone https://github.com/mkj/dropbear dropbear
 RUN hg clone https://hg.ucc.asn.au/dropbear-fuzzcorpus dropbear/corpus
 WORKDIR dropbear
 COPY build.sh *.options $SRC/
