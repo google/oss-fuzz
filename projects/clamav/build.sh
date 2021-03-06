@@ -16,6 +16,7 @@
 ################################################################################
 
 set -ex
+export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
 
 #
 # Build the library.
@@ -24,37 +25,33 @@ rm -rf ${WORK}/build
 mkdir -p ${WORK}/build
 cd ${WORK}/build
 
-if [ -f "${SRC}/clamav-devel/autogen.sh" ]
-then
-    /bin/chmod +x ${SRC}/clamav-devel/autogen.sh
-    ${SRC}/clamav-devel/autogen.sh
-fi
-
-# Remove ltdl so clamav build doesn't detect it and add it as a dependency.
-apt remove -y libtool libltdl-dev libltdl7
-
 #
 # Run ./configure
 #
-ac_cv_c_mmap_anonymous=no \
-    ${SRC}/clamav-devel/configure \
-        --disable-mempool \
-        --enable-fuzz=yes \
-        --with-libjson=no \
-        --with-pcre=no \
-        --enable-static=yes \
-        --enable-shared=no \
-        --disable-llvm \
-        --host=x86_64-unknown-linux-gnu
+export CLAMAV_DEPENDENCIES=/mussels/install
+cmake ${SRC}/clamav-devel \
+    -DENABLE_FUZZ=ON                                                   \
+    -DHAVE_MMAP=OFF                                                    \
+    -DJSONC_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include/json-c"          \
+    -DJSONC_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libjson-c.a"             \
+    -DENABLE_JSON_SHARED=OFF                                           \
+    -DBZIP2_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include"                 \
+    -DBZIP2_LIBRARY_RELEASE="$CLAMAV_DEPENDENCIES/lib/libbz2_static.a" \
+    -DOPENSSL_ROOT_DIR="$CLAMAV_DEPENDENCIES"                          \
+    -DOPENSSL_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include"               \
+    -DOPENSSL_CRYPTO_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libcrypto.a"    \
+    -DOPENSSL_SSL_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libssl.a"          \
+    -DZLIB_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libssl.a"                 \
+    -DLIBXML2_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include"               \
+    -DLIBXML2_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libxml2.a"             \
+    -DPCRE2_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include"                 \
+    -DPCRE2_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libpcre2-8.a"            \
+    -DZLIB_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include"                  \
+    -DZLIB_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libz.a"                   \
+    -DCMAKE_INSTALL_PREFIX="install"
 
-# Build libclamav
-make clean
-make -j"$(nproc)"
-
-#
-# Build the fuzz targets.
-#
-make -j"$(nproc)" fuzz-all
+# Build libclamav and the fuzz targets
+make -j4
 cp ./fuzz/clamav_* ${OUT}/.
 
 #
