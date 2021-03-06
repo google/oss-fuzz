@@ -15,15 +15,13 @@
 #
 ################################################################################
 
-pushd FreeImage
-
 # b44ExpLogTable.cpp only contains a definition of main().
 sed -i 's/Source\/OpenEXR\/IlmImf\/b44ExpLogTable.cpp//' Makefile.srcs
 make LIBRARIES=-lc++ -j$(nproc)
 
-popd
+INSTALL_DIR="$PWD/Dist"
 
-INSTALL_DIR=$SRC/FreeImage/Dist
+cd $SRC
 
 $CXX $CXXFLAGS -I${INSTALL_DIR}/ $LIB_FUZZING_ENGINE \
   load_from_memory_fuzzer.cc ${INSTALL_DIR}/libfreeimage.a \
