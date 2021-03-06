@@ -1,4 +1,5 @@
-# Copyright 2018 Google Inc.
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-RUN svn checkout https://svn.code.sf.net/p/freeimage/svn/ freeimage-svn
-WORKDIR $SRC/freeimage-svn/FreeImage/trunk/
-COPY build.sh $SRC/
-COPY load_from_memory_fuzzer.cc $SRC/
+mv $SRC/id_map_fuzzer.go $SRC/runc/libcontainer/system/
+compile_go_fuzzer ./libcontainer/system Fuzz id_map_fuzzer linux
+
+mv $SRC/user_fuzzer.go $SRC/runc/libcontainer/user
+compile_go_fuzzer ./libcontainer/user Fuzz user_fuzzer
+
+mv $SRC/configs_fuzzer.go $SRC/runc/libcontainer/configs
+compile_go_fuzzer ./libcontainer/configs Fuzz configs_fuzzer
