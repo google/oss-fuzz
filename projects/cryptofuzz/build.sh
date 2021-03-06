@@ -18,6 +18,8 @@
 # TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
 # https://github.com/google/oss-fuzz/issues/2336
 
+export GO111MODULE=off
+
 # Compile xxd
 $CC $SRC/xxd.c -o /usr/bin/xxd
 
