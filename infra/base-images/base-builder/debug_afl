@@ -22,6 +22,8 @@ apt-get install -y strace gdb vim joe
 pushd $SRC/aflplusplus > /dev/null
 git checkout dev
 git pull
+unset CFLAGS
+unset CXXFLAGS
 make
 popd > /dev/null
 
