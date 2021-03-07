@@ -27,9 +27,9 @@ make -j$(nproc) fuzz-targets FUZZLIB=$LIB_FUZZING_ENGINE
 
 TARGETS="$(make list-fuzz-targets)"
 
-make -C $SRC/dropbear/corpus
+make -C $SRC/dropbear-corpus
 
 cp -v $TARGETS $OUT/
 cp -v *.options $OUT/
-cp -v $SRC/dropbear/corpus/*.zip $OUT/
-cp -v $SRC/dropbear/corpus/*.dict $OUT/
+cp -v $SRC/dropbear-corpus/*.zip $OUT/
+cp -v $SRC/dropbear-corpus/*.dict $OUT/
