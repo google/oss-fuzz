@@ -18,6 +18,8 @@
 # TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
 # https://github.com/google/oss-fuzz/issues/2336
 
+export GO111MODULE=off
+
 # Compile xxd
 $CC $SRC/xxd.c -o /usr/bin/xxd
 
@@ -653,3 +655,4 @@ cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl-noasm
 cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-boringssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/boringssl_latest.zip $OUT/cryptofuzz-boringssl-noasm_seed_corpus.zip
+
