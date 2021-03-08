@@ -18,24 +18,7 @@
 # Keeping the rust toolchain in the image wastes 1 GB.
 FROM gcr.io/oss-fuzz-base/base-image as temp-runner-binary-builder
 
-RUN apt-get update && apt-get install -y \
-    binutils \
-    file \
-    fonts-dejavu \
-    git \
-    libc6-dev-i386 \
-    libcap2 \
-    python3 \
-    python3-pip \
-    wget \
-    zip
-
-# Install rustfilt for symbol demangling.
-ENV CARGO_HOME=/rust
-ENV RUSTUP_HOME=/rust/rustup
-ENV PATH=$PATH:/rust/bin
-RUN wget https://sh.rustup.rs -O /tmp/rustup.sh && \
-    cat /tmp/rustup.sh | sh -s -- -y --default-toolchain=nightly
+RUN apt-get update && apt-get install -y cargo
 RUN cargo install rustfilt
 
 # Using multi-stage build to copy some LLVM binaries needed in the runner image.
@@ -44,7 +27,7 @@ FROM gcr.io/oss-fuzz-base/base-clang AS base-clang
 # Real image that will be used later.
 FROM gcr.io/oss-fuzz-base/base-image
 
-COPY --from=temp-runner-binary-builder /rust/bin/rustfilt /usr/local/bin
+COPY --from=temp-runner-binary-builder /root/.cargo/bin/rustfilt /usr/local/bin
 
 # Copy the binaries needed for code coverage and crash symbolization.
 COPY --from=base-clang /usr/local/bin/llvm-cov \
@@ -93,7 +76,8 @@ ENV GOPATH /root/go
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 # Set up Golang coverage modules.
-RUN go get github.com/google/oss-fuzz/infra/go/coverage/...
+COPY gocoverage $GOPATH/gocoverage
+RUN cd $GOPATH/gocoverage && go install ./...
 
 # Install OpenJDK 15 and trim its size by removing unused components.
 ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
