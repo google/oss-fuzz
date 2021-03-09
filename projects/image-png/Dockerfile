@@ -20,3 +20,4 @@ RUN git clone https://github.com/image-rs/image-png
 WORKDIR $SRC
 
 COPY build.sh $SRC/
+COPY buf_independent.rs $SRC/image-png/fuzz/fuzz_targets/buf_independent.rs
