@@ -72,15 +72,6 @@ fn png_compare<R: BufRead, S: BufRead>(reference: png::Decoder<R>, smal: png::De
     loop {
         let rref = reference.next_frame(&mut ref_data);
         let rsmal = smal.next_frame(&mut smal_data);
-        //match (rref, rsmal) {
-        //    (Ok(()), Ok(())) if ref_data == smal_data => {},
-        //    (Ok(()), Ok(())) => panic!("Deviating data decoded"),
-        //    #(Err(Format(fr)), Err(Format(fs))) if fr != fs => panic!("Deviating format errors {} vs {}", fr, fs),
-        //    #(Err(er), Err(es)) if discriminant(&er) == discriminant(&es) => break Ok(sinfo),
-        //    (Err(ferr), Err(serr)) => panic!("Deviating errors {:?} vs {:?}", ferr, serr),
-        //    #(Ok(_), Err(err)) => panic!("Small buffer failed {:?}", err),
-        //    (Err(err), Ok(_)) => panic!("Unexpected success: {:?}", err),
-        //}
     }
 }
 
