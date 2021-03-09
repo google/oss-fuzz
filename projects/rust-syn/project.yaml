@@ -1,0 +1,11 @@
+homepage: "https://github.com/dtolnay/syn"
+primary_contact: "dtolnay@gmail.com"
+sanitizers:
+  - address
+  - memory
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+main_repo: 'https://github.com/dtolnay/syn'

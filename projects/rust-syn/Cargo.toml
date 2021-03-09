@@ -1,0 +1,26 @@
+cargo-features = ['named-profiles']
+
+[package]
+name = "syn-fuzz"
+version = "0.0.0"
+authors = ["Philippe Antoine <p.antoine@catenacyber.fr>"]
+publish = false
+edition = "2018"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.3"
+
+[dependencies.syn]
+path = ".."
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "fuzz_parse_str"
+path = "fuzz_targets/fuzz_parse_str.rs"
+
