@@ -97,11 +97,9 @@ COPY bad_build_check \
     coverage_helper \
     dataflow_tracer.py \
     download_corpus \
-    minijail0 \
     rcfilt \
     reproduce \
     run_fuzzer \
-    run_minijail \
     parse_options.py \
     targets_list \
     test_all.py \
