@@ -1,5 +1,5 @@
 homepage: "https://github.com/go-gitea/gitea"
-primary_contact: "admin@gitea.io"
+primary_contact: "security@gitea.io"
 auto_ccs :
   - "adam@adalogics.com"
 language: go
