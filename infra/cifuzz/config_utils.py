@@ -98,6 +98,8 @@ class BaseConfig:
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
     logging.debug('Is github: %s.', self.is_github)
+    # TODO(metzman): Parse env like we do in ClusterFuzz.
+    self.low_disk_space = bool(int(os.environ.get('LOW_DISK_SPACE', '0')))
 
   @property
   def is_internal(self):

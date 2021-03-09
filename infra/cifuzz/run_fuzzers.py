@@ -91,7 +91,9 @@ class BaseFuzzTargetRunner:
     """Fuzzes with |fuzz_target_obj| and returns the result."""
     # TODO(metzman): Make children implement this so that the batch runner can
     # do things differently.
-    return fuzz_target_obj.fuzz()
+    result = fuzz_target_obj.fuzz()
+    fuzz_target_obj.delete_to_save_disk_space()
+    return result
 
   @property
   def quit_on_bug_found(self):

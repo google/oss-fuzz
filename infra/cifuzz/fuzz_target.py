@@ -16,6 +16,7 @@ import collections
 import logging
 import os
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -28,6 +29,8 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
 
+# Use a fixed seed for determinism. Use len_control=0 since we don't have enough
+# time fuzzing for len_control to make sense (probably).
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 
 # The number of reproduce attempts for a crash.
@@ -78,6 +81,7 @@ class FuzzTarget:
     self.out_dir = out_dir
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
+    self.latest_corpus_path = None
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
@@ -107,10 +111,10 @@ class FuzzTarget:
         options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
 
     # If corpus can be downloaded use it for fuzzing.
-    latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
+    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name, self.out_dir)
-    if latest_corpus_path:
-      run_fuzzer_command = run_fuzzer_command + ' ' + latest_corpus_path
+    if self.latest_corpus_path:
+      run_fuzzer_command = run_fuzzer_command + ' ' + self.latest_corpus_path
     command.append(run_fuzzer_command)
 
     logging.info('Running command: %s', ' '.join(command))
@@ -139,6 +143,25 @@ class FuzzTarget:
     if self.is_crash_reportable(testcase):
       return FuzzResult(testcase, stderr)
     return FuzzResult(None, None)
+
+  def delete_to_save_disk_space(self):
+    """Deletes things that are no longer needed from fuzzing this fuzz target to
+    save disk space if needed."""
+    if not self.config.low_disk_space:
+      return
+    logging.info(
+        'Deleting corpus, seed corpus and fuzz target of %s to save disk.',
+        self.target_name)
+
+    # Delete the seed corpus, corpus, and fuzz target.
+    if self.latest_corpus_path:
+      shutil.rmtree(self.latest_corpus_path)
+
+    os.remove(self.target_path)
+    target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
+    if os.path.exists(target_seed_corpus_path):
+      os.remove(target_seed_corpus_path)
+    logging.debug('Done deleting.')
 
   def is_reproducible(self, testcase, target_path):
     """Checks if the testcase reproduces.

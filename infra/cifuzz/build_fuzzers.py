@@ -20,6 +20,7 @@ import sys
 
 import affected_fuzz_targets
 import continuous_integration
+import docker
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -94,7 +95,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       self.handle_msan_prebuild(container)
 
     docker_args.extend([
-        'gcr.io/oss-fuzz/' + self.config.project_name,
+        docker.get_project_image_name(self.config.project_name),
         '/bin/bash',
         '-c',
     ])
