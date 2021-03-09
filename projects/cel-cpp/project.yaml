@@ -6,6 +6,4 @@ auto_ccs :
 
 sanitizers:
 - address
-- memory
-- undefined
 main_repo: 'https://github.com/google/cel-cpp'
