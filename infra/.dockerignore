@@ -1,1 +1,2 @@
-test_files
+cifuzz/test_files/*
+testcases/*
