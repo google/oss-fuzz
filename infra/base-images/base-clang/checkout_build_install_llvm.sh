@@ -217,6 +217,8 @@ rm -f \
   /usr/local/bin/verify-uselistorder \
   /usr/local/bin/clang-format
 
+# Remove unneeded clang libs, CMake files from LLVM build, lld libs, and the
+# fuzzer_no_main libraries.
 rm -rf \
   /usr/local/lib/libclang* \
   /usr/local/lib/liblld* \
