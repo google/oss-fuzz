@@ -35,13 +35,15 @@ go list $tags $path || { go mod init $path && go mod tidy ;}
 
 if [[ $SANITIZER = *coverage* ]]; then
   fuzzed_package=`go list $tags -f '{{.Name}}' $path`
+  abspath=`go list $tags -f {{.Dir}} $path`
+  cd $abspath
   cp $GOPATH/ossfuzz_coverage_runner.go ./"${function,,}"_test.go
   sed -i -e 's/FuzzFunction/'$function'/' ./"${function,,}"_test.go
   sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
   sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
 
   echo "#!/bin/sh" > $OUT/$fuzzer
-  echo "cd $path" >> $OUT/$fuzzer
+  echo "cd \$OUT/$abspath" >> $OUT/$fuzzer
   # The fuzzer may be in a subdirectory, but we want the coverage report for the whole repository
   fuzzed_repo=`echo $path | cut -d/ -f-3`
   echo "go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -coverprofile \$1 " >> $OUT/$fuzzer
