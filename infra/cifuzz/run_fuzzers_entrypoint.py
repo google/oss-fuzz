@@ -37,6 +37,7 @@ def delete_unneeded_docker_images(config):
   project_image = docker.get_project_image_name(config.project_name)
   images = [project_image, 'gcr.io/oss-fuzz-base/base-builder']
   docker.delete_images(images)
+  os.system('df')
 
 
 def main():
