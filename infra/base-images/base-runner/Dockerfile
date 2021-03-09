@@ -40,10 +40,13 @@ RUN apt-get update && apt-get install -y \
     file \
     fonts-dejavu \
     git \
+    lib32gcc1 \
+    libc6-i386 \
     libcap2 \
     python3 \
-    wget && \
-    apt-get install -y python3-pip libc6-i386 lib32gcc1 zip --no-install-recommends
+    python3-pip \
+    wget \
+    zip --no-install-recommends
 
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage && \
     pip3 install -r /opt/code_coverage/requirements.txt
