@@ -30,3 +30,4 @@ def delete_images(images):
   """Deletes |images|."""
   command = ['docker', 'rmi', '-f'] + images
   utils.execute(command)
+  utils.execute(['docker', 'builder', 'prune', '-f'])
