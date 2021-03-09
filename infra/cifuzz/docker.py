@@ -32,4 +32,4 @@ def delete_images(images):
   print(container_ids, 'container_ids')
   command = ['docker', 'rmi', '-f'] + images
   print('command', utils.execute(command))
-  print('prune', utils.execute(['docker', 'builder', 'prune', '-f'])
+  print('prune', utils.execute(['docker', 'builder', 'prune', '-f']))
