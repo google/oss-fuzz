@@ -161,7 +161,7 @@ class FuzzTarget:
     target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
     if os.path.exists(target_seed_corpus_path):
       os.remove(target_seed_corpus_path)
-    logging.debug('Done deleting.')
+    logging.info('Done deleting.')
 
   def is_reproducible(self, testcase, target_path):
     """Checks if the testcase reproduces.
