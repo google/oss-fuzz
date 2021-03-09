@@ -1,5 +1,5 @@
 homepage: "https://github.com/openconfig/ygot"
-primary_contact: "robjs@google.com"
+primary_contact: "ygot-maintainers@google.com"
 auto_ccs:
   - "p.antoine@catenacyber.fr"
 language: go
