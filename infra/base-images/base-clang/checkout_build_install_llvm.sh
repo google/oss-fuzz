@@ -218,9 +218,9 @@ rm -f \
   /usr/local/bin/clang-format
 
 # Remove unneeded clang libs, CMake files from LLVM build, lld libs, and the
-# fuzzer_no_main libraries.
+# libraries.
+# Note: we need fuzzer_no_main libraries for atheris. Don't delete.
 rm -rf \
   /usr/local/lib/libclang* \
   /usr/local/lib/liblld* \
-  /usr/local/lib/cmake/ \
-  /usr/local/lib/clang/12.0.0/lib/linux/libclang_rt.fuzzer_no_main-*
+  /usr/local/lib/cmake/
