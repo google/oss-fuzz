@@ -28,7 +28,7 @@ def get_project_image_name(project):
 
 def delete_images(images):
   """Deletes |images|."""
-  container_ids = utils.execute(['docker', 'ps', '-a', '-q']).splitlines()
+  container_ids = utils.execute(['docker', 'ps', '-a', '-q'])
   print(container_ids, 'container_ids')
   command = ['docker', 'rmi', '-f'] + images
   print('command', utils.execute(command))
