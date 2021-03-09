@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "../parser/parse_uri.c"
+#include "core/parser/parse_uri.c"
 
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {

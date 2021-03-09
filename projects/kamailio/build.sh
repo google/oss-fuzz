@@ -29,4 +29,4 @@ ar -r libkamilio.a ./objects/*.o
 cd ../
 $CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_uri.c -o $OUT/fuzz_uri \
     -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
-    -I./src/core/parser/ -ldl -lresolv -lm
+    -I./src/ -ldl -lresolv -lm
