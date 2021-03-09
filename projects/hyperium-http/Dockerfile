@@ -16,8 +16,8 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
 
-RUN git clone --depth 1 https://github.com/serde-rs/json json
+RUN git clone https://github.com/hyperium/http
 WORKDIR $SRC
 
 COPY build.sh $SRC/
-COPY fuzz /src/http/fuzz
+COPY fuzz $SRC/http/fuzz
