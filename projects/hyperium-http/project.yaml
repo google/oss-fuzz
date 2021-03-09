@@ -1,5 +1,5 @@
-homepage: "https://github.com/seanmonstar/httparse"
-main_repo: "https://github.com/seanmonstar/httparse"
+homepage: "https://github.com/hyperium/http"
+main_repo: "https://github.com/hyperium/http"
 primary_contact: "david@adalogics.com"
 sanitizers:
   - address
