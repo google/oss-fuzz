@@ -98,7 +98,7 @@ fi
 if [[ "$FUZZING_ENGINE" = afl ]]; then
 
   # Set afl++ environment options.
-  export ASAN_OPTIONS="$ASAN_OPTIONS:abort_on_error=1:symbolize=0"
+  export ASAN_OPTIONS="$ASAN_OPTIONS:abort_on_error=1:symbolize=0:detect_odr_violation=0:"
   export MSAN_OPTIONS="$MSAN_OPTIONS:exit_code=86:symbolize=0"
   export UBSAN_OPTIONS="$UBSAN_OPTIONS:symbolize=0"
   export AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES=1

@@ -59,7 +59,7 @@ CORPUS_BACKUP_URL_FORMAT = (
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'rust']
 
 # pylint: disable=too-many-lines
 
@@ -959,8 +959,10 @@ def shell(args):
       'FUZZING_ENGINE=' + args.engine,
       'SANITIZER=' + args.sanitizer,
       'ARCHITECTURE=' + args.architecture,
-      'FUZZING_LANGUAGE=' + _get_project_language(args.project_name),
   ]
+
+  if args.project_name != 'base-runner-debug':
+    env.append('FUZZING_LANGUAGE=' + _get_project_language(args.project_name))
 
   if args.e:
     env += args.e

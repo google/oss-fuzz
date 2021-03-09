@@ -52,8 +52,16 @@ mv libhtp suricata/
 cd suricata
 sh autogen.sh
 #run configure with right options
+if [ "$SANITIZER" = "coverage" ]
+then
+export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
+chmod +x $SRC/rustc.py
+export RUSTC="$SRC/rustc.py"
+./configure --disable-shared --enable-fuzztargets --enable-debug
+else
 ./src/tests/fuzz/oss-fuzz-configure.sh
-make
+fi
+make -j$(nproc)
 
 cp src/fuzz_* $OUT/
 

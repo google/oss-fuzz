@@ -1,10 +1,11 @@
-out
 .git
-
 # Copied from .gitignore.
 .vscode/
 *.pyc
-/build/
+build
 *~
 .DS_Store
 *.swp
+infra/cifuzz/test_files/*
+docs/*
+infra/testcases/*

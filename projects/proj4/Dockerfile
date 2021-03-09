@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && \
-    apt-get install -y make autoconf automake libtool g++ sqlite3 pkg-config
+    apt-get install -y make autoconf automake libtool g++ sqlite3 pkg-config wget
 
 RUN git clone --depth 1 https://github.com/OSGeo/proj proj
 

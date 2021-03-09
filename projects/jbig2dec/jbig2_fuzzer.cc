@@ -23,39 +23,67 @@
 
 #include "jbig2.h"
 
-#define ALIGNMENT 16
-#define MBYTE (1024 * 1024)
+#define ALIGNMENT ((size_t) 16)
+#define KBYTE ((size_t) 1024)
+#define MBYTE (1024 * KBYTE)
 #define GBYTE (1024 * MBYTE)
 #define MAX_ALLOCATION (1 * GBYTE)
 
-static uint64_t total = 0;
-static uint64_t peak = 0;
+static size_t used;
+static size_t peak;
 
-static void *jbig2_alloc(Jbig2Allocator *allocator, size_t size)
+static void *jbig2_fuzzer_reached_limit(size_t size)
+{
+  fprintf(stderr, "memory: limit: %zu Mbyte used: %zu Mbyte new: %zu Mbyte: reached limit\n", MAX_ALLOCATION / MBYTE, used / MBYTE, size / MBYTE);
+  return NULL;
+}
+
+static void *jbig2_fuzzer_allocation_failed(size_t size)
+{
+  fprintf(stderr, "memory: limit: %zu Mbyte used: %zu Mbyte new: %zu Mbyte: allocation failed\n", MAX_ALLOCATION / MBYTE, used / MBYTE, size / MBYTE);
+  return NULL;
+}
+
+static void jbig2_fuzzer_check_peak(void)
+{
+  if (peak == 0 || used / MBYTE > peak / MBYTE) {
+    peak = used;
+    fprintf(stderr, "memory: limit: %zu Mbyte peak usage: %zu Mbyte\n", MAX_ALLOCATION, peak / MBYTE);
+  }
+}
+
+static void jbig2_fuzzer_statistics(void)
+{
+  fprintf(stderr, "memory: limit: %zu Mbyte peak usage: %zu Mbyte\n", MAX_ALLOCATION / MBYTE, peak / MBYTE);
+
+  if (used > 0 && used > MBYTE)
+    fprintf(stderr, "memory: leak: %zu Mbyte\n", used / MBYTE);
+  else if (used > 0)
+    fprintf(stderr, "memory: leak: %zu byte\n", used);
+}
+
+static void *jbig2_fuzzer_alloc(Jbig2Allocator *allocator, size_t size)
 {
   void *ptr;
 
   if (size == 0)
     return NULL;
-  if (size > MAX_ALLOCATION - ALIGNMENT - total)
-    return NULL;
+  if (size > MAX_ALLOCATION - ALIGNMENT - used)
+    return jbig2_fuzzer_reached_limit(size + ALIGNMENT);
 
   ptr = malloc(size + ALIGNMENT);
   if (ptr == NULL)
-    return NULL;
+    return jbig2_fuzzer_allocation_failed(size + ALIGNMENT);
 
   memcpy(ptr, &size, sizeof(size));
-  total += size + ALIGNMENT;
+  used += size + ALIGNMENT;
 
-  if (peak == 0 || total / MBYTE > peak / MBYTE) {
-	  peak = total;
-	  fprintf(stderr, "memory: limit: %u Mbyte peak usage: %u Mbyte\n", MAX_ALLOCATION, peak);
-  }
+  jbig2_fuzzer_check_peak();
 
   return (unsigned char *) ptr + ALIGNMENT;
 }
 
-static void jbig2_free(Jbig2Allocator *allocator, void *p)
+static void jbig2_fuzzer_free(Jbig2Allocator *allocator, void *p)
 {
   int size;
 
@@ -63,11 +91,11 @@ static void jbig2_free(Jbig2Allocator *allocator, void *p)
     return;
 
   memcpy(&size, (unsigned char *) p - ALIGNMENT, sizeof(size));
-  total -= size + ALIGNMENT;
+  used -= size + ALIGNMENT;
   free((unsigned char *) p - ALIGNMENT);
 }
 
-static void *jbig2_realloc(Jbig2Allocator *allocator, void *p, size_t size)
+static void *jbig2_fuzzer_realloc(Jbig2Allocator *allocator, void *p, size_t size)
 {
   unsigned char *oldp = p ? (unsigned char *) p - ALIGNMENT : NULL;
 
@@ -78,12 +106,12 @@ static void *jbig2_realloc(Jbig2Allocator *allocator, void *p, size_t size)
   {
     if (size == 0)
       return NULL;
-    if (size > MAX_ALLOCATION - ALIGNMENT - total)
-      return NULL;
+    if (size > MAX_ALLOCATION - ALIGNMENT - used)
+      return jbig2_fuzzer_reached_limit(size + ALIGNMENT);
 
     p = malloc(size + ALIGNMENT);
     if (p == NULL)
-      return NULL;
+      return jbig2_fuzzer_allocation_failed(size + ALIGNMENT);
   }
   else
   {
@@ -92,28 +120,25 @@ static void *jbig2_realloc(Jbig2Allocator *allocator, void *p, size_t size)
 
     if (size == 0)
     {
-      total -= oldsize + ALIGNMENT;
+      used -= oldsize + ALIGNMENT;
       free(oldp);
       return NULL;
     }
 
-    if (size > MAX_ALLOCATION - total + oldsize)
-      return NULL;
+    if (size > MAX_ALLOCATION - used + oldsize)
+      return jbig2_fuzzer_reached_limit(size + ALIGNMENT);
 
     p = realloc(oldp, size + ALIGNMENT);
     if (p == NULL)
-      return NULL;
+      return jbig2_fuzzer_allocation_failed(size + ALIGNMENT);
 
-    total -= oldsize + ALIGNMENT;
+    used -= oldsize + ALIGNMENT;
   }
 
   memcpy(p, &size, sizeof(size));
-  total += size + ALIGNMENT;
+  used += size + ALIGNMENT;
 
-  if (peak == 0 || total / MBYTE > peak / MBYTE) {
-	  peak = total;
-	  fprintf(stderr, "memory: limit: %u Mbyte peak usage: %u Mbyte\n", MAX_ALLOCATION, peak);
-  }
+  jbig2_fuzzer_check_peak();
 
   return (unsigned char *) p + ALIGNMENT;
 }
@@ -122,9 +147,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   Jbig2Allocator allocator;
   Jbig2Ctx *ctx = NULL;
 
-  allocator.alloc = jbig2_alloc;
-  allocator.free = jbig2_free;
-  allocator.realloc = jbig2_realloc;
+  used = 0;
+  peak = 0;
+
+  allocator.alloc = jbig2_fuzzer_alloc;
+  allocator.free = jbig2_fuzzer_free;
+  allocator.realloc = jbig2_fuzzer_realloc;
 
   ctx = jbig2_ctx_new(&allocator, (Jbig2Options) 0, NULL, NULL, NULL);
   if (jbig2_data_in(ctx, data, size) == 0)
@@ -144,7 +172,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
   jbig2_ctx_free(ctx);
 
-  fprintf(stderr, "memory: limit: %u Mbyte peak usage: %u Mbyte\n", MAX_ALLOCATION, peak);
+  jbig2_fuzzer_statistics();
 
   return 0;
 }
