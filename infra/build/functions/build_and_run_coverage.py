@@ -48,7 +48,7 @@ LATEST_REPORT_INFO_CONTENT_TYPE = 'application/json'
 UPLOAD_URL_FORMAT = 'gs://' + COVERAGE_BUCKET_NAME + '/{project}/{type}/{date}'
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'rust']
 
 
 def usage():

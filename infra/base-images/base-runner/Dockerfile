@@ -14,27 +14,12 @@
 #
 ################################################################################
 
-# Build go stuff in its own image. We only need the resulting binaries.
-# Keeping the go toolchain in the image wastes 400 MB.
-FROM gcr.io/oss-fuzz-base/base-image as go-builder
+# Build rust stuff in its own image. We only need the resulting binaries.
+# Keeping the rust toolchain in the image wastes 1 GB.
+FROM gcr.io/oss-fuzz-base/base-image as temp-runner-binary-builder
 
-RUN apt-get update && apt-get install wget -y
-
-# Download and install the latest stable Go.
-ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/installer_linux
-RUN chmod +x $SRC/installer_linux && \
-    SHELL="bash" $SRC/installer_linux && \
-    rm $SRC/installer_linux
-
-# Set up Golang environment variables (copied from /root/.bash_profile).
-ENV GOPATH /root/go
-
-# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
-# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
-ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
-
-# Set up Golang coverage modules.
-RUN go get github.com/google/oss-fuzz/infra/go/coverage/...
+RUN apt-get update && apt-get install -y cargo
+RUN cargo install rustfilt
 
 # Using multi-stage build to copy some LLVM binaries needed in the runner image.
 FROM gcr.io/oss-fuzz-base/base-clang AS base-clang
@@ -42,13 +27,7 @@ FROM gcr.io/oss-fuzz-base/base-clang AS base-clang
 # Real image that will be used later.
 FROM gcr.io/oss-fuzz-base/base-image
 
-# Set up Golang environment variables (copied from /root/.bash_profile).
-ENV GOPATH /root/go
-
-# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
-ENV PATH $PATH:$GOPATH/bin
-RUN mkdir -p $GOPATH/bin
-COPY --from=go-builder /root/go/bin/* /root/go/bin/
+COPY --from=temp-runner-binary-builder /root/.cargo/bin/rustfilt /usr/local/bin
 
 # Copy the binaries needed for code coverage and crash symbolization.
 COPY --from=base-clang /usr/local/bin/llvm-cov \
@@ -83,6 +62,23 @@ ENV UBSAN_OPTIONS="print_stacktrace=1:print_summary=1:silence_unsigned_overflow=
 ENV FUZZER_ARGS="-rss_limit_mb=2560 -timeout=25"
 ENV AFL_FUZZER_ARGS="-m none"
 
+# Download and install the latest stable Go.
+ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
+RUN chmod +x $SRC/installer_linux && \
+    SHELL="bash" $SRC/installer_linux && \
+    rm $SRC/installer_linux
+
+# Set up Golang environment variables (copied from /root/.bash_profile).
+ENV GOPATH /root/go
+
+# /root/.go/bin is for the standard Go binaries (i.e. go, gofmt, etc).
+# $GOPATH/bin is for the binaries from the dependencies installed via "go get".
+ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
+
+# Set up Golang coverage modules.
+COPY gocoverage $GOPATH/gocoverage
+RUN cd $GOPATH/gocoverage && go install ./...
+
 # Install OpenJDK 15 and trim its size by removing unused components.
 ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
@@ -103,6 +99,7 @@ COPY bad_build_check \
     dataflow_tracer.py \
     download_corpus \
     minijail0 \
+    rcfilt \
     reproduce \
     run_fuzzer \
     run_minijail \
