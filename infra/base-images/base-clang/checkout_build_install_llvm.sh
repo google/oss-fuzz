@@ -18,7 +18,7 @@
 # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs, so when
 # we compile on GCB we want 16 cores. But locally we want more (so use nproc /
 # 2).
-NPROC=$(expr $(nproc) / 2)
+NPROC=nproc
 
 # zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
 LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev"
@@ -177,12 +177,48 @@ apt-get autoremove -y
 
 # Delete unneeded parts of LLVM to reduce image size.
 # See https://github.com/google/oss-fuzz/issues/5170
-LLVM_TOOLS_DIR=/tmp/llvm-tools
-mkdir $LLVM_TOOLS_DIR
-mv /usr/local/bin/llvm-objcopy /usr/local/bin/llvm-symbolizer /usr/local/bin/llvm-undname /usr/local/bin/llvm-config /usr/local/bin/llvm-as /usr/local/bin/llvm-ranlib  /usr/local/bin/llvm-profdata /usr/local/bin/llvm-cov  $LLVM_TOOLS_DIR
+LLVM_TOOLS_TMPDIR=/tmp/llvm-tools
+mkdir $LLVM_TOOLS_TMPDIR
+# Move binaries with llvm- prefix that we want into LLVM_TOOLS_TMPDIR
+mv \
+  /usr/local/bin/llvm-objcopy \
+  /usr/local/bin/llvm-symbolizer \
+  /usr/local/bin/llvm-undname \
+  /usr/local/bin/llvm-config \
+  /usr/local/bin/llvm-as \
+  /usr/local/bin/llvm-ranlib \
+  /usr/local/bin/llvm-profdata \
+  /usr/local/bin/llvm-cov \
+  $LLVM_TOOLS_TMPDIR
+# Delete remaining llvm- binaries.
 rm -rf /usr/local/bin/llvm-*
-mv $LLVM_TOOLS_DIR/* /usr/local/bin/
+# Restore the llvm- binaries we want to keep.
+mv $LLVM_TOOLS_TMPDIR/* /usr/local/bin/
+rm -rf $LLVM_TOOLS_TMPDIR
 
-rm -rf /usr/local/bin/bugpoint /usr/local/bin/llc /usr/local/bin/lli /usr/local/bin/clang-check /usr/local/bin/clang-refactor /usr/local/bin/clang-offload-wrapper /usr/local/bin/clang-offload-bundler /usr/local/bin/clang-check /usr/local/bin/clang-refactor /usr/local/bin/c-index-test /usr/local/bin/clang-rename /usr/local/bin/clang-scan-deps /usr/local/bin/clang-extdef-mapping /usr/local/bin/diagtool /usr/local/bin/sanstats
-rm -rf $LLVM_TOOLS_DIR
-rm /usr/local/lib/libclang*
+# Remove binaries from LLVM buld that we don't need.
+rm -f \
+  /usr/local/bin/bugpoint \
+  /usr/local/bin/llc \
+  /usr/local/bin/lli \
+  /usr/local/bin/clang-check \
+  /usr/local/bin/clang-refactor \
+  /usr/local/bin/clang-offload-wrapper \
+  /usr/local/bin/clang-offload-bundler \
+  /usr/local/bin/clang-check \
+  /usr/local/bin/clang-refactor \
+  /usr/local/bin/c-index-test \
+  /usr/local/bin/clang-rename \
+  /usr/local/bin/clang-scan-deps \
+  /usr/local/bin/clang-extdef-mapping \
+  /usr/local/bin/diagtool \
+  /usr/local/bin/sanstats \
+  /usr/local/bin/dsymutil \
+  /usr/local/bin/verify-uselistorder \
+  /usr/local/bin/clang-format
+
+rm -rf \
+  /usr/local/lib/libclang* \
+  /usr/local/lib/liblld* \
+  /usr/local/lib/cmake/ \
+  /usr/local/lib/clang/12.0.0/lib/linux/libclang_rt.fuzzer_no_main-*
