@@ -47,4 +47,4 @@ bazel build \
         ${EXTRA_BAZEL_FLAGS} \
         ${FUZZ_TARGETS[*]}
 
-cp ./bazel-bin/fuzz/fuzz_* $OUT/
+cp ./bazel-bin/fuzz/fuzz_parse $OUT/
