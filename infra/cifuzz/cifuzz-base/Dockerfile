@@ -14,24 +14,18 @@
 #
 ################################################################################
 
+# Don't bother with a slimmer base image.
+# When we pull base-builder to build project builder image we need to pull
+# ubuntu:16.04 anyway. So in the long run we probably would waste time if
+# we pulled something like alpine here instead.
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install -y git \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg2 \
-    software-properties-common \
-    python3
+RUN apt-get update && \
+    apt-get install ca-certificates wget python3 git-core --no-install-recommends -y && \
+    wget https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_20.10.5~3-0~ubuntu-xenial_amd64.deb -O /tmp/docker-ce.deb && \
+    dpkg -i /tmp/docker-ce.deb && rm /tmp/docker-ce.deb && \
+    apt-get remove wget -y --purge
 
-
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && apt-key fingerprint 0EBFCD88
-RUN add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   xenial \
-   stable"
-
-RUN apt-get update && apt-get install docker-ce docker-ce-cli containerd.io -y
 
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
 ADD . ${OSS_FUZZ_ROOT}
