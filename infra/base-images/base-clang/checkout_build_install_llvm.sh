@@ -20,7 +20,8 @@
 # 2).
 NPROC=$(expr $(nproc) / 2)
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev"
+# zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev"
 apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 # Checkout

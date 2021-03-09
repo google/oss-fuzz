@@ -91,6 +91,8 @@ RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profil
 RUN cargo install cargo-fuzz
 # Needed to recompile rust std library for MSAN
 RUN rustup component add rust-src --toolchain nightly
+# Set up custom environment variable for source code copy for coverage reports
+ENV OSSFUZZ_RUSTPATH /rust
 
 # Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
 ENV BAZELISK_VERSION 1.7.4
@@ -177,7 +179,7 @@ WORKDIR $SRC
 # TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 333509bb0a56be9bd2e236f0e2f37d4af2dd7d59
+    git checkout 74a6044b3fba496c1255f9aedbf5b7253ae29f0e
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
@@ -186,8 +188,8 @@ RUN cd $SRC && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    compile_go_fuzzer precompile_honggfuzz precompile_afl srcmap \
+COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+    compile_go_fuzzer precompile_honggfuzz precompile_afl debug_afl srcmap \
     write_labels.py /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/

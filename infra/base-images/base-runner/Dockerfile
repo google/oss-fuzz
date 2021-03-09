@@ -14,10 +14,20 @@
 #
 ################################################################################
 
+# Build rust stuff in its own image. We only need the resulting binaries.
+# Keeping the rust toolchain in the image wastes 1 GB.
+FROM gcr.io/oss-fuzz-base/base-image as temp-runner-binary-builder
+
+RUN apt-get update && apt-get install -y cargo
+RUN cargo install rustfilt
+
 # Using multi-stage build to copy some LLVM binaries needed in the runner image.
 FROM gcr.io/oss-fuzz-base/base-clang AS base-clang
 
+# Real image that will be used later.
 FROM gcr.io/oss-fuzz-base/base-image
+
+COPY --from=temp-runner-binary-builder /root/.cargo/bin/rustfilt /usr/local/bin
 
 # Copy the binaries needed for code coverage and crash symbolization.
 COPY --from=base-clang /usr/local/bin/llvm-cov \
@@ -25,19 +35,18 @@ COPY --from=base-clang /usr/local/bin/llvm-cov \
      /usr/local/bin/llvm-symbolizer \
      /usr/local/bin/
 
-# TODO(metzman): Install libc6-i386 lib32gcc1 instead of libc6-dev-i386 for
-# consistency with ClusterFuzz image and to reduce size.
 RUN apt-get update && apt-get install -y \
     binutils \
     file \
     fonts-dejavu \
     git \
-    libc6-dev-i386 \
+    lib32gcc1 \
+    libc6-i386 \
     libcap2 \
     python3 \
     python3-pip \
     wget \
-    zip
+    zip --no-install-recommends
 
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage && \
     pip3 install -r /opt/code_coverage/requirements.txt
@@ -66,14 +75,16 @@ ENV GOPATH /root/go
 ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 
 # Set up Golang coverage modules.
-RUN go get github.com/google/oss-fuzz/infra/go/coverage/...
+COPY gocoverage $GOPATH/gocoverage
+RUN cd $GOPATH/gocoverage && go install ./...
 
 # Install OpenJDK 15 and trim its size by removing unused components.
 ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
 ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
 ENV PATH=$PATH:$JAVA_HOME/bin
-ADD https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz /tmp
-RUN cd /tmp && \
+
+RUN wget https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz -O /tmp/openjdk-15.0.2_linux-x64_bin.tar.gz && \
+    cd /tmp && \
     mkdir -p $JAVA_HOME && \
     tar -xzv --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
     rm -f openjdk-15.0.2_linux-x64_bin.tar.gz && \
@@ -87,6 +98,7 @@ COPY bad_build_check \
     dataflow_tracer.py \
     download_corpus \
     minijail0 \
+    rcfilt \
     reproduce \
     run_fuzzer \
     run_minijail \
