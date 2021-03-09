@@ -1,5 +1,5 @@
-homepage: "https://github.com/gpac/gpac"
-main_repo: "https://https://gpac.wp.imt.fr/"
+homepage: "https://gpac.wp.imt.fr/"
+main_repo: "https://github.com/gpac/gpac"
 primary_contact: "project.gpac@gmail.com"
 language: c
 auto_ccs :
