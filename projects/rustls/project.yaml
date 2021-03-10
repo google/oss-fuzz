@@ -1,6 +1,6 @@
 homepage: "https://github.com/ctz/rustls"
 main_repo: "https://github.com/ctz/rustls"
-primary_contact: "david@adalogics.com"
+primary_contact: "jpixton@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:
