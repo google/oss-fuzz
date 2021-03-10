@@ -15,6 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueLow;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -33,12 +34,14 @@ public class ValidJsonFuzzer {
       // exceeded.
       return;
     }
+
+    // Check that the output is valid JSON. Invalid JSON may crash other parts
+    // of the application that trust the output of the sanitizer.
     try {
+      Gson gson = new Gson();
       gson.fromJson(output, JsonElement.class);
     } catch (Exception e) {
-      System.err.println("input  : " + input);
-      System.err.println("output : " + output);
-      throw e;
+      throw new FuzzerSecurityIssueLow("Output is invalid JSON", e);
     }
   }
 }
