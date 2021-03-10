@@ -14,10 +14,32 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang
-RUN sed -i -r 's/#\s*deb-src/deb-src/g' /etc/apt/sources.list
-RUN apt-get update && apt-get install -y python dpkg-dev patchelf python-apt zip
+FROM gcr.io/oss-fuzz-base/base-sanitizer-libs-builder
 
-COPY compiler_wrapper.py sanitizer_libs_build.py patch_build.py \
-    wrapper_utils.py /usr/local/bin/
-COPY packages /usr/local/bin/packages
+# Take all libraries from lib/dfsan
+RUN cp -R /usr/dfsan/lib/* /usr/lib/
+
+RUN mkdir /dfsan
+WORKDIR /dfsan
+
+ENV PYTHONUNBUFFERED 1
+RUN sanitizer_libs_build.py --work-dir=$WORK \
+    libarchive13 \
+    libattr1 \
+    libbz2-1.0 \
+    libfontconfig1 \
+    libfreetype6 \
+    libfribidi0 \
+    libglib2.0-0 \
+    libicu55  \
+    liblz4-1 \
+    liblzma5 \
+    liblzo2-2 \
+    libnettle6 \
+    libpcre2-posix0 \
+    libpcre3 \
+    libpng12-0 \
+    libssl1.0.0 \
+    libxml2 \
+    zlib1g \
+    /msan

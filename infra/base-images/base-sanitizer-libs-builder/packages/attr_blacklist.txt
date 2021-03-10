@@ -1,0 +1,7 @@
+# The check for nm -B output on the clang produced object relie son the strict
+# name comparison, thus we must not instrument the test function listed below.
+fun:nm_test_func=uninstrumented
+fun:nm_test_func=discard
+
+fun:__gmpz_getlimbn=uninstrumented
+fun:__gmpz_getlimbn=discard

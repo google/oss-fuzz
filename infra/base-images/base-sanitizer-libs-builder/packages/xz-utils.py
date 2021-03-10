@@ -1,4 +1,5 @@
-# Copyright 2017 Google Inc.
+#!/usr/bin/env python
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +15,24 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-clang
-RUN sed -i -r 's/#\s*deb-src/deb-src/g' /etc/apt/sources.list
-RUN apt-get update && apt-get install -y python dpkg-dev patchelf python-apt zip
+import os
+import shutil
 
-COPY compiler_wrapper.py sanitizer_libs_build.py patch_build.py \
-    wrapper_utils.py /usr/local/bin/
-COPY packages /usr/local/bin/packages
+import package
+import wrapper_utils
+
+
+class Package(package.Package):
+  """xz-utils package."""
+
+  def __init__(self, apt_version):
+    super(Package, self).__init__('xz-utils', apt_version)
+
+  def PreBuild(self, source_directory, env, custom_bin_dir):
+    # Disable version script as DFSan symbols aren't exported otherwise.
+    configure_wrapper = (
+        '#!/bin/bash\n'
+        '/usr/bin/dh_auto_configure "$@" --disable-symbol-versions')
+
+    wrapper_utils.InstallWrapper(
+        custom_bin_dir, 'dh_auto_configure', configure_wrapper)

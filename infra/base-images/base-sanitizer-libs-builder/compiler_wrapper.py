@@ -20,7 +20,7 @@ import os
 import subprocess
 import sys
 
-import msan_build
+import sanitizer_libs_build
 
 GCC_ONLY_ARGS = [
     '-aux-info',
@@ -96,14 +96,30 @@ def RemoveZDefs(args):
   return filtered
 
 
+def IsConfigureTest(args):
+  """asd."""
+  for arg in args:
+    if arg.startswith('conftest.'):
+      return True
+  return False
+
+
+def ConfigureTestForStatic(args):
+  """asd."""
+  if '-static' not in args:
+    return False
+
+  return IsConfigureTest(args)
+
+
 def GetCompilerArgs(args, is_cxx):
   """Generate compiler args."""
   compiler_args = args[1:]
 
-  if Is32Bit(args):
+  if Is32Bit(args) or ConfigureTestForStatic(args):
     # 32 bit builds not supported.
     compiler_args.extend([
-        '-fno-sanitize=memory',
+        '-fno-sanitize=memory', # '-fno-sanitize=dataflow',
         '-fno-sanitize-memory-track-origins',
     ])
 
@@ -128,9 +144,14 @@ def GetCompilerArgs(args, is_cxx):
       '-fno-integrated-as',
     ])
 
-  if '-fsanitize=memory' not in args:
+  if '-fsanitize=memory' not in args:  # TODO: or dataflow?
     # If MSan flags weren't added for some reason, add them here.
-    compiler_args.extend(msan_build.GetInjectedFlags())
+    compiler_args.extend(sanitizer_libs_build.GetInjectedFlags())
+
+  if IsConfigureTest(args):
+    compiler_args.append('-fsanitize-blacklist=' + os.path.join(
+        os.path.dirname(os.path.abspath(os.path.realpath(__file__))),
+        'packages', 'attr_blacklist.txt'))
 
   if is_cxx:
     compiler_args.append('-stdlib=libc++')
