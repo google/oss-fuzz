@@ -4,6 +4,7 @@ auto_ccs :
   - "adam@adalogics.com"
   - "edward.welch@grafana.com"
   - "michel.hollands@grafana.com"
+  - "loki@grafana.com"
 language: go
 fuzzing_engines:
   - libfuzzer
