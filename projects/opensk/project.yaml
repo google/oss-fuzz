@@ -1,0 +1,10 @@
+homepage: "https://github.com/google/OpenSK"
+main_page: "https://github.com/google/OpenSK"
+primary_contact: "david@adalogics.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
