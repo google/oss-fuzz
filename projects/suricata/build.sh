@@ -45,6 +45,7 @@ make install
 cd ..
 
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
+export RUSTFLAGS="$RUSTFLAGS -Cpasses=sancov -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-trace-geps -Cllvm-args=-sanitizer-coverage-prune-blocks=0 -Cllvm-args=-sanitizer-coverage-pc-table -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth"
 
 #we did not put libhtp there before so that cifuzz does not remove it
 mv libhtp suricata/
