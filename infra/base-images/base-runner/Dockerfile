@@ -45,6 +45,7 @@ RUN apt-get update && apt-get install -y \
     libcap2 \
     python3 \
     python3-pip \
+    unzip \
     wget \
     zip --no-install-recommends
 
