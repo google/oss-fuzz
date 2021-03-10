@@ -15,6 +15,11 @@
 #
 ################################################################################
 
+if [ "$SANITIZER" = "coverage" ]
+then
+    exit 0 
+fi
+
 cd OpenSK
 cargo fuzz build
 
