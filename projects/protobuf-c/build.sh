@@ -43,7 +43,8 @@ export PROTOC="$SRC/protobuf-install/bin/protoc"
 
 cd $SRC/protobuf-c/
 ./autogen.sh
-protobuf_LIBS="-L/$SRC/protobuf-install/lib -lprotobuf" protobuf_CFLAGS="-I $SRC/protobuf-install/include/" ./configure --enable-static=yes --enable-shared=false
+./configure --enable-static=yes --enable-shared=false PKG_CONFIG_PATH=$SRC/protobuf-install/lib/pkgconfig
+
 make -j$(nproc)
 
 cd $SRC/fuzzing-headers/
