@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y \
   libfftw3-dev \
   libexpat1-dev \
   libffi-dev \
+  libselinux1-dev \
   glib2.0-dev
 RUN mkdir afl-testcases
 RUN curl https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar xzC afl-testcases

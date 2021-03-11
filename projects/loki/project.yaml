@@ -1,0 +1,13 @@
+homepage: "https://github.com/grafana/loki"
+primary_contact: "cyril.tovena@grafana.com"
+auto_ccs :
+  - "adam@adalogics.com"
+  - "edward.welch@grafana.com"
+  - "michel.hollands@grafana.com"
+  - "loki@grafana.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/grafana/loki'

@@ -15,15 +15,20 @@
 
 import logging
 import os
+import posixpath
 import re
 import stat
 import subprocess
+import sys
 
 import helper
 
 ALLOWED_FUZZ_TARGET_EXTENSIONS = ['', '.exe']
 FUZZ_TARGET_SEARCH_STRING = 'LLVMFuzzerTestOneInput'
 VALID_TARGET_NAME = re.compile(r'^[a-zA-Z0-9_-]+$')
+
+# Location of google cloud storage for latest OSS-Fuzz builds.
+GCS_BASE_URL = 'https://storage.googleapis.com/'
 
 
 def chdir_to_root():
@@ -127,3 +132,40 @@ def is_fuzz_target_local(file_path):
 
   with open(file_path, 'rb') as file_handle:
     return file_handle.read().find(FUZZ_TARGET_SEARCH_STRING.encode()) != -1
+
+
+def binary_print(string):
+  """Print that can print a binary string."""
+  if isinstance(string, bytes):
+    string += b'\n'
+  else:
+    string += '\n'
+  sys.stdout.buffer.write(string)
+  sys.stdout.flush()
+
+
+def url_join(*url_parts):
+  """Joins URLs together using the POSIX join method.
+
+  Args:
+    url_parts: Sections of a URL to be joined.
+
+  Returns:
+    Joined URL.
+  """
+  return posixpath.join(*url_parts)
+
+
+def gs_url_to_https(url):
+  """Converts |url| from a GCS URL (beginning with 'gs://') to an HTTPS one."""
+  return url_join(GCS_BASE_URL, remove_prefix(url, 'gs://'))
+
+
+def remove_prefix(string, prefix):
+  """Returns |string| without the leading substring |prefix|."""
+  # Match behavior of removeprefix from python3.9:
+  # https://www.python.org/dev/peps/pep-0616/
+  if string.startswith(prefix):
+    return string[len(prefix):]
+
+  return string

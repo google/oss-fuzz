@@ -74,13 +74,13 @@ jobs:
      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
-       dry-run: false
+       language: c++
    - name: Run Fuzzers
      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
+       language: c++
        fuzz-seconds: 600
-       dry-run: false
    - name: Upload Crash
      uses: actions/upload-artifact@v1
      if: failure() && steps.build.outcome == 'success'
@@ -93,8 +93,16 @@ jobs:
 ### Optional configuration
 
 #### Configurable Variables
+
+`language`: (optional) The language your target program is written in. Defaults
+to `c++`. This shold be the same as the value you set in `project.yaml`. See
+[this explanation]({{ site.baseurl }}//getting-started/new-project-guide/#language)
+for more details.
+
 `fuzz-time`: Determines how long CIFuzz spends fuzzing your project in seconds.
-The default is 600 seconds. The GitHub Actions max run time is 21600 seconds (6 hours).
+The default is 600 seconds. The GitHub Actions max run time is 21600 seconds (6
+hours). This variable is only meaningful when supplied to the `run_fuzzers`
+action, not the `build_fuzzers` action.
 
 `dry-run`: Determines if CIFuzz surfaces errors. The default value is `false`. When set to `true`,
 CIFuzz will never report a failure even if it finds a crash in your project.
@@ -103,7 +111,8 @@ make sure to set the dry-run parameters in both the `Build Fuzzers` and `Run Fuz
 
 `allowed-broken-targets-percentage`: Can be set if you want to set a stricter
 limit for broken fuzz targets than OSS-Fuzz's check_build. Most users should
-not set this.
+not set this. This value is only meaningful when supplied to the `run_fuzzers`
+action, not the `build_fuzzers` action.
 
 `sanitizer`: Determines a sanitizer to build and run fuzz targets with. The choices are `'address'`,
 `'memory'` and `'undefined'`. The default is `'address'`. It is important to note that the `Build Fuzzers`
@@ -128,14 +137,14 @@ jobs:
      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
-       dry-run: false
+       language: c++
        sanitizer: ${{ matrix.sanitizer }}
    - name: Run Fuzzers (${{ matrix.sanitizer }})
      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
+       language: c++
        fuzz-seconds: 600
-       dry-run: false
        sanitizer: ${{ matrix.sanitizer }}
    - name: Upload Crash
      uses: actions/upload-artifact@v1
@@ -175,13 +184,13 @@ jobs:
      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
-       dry-run: false
+       language: c++
    - name: Run Fuzzers
      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
      with:
        oss-fuzz-project-name: 'example'
+       language: c++
        fuzz-seconds: 600
-       dry-run: false
    - name: Upload Crash
      uses: actions/upload-artifact@v1
      if: failure() && steps.build.outcome == 'success'
@@ -213,9 +222,9 @@ The results of CIFuzz can be found in two different places.
     1. When a crash is found by CIFuzz the Upload Artifact event is triggered.
     1. This will cause a pop up in the right hand corner, allowing
     you to download a zip file called `artifacts`.
-    1. `artifacts` contains two files:
-        * `test_case` - a test case that can be used to reproduce the crash.
-        * `bug_summary` - the stack trace and summary of the crash.
+    1. `artifacts` contains two files for each crash:
+        * A test case that can be used to reproduce the crash.
+        * The sanitizer stack trace of the crash.
 
 ![Finding uploaded artifacts](../images/artifacts.png)
 

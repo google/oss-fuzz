@@ -16,24 +16,14 @@
 ################################################################################
 
 # Same as usual except for added -tags gofuzz.
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
 
-  # Compile and instrument all Go files relevant to this fuzz target.
-  go-fuzz -func $function -o $fuzzer.a $path
+cd $GOPATH/src/github.com/coredns/coredns
 
-  # Link Go code ($fuzzer.a) with fuzzing engine to produce fuzz target binary.
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
-
-cd coredns
 #make
 ls plugin/*/fuzz.go | while read target
 do
     fuzzed_plugin=`echo $target | cut -d'/' -f 2`
-    compile_fuzzer github.com/coredns/coredns/plugin/$fuzzed_plugin Fuzz fuzz_plugin_$fuzzed_plugin
+    compile_go_fuzzer github.com/coredns/coredns/plugin/$fuzzed_plugin Fuzz fuzz_plugin_$fuzzed_plugin gofuzz
 done
 
-compile_fuzzer github.com/coredns/coredns/test Fuzz fuzz_core
+compile_go_fuzzer github.com/coredns/coredns/test Fuzz fuzz_core gofuzz

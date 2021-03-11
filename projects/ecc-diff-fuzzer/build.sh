@@ -54,9 +54,9 @@ make install
 cd ../gcrypt
 ./autogen.sh
 if [ "$ARCHITECTURE" = 'i386' ]; then
-    ./configure -host=i386 --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+    ./configure -host=i386 --enable-static --disable-shared --disable-doc --enable-maintainer-mode
 else
-    ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode --disable-asm
+    ./configure --enable-static --disable-shared --disable-doc --enable-maintainer-mode
 fi
 make -j$(nproc)
 make install
@@ -93,13 +93,14 @@ cd libecc
 #botan
 (
 cd botan
-#help it find libstdc++
-cp /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libstdc++.so
-export LDFLAGS=$CXXFLAGS
 if [ "$ARCHITECTURE" = 'i386' ]; then
-    ./configure.py --disable-shared-library --cpu x86_32
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
+               --disable-shared --disable-modules=locking_allocator --disable-shared-library \
+               --without-os-features=getrandom,getentropy --cpu x86_32
 else
-    ./configure.py --disable-shared-library
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" \
+               --disable-shared --disable-modules=locking_allocator --disable-shared-library \
+               --without-os-features=getrandom,getentropy
 fi
 make -j$(nproc)
 make install
@@ -122,9 +123,6 @@ cp quickjs*.h /usr/local/include/
 cp libquickjs.a /usr/local/lib/
 )
 
-ln -s /usr/bin/nodejs /usr/bin/node
-mv /usr/lib/x86_64-linux-gnu/libcrypto.a /usr/lib/x86_64-linux-gnu/libcrypto_old.a
-mv /usr/lib/x86_64-linux-gnu/libcrypto.so /usr/lib/x86_64-linux-gnu/libcrypto_old.so
 #build fuzz target
 cd ecfuzzer
 if [ "$ARCHITECTURE" = 'i386' ]; then
@@ -136,6 +134,7 @@ fi
 zip -r fuzz_ec_seed_corpus.zip corpus/
 cp fuzz_ec_seed_corpus.zip $OUT/
 cp fuzz_ec.dict $OUT/
+cp fuzz_ec.dict $OUT/fuzz_ec_noblocker.dict
 
 mkdir build
 cd build
@@ -147,9 +146,7 @@ if [ "$FUZZING_ENGINE" != 'afl' ]; then
     rm -Rf *
 fi
 
-#another target without cryptopp neither javascript
-cmake -DDISABLE_CRYPTOPP=ON -DDISABLE_JS=ON ..
+#another target without javascript
+cmake -DDISABLE_JS=ON ..
 make -j$(nproc)
 cp ecfuzzer $OUT/fuzz_ec_noblocker
-mv /usr/lib/x86_64-linux-gnu/libcrypto_old.a /usr/lib/x86_64-linux-gnu/libcrypto.a
-mv /usr/lib/x86_64-linux-gnu/libcrypto_old.so /usr/lib/x86_64-linux-gnu/libcrypto.so

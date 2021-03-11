@@ -11,3 +11,4 @@ auto_ccs:
 sanitizers:
  - address
  - undefined
+main_repo: 'https://github.com/libressl-portable/portable.git'

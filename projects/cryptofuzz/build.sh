@@ -18,8 +18,22 @@
 # TODO(metzman): Switch this to LIB_FUZZING_ENGINE when it works.
 # https://github.com/google/oss-fuzz/issues/2336
 
+export GO111MODULE=off
+
 # Compile xxd
 $CC $SRC/xxd.c -o /usr/bin/xxd
+
+# Copy the upstream checkout of xxHash over the old version
+rm -rf $SRC/cryptofuzz/modules/reference/xxHash/
+cp -R $SRC/xxHash/ $SRC/cryptofuzz/modules/reference/
+
+# Install Boost headers
+cd $SRC/
+tar jxf boost_1_74_0.tar.bz2
+cd boost_1_74_0/
+CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+CFLAGS="" CXXFLAGS="" ./b2 headers
+cp -R boost/ /usr/include/
 
 export LINK_FLAGS=""
 export INCLUDE_PATH_FLAGS=""
@@ -27,24 +41,6 @@ export INCLUDE_PATH_FLAGS=""
 # Generate lookup tables. This only needs to be done once.
 cd $SRC/cryptofuzz
 python gen_repository.py
-
-if [[ $CFLAGS = *-m32* ]]
-then
-    export GOARCH=386
-    export CGO_ENABLED=1
-fi
-
-export GO111MODULE=off
-cd $SRC/go/src
-./make.bash
-export GOROOT=$(realpath $SRC/go)
-export GOPATH=$GOROOT/packages
-mkdir $GOPATH
-export PATH=$GOROOT/bin:$PATH
-export PATH=$GOROOT/packages/bin:$PATH
-
-apt-get remove golang-1.9-go -y
-rm /usr/bin/go
 
 go get golang.org/x/crypto/blake2b
 go get golang.org/x/crypto/blake2s
@@ -83,6 +79,11 @@ then
     export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BIGNUMBER_JS"
     cd $SRC/cryptofuzz/modules/bignumber.js/
     make
+
+    export CRYPTO_JS_PATH="$SRC/crypto-js/"
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTO_JS"
+    cd $SRC/cryptofuzz/modules/crypto-js/
+    make
 fi
 
 # Compile NSS
@@ -104,6 +105,27 @@ then
     make -B
 fi
 
+# Compile Monocypher
+cd $SRC/Monocypher/
+make CC="$CC" CFLAGS="$CFLAGS"
+export LIBMONOCYPHER_A_PATH=$(realpath lib/libmonocypher.a)
+export MONOCYPHER_INCLUDE_PATH=$(realpath src/)
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MONOCYPHER"
+
+# Compile Cryptofuzz monocypher module
+cd $SRC/cryptofuzz/modules/monocypher
+make -B
+
+# Rename blake2b_* functions to avoid symbol collisions with other libraries
+cd $SRC/trezor-firmware/crypto
+sed -i "s/\<blake2b_\([A-Za-z_]\)/trezor_blake2b_\1/g" *.c *.h
+sed -i 's/\<blake2b(/trezor_blake2b(/g' *.c *.h
+
+# Compile Cryptofuzz trezor module
+export TREZOR_FIRMWARE_PATH=$(realpath $SRC/trezor-firmware)
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_TREZOR_FIRMWARE"
+cd $SRC/cryptofuzz/modules/trezor
+make -B
 
 # Compile libtomcrypt
 cd $SRC/libtomcrypt
@@ -121,7 +143,7 @@ fi
 
 # Compile SymCrypt
 cd $SRC/SymCrypt/
-if [[ $CFLAGS != *sanitize=undefined* ]]
+if [[ $CFLAGS != *sanitize=array-bounds* ]]
 then
     # Unittests don't build with clang and are not needed anyway
     sed -i "s/^add_subdirectory(unittest)$//g" CMakeLists.txt
@@ -156,8 +178,10 @@ make install
 if [[ $CFLAGS != *-m32* ]]
 then
 export LIBNETTLE_A_PATH=`realpath ../nettle-install/lib/libnettle.a`
+export LIBHOGWEED_A_PATH=`realpath ../nettle-install/lib/libhogweed.a`
 else
 export LIBNETTLE_A_PATH=`realpath ../nettle-install/lib32/libnettle.a`
+export LIBHOGWEED_A_PATH=`realpath ../nettle-install/lib32/libhogweed.a`
 fi
 export NETTLE_INCLUDE_PATH=`realpath ../nettle-install/include`
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NETTLE"
@@ -218,9 +242,10 @@ export CRYPTOFUZZ_REFERENCE_CITY_O_PATH="$SRC/cityhash/src/city.o"
 cd $SRC/cryptopp
 if [[ $CFLAGS != *sanitize=memory* ]]
 then
-    make -j$(nproc) >/dev/null 2>&1
+    make libcryptopp.a -j$(nproc) >/dev/null 2>&1
 else
-    CXXFLAGS="$CXXFLAGS -DCRYPTOPP_DISABLE_ASM=1" make -j$(nproc) >/dev/null 2>&1
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOPP_DISABLE_ASM=1"
+    make libcryptopp.a -j$(nproc) >/dev/null 2>&1
 fi
 
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CRYPTOPP"
@@ -262,14 +287,14 @@ make -B
 cd $SRC/botan
 if [[ $CFLAGS != *-m32* ]]
 then
-    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
+    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
 else
-    ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator
+    ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator --build-targets=static --without-documentation
 fi
 make -j$(nproc)
 
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN"
-export LIBBOTAN_A_PATH="$SRC/botan/libbotan-2.a"
+export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
 export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
 # Compile Cryptofuzz Botan module
@@ -413,9 +438,11 @@ fi
 ##############################################################################
 # Compile wolfCrypt
 cd $SRC/wolfssl
+# Enable additional wolfCrypt features which cannot be activated through arguments to ./configure
+export CFLAGS="$CFLAGS -DHAVE_AES_ECB -DWOLFSSL_DES_ECB -DHAVE_ECC_SECPR2 -DHAVE_ECC_SECPR3 -DHAVE_ECC_BRAINPOOL -DHAVE_ECC_KOBLITZ -DWOLFSSL_ECDSA_SET_K -DWOLFSSL_ECDSA_SET_K_ONE_LOOP"
 autoreconf -ivf
 
-export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519"
+export WOLFCRYPT_CONFIGURE_PARAMS="--enable-static --enable-md2 --enable-md4 --enable-ripemd --enable-blake2 --enable-blake2s --enable-pwdbased --enable-scrypt --enable-hkdf --enable-cmac --enable-arc4 --enable-camellia --enable-rabbit --enable-aesccm --enable-aesctr --enable-hc128 --enable-xts --enable-des3 --enable-idea --enable-x963kdf --enable-harden --enable-aescfb --enable-aesofb --enable-aeskeywrap --enable-shake256 --enable-curve25519 --enable-curve448 --disable-crypttests --disable-examples --enable-keygen --enable-compkey --enable-ed448 --enable-ed25519 --enable-ecccustcurves --enable-xchacha --enable-cryptocb --enable-eccencrypt"
 
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
@@ -628,3 +655,4 @@ cp $SRC/cryptofuzz/cryptofuzz $OUT/cryptofuzz-boringssl-noasm
 cp $SRC/cryptofuzz/cryptofuzz-dict.txt $OUT/cryptofuzz-boringssl-noasm.dict
 # Copy seed corpus
 cp $SRC/cryptofuzz-corpora/boringssl_latest.zip $OUT/cryptofuzz-boringssl-noasm_seed_corpus.zip
+

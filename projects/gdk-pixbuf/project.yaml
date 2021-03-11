@@ -1,0 +1,7 @@
+homepage: https://gitlab.gnome.org/GNOME/gdk-pixbuf/
+language: c
+primary_contact: ebassi@gnome.org
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://gitlab.gnome.org/GNOME/gdk-pixbuf.git'

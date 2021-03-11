@@ -16,12 +16,12 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN go get -u -d github.com/marten-seemann/qpack/ && \
-  cd /root/go/src/github.com/marten-seemann/qpack && \
+RUN git clone --depth 1 https://github.com/marten-seemann/qpack/ && \
+  cd qpack && \
   go build
 
-RUN go get -u -d github.com/lucas-clemente/quic-go/ && \
-  cd /root/go/src/github.com/lucas-clemente/quic-go && \
+RUN git clone --depth 1 https://github.com/lucas-clemente/quic-go/ && \
+  cd quic-go && \
   go build
 
 COPY build.sh .

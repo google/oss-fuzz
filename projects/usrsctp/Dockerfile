@@ -16,6 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make cmake
-RUN git clone --depth 1 --branch oss-fuzz https://github.com/weinrank/usrsctp usrsctp
+RUN git clone --depth 1 https://github.com/sctplab/usrsctp usrsctp
 WORKDIR usrsctp
 COPY build.sh $SRC/

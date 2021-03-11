@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN go get github.com/valyala/fasthttp
+RUN git clone --depth 1 https://github.com/valyala/fasthttp
 
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/fasthttp

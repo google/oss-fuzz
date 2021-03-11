@@ -1,0 +1,12 @@
+homepage: "https://www.lysator.liu.se/~nisse/nettle/"
+language: c++
+primary_contact: guidovranken@gmail.com
+auto_ccs:
+    - "nisse@google.com"
+sanitizers:
+ - address
+ - undefined
+ - memory
+architectures:
+ - x86_64
+ - i386

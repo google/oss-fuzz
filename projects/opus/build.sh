@@ -37,7 +37,8 @@ for build in "${BUILDS[@]}"; do
       ;;
   esac
 
-  ./configure $extra_args --enable-static --disable-shared --disable-doc
+  ./configure $extra_args --enable-static --disable-shared --disable-doc \
+    --enable-assertions
   make -j$(nproc)
 
   # Build all fuzzers
