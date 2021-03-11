@@ -27,6 +27,11 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
+if [[ $SANITIZER = coverage ]]
+then
+    export CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit"
+fi
+
 mkdir $SRC/protobuf-install/
 cd $SRC/protobuf/
 ./autogen.sh
