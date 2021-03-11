@@ -21,7 +21,7 @@ def _eval_value(value_string):
   """Returns evaluated value."""
   try:
     return ast.literal_eval(value_string)
-  except: # pylint: disable=bare-except
+  except:  # pylint: disable=bare-except
     # String fallback.
     return value_string
 
