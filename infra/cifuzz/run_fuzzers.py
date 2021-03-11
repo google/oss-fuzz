@@ -92,7 +92,7 @@ class BaseFuzzTargetRunner:
     # TODO(metzman): Make children implement this so that the batch runner can
     # do things differently.
     result = fuzz_target_obj.fuzz()
-    fuzz_target_obj.delete_to_save_disk_space()
+    fuzz_target_obj.free_disk_if_needed()
     return result
 
   @property

@@ -35,8 +35,9 @@ def delete_unneeded_docker_images(config):
   logging.info('Deleting builder docker images to save disk space.')
   project_image = docker.get_project_image_name(config.project_name)
   images = [
-      project_image, 'gcr.io/oss-fuzz-base/base-builder',
-      'gcr.io/oss-fuzz-base/msan-libs-builder'
+      project_image,
+      docker.BASE_RUNNER_TAG,
+      docker.MSAN_LIBS_BUILDER_TAG,
   ]
   docker.delete_images(images)
 

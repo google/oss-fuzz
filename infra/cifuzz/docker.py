@@ -20,10 +20,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import utils
 
+BASE_BUILDER_TAG = 'gcr.io/oss-fuzz-base/base-builder'
+BASE_RUNNER_TAG = 'gcr.io/oss-fuzz-base/base-runner'
+MSAN_LIBS_BUILDER_TAG = 'gcr.io/oss-fuzz-base/msan-libs-builder'
+PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
+
 
 def get_project_image_name(project):
   """Returns the name of the project builder image for |project_name|."""
-  return 'gcr.io/oss-fuzz/' + project
+  return PROJECT_TAG_PREFIX + project
 
 
 def delete_images(images):

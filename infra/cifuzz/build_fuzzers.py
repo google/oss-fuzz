@@ -120,8 +120,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     helper.docker_run([
         '--volumes-from', container, '-e',
         'WORK={work_dir}'.format(work_dir=self.work_dir),
-        'gcr.io/oss-fuzz-base/base-sanitizer-libs-builder', 'patch_build.py',
-        '/out'
+        docker.MSAN_LIBS_BUILDER_TAG, 'patch_build.py', '/out'
     ])
 
   def handle_msan_prebuild(self, container):
@@ -129,8 +128,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     returns docker arguments to use that directory for MSAN libs."""
     logging.info('Copying MSAN libs.')
     helper.docker_run([
-        '--volumes-from', container, 'gcr.io/oss-fuzz-base/msan-libs-builder',
-        'bash', '-c', 'cp -r /msan {work_dir}'.format(work_dir=self.work_dir)
+        '--volumes-from', container, docker.MSAN_LIBS_BUILDER_TAG, 'bash', '-c',
+        'cp -r /msan {work_dir}'.format(work_dir=self.work_dir)
     ])
 
   def build(self):
@@ -239,7 +238,7 @@ def check_fuzzer_build(out_dir,
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
   else:
     command += ['-v', '%s:/out' % out_dir]
-  command.extend(['-t', 'gcr.io/oss-fuzz-base/base-runner', 'test_all.py'])
+  command.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
   exit_code = helper.docker_run(command)
   logging.info('check fuzzer build exit code: %d', exit_code)
   if exit_code:

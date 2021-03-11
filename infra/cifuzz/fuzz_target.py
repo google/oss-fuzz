@@ -21,6 +21,8 @@ import stat
 import subprocess
 import sys
 
+import docker
+
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import utils
@@ -102,8 +104,7 @@ class FuzzTarget:
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'SANITIZER=' + self.config.sanitizer, '-e', 'CIFUZZ=True', '-e',
-        'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
-        'bash', '-c'
+        'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash', '-c'
     ]
 
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
@@ -144,7 +145,7 @@ class FuzzTarget:
       return FuzzResult(testcase, stderr)
     return FuzzResult(None, None)
 
-  def delete_to_save_disk_space(self):
+  def free_disk_if_needed(self):
     """Deletes things that are no longer needed from fuzzing this fuzz target to
     save disk space if needed."""
     if not self.config.low_disk_space:
@@ -154,7 +155,7 @@ class FuzzTarget:
         self.target_name)
 
     # Delete the seed corpus, corpus, and fuzz target.
-    if self.latest_corpus_path:
+    if self.latest_corpus_path and os.path.exists(self.latest_corpus_path):
       shutil.rmtree(self.latest_corpus_path)
 
     os.remove(self.target_path)
@@ -199,8 +200,7 @@ class FuzzTarget:
       ]
 
     command += [
-        '-t', 'gcr.io/oss-fuzz-base/base-runner', 'reproduce', self.target_name,
-        '-runs=100'
+        '-t', docker.BASE_RUNNER_TAG, 'reproduce', self.target_name, '-runs=100'
     ]
 
     logging.info('Running reproduce command: %s.', ' '.join(command))
