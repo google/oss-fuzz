@@ -1,0 +1,10 @@
+homepage: "https://github.com/caddyserver/caddy"
+main_repo: "https://github.com/caddyserver/caddy"
+primary_contact: "msaa1990@gmail.com"
+auto_ccs :
+  - "Adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
