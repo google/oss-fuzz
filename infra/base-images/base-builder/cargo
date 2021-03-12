@@ -21,8 +21,6 @@
 #
 ################################################################################
 
-export PATH="/rust/bin:$PATH"
-
 if [ "$SANITIZER" = "coverage" ] && [ $1 = "build" ]
 then
     crate_src_abspath=`cargo metadata --no-deps --format-version 1 | jq -r '.workspace_root'`
@@ -41,11 +39,11 @@ then
     # do not optimize with --release, leading to Malformed instrumentation profile data
     cargo build --bins
     # copies the build output in the expected target directory
-    cd target
+    cd `cargo metadata --format-version 1 --no-deps | jq -r '.target_directory'`
     mkdir -p x86_64-unknown-linux-gnu/release
     cp -r debug/* x86_64-unknown-linux-gnu/release/
     )
     exit 0
 fi
 
-cargo "$@"
+/rust/bin/cargo "$@"
