@@ -19,6 +19,6 @@ mkdir build && cd build
 cmake -DSPOTIFY_JSON_BUILD_TESTS=OFF ../
 make
 
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_decode.cpp \
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzers//fuzz_decode.cpp \
     -I../include -I../vendor/double-conversion \
     ./libspotify-json.a ./vendor/double-conversion/libdouble-conversion.a  -lpthread -o $OUT/fuzz_decode

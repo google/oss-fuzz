@@ -19,4 +19,3 @@ RUN git clone https://github.com/spotify/spotify-json
 
 WORKDIR $SRC/spotify-json
 COPY build.sh $SRC/
-COPY fuzz_* $SRC/
