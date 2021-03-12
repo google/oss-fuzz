@@ -44,3 +44,4 @@ runs:
     # for running because we use it to distinguish OSS-Fuzz from non-OSS-Fuzz.
     # We should do something explicit instead.
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
+    LOW_DISK_SPACE: 'True'
