@@ -114,13 +114,11 @@ function run_fuzz_target {
 function run_go_fuzz_target {
   local target=$1
 
-  cd $GOPATH/src
   echo "Running go target $target"
   export FUZZ_CORPUS_DIR="/corpus/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
-  bash $OUT/$target $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
+  $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
   $SYSGOPATH/bin/gocovsum $DUMPS_DIR/$target.profdata > $FUZZER_STATS_DIR/$target.json
-  cd $OUT
 }
 
 export SYSGOPATH=$GOPATH
@@ -131,7 +129,7 @@ for fuzz_target in $FUZZ_TARGETS; do
   if [[ $FUZZING_LANGUAGE == "go" ]]; then
     # Continue if not a fuzz target.
     if [[ $FUZZING_ENGINE != "none" ]]; then
-      grep "go test -run" $fuzz_target > /dev/null 2>&1 || continue
+      grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || continue
     fi
     run_go_fuzz_target $fuzz_target &
   else
