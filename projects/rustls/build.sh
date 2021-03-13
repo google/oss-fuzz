@@ -23,4 +23,3 @@ cp fuzz/target/x86_64-unknown-linux-gnu/release/fragment $OUT/
 cp fuzz/target/x86_64-unknown-linux-gnu/release/hsjoiner $OUT/
 cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/
 cp fuzz/target/x86_64-unknown-linux-gnu/release/server $OUT/
-
