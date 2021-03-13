@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-
 if [ "$SANITIZER" = "coverage" ]
 then
     exit 0 
