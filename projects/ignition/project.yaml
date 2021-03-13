@@ -1,5 +1,5 @@
 homepage: "https://github.com/coreos/ignition"
-homepage: "https://github.com/coreos/ignition"
+main_repo: "https://github.com/coreos/ignition"
 primary_contact: ""
 auto_ccs :
   - "adam@adalogics.com"
