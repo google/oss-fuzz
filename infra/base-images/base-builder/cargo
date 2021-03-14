@@ -36,6 +36,8 @@ then
     cd fuzz || true
     fuzz_src_abspath=`pwd`
     export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix fuzz_targets=$fuzz_src_abspath/fuzz_targets"
+    # we do not want to trigger debug assertions and stops
+    export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
     # do not optimize with --release, leading to Malformed instrumentation profile data
     cargo build --bins
     # copies the build output in the expected target directory
