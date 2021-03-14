@@ -1,4 +1,3 @@
-#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,18 +14,15 @@
 #
 ################################################################################
 
-declare -r QUERY='
-    let all_fuzz_tests = attr(tags, "fuzz-test", "//...") in
-    $all_fuzz_tests - attr(tags, "no-oss-fuzz", $all_fuzz_tests)
-'
+# Force the use of Clang for C++ builds.
+build --action_env=CC=clang
+build --action_env=CXX=clang++
 
-declare -r PACKAGE_SUFFIX="_oss_fuzz"
-declare -r OSS_FUZZ_TESTS="$(bazel query "${QUERY}" | sed "s/$/${PACKAGE_SUFFIX}/")"
+# Define the --config=asan-libfuzzer configuration.
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_sanitizer=asan
 
-bazel build -c opt --config=oss-fuzz --linkopt=-lc++ \
-    --action_env=CC="${CC}" --action_env=CXX="${CXX}" \
-    ${OSS_FUZZ_TESTS[*]}
-
-for oss_fuzz_archive in $(find bazel-bin/ -name "*${PACKAGE_SUFFIX}.tar"); do
-    tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
-done
+build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine
+build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz
+build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_sanitizer=none

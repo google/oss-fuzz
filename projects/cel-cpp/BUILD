@@ -14,7 +14,9 @@
 #
 ################################################################################
 
-cc_binary(
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
+
+cc_fuzz_test(
 	name = "fuzz_parse",
 	deps = ["//parser"],
 	srcs = ["fuzz_parse.cc"],
