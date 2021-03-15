@@ -1,4 +1,5 @@
-# Copyright 2017 Google Inc.
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +15,10 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-  autoconf2.13 \
-  libc++1 \
-  libc++abi1 \
-  yasm \
-  python
+mkdir build && cd build
+cmake -DSPOTIFY_JSON_BUILD_TESTS=OFF ../
+make
 
-# This wrapper of cargo seems to interfere with our build system.
-RUN rm -f /usr/local/bin/cargo
-
-RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
-WORKDIR mozilla-central/js/src/
-COPY build.sh $SRC/
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzers//fuzz_decode.cpp \
+    -I../include -I../vendor/double-conversion \
+    ./libspotify-json.a ./vendor/double-conversion/libdouble-conversion.a  -lpthread -o $OUT/fuzz_decode

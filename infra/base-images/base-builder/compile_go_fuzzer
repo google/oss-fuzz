@@ -42,12 +42,8 @@ if [[ $SANITIZER = *coverage* ]]; then
   sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
   sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
 
-  echo "#!/bin/sh" > $OUT/$fuzzer
-  echo "cd \$OUT/$abspath" >> $OUT/$fuzzer
-  # The fuzzer may be in a subdirectory, but we want the coverage report for the whole repository
   fuzzed_repo=`echo $path | cut -d/ -f-3`
-  echo "go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -coverprofile \$1 " >> $OUT/$fuzzer
-  chmod +x $OUT/$fuzzer
+  go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
 else
   # Compile and instrument all Go files relevant to this fuzz target.
   echo "Running go-fuzz $tags -func $function -o $fuzzer.a $path"

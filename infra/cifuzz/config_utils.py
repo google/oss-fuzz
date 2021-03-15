@@ -18,14 +18,16 @@ import enum
 import os
 import json
 
+import environment
+
 
 def _get_project_repo_name():
-  return os.path.basename(os.getenv('GITHUB_REPOSITORY', ''))
+  return os.path.basename(environment.get('GITHUB_REPOSITORY', ''))
 
 
 def _get_pr_ref(event):
   if event == 'pull_request':
-    return os.getenv('GITHUB_REF')
+    return environment.get('GITHUB_REF')
   return None
 
 
@@ -40,7 +42,7 @@ def _get_project_name():
 
 def _is_dry_run():
   """Returns True if configured to do a dry run."""
-  return os.getenv('DRY_RUN', 'false').lower() == 'true'
+  return environment.get_bool('DRY_RUN', 'false')
 
 
 def get_project_src_path(workspace):
@@ -98,6 +100,8 @@ class BaseConfig:
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
     logging.debug('Is github: %s.', self.is_github)
+    # TODO(metzman): Parse env like we do in ClusterFuzz.
+    self.low_disk_space = environment.get('LOW_DISK_SPACE', False)
 
   @property
   def is_internal(self):
