@@ -28,9 +28,9 @@ build() {
 
   cd $PROJECT_DIR
   crate_src_abspath=`cargo metadata --no-deps --format-version 1 | jq -r '.workspace_root'`
-  find . -name "*.rs" | cut -d/ -f2 | uniq | grep -v fuzz | while read i; do
+  while read i; do
     export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
-  done
+  done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
 
   cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions "$@"
 
