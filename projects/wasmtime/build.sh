@@ -26,6 +26,7 @@ build() {
   shift
   PROJECT_DIR=$SRC/$project
 
+  # ensure we get absolute paths for the coverage report
   cd $PROJECT_DIR
   crate_src_abspath=`cargo metadata --no-deps --format-version 1 | jq -r '.workspace_root'`
   while read i; do
