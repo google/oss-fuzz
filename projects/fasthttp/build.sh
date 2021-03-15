@@ -15,18 +15,10 @@
 #
 ################################################################################
 
-function compile_fuzzer {
-  path=$1
-  function=$2
-  fuzzer=$3
-
-  go-fuzz -func $function -o $fuzzer.a $path
-
-  $CXX $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.a -o $OUT/$fuzzer
-}
 
 
-ls $GOPATH/src/github.com/valyala/fasthttp/fuzzit | while read target
+
+ls fuzzit/ | while read target
 do
-    compile_fuzzer github.com/valyala/fasthttp/fuzzit/$target Fuzz fuzz_$target
+    compile_go_fuzzer github.com/valyala/fasthttp/fuzzit/$target Fuzz fuzz_$target gofuzz
 done

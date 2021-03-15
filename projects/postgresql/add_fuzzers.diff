@@ -1,26 +1,25 @@
 diff --git a/src/backend/tcop/postgres.c b/src/backend/tcop/postgres.c
-index c9424f167c..aa2897ec63 100644
+index cb5a96117f..c9b4880085 100644
 --- a/src/backend/tcop/postgres.c
 +++ b/src/backend/tcop/postgres.c
-@@ -101,6 +101,10 @@ int			max_stack_depth = 100;
+@@ -102,6 +102,9 @@ int			max_stack_depth = 100;
  /* wait N seconds to allow attach from a debugger */
  int			PostAuthDelay = 0;
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 +bool        fuzzer_first_run = true;
 +#endif
-+
  
  
  /* ----------------
-@@ -505,11 +509,14 @@ static int
- ReadCommand(StringInfo inBuf)
+@@ -507,10 +510,15 @@ ReadCommand(StringInfo inBuf)
  {
  	int			result;
--
+ 
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-+	result = SocketBackend(inBuf);
++    result = SocketBackend(inBuf);
 +#else
++
  	if (whereToSendOutput == DestRemote)
  		result = SocketBackend(inBuf);
  	else
@@ -29,34 +28,35 @@ index c9424f167c..aa2897ec63 100644
  	return result;
  }
  
-@@ -3784,6 +3791,10 @@ PostgresMain(int argc, char *argv[],
- 	volatile bool send_ready_for_query = true;
- 	bool		disable_idle_in_transaction_timeout = false;
+@@ -3846,6 +3854,11 @@ PostgresMain(int argc, char *argv[],
+ 	bool		idle_in_transaction_timeout_enabled = false;
+ 	bool		idle_session_timeout_enabled = false;
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-+	if(fuzzer_first_run)
-+	{
++        if(fuzzer_first_run)
++                {
 +#endif /* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
++
  	/* Initialize startup process environment if necessary. */
  	if (!IsUnderPostmaster)
  		InitStandaloneProcess(argv[0]);
-@@ -4151,6 +4162,11 @@ PostgresMain(int argc, char *argv[],
+@@ -4207,6 +4220,11 @@ PostgresMain(int argc, char *argv[],
  	if (!ignore_till_sync)
  		send_ready_for_query = true;	/* initially, or after error */
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-+	fuzzer_first_run=false;
-+	}
++        fuzzer_first_run=false;
++            }
 +#endif /* FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
 +
  	/*
  	 * Non-error queries loop here.
  	 */
 diff --git a/src/backend/utils/error/elog.c b/src/backend/utils/error/elog.c
-index d0b368530e..02a3e9066e 100644
+index 80c2672461..c16e0423c5 100644
 --- a/src/backend/utils/error/elog.c
 +++ b/src/backend/utils/error/elog.c
-@@ -513,7 +513,9 @@ errfinish(const char *filename, int lineno, const char *funcname)
+@@ -600,7 +600,9 @@ errfinish(const char *filename, int lineno, const char *funcname)
  		pq_endcopyout(true);
  
  	/* Emit the message to the right places */

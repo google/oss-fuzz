@@ -14,16 +14,23 @@
 #
 ################################################################################
 """Unit tests for Cloud Function update builds status."""
+import os
+import sys
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock
 
 from google.cloud import ndb
 
+sys.path.append(os.path.dirname(__file__))
+# pylint: disable=wrong-import-position
+
 from datastore_entities import BuildsHistory
 from datastore_entities import LastSuccessfulBuild
 import test_utils
 import update_build_status
+
+# pylint: disable=no-member
 
 
 # pylint: disable=too-few-public-methods

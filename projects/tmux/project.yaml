@@ -1,0 +1,7 @@
+homepage: "https://tmux.github.io/"
+language: c
+primary_contact: nicholas.marriott@gmail.com
+sanitizers:
+  - address
+  - undefined
+main_repo: 'https://github.com/tmux/tmux.git'

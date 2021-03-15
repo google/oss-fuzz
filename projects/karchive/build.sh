@@ -78,7 +78,7 @@ cmake . -DBUILD_SHARED_LIBS=OFF -DQt5Core_DIR=$SRC/qtbase/lib/cmake/Qt5Core/ -DB
 make install -j$(nproc)
 
 # Build karchive_fuzzer
-$CXX $CXXFLAGS -fPIC -std=c++11 $SRC/karchive_fuzzer.cc -o $OUT/karchive_fuzzer -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I /usr/local/include/KF5/KArchive -L $SRC/qtbase/lib -lQt5Core -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive /usr/local/lib/libbz2.a -llzma -lQt5Core
+$CXX $CXXFLAGS -fPIC -std=c++11 $SRC/karchive_fuzzer.cc -o $OUT/karchive_fuzzer -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I /usr/local/include/KF5/KArchive -L $SRC/qtbase/lib -lQt5Core -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive /usr/local/lib/libbz2.a -llzma -lQt5Core /usr/local/lib/libz.a
 
 cd $SRC
 find . -name "*.gz" -o -name "*.zip" -o -name "*.xz" -o -name "*.tar" | zip -q $OUT/karchive_fuzzer_seed_corpus.zip -@

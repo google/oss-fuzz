@@ -1,0 +1,7 @@
+homepage: "https://github.com/googleapis/google-cloud-go"
+primary_contact: "codyoss@google.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

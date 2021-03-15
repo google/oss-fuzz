@@ -13,3 +13,4 @@ sanitizers:
  - address
  - memory
 
+main_repo: 'https://github.com/unicode-org/icu.git'

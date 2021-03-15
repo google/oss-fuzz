@@ -17,3 +17,4 @@
 
 # Run the OSS-Fuzz script in the project
 $SRC/miniz/tests/ossfuzz.sh
+

@@ -3,8 +3,9 @@ language: c++
 primary_contact: "keystone.engine@gmail.com"
 auto_ccs :
   - "p.antoine@catenacyber.fr"
-
+  - "stalkr@stalkr.net"
 sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://github.com/keystone-engine/keystone.git'

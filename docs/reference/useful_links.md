@@ -33,6 +33,8 @@ parent: Reference
 [Security](https://security.googleblog.com/2017/05/oss-fuzz-five-months-later-and.html))
 * 2018-11-06 - A New Chapter for OSS-Fuzz
 ([Security](https://security.googleblog.com/2018/11/a-new-chapter-for-oss-fuzz.html))
+* 2020-10-09 - [Fuzzing internships for Open Source Software](https://security.googleblog.com/2020/10/fuzzing-internships-for-open-source.html)
+* 2020-12-07 - [Improving open source security during the Google summer internship program](https://security.googleblog.com/2020/12/improving-open-source-security-during.html)
 
 ## Tutorials
 

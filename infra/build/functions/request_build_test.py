@@ -17,10 +17,14 @@
 import json
 import datetime
 import os
+import sys
 import unittest
 from unittest import mock
 
 from google.cloud import ndb
+
+sys.path.append(os.path.dirname(__file__))
+# pylint: disable=wrong-import-position
 
 from datastore_entities import BuildsHistory
 from datastore_entities import Project
@@ -28,6 +32,8 @@ from request_build import get_build_steps
 from request_build import get_project_data
 from request_build import update_build_history
 import test_utils
+
+# pylint: disable=no-member
 
 
 class TestRequestBuilds(unittest.TestCase):

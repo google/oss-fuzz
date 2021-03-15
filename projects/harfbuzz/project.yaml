@@ -14,6 +14,7 @@ auto_ccs:
   - "ariza@typekit.com"
   - "qxliu@google.com"
   - "ckitagawa@google.com"
+  - "drott@chromium.org"
 vendor_ccs:
   - "jmuizelaar@mozilla.com"
   - "lsalzman@mozilla.com"
@@ -31,3 +32,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/harfbuzz/harfbuzz.git'

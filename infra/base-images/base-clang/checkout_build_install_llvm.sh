@@ -15,10 +15,14 @@
 #
 ################################################################################
 
-NPROC=16  # See issue #4270. The compiler crashes on GCB instance with 32 vCPUs.
+# See issue #4270. The compiler crashes on GCB instance with 32 vCPUs, so when
+# we compile on GCB we want 16 cores. But locally we want more (so use nproc /
+# 2).
+NPROC=$(expr $(nproc) / 2)
 
-LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python2.7 g++-multilib binutils-dev"
-apt-get install -y $LLVM_DEP_PACKAGES
+# zlib1g-dev is needed for llvm-profdata to handle coverage data from rust compiler
+LLVM_DEP_PACKAGES="build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev"
+apt-get install -y $LLVM_DEP_PACKAGES --no-install-recommends
 
 # Checkout
 CHECKOUT_RETRIES=10
@@ -60,17 +64,17 @@ function cmake_llvm {
 # Use chromium's clang revision
 mkdir $SRC/chromium_tools
 cd $SRC/chromium_tools
-git clone https://chromium.googlesource.com/chromium/src/tools/clang
+git clone https://chromium.googlesource.com/chromium/src/tools/clang --depth 1
 cd clang
 
 LLVM_SRC=$SRC/llvm-project
 
 # For manual bumping.
-OUR_LLVM_REVISION=llvmorg-12-init-1771-g1bd7046e
+OUR_LLVM_REVISION=llvmorg-12-init-17251-g6de48655
 
 # To allow for manual downgrades. Set to 0 to use Chrome's clang version (i.e.
 # *not* force a manual downgrade). Set to 1 to force a manual downgrade.
-FORCE_OUR_REVISION=0
+FORCE_OUR_REVISION=1
 LLVM_REVISION=$(grep -Po "CLANG_REVISION = '\K([^']+)" scripts/update.py)
 
 clone_with_retries https://github.com/llvm/llvm-project.git $LLVM_SRC
@@ -89,11 +93,9 @@ fi
 git -C $LLVM_SRC checkout $LLVM_REVISION
 echo "Using LLVM revision: $LLVM_REVISION"
 
-# Build & install. We build clang in two stages because gcc can't build a
-# static version of libcxxabi
-# (see https://github.com/google/oss-fuzz/issues/2164).
+# Build & install.
 mkdir -p $WORK/llvm-stage2 $WORK/llvm-stage1
-cd $WORK/llvm-stage1
+python3 $SRC/chromium_tools/clang/scripts/update.py --output-dir $WORK/llvm-stage1
 
 TARGET_TO_BUILD=
 case $(uname -m) in
@@ -110,9 +112,6 @@ case $(uname -m) in
 esac
 
 PROJECTS_TO_BUILD="libcxx;libcxxabi;compiler-rt;clang;lld"
-
-cmake_llvm
-ninja -j $NPROC
 
 cd $WORK/llvm-stage2
 export CC=$WORK/llvm-stage1/bin/clang
@@ -142,14 +141,14 @@ mkdir -p $WORK/msan
 cd $WORK/msan
 
 # https://github.com/google/oss-fuzz/issues/1099
-cat <<EOF > $WORK/msan/blacklist.txt
+cat <<EOF > $WORK/msan/blocklist.txt
 fun:__gxx_personality_*
 EOF
 
 cmake_llvm $CMAKE_EXTRA_ARGS \
     -DLLVM_USE_SANITIZER=Memory \
     -DCMAKE_INSTALL_PREFIX=/usr/msan/ \
-    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blacklist.txt"
+    -DCMAKE_CXX_FLAGS="-fsanitize-blacklist=$WORK/msan/blocklist.txt"
 
 ninja -j $NPROC cxx
 ninja install-cxx

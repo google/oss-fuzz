@@ -1,0 +1,8 @@
+homepage: "https://github.com/CodeIntelligenceTesting/jazzer"
+language: jvm
+primary_contact: "meumertzheim@code-intelligence.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/CodeIntelligenceTesting/jazzer"
+sanitizers:
+  - address

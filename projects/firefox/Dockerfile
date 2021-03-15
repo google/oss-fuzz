@@ -21,6 +21,10 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
   libstdc++6 \
   python \
   software-properties-common
+
+# This wrapper of cargo seems to interfere with our build system.
+RUN rm -f /usr/local/bin/cargo
+
 RUN git clone --depth 1 https://github.com/mozilla/gecko-dev mozilla-central
 RUN git clone --depth 1 https://github.com/mozillasecurity/fuzzdata
 WORKDIR mozilla-central

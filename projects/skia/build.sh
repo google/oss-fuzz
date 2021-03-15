@@ -27,6 +27,9 @@ if [ $SANITIZER == "address" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_ASAN"
 elif [ $SANITIZER == "memory" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_MSAN"
+  # oss-fuzz will patch the rpath for this after compilation and linking,
+  # so we only need to set this to appease the Swiftshader build rules check.
+  export SWIFTSHADER_MSAN_INSTRUMENTED_LIBCXX_PATH="/does/not/matter"
 elif [ $SANITIZER == "undefined" ]; then
   # The current SwiftShader build needs -fno-sanitize=vptr, but it cannot be
   # specified here since -fsanitize=undefined will always come after any
@@ -35,6 +38,8 @@ elif [ $SANITIZER == "undefined" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
 elif [ $SANITIZER == "coverage" ]; then
   CMAKE_SANITIZER="SWIFTSHADER_EMIT_COVERAGE"
+elif [ $SANITIZER == "thread" ]; then
+  CMAKE_SANITIZER="SWIFTSHADER_UBSAN_DISABLED"
 else
   exit 1
 fi
@@ -58,12 +63,22 @@ export CFLAGS_ARR=`echo $CFLAGS | sed -e "s/\s/\",\"/g"`
 export CXXFLAGS_ARR=`echo $CXXFLAGS | sed -e "s/\s/\",\"/g"`
 export LDFLAGS_ARR=`echo $LDFLAGS | sed -e "s/\s/\",\"/g"`
 
+$SRC/skia/bin/fetch-gn
+
+set +u
+LIMITED_LINK_POOL="link_pool_depth=1"
+if [ "$CIFUZZ" = "true" ]; then
+  echo "Not restricting linking because on CIFuzz"
+  LIMITED_LINK_POOL=""
+fi
+set -u
+
 # Even though GPU is "enabled" for all these builds, none really
 # uses the gpu except for api_mock_gpu_canvas
-$SRC/depot_tools/gn gen out/Fuzz\
+$SRC/skia/bin/gn gen out/Fuzz\
     --args='cc="'$CC'"
       cxx="'$CXX'"
-      link_pool_depth=1
+      '$LIMITED_LINK_POOL'
       is_debug=false
       extra_cflags_c=["'"$CFLAGS_ARR"'"]
       extra_cflags_cc=["'"$CXXFLAGS_ARR"'"]
@@ -85,6 +100,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   android_codec \
   animated_image_decode \
   api_create_ddl \
+  api_ddl_threading \
   api_draw_functions \
   api_gradients \
   api_image_filter \
@@ -94,6 +110,7 @@ $SRC/depot_tools/ninja -C out/Fuzz \
   api_pathop \
   api_polyutils \
   api_raster_n32_canvas \
+  api_skparagraph \
   api_svg_canvas \
   image_decode \
   image_decode_incremental \
@@ -225,5 +242,9 @@ cp ../skia_data/sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_
 
 cp out/Fuzz/api_create_ddl $OUT/api_create_ddl
 
+cp out/Fuzz/api_ddl_threading $OUT/api_ddl_threading
+
 cp out/Fuzz/skp $OUT/skp
 cp ../skia_data/skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
+
+cp out/Fuzz/api_skparagraph $OUT/api_skparagraph

@@ -30,4 +30,4 @@ RUN curl -L https://download.videolan.org/contrib/nasm/nasm-2.14.tar.gz | tar xv
 RUN cd nasm-2.14 && ./configure && make -j2 && ln -s `pwd`/nasm /usr/bin/nasm && cd ..
 RUN nasm --version
 
-COPY build.sh avif_decode_fuzzer.cc avif_decode_seed_corpus.zip $SRC/
+COPY build.sh avif_decode_seed_corpus.zip $SRC/
