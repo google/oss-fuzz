@@ -156,7 +156,9 @@ class FuzzTarget:
 
     # Delete the seed corpus, corpus, and fuzz target.
     if self.latest_corpus_path and os.path.exists(self.latest_corpus_path):
-      shutil.rmtree(self.latest_corpus_path)
+      # Use ignore_errors=True to fix
+      # https://github.com/google/oss-fuzz/issues/5383.
+      shutil.rmtree(self.latest_corpus_path, ignore_errors=True)
 
     os.remove(self.target_path)
     target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
