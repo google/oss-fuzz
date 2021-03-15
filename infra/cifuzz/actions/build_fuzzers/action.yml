@@ -35,3 +35,4 @@ runs:
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
+    LOW_DISK_SPACE: 'True'

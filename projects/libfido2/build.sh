@@ -20,7 +20,8 @@
 cd ${SRC}/libcbor
 patch -l -p0 < ${SRC}/libfido2/fuzz/README
 mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=${WORK} -DSANITIZE=OFF ..
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_INSTALL_PREFIX=${WORK} -DSANITIZE=OFF ..
 make -j$(nproc) VERBOSE=1
 make install
 
@@ -35,6 +36,12 @@ fi
 	 --openssldir=${WORK}/openssl ${CONFIGURE_FLAGS}
 make -j$(nproc) LDCMD="${CXX} ${CXXFLAGS}"
 make install_sw
+
+# Build zlib, taken from oss-fuzz/projects/zlib.sh
+cd ${SRC}/zlib
+./configure --prefix=${WORK}
+make -j$(nproc) all
+make install
 
 # Building libfido2 with ${LIB_FUZZING_ENGINE} and chosen sanitizer
 cd ${SRC}/libfido2

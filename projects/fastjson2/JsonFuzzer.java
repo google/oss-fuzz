@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+////////////////////////////////////////////////////////////////////////////////
 
-package system
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
+import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 
-import (
-	"strings"
-	"github.com/opencontainers/runc/libcontainer/user"
-)
-
-
-func Fuzz(data []byte) int {
-	uidmap, _ := user.ParseIDMap(strings.NewReader(string(data)))
-	_ = UIDMapInUserNS(uidmap)
-	return 1
+public class JsonFuzzer {
+  public static void fuzzerTestOneInput(FuzzedDataProvider data) {
+    try {
+      JSON.parse(data.consumeRemainingAsString());
+    } catch (JSONException ignored) {
+    }
+  }
 }

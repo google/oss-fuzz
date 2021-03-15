@@ -5,6 +5,7 @@ auto_ccs:
   - "andreas.fuchs@sit.fraunhofer.de"
   - "john.s.andersen@intel.com"
   - "william.c.roberts@intel.com"
+  - "tstruk@gmail.com"
 sanitizers:
   - address
   - memory

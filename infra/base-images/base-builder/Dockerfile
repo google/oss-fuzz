@@ -57,12 +57,14 @@ RUN export PYTHON_DEPS="\
     ln -s /usr/bin/python3 /usr/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
-    apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
+    apt-get remove -y $PYTHON_DEPS  && \
+    rm -rf /usr/local/lib/python3.8/test # https://github.com/google/oss-fuzz/issues/3888
 
 # Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
 # six for Bazel rules.
-RUN unset CFLAGS CXXFLAGS && pip3 install -v \
-    atheris pyinstaller==4.1 six==1.15.0
+RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
+    atheris pyinstaller==4.1 six==1.15.0 && \
+    rm -rf /root/.cache/pip
 
 # Download and install the latest stable Go.
 RUN cd /tmp && \

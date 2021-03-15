@@ -3,6 +3,8 @@ primary_contact: "andres@planetscale.com"
 auto_ccs :
   - "adam@adalogics.com"
   - "team-ps-vitess@planetscale.com"
+  - "manan@planetscale.com"
+  - "harshit@planetscale.com"
 language: go
 fuzzing_engines:
   - libfuzzer

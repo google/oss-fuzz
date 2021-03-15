@@ -35,19 +35,19 @@ COPY --from=base-clang /usr/local/bin/llvm-cov \
      /usr/local/bin/llvm-symbolizer \
      /usr/local/bin/
 
-# TODO(metzman): Install libc6-i386 lib32gcc1 instead of libc6-dev-i386 for
-# consistency with ClusterFuzz image and to reduce size.
 RUN apt-get update && apt-get install -y \
     binutils \
     file \
     fonts-dejavu \
     git \
-    libc6-dev-i386 \
+    lib32gcc1 \
+    libc6-i386 \
     libcap2 \
     python3 \
     python3-pip \
+    unzip \
     wget \
-    zip
+    zip --no-install-recommends
 
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage && \
     pip3 install -r /opt/code_coverage/requirements.txt
@@ -98,11 +98,9 @@ COPY bad_build_check \
     coverage_helper \
     dataflow_tracer.py \
     download_corpus \
-    minijail0 \
     rcfilt \
     reproduce \
     run_fuzzer \
-    run_minijail \
     parse_options.py \
     targets_list \
     test_all.py \
