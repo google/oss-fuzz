@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+rm /usr/lib/x86_64-linux-gnu/libhdf5*.so*
+
 # build project
 git apply ../patch.diff
 mkdir build
