@@ -15,11 +15,4 @@
 #
 ################################################################################
 
-mv $SRC/id_map_fuzzer.go $SRC/runc/libcontainer/system/
-compile_go_fuzzer ./libcontainer/system Fuzz id_map_fuzzer linux
-
-mv $SRC/user_fuzzer.go $SRC/runc/libcontainer/user
-compile_go_fuzzer ./libcontainer/user Fuzz user_fuzzer
-
-mv $SRC/configs_fuzzer.go $SRC/runc/libcontainer/configs
-compile_go_fuzzer ./libcontainer/configs Fuzz configs_fuzzer
+$SRC/runc/tests/fuzzing/oss_fuzz_build.sh
