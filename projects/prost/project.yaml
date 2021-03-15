@@ -1,0 +1,10 @@
+homepage: "https://github.com/danburkert/prost"
+main_repo: "https://github.com/danburkert/prost"
+primary_contact: "david@adalogics.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
