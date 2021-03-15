@@ -1,0 +1,12 @@
+homepage: "https://github.com/Cyan4973/xxHash"
+main_repo: "https://github.com/Cyan4973/xxHash"
+language: c
+primary_contact: "cyan@fb.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
