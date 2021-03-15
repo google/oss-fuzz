@@ -15,4 +15,6 @@
 #
 ################################################################################
 
-$SRC/runc/tests/fuzzing/oss_fuzz_build.sh
+compile_go_fuzzer ./libcontainer/system FuzzUIDMap id_map_fuzzer linux
+compile_go_fuzzer ./libcontainer/user FuzzUser user_fuzzer
+compile_go_fuzzer ./libcontainer/configs FuzzUnmarshalJSON configs_fuzzer
