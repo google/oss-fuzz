@@ -41,7 +41,7 @@ export CXX="$SRC/aflplusplus/afl-clang-fast++"
 # Be quiet, otherwise this can break some builds.
 export AFL_QUIET=1
 # Several targets run their own tools, so ensure its working.
-export AFL_MAP_SIZE=4194304
+export AFL_MAP_SIZE=8000000
 # No leak errors during builds.
 export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_error=1"
 
@@ -51,7 +51,6 @@ export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_
 rm -f "$OUT/afl_cmplog.txt"
 test $(($RANDOM % 10)) -lt 4 && {
   export AFL_LLVM_CMPLOG=1
-  # We need to notify afl-fuzz to activate CMPLOG
   touch "$OUT/afl_cmplog.txt"
 }
 
