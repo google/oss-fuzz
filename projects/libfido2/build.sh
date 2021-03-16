@@ -69,8 +69,11 @@ done
 
  # Prepare seed corpora
 tar xzf ${SRC}/corpus.tgz
-(set -e ; cd fuzz_assert/corpus  ; zip -r ${OUT}/fuzz_assert_seed_corpus.zip .)
-(set -e ; cd fuzz_bio/corpus     ; zip -r ${OUT}/fuzz_bio_seed_corpus.zip .)
-(set -e ; cd fuzz_cred/corpus    ; zip -r ${OUT}/fuzz_cred_seed_corpus.zip .)
-(set -e ; cd fuzz_credman/corpus ; zip -r ${OUT}/fuzz_credman_seed_corpus.zip .)
-(set -e ; cd fuzz_mgmt/corpus    ; zip -r ${OUT}/fuzz_mgmt_seed_corpus.zip .)
+(set -e ; cd fuzz_assert/corpus    ; zip -r ${OUT}/fuzz_assert_seed_corpus.zip .)
+(set -e ; cd fuzz_bio/corpus       ; zip -r ${OUT}/fuzz_bio_seed_corpus.zip .)
+(set -e ; cd fuzz_cred/corpus      ; zip -r ${OUT}/fuzz_cred_seed_corpus.zip .)
+(set -e ; cd fuzz_credman/corpus   ; zip -r ${OUT}/fuzz_credman_seed_corpus.zip .)
+(set -e ; cd fuzz_hid/corpus       ; zip -r ${OUT}/fuzz_hid_seed_corpus.zip .)
+(set -e ; cd fuzz_largeblob/corpus ; zip -r ${OUT}/fuzz_largeblob_seed_corpus.zip .)
+(set -e ; cd fuzz_mgmt/corpus      ; zip -r ${OUT}/fuzz_mgmt_seed_corpus.zip .)
+(set -e ; cd fuzz_netlink/corpus   ; zip -r ${OUT}/fuzz_netlink_seed_corpus.zip .)
