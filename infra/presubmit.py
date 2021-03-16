@@ -241,14 +241,16 @@ def _check_one_options_file(options_file_path):
 
   config = configparser.ConfigParser()
   config.read(options_file_path)
-  libfuzzer_section = config.get('libfuzzer', {})
-  max_len = libfuzzer_section.get('max_len', None)
-  if max_len:
-    print(('Options file: {} is invalid. max_len cannot be enforced by '
-           'honggfuzz and AFL. Enforce this in code instead.'))
-    return False
 
-  return True
+  try:
+      config.get('libfuzzer', 'max_len')
+      print(('Options file: {file_path} is invalid. max_len cannot be enforced '
+             'by honggfuzz and AFL. Enforce this in code instead.').format(
+                 file_path=options_file_path))
+      return False
+  except (configparser.NoSectionError, configparser.NoOptionError):
+    return True
+
 
 def check_options(paths):
   """Checks that all options files are valid."""
@@ -258,7 +260,11 @@ def check_options(paths):
 def do_checks(changed_files):
   """Run all presubmit checks return False if any fails."""
   checks = [
-      check_license, yapf, lint, check_project_yaml, check_lib_fuzzing_engine,
+      check_license,
+      yapf,
+      lint,
+      check_project_yaml,
+      check_lib_fuzzing_engine,
       check_options,
   ]
   # Use a list comprehension here and in other cases where we use all() so that
