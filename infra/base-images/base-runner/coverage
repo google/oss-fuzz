@@ -118,6 +118,10 @@ function run_go_fuzz_target {
   export FUZZ_CORPUS_DIR="/corpus/${target}/"
   export FUZZ_PROFILE_NAME="$DUMPS_DIR/$target.perf"
   $OUT/$target -test.coverprofile $DUMPS_DIR/$target.profdata &> $LOGS_DIR/$target.log
+  # translate from golangish paths to current absolute paths
+  cat $OUT/$target.gocovpath | while read i; do sed -i $i $DUMPS_DIR/$target.profdata; done
+  # cf PATH_EQUIVALENCE_ARGS
+  sed -i 's=/='$OUT'/=' $DUMPS_DIR/$target.profdata
   $SYSGOPATH/bin/gocovsum $DUMPS_DIR/$target.profdata > $FUZZER_STATS_DIR/$target.json
 }
 
@@ -162,7 +166,7 @@ wait
 
 if [[ $FUZZING_LANGUAGE == "go" ]]; then
   $SYSGOPATH/bin/gocovmerge $DUMPS_DIR/*.profdata > fuzz.cov
-  GO111MODULE=off go tool cover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
+  go tool cover -html=fuzz.cov -o $REPORT_ROOT_DIR/index.html
   $SYSGOPATH/bin/gocovsum fuzz.cov > $SUMMARY_FILE
   cp $REPORT_ROOT_DIR/index.html $REPORT_PLATFORM_DIR/index.html
   $SYSGOPATH/bin/pprof-merge $DUMPS_DIR/*.perf.cpu.prof

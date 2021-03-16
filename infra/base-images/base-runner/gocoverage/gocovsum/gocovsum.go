@@ -9,8 +9,6 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"os"
-	"path"
 
 	"golang.org/x/tools/cover"
 )
@@ -68,13 +66,9 @@ func main() {
 	r.Type = "oss-fuzz.go.coverage.json.export"
 	r.Version = "1.0.0"
 	r.Data = make([]CoverageData, 1)
-	gopath := os.Getenv("GOPATH")
-	if len(gopath) == 0 {
-		gopath = os.Getenv("HOME") + "/go"
-	}
 	for _, p := range profiles {
 		fset := token.NewFileSet() // positions are relative to fset
-		f, err := parser.ParseFile(fset, path.Join(gopath, "src", p.FileName), nil, 0)
+		f, err := parser.ParseFile(fset, p.FileName, nil, 0)
 		if err != nil {
 			panic(err)
 		}
