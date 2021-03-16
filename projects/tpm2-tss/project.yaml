@@ -6,7 +6,10 @@ auto_ccs:
   - "john.s.andersen@intel.com"
   - "william.c.roberts@intel.com"
   - "tstruk@gmail.com"
+fuzzing_engines:
+  - libfuzzer
 sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://github.com/tpm2-software/tpm2-tss.git'
