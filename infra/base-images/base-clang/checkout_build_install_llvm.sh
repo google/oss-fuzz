@@ -181,14 +181,15 @@ LLVM_TOOLS_TMPDIR=/tmp/llvm-tools
 mkdir $LLVM_TOOLS_TMPDIR
 # Move binaries with llvm- prefix that we want into LLVM_TOOLS_TMPDIR
 mv \
+  /usr/local/bin/llvm-ar \
+  /usr/local/bin/llvm-as \
+  /usr/local/bin/llvm-config \
+  /usr/local/bin/llvm-cov \
   /usr/local/bin/llvm-objcopy \
+  /usr/local/bin/llvm-profdata \
+  /usr/local/bin/llvm-ranlib \
   /usr/local/bin/llvm-symbolizer \
   /usr/local/bin/llvm-undname \
-  /usr/local/bin/llvm-config \
-  /usr/local/bin/llvm-as \
-  /usr/local/bin/llvm-ranlib \
-  /usr/local/bin/llvm-profdata \
-  /usr/local/bin/llvm-cov \
   $LLVM_TOOLS_TMPDIR
 # Delete remaining llvm- binaries.
 rm -rf /usr/local/bin/llvm-*
