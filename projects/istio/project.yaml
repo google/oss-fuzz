@@ -3,7 +3,6 @@ primary_contact: "istio-security-vulnerability-reports@googlegroups.com"
 auto_ccs :
   - "adam@adalogics.com"
   - "howardjohn@google.com"
-  - "fpesce@google.com"
   - "kconner@redhat.com"
   - "bavery@redhat.com"
 language: go
