@@ -245,10 +245,9 @@ def _check_one_options_file(options_file_path):
   try:
     config.get('libfuzzer', 'max_len')
     print('Options file: {file_path} is invalid. max_len cannot be enforced '
-           'by honggfuzz and AFL. Enforce this in code instead. '
-           'See https://github.com/google/oss-fuzz/issues/5421 for more '
-           'details'.format(
-               file_path=options_file_path))
+          'by honggfuzz and AFL. Enforce this in code instead. '
+          'See https://github.com/google/oss-fuzz/issues/5421 for more '
+          'details'.format(file_path=options_file_path))
     return False
   except (configparser.NoSectionError, configparser.NoOptionError):
     return True
