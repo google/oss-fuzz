@@ -18,7 +18,7 @@
 path=$1
 function=$2
 fuzzer=$3
-tags=""
+tags="-tags gofuzz"
 if [[ $#  -eq 4 ]]; then
   tags="-tags $4"
 fi
@@ -43,8 +43,9 @@ if [[ $SANITIZER = *coverage* ]]; then
   sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
 
   fuzzed_repo=`echo $path | cut -d/ -f-3`
+  abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
   # give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
-  echo "s=$fuzzed_repo"=`go list $tags -f {{.Dir}} $fuzzed_repo`= > $OUT/$fuzzer.gocovpath
+  echo "s=$fuzzed_repo"="$abspath_repo$"= > $OUT/$fuzzer.gocovpath
   go test -run Test${function}Corpus -v $tags -coverpkg $fuzzed_repo/... -c -o $OUT/$fuzzer $path
 else
   # Compile and instrument all Go files relevant to this fuzz target.
