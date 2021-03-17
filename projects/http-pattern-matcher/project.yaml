@@ -1,4 +1,5 @@
 homepage: "https://github.com/google/http_pattern_matcher"
+main_repo: "https://github.com/google/http_pattern_matcher.git"
 language: c++
 primary_contact: "nareddyt@google.com"
 auto_ccs:

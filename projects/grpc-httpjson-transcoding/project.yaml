@@ -1,4 +1,5 @@
 homepage: "https://github.com/grpc-ecosystem/grpc-httpjson-transcoding"
+main_repo: "https://github.com/grpc-ecosystem/grpc-httpjson-transcoding.git"
 language: c++
 primary_contact: "nareddyt@google.com"
 auto_ccs:
