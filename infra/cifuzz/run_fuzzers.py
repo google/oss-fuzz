@@ -150,7 +150,8 @@ class BaseFuzzTargetRunner:
                          (target.target_name.encode(), result.stacktrace))
 
       # TODO(metzman): Do this with filestore.
-      testcase_artifact_path = self.get_fuzz_target_artifact(target, 'testcase')
+      testcase_artifact_path = self.get_fuzz_target_artifact(
+          target, os.path.basename(result.testcase))
       shutil.move(result.testcase, testcase_artifact_path)
       bug_summary_artifact_path = self.get_fuzz_target_artifact(
           target, 'bug-summary.txt')
