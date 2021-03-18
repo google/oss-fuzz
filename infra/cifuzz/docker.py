@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for dealing with docker."""
+import logging
 import os
 import sys
+import tempfile
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -36,3 +38,50 @@ def delete_images(images):
   command = ['docker', 'rmi', '-f'] + images
   utils.execute(command)
   utils.execute(['docker', 'builder', 'prune', '-f'])
+
+def stop_docker_container(container_id, wait_time=1):
+  """Stops the docker container, |container_id|. Returns True on success."""
+  result = subprocess.run([container_id, '-t', str(wait_time)], check=False)
+  return result.returncode == 0
+
+
+def _handle_timedout_container_process(process, cid_file):
+  """Stops the docker container |process| (and child processes) that has a
+  container id in |cid_file|. Returns stdout and stderr of |process|. This
+  function is a helper for run_container_command and should only be invoked by
+  it. Returns None for each if we can't get stdout and stderr."""
+  # Be cautious here. We probably aren't doing anything essential for CIFuzz to
+  # function. So try extra hard not to throw uncaught exceptions.
+  try:
+    with open(cid_filename, 'r') as cid_file_handle:
+      container_id = cid_file_handle.read()
+  except FileNotFoundError:
+    logging.error('cid_file not found.')
+    return None, None
+
+  if not stop_docker_container(container_id):
+    logging.error('Failed to stop docker container: %s', container_id)
+    return None, None
+
+  return process.communicate()
+
+
+def run_container_command(command_arguments, timeout=None):
+  """Runs |command_arguments| as a "docker run" command. Returns popen object,
+  stdout and stderr of the "docker run" process. Stops the command if timeout is
+  reached. Returns (None, None) if """
+  command = ['docker', 'run', '--rm', '--privileged']
+  timed_out = False
+  with tempfile.NamedTemporaryFile() as cid_filename:
+    command.extend(['--cidfile', cid_filename])
+    command.extend(command_arguments)
+    logging.info('Running command: %s', ' '.join(command))
+    process = subprocess.Popen(command,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    try:
+      stdout, stderr = process.communicate(timeout=timeout)
+    except TimeoutExpired:
+      logging.warning('Command timed out: %s', ' '.join(command))
+      stdout, stderr = _handle_timedout_container(process, cid_filename)
+    return process, stdout, setderr
