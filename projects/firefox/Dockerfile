@@ -31,5 +31,5 @@ WORKDIR mozilla-central
 # Install OS dependencies.
 # Will be re-run in build.sh to install missing dependencies.
 ENV SHELL /bin/bash
-RUN ./mach bootstrap --no-interactive --application-choice browser
+RUN ./mach --no-interactive bootstrap --application-choice browser
 COPY build.sh target.c *.options mozconfig.* $SRC/
