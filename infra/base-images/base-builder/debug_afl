@@ -33,7 +33,6 @@ export CXXFLAGS="$CXXFLAGS_SAVE"
 popd > /dev/null
 
 export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_error=1"
-export AFL_MAP_SIZE=8000000
 export AFL_LLVM_LAF_ALL=1
 export AFL_LLVM_CMPLOG=1
 touch "$OUT/afl_cmplog.txt"
