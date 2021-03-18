@@ -12,10 +12,8 @@ fuzzing_engines:
 - libfuzzer
 - afl
 - honggfuzz
-- dataflow
 
 sanitizers:
 - address
 - undefined
 - memory
-- dataflow
