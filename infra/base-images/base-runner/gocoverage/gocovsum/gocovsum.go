@@ -21,13 +21,21 @@ type CoverageTotal struct {
 }
 
 type CoverageTotals struct {
-	Functions CoverageTotal `json:"functions,omitempty"`
-	Lines     CoverageTotal `json:"lines,omitempty"`
-	Regions   CoverageTotal `json:"regions,omitempty"`
+	Functions      CoverageTotal `json:"functions,omitempty"`
+	Lines          CoverageTotal `json:"lines,omitempty"`
+	Regions        CoverageTotal `json:"regions,omitempty"`
+	Instantiations CoverageTotal `json:"instantiations,omitempty"`
+	Branches       CoverageTotal `json:"branches,omitempty"`
+}
+
+type CoverageFile struct {
+	Summary  CoverageTotals `json:"summary,omitempty"`
+	Filename string         `json:"filename,omitempty"`
 }
 
 type CoverageData struct {
 	Totals CoverageTotals `json:"totals,omitempty"`
+	Files  []CoverageFile `json:"files,omitempty"`
 }
 
 type PositionInterval struct {
@@ -52,6 +60,12 @@ func isFunctionCovered(s token.Position, e token.Position, blocks []cover.Profil
 	return false
 }
 
+func computePercent(s *CoverageTotals) {
+	s.Regions.Percent = float64(100*s.Regions.Covered) / float64(s.Regions.Count)
+	s.Lines.Percent = float64(100*s.Lines.Covered) / float64(s.Lines.Count)
+	s.Functions.Percent = float64(100*s.Functions.Covered) / float64(s.Functions.Count)
+}
+
 func main() {
 	flag.Parse()
 
@@ -64,7 +78,7 @@ func main() {
 	}
 	r := CoverageSummary{}
 	r.Type = "oss-fuzz.go.coverage.json.export"
-	r.Version = "1.0.0"
+	r.Version = "2.0.1"
 	r.Data = make([]CoverageData, 1)
 	for _, p := range profiles {
 		fset := token.NewFileSet() // positions are relative to fset
@@ -72,49 +86,62 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		fileCov := CoverageFile{}
+		fileCov.Filename = p.FileName
 		ast.Inspect(f, func(n ast.Node) bool {
 			switch x := n.(type) {
 			case *ast.FuncLit:
 				startf := fset.Position(x.Pos())
 				endf := fset.Position(x.End())
-				r.Data[0].Totals.Functions.Count++
+				fileCov.Summary.Functions.Count++
 				if isFunctionCovered(startf, endf, p.Blocks) {
-					r.Data[0].Totals.Functions.Covered++
+					fileCov.Summary.Functions.Covered++
 				} else {
-					r.Data[0].Totals.Functions.Uncovered++
+					fileCov.Summary.Functions.Uncovered++
 				}
 			case *ast.FuncDecl:
 				startf := fset.Position(x.Pos())
 				endf := fset.Position(x.End())
-				r.Data[0].Totals.Functions.Count++
+				fileCov.Summary.Functions.Count++
 				if isFunctionCovered(startf, endf, p.Blocks) {
-					r.Data[0].Totals.Functions.Covered++
+					fileCov.Summary.Functions.Covered++
 				} else {
-					r.Data[0].Totals.Functions.Uncovered++
+					fileCov.Summary.Functions.Uncovered++
 				}
 			}
 			return true
 		})
 
 		for _, b := range p.Blocks {
-			r.Data[0].Totals.Regions.Count++
+			fileCov.Summary.Regions.Count++
 			if b.Count > 0 {
-				r.Data[0].Totals.Regions.Covered++
+				fileCov.Summary.Regions.Covered++
 			} else {
-				r.Data[0].Totals.Regions.Uncovered++
+				fileCov.Summary.Regions.Uncovered++
 			}
 
-			r.Data[0].Totals.Lines.Count += b.NumStmt
+			fileCov.Summary.Lines.Count += b.NumStmt
 			if b.Count > 0 {
-				r.Data[0].Totals.Lines.Covered += b.NumStmt
+				fileCov.Summary.Lines.Covered += b.NumStmt
 			} else {
-				r.Data[0].Totals.Lines.Uncovered += b.NumStmt
+				fileCov.Summary.Lines.Uncovered += b.NumStmt
 			}
 		}
+		r.Data[0].Totals.Regions.Count += fileCov.Summary.Regions.Count
+		r.Data[0].Totals.Regions.Covered += fileCov.Summary.Regions.Covered
+		r.Data[0].Totals.Regions.Uncovered += fileCov.Summary.Regions.Uncovered
+		r.Data[0].Totals.Lines.Count += fileCov.Summary.Lines.Count
+		r.Data[0].Totals.Lines.Covered += fileCov.Summary.Lines.Covered
+		r.Data[0].Totals.Lines.Uncovered += fileCov.Summary.Lines.Uncovered
+		r.Data[0].Totals.Functions.Count += fileCov.Summary.Functions.Count
+		r.Data[0].Totals.Functions.Covered += fileCov.Summary.Functions.Covered
+		r.Data[0].Totals.Functions.Uncovered += fileCov.Summary.Functions.Uncovered
+
+		computePercent(&fileCov.Summary)
+		r.Data[0].Files = append(r.Data[0].Files, fileCov)
 	}
-	r.Data[0].Totals.Regions.Percent = float64(100*r.Data[0].Totals.Regions.Covered) / float64(r.Data[0].Totals.Regions.Count)
-	r.Data[0].Totals.Lines.Percent = float64(100*r.Data[0].Totals.Lines.Covered) / float64(r.Data[0].Totals.Lines.Count)
-	r.Data[0].Totals.Functions.Percent = float64(100*r.Data[0].Totals.Functions.Covered) / float64(r.Data[0].Totals.Functions.Count)
+
+	computePercent(&r.Data[0].Totals)
 	o, _ := json.Marshal(r)
 	fmt.Printf(string(o))
 }

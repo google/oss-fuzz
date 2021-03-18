@@ -1,4 +1,4 @@
-help_url: "https://github.com/pointcloudlibrary/pcl"
+main_repo: "https://github.com/pointcloudlibrary/pcl"
 homepage: "http://pointclouds.org"
 language: c++
 primary_contact: "kunal.tyagi.3.1994@gmail.com"
