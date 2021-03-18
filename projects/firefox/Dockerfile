@@ -19,6 +19,7 @@ RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
   gawk \
   libstdc++6 \
+  m4 \
   python \
   software-properties-common
 
