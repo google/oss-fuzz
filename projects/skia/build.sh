@@ -147,9 +147,6 @@ mv ../skia_data/textblob_deserialize_seed_corpus.zip $OUT/textblob_deserialize_s
 mv out/Fuzz/path_deserialize $OUT/path_deserialize
 mv ../skia_data/path_deserialize_seed_corpus.zip $OUT/path_deserialize_seed_corpus.zip
 
-mv out/Fuzz/image_decode $OUT/image_decode
-mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
-
 mv out/Fuzz/animated_image_decode $OUT/animated_image_decode
 mv ../skia_data/animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpus.zip
 
@@ -179,6 +176,7 @@ mv ../skia_data/api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corp
 mv out/Fuzz/api_pathop $OUT/api_pathop
 mv ../skia_data/api_pathop_seed_corpus.zip $OUT/api_pathop_seed_corpus.zip
 
+# These 3 use the same corpus.
 mv out/Fuzz/png_encoder $OUT/png_encoder
 cp ../skia_data/encoder_seed_corpus.zip $OUT/png_encoder_seed_corpus.zip
 
@@ -214,7 +212,10 @@ mv ../skia_data/api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corp
 mv out/Fuzz/api_polyutils $OUT/api_polyutils
 mv ../skia_data/api_polyutils_seed_corpus.zip $OUT/api_polyutils_seed_corpus.zip
 
-# These 2 can use the same corpus as the (non animated) image_decode.
+# These 3 use the same corpus.
+mv out/Fuzz/image_decode $OUT/image_decode
+cp ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
+
 mv out/Fuzz/android_codec $OUT/android_codec
 cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
 
