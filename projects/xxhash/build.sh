@@ -20,3 +20,4 @@ find . -name "*.o" -exec ar rcs fuzz_lib.a {} \;
 mv $SRC/fuzzer.c .
 $CC $CFLAGS -c fuzzer.c -o fuzzer.o
 $CC $CFLAGS $LIB_FUZZING_ENGINE fuzzer.o -o $OUT/fuzzer fuzz_lib.a
+
