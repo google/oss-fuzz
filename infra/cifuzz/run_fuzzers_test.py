@@ -38,7 +38,7 @@ EXAMPLE_PROJECT = 'example'
 
 # Location of files used for testing.
 TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'test_data')
+                              'test_data')
 
 MEMORY_FUZZER_DIR = os.path.join(TEST_DATA_PATH, 'memory')
 MEMORY_FUZZER = 'curl_fuzzer_memory'

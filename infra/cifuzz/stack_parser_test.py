@@ -27,7 +27,7 @@ EXAMPLE_PROJECT = 'example'
 
 # Location of data used for testing.
 TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'test_data')
+                              'test_data')
 
 
 class ParseOutputTest(fake_filesystem_unittest.TestCase):
