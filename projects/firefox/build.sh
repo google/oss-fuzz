@@ -44,7 +44,7 @@ export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 
 # Install remaining dependencies.
 export SHELL=/bin/bash
-./mach bootstrap --no-interactive --application-choice browser
+./mach --no-interactive bootstrap --application-choice browser
 
 # Skip patches for now
 rm tools/fuzzing/libfuzzer/patches/*.patch

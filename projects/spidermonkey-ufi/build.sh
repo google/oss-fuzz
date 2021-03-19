@@ -23,7 +23,7 @@ FUZZ_TARGETS=(
 
 # Install dependencies.
 export SHELL=/bin/bash
-../../mach bootstrap --no-interactive --application-choice browser
+../../mach --no-interactive bootstrap --application-choice browser
 
 autoconf2.13
 
