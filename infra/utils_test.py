@@ -24,7 +24,7 @@ import helper
 EXAMPLE_PROJECT = 'example'
 
 TEST_OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            'cifuzz', 'test_files', 'out')
+                            'cifuzz', 'test_data', 'out')
 
 
 class IsFuzzTargetLocalTest(unittest.TestCase):

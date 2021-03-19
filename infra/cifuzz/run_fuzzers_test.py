@@ -37,13 +37,13 @@ import test_helpers
 EXAMPLE_PROJECT = 'example'
 
 # Location of files used for testing.
-TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'test_files')
+TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'test_data')
 
-MEMORY_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'memory')
+MEMORY_FUZZER_DIR = os.path.join(TEST_DATA_PATH, 'memory')
 MEMORY_FUZZER = 'curl_fuzzer_memory'
 
-UNDEFINED_FUZZER_DIR = os.path.join(TEST_FILES_PATH, 'undefined')
+UNDEFINED_FUZZER_DIR = os.path.join(TEST_DATA_PATH, 'undefined')
 UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 
 FUZZ_SECONDS = 10
@@ -335,7 +335,7 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                     side_effect=[True, False]):
       with tempfile.TemporaryDirectory() as tmp_dir:
         workspace = os.path.join(tmp_dir, 'workspace')
-        shutil.copytree(TEST_FILES_PATH, workspace)
+        shutil.copytree(TEST_DATA_PATH, workspace)
         config = _create_config(fuzz_seconds=FUZZ_SECONDS,
                                 workspace=workspace,
                                 project_name=EXAMPLE_PROJECT)
@@ -351,17 +351,17 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
   def test_old_bug_found(self, _):
     """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
     config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                            workspace=TEST_FILES_PATH,
+                            workspace=TEST_DATA_PATH,
                             project_name=EXAMPLE_PROJECT)
     with tempfile.TemporaryDirectory() as tmp_dir:
       workspace = os.path.join(tmp_dir, 'workspace')
-      shutil.copytree(TEST_FILES_PATH, workspace)
+      shutil.copytree(TEST_DATA_PATH, workspace)
       config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                              workspace=TEST_FILES_PATH,
+                              workspace=TEST_DATA_PATH,
                               project_name=EXAMPLE_PROJECT)
       result = run_fuzzers.run_fuzzers(config)
       self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
-      build_dir = os.path.join(TEST_FILES_PATH, 'out', self.BUILD_DIR_NAME)
+      build_dir = os.path.join(TEST_DATA_PATH, 'out', self.BUILD_DIR_NAME)
       self.assertTrue(os.path.exists(build_dir))
       self.assertNotEqual(0, len(os.listdir(build_dir)))
 
