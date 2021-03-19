@@ -1,7 +1,6 @@
 .git
 infra/cifuzz/test_data/*
 docs/*
-infra/test_data/*
 
 # Copied from .gitignore.
 .vscode/

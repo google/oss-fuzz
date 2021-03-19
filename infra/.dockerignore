@@ -1,5 +1,4 @@
 cifuzz/test_data/*
-test_data/*
 
 # Copied from .gitignore.
 .vscode/
