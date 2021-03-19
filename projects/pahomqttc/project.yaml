@@ -1,0 +1,10 @@
+homepage: "https://eclipse.github.io/paho.mqtt.c/MQTTClient/html/"
+language: c++
+primary_contact: "icraggs@eclipse.org"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- undefined
+main_repo: 'https://github.com/eclipse/paho.mqtt.c.git'
