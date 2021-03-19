@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,26 +15,4 @@
 #
 ################################################################################
 
-# Source this file for afl++ debug sessions.
-apt-get update
-apt-get install -y strace gdb vim joe psmisc
-
-pushd $SRC/aflplusplus > /dev/null
-git checkout dev
-git pull
-test -n "$1" && { git checkout "$1" ; git pull ; }
-CFLAGS_SAVE="$CFLAGS"
-CXXFLAGS_SAVE="$CXXFLAGS"
-unset CFLAGS
-unset CXXFLAGS
-make
-export CFLAGS="$CFLAGS_SAVE"
-export CXXFLAGS="$CXXFLAGS_SAVE"
-popd > /dev/null
-
-export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_error=1"
-export AFL_LLVM_LAF_ALL=1
-export AFL_LLVM_CMPLOG=1
-touch "$OUT/afl_cmplog.txt"
-export AFL_LLVM_DICT2FILE=$OUT/afl++.dict
-ulimit -c unlimited
+$SRC/liblouis/tests/fuzzing/build.sh

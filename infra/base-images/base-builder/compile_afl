@@ -40,8 +40,6 @@ export CXX="$SRC/aflplusplus/afl-clang-fast++"
 # Set sane afl++ environment defaults:
 # Be quiet, otherwise this can break some builds.
 export AFL_QUIET=1
-# Several targets run their own tools, so ensure its working.
-export AFL_MAP_SIZE=8000000
 # No leak errors during builds.
 export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_error=1"
 
