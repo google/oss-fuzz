@@ -42,6 +42,9 @@ FUZZ_TARGETS=(
 export MOZ_OBJDIR=$WORK/obj-fuzz
 export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 
+# Without this, a host tool used during Rust part of the build will fail
+export ASAN_OPTIONS="detect_leaks=0"
+
 # Install remaining dependencies.
 export SHELL=/bin/bash
 ./mach --no-interactive bootstrap --application-choice browser
