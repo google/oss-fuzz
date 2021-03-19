@@ -88,8 +88,8 @@ index cc3e410..c10ba5a 100644
  
  
  CC = /usr/bin/gcc
-+CC = clang
-+CXX = clang++
++CC = ${CC}
++CXX = ${CXX}
  
 -CCFLAGS = -Wall  			\
 +CCFLAGS = $(CFLAGS) -Wall  			\
