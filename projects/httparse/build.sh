@@ -15,8 +15,7 @@
 #
 ################################################################################
 
-cd $SRC
-cd httparse
+cd $SRC/httparse
 cargo fuzz build -O
 cp fuzz/target/x86_64-unknown-linux-gnu/release/parse_request $OUT/
 cp fuzz/target/x86_64-unknown-linux-gnu/release/parse_headers $OUT/
