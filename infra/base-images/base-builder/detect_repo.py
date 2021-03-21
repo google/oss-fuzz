@@ -119,7 +119,13 @@ def check_for_repo_name(repo_path, repo_name):
 
   out, _ = execute(['git', 'config', '--get', 'remote.origin.url'],
                    location=repo_path)
-  out = out.split('/')[-1].replace('.git', '').rstrip()
+  out = out.rstrip()
+  if out[-1] == '/':
+    # like https://github.com/google/syzkaller/
+    out = out[:-1].split('/')[-1]
+  else:
+    # like https://github.com/AFLplusplus/AFLplusplus.git
+    out = out.split('/')[-1].replace('.git', '')
   return out == repo_name
 
 
