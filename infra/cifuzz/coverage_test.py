@@ -21,8 +21,8 @@ import coverage
 
 # pylint: disable=protected-access
 
-TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'test_files')
+TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'test_data')
 
 PROJECT_NAME = 'curl'
 REPO_PATH = '/src/curl'
@@ -31,7 +31,7 @@ PROJECT_COV_JSON_FILENAME = 'example_curl_cov.json'
 FUZZ_TARGET_COV_JSON_FILENAME = 'example_curl_fuzzer_cov.json'
 INVALID_TARGET = 'not-a-fuzz-target'
 
-with open(os.path.join(TEST_FILES_PATH,
+with open(os.path.join(TEST_DATA_PATH,
                        PROJECT_COV_JSON_FILENAME),) as cov_file_handle:
   PROJECT_COV_INFO = json.loads(cov_file_handle.read())
 
@@ -107,7 +107,7 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
 
   def test_valid_target(self):
     """Tests that covered files can be retrieved from a coverage report."""
-    with open(os.path.join(TEST_FILES_PATH,
+    with open(os.path.join(TEST_DATA_PATH,
                            FUZZ_TARGET_COV_JSON_FILENAME),) as file_handle:
       fuzzer_cov_info = json.loads(file_handle.read())
 
@@ -115,7 +115,7 @@ class GetFilesCoveredByTargetTest(unittest.TestCase):
                     return_value=fuzzer_cov_info):
       file_list = self.coverage_getter.get_files_covered_by_target(FUZZ_TARGET)
 
-    curl_files_list_path = os.path.join(TEST_FILES_PATH,
+    curl_files_list_path = os.path.join(TEST_DATA_PATH,
                                         'example_curl_file_list.json')
     with open(curl_files_list_path) as file_handle:
       expected_file_list = json.loads(file_handle.read())

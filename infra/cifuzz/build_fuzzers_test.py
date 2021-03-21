@@ -36,9 +36,9 @@ import test_helpers
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
 EXAMPLE_PROJECT = 'example'
 
-# Location of files used for testing.
-TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'test_files')
+# Location of data used for testing.
+TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'test_data')
 
 # An example fuzzer that triggers an crash.
 # Binary is a copy of the example project's do_stuff_fuzzer and can be
@@ -257,7 +257,7 @@ class CheckFuzzerBuildTest(unittest.TestCase):
   def setUp(self):
     self.tmp_dir_obj = tempfile.TemporaryDirectory()
     self.test_files_path = os.path.join(self.tmp_dir_obj.name, 'test_files')
-    shutil.copytree(TEST_FILES_PATH, self.test_files_path)
+    shutil.copytree(TEST_DATA_PATH, self.test_files_path)
 
   def tearDown(self):
     self.tmp_dir_obj.cleanup()
@@ -286,7 +286,7 @@ class CheckFuzzerBuildTest(unittest.TestCase):
     """Tests that ALLOWED_BROKEN_TARGETS_PERCENTAGE is set when running
     docker if passed to check_fuzzer_build."""
     mocked_docker_run.return_value = 0
-    test_fuzzer_dir = os.path.join(TEST_FILES_PATH, 'out')
+    test_fuzzer_dir = os.path.join(TEST_DATA_PATH, 'out')
     build_fuzzers.check_fuzzer_build(test_fuzzer_dir,
                                      self.SANITIZER,
                                      self.LANGUAGE,

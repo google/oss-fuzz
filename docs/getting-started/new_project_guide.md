@@ -149,7 +149,8 @@ homepage]({{ site.baseurl }}/further-reading/clusterfuzz#web-interface).
 ### architectures (optional) {#architectures}
 The list of architectures to fuzz on.
 ClusterFuzz supports fuzzing on x86_64 (aka x64) by default.
-However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifying "x86_64" and "i386" in "architectures" like this:
+Some projects can benefit from i386 fuzzing. OSS-Fuzz will build and run
+AddressSanitizer with libFuzzer on i386 by doing the following:
 
 ```yaml
 architectures:

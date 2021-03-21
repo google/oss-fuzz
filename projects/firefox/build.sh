@@ -42,8 +42,21 @@ FUZZ_TARGETS=(
 export MOZ_OBJDIR=$WORK/obj-fuzz
 export MOZCONFIG=$SRC/mozconfig.$SANITIZER
 
+# Without this, a host tool used during Rust part of the build will fail
+export ASAN_OPTIONS="detect_leaks=0"
+
 # Install remaining dependencies.
 export SHELL=/bin/bash
+
+# Firefox might not be buildable on the latest Rust Nightly, so we should try
+# to use the same version that we use in our CI.
+RUST_NIGHTLY_VERSION=$(sed -n 's/^.*--channel.*\(nightly-[0-9-]*\).*$/\1/p' \
+  $SRC/mozilla-central/taskcluster/ci/toolchain/rust.yml
+)
+
+rustup toolchain install ${RUST_NIGHTLY_VERSION}
+rustup default ${RUST_NIGHTLY_VERSION}-x86_64-unknown-linux-gnu
+
 ./mach --no-interactive bootstrap --application-choice browser
 
 # Skip patches for now
