@@ -257,6 +257,8 @@ then the following code snippit can be used for this:
 ```
 CFLAGS_SAVE="$CFLAGS"
 CXXFLAGS_SAVE="$CXXFLAGS"
+unset CFLAGS
+unset CXXFLAGS
 export AFL_NOOPT=1
 
 #
