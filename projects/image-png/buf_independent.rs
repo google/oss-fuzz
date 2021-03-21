@@ -3,7 +3,6 @@ extern crate libfuzzer_sys;
 use libfuzzer_sys::fuzz_target;
 extern crate png;
 
-use std::mem::discriminant;
 use std::io::{BufRead, Read, Result};
 
 /// A reader that reads at most `n` bytes.
@@ -50,7 +49,7 @@ fuzz_target!(|data: &[u8]| {
 
 #[inline(always)]
 fn png_compare<R: BufRead, S: BufRead>(reference: png::Decoder<R>, smal: png::Decoder<S>)
-    -> std::result::Result<png::OutputInfo, ()> 
+    -> std::result::Result<png::OutputInfo, ()>
 {
     let mut smal = Some(smal);
     let (info, mut reference) = reference.read_info().map_err(|_| {
@@ -67,11 +66,9 @@ fn png_compare<R: BufRead, S: BufRead>(reference: png::Decoder<R>, smal: png::De
     let mut ref_data = vec![0; info.buffer_size()];
     let mut smal_data = vec![0; info.buffer_size()];
 
-    use png::DecodingError::*;
+    let _rref = reference.next_frame(&mut ref_data);
+    let _rsmal = smal.next_frame(&mut smal_data);
 
-    loop {
-        let rref = reference.next_frame(&mut ref_data);
-        let rsmal = smal.next_frame(&mut smal_data);
-    }
+    assert_eq!(smal_data, ref_data);
+    return Ok(info);
 }
-
