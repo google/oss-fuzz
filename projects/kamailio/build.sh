@@ -27,6 +27,6 @@ cd src
 mkdir objects && find . -name "*.o" -exec cp {} ./objects/ \;
 ar -r libkamilio.a ./objects/*.o
 cd ../
-$CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_uri.c -o $OUT/fuzz_uri \
+$CC $CFLAGS $LIB_FUZZING_ENGINE ./misc/fuzz/fuzz_uri.c -o $OUT/fuzz_uri \
     -DFAST_LOCK -D__CPU_i386 ./src/libkamilio.a \
-    -I./src/ -ldl -lresolv -lm
+    -I./src/ -I./src/core/parser -ldl -lresolv -lm

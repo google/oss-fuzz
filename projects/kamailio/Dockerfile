@@ -19,5 +19,4 @@ RUN apt-get update && apt-get install -y bison flex
 RUN git clone https://github.com/kamailio/kamailio
 
 WORKDIR $SRC
-COPY fuzz_uri.c $SRC/fuzz_uri.c
 COPY build.sh $SRC/
