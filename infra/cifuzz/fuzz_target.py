@@ -18,7 +18,6 @@ import os
 import re
 import shutil
 import stat
-import subprocess
 import sys
 
 import docker
@@ -93,6 +92,7 @@ class FuzzTarget:
     """
     logging.info('Fuzzer %s, started.', self.target_name)
     docker_container = utils.get_container_name()
+    command_arguments = []
     if docker_container:
       command_arguments += [
           '--volumes-from', docker_container, '-e', 'OUT=' + self.out_dir
@@ -116,16 +116,16 @@ class FuzzTarget:
     if self.latest_corpus_path:
       run_fuzzer_command = run_fuzzer_command + ' ' + self.latest_corpus_path
     command_arguments.append(run_fuzzer_command)
-    process, _, stderr = docker.run_container_command(
-        command_arguments, timeout=self.duration)
+    result = docker.run_container_command(command_arguments,
+                                          timeout=self.duration)
 
     # Libfuzzer timeout was reached.
-    if not process.returncode:
+    if not result.retcode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
       return FuzzResult(None, None)
 
-    if stderr is None:
+    if result.stderr is None:
       return FuzzResult(None, None)
 
     # Crash was discovered.
@@ -133,13 +133,13 @@ class FuzzTarget:
 
     # TODO(metzman): Replace this with artifact_prefix so we don't have to
     # parse.
-    testcase = self.get_testcase(stderr)
+    testcase = self.get_testcase(result.stderr)
 
     if not testcase:
-      logging.error(b'No testcase found in stacktrace: %s.', stderr)
+      logging.error(b'No testcase found in stacktrace: %s.', result.stderr)
       return FuzzResult(None, None)
     if self.is_crash_reportable(testcase):
-      return FuzzResult(testcase, stderr)
+      return FuzzResult(testcase, result.stderr)
     return FuzzResult(None, None)
 
   def free_disk_if_needed(self):

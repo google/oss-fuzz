@@ -14,8 +14,11 @@
 """Module for dealing with docker."""
 import logging
 import os
+import subprocess
 import sys
 import tempfile
+
+import process_utils
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -39,15 +42,16 @@ def delete_images(images):
   utils.execute(command)
   utils.execute(['docker', 'builder', 'prune', '-f'])
 
+
 def stop_docker_container(container_id, wait_time=1):
   """Stops the docker container, |container_id|. Returns True on success."""
   result = subprocess.run([container_id, '-t', str(wait_time)], check=False)
   return result.returncode == 0
 
 
-def _handle_timedout_container_process(process, cid_file):
+def _handle_timedout_container_process(process, cid_filename):
   """Stops the docker container |process| (and child processes) that has a
-  container id in |cid_file|. Returns stdout and stderr of |process|. This
+  container id in |cid_filename|. Returns stdout and stderr of |process|. This
   function is a helper for run_container_command and should only be invoked by
   it. Returns None for each if we can't get stdout and stderr."""
   # Be cautious here. We probably aren't doing anything essential for CIFuzz to
@@ -81,7 +85,9 @@ def run_container_command(command_arguments, timeout=None):
                                stderr=subprocess.PIPE)
     try:
       stdout, stderr = process.communicate(timeout=timeout)
-    except TimeoutExpired:
+      timed_out = True
+    except subprocess.TimeoutExpired:
       logging.warning('Command timed out: %s', ' '.join(command))
-      stdout, stderr = _handle_timedout_container(process, cid_filename)
-    return process, stdout, setderr
+      stdout, stderr = _handle_timedout_container_process(process, cid_filename)
+
+    return process_utils.ProcessResult(process, stdout, stderr, timed_out)
