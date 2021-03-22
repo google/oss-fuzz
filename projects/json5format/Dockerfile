@@ -19,4 +19,3 @@ RUN git clone --depth 1 https://github.com/google/json5format
 WORKDIR $SRC
 
 COPY build.sh $SRC/
-COPY fuzz $SRC/json5format/fuzz
