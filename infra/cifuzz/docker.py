@@ -67,13 +67,12 @@ def _handle_timedout_container_process(process, cid_filename):
     logging.error('Failed to stop docker container: %s', container_id)
     return None, None
 
-  return process.communicate()
+  return process.communicate(timeout=1)
 
 
 def run_container_command(command_arguments, timeout=None):
-  """Runs |command_arguments| as a "docker run" command. Returns popen object,
-  stdout and stderr of the "docker run" process. Stops the command if timeout is
-  reached. Returns (None, None) if """
+  """Runs |command_arguments| as a "docker run" command. Returns ProcessResult.
+  Stops the command if timeout is reached."""
   command = ['docker', 'run', '--rm', '--privileged']
   timed_out = False
   with tempfile.NamedTemporaryFile() as cid_filename:
