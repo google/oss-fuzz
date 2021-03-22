@@ -329,8 +329,7 @@ def detect_main_repo(project_name, repo_name=None, commit=None):
   if match and match.group(1) and match.group(2):
     return match.group(1), match.group(2)
 
-  logging.error('Failed to detect repo:\n%s', out)
-  logging.error('while running command:\n%s', command_to_run)
+  logging.error('Failed to detect repo:\n, while running: %s.', out, command_to_run)
   return None, None
 
 
