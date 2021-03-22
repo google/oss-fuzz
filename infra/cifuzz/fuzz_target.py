@@ -117,9 +117,11 @@ class FuzzTarget:
       run_fuzzer_command = run_fuzzer_command + ' ' + self.latest_corpus_path
     command_arguments.append(run_fuzzer_command)
     result = docker.run_container_command(command_arguments,
-                                          timeout=self.duration)
+                                          timeout=self.duration + BUFFER_TIME)
 
-    # Libfuzzer timeout was reached.
+    if result.timed_out:
+      logging.info('Stopped docker container before timeout.')
+
     if not result.retcode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)

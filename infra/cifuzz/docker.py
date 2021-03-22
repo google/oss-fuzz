@@ -45,7 +45,7 @@ def delete_images(images):
 
 def stop_docker_container(container_id, wait_time=1):
   """Stops the docker container, |container_id|. Returns True on success."""
-  result = subprocess.run([container_id, '-t', str(wait_time)], check=False)
+  result = subprocess.run(['docker', 'stop', container_id, '-t', str(wait_time)], check=False)
   return result.returncode == 0
 
 
@@ -76,8 +76,11 @@ def run_container_command(command_arguments, timeout=None):
   Stops the command if timeout is reached."""
   command = ['docker', 'run', '--rm', '--privileged']
   timed_out = False
-  with tempfile.NamedTemporaryFile() as cid_file:
-    command.extend(['--cidfile', cid_file.name])
+  with tempfile.TemporaryDirectory() as temp_dir:
+    # Use temp dir instead of file because docker complains if file exists
+    # already.
+    cid_file_path = os.path.join(temp_dir, 'cidfile')
+    command.extend(['--cidfile', cid_file_path])
     command.extend(command_arguments)
     logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
@@ -85,10 +88,10 @@ def run_container_command(command_arguments, timeout=None):
                                stderr=subprocess.PIPE)
     try:
       stdout, stderr = process.communicate(timeout=timeout)
-      timed_out = True
     except subprocess.TimeoutExpired:
       logging.warning('Command timed out: %s', ' '.join(command))
       stdout, stderr = _handle_timedout_container_process(
-          process, cid_file.name)
+          process, cid_file_path)
+      timed_out = True
 
     return process_utils.ProcessResult(process, stdout, stderr, timed_out)
