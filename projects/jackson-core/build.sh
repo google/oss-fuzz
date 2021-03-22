@@ -15,6 +15,9 @@
 #
 ################################################################################
 
+# Copy seed corpus and dictionary.
+mv $SRC/{*.zip,*.dict} $OUT
+
 MAVEN_ARGS="-P!java14+ -Dmaven.test.skip=true -Djavac.src.version=15 -Djavac.target.version=15"
 
 DEPENDENCIES="jackson-core jackson-databind jackson-annotations"
