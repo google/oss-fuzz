@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 ################################################################################
+
+# Move seed corpus and dictionary.
+mv $SRC/{*.zip,*.dict} $OUT
 
 # Build the json-sanitizer jar.
 CURRENT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate \
