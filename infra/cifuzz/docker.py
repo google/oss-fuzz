@@ -45,11 +45,13 @@ def delete_images(images):
 
 def stop_docker_container(container_id, wait_time=1):
   """Stops the docker container, |container_id|. Returns True on success."""
-  result = subprocess.run(['docker', 'stop', container_id, '-t', str(wait_time)], check=False)
+  result = subprocess.run(
+      ['docker', 'stop', container_id, '-t',
+       str(wait_time)], check=False)
   return result.returncode == 0
 
 
-def _handle_timedout_container_process(process, cid_filename):
+def _handle_timed_out_container_process(process, cid_filename):
   """Stops the docker container |process| (and child processes) that has a
   container id in |cid_filename|. Returns stdout and stderr of |process|. This
   function is a helper for run_container_command and should only be invoked by
@@ -90,7 +92,7 @@ def run_container_command(command_arguments, timeout=None):
       stdout, stderr = process.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
       logging.warning('Command timed out: %s', ' '.join(command))
-      stdout, stderr = _handle_timedout_container_process(
+      stdout, stderr = _handle_timed_out_container_process(
           process, cid_file_path)
       timed_out = True
 
