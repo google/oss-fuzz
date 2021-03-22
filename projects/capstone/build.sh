@@ -25,13 +25,15 @@ do
     # + make.sh overwrites CFLAGS
     cd build
     cmake -DCAPSTONE_BUILD_SHARED=0 ..
-    make
+    make -j$(nproc)
 
+if [ "$FUZZING_ENGINE" != 'afl' ]; then
     cd $SRC/capstone$branch/bindings/python
     #better debug info
     sed -i -e 's/#print/print/' capstone/__init__.py
     (
     export CFLAGS=""
+    export CXXFLAGS=""
     python setup.py install
     )
     cd $SRC/capstone$branch/suite
@@ -45,6 +47,7 @@ do
     cp fuzz_disasm.options $OUT/fuzz_disasm$branch.options
 
     cd ../../build
+fi
     # build fuzz target
     FUZZO=CMakeFiles/fuzz_disasm.dir/suite/fuzz/fuzz_disasm.c.o
     if [ -f CMakeFiles/fuzz_disasm.dir/suite/fuzz/platform.c.o ]; then
