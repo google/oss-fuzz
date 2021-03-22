@@ -15,4 +15,4 @@
 #
 ################################################################################
 
-compile_go_fuzzer ./exampleoc Fuzz fuzz_oc_unmarshall gofuzz
+compile_go_fuzzer github.com/openconfig/ygot/exampleoc Fuzz fuzz_oc_unmarshall gofuzz
