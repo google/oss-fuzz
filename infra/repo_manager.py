@@ -129,8 +129,10 @@ class RepoManager:
 
   def fetch_all_remotes(self):
     """Fetch all remotes for checkouts that track a single branch."""
-    self.git(['config', 'remote.origin.fetch',
-              '"+refs/heads/*:refs/remotes/origin/*"'], check_result=True)
+    self.git([
+        'config', 'remote.origin.fetch', '"+refs/heads/*:refs/remotes/origin/*"'
+    ],
+             check_result=True)
     self.git(['remote', 'update'], check_result=True)
 
   def get_commit_list(self, newest_commit, oldest_commit=None):
