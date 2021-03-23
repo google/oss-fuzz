@@ -123,8 +123,8 @@ def check_for_repo_name(repo_path, expected_repo_name):
   # Handle two common cases:
   # https://github.com/google/syzkaller/
   # https://github.com/google/syzkaller.git
-  repo_url = repo_url.replace('.git', '').rstrip('/')
-  actual_repo_name = repo_url.split('/')[-1].rstrip()
+  repo_url = repo_url.replace('.git', '').rstrip().rstrip('/')
+  actual_repo_name = repo_url.split('/')[-1]
   return actual_repo_name == expected_repo_name
 
 
