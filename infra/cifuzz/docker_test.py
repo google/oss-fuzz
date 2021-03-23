@@ -81,7 +81,6 @@ class TestHandleTimedOutContainerProcess(fake_filesystem_unittest.TestCase):
     fake_cid_file = '/tmp/my-fake/cid-file'
     result = docker._handle_timed_out_container_process(mock.MagicMock(),
                                                         fake_cid_file)
-    expected_result = (None, None)
     self.assertEqual(result, self.ERROR_EXPECTED_RESULT)
     mocked_error.assert_called_with('cid_file not found.')
 
@@ -123,21 +122,18 @@ class TestRunContainerCommand(unittest.TestCase):
   """Tests for run_container_command."""
   ARGUMENTS = ['argument']
 
-  @mock.patch('docker._handle_timed_out_container_process')
+  @mock.patch('docker._handle_timed_out_container_process',
+              return_value=(None, None))
   @mock.patch('logging.warning')
   @mock.patch('subprocess.Popen')
-  def test_timeout(self, mocked_popen, mocked_warning,
-                   mocked_handle_timed_out_container_process):
+  def test_timeout(self, mocked_popen, mocked_warning, _):
     """Tests run_container_command behaves as expected when the command times
     out."""
     popen_magic_mock = mock.MagicMock()
     mocked_popen.return_value = popen_magic_mock
     popen_magic_mock.communicate.side_effect = subprocess.TimeoutExpired(
         ['cmd'], '1')
-    mocked_handle_timed_out_container_process.return_value = (None, None)
     result = docker.run_container_command(self.ARGUMENTS)
-    mocked_handle_timed_out_container_process.call_args_list[0][0][0][0] == (
-        popen_magic_mock)
     self.assertEqual(mocked_warning.call_count, 1)
     self.assertTrue(result.timed_out)
 
