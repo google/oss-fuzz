@@ -172,7 +172,7 @@ class BuildFuzzersConfig(BaseConfig):
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
-    self.do_bad_build_check = environment.get_bool('DO_BAD_BUILD_CHECK', 'true')
+    self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', 'true')
 
     # TODO(metzman): Use better system for interpreting env vars. What if env
     # var is set to '0'?

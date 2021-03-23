@@ -73,7 +73,7 @@ def main():
 
   out_dir = os.path.join(config.workspace, 'out')
 
-  if not config.do_bad_build_check:
+  if not config.bad_build_check:
     # If we've gotten to this point and we don't need to do bad_build_check,
     # then the build has succeeded.
     returncode = 0
