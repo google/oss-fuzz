@@ -26,6 +26,13 @@ build() {
   shift
   PROJECT_DIR=$SRC/$project
 
+  # ensure we get absolute paths for the coverage report
+  cd $PROJECT_DIR
+  crate_src_abspath=`cargo metadata --no-deps --format-version 1 | jq -r '.workspace_root'`
+  while read i; do
+    export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
+  done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
+
   cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions "$@"
 
   FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release

@@ -1,6 +1,6 @@
 
 [package]
-name = "json5format-fuzz"
+name = "nom-fuzz"
 version = "0.0.0"
 authors = ["David Korczynski <david@adalogics.com>"]
 publish = false
@@ -12,7 +12,7 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.3"
 
-[dependencies.json5format]
+[dependencies.nom]
 path = ".."
 
 # Prevent this from interfering with workspaces
@@ -20,5 +20,5 @@ path = ".."
 members = ["."]
 
 [[bin]]
-name = "fuzz_parse"
-path = "fuzz_targets/fuzz_parse.rs"
+name = "fuzz_arithmetic"
+path = "fuzz_targets/fuzz_arithmetic.rs"

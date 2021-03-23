@@ -57,14 +57,14 @@ RUN export PYTHON_DEPS="\
     ln -s /usr/bin/python3 /usr/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
-    apt-get remove -y $PYTHON_DEPS  && \
-    rm -rf /usr/local/lib/python3.8/test # https://github.com/google/oss-fuzz/issues/3888
+    rm -rf /usr/local/lib/python3.8/test && \
+    apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
 
 # Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
 # six for Bazel rules.
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
     atheris pyinstaller==4.1 six==1.15.0 && \
-    rm -rf /root/.cache/pip
+    rm -rf /tmp/*
 
 # Download and install the latest stable Go.
 RUN cd /tmp && \
@@ -89,7 +89,7 @@ ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup
 ENV PATH=$PATH:/rust/bin
 RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=minimal
-RUN cargo install cargo-fuzz
+RUN cargo install cargo-fuzz && rm -rf /rust/registry
 # Needed to recompile rust std library for MSAN
 RUN rustup component add rust-src --toolchain nightly
 # Set up custom environment variable for source code copy for coverage reports
@@ -180,7 +180,7 @@ WORKDIR $SRC
 # TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 94312796f936ba1830b61432a0f958e192dd212f
+    git checkout 2102264acf5c271b7560a82771b3af8136af9354
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \

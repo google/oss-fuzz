@@ -46,7 +46,7 @@ fi
 CFLAGS= CXXFLAGS="-stdlib=libc++" cmake .. -GNinja -DCMAKE_MAKE_PROGRAM="$SRC/depot_tools/ninja" -D$CMAKE_SANITIZER=1
 
 $SRC/depot_tools/ninja libGLESv2 libEGL
-cp libGLESv2.so libEGL.so $OUT
+mv libGLESv2.so libEGL.so $OUT
 export SWIFTSHADER_LIB_PATH=$OUT
 
 popd
@@ -136,25 +136,19 @@ $SRC/depot_tools/ninja -C out/Fuzz \
 rm -rf $OUT/data
 mkdir $OUT/data
 
-cp out/Fuzz/region_deserialize $OUT/region_deserialize
+mv out/Fuzz/region_deserialize $OUT/region_deserialize
 
-cp out/Fuzz/region_set_path $OUT/region_set_path
-cp ../skia_data/region_set_path_seed_corpus.zip $OUT/region_set_path_seed_corpus.zip
+mv out/Fuzz/region_set_path $OUT/region_set_path
+mv ../skia_data/region_set_path_seed_corpus.zip $OUT/region_set_path_seed_corpus.zip
 
-cp out/Fuzz/textblob_deserialize $OUT/textblob_deserialize
-cp ../skia_data/textblob_deserialize_seed_corpus.zip $OUT/textblob_deserialize_seed_corpus.zip
+mv out/Fuzz/textblob_deserialize $OUT/textblob_deserialize
+mv ../skia_data/textblob_deserialize_seed_corpus.zip $OUT/textblob_deserialize_seed_corpus.zip
 
-cp out/Fuzz/path_deserialize $OUT/path_deserialize
-cp ../skia_data/path_deserialize_seed_corpus.zip $OUT/path_deserialize_seed_corpus.zip
+mv out/Fuzz/path_deserialize $OUT/path_deserialize
+mv ../skia_data/path_deserialize_seed_corpus.zip $OUT/path_deserialize_seed_corpus.zip
 
-cp out/Fuzz/image_decode $OUT/image_decode
-cp ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
-
-cp out/Fuzz/animated_image_decode $OUT/animated_image_decode
-cp ../skia_data/animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpus.zip
-
-cp out/Fuzz/image_filter_deserialize $OUT/image_filter_deserialize
-cp ../skia_data/image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
+mv out/Fuzz/animated_image_decode $OUT/animated_image_decode
+mv ../skia_data/animated_image_decode_seed_corpus.zip $OUT/animated_image_decode_seed_corpus.zip
 
 # Only create the width version of image_filter_deserialize if building with
 # libfuzzer, since it depends on a libfuzzer specific flag.
@@ -162,89 +156,99 @@ if [ "$FUZZING_ENGINE" == "libfuzzer" ]
 then
   # Use the same binary as image_filter_deserialize.
   cp out/Fuzz/image_filter_deserialize $OUT/image_filter_deserialize_width
-  cp ../skia_data/image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
+  mv ../skia_data/image_filter_deserialize_width.options $OUT/image_filter_deserialize_width.options
   # Use the same seed corpus as image_filter_deserialize.
   cp ../skia_data/image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_width_seed_corpus.zip
 fi
 
-cp out/Fuzz/api_draw_functions $OUT/api_draw_functions
-cp ../skia_data/api_draw_functions_seed_corpus.zip $OUT/api_draw_functions_seed_corpus.zip
+mv out/Fuzz/image_filter_deserialize $OUT/image_filter_deserialize
+mv ../skia_data/image_filter_deserialize_seed_corpus.zip $OUT/image_filter_deserialize_seed_corpus.zip
 
-cp out/Fuzz/api_gradients $OUT/api_gradients
-cp ../skia_data/api_gradients_seed_corpus.zip $OUT/api_gradients_seed_corpus.zip
+mv out/Fuzz/api_draw_functions $OUT/api_draw_functions
+mv ../skia_data/api_draw_functions_seed_corpus.zip $OUT/api_draw_functions_seed_corpus.zip
 
-cp out/Fuzz/api_path_measure $OUT/api_path_measure
-cp ../skia_data/api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corpus.zip
+mv out/Fuzz/api_gradients $OUT/api_gradients
+mv ../skia_data/api_gradients_seed_corpus.zip $OUT/api_gradients_seed_corpus.zip
 
-cp out/Fuzz/api_pathop $OUT/api_pathop
-cp ../skia_data/api_pathop_seed_corpus.zip $OUT/api_pathop_seed_corpus.zip
+mv out/Fuzz/api_path_measure $OUT/api_path_measure
+mv ../skia_data/api_path_measure_seed_corpus.zip $OUT/api_path_measure_seed_corpus.zip
 
-cp out/Fuzz/png_encoder $OUT/png_encoder
+mv out/Fuzz/api_pathop $OUT/api_pathop
+mv ../skia_data/api_pathop_seed_corpus.zip $OUT/api_pathop_seed_corpus.zip
+
+# These 3 use the same corpus.
+mv out/Fuzz/png_encoder $OUT/png_encoder
 cp ../skia_data/encoder_seed_corpus.zip $OUT/png_encoder_seed_corpus.zip
 
-cp out/Fuzz/jpeg_encoder $OUT/jpeg_encoder
+mv out/Fuzz/jpeg_encoder $OUT/jpeg_encoder
 cp ../skia_data/encoder_seed_corpus.zip $OUT/jpeg_encoder_seed_corpus.zip
 
-cp out/Fuzz/webp_encoder $OUT/webp_encoder
-cp ../skia_data/encoder_seed_corpus.zip $OUT/webp_encoder_seed_corpus.zip
+mv out/Fuzz/webp_encoder $OUT/webp_encoder
+mv ../skia_data/encoder_seed_corpus.zip $OUT/webp_encoder_seed_corpus.zip
 
-cp out/Fuzz/skottie_json $OUT/skottie_json
-cp ../skia_data/skottie_json_seed_corpus.zip $OUT/skottie_json_seed_corpus.zip
+mv out/Fuzz/skottie_json $OUT/skottie_json
+mv ../skia_data/skottie_json_seed_corpus.zip $OUT/skottie_json_seed_corpus.zip
 
-cp out/Fuzz/skjson $OUT/skjson
-cp ../skia_data/json.dict $OUT/skjson.dict
-cp ../skia_data/skjson_seed_corpus.zip $OUT/skjson_seed_corpus.zip
+mv out/Fuzz/skjson $OUT/skjson
+mv ../skia_data/json.dict $OUT/skjson.dict
+mv ../skia_data/skjson_seed_corpus.zip $OUT/skjson_seed_corpus.zip
 
-cp out/Fuzz/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
+# These 4 use the same canvas_seed_corpus.
+mv out/Fuzz/api_mock_gpu_canvas $OUT/api_mock_gpu_canvas
 cp ../skia_data/canvas_seed_corpus.zip $OUT/api_mock_gpu_canvas_seed_corpus.zip
 
-cp out/Fuzz/api_raster_n32_canvas $OUT/api_raster_n32_canvas
+mv out/Fuzz/api_raster_n32_canvas $OUT/api_raster_n32_canvas
 cp ../skia_data/canvas_seed_corpus.zip $OUT/api_raster_n32_canvas_seed_corpus.zip
 
-cp out/Fuzz/api_image_filter $OUT/api_image_filter
-cp ../skia_data/api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip
-
-cp out/Fuzz/api_null_canvas $OUT/api_null_canvas
-cp ../skia_data/canvas_seed_corpus.zip $OUT/api_null_canvas_seed_corpus.zip
-
-cp out/Fuzz/api_polyutils $OUT/api_polyutils
-cp ../skia_data/api_polyutils_seed_corpus.zip $OUT/api_polyutils_seed_corpus.zip
-
-# These 2 can use the same corpus as the (non animated) image_decode.
-cp out/Fuzz/android_codec $OUT/android_codec
-cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
-
-cp out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
-cp ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
-
-cp out/Fuzz/sksl2glsl $OUT/sksl2glsl
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2glsl_seed_corpus.zip
-
-cp out/Fuzz/sksl2spirv $OUT/sksl2spirv
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
-
-cp out/Fuzz/sksl2metal $OUT/sksl2metal
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
-
-cp out/Fuzz/sksl2pipeline $OUT/sksl2pipeline
-cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
-
-cp out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
-
-cp out/Fuzz/svg_dom $OUT/svg_dom
-cp ../skia_data/svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
-
-cp out/Fuzz/api_svg_canvas $OUT/api_svg_canvas
+mv out/Fuzz/api_svg_canvas $OUT/api_svg_canvas
 cp ../skia_data/canvas_seed_corpus.zip $OUT/api_svg_canvas_seed_corpus.zip
 
-cp out/Fuzz/skruntimeeffect $OUT/skruntimeeffect
-cp ../skia_data/sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
+mv out/Fuzz/api_null_canvas $OUT/api_null_canvas
+mv ../skia_data/canvas_seed_corpus.zip $OUT/api_null_canvas_seed_corpus.zip
 
-cp out/Fuzz/api_create_ddl $OUT/api_create_ddl
+mv out/Fuzz/api_image_filter $OUT/api_image_filter
+mv ../skia_data/api_image_filter_seed_corpus.zip $OUT/api_image_filter_seed_corpus.zip
 
-cp out/Fuzz/api_ddl_threading $OUT/api_ddl_threading
+mv out/Fuzz/api_polyutils $OUT/api_polyutils
+mv ../skia_data/api_polyutils_seed_corpus.zip $OUT/api_polyutils_seed_corpus.zip
 
-cp out/Fuzz/skp $OUT/skp
-cp ../skia_data/skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
+# These 3 use the same corpus.
+mv out/Fuzz/image_decode $OUT/image_decode
+cp ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_seed_corpus.zip
 
-cp out/Fuzz/api_skparagraph $OUT/api_skparagraph
+mv out/Fuzz/android_codec $OUT/android_codec
+cp ../skia_data/image_decode_seed_corpus.zip $OUT/android_codec_seed_corpus.zip.
+
+mv out/Fuzz/image_decode_incremental $OUT/image_decode_incremental
+mv ../skia_data/image_decode_seed_corpus.zip $OUT/image_decode_incremental_seed_corpus.zip
+
+# These 4 use the same sksl_seed_corpus.
+mv out/Fuzz/sksl2glsl $OUT/sksl2glsl
+cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2glsl_seed_corpus.zip
+
+mv out/Fuzz/sksl2spirv $OUT/sksl2spirv
+cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2spirv_seed_corpus.zip
+
+mv out/Fuzz/sksl2metal $OUT/sksl2metal
+cp ../skia_data/sksl_seed_corpus.zip $OUT/sksl2metal_seed_corpus.zip
+
+mv out/Fuzz/sksl2pipeline $OUT/sksl2pipeline
+mv ../skia_data/sksl_seed_corpus.zip $OUT/sksl2pipeline_seed_corpus.zip
+
+mv out/Fuzz/skdescriptor_deserialize $OUT/skdescriptor_deserialize
+
+mv out/Fuzz/svg_dom $OUT/svg_dom
+mv ../skia_data/svg_dom_seed_corpus.zip $OUT/svg_dom_seed_corpus.zip
+
+
+mv out/Fuzz/skruntimeeffect $OUT/skruntimeeffect
+mv ../skia_data/sksl_with_256_padding_seed_corpus.zip $OUT/skruntimeeffect_seed_corpus.zip
+
+mv out/Fuzz/api_create_ddl $OUT/api_create_ddl
+
+mv out/Fuzz/api_ddl_threading $OUT/api_ddl_threading
+
+mv out/Fuzz/skp $OUT/skp
+mv ../skia_data/skp_seed_corpus.zip $OUT/skp_seed_corpus.zip
+
+mv out/Fuzz/api_skparagraph $OUT/api_skparagraph

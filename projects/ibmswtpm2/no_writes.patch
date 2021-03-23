@@ -84,12 +84,10 @@ diff --git a/makefile b/makefile
 index cc3e410..c10ba5a 100644
 --- a/makefile
 +++ b/makefile
-@@ -40,16 +40,19 @@
+@@ -40,16 +40,16 @@
  
  
- CC = /usr/bin/gcc
-+CC = clang
-+CXX = clang++
+-CC = /usr/bin/gcc
  
 -CCFLAGS = -Wall  			\
 +CCFLAGS = $(CFLAGS) -Wall  			\

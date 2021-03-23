@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +15,6 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    autoconf2.13 \
-    python \
-    libc++1 \
-    libc++abi1 \
-    m4
-
-# This wrapper of cargo seems to interfere with our build system.
-RUN rm -f /usr/local/bin/cargo
-
-RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
-WORKDIR mozilla-central/js/src/
-COPY build.sh target.c $SRC/
+cd $SRC/nom
+cargo fuzz build -O 
+cp fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_arithmetic $OUT/

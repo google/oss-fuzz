@@ -149,7 +149,8 @@ homepage]({{ site.baseurl }}/further-reading/clusterfuzz#web-interface).
 ### architectures (optional) {#architectures}
 The list of architectures to fuzz on.
 ClusterFuzz supports fuzzing on x86_64 (aka x64) by default.
-However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifying "x86_64" and "i386" in "architectures" like this:
+Some projects can benefit from i386 fuzzing. OSS-Fuzz will build and run
+AddressSanitizer with libFuzzer on i386 by doing the following:
 
 ```yaml
 architectures:
@@ -244,6 +245,30 @@ If your project is written in Go, check out the [Integrating a Go project]({{ si
 2. Make sure that the binary names for your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 3. Don't remove source code files. They are needed for code coverage.
+
+### Temporarily disabling code instrumentation during builds
+
+Sometimes not every 3rd party library might be needed to be instrumented or
+tools are being compiled that just support the target built.
+
+If for any reasons part of the build process should not be instrumented
+then the following code snippit can be used for this:
+
+```
+CFLAGS_SAVE="$CFLAGS"
+CXXFLAGS_SAVE="$CXXFLAGS"
+unset CFLAGS
+unset CXXFLAGS
+export AFL_NOOPT=1
+
+#
+# build commands here that should not result in instrumented code.
+#
+
+export CFLAGS="${CFLAGS_SAVE}"
+export CXXFLAGS="${CXXFLAGS_SAVE}"
+unset AFL_NOOPT
+```
 
 ### build.sh script environment
 

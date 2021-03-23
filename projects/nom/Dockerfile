@@ -1,4 +1,3 @@
-
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
-
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y maven
 
-RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN cat fuzzing/dictionaries/json.dict > $SRC/JsonFuzzer.dict
-
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -j $SRC/JsonFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/*
-
-ENV JACKSON_BRANCH=2.13
-
-RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-core
-RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-databind
-RUN git clone --depth 1 --branch=$JACKSON_BRANCH https://github.com/FasterXML/jackson-annotations
+RUN git clone --depth 1 https://github.com/Geal/nom/
+COPY fuzz $SRC/nom/fuzz
+WORKDIR $SRC
 
 COPY build.sh $SRC/
-COPY JsonFuzzer.java $SRC/
-WORKDIR $SRC/
