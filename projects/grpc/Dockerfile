@@ -25,7 +25,8 @@ RUN apt-get update && apt-get -y install  \
 	make            \
         curl            \
         autoconf        \
-        libtool
+        libtool         \
+        rsync
 
 # Install dependencies
 
