@@ -688,8 +688,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
 
   # Don't capture stderr. We want it to print in real time, in case gsutil is
   # asking for two-factor authentication.
-  corpus_listing = subprocess.Popen(command,
-                                    stdout=subprocess.PIPE)
+  corpus_listing = subprocess.Popen(command, stdout=subprocess.PIPE)
   output, _ = corpus_listing.communicate()
 
   # Some fuzz targets (e.g. new ones) may not have corpus yet, just skip those.
