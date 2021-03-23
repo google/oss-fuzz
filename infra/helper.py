@@ -22,7 +22,6 @@ from multiprocessing.dummy import Pool as ThreadPool
 import argparse
 import datetime
 import errno
-import multiprocessing
 import os
 import pipes
 import re
@@ -687,14 +686,14 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
                                                       fuzz_target=fuzz_target)
   command = ['gsutil', 'ls', corpus_backup_url]
 
-  corpus_listing = subprocess.Popen(command,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-  output, error = corpus_listing.communicate()
+  # Don't capture stderr. We want it to print in real time, in case gsutil is
+  # asking for two-factor authentication.
+  corpus_listing = subprocess.Popen(command, stdout=subprocess.PIPE)
+  output, _ = corpus_listing.communicate()
 
   # Some fuzz targets (e.g. new ones) may not have corpus yet, just skip those.
   if corpus_listing.returncode:
-    print('WARNING: corpus for {0} not found:\n{1}'.format(fuzz_target, error),
+    print('WARNING: corpus for {0} not found:\n'.format(fuzz_target),
           file=sys.stderr)
     return
 
@@ -751,7 +750,7 @@ def download_corpora(args):
 
   print('Downloading corpora for %s project to %s' %
         (args.project_name, corpus_dir))
-  thread_pool = ThreadPool(multiprocessing.cpu_count())
+  thread_pool = ThreadPool()
   return all(thread_pool.map(_download_for_single_target, fuzz_targets))
 
 
