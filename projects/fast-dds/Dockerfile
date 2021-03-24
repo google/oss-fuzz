@@ -15,7 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt install -y libasio-dev libtinyxml2-dev autoconf automake
+RUN apt-get update && apt install -y autoconf automake
+RUN git clone --depth 1 https://github.com/leethomason/tinyxml2
 RUN git clone --depth 1 https://github.com/chriskohlhoff/asio/
 RUN git clone --depth 1 https://github.com/eProsima/Fast-CDR.git
 RUN git clone --depth 1 https://github.com/eProsima/foonathan_memory_vendor.git
