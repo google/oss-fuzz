@@ -15,8 +15,5 @@ let package = Package(
         .target(
             name: "swift-protobuf-fuzz",
             dependencies: ["SwiftProtobuf"]),
-        .testTarget(
-            name: "swift-protobuf-fuzzTests",
-            dependencies: ["swift-protobuf-fuzz"]),
     ]
 )
