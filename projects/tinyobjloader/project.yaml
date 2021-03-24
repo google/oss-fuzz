@@ -1,0 +1,10 @@
+homepage: "https://github.com/tinyobjloader/tinyobjloader"
+language: c++
+primary_contact: "syoyo@lighttransport.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- undefined
+main_repo: 'https://github.com/tinyobjloader/tinyobjloader'
