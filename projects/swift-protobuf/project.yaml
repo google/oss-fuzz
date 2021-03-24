@@ -1,0 +1,11 @@
+homepage: "https://github.com/apple/swift-protobuf"
+language: swift
+primary_contact: "thomasvl@google.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+main_repo: 'https://github.com/apple/swift-protobuf.git'
