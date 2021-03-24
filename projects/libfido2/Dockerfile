@@ -22,6 +22,6 @@ RUN git clone --branch OpenSSL_1_1_1-stable https://github.com/openssl/openssl
 RUN git clone --branch v1.2.11 https://github.com/madler/zlib
 RUN git clone https://github.com/Yubico/libfido2
 # CIFuzz will replace the libfido directory so put the corpus outside
-ADD https://ambientworks.net/libfido2/corpus.tgz corpus.tgz
+ADD https://storage.googleapis.com/yubico-libfido2/corpus.tgz corpus.tgz
 WORKDIR libfido2
 COPY build.sh $SRC/
