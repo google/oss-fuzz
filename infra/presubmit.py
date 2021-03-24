@@ -107,6 +107,7 @@ class ProjectYamlChecker:
       'jvm',
       'python',
       'rust',
+      'swift',
   ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
