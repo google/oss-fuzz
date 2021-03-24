@@ -12,7 +12,6 @@ sanitizers:
   - undefined
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
 architectures:
   - x86_64
 main_repo: 'https://git.qemu.org/git/qemu.git'
