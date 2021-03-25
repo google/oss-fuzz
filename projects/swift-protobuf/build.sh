@@ -20,7 +20,7 @@
 mkdir swift-protobuf-fuzz
 cd swift-protobuf-fuzz
 swift package init --type=executable
-cp $SRC/fuzz.swift Sources/swift-protobuf-fuzz/main.swift
+cp $SRC/fuzz_binary.swift Sources/swift-protobuf-fuzz/main.swift
 cp $SRC/Package.swift Package.swift
 cp ../swift-protobuf/Tests/SwiftProtobufTests/unittest.pb.swift Sources/swift-protobuf-fuzz/
 cp ../swift-protobuf/Tests/SwiftProtobufTests/unittest_import.pb.swift Sources/swift-protobuf-fuzz/
