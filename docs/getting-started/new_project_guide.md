@@ -359,7 +359,8 @@ generated from the previous `run_fuzzer` step in your local corpus directory.
     $ python infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
     ```
 
-Please refer to
+You may need to run `python infra/helper.py pull_images` to use the latest
+coverage tools. Please refer to
 [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
 information on code coverage generation.
 
