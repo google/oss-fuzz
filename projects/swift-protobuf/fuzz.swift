@@ -7,7 +7,7 @@ public func test(_ start: UnsafeRawPointer, _ count: Int) -> CInt {
   var options = BinaryDecodingOptions()
   options.messageDepthLimit = 256
   do {
-    let _ = try ProtobufUnittest_NestedTestAllTypes.init(serializedData: Data(bytes),
+    let _ = try ProtobufUnittest_NestedTestAllTypes(serializedData: Data(bytes),
                                              options: options)
   } catch let e {
   }
