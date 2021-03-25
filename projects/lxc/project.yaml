@@ -1,0 +1,12 @@
+homepage: "https://github.com/lxc/lxc"
+language: c
+primary_contact: "christian.brauner@ubuntu.com"
+builds_per_day: 4
+sanitizers:
+  - address
+  - undefined
+  - memory
+auto_ccs:
+  - stgraber@ubuntu.com
+  - evverx@gmail.com
+main_repo: "https://github.com/lxc/lxc"
