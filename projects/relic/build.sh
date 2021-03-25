@@ -33,7 +33,13 @@ export CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR"
 cd $SRC/relic/
 mkdir build/
 cd build/
-cmake .. -DCOMP="$CFLAGS" -DQUIET=on -DRAND=CALL -DSHLIB=off -DSTBIN=off -DTESTS=0 -DBENCH=0 -DALLOC=DYNAMIC
+if [[ $CFLAGS = *-m32* ]]
+then
+    export RELIC_ARCH="X86"
+else
+    export RELIC_ARCH="X64"
+fi
+cmake .. -DCOMP="$CFLAGS" -DQUIET=on -DRAND=CALL -DSHLIB=off -DSTBIN=off -DTESTS=0 -DBENCH=0 -DALLOC=DYNAMIC -DARCH=$RELIC_ARCH
 make -j$(nproc)
 cd ../..
 export RELIC_PATH=$(realpath relic)
@@ -49,7 +55,7 @@ else
 fi
 make -j$(nproc)
 
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN"
+export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BOTAN -DCRYPTOFUZZ_BOTAN_IS_ORACLE"
 export LIBBOTAN_A_PATH="$SRC/botan/libbotan-3.a"
 export BOTAN_INCLUDE_PATH="$SRC/botan/build/include"
 
@@ -59,9 +65,10 @@ python gen_repository.py
 rm extra_options.h
 echo -n '"' >>extra_options.h
 echo -n '--force-module=relic ' >>extra_options.h
-echo -n '--operations=BignumCalc,ECC_PrivateToPublic,ECDSA_Sign,ECDSA_Verify ' >>extra_options.h
+echo -n '--operations=BignumCalc,ECC_PrivateToPublic,ECC_ValidatePubkey,ECDSA_Sign,ECDSA_Verify,Digest,HMAC,KDF_X963 ' >>extra_options.h
 echo -n '--curves=secp256k1,secp256r1 ' >>extra_options.h
-echo -n '--digests=NULL ' >>extra_options.h
+echo -n '--digests=NULL,SHA224,SHA256,SHA384,SHA512,BLAKE2S160,BLAKE2S256 ' >>extra_options.h
+echo -n '--calcops=Abs,Add,Bit,ClearBit,Cmp,CmpAbs,Div,ExpMod,GCD,InvMod,IsEven,IsOdd,IsZero,Jacobi,LCM,LShift1,Mod,Mul,Neg,NumBits,RShift,SetBit,Sqr,Sqrt,Sub ' >>extra_options.h
 echo -n '"' >>extra_options.h
 cd modules/relic/
 make -B -j$(nproc)
