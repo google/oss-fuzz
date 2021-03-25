@@ -30,3 +30,21 @@ bazel build -c opt --config=oss-fuzz --linkopt=-lc++ \
 for oss_fuzz_archive in $(find bazel-bin/ -name "*${PACKAGE_SUFFIX}.tar"); do
     tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
 done
+
+if [ "$SANITIZER" = "coverage" ]; then
+    declare -r COVERAGE_SOURCES="${OUT}/proc/self/cwd"
+    mkdir -p "${COVERAGE_SOURCES}"
+    declare -r RSYNC_FILTER_ARGS=(
+        "--include" "*.h"
+        "--include" "*.cc"
+        "--include" "*.hpp"
+        "--include" "*.cpp"
+        "--include" "*.c"
+        "--include" "*.inc"
+        "--include" "*/"
+        "--exclude" "*"
+    )
+    rsync -avLk "${RSYNC_FILTER_ARGS[@]}" \
+        "$(bazel info execution_root)/" \
+        "${COVERAGE_SOURCES}/"
+fi
