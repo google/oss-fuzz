@@ -17,7 +17,6 @@
 
 
 # build project
-git apply ../patch.diff
 mkdir build && cd build
 cmake .. -DBUILD_SHARED=OFF -DBUILD_MIXED=ON
 make -j $(nproc)
