@@ -16,13 +16,14 @@
 ################################################################################
 
 # generate build env and build assimp
-cmake CMakeLists.txt -G "Ninja" -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_SAMPLES=OFF
+cmake CMakeLists.txt -G "Ninja" -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_SAMPLES=OFF
 cmake --build .
 echo Configuration
 echo $LIB_FUZZING_ENGINE
 echo $SRC/assimp/lib
 
 # build the fuzzer
+# build the fuzzer
 $CXX $CXXFLAGS -std=c++11 -I$SRC/assimp/include \
-	fuzz/assimp_fuzzer.cc -o $OUT/assimp_fuzzer \
-	$LIB_FUZZING_ENGINE $SRC/assimp/lib/libassimp.a $SRC/assimp/lib/libzlibstatic.a
+        fuzz/assimp_fuzzer.cc -o $OUT/assimp_fuzzer \
+        $LIB_FUZZING_ENGINE $SRC/assimp/bin/libassimp.so
