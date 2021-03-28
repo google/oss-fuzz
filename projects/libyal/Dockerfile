@@ -36,6 +36,7 @@ RUN git clone --depth 1 https://github.com/libyal/libmdmp.git libmdmp
 RUN git clone --depth 1 https://github.com/libyal/libmsiecf.git libmsiecf
 RUN git clone --depth 1 https://github.com/libyal/libnk2.git libnk2
 RUN git clone --depth 1 https://github.com/libyal/libolecf.git libolecf
+RUN git clone --depth 1 https://github.com/libyal/libpff.git libpff
 RUN git clone --depth 1 https://github.com/libyal/libregf.git libregf
 RUN git clone --depth 1 https://github.com/libyal/libscca.git libscca
 
@@ -52,8 +53,9 @@ RUN git clone --depth 1 https://github.com/libyal/libvslvm.git libvslvm
 RUN git clone --depth 1 https://github.com/libyal/libvsmbr.git libvsmbr
 
 RUN git clone --depth 1 https://github.com/libyal/libewf.git libewf
-RUN git clone --depth 1 https://github.com/libyal/libsmraw.git libsmraw
+RUN git clone --depth 1 https://github.com/libyal/libmodi.git libmodi
 RUN git clone --depth 1 https://github.com/libyal/libqcow.git libqcow
+RUN git clone --depth 1 https://github.com/libyal/libsmraw.git libsmraw
 RUN git clone --depth 1 https://github.com/libyal/libvhdi.git libvhdi
 RUN git clone --depth 1 https://github.com/libyal/libvmdk.git libvmdk
 
