@@ -19,6 +19,6 @@
 git apply ../patch.diff
 mkdir build
 cd build
-cmake -DBUILD_SHARED_LIBS=OFF -DHDF5_USE_STATIC_LIBRARIES=ON ..
+cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_HDF5=OFF -DCURL_STATICLIB=ON ..
 make -j$(nproc)
 cp fuzz/fuzz* $OUT/
