@@ -1,0 +1,28 @@
+diff --git a/gson/pom.xml b/gson/pom.xml
+index cf32962..500266b 100644
+--- a/gson/pom.xml
++++ b/gson/pom.xml
+@@ -34,7 +34,7 @@
+       <plugin>
+         <groupId>biz.aQute.bnd</groupId>
+         <artifactId>bnd-maven-plugin</artifactId>
+-        <version>4.0.0</version>
++        <version>5.1.0</version>
+         <executions>
+           <execution>
+             <goals>
+diff --git a/pom.xml b/pom.xml
+index 1fb47fc..543b96d 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -90,8 +90,8 @@
+             <jdkToolchain>
+               <version>[1.5,9)</version>
+             </jdkToolchain>
+-            <source>1.6</source>
+-            <target>1.6</target>
++            <source>1.7</source>
++            <target>1.7</target>
+           </configuration>
+         </plugin>
+         <plugin>
