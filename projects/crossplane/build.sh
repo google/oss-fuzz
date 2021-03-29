@@ -16,4 +16,9 @@
 ################################################################################
 
 mv $SRC/fuzz.go $SRC/crossplane/internal/xpkg/
+
+if [[ $SANITIZER = *coverage* ]]; then
+	compile_go_fuzzer github.com/crossplane/crossplane/internal/xpkg FuzzParse fuzz_parse
+	exit 0
+fi
 compile_go_fuzzer ./internal/xpkg FuzzParse fuzz_parse
