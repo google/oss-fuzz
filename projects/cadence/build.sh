@@ -16,5 +16,10 @@
 ################################################################################
 
 mv $SRC/parser_fuzzer.go $SRC/cadence/common/archiver/filestore/
+if [[ $SANITIZER = *coverage* ]]; then
+	compile_go_fuzzer github.com/uber/cadence/common/archiver/filestore Fuzz query_parser_fuzzer
+	exit 0
+fi
+
 cd $SRC/cadence/common/archiver
 compile_go_fuzzer ./filestore Fuzz query_parser_fuzzer
