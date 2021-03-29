@@ -16,4 +16,11 @@
 ################################################################################
 
 mv $SRC/fuzz.go $SRC/kraken/utils/dockerutil/
+
+
+if [[ $SANITIZER = *coverage* ]]; then
+	compile_go_fuzzer github.com/uber/kraken/utils/dockerutil Fuzz manifest_parser_fuzzer
+	exit 0
+fi
+
 compile_go_fuzzer ./utils/dockerutil Fuzz manifest_parser_fuzzer
