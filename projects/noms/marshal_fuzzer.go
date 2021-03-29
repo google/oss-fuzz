@@ -21,7 +21,7 @@ import (
 )
 
 func FuzzUnmarshal(data []byte) int {
-	vs := newTestValueStore()
+	vs := newFuzzValueStore()
 	defer vs.Close()
 
 	var s []string
@@ -34,7 +34,7 @@ func FuzzUnmarshal(data []byte) int {
 	return 1
 }
 
-func newTestValueStore() *types.ValueStore {
+func newFuzzValueStore() *types.ValueStore {
 	st := &chunks.TestStorage{}
 	return types.NewValueStore(st.NewView())
 }
