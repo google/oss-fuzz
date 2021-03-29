@@ -37,6 +37,13 @@ make -j$(nproc)
 make install
 cd ..
 
+cd fuzzpcap
+mkdir build
+cd build
+cmake ..
+make install
+cd ../..
+
 cd libyaml
 ./bootstrap
 ./configure --disable-shared
@@ -52,19 +59,11 @@ mv libhtp suricata/
 cd suricata
 sh autogen.sh
 #run configure with right options
-if [ "$SANITIZER" = "coverage" ]
+if [ "$SANITIZER" = "address" ]
 then
-    export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
-    chmod +x $SRC/rustc.py
-    export RUSTC="$SRC/rustc.py"
-    ./configure --disable-shared --enable-fuzztargets --enable-debug
-else
-    if [ "$SANITIZER" = "address" ]
-    then
-        export RUSTFLAGS="$RUSTFLAGS -Cpasses=sancov -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-trace-geps -Cllvm-args=-sanitizer-coverage-prune-blocks=0 -Cllvm-args=-sanitizer-coverage-pc-table -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth"
-    fi
-    ./src/tests/fuzz/oss-fuzz-configure.sh
+    export RUSTFLAGS="$RUSTFLAGS -Cpasses=sancov -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-trace-geps -Cllvm-args=-sanitizer-coverage-prune-blocks=0 -Cllvm-args=-sanitizer-coverage-pc-table -Clink-dead-code -Cllvm-args=-sanitizer-coverage-stack-depth"
 fi
+./src/tests/fuzz/oss-fuzz-configure.sh
 make -j$(nproc)
 
 cp src/fuzz_* $OUT/
@@ -102,3 +101,13 @@ cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; cat $t/*.pcap >>
 done
 set -x
 zip -q -r $OUT/fuzz_sigpcap_seed_corpus.zip corpus
+rm -Rf corpus
+mkdir corpus
+set +x
+ls | grep -v corpus | while read t; do
+cat $t/*.rules > corpus/$i || true; echo -ne '\0' >> corpus/$i; fpc_bin $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+echo -ne '\0' >> corpus/$i; python3 $SRC/fuzzpcap/tcptofpc.py $t/*.pcap >> corpus/$i || rm corpus/$i; i=$((i+1));
+done
+set -x
+zip -q -r $OUT/fuzz_sigpcap_aware_seed_corpus.zip corpus
+echo "\"FPC0\"" > $OUT/fuzz_sigpcap_aware.dict
