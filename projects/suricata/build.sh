@@ -66,10 +66,14 @@ fi
 ./src/tests/fuzz/oss-fuzz-configure.sh
 make -j$(nproc)
 
+./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse_$i; done
+
 cp src/fuzz_* $OUT/
 
 # dictionaries
 ./src/suricata --list-keywords | grep "\- " | sed 's/- //' | awk '{print "\""$0"\""}' > $OUT/fuzz_siginit.dict
+
+echo \"SMB\" > $OUT/fuzz_applayerparserparse_smb.dict
 
 # build corpuses
 # default configuration file
