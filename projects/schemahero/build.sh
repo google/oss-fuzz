@@ -16,4 +16,8 @@
 ################################################################################
 
 mv $SRC/fuzzer.go $SRC/schemahero/pkg/database/
+if [[ $SANITIZER = *coverage* ]]; then
+	compile_go_fuzzer github.com/schemahero/schemahero/pkg/database Fuzz fuzzer
+	exit 0
+fi
 compile_go_fuzzer ./pkg/database Fuzz fuzzer
