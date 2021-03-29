@@ -62,8 +62,6 @@ sh autogen.sh
 if [ "$SANITIZER" = "coverage" ]
 then
     export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
-    chmod +x $SRC/rustc.py
-    export RUSTC="$SRC/rustc.py"
     ./configure --disable-shared --enable-fuzztargets --enable-debug
 else
     if [ "$SANITIZER" = "address" ]
