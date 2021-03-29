@@ -16,4 +16,8 @@
 ################################################################################
 
 mv $SRC/fuzz.go $SRC/stolon/internal/postgresql/
+if [[ $SANITIZER = *coverage* ]]; then
+	compile_go_fuzzer github.com/sorintlab/stolon/internal/postgresql FuzzConnString fuzz_conn_string
+	exit 0
+fi
 compile_go_fuzzer ./internal/postgresql FuzzConnString fuzz_conn_string
