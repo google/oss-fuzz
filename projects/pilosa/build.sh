@@ -15,5 +15,10 @@
 #
 ################################################################################
 
+if [[ $SANITIZER = *coverage* ]]; then
+	compile_go_fuzzer github.com/pilosa/pilosa FuzzBitmapUnmarshalBinary fuzz_bitmap_unmarshal_binary gofuzz
+	compile_go_fuzzer github.com/pilosa/pilosa FuzzRoaringOps fuzz_roaring_ops gofuzz
+	exit 0
+fi
 compile_go_fuzzer ./roaring FuzzBitmapUnmarshalBinary fuzz_bitmap_unmarshal_binary gofuzz
 compile_go_fuzzer ./roaring FuzzRoaringOps fuzz_roaring_ops gofuzz
