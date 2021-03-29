@@ -1,0 +1,9 @@
+homepage: "https://discord.gg/4cws9zd"
+language: c++
+primary_contact: "pauldreikossfuzz@gmail.com"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+fuzzing_engines:
+  - libfuzzer
+  - afl
+main_repo: 'https://github.com/catchorg/Catch2.git'
