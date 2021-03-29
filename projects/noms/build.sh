@@ -16,4 +16,10 @@
 ################################################################################
 
 mv $SRC/marshal_fuzzer.go $SRC/noms/go/marshal/
+
+if [[ $SANITIZER = *coverage* ]]; then
+	compile_go_fuzzer github.com/attic-labs/noms/go/marshal FuzzUnmarshal unmarshal_fuzzer
+	exit 0
+fi
+
 compile_go_fuzzer ./go/marshal FuzzUnmarshal unmarshal_fuzzer
