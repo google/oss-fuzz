@@ -1,0 +1,6 @@
+homepage: "https://github.com/syoyo/tinygltf"
+language: c++
+primary_contact: "syoyo@lighttransport.com"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+main_repo: 'https://github.com/syoyo/tinygltf.git'
