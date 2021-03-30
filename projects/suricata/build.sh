@@ -52,6 +52,8 @@ make install
 cd ..
 
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
+# cf https://github.com/google/sanitizers/issues/1389
+export MSAN_OPTIONS=strict_memcmp=false
 
 #we did not put libhtp there before so that cifuzz does not remove it
 mv libhtp suricata/
