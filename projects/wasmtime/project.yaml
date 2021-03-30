@@ -6,7 +6,7 @@ auto_ccs:
   - "till@tillschneidereit.net"
   - "ydelendik@mozilla.com"
   - "cfallin@gmail.com"
-  - "andrew.brown@intel.com"
+  - "andrew.s.brown2@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:
