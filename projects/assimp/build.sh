@@ -22,7 +22,7 @@ echo Configuration
 echo $LIB_FUZZING_ENGINE
 echo $SRC/assimp/lib
 
-export LD_LIBRARY_PATH=SRC/assimp/bin/;$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$SRC/assimp/bin/;$LD_LIBRARY_PATH
 # build the fuzzer
 $CXX $CXXFLAGS -std=c++11 -I$SRC/assimp/include -L$SRC/assimp/bin/ \
         fuzz/assimp_fuzzer.cc -o $OUT/assimp_fuzzer \
