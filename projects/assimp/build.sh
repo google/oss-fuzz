@@ -15,15 +15,18 @@
 #
 ################################################################################
 
-# generate build env and build assimp
+# Generate build env and build assimp
 cmake CMakeLists.txt -G "Ninja" -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_SAMPLES=OFF
 cmake --build .
+
+# Print out the configuration
 echo Configuration
 echo $LIB_FUZZING_ENGINE
-echo $SRC/assimp/lib
 
-export LD_LIBRARY_PATH=$SRC/assimp/bin/;$LD_LIBRARY_PATH
-# build the fuzzer
+# Setup the so-paths
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SRC/assimp/bin/
+
+# Build the fuzzer
 $CXX $CXXFLAGS -std=c++11 -I$SRC/assimp/include -L$SRC/assimp/bin/ \
         fuzz/assimp_fuzzer.cc -o $OUT/assimp_fuzzer \
         $LIB_FUZZING_ENGINE $SRC/assimp/bin/libassimp.so
