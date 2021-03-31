@@ -1,0 +1,6 @@
+homepage: "https://github.com/appneta/tcpreplay"
+main_repo: "https://github.com/appneta/tcpreplay"
+primary_contact: "david@adalogics.com"
+language: c
+auto_ccs :
+  - "david@adalogics.com"
