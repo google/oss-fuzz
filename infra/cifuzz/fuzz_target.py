@@ -141,8 +141,14 @@ class FuzzTarget:
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return FuzzResult(None, None)
+
+    utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
+                       (self.target_name.encode(), stderr))
     if self.is_crash_reportable(testcase):
+      # We found a bug in the fuzz target and we will report it.
       return FuzzResult(testcase, stderr)
+
+    # We found a bug but we won't report it.
     return FuzzResult(None, None)
 
   def free_disk_if_needed(self):
@@ -271,7 +277,6 @@ class FuzzTarget:
       logging.info('The crash is reproducible. The crash doesn\'t reproduce '
                    'on old builds. This code change probably introduced the '
                    'crash.')
-
       return True
 
     logging.info('The crash is reproducible on old builds '
