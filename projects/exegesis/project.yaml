@@ -1,0 +1,10 @@
+homepage: "https://github.com/google/EXEgesis"
+language: c++
+primary_contact: "TODO"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- memory
+main_repo: 'https://github.com/google/EXEgesis.git'
