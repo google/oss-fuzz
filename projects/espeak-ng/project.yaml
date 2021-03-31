@@ -1,0 +1,10 @@
+homepage: "https://github.com/espeak-ng/espeak-ng"
+language: c++
+primary_contact: "sascha@brawer.ch"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- undefined
+main_repo: 'https://github.com/espeak-ng/espeak-ng'

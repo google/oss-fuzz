@@ -1,0 +1,51 @@
+diff --git a/Makefile.am b/Makefile.am
+index 533a32d..82a48dc 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -222,6 +222,7 @@ endif
+ 
+ src_espeak_ng_LDADD   = src/libespeak-ng.la ${PCAUDIOLIB_LIBS}
+ src_espeak_ng_SOURCES = src/espeak-ng.c
++nodist_EXTRA_src_espeak_ng_SOURCES = force-cxx-linking.cxx
+ 
+ ##### tests:
+ 
+diff --git a/src/ucd-tools/src/case.c b/src/ucd-tools/src/case.c
+index 04c9736..6408a43 100644
+--- a/src/ucd-tools/src/case.c
++++ b/src/ucd-tools/src/case.c
+@@ -2841,7 +2841,7 @@ codepoint_t ucd_tolower(codepoint_t c)
+ {
+        int begin = 0;
+        int end   = sizeof(case_conversion_data)/sizeof(case_conversion_data[0]);
+-       while (begin <= end)
++       while (begin < end)
+        {
+                int pos = (begin + end) / 2;
+                const struct case_conversion_entry *item = (case_conversion_data + pos);
+
+diff --git a/tests/ssml-fuzzer.c b/tests/ssml-fuzzer.c
+index d5bea20..65b806a 100644
+--- a/tests/ssml-fuzzer.c
++++ b/tests/ssml-fuzzer.c
+@@ -39,14 +39,19 @@ static int SynthCallback(short *wav, int numsamples, espeak_EVENT *events) {
+ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
+ extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+        if (!initialized) {
++               setenv("ESPEAK_DATA_PATH",".",0);
+                espeak_Initialize(AUDIO_OUTPUT_SYNCHRONOUS, 0, NULL, 0);
+                espeak_SetSynthCallback(SynthCallback);
+                initialized = 1;
+        }
+
+        int synth_flags = espeakCHARS_UTF8 | espeakPHONEMES | espeakSSML;
+-       espeak_Synth((char*) data, size + 1, 0, POS_CHARACTER, 0,
++       char *str = malloc(size+1);
++       memcpy(str, data, size);
++       str[size] = 0;
++       espeak_Synth((char*) str, size + 1, 0, POS_CHARACTER, 0,
+                     synth_flags, NULL, NULL);
++       free(str);
+
+        return 0;
+ }
