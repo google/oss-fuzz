@@ -13,9 +13,10 @@
 # limitations under the License.
 #
 ################################################################################
+
 FROM gcr.io/oss-fuzz-base/base-builder
-
-RUN git clone --depth 1 https://github.com/Geal/nom/
-WORKDIR $SRC
-
-COPY build.sh $SRC/
+RUN apt-get update && \
+    apt-get install -y pkgconf make libtool automake autoconf
+RUN git clone --depth 1 https://github.com/lxc/lxc
+WORKDIR lxc
+COPY build.sh *.c $SRC/

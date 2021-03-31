@@ -72,8 +72,13 @@ def main():
     return returncode
 
   out_dir = os.path.join(config.workspace, 'out')
+
+  if not config.bad_build_check:
+    # If we've gotten to this point and we don't need to do bad_build_check,
+    # then the build has succeeded.
+    returncode = 0
   # yapf: disable
-  if build_fuzzers.check_fuzzer_build(
+  elif build_fuzzers.check_fuzzer_build(
       out_dir,
       config.sanitizer,
       config.language,

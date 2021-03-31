@@ -57,10 +57,7 @@ build() {
 }
 
 # Build with peepmatic in order to enable the related fuzz targets.
-build wasmtime "" "" --features peepmatic-fuzzing
-
-# Build the differential fuzzer with the new x86-64 backend as well.
-build wasmtime diff-newbe- differential_wasmi --features experimental_x64
+build wasmtime "" "" --features "peepmatic-fuzzing experimental_x64"
 
 build wasm-tools wasm-tools- ""
 build regalloc.rs regalloc- bt bt

@@ -24,6 +24,10 @@ inputs:
   build-integration-path:
     description: "The path to the the project's build integration."
     required: false
+  bad-build-check:
+    description: "Whether or not OSS-Fuzz's check for bad builds should be done."
+    required: false
+    default: true
 runs:
   using: 'docker'
   image: '../../../build_fuzzers.Dockerfile'
@@ -36,3 +40,4 @@ runs:
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     LOW_DISK_SPACE: 'True'
+    BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}

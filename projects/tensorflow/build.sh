@@ -96,7 +96,7 @@ then
   # code that Bazel creates. Not removing this would cause `rsync` to expand a
   # symlink that ends up pointing to itself!
   pushd bazel-tensorflow
-  unlink external/org_tensorflow
+  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
   ${RSYNC_CMD} external/ ${REMAP_PATH}
   popd
 fi

@@ -26,7 +26,7 @@ for f in fuzz/c/std/*_fuzzer.c; do
 
   # Make the "gzip_fuzzer" binary. First compile the (C) Wuffs code, then link
   # the (C++) fuzzing library.
-  $CC $CFLAGS -c -std=c99 $f -o $WORK/${b}_fuzzer.o
+  $CC $CFLAGS -c $f -o $WORK/${b}_fuzzer.o
   $CXX $CXXFLAGS $WORK/${b}_fuzzer.o -o $OUT/${b}_fuzzer $LIB_FUZZING_ENGINE
 
   # Make the optional "gzip_fuzzer_seed_corpus.zip" archive. This means

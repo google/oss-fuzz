@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+/*
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +12,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+################################################################################
+*/
 
-import sys
-import subprocess
+#include <stddef.h>
+#include <stdint.h>
 
-#disable coverage for crate brotli_decompressor
-sys.argv[0] = "rustc"
-if "brotli_decompressor" in sys.argv:
-    try:
-        sys.argv.remove("-Zinstrument-coverage")
-    except:
-        pass
-    print(sys.argv)
-subprocess.call(sys.argv)
+#include "conf.h"
+#include "confile.h"
+#include "utils.h"
+
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+	int fd = -1;
+	char tmpf[] = "fuzz-lxc-config-read-XXXXXX";
+	struct lxc_conf *conf = NULL;
+
+	fd = lxc_make_tmpfile(tmpf, false);
+	lxc_write_nointr(fd, data, size);
+	close(fd);
+
+	conf = lxc_conf_init();
+	lxc_config_read(tmpf, conf, false);
+	lxc_conf_free(conf);
+
+	(void) unlink(tmpf);
+	return 0;
+}

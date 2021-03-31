@@ -19,10 +19,10 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y maven
 
 RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN cat fuzzing/dictionaries/json.dict > $OUT/DenylistFuzzer.dict
+RUN cat fuzzing/dictionaries/json.dict > $SRC/JsonFuzzer.dict
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
-    zip -j $OUT/JsonFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/*
+    zip -j $SRC/JsonFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/*
 
 ENV JACKSON_BRANCH=2.13
 
