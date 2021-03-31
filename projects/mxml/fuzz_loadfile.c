@@ -20,16 +20,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	sprintf(filename, "/tmp/libfuzzer.%d", getpid());
 
 	FILE *fp2 = fopen(filename, "wb");
-	if (!fp2)
-			return 0;
+	if (!fp2) {
+        return 0;
+    }
 	fwrite(data, size, 1, fp2);
 	fclose(fp2);
 
 	FILE *fp;
-	mxml_node_t *tree;
+	mxml_node_t *tree = NULL;
 
 	fp = fopen(filename, "r");
 	tree = mxmlLoadFile(NULL, fp, MXML_OPAQUE_CALLBACK);
+    if (tree != NULL) {
+        free(tree);
+    }
+
 	fclose(fp);
 
 	unlink(filename);
