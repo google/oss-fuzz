@@ -1,4 +1,5 @@
 homepage: "https://github.com/michaelrsweet/mxml"
+main_repo: "https://github.com/michaelrsweet/mxml"
 primary_contact: "david@adalogics.com"
 language: c
 auto_ccs :
