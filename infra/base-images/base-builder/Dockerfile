@@ -29,6 +29,7 @@ RUN dpkg --add-architecture i386 && \
         jq \
         libc6-dev-i386 \
         patchelf \
+        rsync \
         subversion \
         zip
 
@@ -191,7 +192,7 @@ RUN cd $SRC && \
 
 COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     compile_go_fuzzer precompile_honggfuzz precompile_afl debug_afl srcmap \
-    write_labels.py /usr/local/bin/
+    write_labels.py bazel_build_fuzz_tests /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/
 COPY ossfuzz_coverage_runner.go $GOPATH
