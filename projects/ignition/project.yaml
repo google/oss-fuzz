@@ -1,6 +1,6 @@
 homepage: "https://github.com/coreos/ignition"
 main_repo: "https://github.com/coreos/ignition"
-primary_contact: ""
+primary_contact: "coreos-infra@lists.fedoraproject.org"
 auto_ccs :
   - "adam@adalogics.com"
 language: go
