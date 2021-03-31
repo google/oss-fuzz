@@ -1,9 +1,8 @@
 homepage: "https://www.eprosima.com/"
 language: c++
 primary_contact: "miguelcompany@eprosima.com"
-auto_ccs :
+auto_ccs:
 - "p.antoine@catenacyber.fr"
-
 sanitizers:
 - address
 - undefined
