@@ -32,4 +32,5 @@ $CC $CFLAGS $LIB_FUZZING_ENGINE -DTCPBRIDGE "-D_U_=__attribute__((unused))" ../f
     ./src/tcpbridge-tcpbridge_opts.o ./src/tcpbridge-tcpbridge.o ./src/tcpbridge-bridge.o \
     ./src/tcpedit/libtcpedit.a ./src/common/libcommon.a ./lib/libstrl.a \
     /usr/lib/x86_64-linux-gnu/libopts.a \
-    -I./src/ -I./src/tcpedit/ -I./ -lpcap  -lrt -lnsl
+    /usr/lib/x86_64-linux-gnu/libpcap.a
+    -I./src/ -I./src/tcpedit/ -I./ -lrt -lnsl
