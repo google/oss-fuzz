@@ -3,4 +3,6 @@ language: c++
 primary_contact: "security@sandstorm.io"
 auto_ccs:
   - "p.antoine@catenacyber.fr"
+sanitizers:
+  - address
 main_repo: 'https://github.com/capnproto/capnproto'
