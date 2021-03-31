@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+
+if [[ $SANITIZER = *coverage* ]]; then
+	exit 0
+fi
 mv $SRC/validate_fuzzer.go $SRC/ignition/config/validate/
 compile_go_fuzzer ./config/validate FuzzValidate validate_fuzzer
 
