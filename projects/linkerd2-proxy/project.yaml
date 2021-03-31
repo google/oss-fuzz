@@ -1,0 +1,10 @@
+homepage: "https://linkerd.io/"
+main_repo: "https://github.com/linkerd/linkerd2-proxy"
+primary_contact: "david@adalogics.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
