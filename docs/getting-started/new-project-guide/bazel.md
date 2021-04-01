@@ -79,9 +79,10 @@ which fuzz tests to build, (2) building their OSS-Fuzz package targets in the
 right configuration, and (3) copying the build artifacts to the `${OUT}/`
 destination.
 
-OSS-Fuzz provides a `bazel_build_fuzz_tests` tool that implements these steps in
-a standard way, so in most cases your build script only needs to invoke this
-command with no arguments.
+OSS-Fuzz provides a
+[`bazel_build_fuzz_tests`](https://github.com/google/oss-fuzz/blob/master/infra/base-images/base-builder/bazel_build_fuzz_tests)
+tool that implements these steps in a standard way, so in most cases your
+build script only needs to invoke this command with no arguments.
 
 If necessary, the behavior of the tool can be customized though a set of
 environment variables. The most common are:
