@@ -38,9 +38,36 @@ fi
 export FUZZING_CFLAGS="$CFLAGS"
 export FUZZING_CXXFLAGS="$CXXFLAGS"
 
+# Disable instrumentation in various external libraries. These 
+# are fuzzed elsewhere.
+# The following disables both coverage-instrumentation
+declare -r DI="$(
+if [ "$SANITIZER" != "coverage" ]
+then
+  echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*googletest.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_github_grpc_grpc.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*boringssl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_googlesource_code_re2.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*upb.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*org_brotli.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_google_cel_cpp.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_github_jbeder_yaml_cpp.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*proxy_wasm_cpp_host/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_github_google_libprotobuf_mutator/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_googlesource_googleurl/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*com_lightstep_tracer_cpp/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*\.pb\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+  echo " --per_file_copt=^.*bazel-out/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+fi
+)"
+
+
 # Benchmark about 3 GB per CPU (10 threads for 28.8 GB RAM)
 # TODO(asraa): Remove deprecation warnings when Envoy and deps moves to C++17
-bazel build --verbose_failures --dynamic_mode=off \
+bazel build --verbose_failures --dynamic_mode=off ${DI} \
   --spawn_strategy=standalone --genrule_strategy=standalone \
   --local_cpu_resources=HOST_CPUS*0.32 \
   --//source/extensions/wasm_runtime/v8:enabled=false \
