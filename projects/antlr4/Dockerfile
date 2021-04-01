@@ -20,4 +20,5 @@ RUN git clone https://github.com/antlr/antlr4
 
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_cpp_runtime.cpp $SRC/fuzz_cpp_runtime.cpp
+COPY CMakeLists.txt $SRC/antlr4/runtime/Cpp/demo/CMakeLists.txt
+COPY fuzz_cpp_runtime.cpp $SRC/antlr4/runtime/Cpp/demo/fuzz_cpp_runtime.cpp

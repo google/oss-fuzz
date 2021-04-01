@@ -28,15 +28,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 	new_str[size] = '\0';
 
 	try {
-		ANTLRInputStream input(new_str);
-		TLexer lexer(&input);
-		CommonTokenStream tokens(&lexer);
+        ANTLRInputStream input(new_str);
+        TLexer lexer(&input);
+        CommonTokenStream tokens(&lexer);
 
-		tokens.fill();
-		for (auto token : tokens.getTokens()) {}
+        tokens.fill();
+        for (auto token : tokens.getTokens()) {}
 
-		TParser parser(&tokens);
-		tree::ParseTree* tree = parser.main();
+        TParser parser(&tokens);
+        tree::ParseTree* tree = parser.main();
 	} catch(...) {}
 	free(new_str);
 

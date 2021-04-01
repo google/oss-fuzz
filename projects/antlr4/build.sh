@@ -20,10 +20,8 @@ export CLASSPATH=".:/usr/local/lib/antlr-4.9-complete.jar"
 alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.9-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
 alias grun='java -Xmx500M -cp "/usr/local/lib/antlr-4.9-complete.jar:$CLASSPATH" org.antlr.v4.gui.TestRig'
 
-cd /src/antlr4
-cd runtime/Cpp/
+cd /src/antlr4/runtime/Cpp
 mkdir build && mkdir run && cd build
-cmake .. -DANTLR_JAR_LOCATION=/usr/local/lib/antlr-4.9-complete.jar  -DWITH_DEMO=True -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-make V=1
-cd demo
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_cpp_runtime.cpp -I../../demo/generated/ -I../../runtime/src/ CMakeFiles/antlr4-demo.dir/generated/TLexer.cpp.o CMakeFiles/antlr4-demo.dir/generated/TParser.cpp.o CMakeFiles/antlr4-demo.dir/generated/TParserBaseListener.cpp.o CMakeFiles/antlr4-demo.dir/generated/TParserBaseVisitor.cpp.o CMakeFiles/antlr4-demo.dir/generated/TParserListener.cpp.o CMakeFiles/antlr4-demo.dir/generated/TParserVisitor.cpp.o -o $OUT/fuzz_cpp_runtime  ../../dist/libantlr4-runtime.a -luuid
+cmake .. -DANTLR_JAR_LOCATION=/usr/local/lib/antlr-4.9-complete.jar -DWITH_DEMO=True
+make
+cp ./demo/fuzz_cpp_runtime $OUT/fuzz_cpp_runtime
