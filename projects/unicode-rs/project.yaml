@@ -1,6 +1,6 @@
 homepage: "http://unicode-rs.github.io/"
 main_repo: "https://github.com/unicode-rs"
-primary_contact: "david@adalogics.com"
+primary_contact: "manishsmail@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:
