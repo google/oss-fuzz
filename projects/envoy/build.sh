@@ -40,7 +40,25 @@ export FUZZING_CXXFLAGS="$CXXFLAGS"
 
 # Disable instrumentation in various external libraries. These 
 # are fuzzed elsewhere.
-# The following disables both coverage-instrumentation
+# The following disables both coverage-instrumentation and other sanitizer instrumentation.
+# We disable instrumentation in:
+#  antlr4
+#  google_protobuf
+#  absl
+#  googltest
+#  grpc
+#  boringssl
+#  re2
+#  upb
+#  brotli
+#  cel_cpp
+#  yaml_cpp
+#  wasm_cpp_host
+#  libprotobuf-mutator
+#  google_url (gurl)
+#  lightstep_tracer
+# In addition to this, we disable instrumentation in all *.pb.cc (protobuf-generated files)
+# and everything in the bazel-out directory.
 declare -r DI="$(
 if [ "$SANITIZER" != "coverage" ]
 then
