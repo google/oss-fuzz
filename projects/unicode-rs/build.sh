@@ -17,5 +17,10 @@
 
 cd $SRC/unicode-normalization
 cargo fuzz build -O 
-cp fuzz/target/x86_64-unknown-linux-gnu/release/unicode-normalization $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/streaming $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/unicode-normalization $OUT/unicode-normalization-normalization
+cp fuzz/target/x86_64-unknown-linux-gnu/release/streaming $OUT/unicode-normalization-streaming
+
+cd $SRC/unicode-segmentation/
+cargo fuzz build -O
+cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_target_1 $OUT/unicode-segmentation-fuzzer
+

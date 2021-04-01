@@ -16,6 +16,9 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone --depth 1 https://github.com/unicode-rs/unicode-normalization
+RUN git clone --depth 1 https://github.com/unicode-rs/unicode-segmentation
+
 WORKDIR $SRC
 
 COPY build.sh $SRC/
+COPY unicode-segmentation-fuzz $SRC/unicode-segmentation/fuzz
