@@ -20,5 +20,6 @@ make TARGET=local
 $CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_xml.c -o $OUT/fuzz_xml \
     -I./ ./os_xml.a
 
+static_pcre=($(find /usr/lib -name "libpcre2-8.a"))
 $CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_regex.c -o $OUT/fuzz_regex \
-    -I./ -I./os_regex/ ./os_regex.a -lpcre2-8
+    -I./ -I./os_regex/ ./os_regex.a ${static_pcre}
