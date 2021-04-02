@@ -69,7 +69,7 @@ RUN cd /tmp && \
     curl -O https://storage.googleapis.com/golang/getgo/installer_linux && \
     chmod +x ./installer_linux && \
     SHELL="bash" ./installer_linux && \
-    rm -rf ./installer_linux &&
+    rm -rf ./installer_linux && \
     rm -rf /root/.go/src /root/.go/test /root/.cache
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
