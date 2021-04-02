@@ -25,16 +25,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   size_t regex_length = fuzzed_data.ConsumeIntegral<uint8_t>();
   // Second value is regexp string whose length is `regex_length`
   std::string regex_string = fuzzed_data.ConsumeBytesAsString(regex_length);
-  boost::regex e(regex_string);
-  // Last value is the text to be matched
-  std::string text = fuzzed_data.ConsumeRemainingBytesAsString();
+  try {
+    boost::regex e(regex_string);
+    // Last value is the text to be matched
+    std::string text = fuzzed_data.ConsumeRemainingBytesAsString();
 
 #ifdef DEBUG
     std::cout << "Regexp string: " << regex_string << "Size: " << regex_string.size() << std::endl;
     std::cout << "Text: " << text << "Size: " << text.size() << std::endl;
 #endif
 
-  try {
     boost::match_results<std::string::const_iterator> what;
     bool match = boost::regex_match(text, what, e,
                        boost::match_default | boost::match_partial);
