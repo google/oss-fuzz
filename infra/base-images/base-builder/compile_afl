@@ -45,14 +45,20 @@ export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_
 
 # AFL compile option roulette. It is OK if they all happen together.
 
-# 40% chance to perform CMPLOG
+# 30% chance for CTX-2 coverage instrumentation (Caller conTeXt sensitive
+# edge coverage).
+test $(($RANDOM % 10)) -lt 3 && {
+  export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
+}
+
+# 40% chance to perform CMPLOG/REDQUEEN.
 rm -f "$OUT/afl_cmplog.txt"
 test $(($RANDOM % 10)) -lt 4 && {
   export AFL_LLVM_CMPLOG=1
   touch "$OUT/afl_cmplog.txt"
 }
 
-# 10% chance to perform LAF_INTEL
+# 10% chance to perform COMPCOV/LAF_INTEL.
 test $(($RANDOM % 10)) -lt 1 && {
   export AFL_LLVM_LAF_ALL=1
 }
