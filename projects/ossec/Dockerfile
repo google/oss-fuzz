@@ -20,4 +20,4 @@ RUN git clone https://github.com/ossec/ossec-hids
 
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_xml.c $SRC/
+COPY fuzz_*.c $SRC/
