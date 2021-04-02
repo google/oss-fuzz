@@ -6,4 +6,6 @@ auto_ccs :
 
 sanitizers:
 - address
+fuzzing_engines:
+- libfuzzer
 main_repo: 'https://github.com/dart-lang/sdk.git'
