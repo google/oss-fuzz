@@ -1,5 +1,3 @@
-#!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +14,12 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt install -y g++-multilib git python curl
 
-bazel_build_fuzz_tests
+RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+ENV PATH="${SRC}/depot_tools:${PATH}"
+RUN mkdir dart-sdk && cd dart-sdk && fetch dart
+COPY build.sh $SRC
+COPY patch.diff $SRC
+WORKDIR $SRC/dart-sdk/sdk

@@ -1,5 +1,3 @@
-#!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +14,8 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
-
-bazel_build_fuzz_tests
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt install -y cmake
+RUN git clone --depth 1 https://github.com/openbabel/openbabel.git
+COPY build.sh $SRC
+WORKDIR $SRC/openbabel

@@ -1,5 +1,4 @@
 #!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +15,18 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
+# build project
+export ASAN_OPTIONS=detect_leaks=0
 
-bazel_build_fuzz_tests
+./bootstrap.sh
+# rust fails compilation with clippy warnings
+./configure --with-rs=no
+make -j$(nproc)
+make install
+
+cd lib/go/test/fuzz
+thrift -r --gen go ../../../../tutorial/tutorial.thrift
+(cd ./gen-go/shared && go mod init shared)
+(cd ./gen-go/tutorial && go mod init tutorial)
+go mod tidy || true
+compile_go_fuzzer . Fuzz fuzz_go_tutorial

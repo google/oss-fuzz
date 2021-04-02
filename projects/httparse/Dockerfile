@@ -1,5 +1,3 @@
-#!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
+FROM gcr.io/oss-fuzz-base/base-builder
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
+RUN git clone https://github.com/seanmonstar/httparse
+WORKDIR $SRC
 
-bazel_build_fuzz_tests
+COPY build.sh $SRC/

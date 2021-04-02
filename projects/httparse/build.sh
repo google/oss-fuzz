@@ -1,5 +1,4 @@
 #!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +15,8 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
-
-bazel_build_fuzz_tests
+cd $SRC/httparse
+cargo fuzz build -O
+cp fuzz/target/x86_64-unknown-linux-gnu/release/parse_request $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/parse_headers $OUT/
+cp fuzz/target/x86_64-unknown-linux-gnu/release/parse_chunk_size $OUT/

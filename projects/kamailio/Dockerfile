@@ -1,5 +1,3 @@
-#!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +14,9 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y bison flex
+RUN git clone https://github.com/kamailio/kamailio
 
-bazel_build_fuzz_tests
+WORKDIR $SRC
+COPY build.sh $SRC/

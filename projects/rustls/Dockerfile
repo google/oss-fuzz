@@ -1,5 +1,3 @@
-#!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +14,12 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
 
-bazel_build_fuzz_tests
+RUN git clone https://github.com/ctz/rustls
+
+WORKDIR $SRC
+
+COPY build.sh $SRC/
+COPY persist.rs $SRC/rustls/fuzz/fuzzers/persist.rs

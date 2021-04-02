@@ -1,5 +1,4 @@
 #!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +15,39 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
 
-bazel_build_fuzz_tests
+(
+cd ../tinyxml2
+make -j$(nproc) all
+cp libtinyxml2.a /usr/local/lib/
+cp *.h /usr/local/include/
+)
+
+(
+cd ../asio/asio
+sh autogen.sh
+./configure
+make -j$(nproc) install
+)
+
+(
+cd ..
+mkdir Fast-CDR/build && cd Fast-CDR/build
+cmake .. -DBUILD_SHARED_LIBS=OFF
+cmake --build . --target install
+)
+
+(
+cd ..
+cd foonathan_memory_vendor
+mkdir build && cd build
+cmake .. -DBUILD_SHARED_LIBS=OFF
+cmake --build . --target install
+)
+
+# build project
+git apply ../patch.diff
+mkdir build && cd build
+cmake .. -DBUILD_SHARED_LIBS=OFF
+make -j $(nproc)
+cp src/cpp/fuzz* $OUT/

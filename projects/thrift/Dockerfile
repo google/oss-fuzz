@@ -1,4 +1,3 @@
-/*
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
-*/
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include "conf.h"
-#include "confile.h"
-#include "utils.h"
-
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	int fd = -1;
-	char tmpf[] = "fuzz-lxc-config-read-XXXXXX";
-	struct lxc_conf *conf = NULL;
-
-	fd = lxc_make_tmpfile(tmpf, false);
-	lxc_write_nointr(fd, data, size);
-	close(fd);
-
-	conf = lxc_conf_init();
-	lxc_config_read(tmpf, conf, false);
-	lxc_conf_free(conf);
-
-	(void) unlink(tmpf);
-	return 0;
-}
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y libssl-dev pkg-config autoconf automake libtool bison flex libboost-all-dev
+RUN git clone --depth 1 https://github.com/apache/thrift
+WORKDIR $SRC/thrift
+COPY build.sh $SRC/

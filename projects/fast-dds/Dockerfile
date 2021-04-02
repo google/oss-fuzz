@@ -1,5 +1,3 @@
-#!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +14,13 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
-
-bazel_build_fuzz_tests
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt install -y autoconf automake
+RUN git clone --depth 1 https://github.com/leethomason/tinyxml2
+RUN git clone --depth 1 https://github.com/chriskohlhoff/asio/
+RUN git clone --depth 1 https://github.com/eProsima/Fast-CDR.git
+RUN git clone --depth 1 https://github.com/eProsima/foonathan_memory_vendor.git
+RUN git clone --depth 1 https://github.com/eProsima/Fast-DDS.git
+COPY patch.diff $SRC
+COPY build.sh $SRC
+WORKDIR $SRC/Fast-DDS

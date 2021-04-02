@@ -14,30 +14,4 @@
 # limitations under the License.
 #
 ################################################################################
-
-# -fsanitize=... isn't compatible with -Wl,-no-undefined
-# https://github.com/google/sanitizers/issues/380
-sed -i 's/-Wl,-no-undefined *\\/\\/' src/lxc/Makefile.am
-
-# AFL++ and hoggfuzz are both incompatible with lto=thin apparently
-sed -i '/-flto=thin/d' configure.ac
-
-# turn off the libutil dependency
-sed -i 's/^AC_CHECK_LIB(util/#/' configure.ac
-
-./autogen.sh
-./configure \
-    --disable-tools \
-    --disable-commands \
-    --disable-apparmor \
-    --disable-openssl \
-    --disable-selinux \
-    --disable-seccomp \
-    --disable-capabilities
-
-make -j$(nproc)
-
-$CC -c -o fuzz-lxc-config-read.o $CFLAGS -Isrc -Isrc/lxc $SRC/fuzz-lxc-config-read.c
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE fuzz-lxc-config-read.o src/lxc/.libs/liblxc.a -o $OUT/fuzz-lxc-config-read
-
-zip -r $OUT/fuzz-lxc-config-read_seed_corpus.zip doc/examples
+src/tests/oss-fuzz.sh

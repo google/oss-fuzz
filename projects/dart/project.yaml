@@ -1,0 +1,9 @@
+homepage: "https://dart.dev"
+language: c++
+primary_contact: "scheglov@google.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+main_repo: 'https://github.com/dart-lang/sdk.git'

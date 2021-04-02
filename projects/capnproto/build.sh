@@ -1,5 +1,4 @@
 #!/bin/bash -eu
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +15,9 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
-
-bazel_build_fuzz_tests
+# build project
+mkdir build
+cd build
+cmake -DBUILD_SHARED_LIBS=OFF ..
+make -j$(nproc)
+cp c++/src/capnp/*fuzzer* $OUT/

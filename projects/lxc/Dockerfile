@@ -19,4 +19,4 @@ RUN apt-get update && \
     apt-get install -y pkgconf make libtool automake autoconf
 RUN git clone --depth 1 https://github.com/lxc/lxc
 WORKDIR lxc
-COPY build.sh *.c $SRC/
+COPY build.sh $SRC/

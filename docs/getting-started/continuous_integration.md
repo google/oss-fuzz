@@ -95,7 +95,7 @@ jobs:
 #### Configurable Variables
 
 `language`: (optional) The language your target program is written in. Defaults
-to `c++`. This shold be the same as the value you set in `project.yaml`. See
+to `c++`. This should be the same as the value you set in `project.yaml`. See
 [this explanation]({{ site.baseurl }}//getting-started/new-project-guide/#language)
 for more details.
 
