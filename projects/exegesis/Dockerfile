@@ -17,9 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone --depth 1 https://github.com/google/EXEgesis.git
-COPY BUILD WORKSPACE .bazelrc $SRC/
-RUN cat WORKSPACE >> $SRC/EXEgesis/WORKSPACE
-RUN cat .bazelrc >> $SRC/EXEgesis/.bazelrc
-RUN cat BUILD >> $SRC/EXEgesis/exegesis/llvm/BUILD
 COPY build.sh $SRC/
+COPY patch.diff $SRC/
 WORKDIR $SRC/EXEgesis
