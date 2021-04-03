@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt install -y cmake
 RUN git clone --depth 1 https://github.com/tinyobjloader/tinyobjloader
 COPY build.sh $SRC
 WORKDIR $SRC/tinyobjloader
