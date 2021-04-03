@@ -1,0 +1,150 @@
+diff --git a/.bazelrc b/.bazelrc
+index 0bef563..b1fba66 100644
+--- a/.bazelrc
++++ b/.bazelrc
+@@ -2,3 +2,27 @@ build --copt=-Wno-parentheses --copt=-Wno-sign-compare  --copt=-D_XOPEN_SOURCE \
+--copt=-Wno-misleading-indentation --copt=-Wno-narrowing --define USE_GLPK= \
+--strict_proto_deps=off --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#      http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++#
++################################################################################
++
++# Force the use of Clang for C++ builds.
++build --action_env=CC=clang
++build --action_env=CXX=clang++
++
++# Define the --config=asan-libfuzzer configuration.
++build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine
++build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz
++build:oss-fuzz --@rules_fuzzing//fuzzing:cc_engine_sanitizer=none
+diff --git a/WORKSPACE b/WORKSPACE
+index 6269dab..f3f8a16 100644
+--- a/WORKSPACE
++++ b/WORKSPACE
+@@ -34,6 +34,14 @@ http_archive(
+# ===== protobuf =====
+# See https://bazel.build/blog/2017/02/27/protocol-buffers.html
+
++# Required by protobuf.
++http_archive(
++    name = "protobuf_bazel_skylib",
++    sha256 = "bbccf674aa441c266df9894182d80de104cabd19be98be002f6d478aaa31574d",
++    strip_prefix = "bazel-skylib-2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
++    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/2169ae1c374aab4a09aa90e65efe1a3aad4e279b.tar.gz"],
++)
++
+http_archive(
+name = "com_google_protobuf",
+sha256 = "2ddbc2f0c30e8f9ee7cc8281707859827c143a1dc088f74d38aca66fe6b664a2",
+@@ -42,6 +50,9 @@ http_archive(
+"https://mirror.bazel.build/github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
+"https://github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
+],
++    repo_mapping = {
++         "@bazel_skylib": "@protobuf_bazel_skylib",
++    },
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+@@ -57,14 +68,6 @@ http_archive(
+],
+)
+
+-# Required by protobuf.
+-http_archive(
+-    name = "bazel_skylib",
+-    sha256 = "bbccf674aa441c266df9894182d80de104cabd19be98be002f6d478aaa31574d",
+-    strip_prefix = "bazel-skylib-2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
+-    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/2169ae1c374aab4a09aa90e65efe1a3aad4e279b.tar.gz"],
+-)
+-
+# ===== googletest =====
+
+http_archive(
+@@ -212,3 +215,35 @@ http_archive(
+"https://ftp.gnu.org/gnu/glpk/glpk-4.52.tar.gz",
+],
+)
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#      http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++#
++################################################################################
++
++load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
++
++http_archive(
++    name = "rules_fuzzing",
++    sha256 = "94f25c7a18db0502ace26a3ef7d0a25fd7c195c4e9770ddd1b1ec718e8936091",
++    strip_prefix = "rules_fuzzing-0.1.3",
++    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.1.3.zip"],
++)
++
++load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
++
++rules_fuzzing_dependencies()
++
++load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
++
++rules_fuzzing_init()
+diff --git a/exegesis/llvm/BUILD b/exegesis/llvm/BUILD
+index b09dbf2..7ec825f 100644
+--- a/exegesis/llvm/BUILD
++++ b/exegesis/llvm/BUILD
+@@ -167,3 +167,30 @@ cc_library(
+"@llvm_git//:Target",
+],
+)
++# Copyright 2021 Google LLC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#      http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++#
++################################################################################
++
++load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
++
++cc_fuzz_test(
++       name = "asm_att_fuzzer",
++       srcs = ["asm_att_fuzzer.cc"],
++       deps = [":assembler_disassembler"],
++)
++
++cc_fuzz_test(
++       name = "asm_intel_fuzzer",
++       srcs = ["asm_intel_fuzzer.cc"],
++       deps = [":assembler_disassembler"],
++)
+
