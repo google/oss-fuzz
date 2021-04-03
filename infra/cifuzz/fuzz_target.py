@@ -141,8 +141,14 @@ class FuzzTarget:
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return FuzzResult(None, None)
+
+    utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
+                       (self.target_name.encode(), stderr))
     if self.is_crash_reportable(testcase):
+      # We found a bug in the fuzz target and we will report it.
       return FuzzResult(testcase, stderr)
+
+    # We found a bug but we won't report it.
     return FuzzResult(None, None)
 
   def free_disk_if_needed(self):
@@ -156,7 +162,9 @@ class FuzzTarget:
 
     # Delete the seed corpus, corpus, and fuzz target.
     if self.latest_corpus_path and os.path.exists(self.latest_corpus_path):
-      shutil.rmtree(self.latest_corpus_path)
+      # Use ignore_errors=True to fix
+      # https://github.com/google/oss-fuzz/issues/5383.
+      shutil.rmtree(self.latest_corpus_path, ignore_errors=True)
 
     os.remove(self.target_path)
     target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
@@ -269,7 +277,6 @@ class FuzzTarget:
       logging.info('The crash is reproducible. The crash doesn\'t reproduce '
                    'on old builds. This code change probably introduced the '
                    'crash.')
-
       return True
 
     logging.info('The crash is reproducible on old builds '

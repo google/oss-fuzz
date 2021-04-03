@@ -16,9 +16,5 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/opencontainers/runc
-COPY build.sh \
-     id_map_fuzzer.go \
-     user_fuzzer.go \
-     configs_fuzzer.go \
-     $SRC/
+COPY build.sh $SRC/
 WORKDIR $SRC/runc

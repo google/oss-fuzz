@@ -1,4 +1,7 @@
 . $SRC/mozconfig.coverage
 
 ac_add_options --enable-address-sanitizer
-mk_add_options CFLAGS= CXXFLAGS=
+
+# Don't use standard CFLAGS/CXXFLAGS provided by oss-fuzz
+export CFLAGS=""
+export CXXFLAGS=""

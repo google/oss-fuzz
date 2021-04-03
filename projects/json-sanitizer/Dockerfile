@@ -22,15 +22,14 @@ RUN git clone --depth 1 https://github.com/google/fuzzing
 RUN cat fuzzing/dictionaries/json.dict \
         fuzzing/dictionaries/html.dict \
         fuzzing/dictionaries/xml.dict \
-      > $OUT/DenylistFuzzer.dict
-RUN cat fuzzing/dictionaries/json.dict \
-        fuzzing/dictionaries/html.dict \
-        fuzzing/dictionaries/xml.dict \
-      > $OUT/IdempotenceFuzzer.dict
-RUN cat fuzzing/dictionaries/json.dict \
-        fuzzing/dictionaries/html.dict \
-        fuzzing/dictionaries/xml.dict \
-      > $OUT/ValidJsonFuzzer.dict
+      > $SRC/DenylistFuzzer.dict
+RUN cp fuzzing/dictionaries/json.dict $SRC/IdempotenceFuzzer.dict
+RUN cp fuzzing/dictionaries/json.dict $SRC/ValidJsonFuzzer.dict
+
+RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus && \
+    zip -q $SRC/DenylistFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
+    zip -q $SRC/IdempotenceFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/* && \
+    zip -q $SRC/ValidJsonFuzzer_seed_corpus.zip go-fuzz-corpus/json/corpus/*
 
 RUN git clone --depth 1 https://github.com/OWASP/json-sanitizer
 COPY build.sh $SRC/

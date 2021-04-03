@@ -1,6 +1,8 @@
 homepage: https://gitlab.freedesktop.org/cairo/cairo
 language: c
 primary_contact: security-tps@google.com
+auto_ccs:
+  - "psychon@znc.in"
 sanitizers:
   - address
   - undefined

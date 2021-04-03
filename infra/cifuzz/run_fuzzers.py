@@ -145,12 +145,9 @@ class BaseFuzzTargetRunner:
                      target.target_name)
         continue
 
-      # We found a bug in the fuzz target.
-      utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
-                         (target.target_name.encode(), result.stacktrace))
-
       # TODO(metzman): Do this with filestore.
-      testcase_artifact_path = self.get_fuzz_target_artifact(target, 'testcase')
+      testcase_artifact_path = self.get_fuzz_target_artifact(
+          target, os.path.basename(result.testcase))
       shutil.move(result.testcase, testcase_artifact_path)
       bug_summary_artifact_path = self.get_fuzz_target_artifact(
           target, 'bug-summary.txt')

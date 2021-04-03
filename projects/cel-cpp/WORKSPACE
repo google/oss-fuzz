@@ -1,0 +1,41 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "fuzzing_rules_python",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz",
+    sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
+)
+
+http_archive(
+    name = "rules_fuzzing",
+    sha256 = "a5734cb42b1b69395c57e0bbd32ade394d5c3d6afbfe782b24816a96da24660d",
+    strip_prefix = "rules_fuzzing-0.1.1",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.1.1.zip"],
+    repo_mapping = {
+        "@rules_python": "@fuzzing_rules_python",
+    },
+)
+
+load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
+
+rules_fuzzing_dependencies()
+
+load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
+
+rules_fuzzing_init()

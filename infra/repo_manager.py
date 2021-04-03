@@ -127,6 +127,14 @@ class RepoManager:
 
     return out.strip()
 
+  def fetch_all_remotes(self):
+    """Fetch all remotes for checkouts that track a single branch."""
+    self.git([
+        'config', 'remote.origin.fetch', '+refs/heads/*:refs/remotes/origin/*'
+    ],
+             check_result=True)
+    self.git(['remote', 'update'], check_result=True)
+
   def get_commit_list(self, newest_commit, oldest_commit=None):
     """Gets the list of commits(inclusive) between the old and new commits.
 

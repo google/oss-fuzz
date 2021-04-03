@@ -50,7 +50,8 @@ RUN apt-get update && \
     python3-pip \
     libsqlite3-dev \
     python-cryptography \
-    python3-cryptography
+    python3-cryptography \
+    acl
 
 RUN pip3 install cpp-coveralls
 

@@ -19,6 +19,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   autoconf2.13 \
   libc++1 \
   libc++abi1 \
+  m4 \
   yasm \
   python
 

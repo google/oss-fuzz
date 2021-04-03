@@ -30,15 +30,15 @@ EXAMPLE_PROJECT = 'example'
 
 EXAMPLE_FILE_CHANGED = 'test.txt'
 
-TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'test_files')
+TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'test_data')
 
 
 class RemoveUnaffectedFuzzTargets(unittest.TestCase):
   """Tests remove_unaffected_fuzzers."""
 
-  TEST_FUZZER_1 = os.path.join(TEST_FILES_PATH, 'out', 'example_crash_fuzzer')
-  TEST_FUZZER_2 = os.path.join(TEST_FILES_PATH, 'out', 'example_nocrash_fuzzer')
+  TEST_FUZZER_1 = os.path.join(TEST_DATA_PATH, 'out', 'example_crash_fuzzer')
+  TEST_FUZZER_2 = os.path.join(TEST_DATA_PATH, 'out', 'example_nocrash_fuzzer')
 
   # yapf: disable
   @parameterized.parameterized.expand([

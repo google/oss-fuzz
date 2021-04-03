@@ -38,9 +38,8 @@ INCLUDES=(
 LIBS=(
   "$WORK/src/lib/OpenEXRUtil/libOpenEXRUtil.a"
   "$WORK/src/lib/OpenEXR/libOpenEXR.a"
-  "$WORK/src/lib/Iex/libIex.a"
-  "$WORK/src/lib/IexMath/libIexMath.a"
   "$WORK/src/lib/IlmThread/libIlmThread.a"
+  "$WORK/src/lib/Iex/libIex.a"
   "$WORK/_deps/imath-build/src/Imath/libImath*.a"
 )
 
