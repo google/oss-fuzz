@@ -15,13 +15,7 @@
 #
 ################################################################################
 
-if [[ $SANITIZER = *coverage* ]]; then
-        compile_go_fuzzer github.com/pingcap/tidb/types FuzzMarshalJSON fuzzMarshalJSON
-        compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewBitLiteral fuzzNewBitLiteral
-        compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewHexLiteral fuzzNewHexLiteral
-        exit 0
-fi
 
-compile_go_fuzzer ./types FuzzMarshalJSON fuzzMarshalJSON
-compile_go_fuzzer ./types FuzzNewBitLiteral fuzzNewBitLiteral
-compile_go_fuzzer ./types FuzzNewHexLiteral fuzzNewHexLiteral
+compile_go_fuzzer github.com/pingcap/tidb/types FuzzMarshalJSON fuzzMarshalJSON
+compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewBitLiteral fuzzNewBitLiteral
+compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewHexLiteral fuzzNewHexLiteral
