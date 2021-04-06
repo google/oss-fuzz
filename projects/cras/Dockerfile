@@ -25,7 +25,6 @@ RUN apt-get -y update && \
       apt-get install -y \
       automake \
       build-essential \
-      cmake \
       g++ \
       git \
       ladspa-sdk \
