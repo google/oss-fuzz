@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/DavidKorczynski/linkerd2-proxy
+RUN git clone --depth 1 https://github.com/linkerd/linkerd2-proxy
 
 COPY build.sh $SRC/
 WORKDIR $SRC

@@ -15,26 +15,27 @@
 #
 ################################################################################
 
-TARGET="./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_target_1"
+TARGET_PATH="./fuzz/target/x86_64-unknown-linux-gnu/release"
 BASE="$SRC/linkerd2-proxy/linkerd"
 BUILD_FUZZER="cargo +nightly fuzz build --features fuzzing"
 
 cd ${BASE}/addr/
 ${BUILD_FUZZER}
-cp ${TARGET} $OUT/fuzz_addr
+cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_addr
 
 cd ${BASE}/dns
 ${BUILD_FUZZER}
-cp ${TARGET} $OUT/fuzz_dns
+cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_dns
 
 cd ${BASE}/proxy/http
 ${BUILD_FUZZER}
-cp ${TARGET} $OUT/fuzz_http
+cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_http
 
 cd ${BASE}/tls
 ${BUILD_FUZZER}
-cp ${TARGET} $OUT/fuzz_tls
+cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_tls
 
 cd ${BASE}/transport-header
 ${BUILD_FUZZER}
-cp ${TARGET} $OUT/fuzz_transport_header
+cp ${TARGET_PATH}/fuzz_target_raw $OUT/fuzz_transport_raw
+cp ${TARGET_PATH}/fuzz_target_structured $OUT/fuzz_transport_structured
