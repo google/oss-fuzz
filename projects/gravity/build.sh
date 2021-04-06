@@ -15,6 +15,7 @@
 #
 ################################################################################
 
+
 mv $SRC/Makefile .
 make -j$(nproc)
 find . -name "*.o" -exec ar rcs fuzz_lib.a {} \;
@@ -23,5 +24,5 @@ $CC $CFLAGS -c $SRC/fuzzer.c -o fuzzer.o \
 	-I/src/gravity/src/utils \
 	-I/src/gravity/src/compiler \
 	-I/src/gravity/src/shared
-$CC $CFLAGS $LIB_FUZZING_ENGINE fuzzer.o \
+$CC $CXXFLAGS $LIB_FUZZING_ENGINE fuzzer.o \
 	-o $OUT/fuzzer /src/gravity/fuzz_lib.a
