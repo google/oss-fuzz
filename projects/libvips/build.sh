@@ -91,11 +91,6 @@ make -j$(nproc)
 make install
 popd
 
-# libgif
-pushd $SRC/libgif
-make libgif.a libgif.so install-include install-lib OFLAGS="-O2" PREFIX=$WORK
-popd
-
 # libwebp
 pushd $SRC/libwebp
 autoreconf -fi
@@ -159,7 +154,6 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libturbojpeg.a \
     $WORK/lib/libpng.a \
     $WORK/lib/libz.a \
-    $WORK/lib/libgif.a \
     $WORK/lib/libwebpmux.a \
     $WORK/lib/libwebpdemux.a \
     $WORK/lib/libwebp.a \
