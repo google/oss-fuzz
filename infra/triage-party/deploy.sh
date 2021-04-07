@@ -16,7 +16,7 @@ set -eux
 
 
 export PROJECT=oss-fuzz
-export IMAGE=gcr.io/oss-fuzz/triage-party
+export IMAGE=gcr.io/oss-fuzz-base/triage-party
 export SERVICE_NAME=triage-party
 export CONFIG_FILE=config/examples/oss-fuzz.yaml
 
