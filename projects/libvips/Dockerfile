@@ -34,7 +34,6 @@ RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/libexif/libexif
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
-RUN git clone --depth 1 https://git.code.sf.net/p/giflib/code libgif
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff 
 RUN git clone --depth 1 https://aomedia.googlesource.com/aom
