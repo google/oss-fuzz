@@ -21,7 +21,7 @@
 
 # AFL++ settings.
 export AFL_LLVM_MODE_WORKAROUND=0
-export AFL_ENABLE_DICTIONARY=0
+export AFL_ENABLE_DICTIONARY=1
 
 # Start compiling afl++.
 echo "Copying precompiled afl++"
