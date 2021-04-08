@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 ################################################################################
-
 TARGET_PATH="./fuzz/target/x86_64-unknown-linux-gnu/release"
 BASE="$SRC/linkerd2-proxy/linkerd"
 BUILD_FUZZER="cargo +nightly fuzz build --features fuzzing"
