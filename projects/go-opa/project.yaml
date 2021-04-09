@@ -1,0 +1,10 @@
+homepage: "https://www.openpolicyagent.org/"
+primary_contact: "east.patrick@gmail.com"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
+main_repo: 'https://github.com/open-policy-agent/opa'
