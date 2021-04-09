@@ -32,7 +32,12 @@ RUN apt-get update && apt install -y wget \
 RUN wget https://swift.org/builds/swift-5.3.3-release/ubuntu1604/swift-5.3.3-RELEASE/swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
 RUN tar xzf swift-5.3.3-RELEASE-ubuntu16.04.tar.gz
 RUN cp -r swift-5.3.3-RELEASE-ubuntu16.04/usr/* /usr/
+
+RUN apt-get update && apt-get install -y build-essential make cmake ninja-build git python3 g++-multilib binutils-dev zlib1g-dev --no-install-recommends
+RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
+
 RUN git clone --depth 1 https://github.com/apple/swift-protobuf.git
 COPY build.sh $SRC
+COPY llvmsymbol.diff $SRC
 COPY *.swift $SRC/
 WORKDIR $SRC/
