@@ -9,12 +9,14 @@ edition = "2018"
 cargo-fuzz = true
 
 [dependencies]
-libfuzzer-sys = "0.3"
-http = "0.2"
+arbitrary = { version = "1",  features = ["derive"] }
+libfuzzer-sys = { version = "0.4.0", features = ["arbitrary-derive"] }
+
+[dependencies.http]
+path = ".."
 
 [[bin]]
 name = "fuzz_http"
 path = "src/fuzz_http.rs"
 
 [workspace]
-
