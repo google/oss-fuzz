@@ -28,5 +28,5 @@
 
 
 make V=1 -j$(nproc)
-$CC $CFLAGS -I$SRC/vlc/include -c $SRC/fuzzer.c -o fuzzer.o
+$CC $CFLAGS -I$SRC/vlc/include -c $SRC/string_fuzzer.c -o fuzzer.o
 $CC $CFLAGS $LIB_FUZZING_ENGINE fuzzer.o /src/vlc/src/.libs/libvlccore.a -o $OUT/fuzzer

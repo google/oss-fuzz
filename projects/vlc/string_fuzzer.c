@@ -14,7 +14,10 @@ limitations under the License.
 #include <string.h>
 #include <stdlib.h>
 
+void vlc_xml_decode(char *psz_value);
 char *vlc_xml_encode(const char *str);
+char *vlc_b64_encode_binary(const void *src, size_t length);
+
 extern const char vlc_module_name[] = "foobar";
 
 // vlc does not provide the implementation of strlcpy in static format
@@ -33,15 +36,23 @@ size_t strlcpy (char *tgt, const char *src, size_t bufsize)
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size){
-        char *new_str = (char *)malloc(size+1);
-        if (new_str == NULL){
-                return 0;
-        }
-        memcpy(new_str, data, size);
-        new_str[size] = '\0';
+	char *new_str = (char *)malloc(size+1);
+	if (new_str == NULL){
+	return 0;
+	}
+	memcpy(new_str, data, size);
+	new_str[size] = '\0';
         
 	char *vxe = vlc_xml_encode (new_str);
+	if(vxe!=NULL)
+		free(vxe);
 
-        free(new_str);
-        return 0;
+	vlc_xml_decode(new_str);
+
+	char *veb = vlc_b64_encode_binary(new_str, size+1);
+	if(veb!=NULL) 
+		free(veb);
+
+	free(new_str);
+	return 0;
 }
