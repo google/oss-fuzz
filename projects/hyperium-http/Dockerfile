@@ -17,6 +17,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
 
 RUN git clone https://github.com/hyperium/http
+RUN git clone https://github.com/DavidKorczynski/h2
 WORKDIR $SRC
 
 COPY build.sh $SRC/
