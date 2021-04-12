@@ -19,6 +19,7 @@ RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
   gawk \
   libstdc++6 \
+  m4 \
   python \
   software-properties-common
 
@@ -31,5 +32,5 @@ WORKDIR mozilla-central
 # Install OS dependencies.
 # Will be re-run in build.sh to install missing dependencies.
 ENV SHELL /bin/bash
-RUN ./mach bootstrap --no-interactive --application-choice browser
+RUN ./mach --no-interactive bootstrap --application-choice browser
 COPY build.sh target.c *.options mozconfig.* $SRC/

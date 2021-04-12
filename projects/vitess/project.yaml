@@ -5,6 +5,7 @@ auto_ccs :
   - "team-ps-vitess@planetscale.com"
   - "manan@planetscale.com"
   - "harshit@planetscale.com"
+  - "florent@planetscale.com"
 language: go
 fuzzing_engines:
   - libfuzzer

@@ -29,6 +29,7 @@ RUN dpkg --add-architecture i386 && \
         jq \
         libc6-dev-i386 \
         patchelf \
+        rsync \
         subversion \
         zip
 
@@ -57,14 +58,14 @@ RUN export PYTHON_DEPS="\
     ln -s /usr/bin/python3 /usr/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
-    apt-get remove -y $PYTHON_DEPS  && \
-    rm -rf /usr/local/lib/python3.8/test # https://github.com/google/oss-fuzz/issues/3888
+    rm -rf /usr/local/lib/python3.8/test && \
+    apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
 
 # Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
 # six for Bazel rules.
 RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
     atheris pyinstaller==4.1 six==1.15.0 && \
-    rm -rf /root/.cache/pip
+    rm -rf /tmp/*
 
 # Download and install the latest stable Go.
 RUN cd /tmp && \
@@ -89,7 +90,7 @@ ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup
 ENV PATH=$PATH:/rust/bin
 RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=minimal
-RUN cargo install cargo-fuzz
+RUN cargo install cargo-fuzz && rm -rf /rust/registry
 # Needed to recompile rust std library for MSAN
 RUN rustup component add rust-src --toolchain nightly
 # Set up custom environment variable for source code copy for coverage reports
@@ -180,7 +181,7 @@ WORKDIR $SRC
 # TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 7c2436c7114e21f029b06346421a73910deac578
+    git checkout 3ff4ca348c344bded53f53b0d0c4b020a188f26e
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
@@ -191,7 +192,7 @@ RUN cd $SRC && \
 
 COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
     compile_go_fuzzer precompile_honggfuzz precompile_afl debug_afl srcmap \
-    write_labels.py /usr/local/bin/
+    write_labels.py bazel_build_fuzz_tests /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/
 COPY ossfuzz_coverage_runner.go $GOPATH

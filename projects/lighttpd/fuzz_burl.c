@@ -48,7 +48,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     buffer *ptmp = buffer_init();
     run_burl_normalize(psrc, ptmp, flags, __LINE__, new_str, size);
     buffer_urldecode_path(psrc);
-    buffer_urldecode_query(psrc);
 
     buffer_free(psrc);
     buffer_free(ptmp);

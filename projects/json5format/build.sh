@@ -17,6 +17,4 @@
 
 cd $SRC/json5format
 cargo fuzz build -O
-ls -la ./fuzz
-ls -la ./fuzz/target
 cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_parse $OUT/fuzz_parse

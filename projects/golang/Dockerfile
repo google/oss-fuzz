@@ -16,12 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-RUN mkdir -p $GOPATH/src/github.com/dvyukov/ && \
-    cd $GOPATH/src/github.com/dvyukov/ && \
-    git clone https://github.com/dvyukov/go-fuzz-corpus
-
+RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus golang
 COPY build.sh $SRC/
-
-ENV GO111MODULE="off"
 
 WORKDIR $SRC/golang

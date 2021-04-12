@@ -1,0 +1,74 @@
+diff --git a/src/cpp/CMakeLists.txt b/src/cpp/CMakeLists.txt
+index b7fb777..615e955 100644
+--- a/src/cpp/CMakeLists.txt
++++ b/src/cpp/CMakeLists.txt
+@@ -484,6 +484,11 @@ elseif(NOT EPROSIMA_INSTALLER)
+     endif()
+ endif()
+ 
++if(DEFINED ENV{LIB_FUZZING_ENGINE})
++  add_executable(fuzz_processCDRMsg rtps/messages/fuzz_processCDRMsg.cpp)
++  target_link_libraries(fuzz_processCDRMsg ${PROJECT_NAME} $ENV{LIB_FUZZING_ENGINE})
++endif()
++
+ ###############################################################################
+ # Packaging
+ ###############################################################################
+diff --git a/src/cpp/rtps/messages/MessageReceiver.cpp b/src/cpp/rtps/messages/MessageReceiver.cpp
+index 962ca9b..0e82082 100644
+--- a/src/cpp/rtps/messages/MessageReceiver.cpp
++++ b/src/cpp/rtps/messages/MessageReceiver.cpp
+@@ -324,7 +324,11 @@ void MessageReceiver::processCDRMsg(
+ 
+     reset();
+ 
++#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
++    GuidPrefix_t participantGuidPrefix;
++#else
+     GuidPrefix_t participantGuidPrefix = participant_->getGuid().guidPrefix;
++#endif
+     dest_guid_prefix_ = participantGuidPrefix;
+ 
+     msg->pos = 0; //Start reading at 0
+@@ -513,7 +517,9 @@ void MessageReceiver::processCDRMsg(
+         submessage->pos = next_msg_pos;
+     }
+ 
++#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+     participant_->assert_remote_participant_liveliness(source_guid_prefix_);
++#endif
+ }
+ 
+ bool MessageReceiver::checkRTPSHeader(
+diff --git a/src/cpp/rtps/messages/fuzz_processCDRMsg.cpp b/src/cpp/rtps/messages/fuzz_processCDRMsg.cpp
+new file mode 100644
+index 0000000..6a71817
+--- /dev/null
++++ b/src/cpp/rtps/messages/fuzz_processCDRMsg.cpp
+@@ -0,0 +1,26 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <stdint.h>
++#include <stdarg.h>
++#include <string.h>
++
++#include <fastrtps/rtps/messages/MessageReceiver.h>
++#include <fastdds/rtps/attributes/RTPSParticipantAttributes.h>
++
++extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
++    const eprosima::fastrtps::rtps::Locator_t remoteLocator;
++    eprosima::fastrtps::rtps::MessageReceiver* rcv = new eprosima::fastrtps::rtps::MessageReceiver(NULL, 4096);
++
++    eprosima::fastrtps::rtps::CDRMessage_t msg(0);
++    msg.wraps = true;
++    msg.buffer = const_cast<eprosima::fastrtps::rtps::octet*>(data);
++    msg.length = size;
++    msg.max_size = size;
++    msg.reserved_size = size;
++
++    // TODO: Should we unlock in case UnregisterReceiver is called from callback ?
++    rcv->processCDRMsg(remoteLocator, &msg);
++    delete rcv;
++    return 0;
++}
++

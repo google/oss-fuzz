@@ -200,6 +200,7 @@ def build_fuzzers_from_commit(commit,
     # Re-copy /src for a clean checkout every time.
     copy_src_from_docker(build_data.project_name,
                          os.path.dirname(host_src_path))
+    build_repo_manager.fetch_all_remotes()
 
   projects_dir = os.path.join('projects', build_data.project_name)
   dockerfile_path = os.path.join(projects_dir, 'Dockerfile')

@@ -7,6 +7,9 @@ import (
 )
 
 func FuzzRoundTrip(data []byte) int {
+	if len(data) > 1234567 {
+		return 0
+	}
 	encoded := Encode(nil, data)
 	decoded, err := Decode(nil, encoded)
 	if err != nil {
@@ -19,6 +22,9 @@ func FuzzRoundTrip(data []byte) int {
 }
 
 func FuzzDecode(data []byte) int {
+	if n, _ := DecodedLen(data); n > 1234567 {
+		return 0
+	}
 	_, err := Decode(nil, data)
 	if err != nil {
 		return 0
