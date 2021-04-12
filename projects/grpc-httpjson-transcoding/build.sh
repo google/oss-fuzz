@@ -19,18 +19,4 @@
 # This project uses bazel rules_fuzzing. Script copied from OSS fuzz's bazel-rules-fuzzing-test.
 # https://github.com/google/oss-fuzz/blob/62fce2a587b5d0eff941c392b343edfc68eb4069/projects/bazel-rules-fuzzing-test/build.sh
 
-declare -r QUERY='
-    let all_fuzz_tests = attr(tags, "fuzz-test", "//...") in
-    $all_fuzz_tests - attr(tags, "no-oss-fuzz", $all_fuzz_tests)
-'
-
-declare -r PACKAGE_SUFFIX="_oss_fuzz"
-declare -r OSS_FUZZ_TESTS="$(bazel query "${QUERY}" | sed "s/$/${PACKAGE_SUFFIX}/")"
-
-bazel build -c opt --config=oss-fuzz --linkopt=-lc++ \
-    --action_env=CC="${CC}" --action_env=CXX="${CXX}" \
-    ${OSS_FUZZ_TESTS[*]}
-
-for oss_fuzz_archive in $(find bazel-bin/ -name "*${PACKAGE_SUFFIX}.tar"); do
-    tar -xvf "${oss_fuzz_archive}" -C "${OUT}"
-done
+bazel_build_fuzz_tests
