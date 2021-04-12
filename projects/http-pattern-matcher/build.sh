@@ -16,7 +16,6 @@
 #
 ################################################################################
 
-# This project uses bazel rules_fuzzing. Script copied from OSS fuzz's bazel-rules-fuzzing-test.
-# https://github.com/google/oss-fuzz/blob/62fce2a587b5d0eff941c392b343edfc68eb4069/projects/bazel-rules-fuzzing-test/build.sh
+# This project uses bazel rules_fuzzing.
 
 bazel_build_fuzz_tests
