@@ -17,12 +17,14 @@
 import base64
 import concurrent.futures
 import json
+import os
 import sys
 
 import google.auth
 from googleapiclient.discovery import build
 from google.cloud import ndb
 from google.cloud import storage
+import yaml  # pylint: disable=wrong-import-order
 
 import build_and_run_coverage
 import build_project
@@ -39,6 +41,9 @@ STATUS_BUCKET = 'oss-fuzz-build-logs'
 
 FUZZING_STATUS_FILENAME = 'status.json'
 COVERAGE_STATUS_FILENAME = 'status-coverage.json'
+PROJECTS_DIR = os.path.normpath(
+    os.path.join(__file__, os.pardir, os.pardir, os.pardir, os.pardir,
+                 'projects'))
 
 # pylint: disable=invalid-name
 _client = None
@@ -172,6 +177,7 @@ def update_build_status(build_tag, status_filename):
     """Process a project."""
     project = get_build_history(project_build.build_ids)
     project['name'] = project_build.project
+
     print('Processing project', project['name'])
     return project
 
@@ -183,12 +189,34 @@ def update_build_status(build_tag, status_filename):
 
     for future in concurrent.futures.as_completed(futures):
       project = future.result()
+      if not project_should_build(project['name']):
+        continue
       update_last_successful_build(project, build_tag)
       projects.append(project)
 
   sort_projects(projects)
   data = {'projects': projects}
   upload_status(data, status_filename)
+
+
+def project_should_build(project):
+  """Returns True if project should build. Returns false if project is disabled,
+  deleted (non-existent), or doesn't have a Dockerfile."""
+  project_dir = os.path.join(PROJECTS_DIR, project)
+  docker_file_path = os.path.join(project_dir, 'Dockerfile')
+  if not os.path.exists(docker_file_path):
+    return False
+
+  project_yaml_file_path = os.path.join(project_dir, 'project.yaml')
+  if not os.path.exists(project_yaml_file_path):
+    return False
+
+  with open(project_yaml_file_path) as project_yaml_file_handle:
+    project_yaml = yaml.safe_load(project_yaml_file_handle)
+    project_yaml.setdefault('disabled', False)
+    if project_yaml['disabled']:
+      return False
+  return True
 
 
 def update_build_badges(project, last_build_successful,
