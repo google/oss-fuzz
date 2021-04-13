@@ -26,4 +26,4 @@ cp bin/llvm-symbolizer $OUT/
 # build project
 cd FuzzTesting
 swift build -c debug -Xswiftc -sanitize=address,fuzzer -Xswiftc -parse-as-library -Xswiftc -static-stdlib -Xswiftc -use-ld=/usr/bin/ld --static-swift-stdlib --sanitize=address
-cp .build/x86_64-unknown-linux-gnu/debug/Fuzz* $OUT/
+cp .build/x86_64-unknown-linux-gnu/debug/Fuzz* $OUT/ || true
