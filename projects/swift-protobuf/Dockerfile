@@ -39,5 +39,4 @@ RUN git clone --depth 1 https://github.com/llvm/llvm-project.git
 RUN git clone --depth 1 https://github.com/apple/swift-protobuf.git
 COPY build.sh $SRC
 COPY llvmsymbol.diff $SRC
-COPY *.swift $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/swift-protobuf
