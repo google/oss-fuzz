@@ -17,6 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus golang
-COPY build.sh $SRC/
+RUN git clone https://github.com/golang/go
+COPY build.sh math_big_fuzzer.go $SRC/
 
 WORKDIR $SRC/golang
