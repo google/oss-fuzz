@@ -1,8 +1,9 @@
 homepage: "https://github.com/apple/swift-nio"
 language: swift
-primary_contact: "tkientzle@apple.com"
+primary_contact: "lukasa@apple.com"
 auto_ccs :
-- "cory@lukasa.co.uk"
+- "johannesweiss@apple.com"
+- "pp_adams@apple.com"
 - "p.antoine@catenacyber.fr"
 
 fuzzing_engines:
