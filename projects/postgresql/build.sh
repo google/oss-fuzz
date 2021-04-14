@@ -36,6 +36,7 @@ make
 cd src/backend/fuzzer
 make fuzzer
 if [ "$FUZZING_ENGINE" = "afl" ]
+then
     rm protocol_fuzzer
 fi
 cp *_fuzzer $OUT/
