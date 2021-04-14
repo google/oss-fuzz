@@ -18,7 +18,7 @@ package mathfuzzer
 
 import "math/big"
 
-func FuzzCmp(data []byte) int {
+func FuzzBigIntCmp1(data []byte) int {
     if !isDivisibleBy(len(data), 2) {
         return -1
     }
@@ -37,11 +37,27 @@ func FuzzCmp(data []byte) int {
     return 1
 }
 
-func FuzzExpNN(data []byte) int {
+func FuzzBigIntCmp2(data []byte) int {
+    if !isDivisibleBy(len(data), 2) {
+        return -1
+    }
+    x, y := new(big.Int), new(big.Int)
+    half := len(data)/2
+    if err := x.UnmarshalText(data[:half]); err != nil {
+      return 0
+    }
+    if err := y.UnmarshalText(data[half:]); err != nil {
+      return 0
+    }
+    x.Cmp(y)
+    return 1
+}
+
+func FuzzRatSetString(data []byte) int {
     _, _ = new(big.Rat).SetString(string(data))
     return 1
 }
 
 func isDivisibleBy(n int, divisibleby int) bool {
-	return (n % divisibleby) == 0
+    return (n % divisibleby) == 0
 }
