@@ -35,5 +35,8 @@ make clean
 make
 cd src/backend/fuzzer
 make fuzzer
+if [ "$FUZZING_ENGINE" = "afl" ]
+    rm protocol_fuzzer
+fi
 cp *_fuzzer $OUT/
 cp $SRC/postgresql_fuzzer_seed_corpus.zip $OUT/
