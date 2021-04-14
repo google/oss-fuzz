@@ -62,6 +62,14 @@ export FUZZING_CXXFLAGS="$CXXFLAGS"
 declare -r DI="$(
 if [ "$SANITIZER" != "coverage" ]
 then
+# Envoy code. Disable coverage instrumentation
+  echo " --per_file_copt=^.*source/extensions/access_loggers/.*\.cc\$@-fsanitize-coverage=0" 
+  echo " --per_file_copt=^.*source/common/protobuf/.*\.cc\$@-fsanitize-coverage=0"
+
+# Envoy test code. Disable coverage instrumentation
+  echo " --per_file_copt=^.*test/.*\.cc\$@-fsanitize-coverage=0"
+
+# External dependencies. Disable all instrumentation.
   echo " --per_file_copt=^.*antlr4_runtimes.*\.cpp\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_google_protobuf.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_google_absl.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
@@ -77,6 +85,8 @@ then
   echo " --per_file_copt=^.*com_github_google_libprotobuf_mutator/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_googlesource_googleurl/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*com_lightstep_tracer_cpp/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
+
+# All protobuf code and code in bazel-out
   echo " --per_file_copt=^.*\.pb\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
   echo " --per_file_copt=^.*bazel-out/.*\.cc\$@-fsanitize-coverage=0,-fno-sanitize=all"
 fi
