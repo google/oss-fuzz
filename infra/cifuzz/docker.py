@@ -70,7 +70,11 @@ def _handle_timed_out_container_process(process, cid_filename):
     return None, None
 
   # Use a timeout so we don't wait forever.
-  return process.communicate(timeout=1)
+  try:
+    return process.communicate(timeout=5)
+  except subprocess.TimeoutExpired:
+    logging.error('Docker container still running after stop attempt.')
+    return None, None
 
 
 def run_container_command(command_arguments, timeout=None):
