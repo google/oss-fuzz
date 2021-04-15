@@ -38,6 +38,6 @@ do
     target_dir=$(dirname "$target"); target_dir="${target_dir//.}";
     target_corpus_name="${fuzzer_name}_seed_corpus.zip"
 
-    wget "https://raw.githubusercontent.com/caddyserver/caddy/fuzz-seed-corpus/${target_corpus_name}"
+    curl -s -f -O "https://raw.githubusercontent.com/caddyserver/caddy/fuzz-seed-corpus/${target_corpus_name}" || true
     compile_go_fuzzer github.com/caddyserver/caddy/v2"$target_dir" "$fuzzed_func" "$fuzzer_name" gofuzz
 done
