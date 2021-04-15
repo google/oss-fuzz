@@ -1,0 +1,16 @@
+homepage: "https://github.com/SerenityOS/serenity"
+language: c++
+primary_contact: "kling@serenityos.org"
+auto_ccs:
+  - "david@adalogics.com"
+  - "mail@linusgroh.de"
+  - "ali.mpfard@gmail.com"
+  - "luke.wilde@live.co.uk"
+  - "bugaevc@serenityos.org"
+  - "b.gianfo@gmail.com"
+  - "idan.horowitz@gmail.com"
+  - "~awesomekling/serenityos-dev@lists.sr.ht"
+
+# Bug reports are public by default:
+view_restrictions: none
+main_repo: 'https://github.com/SerenityOS/serenity'

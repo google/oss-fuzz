@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER adam@adalogics.com
-RUN go get github.com/buger/jsonparser
+RUN git clone --depth 1 https://github.com/buger/jsonparser
 
 COPY build.sh $SRC/
-WORKDIR $SRC/
+WORKDIR $SRC/jsonparser

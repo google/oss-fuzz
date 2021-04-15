@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER p.antoine@catenacyber.fr
 RUN apt-get update && apt-get install -y make autoconf automake libtool gettext bzip2 gnupg bison flex
 
 RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error

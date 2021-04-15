@@ -3,6 +3,8 @@ language: c++
 primary_contact: "sigmavirus24@gmail.com"
 auto_ccs:
   - "alex.gaynor@gmail.com"
+  - "perlpunks@googlemail.com"
+  - "ingy@ingy.net"
 fuzzing_engines:
   - libfuzzer
   - afl
@@ -16,3 +18,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/yaml/libyaml'

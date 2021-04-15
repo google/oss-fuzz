@@ -78,7 +78,8 @@ def main():
                       help='The newest commit SHA to be bisected.',
                       required=True)
   parser.add_argument('--old_commit',
-                      help='The oldest commit SHA to be bisected.')
+                      help='The oldest commit SHA to be bisected.',
+                      required=True)
   parser.add_argument('--fuzz_target',
                       help='The name of the fuzzer to be built.',
                       required=True)
@@ -165,6 +166,7 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
 
 # pylint: disable=too-many-locals
 # pylint: disable=too-many-arguments
+# pylint: disable=too-many-statements
 def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
             build_data):
   """Perform the bisect."""
@@ -177,13 +179,18 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
     if not repo_url or not repo_path:
       raise ValueError('Main git repo can not be determined.')
 
+    if old_commit == new_commit:
+      raise BisectError('old_commit is the same as new_commit', repo_url)
+
     # Copy /src from the built Docker container to ensure all dependencies
     # exist. This will be mounted when running them.
     host_src_dir = build_specified_commit.copy_src_from_docker(
         build_data.project_name, tmp_dir)
 
-    bisect_repo_manager = repo_manager.BaseRepoManager(
+    bisect_repo_manager = repo_manager.RepoManager(
         os.path.join(host_src_dir, os.path.basename(repo_path)))
+    bisect_repo_manager.fetch_all_remotes()
+
     commit_list = bisect_repo_manager.get_commit_list(new_commit, old_commit)
 
     old_idx = len(commit_list) - 1
@@ -212,8 +219,8 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
       logging.warning('new_commit crashed but not shouldn\'t. '
                       'Continuing to see if stack changes.')
 
-    # Check if the error is persistent through the commit range
-    if old_commit:
+    range_valid = False
+    for _ in range(2):
       logging.info('Testing against old_commit (%s)', commit_list[old_idx])
       if not build_specified_commit.build_fuzzers_from_commit(
           commit_list[old_idx],
@@ -225,7 +232,23 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
 
       if _check_for_crash(build_data.project_name, fuzz_target,
                           test_case_path) == expected_error:
-        raise BisectError('old_commit had same result as new_commit', repo_url)
+        logging.warning('old_commit %s had same result as new_commit %s',
+                        old_commit, new_commit)
+        # Try again on an slightly older commit.
+        old_commit = bisect_repo_manager.get_parent(old_commit, 64)
+        if not old_commit:
+          break
+
+        commit_list = bisect_repo_manager.get_commit_list(
+            new_commit, old_commit)
+        old_idx = len(commit_list) - 1
+        continue
+
+      range_valid = True
+      break
+
+    if not range_valid:
+      raise BisectError('old_commit had same result as new_commit', repo_url)
 
     while old_idx - new_idx > 1:
       curr_idx = (old_idx + new_idx) // 2
@@ -278,7 +301,7 @@ def bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
                    fuzz_target, build_data)
   finally:
     # Clean up projects/ as _bisect may have modified it.
-    oss_fuzz_repo_manager = repo_manager.BaseRepoManager(helper.OSS_FUZZ_DIR)
+    oss_fuzz_repo_manager = repo_manager.RepoManager(helper.OSS_FUZZ_DIR)
     oss_fuzz_repo_manager.git(['reset', 'projects'])
     oss_fuzz_repo_manager.git(['checkout', 'projects'])
     oss_fuzz_repo_manager.git(['clean', '-fxd', 'projects'])

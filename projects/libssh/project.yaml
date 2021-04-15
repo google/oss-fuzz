@@ -4,7 +4,9 @@ primary_contact: "asn@cryptomilk.org"
 auto_ccs:
  - "cryptomilk@gmail.com"
  - "jakuje@gmail.com"
+ - "anderson.sasaki@gmail.com"
 sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://git.libssh.org/projects/libssh.git'

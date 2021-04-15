@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER taku@google.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool cmake build-essential pkg-config libgoogle-perftools-dev
 RUN git clone --depth 1 https://github.com/google/sentencepiece.git sentencepiece
 WORKDIR sentencepiece

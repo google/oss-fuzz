@@ -16,7 +16,7 @@
 ##############################################################################
 set -eu
 
-FUZZERS="opus_decode_fuzzer"
+FUZZERS="opus_decode_fuzzer opus_multi_fuzzer"
 BUILDS=(floating fixed)
 
 tar xvf $SRC/opus_testvectors.tar.gz
@@ -37,7 +37,8 @@ for build in "${BUILDS[@]}"; do
       ;;
   esac
 
-  ./configure $extra_args --enable-static --disable-shared --disable-doc
+  ./configure $extra_args --enable-static --disable-shared --disable-doc \
+    --enable-assertions
   make -j$(nproc)
 
   # Build all fuzzers
@@ -53,7 +54,8 @@ for build in "${BUILDS[@]}"; do
 
     # Setup the .options and test corpus zip files using the corresponding
     # fuzzer's name
-    cp tests/$fuzzer.options $OUT/${fuzzer}_${build}.options
+    [ -f tests/$fuzzer.options ] \
+        && cp tests/$fuzzer.options $OUT/${fuzzer}_${build}.options
     zip -r $OUT/${fuzzer}_${build}_seed_corpus.zip opus_testvectors/
   done
 done

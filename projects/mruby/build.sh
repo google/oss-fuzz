@@ -18,9 +18,9 @@
 # Instrument mruby
 (
 cd $SRC/mruby
-export LD=clang
+export LD=$CC
 export LDFLAGS="$CFLAGS"
-./minirake clean && ./minirake -j$(nproc) all
+rake -m
 
 # build fuzzers
 FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_fuzzer.c
@@ -36,17 +36,18 @@ rm -f $OUT/${name}.o
 if [[ $CFLAGS != *sanitize=memory* ]]; then
     PROTO_FUZZ_TARGET=$SRC/mruby/oss-fuzz/mruby_proto_fuzzer.cpp
     PROTO_CONVERTER=$SRC/mruby/oss-fuzz/proto_to_ruby.cpp
-    rm -rf genfiles
-    mkdir genfiles
-    LPM/external.protobuf/bin/protoc --proto_path=mruby/oss-fuzz ruby.proto --cpp_out=genfiles
-    $CXX $CXXFLAGS $PROTO_FUZZ_TARGET genfiles/ruby.pb.cc $PROTO_CONVERTER \
-      -I genfiles -I mruby/oss-fuzz  -I libprotobuf-mutator/ -I .  \
-      -I LPM/external.protobuf/include \
-      -I mruby/include -lz -lm \
-      LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
-      LPM/src/libprotobuf-mutator.a \
-      LPM/external.protobuf/lib/libprotobuf.a \
-      mruby/build/host/lib/libmruby.a \
+    rm -rf $SRC/mruby/genfiles
+    mkdir $SRC/mruby/genfiles
+    $SRC/LPM/external.protobuf/bin/protoc --proto_path=$SRC/mruby/oss-fuzz ruby.proto --cpp_out=$SRC/mruby/genfiles
+    $CXX -c $CXXFLAGS $SRC/mruby/genfiles/ruby.pb.cc -o $SRC/mruby/genfiles/ruby.pb.o -I $SRC/LPM/external.protobuf/include
+    $CXX -I $SRC/mruby/include -I $SRC/LPM/external.protobuf/include $CXXFLAGS $PROTO_FUZZ_TARGET $SRC/mruby/genfiles/ruby.pb.o $PROTO_CONVERTER \
+      -I $SRC/mruby/genfiles \
+      -I $SRC/libprotobuf-mutator \
+      -I $SRC/mruby/include -lz -lm \
+      $SRC/LPM/src/libfuzzer/libprotobuf-mutator-libfuzzer.a \
+      $SRC/LPM/src/libprotobuf-mutator.a \
+      $SRC/LPM/external.protobuf/lib/libprotobuf.a \
+      $SRC/mruby/build/host/lib/libmruby.a \
       $LIB_FUZZING_ENGINE \
       -o $OUT/mruby_proto_fuzzer
 

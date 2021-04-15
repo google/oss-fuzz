@@ -16,10 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-# This downloads the latest version at the time of writing. There does not
-# appear to be a head version of FreeImage.
-RUN wget https://downloads.sourceforge.net/freeimage/FreeImage3180.zip
-RUN unzip FreeImage3180.zip
-WORKDIR $SRC
+RUN svn checkout https://svn.code.sf.net/p/freeimage/svn/ freeimage-svn
+WORKDIR $SRC/freeimage-svn/FreeImage/trunk/
 COPY build.sh $SRC/
 COPY load_from_memory_fuzzer.cc $SRC/

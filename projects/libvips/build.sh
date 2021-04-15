@@ -16,6 +16,7 @@
 ################################################################################
 
 export PKG_CONFIG_PATH=/work/lib/pkgconfig
+export LDFLAGS="$CXXFLAGS"
 
 # libz
 pushd $SRC/zlib
@@ -32,6 +33,41 @@ autoreconf -fi
   --disable-docs \
   --disable-dependency-tracking \
   --prefix=$WORK
+make -j$(nproc)
+make install
+popd
+
+# aom
+pushd $SRC/aom
+mkdir -p build/linux
+cd build/linux
+cmake -G "Unix Makefiles" \
+  -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
+  -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DCMAKE_INSTALL_PREFIX=$WORK -DCMAKE_INSTALL_LIBDIR=lib \
+  -DENABLE_SHARED:bool=off -DCONFIG_PIC=1 \
+  -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
+  -DCONFIG_SIZE_LIMIT=1 \
+  -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
+  -DDO_RANGE_CHECK_CLAMP=1 \
+  -DAOM_MAX_ALLOCABLE_MEMORY=536870912 \
+  -DAOM_TARGET_CPU=generic \
+  ../../
+make clean
+make -j$(nproc)
+make install
+popd
+
+# libheif
+pushd $SRC/libheif
+autoreconf -fi
+./configure \
+  --disable-shared \
+  --enable-static \
+  --disable-examples \
+  --disable-go \
+  --prefix=$WORK
+make clean
 make -j$(nproc)
 make install
 popd
@@ -53,11 +89,6 @@ autoreconf -fi
   --disable-dependency-tracking
 make -j$(nproc)
 make install
-popd
-
-# libgif
-pushd $SRC/libgif
-make libgif.a libgif.so install-include install-lib OFLAGS="-O2" PREFIX=$WORK
 popd
 
 # libwebp
@@ -123,14 +154,16 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libturbojpeg.a \
     $WORK/lib/libpng.a \
     $WORK/lib/libz.a \
-    $WORK/lib/libgif.a \
     $WORK/lib/libwebpmux.a \
     $WORK/lib/libwebpdemux.a \
     $WORK/lib/libwebp.a \
     $WORK/lib/libtiff.a \
+    $WORK/lib/libheif.a \
+    $WORK/lib/libaom.a \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
     -lfftw3 -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
+    -lresolv -lsepol -lselinux \
     -Wl,-Bdynamic -pthread
   ln -sf "seed_corpus.zip" "$OUT/${target}_seed_corpus.zip"
 done

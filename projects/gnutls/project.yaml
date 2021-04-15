@@ -1,8 +1,7 @@
 homepage: "https://www.gnutls.org"
 language: c++
-primary_contact: "n.mavrogiannopoulos@gmail.com"
+primary_contact: "daiki.ueno@gmail.com"
 auto_ccs:
-  - "daiki.ueno@gmail.com"
   - "rockdaboot@gmail.com"
   - "nisse@google.com"
   - "anderjuaristi.cictg@gmail.com"
@@ -12,3 +11,4 @@ sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://gitlab.com/gnutls/gnutls.git'

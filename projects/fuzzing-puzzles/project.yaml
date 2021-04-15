@@ -10,3 +10,5 @@ sanitizers:
 
 fuzzing_engines:
   - honggfuzz
+
+disabled: True

@@ -17,7 +17,7 @@
 
 # Install dependencies.
 export SHELL=/bin/bash
-../../mach bootstrap --no-interactive --application-choice browser
+../../mach --no-interactive bootstrap --application-choice browser
 
 autoconf2.13
 
@@ -36,3 +36,8 @@ cd build_DBG.OBJ
 make "-j$(nproc)"
 
 cp dist/bin/js $OUT
+
+# Copy libraries.
+mkdir -p $OUT/lib
+cp -L /usr/lib/x86_64-linux-gnu/libc++.so.1 $OUT/lib
+cp -L /usr/lib/x86_64-linux-gnu/libc++abi.so.1 $OUT/lib

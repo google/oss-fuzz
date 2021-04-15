@@ -37,7 +37,9 @@ DFSAN_CALLS_THRESHOLD_FOR_DFSAN_BUILD=100
 DFSAN_CALLS_THRESHOLD_FOR_NON_DFSAN_BUILD=0
 
 MSAN_CALLS_THRESHOLD_FOR_MSAN_BUILD=1000
-MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD=0
+# Some engines (e.g. honggfuzz) may make a very small number of calls to msan
+# for memory poisoning.
+MSAN_CALLS_THRESHOLD_FOR_NON_MSAN_BUILD=2
 
 # Usually, a non UBSan build (e.g. ASan) has 165 calls to UBSan runtime. The
 # majority of targets built with UBSan have 200+ UBSan calls, but there are
@@ -130,7 +132,8 @@ function check_startup_crash {
   local CHECK_PASSED=0
 
   if [[ "$FUZZING_ENGINE" = libfuzzer ]]; then
-    $FUZZER -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
+    # Skip seed corpus as there is another explicit check that uses seed corpora.
+    SKIP_SEED_CORPUS=1 run_fuzzer $FUZZER_NAME -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "Done $MIN_NUMBER_OF_RUNS runs" -c $FUZZER_OUTPUT)
   elif [[ "$FUZZING_ENGINE" = afl ]]; then
     # TODO(https://github.com/google/oss-fuzz/issues/2470): Dont use
@@ -297,13 +300,25 @@ function check_mixed_sanitizers {
   local FUZZER=$1
   local result=0
   local CALL_INSN=
+
+  if [ "${FUZZING_LANGUAGE:-}" = "jvm" ]; then
+    # Sanitizer runtime is linked into the Jazzer driver, so this check does not
+    # apply.
+    return 0
+  fi
+
+  if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
+    # Sanitizer runtime is loaded via LD_PRELOAD, so this check does not apply.
+    return 0
+  fi
+
   if [[ $ARCHITECTURE == 'i386' ]]
   then
     CALL_INSN="call\s+[0-9a-f]+\s+<"
   else
     case $(uname -m) in
       x86_64)
-        CALL_INSN="callq\s+[0-9a-f]+\s+<"
+        CALL_INSN="callq?\s+[0-9a-f]+\s+<"
         ;;
       aarch64)
         CALL_INSN="bl\s+[0-9a-f]+\s+<"
@@ -319,6 +334,7 @@ function check_mixed_sanitizers {
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
   local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__ubsan" -c)
 
+
   if [[ "$SANITIZER" = address ]]; then
     check_asan_build $FUZZER $ASAN_CALLS $DFSAN_CALLS $MSAN_CALLS $UBSAN_CALLS
     result=$?
@@ -331,6 +347,9 @@ function check_mixed_sanitizers {
   elif [[ "$SANITIZER" = undefined ]]; then
     check_ubsan_build $FUZZER $ASAN_CALLS $DFSAN_CALLS $MSAN_CALLS $UBSAN_CALLS
     result=$?
+  elif [[ "$SANITIZER" = thread ]]; then
+    # TODO(metzman): Implement this.
+    result=0
   fi
 
   return $result
@@ -366,6 +385,17 @@ function check_seed_corpus {
 function check_architecture {
   local FUZZER=$1
   local FUZZER_NAME=$(basename $FUZZER)
+
+  if [ "${FUZZING_LANGUAGE:-}" = "jvm" ]; then
+    # The native dependencies of a JVM project are not packaged, but loaded
+    # dynamically at runtime and thus cannot be checked here.
+    return 0;
+  fi
+
+  if [ "${FUZZING_LANGUAGE:-}" = "python" ]; then
+    FUZZER=${FUZZER}.pkg
+  fi
+
   FILE_OUTPUT=$(file $FUZZER)
   if [[ $ARCHITECTURE == "x86_64" ]]
   then

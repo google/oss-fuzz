@@ -5,6 +5,10 @@ inputs:
   oss-fuzz-project-name:
     description: 'Name of the corresponding OSS-Fuzz project.'
     required: true
+  language:
+    description: 'Programming language project is written in.'
+    required: false
+    default: 'c++'
   dry-run:
     description: 'If set, run the action without actually reporting a failure.'
     default: false
@@ -14,11 +18,26 @@ inputs:
   sanitizer:
     description: 'The sanitizer to build the fuzzers with.'
     default: 'address'
+  project-src-path:
+    description: "The path to the project's source code checkout."
+    required: false
+  build-integration-path:
+    description: "The path to the the project's build integration."
+    required: false
+  bad-build-check:
+    description: "Whether or not OSS-Fuzz's check for bad builds should be done."
+    required: false
+    default: true
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: '../../../build_fuzzers.Dockerfile'
   env:
     OSS_FUZZ_PROJECT_NAME: ${{ inputs.oss-fuzz-project-name }}
+    LANGUAGE: ${{ inputs.language }}
     DRY_RUN: ${{ inputs.dry-run}}
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
     SANITIZER: ${{ inputs.sanitizer }}
+    PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
+    BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
+    LOW_DISK_SPACE: 'True'
+    BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}

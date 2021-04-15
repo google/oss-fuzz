@@ -1,4 +1,4 @@
-# Copyright 2019 Google Inc.
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,38 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER guidovranken@gmail.com
-RUN apt-get update && apt-get install -y make autoconf automake build-essential libbz2-dev libc6-dev libffi-dev libfreetype6-dev libgdbm-dev libjpeg-turbo8-dev liblcms2-dev libncursesw5-dev libreadline-dev libsqlite3-dev libssl-dev libtiff5-dev libtool libwebp-dev make python python-dev python-setuptools tk-dev wget zlib1g-dev libwebp-dev
-RUN wget https://github.com/python/cpython/archive/v3.8.1.tar.gz
-RUN git clone --depth 1 https://github.com/python-pillow/Pillow.git pillow
-RUN git clone --depth 1 https://github.com/guidovranken/oss-fuzz-fuzzers
-WORKDIR pillow
+
+# library build dependencies
+RUN apt-get update && \
+    apt-get install -y \
+      libxau-dev \
+      pkg-config \
+      rsync \
+      zlib1g-dev 
+
+RUN git clone --depth 1 https://github.com/python-pillow/Pillow
+RUN git clone --depth 1 https://github.com/python-pillow/pillow-wheels
+
+RUN $SRC/Pillow/Tests/oss-fuzz/build_dictionaries.sh
+
+COPY build_depends.sh $SRC
+
+RUN ln -s /usr/local/bin/python3 /usr/local/bin/python \
+    && ln -s /bin/true /usr/local/bin/yum_install \
+    && ln -s /bin/true /usr/local/bin/yum \
+    && cd $SRC/pillow-wheels \
+    && git submodule update --init multibuild \
+    && bash $SRC/build_depends.sh
+
+# install extra test images for a better starting corpus
+RUN cd Pillow && depends/install_extra_test_images.sh
+
 COPY build.sh $SRC/
+
+# pillow optional runtime dependencies
+RUN apt-get install -y \
+     python3-tk \
+     tcl8.6-dev \
+     tk8.6-dev 
+
+WORKDIR $SRC/Pillow

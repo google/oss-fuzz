@@ -39,7 +39,7 @@ Before you can start setting up your new project for fuzzing, you must do the fo
   [docker-cleanup](https://gist.github.com/mikea/d23a839cba68778d94e0302e8a2c200f)
   periodically to garbage-collect unused images.
 
-- (optional) [Install gsutil](https://cloud.google.com/storage/docs/gsutil_install) for local code coverage sanity check.
+- (optional) [Install gsutil](https://cloud.google.com/storage/docs/gsutil_install) for local code coverage testing.
   For Google internal (gLinux) machines, please refer [here](https://cloud.google.com/storage/docs/gsutil_install#deb) instead.
 
 ## Creating the file structure
@@ -77,11 +77,13 @@ This configuration file stores project metadata. The following attributes are su
 - [homepage](#homepage)
 - [language](#language)
 - [primary_contact](#primary)
-- [auto_ccs](#primary)
+- [auto_ccs](#auto_ccs)
+- [main_repo](#main_repo)
 - [vendor_ccs](#vendor) (optional)
 - [sanitizers](#sanitizers) (optional)
 - [architectures](#architectures) (optional)
 - [help_url](#help_url) (optional)
+- [builds_per_day](#build_frequency) (optional)
 
 ### homepage
 You project's homepage.
@@ -94,10 +96,15 @@ Programming language the project is written in. Values you can specify include:
 * `c++`
 * [`go`]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)
 * [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
+* [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
+* [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
 tracker. If you're a primary or a CC, you'll need to use a [Google account](https://support.google.com/accounts/answer/176347?hl=en) to get full access. ([why?]({{ site.baseurl }}/faq/#why-do-you-require-a-google-account-for-authentication)).
+
+### main_repo {#main_repo}
+Path to source code repository hosting the code, e.g. `https://path/to/main/repo.git`. 
 
 ### vendor_ccs (optional) {#vendor}
 The list of vendor email addresses that are downstream consumers of the project and want access to
@@ -116,7 +123,7 @@ sanitizers (currently ["address"](https://clang.llvm.org/docs/AddressSanitizer.h
 and recommended, but is not enabled by default due to the likelihood of false positives from
 un-instrumented system dependencies. If you want to use "memory," first make sure your project's
 runtime dependencies are listed in the OSS-Fuzz
-[msan-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
+[msan-libs-builder Dockerfile](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
 Then, you can opt in by adding "memory" to your list of sanitizers.
 
 If your project does not build with a particular sanitizer configuration and you need some time to fix
@@ -142,7 +149,8 @@ homepage]({{ site.baseurl }}/further-reading/clusterfuzz#web-interface).
 ### architectures (optional) {#architectures}
 The list of architectures to fuzz on.
 ClusterFuzz supports fuzzing on x86_64 (aka x64) by default.
-However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifying "x86_64" and "i386" in "architectures" like this:
+Some projects can benefit from i386 fuzzing. OSS-Fuzz will build and run
+AddressSanitizer with libFuzzer on i386 by doing the following:
 
 ```yaml
 architectures:
@@ -169,15 +177,23 @@ reproducing and fixing bugs than the standard one outlined in the reproducing gu
 
 `help_url` example: [skia](https://github.com/google/oss-fuzz/blob/master/projects/skia/project.yaml).
 
+### builds_per_day (optional) {#build_frequency}
+The number of times the project should be built per day.
+OSS-Fuzz allows upto 4 builds per day, and builds once per day by default.
+Example:
+```yaml
+builds_per_day: 2
+```
+
+Will build the project twice per day.
+
 ## Dockerfile
 
 This configuration file defines the Docker image for your project. Your [build.sh](#build.sh) script will be executed in inside the container you define.
 For most projects, the image is simple:
 ```docker
 FROM gcr.io/oss-fuzz-base/base-builder       # base image with clang toolchain
-MAINTAINER YOUR_EMAIL                        # maintainer for this file
 RUN apt-get update && apt-get install -y ... # install required packages to build your project
-RUN go get ...                               # install dependencies to build your Go project
 RUN git clone <git_url> <checkout_dir>       # checkout all sources needed to build your project
 WORKDIR <checkout_dir>                       # current directory for the build script
 COPY build.sh fuzzer.cc $SRC/                # copy build script and other fuzzer files in src dir
@@ -225,10 +241,34 @@ If your project is written in Go, check out the [Integrating a Go project]({{ si
 
 **Note:**
 
-1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for libFuzzer, AFL and Honggfuzz fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
+1. Don't assume the fuzzing engine is libFuzzer by default, because we generate builds for libFuzzer, AFL++ and Honggfuzz fuzzing engine configurations. Instead, link the fuzzing engine using $LIB_FUZZING_ENGINE.
 2. Make sure that the binary names for your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 3. Don't remove source code files. They are needed for code coverage.
+
+### Temporarily disabling code instrumentation during builds
+
+Sometimes not every 3rd party library might be needed to be instrumented or
+tools are being compiled that just support the target built.
+
+If for any reasons part of the build process should not be instrumented
+then the following code snippit can be used for this:
+
+```
+CFLAGS_SAVE="$CFLAGS"
+CXXFLAGS_SAVE="$CXXFLAGS"
+unset CFLAGS
+unset CXXFLAGS
+export AFL_NOOPT=1
+
+#
+# build commands here that should not result in instrumented code.
+#
+
+export CFLAGS="${CFLAGS_SAVE}"
+export CXXFLAGS="${CXXFLAGS_SAVE}"
+unset AFL_NOOPT
+```
 
 ### build.sh script environment
 
@@ -307,16 +347,28 @@ You can build your docker image and fuzz targets locally, so you can test them b
 3. If you want to test changes against a particular fuzz target, run the following command:
 
     ```bash
-    $ python infra/helper.py run_fuzzer $PROJECT_NAME <fuzz_target>
+    $ python infra/helper.py run_fuzzer --corpus-dir=<path-to-temp-corpus-dir> $PROJECT_NAME <fuzz_target>
     ```
 
-4. We recommend taking a look at your code coverage as a sanity check to make sure that your
-fuzz targets get to the code you expect. Please refer to [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/).
+4. We recommend taking a look at your code coverage as a test to ensure that
+your fuzz targets get to the code you expect. This would use the corpus
+generated from the previous `run_fuzzer` step in your local corpus directory.
+
+    ```bash
+    $ python infra/helper.py build_fuzzers --sanitizer coverage $PROJECT_NAME
+    $ python infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
+    ```
+
+You may need to run `python infra/helper.py pull_images` to use the latest
+coverage tools. Please refer to
+[code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
+information on code coverage generation.
+
 
 **Note:** Currently, we only support AddressSanitizer (address) and UndefinedBehaviorSanitizer (undefined)
 configurations. MemorySanitizer is recommended, but needs to be enabled manually once you verify
 that all system dependencies are
-[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-builder/Dockerfile#L20).
+[instrumented](https://github.com/google/oss-fuzz/blob/master/infra/base-images/msan-libs-builder/Dockerfile#L20).
 <b>Make sure to test each
 of the supported build configurations with the above commands (build_fuzzers -> run_fuzzer -> coverage).</b>
 
@@ -395,7 +447,7 @@ via GitHub.
 Please include copyright headers for all files checked in to oss-fuzz:
 
 ```
-# Copyright 2019 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

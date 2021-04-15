@@ -47,7 +47,8 @@ fi
 
 # Determine all fuzz targets. To control what gets fuzzed with OSSFuzz, all
 # supported fuzzers are in `//tensorflow/security/fuzzing`.
-declare -r FUZZERS=$(bazel query 'tests(//tensorflow/security/fuzzing/...)' | grep -v identity)
+# Ignore fuzzers tagged with `no_oss` in opensource.
+declare -r FUZZERS=$(bazel query 'kind(cc_.*, tests(//tensorflow/security/fuzzing/...)) - attr(tags, no_oss, kind(cc_.*, tests(//tensorflow/security/fuzzing/...)))')
 
 # Build the fuzzer targets.
 # Pass in `--config=libc++` to link against libc++.
@@ -56,6 +57,7 @@ declare -r FUZZERS=$(bazel query 'tests(//tensorflow/security/fuzzing/...)' | gr
 # Pass in `$LIB_FUZZING_ENGINE` to `--copt` and `--linkopt` to ensure we have a
 # `main` symbol defined (all these fuzzers build without a `main` and by default
 # `$CFLAGS` and `CXXFLAGS` compile with `-fsanitize=fuzzer-no-link`).
+# Since we have `assert` in fuzzers, make sure `NDEBUG` is not defined
 bazel build \
   --config=libc++ \
   ${EXTRA_FLAGS} \
@@ -63,6 +65,7 @@ bazel build \
   --strip=never \
   --copt=${LIB_FUZZING_ENGINE} \
   --linkopt=${LIB_FUZZING_ENGINE} \
+  --copt='-UNDEBUG' \
   -- ${FUZZERS}
 
 # The fuzzers built above are in the `bazel-bin/` symlink. But they need to be
@@ -89,7 +92,11 @@ then
   ${RSYNC_CMD} ./bazel-out/k8-opt/bin/tensorflow/core/protobuf ${REMAP_PATH}
 
   # Sync external dependencies. We don't need to include `bazel-tensorflow`.
+  # Also, remove `external/org_tensorflow` which is a copy of the entire source
+  # code that Bazel creates. Not removing this would cause `rsync` to expand a
+  # symlink that ends up pointing to itself!
   pushd bazel-tensorflow
+  [[ -e external/org_tensorflow ]] && unlink external/org_tensorflow
   ${RSYNC_CMD} external/ ${REMAP_PATH}
   popd
 fi

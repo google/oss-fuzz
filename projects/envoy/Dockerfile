@@ -16,7 +16,6 @@
 
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER htuch@google.com
 
 RUN apt-get update && apt-get -y install  \
 	build-essential \
@@ -28,11 +27,7 @@ RUN apt-get update && apt-get -y install  \
     libtool         \
     wget            \
     golang          \
-    python
-
-# Install Bazelisk
-RUN wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64
-RUN chmod +x /usr/local/bin/bazel
+    rsync
 
 RUN git clone https://github.com/envoyproxy/envoy.git
 WORKDIR $SRC/envoy/

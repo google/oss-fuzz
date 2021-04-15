@@ -1,0 +1,9 @@
+cifuzz/test_data/*
+
+# Copied from .gitignore.
+.vscode/
+*.pyc
+build
+*~
+.DS_Store
+*.swp

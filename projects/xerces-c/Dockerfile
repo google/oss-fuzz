@@ -13,7 +13,6 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER vincent.ulitzsch@live.de
 RUN apt-get update -y && \
     apt-get install -y make autoconf automake libtool wget zlib1g-dev \
     binutils cmake subversion ninja-build liblzma-dev libz-dev pkg-config

@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-## Copied from esp-v2
+## Copied from envoy
 
 export CFLAGS="$CFLAGS"
 export CXXFLAGS="$CXXFLAGS"
@@ -37,11 +37,15 @@ done
 for f in ${CXXFLAGS}; do
   echo "--cxxopt=${f}" "--linkopt=${f}"
 done
+
 if [ "$SANITIZER" = "undefined" ]
 then
   # Bazel uses clang to link binary, which does not link clang_rt ubsan library for C++ automatically.
   # See issue: https://github.com/bazelbuild/bazel/issues/8777
   echo "--linkopt=\"$(find $(llvm-config --libdir) -name libclang_rt.ubsan_standalone_cxx-x86_64.a | head -1)\""
+elif [ "$SANITIZER" = "address" ]
+then
+  echo "--copt -D__SANITIZE_ADDRESS__" "--copt -DADDRESS_SANITIZER=1"
 fi
 )"
 
@@ -62,11 +66,14 @@ do
 done
 
 # Build driverless libraries.
+# Benchmark about 3 GB per CPU (10 threads for 28.8 GB RAM)
+# TODO(nareddyt): Remove deprecation warnings when Envoy and deps moves to C++17
 bazel build --verbose_failures --dynamic_mode=off --spawn_strategy=sandboxed \
+  --local_cpu_resources=HOST_CPUS*0.32 \
   --genrule_strategy=standalone --strip=never \
   --copt=-fno-sanitize=vptr --linkopt=-fno-sanitize=vptr \
   --define tcmalloc=disabled --define signal_trace=disabled \
-  --define ENVOY_CONFIG_ASAN=1 --copt -D__SANITIZE_ADDRESS__ \
+  --define ENVOY_CONFIG_ASAN=1 \
   --define force_libcpp=enabled --build_tag_filters=-no_asan \
   --linkopt=-lc++ --linkopt=-pthread ${EXTRA_BAZEL_FLAGS} \
   ${BAZEL_BUILD_TARGETS[*]} ${BAZEL_CORPUS_TARGETS[*]}
@@ -94,7 +101,9 @@ then
     "*.hpp" "--include" "*.cpp" "--include" "*.c" "--include" "*/" "--exclude" "*")
   rsync -avLk "${RSYNC_FILTER_ARGS[@]}" "${SRC}"/esp-v2/bazel-out "${REMAP_PATH}"
   rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" "${HOME}" "${OUT}"
-  rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
+  # Some low-level libraries are built located /tmp.
+  # But ESPv2 engineeers don't really look at them.
+  # rsync -avLkR "${RSYNC_FILTER_ARGS[@]}" /tmp "${OUT}"
 fi
 
 # Copy out test driverless binaries from bazel-bin/.

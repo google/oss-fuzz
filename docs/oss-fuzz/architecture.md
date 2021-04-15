@@ -29,5 +29,5 @@ with the project's build and test system.
   discovery (the commit message should contain the string **'Credit to OSS-Fuzz'**).
 
 Once the developer fixes the bug, [ClusterFuzz]({{ site.baseurl }}/further-reading/clusterfuzz) automatically
-verifies the fix, adds a comment, and closes the issue ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53#c3)). 30 days after the fix is verified or 90 days after reporting (whichever is earlier), the issue becomes [public]({{ site.baseurl }}/getting-started/bug-disclosure-guidelines/).
+verifies the fix, adds a comment, and closes the issue ([example](https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=53#c3)). After the fix is verified or 90 days after reporting (whichever is earlier), the issue becomes [public]({{ site.baseurl }}/getting-started/bug-disclosure-guidelines/).
 

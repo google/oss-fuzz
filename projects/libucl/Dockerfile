@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER adam@adalogics.com
 RUN apt-get update && apt-get install -y make cmake autoconf pkg-config libtool
 RUN git clone https://github.com/vstakhov/libucl
 
 WORKDIR $SRC
 
 COPY build.sh $SRC/
+COPY ucl_add_string_fuzzer.options $SRC/ucl_add_string_fuzzer.options

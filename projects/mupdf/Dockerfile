@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jonathan@titanous.com
 RUN apt-get update && apt-get install -y make libtool pkg-config
 RUN git clone --recursive --depth 1 git://git.ghostscript.com/mupdf.git mupdf
 RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
@@ -23,5 +22,5 @@ RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \
     rm -rf pdf.js
 ADD https://raw.githubusercontent.com/rc0r/afl-fuzz/master/dictionaries/pdf.dict $SRC/pdf_fuzzer.dict
 WORKDIR mupdf
-COPY *.cc source/fuzz/
+COPY *.cc $SRC/
 COPY build.sh *.options $SRC/

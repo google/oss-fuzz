@@ -1,0 +1,9 @@
+language: c++
+sanitizers:
+  - address
+
+disabled: true
+
+primary_contact:
+  fake@example.com
+main_repo: 'https://github.com/jonathanmetzman/cifuzz-example.git'
