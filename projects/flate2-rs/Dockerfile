@@ -13,8 +13,7 @@
 #
 ################################################################################
 FROM gcr.io/oss-fuzz-base/base-builder
-#RUN apt-get update && apt-get install -y pkg-config libssl-dev curl libcurl4-openssl-dev ninja-build
-RUN git clone --depth 1 https://github.com/DavidKorczynski/flate2-rs
+RUN git clone --depth 1 https://github.com/rust-lang/flate2-rs
 WORKDIR $SRC
 
 COPY build.sh $SRC/
