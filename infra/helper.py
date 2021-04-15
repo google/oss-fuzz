@@ -98,7 +98,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   if args.command == 'shell':
     return shell(args)
   if args.command == 'pull_images':
-    return pull_images(args)
+    return pull_images()
 
   return 0
 
@@ -367,7 +367,6 @@ def _add_environment_args(parser):
 
 def build_image_impl(image_name, no_cache=False, pull=False):
   """Build image."""
-
   proj_is_base_image = is_base_image(image_name)
   if proj_is_base_image:
     image_project = 'oss-fuzz-base'
@@ -376,8 +375,10 @@ def build_image_impl(image_name, no_cache=False, pull=False):
     image_project = 'oss-fuzz'
     if not check_project_exists(image_name):
       return False
-
     dockerfile_dir = os.path.join('projects', image_name)
+
+  if pull and not pull_images():
+    return False
 
   build_args = []
   if no_cache:
@@ -386,8 +387,7 @@ def build_image_impl(image_name, no_cache=False, pull=False):
   build_args += [
       '-t', 'gcr.io/%s/%s' % (image_project, image_name), dockerfile_dir
   ]
-
-  return docker_build(build_args, pull=pull)
+  return docker_build(build_args)
 
 
 def _env_to_docker_args(env_list):
@@ -447,12 +447,9 @@ def docker_run(run_args, print_output=True):
   return 0
 
 
-def docker_build(build_args, pull=False):
+def docker_build(build_args):
   """Call `docker build`."""
   command = ['docker', 'build']
-  if pull:
-    command.append('--pull')
-
   command.extend(build_args)
   print('Running:', _get_command_string(command))
 
@@ -1003,7 +1000,7 @@ def shell(args):
   return 0
 
 
-def pull_images(_):
+def pull_images():
   """Pull base images."""
   for base_image in BASE_IMAGES:
     if not docker_pull(base_image):
