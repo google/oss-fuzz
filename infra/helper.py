@@ -377,9 +377,8 @@ def build_image_impl(image_name, no_cache=False, pull=False):
       return False
     dockerfile_dir = os.path.join('projects', image_name)
 
-  if pull:
-    if not pull_images():
-      return False
+  if pull and not pull_images():
+    return False
 
   build_args = []
   if no_cache:
