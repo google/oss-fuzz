@@ -1,0 +1,19 @@
+homepage: "https://github.com/google/http_pattern_matcher"
+main_repo: "https://github.com/google/http_pattern_matcher.git"
+language: c++
+primary_contact: "nareddyt@google.com"
+auto_ccs:
+- "yangshuo@google.com"
+- "taoxuy@google.com"
+- "qiwzhang@google.com"
+- "justinmp@google.com"
+
+fuzzing_engines:
+- libfuzzer
+- afl
+- honggfuzz
+
+sanitizers:
+- address
+- undefined
+- memory
