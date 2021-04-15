@@ -22,3 +22,5 @@ cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_http $OUT/
 cd $SRC/h2
 cargo fuzz build -O
 cp ./fuzz/target/x86_64-unknown-linux-gnu/release/fuzz_client $OUT/
+cp ./fuzz/target/x86_64-unknown-linux-gnu/release/complete_fuzz $OUT/
+cp ./fuzz/target/x86_64-unknown-linux-gnu/release/hpack_fuzzer $OUT/
