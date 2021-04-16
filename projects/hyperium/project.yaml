@@ -1,5 +1,5 @@
-homepage: "https://github.com/hyperium/http"
-main_repo: "https://github.com/hyperium/http"
+homepage: "https://github.com/hyperium/"
+main_repo: "https://github.com/hyperium/"
 primary_contact: "david@adalogics.com"
 sanitizers:
   - address
@@ -7,4 +7,4 @@ fuzzing_engines:
   - libfuzzer
 language: rust
 auto_ccs:
-  - "david@adalogics.com"
+  - "seanmonstar@gmail.com"
