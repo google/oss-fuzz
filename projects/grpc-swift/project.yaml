@@ -1,0 +1,11 @@
+homepage: "https://github.com/grpc/grpc-swift"
+language: swift
+primary_contact: "timburks@google.com"
+auto_ccs :
+- "p.antoine@catenacyber.fr"
+
+fuzzing_engines:
+- libfuzzer
+sanitizers:
+- address
+main_repo: 'https://github.com/grpc/grpc-swift'
