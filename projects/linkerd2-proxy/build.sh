@@ -14,27 +14,20 @@
 # limitations under the License.
 #
 ################################################################################
-TARGET_PATH="./fuzz/target/x86_64-unknown-linux-gnu/release"
-BASE="$SRC/linkerd2-proxy/linkerd"
-BUILD_FUZZER="cargo +nightly fuzz build --features fuzzing"
 
-cd ${BASE}/addr/
-${BUILD_FUZZER}
-cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_addr
+BASE=$PWD/linkerd2-proxy
+FUZZERS=$(find . -name "fuzz")
+export RUSTFLAGS="--cap-lints warn"
+for fuzz_dir in ${FUZZERS}; do
+    cd ${fuzz_dir}
+    cargo +nightly fuzz build --features fuzzing
+    cd ${BASE}
+done
 
-cd ${BASE}/dns
-${BUILD_FUZZER}
-cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_dns
-
-cd ${BASE}/proxy/http
-${BUILD_FUZZER}
-cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_http
-
-cd ${BASE}/tls
-${BUILD_FUZZER}
-cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_tls
-
-cd ${BASE}/transport-header
-${BUILD_FUZZER}
-cp ${TARGET_PATH}/fuzz_target_raw $OUT/fuzz_transport_raw
-cp ${TARGET_PATH}/fuzz_target_structured $OUT/fuzz_transport_structured
+# Copy all of the fuzzers over but first delete deps
+find . -name "deps" -exec rm -rf {} \; || true
+FUZZ_TARGETS=$(find .  -type f -executable -name "fuzz_*")
+for fuzz_target in ${FUZZ_TARGETS}; do
+    fixed_name=$(echo ${fuzz_target} | sed -r 's/\.\///g' | sed -r 's/\//-/g')
+    cp ${fuzz_target} ${OUT}/${fixed_name}
+done
