@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-BASE=$PWD/linkerd2-proxy
+BASE=$PWD
 FUZZERS=$(find . -name "fuzz")
 export RUSTFLAGS="--cap-lints warn"
 for fuzz_dir in ${FUZZERS}; do
