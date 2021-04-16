@@ -1,0 +1,10 @@
+homepage: "https://github.com/rust-lang/flate2-rs"
+main_repo: "https://github.com/rust-lang/flate2-rs"
+primary_contact: "david@adalogics.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "alex@alexcrichton.com"
