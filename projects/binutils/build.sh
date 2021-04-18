@@ -31,7 +31,7 @@ cd ../
 
 ./configure --disable-gdb --disable-gdbserver --disable-gdbsupport \
 	    --disable-libdecnumber --disable-readline --disable-sim \
-	    --enable-targets=all
+	    --enable-targets=all --disable-werror
 make MAKEINFO=true && true
 
 # Make fuzzer directory
