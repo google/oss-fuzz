@@ -25,4 +25,10 @@ RUN git clone --branch dev --depth 1 --shallow-submodules \
         --recurse-submodules=qtsvg \
         git://code.qt.io/qt/qt5.git qt
 RUN git clone --branch dev --depth 1 git://code.qt.io/qt/qtqa.git
+WORKDIR qt/qtsvg
+RUN git config --global user.name qtrob && git config --global user.email qtrob@oss-fuzz
+RUN git fetch "https://codereview.qt-project.org/qt/qtsvg" refs/changes/39/343639/2 && git cherry-pick FETCH_HEAD
+WORKDIR $SRC/qtqa
+RUN git fetch "https://codereview.qt-project.org/qt/qtqa" refs/changes/40/343640/2 && git cherry-pick FETCH_HEAD
+WORKDIR $SRC
 RUN cp qtqa/fuzzing/oss-fuzz/build.sh $SRC/
