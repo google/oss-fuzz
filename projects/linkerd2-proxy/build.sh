@@ -14,9 +14,17 @@
 # limitations under the License.
 #
 ################################################################################
+
 TARGET_PATH="./fuzz/target/x86_64-unknown-linux-gnu/release"
 BASE="$SRC/linkerd2-proxy/linkerd"
 BUILD_FUZZER="cargo +nightly fuzz build --features fuzzing"
+
+# Only compile inbound if there is no coverage
+if [ $SANITIZER != "coverage" ]; then
+	cd ${BASE}/app/inbound
+	RUSTFLAGS="--cap-lints warn" ${BUILD_FUZZER}
+	cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_inbound
+fi
 
 cd ${BASE}/addr/
 ${BUILD_FUZZER}
@@ -37,4 +45,6 @@ cp ${TARGET_PATH}/fuzz_target_1 $OUT/fuzz_tls
 cd ${BASE}/transport-header
 ${BUILD_FUZZER}
 cp ${TARGET_PATH}/fuzz_target_raw $OUT/fuzz_transport_raw
-cp ${TARGET_PATH}/fuzz_target_structured $OUT/fuzz_transport_structured
+if [ $SANITIZER != "coverage" ]; then
+	cp ${TARGET_PATH}/fuzz_target_structured $OUT/fuzz_transport_structured
+fi
