@@ -6,8 +6,6 @@ auto_ccs :
 - "lr@pcorp.us"
 - "p.antoine@catenacyber.fr"
 
-fuzzing_engines:
-  - libfuzzer
 sanitizers:
 - address
 - undefined
