@@ -830,7 +830,7 @@ def coverage(args):
 
 
 def run_fuzzer(args):
-  """Runss a fuzzer in the container."""
+  """Runs a fuzzer in the container."""
   if not check_project_exists(args.project_name):
     return False
 
@@ -962,7 +962,7 @@ def generate(args):
     file_handle.write(templates.BUILD_TEMPLATE % template_args)
 
   os.chmod(build_sh_path, 0o755)
-  return False
+  return True
 
 
 def shell(args):
