@@ -81,25 +81,25 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
       args.sanitizer = 'address'
 
   if args.command == 'generate':
-    result = bool_to_retcode(generate(args))
+    result = generate(args)
   elif args.command == 'build_image':
-    return build_image(args)
+    result = build_image(args)
   elif args.command == 'build_fuzzers':
-    return build_fuzzers(args)
+    result = build_fuzzers(args)
   elif args.command == 'check_build':
-    return check_build(args)
+    result = check_build(args)
   elif args.command == 'download_corpora':
-    return download_corpora(args)
+    result = download_corpora(args)
   elif args.command == 'run_fuzzer':
-    return run_fuzzer(args)
+    result = run_fuzzer(args)
   elif args.command == 'coverage':
-    return coverage(args)
+    result = coverage(args)
   elif args.command == 'reproduce':
-    return reproduce(args)
+    result = reproduce(args)
   elif args.command == 'shell':
-    return shell(args)
+    result = shell(args)
   elif args.command == 'pull_images':
-    return pull_images(args)
+    result = pull_images(args)
   else:
     # Print help string if no arguments provided.
     parser.print_help()
@@ -490,7 +490,7 @@ def build_image(args):
   """Build docker image."""
   if args.pull and args.no_pull:
     print('Incompatible arguments --pull and --no-pull.')
-    return 1
+    return False
 
   if args.pull:
     pull = True
@@ -507,9 +507,9 @@ def build_image(args):
 
   # If build_image is called explicitly, don't use cache.
   if build_image_impl(args.project_name, no_cache=True, pull=pull):
-    return 0
+    return True
 
-  return 1
+  return False
 
 
 def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
@@ -524,7 +524,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     mount_location=None):
   """Build fuzzers."""
   if not build_image_impl(project_name, no_cache=no_cache):
-    return 1
+    return False
 
   project_out_dir = _get_output_dir(project_name)
   project_work_dir = _get_work_dir(project_name)
@@ -583,7 +583,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       if workdir == '/src':
         print('Cannot use local checkout with "WORKDIR: /src".',
               file=sys.stderr)
-        return 1
+        return False
 
       command += [
           '-v',
@@ -597,10 +597,10 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       'gcr.io/oss-fuzz/%s' % project_name
   ]
 
-  result_code = docker_run(command)
-  if result_code:
+  return_code = docker_run(command)
+  if return_code:
     print('Building fuzzers failed.', file=sys.stderr)
-    return result_code
+    return False
 
   # Patch MSan builds to use instrumented shared libraries.
   if sanitizer == 'memory':
@@ -613,7 +613,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
         '/out'
     ])
 
-  return 0
+  return True
 
 
 def build_fuzzers(args):
