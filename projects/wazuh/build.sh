@@ -1,4 +1,5 @@
-# Copyright 2019 Google Inc.
+#!/bin/bash -eu
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,11 @@
 #
 ################################################################################
 
-FROM gcr.io/oss-fuzz-base/base-builder
+cd src
+export LDFLAGS="$CFLAGS"
 
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus golang
-COPY build.sh math_big_fuzzer.go $SRC/
-
-WORKDIR $SRC/golang
+make deps
+make TARGET=local
+$CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_xml.c -o $OUT/fuzz_xml -I./ -I./os_xml \
+    ./libwazuh.a ./external/sqlite/libsqlite3.a ./external/cJSON/libcjson.a \
+    ./external/zlib/libz.a ./external/bzip2/libbz2.a

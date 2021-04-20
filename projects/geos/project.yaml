@@ -1,0 +1,12 @@
+homepage: "https://geos.osgeo.org"
+language: c++
+primary_contact: "mtnclimb@gmail.com"
+auto_ccs :
+- "strk@kbt.io"
+- "lr@pcorp.us"
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- undefined
+main_repo: 'https://git.osgeo.org/gitea/geos/geos.git'

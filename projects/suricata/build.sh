@@ -16,6 +16,15 @@
 ################################################################################
 
 # build dependencies statically
+(
+tar -xvzf pcre2-10.36.tar.gz
+cd pcre2-10.36
+./configure --disable-shared
+make -j$(nproc) clean
+make -j$(nproc) all
+make -j$(nproc) install
+)
+
 tar -xvzf lz4-1.9.2.tar.gz
 cd lz4-1.9.2
 make liblz4.a

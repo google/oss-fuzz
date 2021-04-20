@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool texinfo
-
-RUN git clone --depth 1 https://github.com/chewing/libchewing.git
-WORKDIR libchewing
-COPY build.sh chewing_fuzzer_common.[ch] chewing_*_fuzzer.c $SRC/
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget python
+RUN git clone https://github.com/ANSSI-FR/libecc.git
+RUN git clone --depth 1 https://github.com/randombit/botan.git
+RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+RUN wget https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2
+COPY build.sh $SRC/

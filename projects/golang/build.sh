@@ -15,8 +15,14 @@
 # These two dependencies cause build issues and are not used by oss-fuzz:
 rm -r sqlparser
 rm -r parser
+
+mkdir math && cp $SRC/math_big_fuzzer.go ./math/
+
 go mod init "github.com/dvyukov/go-fuzz-corpus"
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
+compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp1 big_cmp_fuzzer1
+compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp2 big_cmp_fuzzer2
+compile_go_fuzzer $FUZZ_ROOT/math FuzzRatSetString big_rat_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/asn1 Fuzz asn_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/csv Fuzz csv_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/elliptic Fuzz elliptic_fuzzer

@@ -4,6 +4,7 @@ primary_contact: "fmayer@google.com"
 auto_ccs:
   - "hjd@google.com"
   - "lalitm@google.com"
+  - "octaviant@google.com"
   - "perfetto-oss-fuzz@google.com"
   - "primiano@google.com"
   - "rsavitski@google.com"

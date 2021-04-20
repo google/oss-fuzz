@@ -1,5 +1,4 @@
-# Copyright 2019 Google Inc.
-#
+# Copyright 2021 Google LL
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,10 +12,8 @@
 # limitations under the License.
 #
 ################################################################################
-
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN git clone --depth 1 https://github.com/rust-lang/flate2-rs
+WORKDIR $SRC
 
-RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus golang
-COPY build.sh math_big_fuzzer.go $SRC/
-
-WORKDIR $SRC/golang
+COPY build.sh $SRC/
