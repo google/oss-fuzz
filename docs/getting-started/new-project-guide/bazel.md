@@ -28,7 +28,7 @@ For Bazel-based projects, we recommend using the
 for defining fuzz tests. `rules_fuzzing` provides support for building and running
 fuzz tests under
 [multiple sanitizer and fuzzing engine configurations][rules-fuzzing-usage].
-It also supports specifying corpora and dictionaires as part of the fuzz test
+It also supports specifying corpora and dictionaries as part of the fuzz test
 definition.
 
 The fuzzing rules provide out-of-the-box support for building and packaging fuzz
@@ -89,7 +89,7 @@ environment variables. The most common are:
 
 * `BAZEL_EXTRA_BUILD_FLAGS` are extra build flags passed on the Bazel command
    line.
-* `BAZEL_FUZZ_TEST_TAG` and `BAZEL_FUZZ_TEST_EXCLUDE_TAG` can be overriden to
+* `BAZEL_FUZZ_TEST_TAG` and `BAZEL_FUZZ_TEST_EXCLUDE_TAG` can be overridden to
   specify which target tags to use when determining what fuzz tests to include.
   By default, the tool selects all the fuzz tests except for those tagged as
   `"no-oss-fuzz"`.
