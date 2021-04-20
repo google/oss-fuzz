@@ -449,9 +449,9 @@ def docker_run(run_args, print_output=True):
   try:
     subprocess.check_call(command, stdout=stdout, stderr=subprocess.STDOUT)
   except subprocess.CalledProcessError as error:
-    return error.returncode
+    return False
 
-  return 0
+  return True
 
 
 def docker_build(build_args, pull=False):
@@ -597,8 +597,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       'gcr.io/oss-fuzz/%s' % project_name
   ]
 
-  return_code = docker_run(command)
-  if return_code:
+  result = docker_run(command)
+  if not result:
     print('Building fuzzers failed.', file=sys.stderr)
     return False
 
@@ -657,13 +657,13 @@ def check_build(args):
   else:
     run_args.append('test_all.py')
 
-  exit_code = docker_run(run_args)
-  if exit_code == 0:
+  result = docker_run(run_args)
+  if result:
     print('Check build passed.')
-    return True
+  else:
+    print('Check build failed.')
 
-  print('Check build failed.')
-  return False
+  return result
 
 
 
@@ -824,22 +824,22 @@ def coverage(args):
   if args.fuzz_target:
     run_args.append(args.fuzz_target)
 
-  exit_code = docker_run(run_args)
-  if exit_code == 0:
+  result = docker_run(run_args)
+  if result:
     print('Successfully generated clang code coverage report.')
   else:
     print('Failed to generate clang code coverage report.')
 
-  return exit_code
+  return result
 
 
 def run_fuzzer(args):
   """Runs a fuzzer in the container."""
   if not check_project_exists(args.project_name):
-    return 1
+    return False
 
   if not _check_fuzzer_exists(args.project_name, args.fuzzer_name):
-    return 1
+    return False
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
@@ -856,7 +856,7 @@ def run_fuzzer(args):
     if not os.path.exists(args.corpus_dir):
       print('ERROR: the path provided in --corpus-dir argument does not exist',
             file=sys.stderr)
-      return 1
+      return False
     corpus_dir = os.path.realpath(args.corpus_dir)
     run_args.extend([
         '-v',
