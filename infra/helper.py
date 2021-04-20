@@ -725,7 +725,7 @@ def _get_latest_corpus(project_name, fuzz_target, base_corpus_dir):
 def download_corpora(args):
   """Download most recent corpora from GCS for the given project."""
   if not check_project_exists(args.project_name):
-    return 1
+    return False
 
   try:
     with open(os.devnull, 'w') as stdout:
