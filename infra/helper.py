@@ -626,11 +626,11 @@ def build_fuzzers(args):
 def check_build(args):
   """Checks that fuzzers in the container execute without errors."""
   if not check_project_exists(args.project_name):
-    return 1
+    return False
 
   if (args.fuzzer_name and
       not _check_fuzzer_exists(args.project_name, args.fuzzer_name)):
-    return 1
+    return False
 
   fuzzing_language = _get_project_language(args.project_name)
   if fuzzing_language is None:
@@ -660,10 +660,11 @@ def check_build(args):
   exit_code = docker_run(run_args)
   if exit_code == 0:
     print('Check build passed.')
-  else:
-    print('Check build failed.')
+    return True
 
-  return exit_code
+  print('Check build failed.')
+  return False
+
 
 
 def _get_fuzz_targets(project_name):
