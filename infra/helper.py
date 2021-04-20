@@ -1014,9 +1014,9 @@ def pull_images(_):
   """Pull base images."""
   for base_image in BASE_IMAGES:
     if not docker_pull(base_image):
-      return 1
+      return False
 
-  return 0
+  return True
 
 
 if __name__ == '__main__':
