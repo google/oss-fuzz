@@ -304,8 +304,8 @@ def get_dockerfile_path(project_name):
 
 
 def _get_project_build_subdir(project_name, subdir_name):
-  """Creates the subdirectory of the |project_name| subdirectory in |BUILD_DIR|
-  and returns its path."""
+  """Creates the |subdir_name| subdirectory of the |project_name| subdirectory
+  in |BUILD_DIR| and returns its path."""
   directory = os.path.join(BUILD_DIR, subdir_name, project_name)
   if not os.path.exists(directory):
     os.makedirs(directory)
