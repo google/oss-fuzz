@@ -28,7 +28,8 @@ class TestShell(unittest.TestCase):
     """Tests that shell base-runner-debug works as intended."""
     image_name = 'base-runner-debug'
     unparsed_args = ['shell', image_name]
-    args = helper.parse_args(unparsed_args)
+    parser = helper.get_parser()
+    args = helper.parse_args(parser, unparsed_args)
     args.sanitizer = 'address'
     result = helper.shell(args)
     mocked_build_image_impl.assert_called_with(image_name)

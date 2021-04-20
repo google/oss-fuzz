@@ -69,7 +69,8 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   if not os.path.exists(BUILD_DIR):
     os.mkdir(BUILD_DIR)
 
-  args = parse_args()
+  parser = get_parser()
+  args = parse_args(parser)
 
   # We have different default values for `sanitizer` depending on the `engine`.
   # Some commands do not have `sanitizer` argument, so `hasattr` is necessary.
@@ -81,33 +82,34 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
 
   if args.command == 'generate':
     return generate(args)
-  if args.command == 'build_image':
+  elif args.command == 'build_image':
     return build_image(args)
-  if args.command == 'build_fuzzers':
+  elif args.command == 'build_fuzzers':
     return build_fuzzers(args)
-  if args.command == 'check_build':
+  elif args.command == 'check_build':
     return check_build(args)
-  if args.command == 'download_corpora':
+  elif args.command == 'download_corpora':
     return download_corpora(args)
-  if args.command == 'run_fuzzer':
+  elif args.command == 'run_fuzzer':
     return run_fuzzer(args)
-  if args.command == 'coverage':
+  elif args.command == 'coverage':
     return coverage(args)
-  if args.command == 'reproduce':
+  elif args.command == 'reproduce':
     return reproduce(args)
-  if args.command == 'shell':
+  elif args.command == 'shell':
     return shell(args)
-  if args.command == 'pull_images':
+  elif args.command == 'pull_images':
     return pull_images(args)
+  else:
+    # Print help string if no arguments provided.
+    parser.print_help()
+    return 0
 
-  return 0
 
-
-def parse_args(args=None):
+def parse_args(parser, args=None):
   """Parses args using argparser and returns parsed args."""
   # Use default argument None for args so that in production, argparse does its
   # normal behavior, but unittesting is easier.
-  parser = get_parser()
   return parser.parse_args(args)
 
 
