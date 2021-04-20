@@ -105,8 +105,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
         rm_path, self.host_repo_path, image_src_path)
     docker_args.append(bash_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
-    if helper.docker_run(docker_args):
-      # docker_run returns nonzero on failure.
+    if not helper.docker_run(docker_args):
       logging.error('Building fuzzers failed.')
       return False
 
@@ -239,9 +238,8 @@ def check_fuzzer_build(out_dir,
   else:
     command += ['-v', '%s:/out' % out_dir]
   command.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
-  exit_code = helper.docker_run(command)
-  logging.info('check fuzzer build exit code: %d', exit_code)
-  if exit_code:
+  result = helper.docker_run(command)
+  if not result:
     logging.error('Check fuzzer build failed.')
     return False
   return True

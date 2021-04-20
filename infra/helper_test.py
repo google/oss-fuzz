@@ -33,4 +33,4 @@ class TestShell(unittest.TestCase):
     args.sanitizer = 'address'
     result = helper.shell(args)
     mocked_build_image_impl.assert_called_with(image_name)
-    self.assertEqual(result, 0)
+    self.assertTrue(result)

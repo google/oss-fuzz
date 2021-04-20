@@ -99,7 +99,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   elif args.command == 'shell':
     result = shell(args)
   elif args.command == 'pull_images':
-    result = pull_images(args)
+    result = pull_images()
   else:
     # Print help string if no arguments provided.
     parser.print_help()
@@ -886,13 +886,14 @@ def reproduce_impl(  # pylint: disable=too-many-arguments
     env_to_add,
     fuzzer_args,
     testcase_path,
-    run_function=docker_run):
+    run_function=docker_run,
+    err_result=False):
   """Reproduces a testcase in the container."""
   if not check_project_exists(project_name):
-    return False
+    return err_result
 
   if not _check_fuzzer_exists(project_name, fuzzer_name):
-    return False
+    return err_result
 
   debugger = ''
   env = []
