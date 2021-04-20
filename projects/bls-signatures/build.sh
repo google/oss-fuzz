@@ -15,9 +15,6 @@
 #
 ################################################################################
 
-export CFLAGS="$CFLAGS -O3"
-export CXXFLAGS="$CXXFLAGS -O3"
-
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -D_LIBCPP_DEBUG=1"
 export LIBFUZZER_LINK="$LIB_FUZZING_ENGINE"
 export LINK_FLAGS=""
@@ -91,7 +88,12 @@ then
     cmake .. -DMCL_STATIC_LIB=on 
     export LINK_FLAGS="$LINK_FLAGS -lgmp"
 else
-    cmake .. -DMCL_STATIC_LIB=on -DGMP_INCLUDE_DIR="$SRC/libgmp-install/include/" -DGMP_LIBRARY="$SRC/libgmp-install/lib/libgmp.a" -DGMP_GMPXX_INCLUDE_DIR="$SRC/libgmp-install/include/" -DGMP_GMPXX_LIBRARY="$SRC/libgmp-install/lib/libgmpxx.a" -DMCL_USE_ASM=off
+    cmake .. -DMCL_STATIC_LIB=on \
+    -DGMP_INCLUDE_DIR="$SRC/libgmp-install/include/"
+    -DGMP_LIBRARY="$SRC/libgmp-install/lib/libgmp.a"
+    -DGMP_GMPXX_INCLUDE_DIR="$SRC/libgmp-install/include/"
+    -DGMP_GMPXX_LIBRARY="$SRC/libgmp-install/lib/libgmpxx.a"
+    -DMCL_USE_ASM=off
     export LINK_FLAGS="$LINK_FLAGS $SRC/libgmp-install/lib/libgmp.a"
 fi
 make
@@ -104,9 +106,20 @@ export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MCL"
 cd $SRC/botan/
 if [[ $CFLAGS != *-m32* ]]
 then
-    ./configure.py --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator,x509,tls --build-targets=static --without-documentation
+    ./configure.py --cc-bin=$CXX \
+    --cc-abi-flags="$CXXFLAGS" \
+    --disable-shared \
+    --disable-modules=locking_allocator,x509,tls \
+    --build-targets=static \
+    --without-documentation
 else
-    ./configure.py --cpu=x86_32 --cc-bin=$CXX --cc-abi-flags="$CXXFLAGS" --disable-shared --disable-modules=locking_allocator,x509,tls --build-targets=static --without-documentation
+    ./configure.py --cpu=x86_32 \
+    --cc-bin=$CXX \
+    --cc-abi-flags="$CXXFLAGS" \
+    --disable-shared \
+    --disable-modules=locking_allocator,x509,tls \
+    --build-targets=static \
+    --without-documentation
 fi
 make -j$(nproc)
 

@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y make autoconf automake libtool cmake wget python lzip libgmp-dev
+RUN apt-get update && apt-get install -y make autoconf automake libtool wget python lzip libgmp-dev
 RUN git clone https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/supranational/blst
 RUN git clone --depth 1 https://github.com/Chia-Network/bls-signatures.git
