@@ -66,7 +66,8 @@ WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
 
 def main():  # pylint: disable=too-many-branches,too-many-return-statements
-  """Gets subcommand from program arguments and does it."""
+  """Gets subcommand from program arguments and does it. Returns 0 on success 1
+  on error."""
   os.chdir(OSS_FUZZ_DIR)
   if not os.path.exists(BUILD_DIR):
     os.mkdir(BUILD_DIR)
@@ -105,7 +106,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   else:
     # Print help string if no arguments provided.
     parser.print_help()
-    result = True
+    result = False
   return bool_to_retcode(result)
 
 
@@ -116,7 +117,7 @@ def bool_to_retcode(boolean):
 
 
 def parse_args(parser, args=None):
-  """Parses args using |parser| and returns parsed args."""
+  """Parses |args| using |parser| and returns parsed args."""
   # Use default argument None for args so that in production, argparse does its
   # normal behavior, but unittesting is easier.
   return parser.parse_args(args)
