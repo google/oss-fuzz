@@ -146,7 +146,7 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
                                                 fuzz_target,
                                                 False, [], [],
                                                 test_case_path,
-                                                runner=docker_run,
+                                                run_function=docker_run,
                                                 err_result=(None, None, None))
   if return_code is None:
     return None

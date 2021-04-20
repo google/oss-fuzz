@@ -311,6 +311,7 @@ def _get_project_build_subdir(project_name, subdir_name):
 
   return directory
 
+
 def _get_corpus_dir(project_name=''):
   """Creates and returns path to /corpus directory for the given project (if
   specified)."""
@@ -446,7 +447,7 @@ def docker_run(run_args, print_output=True):
 
   try:
     subprocess.check_call(command, stdout=stdout, stderr=subprocess.STDOUT)
-  except subprocess.CalledProcessError as error:
+  except subprocess.CalledProcessError:
     return False
 
   return True
@@ -659,7 +660,6 @@ def check_build(args):
     print('Check build failed.')
 
   return result
-
 
 
 def _get_fuzz_targets(project_name):
