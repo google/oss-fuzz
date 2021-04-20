@@ -971,7 +971,7 @@ def generate(args):
 def shell(args):
   """Runs a shell within a docker image."""
   if not build_image_impl(args.project_name):
-    return 1
+    return False
 
   env = [
       'FUZZING_ENGINE=' + args.engine,
@@ -1007,7 +1007,7 @@ def shell(args):
   ])
 
   docker_run(run_args)
-  return 0
+  return True
 
 
 def pull_images(_):
