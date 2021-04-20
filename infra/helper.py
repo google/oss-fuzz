@@ -81,7 +81,7 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
       args.sanitizer = 'address'
 
   if args.command == 'generate':
-    return generate(args)
+    result = bool_to_retcode(generate(args))
   elif args.command == 'build_image':
     return build_image(args)
   elif args.command == 'build_fuzzers':
@@ -103,7 +103,12 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
   else:
     # Print help string if no arguments provided.
     parser.print_help()
-    return 0
+    result = True
+  return bool_to_retcode(result)
+
+
+def bool_to_retcode(boolean):
+  return 0 if boolean is True else 1
 
 
 def parse_args(parser, args=None):
@@ -927,11 +932,11 @@ def generate(args):
     print('Project name needs to be less than or equal to %d characters.' %
           MAX_PROJECT_NAME_LENGTH,
           file=sys.stderr)
-    return 1
+    return False
 
   if not VALID_PROJECT_NAME_REGEX.match(args.project_name):
     print('Invalid project name.', file=sys.stderr)
-    return 1
+    return False
 
   directory = os.path.join('projects', args.project_name)
 
@@ -941,7 +946,7 @@ def generate(args):
     if error.errno != errno.EEXIST:
       raise
     print(directory, 'already exists.', file=sys.stderr)
-    return 1
+    return False
 
   print('Writing new files to', directory)
 
@@ -960,7 +965,7 @@ def generate(args):
     file_handle.write(templates.BUILD_TEMPLATE % template_args)
 
   os.chmod(build_sh_path, 0o755)
-  return 0
+  return False
 
 
 def shell(args):
