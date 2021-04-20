@@ -769,10 +769,10 @@ def coverage(args):
         'ERROR: --corpus-dir requires specifying a particular fuzz target '
         'using --fuzz-target',
         file=sys.stderr)
-    return 1
+    return False
 
   if not check_project_exists(args.project_name):
-    return 1
+    return False
 
   project_language = _get_project_language(args.project_name)
   if project_language not in LANGUAGES_WITH_COVERAGE_SUPPORT:
@@ -780,11 +780,11 @@ def coverage(args):
         'ERROR: Project is written in %s, coverage for it is not supported yet.'
         % project_language,
         file=sys.stderr)
-    return 1
+    return False
 
   if not args.no_corpus_download and not args.corpus_dir:
     if not download_corpora(args):
-      return 1
+      return False
 
   env = [
       'FUZZING_ENGINE=libfuzzer',
@@ -807,7 +807,7 @@ def coverage(args):
     if not os.path.exists(args.corpus_dir):
       print('ERROR: the path provided in --corpus-dir argument does not exist',
             file=sys.stderr)
-      return 1
+      return False
     corpus_dir = os.path.realpath(args.corpus_dir)
     run_args.extend(['-v', '%s:/corpus/%s' % (corpus_dir, args.fuzz_target)])
   else:
