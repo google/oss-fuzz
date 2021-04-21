@@ -285,7 +285,7 @@ def build_fuzzers_from_commit(commit,
     cleanup()
 
   cleanup()
-  return result == 0
+  return result
 
 
 def detect_main_repo(project_name, repo_name=None, commit=None):

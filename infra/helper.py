@@ -111,9 +111,10 @@ def main():  # pylint: disable=too-many-branches,too-many-return-statements
 
 
 def bool_to_retcode(boolean):
-  """Returns True if |boolean| is 0, the standard return value for a successful
-  process execution. Returns False otherwise."""
-  return 0 if boolean is True else 1
+  """Returns 0 if |boolean| is Truthy, 0 is the standard return code for a
+  successful process execution. Returns 1 otherwise, indicating the process
+  failed."""
+  return 0 if boolean else 1
 
 
 def parse_args(parser, args=None):
