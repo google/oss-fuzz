@@ -1,6 +1,6 @@
 homepage: "https://opencensus.io/"
 language: c++
-primary_contact: "opentelemetry-dev+opencensus-fuzz@google.com"
+primary_contact: "joshuasuereth@google.com"
 auto_ccs :
 - "p.antoine@catenacyber.fr"
 
