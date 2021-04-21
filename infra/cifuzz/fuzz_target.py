@@ -143,10 +143,10 @@ class FuzzTarget:
       return FuzzResult(None, None)
 
     utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
-                       (self.target_name.encode(), result.stderr))
+                       (self.target_name.encode(), stderr))
     if self.is_crash_reportable(testcase):
       # We found a bug in the fuzz target and we will report it.
-      return FuzzResult(testcase, result.stderr)
+      return FuzzResult(testcase, stderr)
 
     # We found a bug but we won't report it.
     return FuzzResult(None, None)
