@@ -79,7 +79,7 @@ class BuildFuzzersTest(unittest.TestCase):
               return_value=('example.com', '/path'))
   @mock.patch('repo_manager._clone', return_value=None)
   @mock.patch('continuous_integration.checkout_specified_commit')
-  @mock.patch('helper.docker_run')
+  @mock.patch('helper.docker_run', return_value=False)  # We want to quit early.
   def test_cifuzz_env_var(self, mocked_docker_run, _, __, ___):
     """Tests that the CIFUZZ env var is set."""
 
