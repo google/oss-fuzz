@@ -18,6 +18,7 @@ import os
 import re
 import shutil
 import stat
+import subprocess
 import sys
 
 import docker
@@ -92,15 +93,15 @@ class FuzzTarget:
     """
     logging.info('Fuzzer %s, started.', self.target_name)
     docker_container = utils.get_container_name()
-    command_arguments = []
+    command = ['docker', 'run', '--rm', '--privileged']
     if docker_container:
-      command_arguments += [
+      command += [
           '--volumes-from', docker_container, '-e', 'OUT=' + self.out_dir
       ]
     else:
-      command_arguments += ['-v', '%s:%s' % (self.out_dir, '/out')]
+      command += ['-v', '%s:%s' % (self.out_dir, '/out')]
 
-    command_arguments += [
+    command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'SANITIZER=' + self.config.sanitizer, '-e', 'CIFUZZ=True', '-e',
         'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash', '-c'
@@ -115,37 +116,37 @@ class FuzzTarget:
         self.target_name, self.out_dir)
     if self.latest_corpus_path:
       run_fuzzer_command = run_fuzzer_command + ' ' + self.latest_corpus_path
-    command_arguments.append(run_fuzzer_command)
-    result = docker.run_container_command(command_arguments,
-                                          timeout=self.duration + BUFFER_TIME)
+    command.append(run_fuzzer_command)
 
-    if result.timed_out:
-      logging.info('Stopped docker container before timeout.')
+    logging.info('Running command: %s', ' '.join(command))
+    process = subprocess.Popen(command,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
 
-    if not result.retcode:
+    try:
+      _, stderr = process.communicate(timeout=self.duration + BUFFER_TIME)
+    except subprocess.TimeoutExpired:
+      logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
+      return FuzzResult(None, None)
+
+    # Libfuzzer timeout was reached.
+    if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
       return FuzzResult(None, None)
 
-    if result.stderr is None:
-      return FuzzResult(None, None)
-
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
-
-    # TODO(metzman): Replace this with artifact_prefix so we don't have to
-    # parse.
-    testcase = self.get_testcase(result.stderr)
-
+    testcase = self.get_testcase(stderr)
     if not testcase:
-      logging.error(b'No testcase found in stacktrace: %s.', result.stderr)
+      logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return FuzzResult(None, None)
 
     utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
-                       (self.target_name.encode(), result.stderr))
+                       (self.target_name.encode(), stderr))
     if self.is_crash_reportable(testcase):
       # We found a bug in the fuzz target and we will report it.
-      return FuzzResult(testcase, result.stderr)
+      return FuzzResult(testcase, stderr)
 
     # We found a bug but we won't report it.
     return FuzzResult(None, None)
