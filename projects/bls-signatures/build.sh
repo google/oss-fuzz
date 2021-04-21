@@ -85,7 +85,7 @@ mkdir build/
 cd build/
 if [[ $CFLAGS != *-m32* ]]
 then
-    cmake .. -DMCL_STATIC_LIB=on 
+    cmake .. -DMCL_STATIC_LIB=on
     export LINK_FLAGS="$LINK_FLAGS -lgmp"
 else
     cmake .. -DMCL_STATIC_LIB=on \
