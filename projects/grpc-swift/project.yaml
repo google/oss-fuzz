@@ -3,7 +3,6 @@ language: swift
 primary_contact: "timburks@google.com"
 auto_ccs :
 - "p.antoine@catenacyber.fr"
-
 fuzzing_engines:
 - libfuzzer
 sanitizers:
