@@ -1,0 +1,10 @@
+homepage: "https://github.com/hyperium/"
+main_repo: "https://github.com/hyperium/"
+primary_contact: "seanmonstar@gmail.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "david@adalogics.com"
