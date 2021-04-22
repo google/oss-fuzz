@@ -18,6 +18,7 @@
 
 (
 cd ../tinyxml2
+make clean
 make -j$(nproc) all
 cp libtinyxml2.a /usr/local/lib/
 cp *.h /usr/local/include/
