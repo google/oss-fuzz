@@ -1,6 +1,6 @@
 homepage: "https://github.com/hyperium/"
 main_repo: "https://github.com/hyperium/"
-primary_contact: "seanmonstar@gmail.com"
+primary_contact: "sean.monstar@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:
