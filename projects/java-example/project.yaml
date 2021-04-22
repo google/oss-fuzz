@@ -1,4 +1,5 @@
 homepage: "https://github.com/CodeIntelligenceTesting/jazzer"
+disabled: true
 language: jvm
 primary_contact: "meumertzheim@code-intelligence.com"
 fuzzing_engines:
