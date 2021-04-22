@@ -4,7 +4,6 @@ primary_contact: "guidovranken@gmail.com"
 main_repo: "https://github.com/supranational/blst.git"
 sanitizers:
  - address
- - undefined
 architectures:
  - x86_64
  - i386
