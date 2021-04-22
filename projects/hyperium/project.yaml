@@ -7,4 +7,6 @@ fuzzing_engines:
   - libfuzzer
 language: rust
 auto_ccs:
+  - "ver@buoyant.io"
+  - "eliza@buoyant.io"
   - "david@adalogics.com"
