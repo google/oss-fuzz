@@ -89,10 +89,10 @@ then
     export LINK_FLAGS="$LINK_FLAGS -lgmp"
 else
     cmake .. -DMCL_STATIC_LIB=on \
-    -DGMP_INCLUDE_DIR="$SRC/libgmp-install/include/"
-    -DGMP_LIBRARY="$SRC/libgmp-install/lib/libgmp.a"
-    -DGMP_GMPXX_INCLUDE_DIR="$SRC/libgmp-install/include/"
-    -DGMP_GMPXX_LIBRARY="$SRC/libgmp-install/lib/libgmpxx.a"
+    -DGMP_INCLUDE_DIR="$SRC/libgmp-install/include/" \
+    -DGMP_LIBRARY="$SRC/libgmp-install/lib/libgmp.a" \
+    -DGMP_GMPXX_INCLUDE_DIR="$SRC/libgmp-install/include/" \
+    -DGMP_GMPXX_LIBRARY="$SRC/libgmp-install/lib/libgmpxx.a" \
     -DMCL_USE_ASM=off
     export LINK_FLAGS="$LINK_FLAGS $SRC/libgmp-install/lib/libgmp.a"
 fi
