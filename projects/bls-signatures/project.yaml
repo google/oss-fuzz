@@ -9,3 +9,10 @@ architectures:
  - i386
 auto_ccs:
  - "justin@ethereum.org"
+ - "kelly@supranational.net"
+ - "diederik.loerakker@ethereum.org"
+ - "hoffmang@chia.net"
+ - "bram@chia.net"
+ - "mariano@chia.net"
+ - "arvid@chia.net"
+ - "bill@chia.net"
