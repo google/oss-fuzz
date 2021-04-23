@@ -34,6 +34,27 @@ export CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR"
 cd $SRC/cryptofuzz/
 git checkout bls
 python gen_repository.py
+rm extra_options.h
+echo -n '"' >>extra_options.h
+echo -n "--force-module=blst " >>extra_options.h
+echo -n "--operations=" >>extra_options.h
+echo -n "BignumCalc," >>extra_options.h
+echo -n "BLS_GenerateKeyPair," >>extra_options.h
+echo -n "BLS_HashToG1," >>extra_options.h
+echo -n "BLS_HashToG2," >>extra_options.h
+echo -n "BLS_IsG1OnCurve," >>extra_options.h
+echo -n "BLS_IsG2OnCurve," >>extra_options.h
+echo -n "BLS_Pairing," >>extra_options.h
+echo -n "BLS_PrivateToPublic," >>extra_options.h
+echo -n "BLS_Sign," >>extra_options.h
+echo -n "BLS_Verify," >>extra_options.h
+echo -n "BignumCalc_Mod_BLS12_381_P," >>extra_options.h
+echo -n "BignumCalc_Mod_BLS12_381_R," >>extra_options.h
+echo -n "KDF_HKDF," >>extra_options.h
+echo -n "Misc " >>extra_options.h
+echo -n "--digests=SHA256 " >>extra_options.h
+echo -n '"' >>extra_options.h
+
 
 if [[ $CFLAGS = *-m32* ]]
 then
