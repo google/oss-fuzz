@@ -18,8 +18,13 @@ rm -r parser
 
 mkdir math && cp $SRC/math_big_fuzzer.go ./math/
 
+go get -u golang.org/x/text
+mkdir text && cp $SRC/text_fuzzer.go ./text/
+
 go mod init "github.com/dvyukov/go-fuzz-corpus"
 export FUZZ_ROOT="github.com/dvyukov/go-fuzz-corpus"
+compile_go_fuzzer $FUZZ_ROOT/text FuzzAcceptLanguage accept_language_fuzzer
+compile_go_fuzzer $FUZZ_ROOT/text FuzzCurrency currency_fuzzer
 compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp1 big_cmp_fuzzer1
 compile_go_fuzzer $FUZZ_ROOT/math FuzzBigIntCmp2 big_cmp_fuzzer2
 compile_go_fuzzer $FUZZ_ROOT/math FuzzRatSetString big_rat_fuzzer
