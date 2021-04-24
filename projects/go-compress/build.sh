@@ -22,7 +22,7 @@ compile_go_fuzzer github.com/klauspost/compress/fuzz/huff0 FuzzCompress fuzz_huf
 compile_go_fuzzer github.com/klauspost/compress/fuzz/huff0 FuzzDecompress fuzz_huff0_decompress
 #compile_go_fuzzer github.com/klauspost/compress/fuzz/s2 FuzzCompress fuzz_s2_compress
 #compile_go_fuzzer github.com/klauspost/compress/fuzz/s2 FuzzDecompress fuzz_s2_decompress
-compile_go_fuzzer github.com/klauspost/compress/fuzz/zstd FuzzCompress fuzz_zstd_compress
+#compile_go_fuzzer github.com/klauspost/compress/fuzz/zstd FuzzCompress fuzz_zstd_compress
 #compile_go_fuzzer github.com/klauspost/compress/fuzz/zstd FuzzCompressRef fuzz_zstd_compress_ref datadog
 #compile_go_fuzzer github.com/klauspost/compress/fuzz/zstd FuzzCompressSimple fuzz_zstd_compress_simple
 compile_go_fuzzer github.com/klauspost/compress/fuzz/zstd FuzzDecompress fuzz_zstd_decompress
