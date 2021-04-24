@@ -17,7 +17,7 @@
 
 TARGET_PATH="./fuzz/target/x86_64-unknown-linux-gnu/release"
 BASE="$SRC/linkerd2-proxy/linkerd"
-BUILD_FUZZER="cargo +nightly fuzz build --features fuzzing"
+BUILD_FUZZER="cargo +nightly fuzz build "
 
 cd ${BASE}/app/inbound
 ${BUILD_FUZZER}
