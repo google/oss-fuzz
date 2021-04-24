@@ -1,0 +1,9 @@
+syntax = "proto3";
+package celgolpm;
+
+option go_package = "github.com/google/cel-go/cel";
+
+message FuzzVariables {
+  string expr = 1;
+  map<string,string> inputs = 2;
+}
