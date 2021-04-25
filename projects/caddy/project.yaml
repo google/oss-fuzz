@@ -1,6 +1,8 @@
 homepage: "https://caddyserver.com/"
 language: go
 primary_contact: "msaa1990@gmail.com"
+auto_ccs:
+  - "Adam@adalogics.com"
 fuzzing_engines:
   - libfuzzer
 sanitizers:
