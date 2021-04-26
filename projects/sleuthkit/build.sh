@@ -19,7 +19,7 @@ export CFLAGS="$CFLAGS -Wno-error=non-c-typedef-for-linkage"
 export CXXFLAGS="$CXXFLAGS -Wno-error=non-c-typedef-for-linkage"
 
 ./bootstrap
-./configure --enable-static --disable-shared --disable-java
+./configure --enable-static --disable-shared --disable-java --without-afflib --without-libewf --without-libvhdi --without-libvmdk
 make -j$(nproc)
 
 declare -A TSK_FS_TYPES=(
@@ -38,13 +38,17 @@ declare -A TSK_VS_TYPES=(
 )
 
 for type in ${!TSK_FS_TYPES[@]}; do
-  $CXX $CXXFLAGS -std=c++11 -I.. -I. -Itsk -DFSTYPE=${TSK_FS_TYPES[$type]} \
+  $CXX $CXXFLAGS -std=c++14 -I.. -I. -Itsk -DFSTYPE=${TSK_FS_TYPES[$type]} \
       $SRC/sleuthkit_fls_fuzzer.cc -o $OUT/sleuthkit_fls_${type}_fuzzer \
       $LIB_FUZZING_ENGINE $SRC/sleuthkit/tsk/.libs/libtsk.a
 done
 
+$CXX $CXXFLAGS -std=c++14 -I.. -I. -Itsk \
+    $SRC/sleuthkit_apfs_fuzzer.cc -o $OUT/sleuthkit_apfs_${type}_fuzzer \
+    $LIB_FUZZING_ENGINE $SRC/sleuthkit/tsk/.libs/libtsk.a
+
 for type in ${!TSK_VS_TYPES[@]}; do
-  $CXX $CXXFLAGS -std=c++11 -I.. -I. -Itsk -DVSTYPE=${TSK_VS_TYPES[$type]} \
+  $CXX $CXXFLAGS -std=c++14 -I.. -I. -Itsk -DVSTYPE=${TSK_VS_TYPES[$type]} \
       $SRC/sleuthkit_mmls_fuzzer.cc -o $OUT/sleuthkit_mmls_${type}_fuzzer \
       $LIB_FUZZING_ENGINE $SRC/sleuthkit/tsk/.libs/libtsk.a
 done
