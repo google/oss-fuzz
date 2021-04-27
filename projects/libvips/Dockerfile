@@ -38,6 +38,7 @@ RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff 
 RUN git clone --depth 1 https://aomedia.googlesource.com/aom
 RUN git clone --depth 1 https://github.com/strukturag/libheif
+RUN git clone --depth 1 --recursive https://gitlab.com/wg1/jpeg-xl.git
 
 WORKDIR libvips
 COPY build.sh $SRC/
