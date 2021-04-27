@@ -16,11 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget python lzip libgmp-dev
-RUN git clone https://github.com/guidovranken/cryptofuzz
+RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
 RUN git clone --depth 1 https://github.com/supranational/blst
 RUN git clone --depth 1 https://github.com/Chia-Network/bls-signatures.git
 RUN git clone --depth 1 https://github.com/herumi/mcl.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
-RUN wget https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 RUN wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
 COPY build.sh $SRC/

@@ -32,7 +32,6 @@ export CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR"
 
 # Configure Cryptofuzz
 cd $SRC/cryptofuzz/
-git checkout bls
 python gen_repository.py
 rm extra_options.h
 echo -n '"' >>extra_options.h
