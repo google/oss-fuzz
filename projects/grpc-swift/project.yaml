@@ -1,7 +1,9 @@
 homepage: "https://github.com/grpc/grpc-swift"
 language: swift
-primary_contact: "timburks@google.com"
+primary_contact: "gbarnett@apple.com"
 auto_ccs :
+- "lukasa@apple.com"
+- "pp_adams@apple.com"
 - "p.antoine@catenacyber.fr"
 fuzzing_engines:
 - libfuzzer
