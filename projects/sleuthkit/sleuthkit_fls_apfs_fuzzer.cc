@@ -36,7 +36,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     goto out_img;
   }
   // Pool start block is APFS container specific and is hard coded for now
-  pool_img = pool->get_img_info(pool, (TSK_DADDR_T) 103);
+  pool_img = pool->get_img_info(pool, (TSK_DADDR_T) 106);
 
   if (pool_img == nullptr) {
     goto out_pool;
