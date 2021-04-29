@@ -1,0 +1,4 @@
+homepage: "https://duckdb.org/"
+language: c++
+primary_contact: "david@adalogics.com"
+main_repo: "https://github.com/duckdb/duckdb/"
