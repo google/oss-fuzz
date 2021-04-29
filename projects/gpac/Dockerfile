@@ -16,8 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y build-essential pkg-config libz-dev
-RUN git clone https://github.com/gpac/gpac
+RUN git clone https://github.com/gpac/gpac && git clone https://github.com/gpac/testsuite
 
 WORKDIR $SRC
 COPY build.sh $SRC/
-COPY fuzz_parse.c $SRC/
