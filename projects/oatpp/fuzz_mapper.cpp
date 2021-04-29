@@ -30,10 +30,10 @@ class Test1 : public oatpp::DTO {
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  std::string input(reinterpret_cast<const char*>(data), size);
-  auto mapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
+  oatpp::String input(reinterpret_cast<const char*>(data), size, true);
+  oatpp::parser::json::mapping::ObjectMapper mapper;
   try {
-    mapper->readFromString<oatpp::Object<Test1>>(input.c_str());
+    mapper.readFromString<oatpp::Object<Test1>>(input);
   } catch(...) {}
 
   return 0;
