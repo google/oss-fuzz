@@ -28,9 +28,15 @@ export ONIG_LIBS="-L$PWD/oniguruma/src/.libs -l:libonig.a"
 export CFLAGS="$CFLAGS -fno-sanitize=object-size"
 export CXXFLAGS="$CXXFLAGS -fno-sanitize=object-size"
 
+# Make sure the right assembly files are picked
+BUILD_FLAG=""
+if [ "$ARCHITECTURE" = "i386" ]; then
+    BUILD_FLAG="--build=i686-pc-linux-gnu"
+fi
+
 # build project
 ./buildconf
-./configure \
+./configure $BUILD_FLAG \
     --disable-all \
     --enable-debug-assertions \
     --enable-option-checking=fatal \
