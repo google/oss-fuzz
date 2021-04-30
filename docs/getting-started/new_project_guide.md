@@ -252,7 +252,7 @@ Sometimes not every 3rd party library might be needed to be instrumented or
 tools are being compiled that just support the target built.
 
 If for any reasons part of the build process should not be instrumented
-then the following code snippit can be used for this:
+then the following code snippet can be used for this:
 
 ```
 CFLAGS_SAVE="$CFLAGS"
@@ -392,7 +392,7 @@ of good sample inputs is one of the best ways to improve [fuzz target]({{ site.b
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
 to the [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s binary in `$OUT` during the build. Individual files in this
-archive will be used as starting inputs for mutations. The name of each file in the corpus is the sha1 checksum (which you can get using the `sha1sum` or `shasum` comand) of its contents. You can store the corpus
+archive will be used as starting inputs for mutations. The name of each file in the corpus is the sha1 checksum (which you can get using the `sha1sum` or `shasum` command) of its contents. You can store the corpus
 next to source files, generate during build or fetch it using curl or any other
 tool of your choice.
 (example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L41)).

@@ -1,9 +1,10 @@
 homepage: "https://golang.org/"
+main_repo: "https://github.com/golang/go"
 primary_contact: "golang-fuzz@googlegroups.com"
 auto_ccs:
- - "mmoroz@chromium.org"
  - "josharian@gmail.com"
  - "emmanuel@orijtech.com"
+ - "Adam@adalogics.com"
 language: go
 sanitizers:
  - address

@@ -10,3 +10,6 @@ auto_ccs:
   - stgraber@stgraber.org
   - evverx@gmail.com
 main_repo: "https://github.com/lxc/lxc"
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz

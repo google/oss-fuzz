@@ -231,7 +231,7 @@ def build_fuzzers_from_commit(commit,
                                        env_to_add=None,
                                        source_path=host_src_path,
                                        mount_location='/src')
-    if result == 0 or i == num_retry:
+    if result or i == num_retry:
       break
 
     # Retry with an OSS-Fuzz builder container that's closer to the project
@@ -285,7 +285,7 @@ def build_fuzzers_from_commit(commit,
     cleanup()
 
   cleanup()
-  return result == 0
+  return result
 
 
 def detect_main_repo(project_name, repo_name=None, commit=None):

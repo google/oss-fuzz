@@ -5,4 +5,5 @@ auto_ccs:
   - "p.antoine@catenacyber.fr"
 sanitizers:
   - address
+  - undefined
 main_repo: 'https://github.com/capnproto/capnproto'

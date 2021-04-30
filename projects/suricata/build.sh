@@ -16,6 +16,15 @@
 ################################################################################
 
 # build dependencies statically
+(
+tar -xvzf pcre2-10.36.tar.gz
+cd pcre2-10.36
+./configure --disable-shared
+make -j$(nproc) clean
+make -j$(nproc) all
+make -j$(nproc) install
+)
+
 tar -xvzf lz4-1.9.2.tar.gz
 cd lz4-1.9.2
 make liblz4.a
@@ -52,6 +61,8 @@ make install
 cd ..
 
 export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
+# cf https://github.com/google/sanitizers/issues/1389
+export MSAN_OPTIONS=strict_memcmp=false
 
 #we did not put libhtp there before so that cifuzz does not remove it
 mv libhtp suricata/
@@ -66,10 +77,14 @@ fi
 ./src/tests/fuzz/oss-fuzz-configure.sh
 make -j$(nproc)
 
+./src/suricata --list-app-layer-protos | tail -n +2 | while read i; do cp src/fuzz_applayerparserparse $OUT/fuzz_applayerparserparse_$i; done
+
 cp src/fuzz_* $OUT/
 
 # dictionaries
 ./src/suricata --list-keywords | grep "\- " | sed 's/- //' | awk '{print "\""$0"\""}' > $OUT/fuzz_siginit.dict
+
+echo \"SMB\" > $OUT/fuzz_applayerparserparse_smb.dict
 
 # build corpuses
 # default configuration file

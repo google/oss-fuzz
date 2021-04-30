@@ -16,7 +16,12 @@
 #
 ################################################################################
 
-# This is an example build script for projects using the rules_fuzzing library
-# for Bazel.
+# Due to https://github.com/bazelbuild/bazel/issues/11128, affecting Bazel 4.0
+# or earlier, we cannot use the "@rules_fuzzing//" prefix for the label-typed
+# cc_engine configuration flag when fuzzing directly the rules_fuzzing workspace.
+#
+# This is NOT needed for any other Bazel repository that depends on
+# rules_fuzzing.
+export BAZEL_EXTRA_BUILD_FLAGS="--//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine"
 
 bazel_build_fuzz_tests

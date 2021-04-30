@@ -91,6 +91,9 @@ RUN wget https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db
     rm -f openjdk-15.0.2_linux-x64_bin.tar.gz && \
     rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
 
+# Install Java AWT dependencies.
+RUN apt-get install libxext-dev -y
+
 # Do this last to make developing these files easier/faster due to caching.
 COPY bad_build_check \
     collect_dft \

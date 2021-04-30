@@ -16,7 +16,7 @@ one or more [fuzz targets](http://libfuzzer.info/#fuzz-target)
 and [integrates]({{ site.baseurl }}/advanced-topics/ideal-integration/) them
 with the project's build and test system.
 1. The project is [accepted to OSS-Fuzz]({{ site.baseurl }}/getting-started/accepting-new-projects/) and the developer commits their build configurations.
-1. The OSS-Fuzz [builder](jenkins.io) builds the project from the committed configs.
+1. The OSS-Fuzz [builder](https://github.com/google/oss-fuzz/tree/master/infra/build) builds the project from the committed configs.
 1. The builder uploads the fuzz targets to the OSS-Fuzz GCS bucket.
 1. [ClusterFuzz]({{ site.baseurl }}/further-reading/clusterfuzz) downloads the fuzz targets and begins to fuzz the projects.
 1. When Clusterfuzz finds a

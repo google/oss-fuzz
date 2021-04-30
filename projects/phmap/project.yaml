@@ -1,0 +1,6 @@
+homepage: "https://github.com/greg7mdp/parallel-hashmap"
+main_repo: 'https://github.com/greg7mdp/parallel-hashmap'
+primary_contact: "greg7mdp@gmail.com"
+language: c++
+auto_ccs :
+  - "david@adalogics.com"

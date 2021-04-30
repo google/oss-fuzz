@@ -42,7 +42,7 @@ done
 
 declare -r BAZEL_BUILD_FLAGS=(
     "-c" "opt"
-    "--//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine" \
+    "--@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing_oss_fuzz//:oss_fuzz_engine" \
     "--@rules_fuzzing//fuzzing:cc_engine_instrumentation=oss-fuzz" \
     "--@rules_fuzzing//fuzzing:cc_engine_sanitizer=none" \
     "--linkopt=-lc++" \

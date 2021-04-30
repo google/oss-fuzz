@@ -172,7 +172,22 @@ def test_all(out, fuzzing_language, allowed_broken_targets_percentage):
 
   pool = multiprocessing.Pool()
   bad_build_results = pool.map(do_bad_build_check, fuzz_targets)
+  pool.close()
+  pool.join()
   broken_targets = get_broken_fuzz_targets(bad_build_results, fuzz_targets)
+  broken_targets_count = len(broken_targets)
+  if not broken_targets_count:
+    return True
+
+  print('Retrying failed fuzz targets sequentially', broken_targets_count)
+  pool = multiprocessing.Pool(1)
+  retry_targets = []
+  for broken_target, result in broken_targets:
+    retry_targets.append(broken_target)
+  bad_build_results = pool.map(do_bad_build_check, retry_targets)
+  pool.close()
+  pool.join()
+  broken_targets = get_broken_fuzz_targets(bad_build_results, broken_targets)
   broken_targets_count = len(broken_targets)
   if not broken_targets_count:
     return True

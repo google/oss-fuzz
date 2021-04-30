@@ -91,11 +91,6 @@ make -j$(nproc)
 make install
 popd
 
-# libgif
-pushd $SRC/libgif
-make libgif.a libgif.so install-include install-lib OFLAGS="-O2" PREFIX=$WORK
-popd
-
 # libwebp
 pushd $SRC/libwebp
 autoreconf -fi
@@ -125,6 +120,34 @@ autoreconf -fi
   --prefix=$WORK
 make -j$(nproc)
 make install
+popd
+
+# jpeg-xl (libjxl)
+pushd $SRC/jpeg-xl
+sed -i'.bak' "/add_subdirectory(tools)/d" CMakeLists.txt
+cmake -G "Unix Makefiles" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER=$CC \
+  -DCMAKE_CXX_COMPILER=$CXX \
+  -DCMAKE_C_FLAGS="$CFLAGS" \
+  -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
+  -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
+  -DCMAKE_INSTALL_PREFIX="$WORK" \
+  -DCMAKE_THREAD_LIBS_INIT="-lpthread" \
+  -DCMAKE_USE_PTHREADS_INIT=1 \
+  -DBUILD_SHARED_LIBS=0 \
+  -DBUILD_TESTING=0 \
+  -DJPEGXL_ENABLE_FUZZERS=0 \
+  -DJPEGXL_ENABLE_MANPAGES=0 \
+  -DJPEGXL_ENABLE_BENCHMARK=0 \
+  -DJPEGXL_ENABLE_EXAMPLES=0 \
+  .
+make -j$(nproc)
+make install
+# libbrotli-dev package is too old in Ubuntu 16.04, use jpeg-xl version
+cp -r third_party/brotli/c/include/brotli $WORK/include
+cp third_party/brotli/*.a $WORK/lib
 popd
 
 # libvips
@@ -159,13 +182,14 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libturbojpeg.a \
     $WORK/lib/libpng.a \
     $WORK/lib/libz.a \
-    $WORK/lib/libgif.a \
     $WORK/lib/libwebpmux.a \
     $WORK/lib/libwebpdemux.a \
     $WORK/lib/libwebp.a \
     $WORK/lib/libtiff.a \
     $WORK/lib/libheif.a \
     $WORK/lib/libaom.a \
+    $WORK/lib/libjxl.a \
+    $WORK/lib/libjxl_threads.a \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
     -lfftw3 -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
