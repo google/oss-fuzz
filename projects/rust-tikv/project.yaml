@@ -1,0 +1,11 @@
+homepage: "https://tikv.org"
+primary_contact: "koushiro.cqx@gmail.com"
+auto_ccs:
+- "p.antoine@catenacyber.fr"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+language: rust
+main_repo: 'https://github.com/tikv/tikv.git'
