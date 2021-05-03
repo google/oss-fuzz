@@ -50,10 +50,10 @@ project is located in [`projects/boringssl`](https://github.com/google/oss-fuzz/
 
 Each project directory also contains the following three configuration files:
 
-* [project.yaml](#project.yaml) - provides metadata about the project.
-* [Dockerfile](#Dockerfile) - defines the container environment with information
+* [project.yaml](#projectyaml) - provides metadata about the project.
+* [Dockerfile](#dockerfile) - defines the container environment with information
 on dependencies needed to build the project and its [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target).
-* [build.sh](#build.sh) - defines the build script that executes inside the Docker container and
+* [build.sh](#buildsh) - defines the build script that executes inside the Docker container and
 generates the project build.
 
 You can automatically create a new directory for your project in OSS-Fuzz and
@@ -70,7 +70,7 @@ Once the template configuration files are created, you can modify them to fit yo
 
 **Note:** We prefer that you keep and maintain [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your own source code repository. If this isn't possible, you can store them inside the OSS-Fuzz project directory you created.
 
-## project.yaml
+## project.yaml {projectyaml}
 
 This configuration file stores project metadata. The following attributes are supported:
 
@@ -169,6 +169,11 @@ On the testcase page of each oss-fuzz issue is a list of other jobs where the cr
 Fuzzing on i386 is not enabled by default because many projects won't build for i386 without some modification to their OSS-Fuzz build process.
 For example, you will need to link against `$LIB_FUZZING_ENGINE` and possibly install i386 dependencies within the x86_64 docker image ([for example](https://github.com/google/oss-fuzz/blob/5b8dcb5d942b3b8bc173b823fb9ddbdca7ec6c99/projects/gdal/build.sh#L18)) to get things working.
 
+### fuzzing_engines (optional) {#fuzzing_engines}
+The list of fuzzing engines to use.
+By default, `libfuzzer`, `afl`, and `honggfuzz` are used. It is recommended to
+use all of them if possible. `libfuzzer` is required by OSS-Fuzz.
+
 ### help_url (optional) {#help_url}
 A link to a custom help URL that appears in bug reports instead of the default
 [OSS-Fuzz guide to reproducing crashes]({{ site.baseurl }}/advanced-topics/reproducing/). This can be useful if you assign
@@ -187,9 +192,9 @@ builds_per_day: 2
 
 Will build the project twice per day.
 
-## Dockerfile
+## Dockerfile {#dockerfile}
 
-This configuration file defines the Docker image for your project. Your [build.sh](#build.sh) script will be executed in inside the container you define.
+This configuration file defines the Docker image for your project. Your [build.sh](#buildsh) script will be executed in inside the container you define.
 For most projects, the image is simple:
 ```docker
 FROM gcr.io/oss-fuzz-base/base-builder       # base image with clang toolchain
@@ -205,7 +210,7 @@ For an example, see
 or
 [syzkaller/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/syzkaller/Dockerfile).
 
-## build.sh
+## build.sh {#buildsh}
 
 This file defines how to build binaries for [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your project.
 The script is executed within the image built from your [Dockerfile](#Dockerfile).
