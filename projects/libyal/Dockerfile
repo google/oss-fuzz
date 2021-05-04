@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y make autoconf automake autopoint libtoo
 RUN git clone --depth 1 https://github.com/libyal/libfplist.git libfplist
 RUN git clone --depth 1 https://github.com/libyal/libftxf.git libftxf
 RUN git clone --depth 1 https://github.com/libyal/libfusn.git libfusn
+RUN git clone --depth 1 https://github.com/libyal/libfwevt.git libfwevt
 RUN git clone --depth 1 https://github.com/libyal/libfwnt.git libfwnt
 RUN git clone --depth 1 https://github.com/libyal/libfwps.git libfwps
 RUN git clone --depth 1 https://github.com/libyal/libfwsi.git libfwsi
@@ -55,6 +56,7 @@ RUN git clone --depth 1 https://github.com/libyal/libvsmbr.git libvsmbr
 
 RUN git clone --depth 1 https://github.com/libyal/libewf.git libewf
 RUN git clone --depth 1 https://github.com/libyal/libmodi.git libmodi
+RUN git clone --depth 1 https://github.com/libyal/libodraw.git libodraw
 RUN git clone --depth 1 https://github.com/libyal/libqcow.git libqcow
 RUN git clone --depth 1 https://github.com/libyal/libsmraw.git libsmraw
 RUN git clone --depth 1 https://github.com/libyal/libvhdi.git libvhdi
