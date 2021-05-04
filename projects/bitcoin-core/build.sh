@@ -15,20 +15,23 @@
 #
 ################################################################################
 
-# Temporary workaround for https://github.com/google/oss-fuzz/issues/5697
-wget https://github.com/bitcoin/bitcoin/commit/0be1cb158899374722961b844f9f4b0dc5f8558b.patch
-( patch -p1 < ./*.patch ) || true
-
 # Build dependencies
 # This will also force static builds
 if [ "$ARCHITECTURE" = "i386" ]; then
   export BUILD_TRIPLET="i686-pc-linux-gnu"
+  # Temporary workaround for:
+  #   CXXLD    test/fuzz/fuzz
+  # test/fuzz/test_fuzz_fuzz-multiplication_overflow.o: In function `void (anonymous namespace)::TestMultiplicationOverflow<long long>(FuzzedDataProvider&)':
+  # /src/bitcoin-core/src/test/fuzz/multiplication_overflow.cpp:30: undefined reference to `__mulodi4'
+  # clang-12: error: linker command failed with exit code 1 (use -v to see invocation)
+  # Makefile:5495: recipe for target 'test/fuzz/fuzz' failed
+  sed -i 's|defined(HAVE_BUILTIN_MUL_OVERFLOW)|defined(IGNORE_BUILTIN_MUL_OVERFLOW)|g' "./src/test/fuzz/multiplication_overflow.cpp"
 else
   export BUILD_TRIPLET="x86_64-pc-linux-gnu"
 fi
 (
   cd depends
-  make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_WALLET=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 -j$(nproc)
+  make HOST=$BUILD_TRIPLET DEBUG=1 NO_QT=1 NO_WALLET=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1 boost_cxxflags="-std=c++17 -fvisibility=hidden -fPIC ${CXXFLAGS}" libevent_cflags="${CFLAGS}" -j$(nproc)
 )
 
 # Build the fuzz targets
@@ -50,6 +53,7 @@ make -j$(nproc)
 # Limit to a few targets as temporary workaround for https://github.com/google/oss-fuzz/pull/5699#issuecomment-831030305
 FUZZ_TARGETS=( 'process_messages' 'asmap' )
 for fuzz_target in ${FUZZ_TARGETS[@]}; do
+  git checkout -- "./src/test/fuzz/fuzz.cpp"
   sed -i "s|std::getenv(\"FUZZ\")|\"$fuzz_target\"|g" "./src/test/fuzz/fuzz.cpp"
   make -j$(nproc)
   mv ./src/test/fuzz/fuzz $OUT/$fuzz_target
