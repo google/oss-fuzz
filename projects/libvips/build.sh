@@ -29,8 +29,20 @@ popd
 pushd $SRC/libexif
 autoreconf -fi
 ./configure \
-  --enable-shared=no \
+  --enable-static \
+  --disable-shared \
   --disable-docs \
+  --disable-dependency-tracking \
+  --prefix=$WORK
+make -j$(nproc)
+make install
+popd
+
+# lcms
+pushd $SRC/lcms
+./configure \
+  --enable-static \
+  --disable-shared \
   --disable-dependency-tracking \
   --prefix=$WORK
 make -j$(nproc)
@@ -45,7 +57,7 @@ cmake -G "Unix Makefiles" \
   -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
   -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
   -DCMAKE_INSTALL_PREFIX=$WORK -DCMAKE_INSTALL_LIBDIR=lib \
-  -DENABLE_SHARED:bool=off -DCONFIG_PIC=1 \
+  -DENABLE_SHARED=FALSE -DCONFIG_PIC=1 \
   -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
   -DCONFIG_SIZE_LIMIT=1 \
   -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
@@ -74,14 +86,14 @@ popd
 
 # libjpeg-turbo
 pushd $SRC/libjpeg-turbo
-cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC:bool=on
+cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE -DWITH_TURBOJPEG=FALSE
 make -j$(nproc)
 make install
 popd
 
 # libpng
 pushd $SRC/libpng
-sed -ie "s/option WARNING /option WARNING disabled/" scripts/pnglibconf.dfa
+sed -ie "s/option WARNING /& disabled/" scripts/pnglibconf.dfa
 autoreconf -fi
 ./configure \
   --prefix=$WORK \
@@ -89,6 +101,15 @@ autoreconf -fi
   --disable-dependency-tracking
 make -j$(nproc)
 make install
+popd
+
+# libspng
+pushd $SRC/libspng
+cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DSPNG_STATIC=TRUE -DSPNG_SHARED=FALSE -DZLIB_ROOT=$WORK
+make -j$(nproc)
+make install
+# Fix pkg-config file of libspng
+sed -i'.bak' "s/-lspng/&_static/" $WORK/lib/pkgconfig/libspng.pc
 popd
 
 # libwebp
@@ -179,8 +200,10 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
     $WORK/lib/libvips.a \
     $WORK/lib/libexif.a \
-    $WORK/lib/libturbojpeg.a \
+    $WORK/lib/liblcms2.a \
+    $WORK/lib/libjpeg.a \
     $WORK/lib/libpng.a \
+    $WORK/lib/libspng_static.a \
     $WORK/lib/libz.a \
     $WORK/lib/libwebpmux.a \
     $WORK/lib/libwebpdemux.a \
