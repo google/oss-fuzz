@@ -1,0 +1,8 @@
+[package]
+name = "fuzz-targets-common"
+version = "0.1.0"
+authors = ["The rust-fuzz Project Developers"]
+
+[dependencies.hyper]
+path = "../.."
+
