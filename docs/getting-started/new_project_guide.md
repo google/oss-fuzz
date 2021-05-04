@@ -70,7 +70,7 @@ Once the template configuration files are created, you can modify them to fit yo
 
 **Note:** We prefer that you keep and maintain [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your own source code repository. If this isn't possible, you can store them inside the OSS-Fuzz project directory you created.
 
-## project.yaml {projectyaml}
+## project.yaml {#projectyaml}
 
 This configuration file stores project metadata. The following attributes are supported:
 
