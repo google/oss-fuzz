@@ -6,5 +6,7 @@ auto_ccs :
 
 sanitizers:
 - address
-- undefined
+fuzzing_engines:
+- libfuzzer
+- afl
 main_repo: 'https://github.com/espeak-ng/espeak-ng'
