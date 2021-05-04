@@ -4,6 +4,7 @@ import (
 	"github.com/golang/protobuf/proto"
 
 	"github.com/google/cel-go/checker/decls"
+	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 
 func FuzzEval(data []byte) int {
@@ -13,15 +14,13 @@ func FuzzEval(data []byte) int {
 		panic("Failed to unmarshal LPM generated variables")
 	}
 
-	env, err := NewEnv()
+	declares := make([]*exprpb.Decl, 0, len(gen.Inputs))
+	for k, _ := range gen.Inputs {
+		declares = append(declares, decls.NewVar(k, decls.String))
+	}
+	env, err := NewEnv(Declarations(declares...))
 	if err != nil {
 		panic("impossible to create env")
-	}
-	for k, _ := range gen.Inputs {
-		env, err = env.Extend(Declarations(decls.NewVar(k, decls.String)))
-		if err != nil {
-			panic("impossible to extend env")
-		}
 	}
 
 	ast, issues := env.Compile(gen.Expr)
