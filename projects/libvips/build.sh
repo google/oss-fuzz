@@ -147,6 +147,11 @@ popd
 # jpeg-xl (libjxl)
 pushd $SRC/jpeg-xl
 sed -i'.bak' "/add_subdirectory(tools)/d" CMakeLists.txt
+# Don't overwrite our linker flags
+sed -i'.bak' "/set(CMAKE_EXE_LINKER_FLAGS/{N;d;}" CMakeLists.txt
+# Ensure pkg-config file is installed when -DJPEGXL_STATIC=1, see:
+# https://gitlab.com/wg1/jpeg-xl/-/issues/224
+curl -Ls https://gist.github.com/kleisauke/d54b5e62367d20e66dd58ca19a2234c9/raw/1dfd4398de87e1997f21a216a1c28de730deb2d9/jpeg-xl-pkg-config.patch | patch -p1 || true
 cmake -G "Unix Makefiles" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_COMPILER=$CC \
@@ -160,20 +165,27 @@ cmake -G "Unix Makefiles" \
   -DCMAKE_USE_PTHREADS_INIT=1 \
   -DBUILD_SHARED_LIBS=0 \
   -DBUILD_TESTING=0 \
+  -DJPEGXL_STATIC=1 \
   -DJPEGXL_ENABLE_FUZZERS=0 \
   -DJPEGXL_ENABLE_MANPAGES=0 \
   -DJPEGXL_ENABLE_BENCHMARK=0 \
   -DJPEGXL_ENABLE_EXAMPLES=0 \
+  -DJPEGXL_ENABLE_SKCMS=0 \
   .
 make -j$(nproc)
 make install
 # libbrotli-dev package is too old in Ubuntu 16.04, use jpeg-xl version
 cp -r third_party/brotli/c/include/brotli $WORK/include
 cp third_party/brotli/*.a $WORK/lib
+cp third_party/brotli/*.pc $WORK/lib/pkgconfig
+# Fix pkg-config files of libbrotli
+sed -i'.bak' "s/-lbrotlienc/&-static/" $WORK/lib/pkgconfig/libbrotlienc.pc
+sed -i'.bak' "s/-lbrotlidec/&-static/" $WORK/lib/pkgconfig/libbrotlidec.pc
+sed -i'.bak' "s/-lbrotlicommon/&-static/" $WORK/lib/pkgconfig/libbrotlicommon.pc
 popd
 
 # libvips
-./autogen.sh \
+PKG_CONFIG="pkg-config --static" ./autogen.sh \
   --disable-shared \
   --disable-modules \
   --disable-gtk-doc \
@@ -215,6 +227,10 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     $WORK/lib/libaom.a \
     $WORK/lib/libjxl.a \
     $WORK/lib/libjxl_threads.a \
+    $WORK/lib/libhwy.a \
+    $WORK/lib/libbrotlienc-static.a \
+    $WORK/lib/libbrotlidec-static.a \
+    $WORK/lib/libbrotlicommon-static.a \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
     -lfftw3 -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
