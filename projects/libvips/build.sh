@@ -78,7 +78,8 @@ autoreconf -fi
   --enable-static \
   --disable-examples \
   --disable-go \
-  --prefix=$WORK
+  --prefix=$WORK \
+  CPPFLAGS=-I$WORK/include
 make clean
 make -j$(nproc)
 make install
@@ -174,6 +175,7 @@ popd
 # libvips
 ./autogen.sh \
   --disable-shared \
+  --disable-modules \
   --disable-gtk-doc \
   --disable-gtk-doc-html \
   --disable-dependency-tracking \
