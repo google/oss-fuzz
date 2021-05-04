@@ -19,7 +19,7 @@
 # build project
 export ASAN_OPTIONS=detect_leaks=0
 ./autogen.sh
-./configure --with-libfuzzer=yes --disable-shared
+./configure --with-libfuzzer=yes --disable-shared --with-speechplayer=no
 make check || true
 cp tests/ssml-fuzzer.test $OUT/ssml-fuzzer
 cp -r espeak-ng-data/ $OUT/
