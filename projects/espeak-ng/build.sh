@@ -17,7 +17,6 @@
 
 
 # build project
-git apply  --ignore-whitespace ../patch.diff
 export ASAN_OPTIONS=detect_leaks=0
 ./autogen.sh
 ./configure --with-libfuzzer=yes --disable-shared

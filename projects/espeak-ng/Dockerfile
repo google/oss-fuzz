@@ -18,5 +18,4 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt install -y automake autoconf libtool pkg-config
 RUN git clone --depth 1 https://github.com/espeak-ng/espeak-ng
 COPY build.sh $SRC
-COPY patch.diff $SRC
 WORKDIR $SRC/espeak-ng
