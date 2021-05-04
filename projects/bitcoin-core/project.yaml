@@ -16,3 +16,4 @@ architectures:
   - x86_64
 fuzzing_engines:
   - libfuzzer
+  - honggfuzz

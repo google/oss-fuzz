@@ -35,22 +35,26 @@ fi
 
 ./autogen.sh
 
-# Limit to one target as temporary workaround for https://github.com/google/oss-fuzz/pull/5699#issuecomment-831030305
-export ONLY_ONE_TARGET="process_messages"
-sed -i "s|std::getenv(\"FUZZ\")|\"$ONLY_ONE_TARGET\"|g" "./src/test/fuzz/fuzz.cpp"
-
 # OSS-Fuzz will provide CC, CXX, etc. So only set:
 # * --enable-fuzz, see https://github.com/bitcoin/bitcoin/blob/master/doc/fuzzing.md
 # * CONFIG_SITE, see https://github.com/bitcoin/bitcoin/blob/master/depends/README.md
-CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz --with-sanitizers=fuzzer
+if [ "$FUZZING_ENGINE" = "libfuzzer" ]; then
+  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz --with-sanitizers=fuzzer
+else
+  # See https://google.github.io/oss-fuzz/getting-started/new-project-guide/#Requirements
+  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz LDFLAGS="$LIB_FUZZING_ENGINE"
+fi
 
 make -j$(nproc)
 
-mv ./src/test/fuzz/fuzz $OUT/$ONLY_ONE_TARGET
-
-(
-  cd assets/fuzz_seed_corpus
-  for folder in ./${ONLY_ONE_TARGET}*; do
-    zip --recurse-paths --quiet --junk-paths "$OUT/${folder}_seed_corpus.zip" "${folder}"
-  done
-)
+# Limit to a few targets as temporary workaround for https://github.com/google/oss-fuzz/pull/5699#issuecomment-831030305
+FUZZ_TARGETS=( 'process_messages' 'asmap' )
+for fuzz_target in ${FUZZ_TARGETS[@]}; do
+  sed -i "s|std::getenv(\"FUZZ\")|\"$fuzz_target\"|g" "./src/test/fuzz/fuzz.cpp"
+  make -j$(nproc)
+  mv ./src/test/fuzz/fuzz $OUT/$fuzz_target
+  (
+    cd assets/fuzz_seed_corpus
+    zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
+  )
+done
