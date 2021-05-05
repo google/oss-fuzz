@@ -27,5 +27,12 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone --depth=1 https://github.com/bitcoin/bitcoin.git bitcoin-core
 RUN git clone --depth=1 https://github.com/bitcoin-core/qa-assets bitcoin-core/assets
+RUN git clone --depth 1 https://github.com/guidovranken/cryptofuzz
+RUN git clone --depth 1 https://github.com/bitcoin-core/secp256k1.git
+RUN git clone --depth 1 https://github.com/randombit/botan.git
+RUN git clone --depth 1 https://github.com/trezor/trezor-firmware.git
+RUN git clone --depth 1 https://github.com/google/wycheproof.git
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 WORKDIR bitcoin-core
 COPY build.sh $SRC/
+COPY build_cryptofuzz.sh $SRC/
