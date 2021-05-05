@@ -23,7 +23,7 @@ RUSTFLAGS="" cargo build
         CFLAGS="" CXXFLAGS="" ./target/debug/cli build $t --fuzzer $FUZZING_ENGINE
     fi
     if [ "$FUZZING_ENGINE" = afl ]; then
-        CC=clang CXX=clang++ RUSTFLAGS="" ./target/debug/cli build $t --fuzzer $FUZZING_ENGINE
+        CC=clang CXX=clang++ ./target/debug/cli build $t --fuzzer $FUZZING_ENGINE
     fi
     if [ "$FUZZING_ENGINE" = libfuzzer ]; then
         ./target/debug/cli build $t --fuzzer $FUZZING_ENGINE

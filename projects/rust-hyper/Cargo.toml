@@ -6,3 +6,5 @@ authors = ["The rust-fuzz Project Developers"]
 [dependencies.hyper]
 path = "../.."
 
+[dependencies]
+httparse = "1.4"
