@@ -18,3 +18,4 @@ architectures:
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
+  - afl

@@ -44,8 +44,8 @@ fi
 if [ "$FUZZING_ENGINE" = "libfuzzer" ]; then
   CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz --with-sanitizers=fuzzer
 else
-  # See https://google.github.io/oss-fuzz/getting-started/new-project-guide/#Requirements
-  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz LDFLAGS="$LIB_FUZZING_ENGINE"
+  sed -i "s|PROVIDE_FUZZ_MAIN_FUNCTION|NEVER_PROVIDE_MAIN_FOR_OSS_FUZZ|g" "./src/test/fuzz/fuzz.cpp"
+  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
 fi
 
 make -j$(nproc)
@@ -55,6 +55,7 @@ FUZZ_TARGETS=( 'process_messages' 'asmap' )
 for fuzz_target in ${FUZZ_TARGETS[@]}; do
   git checkout -- "./src/test/fuzz/fuzz.cpp"
   sed -i "s|std::getenv(\"FUZZ\")|\"$fuzz_target\"|g" "./src/test/fuzz/fuzz.cpp"
+  sed -i "s|PROVIDE_FUZZ_MAIN_FUNCTION|NEVER_PROVIDE_MAIN_FOR_OSS_FUZZ|g" "./src/test/fuzz/fuzz.cpp"
   make -j$(nproc)
   mv ./src/test/fuzz/fuzz $OUT/$fuzz_target
   (
