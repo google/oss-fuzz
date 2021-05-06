@@ -16,6 +16,10 @@
 ################################################################################
 
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_NO_OPENSSL -D_LIBCPP_DEBUG=1"
+if [[ "$SANITIZER" = "memory" ]]
+then
+    export CXXFLAGS="$CXXFLAGS -DMSAN"
+fi
 export LIBFUZZER_LINK="$LIB_FUZZING_ENGINE"
 export LINK_FLAGS=""
 
@@ -47,6 +51,14 @@ echo -n "BLS_Pairing," >>extra_options.h
 echo -n "BLS_PrivateToPublic," >>extra_options.h
 echo -n "BLS_Sign," >>extra_options.h
 echo -n "BLS_Verify," >>extra_options.h
+echo -n "BLS_Compress_G1," >>extra_options.h
+echo -n "BLS_Compress_G2," >>extra_options.h
+echo -n "BLS_Decompress_G1," >>extra_options.h
+echo -n "BLS_Decompress_G2," >>extra_options.h
+echo -n "BLS_G1_Add," >>extra_options.h
+echo -n "BLS_G1_Mul," >>extra_options.h
+echo -n "BLS_G2_Add," >>extra_options.h
+echo -n "BLS_G2_Mul," >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_P," >>extra_options.h
 echo -n "BignumCalc_Mod_BLS12_381_R," >>extra_options.h
 echo -n "KDF_HKDF," >>extra_options.h
@@ -76,51 +88,72 @@ fi
 
 # Build blst
 cd $SRC/blst/
-./build.sh
+if [[ "$SANITIZER" == "memory" ]]
+then
+    # Patch to disable assembly
+    touch new_no_asm.h
+    echo "#if LIMB_T_BITS==32" >>new_no_asm.h
+    echo "typedef unsigned long long llimb_t;" >>new_no_asm.h
+    echo "#else" >>new_no_asm.h
+    echo "typedef __uint128_t llimb_t;" >>new_no_asm.h
+    echo "#endif" >>new_no_asm.h
+    cat src/no_asm.h >>new_no_asm.h
+    mv new_no_asm.h src/no_asm.h
+
+    CFLAGS="$CFLAGS -D__BLST_NO_ASM__ -D__BLST_PORTABLE__" ./build.sh
+else
+    ./build.sh
+fi
 export BLST_LIBBLST_A_PATH=$(realpath libblst.a)
 export BLST_INCLUDE_PATH=$(realpath bindings/)
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_BLST"
 
 # Build Chia
-cd $SRC/bls-signatures/
-mkdir build/
-cd build/
-if [[ $CFLAGS = *-m32* ]]
+if [[ $CFLAGS != *sanitize=memory* && $CFLAGS != *undefined ]]
 then
-    export CHIA_ARCH="X86"
-else
-    export CHIA_ARCH="X64"
+    cd $SRC/bls-signatures/
+    mkdir build/
+    cd build/
+    if [[ $CFLAGS = *-m32* ]]
+    then
+        export CHIA_ARCH="X86"
+    else
+        export CHIA_ARCH="X64"
+    fi
+    cmake .. -DBUILD_BLS_PYTHON_BINDINGS=0 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0 -DARCH=$CHIA_ARCH
+    make -j$(nproc)
+    export CHIA_BLS_LIBBLS_A_PATH=$(realpath libbls.a)
+    export CHIA_BLS_INCLUDE_PATH=$(realpath ../src/)
+    export CHIA_BLS_RELIC_INCLUDE_PATH_1=$(realpath _deps/relic-build/include/)
+    export CHIA_BLS_RELIC_INCLUDE_PATH_2=$(realpath _deps/relic-src/include/)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CHIA_BLS"
 fi
-cmake .. -DBUILD_BLS_PYTHON_BINDINGS=0 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0 -DARCH=$CHIA_ARCH
-make -j$(nproc)
-export CHIA_BLS_LIBBLS_A_PATH=$(realpath libbls.a)
-export CHIA_BLS_INCLUDE_PATH=$(realpath ../src/)
-export CHIA_BLS_RELIC_INCLUDE_PATH_1=$(realpath _deps/relic-build/include/)
-export CHIA_BLS_RELIC_INCLUDE_PATH_2=$(realpath _deps/relic-src/include/)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_CHIA_BLS"
 
 # Build mcl
-cd $SRC/mcl/
-mkdir build/
-cd build/
-if [[ $CFLAGS != *-m32* ]]
+if [[ "$SANITIZER" != "memory" && "$SANITIZER" != "undefined" ]]
 then
-    cmake .. -DMCL_STATIC_LIB=on
-    export LINK_FLAGS="$LINK_FLAGS -lgmp"
-else
-    cmake .. -DMCL_STATIC_LIB=on \
-    -DGMP_INCLUDE_DIR="$SRC/libgmp-install/include/" \
-    -DGMP_LIBRARY="$SRC/libgmp-install/lib/libgmp.a" \
-    -DGMP_GMPXX_INCLUDE_DIR="$SRC/libgmp-install/include/" \
-    -DGMP_GMPXX_LIBRARY="$SRC/libgmp-install/lib/libgmpxx.a" \
-    -DMCL_USE_ASM=off
-    export LINK_FLAGS="$LINK_FLAGS $SRC/libgmp-install/lib/libgmp.a"
+    cd $SRC/mcl/
+    mkdir build/
+    cd build/
+    if [[ $CFLAGS != *-m32* ]]
+    then
+        cmake .. -DMCL_STATIC_LIB=on
+        export LINK_FLAGS="$LINK_FLAGS -lgmp"
+    else
+        cmake .. -DMCL_STATIC_LIB=on \
+        -DGMP_INCLUDE_DIR="$SRC/libgmp-install/include/" \
+        -DGMP_LIBRARY="$SRC/libgmp-install/lib/libgmp.a" \
+        -DGMP_GMPXX_INCLUDE_DIR="$SRC/libgmp-install/include/" \
+        -DGMP_GMPXX_LIBRARY="$SRC/libgmp-install/lib/libgmpxx.a" \
+        -DMCL_USE_ASM=off
+        export LINK_FLAGS="$LINK_FLAGS $SRC/libgmp-install/lib/libgmp.a"
+    fi
+    make
+    export MCL_INCLUDE_PATH=$(realpath ../include/)
+    export MCL_LIBMCL_A_PATH=$(realpath lib/libmcl.a)
+    export MCL_LIBMCLBN384_A_PATH=$(realpath lib/libmclbn384.a)
+    export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MCL"
 fi
-make
-export MCL_INCLUDE_PATH=$(realpath ../include/)
-export MCL_LIBMCL_A_PATH=$(realpath lib/libmcl.a)
-export MCL_LIBMCLBN384_A_PATH=$(realpath lib/libmclbn384.a)
-export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_MCL"
 
 # Build Botan
 cd $SRC/botan/
@@ -154,11 +187,17 @@ make -B
 cd $SRC/cryptofuzz/modules/blst/
 make -B
 
-cd $SRC/cryptofuzz/modules/chia_bls/
-make -B
+if [[ "$SANITIZER" != "memory" ]]
+then
+    cd $SRC/cryptofuzz/modules/chia_bls/
+    make -B
+fi
 
-cd $SRC/cryptofuzz/modules/mcl/
-make -B
+if [[ "$SANITIZER" != "memory" && "$SANITIZER" != "undefined" ]]
+then
+    cd $SRC/cryptofuzz/modules/mcl/
+    make -B
+fi
 
 # Build Cryptofuzz
 cd $SRC/cryptofuzz/
