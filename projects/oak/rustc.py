@@ -1,5 +1,6 @@
-#!/bin/bash -eu
-# Copyright 2019 Google Inc.
+#!/usr/bin/env python
+
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,24 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
 
-cd oak_functions/loader/
+import sys
+import subprocess
 
-if [ "$SANITIZER" = "coverage" ]
-then
-  export RUSTFLAGS="$RUSTFLAGS -C debug-assertions=no"
-  chmod +x $SRC/rustc.py
-  export RUSTC="$SRC/rustc.py"
-fi
-
-cargo fuzz build -O
-
-FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
-for f in fuzz/fuzz_targets/*.rs
-do
-    FUZZ_TARGET_NAME=$(basename ${f%.*})
-    cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
-done
-
+#Disable coverage for troubling crates.
+sys.argv[0] = "rustc"
+if "tokio_util" in sys.argv or "hyper" in sys.argv:
+    try:
+        sys.argv.remove("-Zinstrument-coverage")
+    except:
+        pass
+    print(sys.argv)
+subprocess.call(sys.argv)
