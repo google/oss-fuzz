@@ -86,8 +86,9 @@ make
 LIBS="/usr/lib/x86_64-linux-gnu"
 LIBICU=/src/deps/lib
 GLIBS="/glib/build"
-$CC -v $CFLAGS $LIB_FUZZING_ENGINE -I/usr/include/ \
-    $SRC/fuzz_pdf.c -o $OUT/fuzz_pdf ./lib/libfontforge.a \
+$CC $CFLAGS -c $SRC/fuzz_pdf.c
+$CXX -v $CXXFLAGS $LIB_FUZZING_ENGINE  \
+    ./fuzz_pdf.o -o $OUT/fuzz_pdf ./lib/libfontforge.a \
     -Wl,--start-group \
             ${GLIBS}/gmodule/libgmodule-2.0.a \
             ${GLIBS}/glib/libglib-2.0.a \
