@@ -34,9 +34,9 @@ cd $SRC/secp256k1/
 autoreconf -ivf
 if [[ $CFLAGS = *sanitize=memory* ]]
 then
-    ./configure --enable-static --disable-tests --disable-benchmark --with-bignum=no --disable-exhaustive-tests --disable-valgrind --enable-module-recovery --with-asm=no
+    ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --disable-valgrind --enable-module-recovery --enable-module-schnorrsig --enable-experimental --with-asm=no
 else
-    ./configure --enable-static --disable-tests --disable-benchmark --with-bignum=no --disable-exhaustive-tests --disable-valgrind --enable-module-recovery
+    ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --disable-valgrind --enable-module-recovery --enable-module-schnorrsig --enable-experimental
 fi
 make
 export SECP256K1_INCLUDE_PATH=$(realpath include)
