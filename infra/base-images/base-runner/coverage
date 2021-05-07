@@ -125,6 +125,36 @@ function run_go_fuzz_target {
   $SYSGOPATH/bin/gocovsum $DUMPS_DIR/$target.profdata > $FUZZER_STATS_DIR/$target.json
 }
 
+function run_java_fuzz_target {
+  local target=$1
+
+  local exec_file="$DUMPS_DIR/$target.exec"
+  local class_dump_dir="$DUMPS_DIR/${target}_classes/"
+  mkdir "$class_dump_dir"
+  local corpus_real="/corpus/${target}"
+
+  # -merge=1 requires an output directory, create a new, empty dir for that.
+  local corpus_dummy="$OUT/dummy_corpus_dir_for_${target}"
+  rm -rf $corpus_dummy && mkdir -p $corpus_dummy
+
+  # Use 100s timeout instead of 25s as code coverage builds can be very slow.
+  local jacoco_args="destfile=$exec_file,classdumpdir=$class_dump_dir"
+  local args="-merge=1 -timeout=100 -close_fd_mask=3 --nohooks \
+      --jvm_args=-javaagent:/opt/jacoco-agent.jar=$jacoco_args \
+      $corpus_dummy $corpus_real"
+
+  timeout $TIMEOUT $OUT/$target $args &> $LOGS_DIR/$target.log
+  if (( $? != 0 )); then
+    echo "Error occured while running $target:"
+    cat $LOGS_DIR/$target.log
+  fi
+
+  if (( $(du -c $exec_file | tail -n 1 | cut -f 1) == 0 )); then
+    # Skip fuzz targets that failed to produce .exec files.
+    return 0
+  fi
+}
+
 export SYSGOPATH=$GOPATH
 export GOPATH=$OUT/$GOPATH
 # Run each fuzz target, generate raw coverage dumps.
@@ -136,6 +166,14 @@ for fuzz_target in $FUZZ_TARGETS; do
       grep "FUZZ_CORPUS_DIR" $fuzz_target > /dev/null 2>&1 || continue
     fi
     run_go_fuzz_target $fuzz_target &
+  elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
+    # Continue if not a fuzz target.
+    if [[ $FUZZING_ENGINE != "none" ]]; then
+      grep "LLVMFuzzerTestOneInput" $fuzz_target > /dev/null 2>&1 || continue
+    fi
+
+    echo "Running $fuzz_target"
+    run_java_fuzz_target $fuzz_target &
   else
     # Continue if not a fuzz target.
     if [[ $FUZZING_ENGINE != "none" ]]; then
@@ -175,6 +213,43 @@ if [[ $FUZZING_LANGUAGE == "go" ]]; then
   mv merged.data $REPORT_ROOT_DIR/heap.prof
   #TODO some proxy for go tool pprof -http=127.0.0.1:8001 $DUMPS_DIR/cpu.prof
   echo "Finished generating code coverage report for Go fuzz targets."
+elif [[ $FUZZING_LANGUAGE == "jvm" ]]; then
+
+  # From this point on the script does not tolerate any errors.
+  set -e
+
+  # Merge .exec files from the individual targets.
+  jacoco_merged_exec=$DUMPS_DIR/jacoco.merged.exec
+  java -jar /opt/jacoco-cli.jar merge $DUMPS_DIR/*.exec \
+      --destfile $jacoco_merged_exec
+
+  # Merge .class files from the individual targets.
+  classes_dir=$DUMPS_DIR/classes
+  mkdir $classes_dir
+  for fuzz_target in $FUZZ_TARGETS; do
+    cp -r $DUMPS_DIR/${fuzz_target}_classes/* $classes_dir/
+  done
+
+  # Heuristically determine source directories based on Maven structure.
+  # Always include the $SRC root as it likely contains the fuzzer sources.
+  sourcefiles_args=(--sourcefiles $OUT/$SRC)
+  source_dirs=$(find $OUT/$SRC -type d -name 'java')
+  for source_dir in $source_dirs; do
+    sourcefiles_args+=(--sourcefiles "$source_dir")
+  done
+
+  # Generate HTML and XML reports.
+  xml_report=$REPORT_PLATFORM_DIR/index.xml
+  java -jar /opt/jacoco-cli.jar report $jacoco_merged_exec \
+      --html $REPORT_PLATFORM_DIR \
+      --xml $xml_report \
+      --classfiles $classes_dir \
+      "${sourcefiles_args[@]}"
+
+  # Write llvm-cov summary file.
+  jacoco_report_converter.py $xml_report $SUMMARY_FILE
+
+  set +e
 else
 
   # From this point on the script does not tolerate any errors.
