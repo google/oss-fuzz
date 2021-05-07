@@ -239,6 +239,7 @@ def build_canary_project():
 
 def main():
   """Build modified projects or canary project."""
+  os.environ['OSS_FUZZ_CI'] = '1'
   infra_changed = is_infra_changed()
   if infra_changed:
     print('Pulling and building base images first.')

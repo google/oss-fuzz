@@ -554,6 +554,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       'ARCHITECTURE=' + architecture,
   ]
 
+  _add_oss_fuzz_ci_if_needed(env)
+
   if project_language:
     env.append('FUZZING_LANGUAGE=' + project_language)
 
@@ -621,6 +623,13 @@ def build_fuzzers(args):
                             args.source_path)
 
 
+def _add_oss_fuzz_ci_if_needed(env):
+  """Adds value of |OSS_FUZZ_CI| environment variable to |env| if it is set."""
+  oss_fuzz_ci = os.getenv('OSS_FUZZ_CI')
+  if oss_fuzz_ci:
+    env.append('OSS_FUZZ_CI=' + oss_fuzz_ci)
+
+
 def check_build(args):
   """Checks that fuzzers in the container execute without errors."""
   if not check_project_exists(args.project_name):
@@ -641,6 +650,7 @@ def check_build(args):
       'ARCHITECTURE=' + args.architecture,
       'FUZZING_LANGUAGE=' + fuzzing_language,
   ]
+  _add_oss_fuzz_ci_if_needed(env)
   if args.e:
     env += args.e
 
