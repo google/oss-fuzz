@@ -47,13 +47,22 @@ CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable
 
 make -j$(nproc)
 
-# Limit to a few targets as temporary workaround for https://github.com/google/oss-fuzz/pull/5699#issuecomment-831030305
-FUZZ_TARGETS=( 'process_messages' 'asmap' )
+WRITE_ALL_FUZZ_TARGETS_AND_ABORT="/tmp/a" "./src/test/fuzz/fuzz" || true
+readarray FUZZ_TARGETS < "/tmp/a"
+
+# Compile the fuzz executable again with a "magic string" as the name of the fuzz target
+export MAGIC_STR="b5813eee2abc9d3358151f298b75a72264ffa119d2f71ae7fefa15c4b70b4bc5b38e87e3107a730f25891ea428b2b4fabe7a84f5bfa73c79e0479e085e4ff157"
+sed -i "s|std::getenv(\"FUZZ\")|\"$MAGIC_STR\"|g" "./src/test/fuzz/fuzz.cpp"
+make -j$(nproc)
+
+# Clean all build files to avoid out-of-disk errors
+mv "./src/test/fuzz/fuzz" "./fuzz_main"
+make distclean
+
+# Replace the magic string with the actual name of each fuzz target
 for fuzz_target in ${FUZZ_TARGETS[@]}; do
-  git checkout -- "./src/test/fuzz/fuzz.cpp"
-  sed -i "s|std::getenv(\"FUZZ\")|\"$fuzz_target\"|g" "./src/test/fuzz/fuzz.cpp"
-  make -j$(nproc)
-  mv ./src/test/fuzz/fuzz $OUT/$fuzz_target
+  python3 -c "c_str_target=b\"${fuzz_target}\x00\";c_str_magic=b\"$MAGIC_STR\";c=open('./fuzz_main','rb').read();c=c.replace(c_str_magic, c_str_target+c_str_magic[len(c_str_target):]);open(\"$OUT/$fuzz_target\",'wb').write(c)"
+  chmod +x "$OUT/$fuzz_target"
   (
     cd assets/fuzz_seed_corpus
     zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
