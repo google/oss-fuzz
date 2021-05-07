@@ -16,7 +16,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 
 RUN apt update && apt install -y build-essential binutils-dev libunwind-dev libblocksruntime-dev liblzma-dev
-RUN cargo install honggfuzz --version 0.5.47
+RUN cargo install honggfuzz
 
 #TODO back to main repo
 RUN git clone --depth 1 --branch ossfuzz https://github.com/catenacyber/tikv.git
