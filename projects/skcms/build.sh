@@ -31,9 +31,3 @@ cp iccprofile_seed_corpus.zip $OUT/iccprofile_atf_seed_corpus.zip
 cp iccprofile_seed_corpus.zip $OUT/iccprofile_transform_seed_corpus.zip
 # They all use the same dictionary file.
 cp iccprofile.dict $OUT/iccprofile.dict
-if [[ -z "${OSS_FUZZ_CI}" ]]; then
-  echo "passed"
-else
-  echo "OSS_FUZZ_CI $OSS_FUZZ_CI"
-  exit 1
-fi
