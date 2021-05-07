@@ -18,5 +18,6 @@
 mkdir build && cd build
 cmake ../
 make
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_mapper.cpp -o $OUT/fuzz_mapper \
+
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE ../fuzzers/oatpp/parser/json/mapping/ObjectMapper.cpp -o $OUT/fuzz_mapper \
     ./src/liboatpp.a -I../src
