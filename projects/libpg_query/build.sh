@@ -16,4 +16,4 @@
 ################################################################################
 
 make build
-$CC $CFLAGS $LIB_FUZZING_ENGINE ./fuzz_parser.c ./libpg_query.a -I./ -o $OUT/fuzz_parser
+$CC $CFLAGS $LIB_FUZZING_ENGINE ./test/fuzz/fuzz_parser.c ./libpg_query.a -I./ -o $OUT/fuzz_parser

@@ -18,4 +18,3 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN git clone --depth 1 https://github.com/pganalyze/libpg_query libpg_query
 WORKDIR libpg_query
 COPY build.sh $SRC/
-COPY fuzz_parser.c $SRC/libpg_query/fuzz_parser.c
