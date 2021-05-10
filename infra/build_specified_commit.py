@@ -230,7 +230,7 @@ def build_fuzzers_from_commit(commit,
                                        architecture=build_data.architecture,
                                        env_to_add=None,
                                        source_path=host_src_path,
-                                       mount_location='/src')
+                                       mount_path='/src')
     if result or i == num_retry:
       break
 
