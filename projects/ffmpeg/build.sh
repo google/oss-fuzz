@@ -145,7 +145,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
 make clean
 make -j$(nproc) install
 
-# Download test sampes, will be used as seed corpus.
+# Download test samples, will be used as seed corpus.
 # DISABLED.
 # TODO: implement a better way to maintain a minimized seed corpora
 # for all targets. As of 2017-05-04 now the combined size of corpora
