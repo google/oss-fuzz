@@ -145,7 +145,7 @@ PKG_CONFIG_PATH="$FFMPEG_DEPS_PATH/lib/pkgconfig" ./configure \
 make clean
 make -j$(nproc) install
 
-# Download test sampes, will be used as seed corpus.
+# Download test samples, will be used as seed corpus.
 # DISABLED.
 # TODO: implement a better way to maintain a minimized seed corpora
 # for all targets. As of 2017-05-04 now the combined size of corpora
@@ -200,6 +200,7 @@ rm `find fate-suite -name '*.dec'`
 rm `find fate-suite -name '*.pcm'`
 
 zip -r $OUT/${fuzzer_name}_seed_corpus.zip fate-suite
+zip -r $OUT/ffmpeg_AV_CODEC_ID_HEVC_seed_corpus.zip fate-suite/hevc
 
 # Build fuzzer for demuxer fed at IO level
 fuzzer_name=ffmpeg_IO_DEMUXER_fuzzer
