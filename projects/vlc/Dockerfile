@@ -16,7 +16,7 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-  pkg-config cmake flex bison gettext libglu1-mesa-dev libogg-dev libxml2-dev
+  pkg-config cmake flex bison gettext libglu1-mesa-dev 
 RUN git clone --depth 1 https://github.com/videolan/vlc vlc
 WORKDIR vlc
 COPY build.sh string_fuzzer.c $SRC/

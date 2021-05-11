@@ -21,18 +21,24 @@ sed -i 's/-fsanitize-coverage=trace-cmp//g' ./configure.ac
 sed -i 's/-fsanitize-coverage=trace-pc//g' ./configure.ac
 sed -i 's/-lFuzzer//g'  ./configure.ac
 sed -i 's/..\/..\/lib\/libvlc_internal.h/lib\/libvlc_internal.h/g' ./test/src/input/decoder.c
+sed -i 's/..\/modules\/libxml_plugin.la//g' ./test/Makefile.am
+sed -i 's/..\/modules\/libogg_plugin.la//g' ./test/Makefile.am
+sed -i 's/f(misc_xml_xml)//g' ./test/src/input/demux-run.c
+sed -i 's/f(demux_ogg)//g' ./test/src/input/demux-run.c
 
 # Ensure that we compile with the correct link flags.
+#if [ "$FUZZING_ENGINE" = libfuzzer]; then
 RULE="vlc_demux_libfuzzer_LDADD"
-FUZZ_LDFLAGS="vlc_demux_libfuzzer_LDFLAGS=${LIB_FUZZING_ENGINE}"
+FUZZ_LDFLAGS="vlc_demux_libfuzzer_LDFLAGS=\${LIB_FUZZING_ENGINE}"
 sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
 
 RULE="vlc_demux_dec_libfuzzer_LDADD"
-FUZZ_LDFLAGS="vlc_demux_dec_libfuzzer_LDFLAGS=${LIB_FUZZING_ENGINE}"
+FUZZ_LDFLAGS="vlc_demux_dec_libfuzzer_LDFLAGS=\${LIB_FUZZING_ENGINE}"
 sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
+#fi
 
 ./bootstrap
-./configure --disable-lua \
+./configure --disable-ogg --disable-oggspots --disable-libxml2 --disable-lua \
             --disable-shared \
             --enable-static \
             --enable-vlc=no \
