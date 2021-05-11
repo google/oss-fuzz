@@ -686,7 +686,9 @@ def _get_fuzz_targets(project_name):
       continue
 
     path = os.path.join(_get_out_dir(project_name), name)
-    if os.path.isfile(path) and os.access(path, os.X_OK):
+    # Python and JVM fuzz targets are only executable for the root user, so
+    # we can't use os.access.
+    if os.path.isfile(path) and (os.stat(path).st_mode & 0o111):
       fuzz_targets.append(name)
 
   return fuzz_targets
