@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2018 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ sed -i 's/-fsanitize-coverage=trace-pc-guard//g' ./configure.ac
 sed -i 's/-fsanitize-coverage=trace-cmp//g' ./configure.ac
 sed -i 's/-fsanitize-coverage=trace-pc//g' ./configure.ac
 sed -i 's/-lFuzzer//g'  ./configure.ac
+
+# In order to build statically we avoid libxml and ogg plugins.
 sed -i 's/..\/..\/lib\/libvlc_internal.h/lib\/libvlc_internal.h/g' ./test/src/input/decoder.c
 sed -i 's/..\/modules\/libxml_plugin.la//g' ./test/Makefile.am
 sed -i 's/..\/modules\/libogg_plugin.la//g' ./test/Makefile.am
@@ -27,7 +29,6 @@ sed -i 's/f(misc_xml_xml)//g' ./test/src/input/demux-run.c
 sed -i 's/f(demux_ogg)//g' ./test/src/input/demux-run.c
 
 # Ensure that we compile with the correct link flags.
-#if [ "$FUZZING_ENGINE" = libfuzzer]; then
 RULE="vlc_demux_libfuzzer_LDADD"
 FUZZ_LDFLAGS="vlc_demux_libfuzzer_LDFLAGS=\${LIB_FUZZING_ENGINE}"
 sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
@@ -35,7 +36,6 @@ sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
 RULE="vlc_demux_dec_libfuzzer_LDADD"
 FUZZ_LDFLAGS="vlc_demux_dec_libfuzzer_LDFLAGS=\${LIB_FUZZING_ENGINE}"
 sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
-#fi
 
 ./bootstrap
 ./configure --disable-ogg --disable-oggspots --disable-libxml2 --disable-lua \
