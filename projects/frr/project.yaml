@@ -1,0 +1,9 @@
+homepage: "https://frrouting.org"
+language: c++
+primary_contact: "security@lists.frrouting.org"
+auto_ccs:
+- "p.antoine@catenacyber.fr"
+fuzzing_engines:
+ - libfuzzer
+ - afl
+main_repo: 'https://github.com/FRRouting/frr'
