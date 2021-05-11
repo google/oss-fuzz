@@ -27,7 +27,7 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     echo "ERROR: JVM projects can be fuzzed with libFuzzer engine only."
     exit 1
   fi
-  if [ "$SANITIZER" != "address" ]; then
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ]; then
     echo "ERROR: JVM projects can be fuzzed with AddressSanitizer only."
     exit 1
   fi
