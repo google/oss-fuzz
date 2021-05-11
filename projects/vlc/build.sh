@@ -15,18 +15,33 @@
 #
 ################################################################################
 
+# Use OSS-Fuzz environment rather than hardcoded setup.
+sed -i 's/-fsanitize-coverage=trace-pc-guard//g' ./configure.ac
+sed -i 's/-fsanitize-coverage=trace-cmp//g' ./configure.ac
+sed -i 's/-fsanitize-coverage=trace-pc//g' ./configure.ac
+sed -i 's/-lFuzzer//g'  ./configure.ac
+sed -i 's/..\/..\/lib\/libvlc_internal.h/lib\/libvlc_internal.h/g' ./test/src/input/decoder.c
+
+# Ensure that we compile with the correct link flags.
+RULE="vlc_demux_libfuzzer_LDADD"
+FUZZ_LDFLAGS="vlc_demux_libfuzzer_LDFLAGS=${LIB_FUZZING_ENGINE}"
+sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
+
+RULE="vlc_demux_dec_libfuzzer_LDADD"
+FUZZ_LDFLAGS="vlc_demux_dec_libfuzzer_LDFLAGS=${LIB_FUZZING_ENGINE}"
+sed -i "s/${RULE}/${FUZZ_LDFLAGS}\n${RULE}/g" ./test/Makefile.am
+
 ./bootstrap
 ./configure --disable-lua \
-	    --disable-shared \
-	    --enable-static \
-	    --enable-vlc=no \
-	    --disable-avcodec \
-	    --disable-swscale \
-	    --disable-a52 \
-	    --disable-xcb \
-	    --disable-alsa
-
-
+            --disable-shared \
+            --enable-static \
+            --enable-vlc=no \
+            --disable-avcodec \
+            --disable-swscale \
+            --disable-a52 \
+            --disable-xcb \
+            --disable-alsa \
+            --with-libfuzzer
 make V=1 -j$(nproc)
-$CC $CFLAGS -I$SRC/vlc/include -c $SRC/string_fuzzer.c -o fuzzer.o
-$CC $CFLAGS $LIB_FUZZING_ENGINE fuzzer.o /src/vlc/src/.libs/libvlccore.a -o $OUT/fuzzer
+cp ./test/vlc-demux-dec-libfuzzer $OUT/
+cp ./test/vlc-demux-libfuzzer $OUT/
