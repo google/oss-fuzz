@@ -680,6 +680,10 @@ def _get_fuzz_targets(project_name):
   for name in os.listdir(_get_out_dir(project_name)):
     if name.startswith('afl-'):
       continue
+    if name.startswith('jazzer_'):
+      continue
+    if name == 'llvm-symbolizer':
+      continue
 
     path = os.path.join(_get_out_dir(project_name), name)
     if os.path.isfile(path) and os.access(path, os.X_OK):
