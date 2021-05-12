@@ -1,8 +1,8 @@
 homepage: "https://nginx.org/en/docs/njs/"
 language: c++
-primary_contact: "xeioex@nginx.com"
+primary_contact: "xeioexception@gmail.com"
 auto_ccs:
- - "alexander.borisov@nginx.com"
+ - "lex.borisov@gmail.com"
  - "devrep@nginx.com"
  - "mmoroz@google.com"
 sanitizers:
