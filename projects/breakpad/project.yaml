@@ -1,0 +1,10 @@
+homepage: "https://chromium.googlesource.com/breakpad/breakpad"
+language: c++
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://chromium.googlesource.com/breakpad/breakpad"
