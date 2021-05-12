@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-pip3 install six 
+pip3 install six pytest
 python3 setup.py install
 
 # Build fuzzers in $OUT.
