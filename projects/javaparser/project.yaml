@@ -1,6 +1,6 @@
 homepage: "https://javaparser.org"
 language: jvm
-primary_contact: "TODO"
+primary_contact: "MysterAitch@users.noreply.github.com"
 auto_ccs:
   - "p.antoine@catenacyber.fr"
 fuzzing_engines:
