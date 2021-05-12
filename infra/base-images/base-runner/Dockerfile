@@ -45,11 +45,13 @@ RUN apt-get update && apt-get install -y \
     libcap2 \
     python3 \
     python3-pip \
+    python3-setuptools \
     unzip \
     wget \
     zip --no-install-recommends
 
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage && \
+    pip3 install wheel && \
     pip3 install -r /opt/code_coverage/requirements.txt
 
 # Default environment options for various sanitizers.
