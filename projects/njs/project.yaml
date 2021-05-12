@@ -10,3 +10,4 @@ sanitizers:
   - memory
   - undefined
 coverage_extra_args: -ignore-filename-regex=.*/pcre/.*
+main_repo: 'https://github.com/nginx/njs.git'
