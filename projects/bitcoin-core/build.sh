@@ -65,6 +65,7 @@ for fuzz_target in ${FUZZ_TARGETS[@]}; do
   chmod +x "$OUT/$fuzz_target"
   (
     cd assets/fuzz_seed_corpus
-    zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
+    sem --citation -j+0 zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
   )
 done
+sem --citation --wait
