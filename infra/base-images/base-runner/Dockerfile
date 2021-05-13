@@ -52,7 +52,8 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage && \
     pip3 install wheel && \
-    pip3 install -r /opt/code_coverage/requirements.txt
+    pip3 install -r /opt/code_coverage/requirements.txt && \
+    pip3 install MarkupSafe==0.23
 
 # Default environment options for various sanitizers.
 # Note that these match the settings used in ClusterFuzz and
