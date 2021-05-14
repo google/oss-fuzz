@@ -27,6 +27,14 @@ rm -rf $WORK/*
 rm -rf $BUILD
 mkdir -p $BUILD
 
+# Install Boost headers
+cd $SRC/
+tar jxf boost_1_76_0.tar.bz2
+cd boost_1_76_0/
+CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+CFLAGS="" CXXFLAGS="" ./b2 headers
+cp -R boost/ /usr/include/
+
 pushd $SRC/zlib
 CFLAGS=-fPIC ./configure --static --prefix=$PREFIX
 make install -j$(nproc)
