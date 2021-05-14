@@ -1,0 +1,10 @@
+homepage: "https://github.com/kpu/kenlm"
+language: c++
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/kpu/kenlm"
