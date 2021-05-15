@@ -9,6 +9,7 @@ auto_ccs:
   - "sloowfranklin@gmail.com"
   - "gdeschner@gmail.com"
   - "volker.lendecke@gmail.com"
+  - "davidmmulder@gmail.com"
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
