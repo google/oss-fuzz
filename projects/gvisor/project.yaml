@@ -1,0 +1,10 @@
+homepage: "https://github.com/google/gvisor"
+main_repo: "https://github.com/google/gvisor"
+primary_contact: ""
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
