@@ -4,6 +4,7 @@ primary_contact: "bm-dev@yandex.com"
 auto_ccs:
   - "wagner@code-intelligence.com"
   - "jonathan@hedley.net"
+  - "ffrr33aakk@gmail.com"
 fuzzing_engines:
   - libfuzzer
 main_repo: "https://github.com/jhy/jsoup/"
