@@ -157,6 +157,10 @@ if [ "${BUILD_UID-0}" -ne "0" ]; then
   chown -R builder $SRC $OUT $WORK
   su -c "$BUILD_CMD" builder
   if [ "$SANITIZER" = "coverage" ]; then
+    # Copy rust std lib to its path with a hash
+    export rustch=`rustc --version --verbose | grep commit-hash | cut -d' ' -f2`
+    mkdir -p /rust/rustc/$rustch/
+    cp -r /rust/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/ /rust/rustc/$rustch/
     # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
     su -c "$COPY_SOURCES_CMD" builder 2>/dev/null || true
   fi
