@@ -11,7 +11,7 @@ func FuzzCompile(data []byte) int {
 	}
 	_, err = env.Program(ast)
 	if err != nil {
-		panic("impossible to create prog from ast")
+		return 0
 	}
 
 	return 1
