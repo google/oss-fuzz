@@ -4,6 +4,6 @@ primary_contact: ""
 main_repo: "https://github.com/google/tcmalloc"
 auto_ccs: 
  - "david@adalogics.com"
-sanitizer:
+sanitizers:
  - address
  - memory
