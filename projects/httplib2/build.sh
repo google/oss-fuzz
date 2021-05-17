@@ -15,7 +15,7 @@
 #
 ################################################################################
 
-pip3 install six 
+pip3 install six pytest
 python3 setup.py install
 
 # Build fuzzers in $OUT.
@@ -31,5 +31,5 @@ this_dir=\$(dirname \"\$0\")
 LD_PRELOAD=\$this_dir/sanitizer_with_fuzzer.so \
 ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
 \$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+  chmod +x $OUT/$fuzzer_basename
 done

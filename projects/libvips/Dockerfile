@@ -32,8 +32,10 @@ RUN curl https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar xzC afl-te
 RUN git clone --depth 1 https://github.com/libvips/libvips
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/libexif/libexif
+RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git lcms
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
+RUN git clone --depth 1 https://github.com/randy408/libspng.git
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff 
 RUN git clone --depth 1 https://aomedia.googlesource.com/aom

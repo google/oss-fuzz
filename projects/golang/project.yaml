@@ -5,6 +5,7 @@ auto_ccs:
  - "josharian@gmail.com"
  - "emmanuel@orijtech.com"
  - "Adam@adalogics.com"
+ - "cuong.manhle.vn@gmail.com"
 language: go
 sanitizers:
  - address

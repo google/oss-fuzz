@@ -1,0 +1,10 @@
+homepage: "https://znc.in"
+language: c++
+primary_contact: "alexey+znc@asokolov.org"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: "https://github.com/znc/znc"
