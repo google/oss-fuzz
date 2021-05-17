@@ -158,6 +158,17 @@ function run_java_fuzz_target {
     # Skip fuzz targets that failed to produce .exec files.
     return 0
   fi
+
+  # Generate XML report only as input to jacoco_report_converter.
+  # Source files are not needed for the summary.
+  local xml_report="$DUMPS_DIR/${target}.xml"
+  local summary_file="$FUZZER_STATS_DIR/$target.json"
+  java -jar /opt/jacoco-cli.jar report $exec_file \
+      --xml $xml_report \
+      --classfiles $class_dump_dir
+
+  # Write llvm-cov summary file.
+  jacoco_report_converter.py $xml_report $summary_file
 }
 
 export SYSGOPATH=$GOPATH
