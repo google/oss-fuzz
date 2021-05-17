@@ -1,0 +1,6 @@
+homepage: "http://pistache.io"
+language: c++
+primary_contact: ""
+main_repo: "https://github.com/pistacheio/pistache"
+auto_ccs:
+ - "david@adalogics.com"
