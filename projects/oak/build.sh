@@ -24,7 +24,16 @@ then
   export RUSTC="$SRC/rustc.py"
 fi
 
-cargo fuzz build -O
+cargo fuzz build --release
+
+# Clear RUSTFLAGS, and build the fuzzable example. The Wasm module is stored in `/out/bin`.
+# Keep this in sync with `https://github.com/project-oak/oak/blob/main/oak_functions/loader/fuzz/fuzz_targets/wasm_invoke.rs`.
+export RUSTFLAGS=""
+cargo  -Zunstable-options build \
+  --target=wasm32-unknown-unknown \
+  --target-dir=target/wasm32-unknown-unknown/wasm \
+  --out-dir="$OUT/bin" \
+  --manifest-path=../examples/fuzzable/module/Cargo.toml
 
 FUZZ_TARGET_OUTPUT_DIR=fuzz/target/x86_64-unknown-linux-gnu/release
 for f in fuzz/fuzz_targets/*.rs
