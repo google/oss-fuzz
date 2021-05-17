@@ -150,17 +150,18 @@ BUILD_CMD="bash -eux $SRC/build.sh"
 
 # We need to preserve source code files for generating a code coverage report.
 # We need exact files that were compiled, so copy both $SRC and $WORK dirs.
-COPY_SOURCES_CMD="cp -rL --parents $SRC $WORK /usr/include /usr/local/include $GOPATH $OSSFUZZ_RUSTPATH $OUT"
+COPY_SOURCES_CMD="cp -rL --parents $SRC $WORK /usr/include /usr/local/include $GOPATH $OSSFUZZ_RUSTPATH /rustc $OUT"
+
+# Copy rust std lib to its path with a hash
+export rustch=`rustc --version --verbose | grep commit-hash | cut -d' ' -f2`
+mkdir -p /rustc/$rustch/
+cp -r /rust/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/ /rustc/$rustch/
 
 if [ "${BUILD_UID-0}" -ne "0" ]; then
   adduser -u $BUILD_UID --disabled-password --gecos '' builder
   chown -R builder $SRC $OUT $WORK
   su -c "$BUILD_CMD" builder
   if [ "$SANITIZER" = "coverage" ]; then
-    # Copy rust std lib to its path with a hash
-    export rustch=`rustc --version --verbose | grep commit-hash | cut -d' ' -f2`
-    mkdir -p /rust/rustc/$rustch/
-    cp -r /rust/rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/ /rust/rustc/$rustch/
     # Some directories have broken symlinks (e.g. honggfuzz), ignore the errors.
     su -c "$COPY_SOURCES_CMD" builder 2>/dev/null || true
   fi
