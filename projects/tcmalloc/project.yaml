@@ -1,0 +1,6 @@
+homepage: "tcmalloc"
+language: c++
+primary_contact: "<primary_contact_email>"
+main_repo: "https://github.com/google/tcmalloc"
+auto_ccs: 
+ - "david@adalogics.com"
