@@ -2,7 +2,7 @@ homepage: "https://github.com/espeak-ng/espeak-ng"
 language: c++
 primary_contact: "msclrhd@googlemail.com"
 auto_ccs:
-- "valdis.vitolins@odo.lv"
+- "valdis.vitolins@gmail.com"
 - "p.antoine@catenacyber.fr"
 - "sascha.brawer@gmail.com"
 
