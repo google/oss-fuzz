@@ -8,5 +8,6 @@ auto_ccs:
   - "frederik.deweerdt@gmail.com"
   - "kazuhooku@gmail.com"
   - "i.nagata110@gmail.com"
+  - "hfujita@fastly.com"
   - "security@fastly.com"
 main_repo: 'https://github.com/h2o/h2o'
