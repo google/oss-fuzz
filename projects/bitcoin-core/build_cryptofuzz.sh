@@ -29,19 +29,35 @@ export CXXFLAGS="$CXXFLAGS -I $SRC/boost_1_74_0/"
 # Prevent Boost compilation error with -std=c++17
 export CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR"
 
-# Build libsecp256k1
+# Preconfigure libsecp256k1
 cd $SRC/secp256k1/
 autoreconf -ivf
-if [[ $CFLAGS = *sanitize=memory* ]]
-then
-    ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --disable-valgrind --enable-module-recovery --enable-experimental --with-asm=no
-else
-    ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --disable-valgrind --enable-module-recovery --enable-experimental
-fi
-make
-export SECP256K1_INCLUDE_PATH=$(realpath include)
-export LIBSECP256K1_A_PATH=$(realpath .libs/libsecp256k1.a)
 export CXXFLAGS="$CXXFLAGS -DCRYPTOFUZZ_SECP256K1"
+
+function build_libsecp256k1() {
+    # Build libsecp256k1
+    cd $SRC/secp256k1/
+
+    if test -f "Makefile"; then
+        # Remove old configuration if it exists
+        make clean
+    fi
+
+    if [[ $CFLAGS = *sanitize=memory* ]]
+    then
+        ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --enable-module-recovery --enable-experimental --with-asm=no "$@"
+    else
+        ./configure --enable-static --disable-tests --disable-benchmark --disable-exhaustive-tests --enable-module-recovery --enable-experimental "$@"
+    fi
+    make
+
+    export SECP256K1_INCLUDE_PATH=$(realpath include)
+    export LIBSECP256K1_A_PATH=$(realpath .libs/libsecp256k1.a)
+
+    # Build libsecp256k1 Cryptofuzz module
+    cd $SRC/cryptofuzz/modules/secp256k1/
+    make -B -j$(nproc)
+}
 
 # Build Trezor firmware
 cd $SRC/trezor-firmware/crypto/
@@ -79,16 +95,31 @@ echo -n '--calcops=Add,And,Div,IsEq,IsGt,IsGte,IsLt,IsLte,IsOdd,Mul,NumBits,Or,S
 echo -n '"' >>extra_options.h
 cd modules/bitcoin/
 make -B -j$(nproc)
-cd ../secp256k1/
-make -B -j$(nproc)
 cd ../trezor/
 make -B -j$(nproc)
 cd ../botan/
 make -B -j$(nproc)
 cd ../../
-make -B -j$(nproc)
 
-cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography
+# Build with 3 configurations of libsecp256k1
+# Discussion: https://github.com/google/oss-fuzz/pull/5717#issuecomment-842765383
+
+build_libsecp256k1 "--with-ecmult-window=2" "--with-ecmult-gen-precision=2"
+cd $SRC/cryptofuzz/
+make -B -j$(nproc)
+cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w2-p2
+
+build_libsecp256k1 "--with-ecmult-window=15" "--with-ecmult-gen-precision=4"
+cd $SRC/cryptofuzz/
+rm cryptofuzz
+make
+cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w15-p4
+
+build_libsecp256k1 "--with-ecmult-window=24" "--with-ecmult-gen-precision=8"
+cd $SRC/cryptofuzz/
+rm cryptofuzz
+make
+cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w24-p8
 
 # Convert Wycheproof test vectors to Cryptofuzz corpus format
 mkdir $SRC/corpus-cryptofuzz-wycheproof/
