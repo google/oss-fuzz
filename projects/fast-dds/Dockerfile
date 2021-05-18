@@ -21,6 +21,5 @@ RUN git clone --depth 1 https://github.com/chriskohlhoff/asio/
 RUN git clone --depth 1 https://github.com/eProsima/Fast-CDR.git
 RUN git clone --depth 1 https://github.com/eProsima/foonathan_memory_vendor.git
 RUN git clone --depth 1 https://github.com/eProsima/Fast-DDS.git
-COPY patch.diff $SRC
 COPY build.sh $SRC
 WORKDIR $SRC/Fast-DDS
