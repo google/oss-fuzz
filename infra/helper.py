@@ -58,7 +58,7 @@ CORPUS_BACKUP_URL_FORMAT = (
 PROJECT_LANGUAGE_REGEX = re.compile(r'\s*language\s*:\s*([^\s]+)')
 
 # Languages from project.yaml that have code coverage support.
-LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'rust']
+LANGUAGES_WITH_COVERAGE_SUPPORT = ['c', 'c++', 'go', 'jvm', 'rust']
 
 WORKDIR_REGEX = re.compile(r'\s*WORKDIR\s*([^\s]+)')
 
@@ -153,6 +153,10 @@ def get_parser():  # pylint: disable=too-many-statements
   build_fuzzers_parser.add_argument('source_path',
                                     help='path of local source',
                                     nargs='?')
+  build_fuzzers_parser.add_argument('--mount_path',
+                                    dest='mount_path',
+                                    help='path to mount local source in '
+                                    '(defaults to WORKDIR)')
   build_fuzzers_parser.add_argument('--clean',
                                     dest='clean',
                                     action='store_true',
@@ -519,7 +523,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     env_to_add,
     source_path,
     no_cache=False,
-    mount_location=None):
+    mount_path=None):
   """Builds fuzzers."""
   if not build_image_impl(project_name, no_cache=no_cache):
     return False
@@ -554,6 +558,8 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
       'ARCHITECTURE=' + architecture,
   ]
 
+  _add_oss_fuzz_ci_if_needed(env)
+
   if project_language:
     env.append('FUZZING_LANGUAGE=' + project_language)
 
@@ -572,10 +578,10 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   command = ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env)
   if source_path:
     workdir = _workdir_from_dockerfile(project_name)
-    if mount_location:
+    if mount_path:
       command += [
           '-v',
-          '%s:%s' % (_get_absolute_path(source_path), mount_location),
+          '%s:%s' % (_get_absolute_path(source_path), mount_path),
       ]
     else:
       if workdir == '/src':
@@ -616,9 +622,21 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
 def build_fuzzers(args):
   """Builds fuzzers."""
-  return build_fuzzers_impl(args.project_name, args.clean, args.engine,
-                            args.sanitizer, args.architecture, args.e,
-                            args.source_path)
+  return build_fuzzers_impl(args.project_name,
+                            args.clean,
+                            args.engine,
+                            args.sanitizer,
+                            args.architecture,
+                            args.e,
+                            args.source_path,
+                            mount_path=args.mount_path)
+
+
+def _add_oss_fuzz_ci_if_needed(env):
+  """Adds value of |OSS_FUZZ_CI| environment variable to |env| if it is set."""
+  oss_fuzz_ci = os.getenv('OSS_FUZZ_CI')
+  if oss_fuzz_ci:
+    env.append('OSS_FUZZ_CI=' + oss_fuzz_ci)
 
 
 def check_build(args):
@@ -641,6 +659,7 @@ def check_build(args):
       'ARCHITECTURE=' + args.architecture,
       'FUZZING_LANGUAGE=' + fuzzing_language,
   ]
+  _add_oss_fuzz_ci_if_needed(env)
   if args.e:
     env += args.e
 
@@ -670,9 +689,15 @@ def _get_fuzz_targets(project_name):
   for name in os.listdir(_get_out_dir(project_name)):
     if name.startswith('afl-'):
       continue
+    if name.startswith('jazzer_'):
+      continue
+    if name == 'llvm-symbolizer':
+      continue
 
     path = os.path.join(_get_out_dir(project_name), name)
-    if os.path.isfile(path) and os.access(path, os.X_OK):
+    # Python and JVM fuzz targets are only executable for the root user, so
+    # we can't use os.access.
+    if os.path.isfile(path) and (os.stat(path).st_mode & 0o111):
       fuzz_targets.append(name)
 
   return fuzz_targets

@@ -22,4 +22,3 @@ RUN git clone https://github.com/ctz/rustls
 WORKDIR $SRC
 
 COPY build.sh $SRC/
-COPY persist.rs $SRC/rustls/fuzz/fuzzers/persist.rs

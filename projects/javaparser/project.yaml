@@ -1,0 +1,11 @@
+homepage: "https://javaparser.org"
+language: jvm
+primary_contact: "MysterAitch@users.noreply.github.com"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
+  - "jean-pierre.lerbscher@jperf.com"
+fuzzing_engines:
+  - libfuzzer
+main_repo: "https://github.com/javaparser/javaparser"
+sanitizers:
+  - address
