@@ -16,10 +16,10 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update &&\
-    apt-get install -y gperf m4 gettext python3-pip python3-jinja2 \
+    apt-get install -y gperf m4 gettext python3-pip \
         libcap-dev libmount-dev libkmod-dev \
         pkg-config wget &&\
-    pip3 install meson ninja
+    pip3 install meson ninja jinja2
 RUN git clone --depth 1 https://github.com/systemd/systemd systemd
 WORKDIR systemd
 COPY build.sh $SRC/
