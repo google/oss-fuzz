@@ -1,8 +1,9 @@
 homepage: "https://github.com/videolan/vlc"
 language: c
-primary_contact: ""
+primary_contact: "ossfuzz@videolan.org"
 auto_ccs:
-  - "Adam@adalogics.com"
+  - "adam@adalogics.com"
+  - "david@adalogics.com"
 sanitizers:
   - address
   - undefined
