@@ -47,7 +47,6 @@ cmake --build . --target install
 )
 
 # build project
-git apply ../patch.diff
 mkdir build && cd build
 cmake .. -DBUILD_SHARED_LIBS=OFF
 make -j $(nproc)
