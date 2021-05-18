@@ -153,6 +153,10 @@ def get_parser():  # pylint: disable=too-many-statements
   build_fuzzers_parser.add_argument('source_path',
                                     help='path of local source',
                                     nargs='?')
+  build_fuzzers_parser.add_argument('--mount_path',
+                                    dest='mount_path',
+                                    help='path to mount local source in '
+                                    '(defaults to WORKDIR)')
   build_fuzzers_parser.add_argument('--clean',
                                     dest='clean',
                                     action='store_true',
@@ -519,7 +523,7 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     env_to_add,
     source_path,
     no_cache=False,
-    mount_location=None):
+    mount_path=None):
   """Builds fuzzers."""
   if not build_image_impl(project_name, no_cache=no_cache):
     return False
@@ -574,10 +578,10 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
   command = ['--cap-add', 'SYS_PTRACE'] + _env_to_docker_args(env)
   if source_path:
     workdir = _workdir_from_dockerfile(project_name)
-    if mount_location:
+    if mount_path:
       command += [
           '-v',
-          '%s:%s' % (_get_absolute_path(source_path), mount_location),
+          '%s:%s' % (_get_absolute_path(source_path), mount_path),
       ]
     else:
       if workdir == '/src':
@@ -618,9 +622,14 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
 
 def build_fuzzers(args):
   """Builds fuzzers."""
-  return build_fuzzers_impl(args.project_name, args.clean, args.engine,
-                            args.sanitizer, args.architecture, args.e,
-                            args.source_path)
+  return build_fuzzers_impl(args.project_name,
+                            args.clean,
+                            args.engine,
+                            args.sanitizer,
+                            args.architecture,
+                            args.e,
+                            args.source_path,
+                            mount_path=args.mount_path)
 
 
 def _add_oss_fuzz_ci_if_needed(env):
