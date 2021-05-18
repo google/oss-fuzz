@@ -1,0 +1,9 @@
+homepage: "https://github.com/google/filament"
+main_repo: "https://github.com/google/filament"
+language: c++
+primary_contact: ""
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - memory
