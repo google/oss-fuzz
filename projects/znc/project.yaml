@@ -3,6 +3,7 @@ language: c++
 primary_contact: "alexey+znc@asokolov.org"
 auto_ccs:
   - "Adam@adalogics.com"
+  - "ktonibud@gmail.com"
 sanitizers:
   - address
   - undefined
