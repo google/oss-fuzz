@@ -16,7 +16,3 @@
 ################################################################################
 
 bazel_build_fuzz_tests
-
-rm $OUT/experiment_fuzz
-rm $OUT/malloc_extension_fuzz
-rm $OUT/runtime_size_classes_fuzz
