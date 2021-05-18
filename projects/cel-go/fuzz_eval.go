@@ -29,7 +29,7 @@ func FuzzEval(data []byte) int {
 	}
 	prg, err := env.Program(ast)
 	if err != nil {
-		panic("impossible to create prog from ast")
+		return 0
 	}
 	//fmt.Printf("loltry %#+v\n", gen)
 
