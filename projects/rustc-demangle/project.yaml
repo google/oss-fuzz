@@ -1,0 +1,12 @@
+homepage: "https://github.com/alexcrichton/rustc-demangle"
+primary_contact: "alex@alexcrichton.com"
+auto_ccs:
+- "p.antoine@catenacyber.fr"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz
+language: rust
+main_repo: 'https://github.com/alexcrichton/rustc-demangle'
