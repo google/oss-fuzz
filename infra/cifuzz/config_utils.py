@@ -170,6 +170,7 @@ class BuildFuzzersConfig(BaseConfig):
     self.base_ref = os.getenv('GITHUB_BASE_REF')
     self.project_src_path = get_project_src_path(self.workspace)
 
+    self.extra_build_args = os.getenv('EXTRA_BUILD_ARGS')
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
     self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', 'true')

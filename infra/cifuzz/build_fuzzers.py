@@ -82,6 +82,10 @@ class Builder:  # pylint: disable=too-many-instance-attributes
                                          self.config.language)
     container = utils.get_container_name()
 
+    if self.config.extra_build_args is not None:
+      docker_args.extend(
+          ('-e', 'EXTRA_BUILD_ARGS=' + self.config.extra_build_args))
+
     if container:
       docker_args.extend(
           _get_docker_build_fuzzers_args_container(self.out_dir, container))
