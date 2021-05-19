@@ -17,6 +17,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
 RUN pip3 install meson==0.53.0 ninja
-RUN git clone --depth 1 https://github.com/pistache/pistache pistache
+RUN git clone --depth 1 https://github.com/pistacheio/pistache pistache
 WORKDIR pistache
 COPY build.sh $SRC/
