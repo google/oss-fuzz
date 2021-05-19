@@ -69,6 +69,11 @@ class BaseCi:
 def get_ci(config):
   """Determines what kind of CI is being used and returns the object
   representing that system."""
+
+  if config.platform == config.Platform.EXTERNAL_GENERIC_CI:
+    # Non-OSS-Fuzz projects must bring their own source and their own build
+    # integration (which is relative to that source).
+    return ExternalGeneric(config)
   if config.platform == config.Platform.EXTERNAL_GITHUB:
     # Non-OSS-Fuzz projects must bring their own source and their own build
     # integration (which is relative to that source).
@@ -191,6 +196,23 @@ def build_external_project_docker_image(project_name, project_src,
   return helper.docker_build(command)
 
 
+class ExternalGeneric(BaseCi):
+  def get_diff_base(self):
+    return 'origin...'
+
+  def prepare_for_fuzzer_build(self):
+    logging.info('YAAAAAAAY')
+    manager = repo_manager.RepoManager(self.config.project_src_path)
+    abs_build_integration_path = os.path.join(manager.repo_dir,
+                                              self.config.build_integration_path)
+    if not build_external_project_docker_image(
+        self.config.project_name, manager.repo_dir, abs_build_integration_path):
+      logging.error('Failed to build external project.')
+      return BuildPreparationResult(False, None, None)
+
+    image_repo_path = os.path.join('/src', self.config.project_repo_name)
+    return BuildPreparationResult(True, image_repo_path, manager)
+
 class ExternalGithub(GithubCiMixin, BaseCi):
   """Class representing CI for a non-OSS-Fuzz project on Github Actions."""
 
@@ -212,10 +234,10 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 
-    build_integration_path = os.path.join(manager.repo_dir,
-                                          self.config.build_integration_path)
+    abs_build_integration_path = os.path.join(manager.repo_dir,
+                                              self.config.build_integration_path)
     if not build_external_project_docker_image(
-        self.config.project_name, manager.repo_dir, build_integration_path):
+        self.config.project_name, manager.repo_dir, abs_build_integration_path):
       logging.error('Failed to build external project.')
       return BuildPreparationResult(False, None, None)
 

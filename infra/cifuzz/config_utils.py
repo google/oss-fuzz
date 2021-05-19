@@ -88,6 +88,7 @@ class BaseConfig:
     EXTERNAL_GITHUB = 0  # Non-OSS-Fuzz on GitHub actions.
     INTERNAL_GITHUB = 1  # OSS-Fuzz on GitHub actions.
     INTERNAL_GENERIC_CI = 2  # OSS-Fuzz on any CI.
+    EXTERNAL_GENERIC_CI = 3  # Non-OSS-Fuzz on any CI.
 
   def __init__(self):
     self.workspace = os.getenv('GITHUB_WORKSPACE')
@@ -112,7 +113,10 @@ class BaseConfig:
   def platform(self):
     """Returns the platform CIFuzz is runnning on."""
     if not self.is_internal:
+      if not self.is_github:
+        return self.Platform.EXTERNAL_GENERIC_CI
       return self.Platform.EXTERNAL_GITHUB
+
     if self.is_github:
       return self.Platform.INTERNAL_GITHUB
     return self.Platform.INTERNAL_GENERIC_CI
