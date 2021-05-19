@@ -16,6 +16,7 @@
 ################################################################################
 
 mkdir build && cd build
-cmake -DPISTACHE_BUILD_FUZZ=ON ../
-make
-cp ./tests/fuzzers/fuzz_parser $OUT/fuzz_parser
+meson --default-library=static ../
+ninja
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parsers \
+    -std=c++17 -I../include/ ../tests/fuzzers/fuzz_parser.cpp ./src/libpistache.a
