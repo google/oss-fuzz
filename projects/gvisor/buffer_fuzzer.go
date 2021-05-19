@@ -13,17 +13,18 @@
 // limitations under the License.
 //
 
-package buffer
+package fuzzing
 
 import (
 	"bytes"
 	"context"
 	"errors"
 	"gvisor.dev/gvisor/pkg/state"
+	"gvisor.dev/gvisor/pkg/buffer"
 )
 
 
-func doSaveAndLoad(toSave, toLoad *View) (err error) {
+func doSaveAndLoad(toSave, toLoad *buffer.View) (err error) {
 	var buf bytes.Buffer
 	ctx := context.Background()
 	if _, err := state.Save(ctx, &buf, toSave); err != nil {
@@ -36,10 +37,9 @@ func doSaveAndLoad(toSave, toLoad *View) (err error) {
 }
 
 func StateBufferFuzz(data []byte) int {
-	var toSave View
+	var v, toSave buffer.View
 	toSave.Append(data)
 
-	var v View
 	err := doSaveAndLoad(&toSave, &v)
 	if err != nil {
 		return 0

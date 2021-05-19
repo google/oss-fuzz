@@ -15,5 +15,7 @@
 #
 ################################################################################
 
-mv $SRC/buffer_fuzzer.go $GVISOR_ROOT/pkg/buffer/
-compile_go_fuzzer gvisor.dev/gvisor/pkg/buffer StateBufferFuzz state_buffer_fuzz
+git checkout go
+mv $SRC/buffer_fuzzer.go $GVISOR_ROOT/
+
+compile_go_fuzzer gvisor.dev/gvisor StateBufferFuzz state_buffer_fuzz

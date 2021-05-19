@@ -15,8 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN GO111MODULE=on go get gvisor.dev/gvisor/runsc@go
-RUN mv $GOPATH/pkg/mod/gvisor.dev/* $GOPATH/pkg/mod/gvisor.dev/gvisor
+RUN git clone https://github.com/google/gvisor
 COPY build.sh buffer_fuzzer.go $SRC/
-ENV GVISOR_ROOT "/root/go/pkg/mod/gvisor.dev/gvisor"
+ENV GVISOR_ROOT $SRC/gvisor
 WORKDIR $GVISOR_ROOT
