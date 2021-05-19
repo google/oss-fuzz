@@ -1,0 +1,10 @@
+homepage: "https://xuper.baidu.com"
+main_repo: "https://github.com/xuperchain/xuperchain"
+primary_contact: ""
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address
