@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool
-RUN git clone --depth 1 https://github.com/pistacheio/pistache pistache
+RUN git clone --depth 1 https://github.com/DavidKorczynski/pistache pistache
 WORKDIR pistache
 COPY build.sh $SRC/
-COPY fuzz_parsers.cpp $SRC/fuzz_parsers.cpp

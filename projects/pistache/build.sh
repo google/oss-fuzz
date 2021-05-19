@@ -16,6 +16,6 @@
 ################################################################################
 
 mkdir build && cd build
-cmake ../
-make V=1
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -I../include/ -std=c++17 $SRC/fuzz_parsers.cpp ./src/libpistache.a -o $OUT/fuzz_parsers
+cmake -DPISTACHE_BUILD_FUZZ=ON ../
+make
+cp ./tests/fuzzers/fuzz_parser $OUT/fuzz_parser
