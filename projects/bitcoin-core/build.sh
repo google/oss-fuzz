@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+bash $SRC/build_cryptofuzz.sh
+
+cd $SRC/bitcoin-core/
+
 # Build dependencies
 # This will also force static builds
 if [ "$ARCHITECTURE" = "i386" ]; then
