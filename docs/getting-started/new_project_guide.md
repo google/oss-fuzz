@@ -253,7 +253,7 @@ alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on 
 
 ### Temporarily disabling code instrumentation during builds
 
-In some cases, it's not necessary to instrument every 3rd party library or tool that supports the build target. Use the following code snippet to specify build commands that should not result in instrumented code:
+In some cases, it's not necessary to instrument every 3rd party library or tool that supports the build target. Use the following snippet to build tools or libraries without instrumentation:
 
 
 ```
