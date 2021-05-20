@@ -1,8 +1,10 @@
 homepage: "https://tailscale.com/"
 main_repo: "https://github.com/tailscale/tailscale"
-primary_contact: ""
+primary_contact: "Adam@adalogics.com"
 auto_ccs :
-  - "adam@adalogics.com"
+  - "josh@tailscale.com"
+  - "danderson@tailscale.com"
+  - "bradfitz@tailscale.com"
 language: go
 fuzzing_engines:
   - libfuzzer
