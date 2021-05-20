@@ -6,7 +6,5 @@ auto_ccs:
 main_repo: 'https://github.com/FreeRADIUS/freeradius-server.git'
 fuzzing_engines:
 - libfuzzer
-- afl
-- honggfuzz
 sanitizers:
 - address
