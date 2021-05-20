@@ -16,6 +16,19 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+# Install Protobuf compiler.
+ARG protobuf_version=3.13.0
+ARG protobuf_sha256=4a3b26d1ebb9c1d23e933694a6669295f6a39ddc64c3db2adf671f0a6026f82e
+ARG protobuf_dir=/usr/local/protobuf
+ARG protobuf_temp=/tmp/protobuf.zip
+ENV PATH "${protobuf_dir}/bin:${PATH}"
+RUN curl --location https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-linux-x86_64.zip > ${protobuf_temp} \
+  && sha256sum --binary ${protobuf_temp} && echo "${protobuf_sha256} *${protobuf_temp}" | sha256sum --check \
+  && unzip ${protobuf_temp} -d ${protobuf_dir} \
+  && rm ${protobuf_temp} \
+  && chmod --recursive a+rwx ${protobuf_dir} \
+  && protoc --version
+
 RUN git clone --depth 1 https://github.com/project-oak/oak oak
 WORKDIR oak
 COPY build.sh $SRC/
