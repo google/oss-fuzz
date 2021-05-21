@@ -21,7 +21,7 @@
 
 # AFL++ settings.
 export AFL_LLVM_MODE_WORKAROUND=0
-export AFL_ENABLE_DICTIONARY=1
+export AFL_ENABLE_DICTIONARY=0
 
 # Start compiling afl++.
 echo "Copying precompiled afl++"
@@ -45,25 +45,30 @@ export ASAN_OPTIONS="detect_leaks=0:symbolize=0:detect_odr_violation=0:abort_on_
 
 # AFL compile option roulette. It is OK if they all happen together.
 
-# 30% chance for CTX-2 coverage instrumentation (Caller conTeXt sensitive
+# 20% chance for CTX-2 coverage instrumentation (Caller conTeXt sensitive
 # edge coverage).
-test $(($RANDOM % 10)) -lt 3 && {
+test $(($RANDOM % 100)) -lt 20 && {
   export AFL_LLVM_INSTRUMENT=CLASSIC,CTX-2
+}
+
+# 40% chance to create a dictionary.
+test $(($RANDOM % 100)) -lt 40 && {
+  export AFL_ENABLE_DICTIONARY=1
 }
 
 # 40% chance to perform CMPLOG/REDQUEEN.
 rm -f "$OUT/afl_cmplog.txt"
-test $(($RANDOM % 10)) -lt 4 && {
+test $(($RANDOM % 100)) -lt 20 && {
   export AFL_LLVM_CMPLOG=1
   touch "$OUT/afl_cmplog.txt"
 }
 
-# 10% chance to perform COMPCOV/LAF_INTEL.
-test $(($RANDOM % 10)) -lt 1 && {
+# 3% chance to perform COMPCOV/LAF_INTEL.
+test $(($RANDOM % 100)) -lt 3 && {
   export AFL_LLVM_LAF_ALL=1
 }
 
-# If the targets wants a dictionary - then create one.
+# Create a dictionary if one is wanted.
 test "$AFL_ENABLE_DICTIONARY" = "1" && {
   export AFL_LLVM_DICT2FILE="$OUT/afl++.dict"
 }
