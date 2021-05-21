@@ -29,6 +29,10 @@ cp -R boost/ /usr/include/
 # build project
 export CXXFLAGS="$CXXFLAGS -fuse-ld=gold"
 git apply $SRC/patch.diff
-meson . output/release --buildtype=debugoptimized -Db_ndebug=true -Dfuzzer=true -Db_sanitize=$SANITIZER
+if [[ $SANITIZER = *coverage* ]]; then
+    meson . output/release --buildtype=debugoptimized -Db_ndebug=true -Dfuzzer=true
+else
+    meson . output/release --buildtype=debugoptimized -Db_ndebug=true -Dfuzzer=true -Db_sanitize=$SANITIZER
+fi
 ninja -C output/release
 find ./output/release/test/fuzzer/ -type f -executable | while read i; do cp $i $OUT/; done
