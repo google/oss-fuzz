@@ -42,7 +42,9 @@ if [[ $SANITIZER = *coverage* ]]; then
   sed -i -e 's/mypackagebeingfuzzed/'$fuzzed_package'/' ./"${function,,}"_test.go
   sed -i -e 's/TestFuzzCorpus/Test'$function'Corpus/' ./"${function,,}"_test.go
 
-  fuzzed_repo=`echo $path | cut -d/ -f-3`
+  # The repo is the module path/name, which is already created above in case it doesn't exist,
+  # but not always the same as the module path. This is necessary to handle SIV properly.
+  fuzzed_repo=$(go list $tags -f {{.Module}} "$path")
   abspath_repo=`go list -m $tags -f {{.Dir}} $fuzzed_repo || go list $tags -f {{.Dir}} $fuzzed_repo`
   # give equivalence to absolute paths in another file, as go test -cover uses golangish pkg.Dir
   echo "s=$fuzzed_repo"="$abspath_repo"= > $OUT/$fuzzer.gocovpath
