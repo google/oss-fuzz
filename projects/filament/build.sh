@@ -27,11 +27,9 @@ cmake -DFILAMENT_ENABLE_JAVA=OFF \
 	-DVIDEO_X11=OFF \
 	-DFILAMENT_OSS_FUZZ=ON \
 	..
-make V=1
-
+make
 
 # Build fuzzers
-
 cd $SRC/filament
 $CXX $CXXFLAGS \
         -I./filament/include \
@@ -54,7 +52,8 @@ $CXX $CXXFLAGS $LIB_FUZZING_ENGINE material_parser_fuzzer.o \
         -o $OUT/material_parser_fuzzer -std=c++17 \
         -fPIC  -Wl,--gc-sections \
         ./build-dir/filament/libfilament.a \
-        ./build-dir/libs/utils/libutils.a  \
         ./build-dir/libs/filaflat/libfilaflat.a \
+        ./build-dir/libs/filabridge/libfilabridge.a \
+        ./build-dir/libs/utils/libutils.a  \
         ./build-dir/third_party/smol-v/tnt/libsmol-v.a
 
