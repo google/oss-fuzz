@@ -6,5 +6,4 @@ auto_ccs:
 
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
 main_repo: 'https://github.com/MusicPlayerDaemon/MPD'
