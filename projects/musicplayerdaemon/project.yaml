@@ -1,0 +1,10 @@
+homepage: "https://www.musicpd.org"
+language: c++
+primary_contact: "max.kellermann@gmail.com"
+auto_ccs:
+- "p.antoine@catenacyber.fr"
+
+fuzzing_engines:
+  - libfuzzer
+  - honggfuzz
+main_repo: 'https://github.com/MusicPlayerDaemon/MPD'
