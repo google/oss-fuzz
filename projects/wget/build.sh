@@ -78,6 +78,7 @@ export ASAN_OPTIONS=detect_leaks=0
 
 cd $SRC/wget
 ./bootstrap
+autoreconf -fi
 
 # build and run non-networking tests
 LIBS="-lgnutls -lhogweed -lnettle -lidn2 -lunistring" \
