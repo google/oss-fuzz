@@ -42,7 +42,7 @@ cmake ${SRC}/clamav-devel \
     -DOPENSSL_CRYPTO_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libcrypto.a"    \
     -DOPENSSL_SSL_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libssl.a"          \
     -DZLIB_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libssl.a"                 \
-    -DLIBXML2_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include"               \
+    -DLIBXML2_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include/libxml2"       \
     -DLIBXML2_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libxml2.a"             \
     -DPCRE2_INCLUDE_DIR="$CLAMAV_DEPENDENCIES/include"                 \
     -DPCRE2_LIBRARY="$CLAMAV_DEPENDENCIES/lib/libpcre2-8.a"            \
