@@ -45,6 +45,4 @@ COPY llvmsymbol.diff $SRC
 # specific to project
 RUN git clone --depth 1 https://github.com/grpc/grpc-swift
 COPY build.sh $SRC
-COPY *.swift $SRC/
-COPY patch.diff $SRC/
 WORKDIR $SRC/grpc-swift
