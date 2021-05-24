@@ -20,5 +20,4 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_
 RUN pip3 install -U meson ninja
 RUN git clone --depth 1 https://github.com/MusicPlayerDaemon/MPD
 COPY build.sh $SRC
-COPY patch.diff $SRC
 WORKDIR $SRC/MPD
