@@ -137,7 +137,9 @@ class InternalGithub(GithubCiMixin, BaseCi):
     if not inferred_url or not image_repo_path:
       logging.error('Could not detect repo from project %s.',
                     self.config.project_name)
-      return BuildPreparationResult(False, None, None)
+      return BuildPreparationResult(success=False,
+                                    image_repo_path=None,
+                                    repo_manager=None)
 
     git_workspace = os.path.join(self.config.workspace, 'storage')
     os.makedirs(git_workspace, exist_ok=True)
@@ -152,7 +154,9 @@ class InternalGithub(GithubCiMixin, BaseCi):
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 
-    return BuildPreparationResult(True, image_repo_path, manager)
+    return BuildPreparationResult(success=True,
+                                  image_repo_path=image_repo_path,
+                                  repo_manager=manager)
 
 
 class InternalGeneric(BaseCi):
@@ -172,10 +176,14 @@ class InternalGeneric(BaseCi):
     if not image_repo_path:
       logging.error('Could not detect repo from project %s.',
                     self.config.project_name)
-      return BuildPreparationResult(False, None, None)
+      return BuildPreparationResult(success=False,
+                                    image_repo_path=None,
+                                    repo_manager=None)
 
     manager = repo_manager.RepoManager(self.config.project_src_path)
-    return BuildPreparationResult(True, image_repo_path, manager)
+    return BuildPreparationResult(success=True,
+                                  image_repo_path=image_repo_path,
+                                  repo_manager=manager)
 
   def get_diff_base(self):
     return 'origin...'
@@ -197,22 +205,28 @@ def build_external_project_docker_image(project_name, project_src,
 
 
 class ExternalGeneric(BaseCi):
+  """CI implementation for generic CI for external (non-OSS-Fuzz) projects."""
   def get_diff_base(self):
     return 'origin...'
 
   def prepare_for_fuzzer_build(self):
     logging.info('ExternalGeneric: preparing for fuzzer build.')
     manager = repo_manager.RepoManager(self.config.project_src_path)
-    abs_build_integration_path = os.path.join(manager.repo_dir,
-                                              self.config.build_integration_path)
+    abs_build_integration_path = os.path.join(
+        manager.repo_dir, self.config.build_integration_path)
     if not build_external_project_docker_image(
         self.config.project_name, manager.repo_dir, abs_build_integration_path):
       logging.error('Failed to build external project: %s.',
                     self.config.project_name)
-      return BuildPreparationResult(False, None, None)
+      return BuildPreparationResult(success=False,
+                                    image_repo_path=None,
+                                    repo_manager=None)
 
     image_repo_path = os.path.join('/src', self.config.project_repo_name)
-    return BuildPreparationResult(True, image_repo_path, manager)
+    return BuildPreparationResult(success=True,
+                                  image_repo_path=image_repo_path,
+                                  repo_manager=manager)
+
 
 class ExternalGithub(GithubCiMixin, BaseCi):
   """Class representing CI for a non-OSS-Fuzz project on Github Actions."""
@@ -235,12 +249,16 @@ class ExternalGithub(GithubCiMixin, BaseCi):
     checkout_specified_commit(manager, self.config.pr_ref,
                               self.config.commit_sha)
 
-    build_integration_abs_path = os.path.join(manager.repo_dir,
-                                              self.config.build_integration_path)
+    build_integration_abs_path = os.path.join(
+        manager.repo_dir, self.config.build_integration_path)
     if not build_external_project_docker_image(
         self.config.project_name, manager.repo_dir, build_integration_abs_path):
       logging.error('Failed to build external project.')
-      return BuildPreparationResult(False, None, None)
+      return BuildPreparationResult(success=False,
+                                    image_repo_path=None,
+                                    repo_manager=None)
 
     image_repo_path = os.path.join('/src', self.config.project_repo_name)
-    return BuildPreparationResult(True, image_repo_path, manager)
+    return BuildPreparationResult(success=True,
+                                  image_repo_path=image_repo_path,
+                                  repo_manager=manager)
