@@ -206,6 +206,7 @@ def build_external_project_docker_image(project_name, project_src,
 
 class ExternalGeneric(BaseCi):
   """CI implementation for generic CI for external (non-OSS-Fuzz) projects."""
+
   def get_diff_base(self):
     return 'origin...'
 
