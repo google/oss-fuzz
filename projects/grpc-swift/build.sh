@@ -45,7 +45,7 @@ swift build -c debug -Xswiftc -sanitize=fuzzer,address \
 
 (
 cd .build/debug/
-find . -maxdepth 1 -type f -name "*fuzz" -executable | while read i; do cp $i $OUT/"$i"-debug; done
+find . -maxdepth 1 -type f -name "*Fuzzer" -executable | while read i; do cp $i $OUT/"$i"-debug; done
 )
 swift build -c release -Xswiftc -sanitize=fuzzer,address \
     -Xswiftc -parse-as-library -Xswiftc -static-stdlib \
@@ -54,5 +54,5 @@ swift build -c release -Xswiftc -sanitize=fuzzer,address \
     -Xcxx="-fsanitize=fuzzer-no-link,address"
 (
 cd .build/release/
-find . -maxdepth 1 -type f -name "*fuzz" -executable | while read i; do cp $i $OUT/"$i"-release; done
+find . -maxdepth 1 -type f -name "*Fuzzer" -executable | while read i; do cp $i $OUT/"$i"-release; done
 )
