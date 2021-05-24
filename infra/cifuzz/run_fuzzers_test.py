@@ -340,10 +340,6 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
               side_effect=[True, True])
   def test_old_bug_found(self, _):
     """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
-    # !!! Why create two configs?
-    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                            workspace=TEST_DATA_PATH,
-                                            project_name=EXAMPLE_PROJECT)
     with tempfile.TemporaryDirectory() as tmp_dir:
       workspace = os.path.join(tmp_dir, 'workspace')
       shutil.copytree(TEST_DATA_PATH, workspace)
