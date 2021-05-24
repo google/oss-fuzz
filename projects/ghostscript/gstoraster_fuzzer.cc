@@ -42,7 +42,7 @@ static int gs_stdin(void *inst, char *buf, int len)
 	return to_copy;
 }
 
-static int gs_stdout(void *inst, const char *buf, int len)
+static int gs_stdnull(void *inst, const char *buf, int len)
 {
 	/* Just discard everything. */
 	return len;
@@ -69,7 +69,7 @@ static int gs_to_raster_fuzz(const unsigned char *buf, size_t size)
 		"-dBATCH",
 		"-dNOINTERPOLATE",
 		"-dNOMEDIAATTRS",
-		"-sstdout=%stderr",
+		"-sstdout=%%stderr",
 		"-sOutputFile=/dev/null",
 		"-sDEVICE=cups",
 		"-_",
@@ -86,7 +86,7 @@ static int gs_to_raster_fuzz(const unsigned char *buf, size_t size)
 		return ret;
 	}
 
-	gsapi_set_stdio(gs, gs_stdin, gs_stdout, NULL /* stderr */);
+	gsapi_set_stdio(gs, gs_stdin, gs_stdnull, gs_stdnull);
 	ret = gsapi_set_arg_encoding(gs, GS_ARG_ENCODING_UTF8);
 	if (ret < 0) {
 		fprintf(stderr, "gsapi_set_arg_encoding: error %d\n", ret);

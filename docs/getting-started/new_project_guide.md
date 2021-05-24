@@ -50,10 +50,10 @@ project is located in [`projects/boringssl`](https://github.com/google/oss-fuzz/
 
 Each project directory also contains the following three configuration files:
 
-* [project.yaml](#project.yaml) - provides metadata about the project.
-* [Dockerfile](#Dockerfile) - defines the container environment with information
+* [project.yaml](#projectyaml) - provides metadata about the project.
+* [Dockerfile](#dockerfile) - defines the container environment with information
 on dependencies needed to build the project and its [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target).
-* [build.sh](#build.sh) - defines the build script that executes inside the Docker container and
+* [build.sh](#buildsh) - defines the build script that executes inside the Docker container and
 generates the project build.
 
 You can automatically create a new directory for your project in OSS-Fuzz and
@@ -70,7 +70,7 @@ Once the template configuration files are created, you can modify them to fit yo
 
 **Note:** We prefer that you keep and maintain [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your own source code repository. If this isn't possible, you can store them inside the OSS-Fuzz project directory you created.
 
-## project.yaml
+## project.yaml {#projectyaml}
 
 This configuration file stores project metadata. The following attributes are supported:
 
@@ -97,6 +97,7 @@ Programming language the project is written in. Values you can specify include:
 * [`go`]({{ site.baseurl }}//getting-started/new-project-guide/go-lang/)
 * [`rust`]({{ site.baseurl }}//getting-started/new-project-guide/rust-lang/)
 * [`python`]({{ site.baseurl }}//getting-started/new-project-guide/python-lang/)
+* [`jvm` (Java, Kotlin, Scala and other JVM-based languages)]({{ site.baseurl }}//getting-started/new-project-guide/jvm-lang/)
 
 ### primary_contact, auto_ccs {#primary}
 The primary contact and list of other contacts to be CCed. Each person listed gets access to ClusterFuzz, including crash reports and fuzzer statistics, and are auto-cced on new bugs filed in the OSS-Fuzz
@@ -148,7 +149,8 @@ homepage]({{ site.baseurl }}/further-reading/clusterfuzz#web-interface).
 ### architectures (optional) {#architectures}
 The list of architectures to fuzz on.
 ClusterFuzz supports fuzzing on x86_64 (aka x64) by default.
-However you can also fuzz using AddressSanitizer and libFuzzer on i386 (aka x86, or 32 bit) by specifying "x86_64" and "i386" in "architectures" like this:
+Some projects can benefit from i386 fuzzing. OSS-Fuzz will build and run
+AddressSanitizer with libFuzzer on i386 by doing the following:
 
 ```yaml
 architectures:
@@ -166,6 +168,11 @@ On the testcase page of each oss-fuzz issue is a list of other jobs where the cr
 
 Fuzzing on i386 is not enabled by default because many projects won't build for i386 without some modification to their OSS-Fuzz build process.
 For example, you will need to link against `$LIB_FUZZING_ENGINE` and possibly install i386 dependencies within the x86_64 docker image ([for example](https://github.com/google/oss-fuzz/blob/5b8dcb5d942b3b8bc173b823fb9ddbdca7ec6c99/projects/gdal/build.sh#L18)) to get things working.
+
+### fuzzing_engines (optional) {#fuzzing_engines}
+The list of fuzzing engines to use.
+By default, `libfuzzer`, `afl`, and `honggfuzz` are used. It is recommended to
+use all of them if possible. `libfuzzer` is required by OSS-Fuzz.
 
 ### help_url (optional) {#help_url}
 A link to a custom help URL that appears in bug reports instead of the default
@@ -185,9 +192,9 @@ builds_per_day: 2
 
 Will build the project twice per day.
 
-## Dockerfile
+## Dockerfile {#dockerfile}
 
-This configuration file defines the Docker image for your project. Your [build.sh](#build.sh) script will be executed in inside the container you define.
+This configuration file defines the Docker image for your project. Your [build.sh](#buildsh) script will be executed in inside the container you define.
 For most projects, the image is simple:
 ```docker
 FROM gcr.io/oss-fuzz-base/base-builder       # base image with clang toolchain
@@ -203,7 +210,7 @@ For an example, see
 or
 [syzkaller/Dockerfile](https://github.com/google/oss-fuzz/blob/master/projects/syzkaller/Dockerfile).
 
-## build.sh
+## build.sh {#buildsh}
 
 This file defines how to build binaries for [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) in your project.
 The script is executed within the image built from your [Dockerfile](#Dockerfile).
@@ -243,6 +250,27 @@ If your project is written in Go, check out the [Integrating a Go project]({{ si
 2. Make sure that the binary names for your [fuzz targets]({{ site.baseurl }}/reference/glossary/#fuzz-target) contain only
 alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on our infrastructure.
 3. Don't remove source code files. They are needed for code coverage.
+
+### Temporarily disabling code instrumentation during builds
+
+In some cases, it's not necessary to instrument every 3rd party library or tool that supports the build target. Use the following snippet to build tools or libraries without instrumentation:
+
+
+```
+CFLAGS_SAVE="$CFLAGS"
+CXXFLAGS_SAVE="$CXXFLAGS"
+unset CFLAGS
+unset CXXFLAGS
+export AFL_NOOPT=1
+
+#
+# build commands here that should not result in instrumented code.
+#
+
+export CFLAGS="${CFLAGS_SAVE}"
+export CXXFLAGS="${CXXFLAGS_SAVE}"
+unset AFL_NOOPT
+```
 
 ### build.sh script environment
 
@@ -333,7 +361,8 @@ generated from the previous `run_fuzzer` step in your local corpus directory.
     $ python infra/helper.py coverage $PROJECT_NAME --fuzz-target=<fuzz_target> --corpus-dir=<path-to-temp-corpus-dir>
     ```
 
-Please refer to
+You may need to run `python infra/helper.py pull_images` to use the latest
+coverage tools. Please refer to
 [code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
 information on code coverage generation.
 
@@ -365,7 +394,7 @@ of good sample inputs is one of the best ways to improve [fuzz target]({{ site.b
 
 To provide a corpus for `my_fuzzer`, put `my_fuzzer_seed_corpus.zip` file next
 to the [fuzz target]({{ site.baseurl }}/reference/glossary/#fuzz-target)'s binary in `$OUT` during the build. Individual files in this
-archive will be used as starting inputs for mutations. The name of each file in the corpus is the sha1 checksum (which you can get using the `sha1sum` or `shasum` comand) of its contents. You can store the corpus
+archive will be used as starting inputs for mutations. The name of each file in the corpus is the sha1 checksum (which you can get using the `sha1sum` or `shasum` command) of its contents. You can store the corpus
 next to source files, generate during build or fetch it using curl or any other
 tool of your choice.
 (example: [boringssl](https://github.com/google/oss-fuzz/blob/master/projects/boringssl/build.sh#L41)).

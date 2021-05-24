@@ -29,6 +29,7 @@ RUN dpkg --add-architecture i386 && \
         jq \
         libc6-dev-i386 \
         patchelf \
+        rsync \
         subversion \
         zip
 
@@ -57,12 +58,14 @@ RUN export PYTHON_DEPS="\
     ln -s /usr/bin/python3 /usr/bin/python && \
     cd .. && \
     rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
-    apt-get remove -y $PYTHON_DEPS  # https://github.com/google/oss-fuzz/issues/3888
+    rm -rf /usr/local/lib/python3.8/test && \
+    apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
 
 # Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
 # six for Bazel rules.
-RUN unset CFLAGS CXXFLAGS && pip3 install -v \
-    atheris pyinstaller==4.1 six==1.15.0
+RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
+    atheris pyinstaller==4.1 six==1.15.0 && \
+    rm -rf /tmp/*
 
 # Download and install the latest stable Go.
 RUN cd /tmp && \
@@ -87,9 +90,11 @@ ENV CARGO_HOME=/rust
 ENV RUSTUP_HOME=/rust/rustup
 ENV PATH=$PATH:/rust/bin
 RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=minimal
-RUN cargo install cargo-fuzz
+RUN cargo install cargo-fuzz && rm -rf /rust/registry
 # Needed to recompile rust std library for MSAN
 RUN rustup component add rust-src --toolchain nightly
+# Set up custom environment variable for source code copy for coverage reports
+ENV OSSFUZZ_RUSTPATH /rust
 
 # Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
 ENV BAZELISK_VERSION 1.7.4
@@ -131,6 +136,8 @@ ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
 ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
 
+ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
+
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
 
@@ -169,15 +176,12 @@ ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 # TODO: remove after tpm2 catchup.
 ENV FUZZER_LDFLAGS ""
 
-ENV PRECOMPILED_DIR="/usr/lib/precompiled"
-RUN mkdir $PRECOMPILED_DIR
-
 WORKDIR $SRC
 
 # TODO: switch to -b stable once we can.
 RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
     cd aflplusplus && \
-    git checkout 333509bb0a56be9bd2e236f0e2f37d4af2dd7d59
+    git checkout f4cc718fdc4571f56280a1efad3645125bee2154
 
 RUN cd $SRC && \
     curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
@@ -186,12 +190,14 @@ RUN cd $SRC && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
     rm -rf examples $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    compile_go_fuzzer precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
+COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+    compile_go_fuzzer precompile_honggfuzz precompile_afl debug_afl srcmap \
+    write_labels.py bazel_build_fuzz_tests /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/
 COPY ossfuzz_coverage_runner.go $GOPATH
 
 RUN precompile_honggfuzz
+RUN precompile_afl
 
 CMD ["compile"]

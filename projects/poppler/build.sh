@@ -27,6 +27,14 @@ rm -rf $WORK/*
 rm -rf $BUILD
 mkdir -p $BUILD
 
+# Install Boost headers
+cd $SRC/
+tar jxf boost_1_76_0.tar.bz2
+cd boost_1_76_0/
+CFLAGS="" CXXFLAGS="" ./bootstrap.sh
+CFLAGS="" CXXFLAGS="" ./b2 headers
+cp -R boost/ /usr/include/
+
 pushd $SRC/zlib
 CFLAGS=-fPIC ./configure --static --prefix=$PREFIX
 make install -j$(nproc)
@@ -166,7 +174,7 @@ fuzzers=$(find $SRC/poppler/cpp/tests/fuzzing/ -name "*_fuzzer.cc")
 for f in $fuzzers; do
     fuzzer_name=$(basename $f .cc)
 
-    $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp \
+    $CXX $CXXFLAGS -std=c++11 -I$SRC/poppler/cpp -I$SRC/poppler/build/cpp \
         $BUILD_CFLAGS \
         $f -o $OUT/$fuzzer_name \
         $PREDEPS_LDFLAGS \
@@ -213,7 +221,7 @@ for f in $fuzzers; do
     fuzzer_name=$(basename $f .cc)
 
     $CXX $CXXFLAGS -std=c++11 -fPIC \
-        -I$SRC/poppler/qt5/src \
+        -I$SRC/poppler/qt5/src -I$SRC/poppler/build/qt5/src \
         $BUILD_CFLAGS \
         $f -o $OUT/$fuzzer_name \
         $PREDEPS_LDFLAGS \

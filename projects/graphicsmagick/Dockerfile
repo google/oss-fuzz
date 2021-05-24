@@ -29,7 +29,7 @@ RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone https://git.savannah.nongnu.org/r/freetype/freetype2.git/
 RUN git clone --depth 1 https://github.com/pnggroup/libpng
 RUN git clone --depth 1 https://github.com/mm2/Little-CMS
-RUN git clone https://git.ghostscript.com/ghostpdl.git
+RUN git clone http://git.ghostscript.com/ghostpdl.git
 RUN git clone --depth 1 https://gitlab.com/federicomenaquintero/bzip2.git
 RUN git clone --depth 1 https://github.com/jasper-software/jasper
 RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git

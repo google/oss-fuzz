@@ -27,6 +27,11 @@ then
     export CXXFLAGS="$CXXFLAGS -DMSAN"
 fi
 
+if [[ $SANITIZER = coverage ]]
+then
+    export CXXFLAGS="$CXXFLAGS -fno-use-cxa-atexit"
+fi
+
 mkdir $SRC/protobuf-install/
 cd $SRC/protobuf/
 ./autogen.sh
@@ -38,8 +43,10 @@ export PROTOC="$SRC/protobuf-install/bin/protoc"
 
 cd $SRC/protobuf-c/
 ./autogen.sh
-protobuf_LIBS="-L/$SRC/protobuf-install/lib -lprotobuf" protobuf_CFLAGS="-I $SRC/protobuf-install/include/" ./configure --enable-static=yes --enable-shared=false
+./configure --enable-static=yes --enable-shared=false PKG_CONFIG_PATH=$SRC/protobuf-install/lib/pkgconfig
+
 make -j$(nproc)
+make install
 
 cd $SRC/fuzzing-headers/
 ./install.sh
@@ -47,6 +54,6 @@ cd $SRC/fuzzing-headers/
 cd $SRC/protobuf-c-fuzzers/
 cp $SRC/protobuf-c/t/test-full.proto $SRC/protobuf-c-fuzzers/
 export PATH=$PATH:$SRC/protobuf-c/protoc-c
-$PROTOC --c_out=. test-full.proto
+$PROTOC --c_out=. -I. -I/usr/local/include test-full.proto
 $CC $CFLAGS test-full.pb-c.c -I $SRC/protobuf-install -I $SRC/protobuf-c -c -o test-full.pb-c.o
 $CXX $CXXFLAGS fuzzer.cpp -I $SRC/protobuf-install -I $SRC/protobuf-c test-full.pb-c.o $SRC/protobuf-c/protobuf-c/.libs/libprotobuf-c.a $LIB_FUZZING_ENGINE -o $OUT/fuzzer

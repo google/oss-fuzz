@@ -186,6 +186,17 @@ then
     unset WOLFCRYPT_LIBWOLFSSL_A_PATH
     unset WOLFCRYPT_INCLUDE_PATH
 
+    # Convert Wycheproof test vectors to Cryptofuzz corpus format
+    mkdir $SRC/corpus-cryptofuzz-wycheproof/
+    find $SRC/wycheproof/testvectors/ -type f -name 'ecdsa_*' -exec $SRC/cryptofuzz-disable-fastmath/cryptofuzz --from-wycheproof={},$SRC/corpus-cryptofuzz-wycheproof/ \;
+    # Pack it
+    zip -j $SRC/cryptofuzz_wycheproof_seed_corpus.zip $SRC/corpus-cryptofuzz-wycheproof/*
+    # Use it as the seed corpus for each Cryptofuzz-based fuzzer
+    cp $SRC/cryptofuzz_wycheproof_seed_corpus.zip $OUT/cryptofuzz-sp-math-all_seed_corpus.zip
+    cp $SRC/cryptofuzz_wycheproof_seed_corpus.zip $OUT/cryptofuzz-sp-math-all-8bit_seed_corpus.zip
+    cp $SRC/cryptofuzz_wycheproof_seed_corpus.zip $OUT/cryptofuzz-sp-math_seed_corpus.zip
+    cp $SRC/cryptofuzz_wycheproof_seed_corpus.zip $OUT/cryptofuzz-disable-fastmath_seed_corpus.zip
+
     # Build SSL/SSH fuzzers
     NEW_SRC=$SRC/wolf-ssl-ssh-fuzzers/oss-fuzz/projects/wolf-ssl-ssh/
     cp -R $SRC/wolfssl/ $NEW_SRC

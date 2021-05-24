@@ -1,0 +1,14 @@
+homepage: "https://github.com/wasm3/wasm3"
+main_repo: "https://github.com/wasm3/wasm3"
+language: c
+primary_contact: "vshymanskyi@gmail.com"
+auto_ccs:
+  - "Adam@adalogics.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+fuzzing_engines:
+  - libfuzzer
+  - afl
+  - honggfuzz

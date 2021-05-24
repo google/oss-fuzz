@@ -28,18 +28,18 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	fwrite(data, size, 1, fp);
 	fclose(fp);
-	do_syms = TRUE;
-	do_reloc = TRUE;
-	do_unwind = TRUE;
-	do_dynamic = TRUE;
-	do_header = TRUE;
-	do_sections = TRUE;
-	do_section_groups = TRUE;
-	do_segments = TRUE;
-	do_version = TRUE;
-	do_histogram = TRUE;
-	do_arch = TRUE;
-	do_notes = TRUE;
+	do_syms = true;
+	do_reloc = true;
+	do_unwind = true;
+	do_dynamic = true;
+	do_header = true;
+	do_sections = true;
+	do_section_groups = true;
+	do_segments = true;
+	do_version = true;
+	do_histogram = true;
+	do_arch = true;
+	do_notes = true;
 
     // Main fuzz entrypoint
 	process_file(filename);

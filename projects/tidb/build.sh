@@ -15,10 +15,6 @@
 #
 ################################################################################
 
-# Insert empty main function
-sed -i '23 i\func main(){}'\\n $SRC/tidb/plugin/conn_ip_example/conn_ip_example.go
-
-go get ./...
 
 compile_go_fuzzer github.com/pingcap/tidb/types FuzzMarshalJSON fuzzMarshalJSON
 compile_go_fuzzer github.com/pingcap/tidb/types FuzzNewBitLiteral fuzzNewBitLiteral

@@ -4,6 +4,8 @@ primary_contact: "neildhar@fb.com"
 auto_ccs:
   - "dulinr@fb.com"
   - "mhl@fb.com"
+  - "avp@fb.com"
+  - "jsx@fb.com"
 vendor_ccs:
   - "oss-fuzz@fb.com"
 fuzzing_engines:

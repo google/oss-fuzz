@@ -16,9 +16,12 @@ import collections
 import logging
 import os
 import re
+import shutil
 import stat
 import subprocess
 import sys
+
+import docker
 
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,6 +31,8 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
 
+# Use a fixed seed for determinism. Use len_control=0 since we don't have enough
+# time fuzzing for len_control to make sense (probably).
 LIBFUZZER_OPTIONS = '-seed=1337 -len_control=0'
 
 # The number of reproduce attempts for a crash.
@@ -79,6 +84,7 @@ class FuzzTarget:
     self.out_dir = out_dir
     self.clusterfuzz_deployment = clusterfuzz_deployment
     self.config = config
+    self.latest_corpus_path = None
 
   def fuzz(self):
     """Starts the fuzz target run for the length of time specified by duration.
@@ -104,13 +110,18 @@ class FuzzTarget:
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'SANITIZER=' + self.config.sanitizer, '-e', 'CIFUZZ=True', '-e',
-        'RUN_FUZZER_MODE=interactive', 'gcr.io/oss-fuzz-base/base-runner',
-        'bash', '-c'
+        'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash', '-c'
     ]
 
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
         fuzz_target=self.target_name,
         options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
+
+    # If corpus can be downloaded use it for fuzzing.
+    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
+        self.target_name, self.out_dir)
+    if self.latest_corpus_path:
+      run_fuzzer_command = run_fuzzer_command + ' ' + self.latest_corpus_path
     command.append(run_fuzzer_command)
     logging.info('Running command: %s', ' '.join(command))
 
@@ -136,9 +147,36 @@ class FuzzTarget:
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
       return FuzzResult(None, None, corpus_path)
+
+    utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
+                       (self.target_name.encode(), stderr))
     if self.is_crash_reportable(testcase):
+      # We found a bug in the fuzz target and we will report it.
       return FuzzResult(testcase, stderr, corpus_path)
+
+    # We found a bug but we won't report it.
     return FuzzResult(None, None, corpus_path)
+
+  def free_disk_if_needed(self):
+    """Deletes things that are no longer needed from fuzzing this fuzz target to
+    save disk space if needed."""
+    if not self.config.low_disk_space:
+      return
+    logging.info(
+        'Deleting corpus, seed corpus and fuzz target of %s to save disk.',
+        self.target_name)
+
+    # Delete the seed corpus, corpus, and fuzz target.
+    if self.latest_corpus_path and os.path.exists(self.latest_corpus_path):
+      # Use ignore_errors=True to fix
+      # https://github.com/google/oss-fuzz/issues/5383.
+      shutil.rmtree(self.latest_corpus_path, ignore_errors=True)
+
+    os.remove(self.target_path)
+    target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
+    if os.path.exists(target_seed_corpus_path):
+      os.remove(target_seed_corpus_path)
+    logging.info('Done deleting.')
 
   def is_reproducible(self, testcase, target_path):
     """Checks if the testcase reproduces.
@@ -176,8 +214,7 @@ class FuzzTarget:
       ]
 
     command += [
-        '-t', 'gcr.io/oss-fuzz-base/base-runner', 'reproduce', self.target_name,
-        '-runs=100'
+        '-t', docker.BASE_RUNNER_TAG, 'reproduce', self.target_name, '-runs=100'
     ]
 
     logging.info('Running reproduce command: %s.', ' '.join(command))
@@ -246,7 +283,6 @@ class FuzzTarget:
       logging.info('The crash is reproducible. The crash doesn\'t reproduce '
                    'on old builds. This code change probably introduced the '
                    'crash.')
-
       return True
 
     logging.info('The crash is reproducible on old builds '

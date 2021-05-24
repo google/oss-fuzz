@@ -200,6 +200,7 @@ def build_fuzzers_from_commit(commit,
     # Re-copy /src for a clean checkout every time.
     copy_src_from_docker(build_data.project_name,
                          os.path.dirname(host_src_path))
+    build_repo_manager.fetch_all_remotes()
 
   projects_dir = os.path.join('projects', build_data.project_name)
   dockerfile_path = os.path.join(projects_dir, 'Dockerfile')
@@ -229,8 +230,8 @@ def build_fuzzers_from_commit(commit,
                                        architecture=build_data.architecture,
                                        env_to_add=None,
                                        source_path=host_src_path,
-                                       mount_location='/src')
-    if result == 0 or i == num_retry:
+                                       mount_path='/src')
+    if result or i == num_retry:
       break
 
     # Retry with an OSS-Fuzz builder container that's closer to the project
@@ -284,7 +285,7 @@ def build_fuzzers_from_commit(commit,
     cleanup()
 
   cleanup()
-  return result == 0
+  return result
 
 
 def detect_main_repo(project_name, repo_name=None, commit=None):

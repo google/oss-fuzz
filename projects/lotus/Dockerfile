@@ -17,7 +17,7 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y mesa-opencl-icd ocl-icd-opencl-dev gcc \
     git bzr jq pkg-config curl clang build-essential hwloc libhwloc-dev
-RUN git clone --depth 1 https://github.com/filecoin-project/lotus $GOPATH/src/github.com/filecoin-project/lotus
-RUN git clone --depth 1 https://github.com/filecoin-project/fuzzing-lotus $GOPATH/src/github.com/filecoin-project/fuzzing-lotus
+RUN git clone --depth 1 https://github.com/filecoin-project/lotus
+RUN git clone --depth 1 https://github.com/filecoin-project/fuzzing-lotus
 COPY build.sh $SRC/
-WORKDIR $GOPATH/src/github.com/filecoin-project/lotus
+WORKDIR $SRC/lotus

@@ -20,6 +20,9 @@ export PKG_CONFIG_PATH=$DEPS_PATH/lib/pkgconfig
 export CPPFLAGS="-I$DEPS_PATH/include"
 export LDFLAGS="-L$DEPS_PATH/lib"
 export CONFIG_SITE=$SRC/config.site
+export GNULIB_SRCDIR=$SRC/gnulib
+export GNULIB_TOOL=$GNULIB_SRCDIR/gnulib-tool
+
 
 cd $SRC/icu/source
 UBSAN_OPTIONS=detect_leaks=0 \
@@ -30,29 +33,28 @@ CPPFLAGS="$CPPFLAGS -fno-sanitize=vptr" \
   --disable-tests --disable-samples --with-data-packaging=static --prefix=$DEPS_PATH
 # ugly hack to avoid build error
 echo '#include <locale.h>' >>i18n/digitlst.h
-make -j$(nproc)
+make -j
 make install
 
 cd $SRC/libunistring
 ./autogen.sh
 ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
   ./configure --enable-static --disable-shared --prefix=$DEPS_PATH
-make -j$(nproc)
+make -j
 make install
 
 cd $SRC/libidn
+./bootstrap
 ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
-  make CFGFLAGS="--enable-static --disable-shared --disable-doc --prefix=$DEPS_PATH"
-make clean
-make -j1
-make -j$(nproc) check
+  ./configure --enable-static --disable-shared --disable-doc --prefix=$DEPS_PATH
+make -j
 make install
 
 cd $SRC/libidn2
 ./bootstrap
 ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
   ./configure --enable-static --disable-shared --disable-doc --disable-gcc-warnings --prefix=$DEPS_PATH
-make -j$(nproc)
+make -j
 make install
 
 
@@ -82,8 +84,8 @@ for build in $builds; do
   ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=detect_leaks=0 \
     ./configure --enable-static --disable-shared --disable-gtk-doc $BUILD_FLAGS --prefix=$DEPS_PATH
   make clean
-  make -j$(nproc)
-  make -j$(nproc) check
+  make -j
+  make -j check
   make -C fuzz oss-fuzz
   find fuzz -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
 done

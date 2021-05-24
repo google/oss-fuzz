@@ -29,7 +29,7 @@ execution environment and reporting tool.
 [Sanitizers]: https://github.com/google/sanitizers
 [ClusterFuzz]: https://github.com/google/clusterfuzz
 
-Currently, OSS-Fuzz supports C/C++, Rust, Go and Python code. Other languages
+Currently, OSS-Fuzz supports C/C++, Rust, Go, Python and Java/JVM code. Other languages
 supported by [LLVM] may work too. OSS-Fuzz supports fuzzing x86_64 and i386
 builds.
 

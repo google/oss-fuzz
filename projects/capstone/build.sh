@@ -32,6 +32,7 @@ do
     sed -i -e 's/#print/print/' capstone/__init__.py
     (
     export CFLAGS=""
+    export AFL_NOOPT=1
     python setup.py install
     )
     cd $SRC/capstone$branch/suite

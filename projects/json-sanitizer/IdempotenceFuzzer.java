@@ -21,20 +21,18 @@ import com.google.json.JsonSanitizer;
 public class IdempotenceFuzzer {
   public static void fuzzerTestOneInput(FuzzedDataProvider data) {
     String input = data.consumeRemainingAsString();
-    String output1;
+    String output;
     try {
-      output1 = JsonSanitizer.sanitize(input, 10);
+      output = JsonSanitizer.sanitize(input, 10);
     } catch (ArrayIndexOutOfBoundsException e) {
       // ArrayIndexOutOfBoundsException is expected if nesting depth is
       // exceeded.
       return;
     }
-    String output2 = JsonSanitizer.sanitize(output1, 10);
-    if (!output1.equals(output2)) {
-      System.err.println("input  : " + input);
-      System.err.println("output1: " + output1);
-      System.err.println("output2: " + output2);
-      throw new IllegalStateException("Non-idempotence detected");
-    }
+
+    // Ensure that sanitizing twice does not give different output
+    // (idempotence). Since failure to be idempotent is not a security issue in
+    // itself, fail with a regular AssertionError.
+    assert JsonSanitizer.sanitize(output).equals(output) : "Not idempotent";
   }
 }

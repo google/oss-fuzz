@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y wget autoconf automake libtool pkg-config cmake gperf
+RUN apt-get update && apt-get install -y wget autoconf automake libtool pkg-config gperf
 RUN pip3 install meson ninja
 
 RUN git clone --depth 1 https://github.com/madler/zlib.git
@@ -30,6 +30,7 @@ ADD http://ftp.gnome.org/pub/gnome/sources/pango/1.48/pango-1.48.0.tar.xz $SRC
 RUN tar xvJf $SRC/pango-1.48.0.tar.xz
 ADD https://ftp.gnome.org/pub/gnome/sources/glib/2.64/glib-2.64.2.tar.xz $SRC
 RUN tar xvJf $SRC/glib-2.64.2.tar.xz
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2
 RUN git clone --depth 1 --single-branch https://gitlab.freedesktop.org/poppler/poppler.git
 
 RUN git clone --depth 1 https://github.com/mozilla/pdf.js pdf.js && \

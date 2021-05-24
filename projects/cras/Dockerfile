@@ -40,6 +40,7 @@ RUN apt-get -y update && \
       libtool \
       libudev-dev \
       wget \
+      vim \
       zip
 RUN apt-get clean
 RUN cd /tmp && git clone https://github.com/ndevilla/iniparser.git && \

@@ -26,6 +26,13 @@ build() {
   shift
   PROJECT_DIR=$SRC/$project
 
+  # ensure we get absolute paths for the coverage report
+  cd $PROJECT_DIR
+  crate_src_abspath=`cargo metadata --no-deps --format-version 1 | jq -r '.workspace_root'`
+  while read i; do
+    export RUSTFLAGS="$RUSTFLAGS --remap-path-prefix $i=$crate_src_abspath/$i"
+  done <<< "$(find . -name "*.rs" | cut -d/ -f2 | uniq)"
+
   cd $PROJECT_DIR/fuzz && cargo fuzz build -O --debug-assertions "$@"
 
   FUZZ_TARGET_OUTPUT_DIR=$PROJECT_DIR/target/x86_64-unknown-linux-gnu/release
@@ -50,10 +57,7 @@ build() {
 }
 
 # Build with peepmatic in order to enable the related fuzz targets.
-build wasmtime "" "" --features peepmatic-fuzzing
-
-# Build the differential fuzzer with the new x86-64 backend as well.
-build wasmtime diff-newbe- differential_wasmi --features experimental_x64
+build wasmtime "" "" --features "peepmatic-fuzzing experimental_x64"
 
 build wasm-tools wasm-tools- ""
 build regalloc.rs regalloc- bt bt

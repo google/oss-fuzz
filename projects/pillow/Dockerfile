@@ -15,19 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone --depth 1 https://github.com/google/fuzzing
-RUN cat fuzzing/dictionaries/bmp.dict \
-        fuzzing/dictionaries/dds.dict \
-        fuzzing/dictionaries/gif.dict \
-        fuzzing/dictionaries/icns.dict \
-        fuzzing/dictionaries/jpeg.dict \
-        fuzzing/dictionaries/jpeg2000.dict \
-        fuzzing/dictionaries/pbm.dict \
-        fuzzing/dictionaries/png.dict \
-        fuzzing/dictionaries/psd.dict \
-        fuzzing/dictionaries/tiff.dict \
-        fuzzing/dictionaries/webp.dict \
-      > $OUT/fuzz_pillow.dict
 
 # library build dependencies
 RUN apt-get update && \
@@ -39,6 +26,8 @@ RUN apt-get update && \
 
 RUN git clone --depth 1 https://github.com/python-pillow/Pillow
 RUN git clone --depth 1 https://github.com/python-pillow/pillow-wheels
+
+RUN $SRC/Pillow/Tests/oss-fuzz/build_dictionaries.sh
 
 COPY build_depends.sh $SRC
 

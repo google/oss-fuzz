@@ -73,7 +73,9 @@ def SetUpEnvironment(work_dir):
 
   dpkg_host_architecture = wrapper_utils.DpkgHostArchitecture()
   wrapper_utils.CreateSymlinks(
-      compiler_wrapper_path, bin_dir, [
+      compiler_wrapper_path,
+      bin_dir,
+      [
           'clang',
           'clang++',
           # Not all build rules respect $CC/$CXX, so make additional symlinks.
@@ -101,41 +103,35 @@ def SetUpEnvironment(work_dir):
   env['DPKG_GENSYMBOLS_CHECK_LEVEL'] = '0'
 
   # debian/rules can set DPKG_GENSYMBOLS_CHECK_LEVEL explicitly, so override it.
-  gen_symbols_wrapper = (
-        '#!/bin/sh\n'
-        'export DPKG_GENSYMBOLS_CHECK_LEVEL=0\n'
-        '/usr/bin/dpkg-gensymbols "$@"\n')
+  gen_symbols_wrapper = ('#!/bin/sh\n'
+                         'export DPKG_GENSYMBOLS_CHECK_LEVEL=0\n'
+                         '/usr/bin/dpkg-gensymbols "$@"\n')
 
-  wrapper_utils.InstallWrapper(bin_dir, 'dpkg-gensymbols',
-                               gen_symbols_wrapper)
+  wrapper_utils.InstallWrapper(bin_dir, 'dpkg-gensymbols', gen_symbols_wrapper)
 
   # Install no-op strip binaries.
-  no_op_strip = ('#!/bin/sh\n'
-                 'exit 0\n')
-  wrapper_utils.InstallWrapper(
-      bin_dir, 'strip', no_op_strip,
-      [dpkg_host_architecture + '-strip'])
+  no_op_strip = ('#!/bin/sh\n' 'exit 0\n')
+  wrapper_utils.InstallWrapper(bin_dir, 'strip', no_op_strip,
+                               [dpkg_host_architecture + '-strip'])
 
   env['PATH'] = bin_dir + ':' + os.environ['PATH']
 
   # nocheck doesn't disable override_dh_auto_test. So we have this hack to try
   # to disable "make check" or "make test" invocations.
-  make_wrapper = (
-      '#!/bin/bash\n'
-      'if [ "$1" = "test" ] || [ "$1" = "check" ]; then\n'
-      '  exit 0\n'
-      'fi\n'
-      '/usr/bin/make "$@"\n')
-  wrapper_utils.InstallWrapper(bin_dir, 'make',
-                               make_wrapper)
+  make_wrapper = ('#!/bin/bash\n'
+                  'if [ "$1" = "test" ] || [ "$1" = "check" ]; then\n'
+                  '  exit 0\n'
+                  'fi\n'
+                  '/usr/bin/make "$@"\n')
+  wrapper_utils.InstallWrapper(bin_dir, 'make', make_wrapper)
 
   # Prevent entire build from failing because of bugs/uninstrumented in tools
   # that are part of the build.
   msan_log_dir = os.path.join(work_dir, 'msan')
   os.mkdir(msan_log_dir)
   msan_log_path = os.path.join(msan_log_dir, 'log')
-  env['MSAN_OPTIONS'] = (
-      'halt_on_error=0:exitcode=0:report_umrs=0:log_path=' + msan_log_path)
+  env['MSAN_OPTIONS'] = ('halt_on_error=0:exitcode=0:report_umrs=0:log_path=' +
+                         msan_log_path)
 
   # Increase maximum stack size to prevent tests from failing.
   limit = 128 * 1024 * 1024
@@ -207,7 +203,7 @@ def ExtractLibraries(deb_paths, work_directory, output_directory):
 
       target_file_path = os.path.join(output_directory, rel_file_path)
       extracted.append(target_file_path)
-        
+
       if os.path.lexists(target_file_path):
         os.remove(target_file_path)
 
@@ -215,8 +211,8 @@ def ExtractLibraries(deb_paths, work_directory, output_directory):
         link_path = os.readlink(file_path)
         if os.path.isabs(link_path):
           # Make absolute links relative.
-          link_path = os.path.relpath(
-              link_path, os.path.join('/', rel_directory))
+          link_path = os.path.relpath(link_path,
+                                      os.path.join('/', rel_directory))
 
         os.symlink(link_path, target_file_path)
       else:
@@ -244,8 +240,8 @@ def GetPackage(package_name):
 def PatchRpath(path, output_directory):
   """Patch rpath to be relative to $ORIGIN."""
   try:
-    rpaths = subprocess.check_output(
-        ['patchelf', '--print-rpath', path]).strip()
+    rpaths = subprocess.check_output(['patchelf', '--print-rpath',
+                                      path]).strip()
   except subprocess.CalledProcessError:
     return
 
@@ -262,15 +258,13 @@ def PatchRpath(path, output_directory):
       processed_rpath.append(rpath)
       continue
 
-    processed_rpath.append(os.path.join(
-        '$ORIGIN',
-        os.path.relpath(rpath, rel_directory)))
+    processed_rpath.append(
+        os.path.join('$ORIGIN', os.path.relpath(rpath, rel_directory)))
 
   processed_rpath = ':'.join(processed_rpath)
   print('Patching rpath for', path, 'to', processed_rpath)
   subprocess.check_call(
-      ['patchelf', '--force-rpath', '--set-rpath',
-       processed_rpath, path])
+      ['patchelf', '--force-rpath', '--set-rpath', processed_rpath, path])
 
 
 def _CollectDependencies(apt_cache, pkg, cache, dependencies):
@@ -331,7 +325,11 @@ def GetBuildList(package_name):
 class MSanBuilder(object):
   """MSan builder."""
 
-  def __init__(self, debug=False, log_path=None, work_dir=None, no_track_origins=False):
+  def __init__(self,
+               debug=False,
+               log_path=None,
+               work_dir=None,
+               no_track_origins=False):
     self.debug = debug
     self.log_path = log_path
     self.work_dir = work_dir
@@ -396,19 +394,24 @@ class MSanBuilder(object):
     extracted_paths = ExtractLibraries(deb_paths, self.work_dir,
                                        extract_directory)
     for extracted_path in extracted_paths:
-      if not os.path.islink(extracted_path):
-        PatchRpath(extracted_path, extract_directory)
+      if os.path.islink(extracted_path):
+        continue
+      if os.path.basename(extracted_path) == 'llvm-symbolizer':
+        continue
+      PatchRpath(extracted_path, extract_directory)
 
 
 def main():
   parser = argparse.ArgumentParser('msan_build.py', description='MSan builder.')
   parser.add_argument('package_names', nargs='+', help='Name of the packages.')
   parser.add_argument('output_dir', help='Output directory.')
-  parser.add_argument('--create-subdirs', action='store_true',
+  parser.add_argument('--create-subdirs',
+                      action='store_true',
                       help=('Create subdirectories in the output '
                             'directory for each package.'))
   parser.add_argument('--work-dir', help='Work directory.')
-  parser.add_argument('--no-build-deps', action='store_true',
+  parser.add_argument('--no-build-deps',
+                      action='store_true',
                       help='Don\'t build dependencies.')
   parser.add_argument('--debug', action='store_true', help='Enable debug mode.')
   parser.add_argument('--log-path', help='Log path for debugging.')
@@ -445,7 +448,8 @@ def main():
   for package_name in package_names:
     print('\t', package_name)
 
-  with MSanBuilder(debug=args.debug, log_path=args.log_path,
+  with MSanBuilder(debug=args.debug,
+                   log_path=args.log_path,
                    work_dir=args.work_dir,
                    no_track_origins=args.no_track_origins) as builder:
     for package_name in package_names:

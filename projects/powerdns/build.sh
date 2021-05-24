@@ -45,6 +45,8 @@ cp ../regression-tests/zones/* ../fuzzing/corpus/zones/
 
 # generate the corpus files
 zip -j "${OUT}/fuzz_target_dnsdistcache_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
+zip -j "${OUT}/fuzz_target_dnslabeltext_parseRFC1035CharString_seed_corpus.zip" ../fuzzing/corpus/txt-records/*
 zip -j "${OUT}/fuzz_target_moadnsparser_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
 zip -j "${OUT}/fuzz_target_packetcache_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
+zip -j "${OUT}/fuzz_target_proxyprotocol_seed_corpus.zip" ../fuzzing/corpus/proxy-protocol-raw-packets/*
 zip -j "${OUT}/fuzz_target_zoneparsertng_seed_corpus.zip" ../fuzzing/corpus/zones/*

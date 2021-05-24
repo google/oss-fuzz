@@ -158,6 +158,19 @@ We work with open source projects and try to keep as much information public as
 possible. We believe that public code coverage reports do not put users at risk,
 as they do not indicate the presence of bugs or lack thereof.
 
+## Why is the coverage command complaining about format compatibility issues?
+
+This may happen if the Docker images fetched locally become out of sync. Make
+sure you run the following command to pull the most recent images:
+
+```bash
+$ python infra/helper.py pull_images
+```
+
+Please refer to
+[code coverage]({{ site.baseurl }}/advanced-topics/code-coverage/) for detailed
+information on code coverage generation.
+
 ## What happens when I rename a fuzz target ?
 
 If you rename your fuzz targets, the existing bugs for those targets will get

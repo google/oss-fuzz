@@ -25,9 +25,9 @@ import stack_parser
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
 EXAMPLE_PROJECT = 'example'
 
-# Location of files used for testing.
-TEST_FILES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'test_files')
+# Location of data used for testing.
+TEST_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'test_data')
 
 
 class ParseOutputTest(fake_filesystem_unittest.TestCase):
@@ -44,7 +44,7 @@ class ParseOutputTest(fake_filesystem_unittest.TestCase):
   def test_parse_valid_output(self, fuzzer_output_file, bug_summary_file):
     """Checks that the parse fuzzer output can correctly parse output."""
     # Read the fuzzer output from disk.
-    fuzzer_output_path = os.path.join(TEST_FILES_PATH, fuzzer_output_file)
+    fuzzer_output_path = os.path.join(TEST_DATA_PATH, fuzzer_output_file)
     self.fs.add_real_file(fuzzer_output_path)
     with open(fuzzer_output_path, 'rb') as fuzzer_output_handle:
       fuzzer_output = fuzzer_output_handle.read()
@@ -57,7 +57,7 @@ class ParseOutputTest(fake_filesystem_unittest.TestCase):
       bug_summary = bug_summary_handle.read()
 
     # Compare the bug to the expected one.
-    expected_bug_summary_path = os.path.join(TEST_FILES_PATH, bug_summary_file)
+    expected_bug_summary_path = os.path.join(TEST_DATA_PATH, bug_summary_file)
     self.fs.add_real_file(expected_bug_summary_path)
     with open(expected_bug_summary_path) as expected_bug_summary_handle:
       expected_bug_summary = expected_bug_summary_handle.read()

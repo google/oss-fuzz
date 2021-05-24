@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Runs specific OSS-Fuzz project's fuzzers for CI tools."""
+"""Runs a specific OSS-Fuzz project's fuzzers for CI tools."""
 import logging
 import sys
 
 import config_utils
+import docker
 import run_fuzzers
 
 # pylint: disable=c-extension-no-member
@@ -24,6 +25,21 @@ import run_fuzzers
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
+
+
+def delete_unneeded_docker_images(config):
+  """Deletes unneeded docker images if running in an environment with low
+  disk space."""
+  if not config.low_disk_space:
+    return
+  logging.info('Deleting builder docker images to save disk space.')
+  project_image = docker.get_project_image_name(config.project_name)
+  images = [
+      project_image,
+      docker.BASE_RUNNER_TAG,
+      docker.MSAN_LIBS_BUILDER_TAG,
+  ]
+  docker.delete_images(images)
 
 
 def main():
@@ -62,6 +78,7 @@ def main():
     logging.error('This script needs to be run within Github actions.')
     return returncode
 
+  delete_unneeded_docker_images(config)
   # Run the specified project's fuzzers from the build.
   result = run_fuzzers.run_fuzzers(config)
   if result == run_fuzzers.RunFuzzersResult.ERROR:

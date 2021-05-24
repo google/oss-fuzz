@@ -1,2 +1,3 @@
 [asan]
 handle_segv=1
+allow_user_segv_handler=1

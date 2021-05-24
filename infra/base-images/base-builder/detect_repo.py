@@ -107,20 +107,25 @@ def get_repo(repo_path):
   return None
 
 
-def check_for_repo_name(repo_path, repo_name):
-  """Check to see if the repo_name matches the remote repository repo name.
+def check_for_repo_name(repo_path, expected_repo_name):
+  """Returns True if the repo at |repo_path| repo_name matches
+  |expected_repo_name|.
 
   Args:
-    repo_path: The directory of the git repo.
-    repo_name: The name of the target git repo.
+    repo_path: The directory of a git repo.
+    expected_repo_name: The name of the target git repo.
   """
   if not os.path.exists(os.path.join(repo_path, '.git')):
     return False
 
-  out, _ = execute(['git', 'config', '--get', 'remote.origin.url'],
-                   location=repo_path)
-  out = out.split('/')[-1].replace('.git', '').rstrip()
-  return out == repo_name
+  repo_url, _ = execute(['git', 'config', '--get', 'remote.origin.url'],
+                        location=repo_path)
+  # Handle two common cases:
+  # https://github.com/google/syzkaller/
+  # https://github.com/google/syzkaller.git
+  repo_url = repo_url.replace('.git', '').rstrip().rstrip('/')
+  actual_repo_name = repo_url.split('/')[-1]
+  return actual_repo_name == expected_repo_name
 
 
 def check_for_commit(repo_path, commit):

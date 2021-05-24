@@ -2,9 +2,13 @@ homepage: "https://cilium.io"
 language: go
 primary_contact: "security@cilium.io"
 auto_ccs:
-- "tom@isovalent.com"
+- "andre@isovalent.com"
+- "joe@isovalent.com"
 - "natalia@isovalent.com"
+- "robin@isovalent.com"
+- "tom.payne@isovalent.com"
 - "adam@adalogics.com"
+main_repo: "https://github.com/cilium/cilium.git"
 fuzzing_engines:
 - libfuzzer
 sanitizers:

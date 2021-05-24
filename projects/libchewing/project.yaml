@@ -1,5 +1,0 @@
-homepage: "http://chewing.im/"
-language: c++
-disabled: true
-view_restrictions: none
-main_repo: 'https://github.com/chewing/libchewing.git'

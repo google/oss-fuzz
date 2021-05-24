@@ -4,6 +4,8 @@ auto_ccs :
   - "fjl@ethereum.org"
   - "martin.swende@ethereum.org"
   - "marius.vanderwijden@ethereum.org"
+  - "garyrong@ethereum.org"
+  - "zsfelfoldi@ethereum.org"
 language: go
 fuzzing_engines:
   - libfuzzer

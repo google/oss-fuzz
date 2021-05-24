@@ -1,0 +1,11 @@
+homepage: "https://opensource.google/projects/cel"
+language: c++
+primary_contact: "kyessenov@gmail.com"
+auto_ccs :
+- "tswadell@google.com"
+- "p.antoine@catenacyber.fr"
+
+sanitizers:
+- address
+- memory
+main_repo: 'https://github.com/google/cel-cpp'

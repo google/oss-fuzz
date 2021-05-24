@@ -25,7 +25,7 @@ RUN npm install -g browserify
 RUN npm install elliptic
 RUN git clone --depth 1 https://github.com/horhof/quickjs quickjs
 RUN git clone --depth 1 https://github.com/catenacyber/elliptic-curve-differential-fuzzer.git ecfuzzer
-RUN git clone --recursive --depth 1 https://github.com/ARMmbed/mbedtls.git mbedtls
+RUN git clone --recursive --depth 1 -b development_2.x https://github.com/ARMmbed/mbedtls.git mbedtls
 RUN git clone --depth 1 https://github.com/ANSSI-FR/libecc.git libecc
 RUN git clone --depth 1 https://github.com/openssl/openssl.git openssl
 RUN git clone --depth 1 git://git.gnupg.org/libgpg-error.git libgpg-error

@@ -36,7 +36,7 @@ RUN git clone --depth 1 -b oss-fuzz https://github.com/project-everest/hacl-star
 RUN git clone --depth 1 https://github.com/google/cityhash.git
 RUN git clone --depth 1 https://github.com/randombit/botan.git
 RUN git clone --depth 1 https://github.com/wolfSSL/wolfssl.git
-RUN git clone --depth 1 https://github.com/ARMmbed/mbedtls.git
+RUN git clone --depth 1 -b development_2.x https://github.com/ARMmbed/mbedtls.git
 RUN hg clone https://hg.mozilla.org/projects/nspr
 RUN hg clone https://hg.mozilla.org/projects/nss
 RUN git clone --depth 1 https://github.com/jedisct1/libsodium.git
@@ -54,6 +54,6 @@ RUN git clone --depth 1 https://github.com/trezor/trezor-firmware.git
 RUN git clone --depth 1 https://github.com/Cyan4973/xxHash.git
 RUN apt-get remove -y libunwind8
 RUN apt-get install -y libssl-dev
-RUN wget https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.bz2
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.bz2
 
 COPY build.sh xxd.c $SRC/

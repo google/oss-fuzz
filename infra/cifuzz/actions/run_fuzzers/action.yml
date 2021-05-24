@@ -48,3 +48,4 @@ runs:
     # We should do something explicit instead.
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
+    LOW_DISK_SPACE: 'True'

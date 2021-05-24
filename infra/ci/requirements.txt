@@ -4,5 +4,5 @@ pyfakefs==4.1.0
 pylint==2.5.3
 pytest==6.2.1
 pytest-xdist==2.2.0
-PyYAML==5.3.1
+PyYAML==5.4
 yapf==0.30.0

@@ -16,7 +16,7 @@
 
 Brotli==1.0.9
 hiredis==1.1.0
-PyYaml==5.2
+PyYaml==5.4
 PyGithub==1.51
 grpcio==1.29.0
 google-auth==1.21.1

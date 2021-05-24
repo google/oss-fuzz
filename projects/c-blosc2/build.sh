@@ -16,6 +16,8 @@
 ################################################################################
 
 # Build project
+export LDSHARED=lld
+
 cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DBUILD_FUZZERS=ON
 make clean
 make -j$(nproc)

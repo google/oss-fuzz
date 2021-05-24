@@ -39,7 +39,7 @@ this_dir=\$(dirname \"\$0\")
 LD_PRELOAD=\"\$this_dir/sanitizer_with_fuzzer.so \$this_dir/libz-eb09ad1d.so.1.2.3 \$this_dir/libquadmath-2d0c479f.so.0.0.0 \$this_dir/libgfortran-2e0d59d6.so.5.0.0 \$this_dir/libopenblasp-r0-09e95953.3.13.so\" \
 ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
 \$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
-  chmod u+x $OUT/$fuzzer_basename
+  chmod +x $OUT/$fuzzer_basename
 done
 
 mv $SRC/tensorflow/tensorflow_src $SRC/tensorflow/tensorflow

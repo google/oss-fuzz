@@ -146,7 +146,7 @@ def _check_for_crash(project_name, fuzz_target, test_case_path):
                                                 fuzz_target,
                                                 False, [], [],
                                                 test_case_path,
-                                                runner=docker_run,
+                                                run_function=docker_run,
                                                 err_result=(None, None, None))
   if return_code is None:
     return None
@@ -189,6 +189,8 @@ def _bisect(bisect_type, old_commit, new_commit, test_case_path, fuzz_target,
 
     bisect_repo_manager = repo_manager.RepoManager(
         os.path.join(host_src_dir, os.path.basename(repo_path)))
+    bisect_repo_manager.fetch_all_remotes()
+
     commit_list = bisect_repo_manager.get_commit_list(new_commit, old_commit)
 
     old_idx = len(commit_list) - 1

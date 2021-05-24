@@ -334,6 +334,7 @@ function check_mixed_sanitizers {
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
   local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__ubsan" -c)
 
+
   if [[ "$SANITIZER" = address ]]; then
     check_asan_build $FUZZER $ASAN_CALLS $DFSAN_CALLS $MSAN_CALLS $UBSAN_CALLS
     result=$?
@@ -346,6 +347,9 @@ function check_mixed_sanitizers {
   elif [[ "$SANITIZER" = undefined ]]; then
     check_ubsan_build $FUZZER $ASAN_CALLS $DFSAN_CALLS $MSAN_CALLS $UBSAN_CALLS
     result=$?
+  elif [[ "$SANITIZER" = thread ]]; then
+    # TODO(metzman): Implement this.
+    result=0
   fi
 
   return $result

@@ -15,7 +15,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueHigh;
+import com.code_intelligence.jazzer.api.FuzzerSecurityIssueMedium;
 import com.google.json.JsonSanitizer;
 
 public class DenylistFuzzer {
@@ -29,12 +30,20 @@ public class DenylistFuzzer {
       // exceeded.
       return;
     }
-    // See https://github.com/OWASP/json-sanitizer#output.
-    if (output.contains("</script") || output.contains("<script")
-        || output.contains("<!--") || output.contains("]]>")) {
-      System.err.println("input : " + input);
-      System.err.println("output: " + output);
-      throw new IllegalStateException("Output contains forbidden substring");
-    }
+
+    // Check for forbidden substrings. As these would enable Cross-Site
+    // Scripting, treat every finding as a high severity vulnerability.
+    assert !output.contains("</script")
+        : new FuzzerSecurityIssueHigh("Output contains </script");
+    assert !output.contains("]]>")
+        : new FuzzerSecurityIssueHigh("Output contains ]]>");
+
+    // Check for more forbidden substrings. As these would not directly enable
+    // Cross-Site Scripting in general, but may impact script execution on the
+    // embedding page, treat each finding as a medium severity vulnerability.
+    assert !output.contains("<script")
+        : new FuzzerSecurityIssueMedium("Output contains <script");
+    assert !output.contains("<!--")
+        : new FuzzerSecurityIssueMedium("Output contains <!--");
   }
 }

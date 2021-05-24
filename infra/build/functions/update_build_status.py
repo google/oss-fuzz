@@ -195,7 +195,10 @@ def update_build_badges(project, last_build_successful,
                         last_coverage_build_successful):
   """Upload badges of given project."""
   badge = 'building'
-  if not last_coverage_build_successful:
+  # last_coverage_build_successful is False if there was an unsuccessful build
+  # and None if the target does not support coverage (e.g. Python or Java
+  # targets).
+  if last_coverage_build_successful is False:
     badge = 'coverage_failing'
   if not last_build_successful:
     badge = 'failing'
@@ -289,12 +292,16 @@ def update_badges():
     futures = []
     with ndb.Client().context():
       for project in Project.query():
-        if (project.name not in project_build_statuses or
-            project.name not in coverage_build_statuses):
+        if project.name not in project_build_statuses:
           continue
+        # Certain projects (e.g. JVM and Python) do not have any coverage
+        # builds, but should still receive a badge.
+        coverage_build_status = None
+        if project.name in coverage_build_statuses:
+          coverage_build_status = coverage_build_statuses[project.name]
 
         futures.append(
             executor.submit(update_build_badges, project.name,
                             project_build_statuses[project.name],
-                            coverage_build_statuses[project.name]))
+                            coverage_build_status))
     concurrent.futures.wait(futures)

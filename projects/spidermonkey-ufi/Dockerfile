@@ -19,7 +19,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     autoconf2.13 \
     python \
     libc++1 \
-    libc++abi1
+    libc++abi1 \
+    m4
+
+# This wrapper of cargo seems to interfere with our build system.
+RUN rm -f /usr/local/bin/cargo
+
 RUN git clone --depth=1 https://github.com/mozilla/gecko-dev mozilla-central
 WORKDIR mozilla-central/js/src/
 COPY build.sh target.c $SRC/

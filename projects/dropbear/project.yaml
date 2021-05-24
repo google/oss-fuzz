@@ -2,4 +2,4 @@ homepage: "https://matt.ucc.asn.au/dropbear/dropbear.html"
 language: c++
 primary_contact: "matt@ucc.asn.au"
 builds_per_day: 4
-main_repo: "https://hg.ucc.asn.au/dropbear"
+main_repo: "https://github.com/mkj/dropbear"

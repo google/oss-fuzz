@@ -87,9 +87,11 @@ class BaseFuzzTargetRunner:
 
     return True
 
-  def run_fuzz_target(self, fuzz_target_obj):
+  def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
     """Fuzzes with |fuzz_target_obj| and returns the result."""
-    raise NotImplementedError('Child class must implement method')
+    result = fuzz_target_obj.fuzz()
+    fuzz_target_obj.free_disk_if_needed()
+    return result
 
   @property
   def quit_on_bug_found(self):
@@ -142,12 +144,9 @@ class BaseFuzzTargetRunner:
                      target.target_name)
         continue
 
-      # We found a bug in the fuzz target.
-      utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
-                         (target.target_name.encode(), result.stacktrace))
-
       # TODO(metzman): Do this with filestore.
-      testcase_artifact_path = self.get_fuzz_target_artifact(target, 'testcase')
+      testcase_artifact_path = self.get_fuzz_target_artifact(
+          target, os.path.basename(result.testcase))
       shutil.move(result.testcase, testcase_artifact_path)
       bug_summary_artifact_path = self.get_fuzz_target_artifact(
           target, 'bug-summary.txt')

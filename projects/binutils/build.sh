@@ -29,7 +29,9 @@ sed -i 's/vfprintf (stderr/\/\//' elfcomm.c
 sed -i 's/fprintf (stderr/\/\//' elfcomm.c
 cd ../
 
-./configure --disable-gdb --enable-targets=all
+./configure --disable-gdb --disable-gdbserver --disable-gdbsupport \
+	    --disable-libdecnumber --disable-readline --disable-sim \
+	    --enable-targets=all --disable-werror
 make MAKEINFO=true && true
 
 # Make fuzzer directory

@@ -23,6 +23,7 @@ import re
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 import detect_repo
 
@@ -34,6 +35,33 @@ sys.path.append(
 import repo_manager
 import test_repos
 # pylint: enable=wrong-import-position
+
+
+class TestCheckForRepoName(unittest.TestCase):
+  """Tests for check_for_repo_name."""
+
+  @mock.patch('os.path.exists', return_value=True)
+  @mock.patch('detect_repo.execute',
+              return_value=('https://github.com/google/syzkaller/', None))
+  def test_go_get_style_url(self, _, __):
+    """Tests that check_for_repo_name works on repos that were downloaded using
+    go get."""
+    self.assertTrue(detect_repo.check_for_repo_name('fake-path', 'syzkaller'))
+
+  @mock.patch('os.path.exists', return_value=True)
+  @mock.patch('detect_repo.execute',
+              return_value=('https://github.com/google/syzkaller', None))
+  def test_missing_git_and_slash_url(self, _, __):
+    """Tests that check_for_repo_name works on repos who's URLs do not end in
+    ".git" or "/"."""
+    self.assertTrue(detect_repo.check_for_repo_name('fake-path', 'syzkaller'))
+
+  @mock.patch('os.path.exists', return_value=True)
+  @mock.patch('detect_repo.execute',
+              return_value=('https://github.com/google/syzkaller.git', None))
+  def test_normal_style_repo_url(self, _, __):
+    """Tests that check_for_repo_name works on normally cloned repos."""
+    self.assertTrue(detect_repo.check_for_repo_name('fake-path', 'syzkaller'))
 
 
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),

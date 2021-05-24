@@ -18,6 +18,8 @@ import enum
 import os
 import json
 
+import environment
+
 
 def _get_project_repo_owner_and_name():
   # Includes owner and repo name.
@@ -27,7 +29,7 @@ def _get_project_repo_owner_and_name():
 
 def _get_pr_ref(event):
   if event == 'pull_request':
-    return os.getenv('GITHUB_REF')
+    return environment.get('GITHUB_REF')
   return None
 
 
@@ -42,7 +44,7 @@ def _get_project_name():
 
 def _is_dry_run():
   """Returns True if configured to do a dry run."""
-  return os.getenv('DRY_RUN', 'false').lower() == 'true'
+  return environment.get_bool('DRY_RUN', 'false')
 
 
 def get_project_src_path(workspace):
@@ -102,6 +104,8 @@ class BaseConfig:
     event_path = os.getenv('GITHUB_EVENT_PATH')
     self.is_github = bool(event_path)
     logging.debug('Is github: %s.', self.is_github)
+    # TODO(metzman): Parse env like we do in ClusterFuzz.
+    self.low_disk_space = environment.get('LOW_DISK_SPACE', False)
 
     self.github_token = os.environ.get('GITHUB_TOKEN')
 
@@ -173,6 +177,7 @@ class BuildFuzzersConfig(BaseConfig):
 
     self.allowed_broken_targets_percentage = os.getenv(
         'ALLOWED_BROKEN_TARGETS_PERCENTAGE')
+    self.bad_build_check = environment.get_bool('BAD_BUILD_CHECK', 'true')
 
     # TODO(metzman): Use better system for interpreting env vars. What if env
     # var is set to '0'?

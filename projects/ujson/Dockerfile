@@ -25,4 +25,4 @@ RUN git clone \
 
 WORKDIR ultrajson
 
-COPY build.sh json_differential_fuzzer.py ujson_fuzzer.py $SRC/
+COPY build.sh json_differential_fuzzer.py ujson_fuzzer.py hypothesis_structured_fuzzer.py $SRC/
