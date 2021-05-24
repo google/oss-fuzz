@@ -1,4 +1,5 @@
-# Copyright 2016 Google Inc.
+/*
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +14,21 @@
 # limitations under the License.
 #
 ################################################################################
+*/
 
-FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
- pkg-config \
- autopoint \
- autoconf \
- autoconf-archive \
- automake \
- libtool \
- gettext gengetopt curl gperf wget
+#include <stdlib.h>
+#include "spdk/json.h"
 
-RUN git clone --depth=1 https://git.savannah.gnu.org/git/libidn.git
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
+	char *buf = (char *)malloc(size);
+	if (buf == NULL) {
+		return 0;
+	}
+	memcpy(buf, data, size);
+	ssize_t rc = spdk_json_parse(buf, size, NULL, 0, NULL, 0);
 
-WORKDIR libidn
-COPY build.sh $SRC/
+	free(buf);
+	return 0;
+}
+

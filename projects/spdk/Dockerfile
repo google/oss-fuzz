@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,14 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
- pkg-config \
- autopoint \
- autoconf \
- autoconf-archive \
- automake \
- libtool \
- gettext gengetopt curl gperf wget
-
-RUN git clone --depth=1 https://git.savannah.gnu.org/git/libidn.git
-
-WORKDIR libidn
-COPY build.sh $SRC/
+RUN apt-get update && apt-get install -y make curl yasm autoconf libtool meson
+RUN git clone --depth 1 https://github.com/spdk/spdk
+RUN mkdir nasm-2.15 && cd nasm-2.15 && \
+	curl -O -L https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz && \
+	tar -xf nasm-2.15.05.tar.xz --strip-components=1 && \
+	./configure --prefix=/usr && \
+        make -j$(nproc) && \
+        make -j$(nproc) install 
+WORKDIR $SRC/spdk
+RUN git submodule update --init
+COPY build.sh parse_json_fuzzer.cc $SRC/

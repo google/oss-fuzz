@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,27 +15,17 @@
 #
 ################################################################################
 
-# avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
-export ASAN_OPTIONS=detect_leaks=0
+python3 setup.py install
+for fuzzer in $(find $SRC -name '*_fuzzer.py'); do
+  fuzzer_basename=$(basename -s .py $fuzzer)
+  fuzzer_package=${fuzzer_basename}.pkg
+  pyinstaller --distpath $OUT --onefile --name $fuzzer_package $fuzzer
 
-./bootstrap
-./configure --enable-static --disable-doc
-make -j
-make -j check
-
-cd fuzz
-make oss-fuzz
-find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
-
-for fuzzer in *_fuzzer; do
-    cp -p "${fuzzer}" "$OUT"
-
-    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
-        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
-    fi
-
-    if [ -d "${fuzzer}.in/" ]; then
-        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${fuzzer}.in/"
-    fi
+  # Create execution wrapper.
+  echo "#!/bin/sh
+# LLVMFuzzerTestOneInput for fuzzer detection.
+this_dir=\$(dirname \"\$0\")
+ASAN_OPTIONS=\$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer:detect_leaks=0 \
+\$this_dir/$fuzzer_package \$@" > $OUT/$fuzzer_basename
+  chmod u+x $OUT/$fuzzer_basename
 done

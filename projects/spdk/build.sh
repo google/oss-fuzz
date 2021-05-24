@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,27 +15,18 @@
 #
 ################################################################################
 
-# avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
-export ASAN_OPTIONS=detect_leaks=0
+# Build spdk
+export LDFLAGS="${CFLAGS}"
+./scripts/pkgdep.sh
+./configure --without-shared --without-isal
+make -j$(nproc)
 
-./bootstrap
-./configure --enable-static --disable-doc
-make -j
-make -j check
+# Build fuzzers
+$CXX $CXXFLAGS -I/src/spdk -I/src/spdk/include \
+        -fPIC -c $SRC/parse_json_fuzzer.cc \
+        -o parse_json_fuzzer.o
 
-cd fuzz
-make oss-fuzz
-find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
-
-for fuzzer in *_fuzzer; do
-    cp -p "${fuzzer}" "$OUT"
-
-    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
-        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
-    fi
-
-    if [ -d "${fuzzer}.in/" ]; then
-        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${fuzzer}.in/"
-    fi
-done
+$CXX $CXXFLAGS $LIB_FUZZING_ENGINE \
+        parse_json_fuzzer.o -o $OUT/parse_json_fuzzer \
+        /src/spdk/build/lib/libspdk_env_dpdk.a \
+        /src/spdk/build/lib/libspdk_json.a 

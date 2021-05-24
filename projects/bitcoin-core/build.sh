@@ -47,7 +47,21 @@ sed -i "s|PROVIDE_FUZZ_MAIN_FUNCTION|NEVER_PROVIDE_MAIN_FOR_OSS_FUZZ|g" "./confi
 # OSS-Fuzz will provide CC, CXX, etc. So only set:
 # * --enable-fuzz, see https://github.com/bitcoin/bitcoin/blob/master/doc/fuzzing.md
 # * CONFIG_SITE, see https://github.com/bitcoin/bitcoin/blob/master/depends/README.md
-CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
+if [ "$SANITIZER" = "memory" ]; then
+  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE" --with-asm=no
+else
+  CONFIG_SITE="$PWD/depends/$BUILD_TRIPLET/share/config.site" ./configure --enable-fuzz SANITIZER_LDFLAGS="$LIB_FUZZING_ENGINE"
+fi
+
+
+if [ "$SANITIZER" = "memory" ]; then
+  # MemorySanitizer (MSAN) does not support tracking memory initialization done by
+  # using the Linux getrandom syscall. Avoid using getrandom by undefining
+  # HAVE_SYS_GETRANDOM. See https://github.com/google/sanitizers/issues/852 for
+  # details.
+  grep -v HAVE_SYS_GETRANDOM src/config/bitcoin-config.h > src/config/bitcoin-config.h.tmp
+  mv src/config/bitcoin-config.h.tmp src/config/bitcoin-config.h
+fi
 
 make -j$(nproc)
 
@@ -69,6 +83,9 @@ for fuzz_target in ${FUZZ_TARGETS[@]}; do
   chmod +x "$OUT/$fuzz_target"
   (
     cd assets/fuzz_seed_corpus
-    zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
+    if [ -d "$fuzz_target" ]; then
+      sem -j+0 zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
+    fi
   )
 done
+sem --wait

@@ -1,5 +1,5 @@
 #!/bin/bash -eu
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,27 +15,4 @@
 #
 ################################################################################
 
-# avoid iconv() memleak on Ubuntu 16.04 image (breaks test suite)
-export ASAN_OPTIONS=detect_leaks=0
-
-./bootstrap
-./configure --enable-static --disable-doc
-make -j
-make -j check
-
-cd fuzz
-make oss-fuzz
-find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
-find . -name '*_fuzzer.options' -exec cp -v '{}' $OUT ';'
-
-for fuzzer in *_fuzzer; do
-    cp -p "${fuzzer}" "$OUT"
-
-    if [ -f "$SRC/${fuzzer}_seed_corpus.zip" ]; then
-        cp "$SRC/${fuzzer}_seed_corpus.zip" "$OUT/"
-    fi
-
-    if [ -d "${fuzzer}.in/" ]; then
-        zip -rj "$OUT/${fuzzer}_seed_corpus.zip" "${fuzzer}.in/"
-    fi
-done
+bazel_build_fuzz_tests

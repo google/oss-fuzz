@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt-get install -y \
- pkg-config \
- autopoint \
- autoconf \
- autoconf-archive \
- automake \
- libtool \
- gettext gengetopt curl gperf wget
+RUN \
+  apt-get update && \
+  apt-get install -y libtool libusb-1.0-0-dev pkg-config libglib2.0-dev && \
+  apt-get clean
 
-RUN git clone --depth=1 https://git.savannah.gnu.org/git/libidn.git
+# Ubuntu 16.04 ships Meson 0.29 which doesn't support the "feature" option type.
+#
+# https://mesonbuild.com/Build-options.html#features
+RUN python3 -m pip install --no-user --no-cache meson ninja
 
-WORKDIR libidn
+RUN git clone --depth 1 https://gitlab.freedesktop.org/spice/usbredir.git $SRC/spice-usbredir
+
+WORKDIR $SRC/spice-usbredir
 COPY build.sh $SRC/

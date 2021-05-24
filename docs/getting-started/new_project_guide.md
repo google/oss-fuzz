@@ -253,11 +253,8 @@ alphanumeric characters, underscore(_) or dash(-). Otherwise, they won't run on 
 
 ### Temporarily disabling code instrumentation during builds
 
-Sometimes not every 3rd party library might be needed to be instrumented or
-tools are being compiled that just support the target built.
+In some cases, it's not necessary to instrument every 3rd party library or tool that supports the build target. Use the following snippet to build tools or libraries without instrumentation:
 
-If for any reasons part of the build process should not be instrumented
-then the following code snippet can be used for this:
 
 ```
 CFLAGS_SAVE="$CFLAGS"
