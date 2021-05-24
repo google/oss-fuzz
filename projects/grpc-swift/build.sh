@@ -33,14 +33,8 @@ ninja -j$(nproc) llvm-symbolizer
 cp bin/llvm-symbolizer $OUT/
 )
 
-git apply $SRC/patch.diff
 # build project
-mkdir grpc-swift-fuzz
-cd grpc-swift-fuzz
-swift package init --type=executable
-cp $SRC/fuzz_pipeline_configurator.swift Sources/grpc-swift-fuzz/main.swift
-cp -r ../Sources/Examples/Echo Sources/
-cp $SRC/Package.swift Package.swift
+cd FuzzTesting
 # Maybe we should have a helper script to set $SWIFT_FLAGS
 # for instance about -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION in -Xcc
 swift build -c debug -Xswiftc -sanitize=fuzzer,address \
@@ -51,7 +45,7 @@ swift build -c debug -Xswiftc -sanitize=fuzzer,address \
 
 (
 cd .build/debug/
-find . -maxdepth 1 -type f -name "*fuzz" -executable | while read i; do cp $i $OUT/"$i"-debug; done
+find . -maxdepth 1 -type f -name "*Fuzzer" -executable | while read i; do cp $i $OUT/"$i"-debug; done
 )
 swift build -c release -Xswiftc -sanitize=fuzzer,address \
     -Xswiftc -parse-as-library -Xswiftc -static-stdlib \
@@ -60,5 +54,5 @@ swift build -c release -Xswiftc -sanitize=fuzzer,address \
     -Xcxx="-fsanitize=fuzzer-no-link,address"
 (
 cd .build/release/
-find . -maxdepth 1 -type f -name "*fuzz" -executable | while read i; do cp $i $OUT/"$i"-release; done
+find . -maxdepth 1 -type f -name "*Fuzzer" -executable | while read i; do cp $i $OUT/"$i"-release; done
 )
