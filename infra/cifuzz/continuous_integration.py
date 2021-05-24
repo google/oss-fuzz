@@ -212,10 +212,10 @@ class ExternalGeneric(BaseCi):
   def prepare_for_fuzzer_build(self):
     logging.info('ExternalGeneric: preparing for fuzzer build.')
     manager = repo_manager.RepoManager(self.config.project_src_path)
-    abs_build_integration_path = os.path.join(
+    build_integration_abs_path = os.path.join(
         manager.repo_dir, self.config.build_integration_path)
     if not build_external_project_docker_image(
-        self.config.project_name, manager.repo_dir, abs_build_integration_path):
+        self.config.project_name, manager.repo_dir, build_integration_abs_path):
       logging.error('Failed to build external project: %s.',
                     self.config.project_name)
       return BuildPreparationResult(success=False,

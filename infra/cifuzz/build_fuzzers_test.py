@@ -30,6 +30,7 @@ OSS_FUZZ_DIR = os.path.dirname(INFRA_DIR)
 import build_fuzzers
 import config_utils
 import continuous_integration
+import repo_manager
 import test_helpers
 
 # NOTE: This integration test relies on
@@ -169,6 +170,30 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
                            build_integration_path=build_integration_path,
                            git_url=git_url,
                            commit_sha='HEAD',
+                           is_github=True,
+                           base_commit='HEAD^1')
+    self.assertTrue(build_fuzzers.build_fuzzers(config))
+    self.assertTrue(
+        os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
+
+  def test_external_generic_project(self):
+    """Tests building fuzzers from an external project not on Github."""
+    project_name = 'cifuzz-external-example'
+    build_integration_path = 'fuzzer-build-integration'
+    git_url = 'https://github.com/jonathanmetzman/cifuzz-external-example.git'
+    # This test is dependant on the state of
+    # github.com/jonathanmetzman/cifuzz-external-example.
+    manager = repo_manager.clone_repo_and_get_manager(
+        'https://github.com/jonathanmetzman/cifuzz-external-example',
+        self.tmp_dir_obj.name)
+    project_src_path = manager.repo_dir
+    config = create_config(project_name=project_name,
+                           project_repo_name=project_name,
+                           workspace=self.workspace,
+                           build_integration_path=build_integration_path,
+                           git_url=git_url,
+                           commit_sha='HEAD',
+                           project_src_path=project_src_path,
                            base_commit='HEAD^1')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
