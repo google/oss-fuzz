@@ -28,11 +28,9 @@ class TestTestAll(unittest.TestCase):
   def test_test_all_no_fuzz_targets(self, mocked_print, _):
     """Tests that test_all returns False when there are no fuzz targets."""
     outdir = '/out'
-    fuzzing_language = 'c++'
     allowed_broken_targets_percentage = 0
     self.assertFalse(
-        test_all.test_all(outdir, fuzzing_language,
-                          allowed_broken_targets_percentage))
+        test_all.test_all(outdir, allowed_broken_targets_percentage))
     mocked_print.assert_called_with('ERROR: No fuzz targets found.')
 
 
