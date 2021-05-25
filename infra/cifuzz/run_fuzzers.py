@@ -190,6 +190,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
 
   def run_fuzz_targets(self):
     result = super().run_fuzz_targets()
+    # !!!
     # 1. Test returns result.
     # 2. Test that it uploads build.
 
@@ -204,15 +205,18 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     # directory we will remove these extra things that are now in out.
     # TODO(metzman): Don't pollute self.out_dir like this.
 
-    self.clusterfuzz_deployment.upload_latest_build(self.out_dir)
-    # !!! One source of truth for these.
-    for dir_name in [
-        self.clusterfuzz_deployment.CORPUS_DIR_NAME,
-        self.clusterfuzz_deployment.BUILD_DIR_NAME
+    for directory in [
+        self.clusterfuzz_deployment.get_corpus_dir(self.out_dir),
+        self.clusterfuzz_deployment.get_build_dir(self.out_dir),
     ]:
-      path = os.path.join(self.out_dir, dir_name)
-      if os.path.exists(path):
-        shutil.rmtree(path)
+      logging.info('maybe removing directory: %s', directory)
+      if os.path.exists(directory):
+        logging.info('removing directory: %s', directory)
+        shutil.rmtree(directory)
+      else:
+        logging.info('didnt remove directory: %s', directory)
+
+    self.clusterfuzz_deployment.upload_latest_build(self.out_dir)
 
     return result
 

@@ -16,7 +16,6 @@ config-variables.ts."""
 
 import os
 
-# !!! Remove?
 UPLOAD_CHUNK_SIZE = 8 * 1024**2  # 8 MB.
 UPLOAD_FILE_CONCURRENCY = 2
 

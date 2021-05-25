@@ -36,13 +36,13 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     """Uploads build as artifact."""
     build_dir = os.path.abspath(build_dir)
 
-    # !!! Merge with upload_corpus. and zip.
+    # TODO(metzman): Merge with upload_corpus. and zip.
     # Get file paths.
     file_paths = []
     for root, _, curr_file_paths in os.walk(build_dir):
       for file_path in curr_file_paths:
-        # !!!
-        if os.path.basename(root) == 'artifacts':
+        # TODO(metzman): Get rid of this.
+        os.path.basename(root) == 'artifacts':
           continue
         file_paths.append(os.path.join(root, file_path))
 

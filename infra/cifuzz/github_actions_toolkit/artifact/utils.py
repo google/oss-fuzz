@@ -30,7 +30,7 @@ INVALID_ARTIFACT_FILEPATH_CHARACTERS = [
 INVALID_ARTIFACT_NAME_CHARACTERS = ['\\', '/'
                                    ] + INVALID_ARTIFACT_FILEPATH_CHARACTERS
 
-# !!! Convert exceptions to special kind.
+# TODO(metzman): Convert exceptions to special kind.
 
 
 def get_proper_retention(retention, retention_setting):

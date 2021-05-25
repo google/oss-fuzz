@@ -89,7 +89,7 @@ def patch_artifact_size(size, artifact_name):
   data = json.dumps(parameters)
   headers = utils.get_upload_headers('application/json')
   for _ in range(utils.MAX_API_ATTEMPTS):
-    # !!! Create better method for handling.
+    # TODO(metzman): Create better method for handling.
     try:
       _do_patch_request(resource_url, data, headers)
       logging.debug('Artifact "%s" successfully uploaded. Size: %d bytes',

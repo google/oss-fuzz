@@ -59,10 +59,14 @@ class BaseClusterFuzzDeployment:
     """
     raise NotImplementedError('Child class must implement method.')
 
-  def get_corpus_dir(self, target_name, parent_dir):
+  def get_target_corpus_dir(self, target_name, parent_dir):
     """Returns the path to the corpus dir for |target_name| within
     |parent_dir|."""
-    return os.path.join(parent_dir, self.CORPUS_DIR_NAME, target_name)
+    return os.path.join(self.get_corpus_dir(parent_dir), target_name)
+
+  def get_corpus_dir(self, parent_dir):
+    """Returns the path to the corpus dir within |parent_dir|."""
+    return os.path.join(parent_dir, self.CORPUS_DIR_NAME)
 
   def get_build_dir(self, parent_dir):
     """Returns the path to the build dir for within |parent_dir|."""
@@ -97,7 +101,7 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     return None
 
   def download_corpus(self, target_name, parent_dir):
-    corpus_dir = self.get_corpus_dir(target_name, parent_dir)
+    corpus_dir = self.get_target_corpus_dir(target_name, parent_dir)
     logging.debug('ClusterFuzzLite: downloading corpus for %s to %s.',
                   target_name, parent_dir)
     os.makedirs(corpus_dir, exist_ok=True)
@@ -205,7 +209,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     Returns:
       The local path to to corpus or None if download failed.
     """
-    corpus_dir = self.get_corpus_dir(target_name, parent_dir)
+    corpus_dir = self.get_target_corpus_dir(target_name, parent_dir)
     os.makedirs(corpus_dir, exist_ok=True)
     # TODO(metzman): Clean up this code.
     project_qualified_fuzz_target_name = target_name
