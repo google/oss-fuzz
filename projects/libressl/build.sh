@@ -24,9 +24,6 @@ CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 cp -R boost/ /usr/include/
 
-# Prevent Boost compilation error with -std=c++17
-export CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR"
-
 mkdir -p $WORK/libressl
 cd $WORK/libressl
 
