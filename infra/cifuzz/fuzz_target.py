@@ -103,9 +103,10 @@ class FuzzTarget:
       command += ['-v', '%s:%s' % (self.out_dir, '/out')]
 
     # If corpus can be downloaded use it for fuzzing.
-    corpus_path = self.clusterfuzz_deployment.download_corpus(
+    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name, self.out_dir)
-    command += ['-e', 'CORPUS_DIR=' + corpus_path]
+    if self.latest_corpus_path:
+      command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
 
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
@@ -117,11 +118,6 @@ class FuzzTarget:
         fuzz_target=self.target_name,
         options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
 
-    # If corpus can be downloaded use it for fuzzing.
-    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name, self.out_dir)
-    if self.latest_corpus_path:
-      run_fuzzer_command = run_fuzzer_command + ' ' + self.latest_corpus_path
     command.append(run_fuzzer_command)
     logging.info('Running command: %s', ' '.join(command))
 
@@ -133,29 +129,29 @@ class FuzzTarget:
       _, stderr = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
-      return FuzzResult(None, None, corpus_path)
+      return FuzzResult(None, None, self.latest_corpus_path)
 
     # Libfuzzer timeout was reached.
     if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
-      return FuzzResult(None, None, corpus_path)
+      return FuzzResult(None, None, self.latest_corpus_path)
 
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     testcase = self.get_testcase(stderr)
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
-      return FuzzResult(None, None, corpus_path)
+      return FuzzResult(None, None, self.latest_corpus_path)
 
     utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
                        (self.target_name.encode(), stderr))
     if self.is_crash_reportable(testcase):
       # We found a bug in the fuzz target and we will report it.
-      return FuzzResult(testcase, stderr, corpus_path)
+      return FuzzResult(testcase, stderr, self.latest_corpus_path)
 
     # We found a bug but we won't report it.
-    return FuzzResult(None, None, corpus_path)
+    return FuzzResult(None, None, self.latest_corpus_path)
 
   def free_disk_if_needed(self):
     """Deletes things that are no longer needed from fuzzing this fuzz target to

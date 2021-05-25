@@ -9,9 +9,10 @@ permalink: /advanced-topics/code-coverage/
 # Code Coverage
 {: .no_toc}
 
-For projects written in C/C++, you can generate code coverage reports using
-Clang source-based code coverage. This page walks you through the basic steps.
-For more details, see [Clang's documentation].
+For projects written in C/C++, Rust, Go, or Java and other JVM-based languages,
+you can generate code coverage reports using Clang source-based code coverage.
+This page walks you through the basic steps.
+For more details on C/C++ coverage, see [Clang's documentation].
 
 Code coverage reports generation for other languages is not supported yet.
 
@@ -98,7 +99,7 @@ $ python infra/helper.py coverage --fuzz-target=<fuzz_target_name> \
     --corpus-dir=<my_local_corpus_dir> $PROJECT_NAME
 ```
 
-### Additional arguments for `llvm-cov`
+### Additional arguments for `llvm-cov` (C/C++ only)
 
 You may want to use some of the options provided by the [llvm-cov tool], like
 `-ignore-filename-regex=`. You can pass these to the helper script after `--`:

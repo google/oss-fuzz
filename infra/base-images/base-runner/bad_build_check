@@ -90,10 +90,7 @@ function check_engine {
       echo "BAD BUILD: $FUZZER seems to have only partial coverage instrumentation."
     fi
   elif [[ "$FUZZING_ENGINE" == afl ]]; then
-    # TODO(https://github.com/google/oss-fuzz/issues/2470): Dont use
-    # AFL_DRIVER_DONT_DEFER by default, support .options files in
-    # bad_build_check instead.
-    AFL_DRIVER_DONT_DEFER=1 AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    AFL_FORKSRV_INIT_TMOUT=30000 AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 35s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "All set and ready to roll" -c $FUZZER_OUTPUT)
     if (( $CHECK_PASSED == 0 )); then
       echo "BAD BUILD: fuzzing $FUZZER with afl-fuzz failed."
@@ -136,10 +133,7 @@ function check_startup_crash {
     SKIP_SEED_CORPUS=1 run_fuzzer $FUZZER_NAME -seed=1337 -runs=$MIN_NUMBER_OF_RUNS &>$FUZZER_OUTPUT
     CHECK_PASSED=$(egrep "Done $MIN_NUMBER_OF_RUNS runs" -c $FUZZER_OUTPUT)
   elif [[ "$FUZZING_ENGINE" = afl ]]; then
-    # TODO(https://github.com/google/oss-fuzz/issues/2470): Dont use
-    # AFL_DRIVER_DONT_DEFER by default, support .options files in
-    # bad_build_check instead.
-    AFL_DRIVER_DONT_DEFER=1 AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 20s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
+    AFL_FORKSRV_INIT_TMOUT=30000 AFL_NO_UI=1 SKIP_SEED_CORPUS=1 timeout --preserve-status -s INT 35s run_fuzzer $FUZZER_NAME &>$FUZZER_OUTPUT
     if [ $(egrep "target binary (crashed|terminated)" -c $FUZZER_OUTPUT) -eq 0 ]; then
       CHECK_PASSED=1
     fi

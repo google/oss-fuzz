@@ -11,14 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""External filestore interface. Cannot be depended on by filestore code."""
-import filestore.github_actions
+#
+################################################################################
 
-
-def get_filestore(config):
-  """Returns the correct filestore based on the platform in |config|.
-  Raises an exception if there is no correct filestore for the platform."""
-  # TODO(metzman): Force specifying of filestore.
-  if config.platform == config.Platform.EXTERNAL_GITHUB:
-    return filestore.github_actions.GithubActionsFilestore(config)
-  raise Exception('Filestore doesn\'t support platform.')
+FROM gcr.io/oss-fuzz-base/base-builder
+RUN apt-get update && apt-get install -y python3-pip pkg-config && \
+    pip3 install meson==0.53.0 ninja
+RUN git clone --depth 1 https://github.com/fribidi/fribidi.git
+WORKDIR fribidi
+COPY build.sh $SRC/

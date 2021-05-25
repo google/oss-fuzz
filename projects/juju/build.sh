@@ -1,3 +1,4 @@
+#!/bin/bash -eu
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,14 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""External filestore interface. Cannot be depended on by filestore code."""
-import filestore.github_actions
+#
+################################################################################
 
+mv $SRC/storage_fuzzer.go $SRC/juju/storage/
 
-def get_filestore(config):
-  """Returns the correct filestore based on the platform in |config|.
-  Raises an exception if there is no correct filestore for the platform."""
-  # TODO(metzman): Force specifying of filestore.
-  if config.platform == config.Platform.EXTERNAL_GITHUB:
-    return filestore.github_actions.GithubActionsFilestore(config)
-  raise Exception('Filestore doesn\'t support platform.')
+if [[ $SANITIZER = *coverage* ]]; then
+	compile_go_fuzzer github.com/juju/juju/storage Fuzz storage_fuzzer
+	exit 0
+fi
+
+compile_go_fuzzer ./storage Fuzz storage_fuzzer

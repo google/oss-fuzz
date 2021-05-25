@@ -204,6 +204,7 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     # directory we will remove these extra things that are now in out.
     # TODO(metzman): Don't pollute self.out_dir like this.
 
+    self.clusterfuzz_deployment.upload_latest_build(self.out_dir)
     # !!! One source of truth for these.
     for dir_name in [
         self.clusterfuzz_deployment.CORPUS_DIR_NAME,
@@ -213,7 +214,6 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
       if os.path.exists(path):
         shutil.rmtree(path)
 
-    self.clusterfuzz_deployment.upload_latest_build(self.out_dir)
     return result
 
 

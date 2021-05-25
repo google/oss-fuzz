@@ -29,7 +29,11 @@ RUN curl --location https://github.com/protocolbuffers/protobuf/releases/downloa
   && chmod --recursive a+rwx ${protobuf_dir} \
   && protoc --version
 
+# Install WebAssembly target for Rust.
+RUN rustup target add wasm32-unknown-unknown
+
 RUN git clone --depth 1 https://github.com/project-oak/oak oak
+
 WORKDIR oak
 COPY build.sh $SRC/
 COPY rustc.py $SRC/

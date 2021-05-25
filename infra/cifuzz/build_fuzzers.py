@@ -72,6 +72,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       return False
     self.image_repo_path = result.image_repo_path
     self.repo_manager = result.repo_manager
+    logging.info('repo_dir: %s.', self.repo_manager.repo_dir)
     self.host_repo_path = self.repo_manager.repo_dir
     return True
 

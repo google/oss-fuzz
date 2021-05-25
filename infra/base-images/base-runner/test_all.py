@@ -67,7 +67,15 @@ def is_elf(filepath):
   return b'ELF' in result.stdout
 
 
-def find_fuzz_targets(directory, fuzzing_language):
+def is_shell_script(filepath):
+  """Returns True if |filepath| is a shell script."""
+  result = subprocess.run(['file', filepath],
+                          stdout=subprocess.PIPE,
+                          check=False)
+  return b'shell script' in result.stdout
+
+
+def find_fuzz_targets(directory):
   """Returns paths to fuzz targets in |directory|."""
   # TODO(https://github.com/google/oss-fuzz/issues/4585): Use libClusterFuzz for
   # this.
@@ -84,10 +92,10 @@ def find_fuzz_targets(directory, fuzzing_language):
       continue
     if not os.stat(path).st_mode & EXECUTABLE:
       continue
-    # Fuzz targets are expected to be ELF binaries for languages other than
-    # Python and Java.
-    if (fuzzing_language != 'python' and fuzzing_language != 'jvm' and
-        not is_elf(path)):
+    # Fuzz targets can either be ELF binaries or shell scripts (e.g. wrapper
+    # scripts for Python and JVM targets or rules_fuzzing builds with runfiles
+    # trees).
+    if not is_elf(path) and not is_shell_script(path):
       continue
     if os.getenv('FUZZING_ENGINE') != 'none':
       with open(path, 'rb') as file_handle:
@@ -156,16 +164,16 @@ def use_different_out_dir():
     os.environ['OUT'] = initial_out
 
 
-def test_all_outside_out(fuzzing_language, allowed_broken_targets_percentage):
+def test_all_outside_out(allowed_broken_targets_percentage):
   """Wrapper around test_all that changes OUT and returns the result."""
   with use_different_out_dir() as out:
-    return test_all(out, fuzzing_language, allowed_broken_targets_percentage)
+    return test_all(out, allowed_broken_targets_percentage)
 
 
-def test_all(out, fuzzing_language, allowed_broken_targets_percentage):
+def test_all(out, allowed_broken_targets_percentage):
   """Do bad_build_check on all fuzz targets."""
   # TODO(metzman): Refactor so that we can convert test_one to python.
-  fuzz_targets = find_fuzz_targets(out, fuzzing_language)
+  fuzz_targets = find_fuzz_targets(out)
   if not fuzz_targets:
     print('ERROR: No fuzz targets found.')
     return False
@@ -226,11 +234,8 @@ def get_allowed_broken_targets_percentage():
 def main():
   """Does bad_build_check on all fuzz targets in parallel. Returns 0 on success.
   Returns 1 on failure."""
-  # Set these environment variables here so that stdout
-  fuzzing_language = os.getenv('FUZZING_LANGUAGE')
   allowed_broken_targets_percentage = get_allowed_broken_targets_percentage()
-  if not test_all_outside_out(fuzzing_language,
-                              allowed_broken_targets_percentage):
+  if not test_all_outside_out(allowed_broken_targets_percentage):
     return 1
   return 0
 

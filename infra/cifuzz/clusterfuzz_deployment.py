@@ -192,9 +192,12 @@ class OSSFuzz(BaseClusterFuzzDeployment):
 
     return None
 
-  def upload_latest_build(self, build_dir):
-    raise Exception('upload_latest_build not should not be called for '
-                    'OSSFuzz.')
+  def upload_latest_build(self, build_dir):  # pylint: disable=no-self-use,unused-argument
+    logging.info('Not uploading latest build because on OSS-Fuzz.')
+
+  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+    """Noop Impelementation of upload_corpus."""
+    logging.info('Not uploading corpus because on OSS-Fuzz.')
 
   def download_corpus(self, target_name, parent_dir):
     """Downloads the latest OSS-Fuzz corpus for the target.
@@ -221,11 +224,35 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     return corpus_dir
 
 
+class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
+  """ClusterFuzzDeployment implementation used when there is no deployment of
+  ClusterFuzz to use."""
+  def upload_latest_build(self, build_dir):  # pylint: disable=no-self-use,unused-argument
+    """Noop Impelementation of upload_latest_build."""
+    logging.info('Not uploading latest build because no ClusterFuzz '
+                 'deployment.')
+
+  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+    """Noop Impelementation of upload_corpus."""
+    logging.info('Not uploading corpus because no ClusterFuzz deployment.')
+
+  def download_corpus(self, target_name, parent_dir):  # pylint: disable=no-self-use,unused-argument
+    """Noop Impelementation of download_corpus."""
+    logging.info('Not downloading corpus because no ClusterFuzz deployment.')
+
+  def download_latest_build(self, parent_dir):  # pylint: disable=no-self-use,unused-argument
+    """Noop Impelementation of download_latest_build."""
+    logging.info('Not downloading build because no ClusterFuzz deployment.')
+
+
 def get_clusterfuzz_deployment(config):
   """Returns object reprsenting deployment of ClusterFuzz used by |config|."""
   if (config.platform == config.Platform.INTERNAL_GENERIC_CI or
       config.platform == config.Platform.INTERNAL_GITHUB):
     logging.info('Using OSS-Fuzz as ClusterFuzz deployment.')
     return OSSFuzz(config)
+  if config.platform == config.Platform.EXTERNAL_GENERIC_CI:
+    logging.info('Not using a ClusterFuzz deployment.')
+    return NoClusterFuzzDeployment(config)
   logging.info('Using ClusterFuzzLite as ClusterFuzz deployment.')
   return ClusterFuzzLite(config)
