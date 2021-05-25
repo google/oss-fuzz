@@ -5,8 +5,7 @@ language: c++
 primary_contact: "werat@google.com"
 auto_ccs:
   - "tsabolcec@google.com"
-
 fuzzing_engines:
   - libfuzzer
-santizers:
+sanitizers:
   - address
