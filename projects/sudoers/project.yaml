@@ -4,7 +4,6 @@ language: c
 fuzzing_engines:
   - libfuzzer
   - honggfuzz
-  - dataflow
-auto_ccs :
+auto_ccs:
   - "david@adalogics.com"
 main_repo: 'https://github.com/sudo-project/sudo'
