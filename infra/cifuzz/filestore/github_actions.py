@@ -42,7 +42,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     for root, _, curr_file_paths in os.walk(build_dir):
       for file_path in curr_file_paths:
         # TODO(metzman): Get rid of this.
-        os.path.basename(root) == 'artifacts':
+        if os.path.basename(root) == 'artifacts':
           continue
         file_paths.append(os.path.join(root, file_path))
 
