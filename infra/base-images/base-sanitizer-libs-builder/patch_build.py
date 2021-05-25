@@ -36,7 +36,8 @@ def IsElf(file_path):
 def Ldd(binary_path):
   """Run ldd on a file."""
   try:
-    output = subprocess.check_output(['ldd', binary_path], stderr=subprocess.STDOUT)
+    output = subprocess.check_output(['ldd', binary_path],
+                                     stderr=subprocess.STDOUT)
   except subprocess.CalledProcessError:
     print('Failed to call ldd on', binary_path, file=sys.stderr)
     return []
@@ -59,7 +60,7 @@ def FindLib(path):
   candidate_path = os.path.join(MSAN_LIBS_PATH, path[1:])
   if os.path.exists(candidate_path):
     return candidate_path
-  
+
   for lib_dir in os.listdir(MSAN_LIBS_PATH):
     candidate_path = os.path.join(MSAN_LIBS_PATH, lib_dir, path[1:])
     if os.path.exists(candidate_path):
@@ -78,7 +79,8 @@ def PatchBinary(binary_path, instrumented_dir):
 
     instrumented_path = FindLib(path)
     if not instrumented_path:
-      print('WARNING: Instrumented library not found for', path,
+      print('WARNING: Instrumented library not found for',
+            path,
             file=sys.stderr)
       continue
 
@@ -105,9 +107,9 @@ def PatchBinary(binary_path, instrumented_dir):
   print('Patching rpath for', binary_path, 'from', existing_rpaths, 'to',
         processed_rpaths)
 
-  subprocess.check_call(
-      ['patchelf', '--force-rpath', '--set-rpath',
-       processed_rpaths, binary_path])
+  subprocess.check_call([
+      'patchelf', '--force-rpath', '--set-rpath', processed_rpaths, binary_path
+  ])
 
 
 def PatchBuild(output_directory):
@@ -119,6 +121,9 @@ def PatchBuild(output_directory):
 
   for root_dir, _, filenames in os.walk(output_directory):
     for filename in filenames:
+      if filename == "llvm-symbolizer":
+        continue
+
       file_path = os.path.join(root_dir, filename)
 
       if os.path.islink(file_path):
@@ -131,7 +136,8 @@ def PatchBuild(output_directory):
 
 
 def main():
-  parser = argparse.ArgumentParser('patch_build.py', description='MSan build patcher.')
+  parser = argparse.ArgumentParser('patch_build.py',
+                                   description='MSan build patcher.')
   parser.add_argument('output_dir', help='Output directory.')
 
   args = parser.parse_args()
