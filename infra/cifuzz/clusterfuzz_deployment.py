@@ -227,6 +227,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
 class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
   """ClusterFuzzDeployment implementation used when there is no deployment of
   ClusterFuzz to use."""
+
   def upload_latest_build(self, build_dir):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_latest_build."""
     logging.info('Not uploading latest build because no ClusterFuzz '
