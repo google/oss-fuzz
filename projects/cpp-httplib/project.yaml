@@ -9,7 +9,6 @@ auto_ccs :
   - "ankitlohia@google.com"
 sanitizers:
   - address
-  - dataflow
   - undefined
   - memory
 main_repo: 'https://github.com/yhirose/cpp-httplib.git'
