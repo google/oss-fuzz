@@ -15,7 +15,6 @@
 #
 ################################################################################
 
-chmod +x $SRC/build_cryptofuzz.sh
 $SRC/build_cryptofuzz.sh
 
 cd $SRC/bitcoin-core/
