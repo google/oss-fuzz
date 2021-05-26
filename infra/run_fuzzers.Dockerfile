@@ -15,6 +15,8 @@
 ################################################################################
 # Docker image to run the CIFuzz action run_fuzzers in.
 
+# !!! change back to cifuzz-base before committing. cifuzz-base2 is needed for
+# testing while in review
 FROM gcr.io/oss-fuzz-base/cifuzz-base2
 
 # Python file to execute when the docker container starts up.
