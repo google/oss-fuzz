@@ -22,8 +22,8 @@ import parameterized
 from pyfakefs import fake_filesystem_unittest
 
 import clusterfuzz_deployment
-import config_utils
 import fuzz_target
+import test_helpers
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
@@ -48,16 +48,7 @@ def _create_config(**kwargs):
     if default_key not in kwargs:
       kwargs[default_key] = default_value
 
-  with mock.patch('os.path.basename', return_value=None), mock.patch(
-      'config_utils.get_project_src_path',
-      return_value=None), mock.patch('config_utils._is_dry_run',
-                                     return_value=True):
-    config = config_utils.RunFuzzersConfig()
-
-  for key, value in kwargs.items():
-    assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
-    setattr(config, key, value)
-  return config
+  return test_helpers.create_run_config(**kwargs)
 
 
 def _create_deployment(**kwargs):
