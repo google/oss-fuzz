@@ -139,6 +139,8 @@ class BaseFuzzTargetRunner:
 
       fuzzers_left_to_run -= 1
       if not result.testcase or not result.stacktrace:
+        logging.info('result.testcase %s result.stacktrace %s',
+                     result.testcase, result.stacktrace)
         logging.info('Fuzzer %s finished running without crashes.',
                      target.target_name)
         continue
