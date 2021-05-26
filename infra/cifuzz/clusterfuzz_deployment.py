@@ -141,11 +141,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     """
     build_dir = self.get_build_dir(parent_dir)
     if os.path.exists(build_dir):
-      # This path is necessary because download_latest_build can be called
-      # multiple times. That is the case because it is called only when we need
-      # to see if a bug is novel, i.e. until we want to check a bug is novel we
-      # don't want to waste time calling this, but therefore this method can be
-      # called if multiple bugs are found.
+      # This function can be called multiple times, don't download the build
+      # again.
       return build_dir
 
     os.makedirs(build_dir, exist_ok=True)
