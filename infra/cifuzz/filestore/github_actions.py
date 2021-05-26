@@ -32,25 +32,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         'Accept': 'application/vnd.github.v3+json'
     }
 
-  def upload_latest_build(self, build_name, build_dir):  # pylint: disable=no-self-use
-    """Uploads build as artifact."""
-    build_dir = os.path.abspath(build_dir)
-
-    # TODO(metzman): Merge with upload_corpus. and zip.
-    # Get file paths.
-    file_paths = []
-    for root, _, curr_file_paths in os.walk(build_dir):
-      for file_path in curr_file_paths:
-        # TODO(metzman): Get rid of this.
-        if os.path.basename(root) == 'artifacts':
-          continue
-        file_paths.append(os.path.join(root, file_path))
-
-    logging.debug('file_paths: %s', file_paths)
-    return artifact_client.upload_artifact(build_name, file_paths, build_dir)
-
-  def upload_corpus(self, name, directory):  # pylint: disable=no-self-use
-    """Uploads the corpus located at |directory| to |name|."""
+  def upload_directory(self, artifact_name, directory):  # pylint: disable=no-self-use
+    """Uploads |directory| as artifact with name |artifact_name|."""
     directory = os.path.abspath(directory)
 
     # Get file paths.
@@ -59,10 +42,12 @@ class GithubActionsFilestore(filestore.BaseFilestore):
       for file_path in curr_file_paths:
         file_paths.append(os.path.join(root, file_path))
 
-    # TODO(metzman): Zip corpus before upload to make faster.
-    # Note that we will have to avoid double zipping.
+    logging.debug('file_paths: %s', file_paths)
 
-    return artifact_client.upload_artifact(name, file_paths, directory)
+    # TODO(metzman): Zip so that we can upload directories within directories
+    # and save time?
+
+    return artifact_client.upload_artifact(artifact_name, file_paths, directory)
 
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""

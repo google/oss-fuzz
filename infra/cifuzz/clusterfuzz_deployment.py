@@ -59,6 +59,10 @@ class BaseClusterFuzzDeployment:
     """
     raise NotImplementedError('Child class must implement method.')
 
+  def upload_crashes(self, crashes_dir):
+    """Uploads crashes in |crashes_dir| to filestore."""
+    raise NotImplementedError('Child class must implement method.')
+
   def get_target_corpus_dir(self, target_name, parent_dir):
     """Returns the path to the corpus dir for |target_name| within
     |parent_dir|."""
@@ -121,19 +125,41 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     """Returns the name of the corpus artifact."""
     return 'corpus-{target_name}'.format(target_name=target_name)
 
+  def _get_crashes_artifact_name(self):  # pylint: disable=no-self-use
+    """Returns the name of the crashes artifact."""
+    return 'crashes'
+
   def upload_corpus(self, target_name, corpus_dir):
     """Upload the corpus produced by |target_name| in |corpus_dir|."""
-    logging.info('Uploading corpus for %s', target_name)
+    logging.info('Uploading corpus in %s for %s.', corpus_dir, target_name)
     name = self._get_corpus_name(target_name)
     try:
-      self.filestore.upload_corpus(name, corpus_dir)
+      self.filestore.upload_directory(name, corpus_dir)
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload corpus for target: %s. Error: %s.',
                     target_name, error)
 
   def upload_latest_build(self, build_dir):
+    logging.info('Uploading latest build in %s.', build_dir)
     build_name = self._get_build_name()
-    return self.filestore.upload_latest_build(build_name, build_dir)
+    try:
+      return self.filestore.upload_directory(build_name, build_dir)
+    except Exception as error:  # pylint: disable=broad-except
+      logging.error('Failed to upload latest build: %s. Error: %s.',
+                    build_dir, error)
+
+  def upload_crashes(self, crashes_dir):
+    if not os.listdir(crashes_dir):
+      logging.info('No crashes in %s. Not uploading.', crashes_dir)
+      return
+
+    crashes_artifact_name = self._get_crashes_artifact_name()
+
+    logging.info('Uploading crashes in %s', crashes_dir)
+    try:
+      self.filestore.upload_directory(crashes_artifact_name, crashes_dir)
+    except Exception as error:  # pylint: disable=broad-except
+      logging.error('Failed to upload crashes. Error: %s.', error)
 
 
 class OSSFuzz(BaseClusterFuzzDeployment):
@@ -197,11 +223,16 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     return None
 
   def upload_latest_build(self, build_dir):  # pylint: disable=no-self-use,unused-argument
+    """Noop Impelementation of upload_latest_build."""
     logging.info('Not uploading latest build because on OSS-Fuzz.')
 
   def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_corpus."""
     logging.info('Not uploading corpus because on OSS-Fuzz.')
+
+  def upload_crashes(self, crashes_dir):  # pylint: disable=no-self-use,unused-argument
+    """Noop Impelementation of upload_crashes."""
+    logging.info('Not uploading crashes on OSS-Fuzz.')
 
   def download_corpus(self, target_name, parent_dir):
     """Downloads the latest OSS-Fuzz corpus for the target.
@@ -240,6 +271,10 @@ class NoClusterFuzzDeployment(BaseClusterFuzzDeployment):
   def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of upload_corpus."""
     logging.info('Not uploading corpus because no ClusterFuzz deployment.')
+
+  def upload_crashes(self, crashes_dir):  # pylint: disable=no-self-use,unused-argument
+    """Noop Impelementation of upload_crashes."""
+    logging.info('Not uploading crashes because no ClusterFuzz deployment.')
 
   def download_corpus(self, target_name, parent_dir):  # pylint: disable=no-self-use,unused-argument
     """Noop Impelementation of download_corpus."""
