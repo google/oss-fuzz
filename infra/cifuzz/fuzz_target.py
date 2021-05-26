@@ -47,7 +47,8 @@ COULD_NOT_TEST_ON_RECENT_MESSAGE = (
     'target to determine if this code change (pr/commit) introduced crash. '
     'Assuming this code change introduced crash.')
 
-FuzzResult = collections.namedtuple('FuzzResult', ['testcase', 'stacktrace'])
+FuzzResult = collections.namedtuple('FuzzResult',
+                                    ['testcase', 'stacktrace', 'corpus_path'])
 
 
 class ReproduceError(Exception):
@@ -127,29 +128,29 @@ class FuzzTarget:
       _, stderr = process.communicate(timeout=self.duration + BUFFER_TIME)
     except subprocess.TimeoutExpired:
       logging.error('Fuzzer %s timed out, ending fuzzing.', self.target_name)
-      return FuzzResult(None, None)
+      return FuzzResult(None, None, self.latest_corpus_path)
 
     # Libfuzzer timeout was reached.
     if not process.returncode:
       logging.info('Fuzzer %s finished with no crashes discovered.',
                    self.target_name)
-      return FuzzResult(None, None)
+      return FuzzResult(None, None, self.latest_corpus_path)
 
     # Crash was discovered.
     logging.info('Fuzzer %s, ended before timeout.', self.target_name)
     testcase = self.get_testcase(stderr)
     if not testcase:
       logging.error(b'No testcase found in stacktrace: %s.', stderr)
-      return FuzzResult(None, None)
+      return FuzzResult(None, None, self.latest_corpus_path)
 
     utils.binary_print(b'Fuzzer: %s. Detected bug:\n%s' %
                        (self.target_name.encode(), stderr))
     if self.is_crash_reportable(testcase):
       # We found a bug in the fuzz target and we will report it.
-      return FuzzResult(testcase, stderr)
+      return FuzzResult(testcase, stderr, self.latest_corpus_path)
 
     # We found a bug but we won't report it.
-    return FuzzResult(None, None)
+    return FuzzResult(None, None, self.latest_corpus_path)
 
   def free_disk_if_needed(self):
     """Deletes things that are no longer needed from fuzzing this fuzz target to
@@ -254,6 +255,11 @@ class FuzzTarget:
       logging.info('Failed to reproduce the crash using the obtained testcase.')
       return False
 
+    return self.is_crash_novel(testcase)
+
+  def is_crash_novel(self, testcase):
+    """Returns whether or not the crash is new. A crash is considered new if it
+    can't be reproduced on an older ClusterFuzz build of the target."""
     clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build(
         self.out_dir)
     if not clusterfuzz_build_dir:
