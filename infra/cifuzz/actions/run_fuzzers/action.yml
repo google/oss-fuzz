@@ -30,6 +30,14 @@ inputs:
       "batch" is in alpha and should not be used in production.
     required: false
     default: 'ci'
+  github-token:
+    description: |
+      Token for GitHub API. WARNING: THIS SHOULD NOT BE USED IN PRODUCTION YET
+      You should use "secrets.GITHUB_TOKEN" in your workflow file, do not
+      hardcode the token.
+      TODO(https://github.com/google/oss-fuzz/pull/5841#discussion_r639393361):
+      Document locking this down.
+    required: false
 runs:
   using: 'docker'
   image: '../../../run_fuzzers.Dockerfile'
@@ -44,4 +52,5 @@ runs:
     # for running because we use it to distinguish OSS-Fuzz from non-OSS-Fuzz.
     # We should do something explicit instead.
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'

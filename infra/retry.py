@@ -56,9 +56,9 @@ def wrap(retries,
       """Handle retry."""
       if (exception is None or
           isinstance(exception, exception_type)) and num_try < tries:
-        logging.log('Retrying on %s failed with %s. Retrying again.',
-                    function_with_type,
-                    sys.exc_info()[1])
+        logging.info('Retrying on %s failed with %s. Retrying again.',
+                     function_with_type,
+                     sys.exc_info()[1])
         sleep(get_delay(num_try, delay, backoff))
         return True
 

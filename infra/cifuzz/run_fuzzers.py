@@ -46,7 +46,7 @@ class BaseFuzzTargetRunner:
     # Set by the initialize method.
     self.out_dir = None
     self.fuzz_target_paths = None
-    self.artifacts_dir = None
+    self.crashes_dir = None
 
   def initialize(self):
     """Initialization method. Must be called before calling run_fuzz_targets.
@@ -69,13 +69,12 @@ class BaseFuzzTargetRunner:
       logging.error('Out directory: %s does not exist.', self.out_dir)
       return False
 
-    self.artifacts_dir = os.path.join(self.out_dir, 'artifacts')
-    if not os.path.exists(self.artifacts_dir):
-      os.mkdir(self.artifacts_dir)
-    elif (not os.path.isdir(self.artifacts_dir) or
-          os.listdir(self.artifacts_dir)):
+    self.crashes_dir = os.path.join(self.out_dir, 'artifacts')
+    if not os.path.exists(self.crashes_dir):
+      os.mkdir(self.crashes_dir)
+    elif (not os.path.isdir(self.crashes_dir) or os.listdir(self.crashes_dir)):
       logging.error('Artifacts path: %s exists and is not an empty directory.',
-                    self.artifacts_dir)
+                    self.crashes_dir)
       return False
 
     self.fuzz_target_paths = utils.get_fuzz_targets(self.out_dir)
@@ -108,7 +107,7 @@ class BaseFuzzTargetRunner:
         target_name=target.target_name,
         sanitizer=self.config.sanitizer,
         artifact_name=artifact_name)
-    return os.path.join(self.artifacts_dir, artifact_name)
+    return os.path.join(self.crashes_dir, artifact_name)
 
   def create_fuzz_target_obj(self, target_path, run_seconds):
     """Returns a fuzz target object."""
