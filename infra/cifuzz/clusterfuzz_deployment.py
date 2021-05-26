@@ -35,7 +35,7 @@ class BaseClusterFuzzDeployment:
   def __init__(self, config):
     self.config = config
 
-  def download_latest_build(self, out_dir):
+  def download_latest_build(self, parent_dir):
     """Downloads the latest build from ClusterFuzz.
 
     Returns:
@@ -50,14 +50,13 @@ class BaseClusterFuzzDeployment:
     """
     raise NotImplementedError('Child class must implement method.')
 
-  def download_corpus(self, target_name, out_dir):
-    """Downloads the corpus for |target_name| from ClusterFuzz to |out_dir|.
+  def download_corpus(self, target_name, parent_dir):
+    """Downloads the corpus for |target_name| from ClusterFuzz to |parent_dir|.
 
     Returns:
       A path to where the OSS-Fuzz build was stored, or None if it wasn't.
     """
     raise NotImplementedError('Child class must implement method.')
-
 
   def upload_crashes(self, crashes_dir):
     """Uploads crashes in |crashes_dir| to filestore."""
@@ -76,14 +75,18 @@ class BaseClusterFuzzDeployment:
     """Returns the path to the build dir for within |parent_dir|."""
     return os.path.join(parent_dir, self.BUILD_DIR_NAME)
 
+  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+    """Uploads the corpus for |target_name| in |corpus_dir| to filestore."""
+    raise NotImplementedError('Child class must implement method.')
+
 
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
   """Class representing a deployment of ClusterFuzzLite."""
 
-  def download_latest_build(self, out_dir):
+  def download_latest_build(self, parent_dir):
     logging.info('download_latest_build not implemented for ClusterFuzzLite.')
 
-  def download_corpus(self, target_name, out_dir):
+  def download_corpus(self, target_name, parent_dir):
     logging.info('download_corpus not implemented for ClusterFuzzLite.')
 
   def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
@@ -98,7 +101,6 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
 
   def upload_crashes(self, crashes_dir):
     logging.info('upload_crashes not implemented for ClusterFuzzLite.')
-
 
 
 class OSSFuzz(BaseClusterFuzzDeployment):
@@ -131,7 +133,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
       return None
     return response.read().decode()
 
-  def download_latest_build(self, out_dir):
+  def download_latest_build(self, parent_dir):
     """Downloads the latest OSS-Fuzz build from GCS.
 
     Returns:
@@ -173,13 +175,13 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     """Noop Impelementation of upload_crashes."""
     logging.info('Not uploading crashes on OSS-Fuzz.')
 
-  def download_corpus(self, target_name, out_dir):
+  def download_corpus(self, target_name, parent_dir):
     """Downloads the latest OSS-Fuzz corpus for the target.
 
     Returns:
       The local path to to corpus or None if download failed.
     """
-    corpus_dir = os.path.join(out_dir, self.CORPUS_DIR_NAME, target_name)
+    corpus_dir = os.path.join(parent_dir, self.CORPUS_DIR_NAME, target_name)
     os.makedirs(corpus_dir, exist_ok=True)
     # TODO(metzman): Clean up this code.
     project_qualified_fuzz_target_name = target_name
@@ -265,7 +267,7 @@ def download_and_unpack_zip(url, extract_directory):
 
   Args:
     url: A url to the zip file to be downloaded and unpacked.
-    out_dir: The path where the zip file should be extracted to.
+    extract_directory: The path where the zip file should be extracted to.
 
   Returns:
     True on success.
