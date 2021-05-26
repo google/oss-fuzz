@@ -26,9 +26,6 @@ CFLAGS="" CXXFLAGS="" ./bootstrap.sh
 CFLAGS="" CXXFLAGS="" ./b2 headers
 export CXXFLAGS="$CXXFLAGS -I $SRC/boost_1_74_0/"
 
-# Prevent Boost compilation error with -std=c++17
-export CXXFLAGS="$CXXFLAGS -D_LIBCPP_ENABLE_CXX17_REMOVED_AUTO_PTR"
-
 # Preconfigure libsecp256k1
 cd $SRC/secp256k1/
 autoreconf -ivf
@@ -124,5 +121,9 @@ cp cryptofuzz $OUT/cryptofuzz-bitcoin-cryptography-w24-p8
 # Convert Wycheproof test vectors to Cryptofuzz corpus format
 mkdir $SRC/corpus-cryptofuzz-wycheproof/
 find $SRC/wycheproof/testvectors/ -type f -name 'ecdsa_secp256k1_*' -exec $SRC/cryptofuzz/cryptofuzz --from-wycheproof={},$SRC/corpus-cryptofuzz-wycheproof/ \;
-# Pack it and use it as seed corpus
-zip -j $OUT/cryptofuzz-bitcoin-cryptography_seed_corpus.zip $SRC/corpus-cryptofuzz-wycheproof/*
+# Pack the Wycheproof test vectors
+zip -j cryptofuzz-bitcoin-cryptography_seed_corpus.zip $SRC/corpus-cryptofuzz-wycheproof/*
+# Use them as the seed corpus for each of the fuzzers
+cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w2-p2_seed_corpus.zip
+cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w15-p4_seed_corpus.zip
+cp cryptofuzz-bitcoin-cryptography_seed_corpus.zip $OUT/cryptofuzz-bitcoin-cryptography-w24-p8_seed_corpus.zip

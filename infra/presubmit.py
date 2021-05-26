@@ -401,9 +401,14 @@ def run_nonbuild_tests(parallel):
   return subprocess.run(command, check=False).returncode == 0
 
 
-def run_tests(_=None, parallel=False):
+def run_tests(_=None, parallel=False, skip_build_tests=False):
   """Runs all unit tests."""
   nonbuild_success = run_nonbuild_tests(parallel)
+
+  if skip_build_tests:
+    print('Skipping build tests as specified.')
+    return nonbuild_success
+
   build_success = run_build_tests()
   return nonbuild_success and build_success
 
@@ -432,6 +437,12 @@ def main():
                       action='store_true',
                       help='Run tests in parallel.',
                       default=False)
+  parser.add_argument('-s',
+                      '--skip-build-tests',
+                      action='store_true',
+                      help='Skip build tests which are slow and must run '
+                      'sequentially.',
+                      default=False)
   args = parser.parse_args()
 
   if args.all_files:
@@ -455,7 +466,9 @@ def main():
     return bool_to_returncode(success)
 
   if args.command == 'infra-tests':
-    success = run_tests(relevant_files, parallel=args.parallel)
+    success = run_tests(relevant_files,
+                        parallel=args.parallel,
+                        skip_build_tests=args.skip_build_tests)
     return bool_to_returncode(success)
 
   # Do all the checks (but no tests).
