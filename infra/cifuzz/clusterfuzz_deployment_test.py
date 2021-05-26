@@ -21,7 +21,7 @@ import urllib.error
 from pyfakefs import fake_filesystem_unittest
 
 import clusterfuzz_deployment
-import config_utils
+import test_helpers
 
 # NOTE: This integration test relies on
 # https://github.com/google/oss-fuzz/tree/master/projects/example project.
