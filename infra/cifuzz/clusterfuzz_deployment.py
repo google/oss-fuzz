@@ -181,7 +181,7 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     Returns:
       The local path to to corpus or None if download failed.
     """
-    corpus_dir = os.path.join(parent_dir, self.CORPUS_DIR_NAME, target_name)
+    corpus_dir = self.get_target_corpus_dir(target_name, parent_dir)
     os.makedirs(corpus_dir, exist_ok=True)
     # TODO(metzman): Clean up this code.
     project_qualified_fuzz_target_name = target_name
