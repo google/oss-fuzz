@@ -24,9 +24,6 @@ inputs:
   build-integration-path:
     description: "The path to the the project's build integration."
     required: false
-  github_token: # !!!
-    description: "Token for GitHub API."
-    required: false
   bad-build-check:
     description: "Whether or not OSS-Fuzz's check for bad builds should be done."
     required: false
@@ -42,6 +39,5 @@ runs:
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
-    GITHUB_TOKEN: ${{ inputs.github-token }}
     LOW_DISK_SPACE: 'True'
     BAD_BUILD_CHECK: ${{ inputs.bad-build-check }}
