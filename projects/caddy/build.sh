@@ -15,13 +15,6 @@
 #
 ################################################################################
 
-if [[ $SANITIZER = *coverage* ]]; then
-    # we don't support 'coverage' sanitizer yet because 
-    # compile_go_fuzzer doesn't seem to like SIV.
-    # TODO: investigate proper fix for either
-    exit 0
-fi
-
 cd "$GOPATH"/src/github.com/caddyserver/caddy/v2
 
 find . -name '*_fuzz.go' | while read -r target

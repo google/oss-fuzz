@@ -44,7 +44,6 @@ class BaseClusterFuzzDeployment:
 
   def upload_latest_build(self, build_dir):
     """Uploads the latest build to the filestore.
-
     Returns:
       True on success.
     """
@@ -75,6 +74,10 @@ class BaseClusterFuzzDeployment:
   def get_build_dir(self, parent_dir):
     """Returns the path to the build dir for within |parent_dir|."""
     return os.path.join(parent_dir, self.BUILD_DIR_NAME)
+
+  def upload_corpus(self, target_name, corpus_dir):  # pylint: disable=no-self-use,unused-argument
+    """Uploads the corpus for |target_name| in |corpus_dir| to filestore."""
+    raise NotImplementedError('Child class must implement method.')
 
 
 class ClusterFuzzLite(BaseClusterFuzzDeployment):
@@ -161,6 +164,13 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload crashes. Error: %s.', error)
 
+  def upload_latest_build(self, build_dir):
+    """Uploads the latest build to the filestore.
+    Returns:
+      True on success.
+    """
+    logging.info('upload_latest_build not implemented for ClusterFuzzLite.')
+
 
 class OSSFuzz(BaseClusterFuzzDeployment):
   """The OSS-Fuzz ClusterFuzz deployment."""
@@ -200,11 +210,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     """
     build_dir = self.get_build_dir(parent_dir)
     if os.path.exists(build_dir):
-      # This path is necessary because download_latest_build can be called
-      # multiple times.That is the case because it is called only when we need
-      # to see if a bug is novel, i.e. until we want to check a bug is novel we
-      # don't want to waste time calling this, but therefore this method can be
-      # called if multiple bugs are found.
+      # This function can be called multiple times, don't download the build
+      # again.
       return build_dir
 
     os.makedirs(build_dir, exist_ok=True)
