@@ -30,7 +30,7 @@ inputs:
       "batch" is in alpha and should not be used in production.
     required: false
     default: 'ci'
-  github_token:
+  github-token:
     description: "Token for GitHub API."
     required: false
 runs:
