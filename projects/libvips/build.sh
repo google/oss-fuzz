@@ -145,13 +145,10 @@ make install
 popd
 
 # jpeg-xl (libjxl)
-pushd $SRC/jpeg-xl
+pushd $SRC/libjxl
 sed -i'.bak' "/add_subdirectory(tools)/d" CMakeLists.txt
 # Don't overwrite our linker flags
 sed -i'.bak' "/set(CMAKE_EXE_LINKER_FLAGS/{N;d;}" CMakeLists.txt
-# Ensure pkg-config file is installed when -DJPEGXL_STATIC=1, see:
-# https://gitlab.com/wg1/jpeg-xl/-/issues/224
-curl -Ls https://gist.github.com/kleisauke/d54b5e62367d20e66dd58ca19a2234c9/raw/1dfd4398de87e1997f21a216a1c28de730deb2d9/jpeg-xl-pkg-config.patch | patch -p1 || true
 cmake -G "Unix Makefiles" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_COMPILER=$CC \
