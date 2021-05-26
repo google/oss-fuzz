@@ -154,8 +154,8 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         workspace=self.workspace,
         build_integration_path=build_integration_path,
         git_url=git_url,
-        is_github=True,
         commit_sha='HEAD',
+        is_github=True,
         base_commit='HEAD^1')
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
