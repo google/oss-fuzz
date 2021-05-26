@@ -72,8 +72,7 @@ class BaseFuzzTargetRunner:
     self.crashes_dir = os.path.join(self.out_dir, 'artifacts')
     if not os.path.exists(self.crashes_dir):
       os.mkdir(self.crashes_dir)
-    elif (not os.path.isdir(self.crashes_dir) or
-          os.listdir(self.crashes_dir)):
+    elif (not os.path.isdir(self.crashes_dir) or os.listdir(self.crashes_dir)):
       logging.error('Artifacts path: %s exists and is not an empty directory.',
                     self.crashes_dir)
       return False
