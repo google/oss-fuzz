@@ -22,7 +22,6 @@ from unittest import mock
 import parameterized
 from pyfakefs import fake_filesystem_unittest
 
-import config_utils
 import fuzz_target
 import run_fuzzers
 
@@ -49,22 +48,6 @@ UNDEFINED_FUZZER = 'curl_fuzzer_undefined'
 FUZZ_SECONDS = 10
 
 
-def _create_config(**kwargs):
-  """Creates a config object and then sets every attribute that is a key in
-  |kwargs| to the corresponding value. Asserts that each key in |kwargs| is an
-  attribute of Config."""
-  with mock.patch('os.path.basename', return_value=None), mock.patch(
-      'config_utils.get_project_src_path',
-      return_value=None), mock.patch('config_utils._is_dry_run',
-                                     return_value=True):
-    config = config_utils.RunFuzzersConfig()
-
-  for key, value in kwargs.items():
-    assert hasattr(config, key), 'Config doesn\'t have attribute: ' + key
-    setattr(config, key, value)
-  return config
-
-
 class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,invalid-name
   """Mixin for integration test classes that runbuild_fuzzers on builds of a
   specific sanitizer."""
@@ -76,10 +59,10 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
     """Calls run_fuzzers on fuzzer_dir and |sanitizer| and asserts
     the run succeeded and that no bug was found."""
     with test_helpers.temp_dir_copy(fuzzer_dir) as fuzzer_dir_copy:
-      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                              workspace=fuzzer_dir_copy,
-                              project_name='curl',
-                              sanitizer=sanitizer)
+      config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                              workspace=fuzzer_dir_copy,
+                                              project_name='curl',
+                                              sanitizer=sanitizer)
       result = run_fuzzers.run_fuzzers(config)
     self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
 
@@ -119,7 +102,7 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
       if default_key not in kwargs:
         kwargs[default_key] = default_value
 
-    config = _create_config(**kwargs)
+    config = test_helpers.create_run_config(**kwargs)
     return run_fuzzers.BaseFuzzTargetRunner(config)
 
   def _test_initialize_fail(self, expected_error_args, **create_runner_kwargs):
@@ -219,8 +202,8 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
   def test_get_fuzz_target_artifact(self):
     """Tests that get_fuzz_target_artifact works as intended."""
     runner = self._create_runner()
-    artifacts_dir = 'artifacts-dir'
-    runner.artifacts_dir = artifacts_dir
+    crashes_dir = 'crashes-dir'
+    runner.crashes_dir = crashes_dir
     artifact_name = 'artifact-name'
     target = mock.MagicMock()
     target_name = 'target_name'
@@ -228,7 +211,7 @@ class BaseFuzzTargetRunnerTest(unittest.TestCase):
     fuzz_target_artifact = runner.get_fuzz_target_artifact(
         target, artifact_name)
     expected_fuzz_target_artifact = (
-        'artifacts-dir/target_name-address-artifact-name')
+        'crashes-dir/target_name-address-artifact-name')
     self.assertEqual(fuzz_target_artifact, expected_fuzz_target_artifact)
 
 
@@ -248,9 +231,9 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'out')
     self.fs.create_dir(out_path)
-    config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                            workspace=workspace,
-                            project_name=EXAMPLE_PROJECT)
+    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                            workspace=workspace,
+                                            project_name=EXAMPLE_PROJECT)
     runner = run_fuzzers.CiFuzzTargetRunner(config)
 
     mocked_get_fuzz_targets.return_value = ['target1', 'target2']
@@ -264,7 +247,7 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     magic_mock.target_name = 'target1'
     mocked_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
-    self.assertIn('target1-address-testcase', os.listdir(runner.artifacts_dir))
+    self.assertIn('target1-address-testcase', os.listdir(runner.crashes_dir))
     self.assertEqual(mocked_run_fuzz_target.call_count, 1)
 
 
@@ -284,9 +267,9 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'out')
     self.fs.create_dir(out_path)
-    config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                            workspace=workspace,
-                            project_name=EXAMPLE_PROJECT)
+    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                            workspace=workspace,
+                                            project_name=EXAMPLE_PROJECT)
     runner = run_fuzzers.BatchFuzzTargetRunner(config)
 
     mocked_get_fuzz_targets.return_value = ['target1', 'target2']
@@ -314,7 +297,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     mocked_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
     self.assertIn('target1-address-testcase-aaa',
-                  os.listdir(runner.artifacts_dir))
+                  os.listdir(runner.crashes_dir))
     self.assertEqual(mocked_run_fuzz_target.call_count, 2)
 
 
@@ -336,9 +319,9 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
       with tempfile.TemporaryDirectory() as tmp_dir:
         workspace = os.path.join(tmp_dir, 'workspace')
         shutil.copytree(TEST_DATA_PATH, workspace)
-        config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                                workspace=workspace,
-                                project_name=EXAMPLE_PROJECT)
+        config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                                workspace=workspace,
+                                                project_name=EXAMPLE_PROJECT)
         result = run_fuzzers.run_fuzzers(config)
         self.assertEqual(result, run_fuzzers.RunFuzzersResult.BUG_FOUND)
         build_dir = os.path.join(workspace, 'out', self.BUILD_DIR_NAME)
@@ -350,15 +333,15 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
               side_effect=[True, True])
   def test_old_bug_found(self, _):
     """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
-    config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                            workspace=TEST_DATA_PATH,
-                            project_name=EXAMPLE_PROJECT)
+    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                            workspace=TEST_DATA_PATH,
+                                            project_name=EXAMPLE_PROJECT)
     with tempfile.TemporaryDirectory() as tmp_dir:
       workspace = os.path.join(tmp_dir, 'workspace')
       shutil.copytree(TEST_DATA_PATH, workspace)
-      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                              workspace=TEST_DATA_PATH,
-                              project_name=EXAMPLE_PROJECT)
+      config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                              workspace=TEST_DATA_PATH,
+                                              project_name=EXAMPLE_PROJECT)
       result = run_fuzzers.run_fuzzers(config)
       self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
       build_dir = os.path.join(TEST_DATA_PATH, 'out', self.BUILD_DIR_NAME)
@@ -370,9 +353,9 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
     with tempfile.TemporaryDirectory() as tmp_dir:
       out_path = os.path.join(tmp_dir, 'out')
       os.mkdir(out_path)
-      config = _create_config(fuzz_seconds=FUZZ_SECONDS,
-                              workspace=tmp_dir,
-                              project_name=EXAMPLE_PROJECT)
+      config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
+                                              workspace=tmp_dir,
+                                              project_name=EXAMPLE_PROJECT)
       result = run_fuzzers.run_fuzzers(config)
     self.assertEqual(result, run_fuzzers.RunFuzzersResult.ERROR)
 

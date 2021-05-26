@@ -21,8 +21,10 @@ import json
 import environment
 
 
-def _get_project_repo_name():
-  return os.path.basename(environment.get('GITHUB_REPOSITORY', ''))
+def _get_project_repo_owner_and_name():
+  # Includes owner and repo name.
+  github_repository = os.getenv('GITHUB_REPOSITORY', '')
+  return os.path.split(github_repository)
 
 
 def _get_pr_ref(event):
@@ -93,6 +95,8 @@ class BaseConfig:
   def __init__(self):
     self.workspace = os.getenv('GITHUB_WORKSPACE')
     self.project_name = _get_project_name()
+    self.project_repo_owner, self.project_repo_name = (
+        _get_project_repo_owner_and_name())
     # Check if failures should not be reported.
     self.dry_run = _is_dry_run()
     self.sanitizer = _get_sanitizer()
@@ -103,6 +107,8 @@ class BaseConfig:
     logging.debug('Is github: %s.', self.is_github)
     # TODO(metzman): Parse env like we do in ClusterFuzz.
     self.low_disk_space = environment.get('LOW_DISK_SPACE', False)
+
+    self.github_token = os.environ.get('GITHUB_TOKEN')
 
   @property
   def is_internal(self):
@@ -162,7 +168,6 @@ class BuildFuzzersConfig(BaseConfig):
     # TODO(metzman): Some of this config is very CI-specific. Move it into the
     # CI class.
     super().__init__()
-    self.project_repo_name = _get_project_repo_name()
     self.commit_sha = os.getenv('GITHUB_SHA')
     event = os.getenv('GITHUB_EVENT_NAME')
 
