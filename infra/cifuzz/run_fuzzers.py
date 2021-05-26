@@ -139,8 +139,6 @@ class BaseFuzzTargetRunner:
 
       fuzzers_left_to_run -= 1
       if not result.testcase or not result.stacktrace:
-        logging.info('result.testcase %s result.stacktrace %s',
-                     result.testcase, result.stacktrace)
         logging.info('Fuzzer %s finished running without crashes.',
                      target.target_name)
         continue
@@ -148,7 +146,6 @@ class BaseFuzzTargetRunner:
       # TODO(metzman): Do this with filestore.
       testcase_artifact_path = self.get_fuzz_target_artifact(
           target, os.path.basename(result.testcase))
-      logging.debug('Moving %s to %s.', result.testcase, testcase_artifact_path)
       shutil.move(result.testcase, testcase_artifact_path)
       bug_summary_artifact_path = self.get_fuzz_target_artifact(
           target, 'bug-summary.txt')
