@@ -112,7 +112,7 @@ if [[ "$FUZZING_ENGINE" = afl ]]; then
   # If $OUT/afl++.dict we load it as a dictionary for afl-fuzz.
   test -e "$OUT/afl++.dict" && AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -x $OUT/afl++.dict"
   # Ensure timeout is a bit larger than 1sec as some of the OSS-Fuzz fuzzers
-  # are slower than this. 
+  # are slower than this.
   AFL_FUZZER_ARGS="$AFL_FUZZER_ARGS -t 5000+"
   # AFL expects at least 1 file in the input dir.
   echo input > ${CORPUS_DIR}/input
