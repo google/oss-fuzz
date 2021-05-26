@@ -255,16 +255,10 @@ class FuzzTarget:
       logging.info('Failed to reproduce the crash using the obtained testcase.')
       return False
 
-    is_novel = not self.is_crash_novel(testcase)
+    is_novel = self.is_crash_novel(testcase)
 
-    if not is_novel:
-      logging.info('The crash is reproducible. The crash doesn\'t reproduce '
-                   'on old builds. This code change probably introduced the '
-                   'crash.')
+    if is_novel:
       return True
-
-    logging.info('The crash is reproducible on old builds '
-                 '(without the current code change).')
     return False
 
   def is_crash_novel(self, testcase):
@@ -276,7 +270,7 @@ class FuzzTarget:
       # Crash is reproducible on PR build and we can't test on a recent
       # ClusterFuzz/OSS-Fuzz build.
       logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
-      return False
+      return True
 
     clusterfuzz_target_path = os.path.join(clusterfuzz_build_dir,
                                            self.target_name)
@@ -287,17 +281,17 @@ class FuzzTarget:
       # This happens if the project has ClusterFuzz builds, but the fuzz target
       # is not in it (e.g. because the fuzz target is new).
       logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
-      return False
+      return True
 
     if not reproducible_on_clusterfuzz_build:
       logging.info('The crash is reproducible. The crash doesn\'t reproduce '
                    'on old builds. This code change probably introduced the '
                    'crash.')
-      return False
+      return True
 
     logging.info('The crash is reproducible on old builds '
                  '(without the current code change).')
-    return True
+    return False
 
   def get_testcase(self, error_bytes):
     """Gets the file from a fuzzer run stacktrace.
