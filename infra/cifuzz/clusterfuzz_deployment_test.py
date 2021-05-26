@@ -65,8 +65,7 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
     self.setUpPyfakefs()
     self.deployment = _create_deployment()
 
-  @mock.patch('http_utils.download_and_unpack_zip',
-              return_value=True)
+  @mock.patch('http_utils.download_and_unpack_zip', return_value=True)
   def test_download_corpus(self, mocked_download_and_unpack_zip):
     """Tests that we can download a corpus for a valid project."""
     result = self.deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
@@ -79,8 +78,7 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
     call_args, _ = mocked_download_and_unpack_zip.call_args
     self.assertEqual(call_args, (expected_url, expected_corpus_dir))
 
-  @mock.patch('http_utils.download_and_unpack_zip',
-              return_value=False)
+  @mock.patch('http_utils.download_and_unpack_zip', return_value=False)
   def test_download_fail(self, _):
     """Tests that when downloading fails, None is returned."""
     corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
