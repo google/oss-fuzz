@@ -208,6 +208,9 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
     # Thus, we will upload the build after fuzzing. But before we zip the out
     # directory we will remove these extra things that are now in out.
     # TODO(metzman): Don't pollute self.out_dir like this.
+    # TODO(metzman): We should really be uploading latest build in
+    # build_fuzzers before we remove unaffected fuzzers. Otherwise, we lose
+    # fuzzers.
 
     for directory in [
         self.clusterfuzz_deployment.get_corpus_dir(self.out_dir),

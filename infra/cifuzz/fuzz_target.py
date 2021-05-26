@@ -256,24 +256,8 @@ class FuzzTarget:
       logging.info('Failed to reproduce the crash using the obtained testcase.')
       return False
 
-    clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build(
-        self.out_dir)
-    if not clusterfuzz_build_dir:
-      # Crash is reproducible on PR build and we can't test on a recent
-      # ClusterFuzz/OSS-Fuzz build.
-      logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
-      return True
-
-    clusterfuzz_target_path = os.path.join(clusterfuzz_build_dir,
-                                           self.target_name)
-    try:
-      reproducible_on_clusterfuzz_build = self.is_reproducible(
-          testcase, clusterfuzz_target_path)
-    except ReproduceError:
-      # This happens if the project has ClusterFuzz builds, but the fuzz target
-      # is not in it (e.g. because the fuzz target is new).
-      logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
-      return True
+    reproducible_on_clusterfuzz_build = (
+        self.is_reproducible_on_clusterfuzz_build(testcase))
 
     if not reproducible_on_clusterfuzz_build:
       logging.info('The crash is reproducible. The crash doesn\'t reproduce '
@@ -284,6 +268,30 @@ class FuzzTarget:
     logging.info('The crash is reproducible on old builds '
                  '(without the current code change).')
     return False
+
+
+  def is_reproducible_on_clusterfuzz_build(self, testcase):
+    """Returns False if the crash couldn't be reproduced on the ClusterFuzz
+    build of the fuzz target."""
+    clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build(
+        self.out_dir)
+    if not clusterfuzz_build_dir:
+      # Crash is reproducible on PR build and we can't test on a recent
+      # ClusterFuzz/OSS-Fuzz build.
+      logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
+      return False
+    clusterfuzz_target_path = os.path.join(clusterfuzz_build_dir,
+                                           self.target_name)
+
+    try:
+      reproducible_on_clusterfuzz_build = self.is_reproducible(
+          testcase, clusterfuzz_target_path)
+    except ReproduceError:
+      # This happens if the project has ClusterFuzz builds, but the fuzz target
+      # is not in it (e.g. because the fuzz target is new).
+      logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
+      return False
+    return reproducible_on_clusterfuzz_build
 
   def get_testcase(self, error_bytes):
     """Gets the file from a fuzzer run stacktrace.
