@@ -255,11 +255,7 @@ class FuzzTarget:
       logging.info('Failed to reproduce the crash using the obtained testcase.')
       return False
 
-    is_novel = self.is_crash_novel(testcase)
-
-    if is_novel:
-      return True
-    return False
+    return self.is_crash_novel(testcase)
 
   def is_crash_novel(self, testcase):
     """Returns False if the crash couldn't be reproduced on the ClusterFuzz
