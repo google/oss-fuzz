@@ -404,7 +404,9 @@ def run_nonbuild_tests(parallel):
 def run_tests(_=None, parallel=False, skip_build_tests=False):
   """Runs all unit tests."""
   nonbuild_success = run_nonbuild_tests(parallel)
+
   if skip_build_tests:
+    print('Skipping build tests as specified.')
     return nonbuild_success
 
   build_success = run_build_tests()
