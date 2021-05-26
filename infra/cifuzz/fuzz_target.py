@@ -258,8 +258,8 @@ class FuzzTarget:
     return self.is_crash_novel(testcase)
 
   def is_crash_novel(self, testcase):
-    """Returns False if the crash couldn't be reproduced on the ClusterFuzz
-    build of the fuzz target."""
+    """Returns whether or not the crash is new. A crash is considered new if it
+    can't be reproduced on an older ClusterFuzz build of the target."""
     clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build(
         self.out_dir)
     if not clusterfuzz_build_dir:
