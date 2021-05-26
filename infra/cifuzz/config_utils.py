@@ -168,7 +168,6 @@ class BuildFuzzersConfig(BaseConfig):
     # TODO(metzman): Some of this config is very CI-specific. Move it into the
     # CI class.
     super().__init__()
-    self.project_repo_name = _get_project_repo_name()
     self.commit_sha = os.getenv('GITHUB_SHA')
     event = os.getenv('GITHUB_EVENT_NAME')
 
