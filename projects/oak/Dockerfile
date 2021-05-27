@@ -16,6 +16,16 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
+RUN apt-get --yes update \
+   && apt-get install --no-install-recommends --yes \
+   libssl-dev \
+   pkg-config \
+   && apt-get clean \
+   && rm --recursive --force /var/lib/apt/lists/*
+
+# Install WebAssembly target for Rust.
+RUN rustup target add wasm32-unknown-unknown
+
 # Install Protobuf compiler.
 ARG protobuf_version=3.13.0
 ARG protobuf_sha256=4a3b26d1ebb9c1d23e933694a6669295f6a39ddc64c3db2adf671f0a6026f82e
@@ -28,9 +38,6 @@ RUN curl --location https://github.com/protocolbuffers/protobuf/releases/downloa
   && rm ${protobuf_temp} \
   && chmod --recursive a+rwx ${protobuf_dir} \
   && protoc --version
-
-# Install WebAssembly target for Rust.
-RUN rustup target add wasm32-unknown-unknown
 
 RUN git clone --depth 1 https://github.com/project-oak/oak oak
 
