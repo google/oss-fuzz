@@ -42,3 +42,9 @@ do
     cp $FUZZ_TARGET_OUTPUT_DIR/$FUZZ_TARGET_NAME $OUT/
 done
 
+# Check that the Wams file is in the correct location.
+readonly FILE="$OUT/bin/fuzzable.wasm"
+if [ ! -f "$FILE" ]; then
+  exit 1
+fi
+
