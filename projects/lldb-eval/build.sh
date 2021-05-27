@@ -16,46 +16,28 @@
 ################################################################################
 
 (
-cd $SRC/llvm-project && mkdir build_x64_opt && cd build_x64_opt
+cd $SRC/
+GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-llvm-11"
+
+wget --quiet --show-progress $GITHUB_RELEASE/llvm-11.1.0-source.tar.gz
+tar -xzf llvm-11.1.0-source.tar.gz
+
+wget --quiet --show-progress $GITHUB_RELEASE/llvm-11.1.0-x86_64-linux-release-genfiles.tar.gz
+tar -xzf llvm-11.1.0-x86_64-linux-release-genfiles.tar.gz
 
 if [ "$SANITIZER" = "address" ]
 then
-  LLVM_USE_SANITIZER=Address
+  LLVM_ARCHIVE="llvm-11.1.0-x86_64-linux-release-address.tar.gz"
 else
-  LLVM_USE_SANITIZER=""
+  LLVM_ARCHIVE="llvm-11.1.0-x86_64-linux-release-coverage.tar.gz"
 fi
 
-cmake \
-    -DCMAKE_C_COMPILER=clang \
-    -DCMAKE_CXX_COMPILER=clang++ \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_USE_SANITIZER=$LLVM_USE_SANITIZER \
-    -DLLVM_ENABLE_PROJECTS="compiler-rt;clang;lld;lldb" \
-    -DLLVM_USE_LINKER=lld \
-    -DLLVM_TARGETS_TO_BUILD="X86" \
-    -DLLVM_BUILD_TOOLS=OFF \
-    -DLLVM_BUILD_UTILS=OFF \
-    -DLLVM_BUILD_TESTS=OFF \
-    -DLLVM_INCLUDE_TESTS=OFF \
-    -DLLDB_ENABLE_PYTHON=0 \
-    -DLLDB_INCLUDE_TESTS=OFF \
-    -DCMAKE_INSTALL_PREFIX="$SRC/llvm" \
-    -GNinja \
-    ../llvm
-
-ninja \
-    install-clang \
-    install-clang-headers \
-    install-clang-libraries \
-    install-liblldb \
-    install-lld \
-    install-lldb-headers \
-    install-lldb-server \
-    install-llvm-headers \
-    install-llvm-libraries
+wget --quiet --show-progress $GITHUB_RELEASE/$LLVM_ARCHIVE
+mkdir -p llvm && tar -xzf $LLVM_ARCHIVE --strip-components 1 -C llvm
 )
 export LLVM_INSTALL_PATH=$SRC/llvm
 
+# Run the build!
 bazel_build_fuzz_tests
 
 # OSS-Fuzz rule doesn't build data dependencies
