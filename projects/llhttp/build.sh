@@ -20,4 +20,4 @@ npm link typescript
 npm install .
 make
 
-$CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_parser.c -I./build/ ./build/libllhttp.a -o $OUT/fuzz_parser
+$CC $CFLAGS $LIB_FUZZING_ENGINE ./test/fuzzers/fuzz_parser.c -I./build/ ./build/libllhttp.a -o $OUT/fuzz_parser
