@@ -22,4 +22,3 @@ RUN apt install -y nodejs
 RUN git clone --depth 1 https://github.com/nodejs/llhttp llhttp
 WORKDIR llhttp
 COPY build.sh $SRC/
-COPY fuzz_parser.c $SRC/fuzz_parser.c
