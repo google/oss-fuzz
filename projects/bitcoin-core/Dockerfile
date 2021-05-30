@@ -22,7 +22,7 @@ FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y \
   build-essential libtool autotools-dev automake pkg-config bsdmainutils python3 \
   make automake cmake curl g++-multilib libtool binutils-gold bsdmainutils pkg-config patch bison \
-  wget zip parallel
+  wget zip
 
 RUN git clone --depth=1 https://github.com/bitcoin/bitcoin.git bitcoin-core
 RUN git clone --depth=1 https://github.com/bitcoin-core/qa-assets bitcoin-core/assets
