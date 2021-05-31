@@ -1,0 +1,10 @@
+homepage: "https://github.com/alexcrichton/toml-rs"
+main_repo: "https://github.com/alexcrichton/toml-rs"
+primary_contact: "alex@alexcrichton.com"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+auto_ccs:
+  - "evverx@gmail.com"
