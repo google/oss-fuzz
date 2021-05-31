@@ -15,6 +15,6 @@
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update &&\
     apt-get install -y wget
-RUN git clone --depth 1 https://github.com/alexcrichton/toml-rs
+RUN git clone --depth 1 https://github.com/evverx/toml-rs && cd toml-rs && git fetch origin fuzz && git checkout FETCH_HEAD
 WORKDIR toml-rs
 COPY build.sh $SRC/
