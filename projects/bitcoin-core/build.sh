@@ -84,8 +84,7 @@ for fuzz_target in ${FUZZ_TARGETS[@]}; do
   (
     cd assets/fuzz_seed_corpus
     if [ -d "$fuzz_target" ]; then
-      sem -j+0 zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
+      zip --recurse-paths --quiet --junk-paths "$OUT/${fuzz_target}_seed_corpus.zip" "${fuzz_target}"
     fi
   )
 done
-sem --wait
