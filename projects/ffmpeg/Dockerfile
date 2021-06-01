@@ -28,7 +28,6 @@ RUN git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
 RUN wget https://www.alsa-project.org/files/pub/lib/alsa-lib-1.1.0.tar.bz2
 RUN git clone --depth 1 https://github.com/mstorsjo/fdk-aac.git
 RUN git clone --depth 1 git://anongit.freedesktop.org/xorg/lib/libXext
-RUN git clone --depth 1 git://anongit.freedesktop.org/git/xorg/lib/libXfixes
 RUN git clone --depth 1 https://github.com/intel/libva
 RUN git clone --depth 1 -b libvdpau-1.2 git://people.freedesktop.org/~aplattner/libvdpau
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libvpx

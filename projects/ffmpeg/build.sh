@@ -50,13 +50,6 @@ make clean
 make -j$(nproc)
 make install
 
-cd $SRC/libXfixes
-./autogen.sh
-./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static
-make clean
-make -j$(nproc)
-make install
-
 cd $SRC/libva
 ./autogen.sh
 ./configure --prefix="$FFMPEG_DEPS_PATH" --enable-static --disable-shared
