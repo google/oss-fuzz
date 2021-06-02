@@ -27,8 +27,6 @@
 # The dfVFS project: https://github.com/log2timeline/dfvfs
 #   As Apache 2 https://github.com/log2timeline/dfvfs/blob/main/LICENSE
 
-OUT="."
-
 # Files to use for fls fuzz targets
 declare -A FLS_TEST_FILES=(
   ["apfs"]="https://github.com/log2timeline/dfvfs/blob/main/test_data/apfs.raw?raw=true"
