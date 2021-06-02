@@ -1,0 +1,10 @@
+homepage: "https://rust-analyzer.github.io"
+primary_contact: "aleksey.kladov@gmail.com"
+auto_ccs:
+- "p.antoine@catenacyber.fr"
+sanitizers:
+  - address
+fuzzing_engines:
+  - libfuzzer
+language: rust
+main_repo: 'https://github.com/rust-analyzer/rust-analyzer'
