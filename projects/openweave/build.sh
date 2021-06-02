@@ -24,9 +24,16 @@ function copy_lib
 
 mkdir -p $OUT/lib
 
+if [ "$SANITIZER" = "coverage" ]
+then
+    # so that we do not get openssl
+    export CXXFLAGS="$CXXFLAGS -fsanitize=fuzzer-no-link,address"
+    export CFLAGS="$CFLAGS -fsanitize=fuzzer-no-link,address"
+fi
+
 # build project
 ./bootstrap
-# fails with Source option 6 is no longer supported. Use 7 or later.
+# java fails with Source option 6 is no longer supported. Use 7 or later.
 ./configure --disable-java --enable-fuzzing --disable-shared
 make -j$(nproc)
 find src/test-apps/fuzz/ -type f -executable -name "Fuzz*" | while read i; do
