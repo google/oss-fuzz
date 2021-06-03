@@ -98,3 +98,32 @@ $CC $CXXFLAGS $LIB_FUZZING_ENGINE pidgin_xml_fuzzer.o \
   /work/meson/glib/libglib-2.0.a \
   /src/libffi-3.2.1/x86_64-unknown-linux-gnu/.libs/libffi.a \
   -lresolv -lz -llzma
+
+
+
+# utils fuzzer
+cp $SRC/pidging_utils_fuzzer.c .
+$CC $CFLAGS -DHAVE_CONFIG_H \
+  -I. \
+  -I.. \
+  -I/src/glib/glib \
+  -I/src/glib \
+  -I/work/meson/ \
+  -I/work/meson/glib \
+  -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+  -I/usr/local/include/libxml2 \
+  -I/src/glib/gobject \
+  -I/src/glib/gmodule/ \
+  -I./include \
+  -c pidging_utils_fuzzer.c \
+  -o pidging_utils_fuzzer.o
+
+$CC $CXXFLAGS $LIB_FUZZING_ENGINE pidging_utils_fuzzer.o \
+  -o $OUT/pidging_utils_fuzzer ./.libs/libpurple.a \
+  /src/libxml2/.libs/libxml2.a \
+  /src/pidgin-2.14.4/libpurple/protocols/gg/.libs/libgg.a \
+  /work/meson/gobject/libgobject-2.0.a \
+  /work/meson/gmodule/libgmodule-2.0.a \
+  /work/meson/glib/libglib-2.0.a \
+  /src/libffi-3.2.1/x86_64-unknown-linux-gnu/.libs/libffi.a \
+  -lresolv -lz -llzma

@@ -31,4 +31,5 @@ WORKDIR $SRC
 
 COPY build.sh \	
      pidgin_xml_fuzzer.c \
+     pidgin_utils_fuzzer.c \
      $SRC/
