@@ -50,6 +50,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     g_free(tmp);
   }
 
+  char *tmp2 = NULL;
+  tmp2 = purple_mime_decode_field(nstr);
+  if (tmp2 != NULL) {
+    free(tmp2);
+  }
+
   free(nstr);
   return 0;
 }
