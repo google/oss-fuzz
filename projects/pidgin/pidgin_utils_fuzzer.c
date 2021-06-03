@@ -56,6 +56,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     free(tmp2);
   }
 
+  purple_str_to_time(nstr, TRUE, NULL, NULL, NULL);
+
   free(nstr);
   return 0;
 }
