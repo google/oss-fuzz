@@ -27,6 +27,9 @@ RUN git clone --depth 1 https://gitlab.gnome.org/GNOME/libxml2.git
 RUN wget https://sourceforge.net/projects/pidgin/files/Pidgin/2.14.4/pidgin-2.14.4.tar.bz2
 RUN wget ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
 
+RUN git clone --depth 1 https://github.com/dvyukov/go-fuzz-corpus
+RUN git clone --depth 1 https://github.com/google/fuzzing
+
 WORKDIR $SRC
 
 COPY build.sh \	

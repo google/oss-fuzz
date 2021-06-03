@@ -75,24 +75,27 @@ cd pidgin-2.14.4
             --enable-nss=no
 make -j$(nproc)
 
-
 # Build fuzzers
 cd libpurple
 cp $SRC/pidgin_xml_fuzzer.c .
 $CC $CFLAGS -DHAVE_CONFIG_H \
   -I. \
   -I.. \
-  -I/src/pidgin-2.14.4/libpurple/protocols/jabber \
   -I/src/glib/glib \
+  -I/src/glib/gmodule \
   -I/src/glib \
+  -I/work/meson/ \
   -I/work/meson/glib \
   -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+  -I/src/pidgin-2.14.4/libpurple/protocols/jabber \
   -I/usr/local/include/libxml2 \
   -c pidgin_xml_fuzzer.c \
   -o pidgin_xml_fuzzer.o
 
 $CC $CXXFLAGS $LIB_FUZZING_ENGINE pidgin_xml_fuzzer.o \
-  -o $OUT/pidgin_xml_fuzzer ./.libs/libpurple.a \
+  -o $OUT/pidgin_xml_fuzzer \
+  /src/pidgin-2.14.4/libpurple/protocols/jabber/.libs/libjabber.a \
+  ./.libs/libpurple.a \
   /src/libxml2/.libs/libxml2.a \
   /work/meson/gobject/libgobject-2.0.a \
   /work/meson/gmodule/libgmodule-2.0.a \
@@ -128,3 +131,6 @@ $CC $CXXFLAGS $LIB_FUZZING_ENGINE pidgin_utils_fuzzer.o \
   /work/meson/glib/libglib-2.0.a \
   /src/libffi-3.2.1/x86_64-unknown-linux-gnu/.libs/libffi.a \
   -lresolv -lz -llzma
+
+zip $OUT/pidgin_xml_fuzzer_seed_corpus.zip $SRC/go-fuzz-corpus/xml/corpus/*
+cp $SRC/fuzzing/dictionaries/xml.dict $OUT/pidgin_xml_fuzzer.dict
