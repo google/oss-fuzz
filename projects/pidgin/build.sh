@@ -102,7 +102,7 @@ $CC $CXXFLAGS $LIB_FUZZING_ENGINE pidgin_xml_fuzzer.o \
 
 
 # utils fuzzer
-cp $SRC/pidging_utils_fuzzer.c .
+cp $SRC/pidgin_utils_fuzzer.c .
 $CC $CFLAGS -DHAVE_CONFIG_H \
   -I. \
   -I.. \
@@ -115,11 +115,11 @@ $CC $CFLAGS -DHAVE_CONFIG_H \
   -I/src/glib/gobject \
   -I/src/glib/gmodule/ \
   -I./include \
-  -c pidging_utils_fuzzer.c \
-  -o pidging_utils_fuzzer.o
+  -c pidgin_utils_fuzzer.c \
+  -o pidgin_utils_fuzzer.o
 
-$CC $CXXFLAGS $LIB_FUZZING_ENGINE pidging_utils_fuzzer.o \
-  -o $OUT/pidging_utils_fuzzer ./.libs/libpurple.a \
+$CC $CXXFLAGS $LIB_FUZZING_ENGINE pidgin_utils_fuzzer.o \
+  -o $OUT/pidgin_utils_fuzzer ./.libs/libpurple.a \
   /src/libxml2/.libs/libxml2.a \
   /src/pidgin-2.14.4/libpurple/protocols/gg/.libs/libgg.a \
   /work/meson/gobject/libgobject-2.0.a \
