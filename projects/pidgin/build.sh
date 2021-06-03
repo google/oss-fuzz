@@ -82,6 +82,7 @@ cp $SRC/pidgin_xml_fuzzer.c .
 $CC $CFLAGS -DHAVE_CONFIG_H \
   -I. \
   -I.. \
+  -I/src/pidgin-2.14.4/libpurple/protocols/jabber \
   -I/src/glib/glib \
   -I/src/glib \
   -I/work/meson/glib \
