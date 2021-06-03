@@ -56,6 +56,15 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     free(tmp2);
   }
 
+  purple_str_to_time(nstr, TRUE, NULL, NULL, NULL);
+
+  gchar *xhtml = NULL;
+  gchar *plaintext = NULL;
+  purple_markup_html_to_xhtml(nstr, &xhtml, &plaintext);
+
+  if (xhtml != NULL) g_free(xhtml);
+  if (plaintext != NULL) g_free(plaintext);
+
   free(nstr);
   return 0;
 }
