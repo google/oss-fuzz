@@ -21,4 +21,4 @@ git apply --ignore-whitespace $SRC/patch.diff
 ./autogen.sh
 ./configure
 make -j$(nproc)
-cp bin/varnishd/esi_parse_fuzzer $OUT/
+cp bin/varnishd/*_fuzzer $OUT/
