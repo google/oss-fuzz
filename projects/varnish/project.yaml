@@ -1,7 +1,7 @@
 homepage: "https://varnish-cache.org/"
-primary_contact: "federico.schwindt@gmail.com"
+language: c++
+primary_contact: "phk@varnish.org"
 auto_ccs:
-  - "phk@varnish.org"
-sanitizers:
-  - address
-  - undefined
+  - "nils.goroll@uplex.de"
+  - "martin@varnish-software.com"
+main_repo: 'https://github.com/varnishcache/varnish-cache'

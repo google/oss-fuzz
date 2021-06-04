@@ -1,0 +1,17 @@
+diff --git a/bin/varnishd/Makefile.am b/bin/varnishd/Makefile.am
+index ce7145e..18d23b3 100644
+--- a/bin/varnishd/Makefile.am
++++ b/bin/varnishd/Makefile.am
+@@ -208,10 +208,11 @@ esi_parse_fuzzer_SOURCES = \
+        cache/cache_esi_parse.c \
+        fuzzers/esi_parse_fuzzer.c
+ esi_parse_fuzzer_CFLAGS = \
+-       @SAN_CFLAGS@ -DNOT_IN_A_VMOD -DTEST_DRIVER -include config.h
++       @SAN_CFLAGS@ -DNOT_IN_A_VMOD -include config.h
+ esi_parse_fuzzer_LDADD = \
+        $(top_builddir)/lib/libvarnish/libvarnish.la \
+        $(top_builddir)/lib/libvgz/libvgz.a
++esi_parse_fuzzer_LDFLAGS = $(LIB_FUZZING_ENGINE)
+ 
+ TESTS = vhp_table_test vhp_decode_test
+ 
