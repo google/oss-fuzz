@@ -1,0 +1,11 @@
+homepage: "https://github.com/libjxl/libjxl"
+language: c++
+primary_contact: "libjxl-security@google.com"
+auto_ccs:
+  - "deymo@google.com"
+  - "veluca@google.com"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/libjxl/libjxl.git'
