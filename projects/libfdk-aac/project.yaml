@@ -1,4 +1,5 @@
 homepage: https://android.googlesource.com/platform/external/aac/
+main_repo: 'https://android.googlesource.com/platform/external/aac/'
 language: c++
 primary_contact: audio-fdk@iis.fraunhofer.de
 auto_ccs:
