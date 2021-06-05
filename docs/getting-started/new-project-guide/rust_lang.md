@@ -63,6 +63,12 @@ similar to how you wrap test-dependencies as follows:
 [dev-dependencies]
 ```
 
+Finally, you can also combine the testing logic you have and the fuzz logic. This
+can be achieved simply by using 
+```rust
+#[cfg(any(test, fuzzing))]
+```
+
 A project that follows this structure is Linkerd2-proxy and the project files can be
 seen [here](https://github.com/google/oss-fuzz/tree/master/projects/linkerd2-proxy).
 
