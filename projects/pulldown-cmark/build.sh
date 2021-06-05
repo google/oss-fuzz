@@ -15,3 +15,6 @@ fi
 
 cargo fuzz build $build_args --debug-assertions --verbose
 cp "fuzz/target/x86_64-unknown-linux-gnu/$build_type/fuzz_pulldown_cmark_read" $OUT/
+
+git clone --depth 1 https://github.com/michelf/mdtest
+zip -r $OUT/fuzz_pulldown_cmark_read_seed_corpus.zip mdtest
