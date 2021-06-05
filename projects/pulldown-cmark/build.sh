@@ -18,3 +18,6 @@ cp "fuzz/target/x86_64-unknown-linux-gnu/$build_type/fuzz_pulldown_cmark_read" $
 
 git clone --depth 1 https://github.com/michelf/mdtest
 zip -r $OUT/fuzz_pulldown_cmark_read_seed_corpus.zip mdtest
+
+git clone --depth 1 https://github.com/commonmark/cmark
+cp cmark/test/fuzzing_dictionary $OUT/fuzz_pulldown_cmark_read.dict
