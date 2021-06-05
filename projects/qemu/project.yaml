@@ -6,9 +6,12 @@ auto_ccs:
   - "pbonzini@redhat.com"
   - "stefanha@redhat.com"
   - "darren.kenny@oracle.com"
+  - "lichenca2020@gmail.com"
 sanitizers:
   - address
   - undefined
-  - memory
+fuzzing_engines:
+  - libfuzzer
 architectures:
   - x86_64
+main_repo: 'https://git.qemu.org/git/qemu.git'

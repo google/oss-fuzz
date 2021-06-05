@@ -8,3 +8,4 @@ sanitizers:
 auto_ccs:
   - jonathan@titanous.com
   - adam.reichold@t-online.de
+main_repo: 'https://anongit.freedesktop.org/git/poppler/poppler.git'

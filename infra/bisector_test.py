@@ -33,6 +33,8 @@ TEST_DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 class BisectIntegrationTests(unittest.TestCase):
   """Class to test the functionality of bisection method."""
 
+  BISECT_TYPE = 'regressed'
+
   def test_bisect_invalid_repo(self):
     """Test the bisection method on a project that does not exist."""
     test_repo = test_repos.INVALID_REPO
@@ -42,9 +44,9 @@ class BisectIntegrationTests(unittest.TestCase):
         sanitizer='address',
         architecture='x86_64')
     with self.assertRaises(ValueError):
-      bisector.bisect(test_repo.old_commit, test_repo.new_commit,
-                      test_repo.test_case_path, test_repo.fuzz_target,
-                      build_data)
+      bisector.bisect(self.BISECT_TYPE, test_repo.old_commit,
+                      test_repo.new_commit, test_repo.test_case_path,
+                      test_repo.fuzz_target, build_data)
 
   def test_bisect(self):
     """Test the bisect method on example projects."""
@@ -55,8 +57,8 @@ class BisectIntegrationTests(unittest.TestCase):
             engine='libfuzzer',
             sanitizer='address',
             architecture='x86_64')
-        result = bisector.bisect(test_repo.old_commit, test_repo.new_commit,
-                                 test_repo.test_case_path,
+        result = bisector.bisect(self.BISECT_TYPE, test_repo.old_commit,
+                                 test_repo.new_commit, test_repo.test_case_path,
                                  test_repo.fuzz_target, build_data)
         self.assertEqual(result.commit, test_repo.intro_commit)
 

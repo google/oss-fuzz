@@ -1,0 +1,14 @@
+homepage: "https://github.com/yhirose/cpp-httplib"
+language: c++
+primary_contact: "yuji.hirose.bug@gmail.com"
+auto_ccs :
+  - "cpp-httplib-oss-fuzz@googlegroups.com"
+  - "omkarjadhav@google.com"
+  - "hlivingstone@google.com"
+  - "kalaskar@google.com"
+  - "ankitlohia@google.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+main_repo: 'https://github.com/yhirose/cpp-httplib.git'

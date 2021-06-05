@@ -14,12 +14,5 @@
 # limitations under the License.
 #
 ################################################################################
-
-$CXX $CXXFLAGS -std=c++11 -I. \
-    $SRC/stb/tests/stb_png_read_fuzzer.cpp \
-    -o $OUT/stb_png_read_fuzzer $LIB_FUZZING_ENGINE
-
-find $SRC/stb/tests/pngsuite -name "*.png" | \
-     xargs zip $OUT/stb_png_read_fuzzer_seed_corpus.zip
-
-cp $SRC/stb/tests/stb_png.dict $OUT/stb_png_read_fuzzer.dict
+# Run the OSS-Fuzz script in the project
+$SRC/stb/tests/ossfuzz.sh

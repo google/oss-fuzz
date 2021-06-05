@@ -17,3 +17,4 @@ vendor_ccs:
 sanitizers:
   - address
   - undefined
+main_repo: 'https://github.com/freetype/freetype2-testing.git'

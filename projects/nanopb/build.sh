@@ -15,38 +15,6 @@
 #
 ################################################################################
 
-wget "https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh"
-bash "Anaconda3-2020.02-Linux-x86_64.sh" -b
-export PATH=~/anaconda3/bin:$PATH
-conda install protobuf -y
-pip3 install grpcio-tools
-
-cd $SRC/nanopb/tests
-
-# Build seed corpus.
-# Generating it here ensures it will contain all of the fields in the AllTypes
-# test case. The generators are built without fuzzing instrumentation.
-rm -rf build
-scons build/alltypes/encode_alltypes build/fuzztest/generate_message
-mkdir fuzztest_seed_corpus
-build/alltypes/encode_alltypes 0 > fuzztest_seed_corpus/alltypes0
-build/alltypes/encode_alltypes 1 > fuzztest_seed_corpus/alltypes1
-build/alltypes/encode_alltypes 2 > fuzztest_seed_corpus/alltypes2
-build/fuzztest/generate_message $(date +%s) > fuzztest_seed_corpus/rndmsg 2>/dev/null
-for f in fuzztest_seed_corpus/*; do
-    mv $f fuzztest_seed_corpus/$(sha1sum $f | cut -f 1 -d ' ')
-done
-zip -r "$OUT/fuzztest_seed_corpus.zip" fuzztest_seed_corpus
-
-# Build the fuzz testing stub with instrumentation
-rm -rf build
-scons CC="$CC" CXX="$CXX" LINK="$CXX" \
-      CCFLAGS="-Wall -Wextra -g -DLLVMFUZZER $CFLAGS" \
-      CXXFLAGS="-Wall -Wextra -g -DLLVMFUZZER $CXXFLAGS" \
-      NODEFARGS="1" \
-      LINKFLAGS="-std=c++11 $CXXFLAGS" \
-      LINKLIBS="$LIB_FUZZING_ENGINE" build/fuzztest/fuzztest
-
-cp build/fuzztest/fuzztest "$OUT/fuzztest"
-
+# Build script is integrated to nanopb repository.
+source $SRC/nanopb/tests/fuzztest/ossfuzz.sh
 

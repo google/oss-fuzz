@@ -75,37 +75,44 @@ class ProjectYamlChecker:
   SECTIONS_AND_CONSTANTS = {
       'sanitizers': {'address', 'none', 'memory', 'undefined', 'dataflow'},
       'architectures': {'i386', 'x86_64'},
-      'fuzzing_engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow'},
+      'fuzzing_engines': {'afl', 'libfuzzer', 'honggfuzz', 'dataflow', 'none'},
   }
 
   # Note: this list must be updated when we allow new sections.
   VALID_SECTION_NAMES = [
       'architectures',
       'auto_ccs',
+      'blackbox',
+      'builds_per_day',
       'coverage_extra_args',
       'disabled',
       'fuzzing_engines',
+      'help_url',
       'homepage',
+      'language',
+      'labels',  # For internal use only, hard to lint as it uses fuzzer names.
+      'main_repo',
       'primary_contact',
+      'run_tests',
       'sanitizers',
+      'selective_unpack',
       'vendor_ccs',
       'view_restrictions',
-      'language',
-      'help_url',
-      'labels',  # For internal use only, hard to lint as it uses fuzzer names.
-      'selective_unpack',
   ]
 
   LANGUAGES_SUPPORTED = [
       'c',
       'c++',
       'go',
+      'jvm',
+      'python',
       'rust',
+      'swift',
   ]
 
   # Note that some projects like boost only have auto-ccs. However, forgetting
   # primary contact is probably a mistake.
-  REQUIRED_SECTIONS = ['primary_contact']
+  REQUIRED_SECTIONS = ['primary_contact', 'main_repo']
 
   def __init__(self, filename):
     self.filename = filename
@@ -125,6 +132,7 @@ class ProjectYamlChecker:
         self.check_valid_section_names,
         self.check_valid_emails,
         self.check_valid_language,
+        self.check_dataflow,
     ]
     for check_function in checks:
       check_function()
@@ -139,6 +147,25 @@ class ProjectYamlChecker:
     self.success = False
     print('Error in {filename}: {message}'.format(filename=self.filename,
                                                   message=message))
+
+  def check_dataflow(self):
+    """Checks that if "dataflow" is specified in "fuzzing_engines", it is also
+    specified in "sanitizers", and that if specified in "sanitizers", it is also
+    specified in "fuzzing_engines"."""
+    engines = self.data.get('fuzzing_engines', [])
+    dfsan_engines = 'dataflow' in engines
+    sanitizers = self.data.get('sanitizers', [])
+    dfsan_sanitizers = 'dataflow' in sanitizers
+
+    if dfsan_engines and not dfsan_sanitizers:
+      self.error('"dataflow" only specified in "fuzzing_engines" must also be '
+                 'specified in "sanitizers" or in neither.')
+      return
+
+    if dfsan_sanitizers and not dfsan_engines:
+      self.error('"dataflow" only specified in "sanitizers" must also be '
+                 'specified in "fuzzing_engines" or in neither.')
+      return
 
   def check_project_yaml_constants(self):
     """Check that certain sections only have certain constant values."""
@@ -189,7 +216,7 @@ class ProjectYamlChecker:
     if auto_ccs:
       email_addresses.extend(auto_ccs)
 
-    # Sanity check them.
+    # Check that email addresses seem normal.
     for email_address in email_addresses:
       if '@' not in email_address or '.' not in email_address:
         self.error(email_address + ' is an invalid email address.')
@@ -282,21 +309,15 @@ def bool_to_returncode(success):
   return 1
 
 
-def is_python(path):
+def is_nonfuzzer_python(path):
   """Returns True if |path| ends in .py."""
-  return os.path.splitext(path)[1] == '.py'
+  return os.path.splitext(path)[1] == '.py' and '/projects/' not in path
 
 
-def lint(paths):
-  """Run python's linter on |paths| if it is a python file. Return False if it
-  fails linting."""
-  paths = [path for path in paths if is_python(path)]
-  if not paths:
-    return True
+def lint(_=None):
+  """Run python's linter on infra. Return False if it fails linting."""
 
-  command = ['python3', '-m', 'pylint', '-j', '0']
-  command.extend(paths)
-
+  command = ['python3', '-m', 'pylint', '-j', '0', 'infra']
   returncode = subprocess.run(command, check=False).returncode
   return returncode == 0
 
@@ -305,7 +326,7 @@ def yapf(paths, validate=True):
   """Do yapf on |path| if it is Python file. Only validates format if
   |validate| otherwise, formats the file. Returns False if validation
   or formatting fails."""
-  paths = [path for path in paths if is_python(path)]
+  paths = [path for path in paths if is_nonfuzzer_python(path)]
   if not paths:
     return True
 
@@ -319,28 +340,84 @@ def yapf(paths, validate=True):
 
 def get_changed_files():
   """Return a list of absolute paths of files changed in this git branch."""
-  # FIXME: This doesn't work if branch is behind master.
-  diff_command = ['git', 'diff', '--name-only', 'FETCH_HEAD']
-  return [
-      os.path.abspath(path)
-      for path in subprocess.check_output(diff_command).decode().splitlines()
-      if os.path.isfile(path)
+  branch_commit_hash = subprocess.check_output(
+      ['git', 'merge-base', 'FETCH_HEAD', 'origin/HEAD']).strip().decode()
+
+  diff_commands = [
+      # Return list of modified files in the commits on this branch.
+      ['git', 'diff', '--name-only', branch_commit_hash + '..'],
+      # Return list of modified files from uncommitted changes.
+      ['git', 'diff', '--name-only']
   ]
 
+  changed_files = set()
+  for command in diff_commands:
+    file_paths = subprocess.check_output(command).decode().splitlines()
+    for file_path in file_paths:
+      if not os.path.isfile(file_path):
+        continue
+      changed_files.add(file_path)
+  print('Changed files: {changed_files}'.format(
+      changed_files=' '.join(changed_files)))
+  return [os.path.abspath(f) for f in changed_files]
 
-def run_tests():
-  """Run all unit tests in directories that are different from HEAD."""
-  changed_dirs = set()
-  for file in get_changed_files():
-    changed_dirs.add(os.path.dirname(file))
 
-  suite_list = []
-  for change_dir in changed_dirs:
-    suite_list.append(unittest.TestLoader().discover(change_dir,
-                                                     pattern='*_test.py'))
-  full_suite = unittest.TestSuite(suite_list)
-  result = unittest.TextTestRunner().run(full_suite)
-  return not result.failures
+def run_build_tests():
+  """Runs build tests because they can't be run in parallel."""
+  suite_list = [
+      unittest.TestLoader().discover(os.path.join(_SRC_ROOT, 'infra', 'build'),
+                                     pattern='*_test.py'),
+  ]
+  suite = unittest.TestSuite(suite_list)
+  print('Running build tests.')
+  result = unittest.TextTestRunner().run(suite)
+  return not result.failures and not result.errors
+
+
+def run_nonbuild_tests(parallel):
+  """Run all tests but build tests. Do it in parallel if |parallel|. The reason
+  why we exclude build tests is because they use an emulator that prevents them
+  from being used in parallel."""
+  # We look for all project directories because otherwise pytest won't run tests
+  # that are not in valid modules (e.g. "base-images").
+  relevant_dirs = set()
+  all_files = get_all_files()
+  for file_path in all_files:
+    directory = os.path.dirname(file_path)
+    relevant_dirs.add(directory)
+
+  # Use ignore-glob because ignore doesn't seem to work properly with the way we
+  # pass directories to pytest.
+  command = [
+      'pytest',
+      # Test errors with error: "ModuleNotFoundError: No module named 'apt'.
+      '--ignore-glob=infra/base-images/base-sanitizer-libs-builder/*',
+      '--ignore-glob=infra/build/*',
+  ]
+  if parallel:
+    command.extend(['-n', 'auto'])
+  command += list(relevant_dirs)
+  print('Running non-build tests.')
+  return subprocess.run(command, check=False).returncode == 0
+
+
+def run_tests(_=None, parallel=False, skip_build_tests=False):
+  """Runs all unit tests."""
+  nonbuild_success = run_nonbuild_tests(parallel)
+
+  if skip_build_tests:
+    print('Skipping build tests as specified.')
+    return nonbuild_success
+
+  build_success = run_build_tests()
+  return nonbuild_success and build_success
+
+
+def get_all_files():
+  """Returns a list of absolute paths of files in this repo."""
+  get_all_files_command = ['git', 'ls-files']
+  output = subprocess.check_output(get_all_files_command).decode().splitlines()
+  return [os.path.abspath(path) for path in output if os.path.isfile(path)]
 
 
 def main():
@@ -350,30 +427,52 @@ def main():
   parser.add_argument('command',
                       choices=['format', 'lint', 'license', 'infra-tests'],
                       nargs='?')
+  parser.add_argument('-a',
+                      '--all-files',
+                      action='store_true',
+                      help='Run presubmit check(s) on all files',
+                      default=False)
+  parser.add_argument('-p',
+                      '--parallel',
+                      action='store_true',
+                      help='Run tests in parallel.',
+                      default=False)
+  parser.add_argument('-s',
+                      '--skip-build-tests',
+                      action='store_true',
+                      help='Skip build tests which are slow and must run '
+                      'sequentially.',
+                      default=False)
   args = parser.parse_args()
 
-  changed_files = get_changed_files()
+  if args.all_files:
+    relevant_files = get_all_files()
+  else:
+    relevant_files = get_changed_files()
 
   os.chdir(_SRC_ROOT)
 
   # Do one specific check if the user asked for it.
   if args.command == 'format':
-    success = yapf(changed_files, False)
+    success = yapf(relevant_files, False)
     return bool_to_returncode(success)
 
   if args.command == 'lint':
-    success = lint(changed_files)
+    success = lint()
     return bool_to_returncode(success)
 
   if args.command == 'license':
-    success = check_license(changed_files)
+    success = check_license(relevant_files)
     return bool_to_returncode(success)
 
   if args.command == 'infra-tests':
-    return bool_to_returncode(run_tests())
+    success = run_tests(relevant_files,
+                        parallel=args.parallel,
+                        skip_build_tests=args.skip_build_tests)
+    return bool_to_returncode(success)
 
   # Do all the checks (but no tests).
-  success = do_checks(changed_files)
+  success = do_checks(relevant_files)
 
   return bool_to_returncode(success)
 

@@ -1,0 +1,15 @@
+homepage: "https://github.com/haproxy/haproxy"
+primary_contact: "adam@adalogics.com"
+language: c++
+auto_ccs:
+  - "david@adalogics.com"
+  - "timwolla@googlemail.com"
+  - "willy@1wt.eu"
+  - "tribuslukas58@gmail.com"
+  - "christopher.faulet@gmail.com"
+sanitizers:
+  - address
+
+# Bug reports are public by default:
+view_restrictions: none
+main_repo: 'https://github.com/haproxy/haproxy'

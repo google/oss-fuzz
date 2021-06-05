@@ -1,0 +1,12 @@
+homepage: "https://github.com/libsndfile/libsndfile"
+primary_contact: "evpobr@gmail.com"
+language: c
+auto_ccs:
+  - "cmeister2@gmail.com"
+  - "erikd@mega-nerd.com"
+sanitizers:
+  - address
+  - undefined
+  - memory
+coverage_extra_args: -ignore-filename-regex=/usr/lib/jvm/.*
+main_repo: 'https://github.com/libsndfile/libsndfile.git'

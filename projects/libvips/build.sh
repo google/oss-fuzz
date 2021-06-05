@@ -16,6 +16,7 @@
 ################################################################################
 
 export PKG_CONFIG_PATH=/work/lib/pkgconfig
+export LDFLAGS="$CXXFLAGS"
 
 # libz
 pushd $SRC/zlib
@@ -28,7 +29,8 @@ popd
 pushd $SRC/libexif
 autoreconf -fi
 ./configure \
-  --enable-shared=no \
+  --enable-static \
+  --disable-shared \
   --disable-docs \
   --disable-dependency-tracking \
   --prefix=$WORK
@@ -36,16 +38,63 @@ make -j$(nproc)
 make install
 popd
 
+# lcms
+pushd $SRC/lcms
+./configure \
+  --enable-static \
+  --disable-shared \
+  --disable-dependency-tracking \
+  --prefix=$WORK
+make -j$(nproc)
+make install
+popd
+
+# aom
+pushd $SRC/aom
+mkdir -p build/linux
+cd build/linux
+cmake -G "Unix Makefiles" \
+  -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
+  -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DCMAKE_INSTALL_PREFIX=$WORK -DCMAKE_INSTALL_LIBDIR=lib \
+  -DENABLE_SHARED=FALSE -DCONFIG_PIC=1 \
+  -DENABLE_EXAMPLES=0 -DENABLE_DOCS=0 -DENABLE_TESTS=0 \
+  -DCONFIG_SIZE_LIMIT=1 \
+  -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 \
+  -DDO_RANGE_CHECK_CLAMP=1 \
+  -DAOM_MAX_ALLOCABLE_MEMORY=536870912 \
+  -DAOM_TARGET_CPU=generic \
+  ../../
+make clean
+make -j$(nproc)
+make install
+popd
+
+# libheif
+pushd $SRC/libheif
+autoreconf -fi
+./configure \
+  --disable-shared \
+  --enable-static \
+  --disable-examples \
+  --disable-go \
+  --prefix=$WORK \
+  CPPFLAGS=-I$WORK/include
+make clean
+make -j$(nproc)
+make install
+popd
+
 # libjpeg-turbo
 pushd $SRC/libjpeg-turbo
-cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC:bool=on
+cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE -DWITH_TURBOJPEG=FALSE
 make -j$(nproc)
 make install
 popd
 
 # libpng
 pushd $SRC/libpng
-sed -ie "s/option WARNING /option WARNING disabled/" scripts/pnglibconf.dfa
+sed -ie "s/option WARNING /& disabled/" scripts/pnglibconf.dfa
 autoreconf -fi
 ./configure \
   --prefix=$WORK \
@@ -55,9 +104,13 @@ make -j$(nproc)
 make install
 popd
 
-# libgif
-pushd $SRC/libgif
-make libgif.a libgif.so install-include install-lib OFLAGS="-O2" PREFIX=$WORK
+# libspng
+pushd $SRC/libspng
+cmake . -DCMAKE_INSTALL_PREFIX=$WORK -DSPNG_STATIC=TRUE -DSPNG_SHARED=FALSE -DZLIB_ROOT=$WORK
+make -j$(nproc)
+make install
+# Fix pkg-config file of libspng
+sed -i'.bak' "s/-lspng/&_static/" $WORK/lib/pkgconfig/libspng.pc
 popd
 
 # libwebp
@@ -91,9 +144,47 @@ make -j$(nproc)
 make install
 popd
 
+# jpeg-xl (libjxl)
+pushd $SRC/libjxl
+sed -i'.bak' "/add_subdirectory(tools)/d" CMakeLists.txt
+# Don't overwrite our linker flags
+sed -i'.bak' "/set(CMAKE_EXE_LINKER_FLAGS/{N;d;}" CMakeLists.txt
+cmake -G "Unix Makefiles" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER=$CC \
+  -DCMAKE_CXX_COMPILER=$CXX \
+  -DCMAKE_C_FLAGS="$CFLAGS" \
+  -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
+  -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
+  -DCMAKE_INSTALL_PREFIX="$WORK" \
+  -DCMAKE_THREAD_LIBS_INIT="-lpthread" \
+  -DCMAKE_USE_PTHREADS_INIT=1 \
+  -DBUILD_SHARED_LIBS=0 \
+  -DBUILD_TESTING=0 \
+  -DJPEGXL_STATIC=1 \
+  -DJPEGXL_ENABLE_FUZZERS=0 \
+  -DJPEGXL_ENABLE_MANPAGES=0 \
+  -DJPEGXL_ENABLE_BENCHMARK=0 \
+  -DJPEGXL_ENABLE_EXAMPLES=0 \
+  -DJPEGXL_ENABLE_SKCMS=0 \
+  .
+make -j$(nproc)
+make install
+# libbrotli-dev package is too old in Ubuntu 16.04, use jpeg-xl version
+cp -r third_party/brotli/c/include/brotli $WORK/include
+cp third_party/brotli/*.a $WORK/lib
+cp third_party/brotli/*.pc $WORK/lib/pkgconfig
+# Fix pkg-config files of libbrotli
+sed -i'.bak' "s/-lbrotlienc/&-static/" $WORK/lib/pkgconfig/libbrotlienc.pc
+sed -i'.bak' "s/-lbrotlidec/&-static/" $WORK/lib/pkgconfig/libbrotlidec.pc
+sed -i'.bak' "s/-lbrotlicommon/&-static/" $WORK/lib/pkgconfig/libbrotlicommon.pc
+popd
+
 # libvips
-./autogen.sh \
+PKG_CONFIG="pkg-config --static" ./autogen.sh \
   --disable-shared \
+  --disable-modules \
   --disable-gtk-doc \
   --disable-gtk-doc-html \
   --disable-dependency-tracking \
@@ -120,17 +211,27 @@ for fuzzer in fuzz/*_fuzzer.cc; do
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
     $WORK/lib/libvips.a \
     $WORK/lib/libexif.a \
-    $WORK/lib/libturbojpeg.a \
+    $WORK/lib/liblcms2.a \
+    $WORK/lib/libjpeg.a \
     $WORK/lib/libpng.a \
+    $WORK/lib/libspng_static.a \
     $WORK/lib/libz.a \
-    $WORK/lib/libgif.a \
     $WORK/lib/libwebpmux.a \
     $WORK/lib/libwebpdemux.a \
     $WORK/lib/libwebp.a \
     $WORK/lib/libtiff.a \
+    $WORK/lib/libheif.a \
+    $WORK/lib/libaom.a \
+    $WORK/lib/libjxl.a \
+    $WORK/lib/libjxl_threads.a \
+    $WORK/lib/libhwy.a \
+    $WORK/lib/libbrotlienc-static.a \
+    $WORK/lib/libbrotlidec-static.a \
+    $WORK/lib/libbrotlicommon-static.a \
     $LIB_FUZZING_ENGINE \
     -Wl,-Bstatic \
     -lfftw3 -lgmodule-2.0 -lgio-2.0 -lgobject-2.0 -lffi -lglib-2.0 -lpcre -lexpat \
+    -lresolv -lsepol -lselinux \
     -Wl,-Bdynamic -pthread
   ln -sf "seed_corpus.zip" "$OUT/${target}_seed_corpus.zip"
 done

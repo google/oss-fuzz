@@ -12,6 +12,7 @@ auto_ccs:
     - "agl@google.com"
     - "davidben@google.com"
     - "svaldez@google.com"
-    - "support-mbedtls@arm.com"
+    - "mbed-tls-security@lists.trustedfirmware.org"
     - "libmpdec@gmail.com"
     - "richard@levitte.org"
+main_repo: 'https://github.com/guidovranken/bignum-fuzzer'

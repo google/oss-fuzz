@@ -15,18 +15,13 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER konstantin@soramitsu.co.jp
   
 RUN set -e; \
     apt-get update && \
     apt-get -y --no-install-recommends install libicu-dev \
         apt-utils git curl wget unzip tar; \
     apt-get -y clean
-     
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.14.4/cmake-3.14.4-Linux-x86_64.tar.gz && tar -xzvf cmake-3.14.4-Linux-x86_64.tar.gz && cp -a cmake-3.14.4-Linux-x86_64/bin/. /usr/bin/ && cp -a cmake-3.14.4-Linux-x86_64/share/. /usr/share/
-  
-  
-# Get *your* source code here.
+
 RUN git clone --depth 1 --single-branch --branch master https://github.com/hyperledger/iroha.git
 
 WORKDIR iroha

@@ -4,3 +4,8 @@ primary_contact: "vjulien@openinfosecfoundation.org"
 auto_ccs:
 - "jish@openinfosecfoundation.org"
 - "p.antoine@catenacyber.fr"
+sanitizers:
+  - address
+  - memory
+  - undefined
+main_repo: 'https://github.com/OISF/suricata.git'

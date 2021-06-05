@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mhl@fb.com
 
 # Install packages we need to build dependencies
 RUN apt-get update && \
@@ -30,20 +29,6 @@ RUN apt-get update && \
     g++ \
     python \
     python-dev
-
-# We need a newer version of CMake than is available in the base builder image
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.15.2/cmake-3.15.2.tar.gz && \
-    tar xzf cmake-3.15.2.tar.gz && \
-    cd cmake-3.15.2 && \
-    export CC=clang && \
-    export CXX=clang++ && \
-    CXXFLAGS="" && \
-    CFLAGS="" && \
-    ./bootstrap && \
-    make -j$(nproc) && \
-    make install && \
-    cd .. && \
-    rm -rf cmake-3.15.2
 
 # Install and build boost from source so we can have it use libc++
 RUN wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz && \
@@ -125,6 +110,24 @@ RUN wget https://github.com/fmtlib/fmt/archive/6.0.0.tar.gz && \
     sudo make install && \
     cd ../.. && \
     rm -rf fmt-6.0.0
+    
+# Build and install `gperf` (>= 3.1)
+RUN wget http://ftp.gnu.org/pub/gnu/gperf/gperf-3.1.tar.gz && \
+    rm -rf gperf-3.1 | true && \
+    tar xzvf gperf-3.1.tar.gz && \
+    cd gperf-3.1 && \
+    export CC=gcc && \
+    export CXX=g++ && \
+    export CXXFLAGS="" && \
+    export CFLAGS_TMP="$CFLAGS" && \
+    unset CFLAGS && \
+    ./configure && \
+    make -j1 V=s && \
+    sudo make install && \
+    export CFLAGS="$CFLAGS_TMP" && \
+    unset CFLAGS_TMP && \
+    cd .. && \
+    rm -rf gperf-3.1
 
 # Replicate `install-dependencies` from the proxygen `build.sh` script
 RUN apt-get install -y \
@@ -137,7 +140,6 @@ RUN apt-get install -y \
     pkg-config \
     libssl-dev \
     libcap-dev \
-    gperf \
     libevent-dev \
     libtool \
     libjemalloc-dev \

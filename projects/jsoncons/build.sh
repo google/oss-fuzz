@@ -14,13 +14,8 @@
 # limitations under the License.
 #
 ################################################################################
+cd jsoncons/fuzzers
 
-cd jsoncons
-$CXX ./fuzzers/fuzz_parse.cpp -I./include $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_parse
-$CXX ./fuzzers/fuzz_csv.cpp -I./include $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_csv
-
-# With third party
-$CXX ./fuzzers/fuzz_cbor.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_cbor
-$CXX ./fuzzers/fuzz_bson.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_bson
-$CXX ./fuzzers/fuzz_msgpack.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_msgpack
-$CXX ./fuzzers/fuzz_ubjson.cpp -I./include -I./third_party $CXXFLAGS $LIB_FUZZING_ENGINE -o $OUT/fuzz_ubjson
+# Ensure script is executable
+chmod +x ./build_fuzzers.sh
+./build_fuzzers.sh

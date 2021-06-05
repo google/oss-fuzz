@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER oscar.mira@adevinta.com
 RUN apt-get update && apt-get install -y \
   curl \
   automake \
@@ -26,16 +25,22 @@ RUN apt-get update && apt-get install -y \
   libfftw3-dev \
   libexpat1-dev \
   libffi-dev \
+  libselinux1-dev \
   glib2.0-dev
 RUN mkdir afl-testcases
 RUN curl https://lcamtuf.coredump.cx/afl/demo/afl_testcases.tgz | tar xzC afl-testcases
 RUN git clone --depth 1 https://github.com/libvips/libvips
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/libexif/libexif
+RUN git clone --depth 1 https://github.com/mm2/Little-CMS.git lcms
 RUN git clone --depth 1 https://github.com/libjpeg-turbo/libjpeg-turbo
 RUN git clone --depth 1 https://github.com/glennrp/libpng.git
-RUN git clone --depth 1 https://git.code.sf.net/p/giflib/code libgif
+RUN git clone --depth 1 https://github.com/randy408/libspng.git
 RUN git clone --depth 1 https://chromium.googlesource.com/webm/libwebp
 RUN git clone --depth 1 https://gitlab.com/libtiff/libtiff 
+RUN git clone --depth 1 https://aomedia.googlesource.com/aom
+RUN git clone --depth 1 https://github.com/strukturag/libheif
+RUN git clone --depth 1 --recursive https://github.com/libjxl/libjxl.git
+
 WORKDIR libvips
 COPY build.sh $SRC/

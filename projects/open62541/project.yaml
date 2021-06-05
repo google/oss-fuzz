@@ -9,3 +9,4 @@ sanitizers:
 - address
 - undefined
 - memory
+main_repo: 'https://github.com/open62541/open62541.git'

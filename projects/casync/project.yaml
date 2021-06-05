@@ -9,3 +9,4 @@ auto_ccs:
   - zbyszek@in.waw.pl
   - poettering@gmail.com
   - fsumsal@redhat.com
+main_repo: 'https://github.com/systemd/casync'

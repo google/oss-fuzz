@@ -15,20 +15,64 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-clang
-RUN apt-get install -y git \
-    subversion \
-    jq \
-    python3 \
-    zip \
-    make \
-    binutils-dev \
-    libc6-dev-i386
+
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:git-core/ppa && \
+    apt-get update && \
+    apt-get install -y \
+        binutils-dev \
+        build-essential \
+        curl \
+        git \
+        jq \
+        libc6-dev-i386 \
+        patchelf \
+        rsync \
+        subversion \
+        zip
+
+# Build and install latest Python 3 (3.8.3).
+ENV PYTHON_VERSION 3.8.3
+RUN export PYTHON_DEPS="\
+        zlib1g-dev \
+        libncurses5-dev \
+        libgdbm-dev \
+        libnss3-dev \
+        libssl-dev \
+        libsqlite3-dev \
+        libreadline-dev \
+        libffi-dev \
+        libbz2-dev \
+        liblzma-dev" && \
+    unset CFLAGS CXXFLAGS && \
+    apt-get install -y $PYTHON_DEPS && \
+    cd /tmp && \
+    curl -O https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tar.xz && \
+    tar -xvf Python-$PYTHON_VERSION.tar.xz && \
+    cd Python-$PYTHON_VERSION && \
+    ./configure --enable-optimizations --enable-shared && \
+    make -j install && \
+    ldconfig && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    cd .. && \
+    rm -r /tmp/Python-$PYTHON_VERSION.tar.xz /tmp/Python-$PYTHON_VERSION && \
+    rm -rf /usr/local/lib/python3.8/test && \
+    apt-get remove -y $PYTHON_DEPS # https://github.com/google/oss-fuzz/issues/3888
+
+# Install latest atheris for python fuzzing, pyinstaller for fuzzer packaging,
+# six for Bazel rules.
+RUN unset CFLAGS CXXFLAGS && pip3 install -v --no-cache-dir \
+    atheris pyinstaller==4.1 six==1.15.0 && \
+    rm -rf /tmp/*
 
 # Download and install the latest stable Go.
-ADD https://storage.googleapis.com/golang/getgo/installer_linux $SRC/
-RUN chmod +x $SRC/installer_linux && \
-    SHELL="bash" $SRC/installer_linux && \
-    rm $SRC/installer_linux
+RUN cd /tmp && \
+    curl -O https://storage.googleapis.com/golang/getgo/installer_linux && \
+    chmod +x ./installer_linux && \
+    SHELL="bash" ./installer_linux && \
+    rm -rf ./installer_linux
 
 # Set up Golang environment variables (copied from /root/.bash_profile).
 ENV GOPATH /root/go
@@ -41,10 +85,46 @@ ENV PATH $PATH:/root/.go/bin:$GOPATH/bin
 RUN go get -u github.com/mdempsky/go114-fuzz-build && \
     ln -s $GOPATH/bin/go114-fuzz-build $GOPATH/bin/go-fuzz
 
-# DEPRECATED go-fuzz implementation - github.com/dvyukov/go-fuzz-build based on
-# source-to-source transformation.
-RUN go get golang.org/x/tools/go/packages
-RUN go get github.com/dvyukov/go-fuzz/go-fuzz-build
+# Install Rust and cargo-fuzz for libFuzzer instrumentation.
+ENV CARGO_HOME=/rust
+ENV RUSTUP_HOME=/rust/rustup
+ENV PATH=$PATH:/rust/bin
+RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly --profile=minimal
+RUN cargo install cargo-fuzz && rm -rf /rust/registry
+# Needed to recompile rust std library for MSAN
+RUN rustup component add rust-src --toolchain nightly
+# Set up custom environment variable for source code copy for coverage reports
+ENV OSSFUZZ_RUSTPATH /rust
+
+# Install Bazel through Bazelisk, which automatically fetches the latest Bazel version.
+ENV BAZELISK_VERSION 1.7.4
+RUN curl -L https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-amd64 -o /usr/local/bin/bazel && \
+    chmod +x /usr/local/bin/bazel
+
+# Install OpenJDK 15 and trim its size by removing unused components.
+ENV JAVA_HOME=/usr/lib/jvm/java-15-openjdk-amd64
+ENV JVM_LD_LIBRARY_PATH=$JAVA_HOME/lib/server
+ENV PATH=$PATH:$JAVA_HOME/bin
+RUN cd /tmp && \
+    curl -L -O https://download.java.net/java/GA/jdk15.0.2/0d1cfde4252546c6931946de8db48ee2/7/GPL/openjdk-15.0.2_linux-x64_bin.tar.gz && \
+    mkdir -p $JAVA_HOME && \
+    tar -xzv --strip-components=1 -f openjdk-15.0.2_linux-x64_bin.tar.gz --directory $JAVA_HOME && \
+    rm -f openjdk-15.0.2_linux-x64_bin.tar.gz && \
+    rm -rf $JAVA_HOME/jmods $JAVA_HOME/lib/src.zip
+
+# Install the latest Jazzer in $OUT.
+# jazzer_api_deploy.jar is required only at build-time, the agent and the
+# drivers are copied to $OUT as they need to be present on the runners.
+ENV JAZZER_API_PATH "/usr/local/lib/jazzer_api_deploy.jar"
+RUN cd $SRC/ && \
+    git clone --depth=1 https://github.com/CodeIntelligenceTesting/jazzer && \
+    cd jazzer && \
+    bazel build --java_runtime_version=localjdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
+        //agent:jazzer_agent_deploy.jar //driver:jazzer_driver //driver:jazzer_driver_asan //agent:jazzer_api_deploy.jar && \
+    cp bazel-bin/agent/jazzer_agent_deploy.jar bazel-bin/driver/jazzer_driver bazel-bin/driver/jazzer_driver_asan /usr/local/bin/ && \
+    cp bazel-bin/agent/jazzer_api_deploy.jar $JAZZER_API_PATH && \
+    rm -rf ~/.cache/bazel ~/.cache/bazelisk && \
+    rm -rf $SRC/jazzer
 
 # Default build flags for various sanitizers.
 ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
@@ -55,6 +135,8 @@ ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-d
 ENV SANITIZER_FLAGS_memory "-fsanitize=memory -fsanitize-memory-track-origins"
 
 ENV SANITIZER_FLAGS_dataflow "-fsanitize=dataflow"
+
+ENV SANITIZER_FLAGS_thread "-fsanitize=thread"
 
 # Do not use any sanitizers in the coverage build.
 ENV SANITIZER_FLAGS_coverage ""
@@ -94,24 +176,28 @@ ENV LIB_FUZZING_ENGINE="/usr/lib/libFuzzingEngine.a"
 # TODO: remove after tpm2 catchup.
 ENV FUZZER_LDFLAGS ""
 
-ENV PRECOMPILED_DIR="/usr/lib/precompiled"
-RUN mkdir $PRECOMPILED_DIR
-
 WORKDIR $SRC
 
-RUN git clone -b stable https://github.com/google/AFL.git afl
+# TODO: switch to -b stable once we can.
+RUN git clone https://github.com/AFLplusplus/AFLplusplus.git aflplusplus && \
+    cd aflplusplus && \
+    git checkout 5997a4fc09163c1baa186f5a9d00c4c8668a72b1
 
-ADD https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz $SRC/
-RUN mkdir honggfuzz && \
+RUN cd $SRC && \
+    curl -L -O https://github.com/google/honggfuzz/archive/oss-fuzz.tar.gz && \
+    mkdir honggfuzz && \
     cd honggfuzz && \
     tar -xzv --strip-components=1 -f $SRC/oss-fuzz.tar.gz && \
-    rm -rf $SRC/oss-fuzz.tar.gz
+    rm -rf examples $SRC/oss-fuzz.tar.gz
 
-COPY compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
-    precompile_honggfuzz srcmap write_labels.py /usr/local/bin/
+COPY cargo compile compile_afl compile_dataflow compile_libfuzzer compile_honggfuzz \
+    compile_go_fuzzer precompile_honggfuzz precompile_afl debug_afl srcmap \
+    write_labels.py bazel_build_fuzz_tests /usr/local/bin/
 
 COPY detect_repo.py /opt/cifuzz/
+COPY ossfuzz_coverage_runner.go $GOPATH
 
 RUN precompile_honggfuzz
+RUN precompile_afl
 
 CMD ["compile"]

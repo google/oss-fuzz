@@ -78,9 +78,9 @@ $ python infra/helper.py build_fuzzers --sanitizer <address/memory/undefined> \
 
 The `sanitizer` used in the report is the value in the
 **Sanitizer** column. It's one of the following:
-  * **address** for AddressSanitizer
-  * **memory** for MemorySanitizer
-  * **undefined** for UndefinedBehaviorSanitizer
+  * **address** for AddressSanitizer.
+  * **memory** for MemorySanitizer.
+  * **undefined** for UndefinedBehaviorSanitizer.
 
 **Note**: The `architecture` argument is only necessary if you want to specify
 `i386` configuration.
@@ -92,6 +92,9 @@ After you build an image and a fuzzer, you can reproduce a bug by running the fo
 ```bash
 $ python infra/helper.py reproduce $PROJECT_NAME <fuzz_target_name> <testcase_path>
 ```
+
+**Note**: The reproduce command only supports `libfuzzer` fuzzing engine. Crashes
+found with other fuzzing engines should be reproducible with `libfuzzer` too.
 
 For example, to build the [libxml2](https://github.com/google/oss-fuzz/tree/master/projects/libxml2)
 project with UndefinedBehaviorSanitizer (`undefined`) instrumentation and

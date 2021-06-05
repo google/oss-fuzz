@@ -7,6 +7,8 @@ auto_ccs:
   - "sebastian.rasmussen@artifex.com"
   - "julians.artifex@gmail.com"
   - "chris.liddell@artifex.com"
+  - "kdlee@chromium.org"
 sanitizers:
   - address
   - memory
+main_repo: 'git://git.ghostscript.com/ghostpdl.git'

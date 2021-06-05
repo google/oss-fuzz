@@ -15,11 +15,8 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER boxerab@gmail.com
-RUN apt-get update && apt-get install -y make wget
-RUN wget --no-check-certificate -qO - https://cmake.org/files/v3.17/cmake-3.17.0-Linux-x86_64.tar.gz | tar -xz
-RUN mv cmake-3.17.0-Linux-x86_64 cmake-install
+
 RUN git clone --depth 1 https://github.com/GrokImageCompression/grok.git grok
-RUN git clone --depth 1 https://github.com/GrokImageCompression/grok-test-data.git grok/data
+RUN git clone --depth 1 https://github.com/GrokImageCompression/grok-test-data.git grok-data
 WORKDIR grok
 COPY build.sh $SRC/

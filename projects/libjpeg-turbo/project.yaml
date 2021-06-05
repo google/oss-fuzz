@@ -1,5 +1,6 @@
-homepage: "https://github.com/libjpeg-turbo/libjpeg-turbo"
-language: c++
+homepage: "https://libjpeg-turbo.org"
+language: c
+primary_contact: "drc@virtualgl.org"
 vendor_ccs:
   - "aosmond@mozilla.com"
   - "tnikkel@mozilla.com"
@@ -11,3 +12,4 @@ sanitizers:
 architectures:
   - x86_64
   - i386
+main_repo: 'https://github.com/libjpeg-turbo/libjpeg-turbo'

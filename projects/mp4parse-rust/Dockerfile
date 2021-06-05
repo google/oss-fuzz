@@ -15,14 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER mgregan@mozilla.com
 RUN apt-get update && apt-get install -y make autoconf automake libtool curl cmake python llvm-dev libclang-dev clang
 
-ENV CARGO_HOME=/rust RUSTUP_HOME=/rust/rustup PATH=$PATH:/rust/bin
-RUN curl https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
-RUN cargo install cargo-fuzz
-
-RUN git clone --depth 1 https://github.com/mozilla/mp4parse-rust mp4parse-rust
+RUN git clone --depth 1 --recursive https://github.com/mozilla/mp4parse-rust mp4parse-rust
 WORKDIR mp4parse-rust
 
-COPY build.sh $SRC/
+COPY build.sh default.options $SRC/

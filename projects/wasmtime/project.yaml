@@ -5,8 +5,11 @@ auto_ccs:
   - "alex@alexcrichton.com"
   - "till@tillschneidereit.net"
   - "ydelendik@mozilla.com"
+  - "cfallin@gmail.com"
+  - "andrew.s.brown2@gmail.com"
 sanitizers:
   - address
 fuzzing_engines:
   - libfuzzer
 language: rust
+main_repo: 'https://github.com/bytecodealliance/wasmtime'

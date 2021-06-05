@@ -15,9 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER twsmith@mozilla.com
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y autoconf automake autopoint libtool
 RUN git clone --depth 1 https://github.com/hunspell/hunspell.git hunspell
 WORKDIR hunspell

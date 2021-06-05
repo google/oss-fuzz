@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER nigeltao@golang.org
 RUN apt-get update && apt-get install -y wget
 
 # Get Wuffs' first-party code.
@@ -40,6 +39,10 @@ RUN wget -O rapidjson.zip "https://github.com/guidovranken/rapidjson-fuzzers/blo
 RUN mkdir rapidjson_corpus
 RUN unzip -j rapidjson.zip -d rapidjson_corpus
 RUN rm rapidjson.zip
+
+RUN git clone --depth 1 https://github.com/minio/simdjson-fuzz
+RUN mv simdjson-fuzz/corpus/corpus simdjson_corpus
+RUN rm -rf simdjson-fuzz
 
 # Finish.
 

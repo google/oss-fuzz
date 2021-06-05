@@ -10,3 +10,4 @@ fuzzing_engines:
   - honggfuzz
 sanitizers:
  - undefined
+main_repo: 'https://github.com/django/django.git'

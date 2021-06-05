@@ -6,6 +6,10 @@ auto_ccs:
   - "mtklein@google.com"
   - "reed@google.com"
   - "bsalomon@google.com"
+  - "brianosman@google.com"
+  - "johnstiles@google.com"
+  - "ethannicholas@google.com"
+  - "westont@google.com"
 vendor_ccs:
   - "lsalzman@mozilla.com"
   - "twsmith@mozilla.com"
@@ -14,3 +18,5 @@ sanitizers:
  - undefined
  - memory
 help_url: "https://skia.org/dev/testing/fuzz"
+builds_per_day: 4
+main_repo: 'https://skia.googlesource.com/skia.git'

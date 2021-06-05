@@ -56,19 +56,21 @@ CFLAGS="$GNUTLS_CFLAGS" \
 make -j$(nproc)
 make install
 
+cd $SRC/lmdb/libraries/liblmdb
+make -j$(nproc)
+make install
 
 # Compile knot, install fuzzers to $OUT
 
 cd $SRC/knot-dns
+sed -i 's/-llmdb/-Wl,-Bstatic,-llmdb,-Bdynamic/' configure.ac
 autoreconf -if
-
-./configure --with-oss-fuzz=yes --disable-shared --enable-static --disable-daemon --disable-utilities --disable-documentation --disable-fastparser --disable-modules
-
+./configure --with-oss-fuzz=yes --disable-shared --enable-static --disable-daemon --disable-utilities --disable-documentation \
+    --disable-fastparser --disable-modules
 make -j$(nproc)
 cd $SRC/knot-dns/tests-fuzz
 make check
 /bin/bash ../libtool   --mode=install /usr/bin/install -c fuzz_packet fuzz_zscanner fuzz_dname_to_str fuzz_dname_from_str "$OUT"
-
 
 # Set up fuzzing seeds
 

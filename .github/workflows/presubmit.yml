@@ -1,0 +1,35 @@
+name: Presubmit checks
+
+on:
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cancel previous
+        uses: styfle/cancel-workflow-action@0.8.0
+        with:
+          access_token: ${{ github.token }}
+
+      - uses: actions/checkout@v2
+      - run: |  # Needed for git diff to work.
+          git fetch origin master --depth 1
+          git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/master
+
+      - name: Setup python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r infra/ci/requirements.txt
+          pip install -r infra/build/functions/requirements.txt
+
+      - name: Run presubmit checks
+        run: python infra/presubmit.py

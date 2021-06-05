@@ -13,3 +13,4 @@ sanitizers:
 architectures:
  - i386
  - x86_64
+main_repo: 'https://github.com/hunspell/hunspell.git'

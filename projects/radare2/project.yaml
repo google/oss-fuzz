@@ -6,3 +6,4 @@ auto_ccs:
 sanitizers:
   - address
 run_tests: False
+main_repo: 'https://github.com/radare/radare2'

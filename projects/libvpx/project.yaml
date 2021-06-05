@@ -10,3 +10,4 @@ auto_ccs:
 - johannkoenig@google.com
 vendor_ccs:
 - twsmith@mozilla.com
+main_repo: 'https://chromium.googlesource.com/webm/libvpx'

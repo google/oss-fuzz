@@ -1,16 +1,16 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index ce1d1bb05b5..d1d0b04f202 100644
+index 3667900243c..337344e124d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -528,6 +528,7 @@ IF(WITH_JEMALLOC)
-   STRING_APPEND(CMAKE_CXX_FLAGS " -fno-builtin-realloc -fno-builtin-free")
+@@ -597,6 +597,7 @@ IF(WITH_JEMALLOC AND (WITH_TCMALLOC OR WITH_TCMALLOC_DEBUG))
+   MESSAGE(FATAL_ERROR "Specify only *one* of WITH_TCMALLOC and WITH_JEMALLOC")
  ENDIF()
  
 +OPTION(FUZZING "Fuzzing" OFF)
  OPTION(ENABLED_PROFILING "Enable profiling" ON)
  OPTION(WITHOUT_SERVER OFF)
- IF(UNIX)
-@@ -1348,6 +1349,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
+ 
+@@ -1587,6 +1588,10 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
    TARGET_LINK_LIBRARIES(server_unittest_library ${ICU_LIBRARIES})
  ENDIF()
  
@@ -22,10 +22,10 @@ index ce1d1bb05b5..d1d0b04f202 100644
  # It is referenced by some of the directories below, so we insert it here.
  ADD_SUBDIRECTORY(scripts)
 diff --git a/include/mysql.h b/include/mysql.h
-index 1f499e9d9e5..a85c181ae78 100644
+index b805bffdf88..23d2311299e 100644
 --- a/include/mysql.h
 +++ b/include/mysql.h
-@@ -261,7 +261,8 @@ enum mysql_protocol_type {
+@@ -262,7 +262,8 @@ enum mysql_protocol_type {
    MYSQL_PROTOCOL_TCP,
    MYSQL_PROTOCOL_SOCKET,
    MYSQL_PROTOCOL_PIPE,
@@ -35,8 +35,22 @@ index 1f499e9d9e5..a85c181ae78 100644
  };
  
  enum mysql_ssl_mode {
+diff --git a/include/mysql.h.pp b/include/mysql.h.pp
+index ce785802ad9..4f048082335 100644
+--- a/include/mysql.h.pp
++++ b/include/mysql.h.pp
+@@ -485,7 +485,8 @@ enum mysql_protocol_type {
+   MYSQL_PROTOCOL_TCP,
+   MYSQL_PROTOCOL_SOCKET,
+   MYSQL_PROTOCOL_PIPE,
+-  MYSQL_PROTOCOL_MEMORY
++  MYSQL_PROTOCOL_MEMORY,
++  MYSQL_PROTOCOL_FUZZ
+ };
+ enum mysql_ssl_mode {
+   SSL_MODE_DISABLED = 1,
 diff --git a/include/violite.h b/include/violite.h
-index 76f2ed2017a..56900e11349 100644
+index c04e82505a7..2498ba0053c 100644
 --- a/include/violite.h
 +++ b/include/violite.h
 @@ -108,12 +108,14 @@ enum enum_vio_type : int {
@@ -55,9 +69,9 @@ index 76f2ed2017a..56900e11349 100644
  };
  
  /**
-@@ -450,4 +452,20 @@ struct Vio {
- #define SSL_handle void *
- #endif
+@@ -444,4 +446,20 @@ struct Vio {
+ 
+ #define SSL_handle SSL *
  
 +
 +//Vio fuzzing
@@ -77,23 +91,40 @@ index 76f2ed2017a..56900e11349 100644
 +
  #endif /* vio_violite_h_ */
 diff --git a/libmysql/CMakeLists.txt b/libmysql/CMakeLists.txt
-index 0979a2b7b8c..0c896297a9f 100644
+index 4956a0dc2d8..bab0aa3b504 100644
 --- a/libmysql/CMakeLists.txt
 +++ b/libmysql/CMakeLists.txt
-@@ -324,7 +324,7 @@ IF(UNIX)
+@@ -353,11 +353,11 @@ IF(UNIX)
+ 
    ADD_INSTALL_RPATH_FOR_OPENSSL(libmysql)
  
-   GET_TARGET_PROPERTY(libmysql_link_flags libmysql LINK_FLAGS)
--  IF(LINK_FLAG_NO_UNDEFINED)
-+  IF(LINK_FLAG_NO_UNDEFINED AND NOT FUZZING)
-     STRING_APPEND(libmysql_link_flags
-       " ${LINK_FLAG_NO_UNDEFINED}")
-     STRING_APPEND(libmysql_link_flags
+-  IF(LINK_FLAG_Z_DEFS)
++  IF(LINK_FLAG_Z_DEFS AND NOT FUZZING)
+     MY_TARGET_LINK_OPTIONS(libmysql "LINKER:${LINK_FLAG_Z_DEFS}")
+   ENDIF()
+ 
+-  IF(LINUX)
++  IF(LINUX AND NOT FUZZING)
+     MY_TARGET_LINK_OPTIONS(libmysql
+       "LINKER:--version-script=${CMAKE_CURRENT_BINARY_DIR}/libmysql.ver")
+   ENDIF() 
+diff --git a/mysys/mf_tempfile.cc b/mysys/mf_tempfile.cc
+index f4f5dffba9a..26ab2ce0917 100644
+--- a/mysys/mf_tempfile.cc
++++ b/mysys/mf_tempfile.cc
+@@ -320,6 +320,7 @@ File create_temp_file(char *to, const char *dir, const char *prefix,
+       set_my_errno(ENAMETOOLONG);
+       return file;
+     }
++    sprintf(prefix_buff, "%sXXXXXX", prefix ? prefix : "tmp.");
+     my_stpcpy(convert_dirname(to, dir, NullS), prefix_buff);
+     file = mkstemp(to);
+     file_info::RegisterFilename(file, to, file_info::OpenType::FILE_BY_MKSTEMP);
 diff --git a/mysys/my_rnd.cc b/mysys/my_rnd.cc
-index fa96e35eb02..e03ee47c220 100644
+index 8253e3967d4..034c71de600 100644
 --- a/mysys/my_rnd.cc
 +++ b/mysys/my_rnd.cc
-@@ -51,6 +51,9 @@
+@@ -48,6 +48,9 @@
  */
  
  double my_rnd(struct rand_struct *rand_st) {
@@ -103,7 +134,7 @@ index fa96e35eb02..e03ee47c220 100644
    rand_st->seed1 = (rand_st->seed1 * 3 + rand_st->seed2) % rand_st->max_value;
    rand_st->seed2 = (rand_st->seed1 + rand_st->seed2 + 33) % rand_st->max_value;
    return (((double)rand_st->seed1) / rand_st->max_value_dbl);
-@@ -67,6 +70,12 @@ Fill a buffer with random bytes using the SSL library routines
+@@ -64,6 +67,12 @@ Fill a buffer with random bytes using the SSL library routines
  */
  int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
    int rc;
@@ -116,7 +147,7 @@ index fa96e35eb02..e03ee47c220 100644
    rc = RAND_bytes(buffer, (int)buffer_size);
  
    if (!rc) {
-@@ -88,6 +97,9 @@ int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
+@@ -85,6 +94,9 @@ int my_rand_buffer(unsigned char *buffer, size_t buffer_size) {
  double my_rnd_ssl(bool *failed) {
    unsigned int res;
  
@@ -127,10 +158,10 @@ index fa96e35eb02..e03ee47c220 100644
      *failed = true;
      return 0;
 diff --git a/sql-common/client.cc b/sql-common/client.cc
-index fd36e9950cf..c8cae8c3cbf 100644
+index 61404be555b..721802cb60c 100644
 --- a/sql-common/client.cc
 +++ b/sql-common/client.cc
-@@ -5852,6 +5852,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
+@@ -5774,6 +5774,12 @@ static mysql_state_machine_status csm_begin_connect(mysql_async_connect *ctx) {
      }
    }
  #endif /* _WIN32 */
@@ -144,10 +175,10 @@ index fd36e9950cf..c8cae8c3cbf 100644
    if (!net->vio &&
        (!mysql->options.protocol ||
 diff --git a/sql/mysqld.cc b/sql/mysqld.cc
-index c30315d4702..4413d95915d 100644
+index 519926135ed..db75dc7f5e5 100644
 --- a/sql/mysqld.cc
 +++ b/sql/mysqld.cc
-@@ -6395,7 +6395,9 @@ int mysqld_main(int argc, char **argv)
+@@ -6862,7 +6862,9 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);  // Will do exit
    }
  
@@ -157,7 +188,7 @@ index c30315d4702..4413d95915d 100644
  
    size_t guardize = 0;
  #ifndef _WIN32
-@@ -6879,8 +6881,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7347,8 +7349,10 @@ int mysqld_main(int argc, char **argv)
      unireg_abort(MYSQLD_ABORT_EXIT);
  
  #ifndef _WIN32
@@ -168,7 +199,7 @@ index c30315d4702..4413d95915d 100644
  #endif
  
    /* set all persistent options */
-@@ -7022,8 +7026,9 @@ int mysqld_main(int argc, char **argv)
+@@ -7393,8 +7397,9 @@ int mysqld_main(int argc, char **argv)
    }
  
    start_handle_manager();
@@ -179,18 +210,18 @@ index c30315d4702..4413d95915d 100644
  
    LogEvent()
        .type(LOG_TYPE_ERROR)
-@@ -7070,6 +7075,10 @@ int mysqld_main(int argc, char **argv)
+@@ -7441,6 +7446,10 @@ int mysqld_main(int argc, char **argv)
  
-   (void)RUN_HOOK(server_state, before_handle_connection, (NULL));
+   (void)RUN_HOOK(server_state, before_handle_connection, (nullptr));
  
 +#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 +  return 0;
 +#endif
 +
  #if defined(_WIN32)
-   setup_conn_event_handler_threads();
- #else
-@@ -9895,6 +9904,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
+   if (mysqld_socket_acceptor != nullptr)
+     mysqld_socket_acceptor->check_and_spawn_admin_connection_handler_thread();
+@@ -10281,6 +10290,9 @@ static int get_options(int *argc_ptr, char ***argv_ptr) {
  
    if (opt_short_log_format) opt_specialflag |= SPECIAL_SHORT_LOG_FORMAT;
  
@@ -201,10 +232,10 @@ index c30315d4702..4413d95915d 100644
      LogErr(ERROR_LEVEL, ER_CONNECTION_HANDLING_OOM);
      return 1;
 diff --git a/storage/innobase/buf/buf0buf.cc b/storage/innobase/buf/buf0buf.cc
-index 983603eb58c..d577c6fcc05 100644
+index fba0684f322..8352dacbc03 100644
 --- a/storage/innobase/buf/buf0buf.cc
 +++ b/storage/innobase/buf/buf0buf.cc
-@@ -1484,18 +1484,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
+@@ -1487,18 +1487,14 @@ dberr_t buf_pool_init(ulint total_size, ulint n_instances) {
        n = n_instances;
      }
  
@@ -238,38 +269,37 @@ index d44eebce63a..975bc878e17 100644
  
  IF(WIN32)
 diff --git a/vio/vio.cc b/vio/vio.cc
-index f2007bbc928..3b2ca196ec5 100644
+index 38e3d90f20e..abbc9a52478 100644
 --- a/vio/vio.cc
 +++ b/vio/vio.cc
-@@ -301,6 +301,27 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
-     return false;
-   }
- #endif /* HAVE_OPENSSL */
-+  if (type == VIO_TYPE_FUZZ) {
-+    vio->viodelete = vio_delete;
-+    vio->vioerrno = vio_errno;
-+    vio->read = vio_read_buff_fuzz;
-+    vio->write = vio_write_buff_fuzz;
-+    vio->fastsend = vio_fastsend_fuzz;
-+    vio->viokeepalive = vio_keepalive_fuzz;
-+    vio->should_retry = vio_should_retry_fuzz;
-+    vio->was_timeout = vio_was_timeout_fuzz;
-+    vio->vioshutdown = vio_shutdown_fuzz;
-+    vio->peer_addr = vio_peer_addr;
-+    vio->timeout = vio_socket_timeout_fuzz;
-+    vio->io_wait = vio_io_wait_fuzz;
-+    vio->is_connected = vio_is_connected_fuzz;
-+    vio->has_data = vio->read_buffer ? vio_buff_has_data : has_no_data;
-+    vio->is_blocking = vio_is_blocking;
-+    vio->set_blocking = vio_set_blocking;
-+    vio->set_blocking_flag = vio_set_blocking_flag;
-+    vio->is_blocking_flag = false;
-+    return false;
-+  }
-   vio->viodelete = vio_delete;
-   vio->vioerrno = vio_errno;
-   vio->read = vio->read_buffer ? vio_read_buff : vio_read;
-@@ -576,7 +597,8 @@ static const vio_string vio_type_names[] = {{"", 0},
+@@ -284,6 +284,26 @@ static bool vio_init(Vio *vio, enum enum_vio_type type, my_socket sd,
+       vio->is_blocking_flag = true;
+       break;
+ 
++    case VIO_TYPE_FUZZ:
++      vio->viodelete = vio_delete;
++      vio->vioerrno = vio_errno;
++      vio->read = vio_read_buff_fuzz;
++      vio->write = vio_write_buff_fuzz;
++      vio->fastsend = vio_fastsend_fuzz;
++      vio->viokeepalive = vio_keepalive_fuzz;
++      vio->should_retry = vio_should_retry_fuzz;
++      vio->was_timeout = vio_was_timeout_fuzz;
++      vio->vioshutdown = vio_shutdown_fuzz;
++      vio->peer_addr = vio_peer_addr;
++      vio->timeout = vio_socket_timeout_fuzz;
++      vio->io_wait = vio_io_wait_fuzz;
++      vio->is_connected = vio_is_connected_fuzz;
++      vio->has_data = vio->read_buffer ? vio_buff_has_data : has_no_data;
++      vio->is_blocking = vio_is_blocking;
++      vio->set_blocking = vio_set_blocking;
++      vio->set_blocking_flag = vio_set_blocking_flag;
++      vio->is_blocking_flag = false;
++
+     default:
+       vio->viodelete = vio_delete;
+       vio->vioerrno = vio_errno;
+@@ -568,7 +588,8 @@ static const vio_string vio_type_names[] = {{"", 0},
                                              {STRING_WITH_LEN("SSL/TLS")},
                                              {STRING_WITH_LEN("Shared Memory")},
                                              {STRING_WITH_LEN("Internal")},

@@ -6,10 +6,8 @@ auto_ccs:
   - sledru@mozilla.com
 fuzzing_engines:
   - libfuzzer
-  - honggfuzz
 sanitizers:
   - address
-  - undefined
 run_tests: False
 # libraries from $OUT/firefox/dependentlibs.list
 coverage_extra_args: >

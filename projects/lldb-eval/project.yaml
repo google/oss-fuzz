@@ -1,0 +1,10 @@
+homepage: "https://github.com/google/lldb-eval"
+main_repo: "https://github.com/google/lldb-eval"
+language: c++
+primary_contact: "werat@google.com"
+auto_ccs:
+  - "tsabolcec@google.com"
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

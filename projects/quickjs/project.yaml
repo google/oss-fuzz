@@ -3,6 +3,11 @@ language: c
 primary_contact: "fabrice.bellard@gmail.com"
 auto_ccs :
 - "p.antoine@catenacyber.fr"
+vendor_ccs :
+- "apascovici@google.com"
 
 sanitizers:
 - address
+
+blackbox: true  # also use a blackbox fuzzer for this project.
+main_repo: 'https://github.com/horhof/quickjs'

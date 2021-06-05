@@ -9,5 +9,4 @@ architectures:
 sanitizers:
   - address
   - undefined
-  - memory
-  
+main_repo: 'https://github.com/randy408/libspng.git'

@@ -1,8 +1,9 @@
 homepage: "https://github.com/uNetworking/uWebSockets"
 language: c++
 primary_contact: "alexhultman@gmail.com"
+builds_per_day: 4
 sanitizers:
   - address
-  - memory:
-     experimental: True
+  - memory
   - undefined
+main_repo: 'https://github.com/uNetworking/uWebSockets.git'

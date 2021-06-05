@@ -5,3 +5,4 @@ fuzzing_engines:
 sanitizers:
   - address
 language: go
+main_repo: 'https://github.com/google/mtail'

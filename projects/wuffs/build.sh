@@ -26,14 +26,30 @@ for f in fuzz/c/std/*_fuzzer.c; do
 
   # Make the "gzip_fuzzer" binary. First compile the (C) Wuffs code, then link
   # the (C++) fuzzing library.
-  $CC $CFLAGS -c -std=c99 $f -o $WORK/${b}_fuzzer.o
+  $CC $CFLAGS -c $f -o $WORK/${b}_fuzzer.o
   $CXX $CXXFLAGS $WORK/${b}_fuzzer.o -o $OUT/${b}_fuzzer $LIB_FUZZING_ENGINE
 
   # Make the optional "gzip_fuzzer_seed_corpus.zip" archive. This means
   # extracting the "foo/bar/*.gz" out of the matching "gzip: foo/bar/*.gz"
   # lines in fuzz/c/std/seed_corpora.txt.
+  #
+  # The seed_corpora.txt lines can contain multiple entries, combining
+  # independent corpora. A naive "zip --junk-paths" of all those files can fail
+  # if there are duplicate file names, which can easily happen if the file name
+  # is a hash of its contents and the contents are a (trivial) minimal
+  # reproducer. We use a de-duplication step of copying all of those files into
+  # a single directory. Doing that in a single "cp" or "mv" call can fail with
+  # "will not overwrite just-created 'foo/etc' with 'bar/etc'", so we make
+  # multiple calls, each copying one file at a time. Later duplicates overwrite
+  # earlier duplicates. It's OK if the contents aren't identical. The result is
+  # still a valid uber-corpus of seed files.
   seeds=$(sed -n -e "/^$b:/s/^$b: *//p" fuzz/c/std/seed_corpora.txt)
   if [ -n "$seeds" ]; then
-    zip --junk-paths $OUT/${b}_fuzzer_seed_corpus.zip $seeds
+    mkdir ${b}_fuzzer_seed_corpus
+    for s in $seeds; do
+      cp $s ${b}_fuzzer_seed_corpus
+    done
+    zip --junk-paths --recurse-paths $OUT/${b}_fuzzer_seed_corpus.zip ${b}_fuzzer_seed_corpus
+    rm -rf ${b}_fuzzer_seed_corpus
   fi
 done

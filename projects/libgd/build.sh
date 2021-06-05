@@ -32,6 +32,13 @@ for target in Bmp Gd Gd2 Gif Jpeg Png Tga Tiff WBMP Webp; do
       $LIB_FUZZING_ENGINE -lgd -Wl,-Bstatic -lz -Wl,-Bdynamic
 done
 
+for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
+      fuzz_basename=$(basename -s .cc $fuzzers)
+      $CXX $CXXFLAGS -std=c++11 -I"$WORK/include" -L"$WORK/lib" \
+      $fuzzers -o $OUT/$fuzz_basename \
+      $LIB_FUZZING_ENGINE -lgd -Wl,-Bstatic -lz -Wl,-Bdynamic
+done
+
 mkdir afl_testcases
 (cd afl_testcases; tar xvf "$SRC/afl_testcases.tgz")
 for format in bmp gif png webp; do

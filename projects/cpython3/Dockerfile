@@ -1,5 +1,4 @@
 FROM gcr.io/oss-fuzz-base/base-builder
-LABEL maintainer="aaskar@google.com; ammar@ammaraskar.com"
 
 RUN apt-get update
 RUN apt-get install -y build-essential libncursesw5-dev \

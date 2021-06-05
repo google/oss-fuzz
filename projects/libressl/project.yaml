@@ -7,6 +7,8 @@ auto_ccs:
  - "kinichiro.inoguchi@gmail.com"
  - "ted.unangst@gmail.com"
  - "miwaxe@gmail.com"
+ - "guidovranken@gmail.com"
 sanitizers:
  - address
  - undefined
+main_repo: 'https://github.com/libressl-portable/portable.git'

@@ -13,3 +13,4 @@ sanitizers:
   - undefined
   - memory
   - dataflow
+main_repo: 'https://gitlab.freedesktop.org/libspectre/libspectre.git'

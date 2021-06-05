@@ -11,3 +11,4 @@ sanitizers:
   - undefined
   - memory
   - dataflow
+main_repo: 'https://github.com/nghttp2/nghttp2.git'

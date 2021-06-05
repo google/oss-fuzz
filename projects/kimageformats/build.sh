@@ -1,3 +1,20 @@
+#!/bin/bash -eu
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+################################################################################
+
 cd $SRC
 cd zlib
 ./configure --static
@@ -33,8 +50,45 @@ cmake . -DBUILD_SHARED_LIBS=OFF -DQt5Core_DIR=$SRC/qtbase/lib/cmake/Qt5Core/ -DB
 make install -j$(nproc)
 
 cd $SRC
+cd aom
+mkdir build.libavif
+cd build.libavif
+extra_libaom_flags='-DAOM_MAX_ALLOCABLE_MEMORY=536870912 -DDO_RANGE_CHECK_CLAMP=1'
+cmake -DBUILD_SHARED_LIBS=0 -DENABLE_DOCS=0 -DENABLE_EXAMPLES=0 -DENABLE_TESTDATA=0 -DENABLE_TESTS=0 -DENABLE_TOOLS=0 -DCONFIG_PIC=1 -DAOM_TARGET_CPU=generic -DCONFIG_SIZE_LIMIT=1 -DDECODE_HEIGHT_LIMIT=12288 -DDECODE_WIDTH_LIMIT=12288 -DAOM_EXTRA_C_FLAGS="${extra_libaom_flags}" -DAOM_EXTRA_CXX_FLAGS="${extra_libaom_flags}" ..
+make -j$(nproc)
+make install -j$(nproc)
+
+cd $SRC
+ln -s "$SRC/aom" "$SRC/libavif/ext/"
+cd libavif
+mkdir build
+cd build
+CFLAGS="$CFLAGS -fPIC" cmake -DBUILD_SHARED_LIBS=OFF -DAVIF_ENABLE_WERROR=OFF -DAVIF_CODEC_AOM=ON -DAVIF_LOCAL_AOM=ON ..
+make -j$(nproc)
+
+cd $SRC
+cd libde265
+cmake -DBUILD_SHARED_LIBS=OFF -DDISABLE_SSE=ON .
+make -j$(nproc)
+make install -j$(nproc)
+
+cd $SRC
+cd libheif
+#Reduce max width and height to avoid allocating too much memory
+sed -i "s/static const int MAX_IMAGE_WIDTH = 32768;/static const int MAX_IMAGE_WIDTH = 8192;/g" libheif/heif_limits.h
+sed -i "s/static const int MAX_IMAGE_HEIGHT = 32768;/static const int MAX_IMAGE_HEIGHT = 8192;/g" libheif/heif_limits.h
+mkdir build
+cd build
+cmake -DBUILD_SHARED_LIBS=OFF -DWITH_AOM=ON -DWITH_DAV1D=OFF -DWITH_EXAMPLES=OFF -DWITH_LIBDE265=ON -DWITH_RAV1E=OFF -DWITH_X265=OFF ..
+make -j$(nproc)
+make install -j$(nproc)
+
+cd $SRC
 cd kimageformats
-HANDLER_TYPES="KraHandler kra
+HANDLER_TYPES="ANIHandler ani
+        QAVIFHandler avif
+        HEIFHandler heif
+        KraHandler kra
         OraHandler ora
         PCXHandler pcx
         SoftimagePICHandler pic
@@ -49,7 +103,7 @@ echo "$HANDLER_TYPES" | while read class format; do
   fuzz_target_name=kimgio_${format}_fuzzer
 
   $SRC/qtbase/bin/moc $SRC/kimageformats/src/imageformats/$format.cpp -o $format.moc
-  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++14 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp -o $OUT/$fuzz_target_name -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I . -L $SRC/qtbase/lib -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive
+  $CXX $CXXFLAGS -fPIC -DHANDLER=$class -std=c++14 $SRC/kimgio_fuzzer.cc $SRC/kimageformats/src/imageformats/$format.cpp -o $OUT/$fuzz_target_name -I $SRC/qtbase/include/QtCore/ -I $SRC/qtbase/include/ -I $SRC/qtbase/include//QtGui -I $SRC/kimageformats/src/imageformats/ -I $SRC/karchive/src/ -I $SRC/qtbase/mkspecs/linux-clang-libc++/ -I $SRC/libavif/include/ -I . -L $SRC/qtbase/lib $SRC/libavif/build/libavif.a /usr/local/lib/libheif.a /usr/local/lib/liblibde265.a $SRC/aom/build.libavif/libaom.a -lQt5Gui -lQt5Core -lqtlibpng -lqtharfbuzz -lm -lqtpcre2 -ldl -lpthread $LIB_FUZZING_ENGINE /usr/local/lib/libzip.a /usr/local/lib/libz.a -lKF5Archive /usr/local/lib/libz.a
 
   find . -name "*.${format}" | zip -q $OUT/${fuzz_target_name}_seed_corpus.zip -@
 )

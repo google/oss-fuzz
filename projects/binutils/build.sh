@@ -29,7 +29,9 @@ sed -i 's/vfprintf (stderr/\/\//' elfcomm.c
 sed -i 's/fprintf (stderr/\/\//' elfcomm.c
 cd ../
 
-./configure --disable-gdb --enable-targets=all
+./configure --disable-gdb --disable-gdbserver --disable-gdbsupport \
+	    --disable-libdecnumber --disable-readline --disable-sim \
+	    --enable-targets=all --disable-werror
 make MAKEINFO=true && true
 
 # Make fuzzer directory
@@ -47,7 +49,7 @@ done
 cd ../binutils
 
 # First copy the fuzzers, modify applications and copile object files
-for i in readelf cxxfilt; do
+for i in readelf; do
     cp ../../fuzz_$i.c .
 
     # Modify main functions so we dont have them anymore
@@ -66,6 +68,5 @@ mv fuzz_readelf $OUT/fuzz_readelf
 zip fuzz_readelf_seed_corpus.zip /src/fuzz_readelf_seed_corpus/simple_elf
 mv fuzz_readelf_seed_corpus.zip $OUT/ 
 
-## cxxfilt
-$CXX $CXXFLAGS $LIB_FUZZING_ENGINE -W -Wall -I./../zlib -o fuzz_cxxfilt fuzz_cxxfilt.o bucomm.o version.o filemode.o ../bfd/.libs/libbfd.a -L/src/binutils-gdb/zlib -lz ../libiberty/libiberty.a 
-mv fuzz_cxxfilt $OUT/fuzz_cxxfilt
+## Copy over the options file
+cp $SRC/fuzz_readelf.options $OUT/fuzz_readelf.options

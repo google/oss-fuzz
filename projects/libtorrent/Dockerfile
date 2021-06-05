@@ -15,13 +15,11 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER arvid@libtorrent.org
 RUN apt-get update && apt-get install -y wget libssl-dev
 
-RUN git clone --depth 1 --single-branch --branch boost-1.72.0 --recurse-submodules https://github.com/boostorg/boost.git
+RUN git clone --depth 1 --single-branch --branch boost-1.73.0 --recurse-submodules https://github.com/boostorg/boost.git
 
-
-RUN git clone --depth 1 --single-branch --branch RC_1_2 --recurse-submodules https://github.com/arvidn/libtorrent.git
+RUN git clone --depth 1 --single-branch --branch RC_2_0 --recurse-submodules https://github.com/arvidn/libtorrent.git
 WORKDIR libtorrent
 COPY build.sh $SRC/
 

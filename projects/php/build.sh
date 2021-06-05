@@ -28,13 +28,19 @@ export ONIG_LIBS="-L$PWD/oniguruma/src/.libs -l:libonig.a"
 export CFLAGS="$CFLAGS -fno-sanitize=object-size"
 export CXXFLAGS="$CXXFLAGS -fno-sanitize=object-size"
 
+# Make sure the right assembly files are picked
+BUILD_FLAG=""
+if [ "$ARCHITECTURE" = "i386" ]; then
+    BUILD_FLAG="--build=i686-pc-linux-gnu"
+fi
+
 # build project
 ./buildconf
-./configure \
+./configure $BUILD_FLAG \
     --disable-all \
+    --enable-debug-assertions \
     --enable-option-checking=fatal \
     --enable-fuzzer \
-    --enable-json \
     --enable-exif \
     --enable-mbstring \
     --without-pcre-jit \
@@ -43,17 +49,21 @@ export CXXFLAGS="$CXXFLAGS -fno-sanitize=object-size"
     --with-pic
 make -j$(nproc)
 
-# Generate dictionary for unserialize fuzzer
-sapi/cli/php sapi/fuzzer/generate_unserialize_dict.php
+# Generate corpuses and dictionaries.
+sapi/cli/php sapi/fuzzer/generate_all.php
+
+# Copy dictionaries to expected locations.
 cp sapi/fuzzer/dict/unserialize $OUT/php-fuzz-unserialize.dict
-
-# Generate initial corpus for parser fuzzer
-sapi/cli/php sapi/fuzzer/generate_parser_corpus.php
 cp sapi/fuzzer/dict/parser $OUT/php-fuzz-parser.dict
-
 cp sapi/fuzzer/json.dict $OUT/php-fuzz-json.dict
 
-FUZZERS="php-fuzz-json php-fuzz-exif php-fuzz-mbstring php-fuzz-unserialize php-fuzz-parser"
+FUZZERS="php-fuzz-json
+php-fuzz-exif
+php-fuzz-mbstring
+php-fuzz-unserialize
+php-fuzz-unserializehash
+php-fuzz-parser
+php-fuzz-execute"
 for fuzzerName in $FUZZERS; do
 	cp sapi/fuzzer/$fuzzerName $OUT/
 done

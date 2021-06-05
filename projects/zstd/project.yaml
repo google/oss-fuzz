@@ -6,8 +6,8 @@ auto_ccs:
   - "Yann.collet.73@gmail.com"
   - "cyan@fb.com"
   - "felixh@fb.com"
+  - "senhuang96@fb.com"
   - "dpc@fb.com"
-  - "bimbashrestha@fb.com"
   - "mhl@fb.com"
   - "reed@fb.com"
 fuzzing_engines:
@@ -20,3 +20,4 @@ sanitizers:
   - dataflow
   - memory
   - undefined
+main_repo: 'https://github.com/facebook/zstd'

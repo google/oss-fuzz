@@ -14,27 +14,33 @@
 #
 ################################################################################
 
-# TODO(https://github.com/google/oss-fuzz/issues/3093): Stop specifying the
-# image SHA once the bug is fixed.
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:276813aef0ce5972db43c0230f96162003994fa742fb1b2f4e66c67498575c65
-MAINTAINER tzn@google.com
+FROM gcr.io/oss-fuzz-base/base-builder
 
-# Use a fixed Bazel version.
-# https://github.com/google/asylo/blob/088ea3490dd4579655bd5b65b0e31fe18de7f6dd/asylo/distrib/toolchain/Dockerfile#L48-L71
-ARG bazel_version=1.1.0
-ARG bazel_sha=138b47ffd54924e3c0264c65d31d3927803fb9025db4d5b18107df79ee3bda95
-ARG bazel_url=https://storage.googleapis.com/bazel-apt/pool/jdk1.8/b/bazel/bazel_${bazel_version}_amd64.deb
+RUN apt-get --yes update \
+   && apt-get install --no-install-recommends --yes \
+   libssl-dev \
+   pkg-config \
+   && apt-get clean \
+   && rm --recursive --force /var/lib/apt/lists/*
 
-# Install Bazel.
-RUN apt-get update && \
-    apt-get install -y wget && \
-    wget "${bazel_url}" -nv -o- -O bazel.deb && \
-    echo "${bazel_sha}  bazel.deb" > bazel.sha256 && \
-    sha256sum --check bazel.sha256 && \
-    apt-get install -y ./bazel.deb && \
-    rm bazel.deb bazel.sha256 && \
-    apt-get clean
+# Install WebAssembly target for Rust.
+RUN rustup target add wasm32-unknown-unknown
+
+# Install Protobuf compiler.
+ARG protobuf_version=3.13.0
+ARG protobuf_sha256=4a3b26d1ebb9c1d23e933694a6669295f6a39ddc64c3db2adf671f0a6026f82e
+ARG protobuf_dir=/usr/local/protobuf
+ARG protobuf_temp=/tmp/protobuf.zip
+ENV PATH "${protobuf_dir}/bin:${PATH}"
+RUN curl --location https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-linux-x86_64.zip > ${protobuf_temp} \
+  && sha256sum --binary ${protobuf_temp} && echo "${protobuf_sha256} *${protobuf_temp}" | sha256sum --check \
+  && unzip ${protobuf_temp} -d ${protobuf_dir} \
+  && rm ${protobuf_temp} \
+  && chmod --recursive a+rwx ${protobuf_dir} \
+  && protoc --version
 
 RUN git clone --depth 1 https://github.com/project-oak/oak oak
+
 WORKDIR oak
 COPY build.sh $SRC/
+COPY rustc.py $SRC/

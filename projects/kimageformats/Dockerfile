@@ -15,14 +15,17 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER tsdgeos@gmail.com
 RUN apt-get install --yes cmake
 RUN git clone --depth 1 https://github.com/madler/zlib.git
 RUN git clone --depth 1 https://github.com/nih-at/libzip.git
-RUN git clone --depth 1 git://anongit.kde.org/extra-cmake-modules
+RUN git clone --depth 1 https://invent.kde.org/frameworks/extra-cmake-modules.git
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
-RUN git clone --depth 1 git://anongit.kde.org/karchive
-RUN git clone --depth 1 git://anongit.kde.org/kimageformats
+RUN git clone --depth 1 https://invent.kde.org/frameworks/karchive.git
+RUN git clone --depth 1 https://invent.kde.org/frameworks/kimageformats.git
+RUN git clone --depth 1 -b v2.0.2 https://aomedia.googlesource.com/aom
+RUN git clone --depth 1 -b v0.9.0 https://github.com/AOMediaCodec/libavif.git
+RUN git clone --depth 1 https://github.com/strukturag/libde265.git
+RUN git clone --depth 1 https://github.com/strukturag/libheif.git
 COPY build.sh $SRC
 COPY kimgio_fuzzer.cc $SRC
 WORKDIR kimageformats

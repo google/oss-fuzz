@@ -24,7 +24,17 @@ pushd $SRC
 mkdir -p exif_corpus
 find exif-samples -type f -name '*.jpg' -exec mv -n {} exif_corpus/ \; -o -name '*.tiff' -exec mv -n {} exif_corpus/ \;
 cp libexif/test/testdata/*.jpg exif_corpus
-zip -r "$OUT/exif_loader_fuzzer_seed_corpus.zip" exif_corpus/
+zip -r "$WORK/exif_seed_corpus.zip" exif_corpus/
 popd
 
-$CXX $CXXFLAGS -std=c++11 -I"$WORK/include" "$SRC/exif_loader_fuzzer.cc" -o $OUT/exif_loader_fuzzer $LIB_FUZZING_ENGINE "$WORK/lib/libexif.a"
+for fuzzer in $(find $SRC/ -name '*_fuzzer.cc'); do
+  fuzzer_basename=$(basename -s .cc $fuzzer)
+  $CXX $CXXFLAGS \
+      -std=c++11 \
+      -I"$WORK/include" \
+      $fuzzer \
+      -o $OUT/$fuzzer_basename \
+      $LIB_FUZZING_ENGINE \
+      "$WORK/lib/libexif.a"
+  cp $WORK/exif_seed_corpus.zip "${OUT}/${fuzzer_basename}_seed_corpus.zip"
+done

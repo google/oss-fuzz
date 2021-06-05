@@ -15,11 +15,10 @@
 #
 ################################################################################
 
-# Unpack the file
-tar -zxvf xpdf-4.02.tar.gz   
-
-# Now make the build directory
-cd xpdf-4.02
+# Unpack the file and cd into it
+tar -zxvf xpdf-latest.tar.gz
+dir_name=`tar -tzf xpdf-latest.tar.gz | head -1 | cut -f1 -d"/"`
+cd $dir_name
 
 # Make minor change in the CMakeFiles file.
 sed -i 's/#--- object files needed by XpdfWidget/add_library(testXpdfStatic STATIC $<TARGET_OBJECTS:xpdf_objs>)\n#--- object files needed by XpdfWidget/' ./xpdf/CMakeLists.txt
@@ -31,5 +30,12 @@ cmake ../ -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS"
 make -i || true
 
 # Build fuzzers
-cp ../../fuzz_zxdoc.cc .
-$CXX fuzz_zxdoc.cc -o $OUT/fuzz_zxdoc ./xpdf/libtestXpdfStatic.a ./fofi/libfofi.a ./goo/libgoo.a -I../ -I../goo -I../fofi -I. -I../xpdf $CXXFLAGS $LIB_FUZZING_ENGINE
+for fuzzer in zxdoc pdfload; do
+    cp ../../fuzz_$fuzzer.cc .
+    $CXX fuzz_$fuzzer.cc -o $OUT/fuzz_$fuzzer $CXXFLAGS $LIB_FUZZING_ENGINE \
+      ./xpdf/libtestXpdfStatic.a ./fofi/libfofi.a ./goo/libgoo.a \
+      -I../ -I../goo -I../fofi -I. -I../xpdf
+done
+
+# Copy over options files
+cp $SRC/fuzz_pdfload.options $OUT/

@@ -15,17 +15,15 @@
 #
 ################################################################################
 
-# build project
-mkdir -p build_dir
-pushd build_dir
-cmake ..
+# Build project
+cmake . -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DBUILD_FUZZERS=ON
+make clean
 make -j$(nproc)
-popd
 
-# build fuzzers
-for fuzzers in $(find $SRC -name '*_fuzzer.cc'); do
-  fuzz_basename=$(basename -s .cc $fuzzers)
-  $CXX $CXXFLAGS -std=c++11 -I. -I../blosc/ \
-  $fuzzers $LIB_FUZZING_ENGINE ./build_dir/blosc/libblosc.a  \
-  -o $OUT/$fuzz_basename
-done
+# Package seed corpus
+zip -j $OUT/decompress_fuzzer_seed_corpus.zip compat/*.cdata
+
+# Copy the fuzzer executables, zip-ed corpora, and dictionary files to $OUT
+find . -name '*_fuzzer' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer.dict' -exec cp -v '{}' $OUT ';'
+find . -name '*_fuzzer_seed_corpus.zip' -exec cp -v '{}' $OUT ';'

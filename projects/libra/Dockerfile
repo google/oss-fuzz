@@ -16,14 +16,9 @@
 
 # google oss-fuzz stuff
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER davidwg@fb.com
 
 # install other tools we might need
 RUN apt-get update && apt-get install -y cmake curl
-
-# install rust and cargo-fuzz
-ENV CARGO_HOME=/rust RUSTUP_HOME=/rust/rustup PATH=$PATH:/rust/bin
-RUN curl https://sh.rustup.rs | sh -s -- -y 
 
 # get libra
 RUN git clone --depth 1 https://github.com/libra/libra $SRC/libra

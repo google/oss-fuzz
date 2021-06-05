@@ -15,10 +15,9 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER duane.security@gmail.com
-RUN go get github.com/google/gonids
+RUN go get -t github.com/google/gonids
 
 ADD https://rules.emergingthreats.net/open/suricata/emerging.rules.zip emerging.rules.zip
 
 COPY build.sh $SRC/
-WORKDIR $SRC
+WORKDIR $SRC/

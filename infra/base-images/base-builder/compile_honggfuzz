@@ -17,8 +17,8 @@
 
 echo "Skipping compilation; using precompiled honggfuzz"
 
-cp $PRECOMPILED_DIR/honggfuzz.a $LIB_FUZZING_ENGINE
-cp $PRECOMPILED_DIR/honggfuzz $OUT/
+cp $SRC/honggfuzz/honggfuzz.a $LIB_FUZZING_ENGINE
+cp $SRC/honggfuzz/honggfuzz $OUT/
 
 # Custom coverage flags, roughly in sync with:
 # https://github.com/google/honggfuzz/blob/oss-fuzz/hfuzz_cc/hfuzz-cc.c

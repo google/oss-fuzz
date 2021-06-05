@@ -1,0 +1,9 @@
+homepage: "https://github.com/gravitational/teleport"
+primary_contact: "andrew@awly.dev"
+auto_ccs :
+  - "adam@adalogics.com"
+language: go
+fuzzing_engines:
+  - libfuzzer
+sanitizers:
+  - address

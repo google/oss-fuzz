@@ -16,10 +16,14 @@
 ##############################################################################
 set -eu
 
-FUZZERS="opus_decode_fuzzer"
+FUZZERS="opus_decode_fuzzer opus_multi_fuzzer"
 BUILDS=(floating fixed)
 
 tar xvf $SRC/opus_testvectors.tar.gz
+
+if [[ $CFLAGS = *sanitize=memory* ]]; then
+  CFLAGS+=" -D_FORTIFY_SOURCE=0"
+fi
 
 ./autogen.sh
 
@@ -33,8 +37,8 @@ for build in "${BUILDS[@]}"; do
       ;;
   esac
 
-  ./configure $extra_args --enable-static --disable-shared --disable-doc
-  make clean
+  ./configure $extra_args --enable-static --disable-shared --disable-doc \
+    --enable-assertions
   make -j$(nproc)
 
   # Build all fuzzers
@@ -42,6 +46,7 @@ for build in "${BUILDS[@]}"; do
     $CC $CFLAGS -c -Iinclude \
       tests/$fuzzer.c \
       -o $fuzzer.o
+
     $CXX $CXXFLAGS \
       $fuzzer.o \
       -o $OUT/${fuzzer}_${build} \
@@ -49,7 +54,8 @@ for build in "${BUILDS[@]}"; do
 
     # Setup the .options and test corpus zip files using the corresponding
     # fuzzer's name
-    cp tests/$fuzzer.options $OUT/${fuzzer}_${build}.options
+    [ -f tests/$fuzzer.options ] \
+        && cp tests/$fuzzer.options $OUT/${fuzzer}_${build}.options
     zip -r $OUT/${fuzzer}_${build}_seed_corpus.zip opus_testvectors/
   done
 done

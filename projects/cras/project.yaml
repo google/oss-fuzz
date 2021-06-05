@@ -9,3 +9,4 @@ auto_ccs:
   - "enshuo@chromium.org"
   - "tzungbi@chromium.org"
   - "cujomalainey@chromium.org"
+main_repo: 'https://chromium.googlesource.com/chromiumos/third_party/adhd'

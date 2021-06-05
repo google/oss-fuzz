@@ -16,7 +16,6 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 
-MAINTAINER mail@joachim-bauch.de
 
 RUN apt-get update && apt-get install -y \
 	autoconf \

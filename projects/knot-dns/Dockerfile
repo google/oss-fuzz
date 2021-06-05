@@ -15,7 +15,6 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-MAINTAINER jonathan.foote@gmail.com
 RUN apt-get update && apt-get install -y \
  autoconf \
  autogen \
@@ -37,6 +36,7 @@ RUN git clone git://git.savannah.gnu.org/gnulib.git
 RUN git clone --depth=1 --recursive https://git.savannah.gnu.org/git/libunistring.git
 RUN git clone --depth=1 https://git.lysator.liu.se/nettle/nettle.git
 RUN git clone --depth=1 https://gitlab.com/gnutls/gnutls.git
+RUN git clone --depth=1 https://github.com/LMDB/lmdb.git
 RUN git clone --depth=1 https://gitlab.labs.nic.cz/knot/knot-dns
 
 WORKDIR knot-dns

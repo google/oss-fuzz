@@ -1,8 +1,10 @@
 homepage: "https://github.com/google/gonids"
 primary_contact: "duane.security@gmail.com"
-auto_ccs : "p.antoine@catenacyber.fr"
+auto_ccs:
+  - "p.antoine@catenacyber.fr"
 language: go
 fuzzing_engines:
-- libfuzzer
+  - libfuzzer
 sanitizers:
-- address
+  - address
+main_repo: 'https://github.com/google/gonids'

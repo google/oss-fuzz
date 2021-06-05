@@ -8,3 +8,4 @@ sanitizers:
   - address
   - memory
   - undefined
+main_repo: 'https://gitlab.gnome.org/GNOME/libxslt.git'
