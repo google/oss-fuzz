@@ -1,0 +1,23 @@
+diff --git a/src/bin/fuzzer.c b/src/bin/fuzzer.c
+index 9c2eb50..6352aa0 100644
+--- a/src/bin/fuzzer.c
++++ b/src/bin/fuzzer.c
+@@ -125,7 +125,17 @@ int LLVMFuzzerInitialize(int *argc, char ***argv)
+                }
+        }
+
+-       if (!dict_dir) dict_dir = DICTDIR;
++       if (!dict_dir) {
++               dict_dir = malloc(strlen((*argv)[0]) + 1);
++               memcpy(dict_dir, (*argv)[0], strlen((*argv)[0]) + 1);
++               snprintf(strrchr(dict_dir, '/'), 6, "/dict");
++       }
++       if (!lib_dir) {
++                lib_dir = malloc(strlen((*argv)[0]) + 1);
++                memcpy(lib_dir, (*argv)[0], strlen((*argv)[0]) + 1);
++                snprintf(strrchr(lib_dir, '/'), 5, "/lib");
++                setenv("FR_LIBRARY_PATH", lib_dir, 1);
++       }
+
+        /*
+         *      When jobs=N is specified the fuzzer spawns worker processes via
