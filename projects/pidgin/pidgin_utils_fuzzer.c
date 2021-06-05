@@ -40,10 +40,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     }
   }
 
-  /*
-    guchar *
-    purple_quotedp_decode(const char *str, gsize *ret_len)
-  */
   tmp = NULL;
   tmp = purple_quotedp_decode(nstr, &retlen);
   if (tmp != NULL) {
@@ -62,10 +58,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   gchar *plaintext = NULL;
   purple_markup_html_to_xhtml(nstr, &xhtml, &plaintext);
 
-  if (xhtml != NULL) g_free(xhtml);
-  if (plaintext != NULL) g_free(plaintext);
+  if (xhtml != NULL) {
+    g_free(xhtml);
+  }
+
+  if (plaintext != NULL) {
+    g_free(plaintext);
+  }
+
+  char *tmp3 = purple_markup_strip_html(nstr);
+  if (tmp3 != NULL) {
+    free(tmp3);
+  }
+
+  purple_markup_is_rtl(nstr);
 
   free(nstr);
   return 0;
 }
-
