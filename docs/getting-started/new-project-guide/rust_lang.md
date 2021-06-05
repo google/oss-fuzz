@@ -27,6 +27,52 @@ fuzz` tool will build code with required compiler flags as well as link to the
 correct libFuzzer on OSS-Fuzz itself. Note that using `cargo fuzz` also makes it
 quite easy to run the fuzzers locally yourself if you get a failing test case!
 
+
+### Writing fuzzers using a test-style strategy
+
+In Rust you will often have tests written in a way so they are only 
+compiled into the final binary when build in test-mode. This is, achieved by
+wrapping your test code in `cfg(test)`, e.g.
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    ...
+```
+
+Cargo-fuzz automatically enables the `fuzzing` feature, which means you can
+follow a similar strategy to writing fuzzers as you do when writing tests.
+Specifically, you can create modules wrapped in the `fuzzing` feature:
+```rust
+#[cfg(fuzzing)]
+pub mod fuzz_logic {
+    use super::*;
+
+    ...
+```
+and then call the logic within `fuzz_logic` from your fuzzer. 
+
+Furthermore, within your `.toml` files, you can then specify fuzzing-specific
+depedencies by wrapping them as follows:
+```
+[target.'cfg(fuzzing)'.dependencies]
+```
+similar to how you wrap test-dependencies as follows:
+```
+[dev-dependencies]
+```
+
+Finally, you can also combine the testing logic you have and the fuzz logic. This
+can be achieved simply by using 
+```rust
+#[cfg(any(test, fuzzing))]
+```
+
+A project that follows this structure is Linkerd2-proxy and the project files can be
+seen [here](https://github.com/google/oss-fuzz/tree/master/projects/linkerd2-proxy).
+
+
 ## Project files
 
 First you'll want to follow the [setup instructions for `cargo fuzz`
