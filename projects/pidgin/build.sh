@@ -53,8 +53,9 @@ ninja -C $BUILD install
 
 # Build Pidgin
 cd $SRC 
-tar -xf pidgin-2.14.4.tar.bz2
-cd pidgin-2.14.4
+tar -xf pidgin-2.14.5.tar.bz2
+mv pidging-2.14.5 pidgin
+cd pidgin
 ./configure --disable-consoleui \
             --disable-shared \
             --disable-screensaver \
@@ -97,14 +98,14 @@ for fuzzer in "${FUZZERS[@]}"; do
     -I/work/meson/ \
     -I/work/meson/glib \
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
-    -I/src/pidgin-2.14.4/libpurple/protocols/jabber \
+    -I/src/pidgin/libpurple/protocols/jabber \
     -I/usr/local/include/libxml2 \
     -c $fuzzer.c \
     -o $fuzzer.o
 
   $CC $CXXFLAGS $LIB_FUZZING_ENGINE $fuzzer.o \
     -o $OUT/$fuzzer \
-    /src/pidgin-2.14.4/libpurple/protocols/jabber/.libs/libjabber.a \
+    /src/pidgin/libpurple/protocols/jabber/.libs/libjabber.a \
     ./.libs/libpurple.a \
     /src/libxml2/.libs/libxml2.a \
     /work/meson/gobject/libgobject-2.0.a \
