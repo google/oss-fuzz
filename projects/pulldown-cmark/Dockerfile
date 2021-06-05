@@ -17,5 +17,5 @@ RUN apt-get update &&\
     apt-get install -y wget
 RUN git clone --depth 1 https://github.com/raphlinus/pulldown-cmark
 WORKDIR pulldown-cmark
-COPY fuzz ./fuzz
+COPY fuzz $SRC/fuzz
 COPY build.sh $SRC/
