@@ -15,6 +15,10 @@
 #
 ################################################################################
 
+# Place to keep dependencies for static linking
+DEPS=/deps
+mkdir ${DEPS}
+
 
 # Build libffi
 cd $SRC
@@ -23,6 +27,7 @@ cd libffi-3.2.1
 ./configure --disable-shared
 make -j$(nproc)
 export LIBFFI_LIBS="-L/src/libffi-3.2.1 libraries/ -lffi"
+cp ./x86_64-unknown-linux-gnu/.libs/libffi.a ${DEPS}/
 
 
 # Build libxml2
@@ -36,25 +41,30 @@ cd $SRC/libxml2
     --without-python
 make -j$(nproc)
 make install
+cp .libs/libxml2.a ${DEPS}/
 
 
 # Build glib
 cd $SRC/glib
-BUILD=$WORK/meson
-rm -rf $BUILD
-mkdir $BUILD
-meson $BUILD \
+GLIB_BUILD=$WORK/meson
+rm -rf $GLIB_BUILD
+mkdir $GLIB_BUILD
+meson $GLIB_BUILD \
   -Db_lundef=false \
   -Ddefault_library=static \
   -Dlibmount=disabled
-ninja -C $BUILD
-ninja -C $BUILD install
+ninja -C $GLIB_BUILD
+ninja -C $GLIB_BUILD install
+
+cp ${GLIB_BUILD}/gobject/libgobject-2.0.a ${DEPS}/
+cp ${GLIB_BUILD}/gmodule/libgmodule-2.0.a ${DEPS}/
+cp ${GLIB_BUILD}/glib/libglib-2.0.a ${DEPS}/
 
 
 # Build Pidgin
 cd $SRC 
 tar -xf pidgin-2.14.5.tar.bz2
-mv pidging-2.14.5 pidgin
+mv pidgin-2.14.5 pidgin
 cd pidgin
 ./configure --disable-consoleui \
             --disable-shared \
@@ -77,26 +87,24 @@ cd pidgin
 make -j$(nproc)
 
 
-
+# Build fuzzers
 readonly FUZZERS=( \
   pidgin_xml_fuzzer
   pidgin_utils_fuzzer
 )
 
-# Build fuzzers
 cd libpurple
-cp $SRC/pidgin_xml_fuzzer.c .
-cp $SRC/pidgin_utils_fuzzer.c .
+cp $SRC/*fuzzer.c .
 
 for fuzzer in "${FUZZERS[@]}"; do
   $CC $CFLAGS -DHAVE_CONFIG_H \
     -I. \
     -I.. \
-    -I/src/glib \
-    -I/src/glib/glib \
-    -I/src/glib/gmodule \
-    -I/work/meson/ \
-    -I/work/meson/glib \
+    -I${SRC}/glib \
+    -I${SRC}/glib/glib \
+    -I${SRC}/glib/gmodule \
+    -I${GLIB_BUILD} \
+    -I${GLIB_BUILD}/glib \
     -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
     -I/src/pidgin/libpurple/protocols/jabber \
     -I/usr/local/include/libxml2 \
@@ -107,11 +115,11 @@ for fuzzer in "${FUZZERS[@]}"; do
     -o $OUT/$fuzzer \
     /src/pidgin/libpurple/protocols/jabber/.libs/libjabber.a \
     ./.libs/libpurple.a \
-    /src/libxml2/.libs/libxml2.a \
-    /work/meson/gobject/libgobject-2.0.a \
-    /work/meson/gmodule/libgmodule-2.0.a \
-    /work/meson/glib/libglib-2.0.a \
-    /src/libffi-3.2.1/x86_64-unknown-linux-gnu/.libs/libffi.a \
+    ${DEPS}/libxml2.a \
+    ${DEPS}/libgobject-2.0.a \
+    ${DEPS}/libgmodule-2.0.a \
+    ${DEPS}/libglib-2.0.a \
+    ${DEPS}/libffi.a \
     -lresolv -lz -llzma
 done
 
