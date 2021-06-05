@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "xmlnode.h"
+#include "caps.h"
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   char *malicious_xml = (char *)malloc(size + 1);
@@ -30,8 +31,22 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   memcpy(malicious_xml, data, size);
   malicious_xml[size] = '\0';
 
-  xmlnode *isc = xmlnode_from_str(malicious_xml, (int)size + 1);
-  if (isc != NULL) {
+  xmlnode *isc = xmlnode_from_str(malicious_xml, size+1);
+  if (isc != NULL) {    
+    xmlnode_set_attrib(isc, "name", "query");
+    
+    // Parse Jabber caps
+    JabberCapsClientInfo *info = jabber_caps_parse_client_info(isc);
+    gchar *got_hash = jabber_caps_calculate_hash(info, ("sha1"));
+
+    // Insert a child
+    xmlnode *child = xmlnode_new_child(isc, "query");
+    xmlnode_insert_child(isc, child);
+
+    // Get data
+    char *retrieved_data = xmlnode_get_data(isc);
+    char *retrieved_data_unescaped = xmlnode_get_data_unescaped(isc);
+
     xmlnode_free(isc);
   }
 
