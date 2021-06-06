@@ -127,7 +127,7 @@ RUN cd $SRC/ && \
     rm -rf $SRC/jazzer
 
 # Default build flags for various sanitizers.
-ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope"
+ENV SANITIZER_FLAGS_address "-fsanitize=address -fsanitize-address-use-after-scope -ftrivial-auto-var-init=pattern"
 
 # Set of '-fsanitize' flags matches '-fno-sanitize-recover' + 'unsigned-integer-overflow'.
 ENV SANITIZER_FLAGS_undefined "-fsanitize=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unsigned-integer-overflow,unreachable,vla-bound,vptr -fno-sanitize-recover=array-bounds,bool,builtin,enum,float-divide-by-zero,function,integer-divide-by-zero,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,unreachable,vla-bound,vptr"
