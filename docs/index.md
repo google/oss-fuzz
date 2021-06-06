@@ -56,9 +56,9 @@ other resources are listed on the [useful links] page.
 [useful links]: {{ site.baseurl }}/reference/useful-links/#tutorials
 
 ## Trophies
-As of January 2021, OSS-Fuzz has found over [25,000] bugs in [375] open source
+As of June 2021, OSS-Fuzz has found over [30,000] bugs in [500] open source
 projects.
 
-[25,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
-[375]: https://github.com/google/oss-fuzz/tree/master/projects
+[30,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
+[500]: https://github.com/google/oss-fuzz/tree/master/projects
 
