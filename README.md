@@ -44,7 +44,7 @@ Read our [detailed documentation] to learn how to use OSS-Fuzz.
 [detailed documentation]: https://google.github.io/oss-fuzz
 
 ## Trophies
-As of January 2021, OSS-Fuzz has found over [30,000] bugs in [500] open source
+As of June 2021, OSS-Fuzz has found over [30,000] bugs in [500] open source
 projects.
 
 [25,000]: https://bugs.chromium.org/p/oss-fuzz/issues/list?q=-status%3AWontFix%2CDuplicate%20-component%3AInfra&can=1
