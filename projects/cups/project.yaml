@@ -1,0 +1,6 @@
+homepage: "https://openprinting.github.io/cups/"
+language: c++
+primary_contact: "webmaster@msweet.org"
+auto_ccs:
+- "p.antoine@catenacyber.fr"
+main_repo: 'https://github.com/OpenPrinting/cups'
