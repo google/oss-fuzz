@@ -39,6 +39,7 @@ fuzzing more effective and gives you regression testing for free.
 
 1. Your project must be integrated with OSS-Fuzz.
 1. Your project is hosted on GitHub.
+1. Your repository needs to be cloned with `git` in oss-fuzz Dockerfile (do not use `go get` or other methods)
 
 ## Integrating into your repository
 
