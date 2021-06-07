@@ -20,5 +20,5 @@ RUN apt-get update && apt install -y autoconf build-essential libavahi-client-de
     libsystemd-dev libusb-1.0-0-dev zlib1g-dev
 RUN git clone --depth 1 https://github.com/OpenPrinting/cups/
 COPY build.sh $SRC
-COPY patch.diff $SRC
+COPY fuzz*.c $SRC
 WORKDIR $SRC/cups

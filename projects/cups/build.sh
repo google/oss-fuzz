@@ -15,25 +15,12 @@
 #
 ################################################################################
 
-function copy_lib
-    {
-    local fuzzer_path=$1
-    local lib=$2
-    cp $(ldd ${fuzzer_path} | grep "${lib}" | awk '{ print $3 }') ${OUT}/lib
-    }
-
-mkdir -p $OUT/lib
-
 # build project
-git apply $SRC/patch.diff
-export LDFLAGS=$CXXFLAGS
-./configure --with-dnssd=no
+./configure --with-dnssd=no --with-tls=no
 make -j$(nproc)
-cd cups
-make fuzzippread
 
-patchelf --set-rpath '$ORIGIN/lib' fuzzippread
-ldd fuzzippread | grep /lib/x86_64-linux-gnu/ | awk '{print $1}' | while read l; do
-    copy_lib fuzzippread ${l}
-done
+$CC $CFLAGS -I. -Icups -c $SRC/fuzzippread.c -o fuzzippread.o
+$CXX $CXXFLAGS fuzzippread.o -o fuzzippread \
+    cups/libcups.a $LIB_FUZZING_ENGINE -lz
+
 cp fuzzippread $OUT/
