@@ -4,3 +4,6 @@ primary_contact: "webmaster@msweet.org"
 auto_ccs:
 - "p.antoine@catenacyber.fr"
 main_repo: 'https://github.com/OpenPrinting/cups'
+fuzzing_engines:
+  - libfuzzer
+  - afl
