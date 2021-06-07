@@ -41,6 +41,6 @@ ls ./build/bin/local/fuzzer_* | while read i; do
     copy_lib ${i} kqueue
     cp ${i} $OUT/
 done
-cp -r /usr/local/share/freeradius/dictionary /out/dict
+cp -r /usr/local/share/freeradius/dictionary $OUT/dict
 # export FR_DICTIONARY_DIR=/out/dictionary/
 # export FR_LIBRARY_PATH=/out/lib/
