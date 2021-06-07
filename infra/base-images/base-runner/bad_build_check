@@ -326,7 +326,9 @@ function check_mixed_sanitizers {
   local ASAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__asan" -c)
   local DFSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__dfsan" -c)
   local MSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__msan" -c)
-  local UBSAN_CALLS=$(objdump -dC $FUZZER | egrep "${CALL_INSN}__ubsan" -c)
+  # Ignore __ubsan_handle_load_invalid_value as it is used by the ASan config,
+  # too. See SANITIZER_FLAGS_address.
+  local UBSAN_CALLS=$(objdump -dC $FUZZER | grep -v '__ubsan_handle_load_invalid_value' | egrep "${CALL_INSN}__ubsan" -c)
 
 
   if [[ "$SANITIZER" = address ]]; then
