@@ -27,7 +27,7 @@ mkdir -p $OUT/lib
 # build project
 git apply $SRC/patch.diff
 export LDFLAGS=$CXXFLAGS
-./configure --disable-dbus
+./configure --with-dnssd=no
 make -j$(nproc)
 cd cups
 make fuzzippread
