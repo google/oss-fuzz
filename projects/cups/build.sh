@@ -16,6 +16,7 @@
 ################################################################################
 
 # build project
+export LDFLAGS=$CXXFLAGS
 ./configure --with-dnssd=no --with-tls=no
 make -j$(nproc)
 
