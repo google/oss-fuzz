@@ -19,10 +19,10 @@
 cd $SRC/
 GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-llvm-11"
 
-wget --quiet --show-progress $GITHUB_RELEASE/llvm-11.1.0-source.tar.gz
+wget --quiet $GITHUB_RELEASE/llvm-11.1.0-source.tar.gz
 tar -xzf llvm-11.1.0-source.tar.gz
 
-wget --quiet --show-progress $GITHUB_RELEASE/llvm-11.1.0-x86_64-linux-release-genfiles.tar.gz
+wget --quiet $GITHUB_RELEASE/llvm-11.1.0-x86_64-linux-release-genfiles.tar.gz
 tar -xzf llvm-11.1.0-x86_64-linux-release-genfiles.tar.gz
 
 if [ "$SANITIZER" = "address" ]
@@ -32,7 +32,7 @@ else
   LLVM_ARCHIVE="llvm-11.1.0-x86_64-linux-release-coverage.tar.gz"
 fi
 
-wget --quiet --show-progress $GITHUB_RELEASE/$LLVM_ARCHIVE
+wget --quiet $GITHUB_RELEASE/$LLVM_ARCHIVE
 mkdir -p llvm && tar -xzf $LLVM_ARCHIVE --strip-components 1 -C llvm
 )
 export LLVM_INSTALL_PATH=$SRC/llvm
