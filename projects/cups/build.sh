@@ -15,6 +15,15 @@
 #
 ################################################################################
 
+function copy_lib
+    {
+    local fuzzer_path=$1
+    local lib=$2
+    cp $(ldd ${fuzzer_path} | grep "${lib}" | awk '{ print $3 }') ${OUT}/lib
+    }
+
+mkdir -p $OUT/lib
+
 # build project
 git apply $SRC/patch.diff
 export LDFLAGS=$CXXFLAGS
@@ -22,4 +31,8 @@ export LDFLAGS=$CXXFLAGS
 make -j$(nproc)
 cd cups
 make fuzzippread
+
+patchelf --set-rpath '$ORIGIN/lib' fuzzippread
+copy_lib ${i} avahi-common
+
 cp fuzzippread $OUT/
