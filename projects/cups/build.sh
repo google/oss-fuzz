@@ -33,6 +33,6 @@ cd cups
 make fuzzippread
 
 patchelf --set-rpath '$ORIGIN/lib' fuzzippread
-copy_lib ${i} avahi-common
+copy_lib fuzzippread avahi-common
 
 cp fuzzippread $OUT/
