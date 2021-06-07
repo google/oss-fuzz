@@ -27,12 +27,13 @@ mkdir -p $OUT/lib
 # build project
 git apply $SRC/patch.diff
 export LDFLAGS=$CXXFLAGS
-./configure
+./configure --disable-dbus
 make -j$(nproc)
 cd cups
 make fuzzippread
 
 patchelf --set-rpath '$ORIGIN/lib' fuzzippread
-copy_lib fuzzippread avahi-common
-
+ldd /out/fuzzippread | grep /lib/x86_64-linux-gnu/ | awk '{print $1}' | while read l; do
+    copy_lib fuzzippread ${l}
+done
 cp fuzzippread $OUT/
