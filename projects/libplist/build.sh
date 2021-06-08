@@ -16,6 +16,14 @@
 #
 ################################################################################
 
+# prefer clang if it is available
+if test -x "`which clang`"; then
+  export CC=clang
+fi
+if test -x "`which clang++`"; then
+  export CXX=clang++
+fi
+
 ./autogen.sh --without-cython --enable-debug
 make -j$(nproc) clean
 make -j$(nproc) all
