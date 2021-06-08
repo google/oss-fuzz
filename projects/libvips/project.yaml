@@ -2,7 +2,6 @@ homepage: "https://github.com/libvips/libvips"
 language: c++
 primary_contact: "jcupitt@gmail.com"
 auto_ccs:
-  - "oscar.mira@adevinta.com"
   - "kleisauke@gmail.com"
   - "lovell.fuller@gmail.com"
 main_repo: 'https://github.com/libvips/libvips'
