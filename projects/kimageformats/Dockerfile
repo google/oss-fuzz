@@ -22,8 +22,8 @@ RUN git clone --depth 1 https://invent.kde.org/frameworks/extra-cmake-modules.gi
 RUN git clone --depth 1 --branch=5.15 git://code.qt.io/qt/qtbase.git
 RUN git clone --depth 1 https://invent.kde.org/frameworks/karchive.git
 RUN git clone --depth 1 https://invent.kde.org/frameworks/kimageformats.git
-RUN git clone --depth 1 -b v2.0.2 https://aomedia.googlesource.com/aom
-RUN git clone --depth 1 -b v0.9.0 https://github.com/AOMediaCodec/libavif.git
+RUN git clone --depth 1 -b v3.1.0 https://aomedia.googlesource.com/aom
+RUN git clone --depth 1 -b v0.9.1 https://github.com/AOMediaCodec/libavif.git
 RUN git clone --depth 1 https://github.com/strukturag/libde265.git
 RUN git clone --depth 1 https://github.com/strukturag/libheif.git
 COPY build.sh $SRC
