@@ -193,7 +193,7 @@ rm `find fate-suite -name '*.dec'`
 rm `find fate-suite -name '*.pcm'`
 
 zip -r $OUT/${fuzzer_name}_seed_corpus.zip fate-suite
-zip -r $OUT/ffmpeg_AV_CODEC_ID_HEVC_seed_corpus.zip fate-suite/hevc
+zip -r $OUT/ffmpeg_AV_CODEC_ID_HEVC_fuzzer_seed_corpus.zip fate-suite/hevc fate-suite/hevc-conformance
 
 # Build fuzzer for demuxer fed at IO level
 fuzzer_name=ffmpeg_IO_DEMUXER_fuzzer
