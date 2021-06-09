@@ -97,7 +97,7 @@ if [ "$SANITIZER" != "memory" ]; then
     ninja -C _builddir install
     popd
 
-    pushd $SRC/pango-1.48.0
+    pushd $SRC/pango
     meson \
         -Ddefault_library=static \
         --prefix=$PREFIX \
