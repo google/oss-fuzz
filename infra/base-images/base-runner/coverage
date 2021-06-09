@@ -24,7 +24,7 @@ else
       -e 'llvm-symbolizer' \
       -e 'jazzer_agent_deploy.jar' \
       -e 'jazzer_driver' \
-      -e 'jazzer_driver_asan')"
+      -e 'jazzer_driver_with_sanitizer')"
 fi
 
 DUMPS_DIR="$OUT/dumps"
