@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 2.8.12)
+
+project(p7zip)
+
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin
+    CACHE STRING "Where binaries and .dll files go" FORCE)
+
+
+IF(HAVE_WCHAR_H)
+  OPTION(HAVE_UNICODE_WCHAR "Enable Unicode Support" YES)
+  MARK_AS_ADVANCED(HAVE_UNICODE_WCHAR)
+ELSE(HAVE_WCHAR_H)
+  SET(HAVE_UNICODE_WCHAR 0)
+ENDIF(HAVE_WCHAR_H)
+
+SET(HAVE_PTHREADS 0)
+FIND_PACKAGE(Threads)
+IF(WIN32 OR CMAKE_USE_PTHREADS_INIT)
+  SET(HAVE_PTHREADS 1)
+ENDIF(WIN32 OR CMAKE_USE_PTHREADS_INIT)
+
+add_definitions(-DENV_HAVE_GCCVISIBILITYPATCH)
+
+SET(CMAKE_CXX_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden -std=gnu++11 $ENV{CXXFLAGS}  -DDONT_REDEFINE_NEW -Wc++11-narrowing")
+
+add_subdirectory(fuzzer)
+
