@@ -120,8 +120,8 @@ RUN cd $SRC/ && \
     git clone --depth=1 https://github.com/CodeIntelligenceTesting/jazzer && \
     cd jazzer && \
     bazel build --java_runtime_version=localjdk_15 -c opt --cxxopt="-stdlib=libc++" --linkopt=-lc++ \
-        //agent:jazzer_agent_deploy.jar //driver:jazzer_driver //driver:jazzer_driver_asan //agent:jazzer_api_deploy.jar && \
-    cp bazel-bin/agent/jazzer_agent_deploy.jar bazel-bin/driver/jazzer_driver bazel-bin/driver/jazzer_driver_asan /usr/local/bin/ && \
+        //agent:jazzer_agent_deploy.jar //driver:jazzer_driver //driver:jazzer_driver_asan //driver:jazzer_driver_ubsan //agent:jazzer_api_deploy.jar && \
+    cp bazel-bin/agent/jazzer_agent_deploy.jar bazel-bin/driver/jazzer_driver bazel-bin/driver/jazzer_driver_asan bazel-bin/driver/jazzer_driver_ubsan /usr/local/bin/ && \
     cp bazel-bin/agent/jazzer_api_deploy.jar $JAZZER_API_PATH && \
     rm -rf ~/.cache/bazel ~/.cache/bazelisk && \
     rm -rf $SRC/jazzer

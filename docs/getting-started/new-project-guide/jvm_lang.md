@@ -50,8 +50,9 @@ language: jvm
 ```
 
 The only supported fuzzing engine is libFuzzer (`libfuzzer`). So far the only
-supported sanitizer is AddressSanitizer (`address`), which needs to be
-specified explicitly even for pure Java projects.
+supported sanitizers are AddressSanitizer (`address`) and
+UndefinedBehaviorSanitizer (`undefined`). For pure Java projects, specify
+just `address`:
 
 ```yaml
 fuzzing_engines:
@@ -140,6 +141,10 @@ LD_LIBRARY_PATH=\"$JVM_LD_LIBRARY_PATH\":\$this_dir \
   chmod +x $OUT/$fuzzer_basename
 done
 ```
+
+The [java-example](https://github.com/google/oss-fuzz/blob/master/projects/java-example/build.sh)
+project contains an example of a `build.sh` for Java projects with native
+libraries.
 
 ## FuzzedDataProvider
 

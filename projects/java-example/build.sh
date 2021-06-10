@@ -31,7 +31,7 @@ for fuzzer in $(find $SRC -name '*Fuzzer.java' -or -name '*FuzzerNative.java'); 
   cp $SRC/$fuzzer_basename.class $OUT/
 
   if [[ $fuzzer_basename == *FuzzerNative ]]; then
-    driver=jazzer_driver_asan
+    driver=jazzer_driver_with_sanitizer
   else
     driver=jazzer_driver
   fi

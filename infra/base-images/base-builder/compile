@@ -27,8 +27,8 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     echo "ERROR: JVM projects can be fuzzed with libFuzzer engine only."
     exit 1
   fi
-  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ]; then
-    echo "ERROR: JVM projects can be fuzzed with AddressSanitizer only."
+  if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ]; then
+    echo "ERROR: JVM projects can be fuzzed with AddressSanitizer and UndefinedBehaviorSanitizer only."
     exit 1
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
@@ -136,7 +136,13 @@ cp $(which llvm-symbolizer) $OUT/
 
 # Copy Jazzer to $OUT if needed.
 if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
-  cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $(which jazzer_driver_asan) $OUT/
+  cp $(which jazzer_agent_deploy.jar) $(which jazzer_driver) $OUT/
+  jazzer_driver_with_sanitizer=$OUT/jazzer_driver_with_sanitizer
+  if [ "$SANITIZER" = "address" ]; then
+    cp $(which jazzer_driver_asan) $jazzer_driver_with_sanitizer
+  elif [ "$SANITIZER" = "undefined" ]; then
+    cp $(which jazzer_driver_ubsan) $jazzer_driver_with_sanitizer
+  fi
 fi
 
 echo "---------------------------------------------------------------"
