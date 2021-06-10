@@ -17,6 +17,7 @@ extern "C" {
 #include "config.h"
 #include "syshead.h"
 #include "dhcp.h"
+#include "buffer.h"
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
@@ -27,6 +28,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   if (buf_write(&ipbuf, data, size) != false) {
     ret = dhcp_extract_router_msg(&ipbuf);
   }
+  free_buf(&ipbuf);
 
   return 0;
 }
