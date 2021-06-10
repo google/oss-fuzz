@@ -31,6 +31,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
   char *str = NULL;
   openvpn_base64_encode(data, size, &str);
+  if(str != NULL) {
+    free(str);
+  }
 
   uint16_t outsize = 10000;
   char *output_buf = (char *)malloc(outsize);
