@@ -11,64 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Builds a specific OSS-Fuzz project's fuzzers for CI tools."""
-import logging
-import os
+"""Builds fuzzers and runs fuzzers. Entrypoint used for external users"""
 import sys
 
-import build_fuzzers
-import config_utils
+import build_fuzzers_entrypoint
+import run_fuzzers_entrypoint
 
 # pylint: disable=c-extension-no-member
 # pylint gets confused because of the relative import of cifuzz.
-
-# TODO: Turn default logging to INFO when CIFuzz is stable
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG)
-
-
-def build_fuzzers_entry():
-  """Build OSS-Fuzz project's fuzzers for CI tools.
-  This script is used to kick off the Github Actions CI tool. It is the
-  entrypoint of the Dockerfile in this directory. This action can be added to
-  any OSS-Fuzz project's workflow that uses Github."""
-  config = config_utils.BuildFuzzersConfig()
-
-  if config.dry_run:
-    # Sets the default return code on error to success.
-    returncode = 0
-  else:
-    # The default return code when an error occurs.
-    returncode = 1
-
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
-
-  if not build_fuzzers.build_fuzzers(config):
-    logging.error(
-        'Error building fuzzers for project %s (commit: %s, pr_ref: %s).',
-        config.project_name, config.commit_sha, config.pr_ref)
-    return returncode
-
-  out_dir = os.path.join(config.workspace, 'out')
-
-  if not config.bad_build_check:
-    # If we've gotten to this point and we don't need to do bad_build_check,
-    # then the build has succeeded.
-    returncode = 0
-  # yapf: disable
-  elif build_fuzzers.check_fuzzer_build(
-      out_dir,
-      config.sanitizer,
-      config.language,
-      allowed_broken_targets_percentage=config.allowed_broken_targets_percentage
-  ):
-    # yapf: enable
-    returncode = 0
-
-  return returncode
 
 
 def main():
@@ -77,8 +27,18 @@ def main():
   entrypoint of the Dockerfile in this directory. This action can be added to
   any OSS-Fuzz project's workflow that uses Github.
 
-  Note: The resulting clusterfuzz binaries of this build are placed in
+  NOTE: The resulting clusterfuzz binaries of this build are placed in
   the directory: ${GITHUB_WORKSPACE}/out
+
+  NOTE: libFuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
+  directory in order for this action to be used. This action will only fuzz the
+  binaries that are located in that directory. It is recommended that you add
+  the build_fuzzers action preceding this one.
+
+  NOTE: Any crash report will be in the filepath:
+  ${GITHUB_WORKSPACE}/out/testcase
+  This can be used in parallel with the upload-artifact action to surface the
+  logs.
 
   Required environment variables:
     OSS_FUZZ_PROJECT_NAME: The name of OSS-Fuzz project.
@@ -91,11 +51,14 @@ def main():
     GITHUB_WORKSPACE: The shared volume directory where input artifacts are.
     DRY_RUN: If true, no failures will surface.
     SANITIZER: The sanitizer to use when running fuzzers.
+    FUZZ_SECONDS: The length of time in seconds that fuzzers are to be run.
 
   Returns:
     0 on success or 1 on failure.
   """
-  return build_fuzzers_entry()
+  if build_fuzzers_entrypoint.build_fuzzers_entry() == 1:
+    return 1
+  return run_fuzzers_entrypoint.run_fuzzers_entry()
 
 
 if __name__ == '__main__':

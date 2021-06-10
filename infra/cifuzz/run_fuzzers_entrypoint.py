@@ -42,6 +42,36 @@ def delete_unneeded_docker_images(config):
   docker.delete_images(images)
 
 
+def run_fuzzers_entry():
+  """ This is the entrypoint for the run_fuzzers github action.
+  This action can be added to any OSS-Fuzz project's workflow that uses
+  Github."""
+  config = config_utils.RunFuzzersConfig()
+  # The default return code when an error occurs.
+  returncode = 1
+  if config.dry_run:
+    # Sets the default return code on error to success.
+    returncode = 0
+
+  if not config.workspace:
+    logging.error('This script needs to be run within Github actions.')
+    return returncode
+
+  delete_unneeded_docker_images(config)
+  # Run the specified project's fuzzers from the build.
+  result = run_fuzzers.run_fuzzers(config)
+  if result == run_fuzzers.RunFuzzersResult.ERROR:
+    logging.error('Error occurred while running in workspace %s.',
+                  config.workspace)
+    return returncode
+  if result == run_fuzzers.RunFuzzersResult.BUG_FOUND:
+    logging.info('Bug found.')
+    if not config.dry_run:
+      # Return 2 when a bug was found by a fuzzer causing the CI to fail.
+      return 2
+  return 0
+
+
 def main():
   """Runs OSS-Fuzz project's fuzzers for CI tools.
   This is the entrypoint for the run_fuzzers github action.
@@ -67,30 +97,7 @@ def main():
   Returns:
     0 on success or 1 on failure.
   """
-  config = config_utils.RunFuzzersConfig()
-  # The default return code when an error occurs.
-  returncode = 1
-  if config.dry_run:
-    # Sets the default return code on error to success.
-    returncode = 0
-
-  if not config.workspace:
-    logging.error('This script needs to be run within Github actions.')
-    return returncode
-
-  delete_unneeded_docker_images(config)
-  # Run the specified project's fuzzers from the build.
-  result = run_fuzzers.run_fuzzers(config)
-  if result == run_fuzzers.RunFuzzersResult.ERROR:
-    logging.error('Error occurred while running in workspace %s.',
-                  config.workspace)
-    return returncode
-  if result == run_fuzzers.RunFuzzersResult.BUG_FOUND:
-    logging.info('Bug found.')
-    if not config.dry_run:
-      # Return 2 when a bug was found by a fuzzer causing the CI to fail.
-      return 2
-  return 0
+  return run_fuzzers_entry()
 
 
 if __name__ == '__main__':
