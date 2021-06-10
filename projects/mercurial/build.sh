@@ -44,7 +44,7 @@ if [ -e $OUT/sanpy/cflags -a "$(cat $OUT/sanpy/cflags)" = "${CFLAGS}" ] ; then
     echo 'Python cflags unchanged, no need to rebuild'
 else
     rm -rf $OUT/sanpy
-    ./configure "${FLAGS[@]:-}" \
+    ./configure --without-tests "${FLAGS[@]:-}" \
                 --prefix=$OUT/sanpy CFLAGS="${CFLAGS}" LINKCC="${CXX}" \
                 LDFLAGS="${CXXFLAGS}"
     grep -v HAVE_GETC_UNLOCKED < pyconfig.h > tmp && mv tmp pyconfig.h
