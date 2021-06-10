@@ -16,16 +16,11 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool wget
-#RUN git clone --depth 1 https://github.com/jinfeihan57/p7zip p7zip     # or use other version control
-RUN wget https://sourceforge.net/projects/p7zip/files/p7zip/16.02/p7zip_16.02_src_all.tar.bz2 && \
-    tar -xf p7zip_16.02_src_all.tar.bz2 && \
-    mv p7zip_16.02 p7zip
+RUN git clone --depth 1 https://github.com/jinfeihan57/p7zip p7zip     # or use other version control
 WORKDIR p7zip
 COPY build.sh $SRC/
-
 
 RUN mkdir CPP/7zip/CMAKE/fuzzer
 COPY fuzz-CMakeLists.txt $SRC/p7zip/CPP/7zip/CMAKE/fuzzer/CMakeLists.txt
 COPY fuzz_*.cpp $SRC/p7zip/CPP/7zip/CMAKE/ 
 COPY tmp_CMakeLists.txt $SRC/p7zip/CPP/7zip/CMAKE/CMakeLists.txt
-#COPY fuzz-CMakeLists.txt $SRC/fuzz-CMakeLists.txt
