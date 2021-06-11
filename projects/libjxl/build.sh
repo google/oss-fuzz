@@ -43,8 +43,8 @@ build_args=(
 
   # Generate a fuzzer corpus.
   mkdir -p djxl_fuzzer_corpus
-  tools/fuzzer_corpus -r djxl_fuzzer_corpus
-  zip -j "${OUT}/djxl_fuzzer_seed_corpus.zip" djxl_fuzzer_corpus/*
+  tools/fuzzer_corpus -q -r djxl_fuzzer_corpus
+  zip -q -j "${OUT}/djxl_fuzzer_seed_corpus.zip" djxl_fuzzer_corpus/*
 )
 
 # Build the fuzzers in release mode but force the inclusion of JXL_DASSERT()
