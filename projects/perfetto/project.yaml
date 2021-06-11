@@ -1,6 +1,6 @@
 homepage: "https://perfetto.dev"
 language: c++
-primary_contact: "fmayer@google.com"
+primary_contact: "hjd@google.com"
 auto_ccs:
   - "hjd@google.com"
   - "lalitm@google.com"
