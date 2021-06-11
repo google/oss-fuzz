@@ -21,11 +21,18 @@ sed -i 's/CFLAGS        =/CFLAGS        = ${OSS_CFLAGS} /g' ./Makefile
 sed -i 's/LDFLAGS       =/LDFLAGS       = ${OSS_CFLAGS} /g' ./Makefile
 make
 
-# Now build fuzzer
+# Remove main function and create an archive
 cd ./src
 sed -i 's/int main (/int main2 (/g' ./dnsmasq.c
-
 rm dnsmasq.o
-ar cr libndsmasq.a *.o
-$CC $CFLAGS $LIB_FUZZING_ENGINE $SRC/fuzz_util.c dnsmasq.c -o $OUT/fuzz_util \
-    -I./ -DVERSION=\'\"UNKNOWN\"\' libndsmasq.a
+$CC $CFLAGS -c dnsmasq.c -o dnsmasq.o -I./ -DVERSION=\'\"UNKNOWN\"\' 
+ar cr libdnsmasq.a *.o
+
+sed -i 's/class/class2/g' ./dnsmasq.h
+sed -i 's/new/new2/g' ./dnsmasq.h
+
+# Now build fuzzer
+for fuzz_name in util; do
+    $CXX $CXXFLAGS -c ${SRC}/fuzz_${fuzz_name}.cpp -o ./fuzz_${fuzz_name}.o -I./ -DVERSION=\'\"UNKNOWN\"\'
+    $CXX $CXXFLAGS $LIB_FUZZING_ENGINE ./fuzz_${fuzz_name}.o libdnsmasq.a -o $OUT/fuzz_${fuzz_name}
+done
