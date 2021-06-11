@@ -28,7 +28,7 @@ if [ "$FUZZING_LANGUAGE" = "jvm" ]; then
     exit 1
   fi
   if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "coverage" ] && [ "$SANITIZER" != "undefined" ]; then
-    echo "ERROR: JVM projects can be fuzzed with AddressSanitizer and UndefinedBehaviorSanitizer only."
+    echo "ERROR: JVM projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer only."
     exit 1
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
@@ -43,7 +43,7 @@ if [ "$FUZZING_LANGUAGE" = "python" ]; then
     exit 1
   fi
   if [ "$SANITIZER" != "address" ] && [ "$SANITIZER" != "undefined" ]; then
-    echo "ERROR: Python projects can be fuzzed with AddressSanitizer and UndefinedBehaviorSanitizer only."
+    echo "ERROR: Python projects can be fuzzed with AddressSanitizer or UndefinedBehaviorSanitizer only."
     exit 1
   fi
   if [ "$ARCHITECTURE" != "x86_64" ]; then
