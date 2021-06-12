@@ -44,9 +44,21 @@ cp fuzz_target_* "${OUT}/"
 cp ../regression-tests/zones/* ../fuzzing/corpus/zones/
 
 # generate the corpus files
-zip -j "${OUT}/fuzz_target_dnsdistcache_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
-zip -j "${OUT}/fuzz_target_dnslabeltext_parseRFC1035CharString_seed_corpus.zip" ../fuzzing/corpus/txt-records/*
-zip -j "${OUT}/fuzz_target_moadnsparser_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
-zip -j "${OUT}/fuzz_target_packetcache_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
-zip -j "${OUT}/fuzz_target_proxyprotocol_seed_corpus.zip" ../fuzzing/corpus/proxy-protocol-raw-packets/*
-zip -j "${OUT}/fuzz_target_zoneparsertng_seed_corpus.zip" ../fuzzing/corpus/zones/*
+if [ -d ../fuzzing/corpus/raw-dns-packets/ ]; then
+    zip -j "${OUT}/fuzz_target_dnsdistcache_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
+fi
+if [ -d ../fuzzing/corpus/txt-records/ ]; then
+    zip -j "${OUT}/fuzz_target_dnslabeltext_parseRFC1035CharString_seed_corpus.zip" ../fuzzing/corpus/txt-records/*
+fi
+if [ -d ../fuzzing/corpus/raw-dns-packets/ ]; then
+    zip -j "${OUT}/fuzz_target_moadnsparser_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
+fi
+if [ -d ../fuzzing/corpus/raw-dns-packets/ ]; then
+    zip -j "${OUT}/fuzz_target_packetcache_seed_corpus.zip" ../fuzzing/corpus/raw-dns-packets/*
+fi
+if [ -d ../fuzzing/corpus/proxy-protocol-raw-packets/ ]; then
+    zip -j "${OUT}/fuzz_target_proxyprotocol_seed_corpus.zip" ../fuzzing/corpus/proxy-protocol-raw-packets/*
+fi
+if [ -d ../fuzzing/corpus/zones/ ]; then
+    zip -j "${OUT}/fuzz_target_zoneparsertng_seed_corpus.zip" ../fuzzing/corpus/zones/*
+fi
