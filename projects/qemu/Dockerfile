@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
+RUN sed -i -e 's/xenial/bionic/g' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
     libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev patchelf wget \
     libattr1 libattr1-dev libcap-ng-dev
