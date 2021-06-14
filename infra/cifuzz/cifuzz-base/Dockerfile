@@ -21,12 +21,18 @@
 FROM ubuntu:16.04
 
 RUN apt-get update && \
-    apt-get install ca-certificates wget python3 git-core --no-install-recommends -y && \
+    apt-get install ca-certificates wget git-core --no-install-recommends -y && \
     wget https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce-cli_20.10.5~3-0~ubuntu-xenial_amd64.deb -O /tmp/docker-ce.deb && \
     dpkg -i /tmp/docker-ce.deb && rm /tmp/docker-ce.deb && \
     apt-get remove wget -y --purge
 
 
+COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/bin/python3 /usr/local/bin/python3
+COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/libpython3* /usr/local/lib/
+COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/python3.8 /usr/local/lib/python3.8
+RUN ldconfig
+
 ENV OSS_FUZZ_ROOT=/opt/oss-fuzz
 ADD . ${OSS_FUZZ_ROOT}
+RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
 RUN rm -rf ${OSS_FUZZ_ROOT}/infra

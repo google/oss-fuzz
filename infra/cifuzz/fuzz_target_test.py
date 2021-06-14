@@ -18,6 +18,7 @@ import tempfile
 import unittest
 from unittest import mock
 
+import certifi
 import parameterized
 from pyfakefs import fake_filesystem_unittest
 
@@ -176,6 +177,9 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     self.fs.create_file(self.oss_fuzz_target_path)
     self.testcase_path = '/testcase'
     self.fs.create_file(self.testcase_path, contents='')
+
+    # Do this to prevent pyfakefs from messing with requests.
+    self.fs.add_real_directory(os.path.dirname(certifi.__file__))
 
   @mock.patch('fuzz_target.FuzzTarget.is_reproducible',
               side_effect=[True, False])
