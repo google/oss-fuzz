@@ -54,8 +54,10 @@ find . -type d -maxdepth 1 | while read i; do zip -j $OUT/"$i"_seed_corpus.zip "
 find $OUT -maxdepth 1 -type f -executable | while read i; do
     grep "LLVMFuzzerTestOneInput" ${i} > /dev/null 2>&1 || continue
     patchelf --set-rpath '$ORIGIN/lib' ${i}
+    copy_lib ${i} libpcre2
     copy_lib ${i} libyang
     copy_lib ${i} libelf
     copy_lib ${i} libjson-c
-    copy_lib ${i} libpcre2
 done
+
+patchelf --remove-needed libpcre2-8.so.0 $OUT/lib/libyang.so.2
