@@ -16,13 +16,15 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN apt-get update && apt-get install -y make autoconf automake libtool \
-    libglib2.0-dev libfdt-dev libpixman-1-dev zlib1g-dev patchelf wget \
-    libattr1 libattr1-dev libcap-ng-dev
+    libfdt-dev libpixman-1-dev zlib1g-dev patchelf wget \
+    libattr1 libattr1-dev libcap-ng-dev pkg-config
 # Ninja in the apt repos is too old. Get it directly from github
 RUN wget https://github.com/ninja-build/ninja/releases/latest/download/ninja-linux.zip \
     && unzip ninja-linux.zip \
     && rm ninja-linux.zip \
     && mv ninja /usr/bin/ninja
+ADD https://download.gnome.org/sources/glib/2.67/glib-2.67.6.tar.xz $SRC
+RUN tar xvJf $SRC/glib-2.67.6.tar.xz
 RUN git clone --depth 1 https://git.qemu.org/git/qemu.git qemu
 WORKDIR qemu
-RUN cp scripts/oss-fuzz/build.sh $SRC
+COPY build.sh $SRC/
