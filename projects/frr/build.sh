@@ -57,4 +57,5 @@ find $OUT -maxdepth 1 -type f -executable | while read i; do
     copy_lib ${i} libyang
     copy_lib ${i} libelf
     copy_lib ${i} libjson-c
+    copy_lib ${i} libpcre2
 done
