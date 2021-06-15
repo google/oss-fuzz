@@ -22,5 +22,8 @@ cp fuzz/target/x86_64-unknown-linux-gnu/release/deframer $OUT/
 cp fuzz/target/x86_64-unknown-linux-gnu/release/fragment $OUT/
 cp fuzz/target/x86_64-unknown-linux-gnu/release/hsjoiner $OUT/
 cp fuzz/target/x86_64-unknown-linux-gnu/release/message $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/server $OUT/
-cp fuzz/target/x86_64-unknown-linux-gnu/release/persist $OUT/
+if [ "$SANITIZER" != "coverage" ]
+then
+    cp fuzz/target/x86_64-unknown-linux-gnu/release/server $OUT/
+    cp fuzz/target/x86_64-unknown-linux-gnu/release/persist $OUT/
+fi
