@@ -23,5 +23,5 @@ COPY BUILD fuzz*.cc $SRC/cel-cpp/fuzz/
 COPY WORKSPACE .bazelrc $SRC/
 RUN cat WORKSPACE >> $SRC/cel-cpp/WORKSPACE
 RUN cat .bazelrc >> $SRC/cel-cpp/.bazelrc
-RUN echo "4.0.0" > $SRC/cel-cpp/.bazelversion
+RUN echo "4.1.0" > $SRC/cel-cpp/.bazelversion
 WORKDIR $SRC/cel-cpp
