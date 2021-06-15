@@ -259,19 +259,25 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   def setUp(self):
     self.setUpPyfakefs()
 
+  @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
+              return_value=True)
+  @mock.patch('filestore.github_actions.GithubActionsFilestore.upload_directory'
+             )
   @mock.patch('utils.get_fuzz_targets')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.run_fuzz_target')
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
                                   mocked_run_fuzz_target,
-                                  mocked_get_fuzz_targets):
+                                  mocked_get_fuzz_targets,
+                                  mocked_upload_directory, _):
     """Tests that run_fuzz_targets doesn't quit on the first crash it finds."""
     workspace = 'workspace'
     out_path = os.path.join(workspace, 'out')
     self.fs.create_dir(out_path)
     config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
                                             workspace=workspace,
-                                            project_name=EXAMPLE_PROJECT)
+                                            project_name=EXAMPLE_PROJECT,
+                                            build_integration_path='/')
     runner = run_fuzzers.BatchFuzzTargetRunner(config)
 
     mocked_get_fuzz_targets.return_value = ['target1', 'target2']
@@ -292,6 +298,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
         testcase = testcase2
       assert call_count != 2
       call_count += 1
+      self.fs.create_dir(corpus_dir)
       return fuzz_target.FuzzResult(testcase, stacktrace, corpus_dir)
 
     mocked_run_fuzz_target.side_effect = mock_run_fuzz_target
@@ -299,8 +306,6 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     magic_mock.target_name = 'target1'
     mocked_create_fuzz_target_obj.return_value = magic_mock
     self.assertTrue(runner.run_fuzz_targets())
-    self.assertIn('target1-address-testcase-aaa',
-                  os.listdir(runner.crashes_dir))
     self.assertEqual(mocked_run_fuzz_target.call_count, 2)
 
 
@@ -336,9 +341,6 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
               side_effect=[True, True])
   def test_old_bug_found(self, _):
     """Tests run_fuzzers with a bug found in OSS-Fuzz before."""
-    config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                            workspace=TEST_DATA_PATH,
-                                            project_name=EXAMPLE_PROJECT)
     with tempfile.TemporaryDirectory() as tmp_dir:
       workspace = os.path.join(tmp_dir, 'workspace')
       shutil.copytree(TEST_DATA_PATH, workspace)

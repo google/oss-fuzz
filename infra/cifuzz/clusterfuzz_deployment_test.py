@@ -71,9 +71,11 @@ class OSSFuzzTest(fake_filesystem_unittest.TestCase):
 
   @mock.patch('http_utils.download_and_unpack_zip', return_value=False)
   def test_download_fail(self, _):
-    """Tests that when downloading fails, None is returned."""
+    """Tests that when downloading fails, an empty corpus directory is still
+    returned."""
     corpus_path = self.deployment.download_corpus(EXAMPLE_FUZZER, self.OUT_DIR)
-    self.assertIsNone(corpus_path)
+    self.assertEqual(corpus_path, '/out/cifuzz-corpus/example_crash_fuzzer')
+    self.assertEqual(os.listdir(corpus_path), [])
 
   def test_get_latest_build_name(self):
     """Tests that the latest build name can be retrieved from GCS."""

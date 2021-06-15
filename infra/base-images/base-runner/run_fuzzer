@@ -63,7 +63,7 @@ function get_dictionary() {
   fi
 }
 
-rm -rf $CORPUS_DIR && mkdir -p $CORPUS_DIR
+mkdir -p $CORPUS_DIR
 rm -rf $FUZZER_OUT && mkdir -p $FUZZER_OUT
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"
