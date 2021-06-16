@@ -26,7 +26,7 @@ RUN apt-get update && \
     dpkg -i /tmp/docker-ce.deb && rm /tmp/docker-ce.deb && \
     apt-get remove wget -y --purge
 
-
+# Install newer Python from base-builder.
 COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/libpython3* /usr/local/lib/
 COPY --from=gcr.io/oss-fuzz-base/base-builder /usr/local/lib/python3.8 /usr/local/lib/python3.8
