@@ -26,7 +26,13 @@ DEBUGGER=${DEBUGGER:-}
 FUZZER=$1
 shift
 
-CORPUS_DIR=${CORPUS_DIR:-"/tmp/${FUZZER}_corpus"}
+# This option is set by CIFuzz which also passes in a corpus directory
+# containing the fuzzer's corpus from ClusterFuzz.
+if [ -z $CORPUS_DIR ]
+then
+  CORPUS_DIR="/tmp/${FUZZER}_corpus"
+  rm -rf $CORPUS_DIR
+fi
 
 SANITIZER=${SANITIZER:-}
 if [ -z $SANITIZER ]; then
