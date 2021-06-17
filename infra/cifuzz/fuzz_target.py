@@ -239,22 +239,23 @@ class FuzzTarget:
     Raises:
       ReproduceError if we can't attempt to reproduce the crash on the PR build.
     """
-    if not os.path.exists(testcase):
-      raise ReproduceError('Testcase %s not found.' % testcase)
 
     try:
       reproducible_on_code_change = self.is_reproducible(
           testcase, self.target_path)
     except ReproduceError as error:
-      logging.error('Could not run target when checking for reproducibility.'
+      logging.error('Could not check for crash reproducibility.'
                     'Please file an issue:'
                     'https://github.com/google/oss-fuzz/issues/new.')
       raise error
 
     if not reproducible_on_code_change:
-      logging.info('Failed to reproduce the crash using the obtained testcase.')
+      # TODO(metzman): Allow users to specify if unreproducible crashes should
+      # be reported.
+      logging.info('Crash is not reproducible.')
       return False
 
+    logging.info('Crash is reproducible.')
     return self.is_crash_novel(testcase)
 
   def is_crash_novel(self, testcase):
