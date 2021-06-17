@@ -93,9 +93,9 @@ class FuzzTarget:
       FuzzResult namedtuple with stacktrace and testcase if applicable.
     """
     logging.info('Running fuzzer: %s.', self.target_name)
-    command = docker.get_base_docker_run_command(self.out_dir,
-                                                 self.config.sanitizer,
-                                                 self.config.language)
+    command, _ = docker.get_base_docker_run_command(self.out_dir,
+                                                    self.config.sanitizer,
+                                                    self.config.language)
 
     command += [
         '-e', 'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash',

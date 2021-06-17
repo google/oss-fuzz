@@ -73,7 +73,8 @@ class BuildFuzzersTest(unittest.TestCase):
                                            project_repo_name=EXAMPLE_PROJECT,
                                            workspace=tmp_dir,
                                            pr_ref='refs/pull/1757/merge'))
-    docker_run_command = mocked_docker_run.call_args_list[0][0][0]
+
+      docker_run_command = mocked_docker_run.call_args_list[0][0][0]
 
     def command_has_env_var_arg(command, env_var_arg):
       for idx, element in enumerate(command):
@@ -194,6 +195,7 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
         base_commit='da0746452433dc18bae699e355a9821285d863c8',
         is_github=True)
+    import pdb; pdb.set_trace()
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
         os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))
