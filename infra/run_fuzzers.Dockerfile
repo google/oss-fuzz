@@ -28,4 +28,3 @@ WORKDIR ${OSS_FUZZ_ROOT}/infra
 ADD . ${OSS_FUZZ_ROOT}/infra
 
 RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
-RUN apt-get update && apt-get install zip -y

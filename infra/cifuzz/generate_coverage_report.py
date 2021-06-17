@@ -13,7 +13,6 @@
 # limitations under the License.
 """Module for generating coverage reports."""
 import os
-import shutil
 
 import helper
 import docker
@@ -33,7 +32,7 @@ def run_coverage_command(out_dir, config):
 def download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment):
   """Downloads corpora to |out_dir| for the fuzz targets in |fuzz_target_paths|
   using clusterfuzz_deployment| to download corpora from ClusterFuzz/OSS-Fuzz"""
-  # TODO(metzman): Download to corpus.
+  # TODO(metzman): Download to /corpus dir.
   for target_path in fuzz_target_paths:
     target = os.path.basename(target_path)
     clusterfuzz_deployment.download_corpus(target, out_dir)
@@ -44,8 +43,4 @@ def generate_coverage_report(fuzz_target_paths, out_dir, clusterfuzz_deployment,
   """Generates a coverage report using Clang's source based coverage."""
   download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment)
   run_coverage_command(out_dir, config)
-  os.system('ls -lh ' + os.path.join(out_dir, "report"))
-  os.system('chmod -R 777 ' + os.path.join(out_dir, "report"))
-  os.system(f'zip -r {os.path.join(out_dir, "artifacts", "report.zip")} {os.path.join(out_dir, "report")}')
-  # shutil.copytree(os.path.join(out_dir, 'report'),
-  #                 os.path.join(out_dir, 'artifacts', 'report'))
+  # TODO(metzman): Upload this build.
