@@ -185,6 +185,7 @@ class CoverageTargetRunner(BaseFuzzTargetRunner):
     generate_coverage_report.generate_coverage_report(
         self.fuzz_target_paths, self.out_dir, self.clusterfuzz_deployment,
         self.config)
+    return False
 
 
 class CiFuzzTargetRunner(BaseFuzzTargetRunner):
@@ -210,7 +211,7 @@ def get_fuzz_target_runner(config):
   if config.run_fuzzers_mode == 'batch':
     return BatchFuzzTargetRunner(config)
   if config.run_fuzzers_mode == 'coverage':
-    CoverageTargetRunner(config)
+    return CoverageTargetRunner(config)
   return CiFuzzTargetRunner(config)
 
 
