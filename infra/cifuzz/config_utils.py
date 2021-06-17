@@ -127,17 +127,24 @@ class BaseConfig:
       return self.Platform.INTERNAL_GITHUB
     return self.Platform.INTERNAL_GENERIC_CI
 
+  @property
+  def is_coverage(self):
+    """Returns True if this CIFuzz run (building fuzzers and running them) for
+    generating a coverage report."""
+    return self.sanitizer == 'coverage'
+
 
 class RunFuzzersConfig(BaseConfig):
   """Class containing constant configuration for running fuzzers in CIFuzz."""
 
-  RUN_FUZZERS_MODES = {'batch', 'ci'}
+  RUN_FUZZERS_MODES = {'batch', 'ci', 'coverage'}
 
   def __init__(self):
     super().__init__()
     self.fuzz_seconds = int(os.environ.get('FUZZ_SECONDS', 600))
     self.run_fuzzers_mode = os.environ.get('RUN_FUZZERS_MODE', 'ci').lower()
-    if self.run_fuzzers_mode not in self.RUN_FUZZERS_MODES:
+    if self.is_coverage:
+      self.run_fuzzers_mode = 'coverage'
       raise Exception(
           ('Invalid RUN_FUZZERS_MODE %s not one of allowed choices: %s.' %
            self.run_fuzzers_mode, self.RUN_FUZZERS_MODES))

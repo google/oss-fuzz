@@ -61,7 +61,7 @@ class RemoveUnaffectedFuzzTargets(unittest.TestCase):
     # utils.is_fuzz_target_local. This function relies on the executable bit
     # being set, which doesn't work properly in fakefs.
     with tempfile.TemporaryDirectory() as tmp_dir, mock.patch(
-        'coverage.OssFuzzCoverageGetter.get_files_covered_by_target'
+        'get_coverage.OssFuzzCoverageGetter.get_files_covered_by_target'
     ) as mocked_get_files:
       with mock.patch('coverage._get_fuzzer_stats_dir_url', return_value=1):
         mocked_get_files.side_effect = side_effect
