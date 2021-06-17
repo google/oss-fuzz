@@ -22,6 +22,7 @@ OUT_DIR = '/example-out'
 SANITIZER = 'example-sanitizer'
 LANGUAGE = 'example-language'
 
+
 class GetProjectImageTest(unittest.TestCase):
   """Tests for get_project_image."""
 
@@ -48,9 +49,9 @@ class GetDeleteImagesTest(unittest.TestCase):
     mocked_execute.assert_has_calls(expected_calls)
 
 
-
 class GetBaseDockerRunArgsTest(unittest.TestCase):
   """Tests get_base_docker_run_args."""
+
   @mock.patch('utils.get_container_name', return_value=CONTAINER_NAME)
   def test_get_base_docker_run_args_container(self, _):
     """Tests that get_base_docker_run_args works as intended when inside a
@@ -59,10 +60,13 @@ class GetBaseDockerRunArgsTest(unittest.TestCase):
         OUT_DIR, SANITIZER, LANGUAGE)
     self.assertEqual(docker_container, CONTAINER_NAME)
     expected_docker_args = []
-    expected_docker_args = ['--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '--volumes-from', CONTAINER_NAME, '-e', f'OUT={OUT_DIR}']
-    self.assertEqual(
-        docker_args,
-        expected_docker_args)
+    expected_docker_args = [
+        '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
+        'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
+        f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}',
+        '--volumes-from', CONTAINER_NAME, '-e', f'OUT={OUT_DIR}'
+    ]
+    self.assertEqual(docker_args, expected_docker_args)
 
   @mock.patch('utils.get_container_name', return_value=None)
   def test_get_base_docker_run_args_no_container(self, _):
@@ -72,14 +76,18 @@ class GetBaseDockerRunArgsTest(unittest.TestCase):
         OUT_DIR, SANITIZER, LANGUAGE)
     self.assertEqual(docker_container, None)
     expected_docker_args = []
-    expected_docker_args = ['--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '-v', f'{OUT_DIR}:/out']
-    self.assertEqual(
-        docker_args,
-        expected_docker_args)
+    expected_docker_args = [
+        '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
+        'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
+        f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '-v',
+        f'{OUT_DIR}:/out'
+    ]
+    self.assertEqual(docker_args, expected_docker_args)
 
 
 class GetBaseDockerRunCommandTest(unittest.TestCase):
   """Tests get_base_docker_run_args."""
+
   @mock.patch('utils.get_container_name', return_value=None)
   def test_get_base_docker_run_command_no_container(self, _):
     """Tests that get_base_docker_run_args works as intended when not inside a
@@ -88,7 +96,10 @@ class GetBaseDockerRunCommandTest(unittest.TestCase):
         OUT_DIR, SANITIZER, LANGUAGE)
     self.assertEqual(docker_container, None)
     expected_docker_args = []
-    expected_docker_args = ['docker', 'run', '--rm', '--privileged', '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '-v', f'{OUT_DIR}:/out']
-    self.assertEqual(
-        docker_args,
-        expected_docker_args)
+    expected_docker_args = [
+        'docker', 'run', '--rm', '--privileged', '--cap-add', 'SYS_PTRACE',
+        '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
+        'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e',
+        f'FUZZING_LANGUAGE={LANGUAGE}', '-v', f'{OUT_DIR}:/out'
+    ]
+    self.assertEqual(docker_args, expected_docker_args)
