@@ -168,6 +168,7 @@ class BaseFuzzTargetRunner:
 
 class CoverageTargetRunner(BaseFuzzTargetRunner):
   """Runner that runs the 'coverage' command."""
+
   @property
   def quit_on_bug_found(self):
     return False

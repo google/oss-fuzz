@@ -12,15 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for generating coverage reports."""
+import os
 
-import fuzz_target
+import helper
+import docker
 
 
-def run_coverage_command():
-  fuzz_target.get_base_docker_run_command()
+def run_coverage_command(out_dir, config):
+  """Runs the coverage command in base-runner to generate a coverage report."""
+  docker_args = docker.get_base_docker_run_args(out_dir, config.sanitizer,
+                                                config.language)
+  docker_args += ['-t', docker.BASE_RUNNER_TAG, 'coverage']
+  helper.docker_run(docker_args)
+
+
+def download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment):
+  """Downloads corpora to |out_dir| for the fuzz targets in |fuzz_target_paths|
+  using clusterfuzz_deployment| to download corpora from ClusterFuzz/OSS-Fuzz"""
+  for target_path in fuzz_target_paths:
+    target = os.path.basename(target_path)
+    clusterfuzz_deployment.download_corpus(target, out_dir)
 
 
 def generate_coverage_report(fuzz_target_paths, out_dir, clusterfuzz_deployment,
                              config):
-  download_corpora(fuzz_target_paths, clusterfuz_deployment)
-  run_coverage_command()
+  """Generates a coverage report using Clang's source based coverage."""
+  download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment)
+  run_coverage_command(out_dir, config)
