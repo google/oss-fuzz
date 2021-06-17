@@ -85,13 +85,10 @@ class IsReproducibleTest(fake_filesystem_unittest.TestCase):
                                                 self.fuzz_target_path)
       mocked_execute.assert_called_once_with([
           'docker', 'run', '--rm', '--privileged', '--cap-add', 'SYS_PTRACE',
-          '-e', 'FUZZING_ENGINE=libfuzzer',
-          '-e', 'ARCHITECTURE=x86_64',
-          '-e', 'CIFUZZ=True',
-          '-e', 'SANITIZER=' + self.test_target.config.sanitizer,
+          '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
+          'CIFUZZ=True', '-e', 'SANITIZER=' + self.test_target.config.sanitizer,
           '-e', 'FUZZING_LANGUAGE=' + self.test_target.config.language,
-          '--volumes-from',
-          'container', '-e', 'OUT=' + self.out_dir, '-e',
+          '--volumes-from', 'container', '-e', 'OUT=' + self.out_dir, '-e',
           'TESTCASE=' + self.testcase_path, '-t',
           'gcr.io/oss-fuzz-base/base-runner', 'reproduce',
           self.fuzz_target_name, '-runs=100'

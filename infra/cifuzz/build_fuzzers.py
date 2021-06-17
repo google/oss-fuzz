@@ -25,7 +25,6 @@ import docker
 # pylint: disable=wrong-import-position,import-error
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
-import utils
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -197,9 +196,7 @@ def check_fuzzer_build(out_dir,
     logging.error('No fuzzers found in out directory: %s.', out_dir)
     return False
 
-  docker_args, docker_container = docker.get_base_docker_run_args(
-      out_dir, sanitizer, language)
-
+  docker_args, _ = docker.get_base_docker_run_args(out_dir, sanitizer, language)
   if allowed_broken_targets_percentage is not None:
     docker_args += [
         '-e',
@@ -220,6 +217,7 @@ def _get_docker_build_fuzzers_args_not_container(host_repo_path):
   |host_out_dir| when the host of the OSS-Fuzz builder container is not
   another container."""
   return ['-v', f'{host_repo_path}:{host_repo_path}']
+
 
 def _get_docker_build_fuzzers_args_msan(work_dir):
   """Returns arguments to the docker build command that are needed to use
