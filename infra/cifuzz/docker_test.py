@@ -50,8 +50,9 @@ class GetDeleteImagesTest(unittest.TestCase):
 
 
 class GetBaseDockerRunArgsTest(unittest.TestCase):
+  """Tests get_base_docker_run_args."""
   @mock.patch('utils.get_container_name', return_value=CONTAINER_NAME)
-  def test_get_bad_docker_run_args_container(self, _):
+  def test_get_base_docker_run_args_container(self, _):
     """Tests that get_base_docker_run_args works as intended when inside a
     container."""
     docker_args, docker_container = docker.get_base_docker_run_args(
@@ -59,6 +60,35 @@ class GetBaseDockerRunArgsTest(unittest.TestCase):
     self.assertEqual(docker_container, CONTAINER_NAME)
     expected_docker_args = []
     expected_docker_args = ['--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '--volumes-from', CONTAINER_NAME, '-e', f'OUT={OUT_DIR}']
+    self.assertEqual(
+        docker_args,
+        expected_docker_args)
+
+  @mock.patch('utils.get_container_name', return_value=None)
+  def test_get_base_docker_run_args_no_container(self, _):
+    """Tests that get_base_docker_run_args works as intended when not inside a
+    container."""
+    docker_args, docker_container = docker.get_base_docker_run_args(
+        OUT_DIR, SANITIZER, LANGUAGE)
+    self.assertEqual(docker_container, None)
+    expected_docker_args = []
+    expected_docker_args = ['--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '-v', f'{OUT_DIR}:/out']
+    self.assertEqual(
+        docker_args,
+        expected_docker_args)
+
+
+class GetBaseDockerRunCommandTest(unittest.TestCase):
+  """Tests get_base_docker_run_args."""
+  @mock.patch('utils.get_container_name', return_value=None)
+  def test_get_base_docker_run_command_no_container(self, _):
+    """Tests that get_base_docker_run_args works as intended when not inside a
+    container."""
+    docker_args, docker_container = docker.get_base_docker_run_command(
+        OUT_DIR, SANITIZER, LANGUAGE)
+    self.assertEqual(docker_container, None)
+    expected_docker_args = []
+    expected_docker_args = ['docker', 'run', '--rm', '--privileged', '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '-v', f'{OUT_DIR}:/out']
     self.assertEqual(
         docker_args,
         expected_docker_args)
