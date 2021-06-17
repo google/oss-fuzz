@@ -103,10 +103,8 @@ class BaseFuzzTargetRunner:
   def get_fuzz_target_artifact(self, target, artifact_name):
     """Returns the path of a fuzzing artifact named |artifact_name| for
     |fuzz_target|."""
-    artifact_name = '{target_name}-{sanitizer}-{artifact_name}'.format(
-        target_name=target.target_name,
-        sanitizer=self.config.sanitizer,
-        artifact_name=artifact_name)
+    artifact_name = (f'{target.target_name}-{self.config.sanitizer}-'
+                     f'{artifact_name}')
     return os.path.join(self.crashes_dir, artifact_name)
 
   def create_fuzz_target_obj(self, target_path, run_seconds):

@@ -46,9 +46,6 @@ def get_bool(env_var, default_value=None):
   lower_value = value.lower()
   allowed_values = {'true', 'false'}
   if lower_value not in allowed_values:
-    raise Exception(('Bool env var {env_var} value {value} is invalid. '
-                     'Must be one of {allowed_values}').format(
-                         env_var=env_var,
-                         value=value,
-                         allowed_values=allowed_values))
+    raise Exception(f'Bool env var {env_var} value {value} is invalid. '
+                    f'Must be one of {allowed_values}.')
   return lower_value == 'true'

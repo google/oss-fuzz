@@ -108,9 +108,8 @@ class FuzzTarget:
         'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash', '-c'
     ]
 
-    run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
-        fuzz_target=self.target_name,
-        options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
+    options = LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration)
+    run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
 
     # If corpus can be downloaded use it for fuzzing.
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
