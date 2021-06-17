@@ -336,7 +336,6 @@ class GetDockerBuildFuzzersArgsNotContainerTest(unittest.TestCase):
   def test_get_docker_build_fuzzers_args_no_container(self):
     """Tests that _get_docker_build_fuzzers_args_not_container works
     as intended."""
-    host_out_dir = '/cifuzz/out'
     host_repo_path = '/host/repo'
     result = build_fuzzers._get_docker_build_fuzzers_args_not_container(
         host_repo_path)
