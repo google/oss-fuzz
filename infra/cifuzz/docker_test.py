@@ -17,6 +17,10 @@ from unittest import mock
 
 import docker
 
+CONTAINER_NAME = 'example-container'
+OUT_DIR = '/example-out'
+SANITIZER = 'example-sanitizer'
+LANGUAGE = 'example-language'
 
 class GetProjectImageTest(unittest.TestCase):
   """Tests for get_project_image."""
@@ -24,13 +28,15 @@ class GetProjectImageTest(unittest.TestCase):
   def test_get_project_image(self):
     """Tests that get_project_image_name works as intended."""
     project = 'my-project'
-    self.assertEqual(docker.get_project_image_name(project), 'gcr.io/oss-fuzz/my-project')
+    self.assertEqual(docker.get_project_image_name(project),
+                     'gcr.io/oss-fuzz/my-project')
 
-class GetDeleteImages(unittest.TestCase):
+
+class GetDeleteImagesTest(unittest.TestCase):
   """Tests for delete_images."""
 
   @mock.patch('utils.execute')
-  def test_delete_images(self, mocked_execute):
+  def test_delete_images(self, mocked_execute):  # pylint: disable=no-self-use
     """Tests that get_project_image_name works as intended."""
     images = ['image']
     docker.delete_images(images)
@@ -40,3 +46,19 @@ class GetDeleteImages(unittest.TestCase):
     ]
 
     mocked_execute.assert_has_calls(expected_calls)
+
+
+
+class GetBaseDockerRunArgsTest(unittest.TestCase):
+  @mock.patch('utils.get_container_name', return_value=CONTAINER_NAME)
+  def test_get_bad_docker_run_args_container(self, _):
+    """Tests that get_base_docker_run_args works as intended when inside a
+    container."""
+    docker_args, docker_container = docker.get_base_docker_run_args(
+        OUT_DIR, SANITIZER, LANGUAGE)
+    self.assertEqual(docker_container, CONTAINER_NAME)
+    expected_docker_args = []
+    expected_docker_args = ['--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e', f'FUZZING_LANGUAGE={LANGUAGE}', '--volumes-from', CONTAINER_NAME, '-e', f'OUT={OUT_DIR}']
+    self.assertEqual(
+        docker_args,
+        expected_docker_args)
