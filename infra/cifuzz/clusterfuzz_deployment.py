@@ -108,9 +108,6 @@ class OSSFuzz(BaseClusterFuzzDeployment):
   # Location of clusterfuzz builds on GCS.
   CLUSTERFUZZ_BUILDS = 'clusterfuzz-builds'
 
-  # Format string for the latest version of a project's build.
-  VERSION_STRING = '{project_name}-{sanitizer}-latest.version'
-
   # Zip file name containing the corpus.
   CORPUS_ZIP_NAME = 'public.zip'
 
@@ -120,8 +117,8 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     Returns:
       A string with the latest build version or None.
     """
-    version_file = self.VERSION_STRING.format(
-        project_name=self.config.project_name, sanitizer=self.config.sanitizer)
+    version_file = (f'{self.config.project_name}-{self.config.sanitizer}'
+                    '-latest.version')
     version_url = utils.url_join(utils.GCS_BASE_URL, self.CLUSTERFUZZ_BUILDS,
                                  self.config.project_name, version_file)
     try:
@@ -187,11 +184,10 @@ class OSSFuzz(BaseClusterFuzzDeployment):
     if not target_name.startswith(qualified_name_prefix):
       project_qualified_fuzz_target_name = qualified_name_prefix + target_name
 
-    corpus_url = utils.url_join(
-        utils.GCS_BASE_URL,
-        '{0}-backup.clusterfuzz-external.appspot.com/corpus/libFuzzer/'.format(
-            self.config.project_name), project_qualified_fuzz_target_name,
-        self.CORPUS_ZIP_NAME)
+    corpus_url = (f'{utils.GCS_BASE_URL}{self.config.project_name}'
+                  '-backup.clusterfuzz-external.appspot.com/corpus/'
+                  f'libFuzzer/{project_qualified_fuzz_target_name}/'
+                  f'{self.CORPUS_ZIP_NAME}')
 
     if http_utils.download_and_unpack_zip(corpus_url, corpus_dir):
       return corpus_dir

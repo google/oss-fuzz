@@ -91,8 +91,8 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     ])
     rm_path = os.path.join(self.image_repo_path, '*')
     image_src_path = os.path.dirname(self.image_repo_path)
-    bash_command = 'rm -rf {0} && cp -r {1} {2} && compile'.format(
-        rm_path, self.host_repo_path, image_src_path)
+    bash_command = (f'rm -rf {rm_path} && cp -r {self.host_repo_path} '
+                    f'{image_src_path} && compile')
     docker_args.append(bash_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
     # !!! Don't use docker_run.
@@ -108,8 +108,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     """Post-build step for MSAN builds. Patches the build to use MSAN
     libraries."""
     helper.docker_run([
-        '--volumes-from', container, '-e',
-        'WORK={work_dir}'.format(work_dir=self.work_dir),
+        '--volumes-from', container, '-e', f'WORK={self.work_dir}',
         docker.MSAN_LIBS_BUILDER_TAG, 'patch_build.py', '/out'
     ])
 
@@ -119,7 +118,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     logging.info('Copying MSAN libs.')
     helper.docker_run([
         '--volumes-from', container, docker.MSAN_LIBS_BUILDER_TAG, 'bash', '-c',
-        'cp -r /msan {work_dir}'.format(work_dir=self.work_dir)
+        f'cp -r /msan {self.work_dir}'
     ])
 
   def build(self):
@@ -223,7 +222,5 @@ def _get_docker_build_fuzzers_args_msan(work_dir):
   """Returns arguments to the docker build command that are needed to use
   MSAN."""
   # TODO(metzman): MSAN is broken, fix.
-  return [
-      '-e', 'MSAN_LIBS_PATH={msan_libs_path}'.format(
-          msan_libs_path=os.path.join(work_dir, 'msan'))
-  ]
+  msan_libs_path = os.path.join(work_dir, 'msan')
+  return ['-e', f'MSAN_LIBS_PATH={msan_libs_path}']
