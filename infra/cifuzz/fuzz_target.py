@@ -282,12 +282,12 @@ class FuzzTarget:
       return True
 
     if reproducible_on_clusterfuzz_build:
-      logging.info('The crash is reproducible on old builds '
-                   '(without the current code change). Crash is not novel.')
+      logging.info('The crash is reproducible on ClusterFuzz (old) builds. '
+                   'Crash is not novel.')
       return False
     logging.info(
-        'The crash doesn\'t reproduce on ClusterFuzz (old) builds.'
-        'This code change probably introduced the crash. Crash is novel.')
+        'The crash doesn\'t reproduce on ClusterFuzz (old) builds. '
+        'Crash is novel.')
     return True
 
   def get_testcase(self, error_bytes):
