@@ -187,11 +187,12 @@ class FuzzTarget:
 
     os.chmod(target_path, stat.S_IRWXO)
 
-    command, container = get_base_docker_run_command()
+    command, container = docker.get_base_docker_run_command(
+        self.out_dir, self.config.sanitizer, self.config.language)
     if container:
-      command += ['-e', 'TESTCASE=' + testcase]
+      command += ['-e', f'TESTCASE={testcase}']
     else:
-      command += ['%s:/testcase' % testcase]
+      command += ['-v', f'{testcase}:/testcase']
 
     command += [
         '-t', docker.BASE_RUNNER_TAG, 'reproduce', self.target_name, '-runs=100'

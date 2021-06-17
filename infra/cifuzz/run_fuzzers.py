@@ -21,6 +21,7 @@ import time
 
 import clusterfuzz_deployment
 import fuzz_target
+import generate_coverage_report
 import stack_parser
 
 # pylint: disable=wrong-import-position,import-error
@@ -166,6 +167,10 @@ class BaseFuzzTargetRunner:
 
 
 class CoverageTargetRunner(BaseFuzzTargetRunner):
+  """Runner that runs the 'coverage' command."""
+  @property
+  def quit_on_bug_found(self):
+    return False
 
   def get_fuzz_targets(self):
     """Returns fuzz targets in out_dir."""

@@ -75,23 +75,15 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def build_fuzzers(self):
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
-    container = utils.get_container_name()
-    command = get_base_docker_run_args(out_dir, self.config.sanitizer,
-                                       self.config.language)
-
-    docker_args, container = get_base_docker_run_args(self.out_dir,
-                                                      self.config.sanitizer,
-                                                      self.config.language)
-    if not container:
-      docker_args = get_base_docker_run_args('/out', self.config.sanitizer,
-                                             self.config.language)
+    docker_args, docker_container = docker.get_base_docker_run_args(
+        self.out_dir, self.config.sanitizer, self.config.language)
+    if docker_container:
       docker_args.extend(
-          _get_docker_build_fuzzers_args_not_container(self.out_dir,
-                                                       self.host_repo_path))
+          _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
 
     if self.config.sanitizer == 'memory':
       docker_args.extend(_get_docker_build_fuzzers_args_msan(self.work_dir))
-      self.handle_msan_prebuild(container)
+      self.handle_msan_prebuild(docker_container)
 
     docker_args.extend([
         docker.get_project_image_name(self.config.project_name),
@@ -110,7 +102,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
       return False
 
     if self.config.sanitizer == 'memory':
-      self.handle_msan_postbuild(container)
+      self.handle_msan_postbuild(docker_container)
     return True
 
   def handle_msan_postbuild(self, container):
@@ -205,7 +197,7 @@ def check_fuzzer_build(out_dir,
     logging.error('No fuzzers found in out directory: %s.', out_dir)
     return False
 
-  command = get_common_docker_args(sanitizer, language)
+  command = docker.get_base_docker_run_args(out_dir, sanitizer, language)
 
   if allowed_broken_targets_percentage is not None:
     command += [

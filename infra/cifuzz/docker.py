@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for dealing with docker."""
-import logging
 import os
 import sys
 
@@ -30,7 +29,7 @@ PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 DEFAULT_ENGINE = 'libfuzzer'
 DEFAULT_ARCHITECTURE = 'x86_64'
 _DEFAULT_DOCKER_RUN_ARGS = [
-    '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
+    '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
     'ARCHITECTURE=' + DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
 ]
 
@@ -39,8 +38,6 @@ _DEFAULT_DOCKER_RUN_COMMAND = [
     'run',
     '--rm',
     '--privileged',
-    '--cap-add',
-    'SYS_PTRACE',
 ]
 
 
@@ -56,11 +53,15 @@ def delete_images(images):
   utils.execute(['docker', 'builder', 'prune', '-f'])
 
 
-def get_base_docker_run_args(out_dir, sanitzer='address', language='c++'):
-  # !!!
+def get_base_docker_run_args(out_dir, sanitizer='address', language='c++'):
+  """Returns arguments that should be passed to every invocation of 'docker
+  run'."""
   docker_args = _DEFAULT_DOCKER_RUN_ARGS[:]
   docker_args += [
-      '-e', f'SANITIZER={sanitizer}', '-e', f'FUZZING_LANGUAGE={language}',
+      '-e',
+      f'SANITIZER={sanitizer}',
+      '-e',
+      f'FUZZING_LANGUAGE={language}',
   ]
   docker_container = utils.get_container_name()
   if docker_container:
@@ -70,9 +71,10 @@ def get_base_docker_run_args(out_dir, sanitzer='address', language='c++'):
   return docker_args, docker_container
 
 
-def get_base_docker_run_command(out_dir, sanitzer='address', language='c++'):
-  command = DOCKER_RUN_COMMAND[:]
+def get_base_docker_run_command(out_dir, sanitizer='address', language='c++'):
+  """Returns part of the command that should be used everytime docker run is
+  invoked."""
   docker_args, docker_container = get_base_docker_run_args(
       out_dir, sanitizer, language)
-  command += docker_args
+  command = _DEFAULT_DOCKER_RUN_COMMAND[:] + docker_args
   return command, docker_container
