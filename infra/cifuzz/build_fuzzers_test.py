@@ -195,7 +195,6 @@ class BuildFuzzersIntegrationTest(unittest.TestCase):
         commit_sha='0b95fe1039ed7c38fea1f97078316bfc1030c523',
         base_commit='da0746452433dc18bae699e355a9821285d863c8',
         is_github=True)
-    import pdb; pdb.set_trace()
     self.assertTrue(build_fuzzers.build_fuzzers(config))
     self.assertTrue(
         os.path.exists(os.path.join(self.out_dir, EXAMPLE_BUILD_FUZZER)))

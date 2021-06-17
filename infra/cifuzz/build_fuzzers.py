@@ -76,7 +76,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     the fuzzers from that source code. Returns True on success."""
     docker_args, docker_container = docker.get_base_docker_run_args(
         self.out_dir, self.config.sanitizer, self.config.language)
-    if docker_container:
+    if not docker_container:
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.host_repo_path))
 
