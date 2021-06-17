@@ -63,8 +63,7 @@ class GetFuzzerStatsDirUrlTest(unittest.TestCase):
 
   def test_get_invalid_project(self):
     """Tests that passing a bad project returns None."""
-    self.assertIsNone(
-        get_coverage._get_fuzzer_stats_dir_url('not-a-proj'))
+    self.assertIsNone(get_coverage._get_fuzzer_stats_dir_url('not-a-proj'))
 
 
 class GetTargetCoverageReportTest(unittest.TestCase):
@@ -90,8 +89,7 @@ class GetTargetCoverageReportTest(unittest.TestCase):
     self.assertIsNone(
         self.coverage_getter.get_target_coverage_report(INVALID_TARGET))
 
-  @mock.patch('get_coverage._get_latest_cov_report_info',
-              return_value=None)
+  @mock.patch('get_coverage._get_latest_cov_report_info', return_value=None)
   def test_invalid_project_json(self, _):
     """Tests an invalid project JSON results in None being returned."""
     coverage_getter = get_coverage.OssFuzzCoverageGetter(
@@ -173,8 +171,7 @@ class GetLatestCovReportInfo(unittest.TestCase):
                             'latest_report_info/project.json')
 
   @mock.patch('logging.error')
-  @mock.patch('get_coverage.get_json_from_url',
-              return_value={'coverage': 1})
+  @mock.patch('get_coverage.get_json_from_url', return_value={'coverage': 1})
   def test_get_latest_cov_report_info(self, mocked_get_json_from_url,
                                       mocked_error):
     """Tests that _get_latest_cov_report_info works as intended."""

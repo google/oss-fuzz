@@ -71,7 +71,7 @@ def execute(command, location=None, check_result=False):
   return out, err, process.returncode
 
 
-def get_fuzz_targets(path):
+def get_fuzz_targets(path, root_only=False):
   """Get list of fuzz targets in a directory.
 
   Args:
@@ -84,6 +84,9 @@ def get_fuzz_targets(path):
     return []
   fuzz_target_paths = []
   for root, _, fuzzers in os.walk(path):
+    if root_only and path != root:
+      continue
+
     for fuzzer in fuzzers:
       file_path = os.path.join(root, fuzzer)
       if is_fuzz_target_local(file_path):

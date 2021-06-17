@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for dealing with docker."""
+import logging
 import os
 import sys
 
@@ -25,6 +26,23 @@ BASE_RUNNER_TAG = 'gcr.io/oss-fuzz-base/base-runner'
 MSAN_LIBS_BUILDER_TAG = 'gcr.io/oss-fuzz-base/msan-libs-builder'
 PROJECT_TAG_PREFIX = 'gcr.io/oss-fuzz/'
 
+# Default fuzz configuration.
+DEFAULT_ENGINE = 'libfuzzer'
+DEFAULT_ARCHITECTURE = 'x86_64'
+_DEFAULT_DOCKER_RUN_ARGS = [
+    '-e', 'FUZZING_ENGINE=' + DEFAULT_ENGINE, '-e',
+    'ARCHITECTURE=' + DEFAULT_ARCHITECTURE, '-e', 'CIFUZZ=True'
+]
+
+_DEFAULT_DOCKER_RUN_COMMAND = [
+    'docker',
+    'run',
+    '--rm',
+    '--privileged',
+    '--cap-add',
+    'SYS_PTRACE',
+]
+
 
 def get_project_image_name(project):
   """Returns the name of the project builder image for |project_name|."""
@@ -36,3 +54,25 @@ def delete_images(images):
   command = ['docker', 'rmi', '-f'] + images
   utils.execute(command)
   utils.execute(['docker', 'builder', 'prune', '-f'])
+
+
+def get_base_docker_run_args(out_dir, sanitzer='address', language='c++'):
+  # !!!
+  docker_args = _DEFAULT_DOCKER_RUN_ARGS[:]
+  docker_args += [
+      '-e', 'SANITIZER=' + sanitizer, '-e', 'FUZZING_LANGUAGE=' + language
+  ]
+  docker_container = utils.get_container_name()
+  if docker_container:
+    docker_args += ['--volumes-from', docker_container, '-e', 'OUT=' + out_dir]
+  else:
+    docker_args += ['-v', '%s:/out' % out_dir]
+  return docker_args, docker_contianer
+
+
+def get_base_docker_run_command(out_dir, sanitzer='address', language='c++'):
+  command = DOCKER_RUN_COMMAND[:]
+  docker_args, docker_container = get_base_docker_run_args(
+      out_dir, sanitizer, language)
+  command += docker_args
+  return command, docker_container

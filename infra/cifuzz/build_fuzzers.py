@@ -27,10 +27,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import helper
 import utils
 
-# Default fuzz configuration.
-DEFAULT_ENGINE = 'libfuzzer'
-DEFAULT_ARCHITECTURE = 'x86_64'
-
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG)
@@ -79,14 +75,16 @@ class Builder:  # pylint: disable=too-many-instance-attributes
   def build_fuzzers(self):
     """Moves the source code we want to fuzz into the project builder and builds
     the fuzzers from that source code. Returns True on success."""
-    docker_args = get_common_docker_args(self.config.sanitizer,
-                                         self.config.language)
     container = utils.get_container_name()
+    command = get_base_docker_run_args(out_dir, self.config.sanitizer,
+                                       self.config.language)
 
-    if container:
-      docker_args.extend(
-          _get_docker_build_fuzzers_args_container(self.out_dir, container))
-    else:
+    docker_args, container = get_base_docker_run_args(self.out_dir,
+                                                      self.config.sanitizer,
+                                                      self.config.language)
+    if not container:
+      docker_args = get_base_docker_run_args('/out', self.config.sanitizer,
+                                             self.config.language)
       docker_args.extend(
           _get_docker_build_fuzzers_args_not_container(self.out_dir,
                                                        self.host_repo_path))
@@ -106,6 +104,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
         rm_path, self.host_repo_path, image_src_path)
     docker_args.append(bash_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
+    # !!! Don't use docker_run.
     if not helper.docker_run(docker_args):
       logging.error('Building fuzzers failed.')
       return False
@@ -186,24 +185,6 @@ def build_fuzzers(config):
   return builder.build()
 
 
-def get_common_docker_args(sanitizer, language):
-  """Returns a list of common docker arguments."""
-  return [
-      '--cap-add',
-      'SYS_PTRACE',
-      '-e',
-      'FUZZING_ENGINE=' + DEFAULT_ENGINE,
-      '-e',
-      'SANITIZER=' + sanitizer,
-      '-e',
-      'ARCHITECTURE=' + DEFAULT_ARCHITECTURE,
-      '-e',
-      'CIFUZZ=True',
-      '-e',
-      'FUZZING_LANGUAGE=' + language,
-  ]
-
-
 def check_fuzzer_build(out_dir,
                        sanitizer,
                        language,
@@ -246,23 +227,11 @@ def check_fuzzer_build(out_dir,
   return True
 
 
-def _get_docker_build_fuzzers_args_container(host_out_dir, container):
-  """Returns arguments to the docker build arguments that are needed to use
-  |host_out_dir| when the host of the OSS-Fuzz builder container is another
-  container."""
-  return ['-e', 'OUT=' + host_out_dir, '--volumes-from', container]
-
-
-def _get_docker_build_fuzzers_args_not_container(host_out_dir, host_repo_path):
+def _get_docker_build_fuzzers_args_not_container(host_repo_path):
   """Returns arguments to the docker build arguments that are needed to use
   |host_out_dir| when the host of the OSS-Fuzz builder container is not
   another container."""
-  image_out_dir = '/out'
   return [
-      '-e',
-      'OUT=' + image_out_dir,
-      '-v',
-      '%s:%s' % (host_out_dir, image_out_dir),
       '-v',
       '%s:%s' % (host_repo_path, host_repo_path),
   ]

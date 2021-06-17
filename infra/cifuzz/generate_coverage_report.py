@@ -12,3 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Module for generating coverage reports."""
+
+import fuzz_target
+
+
+def run_coverage_command():
+  fuzz_target.get_base_docker_run_command()
+
+
+def generate_coverage_report(fuzz_target_paths, out_dir, clusterfuzz_deployment,
+                             config):
+  download_corpora(fuzz_target_paths, clusterfuz_deployment)
+  run_coverage_command()

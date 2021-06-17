@@ -92,20 +92,14 @@ class FuzzTarget:
     Returns:
       FuzzResult namedtuple with stacktrace and testcase if applicable.
     """
-    logging.info('Fuzzer %s, started.', self.target_name)
-    docker_container = utils.get_container_name()
-    command = ['docker', 'run', '--rm', '--privileged']
-    if docker_container:
-      command += [
-          '--volumes-from', docker_container, '-e', 'OUT=' + self.out_dir
-      ]
-    else:
-      command += ['-v', '%s:%s' % (self.out_dir, '/out')]
+    logging.info('Running fuzzer: %s.', self.target_name)
+    command = docker.get_base_docker_run_command(self.out_dir,
+                                                 self.config.sanitizer,
+                                                 self.config.language)
 
     command += [
-        '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
-        'SANITIZER=' + self.config.sanitizer, '-e', 'CIFUZZ=True', '-e',
-        'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash', '-c'
+        '-e', 'RUN_FUZZER_MODE=interactive', docker.BASE_RUNNER_TAG, 'bash',
+        '-c'
     ]
 
     run_fuzzer_command = 'run_fuzzer {fuzz_target} {options}'.format(
@@ -193,20 +187,11 @@ class FuzzTarget:
 
     os.chmod(target_path, stat.S_IRWXO)
 
-    target_dirname = os.path.dirname(target_path)
-    command = ['docker', 'run', '--rm', '--privileged']
-    container = utils.get_container_name()
+    command, container = get_base_docker_run_command()
     if container:
-      command += [
-          '--volumes-from', container, '-e', 'OUT=' + target_dirname, '-e',
-          'TESTCASE=' + testcase
-      ]
+      command += ['-e', 'TESTCASE=' + testcase]
     else:
-      command += [
-          '-v',
-          '%s:/out' % target_dirname, '-v',
-          '%s:/testcase' % testcase
-      ]
+      command += ['%s:/testcase' % testcase]
 
     command += [
         '-t', docker.BASE_RUNNER_TAG, 'reproduce', self.target_name, '-runs=100'

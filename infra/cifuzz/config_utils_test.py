@@ -51,12 +51,10 @@ class BaseConfigTest(unittest.TestCase):
     config = self._create_config()
     self.assertTrue(config.is_coverage)
 
-
     # Test it is not set when it is not supposed to be.
     os.environ['SANITIZER'] = 'address'
     config = self._create_config()
     self.assertFalse(config.is_coverage)
-
 
 
 class BuildFuzzersConfigTest(unittest.TestCase):
