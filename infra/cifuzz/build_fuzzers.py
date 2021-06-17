@@ -95,7 +95,10 @@ class Builder:  # pylint: disable=too-many-instance-attributes
                     f'{image_src_path} && compile')
     docker_args.append(bash_command)
     logging.info('Building with %s sanitizer.', self.config.sanitizer)
-    # !!! Don't use docker_run.
+
+    # TODO(metzman): Stop using helper.docker_run so we can get rid of
+    # docker.get_base_docker_run_args and merge its contents into
+    # docker.get_base_docker_run_command.
     if not helper.docker_run(docker_args):
       logging.error('Building fuzzers failed.')
       return False

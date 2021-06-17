@@ -72,7 +72,7 @@ def get_base_docker_run_args(out_dir, sanitizer='address', language='c++'):
 
 
 def get_base_docker_run_command(out_dir, sanitizer='address', language='c++'):
-  """Returns part of the command that should be used everytime docker run is
+  """Returns part of the command that should be used everytime 'docker run' is
   invoked."""
   docker_args, docker_container = get_base_docker_run_args(
       out_dir, sanitizer, language)
