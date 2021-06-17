@@ -197,22 +197,18 @@ def check_fuzzer_build(out_dir,
     logging.error('No fuzzers found in out directory: %s.', out_dir)
     return False
 
-  command = docker.get_base_docker_run_args(out_dir, sanitizer, language)
+  docker_args, docker_container = docker.get_base_docker_run_args(
+      out_dir, sanitizer, language)
 
   if allowed_broken_targets_percentage is not None:
-    command += [
+    docker_args += [
         '-e',
         ('ALLOWED_BROKEN_TARGETS_PERCENTAGE=' +
          allowed_broken_targets_percentage)
     ]
 
-  container = utils.get_container_name()
-  if container:
-    command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
-  else:
-    command += ['-v', '%s:/out' % out_dir]
-  command.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
-  result = helper.docker_run(command)
+  docker_args.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
+  result = helper.docker_run(docker_args)
   if not result:
     logging.error('Check fuzzer build failed.')
     return False
@@ -223,11 +219,7 @@ def _get_docker_build_fuzzers_args_not_container(host_repo_path):
   """Returns arguments to the docker build arguments that are needed to use
   |host_out_dir| when the host of the OSS-Fuzz builder container is not
   another container."""
-  return [
-      '-v',
-      '%s:%s' % (host_repo_path, host_repo_path),
-  ]
-
+  return ['-v', f'{host_repo_path}:{host_repo_path}']
 
 def _get_docker_build_fuzzers_args_msan(work_dir):
   """Returns arguments to the docker build command that are needed to use
