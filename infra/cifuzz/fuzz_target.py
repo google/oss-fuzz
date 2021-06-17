@@ -106,7 +106,7 @@ class FuzzTarget:
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name, self.out_dir)
     if self.latest_corpus_path:
-      command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]es
+      command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
 
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
@@ -273,7 +273,8 @@ class FuzzTarget:
                                            self.target_name)
 
     try:
-      reproducible_on_clusterfuzz_build = self.is_reproducible(testcase, clusterfuzz_target_path)
+      reproducible_on_clusterfuzz_build = self.is_reproducible(
+          testcase, clusterfuzz_target_path)
     except ReproduceError:
       # This happens if the project has ClusterFuzz builds, but the fuzz target
       # is not in it (e.g. because the fuzz target is new).
@@ -284,8 +285,9 @@ class FuzzTarget:
       logging.info('The crash is reproducible on old builds '
                    '(without the current code change). Crash is not novel.')
       return False
-    logging.info('The crash doesn\'t reproduce on ClusterFuzz (old) builds.'
-                 'This code change probably introduced the crash. Crash is novel.')
+    logging.info(
+        'The crash doesn\'t reproduce on ClusterFuzz (old) builds.'
+        'This code change probably introduced the crash. Crash is novel.')
     return True
 
   def get_testcase(self, error_bytes):
@@ -297,7 +299,8 @@ class FuzzTarget:
     Returns:
       The path to the testcase or None if not found.
     """
-    # TODO(metzman): Stop parsing and use libFuzzers' artifact_prefix option instead.
+    # TODO(metzman): Stop parsing and use libFuzzers' artifact_prefix option
+    # instead.
     match = re.search(rb'\bTest unit written to \.\/([^\s]+)', error_bytes)
     if match:
       return os.path.join(self.out_dir, match.group(1).decode('utf-8'))
