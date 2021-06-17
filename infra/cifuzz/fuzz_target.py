@@ -42,10 +42,9 @@ REPRODUCE_ATTEMPTS = 10
 BUFFER_TIME = 10
 
 # Log message if we can't check if crash reproduces on an recent build.
-COULD_NOT_TEST_ON_RECENT_MESSAGE = (
-    'Crash is reproducible. Could not run recent build of '
-    'target to determine if this code change (pr/commit) introduced crash. '
-    'Assuming this code change introduced crash.')
+COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE = (
+    'Could not run ClusterFuzz (old) build of target to determine if this '
+    'code change (pr/commit) introduced crash. Assuming crash is novel.')
 
 FuzzResult = collections.namedtuple('FuzzResult',
                                     ['testcase', 'stacktrace', 'corpus_path'])
@@ -266,7 +265,7 @@ class FuzzTarget:
     if not clusterfuzz_build_dir:
       # Crash is reproducible on PR build and we can't test on a recent
       # ClusterFuzz/OSS-Fuzz build.
-      logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
+      logging.info(COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE)
       return True
 
     clusterfuzz_target_path = os.path.join(clusterfuzz_build_dir,
@@ -278,7 +277,7 @@ class FuzzTarget:
     except ReproduceError:
       # This happens if the project has ClusterFuzz builds, but the fuzz target
       # is not in it (e.g. because the fuzz target is new).
-      logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
+      logging.info(COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE)
       return True
 
     if reproducible_on_clusterfuzz_build:
