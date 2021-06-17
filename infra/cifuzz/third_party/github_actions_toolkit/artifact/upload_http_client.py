@@ -39,7 +39,7 @@ def upload_chunk(resource_url, file_path, total_file_size):
   """Based on uploadChunk. Differences from upstream are because:
   1. HTTP client index since we don't need it to do HTTP uploads like typescript
   code.
-  2. GZIP.
+  2. This implementation doesn't use GZIP for simplicity.
   """
   start = 0
   end = total_file_size - 1
@@ -58,9 +58,7 @@ def upload_chunk(resource_url, file_path, total_file_size):
         logging.debug('upload_chunk response: %s', response.text)
       return True
     except Exception as err:  # pylint: disable=broad-except
-      import pdb
-      pdb.set_trace()
-      pass
+      logging.error('Failed to upload chunk because of %s', err)
 
     time.sleep(utils.SLEEP_TIME)
 
@@ -68,7 +66,7 @@ def upload_chunk(resource_url, file_path, total_file_size):
 
 
 def patch_artifact_size(size, artifact_name):
-  """upload-http-client.js"""
+  """Based on patchArtifactSize from upload-http-client.ts"""
   resource_url = utils.get_artifact_url()
   resource_url = _add_url_params(resource_url, {'artifactName': artifact_name})
   logging.debug('resource_url is %s.', resource_url)
@@ -97,7 +95,10 @@ def patch_artifact_size(size, artifact_name):
 
 
 def create_artifact_in_file_container(artifact_name, options):
-  """upload-http-client.js"""
+  """Creates a file container for the new artifact in the remote blob
+  storage/file service. |artifact_name| is the name of the artifact being
+  created. Returns the response form the artifact service if the file container
+  was created successfully."""
   parameters = {
       'Type': 'actions_storage',
       'Name': artifact_name,
@@ -160,7 +161,7 @@ def _do_upload_http_request(url, data, headers, method):
 
 
 def upload_artifact_to_file_container(upload_url, files_to_upload, options):
-  """upload-http-client.js."""
+  """Sequentially uploads |files_to_upload| in chunks to |upload_url|."""
   logging.debug('File concurrency: %d, and chunk size: %d.',
                 config_variables.UPLOAD_FILE_CONCURRENCY,
                 config_variables.UPLOAD_CHUNK_SIZE)

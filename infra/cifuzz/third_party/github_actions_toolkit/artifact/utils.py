@@ -37,7 +37,7 @@ def get_proper_retention(retention, retention_setting):
 
 
 def check_artifact_name(name):
-  """utils.js checkArtifactName."""
+  """utils.ts checkArtifactName."""
   for invalid_char in INVALID_ARTIFACT_NAME_CHARACTERS:
     if invalid_char in name:
       raise Exception(
@@ -84,7 +84,7 @@ def get_upload_headers(  # pylint: disable=too-many-arguments
     uncompressed_length=None,
     content_length=None,
     content_range=None):
-  """utils.js"""
+  """Based on getUploadHeaders implemented in utils.ts"""
   request_options = get_http_request_headers()
   api_version = get_api_version()
   request_options['Accept'] = (
@@ -113,12 +113,12 @@ def get_upload_headers(  # pylint: disable=too-many-arguments
 
 
 def get_api_version():
-  """utils.js"""
+  """Based on getApiVersion from utils.ts"""
   return '6.0-preview'
 
 
 def get_artifact_url(work_flow_run_id=None):
-  """utils.js"""
+  """Based on getArtifactUrl from utils.ts"""
   if work_flow_run_id is None:
     work_flow_run_id = config_variables.get_work_flow_run_id()
   runtime_url = config_variables.get_runtime_url()
