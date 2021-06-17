@@ -44,6 +44,5 @@ def generate_coverage_report(fuzz_target_paths, out_dir, clusterfuzz_deployment,
   """Generates a coverage report using Clang's source based coverage."""
   download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment)
   run_coverage_command(out_dir, config)
-  print('os.listdir(out_dir)', os.listdir(out_dir))
-  shutil.copytree(os.path.join(out_dir, 'coverage'),
-                  os.path.join(out_dir, 'artifacts', 'coverage'))
+  shutil.copytree(os.path.join(out_dir, 'report'),
+                  os.path.join(out_dir, 'artifacts', 'report'))
