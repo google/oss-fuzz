@@ -31,7 +31,6 @@ RUN apt-get update && apt-get install -y \
  gengetopt \
  wget \
  python \
-
  mercurial
 
 ENV GNULIB_TOOL $SRC/gnulib/gnulib-tool
