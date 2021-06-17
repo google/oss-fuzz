@@ -4,6 +4,7 @@ language: c++
 primary_contact: "guenter@pocoproject.org"
 auto_ccs:
   - "Adam@adalogics.com"
+  - "alex@pocoproject.org"
 sanitizers:
   - address
   - undefined
