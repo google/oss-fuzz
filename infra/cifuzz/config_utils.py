@@ -156,8 +156,7 @@ class BuildFuzzersConfig(BaseConfig):
       self.base_commit = event_data['before']
       logging.debug('base_commit: %s', self.base_commit)
     else:
-      self.pr_ref = 'refs/pull/{0}/merge'.format(
-          event_data['pull_request']['number'])
+      self.pr_ref = f'refs/pull/{event_data["pull_request"]["number"]}/merge'
       logging.debug('pr_ref: %s', self.pr_ref)
 
     self.git_url = event_data['repository']['html_url']
