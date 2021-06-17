@@ -100,7 +100,7 @@ class FuzzTarget:
           '--volumes-from', docker_container, '-e', 'OUT=' + self.out_dir
       ]
     else:
-      command += ['-v', '%s:%s' % (self.out_dir, '/out')]
+      command += ['-v', f'{self.out_dir):/out']
 
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
@@ -188,7 +188,7 @@ class FuzzTarget:
     """
 
     if not os.path.exists(target_path):
-      raise ReproduceError('Target %s not found.' % target_path)
+      raise ReproduceError(f'Target {target_path} not found.')
 
     os.chmod(target_path, stat.S_IRWXO)
 
@@ -203,8 +203,8 @@ class FuzzTarget:
     else:
       command += [
           '-v',
-          '%s:/out' % target_dirname, '-v',
-          '%s:/testcase' % testcase
+          f'{target_dirname}:/out', '-v',
+          f'{testcase}:/testcase',
       ]
 
     command += [
@@ -239,7 +239,7 @@ class FuzzTarget:
       ReproduceError if we can't attempt to reproduce the crash on the PR build.
     """
     if not os.path.exists(testcase):
-      raise ReproduceError('Testcase %s not found.' % testcase)
+      raise ReproduceError(f'Testcase {testcase} not found.')
 
     try:
       reproducible_on_code_change = self.is_reproducible(

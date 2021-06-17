@@ -236,7 +236,7 @@ def check_fuzzer_build(out_dir,
   if container:
     command += ['-e', 'OUT=' + out_dir, '--volumes-from', container]
   else:
-    command += ['-v', '%s:/out' % out_dir]
+    command += ['-v', f'{out_dir}:/out']
   command.extend(['-t', docker.BASE_RUNNER_TAG, 'test_all.py'])
   result = helper.docker_run(command)
   if not result:
@@ -261,9 +261,9 @@ def _get_docker_build_fuzzers_args_not_container(host_out_dir, host_repo_path):
       '-e',
       'OUT=' + image_out_dir,
       '-v',
-      '%s:%s' % (host_out_dir, image_out_dir),
+      f'{host_out_dir}:{image_out_dir}',
       '-v',
-      '%s:%s' % (host_repo_path, host_repo_path),
+      f'{host_repo_path}:{host_repo_path}',
   ]
 
 
