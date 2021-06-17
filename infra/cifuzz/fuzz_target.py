@@ -100,7 +100,7 @@ class FuzzTarget:
           '--volumes-from', docker_container, '-e', 'OUT=' + self.out_dir
       ]
     else:
-      command += ['-v', f'{self.out_dir):/out']
+      command += ['-v', f'{self.out_dir}:/out']
 
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
@@ -203,7 +203,8 @@ class FuzzTarget:
     else:
       command += [
           '-v',
-          f'{target_dirname}:/out', '-v',
+          f'{target_dirname}:/out',
+          '-v',
           f'{testcase}:/testcase',
       ]
 
