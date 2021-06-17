@@ -190,8 +190,8 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
       self.test_target.out_dir = tmp_dir
       self.assertTrue(self.test_target.is_crash_reportable(self.testcase_path))
     mocked_info.assert_called_with(
-        'The crash doesn\'t reproduce on ClusterFuzz (old) builds. '
-        'Crash is novel.')
+        'The crash doesn\'t reproduce on previous build. '
+        'Code change (pr/commit) introduced crash.')
 
   # yapf: disable
   @parameterized.parameterized.expand([
@@ -238,8 +238,9 @@ class IsCrashReportableTest(fake_filesystem_unittest.TestCase):
     mocked_is_reproducible.assert_any_call(self.testcase_path,
                                            self.oss_fuzz_target_path)
     mocked_info.assert_called_with(
-        'Could not run ClusterFuzz (old) build of target to determine if this '
-        'code change (pr/commit) introduced crash. Assuming crash is novel.')
+        'Could not run previous build of target to determine if this code '
+        'change (pr/commit) introduced crash. Assuming crash was newly '
+        'introduced.')
 
 
 if __name__ == '__main__':

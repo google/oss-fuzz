@@ -43,8 +43,8 @@ BUFFER_TIME = 10
 
 # Log message if we can't check if crash reproduces on an recent build.
 COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE = (
-    'Could not run ClusterFuzz (old) build of target to determine if this '
-    'code change (pr/commit) introduced crash. Assuming crash is novel.')
+    'Could not run previous build of target to determine if this code change '
+    '(pr/commit) introduced crash. Assuming crash was newly introduced.')
 
 FuzzResult = collections.namedtuple('FuzzResult',
                                     ['testcase', 'stacktrace', 'corpus_path'])
@@ -101,6 +101,8 @@ class FuzzTarget:
     else:
       command += ['-v', '%s:%s' % (self.out_dir, '/out')]
 
+    # TODO(metzman): Stop using /out for artifacts and corpus. Use another
+    # directory.
     # If corpus can be downloaded use it for fuzzing.
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name, self.out_dir)
@@ -118,8 +120,8 @@ class FuzzTarget:
         options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
 
     command.append(run_fuzzer_command)
-    logging.info('Running command: %s', ' '.join(command))
 
+    logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -261,6 +263,8 @@ class FuzzTarget:
   def is_crash_novel(self, testcase):
     """Returns whether or not the crash is new. A crash is considered new if it
     can't be reproduced on an older ClusterFuzz build of the target."""
+    if not os.path.exists(testcase):
+      raise ReproduceError('Testcase %s not found.' % testcase)
     clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build(
         self.out_dir)
     if not clusterfuzz_build_dir:
@@ -282,12 +286,11 @@ class FuzzTarget:
       return True
 
     if reproducible_on_clusterfuzz_build:
-      logging.info('The crash is reproducible on ClusterFuzz (old) builds. '
-                   'Crash is not novel.')
+      logging.info('The crash is reproducible on previous build. '
+                   'Code change (pr/commit) did not introduce crash.')
       return False
-    logging.info(
-        'The crash doesn\'t reproduce on ClusterFuzz (old) builds. '
-        'Crash is novel.')
+    logging.info('The crash doesn\'t reproduce on previous build. '
+                 'Code change (pr/commit) introduced crash.')
     return True
 
   def get_testcase(self, error_bytes):
