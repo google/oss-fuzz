@@ -1,0 +1,13 @@
+
+homepage: "https://github.com/google/maldoca"
+language: c++
+primary_contact: "bgrill@google.com"
+auto_ccs:
+  - "dtao@google.com"
+  - "anise@google.com"
+sanitizers:
+  - address
+  - memory:
+     experimental: True
+  - undefined
+main_repo: 'git@github.com:google/maldoca.git'
