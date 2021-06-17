@@ -22,7 +22,7 @@ def run_coverage_command(out_dir, config):
   """Runs the coverage command in base-runner to generate a coverage report."""
   docker_args, _ = docker.get_base_docker_run_args(out_dir, config.sanitizer,
                                                    config.language)
-  docker_args += ['-e', 'COVERAGE_EXTRA_ARGS=', '-t', docker.BASE_RUNNER_TAG, 'coverage']
+  docker_args += ['-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT', '-t', docker.BASE_RUNNER_TAG, 'coverage']
   helper.docker_run(docker_args)
 
 
