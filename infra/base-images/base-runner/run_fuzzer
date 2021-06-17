@@ -26,8 +26,8 @@ DEBUGGER=${DEBUGGER:-}
 FUZZER=$1
 shift
 
-# This option is set by CIFuzz which also passes in a corpus directory
-# containing the fuzzer's corpus from ClusterFuzz.
+# This env var is set by CIFuzz. CIFuzz fills this directory with the corpus
+# from ClusterFuzz.
 if [ -z $CORPUS_DIR ]
 then
   CORPUS_DIR="/tmp/${FUZZER}_corpus"
