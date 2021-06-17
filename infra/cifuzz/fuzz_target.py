@@ -102,6 +102,12 @@ class FuzzTarget:
     else:
       command += ['-v', '%s:%s' % (self.out_dir, '/out')]
 
+    # If corpus can be downloaded use it for fuzzing.
+    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
+        self.target_name, self.out_dir)
+    if self.latest_corpus_path:
+      command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]es
+
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'SANITIZER=' + self.config.sanitizer, '-e', 'CIFUZZ=True', '-e',
@@ -112,14 +118,9 @@ class FuzzTarget:
         fuzz_target=self.target_name,
         options=LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration))
 
-    # If corpus can be downloaded use it for fuzzing.
-    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name, self.out_dir)
-    if self.latest_corpus_path:
-      run_fuzzer_command = run_fuzzer_command + ' ' + self.latest_corpus_path
     command.append(run_fuzzer_command)
-
     logging.info('Running command: %s', ' '.join(command))
+
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -270,24 +271,22 @@ class FuzzTarget:
 
     clusterfuzz_target_path = os.path.join(clusterfuzz_build_dir,
                                            self.target_name)
+
     try:
-      reproducible_on_clusterfuzz_build = self.is_reproducible(
-          testcase, clusterfuzz_target_path)
+      reproducible_on_clusterfuzz_build = self.is_reproducible(testcase, clusterfuzz_target_path)
     except ReproduceError:
       # This happens if the project has ClusterFuzz builds, but the fuzz target
       # is not in it (e.g. because the fuzz target is new).
       logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
       return True
 
-    if not reproducible_on_clusterfuzz_build:
-      logging.info('The crash is reproducible. The crash doesn\'t reproduce '
-                   'on old builds. This code change probably introduced the '
-                   'crash.')
-      return True
-
-    logging.info('The crash is reproducible on old builds '
-                 '(without the current code change).')
-    return False
+    if reproducible_on_clusterfuzz_build:
+      logging.info('The crash is reproducible on old builds '
+                   '(without the current code change). Crash is not novel.')
+      return False
+    logging.info('The crash doesn\'t reproduce on ClusterFuzz (old) builds.'
+                 'This code change probably introduced the crash. Crash is novel.')
+    return True
 
   def get_testcase(self, error_bytes):
     """Gets the file from a fuzzer run stacktrace.
@@ -298,6 +297,7 @@ class FuzzTarget:
     Returns:
       The path to the testcase or None if not found.
     """
+    # TODO(metzman): Stop parsing and use libFuzzers' artifact_prefix option instead.
     match = re.search(rb'\bTest unit written to \.\/([^\s]+)', error_bytes)
     if match:
       return os.path.join(self.out_dir, match.group(1).decode('utf-8'))
