@@ -60,14 +60,14 @@ def get_base_docker_run_args(out_dir, sanitzer='address', language='c++'):
   # !!!
   docker_args = _DEFAULT_DOCKER_RUN_ARGS[:]
   docker_args += [
-      '-e', 'SANITIZER=' + sanitizer, '-e', 'FUZZING_LANGUAGE=' + language
+      '-e', f'SANITIZER={sanitizer}', '-e', f'FUZZING_LANGUAGE={language}',
   ]
   docker_container = utils.get_container_name()
   if docker_container:
     docker_args += ['--volumes-from', docker_container, '-e', 'OUT=' + out_dir]
   else:
-    docker_args += ['-v', '%s:/out' % out_dir]
-  return docker_args, docker_contianer
+    docker_args += ['-v', f'{out_dir}:/out']
+  return docker_args, docker_container
 
 
 def get_base_docker_run_command(out_dir, sanitzer='address', language='c++'):
