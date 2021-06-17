@@ -289,7 +289,7 @@ def check_license(paths):
   for path in paths:
     path_parts = str(path).split(os.sep)
     if any(path_part == THIRD_PARTY_DIR_NAME for path_part in path_parts):
-        continue
+      continue
     filename = os.path.basename(path)
     extension = os.path.splitext(path)[1]
     if (filename not in _CHECK_LICENSE_FILENAMES and
