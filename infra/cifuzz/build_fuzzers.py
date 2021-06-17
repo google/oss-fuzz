@@ -118,8 +118,7 @@ class Builder:  # pylint: disable=too-many-instance-attributes
     """Post-build step for MSAN builds. Patches the build to use MSAN
     libraries."""
     helper.docker_run([
-        '--volumes-from', container, '-e',
-        f'WORK={self.work_dir}',
+        '--volumes-from', container, '-e', f'WORK={self.work_dir}',
         docker.MSAN_LIBS_BUILDER_TAG, 'patch_build.py', '/out'
     ])
 
