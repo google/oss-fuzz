@@ -22,13 +22,14 @@ def run_coverage_command(out_dir, config):
   """Runs the coverage command in base-runner to generate a coverage report."""
   docker_args, _ = docker.get_base_docker_run_args(out_dir, config.sanitizer,
                                                    config.language)
-  docker_args += ['-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT', '-t', docker.BASE_RUNNER_TAG, 'coverage']
+  docker_args += ['-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-t', docker.BASE_RUNNER_TAG, 'coverage']
   helper.docker_run(docker_args)
 
 
 def download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment):
   """Downloads corpora to |out_dir| for the fuzz targets in |fuzz_target_paths|
   using clusterfuzz_deployment| to download corpora from ClusterFuzz/OSS-Fuzz"""
+  # TODO(metzman): Download to corpus.
   for target_path in fuzz_target_paths:
     target = os.path.basename(target_path)
     clusterfuzz_deployment.download_corpus(target, out_dir)
