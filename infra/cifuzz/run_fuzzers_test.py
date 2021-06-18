@@ -304,6 +304,10 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.assertEqual(mocked_run_fuzz_target.call_count, 2)
 
 
+class CoverageIntegrationTest(unittest.TestCase):
+
+
+
 class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                        unittest.TestCase):
   """Integration tests for build_fuzzers with an ASAN build."""
