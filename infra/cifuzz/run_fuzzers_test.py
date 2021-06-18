@@ -255,9 +255,18 @@ class CiFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
 
 class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   """Tests that CiFuzzTargetRunner works as intended."""
+  WORKSPACE = 'workspace'
+  STACKTRACE = b'stacktrace'
+  CORPUS_DIR = 'corpus'
 
   def setUp(self):
     self.setUpPyfakefs()
+    self.out_dir = os.path.join(self.WORKSPACE, 'out')
+    self.fs.create_dir(self.out_dir)
+    self.testcase1 = os.path.join(self.WORKSPACE, 'testcase-aaa')
+    self.fs.create_file(self.testcase1)
+    self.testcase2 = os.path.join(self.WORKSPACE, 'testcase-bbb')
+    self.fs.create_file(self.testcase2)
 
   @mock.patch('clusterfuzz_deployment.ClusterFuzzLite.upload_latest_build',
               return_value=True)
@@ -269,37 +278,29 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
                                   mocked_run_fuzz_target,
                                   mocked_get_fuzz_targets,
-                                  mocked_upload_directory, _):
+                                  _, __):
     """Tests that run_fuzz_targets doesn't quit on the first crash it finds."""
-    workspace = 'workspace'
-    out_path = os.path.join(workspace, 'out')
-    self.fs.create_dir(out_path)
+
     config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                            workspace=workspace,
+                                            workspace=self.WORKSPACE,
                                             project_name=EXAMPLE_PROJECT,
                                             build_integration_path='/')
     runner = run_fuzzers.BatchFuzzTargetRunner(config)
 
     mocked_get_fuzz_targets.return_value = ['target1', 'target2']
     runner.initialize()
-    testcase1 = os.path.join(workspace, 'testcase-aaa')
-    testcase2 = os.path.join(workspace, 'testcase-bbb')
-    self.fs.create_file(testcase1)
-    self.fs.create_file(testcase2)
-    stacktrace = b'stacktrace'
     call_count = 0
-    corpus_dir = 'corpus'
 
     def mock_run_fuzz_target(_):
       nonlocal call_count
       if call_count == 0:
-        testcase = testcase1
+        testcase = self.testcase1
       elif call_count == 1:
-        testcase = testcase2
+        testcase = self.testcase2
       assert call_count != 2
       call_count += 1
-      self.fs.create_dir(corpus_dir)
-      return fuzz_target.FuzzResult(testcase, stacktrace, corpus_dir)
+      self.fs.create_dir(self.CORPUS_DIR)
+      return fuzz_target.FuzzResult(testcase, self.STACKTRACE, self.CORPUS_DIR)
 
     mocked_run_fuzz_target.side_effect = mock_run_fuzz_target
     magic_mock = mock.MagicMock()

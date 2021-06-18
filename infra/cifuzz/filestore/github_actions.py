@@ -17,7 +17,7 @@ import logging
 
 from cifuzz import http_utils
 from cifuzz import filestore
-from cifuzz.github_actions_toolkit.artifact import artifact_client
+from cifuzz.third_party.github_actions_toolkit.artifact import artifact_client
 from cifuzz.filestore import github_api
 
 
@@ -32,8 +32,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
         'Accept': 'application/vnd.github.v3+json'
     }
 
-  def upload_directory(self, artifact_name, directory):  # pylint: disable=no-self-use
-    """Uploads |directory| as artifact with name |artifact_name|."""
+  def upload_directory(self, name, directory):  # pylint: disable=no-self-use
+    """Uploads |directory| as artifact with |name|."""
     directory = os.path.abspath(directory)
 
     # Get file paths.
@@ -47,7 +47,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     # TODO(metzman): Zip so that we can upload directories within directories
     # and save time?
 
-    return artifact_client.upload_artifact(artifact_name, file_paths, directory)
+    return artifact_client.upload_artifact(name, file_paths, directory)
 
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
@@ -69,8 +69,8 @@ class GithubActionsFilestore(filestore.BaseFilestore):
                                      self.config.project_repo_name,
                                      self.http_headers)
 
-  def download_latest_build(self, name, build_dir):
-    """Downloads latest build with name |name| to |build_dir|."""
+  def download_latest_build(self, name, dst_directory):
+    """Downloads latest build with name |name| to |dst_directory|."""
     artifacts = self._list_artifacts()
     build_artifact = github_api.find_artifact(name, artifacts)
     if not build_artifact:
@@ -80,5 +80,5 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     url = build_artifact['archive_download_url']
     logging.debug('Build artifact url: %s.', url)
     return http_utils.download_and_unpack_zip(url,
-                                              build_dir,
+                                              dst_directory,
                                               headers=self.http_headers)

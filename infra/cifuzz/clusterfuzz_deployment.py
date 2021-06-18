@@ -165,13 +165,6 @@ class ClusterFuzzLite(BaseClusterFuzzDeployment):
     except Exception as error:  # pylint: disable=broad-except
       logging.error('Failed to upload crashes. Error: %s.', error)
 
-  def upload_latest_build(self, build_dir):
-    """Uploads the latest build to the filestore.
-    Returns:
-      True on success.
-    """
-    logging.info('upload_latest_build not implemented for ClusterFuzzLite.')
-
 
 class OSSFuzz(BaseClusterFuzzDeployment):
   """The OSS-Fuzz ClusterFuzz deployment."""
