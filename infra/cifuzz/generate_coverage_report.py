@@ -26,7 +26,7 @@ def run_coverage_command(out_dir, config):
       '-e', 'COVERAGE_EXTRA_ARGS=', '-e', 'HTTP_PORT=', '-t',
       docker.BASE_RUNNER_TAG, 'coverage'
   ]
-  helper.docker_run(docker_args)
+  return helper.docker_run(docker_args)
 
 
 def download_corpora(out_dir, fuzz_target_paths, clusterfuzz_deployment):

@@ -75,7 +75,6 @@ class GetBaseDockerRunArgsTest(unittest.TestCase):
     docker_args, docker_container = docker.get_base_docker_run_args(
         OUT_DIR, SANITIZER, LANGUAGE)
     self.assertEqual(docker_container, None)
-    expected_docker_args = []
     expected_docker_args = [
         '--cap-add', 'SYS_PTRACE', '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'ARCHITECTURE=x86_64', '-e', 'CIFUZZ=True', '-e',
@@ -95,11 +94,10 @@ class GetBaseDockerRunCommandTest(unittest.TestCase):
     docker_args, docker_container = docker.get_base_docker_run_command(
         OUT_DIR, SANITIZER, LANGUAGE)
     self.assertEqual(docker_container, None)
-    expected_docker_args = []
-    expected_docker_args = [
+    expected_docker_command = [
         'docker', 'run', '--rm', '--privileged', '--cap-add', 'SYS_PTRACE',
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e', 'ARCHITECTURE=x86_64', '-e',
         'CIFUZZ=True', '-e', f'SANITIZER={SANITIZER}', '-e',
         f'FUZZING_LANGUAGE={LANGUAGE}', '-v', f'{OUT_DIR}:/out'
     ]
-    self.assertEqual(docker_args, expected_docker_args)
+    self.assertEqual(docker_args, expected_docker_command)
