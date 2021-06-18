@@ -13,20 +13,27 @@
 # limitations under the License.
 """Tests for filestore_utils."""
 import unittest
+from unittest import mock
 
 import parameterized
 
+import config_utils
 import filestore
 from filestore import github_actions
 import filestore_utils
+import test_helpers
 
 
 class GetFilestoreTest(unittest.TestCase):
   """Tests for get_filestore."""
 
-  @parameterized.parameterized.expand([(config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_GITHUB, github_actions.GithubActionsFilestore)])
+  @parameterized.parameterized.expand([
+      (config_utils.BaseConfig.Platform.EXTERNAL_GENERIC_GITHUB,
+       github_actions.GithubActionsFilestore)
+  ])
   def test_get_filestore(self, platform, filestore_cls):
-    """Tests that get_filestore returns the right filestore given a certain platform."""
+    """Tests that get_filestore returns the right filestore given a certain
+    platform."""
     with mock.patch('config_utils.BaseConfig.platform', return_value=platform):
       run_config = test_helpers.create_run_config()
       filestore_impl = filestore_utils.get_filestore(run_config)
