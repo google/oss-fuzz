@@ -16,7 +16,6 @@
 ################################################################################
 
 # build project
-git apply ../patch.diff
 mkdir build
 cd build
 cmake -DBUILD_SHARED_LIBS=OFF -DENABLE_HDF5=OFF -DENABLE_DAP=OFF ..
