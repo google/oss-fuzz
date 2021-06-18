@@ -363,6 +363,7 @@ class CoverageReportIntegrationTest(unittest.TestCase):
               '/bin/bash', '-c', 'rm -rf /workspace/*'
           ])
 
+
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')
 class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
