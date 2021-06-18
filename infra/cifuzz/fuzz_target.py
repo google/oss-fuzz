@@ -107,6 +107,8 @@ class FuzzTarget:
     self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
         self.target_name, self.out_dir)
     if self.latest_corpus_path:
+      command += docker.get_args_mapping_host_path_to_container(
+          self.latest_corpus_path)
       command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
 
     command += [

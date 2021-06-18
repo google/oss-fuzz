@@ -36,3 +36,9 @@ def delete_images(images):
   command = ['docker', 'rmi', '-f'] + images
   utils.execute(command)
   utils.execute(['docker', 'builder', 'prune', '-f'])
+
+
+def get_args_mapping_host_path_to_container(path):
+  """Get arguments to docker run that will map |path| a path on the host to the
+  same location in the container."""
+  return ['-v', f'{path}:{path}']
