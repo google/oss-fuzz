@@ -23,8 +23,8 @@ import requests
 # pylint: disable=wrong-import-position,import-error
 
 sys.path.append(
-    os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir
-                 ))
+    os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir,
+                 os.path.pardir))
 import retry
 
 ARTIFACTS_LIST_API_URL_UNFORMATTED = (

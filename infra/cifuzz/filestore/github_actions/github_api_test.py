@@ -17,8 +17,10 @@ import unittest
 from filestore.github_actions import github_api
 import test_helpers
 
+
 class GetHttpAuthHeaders(unittest.TestCase):
   """Tests for get_http_auth_headers."""
+
   def test_get_http_auth_headers(self):
     """Tests that get_http_auth_headers returns the correct result."""
     github_token = 'example githubtoken'
@@ -27,5 +29,5 @@ class GetHttpAuthHeaders(unittest.TestCase):
         'Authorization': 'token {token}'.format(token=github_token),
         'Accept': 'application/vnd.github.v3+json',
     }
-    self.assertEqual(expected_headers, github_api.get_http_auth_headers(
-        run_config))
+    self.assertEqual(expected_headers,
+                     github_api.get_http_auth_headers(run_config))
