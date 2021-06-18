@@ -21,7 +21,6 @@ from filestore.github_actions import github_api
 from third_party.github_actions_toolkit.artifact import artifact_client
 
 
-
 class GithubActionsFilestore(filestore.BaseFilestore):
   """Implementation of BaseFilestore using Github actions artifacts. Relies on
   github_actions_toolkit for using the GitHub actions API and the github_api

@@ -56,9 +56,8 @@ class GithubActionsFilestoreTest(unittest.TestCase):
                                              self._get_expected_http_headers())
 
   @mock.patch('logging.warning')
-  @mock.patch(
-      'filestore.github_actions.GithubActionsFilestore._list_artifacts',
-      return_value=None)
+  @mock.patch('filestore.github_actions.GithubActionsFilestore._list_artifacts',
+              return_value=None)
   @mock.patch('filestore.github_actions.github_api.find_artifact',
               return_value=None)
   def test_download_latest_build_no_artifact(self, _, __, mocked_warning):
@@ -72,9 +71,8 @@ class GithubActionsFilestoreTest(unittest.TestCase):
     mocked_warning.assert_called_with('Could not download build: %s.', name)
 
   @mock.patch('logging.warning')
-  @mock.patch(
-      'filestore.github_actions.GithubActionsFilestore._list_artifacts',
-      return_value=None)
+  @mock.patch('filestore.github_actions.GithubActionsFilestore._list_artifacts',
+              return_value=None)
   @mock.patch('filestore.github_actions.github_api.find_artifact',
               return_value=None)
   def test_download_corpus_no_artifact(self, _, __, mocked_warning):
