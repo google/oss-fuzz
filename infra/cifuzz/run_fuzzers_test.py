@@ -317,11 +317,9 @@ class CoverageReportIntegrationTest(unittest.TestCase):
   def setUp(self):
     test_helpers.patch_environ(self)
 
-
   def test_coverage_report(self):
     """Tests generation of coverage reports end-to-end, from building to
     generation."""
-
 
     with tempfile.TemporaryDirectory() as workspace:
       out_dir = os.path.join(workspace, 'out')
@@ -338,18 +336,20 @@ class CoverageReportIntegrationTest(unittest.TestCase):
         self.assertTrue(build_fuzzers.build_fuzzers(build_config))
 
         # Generate report.
-        run_config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
-                                                    workspace=workspace,
-                                                    project_name=EXAMPLE_PROJECT,
-                                                    sanitizer=self.SANITIZER,
-                                                    run_fuzzers_mode='coverage')
+        run_config = test_helpers.create_run_config(
+            fuzz_seconds=FUZZ_SECONDS,
+            workspace=workspace,
+            project_name=EXAMPLE_PROJECT,
+            sanitizer=self.SANITIZER,
+            run_fuzzers_mode='coverage')
         result = run_fuzzers.run_fuzzers(run_config)
         self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
-        expected_summary_path = os.path.join(TEST_DATA_PATH,
-                                             'example_coverage_report_summary.json')
+        expected_summary_path = os.path.join(
+            TEST_DATA_PATH, 'example_coverage_report_summary.json')
         with open(expected_summary_path) as file_handle:
           expected_summary = json.loads(file_handle.read())
-        actual_summary_path = os.path.join(out_dir, 'report', 'linux', 'summary.json')
+        actual_summary_path = os.path.join(out_dir, 'report', 'linux',
+                                           'summary.json')
         with open(actual_summary_path) as file_handle:
           actual_summary = json.loads(file_handle.read())
         self.assertEqual(expected_summary, actual_summary)
@@ -358,10 +358,10 @@ class CoverageReportIntegrationTest(unittest.TestCase):
         # directory is deleted because there are files there that are only
         # writeable by root.
         if os.listdir(workspace):
-          helper.docker_run(['-v', f'{workspace}:/workspace', '-t', docker.BASE_RUNNER_TAG,
-                             '/bin/bash', '-c', 'rm -rf /workspace/*'])
-
-
+          helper.docker_run([
+              '-v', f'{workspace}:/workspace', '-t', docker.BASE_RUNNER_TAG,
+              '/bin/bash', '-c', 'rm -rf /workspace/*'
+          ])
 
 
 class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
