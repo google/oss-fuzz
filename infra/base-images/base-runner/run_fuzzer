@@ -26,12 +26,13 @@ DEBUGGER=${DEBUGGER:-}
 FUZZER=$1
 shift
 
-# This option is set by CIFuzz which also passes in a corpus directory
-# containing the fuzzer's corpus from ClusterFuzz.
-if [ -z $CORPUS_DIR ]
+# This env var is set by CIFuzz. CIFuzz fills this directory with the corpus
+# from ClusterFuzz.
+CORPUS_DIR=${CORPUS_DIR:-}
+if [ -z "$CORPUS_DIR" ]
 then
   CORPUS_DIR="/tmp/${FUZZER}_corpus"
-  rm -rf $CORPUS_DIR
+  rm -rf $CORPUS_DIR && mkdir -p $CORPUS_DIR
 fi
 
 SANITIZER=${SANITIZER:-}
@@ -69,7 +70,6 @@ function get_dictionary() {
   fi
 }
 
-mkdir -p $CORPUS_DIR
 rm -rf $FUZZER_OUT && mkdir -p $FUZZER_OUT
 
 SEED_CORPUS="${FUZZER}_seed_corpus.zip"

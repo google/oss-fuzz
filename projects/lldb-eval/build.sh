@@ -57,5 +57,5 @@ cp $SRC/llvm/bin/lldb-server $OUT/lldb_eval_libfuzzer_test.runfiles/llvm_project
 # OSS-Fuzz rule doesn't handle dynamic dependencies
 # Copy liblldb.so and path RPATH of the fuzz target
 mkdir -p $OUT/lib
-cp -a $SRC/llvm/lib/liblldb.so* $OUT/lib
+cp $SRC/llvm/lib/liblldb.so* $OUT/lib
 patchelf --set-rpath '$ORIGIN/lib' $OUT/lldb_eval_libfuzzer_test

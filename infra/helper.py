@@ -139,6 +139,10 @@ def get_parser():  # pylint: disable=too-many-statements
   build_image_parser.add_argument('--pull',
                                   action='store_true',
                                   help='Pull latest base image.')
+  build_image_parser.add_argument('--cache',
+                                  action='store_true',
+                                  default=False,
+                                  help='Use docker cache when building image.')
   build_image_parser.add_argument('--no-pull',
                                   action='store_true',
                                   help='Do not pull latest base image.')
@@ -380,7 +384,7 @@ def _add_environment_args(parser):
                       help="set environment variable e.g. VAR=value")
 
 
-def build_image_impl(image_name, no_cache=False, pull=False):
+def build_image_impl(image_name, cache=True, pull=False):
   """Builds image."""
   proj_is_base_image = is_base_image(image_name)
   if proj_is_base_image:
@@ -396,7 +400,7 @@ def build_image_impl(image_name, no_cache=False, pull=False):
     return False
 
   build_args = []
-  if no_cache:
+  if not cache:
     build_args.append('--no-cache')
 
   build_args += [
@@ -508,7 +512,7 @@ def build_image(args):
     print('Using cached base images...')
 
   # If build_image is called explicitly, don't use cache.
-  if build_image_impl(args.project_name, no_cache=True, pull=pull):
+  if build_image_impl(args.project_name, cache=args.cache, pull=pull):
     return True
 
   return False
@@ -522,10 +526,9 @@ def build_fuzzers_impl(  # pylint: disable=too-many-arguments,too-many-locals,to
     architecture,
     env_to_add,
     source_path,
-    no_cache=False,
     mount_path=None):
   """Builds fuzzers."""
-  if not build_image_impl(project_name, no_cache=no_cache):
+  if not build_image_impl(project_name):
     return False
 
   project_out_dir = _get_out_dir(project_name)

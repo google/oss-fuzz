@@ -266,6 +266,7 @@ _CHECK_LICENSE_EXTENSIONS = [
     '.cc',
     '.cpp',
     '.css',
+    '.Dockerfile',
     '.h',
     '.htm',
     '.html',
@@ -274,6 +275,7 @@ _CHECK_LICENSE_EXTENSIONS = [
     '.py',
     '.sh',
 ]
+THIRD_PARTY_DIR_NAME = 'third_party'
 
 _LICENSE_STRING = 'http://www.apache.org/licenses/LICENSE-2.0'
 
@@ -285,6 +287,9 @@ def check_license(paths):
 
   success = True
   for path in paths:
+    path_parts = str(path).split(os.sep)
+    if any(path_part == THIRD_PARTY_DIR_NAME for path_part in path_parts):
+      continue
     filename = os.path.basename(path)
     extension = os.path.splitext(path)[1]
     if (filename not in _CHECK_LICENSE_FILENAMES and
