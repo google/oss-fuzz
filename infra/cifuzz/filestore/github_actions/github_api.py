@@ -21,9 +21,10 @@ import sys
 import requests
 
 # pylint: disable=wrong-import-position,import-error
-x = os.path.join(os.path.pardir, os.path.pardir, os.path.pardir, os.path.abspath(__file__))
-import ipdb; ipdb.set_trace()
-sys.path.append(os.path.join(os.path.pardir, os.path.pardir, os.path.pardir, os.path.abspath(__file__)))
+
+sys.path.append(
+    os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir, os.path.pardir
+                 ))
 import retry
 
 ARTIFACTS_LIST_API_URL_UNFORMATTED = (

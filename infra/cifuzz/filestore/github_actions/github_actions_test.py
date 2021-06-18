@@ -19,7 +19,7 @@ from unittest import mock
 
 # pylint: disable=wrong-import-position
 INFRA_DIR = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.append(INFRA_DIR)
 
 from cifuzz.filestore import github_actions
@@ -41,7 +41,7 @@ class GithubActionsFilestoreTest(unittest.TestCase):
         'Accept': 'application/vnd.github.v3+json',
     }
 
-  @mock.patch('cifuzz.filestore.github_api.list_artifacts')
+  @mock.patch('cifuzz.filestore.github_actions.github_api.list_artifacts')
   def test_list_artifacts(self, mocked_list_artifacts):
     """Tests that _list_artifacts works as intended."""
     owner = 'exampleowner'
@@ -58,7 +58,7 @@ class GithubActionsFilestoreTest(unittest.TestCase):
   @mock.patch(
       'cifuzz.filestore.github_actions.GithubActionsFilestore._list_artifacts',
       return_value=None)
-  @mock.patch('cifuzz.filestore.github_api.find_artifact', return_value=None)
+  @mock.patch('cifuzz.filestore.github_actions.github_api.find_artifact', return_value=None)
   def test_download_latest_build_no_artifact(self, _, __, mocked_warning):
     """Tests that download_latest_build returns False and doesn't exception when
     find_artifact can't find an artifact."""
@@ -73,7 +73,7 @@ class GithubActionsFilestoreTest(unittest.TestCase):
   @mock.patch(
       'cifuzz.filestore.github_actions.GithubActionsFilestore._list_artifacts',
       return_value=None)
-  @mock.patch('cifuzz.filestore.github_api.find_artifact', return_value=None)
+  @mock.patch('cifuzz.filestore.github_actions.github_api.find_artifact', return_value=None)
   def test_download_corpus_no_artifact(self, _, __, mocked_warning):
     """Tests that download_corpus_build returns False and doesn't exception when
     find_artifact can't find an artifact."""

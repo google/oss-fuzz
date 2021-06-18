@@ -35,7 +35,7 @@ class GetFilestoreTest(unittest.TestCase):
   def test_get_filestore(self, config_kwargs, filestore_cls):
     """Tests that get_filestore returns the right filestore given a certain
     platform."""
-    run_config = test_helpers.create_run_config(*config_kwargs)
+    run_config = test_helpers.create_run_config(**config_kwargs)
     filestore_impl = filestore_utils.get_filestore(run_config)
     self.assertIsInstance(filestore_impl, filestore_cls)
 
