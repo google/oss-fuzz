@@ -23,8 +23,8 @@ INFRA_DIR = os.path.dirname(
         os.path.abspath(__file__)))))
 sys.path.append(INFRA_DIR)
 
-from cifuzz.filestore import github_actions
-from cifuzz import test_helpers
+from filestore import github_actions
+import test_helpers
 
 # pylint: disable=protected-access,no-self-use
 

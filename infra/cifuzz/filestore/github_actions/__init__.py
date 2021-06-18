@@ -15,10 +15,11 @@
 import os
 import logging
 
-from cifuzz import http_utils
-from cifuzz import filestore
-from cifuzz.third_party.github_actions_toolkit.artifact import artifact_client
-from cifuzz.filestore.github_actions import github_api
+import http_utils
+import filestore
+from filestore.github_actions import github_api
+from third_party.github_actions_toolkit.artifact import artifact_client
+
 
 
 class GithubActionsFilestore(filestore.BaseFilestore):
