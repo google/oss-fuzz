@@ -18,19 +18,20 @@ import logging
 from cifuzz import http_utils
 from cifuzz import filestore
 from cifuzz.third_party.github_actions_toolkit.artifact import artifact_client
-from cifuzz.filestore import github_api
+from cifuzz.filestore.github_actions import github_api
 
 
 class GithubActionsFilestore(filestore.BaseFilestore):
-  """Implementation of BaseFilestore using Github actions artifacts."""
+  """Implementation of BaseFilestore using Github actions artifacts. Relies on
+  github_actions_toolkit for using the GitHub actions API and the github_api
+  module for using GitHub's standard API. We need to use both because the GitHub
+  actions API is the only way to upload an artifact but it does not support
+  downloading artifacts from other runs. The standard GitHub API does support
+  this however."""
 
   def __init__(self, config):
     super().__init__(config)
-    authorization = 'token {token}'.format(token=self.config.github_token)
-    self.http_headers = {
-        'Authorization': authorization,
-        'Accept': 'application/vnd.github.v3+json'
-    }
+    self.github_api_http_headers = github_api.get_http_auth_headers(config)
 
   def upload_directory(self, name, directory):  # pylint: disable=no-self-use
     """Uploads |directory| as artifact with |name|."""
@@ -60,14 +61,14 @@ class GithubActionsFilestore(filestore.BaseFilestore):
       return False
     url = corpus_artifact['archive_download_url']
     logging.debug('Corpus artifact url: %s.', url)
-    return http_utils.download_and_unpack_zip(url,
-                                              dst_directory,
-                                              headers=self.http_headers)
+    return http_utils.download_and_unpack_zip(
+        url, dst_directory, headers=self.github_api_http_headers)
 
   def _list_artifacts(self):
+    """Returns a list of artifacts."""
     return github_api.list_artifacts(self.config.project_repo_owner,
                                      self.config.project_repo_name,
-                                     self.http_headers)
+                                     self.github_api_http_headers)
 
   def download_latest_build(self, name, dst_directory):
     """Downloads latest build with name |name| to |dst_directory|."""
@@ -79,6 +80,5 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
     url = build_artifact['archive_download_url']
     logging.debug('Build artifact url: %s.', url)
-    return http_utils.download_and_unpack_zip(url,
-                                              dst_directory,
-                                              headers=self.http_headers)
+    return http_utils.download_and_unpack_zip(
+        url, dst_directory, headers=self.github_api_http_headers)

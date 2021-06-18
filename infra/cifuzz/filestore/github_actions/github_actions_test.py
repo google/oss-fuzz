@@ -41,12 +41,6 @@ class GithubActionsFilestoreTest(unittest.TestCase):
         'Accept': 'application/vnd.github.v3+json',
     }
 
-  def test_http_headers(self):
-    """Tests that __init__ sets self.http_headers correctly."""
-    config = test_helpers.create_run_config(github_token=self.github_token)
-    filestore = github_actions.GithubActionsFilestore(config)
-    self.assertEqual(filestore.http_headers, self._get_expected_http_headers())
-
   @mock.patch('cifuzz.filestore.github_api.list_artifacts')
   def test_list_artifacts(self, mocked_list_artifacts):
     """Tests that _list_artifacts works as intended."""

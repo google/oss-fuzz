@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module for dealing with the github API."""
+"""Module for dealing with the GitHub API. This is different from
+github_actions_toolkit which only deals with the actions API. We need to use
+both."""
 import logging
 import os
 import sys
@@ -19,7 +21,9 @@ import sys
 import requests
 
 # pylint: disable=wrong-import-position,import-error
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+x = os.path.join(os.path.pardir, os.path.pardir, os.path.pardir, os.path.abspath(__file__))
+import ipdb; ipdb.set_trace()
+sys.path.append(os.path.join(os.path.pardir, os.path.pardir, os.path.pardir, os.path.abspath(__file__)))
 import retry
 
 ARTIFACTS_LIST_API_URL_UNFORMATTED = (
@@ -29,6 +33,15 @@ _MAX_ITEMS_PER_PAGE = 100
 
 _GET_ATTEMPTS = 3
 _GET_BACKOFF = 1
+
+
+def get_http_auth_headers(config):
+  """Returns HTTP headers for authentication to the API."""
+  authorization = 'token {token}'.format(token=config.github_token)
+  return {
+      'Authorization': authorization,
+      'Accept': 'application/vnd.github.v3+json'
+  }
 
 
 def _get_artifacts_list_api_url(repo_owner, repo_name):

@@ -17,7 +17,6 @@ from unittest import mock
 
 import parameterized
 
-import config_utils
 import filestore
 from filestore import github_actions
 import filestore_utils
@@ -28,14 +27,15 @@ class GetFilestoreTest(unittest.TestCase):
   """Tests for get_filestore."""
 
   @parameterized.parameterized.expand([
-      (config_utils.BaseConfig.Platform.EXTERNAL_GITHUB,
-       github_actions.GithubActionsFilestore)
+      ({
+          'build_integration_path': '/',
+          'is_github': True,
+      }, github_actions.GithubActionsFilestore),
   ])
-  def test_get_filestore(self, platform, filestore_cls):
+  def test_get_filestore(self, config_kwargs, filestore_cls):
     """Tests that get_filestore returns the right filestore given a certain
     platform."""
-    run_config = test_helpers.create_run_config(build_integration_path='/',
-                                                is_github=True)
+    run_config = test_helpers.create_run_config(*config_kwargs)
     filestore_impl = filestore_utils.get_filestore(run_config)
     self.assertIsInstance(filestore_impl, filestore_cls)
 
