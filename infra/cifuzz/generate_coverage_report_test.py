@@ -25,6 +25,8 @@ SANITIZER = 'coverage'
 
 
 class TestRunCoverageCommand(unittest.TestCase):
+    """Tests run_coverage_command"""
+
     @mock.patch('helper.docker_run')
     def test_run_coverage_command(self, mocked_docker_run):  # pylint: disable=no-self-use
         """Tests that run_coverage_command works as intended."""
@@ -41,3 +43,15 @@ class TestRunCoverageCommand(unittest.TestCase):
                                                 sanitizer=SANITIZER)
         generate_coverage_report.run_coverage_command(OUT_DIR, config)
         mocked_docker_run.assert_called_with(expected_docker_args)
+
+class DownloadCorporaTest(unittest.TestCase):
+    def test_download_corpora(self):
+        clusterfuzz_deployment = mock.Mock()
+        fuzz_target_paths = ['/path/to/fuzzer1', '/path/to/fuzzer2']
+        expected_calls = [
+            mock.call('fuzzer1', OUT_DIR),
+            mock.call('fuzzer2', OUT_DIR)
+        ]
+        generate_coverage_report.download_corpora(OUT_DIR, fuzz_target_paths,
+                                                  clusterfuzz_deployment)
+        clusterfuzz_deployment.download_corpus.assert_has_calls(expected_calls)
