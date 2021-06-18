@@ -2,7 +2,7 @@
 import logging
 import os
 
-from github_actions_toolkit.artifact import utils
+from third_party.github_actions_toolkit.artifact import utils
 
 
 class UploadSpecification:  # pylint: disable=too-few-public-methods
