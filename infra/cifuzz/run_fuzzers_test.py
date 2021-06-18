@@ -66,6 +66,7 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
       result = run_fuzzers.run_fuzzers(config)
     self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
 
+
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
                  'INTEGRATION_TESTS=1 not set')
 class RunMemoryFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
@@ -78,8 +79,9 @@ class RunMemoryFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
     """Tests run_fuzzers with a valid MSAN build."""
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'memory')
 
+
 @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
-                   'INTEGRATION_TESTS=1 not set')
+                 'INTEGRATION_TESTS=1 not set')
 class RunUndefinedFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
                                         unittest.TestCase):
   """Integration test for build_fuzzers with an UBSAN build."""
