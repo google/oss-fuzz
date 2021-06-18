@@ -277,8 +277,7 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
   @mock.patch('run_fuzzers.BatchFuzzTargetRunner.create_fuzz_target_obj')
   def test_run_fuzz_targets_quits(self, mocked_create_fuzz_target_obj,
                                   mocked_run_fuzz_target,
-                                  mocked_get_fuzz_targets,
-                                  _, __):
+                                  mocked_get_fuzz_targets, _, __):
     """Tests that run_fuzz_targets doesn't quit on the first crash it finds."""
 
     config = test_helpers.create_run_config(fuzz_seconds=FUZZ_SECONDS,
