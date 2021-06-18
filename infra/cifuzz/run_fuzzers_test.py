@@ -67,27 +67,27 @@ class RunFuzzerIntegrationTestMixin:  # pylint: disable=too-few-public-methods,i
     self.assertEqual(result, run_fuzzers.RunFuzzersResult.NO_BUG_FOUND)
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class RunMemoryFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
                                      unittest.TestCase):
   """Integration test for build_fuzzers with an MSAN build."""
   FUZZER_DIR = MEMORY_FUZZER_DIR
   FUZZER = MEMORY_FUZZER
 
-  @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
-                   'INTEGRATION_TESTS=1 not set')
   def test_run_with_memory_sanitizer(self):
     """Tests run_fuzzers with a valid MSAN build."""
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'memory')
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class RunUndefinedFuzzerIntegrationTest(RunFuzzerIntegrationTestMixin,
                                         unittest.TestCase):
   """Integration test for build_fuzzers with an UBSAN build."""
   FUZZER_DIR = UNDEFINED_FUZZER_DIR
   FUZZER = UNDEFINED_FUZZER
 
-  @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
-                   'INTEGRATION_TESTS=1 not set')
   def test_run_with_undefined_sanitizer(self):
     """Tests run_fuzzers with a valid UBSAN build."""
     self._test_run_with_sanitizer(self.FUZZER_DIR, 'undefined')
@@ -304,14 +304,14 @@ class BatchFuzzTargetRunnerTest(fake_filesystem_unittest.TestCase):
     self.assertEqual(mocked_run_fuzz_target.call_count, 2)
 
 
+@unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
+                 'INTEGRATION_TESTS=1 not set')
 class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
                                        unittest.TestCase):
   """Integration tests for build_fuzzers with an ASAN build."""
 
   BUILD_DIR_NAME = 'cifuzz-latest-build'
 
-  @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
-                   'INTEGRATION_TESTS=1 not set')
   def test_new_bug_found(self):
     """Tests run_fuzzers with a valid ASAN build."""
     # Set the first return value to True, then the second to False to
@@ -330,8 +330,6 @@ class RunAddressFuzzersIntegrationTest(RunFuzzerIntegrationTestMixin,
         build_dir = os.path.join(workspace, 'out', self.BUILD_DIR_NAME)
         self.assertNotEqual(0, len(os.listdir(build_dir)))
 
-  @unittest.skipIf(not os.getenv('INTEGRATION_TESTS'),
-                   'INTEGRATION_TESTS=1 not set')
   @mock.patch('fuzz_target.FuzzTarget.is_reproducible',
               side_effect=[True, True])
   def test_old_bug_found(self, _):
