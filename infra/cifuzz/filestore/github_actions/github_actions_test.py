@@ -42,7 +42,7 @@ class GithubActionsFilestoreTest(unittest.TestCase):
         'Accept': 'application/vnd.github.v3+json',
     }
 
-  @mock.patch('cifuzz.filestore.github_actions.github_api.list_artifacts')
+  @mock.patch('filestore.github_actions.github_api.list_artifacts')
   def test_list_artifacts(self, mocked_list_artifacts):
     """Tests that _list_artifacts works as intended."""
     owner = 'exampleowner'
@@ -57,9 +57,9 @@ class GithubActionsFilestoreTest(unittest.TestCase):
 
   @mock.patch('logging.warning')
   @mock.patch(
-      'cifuzz.filestore.github_actions.GithubActionsFilestore._list_artifacts',
+      'filestore.github_actions.GithubActionsFilestore._list_artifacts',
       return_value=None)
-  @mock.patch('cifuzz.filestore.github_actions.github_api.find_artifact',
+  @mock.patch('filestore.github_actions.github_api.find_artifact',
               return_value=None)
   def test_download_latest_build_no_artifact(self, _, __, mocked_warning):
     """Tests that download_latest_build returns False and doesn't exception when
@@ -73,9 +73,9 @@ class GithubActionsFilestoreTest(unittest.TestCase):
 
   @mock.patch('logging.warning')
   @mock.patch(
-      'cifuzz.filestore.github_actions.GithubActionsFilestore._list_artifacts',
+      'filestore.github_actions.GithubActionsFilestore._list_artifacts',
       return_value=None)
-  @mock.patch('cifuzz.filestore.github_actions.github_api.find_artifact',
+  @mock.patch('filestore.github_actions.github_api.find_artifact',
               return_value=None)
   def test_download_corpus_no_artifact(self, _, __, mocked_warning):
     """Tests that download_corpus_build returns False and doesn't exception when
