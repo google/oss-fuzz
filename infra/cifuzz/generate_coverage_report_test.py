@@ -47,7 +47,7 @@ class TestRunCoverageCommand(unittest.TestCase):
 class DownloadCorporaTest(unittest.TestCase):
   """Tests for download_corpora."""
 
-  def test_download_corpora(self): # pylint: disable=no-self-use
+  def test_download_corpora(self):  # pylint: disable=no-self-use
     """Tests that download_corpora works as intended."""
     clusterfuzz_deployment = mock.Mock()
     fuzz_target_paths = ['/path/to/fuzzer1', '/path/to/fuzzer2']
