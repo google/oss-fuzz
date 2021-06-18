@@ -42,10 +42,9 @@ REPRODUCE_ATTEMPTS = 10
 BUFFER_TIME = 10
 
 # Log message if we can't check if crash reproduces on an recent build.
-COULD_NOT_TEST_ON_RECENT_MESSAGE = (
-    'Crash is reproducible. Could not run recent build of '
-    'target to determine if this code change (pr/commit) introduced crash. '
-    'Assuming this code change introduced crash.')
+COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE = (
+    'Could not run previous build of target to determine if this code change '
+    '(pr/commit) introduced crash. Assuming crash was newly introduced.')
 
 FuzzResult = collections.namedtuple('FuzzResult',
                                     ['testcase', 'stacktrace', 'corpus_path'])
@@ -102,6 +101,16 @@ class FuzzTarget:
     else:
       command += ['-v', f'{self.out_dir}:/out']
 
+    # TODO(metzman): Stop using /out for artifacts and corpus. Use another
+    # directory.
+    # If corpus can be downloaded use it for fuzzing.
+    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
+        self.target_name, self.out_dir)
+    if self.latest_corpus_path:
+      command += docker.get_args_mapping_host_path_to_container(
+          self.latest_corpus_path)
+      command += ['-e', 'CORPUS_DIR=' + self.latest_corpus_path]
+
     command += [
         '-e', 'FUZZING_ENGINE=libfuzzer', '-e',
         'SANITIZER=' + self.config.sanitizer, '-e', 'CIFUZZ=True', '-e',
@@ -111,11 +120,6 @@ class FuzzTarget:
     options = LIBFUZZER_OPTIONS + ' -max_total_time=' + str(self.duration)
     run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
 
-    # If corpus can be downloaded use it for fuzzing.
-    self.latest_corpus_path = self.clusterfuzz_deployment.download_corpus(
-        self.target_name, self.out_dir)
-    if self.latest_corpus_path:
-      run_fuzzer_command = run_fuzzer_command + ' ' + self.latest_corpus_path
     command.append(run_fuzzer_command)
 
     logging.info('Running command: %s', ' '.join(command))
@@ -246,48 +250,52 @@ class FuzzTarget:
       reproducible_on_code_change = self.is_reproducible(
           testcase, self.target_path)
     except ReproduceError as error:
-      logging.error('Could not run target when checking for reproducibility.'
+      logging.error('Could not check for crash reproducibility.'
                     'Please file an issue:'
                     'https://github.com/google/oss-fuzz/issues/new.')
       raise error
 
     if not reproducible_on_code_change:
-      logging.info('Failed to reproduce the crash using the obtained testcase.')
+      # TODO(metzman): Allow users to specify if unreproducible crashes should
+      # be reported.
+      logging.info('Crash is not reproducible.')
       return False
 
+    logging.info('Crash is reproducible.')
     return self.is_crash_novel(testcase)
 
   def is_crash_novel(self, testcase):
     """Returns whether or not the crash is new. A crash is considered new if it
     can't be reproduced on an older ClusterFuzz build of the target."""
+    if not os.path.exists(testcase):
+      raise ReproduceError('Testcase %s not found.' % testcase)
     clusterfuzz_build_dir = self.clusterfuzz_deployment.download_latest_build(
         self.out_dir)
     if not clusterfuzz_build_dir:
       # Crash is reproducible on PR build and we can't test on a recent
       # ClusterFuzz/OSS-Fuzz build.
-      logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
+      logging.info(COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE)
       return True
 
     clusterfuzz_target_path = os.path.join(clusterfuzz_build_dir,
                                            self.target_name)
+
     try:
       reproducible_on_clusterfuzz_build = self.is_reproducible(
           testcase, clusterfuzz_target_path)
     except ReproduceError:
       # This happens if the project has ClusterFuzz builds, but the fuzz target
       # is not in it (e.g. because the fuzz target is new).
-      logging.info(COULD_NOT_TEST_ON_RECENT_MESSAGE)
+      logging.info(COULD_NOT_TEST_ON_CLUSTERFUZZ_MESSAGE)
       return True
 
-    if not reproducible_on_clusterfuzz_build:
-      logging.info('The crash is reproducible. The crash doesn\'t reproduce '
-                   'on old builds. This code change probably introduced the '
-                   'crash.')
-      return True
-
-    logging.info('The crash is reproducible on old builds '
-                 '(without the current code change).')
-    return False
+    if reproducible_on_clusterfuzz_build:
+      logging.info('The crash is reproducible on previous build. '
+                   'Code change (pr/commit) did not introduce crash.')
+      return False
+    logging.info('The crash doesn\'t reproduce on previous build. '
+                 'Code change (pr/commit) introduced crash.')
+    return True
 
   def get_testcase(self, error_bytes):
     """Gets the file from a fuzzer run stacktrace.
@@ -298,6 +306,8 @@ class FuzzTarget:
     Returns:
       The path to the testcase or None if not found.
     """
+    # TODO(metzman): Stop parsing and use libFuzzers' artifact_prefix option
+    # instead.
     match = re.search(rb'\bTest unit written to \.\/([^\s]+)', error_bytes)
     if match:
       return os.path.join(self.out_dir, match.group(1).decode('utf-8'))
