@@ -44,7 +44,7 @@ RUN git clone --depth 1 https://github.com/libtom/libtomcrypt.git
 RUN git clone --depth 1 https://github.com/microsoft/SymCrypt.git
 RUN git clone --depth 1 https://git.lysator.liu.se/nettle/nettle
 RUN hg clone https://gmplib.org/repo/gmp/ libgmp/
-RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.0.tar.gz
+RUN wget https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-2.5.1.tar.gz
 RUN git clone --depth 1 https://github.com/indutny/bn.js.git
 RUN git clone --depth 1 https://github.com/MikeMcl/bignumber.js.git
 RUN git clone --depth 1 https://github.com/guidovranken/libfuzzer-js.git
