@@ -56,7 +56,7 @@ def delete_images(images):
 def get_base_docker_run_args(out_dir, sanitizer='address', language='c++'):
   """Returns arguments that should be passed to every invocation of 'docker
   run'."""
-  docker_args = _DEFAULT_DOCKER_RUN_ARGS[:]
+  docker_args = _DEFAULT_DOCKER_RUN_ARGS.copy()
   docker_args += [
       '-e',
       f'SANITIZER={sanitizer}',
@@ -76,5 +76,5 @@ def get_base_docker_run_command(out_dir, sanitizer='address', language='c++'):
   invoked."""
   docker_args, docker_container = get_base_docker_run_args(
       out_dir, sanitizer, language)
-  command = _DEFAULT_DOCKER_RUN_COMMAND[:] + docker_args
+  command = _DEFAULT_DOCKER_RUN_COMMAND.copy() + docker_args
   return command, docker_container

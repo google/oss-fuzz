@@ -176,8 +176,9 @@ class CoverageTargetRunner(BaseFuzzTargetRunner):
     # We only want fuzz targets from the root because during the coverage build,
     # a lot of the image's filesystem is copied into /out for the purpose of
     # generating coverage reports.
-    # TOOD(metzman): Figure out if we should do root_only for non-coverage runs.
-    return utils.get_fuzz_targets(self.out_dir, root_only=True)
+    # TOOD(metzman): Figure out if top_level_only should be the only behavior
+    # for this function.
+    return utils.get_fuzz_targets(self.out_dir, top_level_only=True)
 
   def run_fuzz_targets(self):
     generate_coverage_report.generate_coverage_report(
