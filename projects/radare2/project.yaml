@@ -1,4 +1,4 @@
-homepage: "https://github.com/radare/radare2"
+homepage: "https://github.com/radareorg/radare2"
 language: c++
 primary_contact: "pancake@nopcode.org"
 auto_ccs:
@@ -6,4 +6,4 @@ auto_ccs:
 sanitizers:
   - address
 run_tests: False
-main_repo: 'https://github.com/radare/radare2'
+main_repo: 'https://github.com/radareorg/radare2'

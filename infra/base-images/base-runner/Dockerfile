@@ -51,8 +51,10 @@ RUN apt-get update && apt-get install -y \
     zip --no-install-recommends
 
 RUN git clone https://chromium.googlesource.com/chromium/src/tools/code_coverage /opt/code_coverage && \
+    cd /opt/code_coverage && \
+    git checkout edba4873b5e8a390e977a64c522db2df18a8b27d && \
     pip3 install wheel && \
-    pip3 install -r /opt/code_coverage/requirements.txt && \
+    pip3 install -r requirements.txt && \
     pip3 install MarkupSafe==0.23
 
 # Default environment options for various sanitizers.

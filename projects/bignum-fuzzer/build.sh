@@ -20,8 +20,8 @@
 #source $HOME/.cargo/env
 
 # Build libmpdec
-tar zxf mpdecimal-2.5.0.tar.gz
-cd mpdecimal-2.5.0
+tar zxf mpdecimal-2.5.1.tar.gz
+cd mpdecimal-2.5.1
 ./configure && make -j$(nproc)
 
 cd $SRC/openssl
@@ -60,7 +60,7 @@ LIBGMP_INCLUDE_PATH=$SRC/libgmp LIBGMP_A_PATH=$SRC/libgmp/.libs/libgmp.a make
 
 # Build libmpdec module
 cd $SRC/bignum-fuzzer/modules/libmpdec
-LIBMPDEC_A_PATH=$SRC/mpdecimal-2.5.0/libmpdec/libmpdec.a LIBMPDEC_INCLUDE_PATH=$SRC/mpdecimal-2.5.0/libmpdec make
+LIBMPDEC_A_PATH=$SRC/mpdecimal-2.5.1/libmpdec/libmpdec.a LIBMPDEC_INCLUDE_PATH=$SRC/mpdecimal-2.5.1/libmpdec make
 
 BASE_CXXFLAGS=$CXXFLAGS
 

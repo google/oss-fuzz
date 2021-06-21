@@ -37,7 +37,6 @@ ls ./build/bin/local/fuzzer_* | while read i; do
     patchelf --set-rpath '$ORIGIN/lib' ${i}
     copy_lib ${i} libfreeradius
     copy_lib ${i} talloc
-    copy_lib ${i} ssl
     copy_lib ${i} kqueue
     cp ${i} $OUT/
 done
