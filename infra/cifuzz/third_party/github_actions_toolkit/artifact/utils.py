@@ -1,7 +1,7 @@
 """Utility module. Based on utils.ts."""
 import logging
 
-from github_actions_toolkit.artifact import config_variables
+from third_party.github_actions_toolkit.artifact import config_variables
 
 MAX_API_ATTEMPTS = 5
 SLEEP_TIME = 1

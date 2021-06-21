@@ -14,6 +14,10 @@
 """Module for a generic filestore."""
 
 
+class FilestoreError(Exception):
+  """Error using the filestore."""
+
+
 # pylint: disable=unused-argument,no-self-use
 class BaseFilestore:
   """Base class for a filestore."""
@@ -21,10 +25,14 @@ class BaseFilestore:
   def __init__(self, config):
     self.config = config
 
-  def upload_corpus(self, name, directory):
-    """Uploads the corpus located at |directory| to |name|."""
+  def upload_directory(self, name, directory):
+    """Uploads the |directory| to |name|."""
     raise NotImplementedError('Child class must implement method.')
 
   def download_corpus(self, name, dst_directory):
     """Downloads the corpus located at |name| to |dst_directory|."""
+    raise NotImplementedError('Child class must implement method.')
+
+  def download_latest_build(self, name, dst_directory):
+    """Downloads the latest build with |name| to |dst_directory|."""
     raise NotImplementedError('Child class must implement method.')
