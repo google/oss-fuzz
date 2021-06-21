@@ -15,6 +15,9 @@ inputs:
   allowed-broken-targets-percentage:
     description: 'The percentage of broken targets allowed in bad_build_check.'
     required: false
+  extra-build-args:
+    description: 'Additional arguments passed to build scripts via the EXTRA_BUILD_ARGS variable.'
+    required: false
   sanitizer:
     description: 'The sanitizer to build the fuzzers with.'
     default: 'address'
@@ -36,6 +39,7 @@ runs:
     LANGUAGE: ${{ inputs.language }}
     DRY_RUN: ${{ inputs.dry-run}}
     ALLOWED_BROKEN_TARGETS_PERCENTAGE: ${{ inputs.allowed-broken-targets-percentage}}
+    EXTRA_BUILD_ARGS: ${{ inputs.extra-build-args }}
     SANITIZER: ${{ inputs.sanitizer }}
     PROJECT_SRC_PATH: ${{ inputs.project-src-path }}
     BUILD_INTEGRATION_PATH: ${{ inputs.build-integration-path }}
