@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN git clone https://github.com/dragonflyoss/Dragonfly
-COPY build.sh $SRC/
-WORKDIR $SRC/Dragonfly
+RUN apt-get update && apt-get install -y cmake m4
+RUN git clone --depth 1 https://github.com/Unidata/netcdf-c
+COPY build.sh $SRC
+WORKDIR $SRC/netcdf-c

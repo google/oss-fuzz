@@ -67,7 +67,7 @@ def get_base_docker_run_args(out_dir, sanitizer='address', language='c++'):
   if docker_container:
     docker_args += ['--volumes-from', docker_container, '-e', 'OUT=' + out_dir]
   else:
-    docker_args += ['-v', f'{out_dir}:/out']
+    docker_args += get_args_mapping_host_path_to_container(out_dir, '/out')
   return docker_args, docker_container
 
 
@@ -78,3 +78,11 @@ def get_base_docker_run_command(out_dir, sanitizer='address', language='c++'):
       out_dir, sanitizer, language)
   command = _DEFAULT_DOCKER_RUN_COMMAND.copy() + docker_args
   return command, docker_container
+
+
+def get_args_mapping_host_path_to_container(host_path, container_path=None):
+  """Get arguments to docker run that will map |host_path| a path on the host to
+  a path in the container. If |container_path| is specified, that path is mapped
+  to. If not, then |host_path| is mapped to itself in the container."""
+  container_path = host_path if container_path is None
+  return ['-v', f'{host_path}:{container_path}']
