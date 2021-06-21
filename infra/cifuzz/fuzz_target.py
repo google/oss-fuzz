@@ -121,8 +121,8 @@ class FuzzTarget:
     run_fuzzer_command = f'run_fuzzer {self.target_name} {options}'
 
     command.append(run_fuzzer_command)
-    logging.info('Running command: %s', ' '.join(command))
 
+    logging.info('Running command: %s', ' '.join(command))
     process = subprocess.Popen(command,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -155,13 +155,14 @@ class FuzzTarget:
     # We found a bug but we won't report it.
     return FuzzResult(None, None, self.latest_corpus_path)
 
-  def free_disk_if_needed(self):
+  def free_disk_if_needed(self, delete_fuzz_target=True):
     """Deletes things that are no longer needed from fuzzing this fuzz target to
     save disk space if needed."""
     if not self.config.low_disk_space:
+      logging.info('Not freeing disk space after running fuzz target.')
       return
     logging.info(
-        'Deleting corpus, seed corpus and fuzz target of %s to save disk.',
+        'Deleting corpus and seed corpus of %s to save disk.',
         self.target_name)
 
     # Delete the seed corpus, corpus, and fuzz target.
@@ -170,10 +171,13 @@ class FuzzTarget:
       # https://github.com/google/oss-fuzz/issues/5383.
       shutil.rmtree(self.latest_corpus_path, ignore_errors=True)
 
-    os.remove(self.target_path)
     target_seed_corpus_path = self.target_path + '_seed_corpus.zip'
     if os.path.exists(target_seed_corpus_path):
       os.remove(target_seed_corpus_path)
+
+    if delete_fuzz_target:
+      logging.info('Deleting fuzz target: %s.', self.targetg_name)
+      os.remove(self.target_path)
     logging.info('Done deleting.')
 
   def is_reproducible(self, testcase, target_path):

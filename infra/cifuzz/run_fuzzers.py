@@ -88,15 +88,15 @@ class BaseFuzzTargetRunner:
 
   def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
     """Fuzzes with |fuzz_target_obj| and returns the result."""
-    result = fuzz_target_obj.fuzz()
-    fuzz_target_obj.free_disk_if_needed()
-    return result
+    raise NotImplementedError('Child class must implement method.')
+
+
 
   @property
   def quit_on_bug_found(self):
     """Property that is checked to determine if fuzzing should quit after first
     bug is found."""
-    raise NotImplementedError('Child class must implement method')
+    raise NotImplementedError('Child class must implement method.')
 
   def get_fuzz_target_artifact(self, target, artifact_name):
     """Returns the path of a fuzzing artifact named |artifact_name| for
@@ -129,7 +129,6 @@ class BaseFuzzTargetRunner:
       target = self.create_fuzz_target_obj(target_path, run_seconds)
       start_time = time.time()
       result = self.run_fuzz_target(target)
-      shutil.rmtree(result.corpus_path)
 
       # It's OK if this goes negative since we take max when determining
       # run_seconds.
@@ -165,9 +164,10 @@ class CiFuzzTargetRunner(BaseFuzzTargetRunner):
   def quit_on_bug_found(self):
     return True
 
-  def run_fuzz_target(self, fuzz_target_obj):
-    """Fuzzes with |fuzz_target_obj| and returns the result."""
-    return fuzz_target_obj.fuzz()
+  def run_fuzz_target(self, fuzz_target_obj):  # pylint: disable=no-self-use
+    result = fuzz_target_obj.fuzz()
+    fuzz_target_obj.free_disk_if_needed()
+    return result
 
 
 class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
@@ -180,10 +180,13 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
   def run_fuzz_target(self, fuzz_target_obj):
     """Fuzzes with |fuzz_target_obj| and returns the result."""
     result = fuzz_target_obj.fuzz()
-    # !!!
-    logging.info('corpus_path: %s', os.listdir(result.corpus_path))
+    logging.debug('corpus_path: %s', os.listdir(result.corpus_path))
     self.clusterfuzz_deployment.upload_corpus(fuzz_target_obj.target_name,
                                               result.corpus_path)
+    # This must be done after we upload the corpus, otherwise it will be deleted
+    # before we get a chance to upload it. We can't delete the fuzz target
+    # because it is needed when we upload the build.
+    fuzz_target_obj.free_disk_if_needed(delete_fuzz_target=False)
     return result
 
   def run_fuzz_targets(self):
@@ -194,19 +197,21 @@ class BatchFuzzTargetRunner(BaseFuzzTargetRunner):
 
     self.clusterfuzz_deployment.upload_crashes(self.crashes_dir)
 
-    # We want to upload the build to the filestore when we are doing batch
-    # fuzzing.
-    # There's a problem with this. We don't want to upload the build before
-    # fuzzing. Because in novelty-checking CIFuzz downloads an old build, and we
-    # don't want it to consider this build to be an old build. However, the out
-    # directory is mounted into the runnner container and is used to pass the
-    # runner corpora, old builds and for the runner to pass the host testcases.
-    # Thus, we will upload the build after fuzzing. But before we zip the out
-    # directory we will remove these extra things that are now in out.
-    # TODO(metzman): Don't pollute self.out_dir like this.
+    # We want to upload the build to the filestore after we do batch fuzzing.
+    # There are some problems with this. First, we don't want to upload the
+    # build before fuzzing, because if we download the latest build, we will
+    # consider the build we just uploaded to be the latest even though it
+    # shouldn't be (we really intend to download the build before the curent
+    # one.
+    # Second, the out directory is mounted into the runnner container and is
+    # used to pass the runner corpora, old builds and for the runner to pass the
+    # host testcases. Thus, we will upload the build after fuzzing. But before
+    # we zip the out directory we will remove these extra things that are now in
+    # out.
     # TODO(metzman): We should really be uploading latest build in
     # build_fuzzers before we remove unaffected fuzzers. Otherwise, we lose
     # fuzzers.
+    # TODO(metzman): Don't pollute self.out_dir like this.
 
     for directory in [
         self.clusterfuzz_deployment.get_corpus_dir(self.out_dir),

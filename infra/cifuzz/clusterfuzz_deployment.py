@@ -29,6 +29,7 @@ import utils
 
 class BaseClusterFuzzDeployment:
   """Base class for ClusterFuzz deployments."""
+
   CORPUS_DIR_NAME = 'cifuzz-corpus'
   BUILD_DIR_NAME = 'cifuzz-latest-build'
 

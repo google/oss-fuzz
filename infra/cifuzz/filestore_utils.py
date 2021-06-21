@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """External filestore interface. Cannot be depended on by filestore code."""
+import filestore
 import filestore.github_actions
 
 
