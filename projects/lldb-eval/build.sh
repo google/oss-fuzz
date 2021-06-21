@@ -15,6 +15,8 @@
 #
 ################################################################################
 
+(
+cd $SRC/
 GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-llvm-12"
 
 if [ "$SANITIZER" = "address" ]
