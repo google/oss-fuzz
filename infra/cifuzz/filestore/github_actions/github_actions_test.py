@@ -61,13 +61,13 @@ class GithubActionsFilestoreTest(unittest.TestCase):
   @mock.patch('filestore.github_actions.github_api.find_artifact',
               return_value=None)
   def test_download_latest_build_no_artifact(self, _, __, mocked_warning):
-    """Tests that download_latest_build returns False and doesn't exception when
+    """Tests that download_latest_build returns None and doesn't exception when
     find_artifact can't find an artifact."""
     config = test_helpers.create_run_config(github_token=self.github_token)
     filestore = github_actions.GithubActionsFilestore(config)
     name = 'build-name'
     build_dir = 'build-dir'
-    self.assertFalse(filestore.download_latest_build(name, build_dir))
+    self.assertIsNone(filestore.download_latest_build(name, build_dir))
     mocked_warning.assert_called_with('Could not download build: %s.', name)
 
   @mock.patch('logging.warning')
@@ -76,7 +76,7 @@ class GithubActionsFilestoreTest(unittest.TestCase):
   @mock.patch('filestore.github_actions.github_api.find_artifact',
               return_value=None)
   def test_download_corpus_no_artifact(self, _, __, mocked_warning):
-    """Tests that download_corpus_build returns False and doesn't exception when
+    """Tests that download_corpus_build returns None and doesn't exception when
     find_artifact can't find an artifact."""
     config = test_helpers.create_run_config(github_token=self.github_token)
     filestore = github_actions.GithubActionsFilestore(config)

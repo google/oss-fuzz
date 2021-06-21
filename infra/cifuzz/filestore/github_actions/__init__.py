@@ -52,17 +52,24 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def download_corpus(self, name, dst_directory):  # pylint: disable=unused-argument,no-self-use
     """Downloads the corpus located at |name| to |dst_directory|."""
+    return self._download_artifact(name, dst_directory)
+
+  def _find_artifact(self, name):
+    """Finds an artifact using the GitHub API and returns it."""
     logging.debug('listing artifact')
     artifacts = self._list_artifacts()
-    corpus_artifact = github_api.find_artifact(name, artifacts)
-    logging.debug('Corpus artifact: %s.', corpus_artifact)
-    if not corpus_artifact:
-      logging.warning('Could not download corpus: %s.', name)
-      return False
-    url = corpus_artifact['archive_download_url']
-    logging.debug('Corpus artifact url: %s.', url)
+    artifact = github_api.find_artifact(name, artifacts)
+    logging.debug('Artifact: %s.', artifact)
+    return artifact
+
+  def _download_artifact(self, name, dst_directory):
+    """Downloads artifact with |name| to |dst_directory|."""
+    artifact = self._find_artifact(name)
+    if not artifact:
+      logging.warning('Could not download artifact: %s.', name)
+    download_url = artifact['archive_download_url']
     return http_utils.download_and_unpack_zip(
-        url, dst_directory, headers=self.github_api_http_headers)
+        download_url, dst_directory, headers=self.github_api_http_headers)
 
   def _list_artifacts(self):
     """Returns a list of artifacts."""
@@ -72,13 +79,4 @@ class GithubActionsFilestore(filestore.BaseFilestore):
 
   def download_latest_build(self, name, dst_directory):
     """Downloads latest build with name |name| to |dst_directory|."""
-    artifacts = self._list_artifacts()
-    build_artifact = github_api.find_artifact(name, artifacts)
-    if not build_artifact:
-      logging.warning('Could not download build: %s.', name)
-      return False
-
-    url = build_artifact['archive_download_url']
-    logging.debug('Build artifact url: %s.', url)
-    return http_utils.download_and_unpack_zip(
-        url, dst_directory, headers=self.github_api_http_headers)
+    return self._download_artifact(name, dst_directory)

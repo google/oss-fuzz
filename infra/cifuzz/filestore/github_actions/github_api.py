@@ -27,7 +27,6 @@ sys.path.append(
                  os.path.pardir))
 import retry
 
-
 _MAX_ITEMS_PER_PAGE = 100
 
 _GET_ATTEMPTS = 3
@@ -47,7 +46,6 @@ def _get_artifacts_list_api_url(repo_owner, repo_name):
   """Returns the artifacts_api_url for |repo_name| owned by |repo_owner|."""
   return (f'https://api.github.com/repos/{repo_owner}/'
           f'{repo_name}/actions/artifacts')
-
 
 
 @retry.wrap(_GET_ATTEMPTS, _GET_BACKOFF)
