@@ -14,6 +14,10 @@
 """Module for a generic filestore."""
 
 
+class FilestoreError(Exception):
+  """Error using the filestore."""
+
+
 # pylint: disable=unused-argument,no-self-use
 class BaseFilestore:
   """Base class for a filestore."""
