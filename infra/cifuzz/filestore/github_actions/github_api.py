@@ -46,16 +46,20 @@ def get_http_auth_headers(config):
 
 
 def _get_artifacts_list_api_url(repo_owner, repo_name):
+  """Returns the artifacts_api_url for |repo_name| owned by |repo_owner|."""
   return ARTIFACTS_LIST_API_URL_UNFORMATTED.format(repo_owner=repo_owner,
                                                    repo_name=repo_name)
 
 
 @retry.wrap(_GET_ATTEMPTS, _GET_BACKOFF)
 def _do_get_request(*args, **kwargs):
+  """Wrapped version of requests.get that does retries."""
   return requests.get(*args, **kwargs)
 
 
 def _get_items(url, headers):
+  """Generator that gets and yields items from a GitHub API endpoint (specified
+  by |URL|) sending |headers| with the get request."""
   # Github API response pages are 1-indexed.
   page_counter = 1
 
