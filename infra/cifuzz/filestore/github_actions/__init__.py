@@ -67,6 +67,7 @@ class GithubActionsFilestore(filestore.BaseFilestore):
     artifact = self._find_artifact(name)
     if not artifact:
       logging.warning('Could not download artifact: %s.', name)
+      return artifact
     download_url = artifact['archive_download_url']
     return http_utils.download_and_unpack_zip(
         download_url, dst_directory, headers=self.github_api_http_headers)
