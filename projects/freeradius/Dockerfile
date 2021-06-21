@@ -15,7 +15,7 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder
-RUN apt-get update && apt install -y libtalloc-dev libkqueue-dev libssl-dev
+RUN apt-get update && apt install -y libtalloc-dev libkqueue-dev
 
 # OpenSSL 1.1
 ARG OPENSSL_VERSION=1.1.1g
