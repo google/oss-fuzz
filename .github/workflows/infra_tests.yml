@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'infra/**'
+      - '.github/workflows/**'
 
 jobs:
   build:
