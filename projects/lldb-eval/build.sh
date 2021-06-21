@@ -17,25 +17,42 @@
 
 (
 cd $SRC/
-GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-llvm-11"
-
-wget --quiet $GITHUB_RELEASE/llvm-11.1.0-source.tar.gz
-tar -xzf llvm-11.1.0-source.tar.gz
-
-wget --quiet $GITHUB_RELEASE/llvm-11.1.0-x86_64-linux-release-genfiles.tar.gz
-tar -xzf llvm-11.1.0-x86_64-linux-release-genfiles.tar.gz
+GITHUB_RELEASE="https://github.com/google/lldb-eval/releases/download/oss-fuzz-llvm-12"
 
 if [ "$SANITIZER" = "address" ]
 then
-  LLVM_ARCHIVE="llvm-11.1.0-x86_64-linux-release-address.tar.gz"
+  LLVM_ARCHIVE="llvm-12.0.1-x86_64-linux-release-address.tar.gz"
+elif [ "$SANITIZER" = "memory" ]
+then
+  LLVM_ARCHIVE="llvm-12.0.1-x86_64-linux-release-memory.tar.gz"
+elif [ "$SANITIZER" = "undefined" ]
+then
+  LLVM_ARCHIVE="llvm-12.0.1-x86_64-linux-release.tar.gz"
+elif [ "$SANITIZER" = "coverage" ]
+then
+  # For coverage we also need the original source code.
+  wget --quiet $GITHUB_RELEASE/llvm-12.0.1-source.tar.gz
+  tar -xzf llvm-12.0.1-source.tar.gz
+  wget --quiet $GITHUB_RELEASE/llvm-12.0.1-x86_64-linux-release-genfiles.tar.gz
+  tar -xzf llvm-12.0.1-x86_64-linux-release-genfiles.tar.gz
+
+  LLVM_ARCHIVE="llvm-12.0.1-x86_64-linux-release.tar.gz"
 else
-  LLVM_ARCHIVE="llvm-11.1.0-x86_64-linux-release-coverage.tar.gz"
+  echo "Unknown sanitizer: $SANITIZER"
+  exit 1
 fi
 
 wget --quiet $GITHUB_RELEASE/$LLVM_ARCHIVE
 mkdir -p llvm && tar -xzf $LLVM_ARCHIVE --strip-components 1 -C llvm
 )
 export LLVM_INSTALL_PATH=$SRC/llvm
+
+if [ "$SANITIZER" = "undefined" ]
+then
+  # Disable vptr because it's not allowed with '-fno-rtti'
+  CFLAGS="$CFLAGS -fno-sanitize=function,vptr"
+  CXXFLAGS="$CXXFLAGS -fno-sanitize=function,vptr"
+fi
 
 # Run the build!
 bazel_build_fuzz_tests
