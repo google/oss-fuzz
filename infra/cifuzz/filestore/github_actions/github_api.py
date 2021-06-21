@@ -27,8 +27,6 @@ sys.path.append(
                  os.path.pardir))
 import retry
 
-ARTIFACTS_LIST_API_URL_UNFORMATTED = (
-    'https://api.github.com/repos/{repo_owner}/{repo_name}/actions/artifacts')
 
 _MAX_ITEMS_PER_PAGE = 100
 
@@ -47,8 +45,9 @@ def get_http_auth_headers(config):
 
 def _get_artifacts_list_api_url(repo_owner, repo_name):
   """Returns the artifacts_api_url for |repo_name| owned by |repo_owner|."""
-  return ARTIFACTS_LIST_API_URL_UNFORMATTED.format(repo_owner=repo_owner,
-                                                   repo_name=repo_name)
+  return (f'https://api.github.com/repos/{repo_owner}/'
+          f'{repo_name}/actions/artifacts')
+
 
 
 @retry.wrap(_GET_ATTEMPTS, _GET_BACKOFF)
