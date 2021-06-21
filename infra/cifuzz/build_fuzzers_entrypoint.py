@@ -28,11 +28,8 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
-def build_fuzzers_entry():
-  """Build OSS-Fuzz project's fuzzers for CI tools.
-  This script is used to kick off the Github Actions CI tool. It is the
-  entrypoint of the Dockerfile in this directory. This action can be added to
-  any OSS-Fuzz project's workflow that uses Github."""
+def build_fuzzers_entrypoint():
+  """Builds OSS-Fuzz project's fuzzers for CI tools."""
   config = config_utils.BuildFuzzersConfig()
 
   if config.dry_run:
@@ -72,12 +69,9 @@ def build_fuzzers_entry():
 
 
 def main():
-  """Build OSS-Fuzz project's fuzzers for CI tools.
-  This script is used to kick off the Github Actions CI tool. It is the
-  entrypoint of the Dockerfile in this directory. This action can be added to
-  any OSS-Fuzz project's workflow that uses Github.
+  """Builds OSS-Fuzz project's fuzzers for CI tools.
 
-  Note: The resulting clusterfuzz binaries of this build are placed in
+  Note: The resulting fuzz target binaries of this build are placed in
   the directory: ${GITHUB_WORKSPACE}/out
 
   Required environment variables:
@@ -93,9 +87,9 @@ def main():
     SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
-    0 on success or 1 on failure.
+    0 on success or nonzero on failure.
   """
-  return build_fuzzers_entry()
+  return build_fuzzers_entrypoint()
 
 
 if __name__ == '__main__':

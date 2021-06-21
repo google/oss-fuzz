@@ -37,7 +37,7 @@ ADD . ${OSS_FUZZ_ROOT}
 RUN python3 -m pip install -r ${OSS_FUZZ_ROOT}/infra/cifuzz/requirements.txt
 RUN rm -rf ${OSS_FUZZ_ROOT}/infra
 
-# Python file to execute when the docker container starts up
+# Python file to execute when the docker container starts up.
 # We can't use the env var $OSS_FUZZ_ROOT here. Since it's a constant env var,
 # just expand to '/opt/oss-fuzz'.
-ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/cifuzz_external_entrypoint.py"]
+ENTRYPOINT ["python3", "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"]

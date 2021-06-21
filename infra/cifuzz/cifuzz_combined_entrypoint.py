@@ -1,4 +1,4 @@
-# Copyright 2020 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,33 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Builds fuzzers and runs fuzzers. Entrypoint used for external users"""
+import logging
 import sys
 
 import build_fuzzers_entrypoint
 import run_fuzzers_entrypoint
 
-# pylint: disable=c-extension-no-member
-# pylint gets confused because of the relative import of cifuzz.
-
 
 def main():
-  """Build OSS-Fuzz project's fuzzers for CI tools.
-  This script is used to kick off the Github Actions CI tool. It is the
-  entrypoint of the Dockerfile in this directory. This action can be added to
-  any OSS-Fuzz project's workflow that uses Github.
-
-  NOTE: The resulting clusterfuzz binaries of this build are placed in
-  the directory: ${GITHUB_WORKSPACE}/out
-
-  NOTE: libFuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
-  directory in order for this action to be used. This action will only fuzz the
-  binaries that are located in that directory. It is recommended that you add
-  the build_fuzzers action preceding this one.
+  """Builds and runs fuzzers for CI tools.
 
   NOTE: Any crash report will be in the filepath:
   ${GITHUB_WORKSPACE}/out/testcase
-  This can be used in parallel with the upload-artifact action to surface the
-  logs.
+ This can be used with GitHub's upload-artifact action to surface the logs.
 
   Required environment variables:
     OSS_FUZZ_PROJECT_NAME: The name of OSS-Fuzz project.
@@ -56,9 +42,11 @@ def main():
   Returns:
     0 on success or 1 on failure.
   """
-  if build_fuzzers_entrypoint.build_fuzzers_entry() == 1:
-    return 1
-  return run_fuzzers_entrypoint.run_fuzzers_entry()
+  logging.debug("Using cifuzz_combined_entrypoint.")
+  build = build_fuzzers_entrypoint.build_fuzzers_entrypoint()
+  if build != 0:
+    return build
+  return run_fuzzers_entrypoint.run_fuzzers_entrypoint()
 
 
 if __name__ == '__main__':

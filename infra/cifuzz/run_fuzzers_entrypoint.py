@@ -42,8 +42,8 @@ def delete_unneeded_docker_images(config):
   docker.delete_images(images)
 
 
-def run_fuzzers_entry():
-  """ This is the entrypoint for the run_fuzzers github action.
+def run_fuzzers_entrypoint():
+  """This is the entrypoint for the run_fuzzers github action.
   This action can be added to any OSS-Fuzz project's workflow that uses
   Github."""
   config = config_utils.RunFuzzersConfig()
@@ -73,9 +73,8 @@ def run_fuzzers_entry():
 
 
 def main():
-  """Runs OSS-Fuzz project's fuzzers for CI tools.
+  """Runs project's fuzzers for CI tools.
   This is the entrypoint for the run_fuzzers github action.
-  This action can be added to any OSS-Fuzz project's workflow that uses Github.
 
   NOTE: libFuzzer binaries must be located in the ${GITHUB_WORKSPACE}/out
   directory in order for this action to be used. This action will only fuzz the
@@ -95,9 +94,9 @@ def main():
     SANITIZER: The sanitizer to use when running fuzzers.
 
   Returns:
-    0 on success or 1 on failure.
+    0 on success or nonzero on failure.
   """
-  return run_fuzzers_entry()
+  return run_fuzzers_entrypoint()
 
 
 if __name__ == '__main__':
