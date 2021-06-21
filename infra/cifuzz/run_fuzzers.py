@@ -90,8 +90,6 @@ class BaseFuzzTargetRunner:
     """Fuzzes with |fuzz_target_obj| and returns the result."""
     raise NotImplementedError('Child class must implement method.')
 
-
-
   @property
   def quit_on_bug_found(self):
     """Property that is checked to determine if fuzzing should quit after first

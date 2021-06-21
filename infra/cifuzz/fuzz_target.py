@@ -161,9 +161,8 @@ class FuzzTarget:
     if not self.config.low_disk_space:
       logging.info('Not freeing disk space after running fuzz target.')
       return
-    logging.info(
-        'Deleting corpus and seed corpus of %s to save disk.',
-        self.target_name)
+    logging.info('Deleting corpus and seed corpus of %s to save disk.',
+                 self.target_name)
 
     # Delete the seed corpus, corpus, and fuzz target.
     if self.latest_corpus_path and os.path.exists(self.latest_corpus_path):
@@ -176,7 +175,7 @@ class FuzzTarget:
       os.remove(target_seed_corpus_path)
 
     if delete_fuzz_target:
-      logging.info('Deleting fuzz target: %s.', self.targetg_name)
+      logging.info('Deleting fuzz target: %s.', self.target_name)
       os.remove(self.target_path)
     logging.info('Done deleting.')
 
